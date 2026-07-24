@@ -195,30 +195,30 @@ F. Shared hosting/observability
 
 ### Tasks
 
-- [ ] Inventory `Storefront.V2.csproj` project references:
-  - [ ] `BlazorShop.Application`
-  - [ ] `BlazorShop.Web.SharedV2`
-  - [ ] `BlazorShop.ServiceDefaults`
-  - [ ] `BlazorShop.Storefront.Components`
-  - [ ] `BlazorShop.Storefront.WASM`
-- [ ] Inventory all `using BlazorShop.Application.*` in Storefront V2.
-- [ ] Inventory all `using BlazorShop.Web.SharedV2.Models*` in Storefront V2.
-- [ ] Inventory Storefront V2 services/contracts that alias Application DTOs.
-- [ ] Inventory BFF/local endpoint request/response types currently mixed into endpoint support files.
-- [ ] Inventory current handwritten Storefront API clients:
-  - [ ] `StorefrontApiClient.*`
-  - [ ] `StorefrontApiTransport`
-  - [ ] `StorefrontApiRoutes`
-  - [ ] capability interfaces in `Services/Contracts`.
-- [ ] Inventory Razor pages/components that directly use backend DTOs.
-- [ ] Inventory SEO/navigation/sitemap contracts still coming from Application/Web.SharedV2.
-- [ ] Inventory public Storefront API contracts in Commerce Node that still use Application DTOs internally.
-- [ ] Create migration table:
+- [x] Inventory `Storefront.V2.csproj` project references:
+  - [x] `BlazorShop.Application`
+  - [x] `BlazorShop.Web.SharedV2`
+  - [x] `BlazorShop.ServiceDefaults`
+  - [x] `BlazorShop.Storefront.Components`
+  - [x] `BlazorShop.Storefront.WASM`
+- [x] Inventory all `using BlazorShop.Application.*` in Storefront V2.
+- [x] Inventory all `using BlazorShop.Web.SharedV2.Models*` in Storefront V2.
+- [x] Inventory Storefront V2 services/contracts that alias Application DTOs.
+- [x] Inventory BFF/local endpoint request/response types currently mixed into endpoint support files.
+- [x] Inventory current handwritten Storefront API clients:
+  - [x] `StorefrontApiClient.*`
+  - [x] `StorefrontApiTransport`
+  - [x] `StorefrontApiRoutes`
+  - [x] capability interfaces in `Services/Contracts`.
+- [x] Inventory Razor pages/components that directly use backend DTOs.
+- [x] Inventory SEO/navigation/sitemap contracts still coming from Application/Web.SharedV2.
+- [x] Inventory public Storefront API contracts in Commerce Node that still use Application DTOs internally.
+- [x] Create migration table:
 
 | Current type/service | Current owner | Used by | Problem | Replacement | Target owner | Migration phase |
 | --- | --- | --- | --- | --- | --- | --- |
 
-- [ ] Add the migration table to this plan or a sibling audit file.
+- [x] Add the migration table to this plan or a sibling audit file.
 
 ### Suggested commands
 
@@ -230,9 +230,9 @@ rg -n "Application|Domain|Infrastructure|CommerceNode.API|ControlPlane.API" Blaz
 
 ### Done when
 
-- [ ] Every backend/core dependency in Storefront V2 has an owner and replacement plan.
-- [ ] Migration order is known per capability.
-- [ ] No code behavior has changed.
+- [x] Every backend/core dependency in Storefront V2 has an owner and replacement plan.
+- [x] Migration order is known per capability.
+- [x] No code behavior has changed.
 
 ## F2 - Storefront API Contract Hardening
 
@@ -816,8 +816,8 @@ Future `BlazorShop.Storefront.Starter` should include:
 
 ## Implementation Order And Commit Plan
 
-- [ ] Commit 1: F0 architecture role/boundary lock and tests.
-- [ ] Commit 2: F1 dependency audit document and migration table.
+- [x] Commit 1: F0 architecture role/boundary lock and tests.
+- [x] Commit 2: F1 dependency audit document and migration table.
 - [ ] Commit 3: F2 OpenAPI surface split and provider/webhook exclusion from frontend SDK.
 - [ ] Commit 4: F2 error contract/capability projection hardening.
 - [ ] Commit 5: F3 generated C# client project and generator tests.
