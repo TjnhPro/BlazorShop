@@ -376,7 +376,7 @@ FodyWeavers.xsd
 output/
 .gstack/
 Smartstore/
-
+ai-website-cloner-template/
 
 # BlazorShop CommerceNode runtime data
 /BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/media/
