@@ -124,6 +124,39 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("MVP result: pass", report, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CommerceRegressionGate_CoversStarterFlowsAndRejectsDirectCommerceCalls()
+        {
+            var runner = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-commerce-regression.mjs");
+            var report = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/functional-commerce-report.md");
+
+            foreach (var marker in new[]
+            {
+                "Home renders",
+                "Catalog renders",
+                "Product renders",
+                "Product link navigation works",
+                "Product image/gallery region renders",
+                "Quantity control can change",
+                "Add-to-cart command works through same-origin BFF",
+                "Cart badge updates",
+                "Cart page renders",
+                "Checkout route renders",
+                "Account route renders",
+                "Login/register shell renders according to store policy",
+                "Product SEO initial HTML exists",
+                "Browser does not call Commerce Node protected APIs directly",
+                "/api/storefront/",
+                "/api/commerce/",
+            })
+            {
+                Assert.Contains(marker, runner, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("No direct Commerce Node browser calls detected", report, StringComparison.Ordinal);
+            Assert.Contains("PayPal/Stripe production providers are outside this MVP gate", report, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

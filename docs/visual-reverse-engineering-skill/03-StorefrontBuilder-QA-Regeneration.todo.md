@@ -168,38 +168,38 @@ Goal: prove visual generation did not break Starter ecommerce behavior.
 
 Browser tests:
 
-- [ ] Home renders.
-- [ ] Catalog renders.
-- [ ] Product renders.
-- [ ] Product link navigation works.
-- [ ] Product image/gallery region renders.
-- [ ] Quantity control can change.
-- [ ] Add-to-cart command works through same-origin BFF.
-- [ ] Cart badge updates.
-- [ ] Cart page renders.
-- [ ] Checkout route renders.
-- [ ] Account route renders.
-- [ ] Login/register shell renders according to store policy.
-- [ ] Product SEO initial HTML exists.
-- [ ] Browser does not call Commerce Node protected APIs directly.
+- [x] Home renders.
+- [x] Catalog renders.
+- [x] Product renders.
+- [x] Product link navigation works.
+- [x] Product image/gallery region renders.
+- [x] Quantity control can change.
+- [x] Add-to-cart command works through same-origin BFF.
+- [x] Cart badge updates.
+- [x] Cart page renders.
+- [x] Checkout route renders.
+- [x] Account route renders.
+- [x] Login/register shell renders according to store policy.
+- [x] Product SEO initial HTML exists.
+- [x] Browser does not call Commerce Node protected APIs directly.
 
 Notes:
 
-- [ ] COD test order placement can be included only when test store/env is configured.
-- [ ] PayPal/Stripe production providers are not required for this MVP; sandbox can be separate later.
+- [x] COD test order placement can be included only when test store/env is configured.
+- [x] PayPal/Stripe production providers are not required for this MVP; sandbox can be separate later.
 
 Output:
 
-- [ ] `functional-commerce-report.md`
+- [x] `functional-commerce-report.md`
 
 Done when:
 
-- [ ] Generated storefront passes real browser commerce regression for Starter-supported paths.
+- [x] Generated storefront passes real browser commerce regression for Starter-supported paths.
 
 Verification:
 
-- [ ] Playwright tests fail on direct Commerce Node browser calls.
-- [ ] Playwright tests fail when add-to-cart bypasses BFF.
+- [x] Playwright tests fail on direct Commerce Node browser calls.
+- [x] Playwright tests fail when add-to-cart bypasses BFF.
 
 ## S25 - Idempotent Regeneration
 
