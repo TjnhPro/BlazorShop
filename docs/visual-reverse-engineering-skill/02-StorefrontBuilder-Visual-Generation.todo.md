@@ -123,45 +123,45 @@ Goal: classify interactive and responsive behavior before generation.
 
 Behavior classes:
 
-- [ ] CSS-only.
-- [ ] Hover-driven.
-- [ ] Focus-driven.
-- [ ] Click-driven visual-only.
-- [ ] Scroll-driven visual-only.
-- [ ] Starter-feature-driven.
-- [ ] BFF-action-driven.
-- [ ] Approved JS interop.
-- [ ] Unsupported.
+- [x] CSS-only.
+- [x] Hover-driven.
+- [x] Focus-driven.
+- [x] Click-driven visual-only.
+- [x] Scroll-driven visual-only.
+- [x] Starter-feature-driven.
+- [x] BFF-action-driven.
+- [x] Approved JS interop.
+- [x] Unsupported.
 
 Responsive records:
 
-- [ ] Breakpoint.
-- [ ] Layout change.
-- [ ] Header/nav behavior.
-- [ ] Product grid columns.
-- [ ] Product detail media/action stacking.
-- [ ] Footer stacking.
-- [ ] Sticky/fixed elements.
-- [ ] Drawer/menu behavior.
+- [x] Breakpoint.
+- [x] Layout change.
+- [x] Header/nav behavior.
+- [x] Product grid columns.
+- [x] Product detail media/action stacking.
+- [x] Footer stacking.
+- [x] Sticky/fixed elements.
+- [x] Drawer/menu behavior.
 
 Rules:
 
-- [ ] Commerce state changes must be Starter-feature-driven or BFF-action-driven.
-- [ ] JS interop cannot own cart/checkout/account state.
-- [ ] Unsupported target behavior must be hidden or replaced by Starter fallback.
+- [x] Commerce state changes must be Starter-feature-driven or BFF-action-driven.
+- [x] JS interop cannot own cart/checkout/account state.
+- [x] Unsupported target behavior must be hidden or replaced by Starter fallback.
 
 Output:
 
-- [ ] `behaviors.yaml`
-- [ ] `responsive.yaml`
+- [x] `behaviors.yaml`
+- [x] `responsive.yaml`
 
 Done when:
 
-- [ ] Generator knows which interactions are visual and which must bind to Starter contracts.
+- [x] Generator knows which interactions are visual and which must bind to Starter contracts.
 
 Verification:
 
-- [ ] Validator fails if add-to-cart is classified as direct JS or direct HTTP.
+- [x] Validator fails if add-to-cart is classified as direct JS or direct HTTP.
 
 ## S13 - Layout Topology
 

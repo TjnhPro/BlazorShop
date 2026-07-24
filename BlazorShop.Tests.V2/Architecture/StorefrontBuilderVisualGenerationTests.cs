@@ -86,6 +86,52 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-PATTERN-001", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void BehaviorResponsiveModel_ClassifiesInteractionsAndProtectsCommerceState()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/classify-behavior-responsive.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderBehaviorResponsive.ps1");
+
+            foreach (var behaviorClass in new[]
+            {
+                "CSS-only",
+                "Hover-driven",
+                "Focus-driven",
+                "Click-driven visual-only",
+                "Scroll-driven visual-only",
+                "Starter-feature-driven",
+                "BFF-action-driven",
+                "Approved JS interop",
+                "Unsupported",
+            })
+            {
+                Assert.Contains(behaviorClass, generator, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains(behaviorClass, validator, StringComparison.OrdinalIgnoreCase);
+            }
+
+            foreach (var responsiveField in new[]
+            {
+                "breakpoint",
+                "layoutChange",
+                "headerNavBehavior",
+                "productGridColumns",
+                "productDetailMediaActionStacking",
+                "footerStacking",
+                "stickyFixedElements",
+                "drawerMenuBehavior",
+            })
+            {
+                Assert.Contains(responsiveField, generator, StringComparison.Ordinal);
+                Assert.Contains(responsiveField, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("add-to-cart", generator, StringComparison.Ordinal);
+            Assert.Contains("BFF-action-driven", generator, StringComparison.Ordinal);
+            Assert.Contains("SFB-BEHAVIOR-003", validator, StringComparison.Ordinal);
+            Assert.Contains("direct JS", validator, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("direct HTTP", validator, StringComparison.OrdinalIgnoreCase);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
