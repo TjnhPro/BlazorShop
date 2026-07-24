@@ -19,7 +19,8 @@
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Active | Shared V2 browser storage, cookie storage, auth session, toast, and API helper utilities. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Active | Generated Storefront API transport and contracts from Commerce Node Storefront OpenAPI. No backend/core/API project references. |
 | Future Storefront Platform | `BlazorShop.Storefront.Runtime` | Optional | Neutral Storefront runtime primitives only when proven by V2 decoupling. No backend/core/API project references. |
-| Future Storefront Implementation | `BlazorShop.Storefront.Starter` | Deferred | Future neutral skeleton. Not part of the Headless Storefront Platform Foundation and not copied from Storefront V2. |
+| Future Storefront Implementation | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Planned | Neutral skeleton source for deterministic generated storefronts. It consumes package-based Storefront contracts and is not copied from Storefront V2. |
+| Future Storefront Implementation | `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample` | Planned | First deterministic generated storefront proof produced from Starter. |
 | Tests | `BlazorShop.Tests.V2` | Active | V2 architecture, API contract, service, and smoke tests. |
 
 ## Project References
@@ -63,6 +64,8 @@ Target dependency rules:
 - `BlazorShop.Storefront.V2` is the first real storefront consumer, not the neutral Starter.
 - `BlazorShop.Storefront.V2` may use `Web.SharedV2` only for genuinely shared browser utilities, not `Web.SharedV2.Models` business contracts.
 - Future generated storefronts consume Storefront OpenAPI/client contracts instead of copying Storefront V2 internals.
+- `BlazorShop.Storefront.Starter` is the neutral skeleton source for generated storefronts and must use the generated Storefront client package boundary.
+- `BlazorShop.Storefront.Sample` is a deterministic proof project generated from Starter, not a platform contract owner.
 
 Startup migration ownership:
 

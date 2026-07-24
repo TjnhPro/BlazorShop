@@ -12,6 +12,9 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
 - Storefront portable feature component models live with the component feature under `BlazorShop.Storefront.Components/Features/*` when they are presentation-only.
 - Storefront V2 source must not import `Web.SharedV2.Models` or backend/core business namespaces.
+- Storefront Starter and generated storefront source must not import `Web.SharedV2.Models` or backend/core business namespaces.
+- Storefront Starter must consume generated Storefront client contracts by default and must not copy the manual `StorefrontApiClient` transport from Storefront V2.
+- Starter manual HTTP exceptions are allowed only when documented in an exception registry with reason, owner, test, and revisit trigger.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.
 - Generated Storefront clients should target Commerce Node Storefront OpenAPI first. Control Plane generation is a later decision.
 
@@ -59,3 +62,4 @@ Do not add admin-owned fields, store ownership fields, credentials, tokens, pass
 - `StorefrontEndpointDependencyBoundaryTests.StorefrontLocalEndpointMappings_DoNotInjectConcreteStorefrontApiClient` keeps endpoint mappings behind capability interfaces.
 - `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag` proves Storefront OpenAPI remains generator-safe enough for non-.NET clients.
 - `StorefrontGeneratedClientFoundationTests` proves the generated C# Storefront client compiles, uses generated-source guardrails, and has no backend/core project references.
+- `StorefrontStarterFoundationBoundaryTests` keeps Starter documentation, dependency, and manual-client-copy guardrails explicit as the neutral skeleton is introduced.

@@ -266,16 +266,47 @@ Do not create feature packages just to move code out of Storefront V2. Extract o
 
 Status:
 
-- Deferred until the Headless Storefront Platform Foundation is complete.
+- Planned after the Headless Storefront Platform Foundation completion. The Starter is the neutral skeleton source for deterministic generated storefronts.
 
 Use for:
 
-- A neutral storefront skeleton that demonstrates generated client/runtime usage after the foundation gate passes.
+- Neutral SSR, Hybrid, and WASM-host route skeletons.
+- Examples of generated `BlazorShop.Storefront.Client` package consumption.
+- Same-origin BFF examples for protected browser flows.
+- Store bootstrap, capability reading, feature placement, loading/error/empty states, and generation manifest conventions.
+- Deterministic generated storefront output such as `BlazorShop.Storefront.Sample`.
 
 Do not:
 
 - Copy Storefront V2 source as the Starter baseline.
 - Turn Storefront V2 into a neutral template.
+- Reference `BlazorShop.Storefront.V2`, backend/core/API projects, Control Plane Web, or `Web.SharedV2.Models` business contracts.
+- Copy the manual `StorefrontApiClient` transport from Storefront V2.
+- Move pricing, sellability, cart validation, checkout, order placement, payment, or authorization rules into Starter.
+
+Protected areas for future scaffolding or AI generation:
+
+- generated client source;
+- runtime security primitives;
+- BFF transport/security code;
+- package/version manifests;
+- generated storefront manifests.
+
+### Future `BlazorShop.Storefront.Sample`
+
+Status:
+
+- Planned as the first deterministic project generated from Starter.
+
+Use for:
+
+- Proving Starter can build, publish, and run outside the monorepo from packages/configuration.
+- Browser and contract QA against Commerce Node Storefront APIs.
+
+Do not:
+
+- Own platform contracts.
+- Copy Storefront V2 source, CSS, assets, or manual transport internals.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 
