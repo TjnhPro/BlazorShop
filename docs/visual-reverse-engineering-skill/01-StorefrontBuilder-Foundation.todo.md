@@ -296,38 +296,38 @@ Goal: capture visual evidence from reference websites using browser automation w
 
 Recommended MVP:
 
-- [ ] Use Playwright-based capture as first adapter.
-- [ ] Keep provider abstraction small enough to replace later if needed.
-- [ ] Do not require a custom MCP server for MVP.
+- [x] Use Playwright-based capture as first adapter.
+- [x] Keep provider abstraction small enough to replace later if needed.
+- [x] Do not require a custom MCP server for MVP.
 
 Capture operations:
 
-- [ ] Navigate.
-- [ ] Wait for network/DOM readiness.
-- [ ] Resize viewport.
-- [ ] Scroll.
-- [ ] Click.
-- [ ] Hover.
-- [ ] Focus.
-- [ ] Screenshot.
-- [ ] Read DOM snapshot.
-- [ ] Read computed styles.
-- [ ] Read bounding boxes.
-- [ ] Read asset URLs.
+- [x] Navigate.
+- [x] Wait for network/DOM readiness.
+- [x] Resize viewport.
+- [x] Scroll.
+- [x] Click.
+- [x] Hover.
+- [x] Focus.
+- [x] Screenshot.
+- [x] Read DOM snapshot.
+- [x] Read computed styles.
+- [x] Read bounding boxes.
+- [x] Read asset URLs.
 
 Viewports:
 
-- [ ] Desktop 1440px.
-- [ ] Tablet 768px.
-- [ ] Mobile 390px.
+- [x] Desktop 1440px.
+- [x] Tablet 768px.
+- [x] Mobile 390px.
 
 Done when:
 
-- [ ] One URL can produce screenshots, DOM snapshot, computed-style evidence, bounding boxes, and asset list.
+- [x] One URL can produce screenshots, DOM snapshot, computed-style evidence, bounding boxes, and asset list.
 
 Verification:
 
-- [ ] Playwright fixture test captures a static local test page at all viewports.
+- [x] Playwright fixture test captures a static local test page at all viewports.
 
 ## S7 - Page Discovery And Archetype Inventory
 

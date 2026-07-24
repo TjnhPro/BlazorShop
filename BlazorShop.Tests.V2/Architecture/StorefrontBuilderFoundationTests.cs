@@ -271,6 +271,45 @@ namespace BlazorShop.Tests.Architecture
             }
         }
 
+        [Fact]
+        public void StorefrontBuilderBrowserCaptureAdapter_UsesPlaywrightAndCapturesRequiredEvidence()
+        {
+            var script = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/capture/capture-storefront.mjs");
+            var wrapper = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/capture/capture-storefront.ps1");
+            var package = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/package.json");
+            var fixtureSpec = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/playwright/capture-fixture.spec.mjs");
+
+            Assert.Contains("@playwright/test", package, StringComparison.Ordinal);
+            Assert.Contains("chromium.launch", script, StringComparison.Ordinal);
+            foreach (var operation in new[]
+            {
+                "page.goto",
+                "waitForLoadState",
+                "viewport",
+                "mouse.wheel",
+                "page.click",
+                "page.hover",
+                "page.focus",
+                "page.screenshot",
+                "page.content",
+                "getComputedStyle",
+                "getBoundingClientRect",
+                "assetListFile",
+            })
+            {
+                Assert.Contains(operation, script, StringComparison.Ordinal);
+            }
+
+            foreach (var viewport in new[] { "desktop-1440", "tablet-768", "mobile-390" })
+            {
+                Assert.Contains(viewport, script, StringComparison.Ordinal);
+                Assert.Contains(viewport, fixtureSpec, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("node", wrapper, StringComparison.Ordinal);
+            Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/playwright/fixtures/static-storefront.html")));
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;

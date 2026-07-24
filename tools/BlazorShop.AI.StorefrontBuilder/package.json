@@ -1,0 +1,11 @@
+{
+  "name": "blazorshop-ai-storefront-builder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture:fixture": "playwright test tests/playwright/capture-fixture.spec.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

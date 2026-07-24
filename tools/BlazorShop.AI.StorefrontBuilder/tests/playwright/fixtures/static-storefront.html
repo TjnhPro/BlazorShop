@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fixture Storefront</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; color: #17202a; }
+    header, footer { padding: 24px; background: #f4f7fb; }
+    main { max-width: 1120px; margin: auto; padding: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    button { border: 1px solid #17202a; padding: 10px 14px; background: white; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header><nav><a href="/">Home</a> <a href="/catalog">Catalog</a></nav></header>
+  <main>
+    <h1>Fixture Storefront</h1>
+    <section class="grid">
+      <article><img src="fixture-product.png" alt=""><h2>Product</h2><button>Add</button></article>
+      <article><h2>Category</h2><button>View</button></article>
+      <article><h2>Content</h2><button>Read</button></article>
+    </section>
+  </main>
+  <footer>Footer</footer>
+</body>
+</html>
