@@ -528,6 +528,26 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterIsolationGateScript_PacksBuildsPublishesAndRejectsMonorepoReferences()
+        {
+            var script = ReadRepositoryFile("scripts/qa/run-storefront-starter-isolation-gate.ps1");
+            var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
+
+            Assert.Contains("dotnet pack $clientProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet pack $runtimeProject", script, StringComparison.Ordinal);
+            Assert.Contains("obj\\storefront-starter-isolation", script, StringComparison.Ordinal);
+            Assert.Contains("Storefront.Sample", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet restore $starterProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet build $starterProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet publish $starterProject", script, StringComparison.Ordinal);
+            Assert.Contains("ProjectReference", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Application", script, StringComparison.Ordinal);
+            Assert.Contains("[switch]$Describe", script, StringComparison.Ordinal);
+            Assert.Contains("run-storefront-starter-isolation-gate.ps1 -Describe", workflow, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StarterDocs_SayStorefrontV2IsBehaviorReferenceOnly()
         {
             var adr = ReadRepositoryFile("docs/architecture/adr/2026-07-24-storefront-starter-foundation.md");

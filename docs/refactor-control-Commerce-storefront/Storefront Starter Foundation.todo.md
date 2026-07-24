@@ -597,22 +597,22 @@ obj/storefront-starter-isolation/
 
 ### Tasks
 
-- [ ] Pack `Storefront.Client`.
-- [ ] Pack `Storefront.Runtime` if created.
-- [ ] Restore Starter/Sample from local package feed.
-- [ ] Build without backend source project references.
-- [ ] Publish without backend source project references.
-- [ ] Docker build if Starter includes Dockerfile.
-- [ ] Fail if relative source path points to V2, backend, or monorepo-only source.
-- [ ] Add script:
+- [x] Pack `Storefront.Client`.
+- [x] Pack `Storefront.Runtime` if created.
+- [x] Restore Starter/Sample from local package feed.
+- [x] Build without backend source project references.
+- [x] Publish without backend source project references.
+- [n/a] Docker build if Starter includes Dockerfile.
+- [x] Fail if relative source path points to V2, backend, or monorepo-only source.
+- [x] Add script:
 
 ```text
 scripts/qa/run-storefront-starter-isolation-gate.ps1
 ```
 
-- [ ] Add CI option:
-  - [ ] full gate on workflow dispatch/nightly; or
-  - [ ] describe/static gate on PR and full gate before release.
+- [x] Add CI option:
+  - [x] full gate on workflow dispatch/nightly; or
+  - [x] describe/static gate on PR and full gate before release.
 
 ### Verification
 
@@ -622,9 +622,9 @@ scripts/qa/run-storefront-starter-isolation-gate.ps1
 
 ### Done when
 
-- [ ] Starter/Sample can build independently.
-- [ ] Package boundaries are real.
-- [ ] No hidden monorepo dependency is required.
+- [x] Starter/Sample can build independently.
+- [x] Package boundaries are real.
+- [x] No hidden monorepo dependency is required.
 
 ## S9 - Deterministic Storefront.Sample Generation
 
@@ -837,7 +837,7 @@ Add CI in stages:
 - [x] Commit 6: S5 generated-client policy and exception registry.
 - [x] Commit 7: S6 feature manifest/capability activation.
 - [x] Commit 8: S7 neutral layout and state components.
-- [ ] Commit 9: S8 isolation gate script.
+- [x] Commit 9: S8 isolation gate script.
 - [ ] Commit 10: S9 deterministic Sample generation.
 - [ ] Commit 11: S10 Sample QA release gate evidence.
 - [ ] Commit 12: S11 AI Generator planning docs.
