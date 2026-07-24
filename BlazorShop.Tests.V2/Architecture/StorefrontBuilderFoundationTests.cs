@@ -1,6 +1,7 @@
 namespace BlazorShop.Tests.Architecture
 {
     using System.Diagnostics;
+    using System.Text.Json;
     using System.Text.RegularExpressions;
 
     using Xunit;
@@ -155,6 +156,54 @@ namespace BlazorShop.Tests.Architecture
             Assert.Empty(productionProjectReferences);
         }
 
+        [Fact]
+        public void StorefrontBuilderArtifactSchemas_ArePresentAndHaveValidationFixtures()
+        {
+            var requiredSchemas = new[]
+            {
+                "metadata.schema.json",
+                "page-inventory.schema.json",
+                "page-topology.schema.json",
+                "design-tokens.schema.json",
+                "ui-patterns.schema.json",
+                "behaviors.schema.json",
+                "responsive.schema.json",
+                "capability-decisions.schema.json",
+                "composition-manifest.schema.json",
+                "generation-plan.schema.json",
+                "generated-files.schema.json",
+                "asset-manifest.schema.json",
+                "ai-inference-log.schema.json",
+            };
+
+            foreach (var schemaFile in requiredSchemas)
+            {
+                var path = RepositoryPath($"tools/BlazorShop.AI.StorefrontBuilder/schemas/{schemaFile}");
+                Assert.True(File.Exists(path), $"Missing StorefrontBuilder schema '{schemaFile}'.");
+
+                using var document = JsonDocument.Parse(File.ReadAllText(path));
+                var root = document.RootElement;
+                Assert.True(root.TryGetProperty("$schema", out _), $"{schemaFile} is missing $schema.");
+                Assert.Equal("object", root.GetProperty("type").GetString());
+                Assert.True(root.GetProperty("required").GetArrayLength() >= 3, $"{schemaFile} must declare required fields.");
+            }
+
+            AssertRequiredFixturePasses("metadata.schema.json", "valid/metadata.json");
+            AssertRequiredFixturePasses("generation-plan.schema.json", "valid/generation-plan.json");
+            AssertRequiredFixtureFails("metadata.schema.json", "invalid/metadata.missing-generated-project.json");
+            AssertRequiredFixtureFails("generation-plan.schema.json", "invalid/generation-plan.missing-files.json");
+        }
+
+        [Fact]
+        public void StorefrontBuilderSchemaValidationScript_ReportsActionableInvalidFixtures()
+        {
+            var script = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderSchemas.ps1");
+
+            Assert.Contains("Missing required field", script, StringComparison.Ordinal);
+            Assert.Contains("metadata.missing-generated-project.json", script, StringComparison.Ordinal);
+            Assert.Contains("generation-plan.missing-files.json", script, StringComparison.Ordinal);
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;
@@ -166,6 +215,36 @@ namespace BlazorShop.Tests.Architecture
             }
 
             return count;
+        }
+
+        private static void AssertRequiredFixturePasses(string schemaFile, string fixtureFile)
+        {
+            var missing = GetMissingRequiredFields(schemaFile, fixtureFile);
+            Assert.Empty(missing);
+        }
+
+        private static void AssertRequiredFixtureFails(string schemaFile, string fixtureFile)
+        {
+            var missing = GetMissingRequiredFields(schemaFile, fixtureFile);
+            Assert.NotEmpty(missing);
+        }
+
+        private static string[] GetMissingRequiredFields(string schemaFile, string fixtureFile)
+        {
+            using var schema = JsonDocument.Parse(ReadRepositoryFile($"tools/BlazorShop.AI.StorefrontBuilder/schemas/{schemaFile}"));
+            using var fixture = JsonDocument.Parse(ReadRepositoryFile($"tools/BlazorShop.AI.StorefrontBuilder/tests/schemas/fixtures/{fixtureFile}"));
+
+            var required = schema.RootElement.GetProperty("required")
+                .EnumerateArray()
+                .Select(element => element.GetString())
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .ToArray();
+
+            return required
+                .Where(field => !fixture.RootElement.TryGetProperty(field!, out _))
+                .Select(field => field!)
+                .OrderBy(field => field, StringComparer.Ordinal)
+                .ToArray();
         }
 
         private static string ReadRepositoryFile(string relativePath)

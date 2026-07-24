@@ -186,19 +186,19 @@ Goal: make every intermediate result reviewable before generation.
 
 Schemas required:
 
-- [ ] `metadata.schema.json`
-- [ ] `page-inventory.schema.json`
-- [ ] `page-topology.schema.json`
-- [ ] `design-tokens.schema.json`
-- [ ] `ui-patterns.schema.json`
-- [ ] `behaviors.schema.json`
-- [ ] `responsive.schema.json`
-- [ ] `capability-decisions.schema.json`
-- [ ] `composition-manifest.schema.json`
-- [ ] `generation-plan.schema.json`
-- [ ] `generated-files.schema.json`
-- [ ] `asset-manifest.schema.json`
-- [ ] `ai-inference-log.schema.json`
+- [x] `metadata.schema.json`
+- [x] `page-inventory.schema.json`
+- [x] `page-topology.schema.json`
+- [x] `design-tokens.schema.json`
+- [x] `ui-patterns.schema.json`
+- [x] `behaviors.schema.json`
+- [x] `responsive.schema.json`
+- [x] `capability-decisions.schema.json`
+- [x] `composition-manifest.schema.json`
+- [x] `generation-plan.schema.json`
+- [x] `generated-files.schema.json`
+- [x] `asset-manifest.schema.json`
+- [x] `ai-inference-log.schema.json`
 
 Generated storefront artifact path:
 
@@ -208,14 +208,14 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/docs/storefront-analysis/
 
 Done when:
 
-- [ ] Every artifact has a JSON schema.
-- [ ] Missing required fields fail validation before generation.
-- [ ] AI inference is never stored only in prose.
+- [x] Every artifact has a JSON schema.
+- [x] Missing required fields fail validation before generation.
+- [x] AI inference is never stored only in prose.
 
 Verification:
 
-- [ ] Schema tests cover valid and invalid fixtures.
-- [ ] Invalid artifact examples fail with actionable error messages.
+- [x] Schema tests cover valid and invalid fixtures.
+- [x] Invalid artifact examples fail with actionable error messages.
 
 ## S4 - Preflight And Input Validation
 
