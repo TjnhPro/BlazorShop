@@ -1,0 +1,4 @@
+toolName: BlazorShop.AI.StorefrontBuilder
+mode: development-time
+targetProject: BlazorShop.Storefront.{Name}
+starterContract: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml

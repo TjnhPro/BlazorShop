@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/schemas/storefront-builder-tooling.schema.json",
+  "title": "StorefrontBuilder Tooling Location",
+  "type": "object",
+  "required": [ "toolName", "mode", "runtimeBoundary" ],
+  "properties": {
+    "toolName": { "const": "BlazorShop.AI.StorefrontBuilder" },
+    "mode": { "const": "development-time" },
+    "runtimeBoundary": { "const": "no-production-reference" }
+  },
+  "additionalProperties": false
+}

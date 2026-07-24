@@ -110,6 +110,51 @@ namespace BlazorShop.Tests.Architecture
             Assert.True(CountOccurrences(contract, "path: ") >= 12);
         }
 
+        [Fact]
+        public void StorefrontBuilderTooling_LivesOutsideProductionRuntimeProjects()
+        {
+            var requiredPaths = new[]
+            {
+                "tools/BlazorShop.AI.StorefrontBuilder/README.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/skills/storefront-builder/SKILL.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/knowledge/visual-reverse-engineering.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/knowledge/blazor-starter-boundaries.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/knowledge/ecommerce-visual-patterns.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/knowledge/asset-safety.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/schemas/storefront-builder-tooling.schema.json",
+                "tools/BlazorShop.AI.StorefrontBuilder/templates/starter-input.template.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/scripts/capture/README.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/README.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/README.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/scripts/visual-qa/README.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/schemas/README.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/README.md",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/playwright/README.md",
+            };
+
+            foreach (var path in requiredPaths)
+            {
+                Assert.True(File.Exists(RepositoryPath(path)), $"Missing StorefrontBuilder tooling file '{path}'.");
+            }
+
+            var productionProjectReferences = Directory
+                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2"), "*.csproj", SearchOption.AllDirectories)
+                .Concat(Directory.EnumerateFiles(FindRepositoryRoot(), "*.sln", SearchOption.TopDirectoryOnly))
+                .Select(path => new
+                {
+                    Path = path,
+                    Content = File.ReadAllText(path),
+                })
+                .Where(file => file.Content.Contains("BlazorShop.AI.StorefrontBuilder", StringComparison.Ordinal)
+                    || file.Content.Contains("tools/BlazorShop.AI.StorefrontBuilder", StringComparison.Ordinal)
+                    || file.Content.Contains("tools\\BlazorShop.AI.StorefrontBuilder", StringComparison.Ordinal))
+                .Select(file => ToRepositoryRelativePath(file.Path))
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(productionProjectReferences);
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;
@@ -131,6 +176,13 @@ namespace BlazorShop.Tests.Architecture
         private static string RepositoryPath(string relativePath)
         {
             return Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar));
+        }
+
+        private static string ToRepositoryRelativePath(string path)
+        {
+            return Path.GetRelativePath(FindRepositoryRoot(), path)
+                .Replace(Path.DirectorySeparatorChar, '/')
+                .Replace(Path.AltDirectorySeparatorChar, '/');
         }
 
         private static string FindRepositoryRoot()

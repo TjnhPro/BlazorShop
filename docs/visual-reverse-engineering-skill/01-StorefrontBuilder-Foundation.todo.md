@@ -155,30 +155,30 @@ tools/BlazorShop.AI.StorefrontBuilder/
 
 Required structure:
 
-- [ ] `skills/storefront-builder/SKILL.md`
-- [ ] `knowledge/visual-reverse-engineering.md`
-- [ ] `knowledge/blazor-starter-boundaries.md`
-- [ ] `knowledge/ecommerce-visual-patterns.md`
-- [ ] `knowledge/asset-safety.md`
-- [ ] `schemas/*.schema.json`
-- [ ] `templates/*.template.yaml`
-- [ ] `scripts/capture`
-- [ ] `scripts/validate`
-- [ ] `scripts/generate`
-- [ ] `scripts/visual-qa`
-- [ ] `tests/schemas`
-- [ ] `tests/generation`
-- [ ] `tests/playwright`
+- [x] `skills/storefront-builder/SKILL.md`
+- [x] `knowledge/visual-reverse-engineering.md`
+- [x] `knowledge/blazor-starter-boundaries.md`
+- [x] `knowledge/ecommerce-visual-patterns.md`
+- [x] `knowledge/asset-safety.md`
+- [x] `schemas/*.schema.json`
+- [x] `templates/*.template.yaml`
+- [x] `scripts/capture`
+- [x] `scripts/validate`
+- [x] `scripts/generate`
+- [x] `scripts/visual-qa`
+- [x] `tests/schemas`
+- [x] `tests/generation`
+- [x] `tests/playwright`
 
 Done when:
 
-- [ ] Tooling has no production project reference from BlazorShop runtime projects.
-- [ ] Build/test/runtime projects do not depend on StorefrontBuilder.
+- [x] Tooling has no production project reference from BlazorShop runtime projects.
+- [x] Build/test/runtime projects do not depend on StorefrontBuilder.
 
 Verification:
 
-- [ ] `rg -n "BlazorShop.AI.StorefrontBuilder|tools/BlazorShop.AI.StorefrontBuilder" *.slnx *.csproj BlazorShop.PresentationV2`
-- [ ] Confirm no production `.csproj` references StorefrontBuilder.
+- [x] `rg -n -F "BlazorShop.AI.StorefrontBuilder" BlazorShop.PresentationV2 -g "*.csproj"; rg -n -F "tools/BlazorShop.AI.StorefrontBuilder" BlazorShop.PresentationV2 -g "*.csproj"`
+- [x] Confirm no production `.csproj` references StorefrontBuilder.
 
 ## S3 - Artifact Schema Foundation
 
