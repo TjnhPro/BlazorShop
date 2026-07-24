@@ -4,6 +4,8 @@ Status: In progress
 Source: autoplan review on 2026-07-24 after Headless Storefront Foundation completion
 Purpose: build a neutral, package-based Storefront Starter that proves a new storefront can be created from the Storefront API platform without copying Storefront V2 internals or rewriting ecommerce business logic.
 
+Historical note: this file records the original Starter/Sample implementation plan. Current StorefrontBuilder proof output is generated on demand under ignored artifact roots; see `docs/architecture/11-storefront-builder.md` and `docs/visual-reverse-engineering-skill/04-StorefrontBuilder-Generated-Store-Cleanup.todo.md`.
+
 ## Current Verified Codebase Context
 
 - [x] Headless Storefront Platform Foundation is complete and recorded in `Headless Storefront Platform Foundation.completion.md`.

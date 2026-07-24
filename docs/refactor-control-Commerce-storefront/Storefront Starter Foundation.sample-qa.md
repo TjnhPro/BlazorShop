@@ -4,6 +4,8 @@ Date: 2026-07-24
 
 Scope: S10 release gate evidence for the deterministic `BlazorShop.Storefront.Sample` generated from `BlazorShop.Storefront.Starter`.
 
+Historical note: this file records the original Sample QA evidence. Current StorefrontBuilder proof output is generated on demand under ignored artifact roots; see `docs/architecture/11-storefront-builder.md`.
+
 ## Gate Command
 
 ```powershell

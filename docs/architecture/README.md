@@ -24,7 +24,7 @@ BlazorShop is a single ecommerce product with shared core layers and an active V
 
 - Legacy `BlazorShop.Presentation` projects have been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison.
 - `BlazorShop.PresentationV2` is the active direction. New Control Plane, Commerce Node, Storefront V2, Storefront component/WASM, and shared Web V2 work belongs here.
-- `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Starter`, `BlazorShop.Storefront.Sample`, and `BlazorShop.Storefront.BuilderDemo` are the active generated-storefront platform surface.
+- `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Starter` are the active generated-storefront platform source surface. Generated storefront proofs are disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}`.
 - `tools/BlazorShop.AI.StorefrontBuilder` is active development-time tooling for visual reverse engineering, generated storefront preparation, regeneration, validation, and browser QA.
 - `BlazorShop.Domain`, `BlazorShop.Application`, and `BlazorShop.Infrastructure` are shared core layers used by active V2 projects.
 - `Smartstore/` is reference source for ecommerce business research only. Do not copy Smartstore implementation code into BlazorShop and do not add runtime references to Smartstore projects.

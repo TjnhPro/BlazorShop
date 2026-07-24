@@ -11,11 +11,12 @@ The AI generator may start only after these inputs exist and remain green:
 
 - Starter architecture: `docs/architecture/adr/2026-07-24-storefront-starter-foundation.md`.
 - Starter source: `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`.
-- Deterministic Sample: `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`.
+- Deterministic proof artifact: `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof`.
 - Generation workflow: `scripts/generate-storefront-sample.ps1`.
+- Generated proof workflow: `scripts/qa/run-storefront-builder-generated-proof.ps1`.
 - Package gate: `scripts/qa/run-storefront-starter-isolation-gate.ps1`.
-- Sample release gate: `scripts/qa/run-storefront-sample-release-gate.ps1`.
-- Feature map: `Features/feature-manifest.json` in Starter/Sample.
+- Generated storefront release gate: `scripts/qa/run-storefront-sample-release-gate.ps1`.
+- Feature map: `Features/feature-manifest.json` in Starter/generated proof artifacts.
 - Capability map: `StarterFeatureManifest` and `StarterFeatureActivationService`.
 - Route map: `Pages/README.md` and the `Pages/Ssr`, `Pages/Hybrid`, `Pages/WasmHost` folders.
 - Protected file rules: this file, the Starter ADR, and `docs/architecture/05-project-and-folder-guide.md`.
@@ -52,24 +53,24 @@ AI must not edit these areas unless a human explicitly changes the task scope an
 
 ## Required Workflow
 
-1. Generate or refresh the project deterministically from Starter:
+1. Generate or refresh the proof artifact deterministically from Starter:
 
    ```powershell
-   .\scripts\generate-storefront-sample.ps1 -Name BlazorShop.Storefront.Sample -StoreKey sample -Force
+   .\scripts\qa\run-storefront-builder-generated-proof.ps1
    ```
 
-2. Run the package and Sample release gates before AI changes:
+2. Run package and generated storefront release gates before AI changes:
 
    ```powershell
    .\scripts\qa\run-storefront-starter-isolation-gate.ps1
-   .\scripts\qa\run-storefront-sample-release-gate.ps1
+   .\scripts\qa\run-storefront-sample-release-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
    ```
 
 3. Apply AI changes only in allowed edit areas.
 
 4. Diff-review AI output. Any change under a protected area fails review unless explicitly approved in the task.
 
-5. Re-run the same gates after AI changes. The generated client, Runtime security behavior, BFF transport, package boundaries, and Sample route smoke must remain green.
+5. Re-run the same gates after AI changes. The generated client, Runtime security behavior, BFF transport, package boundaries, and generated storefront route smoke must remain green.
 
 ## Failure Conditions
 

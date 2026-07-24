@@ -9,13 +9,14 @@ Current architecture source: [StorefrontBuilder Architecture](../architecture/11
 
 StorefrontBuilder is development-time tooling for visual reverse engineering and generated-storefront preparation. It is not a production ASP.NET service, not a Commerce Node extension, and not a runtime module system.
 
-The tool analyzes reference ecommerce sites, records reviewable evidence, plans generation, and writes generated storefront projects only under the approved generated target pattern:
+The tool analyzes reference ecommerce sites, records reviewable evidence, plans generation, and writes generated storefront projects only under approved ignored artifact roots:
 
 ```text
-BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
+artifacts/storefront-builder/generated/{ProjectName}
+obj/storefront-builder/generated/{ProjectName}
 ```
 
-`{Name}` must be normalized before use as a folder, project name, namespace segment, and file prefix. Unsafe names are rejected before files are created.
+`{ProjectName}` must be normalized before use as a folder, project name, namespace segment, and file prefix. Unsafe names are rejected before files are created. Generated proof artifacts are not added to `BlazorShop.sln` by default.
 
 ## Source Of Truth Order
 
@@ -30,7 +31,7 @@ StorefrontBuilder decisions follow this order:
 
 ## Starter Boundary
 
-`BlazorShop.Storefront.Starter` is a read-only template input for StorefrontBuilder. The generated `BlazorShop.Storefront.{Name}` project is the editable and tunable store project.
+`BlazorShop.Storefront.Starter` is a read-only template input for StorefrontBuilder. The generated `BlazorShop.Storefront.{Name}` artifact is the editable and tunable proof output for that run.
 
 StorefrontBuilder must not write store-specific presentation, assets, CSS, generated analysis artifacts, or AI-tuned components back into Starter. Starter remains neutral and reusable.
 
@@ -44,9 +45,10 @@ Generated storefronts consume `BlazorShop.Storefront.Client` and `BlazorShop.Sto
 
 ## Current Proof
 
-The committed proof projects are:
+The current proof is generated on demand:
 
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1
+```
 
-BuilderDemo keeps review artifacts and QA reports under `docs/storefront-analysis/`.
+The generated artifact keeps review artifacts and QA reports under its local `docs/storefront-analysis/` folder and remains ignored by git unless a separate phase promotes it.

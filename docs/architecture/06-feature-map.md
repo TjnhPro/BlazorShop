@@ -166,9 +166,8 @@ Projects/files:
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`
 - `tools/BlazorShop.AI.StorefrontBuilder`
+- `scripts/qa/run-storefront-builder-generated-proof.ps1`
 - `scripts/qa/run-storefront-builder-isolation-gate.ps1`
 - `docs/visual-reverse-engineering-skill/*`
 
@@ -176,7 +175,7 @@ Capabilities:
 
 - Generated Storefront API client and runtime package boundary.
 - Neutral Starter skeleton for generated storefronts.
-- Deterministic generated storefront proofs.
+- Deterministic generated storefront proof artifacts under ignored output roots.
 - Reference-site capture and review artifact generation.
 - Visual foundation, composition, and generated manifest regeneration.
 - Static validation, idempotency/conflict validation, isolation, visual QA, and commerce regression.

@@ -50,12 +50,11 @@ Active V2 presentation/runtime:
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`
 
 Active StorefrontBuilder tooling:
 
 - `tools/BlazorShop.AI.StorefrontBuilder`
+- `scripts/qa/run-storefront-builder-generated-proof.ps1`
 - `scripts/qa/run-storefront-builder-isolation-gate.ps1`
 
 Legacy presentation projects have been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison and migration reference.
@@ -101,7 +100,7 @@ Route ownership:
 StorefrontBuilder boundary:
 
 - StorefrontBuilder is development-time tooling only; it is not a production service or Commerce Node extension.
-- Generated storefronts live under `BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}` and consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
+- Generated storefronts are disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs. They consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries and must not be added to `BlazorShop.sln` by default.
 - Generated storefronts must not reference Storefront V2, backend/core/API projects, Control Plane Web, Commerce Node API, or `Web.SharedV2.Models` business contracts.
 - Store-specific generated CSS, assets, pages, analysis artifacts, and AI-tuned components must not be written back into `BlazorShop.Storefront.Starter`.
 - Protected browser actions in generated storefronts must go through same-origin BFF endpoints before Commerce Node Storefront APIs.

@@ -20,8 +20,6 @@
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Active | Generated Storefront API transport and contracts from Commerce Node Storefront OpenAPI. No backend/core/API project references. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Active | Neutral Storefront runtime options, generated-client registration, capability, and error primitives shared by V2 and Starter. No backend/core/API project references. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Active | Neutral skeleton source for deterministic generated storefronts. It consumes package-based Storefront contracts and is not copied from Storefront V2. |
-| Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample` | Active | Deterministic generated storefront proof produced from Starter. |
-| Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo` | Active | Committed StorefrontBuilder proof with generated pages, assets, analysis artifacts, visual QA report, and commerce regression report. |
 | Tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Active dev-time | Visual reverse engineering, generated storefront creation, regeneration, static validation, and browser QA tooling. |
 | Tests | `BlazorShop.Tests.V2` | Active | V2 architecture, API contract, service, and smoke tests. |
 
@@ -67,7 +65,7 @@ Target dependency rules:
 - `BlazorShop.Storefront.V2` may use `Web.SharedV2` only for genuinely shared browser utilities, not `Web.SharedV2.Models` business contracts.
 - Generated storefronts consume Storefront OpenAPI/client contracts instead of copying Storefront V2 internals.
 - `BlazorShop.Storefront.Starter` is the neutral skeleton source for generated storefronts and must use the generated Storefront client package boundary.
-- `BlazorShop.Storefront.Sample` and `BlazorShop.Storefront.BuilderDemo` are deterministic proof projects generated from Starter, not platform contract owners.
+- Generated storefront proof projects are disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}`, not active solution projects or platform contract owners.
 - `tools/BlazorShop.AI.StorefrontBuilder` is development-time tooling only and must not become a production runtime dependency.
 
 Startup migration ownership:

@@ -26,6 +26,7 @@ Create a generated storefront:
   -Url https://reference.example `
   -Name Demo `
   -StoreKey sample `
+  -OutputRoot artifacts/storefront-builder/generated `
   -Mode generate
 ```
 
@@ -35,6 +36,7 @@ Use a full project name only when the folder must already include the `BlazorSho
 .\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 `
   -Name BlazorShop.Storefront.Demo `
   -StoreKey sample `
+  -OutputRoot artifacts/storefront-builder/generated `
   -Mode generate
 ```
 
@@ -44,7 +46,7 @@ Regenerate all generated visual/composition output:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.Demo `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope all
 ```
 
@@ -52,7 +54,7 @@ Regenerate a narrower target:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.Demo `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope page `
   -Target Home
 ```
@@ -65,7 +67,7 @@ Run the static gate:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 `
-  -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.Demo `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Name BlazorShop.Storefront.Demo `
   -StoreKey sample
 ```
@@ -79,7 +81,7 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 Run isolation:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -Name BlazorShop.Storefront.Demo
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo -Name BlazorShop.Storefront.Demo
 ```
 
 ## Browser QA
@@ -87,21 +89,21 @@ Run isolation:
 Start the generated storefront:
 
 ```powershell
-dotnet run --no-build --project BlazorShop.PresentationV2/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo.csproj --urls http://127.0.0.1:18991
+dotnet run --no-build --project artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo.csproj --urls http://127.0.0.1:18991
 ```
 
 Run visual and commerce checks from another PowerShell session:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root BlazorShop.PresentationV2/BlazorShop.Storefront.Demo
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root BlazorShop.PresentationV2/BlazorShop.Storefront.Demo
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
 ```
 
-Review and commit the resulting reports under `docs/storefront-analysis/`.
+Review the resulting reports under the generated artifact's `docs/storefront-analysis/`. Do not commit the generated artifact by default.
 
 ## Before Commit
 
-Check these points before committing a generated storefront change:
+Check these points before promoting generated storefront output or committing tooling changes:
 
 - `BlazorShop.Storefront.Starter` has no store-specific visual output.
 - The generated project references `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` as packages.
@@ -109,3 +111,4 @@ Check these points before committing a generated storefront change:
 - Required analysis artifacts exist.
 - Static gate, focused tests, and isolation gate pass.
 - Browser QA reports are current when page behavior changed.
+- Generated storefront artifacts remain out of `BlazorShop.sln` unless a separate architecture decision promotes them.

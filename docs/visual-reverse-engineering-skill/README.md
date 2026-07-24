@@ -7,7 +7,7 @@ This folder documents the StorefrontBuilder workflow for turning reference ecomm
 1. [StorefrontBuilder Architecture](../architecture/11-storefront-builder.md) - ownership, boundaries, artifact rules, and validation gates.
 2. [Reference](reference.md) - commands, modes, generated artifacts, and gate expectations.
 3. [How To Generate And Validate](how-to-generate-and-validate.md) - operator workflow for an existing or new generated storefront.
-4. [Tutorial: BuilderDemo](tutorial-builder-demo.md) - concrete walkthrough using the committed `BuilderDemo` storefront.
+4. [Tutorial: Generated Proof](tutorial-generated-proof.md) - concrete walkthrough using the on-demand generated proof artifact.
 5. [Explanation: Boundaries And Regeneration](explanation-boundaries-and-regeneration.md) - why generated storefronts stay isolated from Storefront V2 and backend projects.
 
 ## Historical Plans

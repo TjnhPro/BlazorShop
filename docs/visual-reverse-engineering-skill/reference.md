@@ -11,6 +11,7 @@
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/` | Generation, planning, token extraction, topology, capability, and manifest scripts. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/` | Static validation scripts and guardrails. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/` | Browser visual QA and commerce regression runners. |
+| `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
 | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Generated storefront build/package/reference isolation gate. |
 
 ## Generated Project Shape
@@ -18,7 +19,8 @@
 Generated storefront projects use this naming pattern:
 
 ```text
-BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
+artifacts/storefront-builder/generated/BlazorShop.Storefront.{Name}
+obj/storefront-builder/generated/BlazorShop.Storefront.{Name}
 ```
 
 Required generated project files include:
@@ -30,10 +32,7 @@ Required generated project files include:
 - `docs/storefront-analysis/asset-manifest.yaml`
 - `docs/storefront-analysis/generated-files.yaml`
 
-Current generated proof projects:
-
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`
+Generated proof projects are ignored artifacts, not committed source projects. The canonical proof name for local validation is `BlazorShop.Storefront.GeneratedProof`.
 
 ## Main Command
 
@@ -52,6 +51,7 @@ Parameters:
 | `Url` | `https://reference.example` | Reference storefront URL used for analysis artifacts. |
 | `Name` | `Demo` | Normalized to `BlazorShop.Storefront.{Name}` unless the full project name is already supplied. |
 | `StoreKey` | `sample` | Storefront API route scope for generated configuration. |
+| `OutputRoot` | `artifacts/storefront-builder/generated` | Generated artifact root. |
 | `Mode` | `validate-only` | One of `analyze-only`, `plan-only`, `generate`, `update`, `validate-only`, `full`. |
 | `Force` | off | Allows project generation to overwrite an existing generated target when the generation script permits it. |
 | `SkipVisualQa` | off | Suppresses visual QA runner reporting in `full` mode. |
@@ -72,7 +72,7 @@ Modes:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
   -Scope all
 ```
 
@@ -95,15 +95,21 @@ Static gate:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 `
-  -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo `
-  -Name BlazorShop.Storefront.BuilderDemo `
-  -StoreKey builder-demo
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
+  -Name BlazorShop.Storefront.GeneratedProof `
+  -StoreKey sample
 ```
 
 Isolation gate:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -Name BlazorShop.Storefront.BuilderDemo
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+```
+
+Canonical generated proof:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1
 ```
 
 Focused test filter:
@@ -125,14 +131,14 @@ Pop-Location
 Run the generated storefront before browser QA:
 
 ```powershell
-dotnet run --no-build --project BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/BlazorShop.Storefront.BuilderDemo.csproj --urls http://127.0.0.1:18991
+dotnet run --no-build --project artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.csproj --urls http://127.0.0.1:18991
 ```
 
 Then run:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
 ```
 
-Commit updated `visual-qa-report.md` and `functional-commerce-report.md` when behavior changes.
+Browser QA writes `visual-qa-report.md` and `functional-commerce-report.md` under the generated artifact. Do not commit generated proof output by default.

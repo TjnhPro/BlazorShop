@@ -33,7 +33,6 @@ The original `BlazorShop.Presentation` source has been removed from the active b
 | Storefront client package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTO contracts from Commerce Node Storefront OpenAPI. |
 | Storefront runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Neutral generated-storefront runtime primitives for store context, capabilities, errors, and client registration. |
 | Storefront Starter | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Neutral skeleton for deterministic generated storefronts. |
-| Storefront generated proofs | `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`, `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo` | Generated storefront proofs from Starter and StorefrontBuilder. |
 | StorefrontBuilder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Development-time visual reverse engineering, generation, regeneration, validation, and browser QA scripts. |
 | Tests | `BlazorShop.Tests.V2` | Active V2 unit, integration, contract, snapshot, and selected smoke tests. |
 
@@ -45,7 +44,7 @@ Current V2 work covers these major areas:
 - Commerce Admin: stores, store domains, feature states, settings, security/privacy, shipping settings, currencies, categories, products, variants, variation templates, inventory, media assets, product media import, pages, navigation, SEO settings, redirects, slug lifecycle, orders, payment methods, message templates, queued messages, tasks, metrics, and audit.
 - Storefront API: current store, maintenance, configuration, catalog, category/product slug routes, recommendations, cart, checkout, address/customer profile, auth, orders, payments, currency, contact, newsletter, consent, SEO, pages, and navigation.
 - Storefront V2 UI: home, search, new releases, deals, category, product, pages by slug, sign in, register, account profile, addresses, orders, cart, checkout, payment result pages, maintenance page, sitemap, robots, and public media proxy routes.
-- StorefrontBuilder: Starter-based generated storefront projects, Storefront Client/Runtime package boundaries, visual analysis artifacts, regeneration, static validation, isolation, and browser QA reports.
+- StorefrontBuilder: Starter-based generated storefront artifacts, Storefront Client/Runtime package boundaries, visual analysis artifacts, regeneration, static validation, isolation, and browser QA reports.
 - Contract foundation: Commerce Node publishes separate Swagger documents for Commerce Admin and Storefront, with stable operation IDs, response schemas, standard error schemas, validation metadata, and security metadata guarded by tests and snapshots.
 
 See [docs/architecture/06-feature-map.md](docs/architecture/06-feature-map.md) for the full ownership map.
@@ -143,8 +142,9 @@ StorefrontBuilder focused validation:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
-.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo -Name BlazorShop.Storefront.BuilderDemo -StoreKey builder-demo
-.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -Name BlazorShop.Storefront.BuilderDemo
+.\scripts\qa\run-storefront-builder-generated-proof.ps1
+.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
 
 See [docs/visual-reverse-engineering-skill](docs/visual-reverse-engineering-skill/) for generation, regeneration, visual QA, and commerce-regression commands.

@@ -193,44 +193,44 @@ Commit:
 
 Goal: remove the misleading mental model from docs so future agents do not assume `Sample` or `BuilderDemo` still exist.
 
-- [ ] Update root `README.md`.
-- [ ] Update root `AGENTS.md`.
-- [ ] Update `docs/architecture/README.md`.
-- [ ] Update `docs/architecture/01-system-map.md`.
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md`.
-- [ ] Update `docs/architecture/06-feature-map.md`.
-- [ ] Update `docs/architecture/07-deployment-and-local-run.md`.
-- [ ] Update `docs/architecture/08-agent-decision-rules.md`.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md`.
-- [ ] Update `docs/architecture/11-storefront-builder.md`.
-- [ ] Update `docs/architecture/adr/2026-07-24-storefront-starter-foundation.md` with a superseding note.
-- [ ] Update `docs/agents/README.md` if it references generated proof projects.
-- [ ] Update `docs/agents/storefront-builder.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
-- [ ] Replace or retire `docs/visual-reverse-engineering-skill/tutorial-builder-demo.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/StorefrontBuilder-architecture-note.md`.
-- [ ] Update `docs/storefront-platform/storefront-ai-generator-plan.md`.
-- [ ] Mark historical phase plans under `docs/refactor-control-Commerce-storefront/` as historical where they mention `Storefront.Sample`.
-- [ ] Search active docs for these phrases and remove or qualify them:
-  - [ ] `BuilderDemo`
-  - [ ] `Storefront.Sample`
-  - [ ] `committed proof`
-  - [ ] `active generated proof`
-  - [ ] `Validate the committed generated proof`
-- [ ] Keep only clearly historical mentions or current removal-plan mentions.
+- [x] Update root `README.md`.
+- [x] Update root `AGENTS.md`.
+- [x] Update `docs/architecture/README.md`.
+- [x] Update `docs/architecture/01-system-map.md`.
+- [x] Update `docs/architecture/05-project-and-folder-guide.md`.
+- [x] Update `docs/architecture/06-feature-map.md`.
+- [x] Update `docs/architecture/07-deployment-and-local-run.md`.
+- [x] Update `docs/architecture/08-agent-decision-rules.md`.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md`.
+- [x] Update `docs/architecture/11-storefront-builder.md`.
+- [x] Update `docs/architecture/adr/2026-07-24-storefront-starter-foundation.md` with a superseding note.
+- [x] Update `docs/agents/README.md` if it references generated proof projects.
+- [x] Update `docs/agents/storefront-builder.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
+- [x] Replace or retire `docs/visual-reverse-engineering-skill/tutorial-builder-demo.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/StorefrontBuilder-architecture-note.md`.
+- [x] Update `docs/storefront-platform/storefront-ai-generator-plan.md`.
+- [x] Mark historical phase plans under `docs/refactor-control-Commerce-storefront/` as historical where they mention `Storefront.Sample`.
+- [x] Search active docs for these phrases and remove or qualify them:
+  - [x] `BuilderDemo`
+  - [x] `Storefront.Sample`
+  - [x] `committed proof`
+  - [x] `active generated proof`
+  - [x] `Validate the committed generated proof`
+- [x] Keep only clearly historical mentions or current removal-plan mentions.
 
 Acceptance:
 
-- [ ] Active docs say generated storefronts are on-demand artifacts.
-- [ ] Active docs list only Client, Runtime, Starter, and StorefrontBuilder tooling as the StorefrontBuilder platform source surface.
-- [ ] No active doc tells agents to run `BuilderDemo` as the canonical proof.
-- [ ] No active doc tells agents `Storefront.Sample` is an active project.
+- [x] Active docs say generated storefronts are on-demand artifacts.
+- [x] Active docs list only Client, Runtime, Starter, and StorefrontBuilder tooling as the StorefrontBuilder platform source surface.
+- [x] No active doc tells agents to run `BuilderDemo` as the canonical proof.
+- [x] No active doc tells agents `Storefront.Sample` is an active project.
 
 Commit:
 
-- [ ] Commit message: `docs: remove committed generated storefront guidance`
+- [x] Commit message: `docs: remove committed generated storefront guidance`
 
 ## Phase 6 - Remove Generated Projects From Source And Solution
 

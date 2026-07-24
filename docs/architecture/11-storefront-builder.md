@@ -9,18 +9,19 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Storefront API contracts | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTOs from Commerce Node Storefront OpenAPI. |
 | Neutral runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Store context, generated-client registration, capability reading, normalized errors, and BFF-safe result primitives. |
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
-| Deterministic proof | `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample` | Generated sample storefront proving Starter can build and run from package-style boundaries. |
-| Committed POC | `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo` | Current generated StorefrontBuilder proof with analysis artifacts and QA reports. |
+| Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
+| Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, and isolation-checks the canonical generated proof artifact. |
 | Isolation gate | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Verifies generated storefronts consume Client/Runtime as packages and avoid forbidden project references. |
 
-Generated storefronts live only under:
+Generated storefront artifacts live under ignored output roots:
 
 ```text
-BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
+artifacts/storefront-builder/generated/{ProjectName}
+obj/storefront-builder/generated/{ProjectName}
 ```
 
-The storefront name must be normalized before it is used as a folder, project name, namespace segment, or file prefix. Unsafe names must fail before files are created.
+The storefront name must be normalized before it is used as a folder, project name, namespace segment, or file prefix. Unsafe names must fail before files are created. Generated proof output must not be added to `BlazorShop.sln` by default.
 
 ## Boundary Model
 
@@ -58,7 +59,7 @@ When visual evidence and backend capability do not agree, decisions follow this 
 
 ## Generated Artifacts
 
-Each generated storefront keeps reviewable artifacts under:
+Each generated storefront artifact keeps reviewable artifacts under:
 
 ```text
 docs/storefront-analysis/
@@ -78,7 +79,7 @@ Current review and QA artifacts:
 - `functional-commerce-report.md`
 - `mvp-poc-report.md`
 
-These files are source evidence for review. Do not treat them as disposable build output.
+These files are source evidence for reviewing that generated artifact. They are disposable with the artifact unless a phase explicitly promotes a specific artifact into tracked evidence.
 
 ## Entrypoints
 
@@ -102,7 +103,7 @@ Supported modes:
 Regeneration command:
 
 ```powershell
-.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo -Scope all
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all
 ```
 
 Supported scopes are `all`, `page`, `component`, `css`, `validate`, and `conflicts`.
@@ -110,13 +111,19 @@ Supported scopes are `all`, `page`, `component`, `css`, `validate`, and `conflic
 Static validation command:
 
 ```powershell
-.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo -Name BlazorShop.Storefront.BuilderDemo -StoreKey builder-demo
+.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 ```
 
 Isolation gate:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -Name BlazorShop.Storefront.BuilderDemo
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+```
+
+Canonical proof workflow:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1
 ```
 
 ## Validation Gates

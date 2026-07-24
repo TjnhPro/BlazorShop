@@ -4,6 +4,8 @@ Status: in-progress
 Scope: BlazorShop.AI.StorefrontBuilder Visual Reverse Engineering Skill MVP
 Phase group: S0-S9
 
+Historical note: this file records the original StorefrontBuilder foundation plan. Current generated proof output is created on demand under ignored artifact roots; see `docs/architecture/11-storefront-builder.md` and `04-StorefrontBuilder-Generated-Store-Cleanup.todo.md`.
+
 ## Purpose
 
 Create the foundation that lets a development-time StorefrontBuilder skill analyze a reference ecommerce site and prepare generation safely.

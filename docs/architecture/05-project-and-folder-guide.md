@@ -274,7 +274,7 @@ Use for:
 - Examples of generated `BlazorShop.Storefront.Client` package consumption.
 - Same-origin BFF examples for protected browser flows.
 - Store bootstrap, capability reading, feature placement, loading/error/empty states, and generation manifest conventions.
-- Deterministic generated storefront output such as `BlazorShop.Storefront.Sample`.
+- Deterministic generated storefront output under ignored artifact roots such as `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof`.
 
 Do not:
 
@@ -292,39 +292,24 @@ Protected areas for scaffolding or AI generation:
 - package/version manifests;
 - generated storefront manifests.
 
-### `BlazorShop.Storefront.Sample`
+### Generated Storefront Artifacts
 
 Status:
 
-- Active deterministic project generated from Starter.
+- Disposable StorefrontBuilder proof output under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
 
 Use for:
 
 - Proving Starter can build, publish, and run outside the monorepo from packages/configuration.
-- Browser and contract QA against Commerce Node Storefront APIs.
-
-Do not:
-
-- Own platform contracts.
-- Copy Storefront V2 source, CSS, assets, or manual transport internals.
-
-### `BlazorShop.Storefront.BuilderDemo`
-
-Status:
-
-- Active committed StorefrontBuilder proof under `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
-
-Use for:
-
-- Proving the visual reverse engineering and regeneration workflow.
 - Reviewing generated pages, generated CSS, asset manifests, and QA artifacts.
-- Running StorefrontBuilder static validation, isolation, visual QA, and commerce-regression checks.
+- Running StorefrontBuilder static validation, isolation, visual smoke QA, and commerce-regression checks.
 
 Do not:
 
-- Treat it as a platform contract owner.
-- Backport its store-specific CSS, assets, generated pages, or analysis artifacts into Starter.
-- Use it as evidence that generated storefronts may reference Storefront V2 or backend/core/API projects.
+- Add generated proof output to `BlazorShop.sln` by default.
+- Treat generated proof output as a platform contract owner.
+- Backport store-specific CSS, assets, generated pages, or analysis artifacts into Starter.
+- Use generated proof output as evidence that generated storefronts may reference Storefront V2 or backend/core/API projects.
 
 ### `tools/BlazorShop.AI.StorefrontBuilder`
 

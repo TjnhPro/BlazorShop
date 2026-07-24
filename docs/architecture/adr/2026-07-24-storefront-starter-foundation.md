@@ -1,7 +1,7 @@
 # ADR: Storefront Starter Foundation
 
 Date: 2026-07-24
-Status: Accepted; implemented for Starter/Sample and extended by StorefrontBuilder
+Status: Accepted as historical Starter foundation; current generated proof policy is superseded by StorefrontBuilder Architecture
 
 ## Context
 
@@ -53,4 +53,4 @@ Starter source must not import `BlazorShop.Web.SharedV2.Models` business contrac
 
 ## Amendment
 
-Later phases on 2026-07-24 introduced StorefrontBuilder tooling and the committed `BlazorShop.Storefront.BuilderDemo` proof. `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Starter`, and `BlazorShop.Storefront.Sample` are now active. The current source of truth for generated storefront preparation is [StorefrontBuilder Architecture](../11-storefront-builder.md).
+Later phases on 2026-07-24 introduced StorefrontBuilder tooling and then superseded committed generated proof projects with on-demand generated proof artifacts. `BlazorShop.Storefront.Runtime` and `BlazorShop.Storefront.Starter` remain active source projects. Generated storefront proofs are disposable artifacts under ignored output roots and must not be treated as active solution projects or contract owners. The current source of truth for generated storefront preparation is [StorefrontBuilder Architecture](../11-storefront-builder.md).
