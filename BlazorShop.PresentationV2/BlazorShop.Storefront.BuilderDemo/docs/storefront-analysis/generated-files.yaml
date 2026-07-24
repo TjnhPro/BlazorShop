@@ -1,0 +1,22 @@
+schemaVersion: 1.0.0
+artifactKind: generated-files
+artifactId: generated-files.builder-demo
+files:
+  - filePath: wwwroot/css/storefront-builder.generated.css
+    ownership: generated
+    generatorVersion: 1.0.0
+    sourceArtifactIds: design-tokens.yaml ui-patterns.yaml
+    sourceSpecHash: pending-s25
+    generatedHash: pending-s25
+    lastGeneratedTimestamp: pending-s25
+    manualEditDetected: false
+    conflictStatus: none
+  - filePath: Components/Layout/MainLayout.razor
+    ownership: generated
+    generatorVersion: 1.0.0
+    sourceArtifactIds: composition-manifest.yaml ui-patterns.yaml
+    sourceSpecHash: pending-s25
+    generatedHash: pending-s25
+    lastGeneratedTimestamp: pending-s25
+    manualEditDetected: false
+    conflictStatus: none

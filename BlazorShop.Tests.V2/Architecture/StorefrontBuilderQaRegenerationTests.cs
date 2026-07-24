@@ -31,6 +31,36 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-ASSET-003", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void StaticValidationGate_CoversArtifactsGuardsRoutesAssetsAndPackages()
+        {
+            var command = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/validate-storefront.ps1");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1");
+            var fixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/bad-static-project/Pages/Duplicate.razor");
+
+            foreach (var marker in new[]
+            {
+                "Test-StorefrontBuilderSchemas.ps1",
+                "Test-StorefrontBuilderGeneratedProject.ps1",
+                "Test-StorefrontBuilderAssets.ps1",
+                "Test-StorefrontBuilderGuard.ps1",
+                "generated-files.yaml",
+                "Duplicate route",
+                "Package compatibility metadata",
+                "PackageReference",
+            })
+            {
+                Assert.Contains(marker, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("validate-storefront", command, StringComparison.Ordinal);
+            Assert.Contains("@page \"/duplicate\"", fixture, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-001", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-002", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-003", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-004", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

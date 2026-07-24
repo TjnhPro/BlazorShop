@@ -67,29 +67,29 @@ Goal: catch structural problems before running browser QA.
 
 Checks:
 
-- [ ] All artifact schemas pass.
-- [ ] Starter generation contract passes.
-- [ ] Composition manifest passes.
-- [ ] Generation plan passes.
-- [ ] Generated file manifest passes.
-- [ ] Asset manifest passes.
-- [ ] No protected file violation.
-- [ ] No forbidden dependency/import.
-- [ ] No direct Commerce Node browser call.
-- [ ] No DTO clone.
-- [ ] No missing slot.
-- [ ] No missing asset.
-- [ ] No duplicate route.
-- [ ] No package version mismatch.
+- [x] All artifact schemas pass.
+- [x] Starter generation contract passes.
+- [x] Composition manifest passes.
+- [x] Generation plan passes.
+- [x] Generated file manifest passes.
+- [x] Asset manifest passes.
+- [x] No protected file violation.
+- [x] No forbidden dependency/import.
+- [x] No direct Commerce Node browser call.
+- [x] No DTO clone.
+- [x] No missing slot.
+- [x] No missing asset.
+- [x] No duplicate route.
+- [x] No package version mismatch.
 
 Done when:
 
-- [ ] `validate-storefront` can fail fast with actionable messages.
+- [x] `validate-storefront` can fail fast with actionable messages.
 
 Verification:
 
-- [ ] Unit tests for each validation category.
-- [ ] Bad fixture project fails validation with exact rule IDs.
+- [x] Unit tests for each validation category.
+- [x] Bad fixture project fails validation with exact rule IDs.
 
 ## S22 - Build And Isolation Gate
 
