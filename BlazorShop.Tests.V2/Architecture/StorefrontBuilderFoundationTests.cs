@@ -310,6 +310,39 @@ namespace BlazorShop.Tests.Architecture
             Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/playwright/fixtures/static-storefront.html")));
         }
 
+        [Fact]
+        public void StorefrontBuilderPageDiscovery_RecordsArchetypesAndCollapsesDuplicateLayouts()
+        {
+            var script = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/capture/discover-pages.mjs");
+            var fixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/duplicate-page-urls.json");
+
+            foreach (var archetype in new[]
+            {
+                "home",
+                "catalog",
+                "product",
+                "search",
+                "cart",
+                "checkout",
+                "account",
+                "content",
+            })
+            {
+                Assert.Contains(archetype, script, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("category/shoes", fixture, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("category/shirts", fixture, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("product/sku-1", fixture, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("product/sku-2", fixture, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("seen.has(archetype)", script, StringComparison.Ordinal);
+            Assert.Contains("evidencePath", script, StringComparison.Ordinal);
+            Assert.Contains("confidence", script, StringComparison.Ordinal);
+            Assert.Contains("reason", script, StringComparison.Ordinal);
+            Assert.Contains("discoveredBy", script, StringComparison.Ordinal);
+            Assert.Contains("page-inventory", script, StringComparison.Ordinal);
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;

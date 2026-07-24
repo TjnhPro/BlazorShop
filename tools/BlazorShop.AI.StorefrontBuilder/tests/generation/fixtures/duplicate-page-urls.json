@@ -1,0 +1,12 @@
+[
+  { "url": "https://reference.example/", "discoveredBy": "seed" },
+  { "url": "https://reference.example/category/shoes", "discoveredBy": "navigation" },
+  { "url": "https://reference.example/category/shirts", "discoveredBy": "navigation" },
+  { "url": "https://reference.example/product/sku-1", "discoveredBy": "catalog-card" },
+  { "url": "https://reference.example/product/sku-2", "discoveredBy": "catalog-card" },
+  { "url": "https://reference.example/search?q=shoe", "discoveredBy": "search-form" },
+  { "url": "https://reference.example/cart", "discoveredBy": "header-link" },
+  { "url": "https://reference.example/checkout", "discoveredBy": "cart-link" },
+  { "url": "https://reference.example/account/login", "discoveredBy": "header-link" },
+  { "url": "https://reference.example/about", "discoveredBy": "footer-link" }
+]

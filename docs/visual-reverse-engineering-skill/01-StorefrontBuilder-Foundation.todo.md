@@ -335,34 +335,34 @@ Goal: find representative pages without crawling an entire site.
 
 Priority archetypes:
 
-- [ ] Home.
-- [ ] Catalog/category.
-- [ ] Product detail.
-- [ ] Search result if discoverable.
-- [ ] Cart if public/reachable.
-- [ ] Checkout if test flow is configured.
-- [ ] Login/account shell if public/reachable.
-- [ ] Important content page.
+- [x] Home.
+- [x] Catalog/category.
+- [x] Product detail.
+- [x] Search result if discoverable.
+- [x] Cart if public/reachable.
+- [x] Checkout if test flow is configured.
+- [x] Login/account shell if public/reachable.
+- [x] Important content page.
 
 Rules:
 
-- [ ] Multiple products with the same layout become one product archetype.
-- [ ] Multiple categories with the same layout become one catalog archetype.
-- [ ] Non-ecommerce pages are optional unless they affect shell/layout.
-- [ ] Capture must record how URL was discovered.
+- [x] Multiple products with the same layout become one product archetype.
+- [x] Multiple categories with the same layout become one catalog archetype.
+- [x] Non-ecommerce pages are optional unless they affect shell/layout.
+- [x] Capture must record how URL was discovered.
 
 Output:
 
-- [ ] `page-inventory.yaml`
+- [x] `page-inventory.yaml`
 
 Done when:
 
-- [ ] Each archetype has URL, evidence path, confidence, and reason.
+- [x] Each archetype has URL, evidence path, confidence, and reason.
 
 Verification:
 
-- [ ] Inventory schema validation.
-- [ ] Fixture site with duplicate product/category pages collapses correctly.
+- [x] Inventory schema validation.
+- [x] Fixture site with duplicate product/category pages collapses correctly.
 
 ## S8 - Evidence Storage And Traceability
 
