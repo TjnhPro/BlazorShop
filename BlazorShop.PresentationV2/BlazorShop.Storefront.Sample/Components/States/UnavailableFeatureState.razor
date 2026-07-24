@@ -1,0 +1,16 @@
+<section class="starter-state" data-feature-key="@FeatureKey">
+    <h2>@Title</h2>
+    <p>@Reason</p>
+</section>
+
+@code {
+    [Parameter]
+    public string FeatureKey { get; set; } = "feature";
+
+    [Parameter]
+    public string Title { get; set; } = "Feature unavailable";
+
+    [Parameter]
+    public string Reason { get; set; } = "This feature is not enabled for the current store.";
+}
+

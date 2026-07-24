@@ -1,0 +1,15 @@
+@page "/category/{Slug}"
+
+<PageTitle>Category</PageTitle>
+<h1>Category</h1>
+<PlaceholderState
+    Title="Category shell"
+    Message="SSR snapshot supplies category and product listing data."
+    RenderOwner="Hybrid"
+    HydrationMode="StarterHydrationMode.InitialSnapshot" />
+
+@code {
+    [Parameter]
+    public string? Slug { get; set; }
+}
+

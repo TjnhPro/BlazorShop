@@ -634,9 +634,9 @@ Goal: generate a sample storefront from Starter without AI.
 
 Choose one deterministic mechanism:
 
-- [ ] `dotnet new` template.
-- [ ] PowerShell scaffolding script.
-- [ ] small CLI command.
+- [n/a] `dotnet new` template.
+- [x] PowerShell scaffolding script.
+- [n/a] small CLI command.
 
 Recommended first version:
 
@@ -646,31 +646,31 @@ Recommended first version:
 
 ### Generated output
 
-- [ ] project file.
-- [ ] namespace/project name.
-- [ ] package references.
-- [ ] `nuget.config`.
-- [ ] `appsettings.json`.
-- [ ] store key/base URL config.
-- [ ] feature manifest.
-- [ ] neutral design files.
-- [ ] test project or QA script.
-- [ ] README.
+- [x] project file.
+- [x] namespace/project name.
+- [x] package references.
+- [x] `nuget.config`.
+- [x] `appsettings.json`.
+- [x] store key/base URL config.
+- [x] feature manifest.
+- [x] neutral design files.
+- [x] test project or QA script.
+- [x] README.
 
 ### Rules
 
-- [ ] Generator copies Starter template only.
-- [ ] Generator does not copy V2 source.
-- [ ] Generator does not edit generated client source.
-- [ ] Generator does not create AI-designed UI.
-- [ ] Generator output is deterministic.
-- [ ] Generated output can be diffed and reviewed.
+- [x] Generator copies Starter template only.
+- [x] Generator does not copy V2 source.
+- [x] Generator does not edit generated client source.
+- [x] Generator does not create AI-designed UI.
+- [x] Generator output is deterministic.
+- [x] Generated output can be diffed and reviewed.
 
 ### Done when
 
-- [ ] `Storefront.Sample` is produced from Starter.
-- [ ] Generated output builds.
-- [ ] Generated output can run against Commerce Node Storefront API.
+- [x] `Storefront.Sample` is produced from Starter.
+- [x] Generated output builds.
+- [x] Generated output can run against Commerce Node Storefront API.
 
 ## S10 - Sample QA Release Gate
 
@@ -838,7 +838,7 @@ Add CI in stages:
 - [x] Commit 7: S6 feature manifest/capability activation.
 - [x] Commit 8: S7 neutral layout and state components.
 - [x] Commit 9: S8 isolation gate script.
-- [ ] Commit 10: S9 deterministic Sample generation.
+- [x] Commit 10: S9 deterministic Sample generation.
 - [ ] Commit 11: S10 Sample QA release gate evidence.
 - [ ] Commit 12: S11 AI Generator planning docs.
 

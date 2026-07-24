@@ -1,0 +1,16 @@
+@page "/product/{Slug}"
+
+<PageTitle>Product</PageTitle>
+<h1>Product detail</h1>
+<PlaceholderState
+    Title="Product detail shell"
+    Message="SSR snapshot supplies product data; browser interactivity may refresh after hydration."
+    RenderOwner="Hybrid"
+    HydrationMode="StarterHydrationMode.InitialSnapshot" />
+<ProductDetailShell ProductName="Product" />
+
+@code {
+    [Parameter]
+    public string? Slug { get; set; }
+}
+

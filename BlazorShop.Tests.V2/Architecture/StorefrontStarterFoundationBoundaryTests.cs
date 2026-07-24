@@ -548,6 +548,26 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StorefrontSampleGeneration_IsDeterministicAndV2Independent()
+        {
+            var script = ReadRepositoryFile("scripts/generate-storefront-sample.ps1");
+            var sampleProject = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Sample/BlazorShop.Storefront.Sample.csproj");
+            var readme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Sample/README.md");
+            var appsettings = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Sample/appsettings.json");
+
+            Assert.Contains("Copy-StarterTemplate", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Starter", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
+            Assert.Contains("Generated\\StorefrontClient.g.cs", script, StringComparison.Ordinal);
+            Assert.Contains("ProjectReference", script, StringComparison.Ordinal);
+            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Client\"", sampleProject, StringComparison.Ordinal);
+            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Runtime\"", sampleProject, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ProjectReference", sampleProject, StringComparison.Ordinal);
+            Assert.Contains("Generated deterministic storefront sample", readme, StringComparison.Ordinal);
+            Assert.Contains("\"StoreKey\": \"sample\"", appsettings, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StarterDocs_SayStorefrontV2IsBehaviorReferenceOnly()
         {
             var adr = ReadRepositoryFile("docs/architecture/adr/2026-07-24-storefront-starter-foundation.md");
