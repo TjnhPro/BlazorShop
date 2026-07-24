@@ -69,53 +69,53 @@ Goal: identify reusable ecommerce UI patterns from the target site.
 
 Patterns:
 
-- [ ] Header.
-- [ ] Footer.
-- [ ] Main navigation.
-- [ ] Mobile navigation.
-- [ ] Breadcrumb.
-- [ ] Product card.
-- [ ] Category card.
-- [ ] Banner/hero section.
-- [ ] Product grid.
-- [ ] Product gallery.
-- [ ] Product information block.
-- [ ] Product purchase block.
-- [ ] Primary button.
-- [ ] Secondary button.
-- [ ] Icon button.
-- [ ] Text input.
-- [ ] Search input.
-- [ ] Select.
-- [ ] Checkbox.
-- [ ] Quantity control.
-- [ ] Pagination.
-- [ ] Empty state.
-- [ ] Error state.
-- [ ] Loading state.
+- [x] Header.
+- [x] Footer.
+- [x] Main navigation.
+- [x] Mobile navigation.
+- [x] Breadcrumb.
+- [x] Product card.
+- [x] Category card.
+- [x] Banner/hero section.
+- [x] Product grid.
+- [x] Product gallery.
+- [x] Product information block.
+- [x] Product purchase block.
+- [x] Primary button.
+- [x] Secondary button.
+- [x] Icon button.
+- [x] Text input.
+- [x] Search input.
+- [x] Select.
+- [x] Checkbox.
+- [x] Quantity control.
+- [x] Pagination.
+- [x] Empty state.
+- [x] Error state.
+- [x] Loading state.
 
 Each pattern records:
 
-- [ ] Evidence IDs.
-- [ ] DOM selector samples.
-- [ ] Visual properties.
-- [ ] States observed.
-- [ ] Responsive notes.
-- [ ] Target slot if known.
-- [ ] Fallback behavior.
+- [x] Evidence IDs.
+- [x] DOM selector samples.
+- [x] Visual properties.
+- [x] States observed.
+- [x] Responsive notes.
+- [x] Target slot if known.
+- [x] Fallback behavior.
 
 Output:
 
-- [ ] `ui-patterns.yaml`
+- [x] `ui-patterns.yaml`
 
 Done when:
 
-- [ ] Pattern inventory covers shell, catalog, product, controls, and state components.
+- [x] Pattern inventory covers shell, catalog, product, controls, and state components.
 
 Verification:
 
-- [ ] Pattern schema validation.
-- [ ] Validator fails if product card or product purchase pattern is missing without fallback reason.
+- [x] Pattern schema validation.
+- [x] Validator fails if product card or product purchase pattern is missing without fallback reason.
 
 ## S12 - Behavior And Responsive Model
 

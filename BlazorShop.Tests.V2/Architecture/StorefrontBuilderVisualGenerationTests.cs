@@ -40,6 +40,52 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("backgroundColor", fixture, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void UiPatternInventory_CoversShellCatalogProductControlsAndStates()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/identify-ui-patterns.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderPatterns.ps1");
+
+            foreach (var pattern in new[]
+            {
+                "header",
+                "footer",
+                "main-navigation",
+                "mobile-navigation",
+                "breadcrumb",
+                "product-card",
+                "category-card",
+                "banner-hero-section",
+                "product-grid",
+                "product-gallery",
+                "product-information-block",
+                "product-purchase-block",
+                "primary-button",
+                "secondary-button",
+                "icon-button",
+                "text-input",
+                "search-input",
+                "select",
+                "checkbox",
+                "quantity-control",
+                "pagination",
+                "empty-state",
+                "error-state",
+                "loading-state",
+            })
+            {
+                Assert.Contains(pattern, generator, StringComparison.Ordinal);
+            }
+
+            foreach (var field in new[] { "evidenceIds", "selectorSamples", "visualProperties", "statesObserved", "responsiveNotes", "targetSlot", "fallbackBehavior" })
+            {
+                Assert.Contains(field, generator, StringComparison.Ordinal);
+                Assert.Contains(field, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("SFB-PATTERN-001", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
