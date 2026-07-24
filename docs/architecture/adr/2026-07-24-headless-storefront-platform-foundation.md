@@ -1,7 +1,7 @@
 # ADR: Headless Storefront Platform Foundation
 
 Date: 2026-07-24
-Status: Accepted
+Status: Accepted; amended by Storefront Starter and StorefrontBuilder implementation
 
 ## Context
 
@@ -43,3 +43,7 @@ Storefront V2 must not be copied into `Storefront.Starter`. Starter work, when a
 - Generated clients are frontend-readable contracts.
 - Storefront V2 can keep presentation-specific view models, but must not add handwritten duplicate API DTO clones where OpenAPI-generated types should be used.
 - Browser/WASM flows continue to call same-origin `/api/*` BFF endpoints and never hold Commerce Node URLs, node credentials, or access tokens in browser storage.
+
+## Amendment
+
+Later phases on 2026-07-24 introduced the neutral runtime package, Starter, Sample, and StorefrontBuilder proof projects. The current source of truth for that implemented surface is [StorefrontBuilder Architecture](../11-storefront-builder.md).

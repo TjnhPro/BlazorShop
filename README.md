@@ -30,6 +30,11 @@ The original `BlazorShop.Presentation` source has been removed from the active b
 | Storefront components | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Reusable Razor components for the Storefront V2 render modes. |
 | Storefront WASM | `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM` | Interactive WebAssembly assembly used by Storefront V2. |
 | Shared Web V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Shared browser storage, cookie storage, auth session sync, API helpers, and toast utilities. |
+| Storefront client package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTO contracts from Commerce Node Storefront OpenAPI. |
+| Storefront runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Neutral generated-storefront runtime primitives for store context, capabilities, errors, and client registration. |
+| Storefront Starter | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Neutral skeleton for deterministic generated storefronts. |
+| Storefront generated proofs | `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`, `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo` | Generated storefront proofs from Starter and StorefrontBuilder. |
+| StorefrontBuilder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Development-time visual reverse engineering, generation, regeneration, validation, and browser QA scripts. |
 | Tests | `BlazorShop.Tests.V2` | Active V2 unit, integration, contract, snapshot, and selected smoke tests. |
 
 ## Feature Surface
@@ -40,6 +45,7 @@ Current V2 work covers these major areas:
 - Commerce Admin: stores, store domains, feature states, settings, security/privacy, shipping settings, currencies, categories, products, variants, variation templates, inventory, media assets, product media import, pages, navigation, SEO settings, redirects, slug lifecycle, orders, payment methods, message templates, queued messages, tasks, metrics, and audit.
 - Storefront API: current store, maintenance, configuration, catalog, category/product slug routes, recommendations, cart, checkout, address/customer profile, auth, orders, payments, currency, contact, newsletter, consent, SEO, pages, and navigation.
 - Storefront V2 UI: home, search, new releases, deals, category, product, pages by slug, sign in, register, account profile, addresses, orders, cart, checkout, payment result pages, maintenance page, sitemap, robots, and public media proxy routes.
+- StorefrontBuilder: Starter-based generated storefront projects, Storefront Client/Runtime package boundaries, visual analysis artifacts, regeneration, static validation, isolation, and browser QA reports.
 - Contract foundation: Commerce Node publishes separate Swagger documents for Commerce Admin and Storefront, with stable operation IDs, response schemas, standard error schemas, validation metadata, and security metadata guarded by tests and snapshots.
 
 See [docs/architecture/06-feature-map.md](docs/architecture/06-feature-map.md) for the full ownership map.
@@ -49,7 +55,7 @@ See [docs/architecture/06-feature-map.md](docs/architecture/06-feature-map.md) f
 - .NET SDK `10.0.107` or compatible `10.0.x` feature roll-forward, as pinned in [global.json](global.json).
 - Docker Desktop or a compatible Docker engine for PostgreSQL, Nginx, and imgproxy local dependencies.
 - PowerShell for the V2 local runner scripts.
-- Node.js 20 if you work on frontend package assets or CI-equivalent frontend restore paths.
+- Node.js 20 or newer if you work on frontend package assets. StorefrontBuilder CI/tooling currently uses the Node package set under `tools/BlazorShop.AI.StorefrontBuilder`.
 
 ## Run V2 Locally
 
@@ -133,6 +139,16 @@ docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t
 
 `compose.production.yml` is the V2 canonical production topology. `compose.v2.production.yml` remains as a transition alias while CI and downstream scripts are updated.
 
+StorefrontBuilder focused validation:
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
+.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo -Name BlazorShop.Storefront.BuilderDemo -StoreKey builder-demo
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -Name BlazorShop.Storefront.BuilderDemo
+```
+
+See [docs/visual-reverse-engineering-skill](docs/visual-reverse-engineering-skill/) for generation, regeneration, visual QA, and commerce-regression commands.
+
 Feature QA checklists live in [docs/refactor-control-Commerce-storefront](docs/refactor-control-Commerce-storefront):
 
 - [QA-ControlPlane.todo.md](docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md)
@@ -154,6 +170,9 @@ Start here:
 - [docs/architecture/06-feature-map.md](docs/architecture/06-feature-map.md): feature ownership.
 - [docs/architecture/07-deployment-and-local-run.md](docs/architecture/07-deployment-and-local-run.md): local run and deployment notes.
 - [docs/architecture/09-api-contract-standards.md](docs/architecture/09-api-contract-standards.md): API contract requirements.
+- [docs/architecture/11-storefront-builder.md](docs/architecture/11-storefront-builder.md): StorefrontBuilder ownership, boundaries, commands, and gates.
+- [docs/visual-reverse-engineering-skill](docs/visual-reverse-engineering-skill/): StorefrontBuilder visual reverse engineering workflow docs.
+- [docs/agents/storefront-builder.md](docs/agents/storefront-builder.md): agent rules for StorefrontBuilder work.
 - [docs/production-runbook.md](docs/production-runbook.md): production notes. Some sections still document the legacy container path; verify against V2 architecture before using it for a release.
 
 ## Legacy And Reference Code

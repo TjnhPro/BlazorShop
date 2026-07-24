@@ -1,7 +1,7 @@
 # ADR: Storefront Starter Foundation
 
 Date: 2026-07-24
-Status: Accepted
+Status: Accepted; implemented for Starter/Sample and extended by StorefrontBuilder
 
 ## Context
 
@@ -50,3 +50,7 @@ Starter source must not import `BlazorShop.Web.SharedV2.Models` business contrac
 - Storefront V2 remains stable and can be used as behavior reference only.
 - Starter teaches SSR, BFF, browser, capability, and feature-placement conventions without owning ecommerce business truth.
 - Sample generation can later prove the Starter deterministically before any AI generator work begins.
+
+## Amendment
+
+Later phases on 2026-07-24 introduced StorefrontBuilder tooling and the committed `BlazorShop.Storefront.BuilderDemo` proof. `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Starter`, and `BlazorShop.Storefront.Sample` are now active. The current source of truth for generated storefront preparation is [StorefrontBuilder Architecture](../11-storefront-builder.md).

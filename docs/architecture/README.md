@@ -14,6 +14,7 @@ Read these documents before planning or implementing new work:
 8. [Agent Decision Rules](08-agent-decision-rules.md)
 9. [API Contract Standards](09-api-contract-standards.md)
 10. [V2 Contract Ownership](10-v2-contract-ownership.md)
+11. [StorefrontBuilder Architecture](11-storefront-builder.md)
 
 Historical implementation plans and QA checklists are tracked under [docs/refactor-control-Commerce-storefront](../refactor-control-Commerce-storefront/). This folder is the current architecture source of truth; do not rely on older plan files when they conflict with these pages.
 
@@ -23,6 +24,8 @@ BlazorShop is a single ecommerce product with shared core layers and an active V
 
 - Legacy `BlazorShop.Presentation` projects have been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison.
 - `BlazorShop.PresentationV2` is the active direction. New Control Plane, Commerce Node, Storefront V2, Storefront component/WASM, and shared Web V2 work belongs here.
+- `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Starter`, `BlazorShop.Storefront.Sample`, and `BlazorShop.Storefront.BuilderDemo` are the active generated-storefront platform surface.
+- `tools/BlazorShop.AI.StorefrontBuilder` is active development-time tooling for visual reverse engineering, generated storefront preparation, regeneration, validation, and browser QA.
 - `BlazorShop.Domain`, `BlazorShop.Application`, and `BlazorShop.Infrastructure` are shared core layers used by active V2 projects.
 - `Smartstore/` is reference source for ecommerce business research only. Do not copy Smartstore implementation code into BlazorShop and do not add runtime references to Smartstore projects.
 
@@ -64,5 +67,7 @@ The short version:
 - [Contributing guide](../../CONTRIBUTING.md)
 - [Security policy](../../SECURITY.md)
 - [Domain docs guide](../agents/domain.md)
+- [StorefrontBuilder agent guide](../agents/storefront-builder.md)
 - [Historical Control Plane and Commerce Storefront plans](../refactor-control-Commerce-storefront/)
+- [Visual reverse engineering and StorefrontBuilder docs](../visual-reverse-engineering-skill/)
 - [Production runbook](../production-runbook.md)

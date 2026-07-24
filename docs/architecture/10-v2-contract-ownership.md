@@ -14,6 +14,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Storefront V2 source must not import `Web.SharedV2.Models` or backend/core business namespaces.
 - Storefront Starter and generated storefront source must not import `Web.SharedV2.Models` or backend/core business namespaces.
 - Storefront Starter must consume generated Storefront client contracts by default and must not copy the manual `StorefrontApiClient` transport from Storefront V2.
+- Generated StorefrontBuilder projects must consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries and must not reference Storefront V2 or backend/core/API projects.
 - Starter manual HTTP exceptions are allowed only when documented in an exception registry with reason, owner, test, and revisit trigger.
 - The Starter generated-client adoption policy and exception registry live under `docs/storefront-platform/`.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.
@@ -47,6 +48,8 @@ This page records the current contract ownership boundary after Storefront V2 mo
 
 `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` is the generated Storefront HTTP client package. It is generated from the Commerce Node Storefront OpenAPI snapshot and must not reference backend/core/API projects or `Storefront.V2`. Storefront V2 migration should consume this generated client instead of adding handwritten API DTO clones.
 
+`BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo` and other generated StorefrontBuilder projects are not contract owners. They consume Storefront client/runtime packages, hold generated presentation output, and keep review artifacts under `docs/storefront-analysis/`.
+
 ## Portable Component Models
 
 `BlazorShop.Storefront.Components/Features/*` may define small render-facing models such as product summary cards, product gallery items, and purchase panel snapshots.
@@ -64,3 +67,4 @@ Do not add admin-owned fields, store ownership fields, credentials, tokens, pass
 - `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag` proves Storefront OpenAPI remains generator-safe enough for non-.NET clients.
 - `StorefrontGeneratedClientFoundationTests` proves the generated C# Storefront client compiles, uses generated-source guardrails, and has no backend/core project references.
 - `StorefrontStarterFoundationBoundaryTests` keeps Starter documentation, dependency, and manual-client-copy guardrails explicit as the neutral skeleton is introduced.
+- StorefrontBuilder focused tests and `scripts/qa/run-storefront-builder-isolation-gate.ps1` prove generated storefronts keep package references, package compatibility metadata, generated artifacts, route uniqueness, and forbidden dependency scans intact.

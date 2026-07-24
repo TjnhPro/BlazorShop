@@ -262,11 +262,11 @@ Current ownership map:
 
 Do not create feature packages just to move code out of Storefront V2. Extract only when it removes real duplication and can stay independent of Storefront V2 design, routes, BFF endpoints, and backend/core/API projects.
 
-### Future `BlazorShop.Storefront.Starter`
+### `BlazorShop.Storefront.Starter`
 
 Status:
 
-- Planned after the Headless Storefront Platform Foundation completion. The Starter is the neutral skeleton source for deterministic generated storefronts.
+- Active neutral skeleton source for deterministic generated storefronts.
 
 Use for:
 
@@ -284,7 +284,7 @@ Do not:
 - Copy the manual `StorefrontApiClient` transport from Storefront V2.
 - Move pricing, sellability, cart validation, checkout, order placement, payment, or authorization rules into Starter.
 
-Protected areas for future scaffolding or AI generation:
+Protected areas for scaffolding or AI generation:
 
 - generated client source;
 - runtime security primitives;
@@ -292,11 +292,11 @@ Protected areas for future scaffolding or AI generation:
 - package/version manifests;
 - generated storefront manifests.
 
-### Future `BlazorShop.Storefront.Sample`
+### `BlazorShop.Storefront.Sample`
 
 Status:
 
-- Planned as the first deterministic project generated from Starter.
+- Active deterministic project generated from Starter.
 
 Use for:
 
@@ -307,6 +307,50 @@ Do not:
 
 - Own platform contracts.
 - Copy Storefront V2 source, CSS, assets, or manual transport internals.
+
+### `BlazorShop.Storefront.BuilderDemo`
+
+Status:
+
+- Active committed StorefrontBuilder proof under `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
+
+Use for:
+
+- Proving the visual reverse engineering and regeneration workflow.
+- Reviewing generated pages, generated CSS, asset manifests, and QA artifacts.
+- Running StorefrontBuilder static validation, isolation, visual QA, and commerce-regression checks.
+
+Do not:
+
+- Treat it as a platform contract owner.
+- Backport its store-specific CSS, assets, generated pages, or analysis artifacts into Starter.
+- Use it as evidence that generated storefronts may reference Storefront V2 or backend/core/API projects.
+
+### `tools/BlazorShop.AI.StorefrontBuilder`
+
+Status:
+
+- Active development-time tooling for generated storefront preparation.
+
+Important folders:
+
+- `scripts/capture/` - Playwright capture and page discovery helpers.
+- `scripts/generate/` - project creation, review artifact writing, token extraction, visual foundation, composition, and generated manifest updates.
+- `scripts/validate/` - schema, project, asset, CSS, composition, idempotency, guard, and static gate validation.
+- `scripts/qa/` - visual QA and commerce-regression browser runners.
+
+Use for:
+
+- Creating generated storefronts from Starter.
+- Writing and validating visual reverse engineering artifacts.
+- Regenerating generated CSS, page, component, and manifest output.
+- Running browser QA against generated storefronts.
+
+Do not:
+
+- Add production API hosting behavior here.
+- Add runtime dependencies from Commerce Node, Control Plane, Storefront V2, or generated storefront projects back to this tooling.
+- Store secrets, node credentials, or production deployment state in generated analysis artifacts.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 

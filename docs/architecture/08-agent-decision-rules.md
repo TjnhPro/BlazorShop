@@ -124,6 +124,34 @@ Shared V2 UI/asset rules:
 - Keep Control Plane-specific nav/sidebar/topbar/page header and dense operational components in `BlazorShop.ControlPlane.Web`.
 - Do not create a shared visual shell or asset registry just to reduce superficial markup similarity.
 
+## StorefrontBuilder Rule
+
+Before changing StorefrontBuilder, read `docs/architecture/11-storefront-builder.md`, `docs/visual-reverse-engineering-skill/README.md`, and `docs/agents/storefront-builder.md`.
+
+StorefrontBuilder is development-time tooling. It may create or update generated projects under `BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}`, but it must not become a production ASP.NET service, Commerce Node module, or Control Plane runtime feature.
+
+Generated storefronts must:
+
+- Consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
+- Keep protected browser commands behind same-origin BFF endpoints.
+- Keep analysis and QA artifacts under `docs/storefront-analysis/`.
+
+Generated storefronts must not:
+
+- Reference `BlazorShop.Storefront.V2`.
+- Reference backend/core/API projects.
+- Call `api/commerce/*`, `api/control-plane/*`, or removed `api/internal/*` from browser code.
+- Copy Storefront V2 transport internals.
+- Write store-specific visual output or analysis artifacts back into `BlazorShop.Storefront.Starter`.
+
+StorefrontBuilder changes need focused validation:
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
+.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo -Name BlazorShop.Storefront.BuilderDemo -StoreKey builder-demo
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -Name BlazorShop.Storefront.BuilderDemo
+```
+
 ## Database Rule
 
 Use the correct context:

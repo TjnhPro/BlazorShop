@@ -10,7 +10,8 @@ Before planning or editing code:
 2. Read `docs/architecture/README.md`.
 3. Read the architecture page that matches the area being changed.
 4. Read relevant historical plan or QA files under `docs/refactor-control-Commerce-storefront/`.
-5. Search existing code patterns with `rg` before adding abstractions.
+5. For StorefrontBuilder work, read `docs/architecture/11-storefront-builder.md`, `docs/visual-reverse-engineering-skill/README.md`, and `docs/agents/storefront-builder.md`.
+6. Search existing code patterns with `rg` before adding abstractions.
 
 Architecture docs:
 
@@ -24,6 +25,7 @@ Architecture docs:
 - `docs/architecture/08-agent-decision-rules.md`
 - `docs/architecture/09-api-contract-standards.md`
 - `docs/architecture/10-v2-contract-ownership.md`
+- `docs/architecture/11-storefront-builder.md`
 
 ## Project Shape
 
@@ -45,6 +47,16 @@ Active V2 presentation/runtime:
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
 - `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`
+
+Active StorefrontBuilder tooling:
+
+- `tools/BlazorShop.AI.StorefrontBuilder`
+- `scripts/qa/run-storefront-builder-isolation-gate.ps1`
 
 Legacy presentation projects have been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison and migration reference.
 
@@ -85,6 +97,14 @@ Route ownership:
 - `api/storefront/stores/{storeKey}/*` belongs to Commerce Node Storefront APIs and is called by Storefront V2. Store scope must come from the route value.
 - `api/internal/*` has been removed from the active V2 Commerce Node runtime. Do not add new features or compatibility routes there.
 - Legacy route groups such as `api/admin/*`, `api/public/*`, and `api/[controller]` are not V2 targets.
+
+StorefrontBuilder boundary:
+
+- StorefrontBuilder is development-time tooling only; it is not a production service or Commerce Node extension.
+- Generated storefronts live under `BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}` and consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
+- Generated storefronts must not reference Storefront V2, backend/core/API projects, Control Plane Web, Commerce Node API, or `Web.SharedV2.Models` business contracts.
+- Store-specific generated CSS, assets, pages, analysis artifacts, and AI-tuned components must not be written back into `BlazorShop.Storefront.Starter`.
+- Protected browser actions in generated storefronts must go through same-origin BFF endpoints before Commerce Node Storefront APIs.
 
 ## API Contract Standards
 
@@ -181,6 +201,8 @@ Commerce Node QA should verify API route groups, credential behavior for `api/co
 
 Storefront V2 QA should verify public page rendering, store key route behavior, catalog pages, slug routes, auth forms, checkout redirects, SEO documents, sitemap, robots, and visible browser flows when requested.
 
+StorefrontBuilder QA should verify static gates, generated project isolation, package boundaries, generated artifacts, browser visual checks, and commerce-regression reports. Use `docs/visual-reverse-engineering-skill/` and `docs/agents/storefront-builder.md` for exact commands.
+
 If browser behavior changes, use Playwright. If the user asks to observe the test, run with a visible browser.
 
 ## Local Runtime Notes
@@ -224,6 +246,7 @@ Root documentation is part of the active architecture surface:
 - `AGENTS.md` is the agent entry point and must stay aligned with architecture docs.
 - `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md` must not reference legacy repository URLs, retired maintainer emails, or unsupported runtime assumptions.
 - `docs/architecture/*` is the source of truth for boundaries, ownership, local run behavior, API contract standards, and feature placement.
+- `docs/architecture/11-storefront-builder.md` and `docs/visual-reverse-engineering-skill/*` are the source of truth for StorefrontBuilder generation, regeneration, QA artifacts, and protected-file behavior.
 - When a feature, route, database owner, local script, or API contract rule changes, update the relevant architecture doc and QA checklist in the same phase.
 
 ## Issue Tracker And Domain Docs
@@ -233,3 +256,5 @@ Issues are tracked in GitHub Issues for `TjnhPro/BlazorShop`; external PRs are n
 Use the default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
 
 Domain documentation uses a single-context layout for the BlazorShop ecommerce product. See `docs/agents/domain.md`.
+
+StorefrontBuilder agent-specific rules live in `docs/agents/storefront-builder.md`.

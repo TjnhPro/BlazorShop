@@ -167,6 +167,27 @@ Storefront V2 BFF/local endpoints are not responsible for:
 
 Local `/api/*` contracts are Storefront V2 browser contracts. They may differ from Commerce Node Storefront API DTOs when the browser needs a smaller or presentation-specific shape, but they must not duplicate ecommerce business truth.
 
+## Generated Storefront Boundary
+
+Generated storefronts from StorefrontBuilder follow the same public Storefront API and browser/BFF model as Storefront V2, but they are isolated from Storefront V2 source code.
+
+Required generated storefront shape:
+
+```text
+BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
+  -> BlazorShop.Storefront.Client package
+  -> BlazorShop.Storefront.Runtime package
+      -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
+```
+
+Rules:
+
+- Generated storefronts must not reference `BlazorShop.Storefront.V2`.
+- Generated storefronts must not reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, or `BlazorShop.ControlPlane.API`.
+- Browser code in generated storefronts must not call Commerce Node admin/control, Control Plane, or removed `api/internal/*` routes directly.
+- `BlazorShop.Storefront.Starter` is a neutral template input. Store-specific generated CSS, assets, pages, and analysis artifacts belong in the generated storefront project only.
+- StorefrontBuilder tooling is development-time only and is documented in [StorefrontBuilder Architecture](11-storefront-builder.md).
+
 ### Storefront Store Resolution
 
 Storefront V2 still resolves store scope from configuration, not from a host-derived public API route. The accepted configuration keys are:

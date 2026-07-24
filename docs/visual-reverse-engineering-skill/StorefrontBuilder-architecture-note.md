@@ -1,7 +1,9 @@
 # StorefrontBuilder Architecture Note
 
 Date: 2026-07-24
-Status: Accepted for MVP planning
+Status: Accepted and implemented for MVP StorefrontBuilder foundation
+
+Current architecture source: [StorefrontBuilder Architecture](../architecture/11-storefront-builder.md).
 
 ## Role
 
@@ -39,3 +41,12 @@ The MVP does not change API contracts, Runtime security primitives, BFF security
 ## Consequence
 
 Generated storefronts consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries, keep browser commands behind same-origin BFF endpoints, and treat Commerce Node as the owner of ecommerce business truth.
+
+## Current Proof
+
+The committed proof projects are:
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`
+
+BuilderDemo keeps review artifacts and QA reports under `docs/storefront-analysis/`.

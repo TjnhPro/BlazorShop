@@ -6,7 +6,7 @@ How engineering skills should consume this repo's domain documentation when expl
 
 BlazorShop uses a **single-context** domain documentation layout.
 
-The product is an ecommerce system. It currently includes legacy commerce/storefront projects plus new Control Plane and Commerce Node boundaries. Future plugins should still be treated as part of the same BlazorShop ecommerce product unless a later architecture decision explicitly splits the domain.
+The product is an ecommerce system. It currently includes active Control Plane, Commerce Node, Storefront V2, Storefront platform packages, StorefrontBuilder tooling, and generated storefront proofs. Legacy presentation projects have been removed from the active branch. Future plugins should still be treated as part of the same BlazorShop ecommerce product unless a later architecture decision explicitly splits the domain.
 
 ## Before Exploring, Read These
 
@@ -15,6 +15,7 @@ The product is an ecommerce system. It currently includes legacy commerce/storef
 - **`CONTEXT.md`** at the repo root, if it exists.
 - **`docs/adr/`**, if it exists. Read ADRs that touch the area being changed.
 - Existing planning docs under `docs/refactor-control-Commerce-storefront/` when working on Control Plane, Commerce Node, Storefront migration, or legacy cutover topics.
+- Existing planning and workflow docs under `docs/visual-reverse-engineering-skill/` when working on StorefrontBuilder, Starter, generated storefronts, visual QA, or regeneration.
 
 If `CONTEXT.md` or `docs/adr/` do not exist yet, proceed silently. Do not flag their absence or create them upfront unless the current task is specifically domain modeling or architecture documentation.
 
@@ -38,13 +39,18 @@ Single-context target layout:
 │   ├── 05-project-and-folder-guide.md
 │   ├── 06-feature-map.md
 │   ├── 07-deployment-and-local-run.md
-│   └── 08-agent-decision-rules.md
-└── docs/refactor-control-Commerce-storefront/
+│   ├── 08-agent-decision-rules.md
+│   ├── 09-api-contract-standards.md
+│   ├── 10-v2-contract-ownership.md
+│   └── 11-storefront-builder.md
+├── docs/agents/
+├── docs/refactor-control-Commerce-storefront/
+└── docs/visual-reverse-engineering-skill/
 ```
 
 ## Use The Glossary's Vocabulary
 
-When output names a domain concept, use the term as defined in `CONTEXT.md` if present. Examples in this repo include Control Plane, Commerce Node, Storefront, legacy Presentation, Admin API, internal Storefront API, and node credential.
+When output names a domain concept, use the term as defined in `CONTEXT.md` if present. Examples in this repo include Control Plane, Commerce Node, Storefront, Storefront V2, StorefrontBuilder, generated storefront, Starter, Commerce Admin API, Storefront API, and node credential.
 
 If a needed concept is missing from the glossary, either avoid inventing a new term or note the gap for a future domain-modeling pass.
 

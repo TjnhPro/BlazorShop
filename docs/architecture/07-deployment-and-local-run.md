@@ -210,6 +210,49 @@ Public URL configuration:
 - Storefront trusted forwarded header config lives under `Storefront:ForwardedHeaders:KnownProxies` and `Storefront:ForwardedHeaders:KnownNetworks`.
 - Configure trusted proxies/networks for the public ingress before relying on `X-Forwarded-Proto` or `X-Forwarded-Host`.
 
+## StorefrontBuilder Local Run
+
+StorefrontBuilder is development-time tooling. It creates and validates generated storefront projects; it is not part of the production runtime topology.
+
+Install Node dependencies for capture and browser QA:
+
+```powershell
+Push-Location tools\BlazorShop.AI.StorefrontBuilder
+npm ci
+Pop-Location
+```
+
+Validate the committed generated proof:
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
+.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo -Name BlazorShop.Storefront.BuilderDemo -StoreKey builder-demo
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -Name BlazorShop.Storefront.BuilderDemo
+```
+
+Create or update a generated storefront through the main entrypoint:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Url https://reference.example -Name Demo -StoreKey sample -Mode generate
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Name Demo -StoreKey sample -Mode update
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Name Demo -StoreKey sample -Mode validate-only
+```
+
+Run a generated storefront for browser QA:
+
+```powershell
+dotnet run --no-build --project BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/BlazorShop.Storefront.BuilderDemo.csproj --urls http://127.0.0.1:18991
+```
+
+Then run from another PowerShell session:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
+```
+
+Commit updated generated reports under `docs/storefront-analysis/` when generated page behavior changes.
+
 ## Store Deployment Flow
 
 Target design:

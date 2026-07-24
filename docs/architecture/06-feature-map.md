@@ -159,6 +159,33 @@ Decision rule:
 - If the feature is visual/storefront page behavior, it belongs to Storefront V2.
 - If the feature needs data, call Commerce Node Storefront APIs under `api/storefront/stores/{storeKey}/*`.
 
+## StorefrontBuilder Dev-Time Generation
+
+Projects/files:
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`
+- `tools/BlazorShop.AI.StorefrontBuilder`
+- `scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- `docs/visual-reverse-engineering-skill/*`
+
+Capabilities:
+
+- Generated Storefront API client and runtime package boundary.
+- Neutral Starter skeleton for generated storefronts.
+- Deterministic generated storefront proofs.
+- Reference-site capture and review artifact generation.
+- Visual foundation, composition, and generated manifest regeneration.
+- Static validation, idempotency/conflict validation, isolation, visual QA, and commerce regression.
+
+Decision rule:
+
+- If the feature changes generated storefront preparation, visual reverse engineering, generation artifacts, or generated storefront guardrails, it belongs to StorefrontBuilder tooling and docs.
+- If the feature changes live customer ecommerce behavior, API contracts, pricing, sellability, checkout, payment, auth, or deployment, it belongs to the normal Storefront V2, Commerce Node, Control Plane, or shared core boundary instead.
+
 ## Shared V2 Web
 
 Project:
