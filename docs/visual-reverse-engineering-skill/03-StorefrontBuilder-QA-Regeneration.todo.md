@@ -207,45 +207,45 @@ Goal: allow repeated generation and later manual tuning without unexpected diffs
 
 Generated file manifest:
 
-- [ ] File path.
-- [ ] Ownership.
-- [ ] Generator version.
-- [ ] Source artifact IDs.
-- [ ] Source/spec hash.
-- [ ] Generated hash.
-- [ ] Last generated timestamp.
-- [ ] Manual edit detected flag.
-- [ ] Conflict status.
+- [x] File path.
+- [x] Ownership.
+- [x] Generator version.
+- [x] Source artifact IDs.
+- [x] Source/spec hash.
+- [x] Generated hash.
+- [x] Last generated timestamp.
+- [x] Manual edit detected flag.
+- [x] Conflict status.
 
 Commands:
 
-- [ ] Regenerate all generated files.
-- [ ] Regenerate one page.
-- [ ] Regenerate one component.
-- [ ] Regenerate only CSS tokens.
-- [ ] Validate without writing.
-- [ ] Show conflict report.
+- [x] Regenerate all generated files.
+- [x] Regenerate one page.
+- [x] Regenerate one component.
+- [x] Regenerate only CSS tokens.
+- [x] Validate without writing.
+- [x] Show conflict report.
 
 Rules:
 
-- [ ] No-op run must create no diff.
-- [ ] Manual changes in generated files must be detected.
-- [ ] Manual changes in managed files must require explicit patch plan.
-- [ ] Protected files must never be modified.
+- [x] No-op run must create no diff.
+- [x] Manual changes in generated files must be detected.
+- [x] Manual changes in managed files must require explicit patch plan.
+- [x] Protected files must never be modified.
 
 Output:
 
-- [ ] `generated-files.yaml`
-- [ ] `regeneration-report.md`
+- [x] `generated-files.yaml`
+- [x] `regeneration-report.md`
 
 Done when:
 
-- [ ] Running the same input twice produces no unexpected file changes.
+- [x] Running the same input twice produces no unexpected file changes.
 
 Verification:
 
-- [ ] Idempotency test on fixture project.
-- [ ] Manual edit conflict fixture test.
+- [x] Idempotency test on fixture project.
+- [x] Manual edit conflict fixture test.
 
 ## S26 - Human Review And Tuning Workflow
 

@@ -157,6 +157,41 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("PayPal/Stripe production providers are outside this MVP gate", report, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void IdempotentRegeneration_TracksHashesCommandsAndManualEditConflicts()
+        {
+            var command = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1");
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/update-generated-files-manifest.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderIdempotency.ps1");
+            var fixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manual-edit-conflict/generated-files.yaml");
+
+            foreach (var marker in new[]
+            {
+                "filePath",
+                "ownership",
+                "generatorVersion",
+                "sourceArtifactIds",
+                "sourceSpecHash",
+                "generatedHash",
+                "lastGeneratedTimestamp",
+                "manualEditDetected",
+                "conflictStatus",
+            })
+            {
+                Assert.Contains(marker, generator, StringComparison.Ordinal);
+                Assert.Contains(marker, validator, StringComparison.Ordinal);
+            }
+
+            foreach (var scope in new[] { "all", "page", "component", "css", "validate", "conflicts" })
+            {
+                Assert.Contains(scope, command, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("manualEditDetected: true", fixture, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-002", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-003", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
