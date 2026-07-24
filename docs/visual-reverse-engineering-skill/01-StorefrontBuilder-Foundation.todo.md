@@ -223,36 +223,36 @@ Goal: reject unsafe or incomplete generation requests before browser capture.
 
 Inputs:
 
-- [ ] Reference URL list.
-- [ ] Storefront project name `{Name}`.
-- [ ] Store key.
-- [ ] Starter source path.
-- [ ] Starter generation contract path.
-- [ ] Storefront API/client version metadata.
-- [ ] Capability snapshot source.
-- [ ] Feature manifest path.
-- [ ] Output project root.
-- [ ] Mode: analyze-only, plan-only, generate, update, validate-only, full.
+- [x] Reference URL list.
+- [x] Storefront project name `{Name}`.
+- [x] Store key.
+- [x] Starter source path.
+- [x] Starter generation contract path.
+- [x] Storefront API/client version metadata.
+- [x] Capability snapshot source.
+- [x] Feature manifest path.
+- [x] Output project root.
+- [x] Mode: analyze-only, plan-only, generate, update, validate-only, full.
 
 Validation:
 
-- [ ] URL must be http/https.
-- [ ] `{Name}` must be safe for project/folder/namespace.
-- [ ] Output must resolve inside the approved workspace or explicit external target root.
-- [ ] Existing output project requires `update` or `--force`.
-- [ ] Starter contract must pass schema validation.
-- [ ] Package versions must be resolvable.
-- [ ] Required gates must exist.
-- [ ] Protected path list must be non-empty.
+- [x] URL must be http/https.
+- [x] `{Name}` must be safe for project/folder/namespace.
+- [x] Output must resolve inside the approved workspace or explicit external target root.
+- [x] Existing output project requires `update` or `--force`.
+- [x] Starter contract must pass schema validation.
+- [x] Package versions must be resolvable.
+- [x] Required gates must exist.
+- [x] Protected path list must be non-empty.
 
 Done when:
 
-- [ ] Bad input fails before creating files.
-- [ ] Error messages explain problem, cause, and fix.
+- [x] Bad input fails before creating files.
+- [x] Error messages explain problem, cause, and fix.
 
 Verification:
 
-- [ ] Unit tests for invalid URL, invalid project name, missing contract, protected output path, and existing output conflict.
+- [x] Unit tests for invalid URL, invalid project name, missing contract, protected output path, and existing output conflict.
 
 ## S5 - Protected File And Dependency Guard
 

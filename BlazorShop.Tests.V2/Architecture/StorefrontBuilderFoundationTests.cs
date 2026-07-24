@@ -204,6 +204,38 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("generation-plan.missing-files.json", script, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void StorefrontBuilderPreflightScript_RejectsUnsafeInputsBeforeGeneration()
+        {
+            var script = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderPreflight.ps1");
+
+            foreach (var expected in new[]
+            {
+                "SFB-PRE-001",
+                "SFB-PRE-002",
+                "SFB-PRE-003",
+                "SFB-PRE-004",
+                "SFB-PRE-006",
+                "SFB-PRE-008",
+                "SFB-PRE-009",
+                "SFB-PRE-010",
+                "SFB-PRE-011",
+                "SFB-PRE-012",
+                "SFB-PRE-014",
+                "Reference URL must use http or https",
+                "Storefront project name is unsafe",
+                "Output path is outside the approved workspace",
+                "Output project already exists",
+                "Starter generation contract is missing",
+                "Protected path list is incomplete",
+                "Cause:",
+                "Fix:",
+            })
+            {
+                Assert.Contains(expected, script, StringComparison.Ordinal);
+            }
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;
