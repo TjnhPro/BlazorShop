@@ -311,23 +311,24 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F9 - Contract ownership and Web.SharedV2 reduction
 
-- [ ] Phân loại mọi model đang dùng trong V2:
-  - [ ] API transport/generated DTO: thuộc `Storefront.Client`.
-  - [ ] Runtime-safe model/result: thuộc `Storefront.Runtime`.
-  - [ ] Presentation/browser component model: thuộc `Storefront.Components`.
-  - [ ] V2 BFF local request/response: thuộc `Storefront.V2`.
-  - [ ] Utility-only shared model: có thể ở `Web.SharedV2`.
-- [ ] Không tạo business DTO mới trong `Web.SharedV2`.
-- [ ] Nếu DTO trùng giữa manual client và generated client, ưu tiên generated contract hoặc runtime projection.
-- [ ] Ghi danh sách exception còn lại và phase xử lý.
+- [x] Phân loại mọi model đang dùng trong V2:
+  - [x] API transport/generated DTO: thuộc `Storefront.Client`.
+  - [x] Runtime-safe model/result: thuộc `Storefront.Runtime`.
+  - [x] Presentation/browser component model: thuộc `Storefront.Components`.
+  - [x] V2 BFF local request/response: thuộc `Storefront.V2`.
+  - [x] Utility-only shared model: có thể ở `Web.SharedV2`.
+- [x] Không tạo business DTO mới trong `Web.SharedV2`.
+- [x] Nếu DTO trùng giữa manual client và generated client, ưu tiên generated contract hoặc runtime projection.
+- [x] Ghi danh sách exception còn lại và phase xử lý.
+  - 2026-07-25: model ownership is classified as generated/API transport DTOs in `Storefront.Client`, runtime-safe facade results in `Storefront.Runtime`, reusable browser component models in `Storefront.Components`, host-local BFF request/response contracts in `Storefront.V2`, and utility-only shared types in `Web.SharedV2`. Duplicate manual/generated DTO use is resolved through generated-client runtime projection for active cutovers. Remaining documented exceptions are `StorefrontApiClient.MergeCurrentCustomerCartAsync`, saved-address `StorefrontApiClient.UpdateCheckoutAddressesAsync` with bearer token, protected `IStorefrontCustomerClient`, and `StorefrontAuthClient`; these move to V2F10 cleanup or a later auth bearer-token strategy.
 
 ### V2F9 QA gate
 
-- [ ] Static guard: `Storefront.Components` không import backend/domain/application/infrastructure.
-- [ ] Static guard: `Storefront.Runtime` không import Razor UI, V2 host hoặc WASM.
-- [ ] Static guard: `Storefront.Client` không import Runtime/Components/V2.
-- [ ] Static guard: `Storefront.V2` không dùng `Web.SharedV2.Models` cho business API contract mới.
-- [ ] Snapshot OpenAPI/generated client compile vẫn pass.
+- [x] Static guard: `Storefront.Components` không import backend/domain/application/infrastructure.
+- [x] Static guard: `Storefront.Runtime` không import Razor UI, V2 host hoặc WASM.
+- [x] Static guard: `Storefront.Client` không import Runtime/Components/V2.
+- [x] Static guard: `Storefront.V2` không dùng `Web.SharedV2.Models` cho business API contract mới.
+- [x] Snapshot OpenAPI/generated client compile vẫn pass.
 
 ## Phase V2F10 - V2 host composition cleanup
 

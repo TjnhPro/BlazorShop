@@ -210,3 +210,17 @@ Verification:
 - Account/consent Playwright against `http://localhost:18598`: passed and wrote `output/playwright/v2f8-account-consent-flow-evidence.json` plus `output/playwright/v2f8-account-consent-flow.png`.
 - Browser QA covered register allowed, password recovery sent state, login/logout, profile edit, address add/edit/default shipping/default billing/delete through same-origin BFF, order paging/detail for `ORD-20260725-FAE82317`, cross-customer order detail denial with `404`, consent save/revoke, zero direct browser requests to `http://localhost:5180`, no 5xx responses, and no unexpected console/page errors.
 - Guest completion token behavior has no current Storefront V2 browser lookup UI; focused `StorefrontGuestOrderServiceTests|StorefrontSwagger_GuestOrderLookupRequiresTokenAndReturnsSafeDetailContract|StorefrontCheckoutServiceTests|OrderReadModelBehaviorLockTests` passed 71/71 and covers token requirement, non-predictable raw token behavior, hash-only persistence, wrong-token/wrong-store denial, and safe detail contract.
+
+## V2F9 contract ownership and Web.SharedV2 reduction
+
+Implementation notes:
+
+- Added `StorefrontContractOwnershipTests` static guards for the active Storefront shared platform boundaries.
+- Classified Storefront V2 model ownership: generated API transport DTOs belong to `Storefront.Client`, runtime-safe facade results belong to `Storefront.Runtime`, reusable browser component models belong to `Storefront.Components`, host-local BFF request/response contracts belong to `Storefront.V2`, and `Web.SharedV2` is limited to utility-only shared types.
+- Guarded against new Storefront V2 business API contracts importing `Web.SharedV2.Models`.
+- Recorded remaining manual-client exceptions: `StorefrontApiClient.MergeCurrentCustomerCartAsync`, saved-address `StorefrontApiClient.UpdateCheckoutAddressesAsync` with bearer token, protected `IStorefrontCustomerClient`, and `StorefrontAuthClient`.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed after confirming no local V2 runtime processes were holding output DLLs. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 16/16.
