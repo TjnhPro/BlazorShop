@@ -49,7 +49,7 @@ foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Ru
     }
 }
 
-if (-not $versions.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $versions.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal)) {
+if (-not $versions.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $versions.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal) -or -not $versions.Contains("StorefrontComponentsPackageVersion", [System.StringComparison]::Ordinal)) {
     throw "[SFB-STATIC-004] Package compatibility metadata is missing."
 }
 

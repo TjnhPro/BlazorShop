@@ -74,6 +74,7 @@ namespace BlazorShop.Tests.Architecture
                 "dotnet pack",
                 "BlazorShop.Storefront.Client",
                 "BlazorShop.Storefront.Runtime",
+                "BlazorShop.Storefront.Components",
                 "PackageReference",
                 "BlazorShop.Storefront.V2",
                 "BlazorShop.Application",
@@ -83,6 +84,7 @@ namespace BlazorShop.Tests.Architecture
                 "BlazorShop.ControlPlane.API",
                 "StorefrontClientPackageVersion",
                 "StorefrontRuntimePackageVersion",
+                "StorefrontComponentsPackageVersion",
                 "Describe",
             })
             {

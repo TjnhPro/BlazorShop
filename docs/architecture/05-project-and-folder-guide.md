@@ -274,6 +274,8 @@ Use for:
 
 - Neutral SSR, Hybrid, and WASM-host route skeletons.
 - Examples of generated `BlazorShop.Storefront.Client` package consumption.
+- Examples of `BlazorShop.Storefront.Runtime` package consumption for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
+- Optional `BlazorShop.Storefront.Components` package consumption for reusable browser-safe UI components; Starter-local neutral components may remain local until shared reuse is needed.
 - Same-origin BFF examples for protected browser flows.
 - Store bootstrap, capability reading, feature placement, loading/error/empty states, and generation manifest conventions.
 - Deterministic generated storefront output under ignored artifact roots such as `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof`.
@@ -305,6 +307,8 @@ Use for:
 - Proving Starter can build, publish, and run outside the monorepo from packages/configuration.
 - Reviewing generated pages, generated CSS, asset manifests, and QA artifacts.
 - Running StorefrontBuilder static validation, isolation, visual smoke QA, and commerce-regression checks.
+- Hosting presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components for exactly one generated/custom storefront.
+- Routing protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
 
 Do not:
 
@@ -312,6 +316,7 @@ Do not:
 - Treat generated proof output as a platform contract owner.
 - Backport store-specific CSS, assets, generated pages, or analysis artifacts into Starter.
 - Use generated proof output as evidence that generated storefronts may reference Storefront V2 or backend/core/API projects.
+- Guess Storefront API response shapes instead of using generated package contracts.
 
 ### `tools/BlazorShop.AI.StorefrontBuilder`
 

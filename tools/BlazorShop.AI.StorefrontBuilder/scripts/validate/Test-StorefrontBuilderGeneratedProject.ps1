@@ -27,7 +27,7 @@ foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Ru
 }
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
-foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "sourceStarterPath:", "protectedFiles:", "BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime")) {
+foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "sourceStarterPath:", "protectedFiles:", "BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Components")) {
     if (-not $metadataText.Contains($required, [System.StringComparison]::Ordinal)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }

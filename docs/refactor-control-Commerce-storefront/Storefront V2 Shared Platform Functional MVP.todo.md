@@ -360,25 +360,26 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F11 - Starter and Storefront.{Name} compatibility definition only
 
-- [ ] Ghi rõ expected consumer rules cho `Storefront.Starter`:
-  - [ ] Dùng `Storefront.Client` package cho API contracts/transport.
-  - [ ] Dùng `Storefront.Runtime` cho server/BFF integration primitives.
-  - [ ] Dùng `Storefront.Components` cho browser-safe UI components.
-  - [ ] Không reference `Storefront.V2`.
-  - [ ] Không reference backend/API/core projects.
-- [ ] Ghi rõ expected consumer rules cho `Storefront.{Name}` generated/custom presentation:
-  - [ ] Project name theo `BlazorShop.Storefront.{Name}`.
-  - [ ] Presentation-specific CSS/assets/pages nằm trong project riêng.
-  - [ ] Protected browser actions đi qua same-origin BFF.
-  - [ ] Generated/custom storefront không được đoán API response; phải dùng generated package contract.
-- [ ] Chỉ làm compile/package compatibility proof tối thiểu nếu cần để không phá package boundary.
-- [ ] Không chạy Playwright production QA cho Starter hoặc Storefront.{Name} ở phase này.
+- [x] Ghi rõ expected consumer rules cho `Storefront.Starter`:
+  - [x] Dùng `Storefront.Client` package cho API contracts/transport.
+  - [x] Dùng `Storefront.Runtime` cho server/BFF integration primitives.
+  - [x] Dùng `Storefront.Components` cho browser-safe UI components.
+  - [x] Không reference `Storefront.V2`.
+  - [x] Không reference backend/API/core projects.
+- [x] Ghi rõ expected consumer rules cho `Storefront.{Name}` generated/custom presentation:
+  - [x] Project name theo `BlazorShop.Storefront.{Name}`.
+  - [x] Presentation-specific CSS/assets/pages nằm trong project riêng.
+  - [x] Protected browser actions đi qua same-origin BFF.
+  - [x] Generated/custom storefront không được đoán API response; phải dùng generated package contract.
+- [x] Chỉ làm compile/package compatibility proof tối thiểu nếu cần để không phá package boundary.
+- [x] Không chạy Playwright production QA cho Starter hoặc Storefront.{Name} ở phase này.
+  - 2026-07-25: V2F11 intentionally skipped Playwright production QA because the phase only defines Starter/generated compatibility and package proof; Storefront V2 production browser gate remains V2F12.
 
 ### V2F11 QA gate
 
-- [ ] Build/package compatibility proof cho `Client`, `Runtime`, `Components`.
-- [ ] Documentation guard: Starter/generated storefront rules được ghi rõ.
-- [ ] Static guard nếu có: generated/custom storefront không reference `Storefront.V2` hoặc backend projects.
+- [x] Build/package compatibility proof cho `Client`, `Runtime`, `Components`.
+- [x] Documentation guard: Starter/generated storefront rules được ghi rõ.
+- [x] Static guard nếu có: generated/custom storefront không reference `Storefront.V2` hoặc backend projects.
 
 ## Phase V2F12 - Storefront.V2 production browser QA release gate
 

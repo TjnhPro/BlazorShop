@@ -54,6 +54,32 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterAndGeneratedStorefrontConsumerRules_AreDocumented()
+        {
+            var architecture = ReadRepositoryFile("docs/architecture/11-storefront-builder.md");
+            var folderGuide = ReadRepositoryFile("docs/architecture/05-project-and-folder-guide.md");
+            var reference = ReadRepositoryFile("docs/visual-reverse-engineering-skill/reference.md");
+            var howTo = ReadRepositoryFile("docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md");
+            var agentGuide = ReadRepositoryFile("docs/agents/storefront-builder.md");
+            var combined = string.Join(Environment.NewLine, architecture, folderGuide, reference, howTo, agentGuide);
+
+            foreach (var expected in new[]
+            {
+                "Use the `BlazorShop.Storefront.Client` package",
+                "Use the `BlazorShop.Storefront.Runtime` package",
+                "BlazorShop.Storefront.Components",
+                "same-origin BFF endpoints",
+                "Do not reference `BlazorShop.Storefront.V2`",
+                "Do not reference backend/API/core projects",
+                "Use generated package contracts instead of guessing API response shapes",
+                "presentation-specific CSS, assets, generated pages",
+            })
+            {
+                Assert.Contains(expected, combined, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void StarterProjects_DoNotReferenceForbiddenProjects()
         {
             foreach (var relativeProjectPath in StarterProjectPaths)
@@ -121,6 +147,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("<ProjectReference", project, StringComparison.Ordinal);
             Assert.Contains("<StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("<StorefrontRuntimePackageVersion>1.0.0-local</StorefrontRuntimePackageVersion>", versionProps, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontComponentsPackageVersion>1.0.0-local</StorefrontComponentsPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("local-storefront-packages", nugetConfig, StringComparison.Ordinal);
             Assert.Contains("| v1 | 1.x | compatible |", compatibility, StringComparison.Ordinal);
             Assert.Contains("| 1.x | 1.x |", compatibility, StringComparison.Ordinal);
@@ -133,6 +160,7 @@ namespace BlazorShop.Tests.Architecture
             var repositoryRoot = FindRepositoryRoot();
             var packageFeed = RepositoryPath("artifacts/storefront-packages");
             var starterProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
+            var componentsProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
 
             if (Directory.Exists(packageFeed))
             {
@@ -168,6 +196,20 @@ namespace BlazorShop.Tests.Architecture
                 repositoryRoot);
 
             Assert.True(runtimePackResult.ExitCode == 0, FormatProcessFailure("Storefront runtime package did not pack.", runtimePackResult));
+
+            var componentsPackResult = RunProcess(
+                "dotnet",
+                [
+                    "pack",
+                    componentsProject,
+                    "--no-restore",
+                    "--output",
+                    packageFeed,
+                    "/p:PackageVersion=1.0.0-local",
+                ],
+                repositoryRoot);
+
+            Assert.True(componentsPackResult.ExitCode == 0, FormatProcessFailure("Storefront components package did not pack.", componentsPackResult));
 
             var restoreResult = RunProcess("dotnet", ["restore", starterProject], repositoryRoot);
             Assert.True(restoreResult.ExitCode == 0, FormatProcessFailure("Starter did not restore from the local Storefront client package.", restoreResult));

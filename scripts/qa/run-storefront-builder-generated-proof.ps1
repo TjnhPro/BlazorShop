@@ -10,6 +10,7 @@ param(
     [int]$RuntimeTimeoutSeconds = 45,
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
+    [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
     [switch]$RunBrowserQa,
     [switch]$Describe
 )
@@ -21,6 +22,7 @@ $toolRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
 $packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
+$componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -144,6 +146,11 @@ Invoke-Step "Pack Storefront.Runtime" {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+Invoke-Step "Pack Storefront.Components" {
+    dotnet pack $componentsProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontComponentsPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
 Invoke-Step "Generate proof storefront" {
     & "$toolRoot\scripts\generate\new-storefront-project.ps1" `
         -Name $Name `
@@ -182,7 +189,8 @@ Invoke-Step "Run StorefrontBuilder isolation gate" {
         -Name $Name `
         -Configuration $Configuration `
         -StorefrontClientPackageVersion $StorefrontClientPackageVersion `
-        -StorefrontRuntimePackageVersion $StorefrontRuntimePackageVersion
+        -StorefrontRuntimePackageVersion $StorefrontRuntimePackageVersion `
+        -StorefrontComponentsPackageVersion $StorefrontComponentsPackageVersion
 }
 
 if ($RunBrowserQa) {

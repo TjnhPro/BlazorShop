@@ -19,9 +19,12 @@ Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
 - Consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
+- Use `BlazorShop.Storefront.Components` only through a package boundary when reusable browser-safe UI components are needed.
 - Keep protected browser actions behind same-origin BFF endpoints.
 - Keep review artifacts under `docs/storefront-analysis/`.
 - Stay out of `BlazorShop.sln` by default.
+- Keep presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components inside the generated/custom project.
+- Use generated package contracts instead of guessing Storefront API response shapes.
 
 Generated storefronts must not:
 
@@ -37,6 +40,7 @@ Treat these as contract surfaces:
 
 - `BlazorShop.Storefront.Client` generated transport and DTOs.
 - `BlazorShop.Storefront.Runtime` security, error, capability, and client-registration primitives.
+- `BlazorShop.Storefront.Components` browser-safe reusable component package.
 - Generated storefront `StorefrontPackageVersions.props`.
 - Generated storefront `starter-generation.contract.yaml`.
 - Generated file manifests under `docs/storefront-analysis/`.

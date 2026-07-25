@@ -49,6 +49,26 @@ Generated storefronts must not:
 - Do not: copy Storefront V2 transport internals, backend DTOs, credentials, or business rules.
 - Mutate `BlazorShop.Storefront.Starter` with store-specific CSS, assets, pages, analysis artifacts, or AI-tuned components.
 
+## Starter And Generated Storefront Compatibility
+
+`BlazorShop.Storefront.Starter` is the neutral skeleton source, not the production storefront and not a copy target for `BlazorShop.Storefront.V2`.
+
+Starter consumer rules:
+
+- Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts.
+- Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
+- Use `BlazorShop.Storefront.Components` only for reusable browser-safe UI components when a starter or generated storefront needs that shared component package; Starter-local neutral components may remain local.
+- Do not reference `BlazorShop.Storefront.V2`.
+- Do not reference backend/API/core projects, Control Plane Web, or `Web.SharedV2.Models` business contracts.
+
+Generated/custom storefront consumer rules:
+
+- Use project names in the `BlazorShop.Storefront.{Name}` pattern after safe normalization.
+- Keep presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components inside the generated/custom storefront project.
+- Route protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
+- Use generated package contracts instead of guessing API response shapes.
+- Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or generated proof output from another store.
+
 ## Source Order
 
 When visual evidence and backend capability do not agree, decisions follow this order:

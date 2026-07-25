@@ -71,7 +71,8 @@ $metadata = @(
     "featureManifest: Features\feature-manifest.json",
     "packageReferences:",
     "  - BlazorShop.Storefront.Client",
-    "  - BlazorShop.Storefront.Runtime"
+    "  - BlazorShop.Storefront.Runtime",
+    "  - BlazorShop.Storefront.Components"
 ) -join [Environment]::NewLine
 
 Set-Content -LiteralPath (Join-Path $analysisRoot "metadata.yaml") -Value $metadata -Encoding UTF8

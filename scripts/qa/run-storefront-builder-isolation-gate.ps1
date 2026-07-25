@@ -4,6 +4,7 @@ param(
     [string]$Configuration = "Debug",
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
+    [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
     [switch]$Describe
 )
 
@@ -28,6 +29,7 @@ $projectFile = Join-Path $projectRoot "$Name.csproj"
 $packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
+$componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
 
 if ($Describe) {
     Write-Host "StorefrontBuilder isolation gate:"
@@ -35,6 +37,7 @@ if ($Describe) {
     Write-Host "- build generated storefront"
     Write-Host "- pack BlazorShop.Storefront.Client"
     Write-Host "- pack BlazorShop.Storefront.Runtime"
+    Write-Host "- pack BlazorShop.Storefront.Components"
     Write-Host "- confirm package references, no Storefront.V2/backend/core/API references"
     exit 0
 }
@@ -47,6 +50,8 @@ New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
 dotnet pack $clientProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontClientPackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet pack $runtimeProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontRuntimePackageVersion"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+dotnet pack $componentsProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontComponentsPackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet restore $projectFile --source $packageRoot --source "https://api.nuget.org/v3/index.json"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -73,7 +78,7 @@ Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
     }
 
 $metadata = Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw
-if (-not $metadata.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal)) {
+if (-not $metadata.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontComponentsPackageVersion", [System.StringComparison]::Ordinal)) {
     throw "[SFB-ISOLATION-003] Package compatibility metadata is missing."
 }
 

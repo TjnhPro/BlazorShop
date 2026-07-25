@@ -280,6 +280,7 @@ namespace BlazorShop.Tests.Architecture
                 "metadata.yaml",
                 "BlazorShop.Storefront.Client",
                 "BlazorShop.Storefront.Runtime",
+                "BlazorShop.Storefront.Components",
                 "Endpoints/StarterBffEndpoints.cs",
                 "Security/StarterReturnUrlValidator.cs",
             })

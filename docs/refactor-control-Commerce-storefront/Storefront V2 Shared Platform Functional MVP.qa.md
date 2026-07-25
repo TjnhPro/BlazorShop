@@ -241,3 +241,19 @@ Verification:
 - Active commerce cutover tests: `StorefrontCommerceFlowCutoverTests` passed 8/8.
 - Focused host read/render smoke passed 7/7 for login/account/cart/checkout/SEO/maintenance representative cases. The full `StorefrontV2HostSmokeTests` class exceeded the 5-minute command timeout; older mutation cases that mock only manual `StorefrontApiClient` are no longer representative after V2F6/V2F7 generated Runtime cutover.
 - Playwright host composition smoke against `http://localhost:18598`: `/`, `/product/qa-simple-product-100`, `/my-cart`, `/checkout`, and `/account/profile` all returned 200/nonblank final pages. Account profile correctly redirected anonymous browser traffic to sign-in. Evidence saved to `output/playwright/v2f10-host-composition-smoke.json` and `output/playwright/v2f10-host-composition-smoke.png`; no direct browser requests to `http://localhost:5180`, no 5xx responses, and no console/page errors were observed.
+
+## V2F11 Starter and generated storefront compatibility definition
+
+Implementation notes:
+
+- Added explicit Starter/generated/custom storefront compatibility rules to `docs/architecture/11-storefront-builder.md`, `docs/architecture/05-project-and-folder-guide.md`, `docs/visual-reverse-engineering-skill/reference.md`, `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`, and `docs/agents/storefront-builder.md`.
+- Rules now state that Starter/generated storefronts use `BlazorShop.Storefront.Client` package contracts, `BlazorShop.Storefront.Runtime` server/BFF primitives, and `BlazorShop.Storefront.Components` only as a browser-safe package when reusable shared UI is needed.
+- Rules also state generated/custom storefronts use `BlazorShop.Storefront.{Name}`, keep store-specific CSS/assets/pages/artifacts inside the generated/custom project, route protected browser actions through same-origin BFF endpoints, and must not guess API response shapes.
+- Extended generated metadata and validation to record `BlazorShop.Storefront.Components` as a platform package surface without forcing every Starter/generated project to reference it when local neutral components are sufficient.
+- Extended generated proof/isolation package proof to pack `BlazorShop.Storefront.Components` alongside Client and Runtime.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests.GeneratedStorefrontProjectCreation_WrapsStarterGenerationAndWritesMetadata|FullyQualifiedName~StorefrontBuilderQaRegenerationTests.BuildIsolationGate_RestoresBuildsPacksAndRejectsForbiddenReferences|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 35/35, including local package proof for Client, Runtime, and Components.
+- Playwright production QA was intentionally not run for Starter/generated storefronts in V2F11; this phase only defines compatibility and package boundaries. Storefront V2 production browser QA remains V2F12.

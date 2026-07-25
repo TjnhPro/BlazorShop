@@ -34,6 +34,16 @@ Required generated project files include:
 
 Generated proof projects are ignored artifacts, not committed source projects. The canonical proof name for local validation is `BlazorShop.Storefront.GeneratedProof`.
 
+Generated/custom storefront compatibility rules:
+
+- Use `BlazorShop.Storefront.Client` package contracts for Storefront API transport and DTOs.
+- Use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
+- Use `BlazorShop.Storefront.Components` only when reusable browser-safe UI components are needed; local presentation components can stay inside the generated storefront.
+- Keep presentation-specific CSS, assets, pages, and analysis artifacts inside the generated/custom project.
+- Route protected browser actions through same-origin BFF endpoints.
+- Never reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or `Web.SharedV2.Models` business contracts.
+- Do not guess API response shapes; use generated package contracts.
+
 ## Main Command
 
 ```powershell
