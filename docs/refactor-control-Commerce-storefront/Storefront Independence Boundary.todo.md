@@ -147,20 +147,20 @@ Storefront.*
 
 ## Phase SIB3 - Remove Storefront.V2 project/build dependency on Web.SharedV2
 
-- [ ] Xóa `ProjectReference` tới `BlazorShop.Web.SharedV2` khỏi `Storefront.V2.csproj`.
-- [ ] Xóa copy step `Web.SharedV2` khỏi `Storefront.V2/Dockerfile`.
-- [ ] Xóa `../BlazorShop.Web.SharedV2/**/*.razor` và `../BlazorShop.Web.SharedV2/**/*.cs` khỏi `Storefront.V2/tailwind.config.js`.
-- [ ] Xóa `using BlazorShop.Web.SharedV2` còn lại trong `Program.cs` và endpoints/services.
-- [ ] Verify Storefront static assets không phụ thuộc class scan từ shared project.
-- [ ] Không xóa `Web.SharedV2` project vì Control Plane vẫn dùng.
+- [x] Xóa `ProjectReference` tới `BlazorShop.Web.SharedV2` khỏi `Storefront.V2.csproj`.
+- [x] Xóa copy step `Web.SharedV2` khỏi `Storefront.V2/Dockerfile`.
+- [x] Xóa `../BlazorShop.Web.SharedV2/**/*.razor` và `../BlazorShop.Web.SharedV2/**/*.cs` khỏi `Storefront.V2/tailwind.config.js`.
+- [x] Xóa `using BlazorShop.Web.SharedV2` còn lại trong `Program.cs` và endpoints/services.
+- [x] Verify Storefront static assets không phụ thuộc class scan từ shared project.
+- [x] Không xóa `Web.SharedV2` project vì Control Plane vẫn dùng.
 
 ### SIB3 QA gate
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`.
-- [ ] `dotnet publish BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`.
-- [ ] Dockerfile static scan không copy `Web.SharedV2`.
-- [ ] Tailwind config static scan không include `Web.SharedV2`.
-- [ ] Architecture test `Storefront.V2_DoesNotReferenceWebSharedV2` pass.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`.
+- [x] `dotnet publish BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`.
+- [x] Dockerfile static scan không copy `Web.SharedV2`.
+- [x] Tailwind config static scan không include `Web.SharedV2`.
+- [x] Architecture test `Storefront.V2_DoesNotReferenceWebSharedV2` pass.
 
 ## Phase SIB4 - Storefront business model and DTO boundary audit
 

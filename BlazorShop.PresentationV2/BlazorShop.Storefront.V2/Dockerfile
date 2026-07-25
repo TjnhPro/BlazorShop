@@ -9,9 +9,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.V2/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.Client/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.Components/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/
-COPY BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/BlazorShop.Web.SharedV2.csproj BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/
 COPY BlazorShop.ServiceDefaults/BlazorShop.ServiceDefaults.csproj BlazorShop.ServiceDefaults/
 
 RUN dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
@@ -20,9 +21,10 @@ COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json BlazorShop.
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json
 
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/ BlazorShop.PresentationV2/BlazorShop.Storefront.V2/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Client/ BlazorShop.PresentationV2/BlazorShop.Storefront.Client/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Components/ BlazorShop.PresentationV2/BlazorShop.Storefront.Components/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/ BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/ BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/
-COPY BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/ BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/
 COPY BlazorShop.ServiceDefaults/ BlazorShop.ServiceDefaults/
 
 WORKDIR /src/BlazorShop.PresentationV2/BlazorShop.Storefront.V2

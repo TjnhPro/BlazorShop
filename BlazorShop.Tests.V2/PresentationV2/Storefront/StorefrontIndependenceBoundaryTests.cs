@@ -35,7 +35,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         ];
 
         [Fact]
-        public void StorefrontV2_WebSharedV2OffendersAreLimitedUntilSib3()
+        public void StorefrontV2_DoesNotReferenceOrImportWebSharedV2()
         {
             var offenders = FindTextOffenders("BlazorShop.PresentationV2/BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2")
                 .Concat(FindTextOffenders("BlazorShop.PresentationV2/BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2.csproj"))
@@ -43,15 +43,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .Order(StringComparer.Ordinal)
                 .ToArray();
 
-            var expected = new[]
-            {
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/tailwind.config.js"
-            };
-
-            Assert.Empty(offenders.Except(expected, StringComparer.Ordinal));
-            Assert.Empty(expected.Except(offenders, StringComparer.Ordinal));
+            Assert.True(
+                offenders.Length == 0,
+                $"Storefront V2 must not reference or import Web.SharedV2:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
         }
 
         [Fact]

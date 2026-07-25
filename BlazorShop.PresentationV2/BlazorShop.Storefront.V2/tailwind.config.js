@@ -4,9 +4,7 @@ module.exports = {
     "./**/*.razor",
     "./**/*.cshtml",
     "./**/*.html",
-    "./**/*.cs",
-    "../BlazorShop.Web.SharedV2/**/*.razor",
-    "../BlazorShop.Web.SharedV2/**/*.cs"
+    "./**/*.cs"
   ],
   theme: {
     extend: {

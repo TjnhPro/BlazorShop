@@ -76,3 +76,21 @@ Verification:
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase2RateLimitTests|FullyQualifiedName~StorefrontSessionResolverTests"`: passed 67/67.
 - `StorefrontIndependenceBoundaryTests` now limits remaining `Storefront.V2 -> Web.SharedV2` offenders to `BlazorShop.Storefront.V2.csproj`, `Dockerfile`, and `tailwind.config.js`; SIB3 owns those build-file removals.
 - Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist notice.
+
+## SIB3 - Remove Storefront.V2 project/build dependency on Web.SharedV2
+
+Implementation notes:
+
+- Removed the `BlazorShop.Web.SharedV2` project reference from `BlazorShop.Storefront.V2.csproj`.
+- Removed `Web.SharedV2` project/source copy lines from the Storefront V2 Dockerfile.
+- Added explicit Dockerfile copies for the allowed `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` project references.
+- Removed `Web.SharedV2` Razor/C# globs from Storefront V2 Tailwind content scanning.
+- Tightened `StorefrontIndependenceBoundaryTests.StorefrontV2_DoesNotReferenceOrImportWebSharedV2` to require zero Storefront V2 `Web.SharedV2` offenders.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`: passed with 0 warnings.
+- `dotnet publish BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --configuration Debug --output artifacts/tmp/sib3-storefront-v2-publish /p:UseAppHost=false`: passed.
+- `rg "BlazorShop\.Web\.SharedV2|Web\.SharedV2|BlazorShop.Web.SharedV2.csproj" BlazorShop.PresentationV2/BlazorShop.Storefront.V2`: no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 8/8.
+- Existing test warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist notice.
