@@ -88,3 +88,24 @@ Verification:
 - `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
 - `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests"`: passed 14/14.
 - `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 7/7.
+
+## V2F3 store bootstrap and configuration cutover
+
+Implementation notes:
+
+- Added `IStorefrontRuntimeConfigurationFacade` and `StorefrontRuntimeConfigurationFacade` in Runtime.
+- Added Runtime configuration/bootstrap models for store identity, branding, lifecycle state, locale/currency, public feature flags, public payment methods, consent/captcha public metadata, and SEO defaults.
+- Registered the configuration facade from `AddStorefrontServerGeneratedClients`, keeping generated-client usage server-side.
+- Changed the V2 `GeneratedStorefrontConfigurationClient` adapter to depend on `IStorefrontRuntimeConfigurationFacade` instead of generated Storefront clients directly.
+- V2 host still owns current-store resolution, route/domain handling, maintenance page/redirect composition, and SSR metadata rendering.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontGeneratedConfigurationClientTests|FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 26/26.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontCurrentStoreProviderTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~StorefrontCurrentStoreMiddlewareTests"`: passed 15/15.
+- Playwright active-store browser smoke against `http://localhost:18598/`: passed; home returned 200, title `Shop Home`, nonblank content, and no direct browser request to `http://localhost:5180/`.
+- Lifecycle guardrails: `dotnet test ... --filter "FullyQualifiedName~StorefrontCurrentStoreMiddlewareTests|FullyQualifiedName~StorefrontCurrentStoreMiddlewareRegressionTests|FullyQualifiedName~StorefrontCurrentStoreProviderTests"` passed 11/11 for missing, unavailable, maintenance, closed, and no-fallback behavior.
+- Maintenance host smoke: `dotnet test ... --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance_WhenCurrentStoreRecovered_RedirectsHome|FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance_WhenCurrentStoreStillInMaintenance_RendersAutoRefresh"` passed 2/2.
+- Secret boundary: `dotnet test ... --filter "FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests"` passed 13/13.
+- Admin/manager storefront access rule: not a separate active Storefront V2 browser feature; lifecycle/admin bypass behavior remains covered by current-store middleware/provider tests.

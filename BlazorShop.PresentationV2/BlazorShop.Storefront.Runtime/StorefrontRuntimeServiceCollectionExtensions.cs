@@ -68,6 +68,7 @@ namespace BlazorShop.Storefront.Runtime
             services.AddScoped<IStorefrontRecommendationsClient>(CreateClient<StorefrontRecommendationsClient>);
             services.AddScoped<IStorefrontSeoClient>(CreateClient<StorefrontSeoClient>);
             services.AddScoped<IStorefrontStoreClient>(CreateClient<StorefrontStoreClient>);
+            services.AddScoped<IStorefrontRuntimeConfigurationFacade, StorefrontRuntimeConfigurationFacade>();
 
             return services;
         }

@@ -124,28 +124,28 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F3 - Store bootstrap and configuration cutover
 
-- [ ] Tạo runtime facade cho public store bootstrap/configuration:
-  - [ ] Store identity.
-  - [ ] Branding/public logo/favicon URLs.
-  - [ ] Store lifecycle state: active, inactive, closed, maintenance, not ready.
-  - [ ] Locale/currency options.
-  - [ ] Public storefront feature flags.
-  - [ ] SEO defaults public-only.
-- [ ] V2 host giữ phần:
-  - [ ] Resolve current store.
-  - [ ] Route/domain handling.
-  - [ ] Maintenance redirect/page composition.
-  - [ ] SSR metadata rendering.
-- [ ] Thay `GeneratedStorefrontConfigurationClient` V2 adapter bằng runtime facade nếu facade đã đủ.
-- [ ] Xóa registration cũ chỉ sau khi không còn consumer.
+- [x] Tạo runtime facade cho public store bootstrap/configuration:
+  - [x] Store identity.
+  - [x] Branding/public logo/favicon URLs.
+  - [x] Store lifecycle state: active, inactive, closed, maintenance, not ready.
+  - [x] Locale/currency options.
+  - [x] Public storefront feature flags.
+  - [x] SEO defaults public-only.
+- [x] V2 host giữ phần:
+  - [x] Resolve current store.
+  - [x] Route/domain handling.
+  - [x] Maintenance redirect/page composition.
+  - [x] SSR metadata rendering.
+- [x] Thay `GeneratedStorefrontConfigurationClient` V2 adapter bằng runtime facade nếu facade đã đủ.
+- [x] Xóa registration cũ chỉ sau khi không còn consumer.
 
 ### V2F3 QA gate
 
-- [ ] Browser test store active hiển thị home.
-- [ ] Browser test store inactive/closed/maintenance redirect hoặc render đúng maintenance page.
-- [ ] Browser test admin/manager access rule nếu V2 đang hỗ trợ.
-- [ ] Browser test missing/misconfigured store không fallback sang store khác.
-- [ ] Assert API/browser không trả secret setting.
+- [x] Browser test store active hiển thị home.
+- [x] Browser test store inactive/closed/maintenance redirect hoặc render đúng maintenance page.
+- [x] Browser test admin/manager access rule nếu V2 đang hỗ trợ.
+- [x] Browser test missing/misconfigured store không fallback sang store khác.
+- [x] Assert API/browser không trả secret setting.
 
 ## Phase V2F4 - Catalog, content, navigation and SEO cutover
 
