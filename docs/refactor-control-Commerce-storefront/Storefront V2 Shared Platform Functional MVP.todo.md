@@ -97,30 +97,30 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F2 - Runtime result and execution primitives
 
-- [ ] Thêm runtime result model trung lập:
-  - [ ] `StorefrontRuntimeResult<T>`.
-  - [ ] `StorefrontRuntimeError`.
-  - [ ] `StorefrontRuntimeValidationError`.
-  - [ ] `StorefrontRuntimeConflict`.
-  - [ ] Optional `StorefrontRuntimeSubmitResult<T>` cho mutation/idempotency.
-- [ ] Chuẩn hóa mapping lỗi từ generated client/API response:
-  - [ ] `401 Unauthorized`.
-  - [ ] `403 Forbidden`.
-  - [ ] `404 Not Found`.
-  - [ ] `409 Conflict`.
-  - [ ] `422 Validation`.
-  - [ ] `503 Unavailable`.
-  - [ ] Timeout/network failure.
-- [ ] Thêm helper đảm bảo mọi call storefront API luôn nhận `storeKey` rõ ràng.
-- [ ] Không đưa cookie, antiforgery, route parsing, SEO hoặc UI state vào Runtime.
+- [x] Thêm runtime result model trung lập:
+  - [x] `StorefrontRuntimeResult<T>`.
+  - [x] `StorefrontRuntimeError`.
+  - [x] `StorefrontRuntimeValidationError`.
+  - [x] `StorefrontRuntimeConflict`.
+  - [x] Optional `StorefrontRuntimeSubmitResult<T>` cho mutation/idempotency.
+- [x] Chuẩn hóa mapping lỗi từ generated client/API response:
+  - [x] `401 Unauthorized`.
+  - [x] `403 Forbidden`.
+  - [x] `404 Not Found`.
+  - [x] `409 Conflict`.
+  - [x] `422 Validation`.
+  - [x] `503 Unavailable`.
+  - [x] Timeout/network failure.
+- [x] Thêm helper đảm bảo mọi call storefront API luôn nhận `storeKey` rõ ràng.
+- [x] Không đưa cookie, antiforgery, route parsing, SEO hoặc UI state vào Runtime.
 
 ### V2F2 QA gate
 
-- [ ] Unit test result mapping cho từng HTTP status.
-- [ ] Unit test timeout/network exception.
-- [ ] Unit test validation payload.
-- [ ] Unit test conflict/version mismatch.
-- [ ] Boundary test Runtime không reference Razor components hoặc V2 host.
+- [x] Unit test result mapping cho từng HTTP status.
+- [x] Unit test timeout/network exception.
+- [x] Unit test validation payload.
+- [x] Unit test conflict/version mismatch.
+- [x] Boundary test Runtime không reference Razor components hoặc V2 host.
 
 ## Phase V2F3 - Store bootstrap and configuration cutover
 

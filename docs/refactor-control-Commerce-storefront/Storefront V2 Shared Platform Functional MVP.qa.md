@@ -71,3 +71,20 @@ Verification:
 - `dotnet pack BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj --no-build -o artifacts/storefront-packages-v2f1`: passed.
 - Local compatibility proof: created temporary Razor class library under `obj/storefront-package-compat-v2f1-01`, restored all three Storefront packages from the local feed, and `dotnet build obj/storefront-package-compat-v2f1-01/StorefrontPackageCompatProof.csproj` passed with 0 warnings and 0 errors.
 - NuGet pack emitted non-failing readme best-practice warnings for all three packages.
+
+## V2F2 runtime result and execution primitives
+
+Implementation notes:
+
+- Added neutral `StorefrontRuntimeResult<T>` and `StorefrontRuntimeSubmitResult<T>` wrappers.
+- Extended `StorefrontRuntimeError` with typed validation and conflict projections while preserving the existing constructor shape used by Starter.
+- Added `StorefrontRuntimeValidationError`, `StorefrontRuntimeConflict`, and `StorefrontRuntimeStatusCodes`.
+- Added exception mapping for generated `StorefrontApiException`, `TimeoutException`, `TaskCanceledException`, `HttpRequestException`, and generic request failures.
+- Added `RequireStoreKey`, `ExecuteAsync`, and `ExecuteSubmitAsync` helpers so runtime facade calls receive an explicit trimmed `storeKey`.
+- Runtime stayed free of cookie, antiforgery, route parsing, SEO, UI state, Razor component, and Storefront V2 host dependencies.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests"`: passed 14/14.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 7/7.
