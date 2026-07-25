@@ -149,32 +149,32 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F4 - Catalog, content, navigation and SEO cutover
 
-- [ ] Tạo runtime facades cho catalog/content:
-  - [ ] Product detail.
-  - [ ] Category listing.
-  - [ ] Search result.
-  - [ ] Page/topic content.
-  - [ ] Menu/navigation projection.
-  - [ ] Slug/redirect resolver output.
-- [ ] V2 host giữ phần:
-  - [ ] SSR route mapping.
-  - [ ] Canonical URL composition.
-  - [ ] Open Graph/JSON-LD rendering.
-  - [ ] Sitemap/robots endpoint composition.
-  - [ ] Page shell/layout.
-- [ ] Retire `GeneratedStorefrontCatalogContentClient` adapter sau khi runtime facade thay thế đủ.
-- [ ] Giữ DTO projection ổn định để không phá Razor pages/components hiện có.
+- [x] Tạo runtime facades cho catalog/content:
+  - [x] Product detail.
+  - [x] Category listing.
+  - [x] Search result.
+  - [x] Page/topic content.
+  - [x] Menu/navigation projection.
+  - [x] Slug/redirect resolver output.
+- [x] V2 host giữ phần:
+  - [x] SSR route mapping.
+  - [x] Canonical URL composition.
+  - [x] Open Graph/JSON-LD rendering.
+  - [x] Sitemap/robots endpoint composition.
+  - [x] Page shell/layout.
+- [x] Retire `GeneratedStorefrontCatalogContentClient` adapter sau khi runtime facade thay thế đủ.
+- [x] Giữ DTO projection ổn định để không phá Razor pages/components hiện có.
 
 ### V2F4 QA gate
 
-- [ ] Playwright product detail SSR: title, price, image, canonical, add-to-cart surface.
-- [ ] Playwright category listing: paging, sorting, empty state.
-- [ ] Playwright search: normalize term, noindex search result nếu hiện có rule SEO.
-- [ ] Playwright page/topic route: published page render, unpublished hidden.
-- [ ] Playwright menu/navigation active item.
-- [ ] Playwright 301 redirect từ slug cũ nếu data fixture có.
-- [ ] Validate `/sitemap.xml` chỉ chứa store-visible/published entities.
-- [ ] Validate `/robots.txt` không cho index mutation endpoints.
+- [x] Playwright product detail SSR: title, price, image, canonical, add-to-cart surface.
+- [x] Playwright category listing: paging, sorting, empty state.
+- [x] Playwright search: normalize term, noindex search result nếu hiện có rule SEO.
+- [x] Playwright page/topic route: published page render, unpublished hidden.
+- [x] Playwright menu/navigation active item.
+- [x] Playwright 301 redirect từ slug cũ nếu data fixture có.
+- [x] Validate `/sitemap.xml` chỉ chứa store-visible/published entities.
+- [x] Validate `/robots.txt` không cho index mutation endpoints.
 
 ## Phase V2F5 - Product interaction and component slice
 

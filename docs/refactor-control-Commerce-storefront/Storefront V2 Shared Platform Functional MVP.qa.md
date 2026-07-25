@@ -109,3 +109,22 @@ Verification:
 - Maintenance host smoke: `dotnet test ... --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance_WhenCurrentStoreRecovered_RedirectsHome|FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance_WhenCurrentStoreStillInMaintenance_RendersAutoRefresh"` passed 2/2.
 - Secret boundary: `dotnet test ... --filter "FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests"` passed 13/13.
 - Admin/manager storefront access rule: not a separate active Storefront V2 browser feature; lifecycle/admin bypass behavior remains covered by current-store middleware/provider tests.
+
+## V2F4 catalog, content, navigation and SEO cutover
+
+Implementation notes:
+
+- Added `IStorefrontRuntimeCatalogContentFacade` and `StorefrontRuntimeCatalogContentFacade` in Runtime.
+- Runtime facade now owns generated Storefront client calls for catalog, category, search, product detail, page/topic content, navigation, SEO settings, and redirect resolution.
+- V2 `GeneratedStorefrontCatalogContentClient` is now a wrapper around the Runtime facade and preserves JSON projection into existing V2/Web.Shared DTOs.
+- V2 host still owns SSR routes, canonical/structured data composition, sitemap/robots endpoint composition, and page shell/layout.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontGeneratedCatalogContentClientTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 18/18.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontPageNavigationProviderTests|FullyQualifiedName~StorefrontSitemapServiceTests|FullyQualifiedName~StorefrontStructuredDataComposerTests"`: passed 56/56.
+- Playwright route smoke against `http://localhost:18598`: `/`, `/category/apparel`, `/search?q=shirt`, `/product/qa-simple-product-100`, `/pages/qa-legal`, `/sitemap.xml`, and `/robots.txt` all returned 200 and rendered nonblank content where applicable.
+- Product/category/page canonical links rendered for checked SSR routes. Search route rendered without a canonical link in current SEO behavior.
+- Browser network assertion: no direct browser requests to `http://localhost:5180/`.
+- Old-slug redirect fixture was not present in the discovered browser smoke route set; redirect resolver remains covered by adapter/unit guardrails in this phase.

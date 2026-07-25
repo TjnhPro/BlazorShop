@@ -6,10 +6,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using System.Text;
 
     using BlazorShop.Storefront.Client;
-    using Microsoft.Extensions.Configuration;
 
     using Xunit;
 
+    using StorefrontRuntimeCatalogContentFacade = BlazorShop.Storefront.Runtime.StorefrontRuntimeCatalogContentFacade;
+    using IStorefrontRuntimeContext = BlazorShop.Storefront.Runtime.IStorefrontRuntimeContext;
     using StorefrontV2::BlazorShop.Storefront.Models;
     using GeneratedStorefrontCatalogContentClient = StorefrontV2::BlazorShop.Storefront.Services.GeneratedStorefrontCatalogContentClient;
 
@@ -196,6 +197,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
 
             Assert.Contains("GeneratedStorefrontCatalogContentClient", source, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeCatalogContentFacade", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCatalogContentClient.cs"), StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontCatalogClient>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontContentClient>", source, StringComparison.Ordinal);
             Assert.Contains("GetRequiredService<GeneratedStorefrontCatalogContentClient>", source, StringComparison.Ordinal);
@@ -226,19 +228,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 BaseAddress = new Uri("https://commerce.example/"),
             };
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Api:StoreKey"] = "default",
-                })
-                .Build();
 
             return new GeneratedStorefrontCatalogContentClient(
-                new StorefrontCatalogClient(string.Empty, httpClient),
-                new StorefrontPagesClient(string.Empty, httpClient),
-                new StorefrontNavigationClient(string.Empty, httpClient),
-                new StorefrontSeoClient(string.Empty, httpClient),
-                configuration);
+                new StorefrontRuntimeCatalogContentFacade(
+                    new StubRuntimeContext(),
+                    new StorefrontCatalogClient(string.Empty, httpClient),
+                    new StorefrontPagesClient(string.Empty, httpClient),
+                    new StorefrontNavigationClient(string.Empty, httpClient),
+                    new StorefrontSeoClient(string.Empty, httpClient)));
         }
 
         private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json)
@@ -303,6 +300,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 RequestPaths.Add(request.RequestUri?.AbsolutePath ?? string.Empty);
                 return Task.FromResult(_responseFactory(request));
             }
+        }
+
+        private sealed class StubRuntimeContext : IStorefrontRuntimeContext
+        {
+            public string CommerceNodeBaseUrl => "https://commerce.example/";
+
+            public string StoreKey => "default";
+
+            public string? PublicBaseUrl => "https://store.example/";
         }
     }
 }
