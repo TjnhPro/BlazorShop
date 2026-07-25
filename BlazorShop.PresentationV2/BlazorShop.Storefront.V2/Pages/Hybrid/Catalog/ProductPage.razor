@@ -62,6 +62,7 @@ else if (_product is not null)
                     <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-neutral-600">
                         <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700">@VariantSummary</span>
                         <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(DefaultSkuLabel) ? "hidden" : null)" data-storefront-selection-sku>@DefaultSkuLabel</span>
+                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(DefaultGtinLabel) ? "hidden" : null)" data-storefront-selection-gtin>@DefaultGtinLabel</span>
                         <span class="@StockBadgeClass" data-storefront-selection-stock>@StockSummary</span>
                     </div>
 
@@ -209,6 +210,10 @@ else if (_product is not null)
         : string.Empty;
 
     private string? DefaultSelectionSku => _product?.Variants.FirstOrDefault(variant => variant.IsDefault)?.Sku ?? _product?.Sku;
+
+    private string DefaultGtinLabel => !string.IsNullOrWhiteSpace(_product?.Gtin)
+        ? $"GTIN {_product.Gtin}"
+        : string.Empty;
 
     private string ProductDescription => !string.IsNullOrWhiteSpace(_product?.FullDescription)
         ? _product.FullDescription!
@@ -392,6 +397,10 @@ else if (_product is not null)
             string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
             DisplayCurrencyCode,
             BaseUnitPriceValue,
+            product.Variants.FirstOrDefault(variant => variant.IsDefault)?.Id,
+            DefaultSelectionSku,
+            product.Gtin,
+            _galleryItems.FirstOrDefault()?.ImageUrl,
             InitialStockValue,
             product.MinOrderQuantity,
             product.MaxOrderQuantity,
@@ -401,6 +410,7 @@ else if (_product is not null)
             CanSubmitInitialPurchase,
             PurchaseMessage,
             PurchaseBlockMessage,
+            BuildInitialValidationMessages(product),
             ActiveVariationOptions
                 .Select(option => new ProductPurchaseOptionItem(
                     option.Name!,
@@ -425,6 +435,33 @@ else if (_product is not null)
                     FormatPrice(GetVariantDisplayPrice(variant), VariantCurrencyCode(variant))))
                 .ToArray(),
             CartUrl);
+    }
+
+    private IReadOnlyList<string> BuildInitialValidationMessages(GetProduct product)
+    {
+        if (CanSubmitInitialPurchase)
+        {
+            return [];
+        }
+
+        return product.PurchaseBlockReasons.Count > 0
+            ? product.PurchaseBlockReasons
+                .Select(FormatPurchaseBlockReason)
+                .Where(message => !string.IsNullOrWhiteSpace(message))
+                .ToArray()
+            : [PurchaseBlockMessage];
+    }
+
+    private string FormatPurchaseBlockReason(string reason)
+    {
+        return reason switch
+        {
+            "purchase_disabled" => "Purchasing is paused.",
+            "out_of_stock" => "Currently out of stock.",
+            "below_min_quantity" => $"Minimum order quantity is {_product?.MinOrderQuantity ?? 1}.",
+            "above_max_quantity" => $"Maximum order quantity is {_product?.MaxOrderQuantity}.",
+            _ => PurchaseBlockMessage,
+        };
     }
 
     private async Task<IReadOnlyList<GetCatalogProduct>> GetRelatedProductsAsync(GetProduct product)

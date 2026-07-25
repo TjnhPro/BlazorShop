@@ -128,3 +128,25 @@ Verification:
 - Product/category/page canonical links rendered for checked SSR routes. Search route rendered without a canonical link in current SEO behavior.
 - Browser network assertion: no direct browser requests to `http://localhost:5180/`.
 - Old-slug redirect fixture was not present in the discovered browser smoke route set; redirect resolver remains covered by adapter/unit guardrails in this phase.
+
+## V2F5 product detail component and interaction cutover
+
+Implementation notes:
+
+- Extended `ProductPurchasePanelModel` with initial resolved variant, SKU, GTIN, main image URL, and validation messages.
+- Product page now maps initial product interaction state into component data attributes while keeping DTO/backend mapping in the V2 page.
+- Product page renders GTIN when present and keeps SKU/GTIN state outside the reusable component's backend contracts.
+- Selection preview JavaScript now applies `primaryImageUrl` to the product gallery main image, selecting a matching thumbnail when one exists.
+- Components remain backend-neutral; product browser behavior continues through same-origin `/api/product-selection-preview` and `/api/cart/*`.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests"`: passed 21/21.
+- `dotnet build BlazorShop.sln`: passed after rerunning serially. A first parallel build/test attempt hit a transient static-web-assets `.gz` file lock in `ControlPlane.Web`; the serial rerun passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- Playwright product flow against `http://localhost:18598`: passed and wrote `output/playwright/v2f5-product-flow-evidence.json` plus `output/playwright/v2f5-product-flow.png`.
+- Gallery QA used `qa-seo-media-product`: 3 thumbnails rendered in square gallery frames; selecting thumbnail 2 changed the main image URL.
+- Variant QA used `catalog-qa-t-shirt`: selecting Red/XL changed price `EUR 19.99` to `EUR 21.99`, stock `8 in stock` to `3 in stock`, and SKU `QA-TSHIRT-RED-M` to `QA-TSHIRT-RED-XL`.
+- Quantity QA used `qa-quantity-rule-product`: HTML constraints rendered `min=2`, `max=10`, `step=2`; below-min and step-mismatched values failed browser validity.
+- Add-to-cart QA used `qa-simple-product-100`: product page add succeeded via same-origin `/api/cart/lines`, cart badge became `1`, and `/my-cart` showed the added product.
+- Unavailable QA used `qa-purchasing-disabled-product`: add button stayed disabled and purchase panel showed the purchasing-disabled reason.
+- Browser network assertion: no direct browser requests to `http://localhost:5180/`; console/page error list was empty.

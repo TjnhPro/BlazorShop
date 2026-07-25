@@ -178,34 +178,34 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F5 - Product interaction and component slice
 
-- [ ] Tách product detail UI thành component API rõ:
-  - [ ] Gallery 1x1 image list.
-  - [ ] Main image.
-  - [ ] Product summary.
-  - [ ] Price block.
-  - [ ] Variant/attribute selector.
-  - [ ] Quantity selector.
-  - [ ] Add-to-cart command surface.
-- [ ] V2 hoặc Runtime cung cấp product interaction model:
-  - [ ] Resolved variant/combination.
-  - [ ] Price.
-  - [ ] Availability.
-  - [ ] SKU/GTIN nếu có.
-  - [ ] Main image/gallery selection.
-  - [ ] Quantity constraints.
-  - [ ] Add-to-cart eligibility.
-  - [ ] Validation messages.
-- [ ] Components không tự gọi Commerce Node trực tiếp.
-- [ ] Components được phép gọi same-origin local BFF qua existing browser abstraction khi cần interactive WASM behavior.
+- [x] Tách product detail UI thành component API rõ:
+  - [x] Gallery 1x1 image list.
+  - [x] Main image.
+  - [x] Product summary.
+  - [x] Price block.
+  - [x] Variant/attribute selector.
+  - [x] Quantity selector.
+  - [x] Add-to-cart command surface.
+- [x] V2 hoặc Runtime cung cấp product interaction model:
+  - [x] Resolved variant/combination.
+  - [x] Price.
+  - [x] Availability.
+  - [x] SKU/GTIN nếu có.
+  - [x] Main image/gallery selection.
+  - [x] Quantity constraints.
+  - [x] Add-to-cart eligibility.
+  - [x] Validation messages.
+- [x] Components không tự gọi Commerce Node trực tiếp.
+- [x] Components được phép gọi same-origin local BFF qua existing browser abstraction khi cần interactive WASM behavior.
 
 ### V2F5 QA gate
 
-- [ ] Playwright product gallery: danh sách ảnh 1x1 render đúng, chọn thumbnail đổi main image.
-- [ ] Playwright variant selection cập nhật price/availability/image nếu fixture có variant.
-- [ ] Playwright quantity min/max/step validation.
-- [ ] Playwright add-to-cart thành công từ product page.
-- [ ] Playwright unavailable product không cho add-to-cart và hiển thị reason.
-- [ ] Network assertion: browser không gọi trực tiếp Commerce Node host.
+- [x] Playwright product gallery: danh sách ảnh 1x1 render đúng, chọn thumbnail đổi main image.
+- [x] Playwright variant selection cập nhật price/availability/image nếu fixture có variant.
+- [x] Playwright quantity min/max/step validation.
+- [x] Playwright add-to-cart thành công từ product page.
+- [x] Playwright unavailable product không cho add-to-cart và hiển thị reason.
+- [x] Network assertion: browser không gọi trực tiếp Commerce Node host.
 
 ## Phase V2F6 - Cart runtime/BFF cutover
 

@@ -137,15 +137,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("StorefrontRoutes", purchasePanel + purchaseModels, StringComparison.Ordinal);
             Assert.Contains("data-storefront-selection-preview", purchasePanel);
             Assert.Contains("data-preview-route=\"/api/product-selection-preview\"", purchasePanel);
+            Assert.Contains("data-resolved-variant-id=\"@Model.ResolvedVariantId\"", purchasePanel);
+            Assert.Contains("data-main-image-url=\"@Model.InitialMainImageUrl\"", purchasePanel);
+            Assert.Contains("data-sku=\"@Model.InitialSku\"", purchasePanel);
+            Assert.Contains("data-gtin=\"@Model.InitialGtin\"", purchasePanel);
             Assert.Contains("data-storefront-attribute-control", purchasePanel);
             Assert.Contains("data-storefront-selection-quantity", purchasePanel);
             Assert.Contains("data-storefront-selection-price", markup);
             Assert.Contains("data-storefront-selection-stock", markup);
+            Assert.Contains("data-storefront-selection-sku", markup);
+            Assert.Contains("data-storefront-selection-gtin", markup);
+            Assert.Contains("InitialValidationMessages", purchaseModels, StringComparison.Ordinal);
 
             Assert.Contains("const selectionPreviewSelector", script);
             Assert.Contains("collectSelectedAttributes", script);
             Assert.Contains("SelectedAttributes: payload.SelectedAttributes || null", script);
             Assert.Contains("/api/product-selection-preview", script);
+            Assert.Contains("syncGalleryMainImage(container, preview.primaryImageUrl)", script);
+            Assert.Contains("container.dataset.mainImageUrl = preview.primaryImageUrl", script);
 
             Assert.Contains("app.MapPost(\"/api/product-selection-preview\"", cartEndpoints);
             Assert.Contains("PreviewProductSelectionAsync", cartEndpoints);

@@ -428,6 +428,44 @@
     }
   }
 
+  function syncGalleryMainImage(container, imageUrl) {
+    const resolvedImageUrl = (imageUrl || "").trim();
+    if (!resolvedImageUrl || !(container instanceof HTMLElement)) {
+      return;
+    }
+
+    const scope = container.closest("main") || document;
+    const gallery = scope.querySelector(productGallerySelector);
+    if (!(gallery instanceof HTMLElement)) {
+      return;
+    }
+
+    const thumbnails = resolveGalleryThumbnails(gallery);
+    const thumbnailIndex = thumbnails.findIndex((thumbnail) => thumbnail.dataset.imageUrl === resolvedImageUrl);
+    if (thumbnailIndex >= 0) {
+      selectGalleryIndex(gallery, thumbnailIndex);
+      return;
+    }
+
+    const mainImage = gallery.querySelector(galleryMainImageSelector);
+    if (!(mainImage instanceof HTMLImageElement)) {
+      return;
+    }
+
+    const placeholder = gallery.querySelector(galleryPlaceholderSelector);
+    mainImage.hidden = false;
+    if (placeholder instanceof HTMLElement) {
+      placeholder.hidden = true;
+    }
+
+    mainImage.src = resolvedImageUrl;
+    thumbnails.forEach((thumbnail) => {
+      thumbnail.dataset.selected = "false";
+      thumbnail.setAttribute("aria-current", "false");
+      thumbnail.setAttribute("aria-selected", "false");
+    });
+  }
+
   function syncManualAddressFields(select) {
     if (!(select instanceof HTMLSelectElement)) {
       return;
@@ -467,6 +505,8 @@
       setText(stock, preview.isAvailable ? `${preview.stockQuantity} in stock` : "Out of stock");
       setText(sku, preview.sku ? `SKU ${preview.sku}` : "");
       toggleHidden(sku, !preview.sku);
+      syncGalleryMainImage(container, preview.primaryImageUrl);
+      container.dataset.mainImageUrl = preview.primaryImageUrl || container.dataset.mainImageUrl || "";
     }
 
     const suppressUntil = parseInteger(container.dataset.cartFeedbackSuppressUntil, 0);
