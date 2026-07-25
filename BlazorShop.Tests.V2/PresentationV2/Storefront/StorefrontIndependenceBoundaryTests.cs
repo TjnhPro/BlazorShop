@@ -256,6 +256,72 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain(v2References, reference => reference.Contains("BlazorShop.ControlPlane", StringComparison.OrdinalIgnoreCase));
         }
 
+        [Fact]
+        public void StorefrontBrowserProjects_CallSameOriginBffOnly()
+        {
+            foreach (var browserRoot in new[]
+            {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components"
+            })
+            {
+                AssertNoSourceFragments(
+                    browserRoot,
+                    [
+                        "BlazorShop.Storefront.Client",
+                        "api/storefront/stores",
+                        "CommerceNodeBaseUrl",
+                        "http://localhost:5180",
+                        "https://localhost:5180",
+                        "NodeSecret",
+                        "NodeKey",
+                        "accessToken",
+                        "refreshToken"
+                    ]);
+            }
+        }
+
+        [Fact]
+        public void StorefrontV2Host_DoesNotCallControlPlaneOrReadNodeCredentials()
+        {
+            AssertNoSourceFragments(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
+                [
+                    "api/control-plane",
+                    "api/controlplane",
+                    "BlazorShop.ControlPlane",
+                    "ControlPlaneConnection",
+                    "ControlPlane:",
+                    "NodeSecret",
+                    "NodeKey",
+                    "X-Node-Key",
+                    "X-Node-Secret"
+                ]);
+        }
+
+        [Fact]
+        public void StorefrontV2ManualClientExceptions_AreRegisteredWithOwnerTestAndRevisitTrigger()
+        {
+            var registry = ReadRepositoryFile("docs/storefront-platform/storefront-client-exception-registry.md");
+            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var cartAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCartClient.cs");
+            var checkoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCheckoutClient.cs");
+
+            Assert.Contains("## Storefront V2", registry, StringComparison.Ordinal);
+            Assert.Contains("StorefrontApiClient.MergeCurrentCustomerCartAsync", registry, StringComparison.Ordinal);
+            Assert.Contains("StorefrontApiClient.UpdateCheckoutAddressesAsync", registry, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontCustomerClient", registry, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAuthClient", registry, StringComparison.Ordinal);
+            Assert.Contains("Owner", registry, StringComparison.Ordinal);
+            Assert.Contains("Test", registry, StringComparison.Ordinal);
+            Assert.Contains("Revisit trigger", registry, StringComparison.Ordinal);
+
+            Assert.Contains("AddHttpClient<StorefrontApiClient>", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("MergeCurrentCustomerCartAsync", cartAdapter, StringComparison.Ordinal);
+            Assert.Contains("UpdateCheckoutAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
+        }
+
         private static void AssertNoProjectReferences(string relativeProjectPath, IReadOnlyCollection<string> forbiddenFragments)
         {
             var references = ReadProjectReferences(relativeProjectPath);

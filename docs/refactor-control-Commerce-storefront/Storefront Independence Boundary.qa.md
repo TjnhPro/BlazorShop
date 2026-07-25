@@ -111,3 +111,21 @@ Verification:
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 13/13.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontGeneratedCatalogContentClientTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 72/72.
 - Static scan for `BlazorShop.Web.SharedV2.Models`, `BlazorShop.Application.DTOs`, `BlazorShop.Application`, `BlazorShop.Domain`, and `BlazorShop.Infrastructure` across Storefront platform projects found no source offenders.
+
+## SIB5 - Storefront API access boundary hardening
+
+Implementation notes:
+
+- Extended `docs/storefront-platform/storefront-client-exception-registry.md` with active Storefront V2 manual-client exceptions for cart merge, saved-address checkout, protected customer account, and auth/session forms.
+- Added guardrails that browser projects (`Storefront.WASM` and `Storefront.Components`) do not reference `Storefront.Client`, Commerce Node route paths, Commerce Node base URLs, node credentials, or protected tokens.
+- Added guardrails that Storefront V2 host source does not call Control Plane routes or read Control Plane/node credential settings.
+- Added guardrails that active manual `StorefrontApiClient` exception usages remain registered with owner, test, and revisit trigger.
+- The allowed API access shape remains V2 SSR/BFF -> Runtime -> Client -> Commerce Node Storefront HTTP API, while browser/WASM calls same-origin `/api/*`.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 16/16.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"`: passed 17/17.
+- Static scan for Control Plane routes/namespaces, node credentials, Commerce Node API project namespace, and backend/core namespaces across Storefront platform projects found no forbidden source/API boundary references.
+- Browser network assertion against `http://localhost:18598/product/qa-simple-product-100` clicked add-to-cart and observed same-origin `POST /api/cart/lines`; no browser request to `localhost:5180`, `/api/storefront/stores/*`, or Control Plane routes. Evidence: `output/playwright/sib5-api-access-boundary-network.json` and `.png`.
+- Local V2 runtime was stopped after the browser assertion.

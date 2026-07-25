@@ -186,27 +186,27 @@ Storefront.*
 
 ## Phase SIB5 - Storefront API access boundary hardening
 
-- [ ] Ensure Storefront API access shape là:
-  - [ ] V2 SSR/BFF calls `Storefront.Runtime`.
-  - [ ] `Storefront.Runtime` calls `Storefront.Client`.
-  - [ ] `Storefront.Client` calls Commerce Node Storefront API via HTTP.
-  - [ ] Browser/WASM calls same-origin V2 BFF endpoints only.
-- [ ] Không cho browser/WASM có Commerce Node base URL hoặc generated Commerce Node client trực tiếp.
-- [ ] Không cho Storefront host gọi Control Plane API.
-- [ ] Không cho Storefront host đọc node credentials hoặc Control Plane registry.
-- [ ] Current store resolution vẫn ở V2 boundary và store scope được truyền qua `storeKey` route/API contract.
-- [ ] Nếu có manual `StorefrontApiClient` còn lại:
-  - [ ] Đưa vào exception registry.
-  - [ ] Ghi capability, owner, test, revisit trigger.
-  - [ ] Không copy sang Starter/generated storefront.
+- [x] Ensure Storefront API access shape là:
+  - [x] V2 SSR/BFF calls `Storefront.Runtime`.
+  - [x] `Storefront.Runtime` calls `Storefront.Client`.
+  - [x] `Storefront.Client` calls Commerce Node Storefront API via HTTP.
+  - [x] Browser/WASM calls same-origin V2 BFF endpoints only.
+- [x] Không cho browser/WASM có Commerce Node base URL hoặc generated Commerce Node client trực tiếp.
+- [x] Không cho Storefront host gọi Control Plane API.
+- [x] Không cho Storefront host đọc node credentials hoặc Control Plane registry.
+- [x] Current store resolution vẫn ở V2 boundary và store scope được truyền qua `storeKey` route/API contract.
+- [x] Nếu có manual `StorefrontApiClient` còn lại:
+  - [x] Đưa vào exception registry.
+  - [x] Ghi capability, owner, test, revisit trigger.
+  - [x] Không copy sang Starter/generated storefront.
 
 ### SIB5 QA gate
 
-- [ ] Static scan không có `ControlPlane` namespace trong `Storefront.*`.
-- [ ] Static scan không có `CommerceNode.API` namespace/project reference trong `Storefront.*`.
-- [ ] Static scan không có `Application`, `Domain`, `Infrastructure` project reference trong `Storefront.*`.
-- [ ] Browser network assertion: protected Storefront browser actions không gọi trực tiếp Commerce Node host.
-- [ ] Storefront generated-client tests pass.
+- [x] Static scan không có `ControlPlane` namespace trong `Storefront.*`.
+- [x] Static scan không có `CommerceNode.API` namespace/project reference trong `Storefront.*`.
+- [x] Static scan không có `Application`, `Domain`, `Infrastructure` project reference trong `Storefront.*`.
+- [x] Browser network assertion: protected Storefront browser actions không gọi trực tiếp Commerce Node host.
+- [x] Storefront generated-client tests pass.
 
 ## Phase SIB6 - Starter and Storefront.{Name} independence contract
 
