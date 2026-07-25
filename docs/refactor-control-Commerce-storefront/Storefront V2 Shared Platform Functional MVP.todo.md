@@ -240,40 +240,42 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F7 - Checkout and COD order placement cutover
 
-- [ ] Runtime facade cho checkout:
-  - [ ] Start/resume checkout.
-  - [ ] Review checkout.
-  - [ ] Set billing address.
-  - [ ] Set shipping address.
-  - [ ] Select shipping method.
-  - [ ] Select payment method.
-  - [ ] Place order.
-- [ ] Runtime facade cho payment method discovery:
-  - [ ] Active providers.
-  - [ ] Display name/icon/order.
-  - [ ] Availability by store/currency/cart/country.
-  - [ ] COD/offline support.
-- [ ] V2 host giữ:
-  - [ ] Same-origin checkout BFF endpoints.
-  - [ ] Checkout session cookie/state boundary.
-  - [ ] Idempotency key handling.
-  - [ ] Antiforgery.
-  - [ ] Redirect/return URL validation.
-- [ ] Không thêm payment provider mới; COD là production QA path chính.
+- [x] Runtime facade cho checkout:
+  - [x] Start/resume checkout.
+  - [x] Review checkout.
+  - [x] Set billing address.
+  - [x] Set shipping address.
+  - [x] Select shipping method.
+  - [x] Select payment method.
+  - [x] Place order.
+- [x] Runtime facade cho payment method discovery:
+  - [x] Active providers.
+  - [x] Display name/icon/order.
+  - [x] Availability by store/currency/cart/country.
+  - [x] COD/offline support.
+- [x] V2 host giữ:
+  - [x] Same-origin checkout BFF endpoints.
+  - [x] Checkout session cookie/state boundary.
+  - [x] Idempotency key handling.
+  - [x] Antiforgery.
+  - [x] Redirect/return URL validation.
+- [x] Không thêm payment provider mới; COD là production QA path chính.
+  - 2026-07-25: active `IStorefrontCheckoutClient` and `IStorefrontPaymentClient` registrations now resolve generated adapters backed by Runtime facades. Saved-address checkout with a bearer token remains a documented auth-sensitive manual exception until account/auth cutover because the generated checkout client has no per-call bearer token parameter.
 
 ### V2F7 QA gate
 
-- [ ] Playwright checkout start từ cart có item.
-- [ ] Playwright billing address chọn/tạo.
-- [ ] Playwright shipping address chọn/tạo hoặc skip nếu cart không cần shipping.
-- [ ] Playwright shipping method chọn.
-- [ ] Playwright COD payment method chọn.
-- [ ] Playwright review page hiển thị address, items, totals, shipping/payment method.
-- [ ] Playwright place order thật bằng COD trên store test.
-- [ ] Playwright double submit không tạo order duplicate.
-- [ ] Playwright cart closed/cleared sau order placement theo rule hiện có.
-- [ ] Playwright order completion page hiển thị order number và payment status.
-- [ ] Negative test: cart đổi sau khi chọn shipping/payment thì checkout reset downstream state.
+- [x] Playwright checkout start từ cart có item.
+- [x] Playwright billing address chọn/tạo.
+- [x] Playwright shipping address chọn/tạo hoặc skip nếu cart không cần shipping.
+- [x] Playwright shipping method chọn.
+- [x] Playwright COD payment method chọn.
+- [x] Playwright review page hiển thị address, items, totals, shipping/payment method.
+- [x] Playwright place order thật bằng COD trên store test.
+- [x] Playwright double submit không tạo order duplicate.
+- [x] Playwright cart closed/cleared sau order placement theo rule hiện có.
+- [x] Playwright order completion page hiển thị order number và payment status.
+- [x] Negative test: cart đổi sau khi chọn shipping/payment thì checkout reset downstream state.
+  - 2026-07-25: focused checkout guard keeps `409` conflict mapping through the checkout BFF; stale cart-version recovery remains covered by existing `SecurityPrivacyPhase1CsrfTests`, `StorefrontWasmRuntimeFoundationTests`, and checkout host smoke guardrails. Browser V2F7 covered the production COD path.
 
 ## Phase V2F8 - Account, auth, address, order self-service and consent alignment
 

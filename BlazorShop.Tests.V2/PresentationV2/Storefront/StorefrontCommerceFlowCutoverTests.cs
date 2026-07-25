@@ -143,6 +143,61 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("localhost:5180", cartComponents, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void StorefrontV2CheckoutAndPaymentClients_UseRuntimeFacadesForActiveGuestCheckout()
+        {
+            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
+            var checkoutFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCheckoutFacade.cs");
+            var paymentFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimePaymentFacade.cs");
+            var checkoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCheckoutClient.cs");
+            var paymentAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontPaymentClient.cs");
+            var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
+            var checkoutEndpointSupport = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs");
+            var checkoutComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
+
+            Assert.Contains("AddScoped<IStorefrontRuntimeCheckoutFacade, StorefrontRuntimeCheckoutFacade>", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontRuntimePaymentFacade, StorefrontRuntimePaymentFacade>", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeCheckoutFacade", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("PreviewAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("StartAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("LoadAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("UpdateAddressesAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("SelectShippingMethodAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("SelectPaymentMethodAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("ReviewAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("PlaceOrderAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimePaymentFacade", paymentFacade, StringComparison.Ordinal);
+            Assert.Contains("ListMethodsAsync", paymentFacade, StringComparison.Ordinal);
+            Assert.Contains("GetAttemptAsync", paymentFacade, StringComparison.Ordinal);
+
+            Assert.Contains("AddScoped<GeneratedStorefrontCheckoutClient>", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<GeneratedStorefrontPaymentClient>", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCheckoutClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontPaymentClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.StartAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.UpdateAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.SelectShippingMethodAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.SelectPaymentMethodAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.ReviewAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.PlaceOrderAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("auth-sensitive checkout exception", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.manualClient.UpdateCheckoutAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.paymentFacade.ListMethodsAsync", paymentAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.paymentFacade.GetAttemptAsync", paymentAdapter, StringComparison.Ordinal);
+
+            Assert.Contains("app.MapGet(\"/api/checkout\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/addresses\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/shipping-method\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/payment-method\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/review\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("StatusCodes.Status409Conflict", checkoutEndpointSupport + checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("\"/api/checkout", checkoutComponents, StringComparison.Ordinal);
+            Assert.DoesNotContain("localhost:5180", checkoutComponents, StringComparison.Ordinal);
+        }
+
         private static string ReadStorefrontApiClientSources()
         {
             var root = FindRepositoryRoot();

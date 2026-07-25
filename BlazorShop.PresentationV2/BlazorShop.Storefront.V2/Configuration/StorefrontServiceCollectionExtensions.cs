@@ -104,14 +104,16 @@ namespace BlazorShop.Storefront.Configuration
             services.AddScoped<GeneratedStorefrontConfigurationClient>();
             services.AddScoped<GeneratedStorefrontCatalogContentClient>();
             services.AddScoped<GeneratedStorefrontCartClient>();
+            services.AddScoped<GeneratedStorefrontCheckoutClient>();
+            services.AddScoped<GeneratedStorefrontPaymentClient>();
             services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCartClient>());
             services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
-            services.AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCheckoutClient>());
             services.AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
             services.AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontPaymentClient>());
             services.AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConfigurationClient>());
 
             return services;

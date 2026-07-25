@@ -36,10 +36,9 @@ Allowed until their target phase cutover lands:
 
 - `IStorefrontAddressClient` through manual `StorefrontApiClient`.
 - `StorefrontApiClient.MergeCurrentCustomerCartAsync` only. Active cart CRUD/session/recalculate now go through `GeneratedStorefrontCartClient` and `IStorefrontRuntimeCartFacade`; merge remains an auth-sensitive exception until the account/auth cutover phase because the generated client has no per-call bearer-token parameter.
-- `IStorefrontCheckoutClient` through manual `StorefrontApiClient`.
+- `StorefrontApiClient.UpdateCheckoutAddressesAsync` only when a saved-address checkout call carries a bearer token. Active guest checkout start/load/review/shipping/payment/place-order now goes through `GeneratedStorefrontCheckoutClient` and `IStorefrontRuntimeCheckoutFacade`; the saved-address bearer path remains an auth-sensitive exception until account/auth cutover because the generated checkout client has no per-call bearer-token parameter.
 - `IStorefrontConsentClient` through manual `StorefrontApiClient`.
 - `IStorefrontCustomerClient` through manual `StorefrontApiClient`.
-- `IStorefrontPaymentClient` through manual `StorefrontApiClient`.
 - `StorefrontAuthClient` remains V2-owned while auth cookie/session/refresh-token behavior stays in the host.
 
 ## V2F0 verification
@@ -173,3 +172,23 @@ Verification:
 - Browser QA disabled `qa-simple-product-100` in the default local store DB, called `/api/cart/recalculate`, saw the warning state and disabled checkout, then restored the product fixture.
 - Negative browser QA verified missing antiforgery on `/api/cart/lines` returned `400` and stale `/api/cart/recalculate` returned `409`.
 - Browser network assertion: no direct browser requests to `http://localhost:5180/`. The only console resource errors were the expected negative-check `400` and `409`; unexpected console/page error list was empty.
+
+## V2F7 checkout and COD order placement cutover
+
+Implementation notes:
+
+- Added `IStorefrontRuntimeCheckoutFacade` and `StorefrontRuntimeCheckoutFacade` in Runtime for checkout preview, start, load, address update, shipping method selection, payment method selection, review, and order placement.
+- Added `IStorefrontRuntimePaymentFacade` and `StorefrontRuntimePaymentFacade` in Runtime for public payment method discovery and payment attempt lookup.
+- Added V2 `GeneratedStorefrontCheckoutClient` and `GeneratedStorefrontPaymentClient` adapters as the active `IStorefrontCheckoutClient` and `IStorefrontPaymentClient` registrations.
+- Kept the V2 host in charge of same-origin `/api/checkout/*`, checkout session state, cart token flow, idempotency, antiforgery, redirect/return URL validation, and local browser DTO mapping.
+- Preserved `409 Conflict` from checkout Runtime/API calls through the local checkout BFF.
+- Kept `StorefrontApiClient.UpdateCheckoutAddressesAsync` as a temporary auth-sensitive exception only for saved-address checkout calls with a bearer token until account/auth cutover.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~StorefrontCheckout"`: passed 87/88 with 1 skipped.
+- Playwright checkout COD flow against `http://localhost:18598`: passed and wrote `output/playwright/v2f7-checkout-cod-flow-evidence.json` plus `output/playwright/v2f7-checkout-cod-flow.png`.
+- Browser QA logged in as the QA customer, cleared cart, added `qa-simple-product-100`, started checkout, selected saved billing/shipping address `3c111111-1111-4111-8111-111111111201`, selected shipping, selected COD, reviewed checkout, and placed order `ORD-20260725-FAE82317`.
+- Double-click place-order QA observed exactly one `POST /api/checkout/place-order`; the cart cleared after order placement and the account order list/detail showed the new order with EUR currency.
+- Browser network assertion: no direct browser requests to `http://localhost:5180/`, no 5xx responses, and no unexpected console/page errors. Expected Blazor WASM fetch abort console noise during navigation was filtered the same way as existing release QA.

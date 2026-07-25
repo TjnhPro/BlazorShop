@@ -140,7 +140,9 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
                 if (!result.Success || result.Data is null)
                 {
-                    return LocalApiValidationError(result.Message);
+                    return result.StatusCode == StatusCodes.Status409Conflict
+                        ? LocalConflict(result.Message)
+                        : LocalApiValidationError(result.Message);
                 }
             
                 var displayContext = await displayContextProvider.GetAsync(cancellationToken);
@@ -179,7 +181,9 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
                 if (!result.Success || result.Data is null)
                 {
-                    return LocalApiValidationError(result.Message);
+                    return result.StatusCode == StatusCodes.Status409Conflict
+                        ? LocalConflict(result.Message)
+                        : LocalApiValidationError(result.Message);
                 }
             
                 var nextActionUrl = result.Data.NextAction?.Url;
