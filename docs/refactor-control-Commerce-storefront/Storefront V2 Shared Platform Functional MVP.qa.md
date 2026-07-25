@@ -10,9 +10,9 @@ Behavior-change scope: none. V2F0 only records the dependency inventory, migrati
 
 | Area | Current dependency | Notes |
 | --- | --- | --- |
-| Manual Storefront API client | `StorefrontApiClient` partials under `BlazorShop.Storefront.V2/Services` | Still owns address, cart, checkout, consent, customer/account, payment, auth-adjacent transport, and legacy-route fallback methods. |
+| Manual Storefront API client | `StorefrontApiClient` partials under `BlazorShop.Storefront.V2/Services` | Still owns protected customer/account bearer-token methods, cart merge, saved-address checkout bearer exception, auth-adjacent transport, and legacy-route fallback methods. |
 | Generated storefront clients | `BlazorShop.Storefront.Client.Generated` registered by `Storefront.Runtime.AddStorefrontGeneratedClients` | Runtime registers generated address/auth/cart/catalog/checkout/configuration/consent/contact/currency/customer/navigation/newsletter/orders/pages/payments/recommendations/seo/store clients. |
-| V2 generated adapters | `GeneratedStorefrontConfigurationClient`, `GeneratedStorefrontCatalogContentClient` | Active V2 DI uses generated adapters for store configuration, catalog, content, navigation, SEO, pages, currency, and product selection preview surfaces. |
+| V2 generated adapters | `GeneratedStorefrontConfigurationClient`, `GeneratedStorefrontCatalogContentClient`, `GeneratedStorefrontCartClient`, `GeneratedStorefrontCheckoutClient`, `GeneratedStorefrontPaymentClient`, `GeneratedStorefrontAddressClient`, `GeneratedStorefrontConsentClient` | Active V2 DI uses generated adapters for store configuration, catalog, content, navigation, SEO, pages, currency, product selection preview, cart, guest checkout, payment discovery, public address metadata, and consent surfaces. |
 | `Web.SharedV2` usage | V2 project reference, Dockerfile copy, Tailwind content path, endpoint helpers, rate-limit identity, cart/session/display context services | Current scan found shared utility imports in V2 host/support files; no direct `BlazorShop.Web.SharedV2.Models` import in active Storefront V2 or Components. |
 | Component local API usage | `Storefront.Components/Browser/StorefrontLocalApiClient.cs` | Cart, checkout, account profile/address/orders/change password and product selection preview use same-origin `/api/*` BFF endpoints. |
 | BFF endpoints | `StorefrontCartEndpoints`, `StorefrontCheckoutEndpoints`, `StorefrontAccountEndpoints`, `StorefrontConsentEndpoints`, `StorefrontAuthFormEndpoints`, `StorefrontMediaEndpoints`, `StorefrontSeoEndpoints`, plus `Program.cs` mappings | V2 host owns same-origin browser endpoints, antiforgery/session/cookies, SEO, media, and SSR route composition. |
@@ -26,19 +26,17 @@ Behavior-change scope: none. V2F0 only records the dependency inventory, migrati
 | Product interaction | V2 pages/components plus local JS/BFF preview | Components for presentation, Runtime/V2 interaction model, V2 host BFF for mutations | product page browser baseline, component/static tests | High |
 | Cart | Manual `StorefrontApiClient`, V2 BFF endpoints, Components local API | Runtime cart facade, V2 host keeps cart token cookie/BFF/antiforgery, Components keep local API | cart API client tests, WASM foundation tests, browser cart/checkout baseline | High |
 | Checkout/COD | Manual `StorefrontApiClient`, V2 checkout BFF, Components local API | Runtime checkout/payment-method facades, V2 host keeps session/idempotency/redirect validation/BFF | checkout host smoke slices, browser checkout baseline | High |
-| Account/auth/address | Manual `StorefrontApiClient`, `StorefrontAuthClient`, V2 BFF/forms, Components local API | Runtime account/address facades where safe; V2 host keeps auth cookies/refresh/session/protected form endpoints | auth/client tests, provider/session tests, browser signin/register/profile baseline | High |
-| Consent/privacy/security BFF | Manual consent client, V2 JavaScript and endpoints | Runtime facade optional for API result mapping; V2 host keeps browser cookie/antiforgery/rate-limit behavior | security/static tests, BFF boundary tests, browser no-direct-CommerceNode assertion | Medium |
+| Account/auth/address | Manual protected customer calls, `StorefrontAuthClient`, Runtime public address facade, V2 BFF/forms, Components local API | Runtime public address facade where safe; V2 host keeps auth cookies/refresh/session/protected form endpoints and bearer-token customer calls | auth/client tests, provider/session tests, browser signin/register/profile/address/order baseline | High |
+| Consent/privacy/security BFF | Runtime consent facade, V2 JavaScript and endpoints | Runtime generated consent mapping; V2 host keeps browser consent visitor cookie, antiforgery, and rate-limit behavior | security/static tests, BFF boundary tests, browser no-direct-CommerceNode assertion | Medium |
 | Payments | Manual `StorefrontApiClient` payment methods/attempts | Runtime payment discovery/attempt facade, V2 host keeps redirect/return validation | API client tests, checkout/browser baseline | High |
 
 ## Temporary manual-client exceptions
 
 Allowed until their target phase cutover lands:
 
-- `IStorefrontAddressClient` through manual `StorefrontApiClient`.
 - `StorefrontApiClient.MergeCurrentCustomerCartAsync` only. Active cart CRUD/session/recalculate now go through `GeneratedStorefrontCartClient` and `IStorefrontRuntimeCartFacade`; merge remains an auth-sensitive exception until the account/auth cutover phase because the generated client has no per-call bearer-token parameter.
 - `StorefrontApiClient.UpdateCheckoutAddressesAsync` only when a saved-address checkout call carries a bearer token. Active guest checkout start/load/review/shipping/payment/place-order now goes through `GeneratedStorefrontCheckoutClient` and `IStorefrontRuntimeCheckoutFacade`; the saved-address bearer path remains an auth-sensitive exception until account/auth cutover because the generated checkout client has no per-call bearer-token parameter.
-- `IStorefrontConsentClient` through manual `StorefrontApiClient`.
-- `IStorefrontCustomerClient` through manual `StorefrontApiClient`.
+- `IStorefrontCustomerClient` through manual `StorefrontApiClient`. Protected customer profile, customer address book, and customer order self-service remain auth-sensitive exceptions until generated clients can attach the current V2 bearer token per call without moving cookie/session policy into Runtime.
 - `StorefrontAuthClient` remains V2-owned while auth cookie/session/refresh-token behavior stays in the host.
 
 ## V2F0 verification
@@ -192,3 +190,23 @@ Verification:
 - Browser QA logged in as the QA customer, cleared cart, added `qa-simple-product-100`, started checkout, selected saved billing/shipping address `3c111111-1111-4111-8111-111111111201`, selected shipping, selected COD, reviewed checkout, and placed order `ORD-20260725-FAE82317`.
 - Double-click place-order QA observed exactly one `POST /api/checkout/place-order`; the cart cleared after order placement and the account order list/detail showed the new order with EUR currency.
 - Browser network assertion: no direct browser requests to `http://localhost:5180/`, no 5xx responses, and no unexpected console/page errors. Expected Blazor WASM fetch abort console noise during navigation was filtered the same way as existing release QA.
+
+## V2F8 account, auth, address, order and consent alignment
+
+Implementation notes:
+
+- Added `IStorefrontRuntimeAddressFacade` and `StorefrontRuntimeAddressFacade` in Runtime for public address countries, states, and address field configuration.
+- Added `IStorefrontRuntimeConsentFacade` and `StorefrontRuntimeConsentFacade` in Runtime for consent current/save/revoke mapping through the generated client.
+- Added V2 `GeneratedStorefrontAddressClient` and `GeneratedStorefrontConsentClient` adapters as the active `IStorefrontAddressClient` and `IStorefrontConsentClient` registrations.
+- Reviewed `StorefrontSessionResolver` and `StorefrontAuthClient`; cookie/header refresh, Set-Cookie bridging, logout cookie behavior, per-request bearer handling, auth forms, and protected account BFF endpoints stay in the V2 host.
+- Kept protected `IStorefrontCustomerClient` calls as a documented auth-sensitive manual exception because generated protected customer clients currently do not expose per-call bearer-token injection.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- Static/client tests: `StorefrontCommerceFlowCutoverTests|StorefrontV2AuthClientTests|StorefrontWasmRuntimeFoundationTests|SecurityPrivacyPhase3ConsentTests|AddressCorePhase7ConfigurationTests` passed 42/42.
+- Focused host smoke account/auth tests passed 8/8 for disabled registration, login cookie redirect, logout cookie copy, forgot password, profile update, address create, order paging, and order detail rendering.
+- Registration policy Playwright: `scripts/qa/run-storefront-registration-policy-e2e.ps1 -Headless` passed and wrote `.gstack/qa-reports/registration-policy-e2e/result.json`, `storefront-register-disabled.png`, and `storefront-register-enabled.png`.
+- Account/consent Playwright against `http://localhost:18598`: passed and wrote `output/playwright/v2f8-account-consent-flow-evidence.json` plus `output/playwright/v2f8-account-consent-flow.png`.
+- Browser QA covered register allowed, password recovery sent state, login/logout, profile edit, address add/edit/default shipping/default billing/delete through same-origin BFF, order paging/detail for `ORD-20260725-FAE82317`, cross-customer order detail denial with `404`, consent save/revoke, zero direct browser requests to `http://localhost:5180`, no 5xx responses, and no unexpected console/page errors.
+- Guest completion token behavior has no current Storefront V2 browser lookup UI; focused `StorefrontGuestOrderServiceTests|StorefrontSwagger_GuestOrderLookupRequiresTokenAndReturnsSafeDetailContract|StorefrontCheckoutServiceTests|OrderReadModelBehaviorLockTests` passed 71/71 and covers token requirement, non-predictable raw token behavior, hash-only persistence, wrong-token/wrong-store denial, and safe detail contract.

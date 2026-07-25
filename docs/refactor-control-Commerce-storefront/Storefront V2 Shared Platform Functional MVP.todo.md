@@ -279,33 +279,35 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F8 - Account, auth, address, order self-service and consent alignment
 
-- [ ] Rà soát `StorefrontSessionResolver` và `StorefrontAuthClient`:
-  - [ ] Giữ auth cookie/header policy ở V2 host.
-  - [ ] Chỉ đưa neutral request/response/error mapping vào Runtime nếu không làm rò browser/server boundary.
-- [ ] Runtime facade hoặc V2 adapter cho:
-  - [ ] Login/logout status.
-  - [ ] Register policy.
-  - [ ] Password recovery.
-  - [ ] Profile.
-  - [ ] Address book.
-  - [ ] Customer order list/detail.
-  - [ ] Guest order lookup nếu hiện có.
-  - [ ] Consent state.
-- [ ] Components account/checkout/cart tiếp tục là WASM components, nhưng business truth đi qua BFF/Runtime/Client.
-- [ ] Không mở thêm nhiều account pages nếu feature có thể là component trong một account shell hợp lý.
+- [x] Rà soát `StorefrontSessionResolver` và `StorefrontAuthClient`:
+  - [x] Giữ auth cookie/header policy ở V2 host.
+  - [x] Chỉ đưa neutral request/response/error mapping vào Runtime nếu không làm rò browser/server boundary.
+- [x] Runtime facade hoặc V2 adapter cho:
+  - [x] Login/logout status.
+  - [x] Register policy.
+  - [x] Password recovery.
+  - [x] Profile.
+  - [x] Address book.
+  - [x] Customer order list/detail.
+  - [x] Guest order lookup nếu hiện có.
+  - [x] Consent state.
+- [x] Components account/checkout/cart tiếp tục là WASM components, nhưng business truth đi qua BFF/Runtime/Client.
+- [x] Không mở thêm nhiều account pages nếu feature có thể là component trong một account shell hợp lý.
+  - 2026-07-25: public address metadata and consent state now use `IStorefrontRuntimeAddressFacade` / `IStorefrontRuntimeConsentFacade` through generated V2 adapters. `StorefrontSessionResolver`, `StorefrontAuthClient`, and protected customer profile/address/order/change-password calls remain V2-owned auth-sensitive paths because the generated protected clients do not yet expose per-call bearer-token injection. Account UI remains inside the existing account shell.
 
 ### V2F8 QA gate
 
-- [ ] Playwright register allowed policy.
-- [ ] Playwright register disabled policy không cho submit và hiển thị đúng state.
-- [ ] Playwright login/logout.
-- [ ] Playwright password recovery request nếu SMTP capture fixture đã setup.
-- [ ] Playwright profile view/edit.
-- [ ] Playwright address add/edit/delete/default.
-- [ ] Playwright order history paging.
-- [ ] Playwright order detail authorization: customer chỉ xem order của mình.
-- [ ] Playwright guest order completion token không dùng predictable ID.
-- [ ] Playwright consent accept/change/revoke.
+- [x] Playwright register allowed policy.
+- [x] Playwright register disabled policy không cho submit và hiển thị đúng state.
+- [x] Playwright login/logout.
+- [x] Playwright password recovery request nếu SMTP capture fixture đã setup.
+- [x] Playwright profile view/edit.
+- [x] Playwright address add/edit/delete/default.
+- [x] Playwright order history paging.
+- [x] Playwright order detail authorization: customer chỉ xem order của mình.
+- [x] Playwright guest order completion token không dùng predictable ID.
+- [x] Playwright consent accept/change/revoke.
+  - 2026-07-25: `run-storefront-registration-policy-e2e.ps1 -Headless` covered register enabled/disabled policy and restored registration mode. `output/playwright/v2f8-account-consent-flow-evidence.json` covered login/logout, password recovery sent state, profile edit, address add/edit/default/delete via same-origin BFF, order paging/detail, cross-customer order detail denial, consent save/revoke, no browser direct Commerce Node requests, no 5xx, and no unexpected console/page errors. Guest completion token remains backend-only in current UI and is covered by focused guest order service/OpenAPI/checkout tests proving non-predictable token behavior and hash-only storage.
 
 ## Phase V2F9 - Contract ownership and Web.SharedV2 reduction
 
