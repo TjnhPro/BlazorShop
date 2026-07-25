@@ -153,7 +153,22 @@ namespace BlazorShop.Storefront.Services
                 return StorefrontCartMutationResult.Succeeded(result.Data);
             }
 
-            return StorefrontCartMutationResult.Failed(result.Message);
+            return StorefrontCartMutationResult.Failed(result.Message, result.StatusCode);
+        }
+
+        public async Task<StorefrontCartMutationResult> RecalculateAsync(
+            HttpContext httpContext,
+            StorefrontCartRecalculateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var token = httpContext.Request.Cookies[StorefrontCookieNames.CartToken];
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return StorefrontCartMutationResult.Failed("Your cart is empty.");
+            }
+
+            var result = await this.apiClient.RecalculateCartAsync(token, request, cancellationToken);
+            return this.ApplyMutationResult(httpContext, token, result);
         }
 
         public async Task<StorefrontCartMutationResult> MergeCurrentCustomerAsync(
@@ -183,7 +198,7 @@ namespace BlazorShop.Storefront.Services
         {
             if (!result.Success)
             {
-                return StorefrontCartMutationResult.Failed(result.Message);
+                return StorefrontCartMutationResult.Failed(result.Message, result.StatusCode);
             }
 
             if (result.Data is not null)
@@ -304,16 +319,16 @@ namespace BlazorShop.Storefront.Services
         }
     }
 
-    public sealed record StorefrontCartMutationResult(bool Success, string Message, StorefrontCartResponse? Cart)
+    public sealed record StorefrontCartMutationResult(bool Success, string Message, StorefrontCartResponse? Cart, int? StatusCode = null)
     {
         public static StorefrontCartMutationResult Succeeded(StorefrontCartResponse? cart)
         {
             return new(true, string.Empty, cart);
         }
 
-        public static StorefrontCartMutationResult Failed(string message)
+        public static StorefrontCartMutationResult Failed(string message, int? statusCode = null)
         {
-            return new(false, string.IsNullOrWhiteSpace(message) ? "Unable to update cart right now." : message, null);
+            return new(false, string.IsNullOrWhiteSpace(message) ? "Unable to update cart right now." : message, null, statusCode);
         }
     }
 }

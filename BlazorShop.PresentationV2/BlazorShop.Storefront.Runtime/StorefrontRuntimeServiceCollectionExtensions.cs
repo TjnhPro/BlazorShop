@@ -69,6 +69,7 @@ namespace BlazorShop.Storefront.Runtime
             services.AddScoped<IStorefrontSeoClient>(CreateClient<StorefrontSeoClient>);
             services.AddScoped<IStorefrontStoreClient>(CreateClient<StorefrontStoreClient>);
             services.AddScoped<IStorefrontRuntimeCatalogContentFacade, StorefrontRuntimeCatalogContentFacade>();
+            services.AddScoped<IStorefrontRuntimeCartFacade, StorefrontRuntimeCartFacade>();
             services.AddScoped<IStorefrontRuntimeConfigurationFacade, StorefrontRuntimeConfigurationFacade>();
 
             return services;

@@ -21,7 +21,9 @@ namespace BlazorShop.Storefront.Endpoints
             return Results.Ok(ToLocalCartResponse(result.Cart, displayContext, priceFormatter));
         }
     
-        return LocalCartValidationError(result.Message);
+        return result.StatusCode == StatusCodes.Status409Conflict
+            ? LocalConflict(result.Message)
+            : LocalCartValidationError(result.Message);
     }
 
         internal static StorefrontBrowserCart ToLocalCartResponse(

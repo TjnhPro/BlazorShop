@@ -53,4 +53,9 @@ namespace BlazorShop.Storefront.Endpoints
     {
         public int Quantity { get; set; }
     }
+
+    public sealed class StorefrontLocalCartRecalculateRequest
+    {
+        public int? ExpectedVersion { get; set; }
+    }
 }

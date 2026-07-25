@@ -176,6 +176,27 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
                 return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
             }).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
+            app.MapPost("/api/cart/recalculate", async (
+                StorefrontLocalCartRecalculateRequest request,
+                StorefrontCartTokenService cartTokenService,
+                IStorefrontDisplayContextProvider displayContextProvider,
+                IStorefrontPriceFormatter priceFormatter,
+                IAntiforgery antiforgery,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+                if (antiforgeryFailure is not null)
+                {
+                    return antiforgeryFailure;
+                }
+
+                var result = await cartTokenService.RecalculateAsync(
+                    httpContext,
+                    new StorefrontCartRecalculateRequest { ExpectedVersion = request.ExpectedVersion },
+                    cancellationToken);
+                return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
+            }).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
 
             return app;
         }

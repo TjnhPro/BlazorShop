@@ -35,7 +35,7 @@ Behavior-change scope: none. V2F0 only records the dependency inventory, migrati
 Allowed until their target phase cutover lands:
 
 - `IStorefrontAddressClient` through manual `StorefrontApiClient`.
-- `IStorefrontCartClient` through manual `StorefrontApiClient`.
+- `StorefrontApiClient.MergeCurrentCustomerCartAsync` only. Active cart CRUD/session/recalculate now go through `GeneratedStorefrontCartClient` and `IStorefrontRuntimeCartFacade`; merge remains an auth-sensitive exception until the account/auth cutover phase because the generated client has no per-call bearer-token parameter.
 - `IStorefrontCheckoutClient` through manual `StorefrontApiClient`.
 - `IStorefrontConsentClient` through manual `StorefrontApiClient`.
 - `IStorefrontCustomerClient` through manual `StorefrontApiClient`.
@@ -150,3 +150,26 @@ Verification:
 - Add-to-cart QA used `qa-simple-product-100`: product page add succeeded via same-origin `/api/cart/lines`, cart badge became `1`, and `/my-cart` showed the added product.
 - Unavailable QA used `qa-purchasing-disabled-product`: add button stayed disabled and purchase panel showed the purchasing-disabled reason.
 - Browser network assertion: no direct browser requests to `http://localhost:5180/`; console/page error list was empty.
+
+## V2F6 cart runtime/BFF cutover
+
+Implementation notes:
+
+- Added `IStorefrontRuntimeCartFacade` and `StorefrontRuntimeCartFacade` in Runtime for cart session, get, add, update, remove, clear, validate, and recalculate operations.
+- Registered the cart facade from `AddStorefrontServerGeneratedClients`.
+- Added `GeneratedStorefrontCartClient` in V2 as the active `IStorefrontCartClient` adapter. It delegates cart CRUD/session/recalculate to Runtime and projects generated DTOs back to existing V2 cart contracts.
+- Kept `StorefrontApiClient.MergeCurrentCustomerCartAsync` as the single documented manual cart exception until account/auth cutover.
+- V2 host still owns cart token cookies, same-origin `/api/cart/*`, antiforgery, and local browser DTO mapping.
+- Added same-origin `/api/cart/recalculate` so browser/BFF QA can verify cart warning refresh and stale-version conflict behavior without direct Commerce Node calls.
+- Extended `StorefrontSubmitResult<T>` and cart mutation mapping to preserve `409 Conflict` from Runtime/API through the local BFF.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"`: passed 36/36.
+- Playwright cart flow against `http://localhost:18598`: passed and wrote `output/playwright/v2f6-cart-flow-evidence.json` plus `output/playwright/v2f6-cart-flow.png`.
+- Browser QA added `qa-simple-product-100` and `catalog-qa-t-shirt` Red/XL from product pages; cart badge updated and cart page rendered line images, selected attributes/variant label, unit price, and line total.
+- Browser QA updated quantity, removed a line, and cleared cart through same-origin `/api/cart/*`.
+- Browser QA disabled `qa-simple-product-100` in the default local store DB, called `/api/cart/recalculate`, saw the warning state and disabled checkout, then restored the product fixture.
+- Negative browser QA verified missing antiforgery on `/api/cart/lines` returned `400` and stale `/api/cart/recalculate` returned `409`.
+- Browser network assertion: no direct browser requests to `http://localhost:5180/`. The only console resource errors were the expected negative-check `400` and `409`; unexpected console/page error list was empty.

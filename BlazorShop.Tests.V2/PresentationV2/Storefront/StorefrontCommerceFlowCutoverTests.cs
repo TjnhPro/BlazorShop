@@ -96,6 +96,53 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AddScoped<IStorefrontPaymentProviderResolver, StorefrontPaymentProviderResolver>", dependencyInjection, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void StorefrontV2CartClient_UsesRuntimeFacadeForActiveCartCrud()
+        {
+            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
+            var runtimeFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCartFacade.cs");
+            var generatedAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCartClient.cs");
+            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
+            var cartContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/Contracts/StorefrontCartLocalContracts.cs");
+            var cartEndpointSupport = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Cart.cs");
+            var commonContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CommonContracts.cs");
+            var cartComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
+
+            Assert.Contains("AddScoped<IStorefrontRuntimeCartFacade, StorefrontRuntimeCartFacade>", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeCartFacade", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("CreateOrResumeSessionAsync", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("GetCartAsync", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("AddLineAsync", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("UpdateLineAsync", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("RemoveLineAsync", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("ClearAsync", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("ValidateAsync", runtimeFacade, StringComparison.Ordinal);
+            Assert.Contains("RecalculateAsync", runtimeFacade, StringComparison.Ordinal);
+
+            Assert.Contains("AddScoped<GeneratedStorefrontCartClient>", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCartClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeCartFacade cartFacade", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.cartFacade.AddLineAsync", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.cartFacade.UpdateLineAsync", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.cartFacade.RemoveLineAsync", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.cartFacade.ClearAsync", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.cartFacade.RecalculateAsync", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("single auth-sensitive cart exception", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.manualClient.MergeCurrentCustomerCartAsync", generatedAdapter, StringComparison.Ordinal);
+
+            Assert.Contains("app.MapGet(\"/api/cart\"", cartEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/cart/lines\"", cartEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/cart/recalculate\"", cartEndpoints, StringComparison.Ordinal);
+            Assert.Contains("StorefrontLocalCartRecalculateRequest", cartContracts, StringComparison.Ordinal);
+            Assert.Contains("int? StatusCode", commonContracts, StringComparison.Ordinal);
+            Assert.Contains("StatusCodes.Status409Conflict", cartEndpointSupport, StringComparison.Ordinal);
+            Assert.Contains("ValidateLocalCartAntiforgeryAsync", cartEndpoints, StringComparison.Ordinal);
+            Assert.Contains("\"/api/cart\"", cartComponents, StringComparison.Ordinal);
+            Assert.DoesNotContain("localhost:5180", cartComponents, StringComparison.Ordinal);
+        }
+
         private static string ReadStorefrontApiClientSources()
         {
             var root = FindRepositoryRoot();

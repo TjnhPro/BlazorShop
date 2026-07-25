@@ -86,6 +86,10 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Storefront V2 references `BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Web.Shared`.
   - 2026-07-09: covered by PresentationV2 boundary tests.
 - [x] After SharedV2 changes, re-run catalog/cart smoke and `FullyQualifiedName~PresentationV2.Storefront`. 2026-07-09: full `dotnet test BlazorShop.sln --no-restore` passed 485/485 with 10 skipped; Playwright catalog/product/cart smoke passed.
+- [x] Storefront V2 Shared Platform Functional MVP V2F6 cart runtime/BFF cutover keeps browser mutations on same-origin `/api/cart/*`. 2026-07-25: active `IStorefrontCartClient` resolves `GeneratedStorefrontCartClient`; cart CRUD/recalculate/session delegate to `IStorefrontRuntimeCartFacade`, while V2 host keeps cart token cookie, local response DTO mapping, and antiforgery. `MergeCurrentCustomerCartAsync` remains the documented manual auth exception until account/auth cutover.
+- [x] V2F6 focused build/tests passed. 2026-07-25: `dotnet build BlazorShop.sln` passed with known MessagePack/Browserslist warnings; focused `StorefrontCommerceFlowCutoverTests|CartCorePhase0InventoryTests|SecurityPrivacyPhase1CsrfTests|StorefrontWasmRuntimeFoundationTests` passed 36/36.
+- [x] V2F6 Playwright cart flow passed on `http://localhost:18598`. 2026-07-25: evidence saved to `output/playwright/v2f6-cart-flow-evidence.json` and `output/playwright/v2f6-cart-flow.png`; verified product-page add, badge update, cart line images/selected attributes/unit price/line total, quantity update, remove, clear, product-disabled warning, `409` stale cart version conflict, and missing antiforgery rejection.
+- [x] V2F6 browser network guard passed. 2026-07-25: Playwright request capture found zero browser requests to `http://localhost:5180`; the only console resource errors were the expected negative-check `400` antiforgery and `409` conflict responses, with no unexpected console/page errors.
 
 ## WASM Foundation
 

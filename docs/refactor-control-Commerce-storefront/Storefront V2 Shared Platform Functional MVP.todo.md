@@ -209,33 +209,34 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F6 - Cart runtime/BFF cutover
 
-- [ ] Runtime facade cho cart:
-  - [ ] Get current cart.
-  - [ ] Add line.
-  - [ ] Update quantity.
-  - [ ] Remove line.
-  - [ ] Clear cart.
-  - [ ] Recalculate cart.
-  - [ ] Cart warnings/validation state.
-- [ ] V2 host giữ:
-  - [ ] Guest/auth cart token cookie.
-  - [ ] Same-origin `/api/cart/*` BFF endpoints.
-  - [ ] Antiforgery.
-  - [ ] Response mapping sang local browser DTO nếu cần.
-- [ ] Components cart vẫn dùng `StorefrontLocalApiClient` cho browser mutation.
-- [ ] Loại manual `StorefrontApiClient` cart methods khỏi active DI sau khi cutover.
+- [x] Runtime facade cho cart:
+  - [x] Get current cart.
+  - [x] Add line.
+  - [x] Update quantity.
+  - [x] Remove line.
+  - [x] Clear cart.
+  - [x] Recalculate cart.
+  - [x] Cart warnings/validation state.
+- [x] V2 host giữ:
+  - [x] Guest/auth cart token cookie.
+  - [x] Same-origin `/api/cart/*` BFF endpoints.
+  - [x] Antiforgery.
+  - [x] Response mapping sang local browser DTO nếu cần.
+- [x] Components cart vẫn dùng `StorefrontLocalApiClient` cho browser mutation.
+- [x] Loại manual `StorefrontApiClient` cart methods khỏi active DI sau khi cutover.
+  - 2026-07-25: active `IStorefrontCartClient` registration now resolves `GeneratedStorefrontCartClient`, which delegates cart CRUD/recalculate/session to `IStorefrontRuntimeCartFacade`. `MergeCurrentCustomerCartAsync` remains the single documented auth-sensitive manual cart exception until the account/auth cutover phase because the generated cart client has no per-call bearer token parameter.
 
 ### V2F6 QA gate
 
-- [ ] Playwright add product to cart từ product page.
-- [ ] Playwright cart badge count update.
-- [ ] Playwright cart page load line items, image, selected attributes, unit price, line total.
-- [ ] Playwright update quantity.
-- [ ] Playwright remove item.
-- [ ] Playwright clear cart.
-- [ ] Playwright validation warning khi product không còn purchasable.
-- [ ] Playwright `409` cart version conflict handling nếu API hỗ trợ.
-- [ ] Antiforgery test: mutation thiếu token bị reject.
+- [x] Playwright add product to cart từ product page.
+- [x] Playwright cart badge count update.
+- [x] Playwright cart page load line items, image, selected attributes, unit price, line total.
+- [x] Playwright update quantity.
+- [x] Playwright remove item.
+- [x] Playwright clear cart.
+- [x] Playwright validation warning khi product không còn purchasable.
+- [x] Playwright `409` cart version conflict handling nếu API hỗ trợ.
+- [x] Antiforgery test: mutation thiếu token bị reject.
 
 ## Phase V2F7 - Checkout and COD order placement cutover
 
