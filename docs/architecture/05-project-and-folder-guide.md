@@ -164,7 +164,6 @@ Use for:
 - SEO and public discovery documents.
 - Store key propagation to Commerce Node Storefront API.
 - Storefront-owned presentation/local endpoint contracts plus generated Storefront client adapters.
-- `Web.SharedV2` utilities only when they are genuinely shared browser/runtime helpers.
 
 Asset and layout rules:
 
@@ -181,7 +180,7 @@ Do not:
 - Call Control Plane.
 - Manage node credentials.
 - Reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, Commerce Node API, or Control Plane API projects.
-- Import `Web.SharedV2.Models` business contracts.
+- Import `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
 
@@ -284,7 +283,7 @@ Do not:
 
 - Copy Storefront V2 source as the Starter baseline.
 - Turn Storefront V2 into a neutral template.
-- Reference `BlazorShop.Storefront.V2`, backend/core/API projects, Control Plane Web, or `Web.SharedV2.Models` business contracts.
+- Reference `BlazorShop.Storefront.V2`, backend/core/API projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Copy the manual `StorefrontApiClient` transport from Storefront V2.
 - Move pricing, sellability, cart validation, checkout, order placement, payment, or authorization rules into Starter.
 
@@ -315,7 +314,7 @@ Do not:
 - Add generated proof output to `BlazorShop.sln` by default.
 - Treat generated proof output as a platform contract owner.
 - Backport store-specific CSS, assets, generated pages, or analysis artifacts into Starter.
-- Use generated proof output as evidence that generated storefronts may reference Storefront V2 or backend/core/API projects.
+- Use generated proof output as evidence that generated storefronts may reference Storefront V2, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or backend/core/API projects.
 - Guess Storefront API response shapes instead of using generated package contracts.
 
 ### `tools/BlazorShop.AI.StorefrontBuilder`

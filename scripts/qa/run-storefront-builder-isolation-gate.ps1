@@ -38,7 +38,7 @@ if ($Describe) {
     Write-Host "- pack BlazorShop.Storefront.Client"
     Write-Host "- pack BlazorShop.Storefront.Runtime"
     Write-Host "- pack BlazorShop.Storefront.Components"
-    Write-Host "- confirm package references, no Storefront.V2/backend/core/API references"
+    Write-Host "- confirm package references, no Storefront.V2/Web.SharedV2/backend/core/API references"
     exit 0
 }
 
@@ -65,7 +65,7 @@ foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Ru
     }
 }
 
-$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API")
+$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API")
 Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
     Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
     ForEach-Object {

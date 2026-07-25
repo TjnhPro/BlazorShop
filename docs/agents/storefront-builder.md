@@ -30,6 +30,7 @@ Generated storefronts must not:
 
 - Reference `BlazorShop.Storefront.V2`.
 - Reference backend/core/API projects.
+- Reference `BlazorShop.Web.SharedV2` or `Web.SharedV2`.
 - Call `api/commerce/*`, `api/control-plane/*`, or legacy `api/internal/*` from browser code.
 - Copy Storefront V2 transport internals.
 - Write store-specific output into `BlazorShop.Storefront.Starter`.

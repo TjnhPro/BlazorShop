@@ -45,6 +45,8 @@ $forbiddenSourcePatterns = @(
     "BlazorShop.ControlPlane.API",
     "BlazorShop.ControlPlane.Web",
     "BlazorShop.Storefront.V2",
+    "BlazorShop.Web.SharedV2",
+    "Web.SharedV2",
     "StorefrontApiClient",
     "Generated\StorefrontClient.g.cs",
     "Generated/StorefrontClient.g.cs"
@@ -65,7 +67,7 @@ if ($Describe) {
     Write-Host "- Pack Storefront.Client and Storefront.Runtime to local feed"
     Write-Host "- Restore/build/publish generated storefront from package references"
     Write-Host "- Verify generated client compatibility and provider callback/webhook exclusion"
-    Write-Host "- Verify generated storefront has no backend/core/V2/generated-source copy"
+    Write-Host "- Verify generated storefront has no backend/core/V2/Web.SharedV2/generated-source copy"
     Write-Host "- Verify required storefront routes, SEO/security conventions, BFF CSRF, and browser token boundaries"
     Write-Host "- Optionally assert live generated storefront route responses unless -SkipRuntime is supplied"
     exit 0

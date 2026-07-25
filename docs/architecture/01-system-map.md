@@ -38,7 +38,7 @@ Active V2 presentation projects reference shared core projects:
 - `BlazorShop.ControlPlane.API` references `Application`, `Infrastructure`, and `ServiceDefaults`.
 - `BlazorShop.CommerceNode.API` references `Application`, `Infrastructure`, and `ServiceDefaults`.
 - `BlazorShop.ControlPlane.Web` references `Application` and `Web.SharedV2`.
-- `BlazorShop.Storefront.V2` references `ServiceDefaults`, `Storefront.Client`, `Storefront.Components`, `Storefront.WASM`, and `Web.SharedV2`; it must not reference `Application`, `Domain`, `Infrastructure`, Commerce Node API, or Control Plane API projects.
+- `BlazorShop.Storefront.V2` references `ServiceDefaults`, `Storefront.Client`, `Storefront.Components`, and `Storefront.WASM`; it must not reference `Application`, `Domain`, `Infrastructure`, Commerce Node API, Control Plane API projects, or `Web.SharedV2`.
 - `BlazorShop.Storefront.WASM` references `Storefront.Components`.
 - `BlazorShop.Storefront.Components` is a Razor component library with no BlazorShop project references.
 - `BlazorShop.Web.SharedV2` has no project references.
@@ -62,7 +62,7 @@ Target dependency rules:
 
 - `BlazorShop.CommerceNode.API` is the headless ecommerce backend and Storefront API platform.
 - `BlazorShop.Storefront.V2` is the first real storefront consumer, not the neutral Starter.
-- `BlazorShop.Storefront.V2` may use `Web.SharedV2` only for genuinely shared browser utilities, not `Web.SharedV2.Models` business contracts.
+- `BlazorShop.Storefront.V2` owns Storefront-specific browser helpers locally and does not reference `Web.SharedV2`.
 - Generated storefronts consume Storefront OpenAPI/client contracts instead of copying Storefront V2 internals.
 - `BlazorShop.Storefront.Starter` is the neutral skeleton source for generated storefronts and must use the generated Storefront client package boundary.
 - Generated storefront proof projects are disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}`, not active solution projects or platform contract owners.

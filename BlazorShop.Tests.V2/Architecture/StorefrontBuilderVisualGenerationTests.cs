@@ -291,6 +291,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-PROJECT-003", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-PROJECT-004", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-PROJECT-005", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-PROJECT-006", validator, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Web.SharedV2", validator, StringComparison.Ordinal);
         }
 
         [Fact]

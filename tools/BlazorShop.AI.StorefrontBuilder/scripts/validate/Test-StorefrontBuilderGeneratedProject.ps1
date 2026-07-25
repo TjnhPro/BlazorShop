@@ -33,4 +33,16 @@ foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "sourceStar
     }
 }
 
+$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "BlazorShop.ControlPlane.Web")
+Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File |
+    Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
+    ForEach-Object {
+        $content = Get-Content -LiteralPath $_.FullName -Raw
+        foreach ($pattern in $forbidden) {
+            if ($content.Contains($pattern, [System.StringComparison]::OrdinalIgnoreCase)) {
+                throw "[SFB-PROJECT-006] Forbidden dependency '$pattern' found in $($_.FullName)."
+            }
+        }
+    }
+
 Write-Host "StorefrontBuilder generated project validation passed for $ProjectRoot."

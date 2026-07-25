@@ -26,6 +26,8 @@ $forbiddenPatterns = @(
     "BlazorShop.ControlPlane.API",
     "BlazorShop.ControlPlane.Web",
     "BlazorShop.Storefront.V2",
+    "BlazorShop.Web.SharedV2",
+    "Web.SharedV2",
     "..\BlazorShop.",
     "../BlazorShop."
 )
@@ -38,7 +40,7 @@ if ($Describe) {
     Write-Host "- Restore from local package feed"
     Write-Host "- Build isolated Starter/Sample copy"
     Write-Host "- Publish isolated Starter/Sample copy"
-    Write-Host "- Fail on backend/V2/ProjectReference source paths"
+    Write-Host "- Fail on backend/V2/Web.SharedV2/ProjectReference source paths"
     exit 0
 }
 

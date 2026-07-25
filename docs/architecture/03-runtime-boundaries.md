@@ -183,7 +183,7 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
 Rules:
 
 - Generated storefronts must not reference `BlazorShop.Storefront.V2`.
-- Generated storefronts must not reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, or `BlazorShop.ControlPlane.API`.
+- Generated storefronts must not reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Browser code in generated storefronts must not call Commerce Node admin/control, Control Plane, or removed `api/internal/*` routes directly.
 - `BlazorShop.Storefront.Starter` is a neutral template input. Store-specific generated CSS, assets, pages, and analysis artifacts belong in the generated storefront project only.
 - StorefrontBuilder tooling is development-time only and is documented in [StorefrontBuilder Architecture](11-storefront-builder.md).

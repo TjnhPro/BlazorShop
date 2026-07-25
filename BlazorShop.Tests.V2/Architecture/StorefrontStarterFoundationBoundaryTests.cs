@@ -71,6 +71,8 @@ namespace BlazorShop.Tests.Architecture
                 "same-origin BFF endpoints",
                 "Do not reference `BlazorShop.Storefront.V2`",
                 "Do not reference backend/API/core projects",
+                "BlazorShop.Web.SharedV2",
+                "Web.SharedV2",
                 "Use generated package contracts instead of guessing API response shapes",
                 "presentation-specific CSS, assets, generated pages",
             })
@@ -100,7 +102,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StarterSource_DoesNotUseSharedBusinessModelsOrCopyManualTransport()
+        public void StarterSource_DoesNotUseWebSharedV2OrCopyManualTransport()
         {
             var sourceRoots = new[]
             {
@@ -122,7 +124,8 @@ namespace BlazorShop.Tests.Architecture
                     RelativePath = ToRepositoryRelativePath(path),
                     Source = File.ReadAllText(path),
                 })
-                .Where(file => file.Source.Contains("BlazorShop.Web.SharedV2.Models", StringComparison.Ordinal)
+                .Where(file => file.Source.Contains("BlazorShop.Web.SharedV2", StringComparison.Ordinal)
+                    || file.Source.Contains("Web.SharedV2", StringComparison.Ordinal)
                     || file.Source.Contains("StorefrontApiClient", StringComparison.Ordinal)
                     || file.Source.Contains("Generated/StorefrontClient.g.cs", StringComparison.Ordinal)
                     || file.Source.Contains("ProjectReference", StringComparison.Ordinal))
@@ -585,6 +588,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("dotnet publish $starterProject", script, StringComparison.Ordinal);
             Assert.Contains("ProjectReference", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Web.SharedV2", script, StringComparison.Ordinal);
+            Assert.Contains("Web.SharedV2", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Application", script, StringComparison.Ordinal);
             Assert.Contains("[switch]$Describe", script, StringComparison.Ordinal);
             Assert.Contains("run-storefront-starter-isolation-gate.ps1 -Describe", workflow, StringComparison.Ordinal);
@@ -604,6 +609,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("dotnet build $sampleProject", script, StringComparison.Ordinal);
             Assert.Contains("dotnet publish $sampleProject", script, StringComparison.Ordinal);
             Assert.Contains("Assert-SourceDoesNotContain $forbiddenSourcePatterns", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Web.SharedV2", script, StringComparison.Ordinal);
+            Assert.Contains("Web.SharedV2", script, StringComparison.Ordinal);
             Assert.Contains("IStorefrontCheckoutClient", script, StringComparison.Ordinal);
             Assert.Contains("Place a COD order from a checkout session.", script, StringComparison.Ordinal);
             Assert.Contains("/robots.txt", script, StringComparison.Ordinal);
@@ -651,6 +658,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
             Assert.Contains("Generated\\StorefrontClient.g.cs", script, StringComparison.Ordinal);
             Assert.Contains("ProjectReference", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Web.SharedV2", script, StringComparison.Ordinal);
+            Assert.Contains("Web.SharedV2", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.GeneratedProof", script, StringComparison.Ordinal);
             Assert.Contains("artifacts/storefront-builder/generated", script, StringComparison.Ordinal);
             Assert.Contains("StorefrontBuilder generated proof workflow", proof, StringComparison.Ordinal);
@@ -709,7 +718,8 @@ namespace BlazorShop.Tests.Architecture
                 || normalized.Contains("/BlazorShop.CommerceNode.API/", StringComparison.OrdinalIgnoreCase)
                 || normalized.Contains("/BlazorShop.ControlPlane.API/", StringComparison.OrdinalIgnoreCase)
                 || normalized.Contains("/BlazorShop.ControlPlane.Web/", StringComparison.OrdinalIgnoreCase)
-                || normalized.Contains("/BlazorShop.Storefront.V2/", StringComparison.OrdinalIgnoreCase);
+                || normalized.Contains("/BlazorShop.Storefront.V2/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.Web.SharedV2/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string ReadRepositoryFile(string relativePath)

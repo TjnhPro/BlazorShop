@@ -91,7 +91,7 @@ Run isolation:
 - Generated storefronts may use `BlazorShop.Storefront.Components` for reusable browser-safe UI components; generated project-local components are allowed for store-specific presentation.
 - Presentation-specific CSS, assets, generated pages, and analysis artifacts stay in the generated/custom project.
 - Protected browser actions go through same-origin BFF endpoints.
-- Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or `Web.SharedV2.Models` business contracts.
+- Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Do not guess API response shapes; use generated package contracts.
 
 ## Browser QA

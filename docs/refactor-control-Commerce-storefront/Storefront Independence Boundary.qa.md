@@ -129,3 +129,18 @@ Verification:
 - Static scan for Control Plane routes/namespaces, node credentials, Commerce Node API project namespace, and backend/core namespaces across Storefront platform projects found no forbidden source/API boundary references.
 - Browser network assertion against `http://localhost:18598/product/qa-simple-product-100` clicked add-to-cart and observed same-origin `POST /api/cart/lines`; no browser request to `localhost:5180`, `/api/storefront/stores/*`, or Control Plane routes. Evidence: `output/playwright/sib5-api-access-boundary-network.json` and `.png`.
 - Local V2 runtime was stopped after the browser assertion.
+
+## SIB6 - Starter and generated storefront independence contract
+
+Implementation notes:
+
+- Updated StorefrontBuilder, Starter, generated storefront, system map, runtime-boundary, project-folder, contract-ownership, ADR, agent, and visual reverse engineering docs so Starter/generated storefronts explicitly ban all `BlazorShop.Web.SharedV2`/`Web.SharedV2` references, not only `Web.SharedV2.Models`.
+- Updated generated storefront validation, generated proof isolation, generated sample release, Starter isolation, and sample generation scripts to fail on `BlazorShop.Web.SharedV2`/`Web.SharedV2` references.
+- Extended architecture tests so Starter/generated consumer documentation, scripts, and validators carry the `Web.SharedV2` prohibition.
+- No production browser QA was run in this phase by design; SIB6 is a compile/static contract proof phase.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 69/69.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1`: passed, including Client/Runtime/Components package pack, generated proof restore/build, StorefrontBuilder static validation, and isolation gate.
+- `rg "BlazorShop.Web.SharedV2|Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.Starter -g "*.cs" -g "*.razor" -g "*.csproj"`: no matches.

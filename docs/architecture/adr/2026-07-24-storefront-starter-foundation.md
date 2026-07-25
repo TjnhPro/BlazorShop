@@ -43,7 +43,7 @@ Starter and generated storefront projects must not reference `BlazorShop.Storefr
 
 Starter must consume `BlazorShop.Storefront.Client` through `PackageReference` in the independent proof. A monorepo development project may exist, but the release gate must prove that an external project restores and builds from local/private packages.
 
-Starter source must not import `BlazorShop.Web.SharedV2.Models` business contracts and must not copy the manual `StorefrontApiClient` transport from Storefront V2. Generated client contracts are the default contract source. Manual HTTP exceptions require an exception registry entry with reason, owner, test, and revisit trigger.
+Starter source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` and must not copy the manual `StorefrontApiClient` transport from Storefront V2. Generated client contracts are the default contract source. Manual HTTP exceptions require an exception registry entry with reason, owner, test, and revisit trigger.
 
 ## Consequences
 

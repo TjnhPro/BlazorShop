@@ -35,6 +35,8 @@ $forbiddenPatterns = @(
     "BlazorShop.CommerceNode.API",
     "BlazorShop.ControlPlane.API",
     "BlazorShop.ControlPlane.Web",
+    "BlazorShop.Web.SharedV2",
+    "Web.SharedV2",
     "Generated\StorefrontClient.g.cs",
     "Generated/StorefrontClient.g.cs"
 )

@@ -210,27 +210,27 @@ Storefront.*
 
 ## Phase SIB6 - Starter and Storefront.{Name} independence contract
 
-- [ ] Update docs/guardrails cho `Storefront.Starter`:
-  - [ ] Package-first consumption.
-  - [ ] Không reference `Storefront.V2`.
-  - [ ] Không reference `Web.SharedV2`.
-  - [ ] Không reference backend/core/API projects.
-  - [ ] Không copy manual `StorefrontApiClient`.
-  - [ ] Protected browser actions phải qua same-origin BFF.
-- [ ] Define rules cho `Storefront.{Name}`:
-  - [ ] Project sinh theo `BlazorShop.Storefront.{Name}`.
-  - [ ] Không nằm trong solution active mặc định.
-  - [ ] Dùng package `Storefront.Client`, `Storefront.Runtime`, `Storefront.Components`.
-  - [ ] Không đoán response shape; dùng generated contract.
-  - [ ] Không phụ thuộc source của V2/ControlPlane/Commerce.
-- [ ] Chỉ cần compile/static proof cho Starter/generated contract ở phase này; chưa chạy production browser QA cho generated storefront.
+- [x] Update docs/guardrails cho `Storefront.Starter`:
+  - [x] Package-first consumption.
+  - [x] Không reference `Storefront.V2`.
+  - [x] Không reference `Web.SharedV2`.
+  - [x] Không reference backend/core/API projects.
+  - [x] Không copy manual `StorefrontApiClient`.
+  - [x] Protected browser actions phải qua same-origin BFF.
+- [x] Define rules cho `Storefront.{Name}`:
+  - [x] Project sinh theo `BlazorShop.Storefront.{Name}`.
+  - [x] Không nằm trong solution active mặc định.
+  - [x] Dùng package `Storefront.Client`, `Storefront.Runtime`, `Storefront.Components`.
+  - [x] Không đoán response shape; dùng generated contract.
+  - [x] Không phụ thuộc source của V2/ControlPlane/Commerce.
+- [x] Chỉ cần compile/static proof cho Starter/generated contract ở phase này; chưa chạy production browser QA cho generated storefront.
 
 ### SIB6 QA gate
 
-- [ ] `StorefrontStarterFoundationBoundaryTests` pass.
-- [ ] Generated storefront static guard nếu có pass.
-- [ ] Package pack/restore proof cho `Storefront.Client` và `Storefront.Runtime`.
-- [ ] No `Web.SharedV2` reference trong Starter/generated sample source.
+- [x] `StorefrontStarterFoundationBoundaryTests` pass.
+- [x] Generated storefront static guard nếu có pass.
+- [x] Package pack/restore proof cho `Storefront.Client` và `Storefront.Runtime`.
+- [x] No `Web.SharedV2` reference trong Starter/generated sample source.
 
 ## Phase SIB7 - Control Plane remaining Web.SharedV2 containment
 

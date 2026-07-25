@@ -59,7 +59,7 @@ Starter consumer rules:
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use `BlazorShop.Storefront.Components` only for reusable browser-safe UI components when a starter or generated storefront needs that shared component package; Starter-local neutral components may remain local.
 - Do not reference `BlazorShop.Storefront.V2`.
-- Do not reference backend/API/core projects, Control Plane Web, or `Web.SharedV2.Models` business contracts.
+- Do not reference backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 
 Generated/custom storefront consumer rules:
 
@@ -67,7 +67,7 @@ Generated/custom storefront consumer rules:
 - Keep presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components inside the generated/custom storefront project.
 - Route protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
 - Use generated package contracts instead of guessing API response shapes.
-- Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or generated proof output from another store.
+- Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or generated proof output from another store.
 
 ## Source Order
 

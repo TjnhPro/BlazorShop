@@ -77,6 +77,8 @@ namespace BlazorShop.Tests.Architecture
                 "BlazorShop.Storefront.Components",
                 "PackageReference",
                 "BlazorShop.Storefront.V2",
+                "BlazorShop.Web.SharedV2",
+                "Web.SharedV2",
                 "BlazorShop.Application",
                 "BlazorShop.Domain",
                 "BlazorShop.Infrastructure",

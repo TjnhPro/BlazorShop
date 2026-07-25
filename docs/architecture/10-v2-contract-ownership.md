@@ -11,10 +11,10 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Storefront frontend code must not add handwritten duplicate API DTO clones when the schema should come from OpenAPI-generated contracts.
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
 - Storefront portable feature component models live with the component feature under `BlazorShop.Storefront.Components/Features/*` when they are presentation-only.
-- Storefront V2 source must not import `Web.SharedV2.Models` or backend/core business namespaces.
-- Storefront Starter and generated storefront source must not import `Web.SharedV2.Models` or backend/core business namespaces.
+- Storefront V2 source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
+- Storefront Starter and generated storefront source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter must consume generated Storefront client contracts by default and must not copy the manual `StorefrontApiClient` transport from Storefront V2.
-- Generated StorefrontBuilder projects must consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries and must not reference Storefront V2 or backend/core/API projects.
+- Generated StorefrontBuilder projects must consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries and must not reference Storefront V2, `BlazorShop.Web.SharedV2`, or backend/core/API projects.
 - Starter manual HTTP exceptions are allowed only when documented in an exception registry with reason, owner, test, and revisit trigger.
 - The Starter generated-client adoption policy and exception registry live under `docs/storefront-platform/`.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.
