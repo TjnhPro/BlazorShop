@@ -68,7 +68,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var cartTokenService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontCartTokenService.cs");
             var authEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs");
             var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
-            var cookieNames = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/StorefrontCookieNames.cs");
+            var cookieNames = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontCookieNames.cs");
 
             Assert.Contains("Cart = \"my-cart\"", cookieNames, StringComparison.Ordinal);
             Assert.Contains("CartToken = \"bs-cart-token\"", cookieNames, StringComparison.Ordinal);

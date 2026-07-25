@@ -8,8 +8,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using System.Reflection;
     using System.Text.RegularExpressions;
 
-    using BlazorShop.Web.SharedV2;
-
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.RateLimiting;
     using Xunit;
@@ -17,6 +15,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using CommerceNodeApi::BlazorShop.CommerceNode.API.Configuration;
     using CommerceNodeApi::BlazorShop.CommerceNode.API.Controllers;
     using CommerceNodeRateLimitIdentity = CommerceNodeApi::BlazorShop.CommerceNode.API.Configuration.StorefrontRateLimitIdentity;
+    using StorefrontV2::BlazorShop.Storefront.Configuration;
     using StorefrontRateLimitIdentity = StorefrontV2::BlazorShop.Storefront.Configuration.StorefrontRateLimitIdentity;
     using StorefrontV2::BlazorShop.Storefront.Options;
 
@@ -82,7 +81,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             Assert.Contains("Storefront:RateLimiting", options, StringComparison.Ordinal);
             Assert.Contains("UseRateLimiter", pipeline, StringComparison.Ordinal);
-            Assert.Equal(4, Regex.Matches(cartEndpoints, "RequireRateLimiting\\(StorefrontRateLimitPolicies\\.LocalCartPolicyName\\)").Count);
+            Assert.Equal(5, Regex.Matches(cartEndpoints, "RequireRateLimiting\\(StorefrontRateLimitPolicies\\.LocalCartPolicyName\\)").Count);
             Assert.Contains("LocalCartPolicyName = \"storefront-local-cart\"", ratePolicies, StringComparison.Ordinal);
             Assert.Contains("StorefrontRateLimitIdentity.ResolveLocalCartActor(httpContext)", ratePolicies, StringComparison.Ordinal);
             Assert.Contains("StorefrontLocalCartErrorResponse(\"Too many cart requests. Try again shortly.\")", ratePolicies, StringComparison.Ordinal);

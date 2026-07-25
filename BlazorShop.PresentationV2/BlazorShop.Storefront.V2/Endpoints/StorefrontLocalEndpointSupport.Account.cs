@@ -6,7 +6,6 @@ namespace BlazorShop.Storefront.Endpoints
     using BlazorShop.Storefront.Models;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2;
     using Microsoft.AspNetCore.Antiforgery;
     internal static partial class StorefrontLocalEndpointSupport
     {

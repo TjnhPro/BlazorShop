@@ -6,8 +6,8 @@ namespace BlazorShop.Storefront.Services
     using System.Text;
     using System.Text.Json;
 
+    using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2;
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
@@ -168,7 +168,7 @@ namespace BlazorShop.Storefront.Services
                 var roleClaims = ReadClaimValues(root, ClaimTypes.Role)
                     .Concat(ReadClaimValues(root, "role"));
 
-                var isAdmin = roleClaims.Any(role => string.Equals(role, RoleNames.Admin, StringComparison.OrdinalIgnoreCase));
+                var isAdmin = roleClaims.Any(role => string.Equals(role, StorefrontRoleNames.Admin, StringComparison.OrdinalIgnoreCase));
 
                 var displayName = ReadClaimValue(root, "FullName")
                     ?? ReadClaimValue(root, ClaimTypes.Name)

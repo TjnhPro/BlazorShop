@@ -123,27 +123,27 @@ Storefront.*
 
 ## Phase SIB2 - Storefront-owned constants and host primitives extraction
 
-- [ ] Di chuyển `StorefrontCookieNames` ra khỏi `Web.SharedV2` cho Storefront:
-  - [ ] Target owner ưu tiên: `Storefront.V2` vì cookie/session/cart-token/currency preference là host/BFF policy.
-  - [ ] Nếu `Starter` hoặc generated storefront cần cùng cookie names thật sự, sau này cân nhắc `Storefront.Runtime`; không move sớm nếu chỉ V2 dùng.
-- [ ] Thay usages trong:
-  - [ ] `StorefrontCartTokenService`.
-  - [ ] `StorefrontDisplayContextProvider`.
-  - [ ] `StorefrontRateLimitIdentity`.
-  - [ ] Cart/checkout/auth/consent/media/SEO endpoints đang đọc/xóa cookie.
-- [ ] Di chuyển hoặc thay `RoleNames.Admin` trong Storefront:
-  - [ ] Target owner ưu tiên: V2-local `StorefrontRoleNames` hoặc auth/session helper.
-  - [ ] Không kéo admin role constant từ Control Plane/shared project vào Storefront.
-  - [ ] Nếu về lâu dài role claim names cần contract chung, định nghĩa qua API/claims contract rõ, không qua `Web.SharedV2`.
-- [ ] Xóa `using BlazorShop.Web.SharedV2` khỏi Storefront V2 files đã thay.
-- [ ] Không sửa logic đọc/ghi cookie ngoài namespace/owner move.
+- [x] Di chuyển `StorefrontCookieNames` ra khỏi `Web.SharedV2` cho Storefront:
+  - [x] Target owner ưu tiên: `Storefront.V2` vì cookie/session/cart-token/currency preference là host/BFF policy.
+  - [x] Nếu `Starter` hoặc generated storefront cần cùng cookie names thật sự, sau này cân nhắc `Storefront.Runtime`; không move sớm nếu chỉ V2 dùng.
+- [x] Thay usages trong:
+  - [x] `StorefrontCartTokenService`.
+  - [x] `StorefrontDisplayContextProvider`.
+  - [x] `StorefrontRateLimitIdentity`.
+  - [x] Cart/checkout/auth/consent/media/SEO endpoints đang đọc/xóa cookie.
+- [x] Di chuyển hoặc thay `RoleNames.Admin` trong Storefront:
+  - [x] Target owner ưu tiên: V2-local `StorefrontRoleNames` hoặc auth/session helper.
+  - [x] Không kéo admin role constant từ Control Plane/shared project vào Storefront.
+  - [x] Nếu về lâu dài role claim names cần contract chung, định nghĩa qua API/claims contract rõ, không qua `Web.SharedV2`.
+- [x] Xóa `using BlazorShop.Web.SharedV2` khỏi Storefront V2 files đã thay.
+- [x] Không sửa logic đọc/ghi cookie ngoài namespace/owner move.
 
 ### SIB2 QA gate
 
-- [ ] Unit/focused tests cho cart token cookie vẫn pass.
-- [ ] Focused tests cho currency preference cookie vẫn pass.
-- [ ] Focused tests cho admin maintenance access/session vẫn pass nếu có coverage.
-- [ ] `rg "BlazorShop.Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.V2` chỉ còn Docker/tailwind/project offenders chưa xử lý ở phase sau, hoặc empty nếu xử lý luôn.
+- [x] Unit/focused tests cho cart token cookie vẫn pass.
+- [x] Focused tests cho currency preference cookie vẫn pass.
+- [x] Focused tests cho admin maintenance access/session vẫn pass nếu có coverage.
+- [x] `rg "BlazorShop.Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.V2` chỉ còn Docker/tailwind/project offenders chưa xử lý ở phase sau, hoặc empty nếu xử lý luôn.
 
 ## Phase SIB3 - Remove Storefront.V2 project/build dependency on Web.SharedV2
 

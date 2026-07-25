@@ -5,7 +5,6 @@ namespace BlazorShop.Storefront.Endpoints
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Storefront.Services.Media;
-    using BlazorShop.Web.SharedV2;
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Mvc;
 

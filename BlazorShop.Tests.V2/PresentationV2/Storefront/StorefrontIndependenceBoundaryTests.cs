@@ -46,22 +46,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var expected = new[]
             {
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitIdentity.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAccountEndpoints.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontConsentEndpoints.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Cart.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontMediaEndpoints.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontSeoEndpoints.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontCartTokenService.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontDisplayContextProvider.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontSessionResolver.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/tailwind.config.js"
             };
 

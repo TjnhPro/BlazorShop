@@ -2,8 +2,8 @@ namespace BlazorShop.Storefront.Services
 {
     using System.Text.Json;
 
+    using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2;
 
     public sealed class StorefrontCartTokenService
     {

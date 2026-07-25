@@ -10,9 +10,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Xunit;
 
     using StorefrontV2::BlazorShop.Storefront.Options;
+    using StorefrontV2::BlazorShop.Storefront.Configuration;
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2;
 
     public sealed class StorefrontDisplayContextProviderTests
     {

@@ -60,3 +60,19 @@ Verification:
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 8/8.
 - Failure messages include offending file/reference paths through `AssertNoProjectReferences` and `AssertNoSourceFragments`.
 - Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist notice.
+
+## SIB2 - Storefront-owned constants and host primitives extraction
+
+Implementation notes:
+
+- Added V2-local `StorefrontCookieNames` in `BlazorShop.Storefront.Configuration` with unchanged values: `my-cart`, `bs-cart-token`, and `bs-currency`.
+- Added V2-local `StorefrontRoleNames.Admin` with unchanged value `Admin`.
+- Replaced Storefront V2 source imports of `BlazorShop.Web.SharedV2` in cart, checkout, auth, consent, media, SEO, local endpoint support, rate-limit identity, display context, cart-token service, and session resolver.
+- Updated focused tests to reference the Storefront V2-local constants where they need cookie names.
+- No cookie names, role semantics, cart token behavior, or endpoint routes were changed.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase2RateLimitTests|FullyQualifiedName~StorefrontSessionResolverTests"`: passed 67/67.
+- `StorefrontIndependenceBoundaryTests` now limits remaining `Storefront.V2 -> Web.SharedV2` offenders to `BlazorShop.Storefront.V2.csproj`, `Dockerfile`, and `tailwind.config.js`; SIB3 owns those build-file removals.
+- Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist notice.

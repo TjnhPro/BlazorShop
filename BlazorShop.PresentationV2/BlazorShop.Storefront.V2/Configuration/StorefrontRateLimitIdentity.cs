@@ -3,8 +3,6 @@ namespace BlazorShop.Storefront.Configuration
     using System.Security.Cryptography;
     using System.Text;
 
-    using BlazorShop.Web.SharedV2;
-
     using Microsoft.AspNetCore.Http;
 
     public static class StorefrontRateLimitIdentity
