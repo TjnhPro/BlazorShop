@@ -94,3 +94,20 @@ Verification:
 - `rg "BlazorShop\.Web\.SharedV2|Web\.SharedV2|BlazorShop.Web.SharedV2.csproj" BlazorShop.PresentationV2/BlazorShop.Storefront.V2`: no matches.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 8/8.
 - Existing test warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist notice.
+
+## SIB4 - Storefront business model and DTO boundary audit
+
+Implementation notes:
+
+- Extended `StorefrontIndependenceBoundaryTests` to guard every Storefront platform project against `Web.SharedV2.Models`, `Application.DTOs`, and backend/core business namespace imports.
+- Added a specific guard for `Storefront.V2/Services/Contracts` so V2-local BFF contracts stay local and do not import backend/shared business DTOs.
+- Added component feature model checks for server-owned/admin-owned fields such as store/customer/user ownership, publication flags, credentials, secrets, and cost fields.
+- Added Runtime checks that keep route/layout/cookie/Razor host primitives out of `Storefront.Runtime`.
+- Added Client checks that prevent handwritten request/response/DTO clones outside the OpenAPI-generated client source.
+- No DTO migration was required in this phase; existing V2 service contracts are same-origin BFF or host projection contracts, and generated Storefront API contracts remain in `Storefront.Client`.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 13/13.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontGeneratedCatalogContentClientTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 72/72.
+- Static scan for `BlazorShop.Web.SharedV2.Models`, `BlazorShop.Application.DTOs`, `BlazorShop.Application`, `BlazorShop.Domain`, and `BlazorShop.Infrastructure` across Storefront platform projects found no source offenders.

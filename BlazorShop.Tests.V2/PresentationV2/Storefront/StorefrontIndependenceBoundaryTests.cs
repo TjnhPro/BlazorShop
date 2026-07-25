@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
+    using System.Text.RegularExpressions;
     using System.Xml.Linq;
     using Xunit;
 
@@ -61,6 +62,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontPlatform_DoesNotImportWebSharedModelsOrApplicationDtos()
+        {
+            foreach (var root in StorefrontProjectRoots)
+            {
+                AssertNoSourceFragments(
+                    root,
+                    [
+                        "BlazorShop.Web.SharedV2.Models",
+                        "BlazorShop.Application.DTOs",
+                        "BlazorShop.Application.CommerceNode",
+                        "BlazorShop.Application.ControlPlane"
+                    ]);
+            }
+        }
+
+        [Fact]
+        public void StorefrontV2LocalContracts_DoNotImportBackendOrSharedBusinessContracts()
+        {
+            AssertNoSourceFragments(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts",
+                ForbiddenBackendNamespaceFragments
+                    .Append("BlazorShop.Web.SharedV2")
+                    .Append("BlazorShop.Web.SharedV2.Models")
+                    .ToArray());
+        }
+
+        [Fact]
         public void StorefrontWasm_OnlyReferencesBrowserSafeStorefrontProjects()
         {
             var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj");
@@ -97,6 +125,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontComponents_FeatureModelsDoNotExposeServerOwnedFields()
+        {
+            var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features")
+                .Where(file => file.RelativePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(file => new[]
+                    {
+                        "StoreId",
+                        "StoreKey",
+                        "CustomerId",
+                        "AppUserId",
+                        "UserId",
+                        "IsPublished",
+                        "Credential",
+                        "Secret",
+                        "ProviderSecret",
+                        "CostPrice"
+                    }
+                    .Where(fragment => File.ReadAllText(file.AbsolutePath).Contains(fragment, StringComparison.Ordinal))
+                    .Select(fragment => $"{file.RelativePath}: {fragment}"))
+                .ToArray();
+
+            Assert.True(
+                offenders.Length == 0,
+                $"Storefront component feature models must stay presentation-only:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+        }
+
+        [Fact]
         public void StorefrontRuntime_OnlyReferencesGeneratedClientAndNoHostOrBackendProjects()
         {
             var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj");
@@ -113,6 +168,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     .Append("BlazorShop.Storefront.Components")
                     .Append("BlazorShop.Storefront.WASM")
                     .ToArray());
+        }
+
+        [Fact]
+        public void StorefrontRuntime_DoesNotContainV2PresentationRouteOrCookiePrimitives()
+        {
+            AssertNoSourceFragments(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime",
+                [
+                    "@page",
+                    "@code",
+                    ".razor",
+                    "StorefrontRoutes",
+                    "StorefrontCookieNames",
+                    "BlazorShop.Storefront.Endpoints",
+                    "Microsoft.AspNetCore.Components"
+                ]);
         }
 
         [Fact]
@@ -135,6 +206,25 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     .Append("BlazorShop.Storefront.Components")
                     .Append("BlazorShop.Storefront.V2")
                     .ToArray());
+        }
+
+        [Fact]
+        public void StorefrontClient_DoesNotAddHandwrittenRequestResponseDtoClones()
+        {
+            var handwrittenDtoOffenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.Client")
+                .Where(file => file.RelativePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                .Where(file => !file.RelativePath.Contains("/Generated/", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(file =>
+                {
+                    var source = File.ReadAllText(file.AbsolutePath);
+                    return Regex.Matches(source, @"\b(class|record)\s+\w*(Request|Response|Dto)\b", RegexOptions.CultureInvariant)
+                        .Select(match => $"{file.RelativePath}: {match.Value}");
+                })
+                .ToArray();
+
+            Assert.True(
+                handwrittenDtoOffenders.Length == 0,
+                $"Storefront.Client request/response DTOs must remain generated from OpenAPI:{Environment.NewLine}{string.Join(Environment.NewLine, handwrittenDtoOffenders)}");
         }
 
         [Fact]

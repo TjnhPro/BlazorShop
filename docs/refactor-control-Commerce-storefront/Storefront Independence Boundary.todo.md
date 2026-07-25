@@ -164,25 +164,25 @@ Storefront.*
 
 ## Phase SIB4 - Storefront business model and DTO boundary audit
 
-- [ ] Confirm `Storefront.V2` không import `Web.SharedV2.Models`.
-- [ ] Confirm `Storefront.Components` không có HTTP/API DTO clone:
-  - [ ] Product/category render models chỉ chứa presentation state.
-  - [ ] Cart/checkout/account render models không chứa server-owned fields.
-  - [ ] Không có admin-only fields, credentials, secrets, internal store ownership fields.
-- [ ] Confirm `Storefront.Runtime` dùng neutral result/context/capability primitives, không chứa V2-specific route, layout, cookie, CSS, Razor component.
-- [ ] Confirm `Storefront.Client` là generated/source-of-truth HTTP contract, không thêm handwritten duplicate DTO.
-- [ ] Đối với DTO đang sống trong `Storefront.V2/Services/Contracts`:
-  - [ ] Nếu là same-origin BFF contract: giữ V2-local.
-  - [ ] Nếu là Storefront API contract: thay bằng generated client DTO hoặc runtime projection.
-  - [ ] Nếu là render model: đưa về Components feature folder.
-- [ ] Không migrate toàn bộ model cùng lúc; đi theo capability slice.
+- [x] Confirm `Storefront.V2` không import `Web.SharedV2.Models`.
+- [x] Confirm `Storefront.Components` không có HTTP/API DTO clone:
+  - [x] Product/category render models chỉ chứa presentation state.
+  - [x] Cart/checkout/account render models không chứa server-owned fields.
+  - [x] Không có admin-only fields, credentials, secrets, internal store ownership fields.
+- [x] Confirm `Storefront.Runtime` dùng neutral result/context/capability primitives, không chứa V2-specific route, layout, cookie, CSS, Razor component.
+- [x] Confirm `Storefront.Client` là generated/source-of-truth HTTP contract, không thêm handwritten duplicate DTO.
+- [x] Đối với DTO đang sống trong `Storefront.V2/Services/Contracts`:
+  - [x] Nếu là same-origin BFF contract: giữ V2-local.
+  - [x] Nếu là Storefront API contract: thay bằng generated client DTO hoặc runtime projection.
+  - [x] Nếu là render model: đưa về Components feature folder.
+- [x] Không migrate toàn bộ model cùng lúc; đi theo capability slice.
 
 ### SIB4 QA gate
 
-- [ ] Static guard cấm `Web.SharedV2.Models` trong tất cả `Storefront.*`.
-- [ ] Static guard cấm `BlazorShop.Application.DTOs` trong all `Storefront.*`.
-- [ ] Generated client compile tests pass.
-- [ ] Component guardrail tests pass.
+- [x] Static guard cấm `Web.SharedV2.Models` trong tất cả `Storefront.*`.
+- [x] Static guard cấm `BlazorShop.Application.DTOs` trong all `Storefront.*`.
+- [x] Generated client compile tests pass.
+- [x] Component guardrail tests pass.
 
 ## Phase SIB5 - Storefront API access boundary hardening
 
