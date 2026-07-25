@@ -141,7 +141,7 @@ Generated storefronts must not:
 - Reference `BlazorShop.Storefront.V2`.
 - Reference backend/core/API projects.
 - Call `api/commerce/*`, `api/control-plane/*`, or removed `api/internal/*` from browser code.
-- Copy Storefront V2 transport internals.
+- Do not: copy Storefront V2 transport internals.
 - Write store-specific visual output or analysis artifacts back into `BlazorShop.Storefront.Starter`.
 
 StorefrontBuilder changes need focused validation:

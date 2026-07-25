@@ -43,7 +43,7 @@ Generated storefronts must not:
 - Reference `BlazorShop.Storefront.V2`.
 - Reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, or `BlazorShop.ControlPlane.API`.
 - Call Commerce Node, Commerce Admin, Control Plane, or legacy `api/internal/*` routes directly from browser code.
-- Copy Storefront V2 transport internals, backend DTOs, credentials, or business rules.
+- Do not: copy Storefront V2 transport internals, backend DTOs, credentials, or business rules.
 - Mutate `BlazorShop.Storefront.Starter` with store-specific CSS, assets, pages, analysis artifacts, or AI-tuned components.
 
 ## Source Order
