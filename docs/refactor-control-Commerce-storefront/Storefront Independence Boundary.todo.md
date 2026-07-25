@@ -234,21 +234,21 @@ Storefront.*
 
 ## Phase SIB7 - Control Plane remaining Web.SharedV2 containment
 
-- [ ] Không tách Control Plane trong cùng phase, nhưng cần containment để Storefront không bị kéo ngược lại.
-- [ ] Ghi rõ `Web.SharedV2` hiện là transitional Control Plane/shared browser helper bucket.
-- [ ] Cấm thêm Storefront-specific file vào `Web.SharedV2`.
-- [ ] Cấm thêm Storefront business model vào `Web.SharedV2/Models`.
-- [ ] Nếu `Web.SharedV2` chỉ còn Control Plane dùng sau Storefront cutover:
-  - [ ] Plan sau sẽ merge về `ControlPlane.Web`.
-  - [ ] Hoặc tách helper generic nhỏ nếu có ít nhất hai active consumer thật.
-- [ ] Không để Control Plane auth/token/JWT helper được tái sử dụng ngầm bởi Storefront.
+- [x] Không tách Control Plane trong cùng phase, nhưng cần containment để Storefront không bị kéo ngược lại.
+- [x] Ghi rõ `Web.SharedV2` hiện là transitional Control Plane/shared browser helper bucket.
+- [x] Cấm thêm Storefront-specific file vào `Web.SharedV2`.
+- [x] Cấm thêm Storefront business model vào `Web.SharedV2/Models`.
+- [x] Nếu `Web.SharedV2` chỉ còn Control Plane dùng sau Storefront cutover:
+  - [x] Plan sau sẽ merge về `ControlPlane.Web`.
+  - [x] Hoặc tách helper generic nhỏ nếu có ít nhất hai active consumer thật.
+- [x] Không để Control Plane auth/token/JWT helper được tái sử dụng ngầm bởi Storefront.
 
 ### SIB7 QA gate
 
-- [ ] Architecture test freeze `Web.SharedV2/Models` folders vẫn pass.
-- [ ] Architecture test cấm new Storefront namespace trong `Web.SharedV2`.
-- [ ] Control Plane build pass.
-- [ ] Control Plane auth focused tests pass nếu có.
+- [x] Architecture test freeze `Web.SharedV2/Models` folders vẫn pass.
+- [x] Architecture test cấm new Storefront namespace trong `Web.SharedV2`.
+- [x] Control Plane build pass.
+- [x] Control Plane auth focused tests pass nếu có.
 
 ## Phase SIB8 - Storefront.V2 functional regression QA
 

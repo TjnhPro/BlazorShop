@@ -18,6 +18,9 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Starter manual HTTP exceptions are allowed only when documented in an exception registry with reason, owner, test, and revisit trigger.
 - The Starter generated-client adoption policy and exception registry live under `docs/storefront-platform/`.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.
+- `Web.SharedV2` is currently a transitional Control Plane/shared browser-helper bucket. Storefront source must not reuse Control Plane auth/token/JWT helpers from it.
+- Do not add Storefront-specific files, namespaces, route helpers, cookie names, or business models to `Web.SharedV2`; Storefront contracts belong in Storefront V2 local contracts, `Storefront.Client`, `Storefront.Runtime`, or `Storefront.Components`.
+- If Control Plane Web becomes the only active consumer of `Web.SharedV2`, a later phase should merge the remaining helpers into `BlazorShop.ControlPlane.Web` or extract a small generic helper package only after at least two active consumers need it.
 - Generated Storefront clients should target Commerce Node Storefront OpenAPI first. Control Plane generation is a later decision.
 
 ## Current `Web.SharedV2/Models` Inventory

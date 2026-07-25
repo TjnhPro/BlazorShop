@@ -29,8 +29,7 @@ namespace BlazorShop.Web.SharedV2.Authentication
         {
             var sanitizedPath = Sanitize(relativePath);
 
-            if (string.IsNullOrWhiteSpace(sanitizedPath)
-                || string.Equals(sanitizedPath, StorefrontCookieNames.Cart, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(sanitizedPath))
             {
                 return isAdmin ? adminPath : accountPath;
             }

@@ -81,22 +81,12 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         }
 
         [Fact]
-        public void StorefrontV2_UsesOnlySharedV2Namespaces()
+        public void StorefrontV2_DoesNotUseWebSharedV2Namespaces()
         {
             var root = FindRepositoryRoot();
             var webRoot = root.CombinePath("BlazorShop.PresentationV2", "BlazorShop.Storefront.V2");
-            var allowedPrefixes = new[]
-            {
-                "BlazorShop.Web.SharedV2",
-                "BlazorShop.Web.SharedV2.Models",
-                "BlazorShop.Web.SharedV2.Models.Category",
-                "BlazorShop.Web.SharedV2.Models.Discovery",
-                "BlazorShop.Web.SharedV2.Models.Payment",
-                "BlazorShop.Web.SharedV2.Models.Product",
-                "BlazorShop.Web.SharedV2.Models.Seo"
-            };
 
-            var invalidUsings = FindInvalidWebSharedUsings(root, webRoot, allowedPrefixes);
+            var invalidUsings = FindInvalidWebSharedUsings(root, webRoot, []);
 
             Assert.Empty(invalidUsings);
         }

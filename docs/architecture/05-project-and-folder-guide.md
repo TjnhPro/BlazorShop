@@ -356,6 +356,7 @@ Important folders:
 
 Use for:
 
+- Transitional Control Plane/shared browser helper ownership while Control Plane Web remains an active consumer.
 - Shared UI/browser utilities across V2 Web projects.
 - Browser storage, cookie, auth-session sync, and toast/helper behavior that is useful to more than one active V2 frontend.
 - Small framework-neutral helper services where sharing reduces duplicated behavior without coupling product UI.
@@ -363,10 +364,15 @@ Use for:
 Do not:
 
 - Put project-specific business logic here.
+- Put Storefront-specific files, namespaces, route helpers, cookie names, or business models here.
+- Add Storefront business model folders to `Models/`; the existing inventory is frozen in architecture tests until a later Control Plane/shared-helper migration removes or relocates it.
+- Reuse Control Plane auth/token/JWT helpers from Storefront code. Storefront auth/session behavior must stay in Storefront-owned host/runtime contracts.
 - Put Commerce Node credentials here.
 - Move Storefront header/footer/cart/toast DOM behavior here unless Control Plane has the same real need.
 - Move Control Plane nav/sidebar/topbar/page chrome here unless Storefront has the same real need.
 - Use `Web.SharedV2` as a forced visual design system; Storefront and Control Plane intentionally keep different UI density and product identity.
+
+If Storefront no longer consumes `Web.SharedV2` and Control Plane Web becomes the only active consumer, move the remaining helpers into `BlazorShop.ControlPlane.Web` in a later phase, or extract a smaller generic helper package only after at least two active consumers need the same behavior.
 
 ## Legacy Presentation
 

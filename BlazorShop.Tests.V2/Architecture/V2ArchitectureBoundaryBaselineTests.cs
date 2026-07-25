@@ -224,6 +224,36 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void WebSharedV2_DoesNotAddStorefrontSpecificRootFilesOrNamespaces()
+        {
+            var sharedRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Web.SharedV2");
+            var storefrontRootFiles = Directory.EnumerateFiles(sharedRoot, "*.cs", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Where(name => name!.Contains("Storefront", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(name => name, StringComparer.Ordinal)
+                .ToArray();
+
+            var namespaceOffenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Web.SharedV2")
+                .SelectMany(path => File.ReadLines(path)
+                    .Select((line, index) => new
+                    {
+                        Path = ToRepositoryRelativePath(path),
+                        Line = line.Trim(),
+                        Number = index + 1,
+                    }))
+                .Where(item => item.Line.StartsWith("namespace BlazorShop.Storefront", StringComparison.Ordinal)
+                    || item.Line.StartsWith("using BlazorShop.Storefront", StringComparison.Ordinal)
+                    || item.Line.Contains("BlazorShop.Storefront.", StringComparison.Ordinal))
+                .Select(item => $"{item.Path}:{item.Number}: {item.Line}")
+                .OrderBy(item => item, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(storefrontRootFiles);
+            Assert.Empty(namespaceOffenders);
+        }
+
+        [Fact]
         public void StorefrontScopedResolveStoreIdDuplication_IsCentralizedAfterPhase5()
         {
             var controllers = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront")

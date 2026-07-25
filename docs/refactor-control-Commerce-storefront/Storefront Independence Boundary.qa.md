@@ -144,3 +144,19 @@ Verification:
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 69/69.
 - `.\scripts\qa\run-storefront-builder-generated-proof.ps1`: passed, including Client/Runtime/Components package pack, generated proof restore/build, StorefrontBuilder static validation, and isolation gate.
 - `rg "BlazorShop.Web.SharedV2|Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.Starter -g "*.cs" -g "*.razor" -g "*.csproj"`: no matches.
+
+## SIB7 - Control Plane remaining Web.SharedV2 containment
+
+Implementation notes:
+
+- Documented `BlazorShop.Web.SharedV2` as a transitional Control Plane/shared browser-helper bucket, not a place for new Storefront ownership.
+- Added architecture guidance that future cleanup should merge `Web.SharedV2` into Control Plane Web if Control Plane becomes the only active consumer, or extract a smaller generic helper package only after at least two active consumers need it.
+- Removed the root-level `Web.SharedV2/StorefrontCookieNames.cs` leftover and stopped `ProtectedRouteRedirectResolver` from depending on Storefront cookie names.
+- Added architecture guardrails that freeze `Web.SharedV2/Models`, block Storefront-specific root files, and block `BlazorShop.Storefront` namespaces/usings inside `Web.SharedV2`.
+- Tightened the Control Plane boundary test so Storefront V2 has no allowed `Web.SharedV2` namespace imports.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`: passed with 0 warnings.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~V2ArchitectureBoundaryBaselineTests|FullyQualifiedName~ControlPlaneArchitectureBoundaryTests|FullyQualifiedName~ControlPlaneAuthorizationTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 49/49.
+- `rg "StorefrontCookieNames|namespace BlazorShop.Storefront|using BlazorShop.Storefront|BlazorShop.Storefront\\." BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`: no matches.
