@@ -45,3 +45,18 @@ Decision:
 
 - No cart/runtime behavior change is in flight. Boundary work can proceed.
 - SIB1 may add guardrails while accepting the known `Storefront.V2 -> Web.SharedV2` offender until SIB3 removes it.
+
+## SIB1 - Guardrails first
+
+Implementation notes:
+
+- Added `StorefrontIndependenceBoundaryTests` for Storefront source/project dependency boundaries.
+- The tests distinguish allowed HTTP contract dependency through `Storefront.Runtime -> Storefront.Client` from forbidden source/project dependency on Commerce Node or Control Plane implementation projects.
+- The temporary `Storefront.V2_WebSharedV2OffendersAreLimitedUntilSib3` guard records the exact known Web.SharedV2 offender set. SIB3 must replace this allowlist with a zero-offender assertion after the dependency is removed.
+- No runtime behavior was changed in this phase.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 8/8.
+- Failure messages include offending file/reference paths through `AssertNoProjectReferences` and `AssertNoSourceFragments`.
+- Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist notice.

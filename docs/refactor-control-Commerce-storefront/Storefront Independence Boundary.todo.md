@@ -101,25 +101,25 @@ Storefront.*
 
 ## Phase SIB1 - Guardrails first
 
-- [ ] Thêm hoặc siết architecture tests cho Storefront source/project dependencies:
-  - [ ] `Storefront.V2` không được reference `Web.SharedV2`.
-  - [ ] `Storefront.V2` không được import `BlazorShop.Web.SharedV2`.
-  - [ ] `Storefront.V2` không được reference/import `ControlPlane.*`.
-  - [ ] `Storefront.V2` không được reference/import `CommerceNode.API`.
-  - [ ] `Storefront.V2` không được reference/import `Application`, `Domain`, `Infrastructure`.
-  - [ ] `Storefront.WASM` chỉ được reference browser-safe Storefront packages.
-  - [ ] `Storefront.Components` không được reference Runtime, Client, V2, Web.SharedV2, backend/core/API projects.
-  - [ ] `Storefront.Runtime` không được reference V2, Components, WASM, Web.SharedV2, backend/core/API projects.
-  - [ ] `Storefront.Client` không được reference V2, Runtime, Components, Web.SharedV2, backend/core/API projects.
-  - [ ] `Storefront.Starter` không được reference V2, Web.SharedV2, Control Plane, Commerce Node API, backend/core projects.
-- [ ] Guardrail test phải phân biệt source dependency và allowed HTTP contract dependency qua `Storefront.Client`.
-- [ ] Guardrail ban đầu có thể có expected failure cho `Storefront.V2 -> Web.SharedV2`; phase SIB3 phải làm test pass.
+- [x] Thêm hoặc siết architecture tests cho Storefront source/project dependencies:
+  - [x] `Storefront.V2` không được reference `Web.SharedV2`.
+  - [x] `Storefront.V2` không được import `BlazorShop.Web.SharedV2`.
+  - [x] `Storefront.V2` không được reference/import `ControlPlane.*`.
+  - [x] `Storefront.V2` không được reference/import `CommerceNode.API`.
+  - [x] `Storefront.V2` không được reference/import `Application`, `Domain`, `Infrastructure`.
+  - [x] `Storefront.WASM` chỉ được reference browser-safe Storefront packages.
+  - [x] `Storefront.Components` không được reference Runtime, Client, V2, Web.SharedV2, backend/core/API projects.
+  - [x] `Storefront.Runtime` không được reference V2, Components, WASM, Web.SharedV2, backend/core/API projects.
+  - [x] `Storefront.Client` không được reference V2, Runtime, Components, Web.SharedV2, backend/core/API projects.
+  - [x] `Storefront.Starter` không được reference V2, Web.SharedV2, Control Plane, Commerce Node API, backend/core projects.
+- [x] Guardrail test phải phân biệt source dependency và allowed HTTP contract dependency qua `Storefront.Client`.
+- [x] Guardrail ban đầu có thể có expected failure cho `Storefront.V2 -> Web.SharedV2`; phase SIB3 phải làm test pass.
 
 ### SIB1 QA gate
 
-- [ ] Focused architecture tests chạy và fail/pass đúng theo trạng thái hiện tại.
-- [ ] Test message khi fail phải chỉ rõ offender file/reference.
-- [ ] Không thay đổi runtime behavior.
+- [x] Focused architecture tests chạy và fail/pass đúng theo trạng thái hiện tại.
+- [x] Test message khi fail phải chỉ rõ offender file/reference.
+- [x] Không thay đổi runtime behavior.
 
 ## Phase SIB2 - Storefront-owned constants and host primitives extraction
 
