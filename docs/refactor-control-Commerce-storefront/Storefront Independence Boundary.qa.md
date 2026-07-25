@@ -160,3 +160,21 @@ Verification:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`: passed with 0 warnings.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~V2ArchitectureBoundaryBaselineTests|FullyQualifiedName~ControlPlaneArchitectureBoundaryTests|FullyQualifiedName~ControlPlaneAuthorizationTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests"`: passed 49/49.
 - `rg "StorefrontCookieNames|namespace BlazorShop.Storefront|using BlazorShop.Storefront|BlazorShop.Storefront\\." BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`: no matches.
+
+## SIB8 - Storefront V2 targeted functional regression QA
+
+Implementation notes:
+
+- No production code changed in SIB8; this phase verified the boundary cleanup with build, focused tests, static scans, browser QA, and public response checks.
+- Browser QA covered home/store bootstrap, product detail, add-to-cart, cart quantity update, cart remove, checkout start/auth handoff, login, logout, currency preference, and same-origin network behavior.
+- Checkout COD placement was not rerun because this phase did not change cart/checkout business behavior; checkout start/auth handoff was covered and prior V2F12 COD/order release evidence remains the active full commerce proof.
+- Local V2 runtime was stopped after browser QA.
+
+Verification:
+
+- `dotnet build BlazorShop.sln -m:1 --no-restore`: passed. Known warnings remain existing MessagePack NU1902/NU1903 and Browserslist notices.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~StorefrontSessionResolverTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~SecurityPrivacyPhase0InventoryTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~ControlPlaneArchitectureBoundaryTests|FullyQualifiedName~ControlPlaneAuthorizationTests"`: passed 84/84.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~SignIn_PostSuccess_SetsRefreshCookieAndRedirectsToSafeReturnUrl|FullyQualifiedName~Logout_PostCallsCommerceNodeAndCopiesExpiredCookie|FullyQualifiedName~Maintenance_WhenCurrentStoreRecovered_RedirectsHome|FullyQualifiedName~Maintenance_WhenCurrentStoreStillInMaintenance_RendersAutoRefresh"`: passed 4/4.
+- Playwright targeted QA against `http://localhost:18598`: passed with 10/10 steps and no forbidden direct browser requests. Evidence: `output/playwright/sib8-storefront-v2-targeted-qa.json` and `.png`.
+- Public response assertion passed for `/`, `/product/qa-simple-product-100`, and `/my-cart`; no provider secret, internal settings, node credential, Control Plane, or Commerce admin markers were found.
+- `rg "BlazorShop.Web.SharedV2|Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.WASM BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime BlazorShop.PresentationV2/BlazorShop.Storefront.Client BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`: no matches.

@@ -1,12 +1,12 @@
 # Storefront Independence Boundary.todo
 
-Status: in progress
+Status: complete
 
 Goal: tách hoàn toàn Storefront presentation/platform khỏi cụm Control Plane, Commerce Node implementation và `BlazorShop.Web.SharedV2`. Sau phase này, `Storefront.V2`, `Storefront.WASM`, `Storefront.Components`, `Storefront.Starter` và storefront sinh theo `BlazorShop.Storefront.{Name}` không được phụ thuộc source/project vào Control Plane, Commerce Node API, backend core implementation, hoặc `Web.SharedV2`.
 
 Important distinction: Storefront vẫn cần gọi Commerce Node Storefront API ở runtime qua HTTP contract. Dependency được phép là `Storefront.Client` generated từ OpenAPI và `Storefront.Runtime` server/BFF primitives. Dependency không được phép là project/source reference tới `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.*`, `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, hoặc `BlazorShop.Web.SharedV2`.
 
-## Current codebase evidence
+## Initial codebase evidence before SIB implementation
 
 - `Storefront.V2` hiện đã reference `Storefront.Client`, `Storefront.Runtime`, `Storefront.Components`, `Storefront.WASM`.
 - `Storefront.V2` vẫn còn `ProjectReference` tới `BlazorShop.Web.SharedV2`.
@@ -252,48 +252,48 @@ Storefront.*
 
 ## Phase SIB8 - Storefront.V2 functional regression QA
 
-- [ ] Chạy Storefront V2 functional smoke ở mức build/test trước.
-- [ ] Chạy Playwright browser QA cho các flow bị ảnh hưởng bởi boundary move:
-  - [ ] Home/store bootstrap.
-  - [ ] Product detail.
-  - [ ] Add to cart.
-  - [ ] Cart load/update/remove.
-  - [ ] Checkout start/review/place order COD nếu cart/checkout code bị chạm.
-  - [ ] Login/logout.
-  - [ ] Maintenance/admin access nếu auth role parsing bị chạm.
-  - [ ] Currency preference nếu cookie name bị chạm.
-- [ ] Network assertion:
-  - [ ] Browser chỉ gọi same-origin `/api/*`.
-  - [ ] Không gọi Control Plane.
-  - [ ] Không gọi Commerce Node host trực tiếp từ browser.
-- [ ] Public response assertion:
-  - [ ] Không trả provider secret.
-  - [ ] Không trả internal settings.
-  - [ ] Không trả node credential/control-plane information.
+- [x] Chạy Storefront V2 functional smoke ở mức build/test trước.
+- [x] Chạy Playwright browser QA cho các flow bị ảnh hưởng bởi boundary move:
+  - [x] Home/store bootstrap.
+  - [x] Product detail.
+  - [x] Add to cart.
+  - [x] Cart load/update/remove.
+  - [x] Checkout start/review/place order COD nếu cart/checkout code bị chạm.
+  - [x] Login/logout.
+  - [x] Maintenance/admin access nếu auth role parsing bị chạm.
+  - [x] Currency preference nếu cookie name bị chạm.
+- [x] Network assertion:
+  - [x] Browser chỉ gọi same-origin `/api/*`.
+  - [x] Không gọi Control Plane.
+  - [x] Không gọi Commerce Node host trực tiếp từ browser.
+- [x] Public response assertion:
+  - [x] Không trả provider secret.
+  - [x] Không trả internal settings.
+  - [x] Không trả node credential/control-plane information.
 
 ### SIB8 QA gate
 
-- [ ] `dotnet build BlazorShop.sln`.
-- [ ] Focused Storefront tests pass.
-- [ ] Focused Control Plane build/tests pass để chứng minh không phá shared consumer còn lại.
-- [ ] Playwright targeted QA pass trên `Storefront.V2`.
-- [ ] QA evidence được ghi vào `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` hoặc QA report riêng nếu phase triển khai yêu cầu.
+- [x] `dotnet build BlazorShop.sln`.
+- [x] Focused Storefront tests pass.
+- [x] Focused Control Plane build/tests pass để chứng minh không phá shared consumer còn lại.
+- [x] Playwright targeted QA pass trên `Storefront.V2`.
+- [x] QA evidence được ghi vào `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` hoặc QA report riêng nếu phase triển khai yêu cầu.
 
 ## Definition of Done
 
-- [ ] `Storefront.V2.csproj` không reference `Web.SharedV2`.
-- [ ] `Storefront.V2` source không import `BlazorShop.Web.SharedV2`.
-- [ ] `Storefront.V2` Dockerfile không copy `Web.SharedV2`.
-- [ ] `Storefront.V2` Tailwind config không scan `Web.SharedV2`.
-- [ ] `Storefront.WASM` không reference `Web.SharedV2`, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
-- [ ] `Storefront.Components` không reference `Web.SharedV2`, Runtime, Client, V2, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
-- [ ] `Storefront.Runtime` không reference `Web.SharedV2`, V2, Components, WASM, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
-- [ ] `Storefront.Client` không reference `Web.SharedV2`, V2, Runtime, Components, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
-- [ ] `Storefront.Starter` không reference `Web.SharedV2`, V2, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
-- [ ] Generated/custom `Storefront.{Name}` rules cấm `Web.SharedV2` và backend/core/API source dependencies.
-- [ ] Storefront vẫn gọi Commerce Node Storefront API được qua generated `Storefront.Client`/`Runtime`.
-- [ ] Control Plane Web vẫn build và hoạt động với `Web.SharedV2` tạm thời.
-- [ ] Storefront V2 Playwright targeted QA pass cho flow bị ảnh hưởng.
+- [x] `Storefront.V2.csproj` không reference `Web.SharedV2`.
+- [x] `Storefront.V2` source không import `BlazorShop.Web.SharedV2`.
+- [x] `Storefront.V2` Dockerfile không copy `Web.SharedV2`.
+- [x] `Storefront.V2` Tailwind config không scan `Web.SharedV2`.
+- [x] `Storefront.WASM` không reference `Web.SharedV2`, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
+- [x] `Storefront.Components` không reference `Web.SharedV2`, Runtime, Client, V2, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
+- [x] `Storefront.Runtime` không reference `Web.SharedV2`, V2, Components, WASM, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
+- [x] `Storefront.Client` không reference `Web.SharedV2`, V2, Runtime, Components, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
+- [x] `Storefront.Starter` không reference `Web.SharedV2`, V2, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
+- [x] Generated/custom `Storefront.{Name}` rules cấm `Web.SharedV2` và backend/core/API source dependencies.
+- [x] Storefront vẫn gọi Commerce Node Storefront API được qua generated `Storefront.Client`/`Runtime`.
+- [x] Control Plane Web vẫn build và hoạt động với `Web.SharedV2` tạm thời.
+- [x] Storefront V2 Playwright targeted QA pass cho flow bị ảnh hưởng.
 
 ## Suggested implementation order
 
@@ -325,13 +325,13 @@ Then run the existing Playwright harness or add a focused script only if the cur
 
 ## Risk controls
 
-- [ ] Do not move Control Plane auth/token helpers during Storefront decoupling.
-- [ ] Do not move business DTOs manually into `Storefront.Client`.
-- [ ] Do not add a new shared package unless at least two real consumers exist.
-- [ ] Do not remove `Web.SharedV2` until Control Plane migration has its own phase.
-- [ ] Do not change cookie names or role semantics while moving constants.
-- [ ] Do not mix cart runtime behavior changes with dependency-boundary cleanup without separate characterization tests.
-- [ ] Do not loosen existing Storefront API contract tests to make migration pass.
+- [x] Do not move Control Plane auth/token helpers during Storefront decoupling.
+- [x] Do not move business DTOs manually into `Storefront.Client`.
+- [x] Do not add a new shared package unless at least two real consumers exist.
+- [x] Do not remove `Web.SharedV2` until Control Plane migration has its own phase.
+- [x] Do not change cookie names or role semantics while moving constants.
+- [x] Do not mix cart runtime behavior changes with dependency-boundary cleanup without separate characterization tests.
+- [x] Do not loosen existing Storefront API contract tests to make migration pass.
 
 ## Decision audit trail
 
