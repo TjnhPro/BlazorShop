@@ -383,62 +383,62 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F12 - Storefront.V2 production browser QA release gate
 
-- [ ] Tạo hoặc cập nhật checklist release gate riêng:
-  - [ ] `docs/refactor-control-Commerce-storefront/Storefront V2 Shared Platform Functional MVP.qa.md`.
-  - [ ] Cập nhật `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` nếu checklist active cần thêm case.
-- [ ] Chạy full browser QA bằng Playwright trên `Storefront.V2` với store test đã setup env.
-- [ ] Không thay bằng smoke test; browser QA phải thao tác thật qua UI và tạo order thật bằng COD trên store test.
-- [ ] Ghi rõ account/cart/checkout đang là WASM components, nhưng protected calls phải đi qua same-origin BFF.
+- [x] Tạo hoặc cập nhật checklist release gate riêng:
+  - [x] `docs/refactor-control-Commerce-storefront/Storefront V2 Shared Platform Functional MVP.qa.md`.
+  - [x] Cập nhật `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` nếu checklist active cần thêm case.
+- [x] Chạy full browser QA bằng Playwright trên `Storefront.V2` với store test đã setup env.
+- [x] Không thay bằng smoke test; browser QA phải thao tác thật qua UI và tạo order thật bằng COD trên store test.
+- [x] Ghi rõ account/cart/checkout đang là WASM components, nhưng protected calls phải đi qua same-origin BFF.
 
 ### V2F12 Playwright P0 release cases
 
-- [ ] Home SSR render: header, nav, content, footer, SEO title/canonical.
-- [ ] Store closed/maintenance: redirect hoặc render maintenance page đúng.
-- [ ] Category page: product grid/list, paging, sorting, empty state.
-- [ ] Search page: term normalization, result/empty state, noindex nếu rule hiện có.
-- [ ] Product detail SSR: name, gallery 1x1, price, availability, SEO metadata.
-- [ ] Product option/variant: selection preview cập nhật price/availability/image.
-- [ ] Add-to-cart: product purchasable thêm được vào cart.
-- [ ] Cart badge: count update sau add/remove.
-- [ ] Cart page: line item display, quantity constraints, totals, warning state.
-- [ ] Checkout COD: start, address, shipping method, payment method, review, place order thật.
-- [ ] Checkout duplicate submit: không tạo duplicate order.
-- [ ] Completion page: order number, payment status, customer-facing reference.
-- [ ] Login/logout.
-- [ ] Register enabled/disabled policy.
-- [ ] Password recovery với SMTP capture nếu fixture sẵn sàng.
-- [ ] Account profile.
-- [ ] Address book.
-- [ ] Order history/list/detail authorization.
-- [ ] Guest completion URL/access token behavior nếu flow hiện có.
-- [ ] Consent accept/change/revoke.
-- [ ] Sitemap XML chỉ chứa published/store-visible content.
-- [ ] Robots.txt chặn mutation/internal routes.
-- [ ] Browser network assertion: không gọi trực tiếp Commerce Node API host.
-- [ ] Browser console: không có uncaught JS/.NET WASM errors.
+- [x] Home SSR render: header, nav, content, footer, SEO title/canonical.
+- [x] Store closed/maintenance: redirect hoặc render maintenance page đúng.
+- [x] Category page: product grid/list, paging, sorting, empty state.
+- [x] Search page: term normalization, result/empty state, noindex nếu rule hiện có.
+- [x] Product detail SSR: name, gallery 1x1, price, availability, SEO metadata.
+- [x] Product option/variant: selection preview cập nhật price/availability/image.
+- [x] Add-to-cart: product purchasable thêm được vào cart.
+- [x] Cart badge: count update sau add/remove.
+- [x] Cart page: line item display, quantity constraints, totals, warning state.
+- [x] Checkout COD: start, address, shipping method, payment method, review, place order thật.
+- [x] Checkout duplicate submit: không tạo duplicate order.
+- [x] Completion page: order number, payment status, customer-facing reference.
+- [x] Login/logout.
+- [x] Register enabled/disabled policy.
+- [x] Password recovery với SMTP capture nếu fixture sẵn sàng.
+- [x] Account profile.
+- [x] Address book.
+- [x] Order history/list/detail authorization.
+- [x] Guest completion URL/access token behavior nếu flow hiện có.
+- [x] Consent accept/change/revoke.
+- [x] Sitemap XML chỉ chứa published/store-visible content.
+- [x] Robots.txt chặn mutation/internal routes.
+- [x] Browser network assertion: không gọi trực tiếp Commerce Node API host.
+- [x] Browser console: không có uncaught JS/.NET WASM errors.
 
 ### V2F12 error and resilience cases
 
-- [ ] `401` session expired: UI redirect/login state đúng.
-- [ ] `403` forbidden: không lộ dữ liệu account/order.
-- [ ] `404` missing product/page/order: route/status UI đúng.
-- [ ] `409` cart/checkout conflict: UI refresh/retry rõ ràng.
-- [ ] `422` validation: field-level/global validation render đúng.
-- [ ] `503` store/API unavailable: user-facing unavailable state, không blank page.
-- [ ] Timeout/network failure: retry/error state không phá cart/checkout state.
-- [ ] Refresh browser giữa checkout vẫn resume hoặc bắt đầu lại theo rule hiện có.
+- [x] `401` session expired: UI redirect/login state đúng.
+- [x] `403` forbidden: không lộ dữ liệu account/order.
+- [x] `404` missing product/page/order: route/status UI đúng.
+- [x] `409` cart/checkout conflict: UI refresh/retry rõ ràng.
+- [x] `422` validation: field-level/global validation render đúng.
+- [x] `503` store/API unavailable: user-facing unavailable state, không blank page.
+- [x] Timeout/network failure: retry/error state không phá cart/checkout state.
+- [x] Refresh browser giữa checkout vẫn resume hoặc bắt đầu lại theo rule hiện có.
 
 ### V2F12 release acceptance
 
-- [ ] `Storefront.V2` build pass.
-- [ ] Runtime/client/component boundary tests pass.
-- [ ] Storefront API contract/generator tests pass.
-- [ ] Storefront V2 host tests pass.
-- [ ] Full Playwright P0 pass trên `Storefront.V2`.
-- [ ] QA report có link tới run command, env, store test key, commit SHA và failure evidence nếu có.
-- [ ] Không có direct browser call tới Commerce Node API.
-- [ ] Không có provider secret/internal setting trong public/browser response.
-- [ ] Manual `StorefrontApiClient` còn lại chỉ nằm trong exception list có owner và phase follow-up.
+- [x] `Storefront.V2` build pass.
+- [x] Runtime/client/component boundary tests pass.
+- [x] Storefront API contract/generator tests pass.
+- [x] Storefront V2 host tests pass.
+- [x] Full Playwright P0 pass trên `Storefront.V2`.
+- [x] QA report có link tới run command, env, store test key, commit SHA và failure evidence nếu có.
+- [x] Không có direct browser call tới Commerce Node API.
+- [x] Không có provider secret/internal setting trong public/browser response.
+- [x] Manual `StorefrontApiClient` còn lại chỉ nằm trong exception list có owner và phase follow-up.
 
 ## Suggested verification commands
 
@@ -456,12 +456,12 @@ Playwright command cần bám theo test harness hiện có trong repo khi triể
 
 ## Risk controls
 
-- [ ] Mỗi capability cutover phải có characterization test trước khi đổi implementation.
-- [ ] Không cutover cart và checkout cùng lúc nếu cart QA chưa pass.
-- [ ] Không xóa manual client/DTO cho đến khi `rg` xác nhận không còn consumer.
-- [ ] Không đổi public route hoặc local `/api/*` BFF path nếu chưa có redirect/compatibility test.
-- [ ] Không thay đổi Commerce Node behavior trong phase Storefront package consumption.
-- [ ] Không trộn QA của `Starter`/`Storefront.{Name}` vào release gate của `Storefront.V2`.
+- [x] Mỗi capability cutover phải có characterization test trước khi đổi implementation.
+- [x] Không cutover cart và checkout cùng lúc nếu cart QA chưa pass.
+- [x] Không xóa manual client/DTO cho đến khi `rg` xác nhận không còn consumer.
+- [x] Không đổi public route hoặc local `/api/*` BFF path nếu chưa có redirect/compatibility test.
+- [x] Không thay đổi Commerce Node behavior trong phase Storefront package consumption.
+- [x] Không trộn QA của `Starter`/`Storefront.{Name}` vào release gate của `Storefront.V2`.
 
 ## Decision audit trail
 

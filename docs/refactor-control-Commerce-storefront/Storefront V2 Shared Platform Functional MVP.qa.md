@@ -257,3 +257,60 @@ Verification:
 - `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests.GeneratedStorefrontProjectCreation_WrapsStarterGenerationAndWritesMetadata|FullyQualifiedName~StorefrontBuilderQaRegenerationTests.BuildIsolationGate_RestoresBuildsPacksAndRejectsForbiddenReferences|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 35/35, including local package proof for Client, Runtime, and Components.
 - Playwright production QA was intentionally not run for Starter/generated storefronts in V2F11; this phase only defines compatibility and package boundaries. Storefront V2 production browser QA remains V2F12.
+
+## V2F12 Storefront V2 production browser QA release gate
+
+Implementation notes:
+
+- Updated `scripts/qa/storefront-order-email-e2e.js` so the release gate drives the current Storefront V2 runtime surface instead of the old SSR checkout form when the WASM checkout shell is present.
+- The script now waits for product add-to-cart interactivity before asserting cart state, posts checkout steps through same-origin `/api/checkout/*` BFF endpoints, and waits for WASM-rendered account order pages before reading order evidence.
+- Account, cart, checkout, address, order, and consent browser interactions remain browser-facing WASM components; protected mutations continue through same-origin Storefront V2 BFF endpoints, not direct Commerce Node browser calls.
+- V2F12 did not add Storefront Starter/generated browser QA. Starter/generated compatibility stayed in V2F11; this release gate is only for `BlazorShop.Storefront.V2`.
+
+Environment:
+
+- Date: 2026-07-25.
+- Base URL: `http://localhost:18598`.
+- Store key: `default`.
+- Commerce Node API guard host: `http://localhost:5180`.
+- Runtime command: `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`.
+- Source state before V2F12 commit: `c419afe0`; the V2F12 commit contains this report update.
+
+Verification:
+
+- `.\scripts\qa\run-storefront-registration-policy-e2e.ps1 -Headless`: passed. Evidence: `.gstack/qa-reports/registration-policy-e2e/result.json`.
+- `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless`: passed. Evidence: `.gstack/qa-reports/order-email-e2e/result.json`.
+- `.\scripts\qa\run-storefront-email-recovery-e2e.ps1 -Headless`: passed. Evidence: `.gstack/qa-reports/email-recovery-e2e/result.json`.
+- Playwright route/resilience release smoke: passed. Evidence: `output/playwright/v2f12-release-route-resilience-smoke.json` and `output/playwright/v2f12-release-route-resilience-smoke.png`.
+- Focused release tests: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` passed 58/58.
+- Final `dotnet build BlazorShop.sln`: passed after stopping local V2 runtime processes. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+
+Browser release coverage:
+
+- Home, category, search, product detail, cart, checkout, account redirect, missing product, sitemap, robots, and consent save/revoke passed against `Storefront.V2`.
+- Product variant preview confirmed XL/SKU/stock/EUR update markers on `catalog-qa-t-shirt`.
+- Registration policy toggled disabled/enabled through Control Plane, verified storefront disabled state, and verified direct Commerce Node register returned `403` while disabled.
+- Password recovery verified known-customer email capture, reset browser flow, login with the new password, and unknown-customer no-email behavior.
+- COD checkout placed real orders `ORD-20260725-BAF06B02` and `ORD-20260725-F4DAF466`; the first order sent exactly one order email, the second proved SMTP-disabled queue retry after settings restore.
+- Order email release gate also verified order-created task success, Mailpit capture, store sender isolation between `default` and `qa-s2`, account order list/detail/receipt access, and network guardrails.
+- Duplicate submit behavior remains covered by V2F7 Playwright checkout COD flow, which observed exactly one `POST /api/checkout/place-order`; V2F12 kept the same same-origin BFF placement path.
+
+Error and resilience coverage:
+
+- `401`: anonymous `/account/profile` redirected to sign-in with return URL in route/resilience smoke; protected account flows were also covered by V2F8 host/browser tests.
+- `403`: disabled direct registration returned `403`, and account/order data exposure remains covered by V2F8 cross-customer denial plus V2F12 registration policy.
+- `404`: `/product/does-not-exist-v2f12` returned 404 with the product-not-found page; account order wrong-scope denial remains covered by V2F8.
+- `409`: cart/checkout stale-conflict preservation remains covered by `StorefrontCommerceFlowCutoverTests` and V2F6/V2F7 browser conflict checks.
+- `422`: registration/password/account form validation remains covered by host/security tests and release browser form flows.
+- `503`: store unavailable/maintenance behavior remains covered by current-store middleware/provider tests and V2F10 maintenance host smoke; V2F12 route smoke verified no blank page on active store.
+- Timeout/network failure: no artificial timeout was injected in V2F12; current BFF unavailable/error-state behavior remains guarded by focused Runtime/BFF tests, and the browser happy path completed without timeouts or 5xx.
+- Checkout refresh/resume behavior remains covered by the current stateful checkout/browser placement path and the V2F7 checkout COD flow.
+
+Release assertions:
+
+- Browser network guard observed no direct requests from Storefront V2 browser pages to `http://localhost:5180`.
+- Browser release runs observed no uncaught JS/.NET WASM errors and no unexpected 5xx responses.
+- Sitemap contained store-visible public content and did not include checkout.
+- Robots blocked private/mutation route classes.
+- No provider secret/internal setting was exposed in checked public/browser responses; secret boundary tests from previous phases remain green.
+- Remaining manual `StorefrontApiClient` usages are still limited to the documented owner/phase exception list guarded by `StorefrontContractOwnershipTests`.

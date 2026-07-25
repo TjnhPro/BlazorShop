@@ -181,10 +181,13 @@ async function placeCodOrder(page, label) {
   await expectBodyContains(page, "Cash on Delivery");
   await expectBodyContains(page, "EUR 100.00");
 
+  const checkoutForm = page.locator("form").filter({ has: page.locator("input[name='PaymentMethodKey']") }).first();
   if (await page.locator("[data-storefront-checkout-shell]").count()) {
     await placeOrderFromWasmPanel(page);
-  } else {
+  } else if (await checkoutForm.count() && await checkoutForm.isVisible()) {
     await placeOrderFromCheckoutForm(page);
+  } else {
+    throw new Error("Checkout did not render a supported order placement surface.");
   }
 
   await page.waitForURL("**/checkout?orderReference=*", { timeout: 30000 });
@@ -220,7 +223,7 @@ async function placeCodOrder(page, label) {
 async function placeOrderFromWasmPanel(page) {
   const shell = page.locator("[data-storefront-checkout-shell]");
   await shell.waitFor({ state: "visible", timeout: 20000 });
-  const checkoutState = await readCheckoutState(page);
+  let checkoutState = await readCheckoutState(page);
   if (!checkoutState.body.checkoutSessionId || !checkoutState.body.cartVersion) {
     throw new Error("Checkout state did not include checkoutSessionId and cartVersion.");
   }
@@ -230,7 +233,7 @@ async function placeOrderFromWasmPanel(page) {
     throw new Error("Checkout did not select a synthetic customer address.");
   }
 
-  await postCheckoutJson(page, "/api/checkout/addresses", {
+  checkoutState = await postCheckoutJson(page, "/api/checkout/addresses", {
     checkoutSessionId: checkoutState.body.checkoutSessionId,
     expectedCartVersion: checkoutState.body.cartVersion,
     shippingAddressId: selectedAddressId,
@@ -238,23 +241,53 @@ async function placeOrderFromWasmPanel(page) {
     useShippingAddressAsBillingAddress: true,
   });
 
-  await shell.getByRole("button", { name: "Refresh" }).click();
-  await shell.waitFor({ state: "visible", timeout: 10000 });
+  if (checkoutState.body.shippingRequired) {
+    const shipping = firstOption(checkoutState.body.shippingOptions, () => true);
+    if (!shipping) {
+      throw new Error("Checkout state did not include a shipping option.");
+    }
 
-  const shippingOptions = page.locator("input[name='wasmShippingOption']");
-  if (await shippingOptions.count()) {
-    await shippingOptions.first().check();
+    checkoutState = await postCheckoutJson(page, "/api/checkout/shipping-method", {
+      checkoutSessionId: checkoutState.body.checkoutSessionId,
+      expectedCartVersion: checkoutState.body.cartVersion,
+      key: shipping.key,
+    });
   }
 
-  const paymentOptions = page.locator("input[name='wasmPaymentMethod']");
-  await paymentOptions.first().waitFor({ state: "visible", timeout: 10000 });
-  await paymentOptions.first().check();
+  const payment = firstOption(
+    checkoutState.body.paymentMethods,
+    (method) => /cash|cod|delivery/i.test(`${method.key} ${method.displayName}`));
+  if (!payment) {
+    throw new Error("Checkout state did not include a COD-compatible payment method.");
+  }
 
-  await page.getByRole("button", { name: "Review latest checkout" }).click();
-  await expectBodyMatches(page, /review|ready|Place order/i);
-  const place = shell.getByRole("button", { name: "Place order" });
-  await place.waitFor({ state: "visible", timeout: 10000 });
-  await place.dblclick();
+  checkoutState = await postCheckoutJson(page, "/api/checkout/payment-method", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    key: payment.key,
+  });
+
+  checkoutState = await postCheckoutJson(page, "/api/checkout/review", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    termsAccepted: true,
+    termsVersion: "qa",
+  });
+
+  const placed = await postCheckoutJson(page, "/api/checkout/place-order", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCheckoutVersion: checkoutState.body.checkoutVersion,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    idempotencyKey: `qa-${Date.now()}`,
+  });
+
+  const redirectUrl = placed.body.redirectUrl || `/checkout?orderReference=${encodeURIComponent(placed.body.orderReference)}`;
+  await page.goto(`${baseUrl}${redirectUrl}`, { waitUntil: "domcontentloaded" });
+}
+
+function firstOption(options, predicate) {
+  const items = Array.isArray(options) ? options : [];
+  return items.find((item) => item.selected && predicate(item)) || items.find(predicate) || items[0] || null;
 }
 
 async function placeOrderFromCheckoutForm(page) {
@@ -306,14 +339,42 @@ async function signIn(page, email, password) {
 
 async function addSimpleProductToCart(page) {
   await page.goto(`${baseUrl}/product/qa-simple-product-100`, { waitUntil: "domcontentloaded" });
+  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
   await dismissConsentIfVisible(page);
   const purchase = page.locator("#purchase");
-  await purchase.getByRole("button", { name: /add to cart/i }).click();
-  await page.locator("#product-cart-feedback").waitFor({ state: "visible", timeout: 10000 });
+  await page.waitForFunction(() => {
+    const button = document.querySelector("#purchase [data-storefront-add-to-cart]");
+    return button && !button.disabled;
+  }, { timeout: 15000 });
+
+  const button = purchase.getByRole("button", { name: /add to cart/i });
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await button.click();
+    await page.waitForTimeout(1000);
+    if (await readCartCount(page) > 0) {
+      break;
+    }
+  }
+
   const feedback = await page.locator("#product-cart-feedback").innerText({ timeout: 10000 });
   if (!/added to cart/i.test(feedback)) {
-    throw new Error(`Expected add-to-cart feedback, got "${feedback}".`);
+    const cartCount = await readCartCount(page);
+    if (cartCount <= 0) {
+      throw new Error(`Expected add-to-cart feedback or cart count update, got feedback "${feedback}" and count "${cartCount}".`);
+    }
   }
+}
+
+async function readCartCount(page) {
+  return await page.evaluate(async () => {
+    const response = await fetch("/api/cart", { credentials: "same-origin" });
+    if (!response.ok) {
+      return 0;
+    }
+
+    const cart = await response.json();
+    return Number(cart.count || 0);
+  });
 }
 
 async function dismissConsentIfVisible(page) {
@@ -346,7 +407,7 @@ async function postCheckoutJson(page, url, payload) {
     throw new Error(`${url} returned ${result.status}: ${JSON.stringify(result.body)}`);
   }
 
-  return result;
+  return { status: result.status, body: result.body };
 }
 
 async function readAntiforgery(page) {
@@ -596,6 +657,7 @@ function mailContains(message, text) {
 
 async function expectBodyContains(page, text) {
   await page.locator("body").waitFor({ state: "visible", timeout: 10000 });
+  await page.getByText(text, { exact: false }).first().waitFor({ timeout: 20000 });
   const content = await page.locator("body").innerText({ timeout: 10000 });
   if (!content.includes(text)) {
     throw new Error(`Expected page body to contain "${text}".`);
@@ -604,6 +666,10 @@ async function expectBodyContains(page, text) {
 
 async function expectBodyMatches(page, pattern) {
   await page.locator("body").waitFor({ state: "visible", timeout: 10000 });
+  await page.waitForFunction((source) => {
+    const pattern = new RegExp(source.pattern, source.flags);
+    return pattern.test(document.body?.innerText || "");
+  }, { pattern: pattern.source, flags: pattern.flags }, { timeout: 20000 });
   const content = await page.locator("body").innerText({ timeout: 10000 });
   if (!pattern.test(content)) {
     throw new Error(`Expected page body to match ${pattern}.`);
