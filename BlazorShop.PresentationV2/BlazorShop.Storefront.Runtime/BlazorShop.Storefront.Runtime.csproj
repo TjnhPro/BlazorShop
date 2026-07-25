@@ -8,6 +8,7 @@
     <Version>1.0.0</Version>
     <Authors>BlazorShop</Authors>
     <Description>Neutral Storefront runtime primitives for generated storefronts.</Description>
+    <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

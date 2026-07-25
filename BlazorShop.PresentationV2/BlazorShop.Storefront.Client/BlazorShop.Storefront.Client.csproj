@@ -8,6 +8,7 @@
     <Version>1.0.0</Version>
     <Authors>BlazorShop</Authors>
     <Description>Generated Commerce Node Storefront API client.</Description>
+    <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
   </PropertyGroup>
 
 </Project>

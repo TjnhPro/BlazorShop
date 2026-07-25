@@ -31,6 +31,13 @@ namespace BlazorShop.Storefront.Runtime
             this IServiceCollection services,
             Action<IServiceProvider, HttpClient>? configureHttpClient = null)
         {
+            return services.AddStorefrontServerGeneratedClients(configureHttpClient);
+        }
+
+        public static IServiceCollection AddStorefrontServerGeneratedClients(
+            this IServiceCollection services,
+            Action<IServiceProvider, HttpClient>? configureHttpClient = null)
+        {
             ArgumentNullException.ThrowIfNull(services);
 
             services.AddHttpClient(

@@ -7,7 +7,8 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Area | Owner | Responsibility |
 | --- | --- | --- |
 | Storefront API contracts | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTOs from Commerce Node Storefront OpenAPI. |
-| Neutral runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Store context, generated-client registration, capability reading, normalized errors, and BFF-safe result primitives. |
+| Neutral runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Store context, server-side generated-client registration, capability reading, normalized errors, and BFF-safe result primitives. |
+| Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Reusable Storefront presentation components that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
@@ -29,13 +30,15 @@ StorefrontBuilder follows the existing Storefront API and BFF model:
 
 ```text
 Generated storefront SSR
-  -> BlazorShop.Storefront.Client
-      -> CommerceNode.API api/storefront/stores/{storeKey}/*
+  -> BlazorShop.Storefront.Runtime
+      -> BlazorShop.Storefront.Client
+          -> CommerceNode.API api/storefront/stores/{storeKey}/*
 
 Generated browser or WASM features
   -> same-origin generated storefront /api/*
-      -> BlazorShop.Storefront.Client
-          -> CommerceNode.API api/storefront/stores/{storeKey}/*
+      -> BlazorShop.Storefront.Runtime
+          -> BlazorShop.Storefront.Client
+              -> CommerceNode.API api/storefront/stores/{storeKey}/*
 ```
 
 Generated storefronts must not:
@@ -51,11 +54,13 @@ Generated storefronts must not:
 When visual evidence and backend capability do not agree, decisions follow this order:
 
 1. Commerce Node Storefront OpenAPI and `BlazorShop.Storefront.Client` contracts.
-2. Starter generation/runtime contract.
-3. Backend capability state.
-4. Starter feature manifest and protected-file rules.
-5. Visual evidence captured from the reference storefront.
-6. AI inference recorded explicitly when evidence is incomplete.
+2. `BlazorShop.Storefront.Runtime` server-side registration and facade contract.
+3. `BlazorShop.Storefront.Components` presentation contract.
+4. Starter generation/runtime contract.
+5. Backend capability state.
+6. Starter feature manifest and protected-file rules.
+7. Visual evidence captured from the reference storefront.
+8. AI inference recorded explicitly when evidence is incomplete.
 
 ## Generated Artifacts
 

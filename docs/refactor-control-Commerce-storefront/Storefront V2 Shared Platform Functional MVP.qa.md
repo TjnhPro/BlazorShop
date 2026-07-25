@@ -51,3 +51,23 @@ Allowed until their target phase cutover lands:
 - Focused host smoke slice: `dotnet test ... --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.SignIn_ReturnsStorefrontLoginPage"` passed 1/1. Running the full `StorefrontV2HostSmokeTests` class exceeded 180 seconds, so V2F0 records a narrow host smoke instead of treating the whole class as a baseline gate.
 - Playwright browser baseline against `http://localhost:18598`: `/`, `/category/apparel`, `/search?q=shirt`, `/product/qa-simple-product-100`, `/my-cart`, `/checkout`, `/signin`, `/register`, `/account/profile`, `/sitemap.xml`, and `/robots.txt` all returned 200 and nonblank content.
 - Browser network assertion: no direct requests from browser to `http://localhost:5180/` were observed.
+
+## V2F1 package contract completion
+
+Implementation notes:
+
+- Added package metadata to `BlazorShop.Storefront.Components`: `PackageId`, `Version`, `Authors`, `Description`, and `RepositoryUrl`.
+- Standardized `RepositoryUrl` on `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Components`.
+- Split Runtime DI naming so `AddStorefrontRuntime` remains the core primitive registration and `AddStorefrontServerGeneratedClients` is the explicit server-side generated-client registration. The previous `AddStorefrontGeneratedClients` wrapper remains for compatibility.
+- Updated Storefront V2 host registration to call `AddStorefrontServerGeneratedClients`.
+- Updated architecture docs to treat Components as a package boundary and Runtime generated clients as server-side registration.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 7/7.
+- `dotnet pack BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj --no-build -o artifacts/storefront-packages-v2f1`: passed.
+- `dotnet pack BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj --no-build -o artifacts/storefront-packages-v2f1`: passed.
+- `dotnet pack BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj --no-build -o artifacts/storefront-packages-v2f1`: passed.
+- Local compatibility proof: created temporary Razor class library under `obj/storefront-package-compat-v2f1-01`, restored all three Storefront packages from the local feed, and `dotnet build obj/storefront-package-compat-v2f1-01/StorefrontPackageCompatProof.csproj` passed with 0 warnings and 0 errors.
+- NuGet pack emitted non-failing readme best-practice warnings for all three packages.

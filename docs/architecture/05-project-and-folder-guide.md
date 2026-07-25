@@ -258,7 +258,8 @@ Current ownership map:
 - `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
 - `BlazorShop.Storefront.Components/Features/*` owns portable presentation-only feature components.
 - `BlazorShop.Storefront.V2` owns route composition, SEO, BFF endpoints, session/cart-token handling, store resolution, deployment, and storefront-specific design.
-- `BlazorShop.Storefront.Runtime` and `Storefront.Features.*` projects are deferred until a second consumer or repeated neutral runtime code proves the need.
+- `BlazorShop.Storefront.Runtime` owns neutral runtime primitives and server-side generated-client registration.
+- `Storefront.Features.*` projects are deferred until repeated neutral feature logic proves the need.
 
 Do not create feature packages just to move code out of Storefront V2. Extract only when it removes real duplication and can stay independent of Storefront V2 design, routes, BFF endpoints, and backend/core/API projects.
 
@@ -267,6 +268,7 @@ Do not create feature packages just to move code out of Storefront V2. Extract o
 Status:
 
 - Active neutral skeleton source for deterministic generated storefronts.
+- Future `BlazorShop.Storefront.Starter` changes must preserve package-first generation, protected manifests, and store-neutral defaults.
 
 Use for:
 

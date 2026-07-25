@@ -72,28 +72,28 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F1 - Package contract completion
 
-- [ ] Bổ sung package metadata còn thiếu cho `Storefront.Components` nếu cần:
-  - [ ] `PackageId`.
-  - [ ] `Version`.
-  - [ ] `Authors`.
-  - [ ] `Description`.
-  - [ ] `RepositoryUrl` nếu repo đã dùng pattern này.
-- [ ] Chuẩn hóa package metadata của `Storefront.Client` và `Storefront.Runtime` theo cùng convention.
-- [ ] Tách rõ registration trong `Storefront.Runtime`:
-  - [ ] Core runtime primitives.
-  - [ ] Server-side generated clients.
-  - [ ] Không register browser/WASM generated clients trực tiếp.
-- [ ] Tạo package compatibility proof bằng local pack/restore build, chưa cần publish package.
-- [ ] Cập nhật architecture note nếu boundary/package rule thay đổi.
+- [x] Bổ sung package metadata còn thiếu cho `Storefront.Components` nếu cần:
+  - [x] `PackageId`.
+  - [x] `Version`.
+  - [x] `Authors`.
+  - [x] `Description`.
+  - [x] `RepositoryUrl` nếu repo đã dùng pattern này.
+- [x] Chuẩn hóa package metadata của `Storefront.Client` và `Storefront.Runtime` theo cùng convention.
+- [x] Tách rõ registration trong `Storefront.Runtime`:
+  - [x] Core runtime primitives.
+  - [x] Server-side generated clients.
+  - [x] Không register browser/WASM generated clients trực tiếp.
+- [x] Tạo package compatibility proof bằng local pack/restore build, chưa cần publish package.
+- [x] Cập nhật architecture note nếu boundary/package rule thay đổi.
 
 ### V2F1 QA gate
 
-- [ ] `dotnet pack` cho `Storefront.Client`.
-- [ ] `dotnet pack` cho `Storefront.Runtime`.
-- [ ] `dotnet pack` cho `Storefront.Components`.
-- [ ] Boundary test: `Storefront.Client` không reference `Runtime`, `Components`, `V2`, `Web.SharedV2`, API/backend projects.
-- [ ] Boundary test: `Storefront.Runtime` chỉ được reference `Storefront.Client` và framework libraries cần thiết.
-- [ ] Boundary test: `Storefront.Components` không reference `CommerceNode.API`, `ControlPlane.*`, `Application`, `Infrastructure`, domain admin contracts, hoặc server-only APIs.
+- [x] `dotnet pack` cho `Storefront.Client`.
+- [x] `dotnet pack` cho `Storefront.Runtime`.
+- [x] `dotnet pack` cho `Storefront.Components`.
+- [x] Boundary test: `Storefront.Client` không reference `Runtime`, `Components`, `V2`, `Web.SharedV2`, API/backend projects.
+- [x] Boundary test: `Storefront.Runtime` chỉ được reference `Storefront.Client` và framework libraries cần thiết.
+- [x] Boundary test: `Storefront.Components` không reference `CommerceNode.API`, `ControlPlane.*`, `Application`, `Infrastructure`, domain admin contracts, hoặc server-only APIs.
 
 ## Phase V2F2 - Runtime result and execution primitives
 

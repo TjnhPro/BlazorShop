@@ -97,7 +97,7 @@ namespace BlazorShop.Storefront.Configuration
                     var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
                     configureHttpClient(client, serviceConfiguration);
                 });
-            services.AddStorefrontGeneratedClients((_, client) =>
+            services.AddStorefrontServerGeneratedClients((_, client) =>
             {
                 client.Timeout = TimeSpan.FromSeconds(2);
             });
