@@ -1,6 +1,6 @@
 # Storefront Independence Boundary.todo
 
-Status: planned
+Status: in progress
 
 Goal: tách hoàn toàn Storefront presentation/platform khỏi cụm Control Plane, Commerce Node implementation và `BlazorShop.Web.SharedV2`. Sau phase này, `Storefront.V2`, `Storefront.WASM`, `Storefront.Components`, `Storefront.Starter` và storefront sinh theo `BlazorShop.Storefront.{Name}` không được phụ thuộc source/project vào Control Plane, Commerce Node API, backend core implementation, hoặc `Web.SharedV2`.
 
@@ -69,35 +69,35 @@ Storefront.*
 
 ## Phase SIB0 - Scope lock, baseline and in-flight work check
 
-- [ ] Ghi baseline commit SHA.
-- [ ] Kiểm tra working tree và phân biệt:
-  - [ ] Thay đổi in-flight của cart/runtime đang có.
-  - [ ] File sẽ chạm cho boundary decoupling.
-  - [ ] File không được đụng trong phase này.
-- [ ] Chạy inventory dependency graph:
-  - [ ] `ProjectReference` của `Storefront.V2`.
-  - [ ] `ProjectReference` của `Storefront.WASM`.
-  - [ ] `ProjectReference` của `Storefront.Components`.
-  - [ ] Package references của `Storefront.Starter`.
-  - [ ] Namespace usages `BlazorShop.Web.SharedV2`.
-  - [ ] Namespace usages `BlazorShop.ControlPlane`.
-  - [ ] Namespace usages `BlazorShop.CommerceNode`.
-  - [ ] Namespace usages `BlazorShop.Application`, `Domain`, `Infrastructure`.
-- [ ] Ghi migration matrix:
-  - [ ] File.
-  - [ ] Current dependency.
-  - [ ] Symbol used.
-  - [ ] Target owner.
-  - [ ] Replacement action.
-  - [ ] Required test.
-- [ ] Không bắt đầu migration nếu cart/runtime in-flight chưa build được hoặc chưa được chủ động chấp nhận làm baseline.
+- [x] Ghi baseline commit SHA.
+- [x] Kiểm tra working tree và phân biệt:
+  - [x] Thay đổi in-flight của cart/runtime đang có.
+  - [x] File sẽ chạm cho boundary decoupling.
+  - [x] File không được đụng trong phase này.
+- [x] Chạy inventory dependency graph:
+  - [x] `ProjectReference` của `Storefront.V2`.
+  - [x] `ProjectReference` của `Storefront.WASM`.
+  - [x] `ProjectReference` của `Storefront.Components`.
+  - [x] Package references của `Storefront.Starter`.
+  - [x] Namespace usages `BlazorShop.Web.SharedV2`.
+  - [x] Namespace usages `BlazorShop.ControlPlane`.
+  - [x] Namespace usages `BlazorShop.CommerceNode`.
+  - [x] Namespace usages `BlazorShop.Application`, `Domain`, `Infrastructure`.
+- [x] Ghi migration matrix:
+  - [x] File.
+  - [x] Current dependency.
+  - [x] Symbol used.
+  - [x] Target owner.
+  - [x] Replacement action.
+  - [x] Required test.
+- [x] Không bắt đầu migration nếu cart/runtime in-flight chưa build được hoặc chưa được chủ động chấp nhận làm baseline.
 
 ### SIB0 QA gate
 
-- [ ] `dotnet build BlazorShop.sln`.
-- [ ] Focused Storefront architecture tests hiện có.
-- [ ] Ghi danh sách dependency offenders vào QA note.
-- [ ] Nếu build đang fail vì in-flight change không thuộc phase này, ghi rõ blocker trước khi triển khai.
+- [x] `dotnet build BlazorShop.sln`.
+- [x] Focused Storefront architecture tests hiện có.
+- [x] Ghi danh sách dependency offenders vào QA note.
+- [x] Nếu build đang fail vì in-flight change không thuộc phase này, ghi rõ blocker trước khi triển khai.
 
 ## Phase SIB1 - Guardrails first
 
