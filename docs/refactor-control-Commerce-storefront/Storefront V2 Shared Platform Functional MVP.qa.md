@@ -224,3 +224,20 @@ Verification:
 
 - `dotnet build BlazorShop.sln`: passed after confirming no local V2 runtime processes were holding output DLLs. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests"`: passed 16/16.
+
+## V2F10 V2 host composition cleanup
+
+Implementation notes:
+
+- Split `StorefrontServiceCollectionExtensions` into named private registration groups for host options, Runtime, auth/session/antiforgery/rate-limit policy, BFF endpoint dependencies, SEO/media/deployment-facing services, and generated-client adapters.
+- Kept endpoint files unchanged because account, cart, checkout, consent, SEO, and media endpoint groups were already split before this phase.
+- Removed unused `Program.cs` imports and kept Program at composition-only shape: service registration, host pipeline, endpoint maps, static assets, and Razor component map.
+- Kept `StorefrontApiClient` because active auth-sensitive exception consumers remain. V2F10 isolates it inside the auth/session/manual-exception registration group and guards allowed usage files.
+
+Verification:
+
+- `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
+- Static composition/boundary tests: `StorefrontHostCompositionTests|StorefrontEndpointDependencyBoundaryTests|StorefrontContractOwnershipTests` passed 9/9.
+- Active commerce cutover tests: `StorefrontCommerceFlowCutoverTests` passed 8/8.
+- Focused host read/render smoke passed 7/7 for login/account/cart/checkout/SEO/maintenance representative cases. The full `StorefrontV2HostSmokeTests` class exceeded the 5-minute command timeout; older mutation cases that mock only manual `StorefrontApiClient` are no longer representative after V2F6/V2F7 generated Runtime cutover.
+- Playwright host composition smoke against `http://localhost:18598`: `/`, `/product/qa-simple-product-100`, `/my-cart`, `/checkout`, and `/account/profile` all returned 200/nonblank final pages. Account profile correctly redirected anonymous browser traffic to sign-in. Evidence saved to `output/playwright/v2f10-host-composition-smoke.json` and `output/playwright/v2f10-host-composition-smoke.png`; no direct browser requests to `http://localhost:5180`, no 5xx responses, and no console/page errors were observed.

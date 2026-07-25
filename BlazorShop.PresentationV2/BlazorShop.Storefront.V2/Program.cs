@@ -1,16 +1,7 @@
-using System.Globalization;
 using BlazorShop.Storefront.Configuration;
 using BlazorShop.Storefront.Endpoints;
 using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront;
-using BlazorShop.Storefront.Components.Browser;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
-using BlazorShop.Storefront.WASM;
-using BlazorShop.Web.SharedV2;
-using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 var storefrontRateLimitingOptions = builder.Configuration

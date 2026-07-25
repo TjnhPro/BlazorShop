@@ -332,30 +332,31 @@ Storefront.V2 / Starter / Storefront.{Name}
 
 ## Phase V2F10 - V2 host composition cleanup
 
-- [ ] Làm gọn `StorefrontServiceCollectionExtensions`:
-  - [ ] Storefront host options.
-  - [ ] Runtime registration.
-  - [ ] Generated client registration qua Runtime.
-  - [ ] BFF endpoint dependencies.
-  - [ ] SEO/media/deployment services.
-  - [ ] Auth/session/antiforgery policies.
-- [ ] Tách endpoint registration nếu còn quá lớn:
-  - [ ] Account endpoints.
-  - [ ] Cart endpoints.
-  - [ ] Checkout endpoints.
-  - [ ] Consent endpoints.
-  - [ ] Media endpoints.
-  - [ ] SEO endpoints.
-- [ ] Không rewrite logic endpoint; chỉ di chuyển cơ học sau khi behavior đã được coverage.
-- [ ] Loại hoặc cô lập `StorefrontApiClient` nếu không còn active consumer.
+- [x] Làm gọn `StorefrontServiceCollectionExtensions`:
+  - [x] Storefront host options.
+  - [x] Runtime registration.
+  - [x] Generated client registration qua Runtime.
+  - [x] BFF endpoint dependencies.
+  - [x] SEO/media/deployment services.
+  - [x] Auth/session/antiforgery policies.
+- [x] Tách endpoint registration nếu còn quá lớn:
+  - [x] Account endpoints.
+  - [x] Cart endpoints.
+  - [x] Checkout endpoints.
+  - [x] Consent endpoints.
+  - [x] Media endpoints.
+  - [x] SEO endpoints.
+- [x] Không rewrite logic endpoint; chỉ di chuyển cơ học sau khi behavior đã được coverage.
+- [x] Loại hoặc cô lập `StorefrontApiClient` nếu không còn active consumer.
+  - 2026-07-25: `StorefrontApiClient` still has active auth-sensitive exception consumers, so V2F10 isolates registration behind the auth/session/manual-exception group and guards the allowed exception files instead of deleting it.
 
 ### V2F10 QA gate
 
-- [ ] Build toàn solution.
-- [ ] Focused host smoke tests.
-- [ ] Static guard: `Program.cs` chỉ còn composition và endpoint map ở mức dễ đọc.
-- [ ] Static guard: manual `StorefrontApiClient` chỉ tồn tại trong documented exception list nếu chưa xóa hết.
-- [ ] Playwright smoke lại home/product/cart/checkout/account.
+- [x] Build toàn solution.
+- [x] Focused host smoke tests.
+- [x] Static guard: `Program.cs` chỉ còn composition và endpoint map ở mức dễ đọc.
+- [x] Static guard: manual `StorefrontApiClient` chỉ tồn tại trong documented exception list nếu chưa xóa hết.
+- [x] Playwright smoke lại home/product/cart/checkout/account.
 
 ## Phase V2F11 - Starter and Storefront.{Name} compatibility definition only
 

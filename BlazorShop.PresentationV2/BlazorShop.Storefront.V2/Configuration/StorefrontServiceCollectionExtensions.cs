@@ -26,12 +26,25 @@ namespace BlazorShop.Storefront.Configuration
             ArgumentNullException.ThrowIfNull(configureRateLimiter);
             ArgumentNullException.ThrowIfNull(configureHttpClient);
 
+            services.AddStorefrontHostOptions(configuration);
+            services.AddStorefrontRuntimeRegistration(configuration);
+            services.AddStorefrontAuthSessionAndAntiforgeryPolicies(
+                rateLimitingOptions,
+                configureRateLimiter,
+                configureHttpClient);
+            services.AddStorefrontBffEndpointDependencies();
+            services.AddStorefrontSeoMediaAndDeploymentServices();
+            services.AddStorefrontGeneratedClientRegistration();
+
+            return services;
+        }
+
+        private static IServiceCollection AddStorefrontHostOptions(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
             services.AddHttpContextAccessor();
             services.AddMemoryCache();
-            services.AddAntiforgery(options =>
-            {
-                options.HeaderName = "X-CSRF-TOKEN";
-            });
             services.AddSingleton<IValidateOptions<StorefrontApiOptions>, StorefrontApiOptionsValidator>();
             services.AddSingleton<IValidateOptions<ClientAppOptions>, StorefrontClientAppOptionsValidator>();
             services.AddSingleton<IValidateOptions<StorefrontPublicUrlOptions>, StorefrontPublicUrlOptionsValidator>();
@@ -51,20 +64,75 @@ namespace BlazorShop.Storefront.Configuration
                 .ValidateOnStart();
             services.AddOptions<StorefrontRateLimitingOptions>()
                 .Bind(configuration.GetSection(StorefrontRateLimitingOptions.SectionName));
+
+            return services;
+        }
+
+        private static IServiceCollection AddStorefrontRuntimeRegistration(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
             services.AddStorefrontRuntime(options =>
             {
                 options.CommerceNodeBaseUrl = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(configuration).ToString();
                 options.StoreKey = StorefrontApiEndpointResolver.ResolveStoreKey(configuration) ?? "default";
+            });
+
+            return services;
+        }
+
+        private static IServiceCollection AddStorefrontAuthSessionAndAntiforgeryPolicies(
+            this IServiceCollection services,
+            StorefrontRateLimitingOptions rateLimitingOptions,
+            Action<RateLimiterOptions, StorefrontRateLimitingOptions> configureRateLimiter,
+            Action<HttpClient, IConfiguration> configureHttpClient)
+        {
+            services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-CSRF-TOKEN";
             });
             if (rateLimitingOptions.Enabled)
             {
                 services.AddRateLimiter(options => configureRateLimiter(options, rateLimitingOptions));
             }
 
+            services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>()
+                .ConfigureHttpClient((serviceProvider, client) =>
+                {
+                    configureHttpClient(client, serviceProvider.GetRequiredService<IConfiguration>());
+                });
+            services.AddHttpClient<IStorefrontAuthClient, StorefrontAuthClient>()
+                .ConfigureHttpClient((serviceProvider, client) =>
+                {
+                    configureHttpClient(client, serviceProvider.GetRequiredService<IConfiguration>());
+                });
+            services.AddHttpClient<StorefrontApiClient>()
+                .ConfigureHttpClient((serviceProvider, client) =>
+                {
+                    configureHttpClient(client, serviceProvider.GetRequiredService<IConfiguration>());
+                });
+
+            return services;
+        }
+
+        private static IServiceCollection AddStorefrontBffEndpointDependencies(this IServiceCollection services)
+        {
             services
                 .AddRazorComponents()
                 .AddInteractiveWebAssemblyComponents();
             services.AddScoped<IStorefrontClientAppUrlResolver, StorefrontClientAppUrlResolver>();
+            services.AddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
+            services.AddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
+            services.AddScoped<IStorefrontPageNavigationProvider, StorefrontPageNavigationProvider>();
+            services.AddScoped<IStorefrontNavigationProvider, StorefrontNavigationProvider>();
+            services.AddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
+            services.AddScoped<StorefrontCartTokenService>();
+
+            return services;
+        }
+
+        private static IServiceCollection AddStorefrontSeoMediaAndDeploymentServices(this IServiceCollection services)
+        {
             services.AddScoped<IStorefrontPublicUrlResolver, StorefrontPublicUrlResolver>();
             services.AddScoped<IStorefrontRobotsService, StorefrontRobotsService>();
             services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettingsProvider>();
@@ -72,31 +140,13 @@ namespace BlazorShop.Storefront.Configuration
             services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
             services.AddScoped<IStorefrontPagePresentationResolver, StorefrontPagePresentationResolver>();
             services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
-            services.AddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
-            services.AddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
-            services.AddScoped<IStorefrontPageNavigationProvider, StorefrontPageNavigationProvider>();
-            services.AddScoped<IStorefrontNavigationProvider, StorefrontNavigationProvider>();
-            services.AddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
             services.AddScoped<StorefrontMediaProxyService>();
-            services.AddScoped<StorefrontCartTokenService>();
-            services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>()
-                .ConfigureHttpClient((serviceProvider, client) =>
-                {
-                    var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
-                    configureHttpClient(client, serviceConfiguration);
-                });
-            services.AddHttpClient<IStorefrontAuthClient, StorefrontAuthClient>()
-                .ConfigureHttpClient((serviceProvider, client) =>
-                {
-                    var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
-                    configureHttpClient(client, serviceConfiguration);
-                });
-            services.AddHttpClient<StorefrontApiClient>()
-                .ConfigureHttpClient((serviceProvider, client) =>
-                {
-                    var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
-                    configureHttpClient(client, serviceConfiguration);
-                });
+
+            return services;
+        }
+
+        private static IServiceCollection AddStorefrontGeneratedClientRegistration(this IServiceCollection services)
+        {
             services.AddStorefrontServerGeneratedClients((_, client) =>
             {
                 client.Timeout = TimeSpan.FromSeconds(2);
