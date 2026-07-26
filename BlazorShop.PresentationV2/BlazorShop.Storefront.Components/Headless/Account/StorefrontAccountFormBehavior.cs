@@ -250,3 +250,24 @@ public sealed record StorefrontAccountOrderDetailClasses
 
     public string GrandTotalRow { get; init; } = string.Empty;
 }
+
+public sealed record StorefrontAccountShellClasses
+{
+    public static StorefrontAccountShellClasses Empty { get; } = new();
+
+    public string Section { get; init; } = string.Empty;
+
+    public string Layout { get; init; } = string.Empty;
+
+    public string ContentArticle { get; init; } = string.Empty;
+
+    public string Header { get; init; } = string.Empty;
+
+    public string Eyebrow { get; init; } = string.Empty;
+
+    public string Title { get; init; } = string.Empty;
+
+    public string Body { get; init; } = string.Empty;
+
+    public string UnknownAlert { get; init; } = string.Empty;
+}

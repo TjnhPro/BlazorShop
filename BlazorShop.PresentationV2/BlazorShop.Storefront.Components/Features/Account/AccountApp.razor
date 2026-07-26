@@ -4,20 +4,20 @@
 
 <PageTitle>@PageTitleText</PageTitle>
 
-<section class="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8" data-storefront-account-app>
-    <div class="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+<section class="@ShellClasses.Section" data-storefront-account-app>
+    <div class="@ShellClasses.Layout">
         <AccountNavigation
             ActiveRoute="@ActiveRoute.NavRoute"
             Items="NavigationItems"
             Classes="NavigationClasses" />
 
-        <article class="rounded border border-neutral-200 bg-white">
-            <header class="border-b border-neutral-200 px-6 py-6">
-                <p class="text-sm font-semibold uppercase text-neutral-500">Customer account</p>
-                <h1 class="mt-2 text-3xl font-extrabold text-neutral-900">@Title</h1>
+        <article class="@ShellClasses.ContentArticle">
+            <header class="@ShellClasses.Header">
+                <p class="@ShellClasses.Eyebrow">Customer account</p>
+                <h1 class="@ShellClasses.Title">@Title</h1>
             </header>
 
-            <div class="px-6 py-6">
+            <div class="@ShellClasses.Body">
                 @RenderActivePanel()
             </div>
         </article>
@@ -72,6 +72,9 @@
 
     [Parameter]
     public StorefrontAccountOrderDetailClasses OrderDetailClasses { get; set; } = StorefrontAccountOrderDetailClasses.Empty;
+
+    [Parameter]
+    public StorefrontAccountShellClasses ShellClasses { get; set; } = StorefrontAccountShellClasses.Empty;
 
     private AccountRoute ActiveRoute => ResolveRoute(Path);
 
@@ -152,7 +155,7 @@
 
             default:
                 builder.OpenElement(50, "div");
-                builder.AddAttribute(51, "class", "rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800");
+                builder.AddAttribute(51, "class", ShellClasses.UnknownAlert);
                 builder.AddAttribute(52, "role", "alert");
                 builder.AddContent(53, "The account section could not be found.");
                 builder.CloseElement();

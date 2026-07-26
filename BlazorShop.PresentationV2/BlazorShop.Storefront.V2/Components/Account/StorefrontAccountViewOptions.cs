@@ -133,4 +133,16 @@ public static class StorefrontAccountViewOptions
         TotalRow = "flex justify-between gap-4",
         GrandTotalRow = "flex justify-between gap-4 border-t border-neutral-200 pt-3 font-bold text-neutral-900"
     };
+
+    public static StorefrontAccountShellClasses ShellClasses { get; } = new()
+    {
+        Section = "mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8",
+        Layout = "grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start",
+        ContentArticle = "rounded border border-neutral-200 bg-white",
+        Header = "border-b border-neutral-200 px-6 py-6",
+        Eyebrow = "text-sm font-semibold uppercase text-neutral-500",
+        Title = "mt-2 text-3xl font-extrabold text-neutral-900",
+        Body = "px-6 py-6",
+        UnknownAlert = "rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800"
+    };
 }

@@ -686,6 +686,55 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("nameof(AccountOrderDetail.Classes)", app, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void AccountApp_UsesHostShellClassesAfterHpr13Migration()
+        {
+            var app = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+            var behavior = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
+            var options = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
+            var host = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+
+            Assert.Contains("StorefrontAccountShellClasses", behavior, StringComparison.Ordinal);
+            Assert.Contains("ShellClasses.Section", app, StringComparison.Ordinal);
+            Assert.Contains("ShellClasses.Layout", app, StringComparison.Ordinal);
+            Assert.Contains("ShellClasses.ContentArticle", app, StringComparison.Ordinal);
+            Assert.Contains("ShellClasses.UnknownAlert", app, StringComparison.Ordinal);
+            Assert.Contains("ShellClasses=\"StorefrontAccountViewOptions.ShellClasses\"", host, StringComparison.Ordinal);
+            Assert.Contains("Section = \"mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8\"", options, StringComparison.Ordinal);
+            Assert.Contains("UnknownAlert = \"rounded border border-rose-200", options, StringComparison.Ordinal);
+
+            foreach (var expectedRoute in new[]
+            {
+                "string.Equals(normalized, \"profile\"",
+                "string.Equals(normalized, \"addresses\"",
+                "string.Equals(normalized, \"orders\"",
+                "string.Equals(normalized, \"change-password\"",
+                "Uri.UnescapeDataString(segments[1])",
+                "AccountRouteKind.OrderDetail"
+            })
+            {
+                Assert.Contains(expectedRoute, app, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("AccountProfileEditor", app, StringComparison.Ordinal);
+            Assert.Contains("AccountAddressBook", app, StringComparison.Ordinal);
+            Assert.Contains("AccountOrderList", app, StringComparison.Ordinal);
+            Assert.Contains("AccountOrderDetail", app, StringComparison.Ordinal);
+            Assert.Contains("AccountChangePasswordForm", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("mx-auto", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("max-w-", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-white", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-rose-", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("text-neutral-", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("sm:", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("lg:", app, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

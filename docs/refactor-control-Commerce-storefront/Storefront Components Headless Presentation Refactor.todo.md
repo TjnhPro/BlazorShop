@@ -447,29 +447,29 @@ Goal: split read-only order self-service views.
 
 Goal: migrate `AccountApp` only after all account leaf components have headless contracts.
 
-- [ ] Keep account route interpretation behavior:
-  - [ ] profile.
-  - [ ] addresses.
-  - [ ] orders.
-  - [ ] orders/{reference}.
-  - [ ] change-password.
-- [ ] Move account shell visual to V2.
-- [ ] Shared account headless app may keep:
-  - [ ] active panel resolution.
-  - [ ] route parsing helper if route-independent enough.
-  - [ ] sign-in-required/error state contract.
-- [ ] Remove direct composition of V2 visual leaf components from shared package.
+- [x] Keep account route interpretation behavior:
+  - [x] profile.
+  - [x] addresses.
+  - [x] orders.
+  - [x] orders/{reference}.
+  - [x] change-password.
+- [x] Move account shell visual to V2.
+- [x] Shared account headless app may keep:
+  - [x] active panel resolution.
+  - [x] route parsing helper if route-independent enough.
+  - [x] sign-in-required/error state contract.
+- [x] Remove direct composition of V2 visual leaf components from shared package.
 
 ### HPR13 QA gate
 
-- [ ] `/account`.
-- [ ] `/account/profile`.
-- [ ] `/account/addresses`.
-- [ ] `/account/orders`.
-- [ ] `/account/orders/{reference}`.
-- [ ] `/account/change-password`.
-- [ ] Unauthenticated account redirect still works.
-- [ ] Account routes remain noindex.
+- [x] `/account`.
+- [x] `/account/profile`.
+- [x] `/account/addresses`.
+- [x] `/account/orders`.
+- [x] `/account/orders/{reference}`.
+- [x] `/account/change-password`.
+- [x] Unauthenticated account redirect still works.
+- [x] Account routes remain noindex.
 
 ## Phase HPR14 - Browser support cleanup
 
@@ -582,7 +582,7 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 - [x] `AccountAddressBook.razor` covered.
 - [x] `AccountOrderList.razor` covered.
 - [x] `AccountOrderDetail.razor` covered.
-- [ ] `AccountApp.razor` covered.
+- [x] `AccountApp.razor` covered.
 - [ ] `ProductSummaryItem.cs` covered.
 - [ ] `DealsPlacement.cs` covered.
 - [ ] `ProductGalleryItem.cs` covered.
