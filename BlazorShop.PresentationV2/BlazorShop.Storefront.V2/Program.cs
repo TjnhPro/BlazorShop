@@ -15,6 +15,7 @@ builder.Services.AddStorefrontV2Services(
     storefrontRateLimitingOptions,
     StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter,
     StorefrontApiEndpointResolver.ConfigureStorefrontHttpClient);
+builder.Services.AddV2FoundationViews();
 
 var app = builder.Build();
 

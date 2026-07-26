@@ -1,0 +1,26 @@
+@namespace BlazorShop.Storefront.Presentation.Views.Foundation
+@using Microsoft.AspNetCore.Components
+
+<DynamicComponent Type="ComponentType" Parameters="Parameters" />
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Type ComponentType { get; set; } = default!;
+
+    [Parameter]
+    public object? Context { get; set; }
+
+    private IDictionary<string, object>? Parameters { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        StorefrontFoundationViewTypeValidator.Validate(this.ComponentType, this.Context);
+        this.Parameters = this.Context is null
+            ? null
+            : new Dictionary<string, object>
+            {
+                [StorefrontFoundationViewTypeValidator.ContextParameterName] = this.Context,
+            };
+    }
+}

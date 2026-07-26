@@ -27,6 +27,7 @@ builder.Services.AddScoped<StorefrontBootstrapService>();
 builder.Services.AddSingleton(_ =>
     StarterFeatureManifest.Load(Path.Combine(builder.Environment.ContentRootPath, "Features", "feature-manifest.json")));
 builder.Services.AddScoped<StarterFeatureActivationService>();
+builder.Services.AddStarterFoundationViews();
 
 builder.Services.AddRazorComponents();
 builder.Services.AddAntiforgery(options =>

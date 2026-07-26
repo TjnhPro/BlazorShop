@@ -198,7 +198,7 @@ Exit criteria:
 
 Muc tieu: Presentation route pages co the render V2/Starter views ma khong reference V2/Starter.
 
-- [ ] Tao `StorefrontFoundationViewSet` trong `Views/Foundation` voi typed slots toi thieu:
+- [x] Tao `StorefrontFoundationViewSet` trong `Views/Foundation` voi typed slots toi thieu:
   - `ApplicationHead`
   - `ApplicationScripts`
   - `MainLayout`
@@ -218,32 +218,44 @@ Muc tieu: Presentation route pages co the render V2/Starter views ma khong refer
   - `NotFoundState`
   - `ServiceUnavailableState`
   - `ErrorState`
-- [ ] Tao `StorefrontFoundationViewOptions`.
-- [ ] Tao `AddStorefrontFoundationViews(...)` cho host dang ky view set.
-- [ ] Tao validator fail-fast khi missing required views.
-- [ ] Tao `StorefrontFoundationViewOutlet.razor` dung `DynamicComponent`.
-- [ ] Context type validation:
+- [x] Tao `StorefrontFoundationViewOptions`.
+- [x] Tao `AddStorefrontFoundationViews(...)` cho host dang ky view set.
+- [x] Tao validator fail-fast khi missing required views.
+- [x] Tao `StorefrontFoundationViewOutlet.razor` dung `DynamicComponent`.
+- [x] Context type validation:
   - view nhan dung parameter name chuan, vi du `Context`;
   - fail ro neu view type khong phu hop.
-- [ ] Them V2 registration:
+- [x] Them V2 registration:
 
 ```text
 BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs
 ```
 
-- [ ] Them Starter registration:
+- [x] Them Starter registration:
 
 ```text
 BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs
 ```
 
-- [ ] Chua doi route trong phase nay; chi prove host co the dang ky view set.
+- [x] Chua doi route trong phase nay; chi prove host co the dang ky view set.
+
+2026-07-26 SPF2 evidence:
+
+- Added `BlazorShop.Storefront.Presentation/Views/Foundation` view-set, options, validator, and outlet primitives.
+- Added `V2FoundationViewRegistration` and `StarterFoundationViewRegistration` using `StorefrontFoundationViewSet.CreateMinimal(typeof(StorefrontFoundationEmptyView))`.
+- V2 and Starter project files now reference `BlazorShop.Storefront.Presentation`.
+- Added focused tests for missing-slot validation, context validation, and host registration source/project references.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj` passed with 0 warnings.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests" --no-restore` passed 8/8 with existing MessagePack vulnerability and Browserslist warnings.
+- Note: one parallel build attempt hit a static-web-assets cache file lock on Presentation; rerunning the builds sequentially passed.
 
 Exit criteria:
 
-- [ ] V2 va Starter build pass khi dang ky empty/minimal view set.
-- [ ] Test fail neu view set thieu slot bat buoc.
-- [ ] Presentation khong reference V2/Starter.
+- [x] V2 va Starter build pass khi dang ky empty/minimal view set.
+- [x] Test fail neu view set thieu slot bat buoc.
+- [x] Presentation khong reference V2/Starter.
 
 ## Phase SPF3 - Application Root and Routing Foundation
 
