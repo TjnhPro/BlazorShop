@@ -121,27 +121,27 @@ Goal: create the neutral production-owned OpenAPI contract location.
 
 ### Tasks
 
-- [ ] Create folder:
+- [x] Create folder:
 
 ```text
 contracts/storefront/
 ```
 
-- [ ] Add canonical contract file:
+- [x] Add canonical contract file:
 
 ```text
 contracts/storefront/storefront.openapi.json
 ```
 
-- [ ] Copy the current frontend/client Storefront OpenAPI JSON from the existing full snapshot as the initial canonical baseline.
-- [ ] Keep JSON formatting stable and deterministic.
-- [ ] Decide the path snapshot ownership:
-  - [ ] Keep `storefront-openapi.paths.snapshot.txt` under test snapshots for test readability.
-  - [ ] Do not use path snapshot as generator input.
-- [ ] Add a short `contracts/storefront/README.md` if needed to state:
-  - [ ] Commerce Node runtime produces the API document.
-  - [ ] canonical committed contract is used for package generation.
-  - [ ] test snapshots are guardrails, not production input.
+- [x] Copy the current frontend/client Storefront OpenAPI JSON from the existing full snapshot as the initial canonical baseline.
+- [x] Keep JSON formatting stable and deterministic.
+- [x] Decide the path snapshot ownership:
+  - [x] Keep `storefront-openapi.paths.snapshot.txt` under test snapshots for test readability.
+  - [x] Do not use path snapshot as generator input.
+- [x] Add a short `contracts/storefront/README.md` if needed to state:
+  - [x] Commerce Node runtime produces the API document.
+  - [x] canonical committed contract is used for package generation.
+  - [x] test snapshots are guardrails, not production input.
 
 ### Files Likely Touched
 
@@ -157,9 +157,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Canonical contract file exists outside the test project.
-- [ ] It matches current Storefront frontend/client OpenAPI baseline.
-- [ ] Existing contract tests still pass before they are retargeted.
+- [x] Canonical contract file exists outside the test project.
+- [x] It matches current Storefront frontend/client OpenAPI baseline.
+- [x] Existing contract tests still pass before they are retargeted.
 
 ## Phase OCH2 - Retarget Contract Tests to Canonical Ownership
 
