@@ -177,6 +177,26 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Null(archivedDetail);
         }
 
+        [Fact]
+        public async Task GetPublishedCatalogPageAsync_CreatedAfterUtcFiltersByCreatedOn()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var catalog = await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var result = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                CategoryId = catalog.RootCategoryId,
+                IncludeSubcategories = true,
+                PageSize = 10,
+                CreatedAfterUtc = new DateTime(2026, 7, 14, 23, 59, 30, DateTimeKind.Utc),
+            });
+
+            Assert.Equal(["Root Product"], result.Items.Select(product => product.Name ?? string.Empty).ToArray());
+        }
+
         [Theory]
         [InlineData("name marker", "Search Name Marker Product")]
         [InlineData("sku-marker", "SKU Search Product")]

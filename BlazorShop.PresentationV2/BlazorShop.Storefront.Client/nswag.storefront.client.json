@@ -37,6 +37,7 @@
       "requiredPropertiesMustBeDefined": false,
       "dateType": "System.DateTimeOffset",
       "dateTimeType": "System.DateTimeOffset",
+      "parameterDateTimeFormat": "O",
       "timeType": "System.TimeSpan",
       "timeSpanType": "System.TimeSpan",
       "classStyle": "Poco",

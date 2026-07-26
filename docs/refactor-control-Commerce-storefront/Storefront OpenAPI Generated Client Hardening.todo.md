@@ -376,32 +376,32 @@ Goal: fix the date query contract before using it again in Storefront pages.
 
 ### Tasks
 
-- [ ] Add a focused issue note in this plan or a dedicated small todo section:
-  - [ ] OpenAPI nullable date query shape.
-  - [ ] `DateTime` versus `DateTimeOffset` at Commerce Node contract boundary.
-  - [ ] NSwag optional query generation behavior.
-  - [ ] timezone/UTC serialization format.
-  - [ ] ASP.NET Core model binding behavior for offset date query strings.
-- [ ] Decide target public API type:
-  - [ ] Prefer `DateTimeOffset?` for Storefront API query contract if offset matters.
-  - [ ] Map to Domain `DateTime? CreatedAfterUtc` only after converting to UTC.
-  - [ ] Keep Domain type unchanged initially if changing it would broaden scope.
-- [ ] Add Commerce Node contract test:
-  - [ ] OpenAPI parameter `CreatedAfterUtc` has `type: string`.
-  - [ ] OpenAPI parameter has expected date/date-time format.
-  - [ ] parameter remains optional/nullable.
-- [ ] Add generated-client test:
-  - [ ] generated source serializes `CreatedAfterUtc` with offset/round-trip-safe format, or
-  - [ ] generated source delegates conversion through a safe generated helper.
-- [ ] Add API behavior test:
-  - [ ] query with UTC/offset value filters products by `CreatedOn`.
-  - [ ] query without value keeps current newest sort behavior.
-- [ ] Only after contract is safe, update `NewReleases.razor` if business wants recent-window semantics:
-  - [ ] choose a window setting or constant, for example 7/14/30 days.
-  - [ ] avoid hardcoding arbitrary business policy if there is no product decision.
-  - [ ] update SEO text if the page becomes a real recent-window page.
-- [ ] Update or remove guard test:
-  - [ ] replace `NewReleases_DoesNotSendGeneratedClientUnsafeCreatedAfterUtcQuery` with a positive test only after safe serialization is proven.
+- [x] Add a focused issue note in this plan or a dedicated small todo section:
+  - [x] OpenAPI nullable date query shape.
+  - [x] `DateTime` versus `DateTimeOffset` at Commerce Node contract boundary.
+  - [x] NSwag optional query generation behavior.
+  - [x] timezone/UTC serialization format.
+  - [x] ASP.NET Core model binding behavior for offset date query strings.
+- [x] Decide target public API type:
+  - [x] Prefer `DateTimeOffset?` for Storefront API query contract if offset matters.
+  - [x] Map to Domain `DateTime? CreatedAfterUtc` only after converting to UTC.
+  - [x] Keep Domain type unchanged initially if changing it would broaden scope.
+- [x] Add Commerce Node contract test:
+  - [x] OpenAPI parameter `CreatedAfterUtc` has `type: string`.
+  - [x] OpenAPI parameter has expected date/date-time format.
+  - [x] parameter remains optional/nullable.
+- [x] Add generated-client test:
+  - [x] generated source serializes `CreatedAfterUtc` with offset/round-trip-safe format, or
+  - [x] generated source delegates conversion through a safe generated helper.
+- [x] Add API behavior test:
+  - [x] query with UTC/offset value filters products by `CreatedOn`.
+  - [x] query without value keeps current newest sort behavior.
+- [x] Only after contract is safe, update `NewReleases.razor` if business wants recent-window semantics:
+  - [x] No recent-window product policy was selected in this phase; New Releases intentionally keeps newest-sort semantics.
+  - [x] Avoided hardcoding arbitrary 7/14/30-day business policy.
+  - [x] SEO text remains aligned with newest-sort semantics instead of claiming a fixed recent window.
+- [x] Update or remove guard test:
+  - [x] replaced `NewReleases_DoesNotSendGeneratedClientUnsafeCreatedAfterUtcQuery` with a newest-sort semantics guard after safe serialization was proven.
 
 ### Files Likely Touched
 
@@ -424,10 +424,10 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] `CreatedAfterUtc` has a generator-safe public contract.
-- [ ] Backend filtering remains covered.
-- [ ] New Releases either intentionally keeps newest-sort semantics or safely restores recent-window filtering.
-- [ ] No test locks in avoidance as the long-term fix.
+- [x] `CreatedAfterUtc` has a generator-safe public contract.
+- [x] Backend filtering remains covered.
+- [x] New Releases either intentionally keeps newest-sort semantics or safely restores recent-window filtering.
+- [x] No test locks in avoidance as the long-term fix.
 
 ## Phase OCH7 - Documentation, QA, and Release Gate Integration
 

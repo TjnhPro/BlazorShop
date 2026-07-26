@@ -18,6 +18,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
     using CommerceNodeProgram = CommerceNodeApi::Program;
     using StorefrontErrorCodes = CommerceNodeApi::BlazorShop.CommerceNode.API.Responses.StorefrontErrorCodes;
+    using StorefrontContractMappings = CommerceNodeApi::BlazorShop.CommerceNode.API.Contracts.Storefront.StorefrontContractMappings;
+    using StorefrontProductCatalogQuery = CommerceNodeApi::BlazorShop.CommerceNode.API.Contracts.Storefront.StorefrontProductCatalogQuery;
 
     public sealed class CommerceNodeStorefrontOpenApiContractTests : IClassFixture<WebApplicationFactory<CommerceNodeProgram>>
     {
@@ -892,6 +894,39 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("newest", sortBy["schema"]?["pattern"]?.GetValue<string>(), StringComparison.Ordinal);
 
             AssertRetiredStorefrontPaymentCaptureIsAbsent(swagger);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_CreatedAfterUtcQueryIsOptionalDateTimeString()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var catalog = GetOperation(swagger, "StorefrontCatalog_QueryProducts");
+            var catalogParameters = catalog["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Catalog query operation does not contain parameters.");
+            var createdAfterUtc = GetParameter(catalogParameters, "CreatedAfterUtc");
+            var schema = createdAfterUtc["schema"]?.AsObject()
+                ?? throw new InvalidOperationException("CreatedAfterUtc parameter does not contain a schema.");
+
+            Assert.Equal("query", createdAfterUtc["in"]?.GetValue<string>());
+            Assert.Equal("string", schema["type"]?.GetValue<string>());
+            Assert.Equal("date-time", schema["format"]?.GetValue<string>());
+            Assert.DoesNotContain("CreatedAfterUtc", catalogParameters
+                .Where(parameter => parameter?["required"]?.GetValue<bool>() == true)
+                .Select(parameter => parameter?["name"]?.GetValue<string>() ?? string.Empty));
+        }
+
+        [Fact]
+        public void StorefrontProductCatalogQuery_MapsCreatedAfterUtcOffsetToUtcDomainValue()
+        {
+            var query = new StorefrontProductCatalogQuery
+            {
+                CreatedAfterUtc = new DateTimeOffset(2026, 7, 15, 6, 59, 30, TimeSpan.FromHours(7)),
+            };
+
+            var applicationQuery = StorefrontContractMappings.ToApplicationQuery(query);
+
+            Assert.Equal(new DateTime(2026, 7, 14, 23, 59, 30, DateTimeKind.Utc), applicationQuery.CreatedAfterUtc);
+            Assert.Equal(DateTimeKind.Utc, applicationQuery.CreatedAfterUtc!.Value.Kind);
         }
 
         [Fact]

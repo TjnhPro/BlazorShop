@@ -36,7 +36,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         [RegularExpression(StorefrontContractValidation.SortByPattern)]
         public string SortBy { get; init; } = StorefrontProductCatalogSortValues.Newest;
 
-        public DateTime? CreatedAfterUtc { get; init; }
+        public DateTimeOffset? CreatedAfterUtc { get; init; }
 
         [StringLength(3, MinimumLength = 3)]
         public string? CurrencyCode { get; init; }

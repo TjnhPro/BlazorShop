@@ -4735,7 +4735,7 @@ namespace BlazorShop.Storefront.Client
                     }
                     if (createdAfterUtc != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("CreatedAfterUtc")).Append('=').Append(System.Uri.EscapeDataString(createdAfterUtc.Value.ToString("s", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("CreatedAfterUtc")).Append('=').Append(System.Uri.EscapeDataString(createdAfterUtc.Value.ToString("O", System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     if (currencyCode != null)
                     {

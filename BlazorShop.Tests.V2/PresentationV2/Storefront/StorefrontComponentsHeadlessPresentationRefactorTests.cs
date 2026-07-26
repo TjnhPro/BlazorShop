@@ -836,13 +836,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void NewReleases_DoesNotSendGeneratedClientUnsafeCreatedAfterUtcQuery()
+        public void NewReleases_UsesNewestSortUntilRecentWindowPolicyIsChosen()
         {
             var newReleases = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
 
             Assert.Contains("SortBy = ProductCatalogSortBy.Newest", newReleases, StringComparison.Ordinal);
-            Assert.DoesNotContain("CreatedAfterUtc", newReleases, StringComparison.Ordinal);
+            Assert.Contains("Latest Products", newReleases, StringComparison.Ordinal);
         }
 
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)

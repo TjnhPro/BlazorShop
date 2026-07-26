@@ -55,6 +55,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"disposeHttpClient\": false", config, StringComparison.Ordinal);
             Assert.Contains("\"useBaseUrl\": false", config, StringComparison.Ordinal);
             Assert.Contains("\"generateBaseUrlProperty\": false", config, StringComparison.Ordinal);
+            Assert.Contains("\"parameterDateTimeFormat\": \"O\"", config, StringComparison.Ordinal);
             Assert.Contains("documentGenerator.fromDocument.url", script, StringComparison.Ordinal);
             Assert.Contains("contracts/storefront/storefront.openapi.json", script, StringComparison.Ordinal);
             Assert.Contains("Canonical Storefront OpenAPI contract was not found", script, StringComparison.Ordinal);
@@ -68,6 +69,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontCheckoutClient", generatedClient, StringComparison.Ordinal);
             Assert.Contains("StorefrontAuthClient", generatedClient, StringComparison.Ordinal);
             Assert.Contains("public StorefrontStoreClient(System.Net.Http.HttpClient httpClient)", generatedClient, StringComparison.Ordinal);
+            Assert.Contains("createdAfterUtc.Value.ToString(\"O\", System.Globalization.CultureInfo.InvariantCulture)", generatedClient, StringComparison.Ordinal);
+            Assert.DoesNotContain("createdAfterUtc.Value.ToString(\"s\", System.Globalization.CultureInfo.InvariantCulture)", generatedClient, StringComparison.Ordinal);
             Assert.DoesNotContain("private string _baseUrl", generatedClient, StringComparison.Ordinal);
             Assert.DoesNotContain("string baseUrl, System.Net.Http.HttpClient httpClient", generatedClient, StringComparison.Ordinal);
             Assert.DoesNotContain("HandleProviderCallback", generatedClient, StringComparison.Ordinal);

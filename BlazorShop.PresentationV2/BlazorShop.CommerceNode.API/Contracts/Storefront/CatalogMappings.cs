@@ -36,7 +36,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 MaxPrice = query.MaxPrice,
                 InStock = query.InStock,
                 SortBy = ToApplicationSortBy(query.SortBy),
-                CreatedAfterUtc = query.CreatedAfterUtc,
+                CreatedAfterUtc = query.CreatedAfterUtc?.UtcDateTime,
             };
         }
         public static StorefrontCategoryResponse ToStorefrontContract(this GetCategory category)
