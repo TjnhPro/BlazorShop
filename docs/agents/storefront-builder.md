@@ -20,7 +20,7 @@ Generated storefronts must:
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
 - Consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
 - Register `BlazorShop.Storefront.Runtime` only in the generated server/BFF host, preferably with `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow hosts.
-- Use `BlazorShop.Storefront.Components` only through a package boundary when reusable browser-safe UI components are needed.
+- Use `BlazorShop.Storefront.Components` only through a package boundary when reusable browser-safe contracts/headless behavior or Browser local API primitives are needed.
 - Keep protected browser actions behind same-origin BFF endpoints.
 - Keep review artifacts under `docs/storefront-analysis/`.
 - Stay out of `BlazorShop.sln` by default.
@@ -35,6 +35,8 @@ Generated storefronts must not:
 - Reference `BlazorShop.Web.SharedV2` or `Web.SharedV2`.
 - Call `api/commerce/*`, `api/control-plane/*`, or legacy `api/internal/*` from browser code.
 - Copy Storefront V2 transport internals.
+- Copy `BlazorShop.Storefront.Components/Features` wrappers as generated visual templates; they are CSS-neutral compatibility wrappers only.
+- Use Components `Features` wrappers as the generated/custom storefront presentation source.
 - Write store-specific output into `BlazorShop.Storefront.Starter`.
 
 ## Protected Areas
@@ -44,7 +46,7 @@ Treat these as contract surfaces:
 - `BlazorShop.Storefront.Client` generated transport and DTOs.
 - `contracts/storefront/storefront.openapi.json` canonical Storefront OpenAPI contract and `scripts/qa/run-storefront-client-regeneration-gate.ps1` package release gate.
 - `BlazorShop.Storefront.Runtime` security, error, capability, and client-registration primitives.
-- `BlazorShop.Storefront.Components` browser-safe reusable component package.
+- `BlazorShop.Storefront.Components` browser-safe contracts/headless/browser primitives package; `Features` wrappers are compatibility-only.
 - Generated storefront `StorefrontPackageVersions.props`.
 - Generated storefront `starter-generation.contract.yaml`.
 - Generated file manifests under `docs/storefront-analysis/`.

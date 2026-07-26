@@ -88,12 +88,14 @@ Run isolation:
 
 - Generated storefronts use `BlazorShop.Storefront.Client` package contracts for Storefront API transport and DTOs.
 - Generated storefronts use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
-- Generated storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior for reusable browser-safe UI components; generated project-local components are allowed for store-specific presentation.
+- Generated storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior and Browser local API primitives for reusable browser-safe UI components; generated project-local components are allowed for store-specific presentation.
+- `BlazorShop.Storefront.Components/Features` contains CSS-neutral compatibility wrappers only; do not copy them as generated visual templates or treat them as stable presentation contracts.
 - `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, generated pages, and analysis artifacts.
 - StorefrontBuilder may replace product card/grid/gallery/purchase/cart/checkout/account visual templates without changing shared behavior contracts.
 - Protected browser actions go through same-origin BFF endpoints.
 - Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Do not use Storefront V2 visual markup as the generated/custom storefront presentation source.
+- Do not copy Components `Features` wrappers as generated visual templates or stable presentation contracts.
 - Do not guess API response shapes; use generated package contracts.
 
 ## Browser QA

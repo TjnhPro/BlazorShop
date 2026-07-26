@@ -8,7 +8,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | --- | --- | --- |
 | Storefront API contracts | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTOs from the canonical Storefront OpenAPI contract at `contracts/storefront/storefront.openapi.json`. |
 | Neutral runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Store context, server-side generated-client registration, capability reading, normalized errors, and BFF-safe result primitives. |
-| Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Headless Storefront presentation contracts, browser-safe behavior/state primitives, and temporary compatibility components that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
+| Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Browser-safe Storefront contracts, headless interaction state, Browser local API primitives, and temporary compatibility component primitives that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
@@ -58,7 +58,8 @@ Starter consumer rules:
 - Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts. The package is generated from `contracts/storefront/storefront.openapi.json`.
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Register Runtime only in the generated server/BFF host. Use `AddStorefrontPlatformRuntime` for the full starter surface, or explicit `AddStorefront{Capability}Runtime` methods when a generated host intentionally supports a smaller surface.
-- Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior when a starter or generated storefront needs that shared component package.
+- Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior and Browser local API primitives when a starter or generated storefront needs that shared component package.
+- Do not use `BlazorShop.Storefront.Components/Features` wrappers as generated visual templates; they are CSS-neutral compatibility wrappers, not stable presentation contracts.
 - Starter owns its neutral visual templates; Starter-local neutral visual components may remain local and must not copy Storefront V2 visual components.
 - Do not reference `BlazorShop.Storefront.V2`.
 - Do not reference backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
@@ -67,7 +68,8 @@ Generated/custom storefront consumer rules:
 
 - Use project names in the `BlazorShop.Storefront.{Name}` pattern after safe normalization.
 - `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, pages, visual analysis artifacts, and AI-tuned components inside the generated/custom storefront project.
-- Generated/custom storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior, but they must not use Storefront V2 visual markup as their presentation source.
+- Generated/custom storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior and Browser primitives, but they must not use Storefront V2 visual markup as their presentation source.
+- Generated/custom storefronts must not copy Components `Features` wrappers as their presentation source; those wrappers are CSS-neutral compatibility wrappers only.
 - StorefrontBuilder may replace product card, grid, gallery, purchase, cart, checkout, and account visual templates in the generated/custom project without changing shared behavior contracts.
 - Route protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
 - Browser and WASM code must not reference `BlazorShop.Storefront.Runtime`; it consumes same-origin generated endpoints and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior.

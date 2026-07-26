@@ -10,7 +10,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Storefront frontend view models are allowed when they are presentation or composition models.
 - Storefront frontend code must not add handwritten duplicate API DTO clones when the schema should come from OpenAPI-generated contracts.
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
-- Storefront portable feature component models live with the component feature under `BlazorShop.Storefront.Components/Features/*` when they are presentation-only.
+- Storefront component contracts are presentation contracts, not public HTTP API contracts. Prefer `BlazorShop.Storefront.Components/Contracts/*` for stable render/input models and keep `BlazorShop.Storefront.Components/Features/*` limited to CSS-neutral compatibility wrappers.
 - Storefront V2 source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter and generated storefront source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter must consume generated Storefront client contracts by default and must not copy the manual `StorefrontApiClient` transport from Storefront V2.
@@ -54,7 +54,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 
 Generated StorefrontBuilder projects are not contract owners. They are disposable artifacts under ignored generated output roots, consume Storefront client/runtime packages, hold generated presentation output, and keep review artifacts under their local `docs/storefront-analysis/`.
 
-Generated storefronts must not infer Storefront API envelopes or field names from screenshots or examples. Server-side Runtime facades map typed generated client envelopes into host-facing runtime results; browser components consume host-owned BFF contracts or `Storefront.Components` presentation/headless contracts.
+Generated storefronts must not infer Storefront API envelopes or field names from screenshots, examples, component models, or `Storefront.Components` render contracts. Server-side Runtime facades map typed generated client envelopes into host-facing runtime results; browser components consume host-owned BFF contracts or `Storefront.Components` presentation/headless contracts.
 
 ## Portable Component Models And Headless Contracts
 

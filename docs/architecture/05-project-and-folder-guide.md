@@ -189,7 +189,7 @@ Use for:
 - Headless Storefront presentation contracts under `Contracts/{Capability}`.
 - Browser-safe behavior/state primitives under `Headless/{Capability}`.
 - Same-origin browser/BFF support primitives under `Browser`.
-- Temporary compatibility feature components under `Features/*` while V2 visual markup is migrated into host-owned templates.
+- CSS-neutral compatibility feature wrappers under `Features/*` while V2 visual markup is migrated into host-owned templates. They are not stable presentation contracts for Starter, StorefrontBuilder, or generated/custom storefronts.
 - Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
 
 Do not:
@@ -199,6 +199,7 @@ Do not:
 - Add public API DTOs, admin request models, store ownership fields, credentials, or server-owned fields to component-facing models.
 - Use this as a general design system for Control Plane.
 - Add new V2 layout/theme implementations to `Features/*`; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
+- Treat `Features/*` as required visual source for Starter or generated storefronts; use `Contracts`, `Headless`, and `Browser` instead when shared behavior is needed.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
 
@@ -261,7 +262,7 @@ Do not:
 Current ownership map:
 
 - `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
-- `BlazorShop.Storefront.Components/Features/*` owns portable presentation-only feature components.
+- `BlazorShop.Storefront.Components/Features/*` owns CSS-neutral compatibility wrappers only; stable shared reuse belongs under `Contracts`, `Headless`, and `Browser`.
 - `BlazorShop.Storefront.V2` owns route composition, SEO, BFF endpoints, session/cart-token handling, store resolution, deployment, and storefront-specific design.
 - `BlazorShop.Storefront.Runtime` owns neutral runtime primitives and server-side generated-client registration.
 - `Storefront.Features.*` projects are deferred until repeated neutral feature logic proves the need.

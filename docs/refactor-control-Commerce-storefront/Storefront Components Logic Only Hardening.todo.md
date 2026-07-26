@@ -666,36 +666,36 @@ Goal: make package role discoverable and prevent Starter/AI Generator from treat
 
 ### Tasks
 
-- [ ] Update `BlazorShop.Storefront.Components.csproj` description to:
+- [x] Update `BlazorShop.Storefront.Components.csproj` description to:
 
 ```text
 Browser-safe Storefront contracts, headless interaction state, and compatibility component primitives.
 ```
 
-- [ ] Add root `README.md` under `BlazorShop.Storefront.Components` if useful:
-  - [ ] package purpose.
-  - [ ] folder ownership.
-  - [ ] current compatibility status.
-  - [ ] what generated storefronts should consume.
-  - [ ] what generated storefronts should not copy.
-- [ ] Update `Features/README.md`:
-  - [ ] call current wrappers `CSS-neutral compatibility wrappers`.
-  - [ ] warn they are not stable presentation contracts.
-  - [ ] direct Starter/AI Generator to `Contracts`, `Headless`, and `Browser`.
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md`:
-  - [ ] distinguish `Contracts`, `Headless`, `Browser`, and `Features`.
-  - [ ] document that class bags/copy/routes belong to host/storefront project.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md`:
-  - [ ] component contracts are presentation contracts, not public HTTP contracts.
-  - [ ] generated storefronts should not infer API shapes from component models.
-- [ ] Update StorefrontBuilder docs:
-  - [ ] generated storefront uses `Contracts`/`Headless`/`Browser`.
-  - [ ] generated storefront renders its own DOM.
-  - [ ] generator must not import `Features` unless explicitly in compatibility mode.
-  - [ ] generator must not treat V2 class bags as portable schema.
-- [ ] Update QA checklist:
-  - [ ] `QA-StorefrontV2.todo.md` includes browser/local BFF structured error checks.
-  - [ ] StorefrontBuilder QA includes no `Features` dependency unless compatibility exception exists.
+- [x] Add root `README.md` under `BlazorShop.Storefront.Components` if useful:
+  - [x] package purpose.
+  - [x] folder ownership.
+  - [x] current compatibility status.
+  - [x] what generated storefronts should consume.
+  - [x] what generated storefronts should not copy.
+- [x] Update `Features/README.md`:
+  - [x] call current wrappers `CSS-neutral compatibility wrappers`.
+  - [x] warn they are not stable presentation contracts.
+  - [x] direct Starter/AI Generator to `Contracts`, `Headless`, and `Browser`.
+- [x] Update `docs/architecture/05-project-and-folder-guide.md`:
+  - [x] distinguish `Contracts`, `Headless`, `Browser`, and `Features`.
+  - [x] document that class bags/copy/routes belong to host/storefront project.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md`:
+  - [x] component contracts are presentation contracts, not public HTTP contracts.
+  - [x] generated storefronts should not infer API shapes from component models.
+- [x] Update StorefrontBuilder docs:
+  - [x] generated storefront uses `Contracts`/`Headless`/`Browser`.
+  - [x] generated storefront renders its own DOM.
+  - [x] generator must not import `Features` unless explicitly in compatibility mode.
+  - [x] generator must not treat V2 class bags as portable schema.
+- [x] Update QA checklist:
+  - [x] `QA-StorefrontV2.todo.md` includes browser/local BFF structured error checks.
+  - [x] StorefrontBuilder QA includes no `Features` dependency unless compatibility exception exists.
 
 ### Files Likely Touched
 
@@ -717,9 +717,17 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Package metadata reflects the new role.
-- [ ] Docs tell generators to use contracts/headless/browser primitives, not compatibility wrappers.
-- [ ] Future contributors can identify CSS-neutral compatibility versus headless API.
+- [x] Package metadata reflects the new role.
+- [x] Docs tell generators to use contracts/headless/browser primitives, not compatibility wrappers.
+- [x] Future contributors can identify CSS-neutral compatibility versus headless API.
+
+### CLH8 Notes - 2026-07-26
+
+- Updated `BlazorShop.Storefront.Components` package description and added a package README that defines `Contracts`, `Headless`, `Browser`, and compatibility-only `Features` ownership.
+- Updated Storefront V2 architecture, V2 contract ownership, StorefrontBuilder architecture/reference/how-to/agent docs, and `Features/README.md` so generated storefronts consume shared contracts/headless/browser primitives but render project-local DOM.
+- Updated `QA-StorefrontV2.todo.md` with CLH7 structured local BFF error coverage and CLH8 StorefrontBuilder no-`Features` dependency guidance.
+- Verification passed:
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` -> passed `51/51`; only existing MessagePack/Browserslist warnings appeared.
 
 ## Phase CLH9 - V2, Starter, StorefrontBuilder QA And Release Proof
 

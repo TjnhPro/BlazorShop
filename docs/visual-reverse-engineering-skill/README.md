@@ -23,4 +23,6 @@ The architecture docs are the current source of truth when a historical plan con
 
 ## Runtime Boundary Reminder
 
-Generated storefront server/BFF projects register `BlazorShop.Storefront.Runtime` through `AddStorefrontPlatformRuntime` or explicit `AddStorefront{Capability}Runtime` methods. Browser and WASM code must use same-origin generated endpoints and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior, not Runtime or guessed Storefront API envelopes.
+Generated storefront server/BFF projects register `BlazorShop.Storefront.Runtime` through `AddStorefrontPlatformRuntime` or explicit `AddStorefront{Capability}Runtime` methods. Browser and WASM code must use same-origin generated endpoints and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior and Browser local API primitives, not Runtime or guessed Storefront API envelopes.
+
+`BlazorShop.Storefront.Components/Features` contains CSS-neutral compatibility wrappers only. StorefrontBuilder output should generate project-local visual templates from evidence and shared contracts, not copy those wrappers as the visual baseline.

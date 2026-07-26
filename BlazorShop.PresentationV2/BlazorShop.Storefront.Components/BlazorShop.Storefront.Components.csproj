@@ -8,7 +8,7 @@
     <PackageId>BlazorShop.Storefront.Components</PackageId>
     <Version>1.0.0</Version>
     <Authors>BlazorShop</Authors>
-    <Description>Portable Blazor storefront presentation components for Storefront V2 and generated storefronts.</Description>
+    <Description>Browser-safe Storefront contracts, headless interaction state, and compatibility component primitives.</Description>
     <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
   </PropertyGroup>
 

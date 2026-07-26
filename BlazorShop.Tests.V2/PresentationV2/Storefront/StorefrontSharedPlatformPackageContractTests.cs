@@ -35,6 +35,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontComponentsPackage_MetadataAndReadmeDescribeLogicOnlyRole()
+        {
+            var project = XDocument.Load(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj"));
+            var properties = project.Descendants("PropertyGroup").Elements().ToDictionary(element => element.Name.LocalName, element => element.Value);
+            var readme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/README.md");
+
+            Assert.Equal(
+                "Browser-safe Storefront contracts, headless interaction state, and compatibility component primitives.",
+                properties["Description"]);
+            Assert.Contains("Contracts/{Capability}", readme, StringComparison.Ordinal);
+            Assert.Contains("Headless/{Capability}", readme, StringComparison.Ordinal);
+            Assert.Contains("Browser", readme, StringComparison.Ordinal);
+            Assert.Contains("CSS-neutral compatibility Razor wrappers", readme, StringComparison.Ordinal);
+            Assert.Contains("not stable presentation contracts", readme, StringComparison.Ordinal);
+            Assert.Contains("same-origin BFF endpoints", readme, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontRuntime_SeparatesCoreRuntimeFromServerGeneratedClientRegistration()
         {
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");

@@ -158,6 +158,31 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StorefrontBuilderGuidance_DoesNotTreatComponentsFeaturesAsVisualTemplates()
+        {
+            var docs = string.Join(
+                Environment.NewLine,
+                ReadRepositoryFile("docs/architecture/11-storefront-builder.md"),
+                ReadRepositoryFile("docs/visual-reverse-engineering-skill/README.md"),
+                ReadRepositoryFile("docs/visual-reverse-engineering-skill/reference.md"),
+                ReadRepositoryFile("docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md"),
+                ReadRepositoryFile("docs/agents/storefront-builder.md"));
+
+            foreach (var expected in new[]
+            {
+                "Browser local API primitives",
+                "CSS-neutral compatibility wrappers",
+                "not stable presentation contracts",
+                "not copy those wrappers as the visual baseline",
+                "do not copy them as generated visual templates",
+                "Components `Features` wrappers as the generated/custom storefront presentation source",
+            })
+            {
+                Assert.Contains(expected, docs, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void StorefrontBuilderArtifactSchemas_ArePresentAndHaveValidationFixtures()
         {
             var requiredSchemas = new[]

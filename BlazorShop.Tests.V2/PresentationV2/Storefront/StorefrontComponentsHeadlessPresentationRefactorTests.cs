@@ -151,8 +151,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             var featuresReadme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/README.md");
             Assert.Contains("temporary compatibility area", featuresReadme, StringComparison.Ordinal);
+            Assert.Contains("CSS-neutral compatibility wrappers", featuresReadme, StringComparison.Ordinal);
             Assert.Contains("Contracts/{Capability}", featuresReadme, StringComparison.Ordinal);
             Assert.Contains("Headless/{Capability}", featuresReadme, StringComparison.Ordinal);
+            Assert.Contains("Browser", featuresReadme, StringComparison.Ordinal);
+            Assert.Contains("not stable presentation contracts", featuresReadme, StringComparison.Ordinal);
             Assert.Contains("Store-owned visual templates belong", featuresReadme, StringComparison.Ordinal);
         }
 
