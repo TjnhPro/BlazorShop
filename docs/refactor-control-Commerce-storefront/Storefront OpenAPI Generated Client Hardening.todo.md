@@ -260,27 +260,27 @@ Goal: prove generation is deterministic by running generator and failing on gene
 
 ### Tasks
 
-- [ ] Add a release-gate script or test helper:
+- [x] Add a release-gate script or test helper:
 
 ```text
 scripts/qa/run-storefront-client-regeneration-gate.ps1
 ```
 
-- [ ] Gate steps:
-  - [ ] run `./scripts/generate-storefront-client.ps1`.
-  - [ ] run `git diff --exit-code -- BlazorShop.PresentationV2/BlazorShop.Storefront.Client/Generated`.
-  - [ ] fail with a clear message if generated files drift.
-  - [ ] tell developer to review and commit regenerated source when contract changes are intentional.
-- [ ] Add optional contract diff check:
-  - [ ] `git diff --exit-code -- contracts/storefront/storefront.openapi.json`.
-  - [ ] make this optional if the gate is run immediately after intentionally refreshing the canonical contract.
-- [ ] Update `StorefrontGeneratedClientFoundationTests`:
-  - [ ] Keep fast string checks.
-  - [ ] Add a test that the QA gate script exists and contains the generator and git diff commands.
-  - [ ] Do not run expensive git/NSwag gate inside normal unit tests unless CI can support it reliably.
-- [ ] Add CI/release checklist instruction:
-  - [ ] run the regeneration gate before publishing `BlazorShop.Storefront.Client`.
-  - [ ] run package consumer build after regeneration.
+- [x] Gate steps:
+  - [x] run `./scripts/generate-storefront-client.ps1`.
+  - [x] run `git diff --exit-code -- BlazorShop.PresentationV2/BlazorShop.Storefront.Client/Generated`.
+  - [x] fail with a clear message if generated files drift.
+  - [x] tell developer to review and commit regenerated source when contract changes are intentional.
+- [x] Add optional contract diff check:
+  - [x] `git diff --exit-code -- contracts/storefront/storefront.openapi.json`.
+  - [x] make this optional if the gate is run immediately after intentionally refreshing the canonical contract.
+- [x] Update `StorefrontGeneratedClientFoundationTests`:
+  - [x] Keep fast string checks.
+  - [x] Add a test that the QA gate script exists and contains the generator and git diff commands.
+  - [x] Do not run expensive git/NSwag gate inside normal unit tests unless CI can support it reliably.
+- [x] Add CI/release checklist instruction:
+  - [x] run the regeneration gate before publishing `BlazorShop.Storefront.Client`.
+  - [x] run package consumer build after regeneration.
 
 ### Files Likely Touched
 
@@ -298,9 +298,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Generated-client drift is caught by a command intended for release/CI.
-- [ ] Normal test suite still has a fast guard that the gate exists.
-- [ ] Drift failure message explains the cause and fix.
+- [x] Generated-client drift is caught by a command intended for release/CI.
+- [x] Normal test suite still has a fast guard that the gate exists.
+- [x] Drift failure message explains the cause and fix.
 
 ## Phase OCH5 - Normalize Generated Client Base URL Behavior
 

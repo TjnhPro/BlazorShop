@@ -11,6 +11,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private const string GeneratedClientPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/Generated/StorefrontClient.g.cs";
         private const string GeneratorConfigPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/nswag.storefront.client.json";
         private const string GeneratorScriptPath = "scripts/generate-storefront-client.ps1";
+        private const string RegenerationGateScriptPath = "scripts/qa/run-storefront-client-regeneration-gate.ps1";
 
         [Fact]
         public void StorefrontClientProject_HasNoBackendOrStorefrontV2References()
@@ -22,6 +23,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .ToArray();
 
             Assert.Empty(forbidden);
+        }
+
+        [Fact]
+        public void StorefrontClientRegenerationGate_RunsGeneratorAndFailsOnDrift()
+        {
+            var gate = ReadRepositoryFile(RegenerationGateScriptPath);
+
+            Assert.Contains("scripts/generate-storefront-client.ps1", gate, StringComparison.Ordinal);
+            Assert.Contains("git diff --exit-code --", gate, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.Client/Generated", gate, StringComparison.Ordinal);
+            Assert.Contains("contracts/storefront/storefront.openapi.json", gate, StringComparison.Ordinal);
+            Assert.Contains("Storefront client regeneration drift detected", gate, StringComparison.Ordinal);
         }
 
         [Fact]
