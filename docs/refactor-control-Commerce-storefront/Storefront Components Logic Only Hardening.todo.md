@@ -282,18 +282,18 @@ Goal: prevent `Headless` from depending on compatibility `Features`.
 
 ### Tasks
 
-- [ ] Update `ProductPurchaseBehavior.cs` to import product contracts, not feature models.
-- [ ] Update `ProductGalleryState.cs` to import product contracts, not feature models.
-- [ ] Scan all `Headless/**/*.cs` files for:
-  - [ ] `BlazorShop.Storefront.Components.Features`
-  - [ ] `.Features.`
-- [ ] Add architecture test:
-  - [ ] `Contracts` must not reference `Headless`, `Browser`, or `Features`.
-  - [ ] `Headless` may reference `Contracts` and `Browser` only where browser-local models are intentionally part of behavior.
-  - [ ] `Headless` must not reference `Features`.
-  - [ ] `Features` may reference `Contracts`, `Headless`, and `Browser` as temporary compatibility wrappers.
-- [ ] Update `Contracts/*/README.md` to say contract models are stable presentation contracts, not API DTOs.
-- [ ] Update `Headless/*/README.md` to say Headless must not import `Features`.
+- [x] Update `ProductPurchaseBehavior.cs` to import product contracts, not feature models.
+- [x] Update `ProductGalleryState.cs` to import product contracts, not feature models.
+- [x] Scan all `Headless/**/*.cs` files for:
+  - [x] `BlazorShop.Storefront.Components.Features`
+  - [x] `.Features.`
+- [x] Add architecture test:
+  - [x] `Contracts` must not reference `Headless`, `Browser`, or `Features`.
+  - [x] `Headless` may reference `Contracts` and `Browser` only where browser-local models are intentionally part of behavior.
+  - [x] `Headless` must not reference `Features`.
+  - [x] `Features` may reference `Contracts`, `Headless`, and `Browser` as temporary compatibility wrappers.
+- [x] Update `Contracts/*/README.md` to say contract models are stable presentation contracts, not API DTOs.
+- [x] Update `Headless/*/README.md` to say Headless must not import `Features`.
 
 ### Files Likely Touched
 
@@ -312,9 +312,17 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] `Headless` has no dependency on `Features`.
-- [ ] Tests enforce the intended dependency direction.
-- [ ] Future compatibility wrappers cannot become the stable contract layer accidentally.
+- [x] `Headless` has no dependency on `Features`.
+- [x] Tests enforce the intended dependency direction.
+- [x] Future compatibility wrappers cannot become the stable contract layer accidentally.
+
+### CLH2 Notes - 2026-07-26
+
+- Added `ComponentsDependencyDirection_KeepsContractsAndHeadlessBelowFeatures` to block `Contracts -> Headless/Browser/Features` and `Headless -> Features` dependencies while allowing compatibility wrappers to consume lower layers.
+- Added `Contracts/Deals/README.md` and updated contract/headless README files with stable presentation-contract and no-Features dependency rules.
+- Verification passed:
+  - `rg -n "BlazorShop.Storefront.Components.Features|\.Features\." BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless` returned no matches.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` passed `23/23`.
 
 ## Phase CLH3 - Move Host-Specific Action Defaults Out Of Shared Headless
 

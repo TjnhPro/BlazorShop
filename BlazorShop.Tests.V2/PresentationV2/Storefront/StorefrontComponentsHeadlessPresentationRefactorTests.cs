@@ -123,6 +123,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var expectedFolders = new[]
             {
                 "Contracts/Catalog",
+                "Contracts/Deals",
                 "Contracts/Product",
                 "Contracts/Cart",
                 "Contracts/Checkout",
@@ -146,6 +147,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Contracts/{Capability}", featuresReadme, StringComparison.Ordinal);
             Assert.Contains("Headless/{Capability}", featuresReadme, StringComparison.Ordinal);
             Assert.Contains("Store-owned visual templates belong", featuresReadme, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void ComponentsDependencyDirection_KeepsContractsAndHeadlessBelowFeatures()
+        {
+            var contractSource = ReadComponentLayerSource("Contracts");
+            var headlessSource = ReadComponentLayerSource("Headless");
+            var featureSource = ReadComponentLayerSource("Features");
+
+            foreach (var forbiddenContractDependency in new[]
+            {
+                "BlazorShop.Storefront.Components.Headless",
+                "BlazorShop.Storefront.Components.Browser",
+                "BlazorShop.Storefront.Components.Features",
+                ".Headless.",
+                ".Browser.",
+                ".Features."
+            })
+            {
+                Assert.DoesNotContain(forbiddenContractDependency, contractSource, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("BlazorShop.Storefront.Components.Contracts", headlessSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Components.Features", headlessSource, StringComparison.Ordinal);
+            Assert.DoesNotContain(".Features.", headlessSource, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Components.Contracts", featureSource, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Components.Headless", featureSource, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -878,6 +906,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .Select(path => Path.GetRelativePath(contractRoot, path).Replace('\\', '/'))
                 .Order(StringComparer.Ordinal)
                 .ToArray();
+        }
+
+        private static string ReadComponentLayerSource(string layer)
+        {
+            var root = RepositoryPath($"BlazorShop.PresentationV2/BlazorShop.Storefront.Components/{layer}");
+
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
+                    .Where(path => Path.GetExtension(path) is ".cs" or ".razor")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
         }
 
         private static string ReadRepositoryFile(string relativePath)
