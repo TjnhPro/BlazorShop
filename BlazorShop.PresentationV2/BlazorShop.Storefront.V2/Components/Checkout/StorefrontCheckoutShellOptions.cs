@@ -1,10 +1,8 @@
 namespace BlazorShop.Storefront.Components.Checkout;
 
-using BlazorShop.Storefront.Components.Headless.Checkout;
-
 public static class StorefrontCheckoutShellOptions
 {
-    public static StorefrontCheckoutActionDescriptor Actions { get; } = new(
+    public static BlazorShop.Storefront.Components.Headless.Checkout.StorefrontCheckoutActionDescriptor Actions { get; } = new(
         "/api/checkout",
         "/api/checkout/shipping-method",
         "/api/checkout/payment-method",

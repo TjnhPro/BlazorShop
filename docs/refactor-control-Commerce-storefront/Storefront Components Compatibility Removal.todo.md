@@ -138,23 +138,23 @@ Exit criteria:
 
 Muc tieu: `CheckoutShell` thuoc V2, shared package chi con state/action/label contracts.
 
-- [ ] Tao V2-owned component:
+- [x] Tao V2-owned component:
   - `BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutShell.razor`
-- [ ] Chuyen markup tu `Features/Checkout/CheckoutShell.razor` sang V2.
-- [ ] Chuyen checkout visual option/class records tu Headless sang V2-local options.
-- [ ] Giu shared contracts/headless:
+- [x] Chuyen markup tu `Features/Checkout/CheckoutShell.razor` sang V2.
+- [x] Chuyen checkout visual option/class records tu Headless sang V2-local options.
+- [x] Giu shared contracts/headless:
   - checkout step state
   - action descriptors
   - validation state
   - browser-safe labels
-- [ ] Update `Pages/Hybrid/Commerce/CheckoutPage.razor` dung `<StorefrontCheckoutShell ...>`.
-- [ ] Remove checkout `Features` import khoi `_Imports.razor` neu khong con consumer.
-- [ ] Update tests dang doc `Features/Checkout/CheckoutShell.razor`.
-- [ ] Bao dam checkout khong doi endpoint:
+- [x] Update `Pages/Hybrid/Commerce/CheckoutPage.razor` dung `<StorefrontCheckoutShell ...>`.
+- [x] Remove checkout `Features` import khoi `_Imports.razor` neu khong con consumer.
+- [x] Update tests dang doc `Features/Checkout/CheckoutShell.razor`.
+- [x] Bao dam checkout khong doi endpoint:
   - `checkout/start`
   - `checkout/review`
   - `checkout/place-order`
-- [ ] Bao dam test van guard:
+- [x] Bao dam test van guard:
   - address step
   - shipping method step
   - payment method COD
@@ -163,9 +163,12 @@ Muc tieu: `CheckoutShell` thuoc V2, shared package chi con state/action/label co
 
 Exit criteria:
 
-- [ ] `CheckoutPage.razor` render bang V2-owned checkout component.
-- [ ] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Checkout`.
-- [ ] Shared Components khong con checkout Razor visual wrapper.
+- [x] `CheckoutPage.razor` render bang V2-owned checkout component.
+- [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Checkout`.
+- [x] Shared Components khong con checkout Razor visual wrapper.
+  - 2026-07-26: shared wrapper con ton tai tam thoi den SCR6, nhung khong con duoc V2 source/test positive path consume.
+  - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
+  - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
 
 ## Phase SCR3 - Move Account Visual Wrapper Ownership to V2
 

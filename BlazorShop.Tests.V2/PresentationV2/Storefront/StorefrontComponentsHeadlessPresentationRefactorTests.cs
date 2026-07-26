@@ -464,7 +464,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutShell_UsesHostActionsAndClassesAfterHpr8Migration()
         {
             var checkoutShell = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutShell.razor");
             var checkoutBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Checkout/StorefrontCheckoutBehavior.cs");
             var checkoutOptions = ReadRepositoryFile(
@@ -482,8 +482,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "PlaceOrderRoute",
                 "StorefrontCheckoutViewState",
                 "Loading",
-                "PlaceOrderAllowed",
-                "StorefrontCheckoutViewClasses"
+                "PlaceOrderAllowed"
             })
             {
                 Assert.Contains(expected, checkoutBehavior, StringComparison.Ordinal);
@@ -507,6 +506,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("rounded", checkoutOptions, StringComparison.Ordinal);
             Assert.Contains("Actions=\"StorefrontCheckoutShellOptions.Actions\"", checkoutPage, StringComparison.Ordinal);
             Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", checkoutPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCheckoutShell", checkoutPage, StringComparison.Ordinal);
+            Assert.DoesNotContain("<CheckoutShell", checkoutPage, StringComparison.Ordinal);
             Assert.Equal(2, CountOccurrences(checkoutPage, "ShowPanel=\"false\""));
         }
 
