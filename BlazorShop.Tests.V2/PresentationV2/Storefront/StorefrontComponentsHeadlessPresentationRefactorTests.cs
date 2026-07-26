@@ -735,6 +735,68 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("lg:", app, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void BrowserPrimitives_RemainBehaviorOnlyAfterHpr14Cleanup()
+        {
+            var browserRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser");
+            var browserSource = string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(browserRoot, "*.cs", SearchOption.TopDirectoryOnly)
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+            var browserReadme = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/README.md");
+            var localApiClient = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
+            var migratedFeatureRazor = string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(
+                        RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features"),
+                        "*.razor",
+                        SearchOption.AllDirectories)
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+
+            Assert.Contains("same-origin BFF endpoints", browserReadme, StringComparison.Ordinal);
+            Assert.Contains("Visual ownership stays with the host storefront project", browserReadme, StringComparison.Ordinal);
+            Assert.Contains("route.StartsWith(\"//\", StringComparison.Ordinal)", localApiClient, StringComparison.Ordinal);
+            Assert.Contains("route.Contains(\"://\", StringComparison.Ordinal)", localApiClient, StringComparison.Ordinal);
+            Assert.Contains("same-origin relative routes", localApiClient, StringComparison.Ordinal);
+
+            foreach (var visualToken in new[]
+            {
+                "bg-",
+                "text-neutral-",
+                "text-rose-",
+                "rounded",
+                "shadow-",
+                "max-w-",
+                "grid-cols-",
+                "hover:"
+            })
+            {
+                Assert.DoesNotContain(visualToken, browserSource, StringComparison.Ordinal);
+            }
+
+            foreach (var forbiddenBrowserDependency in new[]
+            {
+                "https://",
+                "http://",
+                "CommerceNode",
+                "ControlPlane",
+                "NodeSecret",
+                "accessToken",
+                "refreshToken",
+                "api/storefront/stores"
+            })
+            {
+                Assert.DoesNotContain(forbiddenBrowserDependency, browserSource, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(forbiddenBrowserDependency, migratedFeatureRazor, StringComparison.OrdinalIgnoreCase);
+            }
+
+            Assert.DoesNotContain("\"/api/", migratedFeatureRazor, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

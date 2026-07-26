@@ -475,22 +475,22 @@ Goal: migrate `AccountApp` only after all account leaf components have headless 
 
 Goal: make `Browser/*` primitives clearly behavior-only.
 
-- [ ] Keep `StorefrontLocalApiClient` same-origin enforcement.
-- [ ] Ensure `StorefrontLocalApiClient` still rejects absolute URLs.
-- [ ] Ensure route strings are passed by host/action descriptors, not embedded in reusable visual components.
-- [ ] Keep antiforgery reader/token browser-safe.
-- [ ] Review browser models for visual fields:
-  - [ ] Keep display values required by UI.
-  - [ ] Do not add layout/theme fields.
-  - [ ] Do not add admin/internal fields.
-- [ ] Update docs to say browser support is for BFF communication, not visual ownership.
+- [x] Keep `StorefrontLocalApiClient` same-origin enforcement.
+- [x] Ensure `StorefrontLocalApiClient` still rejects absolute URLs.
+- [x] Ensure route strings are passed by host/action descriptors, not embedded in reusable visual components.
+- [x] Keep antiforgery reader/token browser-safe.
+- [x] Review browser models for visual fields:
+  - [x] Keep display values required by UI.
+  - [x] Do not add layout/theme fields.
+  - [x] Do not add admin/internal fields.
+- [x] Update docs to say browser support is for BFF communication, not visual ownership.
 
 ### HPR14 QA gate
 
-- [ ] Storefront WASM build passes.
-- [ ] Components build passes.
-- [ ] Static guard no absolute Commerce Node/Control Plane browser calls.
-- [ ] Static guard no endpoint literals in migrated shared components.
+- [x] Storefront WASM build passes.
+- [x] Components build passes.
+- [x] Static guard no absolute Commerce Node/Control Plane browser calls.
+- [x] Static guard no endpoint literals in migrated shared components.
 
 ## Phase HPR15 - Starter and generated storefront alignment
 
@@ -587,11 +587,11 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 - [ ] `DealsPlacement.cs` covered.
 - [ ] `ProductGalleryItem.cs` covered.
 - [ ] `ProductPurchasePanelModels.cs` covered.
-- [ ] Browser cart models covered.
-- [ ] Browser checkout models covered.
-- [ ] Browser account models covered.
-- [ ] Feature data mode covered.
-- [ ] Local API/antiforgery browser primitives covered.
+- [x] Browser cart models covered.
+- [x] Browser checkout models covered.
+- [x] Browser account models covered.
+- [x] Feature data mode covered.
+- [x] Local API/antiforgery browser primitives covered.
 
 ## Risk controls
 
