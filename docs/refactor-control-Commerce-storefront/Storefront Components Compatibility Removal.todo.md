@@ -395,7 +395,7 @@ Exit criteria:
 
 Muc tieu: tests khong con verify temporary implementation, ma verify final architecture.
 
-- [ ] Refactor cac test dang read file `Components/Features/*`:
+- [x] Refactor cac test dang read file `Components/Features/*`:
   - `StorefrontComponentsHeadlessPresentationRefactorTests`
   - `StorefrontWasmRuntimeFoundationTests`
   - `StorefrontCommerceFlowCutoverTests`
@@ -403,25 +403,26 @@ Muc tieu: tests khong con verify temporary implementation, ma verify final archi
   - `StorefrontPageCompositionGuardrailTests`
   - `StorefrontStarterFoundationBoundaryTests`
   - `StorefrontSharedPlatformPackageContractTests`
-- [ ] Them guardrails moi:
-  - `StorefrontComponents_HasNoFeaturesFolder`
-  - `StorefrontComponents_HasNoRazorFiles`
-  - `StorefrontComponents_UsesClassLibrarySdk`
-  - `StorefrontComponents_HeadlessHasNoVisualClassBags`
-  - `StorefrontV2_DoesNotImportComponentsFeatures`
-  - `StarterAndGeneratedTemplates_DoNotImportComponentsFeatures`
-  - `Runtime_UsesOfficialCapabilityRegistrationSurface`
-- [ ] Giu guardrails hien co ve:
+- [x] Them guardrails moi:
+  - [x] `StorefrontComponents_HasNoFeaturesFolder`
+  - [x] `StorefrontComponents_HasNoRazorFiles`
+  - [x] `StorefrontComponents_UsesClassLibrarySdk`
+  - [x] `StorefrontComponents_HeadlessHasNoVisualClassBags`
+  - [x] `StorefrontV2_DoesNotImportComponentsFeatures`
+  - [x] `StarterAndGeneratedTemplates_DoNotImportComponentsFeatures`
+  - [x] `Runtime_UsesOfficialCapabilityRegistrationSurface`
+- [x] Giu guardrails hien co ve:
   - no `Web.SharedV2` business dependency in Storefront source;
   - no backend/core references in Client/Runtime/Components;
   - Runtime server-only boundary;
   - generated storefront isolation.
-- [ ] Sua tests nao dang xem shared visual wrapper la positive requirement thanh negative requirement.
+- [x] Sua tests nao dang xem shared visual wrapper la positive requirement thanh negative requirement.
 
 Exit criteria:
 
-- [ ] Tests mo ta dung final architecture, khong con compatibility expectation cu.
-- [ ] Test fail neu ai do them lai shared visual Razor wrapper vao `Storefront.Components`.
+- [x] Tests mo ta dung final architecture, khong con compatibility expectation cu.
+- [x] Test fail neu ai do them lai shared visual Razor wrapper vao `Storefront.Components`.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontSharedPlatformPackageContractTests|StorefrontPageCompositionGuardrailTests|StorefrontIndependenceBoundaryTests|StorefrontBrandingMarkupTests|StorefrontWasmRuntimeFoundationTests` pass 144/144.
 
 ## Phase SCR10 - Documentation and QA Checklist Cleanup
 

@@ -4,10 +4,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     public sealed class StorefrontComponentsHeadlessPresentationRefactorTests
     {
-        private static readonly string[] ExpectedFeatureRazorComponents =
-        [
-        ];
-
         private static readonly string[] ExpectedContractModelAndEnumFiles =
         [
             "Account/AccountLabels.cs",
@@ -40,20 +36,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         ];
 
         [Fact]
-        public void FeatureRazorInventory_RecordsAllCurrentComponentsBeforeHeadlessMigration()
+        public void StorefrontComponents_HasNoFeaturesFolder()
         {
-            var actual = EnumerateComponentFeatureFiles("*.razor");
-
-            Assert.Equal(ExpectedFeatureRazorComponents, actual);
-            Assert.Empty(actual);
-        }
-
-        [Fact]
-        public void FeatureModelInventory_KeepsReusableModelsOutOfCompatibilityFeatures()
-        {
-            var actual = EnumerateComponentFeatureFiles("*.cs");
-
-            Assert.Empty(actual);
+            Assert.False(Directory.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features")));
         }
 
         [Fact]
@@ -72,7 +57,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void StorefrontComponents_UsesClassLibrarySdkWithoutSharedStaticWebAssets()
+        public void StorefrontComponents_UsesClassLibrarySdk()
         {
             var project = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
@@ -93,6 +78,32 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("./js/storefrontWasmInterop.js", browserSource, StringComparison.Ordinal);
             Assert.Contains("./js/storefrontWasmInterop.js", cartView, StringComparison.Ordinal);
             Assert.DoesNotContain("_content/BlazorShop.Storefront.Components", browserSource + cartView, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StorefrontV2_DoesNotImportComponentsFeatures()
+        {
+            var v2Root = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2");
+            var source = ReadSourceTree(v2Root);
+
+            Assert.DoesNotContain("BlazorShop.Storefront.Components.Features", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("Components.Features", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StarterAndGeneratedTemplates_DoNotImportComponentsFeatures()
+        {
+            var roots = new[]
+            {
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"),
+                RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder")
+            };
+            var source = string.Join(Environment.NewLine, roots.Select(ReadSourceTree));
+
+            Assert.Contains("Features/feature-manifest.json", source.Replace('\\', '/'), StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Components.Features", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("Components.Features", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("Storefront.Components/Features", source.Replace('\\', '/'), StringComparison.Ordinal);
         }
 
         [Fact]
@@ -178,7 +189,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void ComponentsDependencyDirection_KeepsContractsAndHeadlessBelowFeatures()
+        public void ComponentsDependencyDirection_KeepsContractsAndHeadlessBelowBrowserAndHostMarkup()
         {
             var contractSource = ReadComponentLayerSource("Contracts");
             var headlessSource = ReadComponentLayerSource("Headless");
@@ -202,7 +213,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void HeadlessClassBags_AreCompatibilityOnlyVisualSchemas()
+        public void StorefrontComponents_HeadlessHasNoVisualClassBags()
         {
             var headlessSource = ReadComponentLayerSource("Headless");
             var v2ClassSource =
@@ -899,22 +910,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Latest Products", newReleases, StringComparison.Ordinal);
         }
 
-        private static string[] EnumerateComponentFeatureFiles(string searchPattern)
-        {
-            var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
-            if (!Directory.Exists(featureRoot))
-            {
-                return [];
-            }
-
-            return Directory
-                .EnumerateFiles(featureRoot, searchPattern, SearchOption.AllDirectories)
-                .Where(path => !string.Equals(Path.GetFileName(path), "README.md", StringComparison.OrdinalIgnoreCase))
-                .Select(path => Path.GetRelativePath(featureRoot, path).Replace('\\', '/'))
-                .Order(StringComparer.Ordinal)
-                .ToArray();
-        }
-
         private static string[] EnumerateComponentContractFiles(string searchPattern)
         {
             var contractRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts");
@@ -939,6 +934,38 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Environment.NewLine,
                 Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
                     .Where(path => Path.GetExtension(path) is ".cs" or ".razor")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+        }
+
+        private static string ReadSourceTree(string root)
+        {
+            if (!Directory.Exists(root))
+            {
+                return string.Empty;
+            }
+
+            var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".cs",
+                ".csproj",
+                ".json",
+                ".md",
+                ".mjs",
+                ".props",
+                ".ps1",
+                ".razor",
+                ".yaml",
+                ".yml"
+            };
+
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
+                    .Where(path => allowedExtensions.Contains(Path.GetExtension(path)))
+                    .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                    .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                    .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}node_modules{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
                     .OrderBy(path => path, StringComparer.Ordinal)
                     .Select(File.ReadAllText));
         }
