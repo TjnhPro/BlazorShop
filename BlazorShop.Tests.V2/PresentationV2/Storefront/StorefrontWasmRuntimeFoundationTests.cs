@@ -225,14 +225,21 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderList.razor");
             var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderDetail.razor");
             var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountChangePasswordForm.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
+            var behavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var allComponents = profileComponent + addressesComponent + ordersComponent + orderDetailComponent + passwordComponent;
 
             Assert.Contains("<AntiforgeryToken />", profileComponent, StringComparison.Ordinal);
             Assert.Contains("<AntiforgeryToken />", addressesComponent, StringComparison.Ordinal);
             Assert.Contains("<AntiforgeryToken />", passwordComponent, StringComparison.Ordinal);
             Assert.Contains("Passwords do not match.", passwordComponent, StringComparison.Ordinal);
-            Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(\"/api/account/profile\")", profileComponent, StringComparison.Ordinal);
-            Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(\"/api/account/profile\"", profileComponent, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(Actions.LoadProfileRoute)", profileComponent, StringComparison.Ordinal);
+            Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(Actions.SaveProfileRoute", profileComponent, StringComparison.Ordinal);
+            Assert.Contains("Actions.ChangePasswordRoute", passwordComponent, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/profile\"", options, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/change-password\"", options, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountProfileActionDescriptor", behavior, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountPasswordActionDescriptor", behavior, StringComparison.Ordinal);
             Assert.Contains("GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(\"/api/account/addresses\")", addressesComponent, StringComparison.Ordinal);
             Assert.Contains("PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>", addressesComponent, StringComparison.Ordinal);
             Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>", ordersComponent, StringComparison.Ordinal);

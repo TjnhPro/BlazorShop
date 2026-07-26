@@ -1,60 +1,61 @@
 @namespace BlazorShop.Storefront.Components.Features.Account
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Headless.Account
 @inject IServiceProvider Services
 
-<div data-storefront-account-profile>
+<div class="@Classes.Root" data-storefront-account-profile>
     @if (!string.IsNullOrWhiteSpace(_success))
     {
-        <div class="mb-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">@_success</div>
+        <div class="@Classes.StatusAlert" role="status">@_success</div>
     }
     @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <div class="mb-5 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
     }
 
     @if (_profile is null)
     {
-        <p class="text-sm text-neutral-700">Profile could not be loaded.</p>
+        <p class="@Classes.MissingProfile">Profile could not be loaded.</p>
     }
     else
     {
-        <form method="post" action="@FormAction" class="grid max-w-3xl gap-5 sm:grid-cols-2" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
+        <form method="post" action="@Actions.FormAction" class="@Classes.ProfileForm" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
             <AntiforgeryToken />
             @RenderAntiforgeryField()
-            <label class="block text-sm sm:col-span-2">
-                <span class="font-semibold text-neutral-800">Email address</span>
-                <input name="Email" type="email" autocomplete="email" required @bind="_form.Email" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            <label class="@Classes.WideField">
+                <span class="@Classes.LabelText">Email address</span>
+                <input name="Email" type="email" autocomplete="email" required @bind="_form.Email" class="@Classes.Input" />
             </label>
-            <label class="block text-sm sm:col-span-2">
-                <span class="font-semibold text-neutral-800">Display name</span>
-                <input name="FullName" type="text" autocomplete="name" required @bind="_form.FullName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            <label class="@Classes.WideField">
+                <span class="@Classes.LabelText">Display name</span>
+                <input name="FullName" type="text" autocomplete="name" required @bind="_form.FullName" class="@Classes.Input" />
             </label>
-            <label class="block text-sm">
-                <span class="font-semibold text-neutral-800">First name</span>
-                <input name="FirstName" type="text" autocomplete="given-name" @bind="_form.FirstName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            <label class="@Classes.Field">
+                <span class="@Classes.LabelText">First name</span>
+                <input name="FirstName" type="text" autocomplete="given-name" @bind="_form.FirstName" class="@Classes.Input" />
             </label>
-            <label class="block text-sm">
-                <span class="font-semibold text-neutral-800">Last name</span>
-                <input name="LastName" type="text" autocomplete="family-name" @bind="_form.LastName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            <label class="@Classes.Field">
+                <span class="@Classes.LabelText">Last name</span>
+                <input name="LastName" type="text" autocomplete="family-name" @bind="_form.LastName" class="@Classes.Input" />
             </label>
-            <label class="block text-sm">
-                <span class="font-semibold text-neutral-800">Company</span>
-                <input name="Company" type="text" autocomplete="organization" @bind="_form.Company" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            <label class="@Classes.Field">
+                <span class="@Classes.LabelText">Company</span>
+                <input name="Company" type="text" autocomplete="organization" @bind="_form.Company" class="@Classes.Input" />
             </label>
-            <label class="block text-sm">
-                <span class="font-semibold text-neutral-800">Phone</span>
-                <input name="PhoneNumber" type="tel" autocomplete="tel" @bind="_form.PhoneNumber" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            <label class="@Classes.Field">
+                <span class="@Classes.LabelText">Phone</span>
+                <input name="PhoneNumber" type="tel" autocomplete="tel" @bind="_form.PhoneNumber" class="@Classes.Input" />
             </label>
-            <label class="block text-sm">
-                <span class="font-semibold text-neutral-800">Language</span>
-                <input name="PreferredLanguage" type="text" @bind="_form.PreferredLanguage" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            <label class="@Classes.Field">
+                <span class="@Classes.LabelText">Language</span>
+                <input name="PreferredLanguage" type="text" @bind="_form.PreferredLanguage" class="@Classes.Input" />
             </label>
-            <label class="block text-sm">
-                <span class="font-semibold text-neutral-800">Currency</span>
-                <input name="PreferredCurrencyCode" type="text" maxlength="3" @bind="_form.PreferredCurrencyCode" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm uppercase" />
+            <label class="@Classes.Field">
+                <span class="@Classes.LabelText">Currency</span>
+                <input name="PreferredCurrencyCode" type="text" maxlength="3" @bind="_form.PreferredCurrencyCode" class="@Classes.CurrencyInput" />
             </label>
-            <div class="sm:col-span-2">
-                <button type="submit" disabled="@_saving" class="inline-flex rounded bg-neutral-900 px-5 py-3 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-wait disabled:bg-neutral-500">@(_saving ? "Saving..." : "Save profile")</button>
+            <div class="@Classes.ActionRow">
+                <button type="submit" disabled="@_saving" class="@Classes.SubmitButton">@(_saving ? "Saving..." : "Save profile")</button>
             </div>
         </form>
     }
@@ -71,7 +72,10 @@
     public string? InitialSuccess { get; set; }
 
     [Parameter]
-    public string FormAction { get; set; } = "/account/profile";
+    public StorefrontAccountProfileActionDescriptor Actions { get; set; } = StorefrontAccountProfileActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountFormClasses Classes { get; set; } = StorefrontAccountFormClasses.Empty;
 
     [Parameter]
     public string? AntiforgeryFieldName { get; set; }
@@ -122,7 +126,7 @@
             return;
         }
 
-        var result = await apiClient.GetAsync<StorefrontBrowserCustomerProfile>("/api/account/profile");
+        var result = await apiClient.GetAsync<StorefrontBrowserCustomerProfile>(Actions.LoadProfileRoute);
         if (result.Success && result.Data is not null)
         {
             _profile = result.Data;
@@ -157,7 +161,7 @@
         _saving = true;
         _error = null;
         _success = null;
-        var result = await apiClient.PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>("/api/account/profile", _form);
+        var result = await apiClient.PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(Actions.SaveProfileRoute, _form);
         _saving = false;
         if (result.Success && result.Data is not null)
         {

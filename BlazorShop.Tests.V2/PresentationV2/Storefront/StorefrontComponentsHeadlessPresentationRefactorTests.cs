@@ -484,6 +484,72 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Classes=\"NavigationClasses\"", app, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void AccountProfileAndPasswordForms_UseHostActionsAndClassesAfterHpr10Migration()
+        {
+            var profile = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountProfileEditor.razor");
+            var password = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountChangePasswordForm.razor");
+            var behavior = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
+            var options = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
+            var host = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var app = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+
+            foreach (var expected in new[]
+            {
+                "StorefrontAccountProfileActionDescriptor",
+                "LoadProfileRoute",
+                "SaveProfileRoute",
+                "StorefrontAccountPasswordActionDescriptor",
+                "ChangePasswordRoute",
+                "StorefrontAccountFormClasses",
+                "ProfileForm",
+                "PasswordForm",
+                "SubmitButton"
+            })
+            {
+                Assert.Contains(expected, behavior, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(Actions.LoadProfileRoute)", profile, StringComparison.Ordinal);
+            Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(Actions.SaveProfileRoute", profile, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<object, StorefrontBrowserAccountCommandResult>", password, StringComparison.Ordinal);
+            Assert.Contains("Actions.ChangePasswordRoute", password, StringComparison.Ordinal);
+            Assert.Contains("class=\"@Classes.", profile + password, StringComparison.Ordinal);
+            Assert.Contains("Passwords do not match.", password, StringComparison.Ordinal);
+
+            foreach (var sharedSource in new[] { profile, password })
+            {
+                Assert.DoesNotContain("/api/account/profile", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("/api/account/change-password", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("rounded", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("bg-neutral-", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("text-neutral-", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("hover:", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("sm:", sharedSource, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("ProfileActions", options, StringComparison.Ordinal);
+            Assert.Contains("PasswordActions", options, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/profile\"", options, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/change-password\"", options, StringComparison.Ordinal);
+            Assert.Contains("ProfileForm = \"grid max-w-3xl gap-5 sm:grid-cols-2\"", options, StringComparison.Ordinal);
+            Assert.Contains("SubmitButton = \"inline-flex rounded bg-neutral-900", options, StringComparison.Ordinal);
+
+            Assert.Contains("ProfileActions=\"StorefrontAccountViewOptions.ProfileActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("PasswordActions=\"StorefrontAccountViewOptions.PasswordActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("AccountFormClasses=\"StorefrontAccountViewOptions.FormClasses\"", host, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountProfileEditor.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountChangePasswordForm.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountProfileEditor.Classes)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountChangePasswordForm.Classes)", app, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

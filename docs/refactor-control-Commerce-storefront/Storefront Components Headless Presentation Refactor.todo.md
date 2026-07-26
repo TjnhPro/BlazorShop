@@ -381,22 +381,22 @@ Goal: make account navigation store-owned.
 
 Goal: split simpler account forms first.
 
-- [ ] `AccountProfileEditor.razor`:
-  - [ ] Keep `StorefrontBrowserCustomerProfile`.
-  - [ ] Keep `StorefrontBrowserCustomerProfileUpdateRequest`.
-  - [ ] Extract load/save state and action descriptor.
-  - [ ] Move visual form to V2.
-  - [ ] Remove hardcoded `/api/account/profile`.
-- [ ] `AccountChangePasswordForm.razor`:
-  - [ ] Extract form state and submit action descriptor.
-  - [ ] Move visual form to V2.
-  - [ ] Remove hardcoded `/api/account/change-password`.
+- [x] `AccountProfileEditor.razor`:
+  - [x] Keep `StorefrontBrowserCustomerProfile`.
+  - [x] Keep `StorefrontBrowserCustomerProfileUpdateRequest`.
+  - [x] Extract load/save state and action descriptor.
+  - [x] Move visual form to V2.
+  - [x] Remove hardcoded `/api/account/profile`.
+- [x] `AccountChangePasswordForm.razor`:
+  - [x] Extract form state and submit action descriptor.
+  - [x] Move visual form to V2.
+  - [x] Remove hardcoded `/api/account/change-password`.
 
 ### HPR10 QA gate
 
-- [ ] Account profile loads and saves.
-- [ ] Change password submits and renders validation/success/error states.
-- [ ] Shared profile/password components have no endpoint literals or V2 visual classes.
+- [x] Account profile loads and saves.
+- [x] Change password submits and renders validation/success/error states.
+- [x] Shared profile/password components have no endpoint literals or V2 visual classes.
 
 ## Phase HPR11 - Account leaf: address book
 
@@ -577,8 +577,8 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 - [ ] `CartView.razor` covered.
 - [ ] `CheckoutShell.razor` covered.
 - [x] `AccountNavigation.razor` covered.
-- [ ] `AccountProfileEditor.razor` covered.
-- [ ] `AccountChangePasswordForm.razor` covered.
+- [x] `AccountProfileEditor.razor` covered.
+- [x] `AccountChangePasswordForm.razor` covered.
 - [ ] `AccountAddressBook.razor` covered.
 - [ ] `AccountOrderList.razor` covered.
 - [ ] `AccountOrderDetail.razor` covered.

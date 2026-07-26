@@ -49,6 +49,15 @@
     [Parameter]
     public AccountNavigationClasses NavigationClasses { get; set; } = AccountNavigationClasses.Empty;
 
+    [Parameter]
+    public StorefrontAccountProfileActionDescriptor ProfileActions { get; set; } = StorefrontAccountProfileActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountPasswordActionDescriptor PasswordActions { get; set; } = StorefrontAccountPasswordActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountFormClasses AccountFormClasses { get; set; } = StorefrontAccountFormClasses.Empty;
+
     private AccountRoute ActiveRoute => ResolveRoute(Path);
 
     private string Title => ActiveRoute.Kind switch
@@ -73,10 +82,11 @@
                 builder.OpenComponent<AccountProfileEditor>(0);
                 builder.AddAttribute(1, nameof(AccountProfileEditor.InitialError), Error);
                 builder.AddAttribute(2, nameof(AccountProfileEditor.InitialSuccess), Saved == "1" ? "Profile updated." : null);
-                builder.AddAttribute(3, nameof(AccountProfileEditor.FormAction), AccountRoutes.Profile);
+                builder.AddAttribute(3, nameof(AccountProfileEditor.Actions), ProfileActions);
                 builder.AddAttribute(4, nameof(AccountProfileEditor.AntiforgeryFieldName), AntiforgeryFieldName);
                 builder.AddAttribute(5, nameof(AccountProfileEditor.AntiforgeryRequestToken), AntiforgeryRequestToken);
                 builder.AddAttribute(6, nameof(AccountProfileEditor.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(7, nameof(AccountProfileEditor.Classes), AccountFormClasses);
                 builder.CloseComponent();
                 break;
 
@@ -112,10 +122,11 @@
                 builder.OpenComponent<AccountChangePasswordForm>(40);
                 builder.AddAttribute(41, nameof(AccountChangePasswordForm.InitialError), Error);
                 builder.AddAttribute(42, nameof(AccountChangePasswordForm.InitialSuccess), Saved == "1" ? "Password changed." : null);
-                builder.AddAttribute(43, nameof(AccountChangePasswordForm.FormAction), AccountRoutes.ChangePassword);
+                builder.AddAttribute(43, nameof(AccountChangePasswordForm.Actions), PasswordActions);
                 builder.AddAttribute(44, nameof(AccountChangePasswordForm.AntiforgeryFieldName), AntiforgeryFieldName);
                 builder.AddAttribute(45, nameof(AccountChangePasswordForm.AntiforgeryRequestToken), AntiforgeryRequestToken);
                 builder.AddAttribute(46, nameof(AccountChangePasswordForm.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(47, nameof(AccountChangePasswordForm.Classes), AccountFormClasses);
                 builder.CloseComponent();
                 break;
 
