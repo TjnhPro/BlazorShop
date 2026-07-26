@@ -429,6 +429,61 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", checkoutPage, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void AccountNavigation_UsesHostItemsAndClassesAfterHpr9Migration()
+        {
+            var navigation = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountNavigation.razor");
+            var contracts = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/AccountNavigationContracts.cs");
+            var options = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
+            var host = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var app = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+
+            foreach (var expected in new[]
+            {
+                "AccountNavigationItem",
+                "RouteKey",
+                "Label",
+                "Href",
+                "AccountNavigationClasses",
+                "ActiveLink",
+                "InactiveLink"
+            })
+            {
+                Assert.Contains(expected, contracts, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("data-storefront-account-navigation", navigation, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-account-nav-item=\"@item.RouteKey\"", navigation, StringComparison.Ordinal);
+            Assert.Contains("class=\"@Classes.Nav\"", navigation, StringComparison.Ordinal);
+            Assert.Contains("class=\"@LinkClass(item.Href)\"", navigation, StringComparison.Ordinal);
+            Assert.Contains("Items { get; set; } = []", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/profile", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/orders", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/addresses", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/change-password", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-neutral-", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("text-neutral-", navigation, StringComparison.Ordinal);
+            Assert.DoesNotContain("hover:", navigation, StringComparison.Ordinal);
+
+            Assert.Contains("new(\"profile\", \"Profile\", \"/account/profile\")", options, StringComparison.Ordinal);
+            Assert.Contains("new(\"orders\", \"Orders\", \"/account/orders\")", options, StringComparison.Ordinal);
+            Assert.Contains("new(\"addresses\", \"Addresses\", \"/account/addresses\")", options, StringComparison.Ordinal);
+            Assert.Contains("new(\"change-password\", \"Password\", \"/account/change-password\")", options, StringComparison.Ordinal);
+            Assert.Contains("rounded border border-neutral-200 bg-white", options, StringComparison.Ordinal);
+            Assert.Contains("hover:bg-neutral-100", options, StringComparison.Ordinal);
+
+            Assert.Contains("NavigationItems=\"StorefrontAccountViewOptions.NavigationItems\"", host, StringComparison.Ordinal);
+            Assert.Contains("NavigationClasses=\"StorefrontAccountViewOptions.NavigationClasses\"", host, StringComparison.Ordinal);
+            Assert.Contains("Items=\"NavigationItems\"", app, StringComparison.Ordinal);
+            Assert.Contains("Classes=\"NavigationClasses\"", app, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

@@ -364,18 +364,18 @@ Goal: split checkout command/state behavior from V2 checkout visual shell.
 
 Goal: make account navigation store-owned.
 
-- [ ] Move `AccountNavigation` visual markup to V2 account components.
-- [ ] Keep optional account nav contract:
-  - [ ] route key.
-  - [ ] label.
-  - [ ] href.
-  - [ ] active state.
-- [ ] Do not hardcode account visual style in shared components.
+- [x] Move `AccountNavigation` visual markup to V2 account components.
+- [x] Keep optional account nav contract:
+  - [x] route key.
+  - [x] label.
+  - [x] href.
+  - [x] active state.
+- [x] Do not hardcode account visual style in shared components.
 
 ### HPR9 QA gate
 
-- [ ] Account profile/addresses/orders/password nav works.
-- [ ] Active item state works.
+- [x] Account profile/addresses/orders/password nav works.
+- [x] Active item state works.
 
 ## Phase HPR10 - Account leaf: profile and password forms
 
@@ -576,7 +576,7 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 - [ ] `ProductPurchasePanel.razor` covered.
 - [ ] `CartView.razor` covered.
 - [ ] `CheckoutShell.razor` covered.
-- [ ] `AccountNavigation.razor` covered.
+- [x] `AccountNavigation.razor` covered.
 - [ ] `AccountProfileEditor.razor` covered.
 - [ ] `AccountChangePasswordForm.razor` covered.
 - [ ] `AccountAddressBook.razor` covered.

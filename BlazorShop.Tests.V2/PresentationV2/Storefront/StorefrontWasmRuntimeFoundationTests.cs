@@ -190,16 +190,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
             var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
             var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountNavigation.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
 
             Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", host, StringComparison.Ordinal);
             Assert.Contains("Antiforgery.GetAndStoreTokens(HttpContext)", host, StringComparison.Ordinal);
             Assert.Contains("NavigationManager.ToBaseRelativePath(NavigationManager.Uri)", host, StringComparison.Ordinal);
             Assert.Contains("data-storefront-account-app", app, StringComparison.Ordinal);
             Assert.Contains("aria-label=\"Account navigation\"", navigation, StringComparison.Ordinal);
-            Assert.Contains("/account/profile", navigation, StringComparison.Ordinal);
-            Assert.Contains("/account/orders", navigation, StringComparison.Ordinal);
-            Assert.Contains("/account/addresses", navigation, StringComparison.Ordinal);
-            Assert.Contains("/account/change-password", navigation, StringComparison.Ordinal);
+            Assert.Contains("/account/profile", options, StringComparison.Ordinal);
+            Assert.Contains("/account/orders", options, StringComparison.Ordinal);
+            Assert.Contains("/account/addresses", options, StringComparison.Ordinal);
+            Assert.Contains("/account/change-password", options, StringComparison.Ordinal);
+            Assert.Contains("NavigationItems=\"StorefrontAccountViewOptions.NavigationItems\"", host, StringComparison.Ordinal);
+            Assert.Contains("NavigationClasses=\"StorefrontAccountViewOptions.NavigationClasses\"", host, StringComparison.Ordinal);
 
             foreach (var removedPage in new[]
             {
