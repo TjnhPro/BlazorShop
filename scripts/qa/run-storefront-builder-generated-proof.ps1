@@ -57,6 +57,23 @@ function Assert-UnderRoot {
     }
 }
 
+function Clear-StorefrontLocalPackageCache {
+    $globalPackageRoot = Join-Path ([Environment]::GetFolderPath("UserProfile")) ".nuget\packages"
+    foreach ($package in @("blazorshop.storefront.client", "blazorshop.storefront.runtime", "blazorshop.storefront.components")) {
+        $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontClientPackageVersion"
+        if ($package -eq "blazorshop.storefront.runtime") {
+            $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontRuntimePackageVersion"
+        }
+        elseif ($package -eq "blazorshop.storefront.components") {
+            $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontComponentsPackageVersion"
+        }
+
+        if (Test-Path $versionPath) {
+            Remove-Item -LiteralPath $versionPath -Recurse -Force
+        }
+    }
+}
+
 function Start-ProofStorefront {
     param([string]$ProjectFile)
 
@@ -134,6 +151,7 @@ Invoke-Step "Clean generated proof output" {
 
 Invoke-Step "Prepare local package feed" {
     New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
+    Clear-StorefrontLocalPackageCache
 }
 
 Invoke-Step "Pack Storefront.Client" {
@@ -170,7 +188,7 @@ Invoke-Step "Write StorefrontBuilder artifacts" {
 }
 
 Invoke-Step "Restore generated proof" {
-    dotnet restore $projectFile --source $packageRoot --source "https://api.nuget.org/v3/index.json"
+    dotnet restore $projectFile --no-cache --force-evaluate
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 

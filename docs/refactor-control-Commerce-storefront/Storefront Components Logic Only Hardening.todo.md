@@ -735,7 +735,7 @@ Goal: prove the logic-only hardening did not break active Storefront V2 behavior
 
 ### Static And Build Verification
 
-- [ ] Build shared packages:
+- [x] Build shared packages:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
@@ -744,13 +744,13 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Store
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore
 ```
 
-- [ ] Run focused tests:
+- [x] Run focused tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"
 ```
 
-- [ ] Run source scans:
+- [x] Run source scans:
 
 ```powershell
 rg -n "BlazorShop.Storefront.Components.Features" BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless BlazorShop.PresentationV2/BlazorShop.Storefront.Starter tools/BlazorShop.AI.StorefrontBuilder
@@ -759,32 +759,32 @@ rg -n "StorefrontV2Default|/api/product-selection-preview|/account/profile|/acco
 
 ### Browser Verification If Active V2 Components Changed
 
-- [ ] Start V2 local runtime:
+- [x] Start V2 local runtime:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Run targeted Playwright Storefront V2 cases:
-  - [ ] product card renders and add-to-cart path still works.
-  - [ ] product gallery switches images.
-  - [ ] product purchase panel selection preview still works.
-  - [ ] cart WASM component loads/updates/removes/clears through same-origin BFF.
-  - [ ] checkout WASM component can progress through review/place-order COD if touched.
-  - [ ] account WASM profile/address/order/password flows still work if touched.
-  - [ ] browser network calls same-origin BFF only.
-  - [ ] no direct Commerce Node browser call.
-  - [ ] structured BFF errors render usable validation/auth/conflict states.
+- [x] Run targeted Playwright Storefront V2 cases:
+  - [x] product card renders and add-to-cart path still works.
+  - [x] product gallery switches images.
+  - [x] product purchase panel selection preview still works.
+  - [x] cart WASM component loads/updates/removes/clears through same-origin BFF.
+  - [x] checkout WASM component can progress through review/place-order COD if touched.
+  - [x] account WASM profile/address/order/password flows still work if touched.
+  - [x] browser network calls same-origin BFF only.
+  - [x] no direct Commerce Node browser call.
+  - [x] structured BFF errors render usable validation/auth/conflict states.
 
 ### StorefrontBuilder Verification
 
-- [ ] Run generated storefront static proof if StorefrontBuilder docs or generator rules changed:
+- [x] Run generated storefront static proof if StorefrontBuilder docs or generator rules changed:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1
 ```
 
-- [ ] If available and relevant, run generated proof:
+- [x] If available and relevant, run generated proof:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-generated-proof.ps1
@@ -792,12 +792,33 @@ rg -n "StorefrontV2Default|/api/product-selection-preview|/account/profile|/acco
 
 ### Done When
 
-- [ ] Components package builds.
-- [ ] V2 and WASM build.
-- [ ] Starter builds.
-- [ ] Focused tests pass.
-- [ ] Browser QA passes for changed flows.
-- [ ] Generated storefront guidance remains package-first and does not depend on shared visual wrappers.
+- [x] Components package builds.
+- [x] V2 and WASM build.
+- [x] Starter builds.
+- [x] Focused tests pass.
+- [x] Browser QA passes for changed flows.
+- [x] Generated storefront guidance remains package-first and does not depend on shared visual wrappers.
+
+### CLH9 Notes - 2026-07-26
+
+- Build verification passed after rerunning sequentially to avoid parallel output locks:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` -> passed, `0` warnings.
+- Focused release tests passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"` -> passed `77/77`; only existing MessagePack/Browserslist warnings appeared.
+- Source scans found no matches for forbidden `Headless`/Starter/StorefrontBuilder `BlazorShop.Storefront.Components.Features` imports and no remaining shared Components hardcoded `StorefrontV2Default`, `/api/product-selection-preview`, `/account/profile`, `/account/orders`, `Selection ready`, `Image unavailable`, or `Storefront request failed` strings.
+- StorefrontBuilder verification passed:
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` -> generated, restored, built, statically validated, and isolation-checked `BlazorShop.Storefront.GeneratedProof`.
+  - `.\scripts\qa\run-storefront-builder-isolation-gate.ps1` -> passed independently.
+  - Fixed generated proof/isolation scripts and generated sample `nuget.config` rewriting so `1.0.0-local` proof restores use the just-packed local packages instead of stale global NuGet cache entries.
+- Browser verification passed after `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`:
+  - `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless` -> passed checkout COD, cart/account order list/detail/receipt, queued order email, retry behavior, and network guardrails.
+  - `.\scripts\qa\run-storefront-registration-policy-e2e.ps1 -Headless` -> passed registration policy browser flow.
+  - Inline Playwright product probe verified `/product/qa-simple-product-100` selection preview through `/api/product-selection-preview`, add-to-cart through `/api/cart/lines`, cart display through `/my-cart`, and `0` direct Commerce Node browser calls.
+  - Inline Playwright gallery probe verified `/product/qa-seo-media-product` switches from the first image to the second thumbnail image.
+  - Inline browser fetch probe verified structured local BFF validation/auth errors include `code`, `traceId`, `fieldErrors`, `retryable`, and `statusCode`.
+  - Local runtime was stopped with `.\scripts\stop-v2-local.ps1`.
 
 ## Suggested Implementation Order
 

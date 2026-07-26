@@ -46,14 +46,48 @@ if (-not (Test-Path $projectFile)) {
     throw "[SFB-ISOLATION-000] Generated storefront project is missing: $projectFile"
 }
 
+function Clear-StorefrontLocalPackageCache {
+    $globalPackageRoot = Join-Path ([Environment]::GetFolderPath("UserProfile")) ".nuget\packages"
+    $packages = @(
+        @{ Id = "blazorshop.storefront.client"; Version = $StorefrontClientPackageVersion },
+        @{ Id = "blazorshop.storefront.runtime"; Version = $StorefrontRuntimePackageVersion },
+        @{ Id = "blazorshop.storefront.components"; Version = $StorefrontComponentsPackageVersion }
+    )
+
+    foreach ($package in $packages) {
+        $versionPath = Join-Path $globalPackageRoot "$($package.Id)\$($package.Version)"
+        if (Test-Path $versionPath) {
+            Remove-Item -LiteralPath $versionPath -Recurse -Force
+        }
+    }
+}
+
+function Write-GeneratedNuGetConfig {
+    $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
+    $relativePackageFeed = [System.IO.Path]::GetRelativePath($projectRoot, $packageFeed).Replace('\', '/')
+    $nugetConfig = @(
+        '<?xml version="1.0" encoding="utf-8"?>',
+        '<configuration>',
+        '  <packageSources>',
+        '    <clear />',
+        "    <add key=`"local-storefront-packages`" value=`"$relativePackageFeed`" />",
+        '    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />',
+        '  </packageSources>',
+        '</configuration>'
+    ) -join [Environment]::NewLine
+    Set-Content -LiteralPath (Join-Path $projectRoot "nuget.config") -Value $nugetConfig -Encoding UTF8
+}
+
 New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
+Clear-StorefrontLocalPackageCache
 dotnet pack $clientProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontClientPackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet pack $runtimeProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontRuntimePackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet pack $componentsProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontComponentsPackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-dotnet restore $projectFile --source $packageRoot --source "https://api.nuget.org/v3/index.json"
+Write-GeneratedNuGetConfig
+dotnet restore $projectFile --no-cache --force-evaluate
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet build $projectFile --configuration $Configuration --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

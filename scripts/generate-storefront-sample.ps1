@@ -85,6 +85,23 @@ function Rewrite-GeneratedSource {
         Set-Content -LiteralPath $file.FullName -Value $content -Encoding UTF8
     }
 
+    $nugetConfigPath = Join-Path $projectRoot "nuget.config"
+    if (Test-Path $nugetConfigPath) {
+        $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
+        $relativePackageFeed = [System.IO.Path]::GetRelativePath($projectRoot, $packageFeed).Replace('\', '/')
+        $nugetConfig = @(
+            '<?xml version="1.0" encoding="utf-8"?>',
+            '<configuration>',
+            '  <packageSources>',
+            '    <clear />',
+            "    <add key=`"local-storefront-packages`" value=`"$relativePackageFeed`" />",
+            '    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />',
+            '  </packageSources>',
+            '</configuration>'
+        ) -join [Environment]::NewLine
+        Set-Content -LiteralPath $nugetConfigPath -Value $nugetConfig -Encoding UTF8
+    }
+
     $readmeContent = @(
         "# $Name",
         "",
