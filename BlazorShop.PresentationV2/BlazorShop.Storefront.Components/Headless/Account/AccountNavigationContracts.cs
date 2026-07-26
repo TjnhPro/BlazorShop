@@ -5,6 +5,7 @@ public sealed record AccountNavigationItem(
     string Label,
     string Href);
 
+// Compatibility visual schema for shared AccountNavigation only. Host storefronts should own visual class options.
 public sealed record AccountNavigationClasses
 {
     public static AccountNavigationClasses Empty { get; } = new();

@@ -184,6 +184,31 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void HeadlessClassBags_AreCompatibilityOnlyVisualSchemas()
+        {
+            var headlessSource = ReadComponentLayerSource("Headless");
+
+            foreach (var classBag in new[]
+            {
+                "StorefrontCartViewClasses",
+                "StorefrontCheckoutViewClasses",
+                "AccountNavigationClasses",
+                "StorefrontAccountFormClasses",
+                "StorefrontAccountAddressBookClasses",
+                "StorefrontAccountOrderListClasses",
+                "StorefrontAccountOrderDetailClasses",
+                "StorefrontAccountShellClasses"
+            })
+            {
+                var declarationIndex = headlessSource.IndexOf($"public sealed record {classBag}", StringComparison.Ordinal);
+                Assert.True(declarationIndex >= 0, $"{classBag} must remain discoverable while the compatibility wrapper exists.");
+
+                var markerIndex = headlessSource.LastIndexOf("Compatibility visual schema", declarationIndex, StringComparison.Ordinal);
+                Assert.True(markerIndex >= 0 && declarationIndex - markerIndex < 240, $"{classBag} must be marked as a compatibility-only visual schema.");
+            }
+        }
+
+        [Fact]
         public void SharedProductSummaryCard_RemainsSemanticAfterHpr2Migration()
         {
             var sharedCard = ReadRepositoryFile(

@@ -34,6 +34,7 @@ public sealed record StorefrontCheckoutViewState(
     }
 }
 
+// Compatibility visual schema for shared CheckoutShell only. Host storefronts should own visual class options.
 public sealed record StorefrontCheckoutViewClasses
 {
     public static StorefrontCheckoutViewClasses Empty { get; } = new();

@@ -81,6 +81,7 @@ public sealed record StorefrontAccountOrderActionDescriptor(
     }
 }
 
+// Compatibility visual schema for shared account form wrappers only. Host storefronts should own visual class options.
 public sealed record StorefrontAccountFormClasses
 {
     public static StorefrontAccountFormClasses Empty { get; } = new();
@@ -112,6 +113,7 @@ public sealed record StorefrontAccountFormClasses
     public string SubmitButton { get; init; } = string.Empty;
 }
 
+// Compatibility visual schema for shared account address wrappers only. Host storefronts should own visual class options.
 public sealed record StorefrontAccountAddressBookClasses
 {
     public static StorefrontAccountAddressBookClasses Empty { get; } = new();
@@ -173,6 +175,7 @@ public sealed record StorefrontAccountAddressBookClasses
     public string FullInput { get; init; } = string.Empty;
 }
 
+// Compatibility visual schema for shared account order-list wrapper only. Host storefronts should own visual class options.
 public sealed record StorefrontAccountOrderListClasses
 {
     public static StorefrontAccountOrderListClasses Empty { get; } = new();
@@ -202,6 +205,7 @@ public sealed record StorefrontAccountOrderListClasses
     public string StrongCell { get; init; } = string.Empty;
 }
 
+// Compatibility visual schema for shared account order-detail wrapper only. Host storefronts should own visual class options.
 public sealed record StorefrontAccountOrderDetailClasses
 {
     public static StorefrontAccountOrderDetailClasses Empty { get; } = new();
@@ -251,6 +255,7 @@ public sealed record StorefrontAccountOrderDetailClasses
     public string GrandTotalRow { get; init; } = string.Empty;
 }
 
+// Compatibility visual schema for shared AccountApp shell only. Host storefronts should own visual class options.
 public sealed record StorefrontAccountShellClasses
 {
     public static StorefrontAccountShellClasses Empty { get; } = new();

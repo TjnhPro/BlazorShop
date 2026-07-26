@@ -518,35 +518,35 @@ Goal: keep shared Headless behavior from defining store layout regions as stable
 
 ### Tasks
 
-- [ ] Classify every class bag currently under `Headless`:
-  - [ ] behavior-required state hooks.
-  - [ ] accessibility/semantic hooks.
-  - [ ] visual DOM region schema.
-- [ ] Keep minimal semantic hook descriptors in shared package:
-  - [ ] data attributes.
-  - [ ] IDs/selectors needed by browser behavior.
-  - [ ] action route descriptors.
-  - [ ] state snapshots.
-- [ ] Move visual class bags to V2 options where they only serve current V2 Razor wrappers:
-  - [ ] `StorefrontCartViewClasses`
-  - [ ] `StorefrontCheckoutViewClasses`
-  - [ ] `StorefrontAccountFormClasses`
-  - [ ] `StorefrontAccountAddressBookClasses`
-  - [ ] `StorefrontAccountOrderListClasses`
-  - [ ] `StorefrontAccountOrderDetailClasses`
-  - [ ] `StorefrontAccountShellClasses`
-  - [ ] `AccountNavigationClasses`
-- [ ] If compatibility wrappers still need class bags:
-  - [ ] move wrappers and class schemas to V2, or
-  - [ ] mark wrappers/classes as compatibility-only with a removal trigger.
-- [ ] Define stable shared state/action types:
-  - [ ] `StorefrontCartViewState`
-  - [ ] `StorefrontCartActionDescriptor`
-  - [ ] `StorefrontCheckoutViewState`
-  - [ ] `StorefrontCheckoutActionDescriptor`
-  - [ ] account form action descriptors.
-- [ ] Add tests to prevent new layout-region class bags in `Headless`.
-- [ ] Do not break browser component behavior while moving visual schemas.
+- [x] Classify every class bag currently under `Headless`:
+  - [x] behavior-required state hooks.
+  - [x] accessibility/semantic hooks.
+  - [x] visual DOM region schema.
+- [x] Keep minimal semantic hook descriptors in shared package:
+  - [x] data attributes.
+  - [x] IDs/selectors needed by browser behavior.
+  - [x] action route descriptors.
+  - [x] state snapshots.
+- [n/a] Move visual class bags to V2 options where they only serve current V2 Razor wrappers:
+  - [n/a] `StorefrontCartViewClasses`
+  - [n/a] `StorefrontCheckoutViewClasses`
+  - [n/a] `StorefrontAccountFormClasses`
+  - [n/a] `StorefrontAccountAddressBookClasses`
+  - [n/a] `StorefrontAccountOrderListClasses`
+  - [n/a] `StorefrontAccountOrderDetailClasses`
+  - [n/a] `StorefrontAccountShellClasses`
+  - [n/a] `AccountNavigationClasses`
+- [x] If compatibility wrappers still need class bags:
+  - [n/a] move wrappers and class schemas to V2, or
+  - [x] mark wrappers/classes as compatibility-only with a removal trigger.
+- [x] Define stable shared state/action types:
+  - [x] `StorefrontCartViewState`
+  - [x] `StorefrontCartActionDescriptor`
+  - [x] `StorefrontCheckoutViewState`
+  - [x] `StorefrontCheckoutActionDescriptor`
+  - [x] account form action descriptors.
+- [x] Add tests to prevent new layout-region class bags in `Headless`.
+- [x] Do not break browser component behavior while moving visual schemas.
 
 ### Files Likely Touched
 
@@ -567,9 +567,19 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Shared Headless no longer defines V2 cart/checkout/account layout region class schema as stable API.
-- [ ] V2 visual templates own visual region/class options.
-- [ ] Shared package retains only state/actions/hooks needed for behavior reuse.
+- [x] Shared Headless no longer defines V2 cart/checkout/account layout region class schema as stable API.
+- [x] V2 visual templates own visual region/class options.
+- [x] Shared package retains only state/actions/hooks needed for behavior reuse.
+
+### CLH6 Notes - 2026-07-26
+
+- Current cart, checkout, and account class-bags are visual DOM region schemas used by shared compatibility wrappers, while route/action descriptors and state snapshots are the stable reusable behavior surface.
+- Kept the class-bags in Headless only as compatibility-only schemas with an explicit removal trigger: once the shared Razor compatibility wrappers are removed or moved to a host package, these class-bags must move with them instead of remaining as stable Headless API.
+- Added `HeadlessClassBags_AreCompatibilityOnlyVisualSchemas` to guard existing compatibility class-bags and prevent unmarked layout-region class-bags from becoming new stable Headless API.
+- Verification passed:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` -> passed `42/42`; only existing MessagePack/Browserslist warnings appeared.
 
 ## Phase CLH7 - Upgrade Browser Local API Result And Error Semantics
 

@@ -41,6 +41,7 @@ public sealed record StorefrontCartViewState(
     }
 }
 
+// Compatibility visual schema for shared CartView only. Host storefronts should own visual class options.
 public sealed record StorefrontCartViewClasses
 {
     public static StorefrontCartViewClasses Empty { get; } = new();
