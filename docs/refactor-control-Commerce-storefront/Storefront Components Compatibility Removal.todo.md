@@ -428,26 +428,27 @@ Exit criteria:
 
 Muc tieu: docs hien tai khong con noi `Features` la active migration surface sau khi phase xong.
 
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md`:
+- [x] Update `docs/architecture/05-project-and-folder-guide.md`:
   - `Storefront.Components` chi gom `Contracts`, `Headless`, `Browser`;
   - visual templates thuoc V2/Starter/generated/custom storefront.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md`:
+- [x] Update `docs/architecture/10-v2-contract-ownership.md`:
   - remove "Features may keep temporary compatibility wrappers";
   - add guardrail final state.
-- [ ] Update ADRs lien quan:
+- [x] Update ADRs lien quan:
   - `2026-07-24-storefront-starter-foundation.md`
   - `2026-07-24-headless-storefront-platform-foundation.md`
-- [ ] Update `docs/agents/storefront-builder.md` va `docs/visual-reverse-engineering-skill/reference.md`.
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
+- [x] Update `docs/agents/storefront-builder.md` va `docs/visual-reverse-engineering-skill/reference.md`.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
   - replace old entries noi V2 compose `Features`;
   - add final QA rows for V2-owned cart/checkout/account/product/deals markup;
   - add Playwright release rows cho browser flows.
-- [ ] Khong sua lich su plan da completed neu chi la record cu; neu can, them "retired by Storefront Components Compatibility Removal" note thay vi rewrite qua khu.
+- [x] Khong sua lich su plan da completed neu chi la record cu; neu can, them "retired by Storefront Components Compatibility Removal" note thay vi rewrite qua khu.
 
 Exit criteria:
 
-- [ ] Current architecture docs va QA checklist khong con conflict voi final boundary.
-- [ ] Historical docs neu nhac `Features` thi ro la old migration state.
+- [x] Current architecture docs va QA checklist khong con conflict voi final boundary.
+- [x] Historical docs neu nhac `Features` thi ro la old migration state.
+  - 2026-07-26: focused docs/static guardrails `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontSharedPlatformPackageContractTests|StorefrontPageCompositionGuardrailTests` pass 92/92.
 
 ## Phase SCR11 - Focused Build and Unit/Architecture Verification
 

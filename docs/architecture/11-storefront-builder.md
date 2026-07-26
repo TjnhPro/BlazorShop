@@ -69,7 +69,7 @@ Generated/custom storefront consumer rules:
 - Use project names in the `BlazorShop.Storefront.{Name}` pattern after safe normalization.
 - `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, pages, visual analysis artifacts, and AI-tuned components inside the generated/custom storefront project.
 - Generated/custom storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior and Browser primitives, but they must not use Storefront V2 visual markup as their presentation source.
-- Generated/custom storefronts must not copy Components `Features` wrappers as their presentation source; those wrappers are CSS-neutral compatibility wrappers only.
+- Generated/custom storefronts must not copy retired Components `Features` wrappers as their presentation source; no active shared wrapper source exists in `BlazorShop.Storefront.Components`.
 - StorefrontBuilder may replace product card, grid, gallery, purchase, cart, checkout, and account visual templates in the generated/custom project without changing shared behavior contracts.
 - Route protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
 - Browser and WASM code must not reference `BlazorShop.Storefront.Runtime`; it consumes same-origin generated endpoints and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior.

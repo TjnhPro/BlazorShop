@@ -189,17 +189,16 @@ Use for:
 - Headless Storefront presentation contracts under `Contracts/{Capability}`.
 - Browser-safe behavior/state primitives under `Headless/{Capability}`.
 - Same-origin browser/BFF support primitives under `Browser`.
-- CSS-neutral compatibility feature wrappers under `Features/*` while V2 visual markup is migrated into host-owned templates. They are not stable presentation contracts for Starter, StorefrontBuilder, or generated/custom storefronts.
 - Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
 
 Do not:
 
 - Put Commerce Node clients, Control Plane clients, credentials, EF logic, or product business services here.
-- Reference `Web.SharedV2`, Storefront route helpers, Storefront API clients, Application, Domain, Infrastructure, Control Plane, or Commerce Node runtime projects from `Features/*`.
+- Reference `Web.SharedV2`, Storefront route helpers, Storefront API clients, Application, Domain, Infrastructure, Control Plane, or Commerce Node runtime projects.
 - Add public API DTOs, admin request models, store ownership fields, credentials, or server-owned fields to component-facing models.
 - Use this as a general design system for Control Plane.
-- Add new V2 layout/theme implementations to `Features/*`; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
-- Treat `Features/*` as required visual source for Starter or generated storefronts; use `Contracts`, `Headless`, and `Browser` instead when shared behavior is needed.
+- Add Razor components, static web assets, V2 layout/theme implementations, visual class bags, final copy, or generated visual output.
+- Reintroduce `Features/*` compatibility wrappers without a new architecture decision; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
 
