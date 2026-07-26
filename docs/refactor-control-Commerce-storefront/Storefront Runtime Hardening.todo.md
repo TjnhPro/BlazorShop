@@ -17,7 +17,7 @@ The intended result:
 - Runtime returns stable error primitives for storefront hosts to localize/render.
 - Catalog/content/navigation/SEO runtime operations are split by capability.
 - Storefront V2, Starter, and future `Storefront.{Name}` consumers can opt into only the runtime capabilities they need.
-- `Storefront.WASM` remains browser-only and cannot reference `Storefront.Runtime`.
+- `Storefront.V2.WASM` remains browser-only and cannot reference `Storefront.Runtime`.
 
 ## Current Verified Context
 
@@ -25,7 +25,7 @@ The intended result:
 - [x] Runtime must not own Storefront V2 layout/design, CSS/assets, store-specific composition, backend business rules, provider secrets, or backend/core/API project references.
 - [x] `docs/architecture/10-v2-contract-ownership.md` defines generated Storefront clients as frontend-readable contracts generated from Commerce Node Storefront OpenAPI.
 - [x] `BlazorShop.Storefront.Runtime.csproj` references only `BlazorShop.Storefront.Client` plus Microsoft extension packages.
-- [x] `BlazorShop.Storefront.WASM.csproj` currently references `BlazorShop.Storefront.Components`, not `BlazorShop.Storefront.Runtime`.
+- [x] `BlazorShop.Storefront.V2.WASM.csproj` currently references `BlazorShop.Storefront.Components`, not `BlazorShop.Storefront.Runtime`.
 - [x] `StorefrontRuntimeServiceCollectionExtensions.cs` registers a named generated-client `HttpClient` and sets `HttpClient.BaseAddress` from `StorefrontRuntimeOptions.CommerceNodeBaseUrl`.
 - [x] `StorefrontRuntimeServiceCollectionExtensions.cs` registers all generated clients and all runtime facades in `AddStorefrontServerGeneratedClients`.
 - [x] `StorefrontRuntimeServiceCollectionExtensions.cs` creates generated clients through `Activator.CreateInstance(typeof(TClient), string.Empty, httpClient)`.
@@ -40,7 +40,7 @@ The intended result:
 - [x] `Storefront.Starter` uses `AddStorefrontRuntime` plus `AddStorefrontGeneratedClients`.
 - [x] `StorefrontSharedPlatformPackageContractTests` already checks Runtime/Core separation and that Runtime references only Client.
 - [x] `StorefrontRuntimeResultPrimitiveTests` already covers runtime error mapper basics, store key execution, submit execution, and Runtime package boundary.
-- [x] `StorefrontWasmRuntimeFoundationTests` already verifies WASM same-origin client behavior and absence of Commerce Node config in WASM startup, but it does not yet block a future WASM project reference to Runtime.
+- [x] `StorefrontV2WASMRuntimeFoundationTests` already verifies WASM same-origin client behavior and absence of Commerce Node config in WASM startup, but it does not yet block a future WASM project reference to Runtime.
 - [x] Existing dirty working tree contains OpenAPI/generated-client hardening changes in:
   - [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontGeneratedClientFoundationTests.cs`
   - [x] `docs/refactor-control-Commerce-storefront/Storefront OpenAPI Generated Client Hardening.todo.md`
@@ -74,7 +74,7 @@ Storefront.V2 / Starter / Storefront.{Name}
       -> Storefront.Client generated clients
           -> Commerce Node Storefront API over HTTP
 
-Storefront.WASM
+Storefront.V2.WASM
   -> Storefront.Components
   -> same-origin BFF endpoints only
   -/-> Storefront.Runtime
@@ -157,7 +157,7 @@ Goal: freeze current Runtime behavior and avoid mixing this refactor with existi
   - [x] `AddStorefrontServerGeneratedClients`
   - [x] `AddStorefrontGeneratedClients`
 - [x] Record current generated client constructor signatures before removing `Activator`.
-- [x] Confirm `Storefront.WASM.csproj` has no Runtime or Client reference before adding guardrails.
+- [x] Confirm `Storefront.V2.WASM.csproj` has no Runtime or Client reference before adding guardrails.
 
 ### Baseline Notes
 
@@ -171,15 +171,15 @@ Goal: freeze current Runtime behavior and avoid mixing this refactor with existi
   - `Storefront.V2` calls `AddStorefrontRuntime` and `AddStorefrontServerGeneratedClients`.
   - `Storefront.Starter` calls `AddStorefrontRuntime` and `AddStorefrontGeneratedClients`.
 - Generated client constructors currently use explicit `HttpClient` constructors, for example `StorefrontCartClient(HttpClient httpClient)`.
-- `Storefront.WASM.csproj` has no `Storefront.Runtime` or `Storefront.Client` project reference.
-- Focused baseline test passed: `StorefrontRuntimeResultPrimitiveTests`, `StorefrontSharedPlatformPackageContractTests`, and `StorefrontWasmRuntimeFoundationTests`.
+- `Storefront.V2.WASM.csproj` has no `Storefront.Runtime` or `Storefront.Client` project reference.
+- Focused baseline test passed: `StorefrontRuntimeResultPrimitiveTests`, `StorefrontSharedPlatformPackageContractTests`, and `StorefrontV2WASMRuntimeFoundationTests`.
 
 ### Files Likely Read
 
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/*`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj`
 - `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
 
 ### Verification
@@ -188,7 +188,7 @@ Goal: freeze current Runtime behavior and avoid mixing this refactor with existi
 git status --short
 rg -n "Activator\.CreateInstance|GetProperty\(\"" BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime BlazorShop.Tests.V2
 rg -n "TaskCanceledException|OperationCanceledException" BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime BlazorShop.Tests.V2
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"
 ```
 
 ### Done When
@@ -217,8 +217,8 @@ Status: completed in commit pending.
   - [x] `AddStorefrontServerGeneratedClients` can resolve each registered generated client interface.
   - [x] `AddStorefrontServerGeneratedClients` can resolve each current runtime facade.
 - [x] Add a WASM project boundary test:
-  - [x] `Storefront.WASM.csproj` does not reference `Storefront.Runtime`.
-  - [x] `Storefront.WASM.csproj` does not reference `Storefront.Client`.
+  - [x] `Storefront.V2.WASM.csproj` does not reference `Storefront.Runtime`.
+  - [x] `Storefront.V2.WASM.csproj` does not reference `Storefront.Client`.
   - [x] WASM source does not contain `CommerceNodeBaseUrl`.
   - [x] WASM source does not contain `StorefrontRuntimeOptions`.
   - [x] WASM source does not import `BlazorShop.Storefront.Runtime`.
@@ -236,13 +236,13 @@ Status: completed in commit pending.
 
 - `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontSharedPlatformPackageContractTests.cs`
 - `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontRuntimeResultPrimitiveTests.cs`
-- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontWasmRuntimeFoundationTests.cs`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontV2WASMRuntimeFoundationTests.cs`
 - New focused test file if existing files become too large.
 
 ### QA Gate
 
 ```powershell
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"
 ```
 
 ### Done When
@@ -713,7 +713,7 @@ Goal: make active consumers use the new Runtime shape without breaking existing 
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"
 ```
 
 ### Done When
@@ -730,7 +730,7 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj --no-restore`
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore`
-  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` passed `31/31`.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"` passed `31/31`.
   - Starter package-boundary verification required repacking `BlazorShop.Storefront.Runtime` `1.0.0-local` into the ignored local feed and force-restoring Starter into an isolated repo-local NuGet package cache because the global NuGet cache still contained the older local package binary.
 
 ## Phase SRH9 - Full QA And Release Gate
@@ -742,7 +742,7 @@ Goal: prove hardening did not break Storefront V2 runtime flows or package consu
 - [x] Run Runtime focused tests:
 
 ```powershell
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"
 ```
 
 - [x] Run generated client tests:
@@ -763,7 +763,7 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore
 ```
@@ -797,19 +797,19 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.
 - [x] Runtime error primitives expose retry/localization-ready state.
 - [x] Runtime facade interfaces are capability-scoped.
 - [x] Runtime registration is capability-scoped with compatibility wrapper.
-- [x] Storefront.WASM cannot reference Runtime or Commerce Node generated clients.
+- [x] Storefront.V2.WASM cannot reference Runtime or Commerce Node generated clients.
 - [x] Storefront V2 and Starter build.
 - [x] Focused Storefront tests pass.
 - [n/a] Browser QA passes if V2 runtime behavior was exercised.
 
 ### SRH9 Notes - 2026-07-26
 
-- Builds passed for `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.WASM`, `BlazorShop.Storefront.V2`, and `BlazorShop.Storefront.Starter`.
+- Builds passed for `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.V2.WASM`, `BlazorShop.Storefront.V2`, and `BlazorShop.Storefront.Starter`.
 - Runtime focused tests passed `51/51`.
 - Generated client tests passed `16/16`.
 - Architecture/Storefront boundary gate passed `781/783` with `2` existing skipped cart service tests.
 - Fixed the Starter package-boundary test to restore into an isolated repo-local NuGet package cache, preventing stale global `1.0.0-local` Runtime packages from hiding current package output.
-- Browser QA was not rerun in SRH9 because this phase did not change browser-visible route, endpoint, cart, checkout, account, or media behavior. Browser/WASM boundary remains covered by `StorefrontWasmRuntimeFoundationTests` and the broader Architecture/Storefront gate.
+- Browser QA was not rerun in SRH9 because this phase did not change browser-visible route, endpoint, cart, checkout, account, or media behavior. Browser/WASM boundary remains covered by `StorefrontV2WASMRuntimeFoundationTests` and the broader Architecture/Storefront gate.
 - Static Runtime source scan found no `Activator.CreateInstance`, envelope `GetProperty`, JSON serialize/deserialize projection, old cancellation catch filter, or `dynamic` usage.
 
 ## Suggested Implementation Order
@@ -831,10 +831,10 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontGeneratedCatalogContentClientTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontGeneratedCatalogContentClientTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests"
 ```
 
 If Runtime changes are released with generated-client OpenAPI changes, also run:

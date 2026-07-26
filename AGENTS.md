@@ -45,7 +45,7 @@ Active V2 presentation/runtime:
 - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM`
 - `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`

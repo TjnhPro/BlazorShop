@@ -133,7 +133,7 @@ Project:
 
 - `BlazorShop.Storefront.V2`
 - `BlazorShop.Storefront.Components`
-- `BlazorShop.Storefront.WASM`
+- `BlazorShop.Storefront.V2.WASM`
 
 Capabilities:
 

@@ -97,7 +97,7 @@ rg -n "StorefrontCartViewClasses|StorefrontCheckoutViewClasses|AccountNavigation
 
 - [x] Confirm `Storefront.V2` va `Storefront.Starter` dang dung `AddStorefrontPlatformRuntime`, khong con dung compatibility wrappers trong host code.
 - [x] Confirm tests nao dang doc path `Components/Features/*` de thay bang guardrail moi, khong chi sua cho compile.
-  - 2026-07-26: tests doc path cu gom `StorefrontComponentsHeadlessPresentationRefactorTests`, `StorefrontWasmRuntimeFoundationTests`, `StorefrontCommerceFlowCutoverTests`, `StorefrontBrandingMarkupTests`, `StorefrontPageCompositionGuardrailTests`, `StorefrontStarterFoundationBoundaryTests`.
+  - 2026-07-26: tests doc path cu gom `StorefrontComponentsHeadlessPresentationRefactorTests`, `StorefrontV2WASMRuntimeFoundationTests`, `StorefrontCommerceFlowCutoverTests`, `StorefrontBrandingMarkupTests`, `StorefrontPageCompositionGuardrailTests`, `StorefrontStarterFoundationBoundaryTests`.
 - [x] Tao branch/commit checkpoint neu dang co thay doi lon tu phase truoc.
 
 Exit criteria:
@@ -110,7 +110,7 @@ Exit criteria:
 Muc tieu: `CartView` khong con nam trong shared `Components/Features`, nhung cart browser behavior hien tai khong doi.
 
 - [x] Tao V2-owned interactive component:
-  - 2026-07-26 final path: `BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor`
+  - 2026-07-26 final path: `BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor`
   - Historical SCR1 staging path was `BlazorShop.Storefront.V2/Components/Cart/StorefrontCartView.razor`; SCR12 moved it to WASM for browser hydration.
 - [x] Chuyen visual markup tu shared `Features/Cart/CartView.razor` sang V2 component.
 - [x] Doi namespace/import sang V2 component namespace.
@@ -133,15 +133,15 @@ Exit criteria:
 - [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Cart`.
 - [x] Cart flow tests/guardrails van cover quantity update, remove item, clear cart, checkout action, error state.
   - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
-  - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
-  - 2026-07-26 SCR12 final state: interactive cart root moved from server V2 assembly to `BlazorShop.Storefront.WASM/Components/Cart` so WebAssembly hydration can find the root component; V2 still owns route/BFF/static asset composition.
+  - 2026-07-26: focused `StorefrontV2WASMRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
+  - 2026-07-26 SCR12 final state: interactive cart root moved from server V2 assembly to `BlazorShop.Storefront.V2.WASM/Components/Cart` so WebAssembly hydration can find the root component; V2 still owns route/BFF/static asset composition.
 
 ## Phase SCR2 - Move Checkout Visual Wrapper Ownership to V2
 
 Muc tieu: `CheckoutShell` thuoc V2, shared package chi con state/action/label contracts.
 
 - [x] Tao V2-owned interactive component:
-  - 2026-07-26 final path: `BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor`
+  - 2026-07-26 final path: `BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor`
   - Historical SCR2 staging path was `BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutShell.razor`; SCR12 moved it to WASM for browser hydration.
 - [x] Chuyen markup tu `Features/Checkout/CheckoutShell.razor` sang V2.
 - [x] Chuyen checkout visual option/class records tu Headless sang V2-local options.
@@ -171,15 +171,15 @@ Exit criteria:
 - [x] Shared Components khong con checkout Razor visual wrapper.
   - 2026-07-26: shared wrapper con ton tai tam thoi den SCR6, nhung khong con duoc V2 source/test positive path consume.
   - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
-  - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
-  - 2026-07-26 SCR12 final state: interactive checkout root moved from server V2 assembly to `BlazorShop.Storefront.WASM/Components/Checkout`; V2 host continues to own checkout route, BFF endpoints, antiforgery, and static script ownership.
+  - 2026-07-26: focused `StorefrontV2WASMRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
+  - 2026-07-26 SCR12 final state: interactive checkout root moved from server V2 assembly to `BlazorShop.Storefront.V2.WASM/Components/Checkout`; V2 host continues to own checkout route, BFF endpoints, antiforgery, and static script ownership.
 
 ## Phase SCR3 - Move Account Visual Wrapper Ownership to V2
 
 Muc tieu: account khong con la shared visual app. V2 so huu page composition, routes va copy.
 
 - [x] Tao V2-owned interactive folder:
-  - 2026-07-26 final path: `BlazorShop.Storefront.WASM/Components/Account/`
+  - 2026-07-26 final path: `BlazorShop.Storefront.V2.WASM/Components/Account/`
   - Historical SCR3 staging path was `BlazorShop.Storefront.V2/Components/Account/`; SCR12 moved it to WASM for browser hydration.
 - [x] Chuyen cac visual components sau vao V2:
   - `StorefrontAccountApp.razor`
@@ -215,8 +215,8 @@ Exit criteria:
 - [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Account`.
 - [x] Shared Components khong con account Razor visual wrappers.
   - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
-  - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests|StorefrontBrandingMarkupTests` pass 68/68.
-  - 2026-07-26 SCR12 final state: interactive account root moved from server V2 assembly to `BlazorShop.Storefront.WASM/Components/Account`; this fixes browser hydration while preserving V2 account route/security/BFF ownership.
+  - 2026-07-26: focused `StorefrontV2WASMRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests|StorefrontBrandingMarkupTests` pass 68/68.
+  - 2026-07-26 SCR12 final state: interactive account root moved from server V2 assembly to `BlazorShop.Storefront.V2.WASM/Components/Account`; this fixes browser hydration while preserving V2 account route/security/BFF ownership.
 
 ## Phase SCR4 - Delete Orphan Catalog, Product, and Deals Visual Wrappers
 
@@ -282,7 +282,7 @@ Exit criteria:
 - [x] `rg -n "Classes|CssClass|class=\"" BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless` khong tra ve visual class bag moi.
 - [x] V2 van co class options local va build pass.
   - 2026-07-26: Components build pass; Storefront V2 build pass.
-  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontWasmRuntimeFoundationTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontV2WASMRuntimeFoundationTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
 
 ## Phase SCR6 - Delete Features Folder and Remove Feature Imports
 
@@ -364,8 +364,8 @@ Exit criteria:
 - [x] Components project build pass voi `Microsoft.NET.Sdk`.
 - [x] Browser/WASM flows van lay anti-forgery token dung.
 - [x] Khong con hidden dependency vao Razor static web assets cua Components.
-  - 2026-07-26: Components, Storefront WASM, va Storefront V2 build pass.
-  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontWasmRuntimeFoundationTests|StorefrontSharedPlatformPackageContractTests|StorefrontPageCompositionGuardrailTests` pass 111/111.
+  - 2026-07-26: Components, Storefront V2 WASM, va Storefront V2 build pass.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontV2WASMRuntimeFoundationTests|StorefrontSharedPlatformPackageContractTests|StorefrontPageCompositionGuardrailTests` pass 111/111.
 
 ## Phase SCR8 - Runtime Compatibility API Cleanup
 
@@ -403,7 +403,7 @@ Muc tieu: tests khong con verify temporary implementation, ma verify final archi
 
 - [x] Refactor cac test dang read file `Components/Features/*`:
   - `StorefrontComponentsHeadlessPresentationRefactorTests`
-  - `StorefrontWasmRuntimeFoundationTests`
+  - `StorefrontV2WASMRuntimeFoundationTests`
   - `StorefrontCommerceFlowCutoverTests`
   - `StorefrontBrandingMarkupTests`
   - `StorefrontPageCompositionGuardrailTests`
@@ -428,7 +428,7 @@ Exit criteria:
 
 - [x] Tests mo ta dung final architecture, khong con compatibility expectation cu.
 - [x] Test fail neu ai do them lai shared visual Razor wrapper vao `Storefront.Components`.
-  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontSharedPlatformPackageContractTests|StorefrontPageCompositionGuardrailTests|StorefrontIndependenceBoundaryTests|StorefrontBrandingMarkupTests|StorefrontWasmRuntimeFoundationTests` pass 144/144.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontSharedPlatformPackageContractTests|StorefrontPageCompositionGuardrailTests|StorefrontIndependenceBoundaryTests|StorefrontBrandingMarkupTests|StorefrontV2WASMRuntimeFoundationTests` pass 144/144.
 
 ## Phase SCR10 - Documentation and QA Checklist Cleanup
 
@@ -466,10 +466,10 @@ Chay tu hep den rong de bat loi ngay tai boundary vua doi.
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj
 ```
 
-- [x] Build Storefront WASM:
+- [x] Build Storefront V2 WASM:
 
 ```powershell
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj
 ```
 
 - [x] Build Storefront V2:
@@ -487,7 +487,7 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.
 - [x] Run focused architecture/component/runtime tests:
 
 ```powershell
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests"
 ```
 
 - [x] Run StorefrontBuilder isolation gate:
@@ -508,7 +508,7 @@ Exit criteria:
 - [x] Focused tests pass.
 - [x] Package/isolation gates pass hoac co fail ro do fixture/env khong lien quan va duoc ghi lai.
   - 2026-07-26: Components, WASM, Storefront V2, and Starter builds pass. Initial parallel WASM build hit an obj file lock while V2 was building; rerun sequential WASM build passed.
-  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontWasmRuntimeFoundationTests|StorefrontSharedPlatformPackageContractTests|StorefrontStarterFoundationBoundaryTests` pass 89/89.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontV2WASMRuntimeFoundationTests|StorefrontSharedPlatformPackageContractTests|StorefrontStarterFoundationBoundaryTests` pass 89/89.
   - 2026-07-26: `run-storefront-builder-isolation-gate.ps1` pass for `BlazorShop.Storefront.GeneratedProof`.
   - 2026-07-26: `run-storefront-foundation-isolation-gate.ps1` pass.
 

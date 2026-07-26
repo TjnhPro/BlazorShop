@@ -188,7 +188,7 @@ Goal: freeze current Components state before moving contracts or route/copy owne
 ```powershell
 git status --short
 rg -n "using BlazorShop.Storefront.Components.Features|StorefrontV2Default|Selection ready|Image unavailable|/account/|Storefront request failed" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.Tests.V2/PresentationV2/Storefront
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"
 ```
 
 ### Done When
@@ -205,7 +205,7 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 - Current `Headless -> Features` dependencies are `Headless/Product/ProductPurchaseBehavior.cs` and `Headless/Product/ProductGalleryState.cs`.
 - V2 still imports shared feature namespaces through `_Imports.razor`, `StorefrontProductSummaryMapper.cs`, and account/product host pages/components.
 - Shared copy/route blockers include `Selection ready.`, `Image unavailable`, `Storefront request failed.`, `ProductPurchaseActionDescriptor.StorefrontV2Default`, `/api/product-selection-preview`, and `/account/*` constants in `AccountApp`.
-- Baseline verification passed: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontWasmRuntimeFoundationTests` ran `39/39` passing with existing MessagePack/Browserslist warnings.
+- Baseline verification passed: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontV2WASMRuntimeFoundationTests` ran `39/39` passing with existing MessagePack/Browserslist warnings.
 
 ## Phase CLH1 - Move Feature Models Into Contracts
 
@@ -424,7 +424,7 @@ Goal: stop shared Components from owning final user-facing English copy.
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"
 ```
 
 ### Done When
@@ -443,7 +443,7 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 - Verification passed:
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore`
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
-  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` passed `41/41`.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"` passed `41/41`.
   - Product/headless copy scan found no `Selection ready`, `Image unavailable for`, hardcoded Add/View Cart, or Free shipping copy in migrated product compatibility/headless sources.
 
 ## Phase CLH5 - Move Account Route Interpretation To Host Boundary
@@ -490,9 +490,9 @@ Goal: prevent shared `AccountApp` from owning V2 account route structure.
 
 ```powershell
 rg -n "/account/profile|/account/addresses|/account/orders|/account/change-password" BlazorShop.PresentationV2/BlazorShop.Storefront.Components
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"
 ```
 
 ### Done When
@@ -508,9 +508,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 - `StorefrontAccountViewOptions` owns the current V2 route descriptor and `AccountHostPage` passes it into `AccountApp`.
 - Verification passed:
   - `rg -n "/account/profile|/account/addresses|/account/orders|/account/change-password" BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor` returned no matches.
-  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore`
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
-  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` passed `41/41`.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` passed `41/41`.
 
 ## Phase CLH6 - Move Visual Class-Bag Schemas Out Of Stable Headless API
 
@@ -562,7 +562,7 @@ Goal: keep shared Headless behavior from defining store layout regions as stable
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"
 ```
 
 ### Done When
@@ -579,7 +579,7 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 - Verification passed:
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` -> passed, `0` warnings.
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` -> passed, `0` warnings.
-  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` -> passed `42/42`; only existing MessagePack/Browserslist warnings appeared.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"` -> passed `42/42`; only existing MessagePack/Browserslist warnings appeared.
 
 ## Phase CLH7 - Upgrade Browser Local API Result And Error Semantics
 
@@ -631,16 +631,16 @@ Goal: align browser BFF primitives with Runtime-style structured error semantics
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiResult.cs`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs`
 - Storefront V2 local endpoint files that create `StorefrontLocalApiErrorResponse`.
-- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontWasmRuntimeFoundationTests.cs`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontV2WASMRuntimeFoundationTests.cs`
 - `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontBffBoundaryHardeningTests.cs`
 
 ### QA Gate
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"
 ```
 
 ### Done When
@@ -656,9 +656,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 - Updated `StorefrontLocalApiClient` to read successful bodies safely when content length is unknown, return default data for empty success bodies, parse structured errors, and fall back to status-derived default code/message for invalid error bodies.
 - Verification passed:
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` -> passed, `0` warnings.
-  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore` -> passed, `0` warnings.
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` -> passed, `0` warnings.
-  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"` -> passed `34/34`; only existing MessagePack/Browserslist warnings appeared.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"` -> passed `34/34`; only existing MessagePack/Browserslist warnings appeared.
 
 ## Phase CLH8 - Package Metadata, Docs, And Generator Guidance
 
@@ -739,7 +739,7 @@ Goal: prove the logic-only hardening did not break active Storefront V2 behavior
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore
 ```
@@ -747,7 +747,7 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.
 - [x] Run focused tests:
 
 ```powershell
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"
 ```
 
 - [x] Run source scans:
@@ -803,10 +803,10 @@ rg -n "StorefrontV2Default|/api/product-selection-preview|/account/profile|/acco
 
 - Build verification passed after rerunning sequentially to avoid parallel output locks:
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` -> passed, `0` warnings.
-  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore` -> passed, `0` warnings.
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` -> passed, `0` warnings.
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` -> passed, `0` warnings.
-- Focused release tests passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"` -> passed `77/77`; only existing MessagePack/Browserslist warnings appeared.
+- Focused release tests passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"` -> passed `77/77`; only existing MessagePack/Browserslist warnings appeared.
 - Source scans found no matches for forbidden `Headless`/Starter/StorefrontBuilder `BlazorShop.Storefront.Components.Features` imports and no remaining shared Components hardcoded `StorefrontV2Default`, `/api/product-selection-preview`, `/account/profile`, `/account/orders`, `Selection ready`, `Image unavailable`, or `Storefront request failed` strings.
 - StorefrontBuilder verification passed:
   - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` -> generated, restored, built, statically validated, and isolation-checked `BlazorShop.Storefront.GeneratedProof`.
@@ -837,10 +837,10 @@ rg -n "StorefrontV2Default|/api/product-selection-preview|/account/profile|/acco
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore
-dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontBuilderFoundationTests"
 ```
 
 If active V2 browser behavior changes:

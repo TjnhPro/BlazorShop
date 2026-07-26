@@ -487,7 +487,7 @@ Goal: make `Browser/*` primitives clearly behavior-only.
 
 ### HPR14 QA gate
 
-- [x] Storefront WASM build passes.
+- [x] Storefront V2 WASM build passes.
 - [x] Components build passes.
 - [x] Static guard no absolute Commerce Node/Control Plane browser calls.
 - [x] Static guard no endpoint literals in migrated shared components.
@@ -610,7 +610,7 @@ Evidence: `dotnet build BlazorShop.sln` passed; `dotnet test BlazorShop.Tests.V2
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj
-dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~Storefront"
 ```

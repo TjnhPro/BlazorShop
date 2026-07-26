@@ -43,7 +43,7 @@ Allowed until their target phase cutover lands:
 
 - `dotnet build BlazorShop.sln`: passed. Existing warnings: `MessagePack` NU1902/NU1903 advisories in `BlazorShop.Tests.V2`; Browserslist `caniuse-lite` outdated notice.
 - Focused architecture tests: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~V2ArchitectureBoundaryBaselineTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests|FullyQualifiedName~StorefrontGeneratedCatalogContentClientTests|FullyQualifiedName~StorefrontEndpointDependencyBoundaryTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~HeadlessStorefrontFoundationBoundaryTests"` passed 91/91 after correcting two doc-only StorefrontBuilder boundary lines to explicitly say `Do not:`.
-- Focused Storefront V2 client/runtime tests: `dotnet test ... --filter "FullyQualifiedName~StorefrontV2ApiClientTests|FullyQualifiedName~StorefrontV2AuthClientTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` passed 52/52.
+- Focused Storefront V2 client/runtime tests: `dotnet test ... --filter "FullyQualifiedName~StorefrontV2ApiClientTests|FullyQualifiedName~StorefrontV2AuthClientTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"` passed 52/52.
 - Focused Storefront V2 provider/session tests: `dotnet test ... --filter "FullyQualifiedName~StorefrontApiEndpointResolverTests|FullyQualifiedName~StorefrontCurrentStoreProviderTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~StorefrontSessionResolverTests|FullyQualifiedName~StorefrontV2PublicUrlResolverTests"` passed 20/20.
 - Focused host smoke slice: `dotnet test ... --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.SignIn_ReturnsStorefrontLoginPage"` passed 1/1. Running the full `StorefrontV2HostSmokeTests` class exceeded 180 seconds, so V2F0 records a narrow host smoke instead of treating the whole class as a baseline gate.
 - Playwright browser baseline against `http://localhost:18598`: `/`, `/category/apparel`, `/search?q=shirt`, `/product/qa-simple-product-100`, `/my-cart`, `/checkout`, `/signin`, `/register`, `/account/profile`, `/sitemap.xml`, and `/robots.txt` all returned 200 and nonblank content.
@@ -163,7 +163,7 @@ Implementation notes:
 Verification:
 
 - `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
-- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"`: passed 36/36.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"`: passed 36/36.
 - Playwright cart flow against `http://localhost:18598`: passed and wrote `output/playwright/v2f6-cart-flow-evidence.json` plus `output/playwright/v2f6-cart-flow.png`.
 - Browser QA added `qa-simple-product-100` and `catalog-qa-t-shirt` Red/XL from product pages; cart badge updated and cart page rendered line images, selected attributes/variant label, unit price, and line total.
 - Browser QA updated quantity, removed a line, and cleared cart through same-origin `/api/cart/*`.
@@ -185,7 +185,7 @@ Implementation notes:
 Verification:
 
 - `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
-- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~StorefrontCheckout"`: passed 87/88 with 1 skipped.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~StorefrontCheckout"`: passed 87/88 with 1 skipped.
 - Playwright checkout COD flow against `http://localhost:18598`: passed and wrote `output/playwright/v2f7-checkout-cod-flow-evidence.json` plus `output/playwright/v2f7-checkout-cod-flow.png`.
 - Browser QA logged in as the QA customer, cleared cart, added `qa-simple-product-100`, started checkout, selected saved billing/shipping address `3c111111-1111-4111-8111-111111111201`, selected shipping, selected COD, reviewed checkout, and placed order `ORD-20260725-FAE82317`.
 - Double-click place-order QA observed exactly one `POST /api/checkout/place-order`; the cart cleared after order placement and the account order list/detail showed the new order with EUR currency.
@@ -204,7 +204,7 @@ Implementation notes:
 Verification:
 
 - `dotnet build BlazorShop.sln`: passed. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
-- Static/client tests: `StorefrontCommerceFlowCutoverTests|StorefrontV2AuthClientTests|StorefrontWasmRuntimeFoundationTests|SecurityPrivacyPhase3ConsentTests|AddressCorePhase7ConfigurationTests` passed 42/42.
+- Static/client tests: `StorefrontCommerceFlowCutoverTests|StorefrontV2AuthClientTests|StorefrontV2WASMRuntimeFoundationTests|SecurityPrivacyPhase3ConsentTests|AddressCorePhase7ConfigurationTests` passed 42/42.
 - Focused host smoke account/auth tests passed 8/8 for disabled registration, login cookie redirect, logout cookie copy, forgot password, profile update, address create, order paging, and order detail rendering.
 - Registration policy Playwright: `scripts/qa/run-storefront-registration-policy-e2e.ps1 -Headless` passed and wrote `.gstack/qa-reports/registration-policy-e2e/result.json`, `storefront-register-disabled.png`, and `storefront-register-enabled.png`.
 - Account/consent Playwright against `http://localhost:18598`: passed and wrote `output/playwright/v2f8-account-consent-flow-evidence.json` plus `output/playwright/v2f8-account-consent-flow.png`.
@@ -282,7 +282,7 @@ Verification:
 - `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless`: passed. Evidence: `.gstack/qa-reports/order-email-e2e/result.json`.
 - `.\scripts\qa\run-storefront-email-recovery-e2e.ps1 -Headless`: passed. Evidence: `.gstack/qa-reports/email-recovery-e2e/result.json`.
 - Playwright route/resilience release smoke: passed. Evidence: `output/playwright/v2f12-release-route-resilience-smoke.json` and `output/playwright/v2f12-release-route-resilience-smoke.png`.
-- Focused release tests: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` passed 58/58.
+- Focused release tests: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"` passed 58/58.
 - Final `dotnet build BlazorShop.sln`: passed after stopping local V2 runtime processes. Existing warnings remain `MessagePack` NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
 
 Browser release coverage:

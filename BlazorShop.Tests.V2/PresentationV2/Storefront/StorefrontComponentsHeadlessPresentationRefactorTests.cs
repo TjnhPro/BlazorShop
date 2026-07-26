@@ -66,7 +66,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var sharedInterop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
             var browserSource = ReadComponentLayerSource("Browser");
             var cartView = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
 
             Assert.Contains("<Project Sdk=\"Microsoft.NET.Sdk\">", project, StringComparison.Ordinal);
             Assert.DoesNotContain("Microsoft.NET.Sdk.Razor", project, StringComparison.Ordinal);
@@ -217,9 +217,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var headlessSource = ReadComponentLayerSource("Headless");
             var v2ClassSource =
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewClasses.cs")
-                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartViewClasses.cs")
-                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutViewClasses.cs");
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewClasses.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewClasses.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutViewClasses.cs");
 
             foreach (var classBag in new[]
             {
@@ -395,11 +395,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CartView_UsesHostActionsAndClassesAfterHpr7Migration()
         {
             var cartView = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
             var cartBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
             var cartOptions = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartViewOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs");
             var cartPage = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor");
 
@@ -448,11 +448,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutShell_UsesHostActionsAndClassesAfterHpr8Migration()
         {
             var checkoutShell = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
             var checkoutBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Checkout/StorefrontCheckoutBehavior.cs");
             var checkoutOptions = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
             var checkoutPage = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor");
 
@@ -499,15 +499,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountNavigation_UsesHostItemsAndClassesAfterHpr9Migration()
         {
             var navigation = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountNavigation.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountNavigation.razor");
             var contracts = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/AccountNavigationContracts.cs");
             var options = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
             var host = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
             var app = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
             foreach (var expected in new[]
             {
@@ -554,17 +554,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountProfileAndPasswordForms_UseHostActionsAndClassesAfterHpr10Migration()
         {
             var profile = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountProfileEditor.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountProfileEditor.razor");
             var password = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountChangePasswordForm.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountChangePasswordForm.razor");
             var behavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var options = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
             var host = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
             var app = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
             foreach (var expected in new[]
             {
@@ -620,15 +620,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountAddressBook_UsesHostActionsAndClassesAfterHpr11Migration()
         {
             var addresses = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountAddressBook.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountAddressBook.razor");
             var behavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var options = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
             var host = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
             var app = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
             foreach (var expected in new[]
             {
@@ -683,17 +683,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountOrders_UseHostActionsAndClassesAfterHpr12Migration()
         {
             var orderList = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountOrderList.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderList.razor");
             var orderDetail = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountOrderDetail.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderDetail.razor");
             var behavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var options = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
             var host = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
             var app = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
             foreach (var expected in new[]
             {
@@ -756,7 +756,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountNavigationItems_UseConcreteSharedArrayForWasmHydration()
         {
             var options = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
 
             Assert.Contains("public static AccountNavigationItem[] NavigationItems { get; }", options, StringComparison.Ordinal);
             Assert.DoesNotContain("public static IReadOnlyList<AccountNavigationItem> NavigationItems", options, StringComparison.Ordinal);
@@ -766,9 +766,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountApp_UsesHostShellClassesAfterHpr13Migration()
         {
             var app = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
             var options = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
             var host = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
 

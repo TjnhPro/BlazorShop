@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Cart;
+namespace BlazorShop.Storefront.V2.WASM.Components.Cart;
 
 public sealed record StorefrontCartViewClasses
 {

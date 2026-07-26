@@ -28,7 +28,7 @@ The original `BlazorShop.Presentation` source has been removed from the active b
 | Commerce Node API | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Node-local ecommerce admin APIs, Storefront APIs, task orchestration, media, deployment support, and Commerce Node database migration. |
 | Storefront V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Server-side public storefront, SEO documents, account/cart/checkout forms, and scoped Storefront API client. |
 | Storefront components | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Reusable Razor components for the Storefront V2 render modes. |
-| Storefront WASM | `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM` | Interactive WebAssembly assembly used by Storefront V2. |
+| Storefront V2 WASM | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` | Interactive WebAssembly assembly used by Storefront V2. |
 | Shared Web V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Shared browser storage, cookie storage, auth session sync, API helpers, and toast utilities. |
 | Storefront client package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTO contracts from Commerce Node Storefront OpenAPI. |
 | Storefront runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Neutral generated-storefront runtime primitives for store context, capabilities, errors, and client registration. |

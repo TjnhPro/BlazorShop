@@ -12,7 +12,7 @@ COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.Client/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.Components/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/
-COPY BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/
 COPY BlazorShop.ServiceDefaults/BlazorShop.ServiceDefaults.csproj BlazorShop.ServiceDefaults/
 
 RUN dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
@@ -24,7 +24,7 @@ COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/ BlazorShop.Presentation
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Client/ BlazorShop.PresentationV2/BlazorShop.Storefront.Client/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Components/ BlazorShop.PresentationV2/BlazorShop.Storefront.Components/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/ BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/
-COPY BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/ BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/ BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/
 COPY BlazorShop.ServiceDefaults/ BlazorShop.ServiceDefaults/
 
 WORKDIR /src/BlazorShop.PresentationV2/BlazorShop.Storefront.V2

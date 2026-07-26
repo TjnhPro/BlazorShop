@@ -15,7 +15,7 @@
 | V2 | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Active | Node-local ecommerce API, admin/control endpoints, scoped Storefront endpoints, task orchestration, deployment support, and startup migration for `CommerceNodeDbContext`. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Active | Server-side storefront using Commerce Node Storefront APIs and store key route scope. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Active | Reusable Razor components used by Storefront V2 interactive render modes. |
-| V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM` | Active | Storefront V2 WebAssembly assembly for interactive browser components. |
+| V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` | Active | Storefront V2 WebAssembly assembly for interactive browser components. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Active | Shared V2 browser storage, cookie storage, auth session, toast, and API helper utilities. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Active | Generated Storefront API transport and contracts from Commerce Node Storefront OpenAPI. No backend/core/API project references. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Active | Neutral Storefront runtime options, generated-client registration, capability, and error primitives shared by V2 and Starter. No backend/core/API project references. |
@@ -38,8 +38,8 @@ Active V2 presentation projects reference shared core projects:
 - `BlazorShop.ControlPlane.API` references `Application`, `Infrastructure`, and `ServiceDefaults`.
 - `BlazorShop.CommerceNode.API` references `Application`, `Infrastructure`, and `ServiceDefaults`.
 - `BlazorShop.ControlPlane.Web` references `Application` and `Web.SharedV2`.
-- `BlazorShop.Storefront.V2` references `ServiceDefaults`, `Storefront.Client`, `Storefront.Components`, and `Storefront.WASM`; it must not reference `Application`, `Domain`, `Infrastructure`, Commerce Node API, Control Plane API projects, or `Web.SharedV2`.
-- `BlazorShop.Storefront.WASM` references `Storefront.Components`.
+- `BlazorShop.Storefront.V2` references `ServiceDefaults`, `Storefront.Client`, `Storefront.Components`, and `Storefront.V2.WASM`; it must not reference `Application`, `Domain`, `Infrastructure`, Commerce Node API, Control Plane API projects, or `Web.SharedV2`.
+- `BlazorShop.Storefront.V2.WASM` references `Storefront.Components`.
 - `BlazorShop.Storefront.Components` is a Razor component library with no BlazorShop project references.
 - `BlazorShop.Web.SharedV2` has no project references.
 
@@ -52,7 +52,7 @@ Public SSR:
         -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
 
 Protected browser/WASM:
-  BlazorShop.Storefront.WASM / browser components
+  BlazorShop.Storefront.V2.WASM / browser components
     -> same-origin BlazorShop.Storefront.V2 /api/*
         -> generated Storefront client
             -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*

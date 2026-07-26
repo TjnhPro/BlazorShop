@@ -97,7 +97,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontBrowserProjects_KeepPortableDependencyBoundary()
         {
             var componentReferences = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
-            var wasmReferences = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj");
+            var wasmReferences = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
 
             Assert.DoesNotContain(componentReferences, IsForbiddenStorefrontBrowserReference);
             Assert.DoesNotContain(wasmReferences, IsForbiddenStorefrontBrowserReference);

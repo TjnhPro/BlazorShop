@@ -80,7 +80,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("COPY --from=build /app/publish/wwwroot /usr/share/nginx/html", controlPlaneWebDockerfile, StringComparison.Ordinal);
             Assert.Contains("CONTROLPLANE_API_BASE_URL", controlPlaneWebEntrypoint, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Components.csproj", storefrontDockerfile, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Storefront.WASM.csproj", storefrontDockerfile, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2.WASM.csproj", storefrontDockerfile, StringComparison.Ordinal);
             Assert.Contains("curl", commerceNodeDockerfile, StringComparison.Ordinal);
             Assert.Contains("curl", controlPlaneApiDockerfile, StringComparison.Ordinal);
             Assert.Contains("curl", storefrontDockerfile, StringComparison.Ordinal);

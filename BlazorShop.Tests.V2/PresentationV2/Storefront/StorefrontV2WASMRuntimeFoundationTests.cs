@@ -8,7 +8,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     using Xunit;
 
-    public sealed class StorefrontWasmRuntimeFoundationTests
+    public sealed class StorefrontV2WASMRuntimeFoundationTests
     {
         [Fact]
         public async Task GetAsync_UsesSameOriginRelativeRouteWithoutAntiforgeryHeader()
@@ -160,7 +160,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var program = File.ReadAllText(Path.Combine(
                 RepositoryRoot(),
                 "BlazorShop.PresentationV2",
-                "BlazorShop.Storefront.WASM",
+                "BlazorShop.Storefront.V2.WASM",
                 "Program.cs"));
 
             Assert.Contains("builder.HostEnvironment.BaseAddress", program, StringComparison.Ordinal);
@@ -176,11 +176,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void WasmProject_DoesNotReferenceServerRuntimeOrGeneratedStorefrontClient()
         {
             var root = RepositoryRoot();
-            var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj");
+            var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
             var source = string.Join(
                 Environment.NewLine,
                 Directory.EnumerateFiles(
-                        Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.WASM"),
+                        Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2.WASM"),
                         "*.*",
                         SearchOption.AllDirectories)
                     .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
@@ -197,23 +197,39 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void WasmProjectIdentity_IsExplicitlyScopedToStorefrontV2()
+        {
+            var solution = ReadRepositoryFile("BlazorShop.sln");
+            var hostProject = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj");
+            var testsProject = ReadRepositoryFile("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj");
+            var wasmProject = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
+
+            Assert.Contains("BlazorShop.Storefront.V2.WASM", solution, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2.WASM.csproj", hostProject, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2.WASM.csproj", testsProject, StringComparison.Ordinal);
+            Assert.Contains("<RootNamespace>BlazorShop.Storefront.V2.WASM</RootNamespace>", wasmProject, StringComparison.Ordinal);
+            Assert.False(File.Exists(ResolveRepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj")));
+            Assert.DoesNotContain("BlazorShop.Storefront.WASM", solution, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void WasmProject_OwnsInteractiveRootComponentsUsedByStorefrontV2()
         {
-            var imports = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/_Imports.razor");
+            var imports = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/_Imports.razor");
             var hostProgram = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
 
             foreach (var componentPath in new[]
             {
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor"
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor"
             })
             {
                 Assert.True(File.Exists(ResolveRepositoryPath(componentPath)), $"{componentPath} must be compiled into the WASM client assembly.");
             }
 
-            Assert.Contains("@namespace BlazorShop.Storefront", imports, StringComparison.Ordinal);
-            Assert.Contains("typeof(BlazorShop.Storefront.Components.Account.StorefrontAccountApp).Assembly", hostProgram, StringComparison.Ordinal);
+            Assert.Contains("@namespace BlazorShop.Storefront.V2.WASM", imports, StringComparison.Ordinal);
+            Assert.Contains("typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly", hostProgram, StringComparison.Ordinal);
             Assert.False(Directory.EnumerateFiles(
                     ResolveRepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components"),
                     "StorefrontCartView.razor",
@@ -249,8 +265,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CartWasmComponent_UsesSameOriginLocalCartEndpoints()
         {
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor");
-            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartViewOptions.cs");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs");
             var behavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
 
             Assert.Contains("GetAsync<StorefrontBrowserCart>(Actions.CurrentCartRoute)", component, StringComparison.Ordinal);
@@ -306,7 +322,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountHostPage_HostsInteractiveWasmAccountApp()
         {
             var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
-            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
             Assert.Contains("@page \"/account\"", host, StringComparison.Ordinal);
             Assert.Contains("@page \"/account/{*Path}\"", host, StringComparison.Ordinal);
@@ -335,9 +351,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountHost_UsesSingleShellWhileKeepingPageOwnedGuards()
         {
             var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
-            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
-            var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountNavigation.razor");
-            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
+            var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountNavigation.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
 
             Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", host, StringComparison.Ordinal);
             Assert.Contains("Antiforgery.GetAndStoreTokens(HttpContext)", host, StringComparison.Ordinal);
@@ -367,12 +383,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AccountWasmComponents_UseSameOriginLocalAccountEndpoints()
         {
-            var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountProfileEditor.razor");
-            var addressesComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountAddressBook.razor");
-            var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountOrderList.razor");
-            var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountOrderDetail.razor");
-            var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountChangePasswordForm.razor");
-            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+            var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountProfileEditor.razor");
+            var addressesComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountAddressBook.razor");
+            var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderList.razor");
+            var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderDetail.razor");
+            var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountChangePasswordForm.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
             var behavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var allComponents = profileComponent + addressesComponent + ordersComponent + orderDetailComponent + passwordComponent;
 
@@ -449,8 +465,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CheckoutWasmShell_UsesSameOriginLocalCheckoutEndpoints()
         {
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
-            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
 
             Assert.Contains("GetAsync<StorefrontBrowserCheckoutState>(Actions.CurrentCheckoutRoute)", component, StringComparison.Ordinal);
             Assert.Contains("PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>", component, StringComparison.Ordinal);

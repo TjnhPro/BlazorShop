@@ -99,7 +99,7 @@ public sealed class StorefrontLocalApiClient
         if (route.StartsWith("//", StringComparison.Ordinal) ||
             route.Contains("://", StringComparison.Ordinal))
         {
-            throw new ArgumentException("Storefront WASM local API calls must use same-origin relative routes.", nameof(route));
+            throw new ArgumentException("Storefront browser local API calls must use same-origin relative routes.", nameof(route));
         }
 
         return route[0] == '/' ? route : "/" + route;

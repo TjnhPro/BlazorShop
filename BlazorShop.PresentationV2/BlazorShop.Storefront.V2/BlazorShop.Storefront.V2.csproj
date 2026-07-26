@@ -12,7 +12,7 @@
     <ProjectReference Include="..\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj" />
-    <ProjectReference Include="..\BlazorShop.Storefront.WASM\BlazorShop.Storefront.WASM.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj" />
   </ItemGroup>
 
   <ItemGroup>

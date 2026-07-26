@@ -16,8 +16,8 @@ Dependency inventory:
 
 | Area | Current state |
 | --- | --- |
-| `Storefront.V2` project references | References `ServiceDefaults`, `Storefront.Client`, `Storefront.Components`, `Storefront.Runtime`, `Storefront.WASM`, and offending `Web.SharedV2`. |
-| `Storefront.WASM` project references | References only `Storefront.Components`. |
+| `Storefront.V2` project references | References `ServiceDefaults`, `Storefront.Client`, `Storefront.Components`, `Storefront.Runtime`, `Storefront.V2.WASM`, and offending `Web.SharedV2`. |
+| `Storefront.V2.WASM` project references | References only `Storefront.Components`. |
 | `Storefront.Components` project references | No project references; browser component package only. |
 | `Storefront.Runtime` project references | References only `Storefront.Client`. |
 | `Storefront.Client` project references | No forbidden project references. |
@@ -117,7 +117,7 @@ Verification:
 Implementation notes:
 
 - Extended `docs/storefront-platform/storefront-client-exception-registry.md` with active Storefront V2 manual-client exceptions for cart merge, saved-address checkout, protected customer account, and auth/session forms.
-- Added guardrails that browser projects (`Storefront.WASM` and `Storefront.Components`) do not reference `Storefront.Client`, Commerce Node route paths, Commerce Node base URLs, node credentials, or protected tokens.
+- Added guardrails that browser projects (`Storefront.V2.WASM` and `Storefront.Components`) do not reference `Storefront.Client`, Commerce Node route paths, Commerce Node base URLs, node credentials, or protected tokens.
 - Added guardrails that Storefront V2 host source does not call Control Plane routes or read Control Plane/node credential settings.
 - Added guardrails that active manual `StorefrontApiClient` exception usages remain registered with owner, test, and revisit trigger.
 - The allowed API access shape remains V2 SSR/BFF -> Runtime -> Client -> Commerce Node Storefront HTTP API, while browser/WASM calls same-origin `/api/*`.
@@ -173,8 +173,8 @@ Implementation notes:
 Verification:
 
 - `dotnet build BlazorShop.sln -m:1 --no-restore`: passed. Known warnings remain existing MessagePack NU1902/NU1903 and Browserslist notices.
-- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~StorefrontSessionResolverTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~SecurityPrivacyPhase0InventoryTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~ControlPlaneArchitectureBoundaryTests|FullyQualifiedName~ControlPlaneAuthorizationTests"`: passed 84/84.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~StorefrontSessionResolverTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~SecurityPrivacyPhase0InventoryTests|FullyQualifiedName~CartCorePhase0InventoryTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~ControlPlaneArchitectureBoundaryTests|FullyQualifiedName~ControlPlaneAuthorizationTests"`: passed 84/84.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~SignIn_PostSuccess_SetsRefreshCookieAndRedirectsToSafeReturnUrl|FullyQualifiedName~Logout_PostCallsCommerceNodeAndCopiesExpiredCookie|FullyQualifiedName~Maintenance_WhenCurrentStoreRecovered_RedirectsHome|FullyQualifiedName~Maintenance_WhenCurrentStoreStillInMaintenance_RendersAutoRefresh"`: passed 4/4.
 - Playwright targeted QA against `http://localhost:18598`: passed with 10/10 steps and no forbidden direct browser requests. Evidence: `output/playwright/sib8-storefront-v2-targeted-qa.json` and `.png`.
 - Public response assertion passed for `/`, `/product/qa-simple-product-100`, and `/my-cart`; no provider secret, internal settings, node credential, Control Plane, or Commerce admin markers were found.
-- `rg "BlazorShop.Web.SharedV2|Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.WASM BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime BlazorShop.PresentationV2/BlazorShop.Storefront.Client BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`: no matches.
+- `rg "BlazorShop.Web.SharedV2|Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime BlazorShop.PresentationV2/BlazorShop.Storefront.Client BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`: no matches.

@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Account;
+namespace BlazorShop.Storefront.V2.WASM.Components.Account;
 
 using BlazorShop.Storefront.Components.Contracts.Account;
 using BlazorShop.Storefront.Components.Headless.Account;

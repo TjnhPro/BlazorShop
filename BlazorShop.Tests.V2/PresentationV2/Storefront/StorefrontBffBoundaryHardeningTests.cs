@@ -93,7 +93,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var browserRoots = new[]
             {
                 RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components"),
-                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM"),
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM"),
             };
             var bannedTerms = new[]
             {

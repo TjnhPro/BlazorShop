@@ -12,7 +12,7 @@ Purpose: make Commerce Node a framework-neutral Storefront API platform, keep St
 - [x] Commerce Node Swagger already has a separate document named `storefront`.
 - [x] `CommerceNodeStorefrontOpenApiContractTests` already validates Storefront OpenAPI metadata, schemas, security metadata, snapshots, and TypeScript client generation.
 - [x] `BlazorShop.Storefront.Components` does not reference `Application`, `Domain`, `Infrastructure`, Control Plane, or Commerce Node API projects.
-- [x] `BlazorShop.Storefront.WASM` only references `BlazorShop.Storefront.Components`.
+- [x] `BlazorShop.Storefront.V2.WASM` only references `BlazorShop.Storefront.Components`.
 - [x] `BlazorShop.Storefront.V2` still references `BlazorShop.Application` and `BlazorShop.Web.SharedV2`.
 - [x] `BlazorShop.Storefront.V2` source still imports Application DTOs/contracts and `Web.SharedV2.Models` in pages, services, endpoint mappings, SEO, navigation, cart, checkout, and account areas.
 - [x] Storefront OpenAPI snapshot currently includes payment provider callback/webhook operations, which are not frontend client operations.
@@ -89,7 +89,7 @@ Storefront.V2 -> ControlPlane.API
 
 Storefront.Client -> Domain/Application/Infrastructure/API projects
 Storefront.Runtime -> Domain/Application/Infrastructure/API projects
-Storefront.WASM -> Commerce Node direct protected API
+Storefront.V2.WASM -> Commerce Node direct protected API
 ```
 
 ## Canonical Frontend Flow
@@ -105,7 +105,7 @@ Storefront V2 SSR page/service
 Protected browser/WASM:
 
 ```text
-Storefront.WASM component
+Storefront.V2.WASM component
     -> same-origin /api/*
         -> Storefront V2 BFF endpoint
             -> generated C# Storefront client
@@ -200,7 +200,7 @@ F. Shared hosting/observability
   - [x] `BlazorShop.Web.SharedV2`
   - [x] `BlazorShop.ServiceDefaults`
   - [x] `BlazorShop.Storefront.Components`
-  - [x] `BlazorShop.Storefront.WASM`
+  - [x] `BlazorShop.Storefront.V2.WASM`
 - [x] Inventory all `using BlazorShop.Application.*` in Storefront V2.
 - [x] Inventory all `using BlazorShop.Web.SharedV2.Models*` in Storefront V2.
 - [x] Inventory Storefront V2 services/contracts that alias Application DTOs.
@@ -225,7 +225,7 @@ F. Shared hosting/observability
 ```powershell
 rg -n "using BlazorShop\.Application|BlazorShop\.Application" BlazorShop.PresentationV2\BlazorShop.Storefront.V2
 rg -n "BlazorShop\.Web\.SharedV2|Web\.SharedV2\.Models" BlazorShop.PresentationV2\BlazorShop.Storefront.V2
-rg -n "Application|Domain|Infrastructure|CommerceNode.API|ControlPlane.API" BlazorShop.PresentationV2\BlazorShop.Storefront.Components BlazorShop.PresentationV2\BlazorShop.Storefront.WASM
+rg -n "Application|Domain|Infrastructure|CommerceNode.API|ControlPlane.API" BlazorShop.PresentationV2\BlazorShop.Storefront.Components BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM
 ```
 
 ### Done when
@@ -673,7 +673,7 @@ Goal: prove Storefront V2 can be built/run as an independent frontend consumer o
 - [x] `Storefront.Client` does not reference backend/core/API projects.
 - [x] `Storefront.Runtime`, if present, does not reference backend/core/API projects.
 - [x] `Storefront.Components` remains backend-independent.
-- [x] `Storefront.WASM` remains backend-independent.
+- [x] `Storefront.V2.WASM` remains backend-independent.
 - [x] `Web.SharedV2/Models` business model freeze remains enforced.
 
 ### Generated client tests

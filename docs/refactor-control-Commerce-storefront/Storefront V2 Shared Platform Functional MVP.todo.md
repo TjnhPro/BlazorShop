@@ -6,7 +6,7 @@ Goal: biến `BlazorShop.Storefront.V2` thành storefront reference thật sự 
 
 ## Current codebase context
 
-- `BlazorShop.Storefront.V2` hiện reference `Storefront.Client`, `Storefront.Runtime`, `Storefront.Components`, `Storefront.WASM`, `Web.SharedV2` và `ServiceDefaults`.
+- `BlazorShop.Storefront.V2` hiện reference `Storefront.Client`, `Storefront.Runtime`, `Storefront.Components`, `Storefront.V2.WASM`, `Web.SharedV2` và `ServiceDefaults`.
 - `Storefront.Client` đã là package/contract boundary cho generated API clients.
 - `Storefront.Runtime` hiện mới có runtime options, context, capability reader, error mapper và generated-client registration. Chưa đủ facade/use-case primitive để `Storefront.V2` giảm phụ thuộc vào manual `StorefrontApiClient`.
 - `Storefront.Components` hiện có feature components và browser-safe local API abstraction qua `Browser/StorefrontLocalApiClient.cs`. Phase này không ép components thuần presentational ngay; tách dần container/presentation theo từng flow để không phá WASM.
@@ -23,7 +23,7 @@ Storefront.V2
           -> CommerceNode Storefront API
 
 Browser/WASM protected flow
-Storefront.Components / Storefront.WASM
+Storefront.Components / Storefront.V2.WASM
   -> same-origin /api/*
       -> Storefront.V2 BFF endpoints
           -> Storefront.Runtime
@@ -275,7 +275,7 @@ Storefront.V2 / Starter / Storefront.{Name}
 - [x] Playwright cart closed/cleared sau order placement theo rule hiện có.
 - [x] Playwright order completion page hiển thị order number và payment status.
 - [x] Negative test: cart đổi sau khi chọn shipping/payment thì checkout reset downstream state.
-  - 2026-07-25: focused checkout guard keeps `409` conflict mapping through the checkout BFF; stale cart-version recovery remains covered by existing `SecurityPrivacyPhase1CsrfTests`, `StorefrontWasmRuntimeFoundationTests`, and checkout host smoke guardrails. Browser V2F7 covered the production COD path.
+  - 2026-07-25: focused checkout guard keeps `409` conflict mapping through the checkout BFF; stale cart-version recovery remains covered by existing `SecurityPrivacyPhase1CsrfTests`, `StorefrontV2WASMRuntimeFoundationTests`, and checkout host smoke guardrails. Browser V2F7 covered the production COD path.
 
 ## Phase V2F8 - Account, auth, address, order self-service and consent alignment
 

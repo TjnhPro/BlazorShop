@@ -19,10 +19,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
                 ReadStorefrontApiClientSources(),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountOrderList.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountOrderDetail.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderList.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderDetail.razor"),
             };
 
             foreach (var source in activeStorefrontSources)
@@ -39,7 +39,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var apiClient = ReadStorefrontApiClientSources();
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
-            var checkoutShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+            var checkoutShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
 
             Assert.Contains("StorefrontCartSessionRoute = StorefrontCartRoute + \"/session\"", apiClient, StringComparison.Ordinal);
             Assert.Contains("checkout/start", apiClient, StringComparison.Ordinal);
@@ -107,9 +107,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var cartContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/Contracts/StorefrontCartLocalContracts.cs");
             var cartEndpointSupport = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Cart.cs");
             var commonContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CommonContracts.cs");
-            var cartComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor")
+            var cartComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
-            var cartOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartViewOptions.cs");
+            var cartOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs");
 
             Assert.Contains("AddScoped<IStorefrontRuntimeCartFacade, StorefrontRuntimeCartFacade>", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeCartFacade", runtimeFacade, StringComparison.Ordinal);
@@ -156,9 +156,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var paymentAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontPaymentClient.cs");
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
             var checkoutEndpointSupport = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs");
-            var checkoutComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor")
+            var checkoutComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
-            var checkoutOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
+            var checkoutOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
 
             Assert.Contains("AddScoped<IStorefrontRuntimeCheckoutFacade, StorefrontRuntimeCheckoutFacade>", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontRuntimePaymentFacade, StorefrontRuntimePaymentFacade>", runtimeRegistration, StringComparison.Ordinal);

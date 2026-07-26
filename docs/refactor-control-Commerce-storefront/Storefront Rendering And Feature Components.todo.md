@@ -10,7 +10,7 @@ Purpose: make Storefront V2 rendering ownership visible in code, reduce account 
 - [x] `BlazorShop.Storefront.V2/Program.cs` is already a composition file and maps endpoint groups through extension methods. This plan must not re-expand Program.cs.
 - [x] `BlazorShop.Storefront.Components` currently contains `Account`, `Cart`, `Checkout`, and `Browser`. The old development WASM diagnostics probe has been retired, and it does not yet have a `Features/*` convention.
 - [x] `BlazorShop.Storefront.Components` has no direct reference to `Application`, `Domain`, or `Infrastructure`.
-- [x] `BlazorShop.Storefront.WASM` references `BlazorShop.Storefront.Components` and currently provides browser bootstrapping/local API services, not a full route app.
+- [x] `BlazorShop.Storefront.V2.WASM` references `BlazorShop.Storefront.Components` and currently provides browser bootstrapping/local API services, not a full route app.
 - [x] Account routes originally existed as several server Razor pages under `Pages/Account`, each rendering a WASM component with `InteractiveWebAssembly`.
 - [x] Phase 2 consolidated repeated account route-shell responsibilities into `AccountHostPage` plus `Storefront.Components/Features/Account/AccountApp`.
 - [x] Some WASM components receive server `Initial*` data and still refetch after first browser render. This creates duplicate fetch risk.
@@ -37,7 +37,7 @@ Make Storefront rendering easy to understand by looking at the folder structure 
 - [ ] Do not move checkout place-order/payment logic fully into the browser.
 - [ ] Do not introduce a generic page builder.
 - [ ] Do not create a second Storefront API route shape.
-- [ ] Do not add runtime dependency from `Storefront.Components` or `Storefront.WASM` to `Application`, `Domain`, `Infrastructure`, Control Plane, EF, or node credentials.
+- [ ] Do not add runtime dependency from `Storefront.Components` or `Storefront.V2.WASM` to `Application`, `Domain`, `Infrastructure`, Control Plane, EF, or node credentials.
 - [ ] Do not mix broad behavior changes with mechanical file moves.
 
 ## Target Rendering Ownership Model
@@ -183,8 +183,8 @@ Goal: freeze the current route list, render modes, and project boundaries before
   - [x] `/account/change-password`
 - [x] Add project-boundary tests:
   - [x] `Storefront.Components` does not reference `Application`, `Domain`, `Infrastructure`, Control Plane, or Commerce Node API projects.
-  - [x] `Storefront.WASM` does not reference `Application`, `Domain`, `Infrastructure`, Control Plane, or Commerce Node API projects.
-  - [x] `Storefront.WASM` references `Storefront.Components`.
+  - [x] `Storefront.V2.WASM` does not reference `Application`, `Domain`, `Infrastructure`, Control Plane, or Commerce Node API projects.
+  - [x] `Storefront.V2.WASM` references `Storefront.Components`.
 - [x] Add a render-ownership manifest test or snapshot that records each page route as `Ssr`, `Hybrid`, or `WasmHost`.
 - [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` with a new render-ownership section.
 
@@ -407,7 +407,7 @@ Goal: introduce a reusable `Features/*` convention before extracting larger cata
 
 ```powershell
 dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj --no-restore
-dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.WASM\BlazorShop.Storefront.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj --no-restore
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~Storefront"
 ```
 

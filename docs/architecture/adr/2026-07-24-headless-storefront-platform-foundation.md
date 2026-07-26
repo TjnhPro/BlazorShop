@@ -23,7 +23,7 @@ Final forbidden dependencies:
 - `Storefront.V2` must not reference `Domain`, `Application`, `Infrastructure`, `CommerceNode.API`, or `ControlPlane.API`.
 - `Storefront.Client` must not reference `Domain`, `Application`, `Infrastructure`, `CommerceNode.API`, `ControlPlane.API`, or `Storefront.V2`.
 - `Storefront.Runtime`, if present, must not reference `Domain`, `Application`, `Infrastructure`, `CommerceNode.API`, `ControlPlane.API`, or `Storefront.V2`.
-- `Storefront.Components` and `Storefront.WASM` must remain backend-independent.
+- `Storefront.Components` and `Storefront.V2.WASM` must remain backend-independent.
 
 `Storefront.V2` must consume Commerce Node through Storefront HTTP/OpenAPI clients and Storefront-owned presentation/local endpoint contracts. It owns Storefront-specific browser helpers locally and must not reference `Web.SharedV2`.
 

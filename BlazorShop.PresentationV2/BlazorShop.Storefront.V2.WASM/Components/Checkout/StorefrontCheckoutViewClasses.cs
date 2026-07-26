@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Checkout;
+namespace BlazorShop.Storefront.V2.WASM.Components.Checkout;
 
 public sealed record StorefrontCheckoutViewClasses
 {

@@ -2,14 +2,14 @@
 
 Date: 2026-07-24
 Phase: F1 Current Dependency Audit
-Scope: `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.WASM`, and Commerce Node Storefront public contract/mapping surface.
+Scope: `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.V2.WASM`, and Commerce Node Storefront public contract/mapping surface.
 
 ## Audit Commands
 
 ```powershell
 rg -n "using BlazorShop\.Application|BlazorShop\.Application" BlazorShop.PresentationV2\BlazorShop.Storefront.V2
 rg -n "BlazorShop\.Web\.SharedV2|Web\.SharedV2\.Models" BlazorShop.PresentationV2\BlazorShop.Storefront.V2
-rg -n "Application|Domain|Infrastructure|CommerceNode.API|ControlPlane.API" BlazorShop.PresentationV2\BlazorShop.Storefront.Components BlazorShop.PresentationV2\BlazorShop.Storefront.WASM
+rg -n "Application|Domain|Infrastructure|CommerceNode.API|ControlPlane.API" BlazorShop.PresentationV2\BlazorShop.Storefront.Components BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM
 rg -n "BlazorShop\.Application|Application\.DTOs|ApplicationResult|Domain|Infrastructure|Web\.SharedV2" BlazorShop.PresentationV2\BlazorShop.CommerceNode.API\Contracts\Storefront BlazorShop.PresentationV2\BlazorShop.CommerceNode.API\Controllers\Storefront
 ```
 
@@ -21,7 +21,7 @@ rg -n "BlazorShop\.Application|Application\.DTOs|ApplicationResult|Domain|Infras
 | `BlazorShop.Web.SharedV2` | F. shared hosting/browser utility and A. transitional business DTO bucket | shared API response helpers, storage/session utilities, product/category/page/SEO/payment/discovery models | Mixes frontend utility sharing with Storefront business model coupling | Keep only genuinely shared utilities; move business read models to generated client or Storefront V2 view models | `Web.SharedV2` utilities, `Storefront.Client`, `Storefront.V2` | F4, F5.1-F5.6, final F5 cleanup |
 | `BlazorShop.ServiceDefaults` | F. shared hosting/observability | common hosting defaults | Allowed runtime infrastructure dependency | Keep unless a packaging/isolation phase chooses a different hosting package model | `ServiceDefaults` | F7 review |
 | `BlazorShop.Storefront.Components` | D. frontend presentation | portable Razor feature components | Allowed; already backend-independent | Keep as presentation-only component dependency | `Storefront.Components` | F5/F7 guard |
-| `BlazorShop.Storefront.WASM` | D. frontend presentation | interactive browser assembly | Allowed; already depends only on Components | Keep behind same-origin BFF | `Storefront.WASM` | F4/F7 guard |
+| `BlazorShop.Storefront.V2.WASM` | D. frontend presentation | interactive browser assembly | Allowed; already depends only on Components | Keep behind same-origin BFF | `Storefront.V2.WASM` | F4/F7 guard |
 
 ## Storefront V2 Backend Namespace Inventory
 
@@ -54,7 +54,7 @@ Current `BlazorShop.Web.SharedV2` model namespaces/tokens in Storefront V2:
 Browser projects:
 
 - `BlazorShop.Storefront.Components` has no backend/runtime project reference hit. The only text hit is `Features/README.md`, which is a boundary rule.
-- `BlazorShop.Storefront.WASM` has no `Application`, `Domain`, `Infrastructure`, Commerce Node API, or Control Plane API hits.
+- `BlazorShop.Storefront.V2.WASM` has no `Application`, `Domain`, `Infrastructure`, Commerce Node API, or Control Plane API hits.
 
 ## Storefront V2 Source Inventory
 

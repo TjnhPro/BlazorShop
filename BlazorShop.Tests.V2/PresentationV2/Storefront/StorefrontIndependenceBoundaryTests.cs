@@ -9,7 +9,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static readonly string[] StorefrontProjectRoots =
         [
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Client",
@@ -89,16 +89,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void StorefrontWasm_OnlyReferencesBrowserSafeStorefrontProjects()
+        public void StorefrontV2WASM_OnlyReferencesBrowserSafeStorefrontProjects()
         {
-            var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj");
+            var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
 
             Assert.Equal(
                 ["../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj"],
                 references);
 
             AssertNoSourceFragments(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
                 ForbiddenBackendNamespaceFragments.Append("BlazorShop.Web.SharedV2").ToArray());
         }
 
@@ -145,7 +145,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     .Append("BlazorShop.Web.SharedV2")
                     .Append("BlazorShop.Storefront.V2")
                     .Append("BlazorShop.Storefront.Components")
-                    .Append("BlazorShop.Storefront.WASM")
+                    .Append("BlazorShop.Storefront.V2.WASM")
                     .ToArray());
         }
 
@@ -240,7 +240,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             foreach (var browserRoot in new[]
             {
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.WASM",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components"
             })
             {

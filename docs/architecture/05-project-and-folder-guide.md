@@ -164,7 +164,7 @@ Use for:
 - SEO and public discovery documents.
 - Store key propagation to Commerce Node Storefront API.
 - Storefront-owned presentation/local endpoint contracts plus generated Storefront client adapters.
-- Server-owned route composition and static assets for interactive cart, checkout, and account surfaces hosted from the Storefront WASM client assembly.
+- Server-owned route composition and static assets for interactive cart, checkout, and account surfaces hosted from the Storefront V2 WASM client assembly.
 
 Asset and layout rules:
 
@@ -201,7 +201,7 @@ Do not:
 - Add Razor components, static web assets, V2 layout/theme implementations, visual class bags, final copy, or generated visual output.
 - Reintroduce `Features/*` compatibility wrappers without a new architecture decision; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
 
-### `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM`
 
 Use for:
 

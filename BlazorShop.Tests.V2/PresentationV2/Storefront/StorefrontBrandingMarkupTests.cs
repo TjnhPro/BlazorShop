@@ -338,7 +338,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AccountOrderDetailPage_PassesRouteReferenceToBrowserComponent()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/Components/Account/StorefrontAccountApp.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
             Assert.Contains("nameof(StorefrontAccountOrderDetail.OrderReference)", markup);
             Assert.Contains("ActiveRoute.OrderReference", markup);

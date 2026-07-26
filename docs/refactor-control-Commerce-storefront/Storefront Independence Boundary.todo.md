@@ -2,15 +2,15 @@
 
 Status: complete
 
-Goal: tách hoàn toàn Storefront presentation/platform khỏi cụm Control Plane, Commerce Node implementation và `BlazorShop.Web.SharedV2`. Sau phase này, `Storefront.V2`, `Storefront.WASM`, `Storefront.Components`, `Storefront.Starter` và storefront sinh theo `BlazorShop.Storefront.{Name}` không được phụ thuộc source/project vào Control Plane, Commerce Node API, backend core implementation, hoặc `Web.SharedV2`.
+Goal: tách hoàn toàn Storefront presentation/platform khỏi cụm Control Plane, Commerce Node implementation và `BlazorShop.Web.SharedV2`. Sau phase này, `Storefront.V2`, `Storefront.V2.WASM`, `Storefront.Components`, `Storefront.Starter` và storefront sinh theo `BlazorShop.Storefront.{Name}` không được phụ thuộc source/project vào Control Plane, Commerce Node API, backend core implementation, hoặc `Web.SharedV2`.
 
 Important distinction: Storefront vẫn cần gọi Commerce Node Storefront API ở runtime qua HTTP contract. Dependency được phép là `Storefront.Client` generated từ OpenAPI và `Storefront.Runtime` server/BFF primitives. Dependency không được phép là project/source reference tới `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.*`, `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, hoặc `BlazorShop.Web.SharedV2`.
 
 ## Initial codebase evidence before SIB implementation
 
-- `Storefront.V2` hiện đã reference `Storefront.Client`, `Storefront.Runtime`, `Storefront.Components`, `Storefront.WASM`.
+- `Storefront.V2` hiện đã reference `Storefront.Client`, `Storefront.Runtime`, `Storefront.Components`, `Storefront.V2.WASM`.
 - `Storefront.V2` vẫn còn `ProjectReference` tới `BlazorShop.Web.SharedV2`.
-- `Storefront.WASM` hiện chỉ reference `Storefront.Components`, nên boundary ban đầu sạch.
+- `Storefront.V2.WASM` hiện chỉ reference `Storefront.Components`, nên boundary ban đầu sạch.
 - `Storefront.Components` không reference `Web.SharedV2`, Control Plane, Commerce Node API, Application, Domain hoặc Infrastructure.
 - `Storefront.Starter` dùng package `BlazorShop.Storefront.Client` và `BlazorShop.Storefront.Runtime`, không reference `Web.SharedV2`.
 - `Web.SharedV2` vẫn chứa browser/auth helpers, JS interop, JWT-related code, toast helpers và business/transitional models.
@@ -27,9 +27,9 @@ Storefront.V2
   -> Storefront.Runtime
       -> Storefront.Client
   -> Storefront.Components
-  -> Storefront.WASM
+  -> Storefront.V2.WASM
 
-Storefront.WASM
+Storefront.V2.WASM
   -> Storefront.Components
 
 Storefront.Starter
@@ -76,7 +76,7 @@ Storefront.*
   - [x] File không được đụng trong phase này.
 - [x] Chạy inventory dependency graph:
   - [x] `ProjectReference` của `Storefront.V2`.
-  - [x] `ProjectReference` của `Storefront.WASM`.
+  - [x] `ProjectReference` của `Storefront.V2.WASM`.
   - [x] `ProjectReference` của `Storefront.Components`.
   - [x] Package references của `Storefront.Starter`.
   - [x] Namespace usages `BlazorShop.Web.SharedV2`.
@@ -107,7 +107,7 @@ Storefront.*
   - [x] `Storefront.V2` không được reference/import `ControlPlane.*`.
   - [x] `Storefront.V2` không được reference/import `CommerceNode.API`.
   - [x] `Storefront.V2` không được reference/import `Application`, `Domain`, `Infrastructure`.
-  - [x] `Storefront.WASM` chỉ được reference browser-safe Storefront packages.
+  - [x] `Storefront.V2.WASM` chỉ được reference browser-safe Storefront packages.
   - [x] `Storefront.Components` không được reference Runtime, Client, V2, Web.SharedV2, backend/core/API projects.
   - [x] `Storefront.Runtime` không được reference V2, Components, WASM, Web.SharedV2, backend/core/API projects.
   - [x] `Storefront.Client` không được reference V2, Runtime, Components, Web.SharedV2, backend/core/API projects.
@@ -285,7 +285,7 @@ Storefront.*
 - [x] `Storefront.V2` source không import `BlazorShop.Web.SharedV2`.
 - [x] `Storefront.V2` Dockerfile không copy `Web.SharedV2`.
 - [x] `Storefront.V2` Tailwind config không scan `Web.SharedV2`.
-- [x] `Storefront.WASM` không reference `Web.SharedV2`, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
+- [x] `Storefront.V2.WASM` không reference `Web.SharedV2`, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
 - [x] `Storefront.Components` không reference `Web.SharedV2`, Runtime, Client, V2, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
 - [x] `Storefront.Runtime` không reference `Web.SharedV2`, V2, Components, WASM, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
 - [x] `Storefront.Client` không reference `Web.SharedV2`, V2, Runtime, Components, Control Plane, Commerce Node API, Application, Domain, Infrastructure.
@@ -340,5 +340,5 @@ Then run the existing Playwright harness or add a focused script only if the cur
 | 1 | Storefront independence means no source/project dependency on Control Plane, Commerce implementation, backend core, or `Web.SharedV2` | Storefront still needs Commerce API over HTTP, but contract must be through generated client/runtime boundary | Treating API runtime dependency as forbidden |
 | 2 | Remove `Storefront.V2 -> Web.SharedV2` before rewriting Control Plane shared helpers | Storefront currently has small shared dependency footprint, while Control Plane uses many shared browser/auth helpers | Big-bang migration of Control Plane and Storefront together |
 | 3 | Move `StorefrontCookieNames` to V2-local first | Cookie/session/cart-token/currency preference are host/BFF policy today | Creating a new shared browser package prematurely |
-| 4 | Keep `Storefront.WASM`, `Components`, and `Starter` clean with guardrails | These projects are already clean or near-clean; regression prevention matters more than migration there | Waiting until later to add guardrails |
+| 4 | Keep `Storefront.V2.WASM`, `Components`, and `Starter` clean with guardrails | These projects are already clean or near-clean; regression prevention matters more than migration there | Waiting until later to add guardrails |
 | 5 | Generated `Storefront.Client` remains the only storefront HTTP contract source | Avoids handwritten DTO clones and lets React/other FE read backend contract from generated clients/OpenAPI | Copying DTOs into another shared project |

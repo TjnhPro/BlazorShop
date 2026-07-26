@@ -29,12 +29,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("@code", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("Microsoft.AspNetCore.Components", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Components", sources, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.Storefront.WASM", sources, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2.WASM", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Services", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Web.SharedV2", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Components", project, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.Storefront.WASM", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2.WASM", project, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2", project, StringComparison.Ordinal);
         }
 
@@ -46,7 +46,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.DoesNotContain("BlazorShop.Storefront.Runtime", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Components", sources, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.Storefront.WASM", sources, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2.WASM", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Web.SharedV2", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProjectReference", project, StringComparison.Ordinal);
