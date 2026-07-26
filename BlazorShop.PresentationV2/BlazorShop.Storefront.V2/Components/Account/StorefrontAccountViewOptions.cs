@@ -28,13 +28,13 @@ public static class StorefrontAccountViewOptions
         "/api/account/orders/{orderReference}/receipt",
         "/account/orders/{orderReference}");
 
-    public static IReadOnlyList<AccountNavigationItem> NavigationItems { get; } =
-    [
+    public static AccountNavigationItem[] NavigationItems { get; } =
+    {
         new("profile", "Profile", "/account/profile"),
         new("orders", "Orders", "/account/orders"),
         new("addresses", "Addresses", "/account/addresses"),
         new("change-password", "Password", "/account/change-password")
-    ];
+    };
 
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {

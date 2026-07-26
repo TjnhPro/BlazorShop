@@ -687,6 +687,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void AccountNavigationItems_UseConcreteSharedArrayForWasmHydration()
+        {
+            var options = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
+
+            Assert.Contains("public static AccountNavigationItem[] NavigationItems { get; }", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("public static IReadOnlyList<AccountNavigationItem> NavigationItems", options, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void AccountApp_UsesHostShellClassesAfterHpr13Migration()
         {
             var app = ReadRepositoryFile(
@@ -820,6 +830,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 Assert.Contains(expected, combinedDocs, StringComparison.Ordinal);
             }
+        }
+
+        [Fact]
+        public void NewReleases_DoesNotSendGeneratedClientUnsafeCreatedAfterUtcQuery()
+        {
+            var newReleases = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
+
+            Assert.Contains("SortBy = ProductCatalogSortBy.Newest", newReleases, StringComparison.Ordinal);
+            Assert.DoesNotContain("CreatedAfterUtc", newReleases, StringComparison.Ordinal);
         }
 
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)

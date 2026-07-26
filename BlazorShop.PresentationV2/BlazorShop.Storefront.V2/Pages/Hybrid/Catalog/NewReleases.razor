@@ -62,7 +62,6 @@
             PageNumber = 1,
             PageSize = 24,
             SortBy = ProductCatalogSortBy.Newest,
-            CreatedAfterUtc = DateTime.UtcNow.AddDays(-7),
         }, displayContext.CurrencyCode);
 
         _metadata = await metadataTask;

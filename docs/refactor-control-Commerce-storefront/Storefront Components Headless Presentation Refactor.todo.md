@@ -92,14 +92,14 @@ Storefront.{Name}
 
 ## Non-goals
 
-- [ ] Do not change Commerce Node API behavior.
-- [ ] Do not move backend business rules into `Storefront.Components`.
-- [ ] Do not introduce a new shared theme package in this phase.
-- [ ] Do not force Starter or generated storefronts to reuse V2 visual markup.
-- [ ] Do not remove same-origin BFF security pattern.
-- [ ] Do not add generated Commerce Node API clients to WASM/browser.
-- [ ] Do not migrate every interactive component in one commit.
-- [ ] Do not make component guardrails so strict that accessibility-only classes such as `sr-only` become impossible.
+- [x] Do not change Commerce Node API behavior.
+- [x] Do not move backend business rules into `Storefront.Components`.
+- [x] Do not introduce a new shared theme package in this phase.
+- [x] Do not force Starter or generated storefronts to reuse V2 visual markup.
+- [x] Do not remove same-origin BFF security pattern.
+- [x] Do not add generated Commerce Node API clients to WASM/browser.
+- [x] Do not migrate every interactive component in one commit.
+- [x] Do not make component guardrails so strict that accessibility-only classes such as `sr-only` become impossible.
 
 ## Phase HPR0 - Baseline inventory and guardrail design
 
@@ -515,37 +515,39 @@ Goal: ensure future storefronts can create their own visual templates.
 
 Goal: prove V2 keeps existing behavior after moving visual implementation out of shared components.
 
-- [ ] Unit/static tests:
-  - [ ] Components boundary tests.
-  - [ ] Component theme/layout neutrality tests.
-  - [ ] Component host assumption tests.
-  - [ ] Storefront V2 composition tests.
-  - [ ] WASM build.
-- [ ] Browser QA with Playwright for affected flows:
-  - [ ] Home deals.
-  - [ ] Category product grid.
-  - [ ] Search product grid/empty state.
-  - [ ] New releases.
-  - [ ] Today's deals.
-  - [ ] Product gallery.
-  - [ ] Product purchase/add-to-cart.
-  - [ ] Cart load/update/remove/clear.
-  - [ ] Checkout COD path if checkout was changed.
-  - [ ] Account profile.
-  - [ ] Account password.
-  - [ ] Account addresses.
-  - [ ] Account orders list/detail.
-- [ ] Browser network assertions:
-  - [ ] Browser calls same-origin `/api/*` only.
-  - [ ] No direct Commerce Node host from browser.
-  - [ ] No Control Plane calls from storefront browser.
-- [ ] Update `QA-StorefrontV2.todo.md` with evidence if implementation changes behavior/rendering.
+- [x] Unit/static tests:
+  - [x] Components boundary tests.
+  - [x] Component theme/layout neutrality tests.
+  - [x] Component host assumption tests.
+  - [x] Storefront V2 composition tests.
+  - [x] WASM build.
+- [x] Browser QA with Playwright for affected flows:
+  - [x] Home deals.
+  - [x] Category product grid.
+  - [x] Search product grid/empty state.
+  - [x] New releases.
+  - [x] Today's deals.
+  - [x] Product gallery.
+  - [x] Product purchase/add-to-cart.
+  - [x] Cart load/update/remove/clear.
+  - [x] Checkout COD path if checkout was changed.
+  - [x] Account profile.
+  - [x] Account password.
+  - [x] Account addresses.
+  - [x] Account orders list/detail.
+- [x] Browser network assertions:
+  - [x] Browser calls same-origin `/api/*` only.
+  - [x] No direct Commerce Node host from browser.
+  - [x] No Control Plane calls from storefront browser.
+- [x] Update `QA-StorefrontV2.todo.md` with evidence if implementation changes behavior/rendering.
+
+Evidence: `dotnet build BlazorShop.sln` passed; `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~Storefront"` passed `731/733` with `2` existing skipped tests. Playwright evidence: `output/playwright/hpr16-storefront-route-probe.json`, `output/playwright/hpr16-storefront-cart-mutation-probe.json`, `output/playwright/hpr16-storefront-account-probe.json`, plus `scripts/qa/run-storefront-order-email-e2e.ps1 -Headless` and `scripts/qa/run-storefront-registration-policy-e2e.ps1 -Headless`.
 
 ### HPR16 QA gate
 
-- [ ] `dotnet build BlazorShop.sln`.
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~Storefront"`.
-- [ ] Targeted Playwright Storefront V2 pass for changed flows.
+- [x] `dotnet build BlazorShop.sln`.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~Storefront"`.
+- [x] Targeted Playwright Storefront V2 pass for changed flows.
 
 ## Implementation order summary
 
@@ -569,13 +571,13 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 
 ## Completeness checklist
 
-- [ ] `ProductSummaryCard.razor` covered.
-- [ ] `ProductSummaryGrid.razor` covered.
-- [ ] `DealsBlock.razor` covered.
-- [ ] `ProductGallery.razor` covered.
-- [ ] `ProductPurchasePanel.razor` covered.
-- [ ] `CartView.razor` covered.
-- [ ] `CheckoutShell.razor` covered.
+- [x] `ProductSummaryCard.razor` covered.
+- [x] `ProductSummaryGrid.razor` covered.
+- [x] `DealsBlock.razor` covered.
+- [x] `ProductGallery.razor` covered.
+- [x] `ProductPurchasePanel.razor` covered.
+- [x] `CartView.razor` covered.
+- [x] `CheckoutShell.razor` covered.
 - [x] `AccountNavigation.razor` covered.
 - [x] `AccountProfileEditor.razor` covered.
 - [x] `AccountChangePasswordForm.razor` covered.
@@ -583,10 +585,10 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 - [x] `AccountOrderList.razor` covered.
 - [x] `AccountOrderDetail.razor` covered.
 - [x] `AccountApp.razor` covered.
-- [ ] `ProductSummaryItem.cs` covered.
-- [ ] `DealsPlacement.cs` covered.
-- [ ] `ProductGalleryItem.cs` covered.
-- [ ] `ProductPurchasePanelModels.cs` covered.
+- [x] `ProductSummaryItem.cs` covered.
+- [x] `DealsPlacement.cs` covered.
+- [x] `ProductGalleryItem.cs` covered.
+- [x] `ProductPurchasePanelModels.cs` covered.
 - [x] Browser cart models covered.
 - [x] Browser checkout models covered.
 - [x] Browser account models covered.
@@ -595,14 +597,14 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 
 ## Risk controls
 
-- [ ] Do not migrate cart and checkout in the same commit.
-- [ ] Do not migrate account shell before account leaf components.
-- [ ] Do not delete shared model contracts until all V2 consumers have replacement imports.
-- [ ] Do not remove same-origin BFF security behavior.
-- [ ] Do not loosen existing backend dependency guardrails.
-- [ ] Do not introduce V2 route helpers into `Storefront.Components`.
-- [ ] Do not make Starter depend on V2 visual components.
-- [ ] Do not mark the phase complete until an inventory script proves every current `Features/*.razor` and `Features/*.cs` file is represented.
+- [x] Do not migrate cart and checkout in the same commit.
+- [x] Do not migrate account shell before account leaf components.
+- [x] Do not delete shared model contracts until all V2 consumers have replacement imports.
+- [x] Do not remove same-origin BFF security behavior.
+- [x] Do not loosen existing backend dependency guardrails.
+- [x] Do not introduce V2 route helpers into `Storefront.Components`.
+- [x] Do not make Starter depend on V2 visual components.
+- [x] Do not mark the phase complete until an inventory script proves every current `Features/*.razor` and `Features/*.cs` file is represented.
 
 ## Suggested verification commands
 

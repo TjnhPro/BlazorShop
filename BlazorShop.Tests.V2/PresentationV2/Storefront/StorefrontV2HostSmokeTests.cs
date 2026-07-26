@@ -186,7 +186,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var response = await client.GetAsync(StorefrontRoutes.Register);
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, content);
             Assert.Contains("Create account", content, StringComparison.Ordinal);
             Assert.Contains("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("data-storefront-register-form", content, StringComparison.Ordinal);
@@ -210,7 +210,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var response = await client.GetAsync(StorefrontRoutes.Register);
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, content);
             Assert.Contains("Customer registration is disabled.", content, StringComparison.Ordinal);
             Assert.DoesNotContain("data-storefront-register-form", content, StringComparison.Ordinal);
             Assert.DoesNotContain("name=\"FullName\"", content, StringComparison.OrdinalIgnoreCase);
@@ -699,14 +699,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 services =>
                 {
                     services.RemoveAll<IStorefrontSessionResolver>();
-                    services.RemoveAll<StorefrontApiClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(new CurrencyPreferenceHandler())
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, new CurrencyPreferenceHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -835,13 +829,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             using var client = CreateClient(services =>
             {
-                services.RemoveAll<StorefrontApiClient>();
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(new ServiceUnavailableHandler())
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                ReplaceStorefrontApiClients(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.Cart);
@@ -858,13 +846,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var handler = new CartApiHandler(productId, initialQuantity: 2);
             using var client = CreateClient(services =>
             {
-                services.RemoveAll<StorefrontApiClient>();
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(handler)
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                ReplaceStorefrontApiClients(services, handler);
             });
 
             using var request = new HttpRequestMessage(HttpMethod.Get, StorefrontRoutes.Cart);
@@ -890,13 +872,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    services.RemoveAll<StorefrontApiClient>();
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(new ServiceUnavailableHandler())
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -921,13 +897,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    services.RemoveAll<StorefrontApiClient>();
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -946,7 +916,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, content);
             Assert.Contains("\"count\":1", content, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("no-store", response.Headers.CacheControl?.ToString() ?? string.Empty, StringComparison.OrdinalIgnoreCase);
             Assert.Contains(response.Headers.GetValues("Set-Cookie"), value =>
@@ -965,13 +935,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    services.RemoveAll<StorefrontApiClient>();
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, handler);
                 },
                 allowAutoRedirect: false,
                 configureHost: builder =>
@@ -1015,13 +979,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    services.RemoveAll<StorefrontApiClient>();
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1048,13 +1006,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    services.RemoveAll<StorefrontApiClient>();
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1079,13 +1031,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    services.RemoveAll<StorefrontApiClient>();
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1108,13 +1054,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    services.RemoveAll<StorefrontApiClient>();
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ReplaceStorefrontApiClients(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1201,14 +1141,38 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             return CreateClient(services =>
             {
-                services.RemoveAll<StorefrontApiClient>();
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(handler)
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                ReplaceStorefrontApiClients(services, handler);
             });
+        }
+
+        private static void ReplaceStorefrontApiClients(IServiceCollection services, HttpMessageHandler handler)
+        {
+            services.RemoveAll<StorefrontApiClient>();
+            services.RemoveAll<IStorefrontAddressClient>();
+            services.RemoveAll<IStorefrontCartClient>();
+            services.RemoveAll<IStorefrontCatalogClient>();
+            services.RemoveAll<IStorefrontCheckoutClient>();
+            services.RemoveAll<IStorefrontConsentClient>();
+            services.RemoveAll<IStorefrontContentClient>();
+            services.RemoveAll<IStorefrontCustomerClient>();
+            services.RemoveAll<IStorefrontPaymentClient>();
+            services.RemoveAll<IStorefrontStoreConfigurationClient>();
+
+            services.AddScoped(_ => new StorefrontApiClient(
+                new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                },
+                Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
         }
 
         private static async Task<(string Token, string CookieHeader)> ReadAntiforgeryAsync(

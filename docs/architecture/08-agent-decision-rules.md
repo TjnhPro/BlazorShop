@@ -120,7 +120,7 @@ Control Plane Web asset rules:
 Shared V2 UI/asset rules:
 
 - Treat `BlazorShop.Web.SharedV2` as a transitional Control Plane/shared browser-helper bucket. Do not add Storefront-specific files, namespaces, route helpers, cookie names, or business models there.
-- Share browser behavior helpers through `BlazorShop.Web.SharedV2` only when at least two active V2 frontends have a real use case and the helper is not Storefront-specific.
+- Share browser behavior helpers through `BlazorShop.Web.SharedV2` only when both active V2 frontends have a real use case. The helper must not be Storefront-specific.
 - Keep Storefront-specific header, footer, navigation, cart/toast DOM integration, SEO shell, and public commerce page structure in `BlazorShop.Storefront.V2`.
 - Keep Control Plane-specific nav/sidebar/topbar/page header and dense operational components in `BlazorShop.ControlPlane.Web`.
 - Do not create a shared visual shell or asset registry just to reduce superficial markup similarity.
