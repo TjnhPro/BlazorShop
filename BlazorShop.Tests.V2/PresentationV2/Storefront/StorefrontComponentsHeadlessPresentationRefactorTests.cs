@@ -106,6 +106,37 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Do not enable strict failure until a component group has been migrated", plan, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void TargetContractAndHeadlessFolders_ExistWithOwnershipReadmes()
+        {
+            var expectedFolders = new[]
+            {
+                "Contracts/Catalog",
+                "Contracts/Product",
+                "Contracts/Cart",
+                "Contracts/Checkout",
+                "Contracts/Account",
+                "Headless/Product",
+                "Headless/Cart",
+                "Headless/Checkout",
+                "Headless/Account"
+            };
+
+            foreach (var folder in expectedFolders)
+            {
+                var readmePath = RepositoryPath($"BlazorShop.PresentationV2/BlazorShop.Storefront.Components/{folder}/README.md");
+
+                Assert.True(File.Exists(readmePath), $"{folder} must have a README documenting ownership.");
+                Assert.NotEmpty(File.ReadAllText(readmePath));
+            }
+
+            var featuresReadme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/README.md");
+            Assert.Contains("temporary compatibility area", featuresReadme, StringComparison.Ordinal);
+            Assert.Contains("Contracts/{Capability}", featuresReadme, StringComparison.Ordinal);
+            Assert.Contains("Headless/{Capability}", featuresReadme, StringComparison.Ordinal);
+            Assert.Contains("Store-owned visual templates belong", featuresReadme, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

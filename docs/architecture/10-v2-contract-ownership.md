@@ -53,13 +53,19 @@ This page records the current contract ownership boundary after Storefront V2 mo
 
 Generated StorefrontBuilder projects are not contract owners. They are disposable artifacts under ignored generated output roots, consume Storefront client/runtime packages, hold generated presentation output, and keep review artifacts under their local `docs/storefront-analysis/`.
 
-## Portable Component Models
+## Portable Component Models And Headless Contracts
 
-`BlazorShop.Storefront.Components/Features/*` may define small render-facing models such as product summary cards, product gallery items, and purchase panel snapshots.
+`BlazorShop.Storefront.Components/Contracts/*` is the preferred home for small render-facing models such as product summary cards, product gallery items, and purchase panel snapshots after the headless presentation refactor.
+
+`BlazorShop.Storefront.Components/Headless/*` is the preferred home for browser-safe presentation state and action/event contracts that can be reused without Storefront V2 visual markup.
+
+`BlazorShop.Storefront.Components/Features/*` may keep temporary compatibility wrappers while existing shared visual components are migrated to host-owned templates.
 
 These models are not public HTTP contracts. The Storefront V2 host maps API DTOs or local endpoint contracts into them before composition. They must not reference `Web.SharedV2`, `Application`, `Domain`, `Infrastructure`, Control Plane, Commerce Node runtime projects, Storefront API clients, or Storefront route helpers.
 
 Do not add admin-owned fields, store ownership fields, credentials, tokens, passwords, server-owned publication flags, or cost/internal accounting fields to these component models.
+
+Do not put V2 theme/layout classes, page containers, route strings, or hardcoded same-origin endpoint paths in reusable headless contracts. Host/storefront projects provide visual templates and route/action descriptors.
 
 ## Guardrails
 

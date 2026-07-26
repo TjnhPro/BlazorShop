@@ -186,9 +186,10 @@ Do not:
 
 Use for:
 
-- Reusable Storefront Razor components that can be shared between Storefront V2 server rendering and its interactive WebAssembly assembly.
-- Presentation-only component behavior that belongs to the public Storefront experience.
-- `Features/*` capability components such as account, cart, checkout, deals, catalog summaries, and product gallery/purchase panels.
+- Headless Storefront presentation contracts under `Contracts/{Capability}`.
+- Browser-safe behavior/state primitives under `Headless/{Capability}`.
+- Same-origin browser/BFF support primitives under `Browser`.
+- Temporary compatibility feature components under `Features/*` while V2 visual markup is migrated into host-owned templates.
 - Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
 
 Do not:
@@ -197,6 +198,7 @@ Do not:
 - Reference `Web.SharedV2`, Storefront route helpers, Storefront API clients, Application, Domain, Infrastructure, Control Plane, or Commerce Node runtime projects from `Features/*`.
 - Add public API DTOs, admin request models, store ownership fields, credentials, or server-owned fields to component-facing models.
 - Use this as a general design system for Control Plane.
+- Add new V2 layout/theme implementations to `Features/*`; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
 

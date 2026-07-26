@@ -8,7 +8,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | --- | --- | --- |
 | Storefront API contracts | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTOs from Commerce Node Storefront OpenAPI. |
 | Neutral runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Store context, server-side generated-client registration, capability reading, normalized errors, and BFF-safe result primitives. |
-| Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Reusable Storefront presentation components that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
+| Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Headless Storefront presentation contracts, browser-safe behavior/state primitives, and temporary compatibility components that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
@@ -57,7 +57,7 @@ Starter consumer rules:
 
 - Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts.
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
-- Use `BlazorShop.Storefront.Components` only for reusable browser-safe UI components when a starter or generated storefront needs that shared component package; Starter-local neutral components may remain local.
+- Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior when a starter or generated storefront needs that shared component package; Starter-local neutral visual components may remain local.
 - Do not reference `BlazorShop.Storefront.V2`.
 - Do not reference backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 

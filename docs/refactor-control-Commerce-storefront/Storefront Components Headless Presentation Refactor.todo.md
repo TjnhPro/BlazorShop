@@ -150,29 +150,29 @@ Goal: freeze the component inventory before moving any markup.
 
 Goal: create a place for reusable contracts without moving all visual files at once.
 
-- [ ] Create target namespace/folder convention:
-  - [ ] `Contracts/Catalog`.
-  - [ ] `Contracts/Product`.
-  - [ ] `Contracts/Cart`.
-  - [ ] `Contracts/Checkout`.
-  - [ ] `Contracts/Account`.
-  - [ ] `Headless/Product`.
-  - [ ] `Headless/Cart`.
-  - [ ] `Headless/Checkout`.
-  - [ ] `Headless/Account`.
-- [ ] Decide temporary compatibility strategy:
-  - [ ] Keep old model type names with forwarding wrappers if needed.
-  - [ ] Avoid broad namespace rename if it would touch every V2 page in one commit.
-- [ ] Update `Features/README.md`:
-  - [ ] `Features` is no longer a place for shared V2 visual implementation.
-  - [ ] Shared visual components are allowed only as temporary compatibility wrappers during migration.
-  - [ ] Store-owned visual templates belong in `Storefront.V2`, `Starter`, or `{Name}`.
-- [ ] Update architecture docs if the meaning of `Storefront.Components` changes from portable visual components to headless contracts/behavior.
+- [x] Create target namespace/folder convention:
+  - [x] `Contracts/Catalog`.
+  - [x] `Contracts/Product`.
+  - [x] `Contracts/Cart`.
+  - [x] `Contracts/Checkout`.
+  - [x] `Contracts/Account`.
+  - [x] `Headless/Product`.
+  - [x] `Headless/Cart`.
+  - [x] `Headless/Checkout`.
+  - [x] `Headless/Account`.
+- [x] Decide temporary compatibility strategy:
+  - [x] Keep old model type names with forwarding wrappers if needed.
+  - [x] Avoid broad namespace rename if it would touch every V2 page in one commit.
+- [x] Update `Features/README.md`:
+  - [x] `Features` is no longer a place for shared V2 visual implementation.
+  - [x] Shared visual components are allowed only as temporary compatibility wrappers during migration.
+  - [x] Store-owned visual templates belong in `Storefront.V2`, `Starter`, or `{Name}`.
+- [x] Update architecture docs if the meaning of `Storefront.Components` changes from portable visual components to headless contracts/behavior.
 
 ### HPR1 QA gate
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`.
-- [ ] Docs/guardrail tests confirm new folder convention.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`.
+- [x] Docs/guardrail tests confirm new folder convention.
 
 ## Phase HPR2 - Catalog leaf: ProductSummaryCard
 

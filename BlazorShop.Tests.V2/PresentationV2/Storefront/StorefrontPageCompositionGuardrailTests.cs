@@ -116,7 +116,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var allowedRootDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Browser",
+                "Contracts",
                 "Features",
+                "Headless",
                 "wwwroot",
                 "bin",
                 "obj",
