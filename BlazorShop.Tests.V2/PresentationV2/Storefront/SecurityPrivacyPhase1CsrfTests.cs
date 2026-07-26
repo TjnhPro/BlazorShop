@@ -7,10 +7,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontHead_ProjectsAntiforgeryTokenForJavaScript()
         {
-            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/App.razor");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontApp.razor");
+            var head = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationHead.razor");
             var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Security/StorefrontAntiforgeryHead.razor");
 
-            Assert.Contains("<StorefrontAntiforgeryHead />", app, StringComparison.Ordinal);
+            Assert.Contains("ComponentType=\"@ViewSet.ApplicationHead\"", app, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontAntiforgeryHead />", head, StringComparison.Ordinal);
             Assert.Contains("Antiforgery.GetAndStoreTokens", component, StringComparison.Ordinal);
             Assert.Contains("blazorshop-antiforgery-token", component, StringComparison.Ordinal);
             Assert.Contains("X-CSRF-TOKEN", component, StringComparison.Ordinal);

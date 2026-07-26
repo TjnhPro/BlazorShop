@@ -1,26 +1,8 @@
-@page "/product/{Slug}"
-@inject IStorefrontCatalogClient ApiClient
-@inject IStorefrontSeoComposer SeoComposer
-@inject IStorefrontStructuredDataComposer StructuredDataComposer
-@inject IStorefrontDisplayContextProvider DisplayContextProvider
+@namespace BlazorShop.Storefront.Theme.Pages.Product
+@using BlazorShop.Storefront.Presentation.Services.Product
 @inject IStorefrontPriceFormatter PriceFormatter
-@inject ILogger<ProductPage> Logger
 
-<StorefrontSeoHead Metadata="_metadata" StructuredData="_structuredData" />
-
-@if (_isServiceUnavailable)
-{
-    <ServiceUnavailableState Title="Product temporarily unavailable"
-                             Message="The storefront is running, but the catalog API is not reachable right now. Start the API project or AppHost and refresh this page." />
-}
-else if (_isNotFound)
-{
-    <NotFoundState Title="Product not found"
-                   Message="We couldn't find a published product for this address." />
-}
-else if (_product is not null)
-{
-    <StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-8 pt-10 sm:px-6 lg:px-8">
+<StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-8 pt-10 sm:px-6 lg:px-8">
         <Breadcrumb>
             <BreadcrumbNav Items="_breadcrumbs" />
         </Breadcrumb>
@@ -152,19 +134,22 @@ else if (_product is not null)
             }
         </div>
     </section>
-}
 
 @code {
-    private SeoMetadataDto _metadata = new();
-    private bool _isNotFound;
-    private bool _isServiceUnavailable;
-    private GetProduct? _product;
-    private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs = [];
-    private IReadOnlyList<ProductGalleryItem> _galleryItems = [];
-    private ProductPurchasePanelModel _purchasePanel = ProductPurchasePanelModel.Empty;
-    private IReadOnlyList<GetCatalogProduct> _relatedProducts = [];
-    private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
-    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
+    [Parameter, EditorRequired]
+    public StorefrontProductPageContext Context { get; set; } = default!;
+
+    private GetProduct _product => Context.Product;
+
+    private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs => Context.Breadcrumbs;
+
+    private IReadOnlyList<ProductGalleryItem> _galleryItems => Context.GalleryItems;
+
+    private ProductPurchasePanelModel _purchasePanel => Context.PurchasePanel;
+
+    private IReadOnlyList<GetCatalogProduct> _relatedProducts => Context.RelatedProducts;
+
+    private StorefrontDisplayContext _displayContext => Context.DisplayContext;
 
     private bool IsFreshArrival => _product is not null && DateTime.UtcNow.Subtract(_product.CreatedOn).TotalDays <= 7;
 
@@ -264,225 +249,6 @@ else if (_product is not null)
     private string ProductSeoContentTitle => _product?.Name is { Length: > 0 } productName
         ? $"More about {productName}"
         : string.Empty;
-
-    [Parameter]
-    public string Slug { get; set; } = string.Empty;
-
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        _displayContext = await DisplayContextProvider.GetAsync();
-
-        var routePath = StorefrontRoutes.Product(Slug);
-        var productResult = await ApiClient.GetPublishedProductBySlugAsync(Slug, _displayContext.CurrencyCode);
-
-        if (productResult.IsServiceUnavailable)
-        {
-            _product = null;
-            _isNotFound = false;
-            _isServiceUnavailable = true;
-            _breadcrumbs = [];
-            _galleryItems = [];
-            _purchasePanel = ProductPurchasePanelModel.Empty;
-            _relatedProducts = [];
-            _structuredData = StorefrontStructuredDataDocument.Empty;
-            StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
-            SeoRuntimeLogger.PublicProductServiceUnavailable(Logger, routePath, Slug);
-
-            _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
-                "Product temporarily unavailable",
-                routePath,
-                "The storefront is running, but the catalog API is not reachable right now.");
-            return;
-        }
-
-        _product = productResult.Value;
-
-        if (_product is null)
-        {
-            _isNotFound = true;
-            _isServiceUnavailable = false;
-            _breadcrumbs = [];
-            _galleryItems = [];
-            _purchasePanel = ProductPurchasePanelModel.Empty;
-            _relatedProducts = [];
-            _structuredData = StorefrontStructuredDataDocument.Empty;
-            StorefrontResponseHeaders.ApplyNotFound(HttpContext);
-            SeoRuntimeLogger.PublicProductNotFound(Logger, routePath, Slug);
-
-            _metadata = await SeoComposer.ComposeNotFoundPageAsync(
-                "Product not found",
-                routePath,
-                "We couldn't find a published product for this address.");
-            return;
-        }
-
-        _isNotFound = false;
-        _isServiceUnavailable = false;
-        SeoRuntimeLogger.PublicProductResolved(Logger, routePath, Slug, _product.Id);
-        _breadcrumbs = BuildBreadcrumbs(_product);
-        _galleryItems = BuildGalleryItems(_product);
-        _purchasePanel = BuildPurchasePanel(_product);
-
-        var metadataTask = SeoComposer.ComposeProductPageAsync(_product);
-        var structuredDataTask = StructuredDataComposer.ComposeProductPageAsync(_product);
-        var relatedProductsTask = GetRelatedProductsAsync(_product);
-
-        await Task.WhenAll(metadataTask, structuredDataTask, relatedProductsTask);
-
-        _metadata = await metadataTask;
-        _structuredData = await structuredDataTask;
-        _relatedProducts = await relatedProductsTask;
-    }
-
-    private static IReadOnlyList<StorefrontBreadcrumbItem> BuildBreadcrumbs(GetProduct product)
-    {
-        var breadcrumbs = new List<StorefrontBreadcrumbItem>
-        {
-            new("Home", StorefrontRoutes.Home),
-        };
-
-        if (!string.IsNullOrWhiteSpace(product.Category?.Slug) && !string.IsNullOrWhiteSpace(product.Category?.Name))
-        {
-            breadcrumbs.Add(new StorefrontBreadcrumbItem(product.Category.Name, StorefrontRoutes.Category(product.Category.Slug)));
-        }
-
-        breadcrumbs.Add(new StorefrontBreadcrumbItem(product.Name ?? "Product"));
-
-        return breadcrumbs;
-    }
-
-    private static IReadOnlyList<ProductGalleryItem> BuildGalleryItems(GetProduct product)
-    {
-        var gallery = product.MediaGallery
-            .Where(item => !string.IsNullOrWhiteSpace(item.ImageUrl))
-            .Select(item => new ProductGalleryItem(
-                item.ImageUrl!,
-                string.IsNullOrWhiteSpace(item.ThumbnailUrl) ? item.ImageUrl! : item.ThumbnailUrl!,
-                ResolveGalleryAltText(item.AltText, product.Name)))
-            .ToArray();
-
-        if (gallery.Length > 0)
-        {
-            return gallery;
-        }
-
-        return string.IsNullOrWhiteSpace(product.Image)
-            ? []
-            :
-            [
-                new ProductGalleryItem(
-                    product.Image!,
-                    product.Image!,
-                    ResolveGalleryAltText(null, product.Name)),
-            ];
-    }
-
-    private static string ResolveGalleryAltText(string? altText, string? productName)
-    {
-        if (!string.IsNullOrWhiteSpace(altText))
-        {
-            return altText.Trim();
-        }
-
-        return string.IsNullOrWhiteSpace(productName) ? "Product image" : productName.Trim();
-    }
-
-    private ProductPurchasePanelModel BuildPurchasePanel(GetProduct product)
-    {
-        return new ProductPurchasePanelModel(
-            product.Id,
-            string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
-            DisplayCurrencyCode,
-            BaseUnitPriceValue,
-            product.Variants.FirstOrDefault(variant => variant.IsDefault)?.Id,
-            DefaultSelectionSku,
-            product.Gtin,
-            _galleryItems.FirstOrDefault()?.ImageUrl,
-            InitialStockValue,
-            product.MinOrderQuantity,
-            product.MaxOrderQuantity,
-            product.QuantityStep,
-            product.FreeShipping,
-            product.DeliveryEstimateText,
-            CanSubmitInitialPurchase,
-            PurchaseMessage,
-            PurchaseBlockMessage,
-            BuildInitialValidationMessages(product),
-            ActiveVariationOptions
-                .Select(option => new ProductPurchaseOptionItem(
-                    option.Name!,
-                    option.IsRequired,
-                    option.ControlType,
-                    ActiveVariationValues(option)
-                        .Select(value => new ProductPurchaseOptionValueItem(value.Value!, value.ColorHex))
-                        .ToArray()))
-                .ToArray(),
-            product.Variants
-                .Select(variant => new ProductPurchaseVariantItem(
-                    variant.Id,
-                    VariantDisplayName(variant),
-                    VariantAttributeText(variant),
-                    VariantOptionLabel(variant),
-                    variant.SizeValue,
-                    variant.Sku,
-                    variant.Stock,
-                    variant.IsDefault,
-                    VariantPriceValue(variant),
-                    VariantCurrencyCode(variant),
-                    FormatPrice(GetVariantDisplayPrice(variant), VariantCurrencyCode(variant))))
-                .ToArray(),
-            CartUrl);
-    }
-
-    private IReadOnlyList<string> BuildInitialValidationMessages(GetProduct product)
-    {
-        if (CanSubmitInitialPurchase)
-        {
-            return [];
-        }
-
-        return product.PurchaseBlockReasons.Count > 0
-            ? product.PurchaseBlockReasons
-                .Select(FormatPurchaseBlockReason)
-                .Where(message => !string.IsNullOrWhiteSpace(message))
-                .ToArray()
-            : [PurchaseBlockMessage];
-    }
-
-    private string FormatPurchaseBlockReason(string reason)
-    {
-        return reason switch
-        {
-            "purchase_disabled" => "Purchasing is paused.",
-            "out_of_stock" => "Currently out of stock.",
-            "below_min_quantity" => $"Minimum order quantity is {_product?.MinOrderQuantity ?? 1}.",
-            "above_max_quantity" => $"Maximum order quantity is {_product?.MaxOrderQuantity}.",
-            _ => PurchaseBlockMessage,
-        };
-    }
-
-    private async Task<IReadOnlyList<GetCatalogProduct>> GetRelatedProductsAsync(GetProduct product)
-    {
-        if (string.IsNullOrWhiteSpace(product.Category?.Slug))
-        {
-            return [];
-        }
-
-        var categoryPageResult = await ApiClient.GetPublishedCategoryBySlugAsync(product.Category.Slug, _displayContext.CurrencyCode);
-        if (!categoryPageResult.IsSuccess || categoryPageResult.Value is null)
-        {
-            return [];
-        }
-
-        return categoryPageResult.Value.Products
-            .Where(relatedProduct => relatedProduct.Id != product.Id)
-            .Where(relatedProduct => !string.IsNullOrWhiteSpace(relatedProduct.Slug))
-            .Take(3)
-            .ToArray();
-    }
 
     private static string ScaleLabel(int scale)
     {

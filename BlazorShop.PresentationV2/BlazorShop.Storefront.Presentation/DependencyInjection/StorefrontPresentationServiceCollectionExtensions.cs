@@ -5,6 +5,7 @@ using BlazorShop.Storefront.Configuration;
 using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Presentation.Routing;
+using BlazorShop.Storefront.Presentation.Services.Product;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +36,7 @@ public static class StorefrontPresentationServiceCollectionExtensions
         services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
         services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
         services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
+        services.AddScoped<StorefrontProductPageService>();
 
         return services;
     }

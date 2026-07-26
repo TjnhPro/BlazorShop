@@ -1,14 +1,5 @@
 namespace BlazorShop.Storefront.Services
 {
-    using System.Globalization;
-    using System.Net;
-    using System.Net.Http.Json;
-    using System.Text.Json;
-    using BlazorShop.Storefront.Options;
-
-    using Microsoft.Extensions.Options;
-
-
     public sealed record StorefrontSubmitResult<TData>(bool Success, string Message, TData? Data, int? StatusCode = null)
     {
         public static StorefrontSubmitResult<TData> Succeeded(TData? data, string? message)

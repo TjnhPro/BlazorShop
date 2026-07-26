@@ -97,10 +97,6 @@ namespace BlazorShop.Storefront.Services
         decimal Amount,
         string CurrencyCode);
 
-    public sealed record StorefrontSelectedAttribute(
-        string Name,
-        string Value);
-
     public sealed class StorefrontLegacyCartItem
     {
         public Guid ProductId { get; set; }

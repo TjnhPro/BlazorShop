@@ -449,13 +449,13 @@ Exit criteria:
 
 Muc tieu: tach page phuc tap nhat dau tien de prove architecture.
 
-- [ ] Tao Presentation route page:
+- [x] Tao Presentation route page:
 
 ```text
 Pages/Hybrid/Catalog/ProductRoutePage.razor
 ```
 
-- [ ] Tao service/context:
+- [x] Tao service/context:
 
 ```text
 Services/Product/StorefrontProductPageService.cs
@@ -463,7 +463,7 @@ Services/Product/StorefrontProductPageContext.cs
 Services/Product/StorefrontProductPageMapper.cs
 ```
 
-- [ ] Move vao Presentation:
+- [x] Move vao Presentation:
   - route `/product/{Slug}`;
   - slug validation;
   - catalog facade/client call;
@@ -479,7 +479,7 @@ Services/Product/StorefrontProductPageMapper.cs
   - purchase panel model/context mapping;
   - related products loading;
   - purchase/sellability reason codes.
-- [ ] Giu trong V2 view:
+- [x] Giu trong V2 view:
   - product page markup;
   - gallery markup;
   - purchase panel markup;
@@ -488,15 +488,15 @@ Services/Product/StorefrontProductPageMapper.cs
   - typography;
   - final copy such as out-of-stock text;
   - section ordering.
-- [ ] Tao V2 view:
+- [x] Tao V2 view:
 
 ```text
 Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor
 ```
 
-- [ ] Product route page render V2 view qua `StorefrontFoundationViewOutlet`.
-- [ ] Remove `@page` tu V2 `ProductPage.razor` hoac replace bang V2 view without route directive.
-- [ ] Tests:
+- [x] Product route page render V2 view qua `StorefrontFoundationViewOutlet`.
+- [x] Remove `@page` tu V2 `ProductPage.razor` hoac replace bang V2 view without route directive.
+- [x] Tests:
   - `/product/{slug}` still renders same major DOM markers;
   - missing product returns HTTP 404;
   - Commerce unavailable returns HTTP 503;
@@ -504,11 +504,25 @@ Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor
   - gallery 1x1 visual remains V2-owned;
   - add-to-cart action descriptors unchanged.
 
+2026-07-26 SPF6 evidence:
+
+- Added `BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/ProductRoutePage.razor`.
+- Added `BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageService.cs`, `StorefrontProductPageContext.cs`, and `StorefrontProductPageMapper.cs`.
+- Moved product contracts and breadcrumb/formatter/display-context abstractions into `BlazorShop.Storefront.Presentation`.
+- Moved V2 product page markup into `BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor` and removed its route/SSR orchestration.
+- Updated V2 foundation registration so `ProductPage` is the V2 view while Presentation owns the route.
+- Updated guardrails for App shell ownership, product page ownership, and root asset placement.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontProductPageServiceTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~LayoutAssetFoundationTests" --no-restore` passed 93/93.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.SignIn_ReturnsStorefrontLoginPage|FullyQualifiedName~StorefrontV2HostSmokeTests.HomePage_RendersStorefrontShell" --no-restore` passed 1/1.
+
 Exit criteria:
 
-- [ ] Product application logic nam trong Presentation.
-- [ ] V2 product view khong inject catalog client, SEO composer, status header service.
-- [ ] Product route URL va behavior parity pass.
+- [x] Product application logic nam trong Presentation.
+- [x] V2 product view khong inject catalog client, SEO composer, status header service.
+- [x] Product route URL va behavior parity pass.
 
 ## Phase SPF7 - Catalog Listing Pages
 

@@ -4,6 +4,7 @@ using BlazorShop.Storefront.Components.Layout;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
+using BlazorShop.Storefront.Theme.Pages.Product;
 
 public static class V2FoundationViewRegistration
 {
@@ -18,10 +19,10 @@ public static class V2FoundationViewRegistration
             {
                 ApplicationHead = typeof(StorefrontApplicationHead),
                 ApplicationScripts = typeof(StorefrontApplicationScripts),
-                MainLayout = viewSet.MainLayout,
+                MainLayout = typeof(MainLayout),
                 HomePage = viewSet.HomePage,
                 CategoryPage = viewSet.CategoryPage,
-                ProductPage = viewSet.ProductPage,
+                ProductPage = typeof(V2ProductPageView),
                 SearchPage = viewSet.SearchPage,
                 DealsPage = viewSet.DealsPage,
                 NewReleasesPage = viewSet.NewReleasesPage,
@@ -36,6 +37,6 @@ public static class V2FoundationViewRegistration
                 ServiceUnavailableState = viewSet.ServiceUnavailableState,
                 ErrorState = viewSet.ErrorState,
             };
-        }).AddStorefrontPresentationRoutes(typeof(global::Program).Assembly);
+        }).AddStorefrontPresentationRoutes(typeof(V2FoundationViewRegistration).Assembly);
     }
 }

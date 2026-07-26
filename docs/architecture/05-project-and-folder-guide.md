@@ -168,7 +168,7 @@ Use for:
 
 Asset and layout rules:
 
-- Root Storefront CSS and scripts must stay explicit in `App.razor`.
+- Root Storefront CSS and scripts must stay explicit in `App/StorefrontApp.razor`.
 - `StorefrontBrandHead` must render before `HeadOutlet`, and brand/runtime metadata must not use layout-level `HeadContent`.
 - Page SEO metadata belongs in page/SEO components such as `SeoHead`.
 - Page-specific CSS should prefer scoped CSS or controlled app-owned classes in `wwwroot/css`.

@@ -53,7 +53,8 @@ app.UseAntiforgery();
 app.MapStarterBffEndpoints();
 app.MapStorefrontPresentationSeoEndpoints();
 
-app.MapRazorComponents<StorefrontApp>();
+app.MapRazorComponents<StorefrontApp>()
+    .AddAdditionalAssemblies(typeof(StarterFoundationViewRegistration).Assembly);
 
 app.Run();
 

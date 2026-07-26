@@ -71,7 +71,6 @@ namespace BlazorShop.Tests.PresentationV2
 
         [Theory]
         [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor")]
-        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor")]
         [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor")]
         public void StorefrontRoutedPages_UsePageShellWhileKeepingSeoBreadcrumbAndHeading(string relativePath)
         {
@@ -267,10 +266,10 @@ namespace BlazorShop.Tests.PresentationV2
             var projectGuide = ReadRepositoryFile("docs/architecture/05-project-and-folder-guide.md");
             var decisionRules = ReadRepositoryFile("docs/architecture/08-agent-decision-rules.md");
 
-            Assert.Contains("Root Storefront CSS and scripts must stay explicit in `App.razor`.", projectGuide);
+            Assert.Contains("Root Storefront CSS and scripts must stay explicit in `App/StorefrontApp.razor`.", projectGuide);
             Assert.Contains("Page-specific JavaScript should prefer `IJSRuntime` module imports.", projectGuide);
             Assert.Contains("Store configuration must not accept arbitrary public script or stylesheet injection.", projectGuide);
-            Assert.Contains("Keep root CSS and script entries in `BlazorShop.Storefront.V2/App.razor` allowlisted by tests.", decisionRules);
+            Assert.Contains("Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` allowlisted by tests.", decisionRules);
             Assert.Contains("Keep `blazor.web.js` before `storefrontCommerce.js`", decisionRules);
             Assert.Contains("Do not add DB-configured or store-configured arbitrary public scripts/styles.", decisionRules);
             Assert.Contains("Dynamic Storefront pages, maintenance pages, current-store/config reads, checkout/auth pages, SEO documents, and error states must not receive immutable cache headers.", decisionRules);

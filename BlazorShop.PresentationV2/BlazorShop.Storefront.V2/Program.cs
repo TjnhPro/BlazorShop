@@ -34,7 +34,9 @@ app.MapStorefrontPresentationSeoEndpoints();
 app.MapStorefrontMediaEndpoints();
 app.MapRazorComponents<StorefrontApp>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly);
+    .AddAdditionalAssemblies(
+        typeof(V2FoundationViewRegistration).Assembly,
+        typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly);
 
 app.Run();
 

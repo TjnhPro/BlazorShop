@@ -341,6 +341,34 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains(v2Pages, markup => markup.Contains("<StorefrontSeoHead", StringComparison.Ordinal));
         }
 
+        [Fact]
+        public void ProductPageVerticalSlice_IsPresentationRouteWithV2ViewOnly()
+        {
+            var route = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/ProductRoutePage.razor");
+            var service = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageService.cs");
+            var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
+            var view = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
+
+            Assert.Contains("@page \"/product/{Slug}\"", route, StringComparison.Ordinal);
+            Assert.Contains("StorefrontProductPageService", route, StringComparison.Ordinal);
+            Assert.Contains("StorefrontSeoHead", route, StringComparison.Ordinal);
+            Assert.Contains("StorefrontResponseHeaders.ApplyStatus", route, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontCatalogClient", service, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontSeoComposer", service, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontStructuredDataComposer", service, StringComparison.Ordinal);
+            Assert.Contains("StorefrontProductPageMapper.Map", service, StringComparison.Ordinal);
+            Assert.Contains("BuildPurchasePanel", mapper, StringComparison.Ordinal);
+            Assert.Contains("BuildGalleryItems", mapper, StringComparison.Ordinal);
+            Assert.DoesNotContain("@page", view, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefrontCatalogClient", view, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefrontSeoComposer", view, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefrontStructuredDataComposer", view, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontResponseHeaders", view, StringComparison.Ordinal);
+            Assert.Contains("StorefrontProductPageContext", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductGallery Items=\"_galleryItems\" ProductName=\"@_product.Name\" />", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", view, StringComparison.Ordinal);
+        }
+
         private static bool IsPresentationRuntimeOrClientReference(string reference)
         {
             return reference.Contains("/BlazorShop.Storefront.Presentation/", StringComparison.OrdinalIgnoreCase)

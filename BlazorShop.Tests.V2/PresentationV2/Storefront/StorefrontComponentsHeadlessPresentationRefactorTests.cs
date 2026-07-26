@@ -314,7 +314,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var v2Gallery = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductGallery.razor");
             var productPage = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
 
             foreach (var expected in new[]
             {
@@ -352,7 +352,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var v2ActionOptions = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchaseActionOptions.cs");
             var productPage = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
 
             foreach (var expected in new[]
             {

@@ -1,0 +1,39 @@
+@page "/product/{Slug}"
+@namespace BlazorShop.Storefront.Presentation.Pages.Hybrid.Catalog
+@using BlazorShop.Storefront.Presentation.PagePatterns
+@using BlazorShop.Storefront.Presentation.Services.Product
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@using BlazorShop.Storefront.Services
+@inject StorefrontProductPageService ProductPageService
+@inject StorefrontFoundationViewSet ViewSet
+
+<StorefrontSeoHead Metadata="_result.Metadata" StructuredData="_result.StructuredData" />
+
+@if (_result.State is StorefrontPageState.ServiceUnavailableState)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
+}
+else if (_result.State is StorefrontPageState.NotFoundState)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" />
+}
+else if (_result.State is StorefrontPageState.Ready<StorefrontProductPageContext> ready)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ProductPage" Context="ready.Context" />
+}
+
+@code {
+    private StorefrontProductPageResult _result = StorefrontProductPageResult.Empty;
+
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _result = await ProductPageService.ResolveAsync(Slug);
+        StorefrontResponseHeaders.ApplyStatus(HttpContext, _result.State);
+    }
+}

@@ -95,7 +95,7 @@ Home page metadata uses the reserved published StorefrontPage slug `home`. The `
 
 Storefront root assets are intentionally explicit:
 
-- Keep root CSS and script entries in `BlazorShop.Storefront.V2/App.razor` allowlisted by tests.
+- Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` allowlisted by tests.
 - Keep `blazor.web.js` before `storefrontCommerce.js` unless a focused test and browser QA justify changing the order.
 - Use `SeoHead` and page-level `HeadContent` for metadata; do not move brand/runtime metadata into layout-level `HeadContent`.
 - Prefer JS module imports through `IJSRuntime` for page-specific behavior.

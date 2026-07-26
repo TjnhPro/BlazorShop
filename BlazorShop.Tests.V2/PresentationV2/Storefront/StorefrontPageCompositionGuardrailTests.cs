@@ -26,7 +26,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         [Theory]
         [InlineData("Home.razor", "@page \"/\"")]
-        [InlineData("ProductPage.razor", "@page \"/product/{Slug}\"")]
         [InlineData("CategoryPage.razor", "@page \"/category/{Slug}\"")]
         [InlineData("SearchPage.razor", "@page \"/search\"")]
         [InlineData("NewReleases.razor", "@page \"/new-releases\"")]
@@ -58,7 +57,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 new PageInventoryItem("Pages/Hybrid/Catalog/Home.razor", "/", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Catalog/CategoryPage.razor", "/category/{Slug}", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Catalog/ProductPage.razor", "/product/{Slug}", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Catalog/SearchPage.razor", "/search", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Catalog/NewReleases.razor", "/new-releases", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Catalog/TodaysDeals.razor", "/todays-deals", RenderOwnership.Hybrid),
@@ -91,6 +89,21 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(
                 [RenderOwnership.Hybrid, RenderOwnership.Ssr, RenderOwnership.WasmHost],
                 expected.Select(item => item.Ownership).Distinct().OrderBy(item => item.ToString()).ToArray());
+        }
+
+        [Fact]
+        public void ProductRoute_IsPresentationOwnedAndV2ProvidesView()
+        {
+            var route = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/ProductRoutePage.razor"));
+            var view = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor"));
+            var registration = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs"));
+
+            Assert.Contains("@page \"/product/{Slug}\"", route, StringComparison.Ordinal);
+            Assert.Contains("StorefrontProductPageService", route, StringComparison.Ordinal);
+            Assert.Contains("ComponentType=\"@ViewSet.ProductPage\"", route, StringComparison.Ordinal);
+            Assert.Contains("ProductPage = typeof(V2ProductPageView)", registration, StringComparison.Ordinal);
+            Assert.DoesNotContain("@page", view, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontProductPageContext Context", view, StringComparison.Ordinal);
         }
 
         [Fact]
