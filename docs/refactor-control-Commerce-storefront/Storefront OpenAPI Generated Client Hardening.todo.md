@@ -215,24 +215,24 @@ Goal: make `BlazorShop.Storefront.Client` generation consume the production-owne
 
 ### Tasks
 
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.Client/nswag.storefront.client.json`:
-  - [ ] `documentGenerator.fromDocument.url` points to `../../contracts/storefront/storefront.openapi.json` or another stable relative path from the config file.
-  - [ ] Keep pinned namespace `BlazorShop.Storefront.Client`.
-  - [ ] Keep output `Generated/StorefrontClient.g.cs`.
-  - [ ] Keep pinned NSwag runtime and options unless a later phase changes base URL.
-- [ ] Update `scripts/generate-storefront-client.ps1`:
-  - [ ] Keep default config path.
-  - [ ] Validate canonical contract file exists before running NSwag.
-  - [ ] Emit clear error message with missing path and remediation.
-  - [ ] Keep `dotnet tool restore`.
-  - [ ] Keep working directory at repo root.
-- [ ] Update tests:
-  - [ ] assert config references `contracts/storefront/storefront.openapi.json`.
-  - [ ] assert config does not reference `BlazorShop.Tests.V2`.
-  - [ ] assert script validates missing canonical contract path.
-- [ ] Run generator once and inspect diff:
-  - [ ] No generated source diff expected in this phase unless relative input path affects generated comments only.
-  - [ ] Any generated diff must be reviewed line-by-line.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.Client/nswag.storefront.client.json`:
+  - [x] `documentGenerator.fromDocument.url` points to `../../contracts/storefront/storefront.openapi.json` or another stable relative path from the config file.
+  - [x] Keep pinned namespace `BlazorShop.Storefront.Client`.
+  - [x] Keep output `Generated/StorefrontClient.g.cs`.
+  - [x] Keep pinned NSwag runtime and options unless a later phase changes base URL.
+- [x] Update `scripts/generate-storefront-client.ps1`:
+  - [x] Keep default config path.
+  - [x] Validate canonical contract file exists before running NSwag.
+  - [x] Emit clear error message with missing path and remediation.
+  - [x] Keep `dotnet tool restore`.
+  - [x] Keep working directory at repo root.
+- [x] Update tests:
+  - [x] assert config references `contracts/storefront/storefront.openapi.json`.
+  - [x] assert config does not reference `BlazorShop.Tests.V2`.
+  - [x] assert script validates missing canonical contract path.
+- [x] Run generator once and inspect diff:
+  - [x] No generated source diff expected in this phase unless relative input path affects generated comments only.
+  - [x] Any generated diff must be reviewed line-by-line.
 
 ### Files Likely Touched
 
@@ -250,9 +250,9 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.S
 
 ### Done When
 
-- [ ] Generator input is canonical contract file.
-- [ ] Generator config has no test-project path.
-- [ ] Generated client still builds.
+- [x] Generator input is canonical contract file.
+- [x] Generator config has no test-project path.
+- [x] Generated client still builds.
 
 ## Phase OCH4 - Add Deterministic Regeneration Gate
 
