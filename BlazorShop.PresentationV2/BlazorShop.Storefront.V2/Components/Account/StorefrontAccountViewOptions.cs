@@ -22,6 +22,12 @@ public static class StorefrontAccountViewOptions
         "/api/account/addresses/{addressId}/default-shipping",
         "/api/account/addresses/{addressId}/default-billing");
 
+    public static StorefrontAccountOrderActionDescriptor OrderActions { get; } = new(
+        "/api/account/orders?page={pageNumber}",
+        "/api/account/orders/{orderReference}",
+        "/api/account/orders/{orderReference}/receipt",
+        "/account/orders/{orderReference}");
+
     public static IReadOnlyList<AccountNavigationItem> NavigationItems { get; } =
     [
         new("profile", "Profile", "/account/profile"),
@@ -84,5 +90,47 @@ public static class StorefrontAccountViewOptions
         FullWideField = "grid gap-1 text-sm font-semibold text-neutral-700 sm:col-span-2",
         CompactInput = "rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900",
         FullInput = "rounded border border-neutral-300 px-3 py-2 font-normal"
+    };
+
+    public static StorefrontAccountOrderListClasses OrderListClasses { get; } = new()
+    {
+        Root = string.Empty,
+        ErrorAlert = "rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800",
+        EmptyState = "text-sm text-neutral-700",
+        TableWrapper = "overflow-x-auto",
+        Table = "min-w-full divide-y divide-neutral-200 text-sm",
+        TableHead = "text-left text-xs font-semibold uppercase text-neutral-500",
+        HeaderCell = "py-3 pr-4",
+        TableBody = "divide-y divide-neutral-100",
+        ReferenceCell = "py-4 pr-4 font-semibold text-neutral-900",
+        ReferenceLink = "underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-900",
+        Cell = "py-4 pr-4 text-neutral-700",
+        StrongCell = "py-4 pr-4 text-neutral-900"
+    };
+
+    public static StorefrontAccountOrderDetailClasses OrderDetailClasses { get; } = new()
+    {
+        Root = string.Empty,
+        ErrorAlert = "rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800",
+        MetricsGrid = "grid gap-5 md:grid-cols-3",
+        MetricLabel = "text-xs font-semibold uppercase text-neutral-500",
+        MetricValue = "mt-1 font-semibold text-neutral-900",
+        AddressGrid = "mt-8 grid gap-5 lg:grid-cols-2",
+        AddressSection = "rounded border border-neutral-200 p-4",
+        AddressTitle = "font-bold text-neutral-900",
+        AddressBody = "mt-3 text-sm text-neutral-700",
+        AddressStrongLine = "font-semibold text-neutral-900",
+        ItemsSection = "mt-8",
+        SectionTitle = "font-bold text-neutral-900",
+        ItemsList = "mt-3 divide-y divide-neutral-100 rounded border border-neutral-200",
+        LineRow = "grid gap-2 p-4 sm:grid-cols-[minmax(0,1fr)_80px_120px]",
+        LineName = "font-semibold text-neutral-900",
+        LineSku = "text-sm text-neutral-500",
+        LineText = "text-sm text-neutral-700",
+        LineTotal = "text-sm font-semibold text-neutral-900",
+        TotalsSection = "mt-8 max-w-md rounded border border-neutral-200 p-4",
+        TotalsBody = "mt-3 space-y-2 text-sm",
+        TotalRow = "flex justify-between gap-4",
+        GrandTotalRow = "flex justify-between gap-4 border-t border-neutral-200 pt-3 font-bold text-neutral-900"
     };
 }

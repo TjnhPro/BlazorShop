@@ -1,42 +1,43 @@
 @namespace BlazorShop.Storefront.Components.Features.Account
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Headless.Account
 @inject IServiceProvider Services
 
-<div data-storefront-account-orders>
+<div class="@Classes.Root" data-storefront-account-orders>
     @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
     }
     else if (_orders.Items.Count == 0)
     {
-        <p class="text-sm text-neutral-700">No orders yet.</p>
+        <p class="@Classes.EmptyState">No orders yet.</p>
     }
     else
     {
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-neutral-200 text-sm">
-                <thead class="text-left text-xs font-semibold uppercase text-neutral-500">
+        <div class="@Classes.TableWrapper">
+            <table class="@Classes.Table">
+                <thead class="@Classes.TableHead">
                     <tr>
-                        <th class="py-3 pr-4">Reference</th>
-                        <th class="py-3 pr-4">Date</th>
-                        <th class="py-3 pr-4">Status</th>
-                        <th class="py-3 pr-4">Payment</th>
-                        <th class="py-3 pr-4">Total</th>
-                        <th class="py-3 pr-4">Items</th>
+                        <th class="@Classes.HeaderCell">Reference</th>
+                        <th class="@Classes.HeaderCell">Date</th>
+                        <th class="@Classes.HeaderCell">Status</th>
+                        <th class="@Classes.HeaderCell">Payment</th>
+                        <th class="@Classes.HeaderCell">Total</th>
+                        <th class="@Classes.HeaderCell">Items</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-neutral-100">
+                <tbody class="@Classes.TableBody">
                     @foreach (var order in _orders.Items)
                     {
                         <tr>
-                            <td class="py-4 pr-4 font-semibold text-neutral-900">
-                                <a class="underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-900" href="@BuildOrderUrl(order.Reference)">@order.Reference</a>
+                            <td class="@Classes.ReferenceCell">
+                                <a class="@Classes.ReferenceLink" href="@Actions.OrderDetailHref(order.Reference)">@order.Reference</a>
                             </td>
-                            <td class="py-4 pr-4 text-neutral-700">@order.CreatedOnDisplay</td>
-                            <td class="py-4 pr-4 text-neutral-700">@order.OrderStatus</td>
-                            <td class="py-4 pr-4 text-neutral-700">@order.PaymentStatus</td>
-                            <td class="py-4 pr-4 text-neutral-900">@order.TotalDisplay</td>
-                            <td class="py-4 pr-4 text-neutral-700">@order.ItemCount</td>
+                            <td class="@Classes.Cell">@order.CreatedOnDisplay</td>
+                            <td class="@Classes.Cell">@order.OrderStatus</td>
+                            <td class="@Classes.Cell">@order.PaymentStatus</td>
+                            <td class="@Classes.StrongCell">@order.TotalDisplay</td>
+                            <td class="@Classes.Cell">@order.ItemCount</td>
                         </tr>
                     }
                 </tbody>
@@ -57,6 +58,12 @@
 
     [Parameter]
     public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+
+    [Parameter]
+    public StorefrontAccountOrderActionDescriptor Actions { get; set; } = StorefrontAccountOrderActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountOrderListClasses Classes { get; set; } = StorefrontAccountOrderListClasses.Empty;
 
     private StorefrontBrowserAccountOrderList _orders = new([], 1, 10, 0, 0);
     private string? _error;
@@ -80,7 +87,7 @@
             return;
         }
 
-        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderList>($"/api/account/orders?page={Math.Max(1, PageNumber)}");
+        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderList>(Actions.OrderListRoute(PageNumber));
         if (result.Success && result.Data is not null)
         {
             _orders = result.Data;
@@ -89,8 +96,4 @@
         }
     }
 
-    private static string BuildOrderUrl(string reference)
-    {
-        return $"/account/orders/{Uri.EscapeDataString(reference)}";
-    }
 }

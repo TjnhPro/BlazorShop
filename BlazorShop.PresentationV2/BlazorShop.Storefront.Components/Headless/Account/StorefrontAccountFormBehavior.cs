@@ -52,6 +52,35 @@ public sealed record StorefrontAccountAddressActionDescriptor(
     }
 }
 
+public sealed record StorefrontAccountOrderActionDescriptor(
+    string OrderListRouteTemplate,
+    string OrderDetailRouteTemplate,
+    string ReceiptRouteTemplate,
+    string OrderDetailHrefTemplate)
+{
+    public static StorefrontAccountOrderActionDescriptor Empty { get; } = new(
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty);
+
+    public string OrderListRoute(int pageNumber)
+    {
+        return OrderListRouteTemplate.Replace("{pageNumber}", Math.Max(1, pageNumber).ToString(), StringComparison.Ordinal);
+    }
+
+    public string OrderDetailRoute(string orderReference) => FormatOrderRoute(OrderDetailRouteTemplate, orderReference);
+
+    public string ReceiptRoute(string orderReference) => FormatOrderRoute(ReceiptRouteTemplate, orderReference);
+
+    public string OrderDetailHref(string orderReference) => FormatOrderRoute(OrderDetailHrefTemplate, orderReference);
+
+    private static string FormatOrderRoute(string routeTemplate, string orderReference)
+    {
+        return routeTemplate.Replace("{orderReference}", Uri.EscapeDataString(orderReference), StringComparison.Ordinal);
+    }
+}
+
 public sealed record StorefrontAccountFormClasses
 {
     public static StorefrontAccountFormClasses Empty { get; } = new();
@@ -142,4 +171,82 @@ public sealed record StorefrontAccountAddressBookClasses
     public string CompactInput { get; init; } = string.Empty;
 
     public string FullInput { get; init; } = string.Empty;
+}
+
+public sealed record StorefrontAccountOrderListClasses
+{
+    public static StorefrontAccountOrderListClasses Empty { get; } = new();
+
+    public string Root { get; init; } = string.Empty;
+
+    public string ErrorAlert { get; init; } = string.Empty;
+
+    public string EmptyState { get; init; } = string.Empty;
+
+    public string TableWrapper { get; init; } = string.Empty;
+
+    public string Table { get; init; } = string.Empty;
+
+    public string TableHead { get; init; } = string.Empty;
+
+    public string HeaderCell { get; init; } = string.Empty;
+
+    public string TableBody { get; init; } = string.Empty;
+
+    public string ReferenceCell { get; init; } = string.Empty;
+
+    public string ReferenceLink { get; init; } = string.Empty;
+
+    public string Cell { get; init; } = string.Empty;
+
+    public string StrongCell { get; init; } = string.Empty;
+}
+
+public sealed record StorefrontAccountOrderDetailClasses
+{
+    public static StorefrontAccountOrderDetailClasses Empty { get; } = new();
+
+    public string Root { get; init; } = string.Empty;
+
+    public string ErrorAlert { get; init; } = string.Empty;
+
+    public string MetricsGrid { get; init; } = string.Empty;
+
+    public string MetricLabel { get; init; } = string.Empty;
+
+    public string MetricValue { get; init; } = string.Empty;
+
+    public string AddressGrid { get; init; } = string.Empty;
+
+    public string AddressSection { get; init; } = string.Empty;
+
+    public string AddressTitle { get; init; } = string.Empty;
+
+    public string AddressBody { get; init; } = string.Empty;
+
+    public string AddressStrongLine { get; init; } = string.Empty;
+
+    public string ItemsSection { get; init; } = string.Empty;
+
+    public string SectionTitle { get; init; } = string.Empty;
+
+    public string ItemsList { get; init; } = string.Empty;
+
+    public string LineRow { get; init; } = string.Empty;
+
+    public string LineName { get; init; } = string.Empty;
+
+    public string LineSku { get; init; } = string.Empty;
+
+    public string LineText { get; init; } = string.Empty;
+
+    public string LineTotal { get; init; } = string.Empty;
+
+    public string TotalsSection { get; init; } = string.Empty;
+
+    public string TotalsBody { get; init; } = string.Empty;
+
+    public string TotalRow { get; init; } = string.Empty;
+
+    public string GrandTotalRow { get; init; } = string.Empty;
 }

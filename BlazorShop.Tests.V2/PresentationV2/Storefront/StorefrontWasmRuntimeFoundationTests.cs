@@ -247,8 +247,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Actions.CreateAddressRoute", addressesComponent, StringComparison.Ordinal);
             Assert.Contains("Actions.UpdateAddressRoute(addressId)", addressesComponent, StringComparison.Ordinal);
             Assert.Contains("Actions.DeleteAddressRoute(addressId)", addressesComponent, StringComparison.Ordinal);
-            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>", ordersComponent, StringComparison.Ordinal);
-            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderDetail>", orderDetailComponent, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderActionDescriptor", behavior, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>(Actions.OrderListRoute(PageNumber))", ordersComponent, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderDetail>(route)", orderDetailComponent, StringComparison.Ordinal);
+            Assert.Contains("Actions.OrderDetailRoute(OrderReference)", orderDetailComponent, StringComparison.Ordinal);
+            Assert.Contains("Actions.ReceiptRoute(OrderReference)", orderDetailComponent, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/orders?page={pageNumber}\"", options, StringComparison.Ordinal);
             Assert.Contains("PostJsonAsync<object, StorefrontBrowserAccountCommandResult>", passwordComponent, StringComparison.Ordinal);
             Assert.Contains("DataMode == StorefrontFeatureDataMode.InitialSnapshot", profileComponent, StringComparison.Ordinal);
             Assert.Contains("DataMode == StorefrontFeatureDataMode.InitialSnapshot", addressesComponent, StringComparison.Ordinal);

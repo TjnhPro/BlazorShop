@@ -64,6 +64,15 @@
     [Parameter]
     public StorefrontAccountAddressBookClasses AddressClasses { get; set; } = StorefrontAccountAddressBookClasses.Empty;
 
+    [Parameter]
+    public StorefrontAccountOrderActionDescriptor OrderActions { get; set; } = StorefrontAccountOrderActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountOrderListClasses OrderListClasses { get; set; } = StorefrontAccountOrderListClasses.Empty;
+
+    [Parameter]
+    public StorefrontAccountOrderDetailClasses OrderDetailClasses { get; set; } = StorefrontAccountOrderDetailClasses.Empty;
+
     private AccountRoute ActiveRoute => ResolveRoute(Path);
 
     private string Title => ActiveRoute.Kind switch
@@ -113,6 +122,8 @@
                 builder.AddAttribute(21, nameof(AccountOrderList.InitialError), Error);
                 builder.AddAttribute(22, nameof(AccountOrderList.PageNumber), Math.Max(1, PageNumber));
                 builder.AddAttribute(23, nameof(AccountOrderList.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(24, nameof(AccountOrderList.Actions), OrderActions);
+                builder.AddAttribute(25, nameof(AccountOrderList.Classes), OrderListClasses);
                 builder.CloseComponent();
                 break;
 
@@ -122,6 +133,8 @@
                 builder.AddAttribute(32, nameof(AccountOrderDetail.OrderReference), ActiveRoute.OrderReference);
                 builder.AddAttribute(33, nameof(AccountOrderDetail.ReceiptMode), ActiveRoute.ReceiptMode);
                 builder.AddAttribute(34, nameof(AccountOrderDetail.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(35, nameof(AccountOrderDetail.Actions), OrderActions);
+                builder.AddAttribute(36, nameof(AccountOrderDetail.Classes), OrderDetailClasses);
                 builder.CloseComponent();
                 break;
 

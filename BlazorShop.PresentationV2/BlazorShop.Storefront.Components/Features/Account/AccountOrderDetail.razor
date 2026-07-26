@@ -1,62 +1,63 @@
 @namespace BlazorShop.Storefront.Components.Features.Account
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Headless.Account
 @inject IServiceProvider Services
 
-<div data-storefront-account-order-detail>
+<div class="@Classes.Root" data-storefront-account-order-detail>
     @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
     }
     else if (_order is not null)
     {
-        <div class="grid gap-5 md:grid-cols-3">
+        <div class="@Classes.MetricsGrid">
             <div>
-                <p class="text-xs font-semibold uppercase text-neutral-500">Order status</p>
-                <p class="mt-1 font-semibold text-neutral-900">@_order.OrderStatus</p>
+                <p class="@Classes.MetricLabel">Order status</p>
+                <p class="@Classes.MetricValue">@_order.OrderStatus</p>
             </div>
             <div>
-                <p class="text-xs font-semibold uppercase text-neutral-500">Payment</p>
-                <p class="mt-1 font-semibold text-neutral-900">@_order.PaymentStatus</p>
+                <p class="@Classes.MetricLabel">Payment</p>
+                <p class="@Classes.MetricValue">@_order.PaymentStatus</p>
             </div>
             <div>
-                <p class="text-xs font-semibold uppercase text-neutral-500">Total</p>
-                <p class="mt-1 font-semibold text-neutral-900">@_order.TotalDisplay</p>
+                <p class="@Classes.MetricLabel">Total</p>
+                <p class="@Classes.MetricValue">@_order.TotalDisplay</p>
             </div>
         </div>
 
-        <div class="mt-8 grid gap-5 lg:grid-cols-2">
+        <div class="@Classes.AddressGrid">
             @RenderAddress("Shipping address", _order.ShippingAddress)
             @RenderAddress("Billing address", _order.BillingAddress ?? _order.ShippingAddress)
         </div>
 
-        <section class="mt-8">
-            <h2 class="font-bold text-neutral-900">Items</h2>
-            <div class="mt-3 divide-y divide-neutral-100 rounded border border-neutral-200">
+        <section class="@Classes.ItemsSection">
+            <h2 class="@Classes.SectionTitle">Items</h2>
+            <div class="@Classes.ItemsList">
                 @foreach (var line in _order.Lines)
                 {
-                    <div class="grid gap-2 p-4 sm:grid-cols-[minmax(0,1fr)_80px_120px]">
+                    <div class="@Classes.LineRow">
                         <div>
-                            <p class="font-semibold text-neutral-900">@line.ProductName</p>
+                            <p class="@Classes.LineName">@line.ProductName</p>
                             @if (!string.IsNullOrWhiteSpace(line.Sku))
                             {
-                                <p class="text-sm text-neutral-500">@line.Sku</p>
+                                <p class="@Classes.LineSku">@line.Sku</p>
                             }
                         </div>
-                        <p class="text-sm text-neutral-700">Qty @line.Quantity</p>
-                        <p class="text-sm font-semibold text-neutral-900">@line.LineTotalDisplay</p>
+                        <p class="@Classes.LineText">Qty @line.Quantity</p>
+                        <p class="@Classes.LineTotal">@line.LineTotalDisplay</p>
                     </div>
                 }
             </div>
         </section>
 
-        <section class="mt-8 max-w-md rounded border border-neutral-200 p-4">
-            <h2 class="font-bold text-neutral-900">Totals</h2>
-            <div class="mt-3 space-y-2 text-sm">
-                <div class="flex justify-between gap-4"><span>Subtotal</span><span>@_order.Totals.SubtotalDisplay</span></div>
-                <div class="flex justify-between gap-4"><span>Shipping</span><span>@_order.Totals.ShippingDisplay</span></div>
-                <div class="flex justify-between gap-4"><span>Tax</span><span>@_order.Totals.TaxDisplay</span></div>
-                <div class="flex justify-between gap-4"><span>Discount</span><span>@_order.Totals.DiscountDisplay</span></div>
-                <div class="flex justify-between gap-4 border-t border-neutral-200 pt-3 font-bold text-neutral-900"><span>Grand total</span><span>@_order.Totals.GrandTotalDisplay</span></div>
+        <section class="@Classes.TotalsSection">
+            <h2 class="@Classes.SectionTitle">Totals</h2>
+            <div class="@Classes.TotalsBody">
+                <div class="@Classes.TotalRow"><span>Subtotal</span><span>@_order.Totals.SubtotalDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>Shipping</span><span>@_order.Totals.ShippingDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>Tax</span><span>@_order.Totals.TaxDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>Discount</span><span>@_order.Totals.DiscountDisplay</span></div>
+                <div class="@Classes.GrandTotalRow"><span>Grand total</span><span>@_order.Totals.GrandTotalDisplay</span></div>
             </div>
         </section>
     }
@@ -77,6 +78,12 @@
 
     [Parameter]
     public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+
+    [Parameter]
+    public StorefrontAccountOrderActionDescriptor Actions { get; set; } = StorefrontAccountOrderActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountOrderDetailClasses Classes { get; set; } = StorefrontAccountOrderDetailClasses.Empty;
 
     private StorefrontBrowserAccountOrderDetail? _order;
     private string? _error;
@@ -103,8 +110,10 @@
             return;
         }
 
-        var suffix = ReceiptMode ? "/receipt" : string.Empty;
-        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderDetail>($"/api/account/orders/{Uri.EscapeDataString(OrderReference)}{suffix}");
+        var route = ReceiptMode
+            ? Actions.ReceiptRoute(OrderReference)
+            : Actions.OrderDetailRoute(OrderReference);
+        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderDetail>(route);
         if (result.Success && result.Data is not null)
         {
             _order = result.Data;
@@ -113,17 +122,17 @@
         }
     }
 
-    private static RenderFragment RenderAddress(string title, StorefrontBrowserOrderAddress address) => builder =>
+    private RenderFragment RenderAddress(string title, StorefrontBrowserOrderAddress address) => builder =>
     {
         builder.OpenElement(0, "section");
-        builder.AddAttribute(1, "class", "rounded border border-neutral-200 p-4");
+        builder.AddAttribute(1, "class", Classes.AddressSection);
         builder.OpenElement(2, "h2");
-        builder.AddAttribute(3, "class", "font-bold text-neutral-900");
+        builder.AddAttribute(3, "class", Classes.AddressTitle);
         builder.AddContent(4, title);
         builder.CloseElement();
         builder.OpenElement(5, "div");
-        builder.AddAttribute(6, "class", "mt-3 text-sm text-neutral-700");
-        AddAddressLine(builder, 7, address.FullName, "font-semibold text-neutral-900");
+        builder.AddAttribute(6, "class", Classes.AddressBody);
+        AddAddressLine(builder, 7, address.FullName, Classes.AddressStrongLine);
         AddAddressLine(builder, 10, address.Address1, null);
         AddAddressLine(builder, 13, address.Address2, null);
         AddAddressLine(builder, 16, string.Join(", ", new[] { address.City, address.PostalCode }.Where(part => !string.IsNullOrWhiteSpace(part))), null);

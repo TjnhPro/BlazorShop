@@ -425,23 +425,23 @@ Goal: split the highest-write account leaf before order views.
 
 Goal: split read-only order self-service views.
 
-- [ ] `AccountOrderList.razor`:
-  - [ ] Keep `StorefrontBrowserAccountOrderList`.
-  - [ ] Extract paging/load state and action descriptor.
-  - [ ] Move table/card visual to V2.
-  - [ ] Remove hardcoded `/api/account/orders?page=`.
-- [ ] `AccountOrderDetail.razor`:
-  - [ ] Keep `StorefrontBrowserAccountOrderDetail`.
-  - [ ] Extract detail load state and action descriptor.
-  - [ ] Move detail/receipt visual to V2.
-  - [ ] Remove hardcoded `/api/account/orders/{reference}`.
+- [x] `AccountOrderList.razor`:
+  - [x] Keep `StorefrontBrowserAccountOrderList`.
+  - [x] Extract paging/load state and action descriptor.
+  - [x] Move table/card visual to V2.
+  - [x] Remove hardcoded `/api/account/orders?page=`.
+- [x] `AccountOrderDetail.razor`:
+  - [x] Keep `StorefrontBrowserAccountOrderDetail`.
+  - [x] Extract detail load state and action descriptor.
+  - [x] Move detail/receipt visual to V2.
+  - [x] Remove hardcoded `/api/account/orders/{reference}`.
 
 ### HPR12 QA gate
 
-- [ ] Order history list loads.
-- [ ] Order detail deep link loads.
-- [ ] Receipt mode still works if supported.
-- [ ] Authorization/forbidden state still renders safely.
+- [x] Order history list loads.
+- [x] Order detail deep link loads.
+- [x] Receipt mode still works if supported.
+- [x] Authorization/forbidden state still renders safely.
 
 ## Phase HPR13 - Account composition shell
 
@@ -580,8 +580,8 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 - [x] `AccountProfileEditor.razor` covered.
 - [x] `AccountChangePasswordForm.razor` covered.
 - [x] `AccountAddressBook.razor` covered.
-- [ ] `AccountOrderList.razor` covered.
-- [ ] `AccountOrderDetail.razor` covered.
+- [x] `AccountOrderList.razor` covered.
+- [x] `AccountOrderDetail.razor` covered.
 - [ ] `AccountApp.razor` covered.
 - [ ] `ProductSummaryItem.cs` covered.
 - [ ] `DealsPlacement.cs` covered.

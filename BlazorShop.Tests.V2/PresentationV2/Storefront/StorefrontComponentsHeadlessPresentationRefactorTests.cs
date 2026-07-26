@@ -613,6 +613,79 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("nameof(AccountAddressBook.Classes)", app, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void AccountOrders_UseHostActionsAndClassesAfterHpr12Migration()
+        {
+            var orderList = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderList.razor");
+            var orderDetail = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderDetail.razor");
+            var behavior = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
+            var options = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
+            var host = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var app = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+
+            foreach (var expected in new[]
+            {
+                "StorefrontAccountOrderActionDescriptor",
+                "OrderListRouteTemplate",
+                "OrderDetailRouteTemplate",
+                "ReceiptRouteTemplate",
+                "OrderDetailHrefTemplate",
+                "OrderListRoute(int pageNumber)",
+                "OrderDetailRoute(string orderReference)",
+                "ReceiptRoute(string orderReference)",
+                "OrderDetailHref(string orderReference)",
+                "StorefrontAccountOrderListClasses",
+                "StorefrontAccountOrderDetailClasses"
+            })
+            {
+                Assert.Contains(expected, behavior, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>(Actions.OrderListRoute(PageNumber))", orderList, StringComparison.Ordinal);
+            Assert.Contains("href=\"@Actions.OrderDetailHref(order.Reference)\"", orderList, StringComparison.Ordinal);
+            Assert.Contains("Actions.ReceiptRoute(OrderReference)", orderDetail, StringComparison.Ordinal);
+            Assert.Contains("Actions.OrderDetailRoute(OrderReference)", orderDetail, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderDetail>(route)", orderDetail, StringComparison.Ordinal);
+            Assert.Contains("class=\"@Classes.", orderList + orderDetail, StringComparison.Ordinal);
+            Assert.Contains("Classes.AddressSection", orderDetail, StringComparison.Ordinal);
+            Assert.Contains("Classes.AddressStrongLine", orderDetail, StringComparison.Ordinal);
+
+            foreach (var sharedSource in new[] { orderList, orderDetail })
+            {
+                Assert.DoesNotContain("/api/account/orders", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("/account/orders/", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("rounded", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("bg-neutral-", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("text-neutral-", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("text-rose-", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("hover:", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("sm:", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("md:", sharedSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("lg:", sharedSource, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("OrderActions", options, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/orders?page={pageNumber}\"", options, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/orders/{orderReference}/receipt\"", options, StringComparison.Ordinal);
+            Assert.Contains("\"/account/orders/{orderReference}\"", options, StringComparison.Ordinal);
+            Assert.Contains("OrderListClasses", options, StringComparison.Ordinal);
+            Assert.Contains("OrderDetailClasses", options, StringComparison.Ordinal);
+
+            Assert.Contains("OrderActions=\"StorefrontAccountViewOptions.OrderActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("OrderListClasses=\"StorefrontAccountViewOptions.OrderListClasses\"", host, StringComparison.Ordinal);
+            Assert.Contains("OrderDetailClasses=\"StorefrontAccountViewOptions.OrderDetailClasses\"", host, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountOrderList.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountOrderDetail.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountOrderList.Classes)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountOrderDetail.Classes)", app, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
