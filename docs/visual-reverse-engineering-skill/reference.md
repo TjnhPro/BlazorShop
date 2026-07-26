@@ -40,7 +40,7 @@ Generated/custom storefront compatibility rules:
 - Treat `contracts/storefront/storefront.openapi.json` as the canonical Storefront API contract behind that package; run `scripts/qa/run-storefront-client-regeneration-gate.ps1` before package proof when the contract or generated client changes.
 - Use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use `BlazorShop.Storefront.Components` contracts/headless behavior and Browser local API primitives only when reusable browser-safe UI components are needed; local presentation components can stay inside the generated storefront.
-- Treat `BlazorShop.Storefront.Components/Features` as CSS-neutral compatibility wrappers, not generated visual templates or stable presentation contracts.
+- Treat `BlazorShop.Storefront.Components.Features` as retired. Normal generation consumes `Contracts`, `Headless`, and `Browser` primitives and emits project-local visual templates.
 - `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, pages, and analysis artifacts.
 - StorefrontBuilder may replace product card/grid/gallery/purchase/cart/checkout/account visual templates without changing shared behavior contracts.
 - Route protected browser actions through same-origin BFF endpoints.
@@ -127,7 +127,7 @@ Canonical generated proof:
 .\scripts\qa\run-storefront-builder-generated-proof.ps1
 ```
 
-Generated storefront validation must fail or require an explicit compatibility exception when generated source imports `BlazorShop.Storefront.Components.Features`; normal generation should consume `Contracts`, `Headless`, and `Browser` primitives and render project-local DOM.
+Generated storefront validation must fail when generated source imports `BlazorShop.Storefront.Components.Features`; normal generation consumes `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
 
 Focused test filter:
 

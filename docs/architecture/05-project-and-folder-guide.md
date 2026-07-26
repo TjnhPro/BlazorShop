@@ -262,7 +262,7 @@ Do not:
 Current ownership map:
 
 - `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
-- `BlazorShop.Storefront.Components/Features/*` owns CSS-neutral compatibility wrappers only; stable shared reuse belongs under `Contracts`, `Headless`, and `Browser`.
+- `BlazorShop.Storefront.Components` owns browser-safe reusable `Contracts`, `Headless` state/behavior, and `Browser` same-origin primitives only. Visual templates belong to Storefront V2, Starter, or generated/custom storefront projects.
 - `BlazorShop.Storefront.V2` owns route composition, SEO, BFF endpoints, session/cart-token handling, store resolution, deployment, and storefront-specific design.
 - `BlazorShop.Storefront.Runtime` owns neutral runtime primitives and server-side generated-client registration.
 - `Storefront.Features.*` projects are deferred until repeated neutral feature logic proves the need.

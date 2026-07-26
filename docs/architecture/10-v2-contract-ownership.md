@@ -10,7 +10,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Storefront frontend view models are allowed when they are presentation or composition models.
 - Storefront frontend code must not add handwritten duplicate API DTO clones when the schema should come from OpenAPI-generated contracts.
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
-- Storefront component contracts are presentation contracts, not public HTTP API contracts. Prefer `BlazorShop.Storefront.Components/Contracts/*` for stable render/input models and keep `BlazorShop.Storefront.Components/Features/*` limited to CSS-neutral compatibility wrappers.
+- Storefront component contracts are presentation contracts, not public HTTP API contracts. Use `BlazorShop.Storefront.Components/Contracts/*` for stable render/input models, `Headless/*` for state/behavior, and `Browser/*` for same-origin browser primitives. Store-specific visual templates are host-owned.
 - Storefront V2 source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter and generated storefront source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter must consume generated Storefront client contracts by default and must not copy the manual `StorefrontApiClient` transport from Storefront V2.
@@ -62,7 +62,7 @@ Generated storefronts must not infer Storefront API envelopes or field names fro
 
 `BlazorShop.Storefront.Components/Headless/*` is the preferred home for browser-safe presentation state and action/event contracts that can be reused without Storefront V2 visual markup.
 
-`BlazorShop.Storefront.Components/Features/*` may keep temporary compatibility wrappers while existing shared visual components are migrated to host-owned templates.
+`BlazorShop.Storefront.Components/Features/*` was a temporary compatibility surface and is retired. Reintroducing shared visual Razor wrappers requires a new architecture decision; normal storefront implementation must keep markup, CSS, layout, copy, and route composition in V2, Starter, or generated/custom storefronts.
 
 These models are not public HTTP contracts. The Storefront V2 host maps API DTOs or local endpoint contracts into them before composition. They must not reference `Web.SharedV2`, `Application`, `Domain`, `Infrastructure`, Control Plane, Commerce Node runtime projects, Storefront API clients, or Storefront route helpers.
 

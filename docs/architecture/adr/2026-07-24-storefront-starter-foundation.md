@@ -14,7 +14,7 @@ The Headless Storefront Platform Foundation completed the Commerce Node Storefro
 - `BlazorShop.Storefront.V2` remains the real storefront implementation and behavior reference. It must not be copied into Starter or generated storefront output.
 - `BlazorShop.Storefront.Client` remains the generated OpenAPI transport and contract package.
 - `BlazorShop.Storefront.Runtime` may be introduced only for neutral duplicated runtime primitives needed by both Storefront V2 and Starter.
-- `BlazorShop.Storefront.Components/Features/*` remains presentation-only reusable Blazor component code and is not a backend contract or business-rule package.
+- `BlazorShop.Storefront.Components/Features/*` was a temporary presentation-only compatibility surface and has since been retired by Storefront Components Compatibility Removal. Starter owns neutral markup/CSS locally.
 
 ## Ownership
 

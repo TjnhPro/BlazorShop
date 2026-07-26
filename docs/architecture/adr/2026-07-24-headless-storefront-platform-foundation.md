@@ -31,7 +31,7 @@ Final forbidden dependencies:
 
 The F6 foundation review did not identify enough neutral duplicated runtime code to justify a `Storefront.Runtime` package. Store context resolution, HttpOnly session/cart-token handling, local BFF error normalization, antiforgery, and browser-safe endpoint responses remain Storefront V2 host responsibilities until a second storefront consumer proves a reusable abstraction.
 
-`Storefront.Features.*` projects are also deferred. Portable reusable UI remains under `BlazorShop.Storefront.Components/Features/*`, while Storefront V2 keeps route composition, layout, SEO, BFF, session, and deployment ownership.
+`Storefront.Features.*` projects are also deferred. The later Storefront Components Compatibility Removal retired `BlazorShop.Storefront.Components/Features/*`; portable reuse now lives under `Contracts`, `Headless`, and `Browser`, while Storefront V2 keeps route composition, layout, SEO, BFF, session, and deployment ownership.
 
 ## Storefront V2 Is Not Starter Source
 

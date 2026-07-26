@@ -59,7 +59,7 @@ Starter consumer rules:
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Register Runtime only in the generated server/BFF host. Use `AddStorefrontPlatformRuntime` for the full starter surface, or explicit `AddStorefront{Capability}Runtime` methods when a generated host intentionally supports a smaller surface.
 - Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior and Browser local API primitives when a starter or generated storefront needs that shared component package.
-- Do not use `BlazorShop.Storefront.Components/Features` wrappers as generated visual templates; they are CSS-neutral compatibility wrappers, not stable presentation contracts.
+- Do not import or recreate retired `BlazorShop.Storefront.Components.Features` wrappers. Generated storefronts consume shared `Contracts`, `Headless`, and `Browser` primitives, then own their project-local markup, CSS, layout, assets, and copy.
 - Starter owns its neutral visual templates; Starter-local neutral visual components may remain local and must not copy Storefront V2 visual components.
 - Do not reference `BlazorShop.Storefront.V2`.
 - Do not reference backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.

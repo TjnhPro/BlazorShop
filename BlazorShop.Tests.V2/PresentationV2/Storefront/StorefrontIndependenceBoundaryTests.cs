@@ -127,28 +127,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontComponents_FeatureModelsDoNotExposeServerOwnedFields()
         {
-            var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features")
-                .Where(file => file.RelativePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(file => new[]
-                    {
-                        "StoreId",
-                        "StoreKey",
-                        "CustomerId",
-                        "AppUserId",
-                        "UserId",
-                        "IsPublished",
-                        "Credential",
-                        "Secret",
-                        "ProviderSecret",
-                        "CostPrice"
-                    }
-                    .Where(fragment => File.ReadAllText(file.AbsolutePath).Contains(fragment, StringComparison.Ordinal))
-                    .Select(fragment => $"{file.RelativePath}: {fragment}"))
-                .ToArray();
-
-            Assert.True(
-                offenders.Length == 0,
-                $"Storefront component feature models must stay presentation-only:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+            Assert.False(Directory.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features")));
         }
 
         [Fact]

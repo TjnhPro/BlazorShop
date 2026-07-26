@@ -282,35 +282,37 @@ Exit criteria:
 
 Muc tieu: khong con `Features` folder trong `Storefront.Components`, khong con empty compatibility README.
 
-- [ ] Xoa tat ca file con lai duoi:
+- [x] Xoa tat ca file con lai duoi:
 
 ```text
 BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features
 ```
 
-- [ ] Xoa folder `Features`, khong de lai folder rong hoac README compatibility.
-- [ ] Sua `BlazorShop.Storefront.V2/_Imports.razor` de chi import:
+- [x] Xoa folder `Features`, khong de lai folder rong hoac README compatibility.
+- [x] Sua `BlazorShop.Storefront.V2/_Imports.razor` de chi import:
   - `Contracts`
   - `Headless`
   - `Browser`
   - V2-local component namespaces
-- [ ] Scan va sua active code:
+- [x] Scan va sua active code:
 
 ```powershell
 rg -n "BlazorShop\.Storefront\.Components\.Features|Components/Features|Features\\\\" BlazorShop.PresentationV2 BlazorShop.Tests.V2 docs/architecture docs/agents docs/visual-reverse-engineering-skill -g "!bin" -g "!obj"
 ```
 
-- [ ] Phan biet `Features/feature-manifest.json` cua Starter/StorefrontBuilder voi retired `Storefront.Components/Features`; khong xoa Starter feature manifest.
-- [ ] Update architecture docs:
+- [x] Phan biet `Features/feature-manifest.json` cua Starter/StorefrontBuilder voi retired `Storefront.Components/Features`; khong xoa Starter feature manifest.
+- [x] Update architecture docs:
   - `docs/architecture/05-project-and-folder-guide.md`
   - `docs/architecture/10-v2-contract-ownership.md`
   - ADR nao dang noi `Features/*` la active compatibility surface
-- [ ] Update StorefrontBuilder docs de noi generated storefronts consume `Contracts`, `Headless`, `Browser`; khong co compatibility exception mac dinh cho `Components.Features`.
+- [x] Update StorefrontBuilder docs de noi generated storefronts consume `Contracts`, `Headless`, `Browser`; khong co compatibility exception mac dinh cho `Components.Features`.
 
 Exit criteria:
 
-- [ ] `Test-Path BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features` tra ve `False`.
-- [ ] Khong con active source/test/doc architecture nao coi `Components/Features` la current active surface.
+- [x] `Test-Path BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features` tra ve `False`.
+- [x] Khong con active source/test/doc architecture nao coi `Components/Features` la current active surface.
+  - 2026-07-26: Components build pass; Storefront V2 build pass.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontPageCompositionGuardrailTests|StorefrontIndependenceBoundaryTests|StorefrontStarterFoundationBoundaryTests` pass 116/116.
 
 ## Phase SCR7 - Browser Static Asset and Razor SDK Cleanup
 

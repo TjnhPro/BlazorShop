@@ -35,7 +35,7 @@ Generated storefronts must not:
 - Reference `BlazorShop.Web.SharedV2` or `Web.SharedV2`.
 - Call `api/commerce/*`, `api/control-plane/*`, or legacy `api/internal/*` from browser code.
 - Copy Storefront V2 transport internals.
-- Copy `BlazorShop.Storefront.Components/Features` wrappers as generated visual templates; they are CSS-neutral compatibility wrappers only.
+- Copy or import retired `BlazorShop.Storefront.Components.Features` wrappers. Generated storefronts must use shared `Contracts`, `Headless`, and `Browser` primitives and render project-local DOM/CSS.
 - Use Components `Features` wrappers as the generated/custom storefront presentation source.
 - Write store-specific output into `BlazorShop.Storefront.Starter`.
 

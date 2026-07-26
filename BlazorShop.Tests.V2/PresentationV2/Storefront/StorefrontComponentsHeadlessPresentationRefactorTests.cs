@@ -135,14 +135,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.NotEmpty(File.ReadAllText(readmePath));
             }
 
-            var featuresReadme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/README.md");
-            Assert.Contains("temporary compatibility area", featuresReadme, StringComparison.Ordinal);
-            Assert.Contains("CSS-neutral compatibility wrappers", featuresReadme, StringComparison.Ordinal);
-            Assert.Contains("Contracts/{Capability}", featuresReadme, StringComparison.Ordinal);
-            Assert.Contains("Headless/{Capability}", featuresReadme, StringComparison.Ordinal);
-            Assert.Contains("Browser", featuresReadme, StringComparison.Ordinal);
-            Assert.Contains("not stable presentation contracts", featuresReadme, StringComparison.Ordinal);
-            Assert.Contains("Store-owned visual templates belong", featuresReadme, StringComparison.Ordinal);
+            Assert.False(Directory.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features")));
         }
 
         [Fact]
@@ -795,15 +788,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/README.md");
             var localApiClient = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
-            var migratedFeatureRazor = string.Join(
-                Environment.NewLine,
-                Directory.EnumerateFiles(
-                        RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features"),
-                        "*.razor",
-                        SearchOption.AllDirectories)
-                    .OrderBy(path => path, StringComparer.Ordinal)
-                    .Select(File.ReadAllText));
-
             Assert.Contains("same-origin BFF endpoints", browserReadme, StringComparison.Ordinal);
             Assert.Contains("Visual ownership stays with the host storefront project", browserReadme, StringComparison.Ordinal);
             Assert.Contains("route.StartsWith(\"//\", StringComparison.Ordinal)", localApiClient, StringComparison.Ordinal);
@@ -838,10 +822,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             })
             {
                 Assert.DoesNotContain(forbiddenBrowserDependency, browserSource, StringComparison.OrdinalIgnoreCase);
-                Assert.DoesNotContain(forbiddenBrowserDependency, migratedFeatureRazor, StringComparison.OrdinalIgnoreCase);
             }
-
-            Assert.DoesNotContain("\"/api/", migratedFeatureRazor, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -882,6 +863,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
+            if (!Directory.Exists(featureRoot))
+            {
+                return [];
+            }
 
             return Directory
                 .EnumerateFiles(featureRoot, searchPattern, SearchOption.AllDirectories)
@@ -906,6 +891,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadComponentLayerSource(string layer)
         {
             var root = RepositoryPath($"BlazorShop.PresentationV2/BlazorShop.Storefront.Components/{layer}");
+            if (!Directory.Exists(root))
+            {
+                return string.Empty;
+            }
 
             return string.Join(
                 Environment.NewLine,
