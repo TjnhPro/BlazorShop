@@ -853,20 +853,20 @@ Then run the relevant Storefront V2 Playwright release cases for product, cart, 
 
 ## Completion Checklist
 
-- [ ] Reusable product/catalog models live under `Contracts`.
-- [ ] `Headless` no longer references `Features`.
-- [ ] Shared Headless contains no V2 route defaults.
-- [ ] V2 owns `/api/product-selection-preview` default.
-- [ ] Shared Components does not own final storefront copy for migrated flows.
-- [ ] Account route interpretation is host-owned or clearly compatibility-only.
-- [ ] Visual class-bag schemas are host-owned or explicitly temporary compatibility-only.
-- [ ] Browser local API result carries structured error semantics.
-- [ ] Empty success body handling is safe when `ContentLength` is `null`.
-- [ ] Package metadata reflects contracts/headless/browser role.
-- [ ] Starter and generated storefront docs do not treat `Features` wrappers as required presentation contracts.
-- [ ] V2/Components/WASM/Starter builds pass.
-- [ ] Focused tests pass.
-- [ ] Browser QA passes where flows changed.
+- [x] Reusable product/catalog models live under `Contracts`.
+- [x] `Headless` no longer references `Features`.
+- [x] Shared Headless contains no V2 route defaults.
+- [x] V2 owns `/api/product-selection-preview` default.
+- [x] Shared Components does not own final storefront copy for migrated flows.
+- [x] Account route interpretation is host-owned or clearly compatibility-only.
+- [x] Visual class-bag schemas are host-owned or explicitly temporary compatibility-only.
+- [x] Browser local API result carries structured error semantics.
+- [x] Empty success body handling is safe when `ContentLength` is `null`.
+- [x] Package metadata reflects contracts/headless/browser role.
+- [x] Starter and generated storefront docs do not treat `Features` wrappers as required presentation contracts.
+- [x] V2/Components/WASM/Starter builds pass.
+- [x] Focused tests pass.
+- [x] Browser QA passes where flows changed.
 
 ## Autoplan Decision Audit Trail
 
