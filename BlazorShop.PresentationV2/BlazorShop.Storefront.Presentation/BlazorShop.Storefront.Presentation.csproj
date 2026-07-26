@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>BlazorShop.Storefront.Presentation</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>BlazorShop</Authors>
+    <Description>Storefront application presentation engine for host-owned visual implementations.</Description>
+    <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>

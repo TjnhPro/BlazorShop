@@ -137,29 +137,29 @@ Exit criteria:
 
 ## Phase SPF1 - Create Presentation Project and Dependency Guardrails
 
-- [ ] Tao project:
+- [x] Tao project:
 
 ```text
 BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/
 ```
 
-- [ ] Project SDK:
+- [x] Project SDK:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 ```
 
-- [ ] Target framework va package metadata dong bo voi Storefront packages:
+- [x] Target framework va package metadata dong bo voi Storefront packages:
   - `net10.0`
   - nullable enabled
   - implicit usings enabled
   - package id `BlazorShop.Storefront.Presentation`
-- [ ] Add project references chi toi:
+- [x] Add project references chi toi:
   - `BlazorShop.Storefront.Runtime`
   - `BlazorShop.Storefront.Components`
-- [ ] Add framework/package references can thiet cho server-side Razor components va ASP.NET Core endpoint extensions.
-- [ ] Add project vao solution neu solution file dang quan ly active V2 projects.
-- [ ] Tao thu muc ban dau:
+- [x] Add framework/package references can thiet cho server-side Razor components va ASP.NET Core endpoint extensions.
+- [x] Add project vao solution neu solution file dang quan ly active V2 projects.
+- [x] Tao thu muc ban dau:
 
 ```text
 App/
@@ -175,16 +175,24 @@ Views/Foundation/
 DependencyInjection/
 ```
 
-- [ ] Them architecture tests:
+- [x] Them architecture tests:
   - Presentation references Runtime and Components.
   - Presentation does not reference V2, V2.WASM, Starter, ServiceDefaults, backend/core/API projects.
   - V2.WASM does not reference Presentation, Runtime, or Client.
   - Components does not reference Presentation/Runtime/Client and has no `.razor`.
 
+2026-07-26 SPF1 evidence:
+
+- Created `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj` with `Microsoft.NET.Sdk.Razor`, `net10.0`, package metadata, `Microsoft.AspNetCore.App`, and only Runtime/Components project references.
+- Added foundation folders and initial `AddStorefrontPresentation` registration surface.
+- Added `StorefrontPresentationFoundationBoundaryTests` for solution inclusion, folder skeleton, dependency direction, and Components/WASM boundary.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests" --no-restore` passed 5/5 with existing MessagePack vulnerability and Browserslist warnings.
+
 Exit criteria:
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj` pass.
-- [ ] Dependency guardrails pass.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj` pass.
+- [x] Dependency guardrails pass.
 
 ## Phase SPF2 - Foundation View Adapter
 
