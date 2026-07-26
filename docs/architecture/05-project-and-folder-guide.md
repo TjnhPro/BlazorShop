@@ -248,6 +248,7 @@ Use for:
 - Normalized error mapping primitives.
 - BFF-safe result mapping primitives.
 - Runtime configures generated clients through the named `StorefrontGenerated` `HttpClient`; callers should configure `StorefrontRuntimeOptions.CommerceNodeBaseUrl` instead of passing per-client base URL strings.
+- Runtime errors expose technical fallback state through `Status`, `Code`, `DefaultMessage`/`Message`, `TraceId`, `FieldErrors`, and `Retryable`. Storefront hosts own final localized copy, toast/inline/page placement, and retry CTA behavior.
 
 Do not:
 

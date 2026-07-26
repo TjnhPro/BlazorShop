@@ -466,37 +466,46 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Goal: keep Runtime errors stable and technical while storefront hosts own final visible copy.
 
+Status: completed in commit pending.
+
 ### Tasks
 
-- [ ] Decide the non-breaking error shape migration:
-  - [ ] keep `Message` for compatibility in the first implementation phase.
-  - [ ] add `DefaultMessage` as an alias or new property if the record shape can stay source-compatible.
-  - [ ] add `Retryable`.
-  - [ ] keep `Status`, `Code`, `TraceId`, and `FieldErrors`.
-- [ ] If changing the positional `StorefrontRuntimeError` constructor would create too much churn:
-  - [ ] keep constructor shape.
-  - [ ] add computed properties or factory methods first.
-  - [ ] migrate call sites in a later phase.
-- [ ] Normalize error code ownership:
-  - [ ] API-provided code is preserved.
-  - [ ] network timeout uses `network.timeout`.
-  - [ ] network failure uses `network.failure`.
-  - [ ] fallback unavailable uses `storefront.unavailable`.
-  - [ ] invalid local input uses `request.invalid`.
-- [ ] Define `Retryable` rules:
-  - [ ] `network.timeout` is retryable.
-  - [ ] `network.failure` is retryable only if current policy treats transient HTTP failures as retryable.
-  - [ ] validation, forbidden, unauthorized, not found, and conflict are not retryable by default.
-- [ ] Rename internal comments/docs to describe message as fallback technical copy, not final UI copy.
-- [ ] Add a short host guidance section:
-  - [ ] Storefront host maps `Status`/`Code` to localized copy.
-  - [ ] Storefront host chooses toast, inline error, full error page, or retry CTA.
-  - [ ] Runtime does not decide language or final UX.
-- [ ] Update tests:
-  - [ ] timeout exposes `Retryable = true`.
-  - [ ] validation preserves `FieldErrors`.
-  - [ ] conflict preserves conflict primitive.
-  - [ ] API message still survives as fallback.
+- [x] Decide the non-breaking error shape migration:
+  - [x] keep `Message` for compatibility in the first implementation phase.
+  - [x] add `DefaultMessage` as an alias or new property if the record shape can stay source-compatible.
+  - [x] add `Retryable`.
+  - [x] keep `Status`, `Code`, `TraceId`, and `FieldErrors`.
+- [x] If changing the positional `StorefrontRuntimeError` constructor would create too much churn:
+  - [x] keep constructor shape.
+  - [x] add computed properties or factory methods first.
+  - [x] migrate call sites in a later phase.
+- [x] Normalize error code ownership:
+  - [x] API-provided code is preserved.
+  - [x] network timeout uses `network.timeout`.
+  - [x] network failure uses `network.failure`.
+  - [x] fallback unavailable uses `storefront.unavailable`.
+  - [x] invalid local input uses `request.invalid`.
+- [x] Define `Retryable` rules:
+  - [x] `network.timeout` is retryable.
+  - [x] `network.failure` is retryable only if current policy treats transient HTTP failures as retryable.
+  - [x] validation, forbidden, unauthorized, not found, and conflict are not retryable by default.
+- [x] Rename internal comments/docs to describe message as fallback technical copy, not final UI copy.
+- [x] Add a short host guidance section:
+  - [x] Storefront host maps `Status`/`Code` to localized copy.
+  - [x] Storefront host chooses toast, inline error, full error page, or retry CTA.
+  - [x] Runtime does not decide language or final UX.
+- [x] Update tests:
+  - [x] timeout exposes `Retryable = true`.
+  - [x] validation preserves `FieldErrors`.
+  - [x] conflict preserves conflict primitive.
+  - [x] API message still survives as fallback.
+
+### SRH5 Notes
+
+- `StorefrontRuntimeError` keeps its positional constructor and adds computed `DefaultMessage` and `Retryable` properties.
+- `network.timeout` and `network.failure` are retryable; validation/auth/not-found/conflict errors remain non-retryable by default.
+- Architecture docs now state that Runtime provides technical fallback state while hosts own localization, placement, and retry CTA behavior.
+- Runtime build passed and runtime primitive tests passed.
 
 ### Files Likely Touched
 
@@ -515,9 +524,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Runtime errors expose enough state for localized Storefront UX.
-- [ ] Runtime keeps technical fallback copy without owning final storefront copy.
-- [ ] Existing V2 and Starter consumers still compile.
+- [x] Runtime errors expose enough state for localized Storefront UX.
+- [x] Runtime keeps technical fallback copy without owning final storefront copy.
+- [x] Existing V2 and Starter consumers still compile.
 
 ## Phase SRH6 - Split Catalog Content Facade By Capability
 

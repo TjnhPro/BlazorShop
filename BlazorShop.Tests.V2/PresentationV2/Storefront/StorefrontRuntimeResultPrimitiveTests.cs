@@ -27,6 +27,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(status, error.Status);
             Assert.Equal(code, error.Code);
             Assert.Equal("Mapped message.", error.Message);
+            Assert.Equal("Mapped message.", error.DefaultMessage);
             Assert.Equal("trace-1", error.TraceId);
         }
 
@@ -40,12 +41,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("timed out", error.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        [Fact(Skip = "Enable in SRH5 after Runtime error primitives expose Retryable.")]
+        [Fact]
         public void RuntimeErrorMapper_TimeoutIsRetryable()
         {
-            var retryableProperty = typeof(StorefrontRuntimeError).GetProperty("Retryable");
+            var error = StorefrontRuntimeErrorMapper.FromException(new TimeoutException("Timed out."));
 
-            Assert.NotNull(retryableProperty);
+            Assert.True(error.Retryable);
+            Assert.Equal(error.Message, error.DefaultMessage);
         }
 
         [Fact]
@@ -55,6 +57,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(StorefrontRuntimeStatusCodes.ServiceUnavailable, error.Status);
             Assert.Equal("network.failure", error.Code);
+            Assert.True(error.Retryable);
         }
 
         [Fact]
@@ -72,6 +75,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var error = StorefrontRuntimeErrorMapper.FromApiException(exception);
 
             Assert.Single(error.FieldErrors);
+            Assert.False(error.Retryable);
             Assert.Equal(["Quantity must be at least 1."], error.FieldErrors["quantity"]);
             var validation = Assert.Single(error.ValidationErrors);
             Assert.Equal("quantity", validation.Field);
@@ -89,6 +93,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var error = StorefrontRuntimeErrorMapper.FromApiException(exception);
 
             Assert.NotNull(error.Conflict);
+            Assert.False(error.Retryable);
             Assert.Equal("cart.version_conflict", error.Conflict!.Code);
             Assert.Equal("Cart version mismatch.", error.Conflict.Message);
         }

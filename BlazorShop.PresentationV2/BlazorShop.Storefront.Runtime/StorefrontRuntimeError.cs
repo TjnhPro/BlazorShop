@@ -11,6 +11,12 @@ namespace BlazorShop.Storefront.Runtime
         string? TraceId,
         IReadOnlyDictionary<string, IReadOnlyList<string>> FieldErrors)
     {
+        public string DefaultMessage => this.Message;
+
+        public bool Retryable =>
+            string.Equals(this.Code, "network.timeout", StringComparison.Ordinal)
+            || string.Equals(this.Code, "network.failure", StringComparison.Ordinal);
+
         public IReadOnlyList<StorefrontRuntimeValidationError> ValidationErrors =>
             this.FieldErrors
                 .Select(pair => new StorefrontRuntimeValidationError(pair.Key, pair.Value))
