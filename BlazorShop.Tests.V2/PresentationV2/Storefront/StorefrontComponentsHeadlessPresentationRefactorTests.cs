@@ -550,6 +550,69 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("nameof(AccountChangePasswordForm.Classes)", app, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void AccountAddressBook_UsesHostActionsAndClassesAfterHpr11Migration()
+        {
+            var addresses = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountAddressBook.razor");
+            var behavior = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
+            var options = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
+            var host = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var app = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+
+            foreach (var expected in new[]
+            {
+                "StorefrontAccountAddressActionDescriptor",
+                "CurrentAddressesRoute",
+                "CreateAddressRoute",
+                "UpdateAddressRouteTemplate",
+                "DeleteAddressRouteTemplate",
+                "DefaultShippingRouteTemplate",
+                "DefaultBillingRouteTemplate",
+                "UpdateAddressRoute(Guid addressId)",
+                "StorefrontAccountAddressBookClasses",
+                "CompactWideField",
+                "FullWideField"
+            })
+            {
+                Assert.Contains(expected, behavior, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(Actions.CurrentAddressesRoute)", addresses, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>", addresses, StringComparison.Ordinal);
+            Assert.Contains("Actions.CreateAddressRoute", addresses, StringComparison.Ordinal);
+            Assert.Contains("Actions.UpdateAddressRoute(addressId)", addresses, StringComparison.Ordinal);
+            Assert.Contains("Actions.DeleteAddressRoute(addressId)", addresses, StringComparison.Ordinal);
+            Assert.Contains("Actions.DefaultShippingRoute(addressId)", addresses, StringComparison.Ordinal);
+            Assert.Contains("Actions.DefaultBillingRoute(addressId)", addresses, StringComparison.Ordinal);
+            Assert.Contains("class=\"@Classes.", addresses, StringComparison.Ordinal);
+            Assert.Contains("Classes.CompactInput", addresses, StringComparison.Ordinal);
+            Assert.Contains("Classes.FullInput", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("/api/account/addresses", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-neutral-", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("text-neutral-", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("text-rose-", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("text-sky-", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("sm:", addresses, StringComparison.Ordinal);
+            Assert.DoesNotContain("xl:", addresses, StringComparison.Ordinal);
+
+            Assert.Contains("AddressActions", options, StringComparison.Ordinal);
+            Assert.Contains("AddressClasses", options, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/addresses\"", options, StringComparison.Ordinal);
+            Assert.Contains("\"/api/account/addresses/{addressId}/default-shipping\"", options, StringComparison.Ordinal);
+            Assert.Contains("ListGrid = \"grid gap-4 xl:grid-cols-2\"", options, StringComparison.Ordinal);
+
+            Assert.Contains("AddressActions=\"StorefrontAccountViewOptions.AddressActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("AddressClasses=\"StorefrontAccountViewOptions.AddressClasses\"", host, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountAddressBook.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(AccountAddressBook.Classes)", app, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

@@ -402,24 +402,24 @@ Goal: split simpler account forms first.
 
 Goal: split the highest-write account leaf before order views.
 
-- [ ] Keep `StorefrontBrowserCustomerAddress` and request models.
-- [ ] Extract address state/actions:
-  - [ ] load addresses.
-  - [ ] create.
-  - [ ] update.
-  - [ ] delete.
-  - [ ] set default shipping.
-  - [ ] set default billing.
-  - [ ] success/error state.
-- [ ] Move visual address book/cards/forms to V2.
-- [ ] Remove hardcoded `/api/account/addresses*` literals from shared address behavior.
+- [x] Keep `StorefrontBrowserCustomerAddress` and request models.
+- [x] Extract address state/actions:
+  - [x] load addresses.
+  - [x] create.
+  - [x] update.
+  - [x] delete.
+  - [x] set default shipping.
+  - [x] set default billing.
+  - [x] success/error state.
+- [x] Move visual address book/cards/forms to V2.
+- [x] Remove hardcoded `/api/account/addresses*` literals from shared address behavior.
 
 ### HPR11 QA gate
 
-- [ ] Add/edit/delete address works.
-- [ ] Set default shipping/billing works.
-- [ ] Empty address state renders.
-- [ ] Shared address behavior has no endpoint literals or V2 visual classes.
+- [x] Add/edit/delete address works.
+- [x] Set default shipping/billing works.
+- [x] Empty address state renders.
+- [x] Shared address behavior has no endpoint literals or V2 visual classes.
 
 ## Phase HPR12 - Account leaf: order list and order detail
 
@@ -579,7 +579,7 @@ Goal: prove V2 keeps existing behavior after moving visual implementation out of
 - [x] `AccountNavigation.razor` covered.
 - [x] `AccountProfileEditor.razor` covered.
 - [x] `AccountChangePasswordForm.razor` covered.
-- [ ] `AccountAddressBook.razor` covered.
+- [x] `AccountAddressBook.razor` covered.
 - [ ] `AccountOrderList.razor` covered.
 - [ ] `AccountOrderDetail.razor` covered.
 - [ ] `AccountApp.razor` covered.

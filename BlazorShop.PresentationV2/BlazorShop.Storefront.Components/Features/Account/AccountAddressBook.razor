@@ -1,76 +1,77 @@
 @namespace BlazorShop.Storefront.Components.Features.Account
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Headless.Account
 @inject IServiceProvider Services
 
-<div data-storefront-account-addresses>
+<div class="@Classes.Root" data-storefront-account-addresses>
     @if (!string.IsNullOrWhiteSpace(_success))
     {
-        <div class="mb-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">@_success</div>
+        <div class="@Classes.StatusAlert" role="status">@_success</div>
     }
     @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <div class="mb-5 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
     }
 
-    <section class="mb-8 rounded border border-neutral-200 p-4">
-        <h2 class="text-lg font-bold text-neutral-900">Add address</h2>
-        <form method="post" action="@FormAction" class="mt-4 grid gap-4 sm:grid-cols-2" @onsubmit="CreateAsync" @onsubmit:preventDefault="true">
+    <section class="@Classes.AddSection">
+        <h2 class="@Classes.AddTitle">Add address</h2>
+        <form method="post" action="@Actions.FormAction" class="@Classes.AddForm" @onsubmit="CreateAsync" @onsubmit:preventDefault="true">
             <AntiforgeryToken />
             @RenderAntiforgeryField()
             <input type="hidden" name="Action" value="create" />
             @RenderAddressInputs(_newAddress, false)
-            <div class="sm:col-span-2">
-                <button class="rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:bg-neutral-500" type="submit" disabled="@_saving">Save address</button>
+            <div class="@Classes.ActionRow">
+                <button class="@Classes.PrimaryButton" type="submit" disabled="@_saving">Save address</button>
             </div>
         </form>
     </section>
 
     @if (_addresses.Count == 0)
     {
-        <p class="text-sm text-neutral-700">No saved addresses yet.</p>
+        <p class="@Classes.EmptyState">No saved addresses yet.</p>
     }
     else
     {
-        <div class="grid gap-4 xl:grid-cols-2">
+        <div class="@Classes.ListGrid">
             @foreach (var address in _addresses)
             {
                 var form = _forms[address.PublicId];
-                <section class="rounded border border-neutral-200 p-4" @key="address.PublicId">
-                    <div class="flex flex-wrap gap-2 text-xs font-semibold uppercase text-neutral-500">
+                <section class="@Classes.Card" @key="address.PublicId">
+                    <div class="@Classes.BadgeRow">
                         @if (address.IsDefaultShipping)
                         {
-                            <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-700">Default shipping</span>
+                            <span class="@Classes.ShippingBadge">Default shipping</span>
                         }
                         @if (address.IsDefaultBilling)
                         {
-                            <span class="rounded bg-sky-50 px-2 py-1 text-sky-700">Default billing</span>
+                            <span class="@Classes.BillingBadge">Default billing</span>
                         }
                     </div>
-                    <h2 class="mt-3 text-base font-bold text-neutral-900">@address.FullName</h2>
+                    <h2 class="@Classes.CardTitle">@address.FullName</h2>
                     @if (!string.IsNullOrWhiteSpace(address.Company))
                     {
-                        <p class="mt-1 text-sm text-neutral-700">@address.Company</p>
+                        <p class="@Classes.AddressTextSpaced">@address.Company</p>
                     }
-                    <p class="mt-2 text-sm text-neutral-700">@address.Address1</p>
+                    <p class="@Classes.AddressTextSpaced">@address.Address1</p>
                     @if (!string.IsNullOrWhiteSpace(address.Address2))
                     {
-                        <p class="text-sm text-neutral-700">@address.Address2</p>
+                        <p class="@Classes.AddressText">@address.Address2</p>
                     }
-                    <p class="text-sm text-neutral-700">@address.City, @address.PostalCode</p>
-                    <p class="text-sm text-neutral-700">@address.CountryCode</p>
+                    <p class="@Classes.AddressText">@address.City, @address.PostalCode</p>
+                    <p class="@Classes.AddressText">@address.CountryCode</p>
 
-                    <form method="post" action="@FormAction" class="mt-4 grid gap-3" @onsubmit="() => UpdateAsync(address.PublicId)" @onsubmit:preventDefault="true">
+                    <form method="post" action="@Actions.FormAction" class="@Classes.EditForm" @onsubmit="() => UpdateAsync(address.PublicId)" @onsubmit:preventDefault="true">
                         <AntiforgeryToken />
                         @RenderAntiforgeryField()
                         <input type="hidden" name="AddressId" value="@address.PublicId" />
-                        <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="@Classes.EditFieldsGrid">
                             @RenderAddressInputs(form, true)
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            <button class="rounded bg-neutral-900 px-3 py-2 text-sm font-semibold text-white" type="submit" name="Action" value="update">Update</button>
-                            <button class="rounded border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800" type="button" @onclick="() => SetDefaultAsync(address.PublicId, true)">Default shipping</button>
-                            <button class="rounded border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800" type="button" @onclick="() => SetDefaultAsync(address.PublicId, false)">Default billing</button>
-                            <button class="rounded border border-rose-300 px-3 py-2 text-sm font-semibold text-rose-700" type="button" @onclick="() => DeleteAsync(address.PublicId)">Delete</button>
+                        <div class="@Classes.EditActions">
+                            <button class="@Classes.PrimaryButton" type="submit" name="Action" value="update">Update</button>
+                            <button class="@Classes.SecondaryButton" type="button" @onclick="() => SetDefaultAsync(address.PublicId, true)">Default shipping</button>
+                            <button class="@Classes.SecondaryButton" type="button" @onclick="() => SetDefaultAsync(address.PublicId, false)">Default billing</button>
+                            <button class="@Classes.DangerButton" type="button" @onclick="() => DeleteAsync(address.PublicId)">Delete</button>
                         </div>
                     </form>
                 </section>
@@ -90,7 +91,10 @@
     public string? InitialSuccess { get; set; }
 
     [Parameter]
-    public string FormAction { get; set; } = "/account/addresses";
+    public StorefrontAccountAddressActionDescriptor Actions { get; set; } = StorefrontAccountAddressActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountAddressBookClasses Classes { get; set; } = StorefrontAccountAddressBookClasses.Empty;
 
     [Parameter]
     public string? AntiforgeryFieldName { get; set; }
@@ -129,7 +133,7 @@
     private async Task CreateAsync()
     {
         await MutateAsync(client => client.PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>(
-            "/api/account/addresses",
+            Actions.CreateAddressRoute,
             _newAddress));
         _newAddress = new();
     }
@@ -138,21 +142,21 @@
     {
         return _forms.TryGetValue(addressId, out var form)
             ? MutateAsync(client => client.PutJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>(
-                $"/api/account/addresses/{addressId:D}",
+                Actions.UpdateAddressRoute(addressId),
                 form))
             : Task.CompletedTask;
     }
 
     private Task DeleteAsync(Guid addressId)
     {
-        return MutateAsync(client => client.DeleteAsync<StorefrontBrowserAccountCommandResult>($"/api/account/addresses/{addressId:D}"));
+        return MutateAsync(client => client.DeleteAsync<StorefrontBrowserAccountCommandResult>(Actions.DeleteAddressRoute(addressId)));
     }
 
     private Task SetDefaultAsync(Guid addressId, bool shipping)
     {
-        var route = shipping ? "default-shipping" : "default-billing";
+        var route = shipping ? Actions.DefaultShippingRoute(addressId) : Actions.DefaultBillingRoute(addressId);
         return MutateAsync(client => client.PostJsonAsync<object, StorefrontBrowserCustomerAddress>(
-            $"/api/account/addresses/{addressId:D}/{route}",
+            route,
             new { }));
     }
 
@@ -192,7 +196,7 @@
             return;
         }
 
-        var result = await apiClient.GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>("/api/account/addresses");
+        var result = await apiClient.GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(Actions.CurrentAddressesRoute);
         if (result.Success && result.Data is not null)
         {
             _addresses = result.Data;
@@ -253,7 +257,7 @@
         builder.CloseElement();
     };
 
-    private static void AddTextInput(
+    private void AddTextInput(
         RenderTreeBuilder builder,
         int sequence,
         StorefrontBrowserCustomerAddressRequest form,
@@ -269,15 +273,13 @@
         int? maxLength = null)
     {
         var labelClass = compact
-            ? "grid gap-1 text-xs font-semibold uppercase text-neutral-500" + (spanTwo ? " sm:col-span-2" : string.Empty)
-            : "grid gap-1 text-sm font-semibold text-neutral-700" + (spanTwo ? " sm:col-span-2" : string.Empty);
+            ? (spanTwo ? Classes.CompactWideField : Classes.CompactField)
+            : (spanTwo ? Classes.FullWideField : Classes.FullField);
         builder.OpenElement(sequence, "label");
         builder.AddAttribute(sequence + 1, "class", labelClass);
         builder.AddContent(sequence + 2, label);
         builder.OpenElement(sequence + 3, "input");
-        builder.AddAttribute(sequence + 4, "class", compact
-            ? "rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900"
-            : "rounded border border-neutral-300 px-3 py-2 font-normal");
+        builder.AddAttribute(sequence + 4, "class", compact ? Classes.CompactInput : Classes.FullInput);
         builder.AddAttribute(sequence + 5, "name", name);
         builder.AddAttribute(sequence + 6, "autocomplete", autocomplete);
         builder.AddAttribute(sequence + 7, "type", type);

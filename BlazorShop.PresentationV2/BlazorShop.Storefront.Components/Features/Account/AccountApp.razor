@@ -58,6 +58,12 @@
     [Parameter]
     public StorefrontAccountFormClasses AccountFormClasses { get; set; } = StorefrontAccountFormClasses.Empty;
 
+    [Parameter]
+    public StorefrontAccountAddressActionDescriptor AddressActions { get; set; } = StorefrontAccountAddressActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontAccountAddressBookClasses AddressClasses { get; set; } = StorefrontAccountAddressBookClasses.Empty;
+
     private AccountRoute ActiveRoute => ResolveRoute(Path);
 
     private string Title => ActiveRoute.Kind switch
@@ -94,10 +100,11 @@
                 builder.OpenComponent<AccountAddressBook>(10);
                 builder.AddAttribute(11, nameof(AccountAddressBook.InitialError), Error);
                 builder.AddAttribute(12, nameof(AccountAddressBook.InitialSuccess), Saved == "1" ? "Address book updated." : null);
-                builder.AddAttribute(13, nameof(AccountAddressBook.FormAction), AccountRoutes.Addresses);
+                builder.AddAttribute(13, nameof(AccountAddressBook.Actions), AddressActions);
                 builder.AddAttribute(14, nameof(AccountAddressBook.AntiforgeryFieldName), AntiforgeryFieldName);
                 builder.AddAttribute(15, nameof(AccountAddressBook.AntiforgeryRequestToken), AntiforgeryRequestToken);
                 builder.AddAttribute(16, nameof(AccountAddressBook.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(17, nameof(AccountAddressBook.Classes), AddressClasses);
                 builder.CloseComponent();
                 break;
 
