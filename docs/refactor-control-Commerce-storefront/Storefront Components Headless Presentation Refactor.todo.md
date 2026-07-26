@@ -178,24 +178,24 @@ Goal: create a place for reusable contracts without moving all visual files at o
 
 Goal: remove V2 product-card visual lock from shared components.
 
-- [ ] Keep `ProductSummaryItem` as component-facing contract.
-- [ ] Reconcile current V2-local `Components/Catalog/ProductCard.razor` with shared `ProductSummaryCard.razor`:
-  - [ ] If V2-local product card already covers the visual behavior, switch V2 pages to V2 card/grid.
-  - [ ] If shared card has behavior not present in V2-local card, port that behavior into V2 card before deleting shared visual use.
-- [ ] Move or duplicate V2 visual markup into `Storefront.V2/Components/Catalog`.
-- [ ] Leave behind only:
-  - [ ] `ProductSummaryItem`.
-  - [ ] optional headless product card context/state.
-  - [ ] optional deprecated wrapper if needed for one transition commit.
-- [ ] Remove theme/layout utility classes from shared `ProductSummaryCard` or delete the shared Razor file when no consumer remains.
+- [x] Keep `ProductSummaryItem` as component-facing contract.
+- [x] Reconcile current V2-local `Components/Catalog/ProductCard.razor` with shared `ProductSummaryCard.razor`:
+  - [x] If V2-local product card already covers the visual behavior, switch V2 pages to V2 card/grid.
+  - [x] If shared card has behavior not present in V2-local card, port that behavior into V2 card before deleting shared visual use.
+- [x] Move or duplicate V2 visual markup into `Storefront.V2/Components/Catalog`.
+- [x] Leave behind only:
+  - [x] `ProductSummaryItem`.
+  - [x] optional headless product card context/state.
+  - [x] optional deprecated wrapper if needed for one transition commit.
+- [x] Remove theme/layout utility classes from shared `ProductSummaryCard` or delete the shared Razor file when no consumer remains.
 
 ### HPR2 QA gate
 
-- [ ] Category page renders product cards.
-- [ ] Search page renders product cards.
-- [ ] New releases page renders product cards.
-- [ ] Product direct add-to-cart still works where enabled.
-- [ ] Static guard: shared `ProductSummaryCard.razor` has no V2 theme/layout classes or no longer exists.
+- [x] Category page renders product cards.
+- [x] Search page renders product cards.
+- [x] New releases page renders product cards.
+- [x] Product direct add-to-cart still works where enabled.
+- [x] Static guard: shared `ProductSummaryCard.razor` has no V2 theme/layout classes or no longer exists.
 
 ## Phase HPR3 - Catalog composition: ProductSummaryGrid
 

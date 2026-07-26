@@ -137,6 +137,34 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Store-owned visual templates belong", featuresReadme, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void SharedProductSummaryCard_RemainsSemanticAfterHpr2Migration()
+        {
+            var sharedCard = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor");
+            var v2Card = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
+
+            Assert.Contains("data-storefront-product-summary-card", sharedCard, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-add-to-cart", sharedCard, StringComparison.Ordinal);
+            Assert.Contains("data-unit-price=\"@Item.UnitPriceValue\"", sharedCard, StringComparison.Ordinal);
+            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", sharedCard, StringComparison.Ordinal);
+
+            Assert.DoesNotContain("class=\"", sharedCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded-", sharedCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-neutral-", sharedCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-amber-", sharedCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("text-neutral-", sharedCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("hover:", sharedCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("sm:", sharedCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("lg:", sharedCard, StringComparison.Ordinal);
+
+            Assert.Contains("data-storefront-product-summary-card", v2Card, StringComparison.Ordinal);
+            Assert.Contains("rounded-2xl", v2Card, StringComparison.Ordinal);
+            Assert.Contains("bg-white/95", v2Card, StringComparison.Ordinal);
+            Assert.Contains("hover:shadow-2xl", v2Card, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
