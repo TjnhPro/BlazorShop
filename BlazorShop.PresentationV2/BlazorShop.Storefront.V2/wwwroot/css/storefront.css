@@ -706,9 +706,11 @@
 }
 
 @media (min-width: 1024px) {
+    /*
     .bs-storefront-header__shell::before {
         clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
     }
+    */
 
     .bs-storefront-header__desktop {
         display: flex;

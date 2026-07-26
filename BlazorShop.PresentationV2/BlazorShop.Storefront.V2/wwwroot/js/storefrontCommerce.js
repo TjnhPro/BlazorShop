@@ -517,6 +517,7 @@
     if (button instanceof HTMLButtonElement) {
       button.disabled = !preview.canAddToCart;
       button.dataset.resolvedVariantId = preview.productVariantId || "";
+      button.dataset.canAddToCart = preview.canAddToCart ? "true" : "false";
       if (preview.isValid) {
         button.dataset.unitPrice = String(preview.unitPrice ?? button.dataset.unitPrice ?? "");
         button.dataset.stock = String(preview.stockQuantity ?? button.dataset.stock ?? "0");
@@ -593,7 +594,12 @@
 
     const variantSelectSelector = button.dataset.variantSelect;
     const productStock = parseInteger(button.dataset.stock, 0);
-    if (!variantSelectSelector && productStock <= 0) {
+    const canAddToCart = (button.dataset.canAddToCart || "").toLowerCase();
+    if (!variantSelectSelector && canAddToCart === "false") {
+      return { error: "This product is not available for purchase." };
+    }
+
+    if (!variantSelectSelector && canAddToCart !== "true" && productStock <= 0) {
       return { error: "This product is out of stock." };
     }
 

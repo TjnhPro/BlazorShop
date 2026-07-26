@@ -19,6 +19,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("if (preview.isValid) {\n        button.dataset.unitPrice", script);
         }
 
+        [Fact]
+        public void AddToCart_UsesBackendSellabilityFlagBeforeStockQuantityGuard()
+        {
+            // Regression: unmanaged-stock products can report stockQuantity=0 while still being purchasable.
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js")
+                .ReplaceLineEndings("\n");
+
+            Assert.Contains("button.dataset.canAddToCart = preview.canAddToCart ? \"true\" : \"false\";", script);
+            Assert.Contains("const canAddToCart = (button.dataset.canAddToCart || \"\").toLowerCase();", script);
+            Assert.Contains("if (!variantSelectSelector && canAddToCart === \"false\")", script);
+            Assert.Contains("if (!variantSelectSelector && canAddToCart !== \"true\" && productStock <= 0)", script);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

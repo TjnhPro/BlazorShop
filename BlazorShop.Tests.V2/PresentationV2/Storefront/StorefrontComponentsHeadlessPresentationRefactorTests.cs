@@ -311,6 +311,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", sharedPanel, StringComparison.Ordinal);
             Assert.Contains("data-preview-container=\"@Actions.PreviewContainerSelector\"", sharedPanel, StringComparison.Ordinal);
             Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", sharedPanel, StringComparison.Ordinal);
+            Assert.Contains("data-can-add-to-cart=\"@FormatBoolean(Model.CanSubmitInitialPurchase)\"", sharedPanel, StringComparison.Ordinal);
             Assert.DoesNotContain("/api/", sharedPanel, StringComparison.Ordinal);
             Assert.DoesNotContain("#purchase", sharedPanel, StringComparison.Ordinal);
             Assert.DoesNotContain("#product-cart-feedback", sharedPanel, StringComparison.Ordinal);
@@ -427,6 +428,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("rounded", checkoutOptions, StringComparison.Ordinal);
             Assert.Contains("Actions=\"StorefrontCheckoutShellOptions.Actions\"", checkoutPage, StringComparison.Ordinal);
             Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", checkoutPage, StringComparison.Ordinal);
+            Assert.Equal(2, CountOccurrences(checkoutPage, "ShowPanel=\"false\""));
         }
 
         [Fact]
@@ -475,7 +477,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("new(\"orders\", \"Orders\", \"/account/orders\")", options, StringComparison.Ordinal);
             Assert.Contains("new(\"addresses\", \"Addresses\", \"/account/addresses\")", options, StringComparison.Ordinal);
             Assert.Contains("new(\"change-password\", \"Password\", \"/account/change-password\")", options, StringComparison.Ordinal);
-            Assert.Contains("rounded border border-neutral-200 bg-white", options, StringComparison.Ordinal);
+            Assert.Contains("rounded-3xl border border-neutral-200/70 bg-white/95", options, StringComparison.Ordinal);
             Assert.Contains("hover:bg-neutral-100", options, StringComparison.Ordinal);
 
             Assert.Contains("NavigationItems=\"StorefrontAccountViewOptions.NavigationItems\"", host, StringComparison.Ordinal);
@@ -539,7 +541,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"/api/account/profile\"", options, StringComparison.Ordinal);
             Assert.Contains("\"/api/account/change-password\"", options, StringComparison.Ordinal);
             Assert.Contains("ProfileForm = \"grid max-w-3xl gap-5 sm:grid-cols-2\"", options, StringComparison.Ordinal);
-            Assert.Contains("SubmitButton = \"inline-flex rounded bg-neutral-900", options, StringComparison.Ordinal);
+            Assert.Contains("SubmitButton = \"inline-flex items-center rounded bg-amber-500", options, StringComparison.Ordinal);
 
             Assert.Contains("ProfileActions=\"StorefrontAccountViewOptions.ProfileActions\"", host, StringComparison.Ordinal);
             Assert.Contains("PasswordActions=\"StorefrontAccountViewOptions.PasswordActions\"", host, StringComparison.Ordinal);
@@ -715,7 +717,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("ShellClasses.UnknownAlert", app, StringComparison.Ordinal);
             Assert.Contains("ShellClasses=\"StorefrontAccountViewOptions.ShellClasses\"", host, StringComparison.Ordinal);
             Assert.Contains("Section = \"mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8\"", options, StringComparison.Ordinal);
-            Assert.Contains("UnknownAlert = \"rounded border border-rose-200", options, StringComparison.Ordinal);
+            Assert.Contains("ContentArticle = \"rounded-3xl border border-neutral-200/70 bg-white/95 shadow-lg\"", options, StringComparison.Ordinal);
+            Assert.Contains("UnknownAlert = \"rounded-2xl border border-rose-200", options, StringComparison.Ordinal);
 
             foreach (var expectedRoute in new[]
             {
@@ -857,6 +860,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
+        }
+
+        private static int CountOccurrences(string value, string search)
+        {
+            var count = 0;
+            var index = 0;
+            while ((index = value.IndexOf(search, index, StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                index += search.Length;
+            }
+
+            return count;
         }
 
         private static string RepositoryPath(string relativePath)

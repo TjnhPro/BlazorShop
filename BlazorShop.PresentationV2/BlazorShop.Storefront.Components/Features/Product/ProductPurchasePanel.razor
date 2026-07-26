@@ -115,6 +115,7 @@
             data-resolved-variant-id="@Model.ResolvedVariantId"
             data-unit-price="@Model.BaseUnitPriceValue"
             data-currency-code="@Model.CurrencyCode"
+            data-can-add-to-cart="@FormatBoolean(Model.CanSubmitInitialPurchase)"
             data-preview-container="@Actions.PreviewContainerSelector"
             data-variant-select="@(Snapshot.UsesVariantSelect ? Actions.VariantSelectSelector : null)"
             data-stock="@Model.InitialStockValue"
@@ -183,5 +184,10 @@
         var chars = raw.Select(character => char.IsLetterOrDigit(character) ? character : '-').ToArray();
         var token = new string(chars).Trim('-');
         return string.IsNullOrWhiteSpace(token) ? "option" : token;
+    }
+
+    private static string FormatBoolean(bool value)
+    {
+        return value ? "true" : "false";
     }
 }
