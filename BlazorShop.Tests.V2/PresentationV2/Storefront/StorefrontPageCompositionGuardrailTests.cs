@@ -94,6 +94,39 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StarterPageInventory_RecordsCurrentSecondConsumerBaseline()
+        {
+            var expected = new[]
+            {
+                new PageInventoryItem("Pages/Ssr/Home/HomePage.razor", "/", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Hybrid/Catalog/CategoryPage.razor", "/category/{Slug}", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Hybrid/Catalog/ProductPage.razor", "/product/{Slug}", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Hybrid/Catalog/SearchPage.razor", "/search", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Hybrid/Commerce/DealsPage.razor", "/deals", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Ssr/Content/ContentPage.razor", "/content/{Slug}", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Hybrid/Commerce/CartPage.razor", "/cart", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Hybrid/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Hybrid/Commerce/PaymentResultPage.razor", "/payment/result", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Ssr/Auth/AuthShellPage.razor", "/signin", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account/{*Path}", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/Ssr/System/MaintenancePage.razor", "/maintenance", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Ssr/System/NotFoundPage.razor", "/not-found", RenderOwnership.Ssr),
+            };
+
+            var pageRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter");
+
+            foreach (var item in expected)
+            {
+                var pagePath = Path.Combine(pageRoot, item.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+                Assert.True(File.Exists(pagePath), $"{item.RelativePath} must remain in the Starter baseline inventory.");
+
+                var markup = File.ReadAllText(pagePath);
+                Assert.Contains($"@page \"{item.Route}\"", markup, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void StorefrontBrowserProjects_KeepPortableDependencyBoundary()
         {
             var componentReferences = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");

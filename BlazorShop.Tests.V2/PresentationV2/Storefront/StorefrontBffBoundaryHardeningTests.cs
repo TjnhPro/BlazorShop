@@ -26,6 +26,54 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void LocalEndpointRouteInventory_RecordsCurrentBrowserContracts()
+        {
+            var endpointSources = ReadEndpointSources();
+            var expectedMappings = new[]
+            {
+                "app.MapGet(\"/api/cart\"",
+                "app.MapPost(\"/api/product-selection-preview\"",
+                "app.MapPost(\"/api/cart/lines\"",
+                "app.MapPut(\"/api/cart/lines/{lineId:guid}\"",
+                "app.MapDelete(\"/api/cart/lines/{lineId:guid}\"",
+                "app.MapDelete(\"/api/cart\"",
+                "app.MapPost(\"/api/cart/recalculate\"",
+                "app.MapGet(\"/api/checkout\"",
+                "app.MapPost(\"/api/checkout/addresses\"",
+                "app.MapPost(\"/api/checkout/shipping-method\"",
+                "app.MapPost(\"/api/checkout/payment-method\"",
+                "app.MapPost(\"/api/checkout/review\"",
+                "app.MapPost(\"/api/checkout/place-order\"",
+                "app.MapGet(\"/api/account/profile\"",
+                "app.MapGet(\"/api/account/addresses\"",
+                "app.MapPost(\"/api/account/addresses\"",
+                "app.MapPost(\"/api/account/addresses/{addressId:guid}/default-shipping\"",
+                "app.MapPost(\"/api/account/addresses/{addressId:guid}/default-billing\"",
+                "app.MapGet(\"/api/account/orders\"",
+                "app.MapGet(\"/api/account/orders/{orderReference}\"",
+                "app.MapGet(\"/api/account/orders/{orderReference}/receipt\"",
+                "app.MapPost(\"/api/account/change-password\"",
+                "app.MapGet(\"/api/consent/current\"",
+                "app.MapPost(\"/api/consent\"",
+                "app.MapPost(\"/api/consent/revoke\"",
+                "app.MapGet(StorefrontRoutes.Robots",
+                "app.MapGet(StorefrontRoutes.Sitemap",
+                "app.MapGet(\"/media/products/{mediaPublicId:guid}\"",
+                "app.MapGet(\"/media/assets/{assetPublicId:guid}/{fileName}\"",
+            };
+
+            foreach (var expectedMapping in expectedMappings)
+            {
+                Assert.Contains(expectedMapping, endpointSources, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("StorefrontLocalApiErrorResponse", endpointSources, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBrowserCart", endpointSources, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBrowserCheckoutState", endpointSources, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBrowserCustomerProfile", endpointSources, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void LocalEndpointContracts_AreSplitIntoCapabilitySpecificContractFiles()
         {
             var endpointDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints");
