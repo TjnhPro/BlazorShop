@@ -61,7 +61,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("AddStorefrontRuntime(", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontPlatformRuntime(", runtimeRegistration, StringComparison.Ordinal);
-            Assert.Contains("AddStorefrontServerGeneratedClients(", runtimeRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontServerGeneratedClients", runtimeRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontGeneratedClients", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontPlatformRuntime", v2Registration, StringComparison.Ordinal);
             Assert.DoesNotContain("AddStorefrontServerGeneratedClients", v2Registration, StringComparison.Ordinal);
             Assert.DoesNotContain(".AddStorefrontGeneratedClients", v2Registration, StringComparison.Ordinal);
@@ -110,7 +111,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 options.StoreKey = "sample";
                 options.CommerceNodeBaseUrl = "https://commerce-node.example/";
             });
-            services.AddStorefrontServerGeneratedClients();
+            services.AddStorefrontPlatformRuntime();
 
             using var provider = services.BuildServiceProvider();
             using var scope = provider.CreateScope();
@@ -173,7 +174,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void StorefrontRuntimePlatformRegistrationAndCompatibilityWrappersResolveAllFacades()
+        public void StorefrontRuntimePlatformRegistration_ResolvesAllFacades()
         {
             var platformServices = CreateRuntimeServices();
             platformServices.AddStorefrontPlatformRuntime();
@@ -190,9 +191,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeAddressFacade>());
             Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeConsentFacade>());
             Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimePaymentFacade>());
+        }
 
-            var wrapperSource = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
-            Assert.Contains("return services.AddStorefrontPlatformRuntime(configureHttpClient);", wrapperSource, StringComparison.Ordinal);
+        [Fact]
+        public void Runtime_UsesOfficialCapabilityRegistrationSurface()
+        {
+            var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
+
+            Assert.Contains("AddStorefrontPlatformRuntime(", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontCatalogRuntime(", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontCartRuntime(", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontCheckoutRuntime(", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontAccountRuntime(", runtimeRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontServerGeneratedClients", runtimeRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontGeneratedClients", runtimeRegistration, StringComparison.Ordinal);
         }
 
         [Fact]

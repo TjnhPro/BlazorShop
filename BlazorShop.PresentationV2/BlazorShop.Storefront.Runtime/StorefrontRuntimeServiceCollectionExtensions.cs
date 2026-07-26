@@ -28,20 +28,6 @@ namespace BlazorShop.Storefront.Runtime
             return services;
         }
 
-        public static IServiceCollection AddStorefrontGeneratedClients(
-            this IServiceCollection services,
-            Action<IServiceProvider, HttpClient>? configureHttpClient = null)
-        {
-            return services.AddStorefrontPlatformRuntime(configureHttpClient);
-        }
-
-        public static IServiceCollection AddStorefrontServerGeneratedClients(
-            this IServiceCollection services,
-            Action<IServiceProvider, HttpClient>? configureHttpClient = null)
-        {
-            return services.AddStorefrontPlatformRuntime(configureHttpClient);
-        }
-
         public static IServiceCollection AddStorefrontPlatformRuntime(
             this IServiceCollection services,
             Action<IServiceProvider, HttpClient>? configureHttpClient = null)

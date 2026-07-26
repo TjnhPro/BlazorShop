@@ -365,19 +365,20 @@ Exit criteria:
 
 Muc tieu: runtime DI surface chi con ten chinh thuc, hoac co deprecation policy ro rang neu can giu compatibility.
 
-- [ ] Confirm package chua public external consumer. Neu chua public:
-  - [ ] Remove `AddStorefrontGeneratedClients`.
-  - [ ] Remove `AddStorefrontServerGeneratedClients`.
-  - [ ] Keep `AddStorefrontPlatformRuntime`.
-  - [ ] Keep `AddStorefront{Capability}Runtime`.
-- [ ] Neu package da public hoac can migration window:
-  - [ ] Mark `[Obsolete("Use AddStorefrontPlatformRuntime or AddStorefront{Capability}Runtime. This compatibility alias will be removed in <version>.")]`.
-  - [ ] Them TODO removal version vao docs.
-- [ ] Update tests:
+- [x] Confirm package chua public external consumer. Neu chua public:
+  - [x] Remove `AddStorefrontGeneratedClients`.
+  - [x] Remove `AddStorefrontServerGeneratedClients`.
+  - [x] Keep `AddStorefrontPlatformRuntime`.
+  - [x] Keep `AddStorefront{Capability}Runtime`.
+- [x] Neu package da public hoac can migration window:
+  - [x] Mark `[Obsolete("Use AddStorefrontPlatformRuntime or AddStorefront{Capability}Runtime. This compatibility alias will be removed in <version>.")]`.
+  - [x] Them TODO removal version vao docs.
+  - 2026-07-26: N/A; alias da remove vi repo khong co external public consumer.
+- [x] Update tests:
   - old tests khong assert wrappers la preferred path;
   - neu wrappers removed, test fail khi wrappers con ton tai;
   - neu wrappers obsolete, test assert obsolete message va removal version.
-- [ ] Update docs:
+- [x] Update docs:
   - `docs/architecture/05-project-and-folder-guide.md`
   - `docs/architecture/10-v2-contract-ownership.md`
   - `docs/agents/storefront-builder.md`
@@ -385,8 +386,10 @@ Muc tieu: runtime DI surface chi con ten chinh thuc, hoac co deprecation policy 
 
 Exit criteria:
 
-- [ ] V2 va Starter van dung `AddStorefrontPlatformRuntime`.
-- [ ] Runtime API khong con ten moi/ten cu song song ma khong co policy.
+- [x] V2 va Starter van dung `AddStorefrontPlatformRuntime`.
+- [x] Runtime API khong con ten moi/ten cu song song ma khong co policy.
+  - 2026-07-26: Runtime, Storefront V2, va Starter build pass.
+  - 2026-07-26: focused `StorefrontSharedPlatformPackageContractTests|StorefrontRuntimeResultPrimitiveTests` pass 35/35.
 
 ## Phase SCR9 - Test Suite Refactor and Guardrail Upgrade
 

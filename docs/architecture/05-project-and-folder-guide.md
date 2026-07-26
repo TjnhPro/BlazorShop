@@ -250,7 +250,7 @@ Use for:
 - BFF-safe result mapping primitives.
 - Runtime configures generated clients through the named `StorefrontGenerated` `HttpClient`; callers should configure `StorefrontRuntimeOptions.CommerceNodeBaseUrl` instead of passing per-client base URL strings.
 - Runtime errors expose technical fallback state through `Status`, `Code`, `DefaultMessage`/`Message`, `TraceId`, `FieldErrors`, and `Retryable`. Storefront hosts own final localized copy, toast/inline/page placement, and retry CTA behavior.
-- Server hosts that need the full storefront surface should call `AddStorefrontPlatformRuntime`; narrower hosts may call `AddStorefront{Capability}Runtime` methods such as catalog, cart, checkout, account, payment, consent, or address. `AddStorefrontServerGeneratedClients` and `AddStorefrontGeneratedClients` remain compatibility wrappers, not preferred new composition APIs.
+- Server hosts that need the full storefront surface should call `AddStorefrontPlatformRuntime`; narrower hosts may call `AddStorefront{Capability}Runtime` methods such as catalog, cart, checkout, account, payment, consent, or address. The old `AddStorefrontServerGeneratedClients` and `AddStorefrontGeneratedClients` aliases have been removed.
 
 Do not:
 

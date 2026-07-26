@@ -15,7 +15,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Storefront Starter and generated storefront source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter must consume generated Storefront client contracts by default and must not copy the manual `StorefrontApiClient` transport from Storefront V2.
 - Generated StorefrontBuilder projects must consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries and must not reference Storefront V2, `BlazorShop.Web.SharedV2`, or backend/core/API projects.
-- Storefront Runtime is server/BFF-only. Server hosts use `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow composition; browser/WASM code uses same-origin local endpoints and browser-safe Components primitives instead.
+- Storefront Runtime is server/BFF-only. Server hosts use `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow composition; compatibility aliases such as `AddStorefrontServerGeneratedClients` and `AddStorefrontGeneratedClients` are not part of the current API surface. Browser/WASM code uses same-origin local endpoints and browser-safe Components primitives instead.
 - Starter manual HTTP exceptions are allowed only when documented in an exception registry with reason, owner, test, and revisit trigger.
 - The Starter generated-client adoption policy and exception registry live under `docs/storefront-platform/`.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.
