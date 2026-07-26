@@ -38,6 +38,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("timed out", error.Message, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact(Skip = "Enable in SRH5 after Runtime error primitives expose Retryable.")]
+        public void RuntimeErrorMapper_TimeoutIsRetryable()
+        {
+            var retryableProperty = typeof(StorefrontRuntimeError).GetProperty("Retryable");
+
+            Assert.NotNull(retryableProperty);
+        }
+
         [Fact]
         public void RuntimeErrorMapper_MapsNetworkExceptionToServiceUnavailable()
         {
@@ -106,6 +114,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.False(result.Success);
             Assert.Equal("idem-1", result.IdempotencyKey);
             Assert.Equal(StorefrontRuntimeStatusCodes.Conflict, result.Error!.Status);
+        }
+
+        [Fact(Skip = "Enable in SRH3 after caller cancellation is distinguished from timeout.")]
+        public async Task ExecuteAsync_CallerRequestedTaskCancellationPropagates()
+        {
+            var context = new StubRuntimeContext("default");
+            using var cancellation = new CancellationTokenSource();
+            await cancellation.CancelAsync();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() =>
+                context.ExecuteAsync<string>(
+                    (_, token) => Task.FromCanceled<string>(token),
+                    cancellation.Token));
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_NonCallerTaskCancellationMapsToTimeout()
+        {
+            var context = new StubRuntimeContext("default");
+
+            var result = await context.ExecuteAsync<string>(
+                (_, _) => Task.FromCanceled<string>(new CancellationToken(canceled: true)),
+                CancellationToken.None);
+
+            Assert.False(result.Success);
+            Assert.Equal(StorefrontRuntimeStatusCodes.ServiceUnavailable, result.Error!.Status);
+            Assert.Equal("network.timeout", result.Error.Code);
         }
 
         [Fact]

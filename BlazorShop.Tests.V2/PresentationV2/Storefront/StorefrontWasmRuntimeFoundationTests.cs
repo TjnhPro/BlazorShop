@@ -89,6 +89,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void WasmProject_DoesNotReferenceServerRuntimeOrGeneratedStorefrontClient()
+        {
+            var root = RepositoryRoot();
+            var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj");
+            var source = string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(
+                        Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.WASM"),
+                        "*.*",
+                        SearchOption.AllDirectories)
+                    .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                        || path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)
+                        || path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+
+            Assert.DoesNotContain("BlazorShop.Storefront.Runtime", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Client", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("CommerceNodeBaseUrl", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRuntimeOptions", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("using BlazorShop.Storefront.Runtime", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void CartPage_HostsInteractiveWasmCartViewWithServerSnapshot()
         {
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor");

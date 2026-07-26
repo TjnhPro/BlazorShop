@@ -2,6 +2,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using System.Xml.Linq;
 
+    using BlazorShop.Storefront.Client;
+    using BlazorShop.Storefront.Runtime;
+
+    using Microsoft.Extensions.DependencyInjection;
+
     using Xunit;
 
     public sealed class StorefrontSharedPlatformPackageContractTests
@@ -53,6 +58,68 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("string.Empty, httpClient", runtimeRegistration, StringComparison.Ordinal);
             Assert.DoesNotContain("private string _baseUrl", generatedClient, StringComparison.Ordinal);
             Assert.DoesNotContain("string baseUrl, System.Net.Http.HttpClient httpClient", generatedClient, StringComparison.Ordinal);
+        }
+
+        [Fact(Skip = "Enable in SRH2 after generated-client factories are typed.")]
+        public void StorefrontRuntime_GeneratedClientRegistration_DoesNotUseActivator()
+        {
+            var runtimeSource = ReadRuntimeSource();
+
+            Assert.DoesNotContain("Activator.CreateInstance", runtimeSource, StringComparison.Ordinal);
+        }
+
+        [Fact(Skip = "Enable in SRH4 after Runtime envelope mapping uses typed selectors.")]
+        public void StorefrontRuntime_EnvelopeMapping_DoesNotUseReflectionOrJsonProjection()
+        {
+            var runtimeSource = ReadRuntimeSource();
+
+            Assert.DoesNotContain("GetProperty(\"Success\")", runtimeSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetProperty(\"Data\")", runtimeSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetProperty(\"Message\")", runtimeSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("JsonSerializer.Deserialize<TTarget>(JsonSerializer.Serialize(source", runtimeSource, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StorefrontRuntimeRegistration_ResolvesCurrentGeneratedClientsAndFacades()
+        {
+            var services = new ServiceCollection();
+            services.AddStorefrontRuntime(options =>
+            {
+                options.StoreKey = "sample";
+                options.CommerceNodeBaseUrl = "https://commerce-node.example/";
+            });
+            services.AddStorefrontServerGeneratedClients();
+
+            using var provider = services.BuildServiceProvider();
+            using var scope = provider.CreateScope();
+            var scoped = scope.ServiceProvider;
+
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontAddressClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontAuthClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontCartClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontCatalogClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontCheckoutClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontConfigurationClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontConsentClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontContactClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontCurrencyClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontCustomerAddressesClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontCustomerProfileClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontNavigationClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontNewsletterClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontOrdersClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontPagesClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontPaymentsClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRecommendationsClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontSeoClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontStoreClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeCatalogContentFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeCartFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeCheckoutFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeConfigurationFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeAddressFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeConsentFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimePaymentFacade>());
         }
 
         [Fact]
@@ -115,6 +182,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
+        }
+
+        private static string ReadRuntimeSource()
+        {
+            var runtimeDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime");
+
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(runtimeDirectory, "*.cs", SearchOption.AllDirectories)
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
         }
 
         private static string RepositoryPath(string relativePath)

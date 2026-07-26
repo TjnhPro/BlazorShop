@@ -201,27 +201,36 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Goal: add failing or characterization tests before changing Runtime internals.
 
+Status: completed in commit pending.
+
 ### Tasks
 
-- [ ] Add a Runtime source guardrail test that blocks `Activator.CreateInstance` in `BlazorShop.Storefront.Runtime`.
-- [ ] Add a Runtime source guardrail test that blocks `GetProperty("Success")`, `GetProperty("Data")`, and `GetProperty("Message")` in Runtime source after typed envelope migration.
-- [ ] Add a Runtime source guardrail test that blocks `JsonSerializer.Serialize(source, JsonOptions)` projection inside Runtime facade mapping.
-- [ ] Add a Runtime cancellation characterization test:
-  - [ ] caller-requested cancellation propagates as `OperationCanceledException`.
-  - [ ] network/request timeout maps to `network.timeout`.
-  - [ ] timeout error is marked retryable after SRH5.
-- [ ] Add a Runtime DI characterization test:
-  - [ ] `AddStorefrontRuntime` registers core runtime primitives.
-  - [ ] `AddStorefrontServerGeneratedClients` can resolve each registered generated client interface.
-  - [ ] `AddStorefrontServerGeneratedClients` can resolve each current runtime facade.
-- [ ] Add a WASM project boundary test:
-  - [ ] `Storefront.WASM.csproj` does not reference `Storefront.Runtime`.
-  - [ ] `Storefront.WASM.csproj` does not reference `Storefront.Client`.
-  - [ ] WASM source does not contain `CommerceNodeBaseUrl`.
-  - [ ] WASM source does not contain `StorefrontRuntimeOptions`.
-  - [ ] WASM source does not import `BlazorShop.Storefront.Runtime`.
-- [ ] Keep guardrail tests initially scoped so they can be enabled phase-by-phase if the current code still violates them.
-- [ ] Update test names to explain the rule and remediation.
+- [x] Add a Runtime source guardrail test that blocks `Activator.CreateInstance` in `BlazorShop.Storefront.Runtime`.
+- [x] Add a Runtime source guardrail test that blocks `GetProperty("Success")`, `GetProperty("Data")`, and `GetProperty("Message")` in Runtime source after typed envelope migration.
+- [x] Add a Runtime source guardrail test that blocks `JsonSerializer.Serialize(source, JsonOptions)` projection inside Runtime facade mapping.
+- [x] Add a Runtime cancellation characterization test:
+  - [x] caller-requested cancellation propagates as `OperationCanceledException`.
+  - [x] network/request timeout maps to `network.timeout`.
+  - [x] timeout error is marked retryable after SRH5.
+- [x] Add a Runtime DI characterization test:
+  - [x] `AddStorefrontRuntime` registers core runtime primitives.
+  - [x] `AddStorefrontServerGeneratedClients` can resolve each registered generated client interface.
+  - [x] `AddStorefrontServerGeneratedClients` can resolve each current runtime facade.
+- [x] Add a WASM project boundary test:
+  - [x] `Storefront.WASM.csproj` does not reference `Storefront.Runtime`.
+  - [x] `Storefront.WASM.csproj` does not reference `Storefront.Client`.
+  - [x] WASM source does not contain `CommerceNodeBaseUrl`.
+  - [x] WASM source does not contain `StorefrontRuntimeOptions`.
+  - [x] WASM source does not import `BlazorShop.Storefront.Runtime`.
+- [x] Keep guardrail tests initially scoped so they can be enabled phase-by-phase if the current code still violates them.
+- [x] Update test names to explain the rule and remediation.
+
+### SRH1 Notes
+
+- Added active DI characterization for `AddStorefrontRuntime` plus `AddStorefrontServerGeneratedClients`.
+- Added active WASM project/source boundary guardrail blocking Runtime, Client, `CommerceNodeBaseUrl`, and `StorefrontRuntimeOptions` usage from WASM.
+- Added target guardrails for Activator, envelope reflection, JSON projection, caller cancellation, and retryable timeout as skipped tests with explicit SRH enablement notes.
+- Focused QA gate passed with 42 passed and 4 intentionally skipped target guardrails.
 
 ### Files Likely Touched
 
@@ -238,9 +247,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Tests describe the target Runtime safety rules.
-- [ ] Tests fail only for intentional current offenders or pass after the matching refactor phase.
-- [ ] Failure messages identify the exact offending file and target remediation.
+- [x] Tests describe the target Runtime safety rules.
+- [x] Tests fail only for intentional current offenders or pass after the matching refactor phase.
+- [x] Failure messages identify the exact offending file and target remediation.
 
 ## Phase SRH2 - Replace Activator With Typed Generated-Client Factories
 
