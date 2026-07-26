@@ -167,27 +167,27 @@ Goal: make tests prove runtime OpenAPI matches the canonical contract without le
 
 ### Tasks
 
-- [ ] Update `CommerceNodeStorefrontOpenApiContractTests` constants:
-  - [ ] Add repository-root resolution for `contracts/storefront/storefront.openapi.json`.
-  - [ ] Use canonical contract for full-document baseline comparison.
-  - [ ] Keep path snapshot comparison under test snapshots if it remains useful.
-- [ ] Update `BlazorShop.Tests.V2.csproj`:
-  - [ ] Stop relying on copying full OpenAPI JSON snapshot from test project if canonical contract is read from repo root.
-  - [ ] Keep path snapshot copy only if test still reads it through output directory.
-- [ ] Preserve breaking-change guard behavior:
-  - [ ] removed paths fail.
-  - [ ] removed operation IDs fail.
-  - [ ] removed schemas/properties fail.
-  - [ ] property type changes fail.
-  - [ ] optional-to-required changes fail.
-  - [ ] enum value removals fail.
-  - [ ] response status removals fail.
-  - [ ] security scheme removals/changes fail.
-- [ ] Rename variables/test messages from `SwaggerSnapshotPath` to `CanonicalStorefrontContractPath` where applicable.
-- [ ] Update tests that assert old snapshot ownership:
-  - [ ] `V2ProductionReadinessTests` currently expects test snapshot copy entries.
-  - [ ] `StorefrontGeneratedClientFoundationTests` currently expects `"storefront-openapi.snapshot.json"` in NSwag config.
-- [ ] Keep old test snapshot file temporarily until all references are removed or explicitly converted.
+- [x] Update `CommerceNodeStorefrontOpenApiContractTests` constants:
+  - [x] Add repository-root resolution for `contracts/storefront/storefront.openapi.json`.
+  - [x] Use canonical contract for full-document baseline comparison.
+  - [x] Keep path snapshot comparison under test snapshots if it remains useful.
+- [x] Update `BlazorShop.Tests.V2.csproj`:
+  - [x] Stop relying on copying full OpenAPI JSON snapshot from test project if canonical contract is read from repo root.
+  - [x] Keep path snapshot copy only if test still reads it through output directory.
+- [x] Preserve breaking-change guard behavior:
+  - [x] removed paths fail.
+  - [x] removed operation IDs fail.
+  - [x] removed schemas/properties fail.
+  - [x] property type changes fail.
+  - [x] optional-to-required changes fail.
+  - [x] enum value removals fail.
+  - [x] response status removals fail.
+  - [x] security scheme removals/changes fail.
+- [x] Rename variables/test messages from `SwaggerSnapshotPath` to `CanonicalStorefrontContractPath` where applicable.
+- [x] Update tests that assert old snapshot ownership:
+  - [x] `V2ProductionReadinessTests` currently expects test snapshot copy entries.
+  - [x] `StorefrontGeneratedClientFoundationTests` currently expects `"storefront-openapi.snapshot.json"` in NSwag config.
+- [x] Keep old test snapshot file temporarily until all references are removed or explicitly converted.
 
 ### Files Likely Touched
 
@@ -205,9 +205,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Runtime Storefront Swagger is compared against `contracts/storefront/storefront.openapi.json`.
-- [ ] No production package generation path points into `BlazorShop.Tests.V2`.
-- [ ] Test snapshots remain guardrails only.
+- [x] Runtime Storefront Swagger is compared against `contracts/storefront/storefront.openapi.json`.
+- [x] No production package generation path points into `BlazorShop.Tests.V2`.
+- [x] Test snapshots remain guardrails only.
 
 ## Phase OCH3 - Retarget NSwag Generator to Canonical Contract
 

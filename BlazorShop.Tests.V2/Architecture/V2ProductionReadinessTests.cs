@@ -49,7 +49,8 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.DoesNotContain(@"..\BlazorShop.Tests\", v2TestProject, StringComparison.Ordinal);
             Assert.Contains(@"PresentationV2\CommerceNode\Snapshots\*.txt", v2TestProject, StringComparison.Ordinal);
-            Assert.Contains(@"PresentationV2\CommerceNode\Snapshots\*.json", v2TestProject, StringComparison.Ordinal);
+            Assert.DoesNotContain(@"PresentationV2\CommerceNode\Snapshots\*.json", v2TestProject, StringComparison.Ordinal);
+            Assert.True(File.Exists(RepositoryPath("contracts/storefront/storefront.openapi.json")));
             Assert.True(applicationCommerceNodeTests.Length >= 10);
             Assert.True(infrastructureCommerceNodeTests.Length >= 20);
             Assert.True(infrastructureControlPlaneTests.Length >= 5);

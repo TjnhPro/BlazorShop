@@ -24,7 +24,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         private const string StorefrontSwaggerPath = "/swagger/storefront/swagger.json";
         private const string StorefrontProviderSwaggerPath = "/swagger/storefront-provider/swagger.json";
         private const string PathSnapshotPath = "PresentationV2/CommerceNode/Snapshots/storefront-openapi.paths.snapshot.txt";
-        private const string SwaggerSnapshotPath = "PresentationV2/CommerceNode/Snapshots/storefront-openapi.snapshot.json";
+        private const string CanonicalStorefrontContractPath = "contracts/storefront/storefront.openapi.json";
 
         private static readonly string[] ProtectedOperationIds =
         [
@@ -240,10 +240,10 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
-        public async Task StorefrontSwagger_FullSnapshotMatchesBaseline()
+        public async Task StorefrontSwagger_MatchesCanonicalContract()
         {
             var swagger = await this.GetStorefrontSwaggerTextAsync();
-            var expected = await File.ReadAllTextAsync(GetSnapshotAbsolutePath(SwaggerSnapshotPath));
+            var expected = await File.ReadAllTextAsync(GetRepositoryAbsolutePath(CanonicalStorefrontContractPath));
 
             Assert.Equal(NormalizeJson(expected), NormalizeJson(swagger));
         }
@@ -251,13 +251,13 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public async Task StorefrontSwagger_BreakingChangeGuard_CurrentDocumentIsCompatibleWithBaseline()
         {
-            var expected = JsonNode.Parse(await File.ReadAllTextAsync(GetSnapshotAbsolutePath(SwaggerSnapshotPath)))?.AsObject()
-                ?? throw new InvalidOperationException("Storefront Swagger snapshot was not a JSON object.");
+            var expected = JsonNode.Parse(await File.ReadAllTextAsync(GetRepositoryAbsolutePath(CanonicalStorefrontContractPath)))?.AsObject()
+                ?? throw new InvalidOperationException("Canonical Storefront OpenAPI contract was not a JSON object.");
             var actual = await this.GetStorefrontSwaggerAsync();
             var failures = new List<string>();
 
             var expectedPaths = expected["paths"]?.AsObject()
-                ?? throw new InvalidOperationException("Storefront Swagger snapshot does not contain paths.");
+                ?? throw new InvalidOperationException("Canonical Storefront OpenAPI contract does not contain paths.");
             var actualPaths = actual["paths"]?.AsObject()
                 ?? throw new InvalidOperationException("Storefront Swagger document does not contain paths.");
             AddRemovedKeys(failures, "path", expectedPaths, actualPaths);
@@ -1998,6 +1998,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         private static string GetSnapshotAbsolutePath(string snapshotPath)
         {
             return Path.Combine(AppContext.BaseDirectory, snapshotPath);
+        }
+
+        private static string GetRepositoryAbsolutePath(string relativePath)
+        {
+            return Path.Combine(FindRepositoryRoot().FullName, relativePath.Replace('/', Path.DirectorySeparatorChar));
         }
 
         private async Task<JsonObject> GetStorefrontProviderSwaggerAsync()

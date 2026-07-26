@@ -2,7 +2,7 @@
   "runtime": "Net100",
   "documentGenerator": {
     "fromDocument": {
-      "url": "../../BlazorShop.Tests.V2/PresentationV2/CommerceNode/Snapshots/storefront-openapi.snapshot.json",
+      "url": "../../contracts/storefront/storefront.openapi.json",
       "output": null,
       "newLineBehavior": "Auto"
     }

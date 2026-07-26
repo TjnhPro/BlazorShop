@@ -33,7 +33,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("\"nswag.consolecore\"", ReadRepositoryFile(".config/dotnet-tools.json"), StringComparison.Ordinal);
             Assert.Contains("\"version\": \"14.7.1\"", ReadRepositoryFile(".config/dotnet-tools.json"), StringComparison.Ordinal);
-            Assert.Contains("storefront-openapi.snapshot.json", config, StringComparison.Ordinal);
+            Assert.Contains("contracts/storefront/storefront.openapi.json", config, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Tests.V2", config, StringComparison.Ordinal);
+            Assert.DoesNotContain("storefront-openapi.snapshot.json", config, StringComparison.Ordinal);
             Assert.Contains("\"openApiToCSharpClient\"", config, StringComparison.Ordinal);
             Assert.Contains("\"namespace\": \"BlazorShop.Storefront.Client\"", config, StringComparison.Ordinal);
             Assert.Contains("dotnet nswag run", script, StringComparison.Ordinal);
