@@ -739,25 +739,25 @@ Goal: prove hardening did not break Storefront V2 runtime flows or package consu
 
 ### Static And Unit Verification
 
-- [ ] Run Runtime focused tests:
+- [x] Run Runtime focused tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntimeResultPrimitiveTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"
 ```
 
-- [ ] Run generated client tests:
+- [x] Run generated client tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontGeneratedCatalogContentClientTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests"
 ```
 
-- [ ] Run architecture/boundary tests:
+- [x] Run architecture/boundary tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~Architecture|FullyQualifiedName~Storefront"
 ```
 
-- [ ] Run builds:
+- [x] Run builds:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj --no-restore
@@ -770,37 +770,47 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.
 
 ### Browser Verification If Runtime Flow Changes Touch V2
 
-- [ ] Start V2 local runtime:
+- [n/a] Start V2 local runtime:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Run targeted Playwright Storefront V2 browser QA:
-  - [ ] home/store bootstrap loads with current store context.
-  - [ ] catalog page loads products through Runtime generated client.
-  - [ ] product detail loads product and SEO data through Runtime generated client.
-  - [ ] add-to-cart works.
-  - [ ] cart WASM component calls same-origin BFF only.
-  - [ ] checkout start/review/place-order COD still works if checkout Runtime code changed.
-  - [ ] account WASM component calls same-origin BFF only if account registration/runtime changed.
-  - [ ] payment result/order completion still resolves through Storefront API.
-  - [ ] network assertion: browser does not call Commerce Node host directly.
-  - [ ] network assertion: browser does not call Control Plane.
+- [n/a] Run targeted Playwright Storefront V2 browser QA:
+  - [n/a] home/store bootstrap loads with current store context.
+  - [n/a] catalog page loads products through Runtime generated client.
+  - [n/a] product detail loads product and SEO data through Runtime generated client.
+  - [n/a] add-to-cart works.
+  - [n/a] cart WASM component calls same-origin BFF only.
+  - [n/a] checkout start/review/place-order COD still works if checkout Runtime code changed.
+  - [n/a] account WASM component calls same-origin BFF only if account registration/runtime changed.
+  - [n/a] payment result/order completion still resolves through Storefront API.
+  - [n/a] network assertion: browser does not call Commerce Node host directly.
+  - [n/a] network assertion: browser does not call Control Plane.
 
 ### Done When
 
-- [ ] Runtime source contains no `Activator.CreateInstance`.
-- [ ] Runtime source contains no envelope `GetProperty` reflection.
-- [ ] Runtime source contains no JSON serialize/deserialize DTO projection.
-- [ ] Runtime source contains no old cancellation catch filter.
-- [ ] Runtime error primitives expose retry/localization-ready state.
-- [ ] Runtime facade interfaces are capability-scoped.
-- [ ] Runtime registration is capability-scoped with compatibility wrapper.
-- [ ] Storefront.WASM cannot reference Runtime or Commerce Node generated clients.
-- [ ] Storefront V2 and Starter build.
-- [ ] Focused Storefront tests pass.
-- [ ] Browser QA passes if V2 runtime behavior was exercised.
+- [x] Runtime source contains no `Activator.CreateInstance`.
+- [x] Runtime source contains no envelope `GetProperty` reflection.
+- [x] Runtime source contains no JSON serialize/deserialize DTO projection.
+- [x] Runtime source contains no old cancellation catch filter.
+- [x] Runtime error primitives expose retry/localization-ready state.
+- [x] Runtime facade interfaces are capability-scoped.
+- [x] Runtime registration is capability-scoped with compatibility wrapper.
+- [x] Storefront.WASM cannot reference Runtime or Commerce Node generated clients.
+- [x] Storefront V2 and Starter build.
+- [x] Focused Storefront tests pass.
+- [n/a] Browser QA passes if V2 runtime behavior was exercised.
+
+### SRH9 Notes - 2026-07-26
+
+- Builds passed for `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.WASM`, `BlazorShop.Storefront.V2`, and `BlazorShop.Storefront.Starter`.
+- Runtime focused tests passed `51/51`.
+- Generated client tests passed `16/16`.
+- Architecture/Storefront boundary gate passed `781/783` with `2` existing skipped cart service tests.
+- Fixed the Starter package-boundary test to restore into an isolated repo-local NuGet package cache, preventing stale global `1.0.0-local` Runtime packages from hiding current package output.
+- Browser QA was not rerun in SRH9 because this phase did not change browser-visible route, endpoint, cart, checkout, account, or media behavior. Browser/WASM boundary remains covered by `StorefrontWasmRuntimeFoundationTests` and the broader Architecture/Storefront gate.
+- Static Runtime source scan found no `Activator.CreateInstance`, envelope `GetProperty`, JSON serialize/deserialize projection, old cancellation catch filter, or `dynamic` usage.
 
 ## Suggested Implementation Order
 
@@ -837,20 +847,20 @@ If V2 runtime behavior changes are browser-visible, also run Storefront V2 Playw
 
 ## Completion Checklist
 
-- [ ] Runtime generated-client registration is typed and compile-time-safe.
-- [ ] Runtime generated-client registration still supports V2 and Starter.
-- [ ] Runtime envelope mapping is typed.
-- [ ] Runtime does not use reflection to read generated envelopes.
-- [ ] Runtime does not JSON roundtrip generated DTOs for projection.
-- [ ] Runtime cancellation propagates caller aborts.
-- [ ] Runtime timeout mapping is explicit and test-covered.
-- [ ] Runtime error result supports localized storefront UX through stable primitives.
-- [ ] Runtime facades are capability-scoped.
-- [ ] Capability registration methods exist.
-- [ ] All-in registration remains available as a compatibility wrapper.
-- [ ] WASM/server boundary guardrails prevent Runtime usage in browser project.
-- [ ] Architecture docs and QA checklists are updated.
-- [ ] Storefront V2, Starter, Runtime, Client, Components, and WASM builds pass.
+- [x] Runtime generated-client registration is typed and compile-time-safe.
+- [x] Runtime generated-client registration still supports V2 and Starter.
+- [x] Runtime envelope mapping is typed.
+- [x] Runtime does not use reflection to read generated envelopes.
+- [x] Runtime does not JSON roundtrip generated DTOs for projection.
+- [x] Runtime cancellation propagates caller aborts.
+- [x] Runtime timeout mapping is explicit and test-covered.
+- [x] Runtime error result supports localized storefront UX through stable primitives.
+- [x] Runtime facades are capability-scoped.
+- [x] Capability registration methods exist.
+- [x] All-in registration remains available as a compatibility wrapper.
+- [x] WASM/server boundary guardrails prevent Runtime usage in browser project.
+- [x] Architecture docs and QA checklists are updated.
+- [x] Storefront V2, Starter, Runtime, Client, Components, and WASM builds pass.
 
 ## Autoplan Decision Audit Trail
 

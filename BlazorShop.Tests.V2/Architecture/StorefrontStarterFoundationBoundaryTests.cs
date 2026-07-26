@@ -162,6 +162,7 @@ namespace BlazorShop.Tests.Architecture
         {
             var repositoryRoot = FindRepositoryRoot();
             var packageFeed = RepositoryPath("artifacts/storefront-packages");
+            var packageCache = RepositoryPath("obj/storefront-starter-foundation-boundary/nuget-packages");
             var starterProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
             var componentsProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
 
@@ -170,7 +171,13 @@ namespace BlazorShop.Tests.Architecture
                 Directory.Delete(packageFeed, recursive: true);
             }
 
+            if (Directory.Exists(packageCache))
+            {
+                Directory.Delete(packageCache, recursive: true);
+            }
+
             Directory.CreateDirectory(packageFeed);
+            Directory.CreateDirectory(packageCache);
 
             var packResult = RunProcess(
                 "dotnet",
@@ -214,7 +221,16 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.True(componentsPackResult.ExitCode == 0, FormatProcessFailure("Storefront components package did not pack.", componentsPackResult));
 
-            var restoreResult = RunProcess("dotnet", ["restore", starterProject], repositoryRoot);
+            var restoreResult = RunProcess(
+                "dotnet",
+                [
+                    "restore",
+                    starterProject,
+                    "--no-cache",
+                    "--force-evaluate",
+                    $"/p:RestorePackagesPath={packageCache}",
+                ],
+                repositoryRoot);
             Assert.True(restoreResult.ExitCode == 0, FormatProcessFailure("Starter did not restore from the local Storefront client package.", restoreResult));
 
             var buildResult = RunProcess("dotnet", ["build", starterProject, "--no-restore"], repositoryRoot);
