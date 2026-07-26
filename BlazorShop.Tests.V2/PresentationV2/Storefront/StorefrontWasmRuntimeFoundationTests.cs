@@ -71,6 +71,90 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task LocalApiClient_HandlesEmptySuccessBodyWithUnknownLength()
+        {
+            var handler = new RecordingHandler(HttpStatusCode.OK, new UnknownLengthStringContent(string.Empty));
+            using var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://storefront.example/"),
+            };
+            var client = new StorefrontLocalApiClient(
+                httpClient,
+                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
+
+            var result = await client.DeleteAsync<MutationResult>("/api/cart");
+
+            Assert.True(result.Success);
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Null(result.Data);
+            Assert.Null(result.Error);
+            Assert.Equal(string.Empty, result.Message);
+        }
+
+        [Fact]
+        public async Task LocalApiClient_PreservesStructuredErrorDetails()
+        {
+            var fieldErrors = new Dictionary<string, string[]>
+            {
+                ["email"] = ["Email is invalid."],
+            };
+            var errorBody = JsonSerializer.Serialize(
+                new StorefrontLocalApiErrorResponse(
+                    "Email is invalid.",
+                    "checkout.validation",
+                    "trace-123",
+                    fieldErrors,
+                    false,
+                    StatusCode: 422),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var handler = new RecordingHandler(
+                HttpStatusCode.UnprocessableEntity,
+                new StringContent(errorBody, Encoding.UTF8, "application/json"));
+            using var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://storefront.example/"),
+            };
+            var client = new StorefrontLocalApiClient(
+                httpClient,
+                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
+
+            var result = await client.PostJsonAsync<object, MutationResult>("/api/checkout/review", new { accepted = false });
+
+            Assert.False(result.Success);
+            Assert.Equal("Email is invalid.", result.Message);
+            Assert.NotNull(result.Error);
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, result.Error.StatusCode);
+            Assert.Equal("checkout.validation", result.Error.Code);
+            Assert.Equal("trace-123", result.Error.TraceId);
+            Assert.False(result.Error.Retryable);
+            Assert.Equal("Email is invalid.", result.Error.FieldErrors["email"].Single());
+        }
+
+        [Fact]
+        public async Task LocalApiClient_InvalidErrorBodyFallsBackToStatusDefault()
+        {
+            var handler = new RecordingHandler(
+                HttpStatusCode.RequestTimeout,
+                new StringContent("<html>timeout</html>", Encoding.UTF8, "text/html"));
+            using var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://storefront.example/"),
+            };
+            var client = new StorefrontLocalApiClient(
+                httpClient,
+                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
+
+            var result = await client.GetAsync<MutationResult>("/api/cart");
+
+            Assert.False(result.Success);
+            Assert.Equal("The request timed out. Try again.", result.Message);
+            Assert.NotNull(result.Error);
+            Assert.Equal("timeout", result.Error.Code);
+            Assert.True(result.Error.Retryable);
+            Assert.Empty(result.Error.FieldErrors);
+        }
+
+        [Fact]
         public void WasmStartup_RegistersSameOriginClientWithoutCommerceNodeConfiguration()
         {
             var program = File.ReadAllText(Path.Combine(
@@ -504,11 +588,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private sealed class RecordingHandler : HttpMessageHandler
         {
-            private readonly object _response;
+            private readonly HttpContent? _content;
+            private readonly object? _response;
+            private readonly HttpStatusCode _statusCode;
 
             public RecordingHandler(object response)
             {
                 _response = response;
+                _statusCode = HttpStatusCode.OK;
+            }
+
+            public RecordingHandler(HttpStatusCode statusCode, HttpContent content)
+            {
+                _statusCode = statusCode;
+                _content = content;
             }
 
             public HttpRequestMessage? LastRequest { get; private set; }
@@ -517,12 +610,39 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 LastRequest = request;
 
-                var json = JsonSerializer.Serialize(_response, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                var content = _content;
+                if (content is null)
                 {
-                    Content = new StringContent(json, Encoding.UTF8, "application/json"),
+                    var json = JsonSerializer.Serialize(_response, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                    content = new StringContent(json, Encoding.UTF8, "application/json");
+                }
+
+                return Task.FromResult(new HttpResponseMessage(_statusCode)
+                {
+                    Content = content,
                     RequestMessage = request,
                 });
+            }
+        }
+
+        private sealed class UnknownLengthStringContent : HttpContent
+        {
+            private readonly byte[] _bytes;
+
+            public UnknownLengthStringContent(string value)
+            {
+                _bytes = Encoding.UTF8.GetBytes(value);
+            }
+
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+            {
+                return stream.WriteAsync(_bytes, 0, _bytes.Length);
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = 0;
+                return false;
             }
         }
     }

@@ -74,6 +74,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontLocalApiErrorResponse", support, StringComparison.Ordinal);
             Assert.Contains("StorefrontLocalCartErrorResponse", support, StringComparison.Ordinal);
             Assert.Contains("NormalizeLocalErrorMessage", support, StringComparison.Ordinal);
+            Assert.Contains("DefaultLocalErrorCode", support, StringComparison.Ordinal);
+            Assert.Contains("CurrentTraceId", support, StringComparison.Ordinal);
+            Assert.Contains("NormalizeFieldErrors", support, StringComparison.Ordinal);
+            Assert.Contains("Retryable", support, StringComparison.Ordinal);
+            Assert.Contains("StatusCode", support, StringComparison.Ordinal);
+            Assert.Contains("LocalUnavailable", endpointSources, StringComparison.Ordinal);
+            Assert.Contains("LocalNotFound", endpointSources, StringComparison.Ordinal);
             Assert.Contains("LocalApiValidationError", endpointSources, StringComparison.Ordinal);
             Assert.Contains("LocalCartValidationError", endpointSources, StringComparison.Ordinal);
             Assert.Contains("LocalConflict", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs"), StringComparison.Ordinal);

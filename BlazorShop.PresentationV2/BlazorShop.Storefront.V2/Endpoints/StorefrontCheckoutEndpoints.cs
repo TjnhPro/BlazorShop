@@ -31,7 +31,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var checkoutResult = await apiClient.StartCheckoutAsync(cartResolution.CartToken, cancellationToken);
                 if (!checkoutResult.Success || checkoutResult.Data is null)
                 {
-                    return Results.Json(new StorefrontLocalApiErrorResponse(checkoutResult.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+                    return LocalUnavailable(checkoutResult.Message);
                 }
             
                 var displayContext = await displayContextProvider.GetAsync(cancellationToken);

@@ -24,7 +24,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.GetConsentAsync(visitorKey, cancellationToken);
                 return result.Success
                     ? Results.Ok(result.Data)
-                    : Results.Json(new StorefrontLocalCartErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+                    : LocalCartError(result.Message, StatusCodes.Status503ServiceUnavailable, "service_unavailable", retryable: true);
             });
             app.MapPost("/api/consent", async (
                 StorefrontConsentSaveRequest request,

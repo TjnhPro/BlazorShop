@@ -74,19 +74,18 @@ public sealed class StorefrontLocalApiClient
         }
 
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            return StorefrontLocalApiResult<TResponse>.Failed(
-                response.StatusCode,
-                await ReadErrorMessageAsync(response, cancellationToken).ConfigureAwait(false));
+            return StorefrontLocalApiResult<TResponse>.Failed(ReadError(response.StatusCode, responseBody));
         }
 
-        if (response.Content.Headers.ContentLength == 0)
+        if (string.IsNullOrWhiteSpace(responseBody))
         {
             return StorefrontLocalApiResult<TResponse>.Succeeded(response.StatusCode, default);
         }
 
-        var data = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions, cancellationToken).ConfigureAwait(false);
+        var data = JsonSerializer.Deserialize<TResponse>(responseBody, JsonOptions);
         return StorefrontLocalApiResult<TResponse>.Succeeded(response.StatusCode, data);
     }
 
@@ -106,22 +105,18 @@ public sealed class StorefrontLocalApiClient
         return route[0] == '/' ? route : "/" + route;
     }
 
-    private static async Task<string> ReadErrorMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    private static StorefrontLocalApiError ReadError(System.Net.HttpStatusCode statusCode, string responseBody)
     {
         try
         {
-            var error = await response.Content
-                .ReadFromJsonAsync<StorefrontLocalApiErrorResponse>(JsonOptions, cancellationToken)
-                .ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(error?.Message))
-            {
-                return error.Message;
-            }
+            var response = string.IsNullOrWhiteSpace(responseBody)
+                ? null
+                : JsonSerializer.Deserialize<StorefrontLocalApiErrorResponse>(responseBody, JsonOptions);
+            return StorefrontLocalApiError.Create(statusCode, response);
         }
         catch (JsonException)
         {
+            return StorefrontLocalApiError.Create(statusCode, response: null);
         }
-
-        return "Storefront request failed.";
     }
 }

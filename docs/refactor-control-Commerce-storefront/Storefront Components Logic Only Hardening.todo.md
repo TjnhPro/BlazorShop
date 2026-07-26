@@ -587,43 +587,43 @@ Goal: align browser BFF primitives with Runtime-style structured error semantics
 
 ### Tasks
 
-- [ ] Introduce structured browser local API error model:
-  - [ ] `StatusCode`
-  - [ ] `Code`
-  - [ ] `TraceId`
-  - [ ] `FieldErrors`
-  - [ ] `Retryable`
-  - [ ] `DefaultMessage` or technical fallback.
-- [ ] Update `StorefrontLocalApiResult<T>`:
-  - [ ] keep `Message` temporarily if active components read it.
-  - [ ] add `Error` or structured error properties.
-  - [ ] avoid forcing UI copy into the result model.
-- [ ] Update `StorefrontLocalApiErrorResponse`:
-  - [ ] accept optional `code`.
-  - [ ] accept optional `traceId`.
-  - [ ] accept optional `fieldErrors`.
-  - [ ] accept optional `retryable`.
-  - [ ] keep `message` compatibility during migration.
-- [ ] Update `StorefrontLocalApiClient` success handling:
-  - [ ] if content length is zero, return success default.
-  - [ ] if content length is null, read as string first or handle empty stream safely.
-  - [ ] do not throw `JsonException` for empty successful body.
-- [ ] Update `StorefrontLocalApiClient` error handling:
-  - [ ] parse structured error when available.
-  - [ ] fallback to status/code/default message if body is empty or invalid.
-  - [ ] do not turn all errors into `Storefront request failed.`.
-- [ ] Update V2 local endpoint support:
-  - [ ] include status code semantic.
-  - [ ] include code where Runtime or BFF layer knows it.
-  - [ ] include trace ID if available.
-  - [ ] include field errors for validation.
-- [ ] Add browser primitive tests:
-  - [ ] same-origin route rejection still works.
-  - [ ] mutating request still sends antiforgery.
-  - [ ] empty success body with `ContentLength = null` does not fail JSON parsing.
-  - [ ] structured error body preserves code/trace/field errors.
-  - [ ] invalid error body falls back to technical default.
-- [ ] Keep local BFF errors browser-safe; do not expose provider secrets/internal settings.
+- [x] Introduce structured browser local API error model:
+  - [x] `StatusCode`
+  - [x] `Code`
+  - [x] `TraceId`
+  - [x] `FieldErrors`
+  - [x] `Retryable`
+  - [x] `DefaultMessage` or technical fallback.
+- [x] Update `StorefrontLocalApiResult<T>`:
+  - [x] keep `Message` temporarily if active components read it.
+  - [x] add `Error` or structured error properties.
+  - [x] avoid forcing UI copy into the result model.
+- [x] Update `StorefrontLocalApiErrorResponse`:
+  - [x] accept optional `code`.
+  - [x] accept optional `traceId`.
+  - [x] accept optional `fieldErrors`.
+  - [x] accept optional `retryable`.
+  - [x] keep `message` compatibility during migration.
+- [x] Update `StorefrontLocalApiClient` success handling:
+  - [x] if content length is zero, return success default.
+  - [x] if content length is null, read as string first or handle empty stream safely.
+  - [x] do not throw `JsonException` for empty successful body.
+- [x] Update `StorefrontLocalApiClient` error handling:
+  - [x] parse structured error when available.
+  - [x] fallback to status/code/default message if body is empty or invalid.
+  - [x] do not turn all errors into `Storefront request failed.`.
+- [x] Update V2 local endpoint support:
+  - [x] include status code semantic.
+  - [x] include code where Runtime or BFF layer knows it.
+  - [x] include trace ID if available.
+  - [x] include field errors for validation.
+- [x] Add browser primitive tests:
+  - [x] same-origin route rejection still works.
+  - [x] mutating request still sends antiforgery.
+  - [x] empty success body with `ContentLength = null` does not fail JSON parsing.
+  - [x] structured error body preserves code/trace/field errors.
+  - [x] invalid error body falls back to technical default.
+- [x] Keep local BFF errors browser-safe; do not expose provider secrets/internal settings.
 
 ### Files Likely Touched
 
@@ -645,9 +645,20 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Browser BFF result supports structured errors.
-- [ ] Empty successful BFF responses do not fail JSON parsing.
-- [ ] Browser components can distinguish validation, auth, conflict, timeout, and generic failure states without parsing English copy.
+- [x] Browser BFF result supports structured errors.
+- [x] Empty successful BFF responses do not fail JSON parsing.
+- [x] Browser components can distinguish validation, auth, conflict, timeout, and generic failure states without parsing English copy.
+
+### CLH7 Notes - 2026-07-26
+
+- Added `StorefrontLocalApiError` and extended `StorefrontLocalApiResult<T>` with `Error` while preserving `Message` compatibility for existing cart/account/checkout components.
+- Extended local API/cart error response bodies with optional `code`, `traceId`, `fieldErrors`, `retryable`, and `statusCode`; V2 local endpoint helpers now centralize status/code/retryability semantics for validation, auth, forbidden, not-found, conflict, unavailable, and server errors.
+- Updated `StorefrontLocalApiClient` to read successful bodies safely when content length is unknown, return default data for empty success bodies, parse structured errors, and fall back to status-derived default code/message for invalid error bodies.
+- Verification passed:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` -> passed, `0` warnings.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"` -> passed `34/34`; only existing MessagePack/Browserslist warnings appeared.
 
 ## Phase CLH8 - Package Metadata, Docs, And Generator Guidance
 

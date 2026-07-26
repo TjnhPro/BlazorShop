@@ -31,7 +31,13 @@ namespace BlazorShop.Storefront.Configuration
                 }
 
                 await httpContext.Response.WriteAsJsonAsync(
-                    new StorefrontLocalCartErrorResponse("Too many cart requests. Try again shortly."),
+                    new StorefrontLocalCartErrorResponse(
+                        "Too many cart requests. Try again shortly.",
+                        "rate_limited",
+                        null,
+                        [],
+                        true,
+                        StatusCodes.Status429TooManyRequests),
                     cancellationToken);
             };
 
@@ -65,5 +71,11 @@ namespace BlazorShop.Storefront.Configuration
         }
     }
 
-    public sealed record StorefrontLocalCartErrorResponse(string Message);
+    public sealed record StorefrontLocalCartErrorResponse(
+        string Message,
+        string? Code = null,
+        string? TraceId = null,
+        Dictionary<string, string[]>? FieldErrors = null,
+        bool? Retryable = null,
+        int? StatusCode = null);
 }

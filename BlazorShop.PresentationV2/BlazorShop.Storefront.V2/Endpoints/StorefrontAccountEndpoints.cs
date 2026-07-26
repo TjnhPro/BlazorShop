@@ -30,7 +30,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.GetCustomerProfileAsync(session.AccessToken!, cancellationToken);
                 return result.Success && result.Data is not null
                     ? Results.Ok(ToBrowserProfile(result.Data))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+                    : LocalUnavailable(result.Message);
             });
             app.MapPut("/api/account/profile", async (
                 StorefrontBrowserCustomerProfileUpdateRequest request,
@@ -81,7 +81,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.GetCustomerAddressesAsync(session.AccessToken!, cancellationToken);
                 return result.Success
                     ? Results.Ok((result.Data ?? []).Select(ToBrowserAddress).ToArray())
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+                    : LocalUnavailable(result.Message);
             });
             app.MapPost("/api/account/addresses", async (
                 StorefrontBrowserCustomerAddressRequest request,
@@ -201,7 +201,7 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
                 return result.Success && result.Data is not null
                     ? Results.Ok(ToBrowserOrderList(result.Data))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+                    : LocalUnavailable(result.Message);
             });
             app.MapGet("/api/account/orders/{orderReference}", async (
                 string orderReference,
@@ -220,7 +220,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.GetCustomerOrderAsync(session.AccessToken!, orderReference, cancellationToken);
                 return result.Success && result.Data is not null
                     ? Results.Ok(ToBrowserOrderDetail(result.Data, receiptMode: false))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status404NotFound);
+                    : LocalNotFound(result.Message);
             });
             app.MapGet("/api/account/orders/{orderReference}/receipt", async (
                 string orderReference,
@@ -239,7 +239,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.GetCustomerOrderReceiptAsync(session.AccessToken!, orderReference, cancellationToken);
                 return result.Success && result.Data is not null
                     ? Results.Ok(ToBrowserOrderDetail(result.Data, receiptMode: true))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status404NotFound);
+                    : LocalNotFound(result.Message);
             });
             app.MapPost("/api/account/change-password", async (
                 StorefrontChangePasswordForm request,
