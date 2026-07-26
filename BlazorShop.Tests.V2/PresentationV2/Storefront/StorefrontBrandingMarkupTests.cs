@@ -311,9 +311,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<DealsBlock Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
             Assert.Contains("<DealsBlock Placement=\"DealsPlacement.DedicatedPage\"", dealsPage, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryGrid Items=\"_productSummaries\"", categoryPage, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryGrid Items=\"_productSummaries\"", searchPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", categoryPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", searchPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductGrid Products=\"_products\"", categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
             Assert.Contains("StorefrontProductSummaryMapper.ToProductSummary", home + categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
 

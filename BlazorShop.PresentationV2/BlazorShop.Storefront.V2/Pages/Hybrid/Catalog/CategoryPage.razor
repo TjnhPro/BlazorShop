@@ -62,8 +62,8 @@ else if (_categoryPage is not null)
     </StorefrontPageShell>
 
     <section class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <ProductSummaryGrid Items="_productSummaries"
-                            EmptyMessage="No products are available in this category right now." />
+        <StorefrontProductSummaryGrid Items="_productSummaries"
+                                      EmptyMessage="No products are available in this category right now." />
 
         @if (_totalPages > 1)
         {

@@ -165,6 +165,38 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("hover:shadow-2xl", v2Card, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void SharedProductSummaryGrid_RemainsSemanticAfterHpr3Migration()
+        {
+            var sharedGrid = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryGrid.razor");
+            var v2Grid = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor");
+            var categoryPage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
+            var searchPage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
+            var newReleasesPage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
+
+            Assert.Contains("data-storefront-product-summary-grid", sharedGrid, StringComparison.Ordinal);
+            Assert.Contains("<ProductSummaryCard Item=\"item\" />", sharedGrid, StringComparison.Ordinal);
+            Assert.DoesNotContain("class=\"", sharedGrid, StringComparison.Ordinal);
+            Assert.DoesNotContain("grid-cols-", sharedGrid, StringComparison.Ordinal);
+            Assert.DoesNotContain("sm:", sharedGrid, StringComparison.Ordinal);
+            Assert.DoesNotContain("lg:", sharedGrid, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded-", sharedGrid, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-blue-", sharedGrid, StringComparison.Ordinal);
+
+            Assert.Contains("<StorefrontProductSummaryCard Item=\"item\" />", v2Grid, StringComparison.Ordinal);
+            Assert.Contains("grid gap-8 sm:grid-cols-2 lg:grid-cols-3", v2Grid, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-summary-empty", v2Grid, StringComparison.Ordinal);
+
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", categoryPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", searchPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

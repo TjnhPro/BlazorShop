@@ -201,25 +201,25 @@ Goal: remove V2 product-card visual lock from shared components.
 
 Goal: make grid layout store-owned.
 
-- [ ] Move `ProductSummaryGrid` visual markup to V2.
-- [ ] Keep a neutral list/collection contract if useful:
-  - [ ] items.
-  - [ ] empty message.
-  - [ ] optional item context.
-- [ ] V2 owns:
-  - [ ] column count.
-  - [ ] gap.
-  - [ ] empty-state visual.
-  - [ ] list/card wrapper markup.
-- [ ] Update V2 pages using `ProductSummaryGrid`:
-  - [ ] `CategoryPage.razor`.
-  - [ ] `SearchPage.razor`.
-  - [ ] `NewReleases.razor`.
+- [x] Move `ProductSummaryGrid` visual markup to V2.
+- [x] Keep a neutral list/collection contract if useful:
+  - [x] items.
+  - [x] empty message.
+  - [x] optional item context.
+- [x] V2 owns:
+  - [x] column count.
+  - [x] gap.
+  - [x] empty-state visual.
+  - [x] list/card wrapper markup.
+- [x] Update V2 pages using `ProductSummaryGrid`:
+  - [x] `CategoryPage.razor`.
+  - [x] `SearchPage.razor`.
+  - [x] `NewReleases.razor`.
 
 ### HPR3 QA gate
 
-- [ ] Category/search/new releases still render with same V2 visual output.
-- [ ] Shared `ProductSummaryGrid.razor` removed or reduced to headless collection contract.
+- [x] Category/search/new releases still render with same V2 visual output.
+- [x] Shared `ProductSummaryGrid.razor` removed or reduced to headless collection contract.
 
 ## Phase HPR4 - Deals composition: DealsBlock
 
