@@ -330,20 +330,20 @@ Goal: remove V2 route defaults from shared descriptors.
 
 ### Tasks
 
-- [ ] Remove or obsolete `ProductPurchaseActionDescriptor.StorefrontV2Default` from shared Headless.
-- [ ] Keep `ProductPurchaseActionDescriptor.Empty` in shared Headless.
-- [ ] Add V2-owned product purchase action factory:
-  - [ ] `StorefrontProductPurchasePanelOptions.Actions`
-  - [ ] or `StorefrontProductPurchaseActionOptions.Default`
-  - [ ] located under `BlazorShop.Storefront.V2/Components/Product`.
-- [ ] Move `/api/product-selection-preview` into V2-owned options.
-- [ ] Update `StorefrontProductPurchasePanel.razor` to use V2-owned options by default.
-- [ ] Update product page composition to pass explicit actions if that is clearer.
-- [ ] Add guardrail:
-  - [ ] shared Components source must not contain `/api/product-selection-preview`.
-  - [ ] shared Headless must not contain `StorefrontV2Default`.
-  - [ ] V2 options must contain the route default.
-- [ ] Repeat scan for other host-specific route defaults under shared Headless.
+- [x] Remove or obsolete `ProductPurchaseActionDescriptor.StorefrontV2Default` from shared Headless.
+- [x] Keep `ProductPurchaseActionDescriptor.Empty` in shared Headless.
+- [x] Add V2-owned product purchase action factory:
+  - [n/a] `StorefrontProductPurchasePanelOptions.Actions`
+  - [x] or `StorefrontProductPurchaseActionOptions.Default`
+  - [x] located under `BlazorShop.Storefront.V2/Components/Product`.
+- [x] Move `/api/product-selection-preview` into V2-owned options.
+- [x] Update `StorefrontProductPurchasePanel.razor` to use V2-owned options by default.
+- [x] Update product page composition to pass explicit actions if that is clearer.
+- [x] Add guardrail:
+  - [x] shared Components source must not contain `/api/product-selection-preview`.
+  - [x] shared Headless must not contain `StorefrontV2Default`.
+  - [x] V2 options must contain the route default.
+- [x] Repeat scan for other host-specific route defaults under shared Headless.
 
 ### Files Likely Touched
 
@@ -362,9 +362,19 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Shared descriptors have no V2-specific route defaults.
-- [ ] V2 owns its BFF route defaults.
-- [ ] Product selection preview still works in V2.
+- [x] Shared descriptors have no V2-specific route defaults.
+- [x] V2 owns its BFF route defaults.
+- [x] Product selection preview still works in V2.
+
+### CLH3 Notes - 2026-07-26
+
+- Removed `ProductPurchaseActionDescriptor.StorefrontV2Default` from shared Headless.
+- Added V2-owned `StorefrontProductPurchaseActionOptions.Default` with `/api/product-selection-preview`.
+- `StorefrontProductPurchasePanel.razor` now defaults to the V2 action options while shared `ProductPurchasePanel.razor` keeps `ProductPurchaseActionDescriptor.Empty`.
+- Verification passed:
+  - `rg -n "StorefrontV2Default|/api/product-selection-preview" BlazorShop.PresentationV2/BlazorShop.Storefront.Components` returned no matches.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontBrandingMarkupTests"` passed `38/38`.
 
 ## Phase CLH4 - Move Copywriting Into Host Labels And Localization Descriptors
 

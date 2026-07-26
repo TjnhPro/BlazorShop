@@ -320,6 +320,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs");
             var v2Panel = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
+            var v2ActionOptions = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchaseActionOptions.cs");
             var productPage = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
 
@@ -359,8 +361,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("bg-neutral-", sharedPanel, StringComparison.Ordinal);
             Assert.DoesNotContain("bg-amber-", sharedPanel, StringComparison.Ordinal);
 
-            Assert.Contains("ProductPurchaseActionDescriptor.StorefrontV2Default", v2Panel, StringComparison.Ordinal);
-            Assert.Contains("/api/product-selection-preview", purchaseBehavior, StringComparison.Ordinal);
+            Assert.Contains("StorefrontProductPurchaseActionOptions.Default", v2Panel, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontV2Default", purchaseBehavior, StringComparison.Ordinal);
+            Assert.DoesNotContain("/api/product-selection-preview", purchaseBehavior, StringComparison.Ordinal);
+            Assert.Contains("/api/product-selection-preview", v2ActionOptions, StringComparison.Ordinal);
             Assert.Contains("id=\"@Actions.PanelId\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("rounded-2xl", v2Panel, StringComparison.Ordinal);

@@ -69,11 +69,4 @@ public sealed record ProductPurchaseActionDescriptor(
         "product-purchase-feedback",
         "product-variant-select",
         "product-selection-quantity");
-
-    public static ProductPurchaseActionDescriptor StorefrontV2Default { get; } = new(
-        "purchase",
-        "/api/product-selection-preview",
-        "product-cart-feedback",
-        "product-variant-select",
-        "product-selection-quantity");
 }
