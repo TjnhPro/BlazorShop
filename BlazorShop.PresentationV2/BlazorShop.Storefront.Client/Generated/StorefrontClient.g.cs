@@ -79,19 +79,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontAddressClient : IStorefrontAddressClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontAddressClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontAddressClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -101,17 +96,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -155,7 +139,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/address/countries"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -267,7 +251,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/address/countries/{countryCode}/states"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -388,7 +372,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/address/configuration"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -753,19 +737,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontAuthClient : IStorefrontAuthClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontAuthClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontAuthClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -775,17 +754,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -836,7 +804,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/register"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -965,7 +933,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/registration-policy"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1071,7 +1039,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/login"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1191,7 +1159,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/refresh-token"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1311,7 +1279,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/logout"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1427,7 +1395,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/change-password"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1553,7 +1521,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/forgot-password"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1669,7 +1637,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/reset-password"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1778,7 +1746,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/confirm-email"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -1914,7 +1882,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/auth/update-profile"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -2274,19 +2242,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontCartClient : IStorefrontCartClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontCartClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontCartClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -2296,17 +2259,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -2357,7 +2309,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart/session"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -2489,7 +2441,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -2621,7 +2573,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -2760,7 +2712,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart/lines"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -2902,7 +2854,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart/lines/{lineId}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -3038,7 +2990,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart/lines/{lineId}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -3178,7 +3130,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart/validate"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -3317,7 +3269,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart/recalculate"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -3450,7 +3402,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/cart/merge-current-customer"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -3875,19 +3827,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontCatalogClient : IStorefrontCatalogClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontCatalogClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontCatalogClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -3897,17 +3844,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -3951,7 +3887,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/categories"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4050,7 +3986,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/categories/tree"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4152,7 +4088,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/categories/{id}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4265,7 +4201,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/categories/slug/{slug}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4384,7 +4320,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/categories/{categoryId}/products"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4501,7 +4437,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/product-filter-metadata"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4624,7 +4560,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/search-suggestions"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4751,7 +4687,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/products"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -4913,7 +4849,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/products/{id}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -5032,7 +4968,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/products/slug/{slug}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -5158,7 +5094,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/products/{productId}/selection-preview"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -5279,7 +5215,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/catalog/sitemap"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -5619,19 +5555,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontCheckoutClient : IStorefrontCheckoutClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontCheckoutClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontCheckoutClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -5641,17 +5572,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -5705,7 +5625,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/start"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -5840,7 +5760,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -5977,7 +5897,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/cancel"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -6121,7 +6041,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/addresses"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -6265,7 +6185,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/shipping-method"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -6409,7 +6329,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/payment-method"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -6553,7 +6473,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/review"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -6694,7 +6614,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/preview"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -6830,7 +6750,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/checkout/place-order"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -7080,19 +7000,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontConfigurationClient : IStorefrontConfigurationClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontConfigurationClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontConfigurationClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -7102,17 +7017,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -7156,7 +7060,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/configuration"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -7436,19 +7340,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontConsentClient : IStorefrontConsentClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontConsentClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontConsentClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -7458,17 +7357,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -7515,7 +7403,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/consent/current"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -7644,7 +7532,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/consent"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -7777,7 +7665,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/consent/revoke"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -8027,19 +7915,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontContactClient : IStorefrontContactClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontContactClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontContactClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -8049,17 +7932,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -8110,7 +7982,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/contact"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -8360,19 +8232,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontCurrencyClient : IStorefrontCurrencyClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontCurrencyClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontCurrencyClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -8382,17 +8249,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -8443,7 +8299,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/currency/preference"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -8768,19 +8624,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontCustomerAddressesClient : IStorefrontCustomerAddressesClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontCustomerAddressesClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontCustomerAddressesClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -8790,17 +8641,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -8844,7 +8684,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/addresses"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -8970,7 +8810,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/addresses"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -9119,7 +8959,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/addresses/{addressId}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -9262,7 +9102,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/addresses/{addressId}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -9386,7 +9226,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/addresses/{addressId}/default-shipping"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -9521,7 +9361,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/addresses/{addressId}/default-billing"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -9788,19 +9628,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontCustomerProfileClient : IStorefrontCustomerProfileClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontCustomerProfileClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontCustomerProfileClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -9810,17 +9645,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -9864,7 +9688,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/profile"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -10010,7 +9834,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/customer/profile"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -10270,19 +10094,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontNavigationClient : IStorefrontNavigationClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontNavigationClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontNavigationClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -10292,17 +10111,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -10349,7 +10157,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/navigation/{systemName}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -10580,19 +10388,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontNewsletterClient : IStorefrontNewsletterClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontNewsletterClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontNewsletterClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -10602,17 +10405,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -10663,7 +10455,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/newsletter/subscribe"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -10948,19 +10740,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontOrdersClient : IStorefrontOrdersClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontOrdersClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontOrdersClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -10970,17 +10757,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -11024,7 +10800,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/orders/current-user"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -11166,7 +10942,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/orders/current-user/{orderReference}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -11299,7 +11075,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/orders/current-user/{orderReference}/receipt"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -11437,7 +11213,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/orders/guest-lookup"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -11692,19 +11468,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontPagesClient : IStorefrontPagesClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontPagesClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontPagesClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -11714,17 +11485,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -11768,7 +11528,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/pages/navigation"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -11880,7 +11640,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/pages/{slug}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -12126,19 +11886,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontPaymentsClient : IStorefrontPaymentsClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontPaymentsClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontPaymentsClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -12148,17 +11903,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -12202,7 +11946,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/payments/methods"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -12314,7 +12058,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/payments/attempts/{attemptId}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -12555,19 +12299,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontRecommendationsClient : IStorefrontRecommendationsClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontRecommendationsClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontRecommendationsClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -12577,17 +12316,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -12634,7 +12362,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/recommendations/products/{productId}"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -12890,19 +12618,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontSeoClient : IStorefrontSeoClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontSeoClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontSeoClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -12912,17 +12635,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -12966,7 +12678,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/seo/settings"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -13065,7 +12777,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/seo/redirects/resolve"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -13326,19 +13038,14 @@ namespace BlazorShop.Storefront.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class StorefrontStoreClient : IStorefrontStoreClient
     {
-        #pragma warning disable 8618
-        private string _baseUrl;
-        #pragma warning restore 8618
-
         private System.Net.Http.HttpClient _httpClient;
         private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public StorefrontStoreClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public StorefrontStoreClient(System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            BaseUrl = baseUrl;
             _httpClient = httpClient;
             Initialize();
         }
@@ -13348,17 +13055,6 @@ namespace BlazorShop.Storefront.Client
             var settings = new System.Text.Json.JsonSerializerOptions();
             UpdateJsonSerializerSettings(settings);
             return settings;
-        }
-
-        public string BaseUrl
-        {
-            get { return _baseUrl; }
-            set
-            {
-                _baseUrl = value;
-                if (!string.IsNullOrEmpty(_baseUrl) && !_baseUrl.EndsWith("/"))
-                    _baseUrl += '/';
-            }
         }
 
         protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
@@ -13402,7 +13098,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/store/current"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));
@@ -13531,7 +13227,7 @@ namespace BlazorShop.Storefront.Client
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     var urlBuilder_ = new System.Text.StringBuilder();
-                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                
                     // Operation Path: "api/storefront/stores/{storeKey}/store/maintenance"
                     urlBuilder_.Append("api/storefront/stores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(storeKey, System.Globalization.CultureInfo.InvariantCulture)));

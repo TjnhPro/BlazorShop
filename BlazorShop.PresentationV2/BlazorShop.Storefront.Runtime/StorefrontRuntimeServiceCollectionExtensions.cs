@@ -86,7 +86,7 @@ namespace BlazorShop.Storefront.Runtime
                 .GetRequiredService<IHttpClientFactory>()
                 .CreateClient(GeneratedClientHttpClientName);
 
-            return (TClient)Activator.CreateInstance(typeof(TClient), string.Empty, httpClient)!;
+            return (TClient)Activator.CreateInstance(typeof(TClient), httpClient)!;
         }
     }
 }

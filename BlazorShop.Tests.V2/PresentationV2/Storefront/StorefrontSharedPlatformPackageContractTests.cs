@@ -42,6 +42,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontRuntime_GeneratedClientRegistrationUsesHttpClientBaseAddressOnly()
+        {
+            var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
+            var generatedClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Client/Generated/StorefrontClient.g.cs");
+
+            Assert.Contains("client.BaseAddress = new Uri(options.CommerceNodeBaseUrl, UriKind.Absolute)", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("CreateClient(GeneratedClientHttpClientName)", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("Activator.CreateInstance(typeof(TClient), httpClient)", runtimeRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("string.Empty, httpClient", runtimeRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("private string _baseUrl", generatedClient, StringComparison.Ordinal);
+            Assert.DoesNotContain("string baseUrl, System.Net.Http.HttpClient httpClient", generatedClient, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontClientPackage_DoesNotReferenceRuntimeComponentsV2OrBackendProjects()
         {
             var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj");

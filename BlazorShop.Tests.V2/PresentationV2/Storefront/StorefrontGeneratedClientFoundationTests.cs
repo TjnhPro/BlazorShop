@@ -51,6 +51,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("storefront-openapi.snapshot.json", config, StringComparison.Ordinal);
             Assert.Contains("\"openApiToCSharpClient\"", config, StringComparison.Ordinal);
             Assert.Contains("\"namespace\": \"BlazorShop.Storefront.Client\"", config, StringComparison.Ordinal);
+            Assert.Contains("\"injectHttpClient\": true", config, StringComparison.Ordinal);
+            Assert.Contains("\"disposeHttpClient\": false", config, StringComparison.Ordinal);
+            Assert.Contains("\"useBaseUrl\": false", config, StringComparison.Ordinal);
+            Assert.Contains("\"generateBaseUrlProperty\": false", config, StringComparison.Ordinal);
             Assert.Contains("documentGenerator.fromDocument.url", script, StringComparison.Ordinal);
             Assert.Contains("contracts/storefront/storefront.openapi.json", script, StringComparison.Ordinal);
             Assert.Contains("Canonical Storefront OpenAPI contract was not found", script, StringComparison.Ordinal);
@@ -63,6 +67,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontCartClient", generatedClient, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckoutClient", generatedClient, StringComparison.Ordinal);
             Assert.Contains("StorefrontAuthClient", generatedClient, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontStoreClient(System.Net.Http.HttpClient httpClient)", generatedClient, StringComparison.Ordinal);
+            Assert.DoesNotContain("private string _baseUrl", generatedClient, StringComparison.Ordinal);
+            Assert.DoesNotContain("string baseUrl, System.Net.Http.HttpClient httpClient", generatedClient, StringComparison.Ordinal);
             Assert.DoesNotContain("HandleProviderCallback", generatedClient, StringComparison.Ordinal);
             Assert.DoesNotContain("HandleWebhook", generatedClient, StringComparison.Ordinal);
         }
@@ -95,7 +102,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var proofRoot = RepositoryPath("obj/storefront-client-package-consumer");
             var feedRoot = Path.Combine(proofRoot, "feed");
             var consumerRoot = Path.Combine(proofRoot, "consumer");
-            var packageVersion = "1.0.0-local";
+            var packageVersion = $"1.0.0-local.{Guid.NewGuid():N}";
 
             if (Directory.Exists(proofRoot))
             {
@@ -148,8 +155,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 """
                 using BlazorShop.Storefront.Client;
 
-                using var httpClient = new HttpClient();
-                var client = new StorefrontStoreClient("https://example.invalid", httpClient);
+                using var httpClient = new HttpClient
+                {
+                    BaseAddress = new Uri("https://example.invalid/")
+                };
+                var client = new StorefrontStoreClient(httpClient);
                 Console.WriteLine(client.GetType().FullName);
                 """);
             File.WriteAllText(

@@ -290,9 +290,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return new GeneratedStorefrontConfigurationClient(
                 new StorefrontRuntimeConfigurationFacade(
                     new StubRuntimeContext(),
-                    new StorefrontStoreClient(string.Empty, httpClient),
-                    new StorefrontConfigurationClient(string.Empty, httpClient),
-                    new StorefrontCurrencyClient(string.Empty, httpClient)));
+                    new StorefrontStoreClient(httpClient),
+                    new StorefrontConfigurationClient(httpClient),
+                    new StorefrontCurrencyClient(httpClient)));
         }
 
         private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json)

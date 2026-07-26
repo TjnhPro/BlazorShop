@@ -232,10 +232,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return new GeneratedStorefrontCatalogContentClient(
                 new StorefrontRuntimeCatalogContentFacade(
                     new StubRuntimeContext(),
-                    new StorefrontCatalogClient(string.Empty, httpClient),
-                    new StorefrontPagesClient(string.Empty, httpClient),
-                    new StorefrontNavigationClient(string.Empty, httpClient),
-                    new StorefrontSeoClient(string.Empty, httpClient)));
+                    new StorefrontCatalogClient(httpClient),
+                    new StorefrontPagesClient(httpClient),
+                    new StorefrontNavigationClient(httpClient),
+                    new StorefrontSeoClient(httpClient)));
         }
 
         private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json)

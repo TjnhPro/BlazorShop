@@ -317,30 +317,30 @@ Decision: use `HttpClient.BaseAddress` as the single source for Storefront gener
 
 ### Tasks
 
-- [ ] Update `nswag.storefront.client.json`:
-  - [ ] set `useBaseUrl` to `false` if NSwag supports relative URL generation with injected `HttpClient`.
-  - [ ] set `generateBaseUrlProperty` to `false`.
-  - [ ] keep `injectHttpClient` true.
-  - [ ] keep `disposeHttpClient` false.
-- [ ] Run `scripts/generate-storefront-client.ps1`.
-- [ ] Review generated constructor signatures:
-  - [ ] generated clients should no longer require a `string baseUrl` constructor parameter.
-  - [ ] generated clients should use request URLs relative to `HttpClient.BaseAddress`.
-- [ ] Update `StorefrontRuntimeServiceCollectionExtensions.CreateClient<TClient>`:
-  - [ ] instantiate generated clients with only `HttpClient` if constructor changes.
-  - [ ] remove `string.Empty` base URL usage.
-  - [ ] keep named HttpClient registration.
-- [ ] Update independent package consumer test:
-  - [ ] construct a generated client with `HttpClient { BaseAddress = new Uri("https://example.invalid/") }`.
-  - [ ] do not pass a base URL string.
-- [ ] Update Runtime tests:
-  - [ ] assert generated client registration uses `HttpClient.BaseAddress`.
-  - [ ] assert no generated `BaseUrl` property is present if config supports it.
-- [ ] Update any docs that mention generated client constructor shape.
-- [ ] If NSwag cannot remove `BaseUrl` cleanly:
-  - [ ] keep generated constructor but create a Runtime factory wrapper with a named helper method.
-  - [ ] add a guard explaining why base URL must be empty.
-  - [ ] mark this as a temporary compatibility exception.
+- [x] Update `nswag.storefront.client.json`:
+  - [x] set `useBaseUrl` to `false` if NSwag supports relative URL generation with injected `HttpClient`.
+  - [x] set `generateBaseUrlProperty` to `false`.
+  - [x] keep `injectHttpClient` true.
+  - [x] keep `disposeHttpClient` false.
+- [x] Run `scripts/generate-storefront-client.ps1`.
+- [x] Review generated constructor signatures:
+  - [x] generated clients should no longer require a `string baseUrl` constructor parameter.
+  - [x] generated clients should use request URLs relative to `HttpClient.BaseAddress`.
+- [x] Update `StorefrontRuntimeServiceCollectionExtensions.CreateClient<TClient>`:
+  - [x] instantiate generated clients with only `HttpClient` if constructor changes.
+  - [x] remove `string.Empty` base URL usage.
+  - [x] keep named HttpClient registration.
+- [x] Update independent package consumer test:
+  - [x] construct a generated client with `HttpClient { BaseAddress = new Uri("https://example.invalid/") }`.
+  - [x] do not pass a base URL string.
+- [x] Update Runtime tests:
+  - [x] assert generated client registration uses `HttpClient.BaseAddress`.
+  - [x] assert no generated `BaseUrl` property is present if config supports it.
+- [x] Update any docs that mention generated client constructor shape.
+- [x] If NSwag cannot remove `BaseUrl` cleanly:
+  - [x] Not applicable; NSwag removed the generated client `BaseUrl` constructor/property cleanly.
+  - [x] No Runtime compatibility wrapper or empty-base-url exception is needed.
+  - [x] Guard tests assert the old constructor and `_baseUrl` field stay absent.
 
 ### Files Likely Touched
 
@@ -362,9 +362,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Generated clients have one base URL source.
-- [ ] Runtime generated-client registration is simpler and explicit.
-- [ ] Starter/package consumer still builds from the generated package.
+- [x] Generated clients have one base URL source.
+- [x] Runtime generated-client registration is simpler and explicit.
+- [x] Starter/package consumer still builds from the generated package.
 
 ## Phase OCH6 - Resolve `CreatedAfterUtc` Query Contract
 
