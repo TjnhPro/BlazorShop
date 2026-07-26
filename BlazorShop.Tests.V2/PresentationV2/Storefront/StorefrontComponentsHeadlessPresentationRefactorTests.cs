@@ -24,9 +24,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private static readonly string[] ExpectedContractModelAndEnumFiles =
         [
+            "Account/AccountLabels.cs",
+            "Cart/CartLabels.cs",
             "Catalog/ProductSummaryItem.cs",
+            "Catalog/ProductSummaryLabels.cs",
+            "Checkout/CheckoutLabels.cs",
             "Deals/DealsPlacement.cs",
             "Product/ProductGalleryItem.cs",
+            "Product/ProductGalleryLabels.cs",
+            "Product/ProductPurchaseLabels.cs",
             "Product/ProductPurchaseOptionItem.cs",
             "Product/ProductPurchaseOptionValueItem.cs",
             "Product/ProductPurchasePanelModel.cs",
@@ -69,7 +75,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(7, actual.Length);
+            Assert.Equal(13, actual.Length);
         }
 
         [Fact]
@@ -219,7 +225,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
 
             Assert.Contains("data-storefront-product-summary-grid", sharedGrid, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryCard Item=\"item\" />", sharedGrid, StringComparison.Ordinal);
+            Assert.Contains("<ProductSummaryCard Item=\"item\" Labels=\"Labels\" />", sharedGrid, StringComparison.Ordinal);
             Assert.DoesNotContain("class=\"", sharedGrid, StringComparison.Ordinal);
             Assert.DoesNotContain("grid-cols-", sharedGrid, StringComparison.Ordinal);
             Assert.DoesNotContain("sm:", sharedGrid, StringComparison.Ordinal);
@@ -250,7 +256,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("data-storefront-deals-block", sharedDeals, StringComparison.Ordinal);
             Assert.Contains("data-storefront-deals-items", sharedDeals, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryCard Item=\"item\" />", sharedDeals, StringComparison.Ordinal);
+            Assert.Contains("<ProductSummaryCard Item=\"item\" Labels=\"ProductLabels\" />", sharedDeals, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductSummaryGrid", sharedDeals, StringComparison.Ordinal);
             Assert.DoesNotContain("class=\"", sharedDeals, StringComparison.Ordinal);
             Assert.DoesNotContain("max-w-", sharedDeals, StringComparison.Ordinal);
@@ -288,7 +294,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "Select(int index)",
                 "SelectPrevious()",
                 "SelectNext()",
-                "FallbackAltText",
                 "data-storefront-gallery-thumbnail"
             })
             {
@@ -296,6 +301,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             Assert.Contains("ProductGalleryState.Create(Items, ProductName)", sharedGallery, StringComparison.Ordinal);
+            Assert.Contains("ProductGalleryLabels.Empty", sharedGallery, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-gallery", sharedGallery, StringComparison.Ordinal);
             Assert.Contains("data-storefront-gallery-main-image", sharedGallery, StringComparison.Ordinal);
             Assert.DoesNotContain("class=\"", sharedGallery, StringComparison.Ordinal);

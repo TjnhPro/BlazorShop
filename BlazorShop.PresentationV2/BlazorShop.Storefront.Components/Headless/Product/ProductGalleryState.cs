@@ -28,9 +28,7 @@ public sealed record ProductGalleryState(
 
     public bool CanSelectNext => SelectedIndex < Items.Count - 1;
 
-    public string SelectedAltText => SelectedItem?.AltText ?? FallbackAltText;
-
-    public string FallbackAltText => $"Image unavailable for {DisplayProductName}";
+    public string SelectedAltText => SelectedItem?.AltText ?? DisplayProductName;
 
     public ProductGalleryState Select(int index)
     {

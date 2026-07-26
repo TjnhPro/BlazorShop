@@ -12,7 +12,7 @@
                  data-storefront-gallery-main-image />
             <div class="bs-product-gallery__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
                  role="img"
-                 aria-label="@Gallery.FallbackAltText"
+                 aria-label="@FallbackAltText"
                  data-storefront-gallery-placeholder
                  hidden>
                 Image unavailable
@@ -90,7 +90,7 @@ else
     <div class="bs-product-gallery__main relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-product-gallery>
         <div class="bs-product-gallery__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
              role="img"
-             aria-label="@Gallery.FallbackAltText"
+             aria-label="@FallbackAltText"
              data-storefront-gallery-placeholder>
             Image unavailable
         </div>
@@ -105,6 +105,8 @@ else
     public string? ProductName { get; set; }
 
     private ProductGalleryState Gallery => ProductGalleryState.Create(Items, ProductName);
+
+    private string FallbackAltText => $"Image unavailable for {Gallery.DisplayProductName}";
 
     private const string BrokenImageFallbackScript = "this.onerror=null;this.hidden=true;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E';if(this.nextElementSibling){this.nextElementSibling.hidden=false;}";
 }

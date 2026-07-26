@@ -12,7 +12,7 @@ public sealed record ProductPurchaseSnapshot(
 
     public string InitialSelectionMessage => Model.InitialValidationMessages.Count > 0
         ? Model.InitialValidationMessages[0]
-        : Model.CanSubmitInitialPurchase ? "Selection ready." : Model.PurchaseBlockMessage;
+        : Model.CanSubmitInitialPurchase ? Model.PurchaseMessage : Model.PurchaseBlockMessage;
 
     public static ProductPurchaseSnapshot Create(
         ProductPurchasePanelModel model,

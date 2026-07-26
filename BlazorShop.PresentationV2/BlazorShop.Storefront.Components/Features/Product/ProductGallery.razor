@@ -12,27 +12,27 @@
                  data-storefront-gallery-main-image />
             <div
                  role="img"
-                 aria-label="@Gallery.FallbackAltText"
+                 aria-label="@Labels.FormatImageUnavailableAlt(Gallery.DisplayProductName)"
                  data-storefront-gallery-placeholder
                  hidden>
-                Image unavailable
+                @Labels.ImageUnavailableText
             </div>
 
             @if (Gallery.HasMultipleItems)
             {
                 <div data-storefront-gallery-controls>
                     <button type="button"
-                            aria-label="Show previous product image"
+                            aria-label="@Labels.PreviousImage"
                             aria-disabled="@(!Gallery.CanSelectPrevious).ToString().ToLowerInvariant()"
                             data-storefront-gallery-prev
                             disabled>
-                        Previous
+                        @Labels.PreviousImage
                     </button>
                     <button type="button"
-                            aria-label="Show next product image"
+                            aria-label="@Labels.NextImage"
                             aria-disabled="@(!Gallery.CanSelectNext).ToString().ToLowerInvariant()"
                             data-storefront-gallery-next>
-                        Next
+                        @Labels.NextImage
                     </button>
                 </div>
             }
@@ -42,12 +42,12 @@
         {
             <div data-storefront-gallery-thumb-viewport
                  role="list"
-                 aria-label="Product images">
+                 aria-label="@Labels.ImagesRegion">
                 @for (var index = 0; index < Gallery.Items.Count; index++)
                 {
                     var item = Gallery.Items[index];
                     <button type="button"
-                            aria-label="@($"Show product image {index + 1}")"
+                            aria-label="@Labels.FormatImageButton(index + 1)"
                             aria-current="@(index == Gallery.SelectedIndex ? "true" : "false")"
                             aria-selected="@(index == Gallery.SelectedIndex ? "true" : "false")"
                             data-selected="@(index == Gallery.SelectedIndex ? "true" : "false")"
@@ -60,7 +60,7 @@
                              loading="lazy" />
                         <span data-storefront-gallery-thumb-fallback
                               hidden>
-                            Image unavailable
+                            @Labels.ImageUnavailableText
                         </span>
                     </button>
                 }
@@ -73,9 +73,9 @@ else
     <div data-storefront-product-gallery>
         <div
              role="img"
-             aria-label="@Gallery.FallbackAltText"
+             aria-label="@Labels.FormatImageUnavailableAlt(Gallery.DisplayProductName)"
              data-storefront-gallery-placeholder>
-            Image unavailable
+            @Labels.ImageUnavailableText
         </div>
     </div>
 }
@@ -86,6 +86,9 @@ else
 
     [Parameter]
     public string? ProductName { get; set; }
+
+    [Parameter]
+    public ProductGalleryLabels Labels { get; set; } = ProductGalleryLabels.Empty;
 
     private ProductGalleryState Gallery => ProductGalleryState.Create(Items, ProductName);
 }

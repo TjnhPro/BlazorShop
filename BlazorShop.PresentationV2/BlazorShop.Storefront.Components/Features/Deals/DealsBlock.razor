@@ -22,7 +22,7 @@
             @foreach (var item in Items)
             {
                 <li @key="item.Id">
-                    <ProductSummaryCard Item="item" />
+                    <ProductSummaryCard Item="item" Labels="ProductLabels" />
                 </li>
             }
         </ul>
@@ -41,19 +41,22 @@
     public IReadOnlyList<ProductSummaryItem> Items { get; set; } = [];
 
     [Parameter]
-    public string Eyebrow { get; set; } = "Today's Deals";
+    public ProductSummaryLabels ProductLabels { get; set; } = ProductSummaryLabels.Empty;
 
     [Parameter]
-    public string Title { get; set; } = "Featured Picks";
+    public string Eyebrow { get; set; } = string.Empty;
 
     [Parameter]
-    public string EmptyMessage { get; set; } = "No deal selections are available right now.";
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = string.Empty;
 
     [Parameter]
     public string? ActionUrl { get; set; }
 
     [Parameter]
-    public string ActionText { get; set; } = "View all";
+    public string ActionText { get; set; } = string.Empty;
 
     [Parameter]
     public bool ShowHeader { get; set; } = true;

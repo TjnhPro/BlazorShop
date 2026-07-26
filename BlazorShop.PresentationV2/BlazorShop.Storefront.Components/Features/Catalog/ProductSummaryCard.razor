@@ -28,7 +28,7 @@
     </header>
 
     <p>
-        <span>@(Item.HasVariants ? "From" : "Price")</span>
+        <span>@(Item.HasVariants ? Labels.FromPrefix : Labels.PricePrefix)</span>
         <span>@Item.PriceDisplay</span>
         @if (!string.IsNullOrWhiteSpace(Item.ComparePriceDisplay))
         {
@@ -42,7 +42,7 @@
     }
     else
     {
-        <div role="img" aria-label="Image unavailable for @Item.Name">Image unavailable</div>
+        <div role="img" aria-label="@Labels.FormatImageUnavailableAlt(Item.Name)">@Labels.ImageUnavailableText</div>
     }
 
     @if (!string.IsNullOrWhiteSpace(Item.Description))
@@ -53,39 +53,39 @@
     <footer>
         @if (Item.IsNewArrival)
         {
-            <span data-storefront-product-badge="new">New</span>
+            <span data-storefront-product-badge="new">@Labels.NewBadge</span>
         }
         @if (Item.HasVariants)
         {
-            <span data-storefront-product-badge="variants">Variants</span>
+            <span data-storefront-product-badge="variants">@Labels.VariantsBadge</span>
         }
         @if (!Item.InStock)
         {
-            <span data-storefront-product-badge="out-of-stock">Out</span>
+            <span data-storefront-product-badge="out-of-stock">@Labels.OutOfStockBadge</span>
         }
 
         @if (Item.CanAddDirectly)
         {
             <button type="button"
                     data-storefront-add-to-cart
-                    data-default-label="Add to Cart"
-                    data-success-label="Added"
+                    data-default-label="@Labels.AddToCart"
+                    data-success-label="@Labels.AddedToCart"
                     data-product-id="@Item.Id"
                     data-product-name="@Item.Name"
                     data-unit-price="@Item.UnitPriceValue"
                     data-currency-code="@Item.CurrencyCode"
                     data-stock="@Item.DirectAddStockValue">
-                Add to Cart
+                @Labels.AddToCart
             </button>
         }
         else if (Item.HasVariants && !string.IsNullOrWhiteSpace(Item.PurchaseUrl))
         {
-            <a href="@Item.PurchaseUrl">Add to Cart</a>
+            <a href="@Item.PurchaseUrl">@Labels.AddToCart</a>
         }
 
         @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
         {
-            <a href="@Item.ProductUrl">View Product</a>
+            <a href="@Item.ProductUrl">@Labels.ViewProduct</a>
         }
     </footer>
 </article>
@@ -93,4 +93,7 @@
 @code {
     [Parameter, EditorRequired]
     public ProductSummaryItem Item { get; set; } = default!;
+
+    [Parameter]
+    public ProductSummaryLabels Labels { get; set; } = ProductSummaryLabels.Empty;
 }

@@ -7,7 +7,7 @@
         @foreach (var item in Items)
         {
             <li @key="item.Id">
-                <ProductSummaryCard Item="item" />
+                <ProductSummaryCard Item="item" Labels="Labels" />
             </li>
         }
     </ul>
@@ -24,5 +24,8 @@ else
     public IReadOnlyList<ProductSummaryItem> Items { get; set; } = [];
 
     [Parameter]
-    public string EmptyMessage { get; set; } = "No products are available right now.";
+    public ProductSummaryLabels Labels { get; set; } = ProductSummaryLabels.Empty;
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = string.Empty;
 }

@@ -382,34 +382,34 @@ Goal: stop shared Components from owning final user-facing English copy.
 
 ### Tasks
 
-- [ ] Introduce small label descriptors under Contracts or Headless:
-  - [ ] `ProductSummaryLabels`
-  - [ ] `ProductGalleryLabels`
-  - [ ] `ProductPurchaseLabels`
-  - [ ] `CartLabels`
-  - [ ] `CheckoutLabels`
-  - [ ] `AccountLabels`
-  - [ ] `LocalApiErrorLabels` only if browser fallback copy remains needed.
-- [ ] Keep descriptors browser-safe and plain data.
-- [ ] Move V2 English defaults into V2 options:
-  - [ ] add to cart.
-  - [ ] added.
-  - [ ] view product.
-  - [ ] view cart.
-  - [ ] free shipping.
-  - [ ] choose/select variant.
-  - [ ] quantity.
-  - [ ] selection ready.
-  - [ ] image unavailable.
-  - [ ] account section titles.
-  - [ ] profile/address/password success messages.
-  - [ ] empty/error state copy for compatibility wrappers.
-- [ ] Update shared compatibility components to receive labels as parameters with empty/technical fallback only where required for accessibility.
-- [ ] Avoid localizing business/API validation messages inside shared components; show host-provided message or structured error code.
-- [ ] Update `ProductPurchaseSnapshot` so it does not hardcode `Selection ready.`
-- [ ] Update `ProductGalleryState` so fallback alt text comes from descriptor or a host-supplied function.
-- [ ] Add guardrail scans for known hardcoded copy in shared `Features`, `Headless`, and `Browser`.
-- [ ] Keep accessibility labels required by semantics, but make their wording host-provided when user-visible.
+- [x] Introduce small label descriptors under Contracts or Headless:
+  - [x] `ProductSummaryLabels`
+  - [x] `ProductGalleryLabels`
+  - [x] `ProductPurchaseLabels`
+  - [x] `CartLabels`
+  - [x] `CheckoutLabels`
+  - [x] `AccountLabels`
+  - [n/a] `LocalApiErrorLabels` only if browser fallback copy remains needed.
+- [x] Keep descriptors browser-safe and plain data.
+- [x] Move V2 English defaults into V2 options:
+  - [x] add to cart.
+  - [x] added.
+  - [x] view product.
+  - [x] view cart.
+  - [x] free shipping.
+  - [x] choose/select variant.
+  - [x] quantity.
+  - [x] selection ready.
+  - [x] image unavailable.
+  - [x] account section titles.
+  - [x] profile/address/password success messages.
+  - [x] empty/error state copy for compatibility wrappers.
+- [x] Update shared compatibility components to receive labels as parameters with empty/technical fallback only where required for accessibility.
+- [x] Avoid localizing business/API validation messages inside shared components; show host-provided message or structured error code.
+- [x] Update `ProductPurchaseSnapshot` so it does not hardcode `Selection ready.`
+- [x] Update `ProductGalleryState` so fallback alt text comes from descriptor or a host-supplied function.
+- [x] Add guardrail scans for known hardcoded copy in shared `Features`, `Headless`, and `Browser`.
+- [x] Keep accessibility labels required by semantics, but make their wording host-provided when user-visible.
 
 ### Files Likely Touched
 
@@ -429,9 +429,22 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Shared Components no longer owns final storefront copy for product/cart/checkout/account flows.
-- [ ] V2 owns current English defaults until localization is introduced.
-- [ ] Starter/generated storefronts can provide their own labels without rewriting behavior.
+- [x] Shared Components no longer owns final storefront copy for product/cart/checkout/account flows.
+- [x] V2 owns current English defaults until localization is introduced.
+- [x] Starter/generated storefronts can provide their own labels without rewriting behavior.
+
+### CLH4 Notes - 2026-07-26
+
+- Added browser-safe label descriptors: `ProductSummaryLabels`, `ProductGalleryLabels`, `ProductPurchaseLabels`, `CartLabels`, `CheckoutLabels`, and `AccountLabels`.
+- Migrated product summary, product gallery, and product purchase compatibility wrappers to receive labels as parameters with empty defaults.
+- `ProductPurchaseSnapshot` now uses host-supplied `ProductPurchasePanelModel.PurchaseMessage` for the ready state instead of hardcoding `Selection ready.`
+- `ProductGalleryState` no longer hardcodes fallback alt text; shared and V2 gallery templates own their own fallback wording.
+- `Storefront request failed.` remains intentionally deferred to CLH7 structured browser local API errors.
+- Verification passed:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` passed `41/41`.
+  - Product/headless copy scan found no `Selection ready`, `Image unavailable for`, hardcoded Add/View Cart, or Free shipping copy in migrated product compatibility/headless sources.
 
 ## Phase CLH5 - Move Account Route Interpretation To Host Boundary
 

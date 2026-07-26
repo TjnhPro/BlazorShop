@@ -12,7 +12,7 @@
      data-sku="@Model.InitialSku"
      data-gtin="@Model.InitialGtin"
      data-storefront-product-purchase-panel>
-    <p>Add to Cart</p>
+    <p>@Labels.AddToCart</p>
     <p>@Model.PurchaseMessage</p>
     @if (!Model.CanSubmitInitialPurchase)
     {
@@ -20,7 +20,7 @@
     }
     @if (Model.FreeShipping)
     {
-        <span>Free shipping</span>
+        <span>@Labels.FreeShipping</span>
     }
     @if (!string.IsNullOrWhiteSpace(Model.DeliveryEstimateText))
     {
@@ -36,7 +36,7 @@
                     <label for="@OptionInputId(option)">@option.Name</label>
                     @if (!option.IsRequired)
                     {
-                        <span>Optional</span>
+                        <span>@Labels.Optional</span>
                     }
 
                     @if (IsRadioControl(option) || IsColorControl(option))
@@ -109,8 +109,8 @@
 
     <button type="button"
             data-storefront-add-to-cart
-            data-default-label="Add to Cart"
-            data-success-label="Added"
+            data-default-label="@Labels.AddToCart"
+            data-success-label="@Labels.AddedToCart"
             data-product-id="@Model.ProductId"
             data-product-name="@Model.ProductName"
             data-resolved-variant-id="@Model.ResolvedVariantId"
@@ -122,10 +122,10 @@
             data-stock="@Model.InitialStockValue"
             disabled="@(!Model.CanSubmitInitialPurchase)"
             data-feedback-target="@Actions.FeedbackTargetSelector">
-        Add to Cart
+        @Labels.AddToCart
     </button>
 
-    <a href="@Model.CartUrl">View Cart</a>
+    <a href="@Model.CartUrl">@Labels.ViewCart</a>
 
     <p id="@Actions.FeedbackElementId" aria-live="polite" data-storefront-selection-message>@Snapshot.InitialSelectionMessage</p>
 </div>
@@ -136,6 +136,9 @@
 
     [Parameter]
     public ProductPurchaseActionDescriptor Actions { get; set; } = ProductPurchaseActionDescriptor.Empty;
+
+    [Parameter]
+    public ProductPurchaseLabels Labels { get; set; } = ProductPurchaseLabels.Empty;
 
     private ProductPurchaseSnapshot Snapshot => ProductPurchaseSnapshot.Create(Model, Actions);
 
