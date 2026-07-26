@@ -1,11 +1,11 @@
 @namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
 
-<h1>Deals</h1>
+<h1>New releases</h1>
 <PlaceholderState
-    Title="Recommendations and deals"
-    Message="Feature placement is explicit and hidden when backend capabilities are unsupported or disabled."
+    Title="New releases shell"
+    Message="SSR snapshot supplies newly published product listing data."
     RenderOwner="Hybrid"
-    HydrationMode="StarterHydrationMode.RefreshAfterHydration" />
+    HydrationMode="StarterHydrationMode.InitialSnapshot" />
 
 @code {
     [Parameter, EditorRequired]

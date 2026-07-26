@@ -12,8 +12,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             // Report: .gstack/qa-reports/storefront-release-2026-07-18.md
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
 
-            Assert.Contains("CategorySlug=\"@Category\"", markup);
-            Assert.Contains("SearchTerm=\"@Q\"", markup);
+            Assert.Contains("CategorySlug=\"@Context.Category\"", markup);
+            Assert.Contains("SearchTerm=\"@Context.Q\"", markup);
             Assert.DoesNotContain("CategorySlug=\"Category\"", markup);
             Assert.DoesNotContain("SearchTerm=\"Q\"", markup);
         }

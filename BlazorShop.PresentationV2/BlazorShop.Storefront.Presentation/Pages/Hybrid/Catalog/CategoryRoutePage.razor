@@ -1,0 +1,55 @@
+@page "/category/{Slug}"
+@inject StorefrontCategoryPageService CategoryPageService
+@inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
+
+<StorefrontSeoHead Metadata="_result.Metadata" StructuredData="_result.StructuredData" />
+
+@if (_result.State is StorefrontPageState.ServiceUnavailableState)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
+}
+else if (_result.State is StorefrontPageState.NotFoundState)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" />
+}
+else if (_result.Context is not null)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.CategoryPage" Context="_result.Context" />
+}
+
+@code {
+    private StorefrontCatalogPageResult<StorefrontCategoryPageContext> _result = StorefrontCatalogPageResult<StorefrontCategoryPageContext>.Empty;
+
+    private StorefrontFoundationViewSet ViewSet => FoundationOptions.Value.ViewSet
+        ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");
+
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    [SupplyParameterFromQuery(Name = "minPrice")]
+    public decimal? MinPrice { get; set; }
+
+    [SupplyParameterFromQuery(Name = "maxPrice")]
+    public decimal? MaxPrice { get; set; }
+
+    [SupplyParameterFromQuery(Name = "inStock")]
+    public bool InStock { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int Page { get; set; } = 1;
+
+    [SupplyParameterFromQuery(Name = "pageSize")]
+    public int PageSize { get; set; } = 24;
+
+    [SupplyParameterFromQuery(Name = "sortBy")]
+    public string? SortByQuery { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _result = await CategoryPageService.GetAsync(Slug, MinPrice, MaxPrice, InStock, Page, PageSize, SortByQuery);
+        StorefrontResponseHeaders.ApplyStatus(HttpContext, _result.State);
+    }
+}

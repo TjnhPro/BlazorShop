@@ -1,0 +1,30 @@
+@page "/todays-deals"
+@inject StorefrontDealsPageService DealsPageService
+@inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
+
+<StorefrontSeoHead Metadata="_result.Metadata" StructuredData="_result.StructuredData" />
+
+@if (_result.State is StorefrontPageState.ServiceUnavailableState)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
+}
+else if (_result.Context is not null)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.DealsPage" Context="_result.Context" />
+}
+
+@code {
+    private StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext> _result = StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext>.Empty;
+
+    private StorefrontFoundationViewSet ViewSet => FoundationOptions.Value.ViewSet
+        ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _result = await DealsPageService.GetAsync();
+        StorefrontResponseHeaders.ApplyStatus(HttpContext, _result.State);
+    }
+}

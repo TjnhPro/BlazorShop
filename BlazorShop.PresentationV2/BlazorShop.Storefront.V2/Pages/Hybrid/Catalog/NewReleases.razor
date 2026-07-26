@@ -1,11 +1,5 @@
-@page "/new-releases"
-@inject IStorefrontCatalogClient ApiClient
-@inject IStorefrontSeoComposer SeoComposer
-@inject IStorefrontStructuredDataComposer StructuredDataComposer
-@inject IStorefrontDisplayContextProvider DisplayContextProvider
-@inject IStorefrontPriceFormatter PriceFormatter
-
-<StorefrontSeoHead Metadata="_metadata" StructuredData="_structuredData" />
+@namespace BlazorShop.Storefront.Theme.Pages.Catalog
+@using BlazorShop.Storefront.Presentation.Services.Catalog
 
 <section class="mx-auto max-w-7xl px-4 pb-6 pt-10 sm:px-6 lg:px-8">
     <div class="text-center">
@@ -21,70 +15,14 @@
 </section>
 
 <section class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-    @if (_isServiceUnavailable)
-    {
-        <ServiceUnavailableState Title="New releases are temporarily unavailable"
-                                 Message="The storefront is running, but the catalog API is not reachable right now. Start the API project or AppHost and refresh this page." />
-    }
-    else
-    {
-        <div class="mb-6">
-            <h2 class="text-2xl font-extrabold tracking-tight text-neutral-900">Latest Products</h2>
-        </div>
+    <div class="mb-6">
+        <h2 class="text-2xl font-extrabold tracking-tight text-neutral-900">Latest Products</h2>
+    </div>
 
-        <StorefrontProductSummaryGrid Items="_productSummaries" EmptyMessage="No new releases have been published yet." />
-    }
+    <StorefrontProductSummaryGrid Items="Context.ProductSummaries" EmptyMessage="No new releases have been published yet." />
 </section>
 
 @code {
-    private bool _isServiceUnavailable;
-    private IReadOnlyList<GetCatalogProduct> _products = [];
-    private IReadOnlyList<ProductSummaryItem> _productSummaries = [];
-    private SeoMetadataDto _metadata = new();
-    private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
-
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var displayContext = await DisplayContextProvider.GetAsync();
-        var metadataTask = SeoComposer.ComposeStaticPageAsync(
-            "New Releases",
-            StorefrontRoutes.NewReleases,
-            "Browse newly published BlazorShop products on stable route-based pages.");
-        var structuredDataTask = StructuredDataComposer.ComposeCollectionPageAsync(
-            "New Releases",
-            StorefrontRoutes.NewReleases,
-            "Browse newly published BlazorShop products on stable route-based pages.");
-        var result = await ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
-        {
-            PageNumber = 1,
-            PageSize = 24,
-            SortBy = ProductCatalogSortBy.Newest,
-        }, displayContext.CurrencyCode);
-
-        _metadata = await metadataTask;
-
-        if (result.IsServiceUnavailable)
-        {
-            _isServiceUnavailable = true;
-            _products = [];
-            _productSummaries = [];
-            _structuredData = StorefrontStructuredDataDocument.Empty;
-            StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
-            _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
-                "New releases are temporarily unavailable",
-                StorefrontRoutes.NewReleases,
-                "The storefront is running, but the catalog API is not reachable right now.");
-
-            return;
-        }
-
-        _isServiceUnavailable = false;
-        _products = result.Value?.Items ?? [];
-        _productSummaries = _products.Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, PriceFormatter)).ToArray();
-        _structuredData = await structuredDataTask;
-    }
-
+    [Parameter, EditorRequired]
+    public StorefrontCatalogProductsPageContext Context { get; set; } = default!;
 }

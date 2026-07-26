@@ -322,11 +322,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.DedicatedPage\"", dealsPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", categoryPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", searchPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", newReleasesPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", categoryPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", searchPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductGrid Products=\"_products\"", categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
-            Assert.Contains("StorefrontProductSummaryMapper.ToProductSummary", home + categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
+            var catalogServices = string.Concat(
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontHomePageService.cs"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontCategoryPageService.cs"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontSearchPageService.cs"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontDealsPageService.cs"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontNewReleasesPageService.cs"));
+            Assert.Contains("StorefrontProductSummaryMapper.ToProductSummary", catalogServices, StringComparison.Ordinal);
 
             Assert.Contains("data-storefront-deals-block", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid", dealsBlock, StringComparison.Ordinal);

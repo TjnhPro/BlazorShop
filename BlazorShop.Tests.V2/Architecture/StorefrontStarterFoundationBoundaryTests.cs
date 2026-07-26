@@ -127,8 +127,7 @@ namespace BlazorShop.Tests.Architecture
                 .Where(file => file.Source.Contains("BlazorShop.Web.SharedV2", StringComparison.Ordinal)
                     || file.Source.Contains("Web.SharedV2", StringComparison.Ordinal)
                     || file.Source.Contains("StorefrontApiClient", StringComparison.Ordinal)
-                    || file.Source.Contains("Generated/StorefrontClient.g.cs", StringComparison.Ordinal)
-                    || file.Source.Contains("ProjectReference", StringComparison.Ordinal))
+                    || file.Source.Contains("Generated/StorefrontClient.g.cs", StringComparison.Ordinal))
                 .Select(file => file.RelativePath)
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
@@ -147,7 +146,9 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Client\" Version=\"$(StorefrontClientPackageVersion)\"", project, StringComparison.Ordinal);
             Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Runtime\" Version=\"$(StorefrontRuntimePackageVersion)\"", project, StringComparison.Ordinal);
-            Assert.DoesNotContain("<ProjectReference", project, StringComparison.Ordinal);
+            Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj""", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Client.csproj", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Runtime.csproj", project, StringComparison.Ordinal);
             Assert.Contains("<StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("<StorefrontRuntimePackageVersion>1.0.0-local</StorefrontRuntimePackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("<StorefrontComponentsPackageVersion>1.0.0-local</StorefrontComponentsPackageVersion>", versionProps, StringComparison.Ordinal);
@@ -184,7 +185,6 @@ namespace BlazorShop.Tests.Architecture
                 [
                     "pack",
                     RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj"),
-                    "--no-restore",
                     "--output",
                     packageFeed,
                     "/p:PackageVersion=1.0.0-local",
@@ -198,7 +198,6 @@ namespace BlazorShop.Tests.Architecture
                 [
                     "pack",
                     RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj"),
-                    "--no-restore",
                     "--output",
                     packageFeed,
                     "/p:PackageVersion=1.0.0-local",
@@ -212,7 +211,6 @@ namespace BlazorShop.Tests.Architecture
                 [
                     "pack",
                     componentsProject,
-                    "--no-restore",
                     "--output",
                     packageFeed,
                     "/p:PackageVersion=1.0.0-local",
@@ -377,18 +375,14 @@ namespace BlazorShop.Tests.Architecture
         {
             var expectedRoutes = new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor"] = ["@page \"/\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = ["@page \"/content/{Slug}\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor"] = ["@page \"/signin\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/MaintenancePage.razor"] = ["@page \"/maintenance\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/NotFoundPage.razor"] = ["@page \"/not-found\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"] = ["@page \"/product/{Slug}\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/CategoryPage.razor"] = ["@page \"/category/{Slug}\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/SearchPage.razor"] = ["@page \"/search\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = ["@page \"/cart\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"] = ["@page \"/checkout\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/PaymentResultPage.razor"] = ["@page \"/payment/result\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = ["@page \"/deals\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"] = ["@page \"/account\"", "@page \"/account/{*Path}\""],
             };
 
@@ -400,16 +394,28 @@ namespace BlazorShop.Tests.Architecture
                     Assert.Contains(route, source, StringComparison.Ordinal);
                 }
 
-                if (relativePath.EndsWith("HomePage.razor", StringComparison.Ordinal))
-                {
-                    Assert.Contains("BootstrapService.LoadAsync", source, StringComparison.Ordinal);
-                    Assert.Contains("StarterHydrationMode.InitialSnapshot", source, StringComparison.Ordinal);
-                }
-                else
-                {
-                    Assert.Contains("PlaceholderState", source, StringComparison.Ordinal);
-                }
+                Assert.Contains("PlaceholderState", source, StringComparison.Ordinal);
             }
+
+            var starterViews = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor"] = "StorefrontHomePageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/CategoryPage.razor"] = "StorefrontCategoryPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/SearchPage.razor"] = "StorefrontSearchPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = "StorefrontCatalogProductsPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor"] = "StorefrontCatalogProductsPageContext",
+            };
+
+            foreach (var (relativePath, contextType) in starterViews)
+            {
+                var source = ReadRepositoryFile(relativePath);
+                Assert.DoesNotContain("@page", source, StringComparison.Ordinal);
+                Assert.Contains(contextType, source, StringComparison.Ordinal);
+            }
+
+            var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor");
+            Assert.Contains("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
+            Assert.Contains("StarterHydrationMode.InitialSnapshot", home, StringComparison.Ordinal);
 
             var hydration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Composition/StarterHydrationMode.cs");
             var pagesReadme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/README.md");

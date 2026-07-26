@@ -1,10 +1,5 @@
-@page "/category/{Slug}"
+@namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
 
-<PageTitle>@CategoryTitle</PageTitle>
-<HeadContent>
-    <meta name="description" content="@CategoryDescription" />
-    <link rel="canonical" href="@CanonicalUrl" />
-</HeadContent>
 <h1>Category</h1>
 <PlaceholderState
     Title="Category shell"
@@ -13,19 +8,8 @@
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
 
 @code {
-    [Parameter]
-    public string? Slug { get; set; }
+    [Parameter, EditorRequired]
+    public StorefrontCategoryPageContext Context { get; set; } = default!;
 
-    private string CategoryTitle => string.IsNullOrWhiteSpace(this.Slug)
-        ? "Category"
-        : $"Category {this.Slug}";
-
-    private string CategoryDescription => $"Storefront category page for {NormalizeSlug(this.Slug)}.";
-
-    private string CanonicalUrl => $"/category/{NormalizeSlug(this.Slug)}";
-
-    private static string NormalizeSlug(string? slug)
-    {
-        return string.IsNullOrWhiteSpace(slug) ? "sample-category" : slug.Trim();
-    }
+    private string CategoryName => Context.CategoryPage.Category.Name;
 }

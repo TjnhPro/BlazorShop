@@ -1,9 +1,7 @@
-@page "/"
+@namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
 @inject IOptions<StarterStorefrontOptions> StorefrontOptions
 @inject StorefrontBootstrapService BootstrapService
 @inject StarterFeatureActivationService FeatureActivationService
-
-<PageTitle>@(_snapshot?.StoreName ?? "Storefront Starter")</PageTitle>
 
 <h1>@(_snapshot?.StoreName ?? "Storefront Starter")</h1>
 <p>This neutral shell consumes the generated Storefront client package.</p>
@@ -41,6 +39,9 @@ else if (_snapshot is not null)
 }
 
 @code {
+    [Parameter, EditorRequired]
+    public StorefrontHomePageContext Context { get; set; } = default!;
+
     private StarterBootstrapSnapshot? _snapshot;
 
     protected override async Task OnInitializedAsync()

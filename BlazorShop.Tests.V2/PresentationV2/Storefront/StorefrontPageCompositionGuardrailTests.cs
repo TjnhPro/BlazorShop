@@ -25,11 +25,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Theory]
-        [InlineData("Home.razor", "@page \"/\"")]
-        [InlineData("CategoryPage.razor", "@page \"/category/{Slug}\"")]
-        [InlineData("SearchPage.razor", "@page \"/search\"")]
-        [InlineData("NewReleases.razor", "@page \"/new-releases\"")]
-        [InlineData("TodaysDeals.razor", "@page \"/todays-deals\"")]
         [InlineData("StorefrontPage.razor", "@page \"/pages/{Slug}\"")]
         [InlineData("CartPage.razor", "@page \"/my-cart\"")]
         [InlineData("CheckoutPage.razor", "@page \"/checkout\"")]
@@ -55,11 +50,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var expected = new[]
             {
-                new PageInventoryItem("Pages/Hybrid/Catalog/Home.razor", "/", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Catalog/CategoryPage.razor", "/category/{Slug}", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Catalog/SearchPage.razor", "/search", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Catalog/NewReleases.razor", "/new-releases", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Catalog/TodaysDeals.razor", "/todays-deals", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Ssr/Content/StorefrontPage.razor", "/pages/{Slug}", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CartPage.razor", "/my-cart", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),
@@ -92,6 +82,53 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void CatalogRoutes_ArePresentationOwnedAndV2ProvidesViews()
+        {
+            var routes = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["HomeRoutePage.razor"] = "@page \"/\"",
+                ["CategoryRoutePage.razor"] = "@page \"/category/{Slug}\"",
+                ["SearchRoutePage.razor"] = "@page \"/search\"",
+                ["TodaysDealsRoutePage.razor"] = "@page \"/todays-deals\"",
+                ["NewReleasesRoutePage.razor"] = "@page \"/new-releases\"",
+            };
+            var presentationCatalogRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog");
+            var registration = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs"));
+
+            foreach (var route in routes)
+            {
+                var routeMarkup = File.ReadAllText(Path.Combine(presentationCatalogRoot, route.Key));
+                Assert.Contains(route.Value, routeMarkup, StringComparison.Ordinal);
+                Assert.Contains("StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
+                Assert.Contains("StorefrontResponseHeaders.ApplyStatus", routeMarkup, StringComparison.Ordinal);
+            }
+
+            var viewPaths = new[]
+            {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor",
+            };
+
+            foreach (var viewPath in viewPaths)
+            {
+                var viewMarkup = File.ReadAllText(RepositoryPath(viewPath));
+                Assert.DoesNotContain("@page \"", viewMarkup, StringComparison.Ordinal);
+                Assert.DoesNotContain("IStorefrontCatalogClient", viewMarkup, StringComparison.Ordinal);
+                Assert.DoesNotContain("IStorefrontSeoComposer", viewMarkup, StringComparison.Ordinal);
+                Assert.DoesNotContain("StorefrontResponseHeaders", viewMarkup, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("HomePage = typeof(Home)", registration, StringComparison.Ordinal);
+            Assert.Contains("CategoryPage = typeof(CategoryPage)", registration, StringComparison.Ordinal);
+            Assert.Contains("SearchPage = typeof(SearchPage)", registration, StringComparison.Ordinal);
+            Assert.Contains("DealsPage = typeof(TodaysDeals)", registration, StringComparison.Ordinal);
+            Assert.Contains("NewReleasesPage = typeof(NewReleases)", registration, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void ProductRoute_IsPresentationOwnedAndV2ProvidesView()
         {
             var route = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/ProductRoutePage.razor"));
@@ -111,11 +148,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var expected = new[]
             {
-                new PageInventoryItem("Pages/Ssr/Home/HomePage.razor", "/", RenderOwnership.Ssr),
-                new PageInventoryItem("Pages/Hybrid/Catalog/CategoryPage.razor", "/category/{Slug}", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Catalog/ProductPage.razor", "/product/{Slug}", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Catalog/SearchPage.razor", "/search", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Commerce/DealsPage.razor", "/deals", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Ssr/Content/ContentPage.razor", "/content/{Slug}", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CartPage.razor", "/cart", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),

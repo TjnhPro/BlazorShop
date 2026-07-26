@@ -1,10 +1,6 @@
-@page "/search"
-@inject IStorefrontCatalogClient ApiClient
-@inject IStorefrontSeoComposer SeoComposer
-@inject IStorefrontDisplayContextProvider DisplayContextProvider
-@inject IStorefrontPriceFormatter PriceFormatter
-
-<StorefrontSeoHead Metadata="_metadata" />
+@namespace BlazorShop.Storefront.Theme.Pages.Catalog
+@using BlazorShop.Storefront.Models
+@using BlazorShop.Storefront.Presentation.Services.Catalog
 
 <section class="mx-auto max-w-7xl px-4 pb-6 pt-10 sm:px-6 lg:px-8">
     <div class="rounded-2xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg">
@@ -19,19 +15,19 @@
                                 Class="grid gap-3 md:grid-cols-4 xl:grid-cols-8"
                                 Role="search"
                                 ShowCategory="true"
-                                Categories="_searchCategories"
-                                CategorySlug="@Category"
+                                Categories="Context.SearchCategories"
+                                CategorySlug="@Context.Category"
                                 ShowSearch="true"
-                                SearchTerm="@Q"
+                                SearchTerm="@Context.Q"
                                 ShowPriceRange="true"
-                                MinPrice="MinPrice"
-                                MaxPrice="MaxPrice"
+                                MinPrice="Context.MinPrice"
+                                MaxPrice="Context.MaxPrice"
                                 ShowSort="true"
-                                SortBy="SortBy"
+                                SortBy="Context.SortBy"
                                 ShowPageSize="true"
-                                PageSize="_pageSize"
+                                PageSize="Context.PageSize"
                                 ShowStock="true"
-                                InStock="InStock"
+                                InStock="Context.InStock"
                                 SelectClass="rounded border border-neutral-300 bg-white px-3 py-3 text-sm font-semibold text-neutral-900"
                                 InputClass="rounded border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
                                 SubmitButtonClass="inline-flex items-center justify-center gap-2 rounded bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600"
@@ -42,206 +38,54 @@
 </section>
 
 <section class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-    @if (_isServiceUnavailable)
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-2xl font-extrabold tracking-tight text-neutral-900">Results</h2>
+        <span class="inline-flex items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-700 shadow">@ResultCountText</span>
+    </div>
+
+    @if (Context.IsSearchTermTooShort)
     {
-        <ServiceUnavailableState Title="Search temporarily unavailable"
-                                 Message="The storefront is running, but the catalog API is not reachable right now. Start the API project or AppHost and refresh this page." />
-    }
-    else
-    {
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-2xl font-extrabold tracking-tight text-neutral-900">Results</h2>
-            <span class="inline-flex items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-700 shadow">@ResultCountText</span>
+        <div class="mb-6 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+            Enter at least @CatalogSearchPolicy.MinimumSearchTermLength characters to search products.
         </div>
+    }
 
-        @if (_isSearchTermTooShort)
-        {
-            <div class="mb-6 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-                Enter at least @CatalogSearchPolicy.MinimumSearchTermLength characters to search products.
-            </div>
-        }
+    <StorefrontProductSummaryGrid Items="Context.ProductSummaries" EmptyMessage="No products found" />
 
-        <StorefrontProductSummaryGrid Items="_productSummaries" EmptyMessage="No products found" />
-
-        @if (_totalPages > 1)
-        {
-            <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
-                @for (var pageNumber = 1; pageNumber <= _totalPages; pageNumber++)
-                {
-                    <a href="@StorefrontRoutes.SearchUrl(Q, Category, pageNumber, _pageSize, SortBy, MinPrice, MaxPrice, InStock ? true : null)"
-                       class="@GetPageLinkClass(pageNumber)"
-                       aria-current="@(pageNumber == _pageNumber ? "page" : null)">
-                        @pageNumber
-                    </a>
-                }
-            </nav>
-        }
+    @if (Context.TotalPages > 1)
+    {
+        <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
+            @for (var pageNumber = 1; pageNumber <= Context.TotalPages; pageNumber++)
+            {
+                <a href="@StorefrontRoutes.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)"
+                   class="@GetPageLinkClass(pageNumber)"
+                   aria-current="@(pageNumber == Context.PageNumber ? "page" : null)">
+                    @pageNumber
+                </a>
+            }
+        </nav>
     }
 </section>
 
 @code {
-    private bool _isServiceUnavailable;
-    private bool _isSearchTermTooShort;
-    private int _pageNumber = 1;
-    private int _pageSize = 24;
-    private int _totalCount;
-    private int _totalPages;
-    private IReadOnlyList<GetCatalogProduct> _products = [];
-    private IReadOnlyList<ProductSummaryItem> _productSummaries = [];
-    private IReadOnlyList<CatalogFilterCategoryOption> _searchCategories = [];
-    private SeoMetadataDto _metadata = new();
+    [Parameter, EditorRequired]
+    public StorefrontSearchPageContext Context { get; set; } = default!;
 
-    [SupplyParameterFromQuery(Name = "q")]
-    public string? Q { get; set; }
-
-    [SupplyParameterFromQuery(Name = "category")]
-    public string? Category { get; set; }
-
-    [SupplyParameterFromQuery(Name = "page")]
-    public int Page { get; set; } = 1;
-
-    [SupplyParameterFromQuery(Name = "pageSize")]
-    public int PageSize { get; set; } = 24;
-
-    [SupplyParameterFromQuery(Name = "minPrice")]
-    public decimal? MinPrice { get; set; }
-
-    [SupplyParameterFromQuery(Name = "maxPrice")]
-    public decimal? MaxPrice { get; set; }
-
-    [SupplyParameterFromQuery(Name = "inStock")]
-    public bool InStock { get; set; }
-
-    [SupplyParameterFromQuery(Name = "sortBy")]
-    public string? SortByQuery { get; set; }
-
-    private ProductCatalogSortBy SortBy => ProductCatalogSortByExtensions.TryParseApiValue(SortByQuery, out var sortBy)
-        ? sortBy
-        : ProductCatalogSortBy.DisplayOrder;
-
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
-    private string TitleText => string.IsNullOrWhiteSpace(Q)
+    private string TitleText => string.IsNullOrWhiteSpace(Context.Q)
         ? "Browse products"
-        : $"Search results for \"{Q.Trim()}\"";
+        : $"Search results for \"{Context.Q.Trim()}\"";
 
-    private string ScopeText => string.IsNullOrWhiteSpace(Category)
+    private string ScopeText => string.IsNullOrWhiteSpace(Context.Category)
         ? "Showing published products across the store."
-        : $"Showing published products in {Category.Trim()}.";
+        : $"Showing published products in {Context.Category.Trim()}.";
 
-    private string ResultCountText => _totalCount == 1 ? "1 item" : $"{_totalCount} items";
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var displayContext = await DisplayContextProvider.GetAsync();
-        _pageSize = NormalizePageSize(PageSize);
-        _isSearchTermTooShort = CatalogSearchPolicy.IsSearchTermTooShort(CatalogSearchPolicy.NormalizeSearchTerm(Q));
-        var metadataTask = SeoComposer.ComposeStaticPageAsync(
-            "Search",
-            StorefrontRoutes.Search,
-            "Search published products in the BlazorShop catalog.");
-        var categoriesTask = ApiClient.GetPublishedCategoryTreeAsync();
-        var productsTask = _isSearchTermTooShort
-            ? null
-            : ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
-            {
-                PageNumber = Math.Max(1, Page),
-                PageSize = _pageSize,
-                CategorySlug = Category,
-                IncludeSubcategories = !string.IsNullOrWhiteSpace(Category),
-                SearchTerm = Q,
-                MinPrice = MinPrice,
-                MaxPrice = MaxPrice,
-                InStock = InStock ? true : null,
-                SortBy = SortBy,
-            }, displayContext.CurrencyCode);
-
-        _metadata = await metadataTask;
-        StorefrontIndexingPolicy.ApplySearchMetadata(_metadata);
-
-        var categories = await categoriesTask;
-        _searchCategories = categories.IsSuccess && categories.Value is not null
-            ? FlattenCategories(categories.Value)
-            : [];
-
-        if (_isSearchTermTooShort)
-        {
-            _isServiceUnavailable = false;
-            _products = [];
-            _productSummaries = [];
-            _pageNumber = 1;
-            _totalCount = 0;
-            _totalPages = 0;
-            return;
-        }
-
-        var products = await productsTask!;
-        if (products.IsServiceUnavailable)
-        {
-            _isServiceUnavailable = true;
-            _products = [];
-            _productSummaries = [];
-            _pageNumber = 1;
-            _totalCount = 0;
-            _totalPages = 0;
-            StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
-            _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
-                "Search temporarily unavailable",
-                StorefrontRoutes.Search,
-                "The storefront is running, but the catalog API is not reachable right now.");
-            return;
-        }
-
-        _isServiceUnavailable = false;
-        _products = products.Value?.Items ?? [];
-        _productSummaries = _products
-            .Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, PriceFormatter))
-            .ToArray();
-        _pageNumber = products.Value?.PageNumber ?? Math.Max(1, Page);
-        _pageSize = products.Value?.PageSize ?? _pageSize;
-        _totalCount = products.Value?.TotalCount ?? _products.Count;
-        _totalPages = Math.Min(10, products.Value?.TotalPages ?? 0);
-    }
+    private string ResultCountText => Context.TotalCount == 1 ? "1 item" : $"{Context.TotalCount} items";
 
     private string GetPageLinkClass(int page)
     {
         var baseClass = "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold";
-        return page == _pageNumber
+        return page == Context.PageNumber
             ? $"{baseClass} border-neutral-900 bg-neutral-900 text-white"
             : $"{baseClass} border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100";
-    }
-
-    private static IReadOnlyList<CatalogFilterCategoryOption> FlattenCategories(IReadOnlyList<GetCategoryTreeNode> categories)
-    {
-        var options = new List<CatalogFilterCategoryOption>();
-
-        foreach (var category in categories)
-        {
-            AppendCategory(options, category, 0);
-        }
-
-        return options;
-    }
-
-    private static void AppendCategory(List<CatalogFilterCategoryOption> options, GetCategoryTreeNode category, int depth)
-    {
-        if (!string.IsNullOrWhiteSpace(category.Slug))
-        {
-            var prefix = depth <= 0 ? string.Empty : $"{new string('-', depth * 2)} ";
-            options.Add(new CatalogFilterCategoryOption(category.Slug, $"{prefix}{category.Name}"));
-        }
-
-        foreach (var child in category.Children)
-        {
-            AppendCategory(options, child, depth + 1);
-        }
-    }
-
-    private static int NormalizePageSize(int pageSize)
-    {
-        return CatalogSearchPolicy.StorefrontPageSizes.Contains(pageSize)
-            ? pageSize
-            : 24;
     }
 }

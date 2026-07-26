@@ -1,8 +1,9 @@
+namespace BlazorShop.Storefront.Services;
+
+using System.Globalization;
 using BlazorShop.Storefront.Components.Contracts.Catalog;
 using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services.Contracts;
-
-namespace BlazorShop.Storefront.Services;
 
 public static class StorefrontProductSummaryMapper
 {
@@ -37,7 +38,7 @@ public static class StorefrontProductSummaryMapper
             product.Purchasable,
             productUrl is null ? null : $"{productUrl}#purchase",
             canAddDirectly,
-            displayPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture),
+            displayPrice.ToString("0.00", CultureInfo.InvariantCulture),
             displayCurrencyCode,
             directAddStockValue,
             PurchaseBlockMessage(product));

@@ -9,6 +9,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Account/AccountLabels.cs",
             "Account/AccountRouteDescriptor.cs",
             "Cart/CartLabels.cs",
+            "Catalog/CatalogFilterCategoryOption.cs",
             "Catalog/ProductSummaryItem.cs",
             "Catalog/ProductSummaryLabels.cs",
             "Checkout/CheckoutLabels.cs",
@@ -112,7 +113,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(14, actual.Length);
+            Assert.Equal(15, actual.Length);
         }
 
         [Fact]
@@ -277,9 +278,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("grid gap-8 sm:grid-cols-2 lg:grid-cols-3", v2Grid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-empty", v2Grid, StringComparison.Ordinal);
 
-            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", categoryPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", searchPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", categoryPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", searchPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", newReleasesPage, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -904,10 +905,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void NewReleases_UsesNewestSortUntilRecentWindowPolicyIsChosen()
         {
             var newReleases = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontNewReleasesPageService.cs");
 
             Assert.Contains("SortBy = ProductCatalogSortBy.Newest", newReleases, StringComparison.Ordinal);
-            Assert.Contains("Latest Products", newReleases, StringComparison.Ordinal);
+            Assert.Contains("New Releases", newReleases, StringComparison.Ordinal);
         }
 
         private static string[] EnumerateComponentContractFiles(string searchPattern)

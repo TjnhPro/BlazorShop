@@ -70,7 +70,6 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Theory]
-        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor")]
         [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor")]
         public void StorefrontRoutedPages_UsePageShellWhileKeepingSeoBreadcrumbAndHeading(string relativePath)
         {
@@ -82,6 +81,22 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("<BreadcrumbNav", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<ChildContent>", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<h1", pageMarkup, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void StorefrontCategoryRouteAndView_SplitSeoFromVisualShell()
+        {
+            var routeMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/CategoryRoutePage.razor");
+            var viewMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
+
+            Assert.Contains("<StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCategoryPageService", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPageShell", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("<Breadcrumb>", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("<BreadcrumbNav", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("<ChildContent>", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("<h1", viewMarkup, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("<StorefrontSeoHead", viewMarkup, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -113,20 +128,20 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("ShowPriceRange=\"true\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowSort=\"true\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowStock=\"true\"", categoryMarkup, StringComparison.Ordinal);
-            Assert.Contains("MinPrice=\"MinPrice\"", categoryMarkup, StringComparison.Ordinal);
-            Assert.Contains("MaxPrice=\"MaxPrice\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("MinPrice=\"Context.MinPrice\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("MaxPrice=\"Context.MaxPrice\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPageSize=\"true\"", categoryMarkup, StringComparison.Ordinal);
-            Assert.Contains("PageSize=\"_pageSize\"", categoryMarkup, StringComparison.Ordinal);
-            Assert.Contains("InStock=\"InStock\"", categoryMarkup, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.CategoryUrl(Slug, pageNumber, _pageSize, SortBy, MinPrice, MaxPrice, InStock ? true : null)", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("PageSize=\"Context.PageSize\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("InStock=\"Context.InStock\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.CategoryUrl(Context.Slug, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", categoryMarkup, StringComparison.Ordinal);
 
             Assert.Contains("<CatalogFilterPanel", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("Action=\"@StorefrontRoutes.Search\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowCategory=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowSearch=\"true\"", searchMarkup, StringComparison.Ordinal);
-            Assert.Contains("SearchTerm=\"@Q\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("SearchTerm=\"@Context.Q\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPageSize=\"true\"", searchMarkup, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.SearchUrl(Q, Category, pageNumber, _pageSize, SortBy, MinPrice, MaxPrice, InStock ? true : null)", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("CatalogSearchPolicy.MinimumSearchTermLength", searchMarkup, StringComparison.Ordinal);
         }
 

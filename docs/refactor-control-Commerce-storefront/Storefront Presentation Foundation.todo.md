@@ -528,19 +528,19 @@ Exit criteria:
 
 Muc tieu: move application orchestration cho public catalog pages sau khi product slice pass.
 
-- [ ] Move route pages vao Presentation:
+- [x] Move route pages vao Presentation:
   - home `/`
   - category `/category/{Slug}`
   - search `/search`
   - today's deals `/todays-deals`
   - new releases `/new-releases`
-- [ ] Tao services/contexts:
+- [x] Tao services/contexts:
   - `StorefrontHomePageService`
   - `StorefrontCategoryPageService`
   - `StorefrontSearchPageService`
   - `StorefrontDealsPageService`
   - `StorefrontNewReleasesPageService`
-- [ ] Presentation owns:
+- [x] Presentation owns:
   - query normalization;
   - paging;
   - sorting/filter parameter interpretation;
@@ -549,16 +549,16 @@ Muc tieu: move application orchestration cho public catalog pages sau khi produc
   - SEO/canonical;
   - search noindex;
   - product summary context mapping.
-- [ ] V2 owns:
+- [x] V2 owns:
   - filter panel markup;
   - product grid;
   - product card;
   - empty-state visual;
   - responsive layout;
   - final text.
-- [ ] Starter owns neutral views cho same contexts.
-- [ ] Remove `@page` tu V2/Starter catalog visual files after cutover.
-- [ ] Tests:
+- [x] Starter owns neutral views cho same contexts.
+- [x] Remove `@page` tu V2/Starter catalog visual files after cutover.
+- [x] Tests:
   - home/category/search/deals/new releases route parity;
   - search noindex;
   - category not found;
@@ -566,8 +566,8 @@ Muc tieu: move application orchestration cho public catalog pages sau khi produc
 
 Exit criteria:
 
-- [ ] Public catalog route files nam trong Presentation.
-- [ ] V2/Starter catalog files are views, not route pages.
+- [x] Public catalog route files nam trong Presentation.
+- [x] V2/Starter catalog files are views, not route pages.
 
 ## Phase SPF8 - Content, System, and Auth SSR Pages
 

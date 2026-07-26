@@ -1,11 +1,5 @@
-@page "/todays-deals"
-@inject IStorefrontCatalogClient ApiClient
-@inject IStorefrontSeoComposer SeoComposer
-@inject IStorefrontStructuredDataComposer StructuredDataComposer
-@inject IStorefrontDisplayContextProvider DisplayContextProvider
-@inject IStorefrontPriceFormatter PriceFormatter
-
-<StorefrontSeoHead Metadata="_metadata" StructuredData="_structuredData" />
+@namespace BlazorShop.Storefront.Theme.Pages.Catalog
+@using BlazorShop.Storefront.Presentation.Services.Catalog
 
 <section class="mx-auto max-w-7xl px-4 pb-6 pt-10 sm:px-6 lg:px-8">
     <div class="text-center">
@@ -21,71 +15,15 @@
 </section>
 
 <section class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-    @if (_isServiceUnavailable)
-    {
-        <ServiceUnavailableState Title="Today's deals are temporarily unavailable"
-                                 Message="The storefront is running, but the catalog API is not reachable right now. Start the API project or AppHost and refresh this page." />
-    }
-    else
-    {
-        <StorefrontDealsSection Placement="DealsPlacement.DedicatedPage"
-                                Items="_productSummaries"
-                                Eyebrow="Today's Deals"
-                                Title="Featured Picks"
-                                EmptyMessage="No deal selections are available right now."
-                                ShowHeader="true" />
-    }
+    <StorefrontDealsSection Placement="DealsPlacement.DedicatedPage"
+                            Items="Context.ProductSummaries"
+                            Eyebrow="Today's Deals"
+                            Title="Featured Picks"
+                            EmptyMessage="No deal selections are available right now."
+                            ShowHeader="true" />
 </section>
 
 @code {
-    private bool _isServiceUnavailable;
-    private IReadOnlyList<GetCatalogProduct> _products = [];
-    private IReadOnlyList<ProductSummaryItem> _productSummaries = [];
-    private SeoMetadataDto _metadata = new();
-    private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
-
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var displayContext = await DisplayContextProvider.GetAsync();
-        var metadataTask = SeoComposer.ComposeStaticPageAsync(
-            "Today's Deals",
-            StorefrontRoutes.TodaysDeals,
-            "Explore published BlazorShop catalog entries curated as current featured deals.");
-        var structuredDataTask = StructuredDataComposer.ComposeCollectionPageAsync(
-            "Today's Deals",
-            StorefrontRoutes.TodaysDeals,
-            "Explore published BlazorShop catalog entries curated as current featured deals.");
-        var result = await ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
-        {
-            PageNumber = 1,
-            PageSize = 12,
-            SortBy = ProductCatalogSortBy.Newest,
-        }, displayContext.CurrencyCode);
-
-        _metadata = await metadataTask;
-
-        if (result.IsServiceUnavailable)
-        {
-            _isServiceUnavailable = true;
-            _products = [];
-            _productSummaries = [];
-            _structuredData = StorefrontStructuredDataDocument.Empty;
-            StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
-            _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
-                "Today's deals are temporarily unavailable",
-                StorefrontRoutes.TodaysDeals,
-                "The storefront is running, but the catalog API is not reachable right now.");
-
-            return;
-        }
-
-        _isServiceUnavailable = false;
-        _products = result.Value?.Items ?? [];
-        _productSummaries = _products.Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, PriceFormatter)).ToArray();
-        _structuredData = await structuredDataTask;
-    }
-
+    [Parameter, EditorRequired]
+    public StorefrontCatalogProductsPageContext Context { get; set; } = default!;
 }
