@@ -454,43 +454,43 @@ Exit criteria:
 
 Chay tu hep den rong de bat loi ngay tai boundary vua doi.
 
-- [ ] Build Components:
+- [x] Build Components:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj
 ```
 
-- [ ] Build Storefront WASM:
+- [x] Build Storefront WASM:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj
 ```
 
-- [ ] Build Storefront V2:
+- [x] Build Storefront V2:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
 ```
 
-- [ ] Build Starter:
+- [x] Build Starter:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj
 ```
 
-- [ ] Run focused architecture/component/runtime tests:
+- [x] Run focused architecture/component/runtime tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests"
 ```
 
-- [ ] Run StorefrontBuilder isolation gate:
+- [x] Run StorefrontBuilder isolation gate:
 
 ```powershell
 ./scripts/qa/run-storefront-builder-isolation-gate.ps1
 ```
 
-- [ ] Run storefront foundation isolation gate neu co lien quan package boundary:
+- [x] Run storefront foundation isolation gate neu co lien quan package boundary:
 
 ```powershell
 ./scripts/qa/run-storefront-foundation-isolation-gate.ps1
@@ -498,9 +498,13 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualif
 
 Exit criteria:
 
-- [ ] Focused builds pass.
-- [ ] Focused tests pass.
-- [ ] Package/isolation gates pass hoac co fail ro do fixture/env khong lien quan va duoc ghi lai.
+- [x] Focused builds pass.
+- [x] Focused tests pass.
+- [x] Package/isolation gates pass hoac co fail ro do fixture/env khong lien quan va duoc ghi lai.
+  - 2026-07-26: Components, WASM, Storefront V2, and Starter builds pass. Initial parallel WASM build hit an obj file lock while V2 was building; rerun sequential WASM build passed.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontWasmRuntimeFoundationTests|StorefrontSharedPlatformPackageContractTests|StorefrontStarterFoundationBoundaryTests` pass 89/89.
+  - 2026-07-26: `run-storefront-builder-isolation-gate.ps1` pass for `BlazorShop.Storefront.GeneratedProof`.
+  - 2026-07-26: `run-storefront-foundation-isolation-gate.ps1` pass.
 
 ## Phase SCR12 - Browser Playwright Release Verification
 
