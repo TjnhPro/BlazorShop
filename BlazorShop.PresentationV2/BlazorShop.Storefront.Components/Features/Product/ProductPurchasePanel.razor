@@ -1,9 +1,9 @@
 @namespace BlazorShop.Storefront.Components.Features.Product
+@using BlazorShop.Storefront.Components.Headless.Product
 
-<div id="purchase"
-     class="mt-8 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-5"
+<div id="@Actions.PanelId"
      data-storefront-selection-preview
-     data-preview-route="/api/product-selection-preview"
+     data-preview-route="@Actions.SelectionPreviewRoute"
      data-product-id="@Model.ProductId"
      data-currency-code="@Model.CurrencyCode"
      data-resolved-variant-id="@Model.ResolvedVariantId"
@@ -11,76 +11,47 @@
      data-sku="@Model.InitialSku"
      data-gtin="@Model.InitialGtin"
      data-storefront-product-purchase-panel>
-    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Add to Cart</p>
-    <p class="mt-2 text-sm leading-6 text-neutral-700">@Model.PurchaseMessage</p>
+    <p>Add to Cart</p>
+    <p>@Model.PurchaseMessage</p>
     @if (!Model.CanSubmitInitialPurchase)
     {
-        <p class="mt-3 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">@Model.PurchaseBlockMessage</p>
+        <p>@Model.PurchaseBlockMessage</p>
     }
-    @if (!string.IsNullOrWhiteSpace(Model.DeliveryEstimateText) || Model.FreeShipping)
+    @if (Model.FreeShipping)
     {
-        <div class="mt-3 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.14em]">
-            @if (Model.FreeShipping)
-            {
-                <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-700">Free shipping</span>
-            }
-            @if (!string.IsNullOrWhiteSpace(Model.DeliveryEstimateText))
-            {
-                <span class="rounded bg-neutral-100 px-2 py-1 text-neutral-700">@Model.DeliveryEstimateText</span>
-            }
-        </div>
+        <span>Free shipping</span>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.DeliveryEstimateText))
+    {
+        <span>@Model.DeliveryEstimateText</span>
     }
 
-    @if (HasVariationTemplate)
+    @if (Snapshot.HasVariationTemplate)
     {
-        <div class="mt-5 grid gap-5" data-storefront-attribute-group>
+        <div data-storefront-attribute-group>
             @foreach (var option in Model.VariationOptions)
             {
                 <div>
-                    <div class="flex items-center justify-between gap-3">
-                        <label class="text-sm font-semibold text-neutral-900" for="@OptionInputId(option)">@option.Name</label>
-                        @if (!option.IsRequired)
-                        {
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">Optional</span>
-                        }
-                    </div>
-
-                    @if (IsRadioControl(option))
+                    <label for="@OptionInputId(option)">@option.Name</label>
+                    @if (!option.IsRequired)
                     {
-                        <div class="mt-2 flex flex-wrap gap-2" id="@OptionInputId(option)">
-                            @foreach (var value in ActiveVariationValues(option))
-                            {
-                                var inputId = OptionValueInputId(option, value);
-                                <label class="inline-flex cursor-pointer items-center gap-2 rounded border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 hover:border-neutral-400">
-                                    <input id="@inputId"
-                                           type="radio"
-                                           name="@OptionInputName(option)"
-                                           value="@value.Value"
-                                           checked="@ShouldSelectOptionValue(option, value)"
-                                           data-storefront-attribute-control
-                                           data-attribute-name="@option.Name"
-                                           class="h-4 w-4 accent-neutral-900" />
-                                    <span>@value.Value</span>
-                                </label>
-                            }
-                        </div>
+                        <span>Optional</span>
                     }
-                    else if (IsColorControl(option))
+
+                    @if (IsRadioControl(option) || IsColorControl(option))
                     {
-                        <div class="mt-2 flex flex-wrap gap-2" id="@OptionInputId(option)">
+                        <div id="@OptionInputId(option)">
                             @foreach (var value in ActiveVariationValues(option))
                             {
                                 var inputId = OptionValueInputId(option, value);
-                                <label class="inline-flex cursor-pointer items-center gap-2 rounded border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 hover:border-neutral-400">
+                                <label>
                                     <input id="@inputId"
                                            type="radio"
                                            name="@OptionInputName(option)"
                                            value="@value.Value"
                                            checked="@ShouldSelectOptionValue(option, value)"
                                            data-storefront-attribute-control
-                                           data-attribute-name="@option.Name"
-                                           class="sr-only" />
-                                    <span class="h-5 w-5 rounded-full border border-neutral-300" style="@ColorSwatchStyle(value)"></span>
+                                           data-attribute-name="@option.Name" />
                                     <span>@value.Value</span>
                                 </label>
                             }
@@ -89,7 +60,6 @@
                     else
                     {
                         <select id="@OptionInputId(option)"
-                                class="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
                                 data-storefront-attribute-control
                                 data-attribute-name="@option.Name">
                             @if (!option.IsRequired)
@@ -109,82 +79,63 @@
     }
     else if (Model.Variants.Count > 0)
     {
-        <div class="mt-4">
-            <label for="product-variant-select" class="block text-sm font-semibold text-neutral-900">Choose a variant</label>
-            <select id="product-variant-select"
-                    class="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
-                    data-storefront-variant-select>
-                <option value="">Select a variant</option>
-                @foreach (var variant in Model.Variants)
-                {
-                    <option value="@variant.Id"
-                            selected="@variant.IsDefault"
-                            data-size-value="@variant.SizeValue"
-                            data-display-name="@variant.DisplayName"
-                            data-unit-price="@variant.UnitPriceValue"
-                            data-currency-code="@variant.CurrencyCode"
-                            data-stock="@variant.Stock">
-                        @variant.OptionLabel
-                    </option>
-                }
-            </select>
-        </div>
+        <label for="@Actions.VariantSelectId">Choose a variant</label>
+        <select id="@Actions.VariantSelectId" data-storefront-variant-select>
+            <option value="">Select a variant</option>
+            @foreach (var variant in Model.Variants)
+            {
+                <option value="@variant.Id"
+                        selected="@variant.IsDefault"
+                        data-size-value="@variant.SizeValue"
+                        data-display-name="@variant.DisplayName"
+                        data-unit-price="@variant.UnitPriceValue"
+                        data-currency-code="@variant.CurrencyCode"
+                        data-stock="@variant.Stock">
+                    @variant.OptionLabel
+                </option>
+            }
+        </select>
     }
 
-    <div class="mt-4">
-        <label for="product-selection-quantity" class="block text-sm font-semibold text-neutral-900">Quantity</label>
-        <input id="product-selection-quantity"
-               type="number"
-               min="@Model.MinOrderQuantity"
-               max="@Model.MaxOrderQuantity"
-               step="@Model.QuantityStep"
-               value="@Model.MinOrderQuantity"
-               class="mt-2 w-28 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
-               data-storefront-selection-quantity />
-    </div>
+    <label for="@Actions.QuantityInputId">Quantity</label>
+    <input id="@Actions.QuantityInputId"
+           type="number"
+           min="@Model.MinOrderQuantity"
+           max="@Model.MaxOrderQuantity"
+           step="@Model.QuantityStep"
+           value="@Model.MinOrderQuantity"
+           data-storefront-selection-quantity />
 
-    <div class="mt-4 flex flex-wrap gap-3">
-        <button type="button"
-                class="@AddToCartButtonClass"
-                data-storefront-add-to-cart
-                data-default-label="Add to Cart"
-                data-success-label="Added"
-                data-product-id="@Model.ProductId"
-                data-product-name="@Model.ProductName"
-                data-resolved-variant-id="@Model.ResolvedVariantId"
-                data-unit-price="@Model.BaseUnitPriceValue"
-                data-currency-code="@Model.CurrencyCode"
-                data-preview-container="#purchase"
-                data-variant-select="@(UsesVariantSelect ? "#product-variant-select" : null)"
-                data-stock="@Model.InitialStockValue"
-                disabled="@(!Model.CanSubmitInitialPurchase)"
-                data-feedback-target="#product-cart-feedback">
-            Add to Cart
-        </button>
+    <button type="button"
+            data-storefront-add-to-cart
+            data-default-label="Add to Cart"
+            data-success-label="Added"
+            data-product-id="@Model.ProductId"
+            data-product-name="@Model.ProductName"
+            data-resolved-variant-id="@Model.ResolvedVariantId"
+            data-unit-price="@Model.BaseUnitPriceValue"
+            data-currency-code="@Model.CurrencyCode"
+            data-preview-container="@Actions.PreviewContainerSelector"
+            data-variant-select="@(Snapshot.UsesVariantSelect ? Actions.VariantSelectSelector : null)"
+            data-stock="@Model.InitialStockValue"
+            disabled="@(!Model.CanSubmitInitialPurchase)"
+            data-feedback-target="@Actions.FeedbackTargetSelector">
+        Add to Cart
+    </button>
 
-        <a href="@Model.CartUrl" class="inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">
-            View Cart
-        </a>
-    </div>
+    <a href="@Model.CartUrl">View Cart</a>
 
-    <p id="product-cart-feedback" class="mt-3 text-sm font-medium text-emerald-700" aria-live="polite" data-storefront-selection-message>@InitialSelectionMessage</p>
+    <p id="@Actions.FeedbackElementId" aria-live="polite" data-storefront-selection-message>@Snapshot.InitialSelectionMessage</p>
 </div>
 
 @code {
     [Parameter]
     public ProductPurchasePanelModel Model { get; set; } = ProductPurchasePanelModel.Empty;
 
-    private bool HasVariationTemplate => Model.VariationOptions.Count > 0;
+    [Parameter]
+    public ProductPurchaseActionDescriptor Actions { get; set; } = ProductPurchaseActionDescriptor.Empty;
 
-    private bool UsesVariantSelect => Model.Variants.Count > 0 && !HasVariationTemplate;
-
-    private string InitialSelectionMessage => Model.InitialValidationMessages.Count > 0
-        ? Model.InitialValidationMessages[0]
-        : Model.CanSubmitInitialPurchase ? "Selection ready." : Model.PurchaseBlockMessage;
-
-    private string AddToCartButtonClass => Model.CanSubmitInitialPurchase
-        ? "inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600"
-        : "inline-flex cursor-not-allowed items-center rounded bg-neutral-300 px-4 py-2 font-semibold text-neutral-600 hover:bg-neutral-300";
+    private ProductPurchaseSnapshot Snapshot => ProductPurchaseSnapshot.Create(Model, Actions);
 
     private static IReadOnlyList<ProductPurchaseOptionValueItem> ActiveVariationValues(ProductPurchaseOptionItem option)
     {
@@ -224,13 +175,6 @@
     private static string OptionValueInputId(ProductPurchaseOptionItem option, ProductPurchaseOptionValueItem value)
     {
         return $"{OptionInputId(option)}-{SanitizeDomToken(value.Value)}";
-    }
-
-    private static string ColorSwatchStyle(ProductPurchaseOptionValueItem value)
-    {
-        return !string.IsNullOrWhiteSpace(value.ColorHex)
-            ? $"background-color: {value.ColorHex};"
-            : "background-color: #f5f5f5;";
     }
 
     private static string SanitizeDomToken(string? value)

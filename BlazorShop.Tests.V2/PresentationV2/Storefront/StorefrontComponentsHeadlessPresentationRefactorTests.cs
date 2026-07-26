@@ -272,6 +272,62 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("<ProductGallery Items=\"_galleryItems\"", productPage, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void ProductPurchasePanel_UsesHostActionDescriptorAfterHpr6Migration()
+        {
+            var sharedPanel = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
+            var purchaseBehavior = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs");
+            var v2Panel = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
+            var productPage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
+
+            foreach (var expected in new[]
+            {
+                "ProductPurchaseSnapshot",
+                "ProductPurchaseSelectionState",
+                "SelectedVariantId",
+                "SelectedAttributes",
+                "Quantity",
+                "ValidationMessages",
+                "CanAddToCart",
+                "IsPreviewPending",
+                "PreviewError",
+                "IsAddToCartPending",
+                "AddToCartError",
+                "AddToCartSuccess",
+                "ProductPurchaseActionDescriptor",
+                "SelectionPreviewRoute",
+                "PreviewContainerSelector",
+                "FeedbackTargetSelector"
+            })
+            {
+                Assert.Contains(expected, purchaseBehavior, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("ProductPurchaseActionDescriptor.Empty", sharedPanel, StringComparison.Ordinal);
+            Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", sharedPanel, StringComparison.Ordinal);
+            Assert.Contains("data-preview-container=\"@Actions.PreviewContainerSelector\"", sharedPanel, StringComparison.Ordinal);
+            Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", sharedPanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("/api/", sharedPanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("#purchase", sharedPanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("#product-cart-feedback", sharedPanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("class=\"", sharedPanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded-", sharedPanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-neutral-", sharedPanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-amber-", sharedPanel, StringComparison.Ordinal);
+
+            Assert.Contains("ProductPurchaseActionDescriptor.StorefrontV2Default", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("/api/product-selection-preview", purchaseBehavior, StringComparison.Ordinal);
+            Assert.Contains("id=\"@Actions.PanelId\"", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("rounded-2xl", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", productPage, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ProductPurchasePanel Model=\"_purchasePanel\"", productPage, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

@@ -125,18 +125,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductPage_UsesBackendSelectionPreviewForVariantAttributes()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
-            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
+            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
+            var sharedPurchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
             var purchaseModels = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanelModels.cs");
+            var purchaseBehavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
 
-            Assert.Contains("<ProductPurchasePanel Model=\"_purchasePanel\" />", markup);
+            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", markup);
             Assert.Contains("BuildPurchasePanel", markup, StringComparison.Ordinal);
             Assert.Contains("ProductPurchasePanelModel", purchaseModels, StringComparison.Ordinal);
-            Assert.DoesNotContain("GetProduct", purchasePanel + purchaseModels, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontRoutes", purchasePanel + purchaseModels, StringComparison.Ordinal);
+            Assert.Contains("ProductPurchaseActionDescriptor", purchaseBehavior, StringComparison.Ordinal);
+            Assert.Contains("ProductPurchaseSelectionState", purchaseBehavior, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetProduct", purchasePanel + sharedPurchasePanel + purchaseModels, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes", purchasePanel + sharedPurchasePanel + purchaseModels, StringComparison.Ordinal);
             Assert.Contains("data-storefront-selection-preview", purchasePanel);
-            Assert.Contains("data-preview-route=\"/api/product-selection-preview\"", purchasePanel);
+            Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", purchasePanel);
+            Assert.DoesNotContain("/api/product-selection-preview", sharedPurchasePanel);
             Assert.Contains("data-resolved-variant-id=\"@Model.ResolvedVariantId\"", purchasePanel);
             Assert.Contains("data-main-image-url=\"@Model.InitialMainImageUrl\"", purchasePanel);
             Assert.Contains("data-sku=\"@Model.InitialSku\"", purchasePanel);
@@ -182,7 +187,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductPage_RendersSellabilityAndQuantityMetadata()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
-            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
+            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
 
             Assert.Contains("min=\"@Model.MinOrderQuantity\"", purchasePanel);
             Assert.Contains("max=\"@Model.MaxOrderQuantity\"", purchasePanel);

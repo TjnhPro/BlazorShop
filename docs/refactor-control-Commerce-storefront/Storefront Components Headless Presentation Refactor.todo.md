@@ -270,33 +270,33 @@ Goal: keep gallery behavior but make visual layout store-owned.
 
 Goal: split purchase state/actions from purchase panel visual markup.
 
-- [ ] Keep `ProductPurchasePanelModel` but split if needed:
-  - [ ] `ProductPurchaseSnapshot`.
-  - [ ] `ProductPurchaseSelectionState`.
-  - [ ] `ProductPurchaseOptionItem`.
-  - [ ] `ProductPurchaseVariantItem`.
-- [ ] Create headless selection behavior:
-  - [ ] selected variant.
-  - [ ] selected attributes.
-  - [ ] quantity.
-  - [ ] validation messages.
-  - [ ] can add to cart.
-  - [ ] preview pending/error state.
-  - [ ] add-to-cart pending/error/success state.
-- [ ] Replace hardcoded host assumptions:
-  - [ ] `/api/product-selection-preview`.
-  - [ ] `#purchase`.
-  - [ ] `#product-cart-feedback`.
-  - [ ] `data-feedback-target`.
-- [ ] Host/V2 provides route/action descriptors.
-- [ ] Move V2 purchase panel visual to `Storefront.V2/Components/Product`.
+- [x] Keep `ProductPurchasePanelModel` but split if needed:
+  - [x] `ProductPurchaseSnapshot`.
+  - [x] `ProductPurchaseSelectionState`.
+  - [x] `ProductPurchaseOptionItem`.
+  - [x] `ProductPurchaseVariantItem`.
+- [x] Create headless selection behavior:
+  - [x] selected variant.
+  - [x] selected attributes.
+  - [x] quantity.
+  - [x] validation messages.
+  - [x] can add to cart.
+  - [x] preview pending/error state.
+  - [x] add-to-cart pending/error/success state.
+- [x] Replace hardcoded host assumptions:
+  - [x] `/api/product-selection-preview`.
+  - [x] `#purchase`.
+  - [x] `#product-cart-feedback`.
+  - [x] `data-feedback-target`.
+- [x] Host/V2 provides route/action descriptors.
+- [x] Move V2 purchase panel visual to `Storefront.V2/Components/Product`.
 
 ### HPR6 QA gate
 
-- [ ] Product detail selection preview still works.
-- [ ] Variant/attribute selection updates price/availability/image where fixture supports it.
-- [ ] Add-to-cart still works.
-- [ ] Static guard: shared purchase behavior has no hardcoded `/api/*` route or V2 visual classes.
+- [x] Product detail selection preview still works.
+- [x] Variant/attribute selection updates price/availability/image where fixture supports it.
+- [x] Add-to-cart still works.
+- [x] Static guard: shared purchase behavior has no hardcoded `/api/*` route or V2 visual classes.
 
 ## Phase HPR7 - Cart headless state/actions
 
