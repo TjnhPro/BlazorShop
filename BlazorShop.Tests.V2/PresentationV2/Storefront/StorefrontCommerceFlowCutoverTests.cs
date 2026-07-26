@@ -109,6 +109,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var commonContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CommonContracts.cs");
             var cartComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
+            var cartOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartViewOptions.cs");
 
             Assert.Contains("AddScoped<IStorefrontRuntimeCartFacade, StorefrontRuntimeCartFacade>", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeCartFacade", runtimeFacade, StringComparison.Ordinal);
@@ -139,7 +140,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("int? StatusCode", commonContracts, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status409Conflict", cartEndpointSupport, StringComparison.Ordinal);
             Assert.Contains("ValidateLocalCartAntiforgeryAsync", cartEndpoints, StringComparison.Ordinal);
-            Assert.Contains("\"/api/cart\"", cartComponents, StringComparison.Ordinal);
+            Assert.Contains("Actions.CurrentCartRoute", cartComponents, StringComparison.Ordinal);
+            Assert.Contains("\"/api/cart\"", cartOptions, StringComparison.Ordinal);
             Assert.DoesNotContain("localhost:5180", cartComponents, StringComparison.Ordinal);
         }
 

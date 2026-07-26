@@ -7,9 +7,11 @@
 </HeadContent>
 
 <CartView InitialCart="_cart"
-                    InitialAlerts="_alerts"
-                    DataMode="StorefrontFeatureDataMode.InitialSnapshot"
-                    CheckoutUrl="@StorefrontRoutes.Checkout"
-                    NewReleasesUrl="@StorefrontRoutes.NewReleases"
-                    TodaysDealsUrl="@StorefrontRoutes.TodaysDeals"
-                    @rendermode="InteractiveWebAssembly" />
+          InitialAlerts="_alerts"
+          DataMode="StorefrontFeatureDataMode.InitialSnapshot"
+          Actions="StorefrontCartViewOptions.Actions"
+          Classes="StorefrontCartViewOptions.Classes"
+          CheckoutUrl="@StorefrontRoutes.Checkout"
+          NewReleasesUrl="@StorefrontRoutes.NewReleases"
+          TodaysDealsUrl="@StorefrontRoutes.TodaysDeals"
+          @rendermode="InteractiveWebAssembly" />

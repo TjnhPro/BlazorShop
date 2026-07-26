@@ -97,6 +97,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("InitialCart=\"_cart\"", page, StringComparison.Ordinal);
             Assert.Contains("InitialAlerts=\"_alerts\"", page, StringComparison.Ordinal);
             Assert.Contains("DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"", page, StringComparison.Ordinal);
+            Assert.Contains("Actions=\"StorefrontCartViewOptions.Actions\"", page, StringComparison.Ordinal);
+            Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", page, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
         }
 
@@ -104,16 +106,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CartWasmComponent_UsesSameOriginLocalCartEndpoints()
         {
             var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartViewOptions.cs");
+            var behavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
 
-            Assert.Contains("GetAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserCart>(Actions.CurrentCartRoute)", component, StringComparison.Ordinal);
             Assert.Contains("ShouldFetchAfterHydration()", component, StringComparison.Ordinal);
             Assert.Contains("StorefrontFeatureDataMode.InitialSnapshot => false", component, StringComparison.Ordinal);
             Assert.Contains("await LoadCartAsync();", component, StringComparison.Ordinal);
             Assert.Contains("await PublishCartChangedAsync(_cart.Count);", component, StringComparison.Ordinal);
             Assert.Contains("StateHasChanged();", component, StringComparison.Ordinal);
             Assert.Contains("PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>", component, StringComparison.Ordinal);
-            Assert.Contains("DeleteAsync<StorefrontBrowserCart>($\"/api/cart/lines/{line.LineId:D}\")", component, StringComparison.Ordinal);
-            Assert.Contains("DeleteAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);
+            Assert.Contains("Actions.UpdateLineRoute(line.LineId)", component, StringComparison.Ordinal);
+            Assert.Contains("DeleteAsync<StorefrontBrowserCart>(Actions.RemoveLineRoute(line.LineId))", component, StringComparison.Ordinal);
+            Assert.Contains("DeleteAsync<StorefrontBrowserCart>(Actions.ClearCartRoute)", component, StringComparison.Ordinal);
             Assert.Contains("IsMutationBusy(line.LineId)", component, StringComparison.Ordinal);
             Assert.Contains("IsDisabled(line.LineId)", component, StringComparison.Ordinal);
             Assert.Contains("_apiClient is null || _clearing || _busyLineId.HasValue", component, StringComparison.Ordinal);
@@ -121,6 +126,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("data-storefront-cart-quantity", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-remove", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-clear", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/cart", component, StringComparison.Ordinal);
+            Assert.Contains("\"/api/cart\"", options, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCartActionDescriptor", behavior, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCartViewState", behavior, StringComparison.Ordinal);
             Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNode", component, StringComparison.OrdinalIgnoreCase);
 

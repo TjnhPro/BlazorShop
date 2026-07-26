@@ -1,93 +1,92 @@
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Headless.Cart
 @using Microsoft.JSInterop
 @implements IAsyncDisposable
 @inject IServiceProvider Services
 @inject IJSRuntime JS
 
-<section class="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-    <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div class="flex-1 space-y-4">
-            <header class="rounded-3xl border border-neutral-200/70 bg-white/90 p-8 shadow-lg">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+<section class="@Classes.PageSection">
+    <div class="@Classes.Layout">
+        <div class="@Classes.ContentColumn">
+            <header class="@Classes.HeaderCard">
+                <div class="@Classes.HeaderLayout">
                     <div>
-                        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Storefront Cart</p>
-                        <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">My Cart</h1>
-                        <p class="mt-3 max-w-2xl text-base leading-7 text-neutral-700">Review the items you picked from the public storefront before you continue to checkout.</p>
+                        <p class="@Classes.Eyebrow">Storefront Cart</p>
+                        <h1 class="@Classes.PageTitle">My Cart</h1>
+                        <p class="@Classes.BodyText">Review the items you picked from the public storefront before you continue to checkout.</p>
                     </div>
 
-                    <div class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-900 shadow-sm">
-                        @ItemCount item@(ItemCount == 1 ? string.Empty : "s") in cart
+                    <div class="@Classes.CountBadge">
+                        @ViewState.ItemCount item@(ViewState.ItemCount == 1 ? string.Empty : "s") in cart
                     </div>
                 </div>
             </header>
 
             @foreach (var alert in Alerts)
             {
-                <div class="rounded-2xl border px-4 py-3 text-sm leading-6 @(alert.Level == "error"
-                        ? "border-rose-200 bg-rose-50 text-rose-900"
-                        : "border-amber-200 bg-amber-50 text-amber-900")">
+                <div class="@AlertClass(alert)">
                     @alert.Message
                 </div>
             }
 
             @if (Lines.Count == 0)
             {
-                <div class="rounded-3xl border border-dashed border-neutral-300 bg-white/80 px-6 py-10 text-center shadow-sm">
-                    <h2 class="text-2xl font-bold text-neutral-900">Your cart is empty</h2>
-                    <p class="mx-auto mt-3 max-w-xl text-base leading-7 text-neutral-700">Add products from the storefront and they will appear here for review before checkout.</p>
-                    <div class="mt-6 flex flex-wrap justify-center gap-3">
-                        <a href="@NewReleasesUrl" class="inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">Shop New Releases</a>
-                        <a href="@TodaysDealsUrl" class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">See Today's Deals</a>
+                <div class="@Classes.EmptyState">
+                    <h2 class="@Classes.EmptyTitle">Your cart is empty</h2>
+                    <p class="@Classes.BodyText">Add products from the storefront and they will appear here for review before checkout.</p>
+                    <div class="@Classes.EmptyActions">
+                        <a href="@NewReleasesUrl" class="@Classes.PrimaryLink">Shop New Releases</a>
+                        <a href="@TodaysDealsUrl" class="@Classes.SecondaryLink">See Today's Deals</a>
                     </div>
                 </div>
             }
             else
             {
-                <div class="space-y-4">
+                <div class="@Classes.LineList">
                     @foreach (var line in Lines)
                     {
-                        <article class="rounded-3xl border border-neutral-200/70 bg-white/95 p-5 shadow-md">
-                            <div class="flex flex-col gap-4 sm:flex-row">
-                                <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5">
+                        <article class="@Classes.LineCard">
+                            <div class="@Classes.LineLayout">
+                                <div class="@Classes.LineImageFrame">
                                     @if (!string.IsNullOrWhiteSpace(line.ImageUrl))
                                     {
-                                        <img src="@line.ImageUrl" alt="@line.DisplayName" class="h-full w-full object-contain" />
+                                        <img src="@line.ImageUrl" alt="@line.DisplayName" class="@Classes.LineImage" />
                                     }
                                     else
                                     {
-                                        <span class="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">Item</span>
+                                        <span>Item</span>
                                     }
                                 </div>
 
-                                <div class="min-w-0 flex-1">
+                                <div>
                                     @if (!string.IsNullOrWhiteSpace(line.ProductUrl))
                                     {
-                                        <a href="@line.ProductUrl" class="text-xl font-bold text-neutral-900 hover:text-neutral-700">@line.DisplayName</a>
+                                        <a href="@line.ProductUrl" class="@Classes.LineTitle">@line.DisplayName</a>
                                     }
                                     else
                                     {
-                                        <h2 class="text-xl font-bold text-neutral-900">@line.DisplayName</h2>
+                                        <h2 class="@Classes.LineTitle">@line.DisplayName</h2>
                                     }
 
                                     @if (!string.IsNullOrWhiteSpace(line.VariantLabel))
                                     {
-                                        <p class="mt-1 text-sm font-medium text-neutral-500">@line.VariantLabel</p>
+                                        <p class="@Classes.LineMeta">@line.VariantLabel</p>
                                     }
 
                                     @foreach (var warning in line.Warnings)
                                     {
-                                        <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">@warning.Message</p>
+                                        <p class="@Classes.LineWarning">@warning.Message</p>
                                     }
 
-                                    <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
-                                        <div class="grid gap-4 sm:grid-cols-3">
+                                    <div class="@Classes.LineControls">
+                                        <div class="@Classes.LineMetrics">
                                             <div>
-                                                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Unit Price</p>
-                                                <p class="mt-1 text-lg font-bold text-neutral-900">@line.UnitPriceDisplay</p>
+                                                <p class="@Classes.MetricLabel">Unit Price</p>
+                                                <p class="@Classes.MetricValue">@line.UnitPriceDisplay</p>
                                             </div>
 
-                                            <label class="block">
-                                                <span class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Quantity</span>
+                                            <label>
+                                                <span class="@Classes.MetricLabel">Quantity</span>
                                                 <input type="number"
                                                        min="@line.QuantityMinimum"
                                                        max="@line.QuantityMaximum"
@@ -101,18 +100,18 @@
                                                        data-product-name="@line.DisplayName"
                                                        data-size-value="@line.VariantLabel"
                                                        @onchange="eventArgs => UpdateQuantityAsync(line, eventArgs.Value)"
-                                                       class="mt-1 w-24 rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 focus:border-neutral-500 focus:outline-none disabled:cursor-wait disabled:bg-neutral-100" />
+                                                       class="@Classes.QuantityInput" />
                                             </label>
 
                                             <div>
-                                                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Line Total</p>
-                                                <p class="mt-1 text-lg font-bold text-neutral-900">@line.LineTotalDisplay</p>
+                                                <p class="@Classes.MetricLabel">Line Total</p>
+                                                <p class="@Classes.MetricValue">@line.LineTotalDisplay</p>
                                             </div>
                                         </div>
 
                                         @if (!string.IsNullOrWhiteSpace(line.ProductUrl))
                                         {
-                                            <a href="@line.ProductUrl" class="inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800">View Product</a>
+                                            <a href="@line.ProductUrl" class="@Classes.PrimaryLink">View Product</a>
                                         }
 
                                         <button type="button"
@@ -124,7 +123,7 @@
                                                 data-product-name="@line.DisplayName"
                                                 data-size-value="@line.VariantLabel"
                                                 @onclick="() => RemoveLineAsync(line)"
-                                                class="inline-flex items-center justify-center rounded bg-white px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 disabled:cursor-wait disabled:bg-neutral-100">
+                                                class="@Classes.RemoveButton">
                                             Remove
                                         </button>
                                     </div>
@@ -136,49 +135,49 @@
             }
         </div>
 
-        <aside class="w-full lg:sticky lg:top-6 lg:max-w-sm">
-            <div class="rounded-3xl border border-neutral-200/70 bg-white/95 p-6 shadow-lg">
-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Order Summary</p>
-                <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-neutral-900">Ready for checkout</h2>
+        <aside class="@Classes.SummaryAside">
+            <div class="@Classes.SummaryCard">
+                <p class="@Classes.Eyebrow">Order Summary</p>
+                <h2 class="@Classes.EmptyTitle">Ready for checkout</h2>
 
-                <dl class="mt-6 space-y-3 text-sm text-neutral-700">
-                    <div class="flex items-center justify-between gap-3">
+                <dl class="@Classes.SummaryRows">
+                    <div class="@Classes.SummaryRow">
                         <dt>Items</dt>
-                        <dd class="font-semibold text-neutral-900">@ItemCount</dd>
+                        <dd>@ViewState.ItemCount</dd>
                     </div>
-                    <div class="flex items-center justify-between gap-3">
+                    <div class="@Classes.SummaryRow">
                         <dt>Subtotal</dt>
-                        <dd class="font-semibold text-neutral-900">@GrandTotalDisplay</dd>
+                        <dd>@GrandTotalDisplay</dd>
                     </div>
-                    <div class="flex items-center justify-between gap-3 border-t border-neutral-200 pt-3 text-base">
-                        <dt class="font-semibold text-neutral-900">Total</dt>
-                        <dd class="font-black text-neutral-900">@GrandTotalDisplay</dd>
+                    <div class="@Classes.SummaryRow">
+                        <dt>Total</dt>
+                        <dd>@GrandTotalDisplay</dd>
                     </div>
                 </dl>
 
-                <div class="mt-6 space-y-3">
+                <div>
                     @if (Lines.Count > 0)
                     {
-                        @if (CheckoutAllowed)
+                        @if (ViewState.CheckoutAllowed)
                         {
-                            <a href="@CheckoutUrl" class="inline-flex w-full items-center justify-center rounded bg-amber-500 px-4 py-3 font-semibold text-white hover:bg-amber-600">Continue to Checkout</a>
+                            <a href="@CheckoutUrl" class="@Classes.CheckoutButton">Continue to Checkout</a>
                         }
                         else
                         {
-                            <button type="button" disabled class="inline-flex w-full cursor-not-allowed items-center justify-center rounded bg-neutral-300 px-4 py-3 font-semibold text-neutral-600">Continue to Checkout</button>
+                            <button type="button" disabled class="@Classes.DisabledCheckoutButton">Continue to Checkout</button>
                         }
-                        <p class="text-sm leading-6 text-neutral-600">Checkout continues through an authenticated handoff so payment and order history stay attached to your profile.</p>
+                        <p class="@Classes.BodyText">Checkout continues through an authenticated handoff so payment and order history stay attached to your profile.</p>
 
                         <button type="button"
                                 disabled="@(_apiClient is null || _clearing || _busyLineId.HasValue)"
                                 data-storefront-cart-clear
                                 @onclick="ClearCartAsync"
-                                class="inline-flex w-full items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100 disabled:cursor-wait disabled:bg-neutral-100">
+                                class="@Classes.ClearButton">
                             Clear Cart
                         </button>
                     }
 
-                    <a href="@NewReleasesUrl" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">Keep Shopping</a>
+                    <a href="@NewReleasesUrl" class="@Classes.PrimaryLink">Keep Shopping</a>
                 </div>
             </div>
         </aside>
@@ -203,6 +202,12 @@
     public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
 
     [Parameter]
+    public StorefrontCartActionDescriptor Actions { get; set; } = StorefrontCartActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontCartViewClasses Classes { get; set; } = StorefrontCartViewClasses.Empty;
+
+    [Parameter]
     public string CheckoutUrl { get; set; } = "/checkout";
 
     [Parameter]
@@ -215,11 +220,9 @@
 
     private IReadOnlyList<StorefrontBrowserCartLine> Lines => _cart?.Lines ?? [];
 
-    private int ItemCount => _cart?.Count > 0 ? _cart.Count : Lines.Sum(line => line.Quantity);
-
     private string GrandTotalDisplay => _cart?.GrandTotalDisplay ?? "$0.00";
 
-    private bool CheckoutAllowed => _cart?.CheckoutAllowed ?? Lines.All(line => !line.IsUnavailable);
+    private StorefrontCartViewState ViewState => StorefrontCartViewState.FromCart(_cart, _alerts);
 
     protected override void OnParametersSet()
     {
@@ -270,12 +273,12 @@
 
     private async Task LoadCartAsync()
     {
-        if (_apiClient is null)
+        if (_apiClient is null || string.IsNullOrWhiteSpace(Actions.CurrentCartRoute))
         {
             return;
         }
 
-        var result = await _apiClient.GetAsync<StorefrontBrowserCart>("/api/cart");
+        var result = await _apiClient.GetAsync<StorefrontBrowserCart>(Actions.CurrentCartRoute);
         await ApplyCartResultAsync(result);
     }
 
@@ -299,7 +302,7 @@
         try
         {
             var result = await _apiClient.PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>(
-                $"/api/cart/lines/{line.LineId:D}",
+                Actions.UpdateLineRoute(line.LineId),
                 new StorefrontBrowserCartQuantityRequest(quantity));
             await ApplyCartResultAsync(result);
         }
@@ -321,7 +324,7 @@
         _busyLineId = line.LineId;
         try
         {
-            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>($"/api/cart/lines/{line.LineId:D}");
+            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>(Actions.RemoveLineRoute(line.LineId));
             await ApplyCartResultAsync(result);
         }
         finally
@@ -332,7 +335,7 @@
 
     private async Task ClearCartAsync()
     {
-        if (_apiClient is null || _clearing || _busyLineId.HasValue)
+        if (_apiClient is null || _clearing || _busyLineId.HasValue || string.IsNullOrWhiteSpace(Actions.ClearCartRoute))
         {
             return;
         }
@@ -340,7 +343,7 @@
         _clearing = true;
         try
         {
-            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>("/api/cart");
+            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>(Actions.ClearCartRoute);
             await ApplyCartResultAsync(result);
         }
         finally
@@ -372,6 +375,14 @@
     {
         _alerts.RemoveAll(alert => alert.Level == "error");
         _alerts.Insert(0, new StorefrontBrowserCartAlert("error", message));
+    }
+
+    private string AlertClass(StorefrontBrowserCartAlert alert)
+    {
+        return string.Join(
+            " ",
+            Classes.Alert,
+            string.Equals(alert.Level, "error", StringComparison.OrdinalIgnoreCase) ? Classes.ErrorAlert : Classes.WarningAlert);
     }
 
     private async Task PublishCartChangedAsync(int count)

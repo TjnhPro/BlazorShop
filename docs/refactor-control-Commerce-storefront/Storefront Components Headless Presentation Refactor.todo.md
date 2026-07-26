@@ -302,33 +302,33 @@ Goal: split purchase state/actions from purchase panel visual markup.
 
 Goal: split cart browser behavior from V2 cart page visual.
 
-- [ ] Keep `StorefrontBrowserCartModels.cs` browser-safe contracts.
-- [ ] Define cart route/action descriptors supplied by host:
-  - [ ] get current cart.
-  - [ ] update line.
-  - [ ] remove line.
-  - [ ] clear cart.
-- [ ] Create headless cart state/actions:
-  - [ ] loading.
-  - [ ] empty.
-  - [ ] error.
-  - [ ] alerts/warnings.
-  - [ ] quantity edit.
-  - [ ] remove.
-  - [ ] clear.
-  - [ ] checkout allowed.
-- [ ] Move V2 cart page visual to `Storefront.V2/Components/Cart`.
-- [ ] Keep `CartPage.razor` as route/initial-snapshot composition.
-- [ ] Remove hardcoded `/api/cart` route strings from shared cart component.
+- [x] Keep `StorefrontBrowserCartModels.cs` browser-safe contracts.
+- [x] Define cart route/action descriptors supplied by host:
+  - [x] get current cart.
+  - [x] update line.
+  - [x] remove line.
+  - [x] clear cart.
+- [x] Create headless cart state/actions:
+  - [x] loading.
+  - [x] empty.
+  - [x] error.
+  - [x] alerts/warnings.
+  - [x] quantity edit.
+  - [x] remove.
+  - [x] clear.
+  - [x] checkout allowed.
+- [x] Move V2 cart page visual to `Storefront.V2/Components/Cart`.
+- [x] Keep `CartPage.razor` as route/initial-snapshot composition.
+- [x] Remove hardcoded `/api/cart` route strings from shared cart component.
 
 ### HPR7 QA gate
 
-- [ ] Cart initial snapshot renders without duplicate fetch.
-- [ ] Quantity update works.
-- [ ] Remove line works.
-- [ ] Clear cart works.
-- [ ] Empty cart state renders.
-- [ ] Static guard: shared cart components contain no `/api/cart` literals or V2 layout classes.
+- [x] Cart initial snapshot renders without duplicate fetch.
+- [x] Quantity update works.
+- [x] Remove line works.
+- [x] Clear cart works.
+- [x] Empty cart state renders.
+- [x] Static guard: shared cart components contain no `/api/cart` literals or V2 layout classes.
 
 ## Phase HPR8 - Checkout headless state/actions
 

@@ -328,6 +328,58 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("<ProductPurchasePanel Model=\"_purchasePanel\"", productPage, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CartView_UsesHostActionsAndClassesAfterHpr7Migration()
+        {
+            var cartView = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor");
+            var cartBehavior = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
+            var cartOptions = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartViewOptions.cs");
+            var cartPage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor");
+
+            foreach (var expected in new[]
+            {
+                "StorefrontCartActionDescriptor",
+                "CurrentCartRoute",
+                "UpdateLineRouteTemplate",
+                "RemoveLineRouteTemplate",
+                "ClearCartRoute",
+                "StorefrontCartViewState",
+                "Loading",
+                "Empty",
+                "HasError",
+                "CheckoutAllowed",
+                "StorefrontCartViewClasses"
+            })
+            {
+                Assert.Contains(expected, cartBehavior, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("Actions.CurrentCartRoute", cartView, StringComparison.Ordinal);
+            Assert.Contains("Actions.UpdateLineRoute(line.LineId)", cartView, StringComparison.Ordinal);
+            Assert.Contains("Actions.RemoveLineRoute(line.LineId)", cartView, StringComparison.Ordinal);
+            Assert.Contains("Actions.ClearCartRoute", cartView, StringComparison.Ordinal);
+            Assert.Contains("class=\"@Classes.", cartView, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-quantity", cartView, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-remove", cartView, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-clear", cartView, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/cart", cartView, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded-", cartView, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-neutral-", cartView, StringComparison.Ordinal);
+            Assert.DoesNotContain("max-w-", cartView, StringComparison.Ordinal);
+            Assert.DoesNotContain("sm:", cartView, StringComparison.Ordinal);
+            Assert.DoesNotContain("lg:", cartView, StringComparison.Ordinal);
+
+            Assert.Contains("\"/api/cart\"", cartOptions, StringComparison.Ordinal);
+            Assert.Contains("rounded-3xl", cartOptions, StringComparison.Ordinal);
+            Assert.Contains("max-w-7xl", cartOptions, StringComparison.Ordinal);
+            Assert.Contains("Actions=\"StorefrontCartViewOptions.Actions\"", cartPage, StringComparison.Ordinal);
+            Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", cartPage, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
