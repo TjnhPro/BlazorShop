@@ -32,6 +32,9 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteListAsync<StorefrontPaymentMethodResponseIReadOnlyListCommerceNodeApiResponse, StorefrontPaymentMethodResponse>(
                 storeKey => this.paymentsClient.ListMethodsAsync(storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to load payment methods right now.",
                 cancellationToken);
         }
@@ -47,68 +50,47 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontPaymentAttemptResponseCommerceNodeApiResponse, StorefrontPaymentAttemptResponse>(
                 storeKey => this.paymentsClient.GetAttemptAsync(paymentAttemptId, storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to load payment attempt right now.",
                 cancellationToken);
         }
 
         private async Task<StorefrontRuntimeResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
+            Func<TEnvelope, bool?> successSelector,
+            Func<TEnvelope, TData?> dataSelector,
+            Func<TEnvelope, string?> messageSelector,
             string fallbackMessage,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await execute(this.context.RequireStoreKey()).ConfigureAwait(false);
-                if (response is null)
-                {
-                    return StorefrontRuntimeResult<TData>.Failed(ServiceUnavailable(fallbackMessage));
-                }
-
-                var success = response.GetType().GetProperty("Success")?.GetValue(response) as bool?;
-                var data = response.GetType().GetProperty("Data")?.GetValue(response);
-                var message = response.GetType().GetProperty("Message")?.GetValue(response) as string;
-                return success == true && data is TData typedData
-                    ? StorefrontRuntimeResult<TData>.Succeeded(typedData)
-                    : StorefrontRuntimeResult<TData>.Failed(ServiceUnavailable(message ?? fallbackMessage));
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                return StorefrontRuntimeResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
-            }
+            return await StorefrontRuntimeEnvelopeExecutor.ExecuteResultAsync(
+                this.context,
+                (storeKey, _) => execute(storeKey),
+                successSelector,
+                dataSelector,
+                messageSelector,
+                fallbackMessage,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<StorefrontRuntimeResult<IReadOnlyList<TData>>> ExecuteListAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
+            Func<TEnvelope, bool?> successSelector,
+            Func<TEnvelope, IEnumerable<TData>?> dataSelector,
+            Func<TEnvelope, string?> messageSelector,
             string fallbackMessage,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await execute(this.context.RequireStoreKey()).ConfigureAwait(false);
-                if (response is null)
-                {
-                    return StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(ServiceUnavailable(fallbackMessage));
-                }
-
-                var success = response.GetType().GetProperty("Success")?.GetValue(response) as bool?;
-                var data = response.GetType().GetProperty("Data")?.GetValue(response);
-                var message = response.GetType().GetProperty("Message")?.GetValue(response) as string;
-                return success == true && data is IEnumerable<TData> typedData
-                    ? StorefrontRuntimeResult<IReadOnlyList<TData>>.Succeeded(typedData.ToArray())
-                    : StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(ServiceUnavailable(message ?? fallbackMessage));
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                return StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
-            }
+            return await StorefrontRuntimeEnvelopeExecutor.ExecuteListResultAsync(
+                this.context,
+                (storeKey, _) => execute(storeKey),
+                successSelector,
+                dataSelector,
+                messageSelector,
+                fallbackMessage,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static StorefrontRuntimeError NotFound()

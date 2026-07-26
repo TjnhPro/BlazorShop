@@ -68,7 +68,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("Activator.CreateInstance", runtimeSource, StringComparison.Ordinal);
         }
 
-        [Fact(Skip = "Enable in SRH4 after Runtime envelope mapping uses typed selectors.")]
+        [Fact]
         public void StorefrontRuntime_EnvelopeMapping_DoesNotUseReflectionOrJsonProjection()
         {
             var runtimeSource = ReadRuntimeSource();
@@ -77,6 +77,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("GetProperty(\"Data\")", runtimeSource, StringComparison.Ordinal);
             Assert.DoesNotContain("GetProperty(\"Message\")", runtimeSource, StringComparison.Ordinal);
             Assert.DoesNotContain("JsonSerializer.Deserialize<TTarget>(JsonSerializer.Serialize(source", runtimeSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("dynamic", runtimeSource, StringComparison.Ordinal);
         }
 
         [Fact]

@@ -1,8 +1,5 @@
 namespace BlazorShop.Storefront.Runtime
 {
-    using System.Text.Json;
-    using System.Text.Json.Serialization;
-
     using BlazorShop.Storefront.Client;
 
     using GeneratedCatalogClient = BlazorShop.Storefront.Client.IStorefrontCatalogClient;
@@ -89,11 +86,6 @@ namespace BlazorShop.Storefront.Runtime
 
     public sealed class StorefrontRuntimeCatalogContentFacade : IStorefrontRuntimeCatalogContentFacade
     {
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
-
         private readonly IStorefrontRuntimeContext context;
         private readonly GeneratedCatalogClient catalogClient;
         private readonly GeneratedPagesClient pagesClient;
@@ -118,6 +110,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteListAsync<StorefrontCategoryResponseIReadOnlyListCommerceNodeApiResponse, StorefrontCategoryResponse>(
                 storeKey => this.catalogClient.ListCategoriesAsync(storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 cancellationToken);
         }
 
@@ -125,6 +119,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteListAsync<StorefrontCategoryTreeNodeResponseIReadOnlyListCommerceNodeApiResponse, StorefrontCategoryTreeNodeResponse>(
                 storeKey => this.catalogClient.GetCategoryTreeAsync(storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 cancellationToken);
         }
 
@@ -132,6 +128,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<GetPublicCatalogSitemapCommerceNodeApiResponse, GetPublicCatalogSitemap>(
                 storeKey => this.catalogClient.GetSitemapAsync(storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 fallbackValue: new GetPublicCatalogSitemap(),
                 cancellationToken: cancellationToken);
         }
@@ -157,6 +155,8 @@ namespace BlazorShop.Storefront.Runtime
                     NormalizeCurrencyCode(currencyCode),
                     storeKey,
                     cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 fallbackValue: new StorefrontCatalogProductResponseStorefrontPagedResponse(),
                 cancellationToken: cancellationToken);
         }
@@ -170,6 +170,8 @@ namespace BlazorShop.Storefront.Runtime
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontCategoryPageResponse>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontCategoryPageResponseCommerceNodeApiResponse, StorefrontCategoryPageResponse>(
                     storeKey => this.catalogClient.GetCategoryBySlugAsync(slug.Trim(), NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken),
+                    envelope => envelope.Success,
+                    envelope => envelope.Data,
                     cancellationToken: cancellationToken);
         }
 
@@ -186,6 +188,8 @@ namespace BlazorShop.Storefront.Runtime
                     NormalizeCurrencyCode(currencyCode),
                     storeKey,
                     cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 cancellationToken: cancellationToken);
         }
 
@@ -204,6 +208,8 @@ namespace BlazorShop.Storefront.Runtime
                     NormalizeCurrencyCode(currencyCode),
                     storeKey,
                     cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 cancellationToken: cancellationToken);
         }
 
@@ -216,6 +222,8 @@ namespace BlazorShop.Storefront.Runtime
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontProductResponse>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontProductResponseCommerceNodeApiResponse, StorefrontProductResponse>(
                     storeKey => this.catalogClient.GetProductBySlugAsync(slug.Trim(), NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken),
+                    envelope => envelope.Success,
+                    envelope => envelope.Data,
                     cancellationToken: cancellationToken);
         }
 
@@ -228,6 +236,8 @@ namespace BlazorShop.Storefront.Runtime
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontProductResponse>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontProductResponseCommerceNodeApiResponse, StorefrontProductResponse>(
                     storeKey => this.catalogClient.GetProductByIdAsync(id, NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken),
+                    envelope => envelope.Success,
+                    envelope => envelope.Data,
                     cancellationToken: cancellationToken);
         }
 
@@ -270,6 +280,8 @@ namespace BlazorShop.Storefront.Runtime
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontPagePublicDto>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontPagePublicDtoCommerceNodeApiResponse, StorefrontPagePublicDto>(
                     storeKey => this.pagesClient.GetBySlugAsync(slug.Trim(), storeKey, cancellationToken),
+                    envelope => envelope.Success,
+                    envelope => envelope.Data,
                     cancellationToken: cancellationToken);
         }
 
@@ -277,6 +289,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteListAsync<StorefrontPageNavigationLinkDtoIReadOnlyListCommerceNodeApiResponse, StorefrontPageNavigationLinkDto>(
                 storeKey => this.pagesClient.ListNavigationAsync(storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 cancellationToken);
         }
 
@@ -288,6 +302,8 @@ namespace BlazorShop.Storefront.Runtime
                 ? Task.FromResult(StorefrontRuntimeResult<StoreNavigationPublicMenuDto>.Failed(NotFound()))
                 : ExecuteAsync<StoreNavigationPublicMenuDtoCommerceNodeApiResponse, StoreNavigationPublicMenuDto>(
                     storeKey => this.navigationClient.GetMenuAsync(systemName.Trim().ToLowerInvariant(), storeKey, cancellationToken),
+                    envelope => envelope.Success,
+                    envelope => envelope.Data,
                     cancellationToken: cancellationToken);
         }
 
@@ -295,6 +311,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<SeoSettingsDtoCommerceNodeApiResponse, SeoSettingsDto>(
                 storeKey => this.seoClient.GetSettingsAsync(storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 cancellationToken: cancellationToken);
         }
 
@@ -304,15 +322,21 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<SeoRedirectResolutionDtoCommerceNodeApiResponse, SeoRedirectResolutionDto>(
                 storeKey => this.seoClient.ResolveRedirectAsync(path, storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
                 cancellationToken: cancellationToken);
         }
 
         private async Task<StorefrontRuntimeResult<IReadOnlyList<TData>>> ExecuteListAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
+            Func<TEnvelope, bool?> successSelector,
+            Func<TEnvelope, IEnumerable<TData>?> dataSelector,
             CancellationToken cancellationToken)
         {
             var result = await ExecuteAsync<TEnvelope, IEnumerable<TData>>(
                 execute,
+                successSelector,
+                dataSelector,
                 fallbackValue: Array.Empty<TData>(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
             return result.Success && result.Value is not null
@@ -322,6 +346,8 @@ namespace BlazorShop.Storefront.Runtime
 
         private async Task<StorefrontRuntimeResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
+            Func<TEnvelope, bool?> successSelector,
+            Func<TEnvelope, TData?> dataSelector,
             TData? fallbackValue = default,
             CancellationToken cancellationToken = default)
         {
@@ -335,11 +361,10 @@ namespace BlazorShop.Storefront.Runtime
                         : StorefrontRuntimeResult<TData>.Failed(NotFound());
                 }
 
-                var success = response.GetType().GetProperty("Success")?.GetValue(response) as bool?;
-                var data = response.GetType().GetProperty("Data")?.GetValue(response);
-                if (success == true && data is not null)
+                var data = dataSelector(response);
+                if (successSelector(response) == true && data is not null)
                 {
-                    return StorefrontRuntimeResult<TData>.Succeeded(Project<TData>(data));
+                    return StorefrontRuntimeResult<TData>.Succeeded(data);
                 }
 
                 return fallbackValue is not null
@@ -360,12 +385,6 @@ namespace BlazorShop.Storefront.Runtime
             {
                 return StorefrontRuntimeResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }
-        }
-
-        private static TTarget Project<TTarget>(object source)
-        {
-            return JsonSerializer.Deserialize<TTarget>(JsonSerializer.Serialize(source, JsonOptions), JsonOptions)
-                ?? throw new InvalidOperationException($"Could not project generated Storefront DTO to {typeof(TTarget).Name}.");
         }
 
         private static SortBy MapSort(string? sortBy)

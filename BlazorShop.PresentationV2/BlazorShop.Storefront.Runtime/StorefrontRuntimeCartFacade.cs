@@ -68,6 +68,9 @@ namespace BlazorShop.Storefront.Runtime
                     storeKey,
                     new StorefrontCreateCartSessionRequest { CartToken = NormalizeToken(cartToken) },
                     cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to create cart right now.",
                 cancellationToken);
         }
@@ -78,6 +81,9 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.GetAsync(NormalizeToken(cartToken), storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to load cart right now.",
                 cancellationToken);
         }
@@ -89,6 +95,9 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.AddLineAsync(NormalizeToken(cartToken), storeKey, request, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to add this item to cart right now.",
                 cancellationToken);
         }
@@ -106,6 +115,9 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.UpdateLineAsync(lineId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to update this cart line right now.",
                 cancellationToken);
         }
@@ -122,6 +134,9 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.RemoveLineAsync(lineId, NormalizeToken(cartToken), storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to remove this cart line right now.",
                 cancellationToken);
         }
@@ -132,6 +147,9 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.ClearAsync(NormalizeToken(cartToken), storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to clear cart right now.",
                 cancellationToken);
         }
@@ -143,6 +161,9 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartValidationResponseCommerceNodeApiResponse, StorefrontCartValidationResponse>(
                 storeKey => this.cartClient.ValidateAsync(NormalizeToken(cartToken), storeKey, request, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to validate cart right now.",
                 cancellationToken);
         }
@@ -154,38 +175,29 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.RecalculateAsync(NormalizeToken(cartToken), storeKey, request, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
                 "Unable to refresh cart right now.",
                 cancellationToken);
         }
 
         private async Task<StorefrontRuntimeSubmitResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
+            Func<TEnvelope, bool?> successSelector,
+            Func<TEnvelope, TData?> dataSelector,
+            Func<TEnvelope, string?> messageSelector,
             string fallbackMessage,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await execute(this.context.RequireStoreKey()).ConfigureAwait(false);
-                if (response is null)
-                {
-                    return StorefrontRuntimeSubmitResult<TData>.Failed(ServiceUnavailable(fallbackMessage));
-                }
-
-                var success = response.GetType().GetProperty("Success")?.GetValue(response) as bool?;
-                var data = response.GetType().GetProperty("Data")?.GetValue(response);
-                var message = response.GetType().GetProperty("Message")?.GetValue(response) as string;
-                return success == true && data is TData typedData
-                    ? StorefrontRuntimeSubmitResult<TData>.Succeeded(typedData)
-                    : StorefrontRuntimeSubmitResult<TData>.Failed(ServiceUnavailable(message ?? fallbackMessage));
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                return StorefrontRuntimeSubmitResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
-            }
+            return await StorefrontRuntimeEnvelopeExecutor.ExecuteSubmitAsync(
+                this.context,
+                (storeKey, _) => execute(storeKey),
+                successSelector,
+                dataSelector,
+                messageSelector,
+                fallbackMessage,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static string? NormalizeToken(string? cartToken)

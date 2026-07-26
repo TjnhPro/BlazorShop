@@ -390,12 +390,14 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.
 
 Goal: map generated response envelopes without reflection, dynamic typing, or JSON projection.
 
+Status: completed in commit pending.
+
 ### Tasks
 
-- [ ] Introduce a small internal typed envelope executor in Runtime, for example:
-  - [ ] `StorefrontRuntimeEnvelopeExecutor`
-  - [ ] or generic methods on `StorefrontRuntimeExecution`
-- [ ] The executor should accept typed selectors:
+- [x] Introduce a small internal typed envelope executor in Runtime, for example:
+  - [x] `StorefrontRuntimeEnvelopeExecutor`
+  - [x] or generic methods on `StorefrontRuntimeExecution`
+- [x] The executor should accept typed selectors:
 
 ```csharp
 Func<TEnvelope, bool?> successSelector
@@ -403,31 +405,40 @@ Func<TEnvelope, TData?> dataSelector
 Func<TEnvelope, string?> messageSelector
 ```
 
-- [ ] Executor must also receive:
-  - [ ] `IStorefrontRuntimeContext`
-  - [ ] generated-client call delegate using `storeKey` and `CancellationToken`
-  - [ ] fallback code/message
-  - [ ] caller cancellation token
-  - [ ] optional idempotency key for submit results.
-- [ ] Replace reflection envelope mapping in:
-  - [ ] `StorefrontRuntimeCartFacade.cs`
-  - [ ] `StorefrontRuntimeAddressFacade.cs`
-  - [ ] `StorefrontRuntimeCheckoutFacade.cs`
-  - [ ] `StorefrontRuntimeConsentFacade.cs`
-  - [ ] `StorefrontRuntimePaymentFacade.cs`
-  - [ ] `StorefrontRuntimeCatalogContentFacade.cs`
-- [ ] For each generated call, use the concrete generated envelope type returned by NSwag.
-- [ ] Do not create handwritten clone DTOs just to simplify selectors.
-- [ ] Remove `JsonSerializer.Serialize`/`Deserialize` projection from `StorefrontRuntimeCatalogContentFacade`.
-- [ ] If generated `Data` type differs from current Runtime return type:
-  - [ ] first prefer returning the generated DTO type directly from Runtime.
-  - [ ] if a Runtime projection remains necessary, use explicit property mapping.
-  - [ ] keep mapping small and covered by tests.
-- [ ] Add tests or source guardrails that Runtime no longer contains:
-  - [ ] `GetProperty("Success")`
-  - [ ] `GetProperty("Data")`
-  - [ ] `GetProperty("Message")`
-  - [ ] JSON serialize/deserialize projection.
+- [x] Executor must also receive:
+  - [x] `IStorefrontRuntimeContext`
+  - [x] generated-client call delegate using `storeKey` and `CancellationToken`
+  - [x] fallback code/message
+  - [x] caller cancellation token
+  - [x] optional idempotency key for submit results.
+- [x] Replace reflection envelope mapping in:
+  - [x] `StorefrontRuntimeCartFacade.cs`
+  - [x] `StorefrontRuntimeAddressFacade.cs`
+  - [x] `StorefrontRuntimeCheckoutFacade.cs`
+  - [x] `StorefrontRuntimeConsentFacade.cs`
+  - [x] `StorefrontRuntimePaymentFacade.cs`
+  - [x] `StorefrontRuntimeCatalogContentFacade.cs`
+- [x] For each generated call, use the concrete generated envelope type returned by NSwag.
+- [x] Do not create handwritten clone DTOs just to simplify selectors.
+- [x] Remove `JsonSerializer.Serialize`/`Deserialize` projection from `StorefrontRuntimeCatalogContentFacade`.
+- [x] If generated `Data` type differs from current Runtime return type:
+  - [x] first prefer returning the generated DTO type directly from Runtime.
+  - [x] if a Runtime projection remains necessary, use explicit property mapping.
+  - [x] keep mapping small and covered by tests.
+- [x] Add tests or source guardrails that Runtime no longer contains:
+  - [x] `GetProperty("Success")`
+  - [x] `GetProperty("Data")`
+  - [x] `GetProperty("Message")`
+  - [x] JSON serialize/deserialize projection.
+
+### SRH4 Notes
+
+- Added `StorefrontRuntimeEnvelopeExecutor` with typed selectors for success/data/message and shared cancellation/error mapping.
+- Runtime facades now pass concrete generated envelope selectors instead of reading `Success`, `Data`, and `Message` through reflection.
+- Catalog/content no longer JSON roundtrips generated DTOs; generated `Data` is returned directly where types match.
+- Source guardrail is active and also blocks `dynamic`.
+- Runtime source scan found no envelope reflection, JSON projection, `dynamic`, or `Activator.CreateInstance`.
+- Runtime build and focused Runtime/shared/generated catalog/configuration tests passed.
 
 ### Files Likely Touched
 
@@ -446,10 +457,10 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Runtime envelope success/data/message mapping is compile-time checked.
-- [ ] Runtime source has no reflection envelope mapping.
-- [ ] Catalog/content facade no longer serializes generated DTOs for projection.
-- [ ] Existing V2 behavior remains unchanged.
+- [x] Runtime envelope success/data/message mapping is compile-time checked.
+- [x] Runtime source has no reflection envelope mapping.
+- [x] Catalog/content facade no longer serializes generated DTOs for projection.
+- [x] Existing V2 behavior remains unchanged.
 
 ## Phase SRH5 - Harden Runtime Error Primitives Without Forcing Store Copy
 
