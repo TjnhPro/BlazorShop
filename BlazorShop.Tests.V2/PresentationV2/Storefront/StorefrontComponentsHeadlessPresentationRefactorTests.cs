@@ -6,7 +6,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     {
         private static readonly string[] ExpectedFeatureRazorComponents =
         [
-            "Cart/CartView.razor",
         ];
 
         private static readonly string[] ExpectedContractModelAndEnumFiles =
@@ -46,7 +45,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentFeatureFiles("*.razor");
 
             Assert.Equal(ExpectedFeatureRazorComponents, actual);
-            Assert.Single(actual);
+            Assert.Empty(actual);
         }
 
         [Fact]
@@ -151,7 +150,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var contractSource = ReadComponentLayerSource("Contracts");
             var headlessSource = ReadComponentLayerSource("Headless");
-            var featureSource = ReadComponentLayerSource("Features");
 
             foreach (var forbiddenContractDependency in new[]
             {
@@ -169,13 +167,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("BlazorShop.Storefront.Components.Contracts", headlessSource, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Components.Features", headlessSource, StringComparison.Ordinal);
             Assert.DoesNotContain(".Features.", headlessSource, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Storefront.Components.Headless", featureSource, StringComparison.Ordinal);
         }
 
         [Fact]
         public void HeadlessClassBags_AreCompatibilityOnlyVisualSchemas()
         {
             var headlessSource = ReadComponentLayerSource("Headless");
+            var v2ClassSource =
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewClasses.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartViewClasses.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutViewClasses.cs");
 
             foreach (var classBag in new[]
             {
@@ -189,11 +190,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "StorefrontAccountShellClasses"
             })
             {
-                var declarationIndex = headlessSource.IndexOf($"public sealed record {classBag}", StringComparison.Ordinal);
-                Assert.True(declarationIndex >= 0, $"{classBag} must remain discoverable while the compatibility wrapper exists.");
-
-                var markerIndex = headlessSource.LastIndexOf("Compatibility visual schema", declarationIndex, StringComparison.Ordinal);
-                Assert.True(markerIndex >= 0 && declarationIndex - markerIndex < 240, $"{classBag} must be marked as a compatibility-only visual schema.");
+                Assert.DoesNotContain(classBag, headlessSource, StringComparison.Ordinal);
+                Assert.Contains(classBag, v2ClassSource, StringComparison.Ordinal);
             }
         }
 
@@ -473,14 +471,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "AccountNavigationItem",
                 "RouteKey",
                 "Label",
-                "Href",
-                "AccountNavigationClasses",
-                "ActiveLink",
-                "InactiveLink"
+                "Href"
             })
             {
                 Assert.Contains(expected, contracts, StringComparison.Ordinal);
             }
+            Assert.Contains("AccountNavigationClasses", options, StringComparison.Ordinal);
+            Assert.Contains("ActiveLink", options, StringComparison.Ordinal);
+            Assert.Contains("InactiveLink", options, StringComparison.Ordinal);
 
             Assert.Contains("data-storefront-account-navigation", navigation, StringComparison.Ordinal);
             Assert.Contains("data-storefront-account-nav-item=\"@item.RouteKey\"", navigation, StringComparison.Ordinal);
@@ -531,15 +529,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "LoadProfileRoute",
                 "SaveProfileRoute",
                 "StorefrontAccountPasswordActionDescriptor",
-                "ChangePasswordRoute",
-                "StorefrontAccountFormClasses",
-                "ProfileForm",
-                "PasswordForm",
-                "SubmitButton"
+                "ChangePasswordRoute"
             })
             {
                 Assert.Contains(expected, behavior, StringComparison.Ordinal);
             }
+            Assert.Contains("StorefrontAccountFormClasses", options, StringComparison.Ordinal);
+            Assert.Contains("ProfileForm", options, StringComparison.Ordinal);
+            Assert.Contains("PasswordForm", options, StringComparison.Ordinal);
+            Assert.Contains("SubmitButton", options, StringComparison.Ordinal);
 
             Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(Actions.LoadProfileRoute)", profile, StringComparison.Ordinal);
             Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(Actions.SaveProfileRoute", profile, StringComparison.Ordinal);
@@ -598,14 +596,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "DeleteAddressRouteTemplate",
                 "DefaultShippingRouteTemplate",
                 "DefaultBillingRouteTemplate",
-                "UpdateAddressRoute(Guid addressId)",
-                "StorefrontAccountAddressBookClasses",
-                "CompactWideField",
-                "FullWideField"
+                "UpdateAddressRoute(Guid addressId)"
             })
             {
                 Assert.Contains(expected, behavior, StringComparison.Ordinal);
             }
+            Assert.Contains("StorefrontAccountAddressBookClasses", options, StringComparison.Ordinal);
+            Assert.Contains("CompactWideField", options, StringComparison.Ordinal);
+            Assert.Contains("FullWideField", options, StringComparison.Ordinal);
 
             Assert.Contains("GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(Actions.CurrentAddressesRoute)", addresses, StringComparison.Ordinal);
             Assert.Contains("PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>", addresses, StringComparison.Ordinal);
@@ -664,13 +662,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "OrderListRoute(int pageNumber)",
                 "OrderDetailRoute(string orderReference)",
                 "ReceiptRoute(string orderReference)",
-                "OrderDetailHref(string orderReference)",
-                "StorefrontAccountOrderListClasses",
-                "StorefrontAccountOrderDetailClasses"
+                "OrderDetailHref(string orderReference)"
             })
             {
                 Assert.Contains(expected, behavior, StringComparison.Ordinal);
             }
+            Assert.Contains("StorefrontAccountOrderListClasses", options, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderDetailClasses", options, StringComparison.Ordinal);
 
             Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>(Actions.OrderListRoute(PageNumber))", orderList, StringComparison.Ordinal);
             Assert.Contains("href=\"@Actions.OrderDetailHref(order.Reference)\"", orderList, StringComparison.Ordinal);
@@ -726,14 +724,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var app = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountApp.razor");
-            var behavior = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var options = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
             var host = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
 
-            Assert.Contains("StorefrontAccountShellClasses", behavior, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountShellClasses", options, StringComparison.Ordinal);
             Assert.Contains("ShellClasses.Section", app, StringComparison.Ordinal);
             Assert.Contains("ShellClasses.Layout", app, StringComparison.Ordinal);
             Assert.Contains("ShellClasses.ContentArticle", app, StringComparison.Ordinal);

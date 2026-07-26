@@ -247,7 +247,7 @@ Exit criteria:
 
 Muc tieu: `Headless` khong con quy dinh DOM regions/layout/class schema.
 
-- [ ] Chuyen cac record class bag ra V2-local options/contracts:
+- [x] Chuyen cac record class bag ra V2-local options/contracts:
   - `StorefrontCartViewClasses`
   - `StorefrontCheckoutViewClasses`
   - `AccountNavigationClasses`
@@ -256,25 +256,27 @@ Muc tieu: `Headless` khong con quy dinh DOM regions/layout/class schema.
   - `StorefrontAccountOrderListClasses`
   - `StorefrontAccountOrderDetailClasses`
   - `StorefrontAccountShellClasses`
-- [ ] Dat namespace moi trong V2, vi du:
+- [x] Dat namespace moi trong V2, vi du:
   - `BlazorShop.Storefront.V2.Components.Cart`
   - `BlazorShop.Storefront.V2.Components.Checkout`
   - `BlazorShop.Storefront.V2.Components.Account`
-- [ ] Sua V2 option files dung V2-local class records.
-- [ ] Giu trong `Headless` chi cac object sau:
+- [x] Sua V2 option files dung V2-local class records.
+- [x] Giu trong `Headless` chi cac object sau:
   - `ViewState`
   - `SelectionState`
   - `ActionDescriptor`
   - `RouteDescriptor`
   - `ValidationState`
   - semantic/data hooks khong co class/layout property
-- [ ] Update guardrail test `StorefrontComponentsHeadlessPresentationRefactorTests` de fail neu `Headless` co record/type ket thuc bang `Classes` hoac property ten `Class`.
-- [ ] Neu co truong semantic nhu `CssClass` that su can cho browser interoperability, phai doi ten hoac dua ve host-specific model.
+- [x] Update guardrail test `StorefrontComponentsHeadlessPresentationRefactorTests` de fail neu `Headless` co record/type ket thuc bang `Classes` hoac property ten `Class`.
+- [x] Neu co truong semantic nhu `CssClass` that su can cho browser interoperability, phai doi ten hoac dua ve host-specific model.
 
 Exit criteria:
 
-- [ ] `rg -n "Classes|CssClass|class=\"" BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless` khong tra ve visual class bag moi.
-- [ ] V2 van co class options local va build pass.
+- [x] `rg -n "Classes|CssClass|class=\"" BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless` khong tra ve visual class bag moi.
+- [x] V2 van co class options local va build pass.
+  - 2026-07-26: Components build pass; Storefront V2 build pass.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontWasmRuntimeFoundationTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
 
 ## Phase SCR6 - Delete Features Folder and Remove Feature Imports
 
