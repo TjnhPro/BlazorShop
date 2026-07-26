@@ -334,31 +334,31 @@ Goal: split cart browser behavior from V2 cart page visual.
 
 Goal: split checkout command/state behavior from V2 checkout visual shell.
 
-- [ ] Keep `StorefrontBrowserCheckoutModels.cs` browser-safe contracts.
-- [ ] Define checkout route/action descriptors supplied by host:
-  - [ ] get checkout.
-  - [ ] shipping method.
-  - [ ] payment method.
-  - [ ] review.
-  - [ ] place order.
-- [ ] Create headless checkout state/actions:
-  - [ ] load state.
-  - [ ] select shipping.
-  - [ ] select payment.
-  - [ ] review terms.
-  - [ ] place order with idempotency key.
-  - [ ] conflict/validation/error state.
-- [ ] Move V2 checkout shell visual to `Storefront.V2/Components/Checkout`.
-- [ ] Keep `CheckoutPage.razor` as route/initial-snapshot composition.
-- [ ] Remove hardcoded `/api/checkout*` route strings from shared checkout component.
+- [x] Keep `StorefrontBrowserCheckoutModels.cs` browser-safe contracts.
+- [x] Define checkout route/action descriptors supplied by host:
+  - [x] get checkout.
+  - [x] shipping method.
+  - [x] payment method.
+  - [x] review.
+  - [x] place order.
+- [x] Create headless checkout state/actions:
+  - [x] load state.
+  - [x] select shipping.
+  - [x] select payment.
+  - [x] review terms.
+  - [x] place order with idempotency key.
+  - [x] conflict/validation/error state.
+- [x] Move V2 checkout shell visual to `Storefront.V2/Components/Checkout`.
+- [x] Keep `CheckoutPage.razor` as route/initial-snapshot composition.
+- [x] Remove hardcoded `/api/checkout*` route strings from shared checkout component.
 
 ### HPR8 QA gate
 
-- [ ] Checkout initial snapshot renders.
-- [ ] Shipping/payment selection works.
-- [ ] Review works.
-- [ ] COD place order works in focused browser QA if checkout behavior changed.
-- [ ] Static guard: shared checkout components contain no `/api/checkout` literals or V2 layout classes.
+- [x] Checkout initial snapshot renders.
+- [x] Shipping/payment selection works.
+- [x] Review works.
+- [x] COD place order works in focused browser QA if checkout behavior changed.
+- [x] Static guard: shared checkout components contain no `/api/checkout` literals or V2 layout classes.
 
 ## Phase HPR9 - Account leaf: navigation
 

@@ -272,7 +272,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("InitialState=\"CheckoutState\"", page, StringComparison.Ordinal);
             Assert.Contains("DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"", page, StringComparison.Ordinal);
             Assert.Contains("ShowPanel=\"false\"", page, StringComparison.Ordinal);
-            Assert.Contains("<CheckoutShell InitialState=\"CheckoutState\" DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\" @rendermode=\"InteractiveWebAssembly\" />", page, StringComparison.Ordinal);
+            Assert.Contains("Actions=\"StorefrontCheckoutShellOptions.Actions\"", page, StringComparison.Ordinal);
+            Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", page, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
             Assert.Contains("StorefrontBrowserCheckoutState", codeBehind, StringComparison.Ordinal);
             Assert.Contains("ToBrowserCheckoutState(checkoutSession)", codeBehind, StringComparison.Ordinal);
@@ -282,17 +283,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutWasmShell_UsesSameOriginLocalCheckoutEndpoints()
         {
             var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutShellOptions.cs");
 
-            Assert.Contains("GetAsync<StorefrontBrowserCheckoutState>(\"/api/checkout\")", component, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserCheckoutState>(Actions.CurrentCheckoutRoute)", component, StringComparison.Ordinal);
             Assert.Contains("PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>", component, StringComparison.Ordinal);
-            Assert.Contains("\"/api/checkout/shipping-method\"", component, StringComparison.Ordinal);
-            Assert.Contains("\"/api/checkout/payment-method\"", component, StringComparison.Ordinal);
-            Assert.Contains("\"/api/checkout/review\"", component, StringComparison.Ordinal);
-            Assert.Contains("\"/api/checkout/place-order\"", component, StringComparison.Ordinal);
+            Assert.Contains("Actions.ShippingMethodRoute", component, StringComparison.Ordinal);
+            Assert.Contains("Actions.PaymentMethodRoute", component, StringComparison.Ordinal);
+            Assert.Contains("Actions.ReviewRoute", component, StringComparison.Ordinal);
+            Assert.Contains("Actions.PlaceOrderRoute", component, StringComparison.Ordinal);
+            Assert.Contains("\"/api/checkout/place-order\"", options, StringComparison.Ordinal);
             Assert.Contains("public bool ShowPanel { get; set; } = true;", component, StringComparison.Ordinal);
             Assert.Contains("DataMode != StorefrontFeatureDataMode.InitialSnapshot", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-shell", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-cart-version", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/checkout", component, StringComparison.Ordinal);
             Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNode", component, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("accessToken", component, StringComparison.OrdinalIgnoreCase);

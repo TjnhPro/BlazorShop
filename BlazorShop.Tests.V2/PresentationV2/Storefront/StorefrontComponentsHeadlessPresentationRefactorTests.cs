@@ -380,6 +380,55 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", cartPage, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CheckoutShell_UsesHostActionsAndClassesAfterHpr8Migration()
+        {
+            var checkoutShell = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor");
+            var checkoutBehavior = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Checkout/StorefrontCheckoutBehavior.cs");
+            var checkoutOptions = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutShellOptions.cs");
+            var checkoutPage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor");
+
+            foreach (var expected in new[]
+            {
+                "StorefrontCheckoutActionDescriptor",
+                "CurrentCheckoutRoute",
+                "ShippingMethodRoute",
+                "PaymentMethodRoute",
+                "ReviewRoute",
+                "PlaceOrderRoute",
+                "StorefrontCheckoutViewState",
+                "Loading",
+                "PlaceOrderAllowed",
+                "StorefrontCheckoutViewClasses"
+            })
+            {
+                Assert.Contains(expected, checkoutBehavior, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("Actions.CurrentCheckoutRoute", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("Actions.ShippingMethodRoute", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("Actions.PaymentMethodRoute", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("Actions.ReviewRoute", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("Actions.PlaceOrderRoute", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("class=\"@Classes.", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-checkout-shell", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-checkout-cart-version", checkoutShell, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/checkout", checkoutShell, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded-", checkoutShell, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-neutral-", checkoutShell, StringComparison.Ordinal);
+            Assert.DoesNotContain("lg:", checkoutShell, StringComparison.Ordinal);
+
+            Assert.Contains("\"/api/checkout\"", checkoutOptions, StringComparison.Ordinal);
+            Assert.Contains("\"/api/checkout/place-order\"", checkoutOptions, StringComparison.Ordinal);
+            Assert.Contains("rounded", checkoutOptions, StringComparison.Ordinal);
+            Assert.Contains("Actions=\"StorefrontCheckoutShellOptions.Actions\"", checkoutPage, StringComparison.Ordinal);
+            Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", checkoutPage, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

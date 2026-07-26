@@ -1,50 +1,51 @@
 @namespace BlazorShop.Storefront.Components.Features.Checkout
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Headless.Checkout
 @inject IServiceProvider Services
 @inject NavigationManager NavigationManager
 
 @if (ShowPanel)
 {
-    <section class="mb-6 rounded border border-neutral-200 bg-white px-5 py-4" data-storefront-checkout-shell>
-        <div class="flex flex-wrap items-start justify-between gap-4">
+    <section class="@Classes.Shell" data-storefront-checkout-shell>
+        <div class="@Classes.HeaderLayout">
             <div>
-                <p class="text-xs font-semibold uppercase text-neutral-500">Checkout state</p>
-                <h2 class="mt-1 text-lg font-bold text-neutral-950">@Title</h2>
+                <p class="@Classes.Eyebrow">Checkout state</p>
+                <h2 class="@Classes.Title">@Title</h2>
                 @if (!string.IsNullOrWhiteSpace(_state.Message))
                 {
-                    <p class="mt-1 text-sm text-neutral-700">@_state.Message</p>
+                    <p class="@Classes.BodyText">@_state.Message</p>
                 }
             </div>
-            <button type="button" class="rounded border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50" @onclick="RefreshAsync" disabled="@_loading">
+            <button type="button" class="@Classes.RefreshButton" @onclick="RefreshAsync" disabled="@_loading">
                 @(_loading ? "Refreshing..." : "Refresh")
             </button>
         </div>
 
         @if (!string.IsNullOrWhiteSpace(_error))
         {
-            <div class="mt-4 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+            <div class="@Classes.Error" role="alert">@_error</div>
         }
 
         @if (_state.HasCart)
         {
-            <div class="mt-4 grid gap-4 md:grid-cols-3">
-                <div class="rounded border border-neutral-200 p-3">
-                    <p class="text-xs font-semibold uppercase text-neutral-500">Cart version</p>
-                    <p class="mt-1 font-mono text-sm text-neutral-900" data-storefront-checkout-cart-version>@_state.CartVersion</p>
+            <div class="@Classes.MetricsGrid">
+                <div class="@Classes.MetricCard">
+                    <p class="@Classes.Eyebrow">Cart version</p>
+                    <p class="@Classes.MetricValue" data-storefront-checkout-cart-version>@_state.CartVersion</p>
                 </div>
-                <div class="rounded border border-neutral-200 p-3">
-                    <p class="text-xs font-semibold uppercase text-neutral-500">Checkout version</p>
-                    <p class="mt-1 font-mono text-sm text-neutral-900">@_state.CheckoutVersion</p>
+                <div class="@Classes.MetricCard">
+                    <p class="@Classes.Eyebrow">Checkout version</p>
+                    <p class="@Classes.MetricValue">@_state.CheckoutVersion</p>
                 </div>
-                <div class="rounded border border-neutral-200 p-3">
-                    <p class="text-xs font-semibold uppercase text-neutral-500">Total</p>
-                    <p class="mt-1 font-bold text-neutral-900">@_state.GrandTotalDisplay</p>
+                <div class="@Classes.MetricCard">
+                    <p class="@Classes.Eyebrow">Total</p>
+                    <p class="@Classes.MetricValue">@_state.GrandTotalDisplay</p>
                 </div>
             </div>
 
             @if (_state.Issues.Count > 0)
             {
-                <div class="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <div class="@Classes.IssuePanel">
                     @foreach (var issue in _state.Issues)
                     {
                         <p>@issue.Message</p>
@@ -52,29 +53,29 @@
                 </div>
             }
 
-            <div class="mt-4 grid gap-4 lg:grid-cols-2">
-                <section class="rounded border border-neutral-200 p-4">
-                    <h3 class="font-bold text-neutral-950">Shipping</h3>
-                    <div class="mt-3 space-y-2 text-sm">
+            <div class="@Classes.OptionGrid">
+                <section class="@Classes.OptionPanel">
+                    <h3>Shipping</h3>
+                    <div class="@Classes.OptionList">
                         @if (!_state.ShippingRequired)
                         {
-                            <p class="text-neutral-700">Shipping is not required for this cart.</p>
+                            <p>Shipping is not required for this cart.</p>
                         }
                         else if (_state.ShippingOptions.Count == 0)
                         {
-                            <p class="text-neutral-700">Shipping is not available yet.</p>
+                            <p>Shipping is not available yet.</p>
                         }
                         else
                         {
                             @foreach (var option in _state.ShippingOptions)
                             {
-                                <label class="flex items-start gap-2 rounded border border-neutral-200 p-3">
+                                <label class="@Classes.OptionLabel">
                                     <input type="radio" name="wasmShippingOption" checked="@option.Selected" @onchange="() => SelectShippingAsync(option.Key)" />
                                     <span>
-                                        <span class="block font-semibold text-neutral-900">@option.DisplayName</span>
+                                        <span>@option.DisplayName</span>
                                         @if (!string.IsNullOrWhiteSpace(option.AmountDisplay))
                                         {
-                                            <span class="block text-neutral-600">@option.AmountDisplay</span>
+                                            <span>@option.AmountDisplay</span>
                                         }
                                     </span>
                                 </label>
@@ -83,18 +84,18 @@
                     </div>
                 </section>
 
-                <section class="rounded border border-neutral-200 p-4">
-                    <h3 class="font-bold text-neutral-950">Payment</h3>
-                    <div class="mt-3 space-y-2 text-sm">
+                <section class="@Classes.OptionPanel">
+                    <h3>Payment</h3>
+                    <div class="@Classes.OptionList">
                         @foreach (var method in _state.PaymentMethods)
                         {
-                            <label class="flex items-start gap-2 rounded border border-neutral-200 p-3">
+                            <label class="@Classes.OptionLabel">
                                 <input type="radio" name="wasmPaymentMethod" checked="@method.Selected" @onchange="() => SelectPaymentAsync(method.Key)" />
                                 <span>
-                                    <span class="block font-semibold text-neutral-900">@method.DisplayName</span>
+                                    <span>@method.DisplayName</span>
                                     @if (!string.IsNullOrWhiteSpace(method.Description))
                                     {
-                                        <span class="block text-neutral-600">@method.Description</span>
+                                        <span>@method.Description</span>
                                     }
                                 </span>
                             </label>
@@ -103,12 +104,12 @@
                 </section>
             </div>
 
-            <button type="button" class="mt-4 rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-wait disabled:bg-neutral-500" @onclick="ReviewAsync" disabled="@_loading">
+            <button type="button" class="@Classes.PrimaryButton" @onclick="ReviewAsync" disabled="@_loading">
                 Review latest checkout
             </button>
             @if (_state.PlaceOrderAllowed)
             {
-                <button type="button" class="mt-4 ml-2 rounded bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 disabled:cursor-wait disabled:bg-amber-300" @onclick="PlaceOrderAsync" disabled="@_loading">
+                <button type="button" class="@Classes.SecondaryButton" @onclick="PlaceOrderAsync" disabled="@_loading">
                     Place order
                 </button>
             }
@@ -126,12 +127,20 @@
     [Parameter]
     public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
 
+    [Parameter]
+    public StorefrontCheckoutActionDescriptor Actions { get; set; } = StorefrontCheckoutActionDescriptor.Empty;
+
+    [Parameter]
+    public StorefrontCheckoutViewClasses Classes { get; set; } = StorefrontCheckoutViewClasses.Empty;
+
     private StorefrontBrowserCheckoutState _state = EmptyState("Checkout is not available yet.");
     private string? _error;
     private bool _loading;
     private string _idempotencyKey = Guid.NewGuid().ToString("N");
 
     private string Title => !_state.HasCart ? "Cart is empty" : $"{_state.CurrentStep} ready";
+
+    private StorefrontCheckoutViewState ViewState => StorefrontCheckoutViewState.FromState(_state, _loading, _error);
 
     protected override void OnParametersSet()
     {
@@ -151,12 +160,12 @@
 
     private async Task RefreshAsync()
     {
-        if (!ShowPanel)
+        if (!ShowPanel || string.IsNullOrWhiteSpace(Actions.CurrentCheckoutRoute))
         {
             return;
         }
 
-        await LoadAsync(client => client.GetAsync<StorefrontBrowserCheckoutState>("/api/checkout"));
+        await LoadAsync(client => client.GetAsync<StorefrontBrowserCheckoutState>(Actions.CurrentCheckoutRoute));
     }
 
     private async Task SelectShippingAsync(string key)
@@ -167,7 +176,7 @@
         }
 
         await LoadAsync(client => client.PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>(
-            "/api/checkout/shipping-method",
+            Actions.ShippingMethodRoute,
             new StorefrontBrowserCheckoutSelectionRequest
             {
                 CheckoutSessionId = sessionId,
@@ -184,7 +193,7 @@
         }
 
         await LoadAsync(client => client.PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>(
-            "/api/checkout/payment-method",
+            Actions.PaymentMethodRoute,
             new StorefrontBrowserCheckoutSelectionRequest
             {
                 CheckoutSessionId = sessionId,
@@ -201,7 +210,7 @@
         }
 
         await LoadAsync(client => client.PostJsonAsync<StorefrontBrowserCheckoutReviewRequest, StorefrontBrowserCheckoutState>(
-            "/api/checkout/review",
+            Actions.ReviewRoute,
             new StorefrontBrowserCheckoutReviewRequest
             {
                 CheckoutSessionId = sessionId,
@@ -226,7 +235,7 @@
         _loading = true;
         _error = null;
         var result = await apiClient.PostJsonAsync<StorefrontBrowserCheckoutPlaceOrderRequest, StorefrontBrowserCheckoutPlaceOrderResult>(
-            "/api/checkout/place-order",
+            Actions.PlaceOrderRoute,
             new StorefrontBrowserCheckoutPlaceOrderRequest
             {
                 CheckoutSessionId = sessionId,
