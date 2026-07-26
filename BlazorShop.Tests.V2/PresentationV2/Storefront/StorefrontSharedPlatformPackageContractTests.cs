@@ -41,8 +41,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var v2Registration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
 
             Assert.Contains("AddStorefrontRuntime(", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontPlatformRuntime(", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontServerGeneratedClients(", runtimeRegistration, StringComparison.Ordinal);
-            Assert.Contains("AddStorefrontServerGeneratedClients", v2Registration, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontPlatformRuntime", v2Registration, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontServerGeneratedClients", v2Registration, StringComparison.Ordinal);
             Assert.DoesNotContain(".AddStorefrontGeneratedClients", v2Registration, StringComparison.Ordinal);
         }
 

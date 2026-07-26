@@ -249,10 +249,12 @@ Use for:
 - BFF-safe result mapping primitives.
 - Runtime configures generated clients through the named `StorefrontGenerated` `HttpClient`; callers should configure `StorefrontRuntimeOptions.CommerceNodeBaseUrl` instead of passing per-client base URL strings.
 - Runtime errors expose technical fallback state through `Status`, `Code`, `DefaultMessage`/`Message`, `TraceId`, `FieldErrors`, and `Retryable`. Storefront hosts own final localized copy, toast/inline/page placement, and retry CTA behavior.
+- Server hosts that need the full storefront surface should call `AddStorefrontPlatformRuntime`; narrower hosts may call `AddStorefront{Capability}Runtime` methods such as catalog, cart, checkout, account, payment, consent, or address. `AddStorefrontServerGeneratedClients` and `AddStorefrontGeneratedClients` remain compatibility wrappers, not preferred new composition APIs.
 
 Do not:
 
 - Add Storefront V2 layout/design, CSS/assets, store-specific composition, backend business rules, provider secrets, or references to backend/core/API projects.
+- Reference Runtime from browser/WASM projects; browser actions must go through host-owned same-origin BFF endpoints.
 
 ### Storefront Feature Module Boundary
 
@@ -278,6 +280,7 @@ Use for:
 - Neutral SSR, Hybrid, and WASM-host route skeletons.
 - Examples of generated `BlazorShop.Storefront.Client` package consumption.
 - Examples of `BlazorShop.Storefront.Runtime` package consumption for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
+- Examples should use `AddStorefrontPlatformRuntime` for simple server/BFF composition or the specific `AddStorefront{Capability}Runtime` methods for intentionally narrow generated hosts.
 - Optional `BlazorShop.Storefront.Components` package consumption for reusable browser-safe UI components; Starter-local neutral components may remain local until shared reuse is needed.
 - Starter owns its neutral visual templates and may consume `Storefront.Components` contracts/headless behavior without copying Storefront V2 visual components.
 - Same-origin BFF examples for protected browser flows.

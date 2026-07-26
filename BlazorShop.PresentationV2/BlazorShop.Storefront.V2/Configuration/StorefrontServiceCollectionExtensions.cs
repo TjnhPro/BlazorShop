@@ -147,7 +147,7 @@ namespace BlazorShop.Storefront.Configuration
 
         private static IServiceCollection AddStorefrontGeneratedClientRegistration(this IServiceCollection services)
         {
-            services.AddStorefrontServerGeneratedClients((_, client) =>
+            services.AddStorefrontPlatformRuntime((_, client) =>
             {
                 client.Timeout = TimeSpan.FromSeconds(2);
             });

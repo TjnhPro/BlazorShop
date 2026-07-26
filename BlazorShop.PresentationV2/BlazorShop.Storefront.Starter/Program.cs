@@ -22,7 +22,7 @@ builder.Services.AddStorefrontRuntime(options =>
     options.StoreKey = starterOptions.StoreKey;
     options.PublicBaseUrl = starterOptions.PublicBaseUrl;
 });
-builder.Services.AddStorefrontGeneratedClients();
+builder.Services.AddStorefrontPlatformRuntime();
 builder.Services.AddScoped<StorefrontBootstrapService>();
 builder.Services.AddSingleton(_ =>
     StarterFeatureManifest.Load(Path.Combine(builder.Environment.ContentRootPath, "Features", "feature-manifest.json")));

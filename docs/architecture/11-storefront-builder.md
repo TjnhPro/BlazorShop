@@ -57,6 +57,7 @@ Starter consumer rules:
 
 - Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts. The package is generated from `contracts/storefront/storefront.openapi.json`.
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
+- Register Runtime only in the generated server/BFF host. Use `AddStorefrontPlatformRuntime` for the full starter surface, or explicit `AddStorefront{Capability}Runtime` methods when a generated host intentionally supports a smaller surface.
 - Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior when a starter or generated storefront needs that shared component package.
 - Starter owns its neutral visual templates; Starter-local neutral visual components may remain local and must not copy Storefront V2 visual components.
 - Do not reference `BlazorShop.Storefront.V2`.
@@ -69,6 +70,7 @@ Generated/custom storefront consumer rules:
 - Generated/custom storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior, but they must not use Storefront V2 visual markup as their presentation source.
 - StorefrontBuilder may replace product card, grid, gallery, purchase, cart, checkout, and account visual templates in the generated/custom project without changing shared behavior contracts.
 - Route protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
+- Browser and WASM code must not reference `BlazorShop.Storefront.Runtime`; it consumes same-origin generated endpoints and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior.
 - Use generated package contracts instead of guessing API response shapes.
 - Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or generated proof output from another store.
 

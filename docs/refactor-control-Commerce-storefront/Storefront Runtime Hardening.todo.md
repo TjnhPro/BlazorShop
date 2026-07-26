@@ -675,28 +675,28 @@ Goal: make active consumers use the new Runtime shape without breaking existing 
 
 ### Tasks
 
-- [ ] Update `Storefront.V2` registration:
-  - [ ] prefer `AddStorefrontPlatformRuntime` if V2 still needs all current capabilities.
-  - [ ] or use explicit capability registration if V2 composition is already split.
-  - [ ] do not call both old and new all-in wrappers.
-- [ ] Update `Storefront.Starter` registration:
-  - [ ] use `AddStorefrontPlatformRuntime` for starter simplicity, or
-  - [ ] use a minimal explicit set if Starter has intentionally narrow capabilities.
-- [ ] Update generated storefront docs/rules so future `Storefront.{Name}` projects:
-  - [ ] use Runtime only from server/BFF project.
-  - [ ] use Components/Browser for WASM/browser behavior.
-  - [ ] do not guess API response shape.
-  - [ ] do not reference Commerce Node API, Control Plane API, Application, Domain, Infrastructure, or `Web.SharedV2`.
-- [ ] Update architecture docs:
-  - [ ] `docs/architecture/05-project-and-folder-guide.md`
-  - [ ] `docs/architecture/10-v2-contract-ownership.md`
-  - [ ] `docs/architecture/11-storefront-builder.md` if generated storefront guidance changes.
-- [ ] Update QA checklist:
-  - [ ] `QA-StorefrontV2.todo.md` includes Runtime DI/cancellation/envelope/browser-boundary cases.
-  - [ ] StorefrontBuilder QA docs include server-only Runtime consumption rule if generated storefronts are involved.
-- [ ] Decide whether to mark old wrapper names obsolete:
-  - [ ] only after V2 and Starter call the new preferred method.
-  - [ ] do not remove wrappers until a later cleanup phase.
+- [x] Update `Storefront.V2` registration:
+  - [x] prefer `AddStorefrontPlatformRuntime` if V2 still needs all current capabilities.
+  - [x] or use explicit capability registration if V2 composition is already split.
+  - [x] do not call both old and new all-in wrappers.
+- [x] Update `Storefront.Starter` registration:
+  - [x] use `AddStorefrontPlatformRuntime` for starter simplicity, or
+  - [x] use a minimal explicit set if Starter has intentionally narrow capabilities.
+- [x] Update generated storefront docs/rules so future `Storefront.{Name}` projects:
+  - [x] use Runtime only from server/BFF project.
+  - [x] use Components/Browser for WASM/browser behavior.
+  - [x] do not guess API response shape.
+  - [x] do not reference Commerce Node API, Control Plane API, Application, Domain, Infrastructure, or `Web.SharedV2`.
+- [x] Update architecture docs:
+  - [x] `docs/architecture/05-project-and-folder-guide.md`
+  - [x] `docs/architecture/10-v2-contract-ownership.md`
+  - [x] `docs/architecture/11-storefront-builder.md` if generated storefront guidance changes.
+- [x] Update QA checklist:
+  - [x] `QA-StorefrontV2.todo.md` includes Runtime DI/cancellation/envelope/browser-boundary cases.
+  - [x] StorefrontBuilder QA docs include server-only Runtime consumption rule if generated storefronts are involved.
+- [x] Decide whether to mark old wrapper names obsolete:
+  - [x] only after V2 and Starter call the new preferred method.
+  - [x] do not remove wrappers until a later cleanup phase.
 
 ### Files Likely Touched
 
@@ -718,9 +718,20 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Active server storefront consumers use the new preferred Runtime registration path.
-- [ ] Browser/WASM boundary remains explicit.
-- [ ] Docs explain Runtime as server-only BFF integration.
+- [x] Active server storefront consumers use the new preferred Runtime registration path.
+- [x] Browser/WASM boundary remains explicit.
+- [x] Docs explain Runtime as server-only BFF integration.
+
+### SRH8 Notes - 2026-07-26
+
+- `Storefront.V2` and `Storefront.Starter` now call `AddStorefrontPlatformRuntime`; the old all-in wrapper names remain compatibility APIs for later cleanup.
+- StorefrontBuilder, architecture, agent, and QA docs now state that Runtime is server/BFF-only and browser/WASM code must use same-origin endpoints plus browser-safe Components contracts/headless behavior.
+- Verification passed:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj --no-restore`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontWasmRuntimeFoundationTests"` passed `31/31`.
+  - Starter package-boundary verification required repacking `BlazorShop.Storefront.Runtime` `1.0.0-local` into the ignored local feed and force-restoring Starter into an isolated repo-local NuGet package cache because the global NuGet cache still contained the older local package binary.
 
 ## Phase SRH9 - Full QA And Release Gate
 

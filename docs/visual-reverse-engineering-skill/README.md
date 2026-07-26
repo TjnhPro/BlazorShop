@@ -20,3 +20,7 @@ The phase plans are retained as implementation history and checklist evidence:
 - [StorefrontBuilder Architecture Note](StorefrontBuilder-architecture-note.md)
 
 The architecture docs are the current source of truth when a historical plan conflicts with current code.
+
+## Runtime Boundary Reminder
+
+Generated storefront server/BFF projects register `BlazorShop.Storefront.Runtime` through `AddStorefrontPlatformRuntime` or explicit `AddStorefront{Capability}Runtime` methods. Browser and WASM code must use same-origin generated endpoints and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior, not Runtime or guessed Storefront API envelopes.
