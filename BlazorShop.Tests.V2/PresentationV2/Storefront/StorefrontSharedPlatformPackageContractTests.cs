@@ -42,13 +42,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var readme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/README.md");
 
             Assert.Equal(
-                "Browser-safe Storefront contracts, headless interaction state, and compatibility component primitives.",
+                "Browser-safe Storefront contracts, headless interaction state, and browser primitives.",
                 properties["Description"]);
             Assert.Contains("Contracts/{Capability}", readme, StringComparison.Ordinal);
             Assert.Contains("Headless/{Capability}", readme, StringComparison.Ordinal);
             Assert.Contains("Browser", readme, StringComparison.Ordinal);
-            Assert.Contains("CSS-neutral compatibility Razor wrappers", readme, StringComparison.Ordinal);
-            Assert.Contains("not stable presentation contracts", readme, StringComparison.Ordinal);
+            Assert.Contains("Browser interop modules are hosted by the concrete storefront project", readme, StringComparison.Ordinal);
+            Assert.Contains("Razor components, shared visual wrappers, visual class bags, static web assets", readme, StringComparison.Ordinal);
+            Assert.DoesNotContain("compatibility Razor wrappers", readme, StringComparison.Ordinal);
             Assert.Contains("same-origin BFF endpoints", readme, StringComparison.Ordinal);
         }
 

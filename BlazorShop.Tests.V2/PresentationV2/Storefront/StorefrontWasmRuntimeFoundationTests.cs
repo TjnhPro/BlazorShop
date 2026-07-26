@@ -242,8 +242,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNode", component, StringComparison.OrdinalIgnoreCase);
 
-            var interop = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
+            var tokenReader = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontAntiforgeryTokenReader.cs");
+            var interop = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontWasmInterop.js");
             Assert.Contains("publishCartChanged", component, StringComparison.Ordinal);
+            Assert.Contains("./js/storefrontWasmInterop.js", component, StringComparison.Ordinal);
+            Assert.Contains("./js/storefrontWasmInterop.js", tokenReader, StringComparison.Ordinal);
+            Assert.DoesNotContain("_content/BlazorShop.Storefront.Components", component + tokenReader, StringComparison.Ordinal);
             Assert.Contains("[data-storefront-cart-badge]", interop, StringComparison.Ordinal);
             Assert.Contains("blazorshop:cart-changed", interop, StringComparison.Ordinal);
         }

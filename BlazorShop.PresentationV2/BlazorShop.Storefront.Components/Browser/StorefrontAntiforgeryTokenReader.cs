@@ -13,7 +13,7 @@ public sealed class StorefrontAntiforgeryTokenReader : IStorefrontAntiforgeryTok
         _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
             jsRuntime.InvokeAsync<IJSObjectReference>(
                 "import",
-                "./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js").AsTask());
+                "./js/storefrontWasmInterop.js").AsTask());
     }
 
     public async ValueTask<StorefrontAntiforgeryToken?> ReadAsync(CancellationToken cancellationToken = default)

@@ -110,16 +110,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void StorefrontComponents_BusinessFeatureFoldersStayUnderFeatures()
+        public void StorefrontComponents_OnlyExposeContractsHeadlessAndBrowserFolders()
         {
             var componentRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components");
             var allowedRootDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Browser",
                 "Contracts",
-                "Features",
                 "Headless",
-                "wwwroot",
                 "bin",
                 "obj",
             };

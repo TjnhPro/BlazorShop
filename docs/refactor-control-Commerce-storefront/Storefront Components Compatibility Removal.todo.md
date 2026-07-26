@@ -318,46 +318,48 @@ Exit criteria:
 
 Muc tieu: `Storefront.Components` khong con la Razor component library neu khong con `.razor`, nhung khong pha JS interop/browser action.
 
-- [ ] Inventory `.razor` con lai:
+- [x] Inventory `.razor` con lai:
 
 ```powershell
 Get-ChildItem BlazorShop.PresentationV2/BlazorShop.Storefront.Components -Recurse -Filter *.razor
 ```
 
-- [ ] Xoa `BlazorShop.Storefront.Components/_Imports.razor` neu khong con Razor file.
-- [ ] Xu ly `storefrontWasmInterop.js` truoc khi doi SDK:
-  - [ ] Kiem tra consumer cua `_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js`.
-  - [ ] Chon ownership moi cho static JS:
+- [x] Xoa `BlazorShop.Storefront.Components/_Imports.razor` neu khong con Razor file.
+- [x] Xu ly `storefrontWasmInterop.js` truoc khi doi SDK:
+  - [x] Kiem tra consumer cua `_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js`.
+  - [x] Chon ownership moi cho static JS:
     - preferred: move concrete JS asset va module path vao host browser/WASM/V2 layer;
     - acceptable: keep shared browser primitive with host-provided configurable module path;
     - khong acceptable: doi SDK lam mat static web asset nhung giu hardcoded `_content/BlazorShop.Storefront.Components`.
-  - [ ] Update `StorefrontAntiforgeryTokenReader` de khong hardcode shared package static asset neu package khong con phat static web assets.
-  - [ ] Update `CartView` moved-to-V2 JS import path neu component van can direct JS module.
-- [ ] Doi project SDK:
+  - [x] Update `StorefrontAntiforgeryTokenReader` de khong hardcode shared package static asset neu package khong con phat static web assets.
+  - [x] Update `CartView` moved-to-V2 JS import path neu component van can direct JS module.
+- [x] Doi project SDK:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 ```
 
-- [ ] Doi package reference toi dependency toi thieu:
+- [x] Doi package reference toi dependency toi thieu:
   - giu `Microsoft.JSInterop` neu can;
   - chi giu `Microsoft.AspNetCore.Components.Web` neu co type dung that su va build can.
-- [ ] Update package description neu can:
+- [x] Update package description neu can:
 
 ```text
 Browser-safe Storefront contracts, headless interaction state, and browser primitives.
 ```
 
-- [ ] Them/update test guard:
+- [x] Them/update test guard:
   - no `.razor` under `BlazorShop.Storefront.Components`;
   - csproj no longer uses `Microsoft.NET.Sdk.Razor`;
   - no shared static web asset hardcoded path unless ownership is intentionally documented and tested.
 
 Exit criteria:
 
-- [ ] Components project build pass voi `Microsoft.NET.Sdk`.
-- [ ] Browser/WASM flows van lay anti-forgery token dung.
-- [ ] Khong con hidden dependency vao Razor static web assets cua Components.
+- [x] Components project build pass voi `Microsoft.NET.Sdk`.
+- [x] Browser/WASM flows van lay anti-forgery token dung.
+- [x] Khong con hidden dependency vao Razor static web assets cua Components.
+  - 2026-07-26: Components, Storefront WASM, va Storefront V2 build pass.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontWasmRuntimeFoundationTests|StorefrontSharedPlatformPackageContractTests|StorefrontPageCompositionGuardrailTests` pass 111/111.
 
 ## Phase SCR8 - Runtime Compatibility API Cleanup
 

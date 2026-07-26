@@ -57,6 +57,45 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontComponents_HasNoRazorFiles()
+        {
+            var componentRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components");
+            var razorFiles = Directory
+                .EnumerateFiles(componentRoot, "*.razor", SearchOption.AllDirectories)
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .Select(path => Path.GetRelativePath(componentRoot, path).Replace('\\', '/'))
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(razorFiles);
+        }
+
+        [Fact]
+        public void StorefrontComponents_UsesClassLibrarySdkWithoutSharedStaticWebAssets()
+        {
+            var project = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
+            var componentRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components");
+            var v2Interop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontWasmInterop.js");
+            var sharedInterop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
+            var browserSource = ReadComponentLayerSource("Browser");
+            var cartView = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartView.razor");
+
+            Assert.Contains("<Project Sdk=\"Microsoft.NET.Sdk\">", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("Microsoft.NET.Sdk.Razor", project, StringComparison.Ordinal);
+            Assert.Contains("Microsoft.JSInterop", project, StringComparison.Ordinal);
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/_Imports.razor")));
+            Assert.False(Directory.Exists(Path.Combine(componentRoot, "wwwroot")));
+            Assert.False(File.Exists(sharedInterop));
+            Assert.True(File.Exists(v2Interop));
+            Assert.Contains("./js/storefrontWasmInterop.js", browserSource, StringComparison.Ordinal);
+            Assert.Contains("./js/storefrontWasmInterop.js", cartView, StringComparison.Ordinal);
+            Assert.DoesNotContain("_content/BlazorShop.Storefront.Components", browserSource + cartView, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void ContractModelInventory_RecordsReusableProductAndCatalogContracts()
         {
             var actual = EnumerateComponentContractFiles("*.cs");

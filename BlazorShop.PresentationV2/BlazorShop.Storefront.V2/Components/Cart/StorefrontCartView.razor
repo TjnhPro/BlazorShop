@@ -246,7 +246,7 @@
             _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
                 JS.InvokeAsync<IJSObjectReference>(
                     "import",
-                    "./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js").AsTask());
+                    "./js/storefrontWasmInterop.js").AsTask());
             if (ShouldFetchAfterHydration())
             {
                 await LoadCartAsync();
