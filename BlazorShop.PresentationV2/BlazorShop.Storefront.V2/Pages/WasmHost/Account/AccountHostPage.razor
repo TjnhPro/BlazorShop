@@ -1,7 +1,6 @@
 @page "/account"
 @page "/account/{*Path}"
 @using Microsoft.AspNetCore.Antiforgery
-@using BlazorShop.Storefront.Components.Features.Account
 @inject IStorefrontSessionResolver SessionResolver
 @inject NavigationManager NavigationManager
 @inject IAntiforgery Antiforgery
@@ -14,7 +13,7 @@
 
 @if (_authorized)
 {
-    <AccountApp
+    <StorefrontAccountApp
         Path="@Path"
         PageNumber="@Page"
         Error="@Error"

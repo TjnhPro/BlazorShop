@@ -267,22 +267,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountHostPage_HostsInteractiveWasmAccountApp()
         {
             var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
-            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountApp.razor");
 
             Assert.Contains("@page \"/account\"", host, StringComparison.Ordinal);
             Assert.Contains("@page \"/account/{*Path}\"", host, StringComparison.Ordinal);
-            Assert.Contains("<AccountApp", host, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontAccountApp", host, StringComparison.Ordinal);
+            Assert.DoesNotContain("<AccountApp", host, StringComparison.Ordinal);
             Assert.Contains("Path=\"@Path\"", host, StringComparison.Ordinal);
             Assert.Contains("AntiforgeryFieldName=\"@_antiforgeryFieldName\"", host, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", host, StringComparison.Ordinal);
             Assert.Contains("SessionResolver.GetCurrentUserAsync()", host, StringComparison.Ordinal);
             Assert.Contains("StorefrontReturnUrl.BuildSignInUrl(CurrentReturnUrl())", host, StringComparison.Ordinal);
 
-            Assert.Contains("AccountProfileEditor", app, StringComparison.Ordinal);
-            Assert.Contains("AccountAddressBook", app, StringComparison.Ordinal);
-            Assert.Contains("AccountOrderList", app, StringComparison.Ordinal);
-            Assert.Contains("AccountOrderDetail", app, StringComparison.Ordinal);
-            Assert.Contains("AccountChangePasswordForm", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountProfileEditor", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountAddressBook", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderList", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderDetail", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountChangePasswordForm", app, StringComparison.Ordinal);
             Assert.Contains("StorefrontFeatureDataMode.BrowserFetch", app, StringComparison.Ordinal);
             Assert.Contains("RouteDescriptor=\"StorefrontAccountViewOptions.RouteDescriptor\"", host, StringComparison.Ordinal);
             Assert.Contains("AccountRouteParser.Resolve(Path, RouteDescriptor)", app, StringComparison.Ordinal);
@@ -295,8 +296,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountHost_UsesSingleShellWhileKeepingPageOwnedGuards()
         {
             var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
-            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
-            var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountNavigation.razor");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountApp.razor");
+            var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountNavigation.razor");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
 
             Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", host, StringComparison.Ordinal);
@@ -327,11 +328,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AccountWasmComponents_UseSameOriginLocalAccountEndpoints()
         {
-            var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountProfileEditor.razor");
-            var addressesComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountAddressBook.razor");
-            var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderList.razor");
-            var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderDetail.razor");
-            var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountChangePasswordForm.razor");
+            var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountProfileEditor.razor");
+            var addressesComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountAddressBook.razor");
+            var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountOrderList.razor");
+            var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountOrderDetail.razor");
+            var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountChangePasswordForm.razor");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountViewOptions.cs");
             var behavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var allComponents = profileComponent + addressesComponent + ordersComponent + orderDetailComponent + passwordComponent;

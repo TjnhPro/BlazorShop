@@ -339,9 +339,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AccountOrderDetailPage_PassesRouteReferenceToBrowserComponent()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/StorefrontAccountApp.razor");
 
-            Assert.Contains("nameof(AccountOrderDetail.OrderReference)", markup);
+            Assert.Contains("nameof(StorefrontAccountOrderDetail.OrderReference)", markup);
             Assert.Contains("ActiveRoute.OrderReference", markup);
             Assert.DoesNotContain("OrderReference=\"OrderReference\"", markup, StringComparison.Ordinal);
         }

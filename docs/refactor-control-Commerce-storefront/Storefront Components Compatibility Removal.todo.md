@@ -174,9 +174,9 @@ Exit criteria:
 
 Muc tieu: account khong con la shared visual app. V2 so huu page composition, routes va copy.
 
-- [ ] Tao V2-owned folder:
+- [x] Tao V2-owned folder:
   - `BlazorShop.Storefront.V2/Components/Account/`
-- [ ] Chuyen cac visual components sau vao V2:
+- [x] Chuyen cac visual components sau vao V2:
   - `StorefrontAccountApp.razor`
   - `StorefrontAccountNavigation.razor`
   - `StorefrontAccountProfileEditor.razor`
@@ -184,31 +184,33 @@ Muc tieu: account khong con la shared visual app. V2 so huu page composition, ro
   - `StorefrontAccountAddressBook.razor`
   - `StorefrontAccountOrderList.razor`
   - `StorefrontAccountOrderDetail.razor`
-- [ ] Doi route interpretation tu shared component sang V2:
+- [x] Doi route interpretation tu shared component sang V2:
   - `/account/profile`
   - `/account/addresses`
   - `/account/orders`
   - `/account/change-password`
-- [ ] Giu shared account contracts/headless chi cho:
+- [x] Giu shared account contracts/headless chi cho:
   - account labels
   - account route descriptor/parser primitives neu can
   - form state/validation state
   - action descriptors
   - data hooks
-- [ ] Doi visual class bags account thanh V2-local options.
-- [ ] Update `Pages/WasmHost/Account/AccountHostPage.razor` dung `<StorefrontAccountApp ...>`.
-- [ ] Remove direct `@using BlazorShop.Storefront.Components.Features.Account`.
-- [ ] Update tests dang doc `Features/Account/*`.
-- [ ] Giu account page surface gon:
+- [x] Doi visual class bags account thanh V2-local options.
+- [x] Update `Pages/WasmHost/Account/AccountHostPage.razor` dung `<StorefrontAccountApp ...>`.
+- [x] Remove direct `@using BlazorShop.Storefront.Components.Features.Account`.
+- [x] Update tests dang doc `Features/Account/*`.
+- [x] Giu account page surface gon:
   - khong tao them page account moi;
   - chi move nhung page/section hien co;
   - account page composition van co the chua profile, addresses, orders, password trong cung host.
 
 Exit criteria:
 
-- [ ] Account WASM host render bang V2-owned account components.
-- [ ] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Account`.
-- [ ] Shared Components khong con account Razor visual wrappers.
+- [x] Account WASM host render bang V2-owned account components.
+- [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Account`.
+- [x] Shared Components khong con account Razor visual wrappers.
+  - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
+  - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests|StorefrontBrandingMarkupTests` pass 68/68.
 
 ## Phase SCR4 - Delete Orphan Catalog, Product, and Deals Visual Wrappers
 
