@@ -16,28 +16,38 @@ namespace BlazorShop.Storefront.Services
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        private readonly IStorefrontRuntimeCatalogContentFacade catalogContentFacade;
+        private readonly IStorefrontRuntimeCatalogFacade catalogFacade;
+        private readonly IStorefrontRuntimeContentFacade contentFacade;
+        private readonly IStorefrontRuntimeNavigationFacade navigationFacade;
+        private readonly IStorefrontRuntimeSeoFacade seoFacade;
 
-        public GeneratedStorefrontCatalogContentClient(IStorefrontRuntimeCatalogContentFacade catalogContentFacade)
+        public GeneratedStorefrontCatalogContentClient(
+            IStorefrontRuntimeCatalogFacade catalogFacade,
+            IStorefrontRuntimeContentFacade contentFacade,
+            IStorefrontRuntimeNavigationFacade navigationFacade,
+            IStorefrontRuntimeSeoFacade seoFacade)
         {
-            this.catalogContentFacade = catalogContentFacade;
+            this.catalogFacade = catalogFacade;
+            this.contentFacade = contentFacade;
+            this.navigationFacade = navigationFacade;
+            this.seoFacade = seoFacade;
         }
 
         public async Task<StorefrontApiResult<IReadOnlyList<GetCategory>>> GetPublishedCategoriesAsync(CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPublishedCategoriesAsync(cancellationToken);
+            var result = await this.catalogFacade.GetPublishedCategoriesAsync(cancellationToken);
             return MapListResult<GeneratedClients.StorefrontCategoryResponse, GetCategory>(result, fallbackEmpty: true);
         }
 
         public async Task<StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>> GetPublishedCategoryTreeAsync(CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPublishedCategoryTreeAsync(cancellationToken);
+            var result = await this.catalogFacade.GetPublishedCategoryTreeAsync(cancellationToken);
             return MapListResult<GeneratedClients.StorefrontCategoryTreeNodeResponse, GetCategoryTreeNode>(result, fallbackEmpty: true);
         }
 
         public async Task<StorefrontApiResult<GetPublicCatalogSitemap>> GetPublishedSitemapAsync(CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPublishedSitemapAsync(cancellationToken);
+            var result = await this.catalogFacade.GetPublishedSitemapAsync(cancellationToken);
             return MapResult<GeneratedClients.GetPublicCatalogSitemap, GetPublicCatalogSitemap>(result, fallbackValue: new GetPublicCatalogSitemap());
         }
 
@@ -53,7 +63,7 @@ namespace BlazorShop.Storefront.Services
             string? currencyCode,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPublishedCatalogPageAsync(MapCatalogQuery(query), currencyCode, cancellationToken);
+            var result = await this.catalogFacade.GetPublishedCatalogPageAsync(MapCatalogQuery(query), currencyCode, cancellationToken);
             return MapResult<GeneratedClients.StorefrontCatalogProductResponseStorefrontPagedResponse, PagedResult<GetCatalogProduct>>(
                 result,
                 fallbackValue: new PagedResult<GetCatalogProduct>());
@@ -71,7 +81,7 @@ namespace BlazorShop.Storefront.Services
             string? currencyCode,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPublishedCategoryBySlugAsync(slug, currencyCode, cancellationToken);
+            var result = await this.catalogFacade.GetPublishedCategoryBySlugAsync(slug, currencyCode, cancellationToken);
             return MapResult<GeneratedClients.StorefrontCategoryPageResponse, GetCategoryPage>(result);
         }
 
@@ -81,7 +91,7 @@ namespace BlazorShop.Storefront.Services
             string? currencyCode = null,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetProductFilterMetadataAsync(categorySlug, searchTerm, currencyCode, cancellationToken);
+            var result = await this.catalogFacade.GetProductFilterMetadataAsync(categorySlug, searchTerm, currencyCode, cancellationToken);
             return MapResult<GeneratedClients.StorefrontProductFilterMetadataResponse, StorefrontProductFilterMetadataResponse>(result);
         }
 
@@ -92,7 +102,7 @@ namespace BlazorShop.Storefront.Services
             string? currencyCode = null,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetSearchSuggestionsAsync(searchTerm, categorySlug, limit, currencyCode, cancellationToken);
+            var result = await this.catalogFacade.GetSearchSuggestionsAsync(searchTerm, categorySlug, limit, currencyCode, cancellationToken);
             return MapResult<GeneratedClients.StorefrontSearchSuggestionResponse, StorefrontSearchSuggestionResponse>(result);
         }
 
@@ -108,7 +118,7 @@ namespace BlazorShop.Storefront.Services
             string? currencyCode,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPublishedProductBySlugAsync(slug, currencyCode, cancellationToken);
+            var result = await this.catalogFacade.GetPublishedProductBySlugAsync(slug, currencyCode, cancellationToken);
             return MapResult<GeneratedClients.StorefrontProductResponse, GetProduct>(result);
         }
 
@@ -122,7 +132,7 @@ namespace BlazorShop.Storefront.Services
             string? currencyCode,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetProductByIdAsync(id, currencyCode, cancellationToken);
+            var result = await this.catalogFacade.GetProductByIdAsync(id, currencyCode, cancellationToken);
             return MapResult<GeneratedClients.StorefrontProductResponse, GetProduct>(result);
         }
 
@@ -131,7 +141,7 @@ namespace BlazorShop.Storefront.Services
             StorefrontProductSelectionPreviewRequest request,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.PreviewProductSelectionAsync(
+            var result = await this.catalogFacade.PreviewProductSelectionAsync(
                 productId,
                 Project<GeneratedClients.StorefrontProductSelectionPreviewRequest>(request),
                 cancellationToken);
@@ -146,14 +156,14 @@ namespace BlazorShop.Storefront.Services
             string slug,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPublishedPageBySlugAsync(slug, cancellationToken);
+            var result = await this.contentFacade.GetPublishedPageBySlugAsync(slug, cancellationToken);
             return MapResult<GeneratedClients.StorefrontPagePublicDto, GetStorefrontPage>(result);
         }
 
         public async Task<StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>> GetPageNavigationLinksAsync(
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetPageNavigationLinksAsync(cancellationToken);
+            var result = await this.contentFacade.GetPageNavigationLinksAsync(cancellationToken);
             return MapListResult<GeneratedClients.StorefrontPageNavigationLinkDto, StorefrontPageNavigationLinkDto>(result, fallbackEmpty: true);
         }
 
@@ -161,13 +171,13 @@ namespace BlazorShop.Storefront.Services
             string systemName,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetNavigationMenuAsync(systemName, cancellationToken);
+            var result = await this.navigationFacade.GetNavigationMenuAsync(systemName, cancellationToken);
             return MapResult<GeneratedClients.StoreNavigationPublicMenuDto, StoreNavigationPublicMenuDto>(result);
         }
 
         public async Task<StorefrontApiResult<GetSeoSettings>> GetSeoSettingsAsync(CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetSeoSettingsAsync(cancellationToken);
+            var result = await this.seoFacade.GetSeoSettingsAsync(cancellationToken);
             return MapResult<GeneratedClients.SeoSettingsDto, GetSeoSettings>(result);
         }
 
@@ -175,7 +185,7 @@ namespace BlazorShop.Storefront.Services
             string path,
             CancellationToken cancellationToken = default)
         {
-            var result = await this.catalogContentFacade.GetRedirectResolutionAsync(path, cancellationToken);
+            var result = await this.seoFacade.GetRedirectResolutionAsync(path, cancellationToken);
             return MapResult<GeneratedClients.SeoRedirectResolutionDto, SeoRedirectResolutionDto>(result);
         }
 

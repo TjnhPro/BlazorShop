@@ -7,7 +7,7 @@ namespace BlazorShop.Storefront.Runtime
     using GeneratedPagesClient = BlazorShop.Storefront.Client.IStorefrontPagesClient;
     using GeneratedSeoClient = BlazorShop.Storefront.Client.IStorefrontSeoClient;
 
-    public interface IStorefrontRuntimeCatalogContentFacade
+    public interface IStorefrontRuntimeCatalogFacade
     {
         Task<StorefrontRuntimeResult<IReadOnlyList<StorefrontCategoryResponse>>> GetPublishedCategoriesAsync(CancellationToken cancellationToken = default);
 
@@ -52,23 +52,40 @@ namespace BlazorShop.Storefront.Runtime
             Guid productId,
             StorefrontProductSelectionPreviewRequest request,
             CancellationToken cancellationToken = default);
+    }
 
+    public interface IStorefrontRuntimeContentFacade
+    {
         Task<StorefrontRuntimeResult<StorefrontPagePublicDto>> GetPublishedPageBySlugAsync(
             string slug,
             CancellationToken cancellationToken = default);
 
         Task<StorefrontRuntimeResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>> GetPageNavigationLinksAsync(
             CancellationToken cancellationToken = default);
+    }
 
+    public interface IStorefrontRuntimeNavigationFacade
+    {
         Task<StorefrontRuntimeResult<StoreNavigationPublicMenuDto>> GetNavigationMenuAsync(
             string systemName,
             CancellationToken cancellationToken = default);
+    }
 
+    public interface IStorefrontRuntimeSeoFacade
+    {
         Task<StorefrontRuntimeResult<SeoSettingsDto>> GetSeoSettingsAsync(CancellationToken cancellationToken = default);
 
         Task<StorefrontRuntimeResult<SeoRedirectResolutionDto>> GetRedirectResolutionAsync(
             string path,
             CancellationToken cancellationToken = default);
+    }
+
+    public interface IStorefrontRuntimeCatalogContentFacade :
+        IStorefrontRuntimeCatalogFacade,
+        IStorefrontRuntimeContentFacade,
+        IStorefrontRuntimeNavigationFacade,
+        IStorefrontRuntimeSeoFacade
+    {
     }
 
     public sealed record StorefrontRuntimeProductCatalogQuery(

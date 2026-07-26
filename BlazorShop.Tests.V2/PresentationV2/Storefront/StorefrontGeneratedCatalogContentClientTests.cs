@@ -195,9 +195,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontDi_UsesGeneratedCatalogContentAdapterForCatalogContentNavigationAndSeo()
         {
             var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var adapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCatalogContentClient.cs");
 
             Assert.Contains("GeneratedStorefrontCatalogContentClient", source, StringComparison.Ordinal);
-            Assert.Contains("IStorefrontRuntimeCatalogContentFacade", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCatalogContentClient.cs"), StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeCatalogFacade", adapter, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeContentFacade", adapter, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeNavigationFacade", adapter, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeSeoFacade", adapter, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefrontRuntimeCatalogContentFacade catalogContentFacade", adapter, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontCatalogClient>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontContentClient>", source, StringComparison.Ordinal);
             Assert.Contains("GetRequiredService<GeneratedStorefrontCatalogContentClient>", source, StringComparison.Ordinal);
@@ -229,13 +234,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 BaseAddress = new Uri("https://commerce.example/"),
             };
 
-            return new GeneratedStorefrontCatalogContentClient(
-                new StorefrontRuntimeCatalogContentFacade(
-                    new StubRuntimeContext(),
-                    new StorefrontCatalogClient(httpClient),
-                    new StorefrontPagesClient(httpClient),
-                    new StorefrontNavigationClient(httpClient),
-                    new StorefrontSeoClient(httpClient)));
+            var facade = new StorefrontRuntimeCatalogContentFacade(
+                new StubRuntimeContext(),
+                new StorefrontCatalogClient(httpClient),
+                new StorefrontPagesClient(httpClient),
+                new StorefrontNavigationClient(httpClient),
+                new StorefrontSeoClient(httpClient));
+
+            return new GeneratedStorefrontCatalogContentClient(facade, facade, facade, facade);
         }
 
         private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json)

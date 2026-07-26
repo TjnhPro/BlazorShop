@@ -68,7 +68,12 @@ namespace BlazorShop.Storefront.Runtime
             services.AddScoped<IStorefrontRecommendationsClient>(serviceProvider => new StorefrontRecommendationsClient(CreateGeneratedHttpClient(serviceProvider)));
             services.AddScoped<IStorefrontSeoClient>(serviceProvider => new StorefrontSeoClient(CreateGeneratedHttpClient(serviceProvider)));
             services.AddScoped<IStorefrontStoreClient>(serviceProvider => new StorefrontStoreClient(CreateGeneratedHttpClient(serviceProvider)));
-            services.AddScoped<IStorefrontRuntimeCatalogContentFacade, StorefrontRuntimeCatalogContentFacade>();
+            services.AddScoped<StorefrontRuntimeCatalogContentFacade>();
+            services.AddScoped<IStorefrontRuntimeCatalogContentFacade>(serviceProvider => serviceProvider.GetRequiredService<StorefrontRuntimeCatalogContentFacade>());
+            services.AddScoped<IStorefrontRuntimeCatalogFacade, StorefrontRuntimeCatalogFacade>();
+            services.AddScoped<IStorefrontRuntimeContentFacade, StorefrontRuntimeContentFacade>();
+            services.AddScoped<IStorefrontRuntimeNavigationFacade, StorefrontRuntimeNavigationFacade>();
+            services.AddScoped<IStorefrontRuntimeSeoFacade, StorefrontRuntimeSeoFacade>();
             services.AddScoped<IStorefrontRuntimeCartFacade, StorefrontRuntimeCartFacade>();
             services.AddScoped<IStorefrontRuntimeCheckoutFacade, StorefrontRuntimeCheckoutFacade>();
             services.AddScoped<IStorefrontRuntimeConfigurationFacade, StorefrontRuntimeConfigurationFacade>();

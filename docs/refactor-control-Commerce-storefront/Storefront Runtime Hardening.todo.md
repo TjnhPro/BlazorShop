@@ -532,44 +532,56 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Goal: reduce `IStorefrontRuntimeCatalogContentFacade` scope without changing endpoint behavior.
 
+Status: completed in commit pending.
+
 ### Target Interfaces
 
-- [ ] `IStorefrontRuntimeCatalogFacade`
-  - [ ] published categories
-  - [ ] category tree
-  - [ ] category by slug
-  - [ ] catalog products
-  - [ ] filter metadata
-  - [ ] search suggestions
-  - [ ] product by slug
-  - [ ] product by ID
-  - [ ] product selection preview if current consumers treat it as catalog/product runtime.
-- [ ] `IStorefrontRuntimeContentFacade`
-  - [ ] published page by slug/system name
-  - [ ] page navigation links if currently page-owned.
-- [ ] `IStorefrontRuntimeNavigationFacade`
-  - [ ] menu tree/menu items
-  - [ ] active navigation support if Runtime owns it.
-- [ ] `IStorefrontRuntimeSeoFacade`
-  - [ ] SEO settings/defaults
-  - [ ] redirect resolution
-  - [ ] canonical/route resolver helpers if currently in Runtime.
+- [x] `IStorefrontRuntimeCatalogFacade`
+  - [x] published categories
+  - [x] category tree
+  - [x] category by slug
+  - [x] catalog products
+  - [x] filter metadata
+  - [x] search suggestions
+  - [x] product by slug
+  - [x] product by ID
+  - [x] product selection preview if current consumers treat it as catalog/product runtime.
+- [x] `IStorefrontRuntimeContentFacade`
+  - [x] published page by slug/system name
+  - [x] page navigation links if currently page-owned.
+- [x] `IStorefrontRuntimeNavigationFacade`
+  - [x] menu tree/menu items
+  - [x] active navigation support if Runtime owns it.
+- [x] `IStorefrontRuntimeSeoFacade`
+  - [x] SEO settings/defaults
+  - [x] redirect resolution
+  - [x] canonical/route resolver helpers if currently in Runtime.
 
 ### Tasks
 
-- [ ] Record current consumers of `IStorefrontRuntimeCatalogContentFacade`.
-- [ ] Create new capability-specific interfaces in Runtime.
-- [ ] Move implementation code mechanically into capability-specific classes:
-  - [ ] `StorefrontRuntimeCatalogFacade`
-  - [ ] `StorefrontRuntimeContentFacade`
-  - [ ] `StorefrontRuntimeNavigationFacade`
-  - [ ] `StorefrontRuntimeSeoFacade`
-- [ ] Keep old `IStorefrontRuntimeCatalogContentFacade` as a compatibility adapter for one phase if consumers are numerous.
-- [ ] Mark compatibility adapter with an implementation comment and test, not a permanent abstraction.
-- [ ] Update V2 generated adapters or services to inject the new specific facade where the consuming class only needs one capability.
-- [ ] Do not change public Storefront API routes or generated DTOs.
-- [ ] Do not add a new NuGet package.
-- [ ] Keep tests for old and new registrations until V2/Starter migration is complete.
+- [x] Record current consumers of `IStorefrontRuntimeCatalogContentFacade`.
+- [x] Create new capability-specific interfaces in Runtime.
+- [x] Move implementation code mechanically into capability-specific classes:
+  - [x] `StorefrontRuntimeCatalogFacade`
+  - [x] `StorefrontRuntimeContentFacade`
+  - [x] `StorefrontRuntimeNavigationFacade`
+  - [x] `StorefrontRuntimeSeoFacade`
+- [x] Keep old `IStorefrontRuntimeCatalogContentFacade` as a compatibility adapter for one phase if consumers are numerous.
+- [x] Mark compatibility adapter with an implementation comment and test, not a permanent abstraction.
+- [x] Update V2 generated adapters or services to inject the new specific facade where the consuming class only needs one capability.
+- [x] Do not change public Storefront API routes or generated DTOs.
+- [x] Do not add a new NuGet package.
+- [x] Keep tests for old and new registrations until V2/Starter migration is complete.
+
+### SRH6 Notes
+
+- Current old-facade consumers were `GeneratedStorefrontCatalogContentClient`, generated catalog tests, shared package DI tests, and plan docs.
+- Added `IStorefrontRuntimeCatalogFacade`, `IStorefrontRuntimeContentFacade`, `IStorefrontRuntimeNavigationFacade`, and `IStorefrontRuntimeSeoFacade`.
+- Kept `IStorefrontRuntimeCatalogContentFacade` as a compatibility adapter interface extending the four capability interfaces for one migration phase.
+- Added `StorefrontRuntimeCatalogFacade`, `StorefrontRuntimeContentFacade`, `StorefrontRuntimeNavigationFacade`, and `StorefrontRuntimeSeoFacade` as the primary capability facade classes.
+- The compatibility implementation remains `StorefrontRuntimeCatalogContentFacade` in this phase to avoid behavioral churn; the new capability facade classes delegate to the compatibility facade until the adapter is removed.
+- V2 generated catalog/content adapter now injects the four capability interfaces instead of the compatibility god facade.
+- Runtime/V2 builds passed and focused Runtime/shared/catalog tests passed.
 
 ### Files Likely Touched
 
@@ -589,9 +601,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Runtime no longer has one catalog/content/navigation/SEO god facade as the primary API.
-- [ ] Existing V2 and Starter flows keep working.
-- [ ] Compatibility adapter has a planned removal trigger.
+- [x] Runtime no longer has one catalog/content/navigation/SEO god facade as the primary API.
+- [x] Existing V2 and Starter flows keep working.
+- [x] Compatibility adapter has a planned removal trigger.
 
 ## Phase SRH7 - Split Capability Registration
 

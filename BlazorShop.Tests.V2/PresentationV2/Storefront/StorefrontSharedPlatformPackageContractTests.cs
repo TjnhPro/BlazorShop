@@ -114,6 +114,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.NotNull(scoped.GetRequiredService<IStorefrontRecommendationsClient>());
             Assert.NotNull(scoped.GetRequiredService<IStorefrontSeoClient>());
             Assert.NotNull(scoped.GetRequiredService<IStorefrontStoreClient>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeCatalogFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeContentFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeNavigationFacade>());
+            Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeSeoFacade>());
             Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeCatalogContentFacade>());
             Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeCartFacade>());
             Assert.NotNull(scoped.GetRequiredService<IStorefrontRuntimeCheckoutFacade>());
