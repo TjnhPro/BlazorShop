@@ -109,8 +109,9 @@ Exit criteria:
 
 Muc tieu: `CartView` khong con nam trong shared `Components/Features`, nhung cart browser behavior hien tai khong doi.
 
-- [x] Tao V2-owned component:
-  - `BlazorShop.Storefront.V2/Components/Cart/StorefrontCartView.razor`
+- [x] Tao V2-owned interactive component:
+  - 2026-07-26 final path: `BlazorShop.Storefront.WASM/Components/Cart/StorefrontCartView.razor`
+  - Historical SCR1 staging path was `BlazorShop.Storefront.V2/Components/Cart/StorefrontCartView.razor`; SCR12 moved it to WASM for browser hydration.
 - [x] Chuyen visual markup tu shared `Features/Cart/CartView.razor` sang V2 component.
 - [x] Doi namespace/import sang V2 component namespace.
 - [x] Giu shared dependencies chi o muc:
@@ -128,18 +129,20 @@ Muc tieu: `CartView` khong con nam trong shared `Components/Features`, nhung car
 
 Exit criteria:
 
-- [x] `CartPage.razor` render bang V2-owned cart component.
+- [x] `CartPage.razor` render bang V2 host/WASM-owned cart component.
 - [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Cart`.
 - [x] Cart flow tests/guardrails van cover quantity update, remove item, clear cart, checkout action, error state.
   - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
   - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
+  - 2026-07-26 SCR12 final state: interactive cart root moved from server V2 assembly to `BlazorShop.Storefront.WASM/Components/Cart` so WebAssembly hydration can find the root component; V2 still owns route/BFF/static asset composition.
 
 ## Phase SCR2 - Move Checkout Visual Wrapper Ownership to V2
 
 Muc tieu: `CheckoutShell` thuoc V2, shared package chi con state/action/label contracts.
 
-- [x] Tao V2-owned component:
-  - `BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutShell.razor`
+- [x] Tao V2-owned interactive component:
+  - 2026-07-26 final path: `BlazorShop.Storefront.WASM/Components/Checkout/StorefrontCheckoutShell.razor`
+  - Historical SCR2 staging path was `BlazorShop.Storefront.V2/Components/Checkout/StorefrontCheckoutShell.razor`; SCR12 moved it to WASM for browser hydration.
 - [x] Chuyen markup tu `Features/Checkout/CheckoutShell.razor` sang V2.
 - [x] Chuyen checkout visual option/class records tu Headless sang V2-local options.
 - [x] Giu shared contracts/headless:
@@ -163,19 +166,21 @@ Muc tieu: `CheckoutShell` thuoc V2, shared package chi con state/action/label co
 
 Exit criteria:
 
-- [x] `CheckoutPage.razor` render bang V2-owned checkout component.
+- [x] `CheckoutPage.razor` render bang V2 host/WASM-owned checkout component.
 - [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Checkout`.
 - [x] Shared Components khong con checkout Razor visual wrapper.
   - 2026-07-26: shared wrapper con ton tai tam thoi den SCR6, nhung khong con duoc V2 source/test positive path consume.
   - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
   - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
+  - 2026-07-26 SCR12 final state: interactive checkout root moved from server V2 assembly to `BlazorShop.Storefront.WASM/Components/Checkout`; V2 host continues to own checkout route, BFF endpoints, antiforgery, and static script ownership.
 
 ## Phase SCR3 - Move Account Visual Wrapper Ownership to V2
 
 Muc tieu: account khong con la shared visual app. V2 so huu page composition, routes va copy.
 
-- [x] Tao V2-owned folder:
-  - `BlazorShop.Storefront.V2/Components/Account/`
+- [x] Tao V2-owned interactive folder:
+  - 2026-07-26 final path: `BlazorShop.Storefront.WASM/Components/Account/`
+  - Historical SCR3 staging path was `BlazorShop.Storefront.V2/Components/Account/`; SCR12 moved it to WASM for browser hydration.
 - [x] Chuyen cac visual components sau vao V2:
   - `StorefrontAccountApp.razor`
   - `StorefrontAccountNavigation.razor`
@@ -206,11 +211,12 @@ Muc tieu: account khong con la shared visual app. V2 so huu page composition, ro
 
 Exit criteria:
 
-- [x] Account WASM host render bang V2-owned account components.
+- [x] Account WASM host render bang V2 host/WASM-owned account components.
 - [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Account`.
 - [x] Shared Components khong con account Razor visual wrappers.
   - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
   - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests|StorefrontBrandingMarkupTests` pass 68/68.
+  - 2026-07-26 SCR12 final state: interactive account root moved from server V2 assembly to `BlazorShop.Storefront.WASM/Components/Account`; this fixes browser hydration while preserving V2 account route/security/BFF ownership.
 
 ## Phase SCR4 - Delete Orphan Catalog, Product, and Deals Visual Wrappers
 
@@ -440,7 +446,7 @@ Muc tieu: docs hien tai khong con noi `Features` la active migration surface sau
 - [x] Update `docs/agents/storefront-builder.md` va `docs/visual-reverse-engineering-skill/reference.md`.
 - [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
   - replace old entries noi V2 compose `Features`;
-  - add final QA rows for V2-owned cart/checkout/account/product/deals markup;
+  - add final QA rows for V2 host/WASM-owned cart/checkout/account markup and V2-owned product/deals markup;
   - add Playwright release rows cho browser flows.
 - [x] Khong sua lich su plan da completed neu chi la record cu; neu can, them "retired by Storefront Components Compatibility Removal" note thay vi rewrite qua khu.
 
@@ -510,13 +516,13 @@ Exit criteria:
 
 Muc tieu: chung minh viec move component khong lam hong flow that cua Storefront V2.
 
-- [ ] Start local V2 runtime:
+- [x] Start local V2 runtime:
 
 ```powershell
 ./scripts/run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Dung Playwright browser test cac flow V2 that:
+- [x] Dung Playwright browser test cac flow V2 that:
   - home page render;
   - product list/category/search render;
   - product detail gallery 1x1 va purchase panel;
@@ -530,36 +536,42 @@ Muc tieu: chung minh viec move component khong lam hong flow that cua Storefront
   - order detail;
   - account password/change-password route neu fixture cho phep;
   - recovery UI neu dang nam trong release checklist.
-- [ ] Capture screenshots/trace cho loi UI neu co.
-- [ ] Verify browser console khong co JS module import error lien quan `storefrontWasmInterop.js`.
-- [ ] Verify anti-forgery/browser same-origin actions van submit duoc.
-- [ ] Update release QA checklist voi ket qua pass/fail that.
+  - 2026-07-26: `run-storefront-order-email-e2e.ps1 -Headless` pass, proving login, add-to-cart, checkout COD, order confirmation, account orders, order detail, receipt, order email, queued retry behavior, and same-origin network guard.
+  - 2026-07-26: `run-storefront-registration-policy-e2e.ps1 -Headless` pass.
+  - 2026-07-26: `.gstack/qa-reports/scr12-browser-qa/result.json` pass for `/`, `/category/apparel`, `/search?q=qa`, `/product/qa-simple-product-100`, add-to-cart, `/my-cart` quantity update, remove, clear, `/checkout`, static JS, console, and direct Commerce Node browser request guard.
+- [x] Capture screenshots/trace cho loi UI neu co.
+  - 2026-07-26: initial account hydration failure screenshot captured at `.gstack/qa-reports/order-email-e2e/failure.png`; fixed by moving interactive root components into WASM. Passing screenshots are under `.gstack/qa-reports/order-email-e2e/` and `.gstack/qa-reports/scr12-browser-qa/cart-clear-empty.png`.
+- [x] Verify browser console khong co JS module import error lien quan `storefrontWasmInterop.js`.
+  - 2026-07-26: `.gstack/qa-reports/scr12-browser-qa/result.json` has empty console list and `storefrontWasmInterop.js` returned HTTP 200 `text/javascript`.
+- [x] Verify anti-forgery/browser same-origin actions van submit duoc.
+  - 2026-07-26: cart clear/update/remove and checkout/order placement submitted through same-origin BFF with antiforgery-backed browser actions; no direct browser requests to Commerce Node were recorded.
+- [x] Update release QA checklist voi ket qua pass/fail that.
 
 Exit criteria:
 
-- [ ] Storefront V2 browser e2e pass cho cart/account/checkout.
-- [ ] Place order bang COD pass trong store test.
-- [ ] Khong co console error do missing static asset sau khi Components doi SDK.
+- [x] Storefront V2 browser e2e pass cho cart/account/checkout.
+- [x] Place order bang COD pass trong store test.
+- [x] Khong co console error do missing static asset sau khi Components doi SDK.
 
 ## Final Cleanup Checklist
 
-- [ ] `BlazorShop.Storefront.Components/Features` khong ton tai.
-- [ ] `BlazorShop.Storefront.Components` khong co `.razor`.
-- [ ] `BlazorShop.Storefront.Components.csproj` dung `Microsoft.NET.Sdk`.
-- [ ] `BlazorShop.Storefront.Components` chi co cac thu muc stable:
+- [x] `BlazorShop.Storefront.Components/Features` khong ton tai.
+- [x] `BlazorShop.Storefront.Components` khong co `.razor`.
+- [x] `BlazorShop.Storefront.Components.csproj` dung `Microsoft.NET.Sdk`.
+- [x] `BlazorShop.Storefront.Components` chi co cac thu muc stable:
   - `Contracts`
   - `Headless`
   - `Browser`
-- [ ] `Headless` khong co visual class bags.
-- [ ] Shared package khong hardcode V2 route default.
-- [ ] Shared package khong own final English storefront copy.
-- [ ] Shared package khong own layout/DOM visual composition.
-- [ ] V2 owns V2 markup/CSS/layout.
-- [ ] Starter owns neutral markup/CSS/layout.
-- [ ] StorefrontBuilder/generated storefronts own generated markup/CSS/layout.
-- [ ] Runtime registration surface da duoc cleanup hoac obsolete policy ro rang.
-- [ ] Architecture docs, StorefrontBuilder docs, QA checklist da dong bo.
-- [ ] No active source import:
+- [x] `Headless` khong co visual class bags.
+- [x] Shared package khong hardcode V2 route default.
+- [x] Shared package khong own final English storefront copy.
+- [x] Shared package khong own layout/DOM visual composition.
+- [x] V2 host/WASM client owns V2 markup/CSS/layout.
+- [x] Starter owns neutral markup/CSS/layout.
+- [x] StorefrontBuilder/generated storefronts own generated markup/CSS/layout.
+- [x] Runtime registration surface da duoc cleanup hoac obsolete policy ro rang.
+- [x] Architecture docs, StorefrontBuilder docs, QA checklist da dong bo.
+- [x] No active source import:
 
 ```text
 BlazorShop.Storefront.Components.Features
@@ -569,45 +581,45 @@ BlazorShop.Storefront.Components.Features
 
 Client:
 
-- [ ] Canonical OpenAPI remains at `contracts/storefront/storefront.openapi.json`.
-- [ ] Deterministic regeneration gate still passes.
-- [ ] No backend source dependency.
-- [ ] Independent package consumer proof still passes.
+- [x] Canonical OpenAPI remains at `contracts/storefront/storefront.openapi.json`.
+- [x] Deterministic regeneration gate still passes.
+- [x] No backend source dependency.
+- [x] Independent package consumer proof still passes.
 
 Runtime:
 
-- [ ] Typed generated-client factories remain.
-- [ ] Typed envelope mapping remains.
-- [ ] Caller cancellation behavior remains correct.
-- [ ] Capability-scoped registration remains.
-- [ ] Server-only boundary remains guarded.
-- [ ] No obsolete compatibility aliases, or aliases have explicit removal policy.
+- [x] Typed generated-client factories remain.
+- [x] Typed envelope mapping remains.
+- [x] Caller cancellation behavior remains correct.
+- [x] Capability-scoped registration remains.
+- [x] Server-only boundary remains guarded.
+- [x] No obsolete compatibility aliases, or aliases have explicit removal policy.
 
 Components:
 
-- [ ] Contracts only.
-- [ ] Headless behavior/state only.
-- [ ] Browser same-origin primitives only.
-- [ ] No `Features` folder.
-- [ ] No shared visual Razor wrappers.
-- [ ] No visual class bags.
-- [ ] No V2 route defaults.
-- [ ] No final copy/design/layout ownership.
+- [x] Contracts only.
+- [x] Headless behavior/state only.
+- [x] Browser same-origin primitives only.
+- [x] No `Features` folder.
+- [x] No shared visual Razor wrappers.
+- [x] No visual class bags.
+- [x] No V2 route defaults.
+- [x] No final copy/design/layout ownership.
 
 Stores:
 
-- [ ] V2 owns V2 markup/CSS/layout.
-- [ ] Starter owns neutral markup/CSS/layout.
-- [ ] `Storefront.{Name}` owns generated/custom markup/CSS/layout.
+- [x] V2 host/WASM client owns V2 markup/CSS/layout.
+- [x] Starter owns neutral markup/CSS/layout.
+- [x] `Storefront.{Name}` owns generated/custom markup/CSS/layout.
 
 ## Risk Controls
 
-- [ ] Move one capability at a time: cart, checkout, account, then orphan catalog/product/deals deletion.
-- [ ] Do not delete shared wrapper before V2 consumer is cut over and tests pass.
-- [ ] Do not switch Components SDK until static JS asset ownership is proven.
-- [ ] Do not keep compatibility aliases silently; remove or mark obsolete with version.
-- [ ] Do not treat old docs as source of truth when they conflict with architecture docs.
-- [ ] Browser QA must include real cart/account/checkout flows, not only smoke tests.
+- [x] Move one capability at a time: cart, checkout, account, then orphan catalog/product/deals deletion.
+- [x] Do not delete shared wrapper before V2 consumer is cut over and tests pass.
+- [x] Do not switch Components SDK until static JS asset ownership is proven.
+- [x] Do not keep compatibility aliases silently; remove or mark obsolete with version.
+- [x] Do not treat old docs as source of truth when they conflict with architecture docs.
+- [x] Browser QA must include real cart/account/checkout flows, not only smoke tests.
 
 ## Decision Audit Trail
 

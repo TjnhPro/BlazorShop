@@ -31,7 +31,7 @@ app.MapStorefrontSeoEndpoints();
 app.MapStorefrontMediaEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(BlazorShop.Storefront.WASM._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(BlazorShop.Storefront.Components.Account.StorefrontAccountApp).Assembly);
 
 app.Run();
 

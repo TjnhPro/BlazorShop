@@ -164,6 +164,7 @@ Use for:
 - SEO and public discovery documents.
 - Store key propagation to Commerce Node Storefront API.
 - Storefront-owned presentation/local endpoint contracts plus generated Storefront client adapters.
+- Server-owned route composition and static assets for interactive cart, checkout, and account surfaces hosted from the Storefront WASM client assembly.
 
 Asset and layout rules:
 
@@ -205,6 +206,7 @@ Do not:
 Use for:
 
 - Storefront V2 interactive WebAssembly components and bootstrapping required by `AddInteractiveWebAssemblyRenderMode`.
+- Interactive cart, checkout, and account root components used by Storefront V2 after SSR route/security/bootstrap has selected the page surface.
 - Browser-side Storefront UI behavior that is intentionally part of the public Storefront runtime.
 
 Do not:
@@ -262,7 +264,7 @@ Current ownership map:
 
 - `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
 - `BlazorShop.Storefront.Components` owns browser-safe reusable `Contracts`, `Headless` state/behavior, and `Browser` same-origin primitives only. Visual templates belong to Storefront V2, Starter, or generated/custom storefront projects.
-- `BlazorShop.Storefront.V2` owns route composition, SEO, BFF endpoints, session/cart-token handling, store resolution, deployment, and storefront-specific design.
+- `BlazorShop.Storefront.V2` owns route composition, SEO, BFF endpoints, session/cart-token handling, store resolution, deployment, static storefront assets, and storefront-specific design. Its WASM client assembly owns the interactive V2 root components that must hydrate in the browser.
 - `BlazorShop.Storefront.Runtime` owns neutral runtime primitives and server-side generated-client registration.
 - `Storefront.Features.*` projects are deferred until repeated neutral feature logic proves the need.
 
