@@ -228,6 +228,50 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("<DealsBlock", home + todaysDeals, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void ProductGallery_UsesHeadlessStateAndV2VisualTemplateAfterHpr5Migration()
+        {
+            var sharedGallery = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor");
+            var galleryState = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductGalleryState.cs");
+            var v2Gallery = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductGallery.razor");
+            var productPage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
+
+            foreach (var expected in new[]
+            {
+                "SelectedIndex",
+                "SelectedItem",
+                "CanSelectPrevious",
+                "CanSelectNext",
+                "Select(int index)",
+                "SelectPrevious()",
+                "SelectNext()",
+                "FallbackAltText",
+                "data-storefront-gallery-thumbnail"
+            })
+            {
+                Assert.Contains(expected, galleryState, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("ProductGalleryState.Create(Items, ProductName)", sharedGallery, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-gallery", sharedGallery, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-gallery-main-image", sharedGallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("class=\"", sharedGallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("aspect-square", sharedGallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("rounded-", sharedGallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-neutral-", sharedGallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("sm:grid", sharedGallery, StringComparison.Ordinal);
+
+            Assert.Contains("ProductGalleryState.Create(Items, ProductName)", v2Gallery, StringComparison.Ordinal);
+            Assert.Contains("aspect-square", v2Gallery, StringComparison.Ordinal);
+            Assert.Contains("bs-product-gallery__main", v2Gallery, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductGallery Items=\"_galleryItems\" ProductName=\"@_product.Name\" />", productPage, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ProductGallery Items=\"_galleryItems\"", productPage, StringComparison.Ordinal);
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");

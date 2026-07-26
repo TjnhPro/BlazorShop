@@ -246,25 +246,25 @@ Goal: remove V2 deals section composition from shared components.
 
 Goal: keep gallery behavior but make visual layout store-owned.
 
-- [ ] Keep `ProductGalleryItem`.
-- [ ] Add headless gallery state/context:
-  - [ ] selected index.
-  - [ ] selected item.
-  - [ ] next/previous availability.
-  - [ ] select thumbnail action.
-  - [ ] alt text/fallback state.
-  - [ ] stable `data-storefront-gallery-*` hook names.
-- [ ] Move V2 visual gallery markup to `Storefront.V2/Components/Product`.
-- [ ] Preserve V2 requirement that product images render square/1x1 in V2 visual template.
-- [ ] Do not force square layout in shared headless contract.
-- [ ] Keep semantic hooks possible but not layout-defining.
+- [x] Keep `ProductGalleryItem`.
+- [x] Add headless gallery state/context:
+  - [x] selected index.
+  - [x] selected item.
+  - [x] next/previous availability.
+  - [x] select thumbnail action.
+  - [x] alt text/fallback state.
+  - [x] stable `data-storefront-gallery-*` hook names.
+- [x] Move V2 visual gallery markup to `Storefront.V2/Components/Product`.
+- [x] Preserve V2 requirement that product images render square/1x1 in V2 visual template.
+- [x] Do not force square layout in shared headless contract.
+- [x] Keep semantic hooks possible but not layout-defining.
 
 ### HPR5 QA gate
 
-- [ ] Product detail gallery renders.
-- [ ] Thumbnail selection changes main image.
-- [ ] Missing/broken image fallback still works.
-- [ ] Static guard: shared gallery has no `aspect-square`, thumbnail size, `rounded-*`, `bg-neutral-*`, or store-specific layout classes.
+- [x] Product detail gallery renders.
+- [x] Thumbnail selection changes main image.
+- [x] Missing/broken image fallback still works.
+- [x] Static guard: shared gallery has no `aspect-square`, thumbnail size, `rounded-*`, `bg-neutral-*`, or store-specific layout classes.
 
 ## Phase HPR6 - Product purchase headless behavior
 
