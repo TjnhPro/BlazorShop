@@ -218,14 +218,14 @@ Do not:
 Status:
 
 - Active generated Storefront API client under `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`.
-- Generated from the Commerce Node Storefront OpenAPI snapshot by `scripts/generate-storefront-client.ps1` using the pinned NSwag dotnet tool.
+- Generated from the canonical Storefront OpenAPI contract at `contracts/storefront/storefront.openapi.json` by `scripts/generate-storefront-client.ps1` using the pinned NSwag dotnet tool.
 
 Use for:
 
 - Generated request and response DTOs from Commerce Node Storefront OpenAPI.
 - Generated typed HTTP clients and transport primitives.
 - JSON serialization settings, route construction with `storeKey`, cancellation token propagation, and error deserialization.
-- Partial hooks and injected `HttpClient` for correlation, tracing, and caller-owned retry policy wiring.
+- Partial hooks and injected `HttpClient` for correlation, tracing, and caller-owned retry policy wiring. `HttpClient.BaseAddress` is the single Commerce Node base URL source for generated clients.
 - Small typed facades only when a generated client shape is proven too raw for Storefront consumers.
 
 Do not:
@@ -247,6 +247,7 @@ Use for:
 - Capability/configuration readers.
 - Normalized error mapping primitives.
 - BFF-safe result mapping primitives.
+- Runtime configures generated clients through the named `StorefrontGenerated` `HttpClient`; callers should configure `StorefrontRuntimeOptions.CommerceNodeBaseUrl` instead of passing per-client base URL strings.
 
 Do not:
 

@@ -40,6 +40,7 @@ Generated storefronts must not:
 Treat these as contract surfaces:
 
 - `BlazorShop.Storefront.Client` generated transport and DTOs.
+- `contracts/storefront/storefront.openapi.json` canonical Storefront OpenAPI contract and `scripts/qa/run-storefront-client-regeneration-gate.ps1` package release gate.
 - `BlazorShop.Storefront.Runtime` security, error, capability, and client-registration primitives.
 - `BlazorShop.Storefront.Components` browser-safe reusable component package.
 - Generated storefront `StorefrontPackageVersions.props`.
@@ -56,6 +57,7 @@ Use focused validation for StorefrontBuilder changes:
 ```powershell
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
 .\scripts\qa\run-storefront-builder-generated-proof.ps1
+.\scripts\qa\run-storefront-client-regeneration-gate.ps1
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```

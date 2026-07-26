@@ -93,10 +93,13 @@ Swagger/OpenAPI is part of the product surface. Every active API document must:
 Commerce Node Storefront document ownership:
 
 - `/swagger/storefront/swagger.json` is the frontend/client Storefront API contract and must exclude provider callback/webhook operations.
+- `contracts/storefront/storefront.openapi.json` is the canonical committed Storefront frontend/client contract used to generate `BlazorShop.Storefront.Client`.
 - `/swagger/storefront-provider/swagger.json` is the provider integration contract for payment callback/webhook routes when those operations need Swagger coverage.
 - Runtime provider callback/webhook routes may stay under `api/storefront/stores/{storeKey}/payments/*`, but they are not frontend SDK operations.
 - Storefront expected errors use `CommerceNodeApiErrorResponse` with a stable machine-readable `code`; frontend clients must branch on `code`, not parse `message`.
 - Storefront public configuration exposes a machine-readable `features` capability map with `supported`, `enabled`, and optional `reason`, while flat feature flags may remain temporarily for backward compatibility.
+- Commerce Node Storefront runtime contract tests compare live Swagger to the canonical contract. Test snapshots are guardrails and must not be treated as production generator input.
+- Run `scripts/qa/run-storefront-client-regeneration-gate.ps1` before publishing `BlazorShop.Storefront.Client` or consuming a refreshed package.
 - Storefront OpenAPI compatibility tests must guard removed paths, operation IDs, schemas, properties, enum values, response statuses, security schemes, property type changes, and optional-to-required changes before snapshots are refreshed.
 
 ## Contract Tests
@@ -117,6 +120,7 @@ Minimum contract test coverage:
 - Side-effecting operations do not use `GET`.
 - A C# or TypeScript client can be generated, or a smoke equivalent proves generator-safe operation names and schemas.
 - Swagger snapshots are stored for breaking-change detection when the API is public or consumed by another V2 runtime.
+- Storefront generated-client drift is checked with `scripts/qa/run-storefront-client-regeneration-gate.ps1` before package release.
 
 ## Change Checklist
 
@@ -131,3 +135,4 @@ Before committing any API change:
 7. Add or update contract tests and snapshots.
 8. Run focused build/test verification.
 9. Update the relevant QA todo file.
+10. For Storefront client package changes, run the generated-client regeneration gate and package consumer proof.

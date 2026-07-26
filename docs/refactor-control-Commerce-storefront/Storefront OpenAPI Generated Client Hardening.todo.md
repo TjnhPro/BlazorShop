@@ -1,6 +1,6 @@
 # Storefront OpenAPI Generated Client Hardening.todo
 
-Status: in progress
+Status: implemented
 Source: autoplan after repository review of Storefront OpenAPI snapshot ownership, generated-client determinism, generated-client base URL behavior, and `CreatedAfterUtc` query semantics.
 
 ## Goal
@@ -435,31 +435,31 @@ Goal: make the new ownership and release commands discoverable.
 
 ### Tasks
 
-- [ ] Update `docs/architecture/09-api-contract-standards.md`:
-  - [ ] canonical Storefront contract lives under `contracts/storefront/storefront.openapi.json`.
-  - [ ] Commerce Node runtime contract tests compare live Swagger to canonical contract.
-  - [ ] generated client drift gate is required before package release.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md`:
-  - [ ] clarify `Storefront.Client` is generated from canonical contract, not test snapshot.
-  - [ ] clarify test snapshots are breaking-change guardrails only.
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md`:
-  - [ ] replace "generated from Commerce Node Storefront OpenAPI snapshot" wording with canonical contract wording.
-  - [ ] document Runtime base URL ownership.
-- [ ] Update StorefrontBuilder docs if they mention generated client source:
-  - [ ] `docs/architecture/11-storefront-builder.md`
-  - [ ] `docs/agents/storefront-builder.md`
-  - [ ] `docs/visual-reverse-engineering-skill/*`
-- [ ] Update QA checklists:
-  - [ ] `QA-CommerceNode.todo.md` includes canonical contract verification.
-  - [ ] `QA-StorefrontV2.todo.md` includes generated-client regeneration gate before release.
-  - [ ] StorefrontBuilder QA includes package/generation guard when generated storefronts consume `Storefront.Client`.
-- [ ] Add a release checklist section:
-  - [ ] fetch/run Commerce Node Storefront Swagger contract tests.
-  - [ ] compare runtime OpenAPI to canonical.
-  - [ ] run `./scripts/qa/run-storefront-client-regeneration-gate.ps1`.
-  - [ ] build `Storefront.Client`.
-  - [ ] run package consumer proof.
-  - [ ] run Storefront V2 focused tests.
+- [x] Update `docs/architecture/09-api-contract-standards.md`:
+  - [x] canonical Storefront contract lives under `contracts/storefront/storefront.openapi.json`.
+  - [x] Commerce Node runtime contract tests compare live Swagger to canonical contract.
+  - [x] generated client drift gate is required before package release.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md`:
+  - [x] clarify `Storefront.Client` is generated from canonical contract, not test snapshot.
+  - [x] clarify test snapshots are breaking-change guardrails only.
+- [x] Update `docs/architecture/05-project-and-folder-guide.md`:
+  - [x] replace "generated from Commerce Node Storefront OpenAPI snapshot" wording with canonical contract wording.
+  - [x] document Runtime base URL ownership.
+- [x] Update StorefrontBuilder docs if they mention generated client source:
+  - [x] `docs/architecture/11-storefront-builder.md`
+  - [x] `docs/agents/storefront-builder.md`
+  - [x] `docs/visual-reverse-engineering-skill/*`
+- [x] Update QA checklists:
+  - [x] `QA-CommerceNode.todo.md` includes canonical contract verification.
+  - [x] `QA-StorefrontV2.todo.md` includes generated-client regeneration gate before release.
+  - [x] StorefrontBuilder QA includes package/generation guard when generated storefronts consume `Storefront.Client`.
+- [x] Add a release checklist section:
+  - [x] fetch/run Commerce Node Storefront Swagger contract tests.
+  - [x] compare runtime OpenAPI to canonical.
+  - [x] run `./scripts/qa/run-storefront-client-regeneration-gate.ps1`.
+  - [x] build `Storefront.Client`.
+  - [x] run package consumer proof.
+  - [x] run Storefront V2 focused tests.
 
 ### Files Likely Touched
 
@@ -481,9 +481,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Architecture docs match implementation.
-- [ ] QA files list the new release gates.
-- [ ] Future agents do not infer test snapshots are production contract owners.
+- [x] Architecture docs match implementation.
+- [x] QA files list the new release gates.
+- [x] Future agents do not infer test snapshots are production contract owners.
 
 ## Final Release Verification
 
@@ -506,17 +506,17 @@ If browser-visible New Releases behavior changes in OCH6:
 
 ## Completion Checklist
 
-- [ ] `contracts/storefront/storefront.openapi.json` exists and is canonical.
-- [ ] NSwag config no longer points into `BlazorShop.Tests.V2`.
-- [ ] Commerce Node contract tests compare runtime Swagger against canonical contract.
-- [ ] Generated client regeneration gate exists.
-- [ ] Generated client regeneration gate fails on `Generated/StorefrontClient.g.cs` drift.
-- [ ] Generated clients use one base URL source.
-- [ ] Runtime registration no longer depends on a confusing empty generated base URL when NSwag supports removing it.
-- [ ] `CreatedAfterUtc` has a tracked contract fix path.
-- [ ] New Releases semantics are intentionally chosen after the date contract fix.
-- [ ] Architecture docs and QA checklists are updated.
-- [ ] Storefront.Client package consumer proof still passes.
+- [x] `contracts/storefront/storefront.openapi.json` exists and is canonical.
+- [x] NSwag config no longer points into `BlazorShop.Tests.V2`.
+- [x] Commerce Node contract tests compare runtime Swagger against canonical contract.
+- [x] Generated client regeneration gate exists.
+- [x] Generated client regeneration gate fails on `Generated/StorefrontClient.g.cs` drift.
+- [x] Generated clients use one base URL source.
+- [x] Runtime registration no longer depends on a confusing empty generated base URL when NSwag supports removing it.
+- [x] `CreatedAfterUtc` has a tracked contract fix path.
+- [x] New Releases semantics are intentionally chosen after the date contract fix.
+- [x] Architecture docs and QA checklists are updated.
+- [x] Storefront.Client package consumer proof still passes.
 
 ## Autoplan Decision Audit Trail
 

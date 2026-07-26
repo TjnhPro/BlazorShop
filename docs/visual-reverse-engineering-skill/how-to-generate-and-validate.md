@@ -123,5 +123,6 @@ Check these points before promoting generated storefront output or committing to
 - Browser code uses same-origin BFF routes for protected actions.
 - Required analysis artifacts exist.
 - Static gate, focused tests, and isolation gate pass.
+- Storefront client regeneration gate passes before package proof if the canonical Storefront contract or generated client changed.
 - Browser QA reports are current when page behavior changed.
 - Generated storefront artifacts remain out of `BlazorShop.sln` unless a separate architecture decision promotes them.

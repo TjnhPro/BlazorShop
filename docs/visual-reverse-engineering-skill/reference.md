@@ -37,6 +37,7 @@ Generated proof projects are ignored artifacts, not committed source projects. T
 Generated/custom storefront compatibility rules:
 
 - Use `BlazorShop.Storefront.Client` package contracts for Storefront API transport and DTOs.
+- Treat `contracts/storefront/storefront.openapi.json` as the canonical Storefront API contract behind that package; run `scripts/qa/run-storefront-client-regeneration-gate.ps1` before package proof when the contract or generated client changes.
 - Use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use `BlazorShop.Storefront.Components` contracts/headless behavior only when reusable browser-safe UI components are needed; local presentation components can stay inside the generated storefront.
 - `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, pages, and analysis artifacts.

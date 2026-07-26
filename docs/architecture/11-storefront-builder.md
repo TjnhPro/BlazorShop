@@ -6,7 +6,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 
 | Area | Owner | Responsibility |
 | --- | --- | --- |
-| Storefront API contracts | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTOs from Commerce Node Storefront OpenAPI. |
+| Storefront API contracts | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Generated Storefront API transport and DTOs from the canonical Storefront OpenAPI contract at `contracts/storefront/storefront.openapi.json`. |
 | Neutral runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Store context, server-side generated-client registration, capability reading, normalized errors, and BFF-safe result primitives. |
 | Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Headless Storefront presentation contracts, browser-safe behavior/state primitives, and temporary compatibility components that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
@@ -55,7 +55,7 @@ Generated storefronts must not:
 
 Starter consumer rules:
 
-- Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts.
+- Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts. The package is generated from `contracts/storefront/storefront.openapi.json`.
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior when a starter or generated storefront needs that shared component package.
 - Starter owns its neutral visual templates; Starter-local neutral visual components may remain local and must not copy Storefront V2 visual components.
@@ -76,7 +76,7 @@ Generated/custom storefront consumer rules:
 
 When visual evidence and backend capability do not agree, decisions follow this order:
 
-1. Commerce Node Storefront OpenAPI and `BlazorShop.Storefront.Client` contracts.
+1. Canonical Storefront OpenAPI (`contracts/storefront/storefront.openapi.json`) and `BlazorShop.Storefront.Client` contracts.
 2. `BlazorShop.Storefront.Runtime` server-side registration and facade contract.
 3. `BlazorShop.Storefront.Components` presentation contract.
 4. Starter generation/runtime contract.

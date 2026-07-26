@@ -6,7 +6,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 
 - Public HTTP contracts live at the API boundary that exposes them.
 - Commerce Node Storefront public HTTP contracts are canonical at the `api/storefront/stores/{storeKey}/*` boundary.
-- Generated Storefront clients are frontend-readable contracts and should be regenerated from Commerce Node Storefront OpenAPI instead of hand-copied into frontend packages.
+- Generated Storefront clients are frontend-readable contracts and must be regenerated from the canonical Storefront OpenAPI contract at `contracts/storefront/storefront.openapi.json` instead of hand-copied into frontend packages.
 - Storefront frontend view models are allowed when they are presentation or composition models.
 - Storefront frontend code must not add handwritten duplicate API DTO clones when the schema should come from OpenAPI-generated contracts.
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
@@ -49,7 +49,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Payment attempts/methods.
 - SEO, sitemap, pages, catalog, and rendering helpers.
 
-`BlazorShop.PresentationV2/BlazorShop.Storefront.Client` is the generated Storefront HTTP client package. It is generated from the Commerce Node Storefront OpenAPI snapshot and must not reference backend/core/API projects or `Storefront.V2`. Storefront V2 migration should consume this generated client instead of adding handwritten API DTO clones.
+`BlazorShop.PresentationV2/BlazorShop.Storefront.Client` is the generated Storefront HTTP client package. It is generated from the canonical committed Storefront contract at `contracts/storefront/storefront.openapi.json`, not from test snapshots, and must not reference backend/core/API projects or `Storefront.V2`. Test snapshots remain breaking-change guardrails only. Storefront V2 migration should consume this generated client instead of adding handwritten API DTO clones.
 
 Generated StorefrontBuilder projects are not contract owners. They are disposable artifacts under ignored generated output roots, consume Storefront client/runtime packages, hold generated presentation output, and keep review artifacts under their local `docs/storefront-analysis/`.
 
@@ -75,5 +75,6 @@ Do not put V2 theme/layout classes, page containers, route strings, or hardcoded
 - `StorefrontEndpointDependencyBoundaryTests.StorefrontLocalEndpointMappings_DoNotInjectConcreteStorefrontApiClient` keeps endpoint mappings behind capability interfaces.
 - `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag` proves Storefront OpenAPI remains generator-safe enough for non-.NET clients.
 - `StorefrontGeneratedClientFoundationTests` proves the generated C# Storefront client compiles, uses generated-source guardrails, and has no backend/core project references.
+- `scripts/qa/run-storefront-client-regeneration-gate.ps1` regenerates `BlazorShop.Storefront.Client` from the canonical contract and fails on generated-source drift before package release.
 - `StorefrontStarterFoundationBoundaryTests` keeps Starter documentation, dependency, and manual-client-copy guardrails explicit as the neutral skeleton is introduced.
 - StorefrontBuilder focused tests and `scripts/qa/run-storefront-builder-isolation-gate.ps1` prove generated storefronts keep package references, package compatibility metadata, generated artifacts, route uniqueness, and forbidden dependency scans intact.
