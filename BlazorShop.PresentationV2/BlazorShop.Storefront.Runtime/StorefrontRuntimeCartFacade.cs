@@ -68,7 +68,8 @@ namespace BlazorShop.Storefront.Runtime
                     storeKey,
                     new StorefrontCreateCartSessionRequest { CartToken = NormalizeToken(cartToken) },
                     cancellationToken),
-                "Unable to create cart right now.");
+                "Unable to create cart right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> GetCartAsync(
@@ -77,7 +78,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.GetAsync(NormalizeToken(cartToken), storeKey, cancellationToken),
-                "Unable to load cart right now.");
+                "Unable to load cart right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> AddLineAsync(
@@ -87,7 +89,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.AddLineAsync(NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to add this item to cart right now.");
+                "Unable to add this item to cart right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> UpdateLineAsync(
@@ -103,7 +106,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.UpdateLineAsync(lineId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to update this cart line right now.");
+                "Unable to update this cart line right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> RemoveLineAsync(
@@ -118,7 +122,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.RemoveLineAsync(lineId, NormalizeToken(cartToken), storeKey, cancellationToken),
-                "Unable to remove this cart line right now.");
+                "Unable to remove this cart line right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> ClearAsync(
@@ -127,7 +132,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.ClearAsync(NormalizeToken(cartToken), storeKey, cancellationToken),
-                "Unable to clear cart right now.");
+                "Unable to clear cart right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartValidationResponse>> ValidateAsync(
@@ -137,7 +143,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartValidationResponseCommerceNodeApiResponse, StorefrontCartValidationResponse>(
                 storeKey => this.cartClient.ValidateAsync(NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to validate cart right now.");
+                "Unable to validate cart right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> RecalculateAsync(
@@ -147,12 +154,14 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
                 storeKey => this.cartClient.RecalculateAsync(NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to refresh cart right now.");
+                "Unable to refresh cart right now.",
+                cancellationToken);
         }
 
         private async Task<StorefrontRuntimeSubmitResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            string fallbackMessage)
+            string fallbackMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -169,7 +178,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeSubmitResult<TData>.Succeeded(typedData)
                     : StorefrontRuntimeSubmitResult<TData>.Failed(ServiceUnavailable(message ?? fallbackMessage));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeSubmitResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }

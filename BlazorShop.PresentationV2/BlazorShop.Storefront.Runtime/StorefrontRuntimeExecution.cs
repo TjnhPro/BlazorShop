@@ -33,7 +33,11 @@ namespace BlazorShop.Storefront.Runtime
                 var value = await call(storeKey, cancellationToken).ConfigureAwait(false);
                 return StorefrontRuntimeResult<T>.Succeeded(value);
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<T>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }
@@ -54,7 +58,11 @@ namespace BlazorShop.Storefront.Runtime
                 var value = await call(storeKey, cancellationToken).ConfigureAwait(false);
                 return StorefrontRuntimeSubmitResult<T>.Succeeded(value, idempotencyKey);
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeSubmitResult<T>.Failed(StorefrontRuntimeErrorMapper.FromException(exception), idempotencyKey);
             }

@@ -49,7 +49,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeResult<StorefrontRuntimeCurrentStore>.Succeeded(MapCurrentStore(response.Data))
                     : StorefrontRuntimeResult<StorefrontRuntimeCurrentStore>.Failed(ServiceUnavailable());
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<StorefrontRuntimeCurrentStore>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }
@@ -64,7 +68,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeResult<StorefrontRuntimePublicConfiguration>.Succeeded(MapPublicConfiguration(response.Data))
                     : StorefrontRuntimeResult<StorefrontRuntimePublicConfiguration>.Failed(ServiceUnavailable());
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<StorefrontRuntimePublicConfiguration>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }
@@ -86,7 +94,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeSubmitResult<StorefrontRuntimeCurrencyPreferenceResponse>.Succeeded(MapCurrencyPreference(response.Data))
                     : StorefrontRuntimeSubmitResult<StorefrontRuntimeCurrencyPreferenceResponse>.Failed(ServiceUnavailable(response.Message));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeSubmitResult<StorefrontRuntimeCurrencyPreferenceResponse>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }

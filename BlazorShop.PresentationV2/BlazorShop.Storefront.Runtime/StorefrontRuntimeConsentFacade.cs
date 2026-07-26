@@ -39,7 +39,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontConsentResponseCommerceNodeApiResponse, StorefrontConsentResponse>(
                 storeKey => this.consentClient.CurrentAsync(NormalizeVisitorKey(visitorKey), storeKey, cancellationToken),
-                "Unable to load consent state right now.");
+                "Unable to load consent state right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontConsentResponse>> SaveAsync(
@@ -49,7 +50,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontConsentResponseCommerceNodeApiResponse, StorefrontConsentResponse>(
                 storeKey => this.consentClient.SaveAsync(NormalizeVisitorKey(visitorKey), storeKey, request, cancellationToken),
-                "Unable to save consent right now.");
+                "Unable to save consent right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontConsentResponse>> RevokeAsync(
@@ -58,12 +60,14 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontConsentResponseCommerceNodeApiResponse, StorefrontConsentResponse>(
                 storeKey => this.consentClient.RevokeAsync(NormalizeVisitorKey(visitorKey), storeKey, cancellationToken),
-                "Unable to revoke consent right now.");
+                "Unable to revoke consent right now.",
+                cancellationToken);
         }
 
         private async Task<StorefrontRuntimeSubmitResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            string fallbackMessage)
+            string fallbackMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -80,7 +84,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeSubmitResult<TData>.Succeeded(typedData)
                     : StorefrontRuntimeSubmitResult<TData>.Failed(ServiceUnavailable(message ?? fallbackMessage));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeSubmitResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }

@@ -32,7 +32,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteListAsync<StorefrontPaymentMethodResponseIReadOnlyListCommerceNodeApiResponse, StorefrontPaymentMethodResponse>(
                 storeKey => this.paymentsClient.ListMethodsAsync(storeKey, cancellationToken),
-                "Unable to load payment methods right now.");
+                "Unable to load payment methods right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontPaymentAttemptResponse>> GetAttemptAsync(
@@ -46,12 +47,14 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontPaymentAttemptResponseCommerceNodeApiResponse, StorefrontPaymentAttemptResponse>(
                 storeKey => this.paymentsClient.GetAttemptAsync(paymentAttemptId, storeKey, cancellationToken),
-                "Unable to load payment attempt right now.");
+                "Unable to load payment attempt right now.",
+                cancellationToken);
         }
 
         private async Task<StorefrontRuntimeResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            string fallbackMessage)
+            string fallbackMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -68,7 +71,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeResult<TData>.Succeeded(typedData)
                     : StorefrontRuntimeResult<TData>.Failed(ServiceUnavailable(message ?? fallbackMessage));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }
@@ -76,7 +83,8 @@ namespace BlazorShop.Storefront.Runtime
 
         private async Task<StorefrontRuntimeResult<IReadOnlyList<TData>>> ExecuteListAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            string fallbackMessage)
+            string fallbackMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -93,7 +101,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeResult<IReadOnlyList<TData>>.Succeeded(typedData.ToArray())
                     : StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(ServiceUnavailable(message ?? fallbackMessage));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }

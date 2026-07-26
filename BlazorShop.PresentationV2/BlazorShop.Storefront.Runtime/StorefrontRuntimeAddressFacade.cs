@@ -35,7 +35,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteListAsync<StorefrontAddressCountryResponseIReadOnlyListCommerceNodeApiResponse, StorefrontAddressCountryResponse>(
                 storeKey => this.addressClient.ListCountriesAsync(storeKey, cancellationToken),
-                "Unable to load address countries right now.");
+                "Unable to load address countries right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<IReadOnlyList<StorefrontAddressStateProvinceResponse>>> ListStatesAsync(
@@ -50,7 +51,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteListAsync<StorefrontAddressStateProvinceResponseIReadOnlyListCommerceNodeApiResponse, StorefrontAddressStateProvinceResponse>(
                 storeKey => this.addressClient.ListStatesAsync(normalized, storeKey, cancellationToken),
-                "Unable to load address states right now.");
+                "Unable to load address states right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontAddressFieldConfigurationResponse>> GetConfigurationAsync(
@@ -58,12 +60,14 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontAddressFieldConfigurationResponseCommerceNodeApiResponse, StorefrontAddressFieldConfigurationResponse>(
                 storeKey => this.addressClient.GetConfigurationAsync(storeKey, cancellationToken),
-                "Unable to load address configuration right now.");
+                "Unable to load address configuration right now.",
+                cancellationToken);
         }
 
         private async Task<StorefrontRuntimeResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            string fallbackMessage)
+            string fallbackMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -80,7 +84,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeResult<TData>.Succeeded(typedData)
                     : StorefrontRuntimeResult<TData>.Failed(ServiceUnavailable(message ?? fallbackMessage));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }
@@ -88,7 +96,8 @@ namespace BlazorShop.Storefront.Runtime
 
         private async Task<StorefrontRuntimeResult<IReadOnlyList<TData>>> ExecuteListAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            string fallbackMessage)
+            string fallbackMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -105,7 +114,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeResult<IReadOnlyList<TData>>.Succeeded(typedData.ToArray())
                     : StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(ServiceUnavailable(message ?? fallbackMessage));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }

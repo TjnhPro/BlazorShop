@@ -117,20 +117,23 @@ namespace BlazorShop.Storefront.Runtime
         public Task<StorefrontRuntimeResult<IReadOnlyList<StorefrontCategoryResponse>>> GetPublishedCategoriesAsync(CancellationToken cancellationToken = default)
         {
             return ExecuteListAsync<StorefrontCategoryResponseIReadOnlyListCommerceNodeApiResponse, StorefrontCategoryResponse>(
-                storeKey => this.catalogClient.ListCategoriesAsync(storeKey, cancellationToken));
+                storeKey => this.catalogClient.ListCategoriesAsync(storeKey, cancellationToken),
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<IReadOnlyList<StorefrontCategoryTreeNodeResponse>>> GetPublishedCategoryTreeAsync(CancellationToken cancellationToken = default)
         {
             return ExecuteListAsync<StorefrontCategoryTreeNodeResponseIReadOnlyListCommerceNodeApiResponse, StorefrontCategoryTreeNodeResponse>(
-                storeKey => this.catalogClient.GetCategoryTreeAsync(storeKey, cancellationToken));
+                storeKey => this.catalogClient.GetCategoryTreeAsync(storeKey, cancellationToken),
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<GetPublicCatalogSitemap>> GetPublishedSitemapAsync(CancellationToken cancellationToken = default)
         {
             return ExecuteAsync<GetPublicCatalogSitemapCommerceNodeApiResponse, GetPublicCatalogSitemap>(
                 storeKey => this.catalogClient.GetSitemapAsync(storeKey, cancellationToken),
-                fallbackValue: new GetPublicCatalogSitemap());
+                fallbackValue: new GetPublicCatalogSitemap(),
+                cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontCatalogProductResponseStorefrontPagedResponse>> GetPublishedCatalogPageAsync(
@@ -154,7 +157,8 @@ namespace BlazorShop.Storefront.Runtime
                     NormalizeCurrencyCode(currencyCode),
                     storeKey,
                     cancellationToken),
-                fallbackValue: new StorefrontCatalogProductResponseStorefrontPagedResponse());
+                fallbackValue: new StorefrontCatalogProductResponseStorefrontPagedResponse(),
+                cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontCategoryPageResponse>> GetPublishedCategoryBySlugAsync(
@@ -165,7 +169,8 @@ namespace BlazorShop.Storefront.Runtime
             return string.IsNullOrWhiteSpace(slug)
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontCategoryPageResponse>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontCategoryPageResponseCommerceNodeApiResponse, StorefrontCategoryPageResponse>(
-                    storeKey => this.catalogClient.GetCategoryBySlugAsync(slug.Trim(), NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken));
+                    storeKey => this.catalogClient.GetCategoryBySlugAsync(slug.Trim(), NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken),
+                    cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontProductFilterMetadataResponse>> GetProductFilterMetadataAsync(
@@ -180,7 +185,8 @@ namespace BlazorShop.Storefront.Runtime
                     NormalizeOptional(searchTerm),
                     NormalizeCurrencyCode(currencyCode),
                     storeKey,
-                    cancellationToken));
+                    cancellationToken),
+                cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontSearchSuggestionResponse>> GetSearchSuggestionsAsync(
@@ -197,7 +203,8 @@ namespace BlazorShop.Storefront.Runtime
                     limit,
                     NormalizeCurrencyCode(currencyCode),
                     storeKey,
-                    cancellationToken));
+                    cancellationToken),
+                cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontProductResponse>> GetPublishedProductBySlugAsync(
@@ -208,7 +215,8 @@ namespace BlazorShop.Storefront.Runtime
             return string.IsNullOrWhiteSpace(slug)
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontProductResponse>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontProductResponseCommerceNodeApiResponse, StorefrontProductResponse>(
-                    storeKey => this.catalogClient.GetProductBySlugAsync(slug.Trim(), NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken));
+                    storeKey => this.catalogClient.GetProductBySlugAsync(slug.Trim(), NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken),
+                    cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StorefrontProductResponse>> GetProductByIdAsync(
@@ -219,7 +227,8 @@ namespace BlazorShop.Storefront.Runtime
             return id == Guid.Empty
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontProductResponse>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontProductResponseCommerceNodeApiResponse, StorefrontProductResponse>(
-                    storeKey => this.catalogClient.GetProductByIdAsync(id, NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken));
+                    storeKey => this.catalogClient.GetProductByIdAsync(id, NormalizeCurrencyCode(currencyCode), storeKey, cancellationToken),
+                    cancellationToken: cancellationToken);
         }
 
         public async Task<StorefrontRuntimeSubmitResult<StorefrontProductSelectionPreviewResponse>> PreviewProductSelectionAsync(
@@ -243,7 +252,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeSubmitResult<StorefrontProductSelectionPreviewResponse>.Succeeded(response.Data)
                     : StorefrontRuntimeSubmitResult<StorefrontProductSelectionPreviewResponse>.Failed(ServiceUnavailable(response.Message));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeSubmitResult<StorefrontProductSelectionPreviewResponse>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }
@@ -256,13 +269,15 @@ namespace BlazorShop.Storefront.Runtime
             return string.IsNullOrWhiteSpace(slug)
                 ? Task.FromResult(StorefrontRuntimeResult<StorefrontPagePublicDto>.Failed(NotFound()))
                 : ExecuteAsync<StorefrontPagePublicDtoCommerceNodeApiResponse, StorefrontPagePublicDto>(
-                    storeKey => this.pagesClient.GetBySlugAsync(slug.Trim(), storeKey, cancellationToken));
+                    storeKey => this.pagesClient.GetBySlugAsync(slug.Trim(), storeKey, cancellationToken),
+                    cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>> GetPageNavigationLinksAsync(CancellationToken cancellationToken = default)
         {
             return ExecuteListAsync<StorefrontPageNavigationLinkDtoIReadOnlyListCommerceNodeApiResponse, StorefrontPageNavigationLinkDto>(
-                storeKey => this.pagesClient.ListNavigationAsync(storeKey, cancellationToken));
+                storeKey => this.pagesClient.ListNavigationAsync(storeKey, cancellationToken),
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<StoreNavigationPublicMenuDto>> GetNavigationMenuAsync(
@@ -272,13 +287,15 @@ namespace BlazorShop.Storefront.Runtime
             return string.IsNullOrWhiteSpace(systemName)
                 ? Task.FromResult(StorefrontRuntimeResult<StoreNavigationPublicMenuDto>.Failed(NotFound()))
                 : ExecuteAsync<StoreNavigationPublicMenuDtoCommerceNodeApiResponse, StoreNavigationPublicMenuDto>(
-                    storeKey => this.navigationClient.GetMenuAsync(systemName.Trim().ToLowerInvariant(), storeKey, cancellationToken));
+                    storeKey => this.navigationClient.GetMenuAsync(systemName.Trim().ToLowerInvariant(), storeKey, cancellationToken),
+                    cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<SeoSettingsDto>> GetSeoSettingsAsync(CancellationToken cancellationToken = default)
         {
             return ExecuteAsync<SeoSettingsDtoCommerceNodeApiResponse, SeoSettingsDto>(
-                storeKey => this.seoClient.GetSettingsAsync(storeKey, cancellationToken));
+                storeKey => this.seoClient.GetSettingsAsync(storeKey, cancellationToken),
+                cancellationToken: cancellationToken);
         }
 
         public Task<StorefrontRuntimeResult<SeoRedirectResolutionDto>> GetRedirectResolutionAsync(
@@ -286,13 +303,18 @@ namespace BlazorShop.Storefront.Runtime
             CancellationToken cancellationToken = default)
         {
             return ExecuteAsync<SeoRedirectResolutionDtoCommerceNodeApiResponse, SeoRedirectResolutionDto>(
-                storeKey => this.seoClient.ResolveRedirectAsync(path, storeKey, cancellationToken));
+                storeKey => this.seoClient.ResolveRedirectAsync(path, storeKey, cancellationToken),
+                cancellationToken: cancellationToken);
         }
 
         private async Task<StorefrontRuntimeResult<IReadOnlyList<TData>>> ExecuteListAsync<TEnvelope, TData>(
-            Func<string, Task<TEnvelope>> execute)
+            Func<string, Task<TEnvelope>> execute,
+            CancellationToken cancellationToken)
         {
-            var result = await ExecuteAsync<TEnvelope, IEnumerable<TData>>(execute, fallbackValue: Array.Empty<TData>()).ConfigureAwait(false);
+            var result = await ExecuteAsync<TEnvelope, IEnumerable<TData>>(
+                execute,
+                fallbackValue: Array.Empty<TData>(),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
             return result.Success && result.Value is not null
                 ? StorefrontRuntimeResult<IReadOnlyList<TData>>.Succeeded(result.Value.ToArray())
                 : StorefrontRuntimeResult<IReadOnlyList<TData>>.Failed(result.Error ?? ServiceUnavailable());
@@ -300,7 +322,8 @@ namespace BlazorShop.Storefront.Runtime
 
         private async Task<StorefrontRuntimeResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            TData? fallbackValue = default)
+            TData? fallbackValue = default,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -329,7 +352,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeResult<TData>.Succeeded(fallbackValue)
                     : StorefrontRuntimeResult<TData>.Failed(NotFound());
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }

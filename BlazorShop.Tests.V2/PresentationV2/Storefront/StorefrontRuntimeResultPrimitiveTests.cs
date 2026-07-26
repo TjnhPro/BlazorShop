@@ -5,6 +5,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using BlazorShop.Storefront.Client;
     using BlazorShop.Storefront.Runtime;
 
+    using Moq;
+
     using Xunit;
 
     public sealed class StorefrontRuntimeResultPrimitiveTests
@@ -116,7 +118,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(StorefrontRuntimeStatusCodes.Conflict, result.Error!.Status);
         }
 
-        [Fact(Skip = "Enable in SRH3 after caller cancellation is distinguished from timeout.")]
+        [Fact]
         public async Task ExecuteAsync_CallerRequestedTaskCancellationPropagates()
         {
             var context = new StubRuntimeContext("default");
@@ -127,6 +129,49 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 context.ExecuteAsync<string>(
                     (_, token) => Task.FromCanceled<string>(token),
                     cancellation.Token));
+        }
+
+        [Fact]
+        public async Task ExecuteSubmitAsync_CallerRequestedTaskCancellationPropagates()
+        {
+            var context = new StubRuntimeContext("default");
+            using var cancellation = new CancellationTokenSource();
+            await cancellation.CancelAsync();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() =>
+                context.ExecuteSubmitAsync<string>(
+                    (_, token) => Task.FromCanceled<string>(token),
+                    cancellationToken: cancellation.Token));
+        }
+
+        [Fact]
+        public async Task CartSubmitFacade_CallerRequestedTaskCancellationPropagates()
+        {
+            var context = new StubRuntimeContext("default");
+            using var cancellation = new CancellationTokenSource();
+            await cancellation.CancelAsync();
+            var cartClient = new Mock<IStorefrontCartClient>(MockBehavior.Strict);
+            cartClient
+                .Setup(client => client.GetAsync(null, "default", cancellation.Token))
+                .Returns(Task.FromCanceled<StorefrontCartResponseCommerceNodeApiResponse>(cancellation.Token));
+            var facade = new StorefrontRuntimeCartFacade(context, cartClient.Object);
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() => facade.GetCartAsync(null, cancellation.Token));
+        }
+
+        [Fact]
+        public async Task AddressReadFacade_CallerRequestedTaskCancellationPropagates()
+        {
+            var context = new StubRuntimeContext("default");
+            using var cancellation = new CancellationTokenSource();
+            await cancellation.CancelAsync();
+            var addressClient = new Mock<IStorefrontAddressClient>(MockBehavior.Strict);
+            addressClient
+                .Setup(client => client.ListCountriesAsync("default", cancellation.Token))
+                .Returns(Task.FromCanceled<StorefrontAddressCountryResponseIReadOnlyListCommerceNodeApiResponse>(cancellation.Token));
+            var facade = new StorefrontRuntimeAddressFacade(context, addressClient.Object);
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() => facade.ListCountriesAsync(cancellation.Token));
         }
 
         [Fact]

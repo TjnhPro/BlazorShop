@@ -69,7 +69,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCheckoutPreviewResponseCommerceNodeApiResponse, StorefrontCheckoutPreviewResponse>(
                 storeKey => this.checkoutClient.PreviewAsync(NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to preview checkout right now.");
+                "Unable to preview checkout right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> StartAsync(
@@ -78,7 +79,8 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontCheckoutSessionResponseCommerceNodeApiResponse, StorefrontCheckoutSessionResponse>(
                 storeKey => this.checkoutClient.StartAsync(NormalizeToken(cartToken), storeKey, new StorefrontCheckoutStartRequest(), cancellationToken),
-                "Unable to start checkout right now.");
+                "Unable to start checkout right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> LoadAsync(
@@ -93,7 +95,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCheckoutSessionResponseCommerceNodeApiResponse, StorefrontCheckoutSessionResponse>(
                 storeKey => this.checkoutClient.LoadAsync(checkoutSessionId, NormalizeToken(cartToken), storeKey, cancellationToken),
-                "Unable to load checkout right now.");
+                "Unable to load checkout right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> UpdateAddressesAsync(
@@ -109,7 +112,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCheckoutSessionResponseCommerceNodeApiResponse, StorefrontCheckoutSessionResponse>(
                 storeKey => this.checkoutClient.UpdateAddressesAsync(checkoutSessionId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to update checkout address right now.");
+                "Unable to update checkout address right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> SelectShippingMethodAsync(
@@ -125,7 +129,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCheckoutSessionResponseCommerceNodeApiResponse, StorefrontCheckoutSessionResponse>(
                 storeKey => this.checkoutClient.SelectShippingMethodAsync(checkoutSessionId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to update shipping method right now.");
+                "Unable to update shipping method right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> SelectPaymentMethodAsync(
@@ -141,7 +146,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCheckoutSessionResponseCommerceNodeApiResponse, StorefrontCheckoutSessionResponse>(
                 storeKey => this.checkoutClient.SelectPaymentMethodAsync(checkoutSessionId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to update payment method right now.");
+                "Unable to update payment method right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutReviewResponse>> ReviewAsync(
@@ -157,7 +163,8 @@ namespace BlazorShop.Storefront.Runtime
 
             return ExecuteAsync<StorefrontCheckoutReviewResponseCommerceNodeApiResponse, StorefrontCheckoutReviewResponse>(
                 storeKey => this.checkoutClient.ReviewAsync(checkoutSessionId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
-                "Unable to review checkout right now.");
+                "Unable to review checkout right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontPlaceOrderResponse>> PlaceOrderAsync(
@@ -166,12 +173,14 @@ namespace BlazorShop.Storefront.Runtime
         {
             return ExecuteAsync<StorefrontPlaceOrderResponseCommerceNodeApiResponse, StorefrontPlaceOrderResponse>(
                 storeKey => this.checkoutClient.PlaceOrderAsync(storeKey, request, cancellationToken),
-                "Unable to place order right now.");
+                "Unable to place order right now.",
+                cancellationToken);
         }
 
         private async Task<StorefrontRuntimeSubmitResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
-            string fallbackMessage)
+            string fallbackMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -188,7 +197,11 @@ namespace BlazorShop.Storefront.Runtime
                     ? StorefrontRuntimeSubmitResult<TData>.Succeeded(typedData)
                     : StorefrontRuntimeSubmitResult<TData>.Failed(ServiceUnavailable(message ?? fallbackMessage));
             }
-            catch (Exception exception) when (exception is not OperationCanceledException || exception is TaskCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
             {
                 return StorefrontRuntimeSubmitResult<TData>.Failed(StorefrontRuntimeErrorMapper.FromException(exception));
             }

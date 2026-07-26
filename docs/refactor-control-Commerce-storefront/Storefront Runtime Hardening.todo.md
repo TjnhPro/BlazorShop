@@ -332,29 +332,39 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Goal: distinguish caller cancellation from network timeout consistently.
 
+Status: completed in commit pending.
+
 ### Tasks
 
-- [ ] Update `StorefrontRuntimeExecution.ExecuteAsync` and `ExecuteSubmitAsync` to accept and use the caller `CancellationToken` in exception handling.
-- [ ] Use the rule:
-  - [ ] if `OperationCanceledException` occurs and `cancellationToken.IsCancellationRequested` is true, rethrow.
-  - [ ] if `TaskCanceledException` occurs and caller token is not canceled, map to `network.timeout`.
-  - [ ] if `TimeoutException` occurs, map to `network.timeout`.
-  - [ ] if `HttpRequestException` occurs, map to `network.failure`.
-- [ ] Update every Runtime facade local executor to either:
-  - [ ] use `StorefrontRuntimeExecution`, or
-  - [ ] implement the same cancellation rule with the explicit caller token.
-- [ ] Remove catch filters shaped like:
+- [x] Update `StorefrontRuntimeExecution.ExecuteAsync` and `ExecuteSubmitAsync` to accept and use the caller `CancellationToken` in exception handling.
+- [x] Use the rule:
+  - [x] if `OperationCanceledException` occurs and `cancellationToken.IsCancellationRequested` is true, rethrow.
+  - [x] if `TaskCanceledException` occurs and caller token is not canceled, map to `network.timeout`.
+  - [x] if `TimeoutException` occurs, map to `network.timeout`.
+  - [x] if `HttpRequestException` occurs, map to `network.failure`.
+- [x] Update every Runtime facade local executor to either:
+  - [x] use `StorefrontRuntimeExecution`, or
+  - [x] implement the same cancellation rule with the explicit caller token.
+- [x] Remove catch filters shaped like:
 
 ```csharp
 catch (Exception exception)
     when (exception is not OperationCanceledException || exception is TaskCanceledException)
 ```
 
-- [ ] Make cancellation tests cover at least:
-  - [ ] `StorefrontRuntimeExecution.ExecuteAsync`.
-  - [ ] one submit facade path.
-  - [ ] one read facade path.
-- [ ] Do not swallow cancellation in UI/server layers that rely on request abort behavior.
+- [x] Make cancellation tests cover at least:
+  - [x] `StorefrontRuntimeExecution.ExecuteAsync`.
+  - [x] one submit facade path.
+  - [x] one read facade path.
+- [x] Do not swallow cancellation in UI/server layers that rely on request abort behavior.
+
+### SRH3 Notes
+
+- `StorefrontRuntimeExecution` now rethrows caller-requested cancellation and only maps non-caller `TaskCanceledException`/timeouts through the error mapper.
+- Runtime facade-local executors now receive the caller token and use the same cancellation rule.
+- Added tests for core read execution, core submit execution, cart submit facade cancellation, and address read facade cancellation.
+- Source scan found no old `OperationCanceledException`/`TaskCanceledException` catch filter after the change.
+- Runtime build passed and focused runtime primitive tests passed.
 
 ### Files Likely Touched
 
@@ -372,9 +382,9 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.
 
 ### Done When
 
-- [ ] Caller cancellation is no longer converted into timeout.
-- [ ] Real timeout still produces a normalized runtime error.
-- [ ] Runtime source has no old cancellation catch filter.
+- [x] Caller cancellation is no longer converted into timeout.
+- [x] Real timeout still produces a normalized runtime error.
+- [x] Runtime source has no old cancellation catch filter.
 
 ## Phase SRH4 - Replace Reflection Envelope Mapping With Typed Selectors
 
