@@ -201,7 +201,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor");
 
-            Assert.Contains("<CartView", page, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCartView", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("<CartView", page, StringComparison.Ordinal);
             Assert.Contains("InitialCart=\"_cart\"", page, StringComparison.Ordinal);
             Assert.Contains("InitialAlerts=\"_alerts\"", page, StringComparison.Ordinal);
             Assert.Contains("DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"", page, StringComparison.Ordinal);
@@ -213,7 +214,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CartWasmComponent_UsesSameOriginLocalCartEndpoints()
         {
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartView.razor");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartViewOptions.cs");
             var behavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
 

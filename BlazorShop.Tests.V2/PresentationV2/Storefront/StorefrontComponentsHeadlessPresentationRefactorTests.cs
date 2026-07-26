@@ -411,7 +411,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CartView_UsesHostActionsAndClassesAfterHpr7Migration()
         {
             var cartView = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Cart/StorefrontCartView.razor");
             var cartBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
             var cartOptions = ReadRepositoryFile(
@@ -430,8 +430,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "Loading",
                 "Empty",
                 "HasError",
-                "CheckoutAllowed",
-                "StorefrontCartViewClasses"
+                "CheckoutAllowed"
             })
             {
                 Assert.Contains(expected, cartBehavior, StringComparison.Ordinal);
@@ -457,6 +456,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("max-w-7xl", cartOptions, StringComparison.Ordinal);
             Assert.Contains("Actions=\"StorefrontCartViewOptions.Actions\"", cartPage, StringComparison.Ordinal);
             Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", cartPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCartView", cartPage, StringComparison.Ordinal);
+            Assert.DoesNotContain("<CartView", cartPage, StringComparison.Ordinal);
         }
 
         [Fact]

@@ -6,12 +6,12 @@
     <meta name="robots" content="noindex,nofollow" />
 </HeadContent>
 
-<CartView InitialCart="_cart"
-          InitialAlerts="_alerts"
-          DataMode="StorefrontFeatureDataMode.InitialSnapshot"
-          Actions="StorefrontCartViewOptions.Actions"
-          Classes="StorefrontCartViewOptions.Classes"
-          CheckoutUrl="@StorefrontRoutes.Checkout"
-          NewReleasesUrl="@StorefrontRoutes.NewReleases"
-          TodaysDealsUrl="@StorefrontRoutes.TodaysDeals"
-          @rendermode="InteractiveWebAssembly" />
+<StorefrontCartView InitialCart="_cart"
+                    InitialAlerts="_alerts"
+                    DataMode="StorefrontFeatureDataMode.InitialSnapshot"
+                    Actions="StorefrontCartViewOptions.Actions"
+                    Classes="StorefrontCartViewOptions.Classes"
+                    CheckoutUrl="@StorefrontRoutes.Checkout"
+                    NewReleasesUrl="@StorefrontRoutes.NewReleases"
+                    TodaysDealsUrl="@StorefrontRoutes.TodaysDeals"
+                    @rendermode="InteractiveWebAssembly" />

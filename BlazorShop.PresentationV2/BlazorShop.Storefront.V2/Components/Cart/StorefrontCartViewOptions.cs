@@ -1,10 +1,8 @@
 namespace BlazorShop.Storefront.Components.Cart;
 
-using BlazorShop.Storefront.Components.Headless.Cart;
-
 public static class StorefrontCartViewOptions
 {
-    public static StorefrontCartActionDescriptor Actions { get; } = new(
+    public static BlazorShop.Storefront.Components.Headless.Cart.StorefrontCartActionDescriptor Actions { get; } = new(
         "/api/cart",
         "/api/cart/lines/{lineId}",
         "/api/cart/lines/{lineId}",

@@ -109,28 +109,30 @@ Exit criteria:
 
 Muc tieu: `CartView` khong con nam trong shared `Components/Features`, nhung cart browser behavior hien tai khong doi.
 
-- [ ] Tao V2-owned component:
+- [x] Tao V2-owned component:
   - `BlazorShop.Storefront.V2/Components/Cart/StorefrontCartView.razor`
-- [ ] Chuyen visual markup tu shared `Features/Cart/CartView.razor` sang V2 component.
-- [ ] Doi namespace/import sang V2 component namespace.
-- [ ] Giu shared dependencies chi o muc:
+- [x] Chuyen visual markup tu shared `Features/Cart/CartView.razor` sang V2 component.
+- [x] Doi namespace/import sang V2 component namespace.
+- [x] Giu shared dependencies chi o muc:
   - `Contracts/Cart`
   - `Headless/Cart`
   - `Browser`
-- [ ] Chuyen class/style defaults tu `StorefrontCartViewOptions` sang V2-local type, khong dung `StorefrontCartViewClasses` tu Headless nua.
-- [ ] Giu same-origin browser action behavior qua `StorefrontLocalApiClient`.
-- [ ] Update `Pages/Hybrid/Commerce/CartPage.razor` dung `<StorefrontCartView ...>`.
-- [ ] Remove cart-related `Features` import khoi `_Imports.razor` neu khong con consumer.
-- [ ] Update tests dang doc `Features/Cart/CartView.razor` sang:
+- [x] Chuyen class/style defaults tu `StorefrontCartViewOptions` sang V2-local type, khong dung `StorefrontCartViewClasses` tu Headless nua.
+- [x] Giu same-origin browser action behavior qua `StorefrontLocalApiClient`.
+- [x] Update `Pages/Hybrid/Commerce/CartPage.razor` dung `<StorefrontCartView ...>`.
+- [x] Remove cart-related `Features` import khoi `_Imports.razor` neu khong con consumer.
+- [x] Update tests dang doc `Features/Cart/CartView.razor` sang:
   - doc V2 component de guard markup V2;
   - doc Headless/Browser contracts de guard reusable behavior;
   - them test khong con shared cart Razor wrapper.
 
 Exit criteria:
 
-- [ ] `CartPage.razor` render bang V2-owned cart component.
-- [ ] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Cart`.
-- [ ] Cart flow tests/guardrails van cover quantity update, remove item, clear cart, checkout action, error state.
+- [x] `CartPage.razor` render bang V2-owned cart component.
+- [x] Khong con active V2 source reference `BlazorShop.Storefront.Components.Features.Cart`.
+- [x] Cart flow tests/guardrails van cover quantity update, remove item, clear cart, checkout action, error state.
+  - 2026-07-26: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` pass.
+  - 2026-07-26: focused `StorefrontWasmRuntimeFoundationTests|StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontCommerceFlowCutoverTests` pass 53/53.
 
 ## Phase SCR2 - Move Checkout Visual Wrapper Ownership to V2
 
