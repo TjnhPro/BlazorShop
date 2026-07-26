@@ -1,0 +1,22 @@
+@namespace BlazorShop.Storefront.Presentation.App
+@inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ApplicationHead" />
+    <HeadOutlet />
+</head>
+<body>
+    <StorefrontRoutes />
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ApplicationScripts" />
+</body>
+</html>
+
+@code {
+    private StorefrontFoundationViewSet ViewSet => this.FoundationOptions.Value.ViewSet
+        ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");
+}

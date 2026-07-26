@@ -173,6 +173,37 @@ namespace BlazorShop.Tests.Architecture
                 "StorefrontFoundationViewSet.CreateMinimal",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs"),
                 StringComparison.Ordinal);
+            Assert.Contains(
+                "MapRazorComponents<StorefrontApp>()",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "MapRazorComponents<StorefrontApp>()",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs"),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "AdditionalAssemblies",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor"),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "DefaultLayout=\"@ViewSet.MainLayout\"",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor"),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "StorefrontFoundationViewOutlet",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontApp.razor"),
+                StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void V2AndStarter_RetireOldAppAndRoutesRootFiles()
+        {
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/App.razor")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Routes.razor")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/App.razor")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Routes.razor")));
+            Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontApp.razor")));
+            Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor")));
         }
 
         private static bool IsPresentationRuntimeOrClientReference(string reference)

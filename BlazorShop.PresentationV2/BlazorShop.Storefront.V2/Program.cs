@@ -1,5 +1,6 @@
 using BlazorShop.Storefront.Configuration;
 using BlazorShop.Storefront.Endpoints;
+using BlazorShop.Storefront.Presentation.App;
 using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront;
 
@@ -30,7 +31,7 @@ app.MapStorefrontCheckoutEndpoints();
 app.MapStorefrontConsentEndpoints();
 app.MapStorefrontSeoEndpoints();
 app.MapStorefrontMediaEndpoints();
-app.MapRazorComponents<App>()
+app.MapRazorComponents<StorefrontApp>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly);
 

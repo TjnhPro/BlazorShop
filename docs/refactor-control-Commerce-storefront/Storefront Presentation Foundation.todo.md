@@ -261,7 +261,7 @@ Exit criteria:
 
 Muc tieu: Presentation so huu root app lifecycle va router; host so huu assets/visual shell.
 
-- [ ] Tao trong Presentation:
+- [x] Tao trong Presentation:
 
 ```text
 App/StorefrontApp.razor
@@ -272,7 +272,7 @@ Routing/StorefrontRouteNames.cs
 Routing/StorefrontNavigationPolicy.cs
 ```
 
-- [ ] `StorefrontApp.razor` so huu:
+- [x] `StorefrontApp.razor` so huu:
   - DOCTYPE
   - `html/head/body`
   - `base href`
@@ -281,16 +281,16 @@ Routing/StorefrontNavigationPolicy.cs
   - asset/head outlet hook
   - script outlet hook
   - Blazor bootstrap position
-- [ ] Khong hardcode V2-only assets trong Presentation:
+- [x] Khong hardcode V2-only assets trong Presentation:
   - no `css/storefront.css`
   - no `js/storefrontCommerce.js`
   - no V2 favicon/icon assumptions ngoai generic slot
-- [ ] `StorefrontRoutes.razor` so huu:
+- [x] `StorefrontRoutes.razor` so huu:
   - route discovery tren Presentation assembly;
   - default layout type tu view set;
   - focus-on-navigation;
   - not-found composition qua state/view outlet.
-- [ ] V2 `Program.cs` doi root mapping sang:
+- [x] V2 `Program.cs` doi root mapping sang:
 
 ```csharp
 app.MapRazorComponents<StorefrontApp>()
@@ -298,22 +298,34 @@ app.MapRazorComponents<StorefrontApp>()
     .AddAdditionalAssemblies(typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly);
 ```
 
-- [ ] Starter `Program.cs` doi root mapping sang `StorefrontApp`.
-- [ ] Sau khi V2/Starter dung Presentation root, remove hoac retire:
+- [x] Starter `Program.cs` doi root mapping sang `StorefrontApp`.
+- [x] Sau khi V2/Starter dung Presentation root, remove hoac retire:
   - `Storefront.V2/App.razor`
   - `Storefront.V2/Routes.razor`
   - `Storefront.Starter/Components/App.razor`
   - `Storefront.Starter/Components/Routes.razor`
-- [ ] Them guardrail:
+- [x] Them guardrail:
   - V2/Starter khong co `App.razor`;
   - V2/Starter khong co `Routes.razor`;
   - Presentation root does not hardcode V2 CSS/script paths.
 
+2026-07-26 SPF3 evidence:
+
+- Added `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` and `App/StorefrontRoutes.razor`.
+- Added `Routing/StorefrontRoutePatterns.cs`, `StorefrontRouteNames.cs`, `StorefrontNavigationPolicy.cs`, and route assembly options.
+- V2 and Starter now map `StorefrontApp` and register their host assemblies through `AddStorefrontPresentationRoutes(...)`.
+- Retired old V2/Starter `App.razor` and `Routes.razor` root files.
+- Added guardrails for root-file retirement and Presentation root composition.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj` passed with 0 warnings.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests" --no-restore` passed 9/9 with existing MessagePack vulnerability and Browserslist warnings.
+
 Exit criteria:
 
-- [ ] V2 va Starter dung chung Presentation App/Routes.
-- [ ] Header/footer/layout visual van do V2/Starter view set cung cap.
-- [ ] Root CSS/script cua V2/Starter van render dung qua host-provided view slots.
+- [x] V2 va Starter dung chung Presentation App/Routes.
+- [x] Header/footer/layout visual van do V2/Starter view set cung cap.
+- [x] Root CSS/script cua V2/Starter van render dung qua host-provided view slots.
 
 ## Phase SPF4 - Page State and HTTP Status Foundation
 

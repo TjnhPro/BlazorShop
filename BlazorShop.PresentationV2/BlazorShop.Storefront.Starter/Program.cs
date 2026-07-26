@@ -3,6 +3,7 @@ using BlazorShop.Storefront.Starter;
 using BlazorShop.Storefront.Starter.Components;
 using BlazorShop.Storefront.Starter.Endpoints;
 using BlazorShop.Storefront.Starter.Features;
+using BlazorShop.Storefront.Presentation.App;
 using BlazorShop.Storefront.Starter.Options;
 using BlazorShop.Storefront.Starter.Services;
 
@@ -49,7 +50,7 @@ app.UseAntiforgery();
 app.MapStarterBffEndpoints();
 app.MapStarterSeoEndpoints();
 
-app.MapRazorComponents<App>();
+app.MapRazorComponents<StorefrontApp>();
 
 app.Run();
 

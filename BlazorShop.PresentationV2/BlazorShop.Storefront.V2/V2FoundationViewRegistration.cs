@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront;
 
 using BlazorShop.Storefront.Presentation.DependencyInjection;
+using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 
 public static class V2FoundationViewRegistration
@@ -12,6 +13,6 @@ public static class V2FoundationViewRegistration
         return services.AddStorefrontFoundationViews(options =>
         {
             options.ViewSet = StorefrontFoundationViewSet.CreateMinimal(typeof(StorefrontFoundationEmptyView));
-        });
+        }).AddStorefrontPresentationRoutes(typeof(global::Program).Assembly);
     }
 }

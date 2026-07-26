@@ -1,0 +1,20 @@
+@namespace BlazorShop.Storefront.Presentation.App
+@inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
+@inject IOptions<StorefrontPresentationRouteOptions> RouteOptions
+
+<Router AppAssembly="@typeof(StorefrontApp).Assembly" AdditionalAssemblies="@RouteAssemblies">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@ViewSet.MainLayout" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" />
+    </NotFound>
+</Router>
+
+@code {
+    private Assembly[] RouteAssemblies => this.RouteOptions.Value.AdditionalAssemblies.ToArray();
+
+    private StorefrontFoundationViewSet ViewSet => this.FoundationOptions.Value.ViewSet
+        ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");
+}
