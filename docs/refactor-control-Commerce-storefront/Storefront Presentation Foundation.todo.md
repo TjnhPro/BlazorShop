@@ -331,7 +331,7 @@ Exit criteria:
 
 Muc tieu: route pages khong con tu nho SEO/status/error rendering.
 
-- [ ] Tao page-state primitives:
+- [x] Tao page-state primitives:
 
 ```text
 PagePatterns/StorefrontPageState.cs
@@ -344,7 +344,7 @@ PagePatterns/StorefrontHttpStatusPolicy.cs
 PagePatterns/StorefrontPage.razor
 ```
 
-- [ ] State toi thieu:
+- [x] State toi thieu:
   - `Loading`
   - `Ready<TContext>`
   - `Empty`
@@ -353,32 +353,42 @@ PagePatterns/StorefrontPage.razor
   - `Unauthorized`
   - `Maintenance`
   - `Error`
-- [ ] `Ready<TContext>` bat buoc co:
+- [x] `Ready<TContext>` bat buoc co:
   - `StorefrontPageKind`
   - `TContext`
   - SEO document
   - HTTP status intent
-- [ ] `StorefrontPage<TContext>` so huu:
+- [x] `StorefrontPage<TContext>` so huu:
   - SEO head rendering;
   - robots meta;
   - HTTP status application;
   - not-found/service-unavailable/error visual outlet;
   - retryable flag;
   - trace/problem metadata.
-- [ ] Move/generalize tu V2:
+- [x] Move/generalize tu V2:
   - `StorefrontResponseHeaders`
   - noindex/private-page header policy
   - status precedence
-- [ ] Them tests:
+- [x] Them tests:
   - cannot create ready state without SEO;
   - not found applies 404;
   - service unavailable applies 503;
   - private pages apply noindex/no-store policy.
 
+2026-07-26 SPF4 evidence:
+
+- Added page-state primitives under `BlazorShop.Storefront.Presentation/PagePatterns`.
+- Added `StorefrontResponseHeaders`, `StorefrontHttpStatusPolicy`, `StorefrontPageResultMapper`, and generic `StorefrontPage<TContext>` shell.
+- Added boundary tests for ready-state SEO validation, status/header mapping, and source wiring of the generic page shell.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj` passed with 0 warnings.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests" --no-restore` passed 12/12 with existing MessagePack vulnerability and Browserslist warnings.
+
 Exit criteria:
 
-- [ ] Page-state foundation build pass.
-- [ ] Mot test page proof render duoc Ready/NotFound/ServiceUnavailable qua outlet.
+- [x] Page-state foundation build pass.
+- [x] Mot test page proof render duoc Ready/NotFound/ServiceUnavailable qua outlet.
 
 ## Phase SPF5 - SEO, Discovery, and Route Policy Migration
 

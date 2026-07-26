@@ -1,0 +1,63 @@
+@typeparam TContext
+@namespace BlazorShop.Storefront.Presentation.PagePatterns
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (CurrentState is StorefrontPageState.Ready<TContext> ready)
+{
+    <HeadContent>
+        @if (!string.IsNullOrWhiteSpace(ready.Document.Title))
+        {
+            <title>@ready.Document.Title</title>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(ready.Document.Description))
+        {
+            <meta name="description" content="@ready.Document.Description" />
+        }
+
+        <meta name="robots" content="@(ready.Document.RobotsIndex ? "index" : "noindex"),@(ready.Document.RobotsFollow ? "follow" : "nofollow")" />
+        @if (!string.IsNullOrWhiteSpace(ready.Document.CanonicalUrl))
+        {
+            <link rel="canonical" href="@ready.Document.CanonicalUrl" />
+        }
+    </HeadContent>
+    @Body
+}
+else if (CurrentState is StorefrontPageState.NotFoundState)
+{
+    @NotFoundContent
+}
+else if (CurrentState is StorefrontPageState.ServiceUnavailableState)
+{
+    @ServiceUnavailableContent
+}
+else if (CurrentState is StorefrontPageState.ErrorState)
+{
+    @ErrorContent
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public StorefrontPageState CurrentState { get; set; } = default!;
+
+    [Parameter]
+    [EditorRequired]
+    public RenderFragment Body { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment? NotFoundContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? ServiceUnavailableContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? ErrorContent { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        StorefrontResponseHeaders.ApplyStatus(this.HttpContextAccessor.HttpContext, this.CurrentState);
+    }
+}

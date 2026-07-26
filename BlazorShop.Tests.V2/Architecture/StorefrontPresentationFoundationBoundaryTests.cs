@@ -3,8 +3,10 @@ namespace BlazorShop.Tests.Architecture
     using System.Xml.Linq;
 
     using BlazorShop.Storefront.Presentation.Views.Foundation;
+    using BlazorShop.Storefront.Presentation.PagePatterns;
 
     using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Http;
 
     using Xunit;
 
@@ -204,6 +206,57 @@ namespace BlazorShop.Tests.Architecture
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Routes.razor")));
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontApp.razor")));
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor")));
+        }
+
+        [Fact]
+        public void PageStateMapper_RequiresSeoDocumentForReadyState()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                StorefrontPageResultMapper.Ready(
+                    StorefrontPageKind.Home,
+                    new FoundationContext("demo"),
+                    new StorefrontPageDocument()));
+        }
+
+        [Fact]
+        public void PageStatePolicy_MapsStatusAndPrivateHeaders()
+        {
+            var ready = StorefrontPageResultMapper.Ready(
+                StorefrontPageKind.Product,
+                new FoundationContext("demo"),
+                new StorefrontPageDocument("Product", "Description", "/product/demo", RobotsIndex: false, RobotsFollow: false),
+                httpStatusCode: 418,
+                retryable: true);
+            var notFound = StorefrontPageResultMapper.NotFound(StorefrontPageKind.Product);
+            var serviceUnavailable = StorefrontPageResultMapper.ServiceUnavailable(StorefrontPageKind.Product);
+
+            var readyContext = new DefaultHttpContext();
+            var notFoundContext = new DefaultHttpContext();
+            var serviceUnavailableContext = new DefaultHttpContext();
+
+            StorefrontResponseHeaders.ApplyStatus(readyContext, ready);
+            StorefrontResponseHeaders.ApplyStatus(notFoundContext, notFound);
+            StorefrontResponseHeaders.ApplyStatus(serviceUnavailableContext, serviceUnavailable);
+
+            Assert.Equal(418, readyContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, serviceUnavailableContext.Response.StatusCode);
+            Assert.Equal(StorefrontHttpStatusPolicy.NoIndexNoFollow, readyContext.Response.Headers["X-Robots-Tag"].ToString());
+            Assert.Equal(StorefrontHttpStatusPolicy.PrivateCacheControl, readyContext.Response.Headers["Cache-Control"].ToString());
+        }
+
+        [Fact]
+        public void PresentationPageShell_IsWiredToHeadAndStatusPolicy()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/PagePatterns/StorefrontPage.razor");
+
+            Assert.Contains("@typeparam TContext", source, StringComparison.Ordinal);
+            Assert.Contains("<HeadContent>", source, StringComparison.Ordinal);
+            Assert.Contains("StorefrontResponseHeaders.ApplyStatus", source, StringComparison.Ordinal);
+            Assert.Contains("CurrentState is StorefrontPageState.Ready<TContext>", source, StringComparison.Ordinal);
+            Assert.Contains("NotFoundContent", source, StringComparison.Ordinal);
+            Assert.Contains("ServiceUnavailableContent", source, StringComparison.Ordinal);
+            Assert.Contains("ErrorContent", source, StringComparison.Ordinal);
         }
 
         private static bool IsPresentationRuntimeOrClientReference(string reference)
