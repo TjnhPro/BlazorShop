@@ -216,30 +216,32 @@ Exit criteria:
 
 Muc tieu: xoa cac wrapper shared da duoc thay bang V2-local component, tranh de Starter/AI Generator nham chung la contract visual bat buoc.
 
-- [ ] Confirm runtime V2 source da dung:
+- [x] Confirm runtime V2 source da dung:
   - `StorefrontProductSummaryCard`
   - `StorefrontProductSummaryGrid`
   - `StorefrontDealsSection`
   - `StorefrontProductGallery`
   - `StorefrontProductPurchasePanel`
-- [ ] Confirm khong co Starter/generated source import `BlazorShop.Storefront.Components.Features.*`.
-- [ ] Xoa shared Razor wrappers neu khong con consumer:
+- [x] Confirm khong co Starter/generated source import `BlazorShop.Storefront.Components.Features.*`.
+- [x] Xoa shared Razor wrappers neu khong con consumer:
   - `Features/Catalog/ProductSummaryCard.razor`
   - `Features/Catalog/ProductSummaryGrid.razor`
   - `Features/Deals/DealsBlock.razor`
   - `Features/Product/ProductGallery.razor`
   - `Features/Product/ProductPurchasePanel.razor`
-- [ ] Update tests dang doc cac file tren:
+- [x] Update tests dang doc cac file tren:
   - guard V2 owns markup/CSS;
   - guard shared Contracts/Headless contain only data/state/action;
   - guard no shared visual wrappers.
-- [ ] Update `QA-StorefrontV2.todo.md` cac dong cu cu the noi product/deals/catalog con compose shared `Features`.
-- [ ] Neu historical plan da co `[x]` ve old Features, khong rewrite lich su; them note vao plan/QA active noi no da duoc retired.
+- [x] Update `QA-StorefrontV2.todo.md` cac dong cu cu the noi product/deals/catalog con compose shared `Features`.
+- [x] Neu historical plan da co `[x]` ve old Features, khong rewrite lich su; them note vao plan/QA active noi no da duoc retired.
 
 Exit criteria:
 
-- [ ] Catalog/product/deals visual wrappers khong con nam trong shared package.
-- [ ] V2 product detail, catalog grid, deals, new releases van build va render tu V2-local components.
+- [x] Catalog/product/deals visual wrappers khong con nam trong shared package.
+- [x] V2 product detail, catalog grid, deals, new releases van build va render tu V2-local components.
+  - 2026-07-26: Components build pass; Storefront V2 build pass.
+  - 2026-07-26: focused `StorefrontComponentsHeadlessPresentationRefactorTests|StorefrontBrandingMarkupTests|StorefrontStarterFoundationBoundaryTests` pass 65/65.
 
 ## Phase SCR5 - Remove Visual Class Bags from Headless
 

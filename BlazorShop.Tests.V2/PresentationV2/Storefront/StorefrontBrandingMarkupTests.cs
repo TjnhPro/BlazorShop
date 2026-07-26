@@ -104,7 +104,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains(
                 "data-currency-code",
                 ReadRepositoryFile(files[1])
-                    + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor"),
+                    + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor"),
                 StringComparison.Ordinal);
         }
 
@@ -126,22 +126,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
             var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
-            var sharedPurchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
             var purchaseModels = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchasePanelModel.cs");
             var purchaseBehavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor")));
 
             Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", markup);
             Assert.Contains("BuildPurchasePanel", markup, StringComparison.Ordinal);
             Assert.Contains("ProductPurchasePanelModel", purchaseModels, StringComparison.Ordinal);
             Assert.Contains("ProductPurchaseActionDescriptor", purchaseBehavior, StringComparison.Ordinal);
             Assert.Contains("ProductPurchaseSelectionState", purchaseBehavior, StringComparison.Ordinal);
-            Assert.DoesNotContain("GetProduct", purchasePanel + sharedPurchasePanel + purchaseModels, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontRoutes", purchasePanel + sharedPurchasePanel + purchaseModels, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetProduct", purchasePanel + purchaseModels, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes", purchasePanel + purchaseModels, StringComparison.Ordinal);
             Assert.Contains("data-storefront-selection-preview", purchasePanel);
             Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", purchasePanel);
-            Assert.DoesNotContain("/api/product-selection-preview", sharedPurchasePanel);
+            Assert.DoesNotContain("StorefrontV2Default", purchaseBehavior, StringComparison.Ordinal);
             Assert.Contains("data-resolved-variant-id=\"@Model.ResolvedVariantId\"", purchasePanel);
             Assert.Contains("data-main-image-url=\"@Model.InitialMainImageUrl\"", purchasePanel);
             Assert.Contains("data-sku=\"@Model.InitialSku\"", purchasePanel);
@@ -208,7 +208,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductPage_RendersProductImageGalleryComponent()
         {
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
-            var gallery = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor");
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor")));
+            var galleryState = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductGalleryState.cs");
             var v2Gallery = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductGallery.razor");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
 
@@ -216,10 +217,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("aspect-[4/3]", page, StringComparison.Ordinal);
             Assert.Contains("BuildGalleryItems", page, StringComparison.Ordinal);
             Assert.Contains("product.MediaGallery", page, StringComparison.Ordinal);
-            Assert.Contains("ProductGalleryItem", gallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("GetProduct", gallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("product.MediaGallery", gallery, StringComparison.Ordinal);
-            Assert.Contains("ProductGalleryState", gallery);
+            Assert.Contains("ProductGalleryItem", page, StringComparison.Ordinal);
+            Assert.Contains("ProductGalleryState", galleryState);
             Assert.Contains("bs-product-gallery__main", v2Gallery);
             Assert.Contains("bs-product-gallery__thumb", v2Gallery);
             Assert.Contains("aspect-square", v2Gallery);
@@ -240,8 +239,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("aria-selected=\"@(index == Gallery.SelectedIndex ? \"true\" : \"false\")\"", v2Gallery);
             Assert.Contains("data-storefront-gallery-prev", v2Gallery);
             Assert.Contains("disabled>", v2Gallery);
-            Assert.DoesNotContain("sm:grid", gallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("sm:grid-cols", gallery, StringComparison.Ordinal);
             Assert.Contains("data-[selected=true]:ring-2", v2Gallery);
             Assert.Contains("product.Image", page);
             Assert.Contains("Image unavailable", v2Gallery);
@@ -311,10 +308,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var searchPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
             var dealsPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor");
             var newReleasesPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
-            var dealsBlock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsBlock.razor");
-            var productGrid = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryGrid.razor");
-            var productCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor");
+            var dealsBlock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontDealsSection.razor");
+            var productGrid = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor");
+            var productCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
             var dealsPlacement = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Deals/DealsPlacement.cs");
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsBlock.razor")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryGrid.razor")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor")));
 
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.DedicatedPage\"", dealsPage, StringComparison.Ordinal);
@@ -325,7 +325,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontProductSummaryMapper.ToProductSummary", home + categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
 
             Assert.Contains("data-storefront-deals-block", dealsBlock, StringComparison.Ordinal);
-            Assert.DoesNotContain("<ProductSummaryGrid", dealsBlock, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryGrid", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-grid", productGrid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-card", productCard, StringComparison.Ordinal);
             Assert.Contains("data-storefront-add-to-cart", productCard, StringComparison.Ordinal);
@@ -333,7 +333,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", productCard, StringComparison.Ordinal);
             Assert.Contains("ProductDetailFooter", dealsPlacement, StringComparison.Ordinal);
             Assert.DoesNotContain("IStorefront", dealsBlock + productGrid + productCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontRoutes", dealsBlock + productGrid + productCard, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -396,6 +395,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
+        }
+
+        private static string RepositoryPath(string relativePath)
+        {
+            return Path.Combine(FindRepositoryRoot(), relativePath);
         }
 
         private static string FindRepositoryRoot()

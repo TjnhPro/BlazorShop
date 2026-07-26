@@ -7,11 +7,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static readonly string[] ExpectedFeatureRazorComponents =
         [
             "Cart/CartView.razor",
-            "Catalog/ProductSummaryCard.razor",
-            "Catalog/ProductSummaryGrid.razor",
-            "Deals/DealsBlock.razor",
-            "Product/ProductGallery.razor",
-            "Product/ProductPurchasePanel.razor"
         ];
 
         private static readonly string[] ExpectedContractModelAndEnumFiles =
@@ -51,7 +46,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentFeatureFiles("*.razor");
 
             Assert.Equal(ExpectedFeatureRazorComponents, actual);
-            Assert.Equal(6, actual.Length);
+            Assert.Single(actual);
         }
 
         [Fact]
@@ -174,7 +169,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("BlazorShop.Storefront.Components.Contracts", headlessSource, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Components.Features", headlessSource, StringComparison.Ordinal);
             Assert.DoesNotContain(".Features.", headlessSource, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Storefront.Components.Contracts", featureSource, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Components.Headless", featureSource, StringComparison.Ordinal);
         }
 
@@ -206,26 +200,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void SharedProductSummaryCard_RemainsSemanticAfterHpr2Migration()
         {
-            var sharedCard = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor");
+            Assert.False(File.Exists(RepositoryPath(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor")));
+            var productSummaryContract = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryItem.cs");
             var v2Card = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
 
-            Assert.Contains("data-storefront-product-summary-card", sharedCard, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-add-to-cart", sharedCard, StringComparison.Ordinal);
-            Assert.Contains("data-unit-price=\"@Item.UnitPriceValue\"", sharedCard, StringComparison.Ordinal);
-            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", sharedCard, StringComparison.Ordinal);
-
-            Assert.DoesNotContain("class=\"", sharedCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("rounded-", sharedCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("bg-neutral-", sharedCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("bg-amber-", sharedCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("text-neutral-", sharedCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("hover:", sharedCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("sm:", sharedCard, StringComparison.Ordinal);
-            Assert.DoesNotContain("lg:", sharedCard, StringComparison.Ordinal);
-
+            Assert.Contains("public sealed record ProductSummaryItem", productSummaryContract, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-card", v2Card, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-add-to-cart", v2Card, StringComparison.Ordinal);
+            Assert.Contains("data-unit-price=\"@Item.UnitPriceValue\"", v2Card, StringComparison.Ordinal);
+            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", v2Card, StringComparison.Ordinal);
             Assert.Contains("rounded-2xl", v2Card, StringComparison.Ordinal);
             Assert.Contains("bg-white/95", v2Card, StringComparison.Ordinal);
             Assert.Contains("hover:shadow-2xl", v2Card, StringComparison.Ordinal);
@@ -234,8 +220,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void SharedProductSummaryGrid_RemainsSemanticAfterHpr3Migration()
         {
-            var sharedGrid = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryGrid.razor");
+            Assert.False(File.Exists(RepositoryPath(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryGrid.razor")));
             var v2Grid = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor");
             var categoryPage = ReadRepositoryFile(
@@ -245,15 +231,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var newReleasesPage = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
 
-            Assert.Contains("data-storefront-product-summary-grid", sharedGrid, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryCard Item=\"item\" Labels=\"Labels\" />", sharedGrid, StringComparison.Ordinal);
-            Assert.DoesNotContain("class=\"", sharedGrid, StringComparison.Ordinal);
-            Assert.DoesNotContain("grid-cols-", sharedGrid, StringComparison.Ordinal);
-            Assert.DoesNotContain("sm:", sharedGrid, StringComparison.Ordinal);
-            Assert.DoesNotContain("lg:", sharedGrid, StringComparison.Ordinal);
-            Assert.DoesNotContain("rounded-", sharedGrid, StringComparison.Ordinal);
-            Assert.DoesNotContain("bg-blue-", sharedGrid, StringComparison.Ordinal);
-
+            Assert.Contains("data-storefront-product-summary-grid", v2Grid, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryCard Item=\"item\" />", v2Grid, StringComparison.Ordinal);
             Assert.Contains("grid gap-8 sm:grid-cols-2 lg:grid-cols-3", v2Grid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-empty", v2Grid, StringComparison.Ordinal);
@@ -266,8 +244,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void SharedDealsBlock_RemainsSemanticAfterHpr4Migration()
         {
-            var sharedDeals = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsBlock.razor");
+            Assert.False(File.Exists(RepositoryPath(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsBlock.razor")));
             var v2Deals = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontDealsSection.razor");
             var home = ReadRepositoryFile(
@@ -275,16 +253,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var todaysDeals = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor");
 
-            Assert.Contains("data-storefront-deals-block", sharedDeals, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-deals-items", sharedDeals, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryCard Item=\"item\" Labels=\"ProductLabels\" />", sharedDeals, StringComparison.Ordinal);
-            Assert.DoesNotContain("<ProductSummaryGrid", sharedDeals, StringComparison.Ordinal);
-            Assert.DoesNotContain("class=\"", sharedDeals, StringComparison.Ordinal);
-            Assert.DoesNotContain("max-w-", sharedDeals, StringComparison.Ordinal);
-            Assert.DoesNotContain("bg-amber-", sharedDeals, StringComparison.Ordinal);
-            Assert.DoesNotContain("sm:", sharedDeals, StringComparison.Ordinal);
-            Assert.DoesNotContain("lg:", sharedDeals, StringComparison.Ordinal);
-
+            Assert.Contains("data-storefront-deals-block", v2Deals, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Items\"", v2Deals, StringComparison.Ordinal);
             Assert.Contains("mx-auto max-w-7xl", v2Deals, StringComparison.Ordinal);
             Assert.Contains("bg-amber-500", v2Deals, StringComparison.Ordinal);
@@ -297,8 +266,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductGallery_UsesHeadlessStateAndV2VisualTemplateAfterHpr5Migration()
         {
-            var sharedGallery = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor");
+            Assert.False(File.Exists(RepositoryPath(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor")));
             var galleryState = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductGalleryState.cs");
             var v2Gallery = ReadRepositoryFile(
@@ -321,17 +290,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(expected, galleryState, StringComparison.Ordinal);
             }
 
-            Assert.Contains("ProductGalleryState.Create(Items, ProductName)", sharedGallery, StringComparison.Ordinal);
-            Assert.Contains("ProductGalleryLabels.Empty", sharedGallery, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-product-gallery", sharedGallery, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-gallery-main-image", sharedGallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("class=\"", sharedGallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("aspect-square", sharedGallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("rounded-", sharedGallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("bg-neutral-", sharedGallery, StringComparison.Ordinal);
-            Assert.DoesNotContain("sm:grid", sharedGallery, StringComparison.Ordinal);
-
             Assert.Contains("ProductGalleryState.Create(Items, ProductName)", v2Gallery, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-gallery", v2Gallery, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-gallery-main-image", v2Gallery, StringComparison.Ordinal);
             Assert.Contains("aspect-square", v2Gallery, StringComparison.Ordinal);
             Assert.Contains("bs-product-gallery__main", v2Gallery, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductGallery Items=\"_galleryItems\" ProductName=\"@_product.Name\" />", productPage, StringComparison.Ordinal);
@@ -341,8 +302,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductPurchasePanel_UsesHostActionDescriptorAfterHpr6Migration()
         {
-            var sharedPanel = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
+            Assert.False(File.Exists(RepositoryPath(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor")));
             var purchaseBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs");
             var v2Panel = ReadRepositoryFile(
@@ -375,25 +336,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(expected, purchaseBehavior, StringComparison.Ordinal);
             }
 
-            Assert.Contains("ProductPurchaseActionDescriptor.Empty", sharedPanel, StringComparison.Ordinal);
-            Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", sharedPanel, StringComparison.Ordinal);
-            Assert.Contains("data-preview-container=\"@Actions.PreviewContainerSelector\"", sharedPanel, StringComparison.Ordinal);
-            Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", sharedPanel, StringComparison.Ordinal);
-            Assert.Contains("data-can-add-to-cart=\"@FormatBoolean(Model.CanSubmitInitialPurchase)\"", sharedPanel, StringComparison.Ordinal);
-            Assert.DoesNotContain("/api/", sharedPanel, StringComparison.Ordinal);
-            Assert.DoesNotContain("#purchase", sharedPanel, StringComparison.Ordinal);
-            Assert.DoesNotContain("#product-cart-feedback", sharedPanel, StringComparison.Ordinal);
-            Assert.DoesNotContain("class=\"", sharedPanel, StringComparison.Ordinal);
-            Assert.DoesNotContain("rounded-", sharedPanel, StringComparison.Ordinal);
-            Assert.DoesNotContain("bg-neutral-", sharedPanel, StringComparison.Ordinal);
-            Assert.DoesNotContain("bg-amber-", sharedPanel, StringComparison.Ordinal);
-
             Assert.Contains("StorefrontProductPurchaseActionOptions.Default", v2Panel, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontV2Default", purchaseBehavior, StringComparison.Ordinal);
             Assert.DoesNotContain("/api/product-selection-preview", purchaseBehavior, StringComparison.Ordinal);
             Assert.Contains("/api/product-selection-preview", v2ActionOptions, StringComparison.Ordinal);
             Assert.Contains("id=\"@Actions.PanelId\"", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("data-preview-container=\"@Actions.PreviewContainerSelector\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("disabled=\"@(!Model.CanSubmitInitialPurchase)\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("rounded-2xl", v2Panel, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", productPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductPurchasePanel Model=\"_purchasePanel\"", productPage, StringComparison.Ordinal);
