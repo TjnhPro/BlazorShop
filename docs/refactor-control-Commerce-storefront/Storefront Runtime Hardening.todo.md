@@ -609,35 +609,46 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Goal: let hosts opt into runtime capabilities while preserving current all-in registration convenience.
 
+Status: completed in commit pending.
+
 ### Tasks
 
-- [ ] Add registration methods:
-  - [ ] `AddStorefrontCatalogRuntime`
-  - [ ] `AddStorefrontContentRuntime`
-  - [ ] `AddStorefrontNavigationRuntime`
-  - [ ] `AddStorefrontSeoRuntime`
-  - [ ] `AddStorefrontCartRuntime`
-  - [ ] `AddStorefrontCheckoutRuntime`
-  - [ ] `AddStorefrontAccountRuntime`
-  - [ ] `AddStorefrontConfigurationRuntime`
-  - [ ] `AddStorefrontPaymentRuntime`
-  - [ ] `AddStorefrontConsentRuntime`
-  - [ ] `AddStorefrontAddressRuntime`
-- [ ] Each capability registration should register only:
-  - [ ] generated clients needed by that capability.
-  - [ ] facades needed by that capability.
-  - [ ] small shared helpers required by the capability.
-- [ ] Add `AddStorefrontPlatformRuntime` as the intentional all-capability registration.
-- [ ] Keep `AddStorefrontServerGeneratedClients` as compatibility wrapper to `AddStorefrontPlatformRuntime` during migration.
-- [ ] Keep `AddStorefrontGeneratedClients` as compatibility wrapper for Starter during migration.
-- [ ] Add tests that prove:
-  - [ ] catalog-only registration does not register checkout/payment/cart facades.
-  - [ ] cart-only registration registers cart client/facade and shared runtime primitives.
-  - [ ] platform registration resolves all current facades.
-  - [ ] old wrapper methods still work.
-- [ ] Avoid implicit duplicate registration conflicts:
-  - [ ] repeated calls should be safe or documented.
-  - [ ] prefer `TryAdd` only when it matches current DI behavior.
+- [x] Add registration methods:
+  - [x] `AddStorefrontCatalogRuntime`
+  - [x] `AddStorefrontContentRuntime`
+  - [x] `AddStorefrontNavigationRuntime`
+  - [x] `AddStorefrontSeoRuntime`
+  - [x] `AddStorefrontCartRuntime`
+  - [x] `AddStorefrontCheckoutRuntime`
+  - [x] `AddStorefrontAccountRuntime`
+  - [x] `AddStorefrontConfigurationRuntime`
+  - [x] `AddStorefrontPaymentRuntime`
+  - [x] `AddStorefrontConsentRuntime`
+  - [x] `AddStorefrontAddressRuntime`
+- [x] Each capability registration should register only:
+  - [x] generated clients needed by that capability.
+  - [x] facades needed by that capability.
+  - [x] small shared helpers required by the capability.
+- [x] Add `AddStorefrontPlatformRuntime` as the intentional all-capability registration.
+- [x] Keep `AddStorefrontServerGeneratedClients` as compatibility wrapper to `AddStorefrontPlatformRuntime` during migration.
+- [x] Keep `AddStorefrontGeneratedClients` as compatibility wrapper for Starter during migration.
+- [x] Add tests that prove:
+  - [x] catalog-only registration does not register checkout/payment/cart facades.
+  - [x] cart-only registration registers cart client/facade and shared runtime primitives.
+  - [x] platform registration resolves all current facades.
+  - [x] old wrapper methods still work.
+- [x] Avoid implicit duplicate registration conflicts:
+  - [x] repeated calls should be safe or documented.
+  - [x] prefer `TryAdd` only when it matches current DI behavior.
+
+### SRH7 Notes
+
+- Added all requested capability registration methods plus `AddStorefrontPlatformRuntime`.
+- `AddStorefrontServerGeneratedClients` and `AddStorefrontGeneratedClients` now delegate to `AddStorefrontPlatformRuntime`.
+- Registrations use `TryAddScoped` for generated clients/facades so repeated capability calls stay stable.
+- Catalog/content/navigation/SEO currently share `AddCatalogContentRuntimeCore` because the compatibility adapter still has a shared constructor; this keeps checkout/payment/cart out of catalog-only registration and leaves deeper adapter removal for the planned follow-up.
+- Added DI tests for catalog-only, cart-only, platform registration, and wrapper delegation.
+- Runtime build passed and shared platform package tests passed.
 
 ### Files Likely Touched
 
@@ -654,9 +665,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Hosts can register only the Runtime capabilities they need.
-- [ ] Existing all-in Runtime registration still works.
-- [ ] DI tests prove capability boundaries.
+- [x] Hosts can register only the Runtime capabilities they need.
+- [x] Existing all-in Runtime registration still works.
+- [x] DI tests prove capability boundaries.
 
 ## Phase SRH8 - V2, Starter, Docs, And Boundary Adoption
 

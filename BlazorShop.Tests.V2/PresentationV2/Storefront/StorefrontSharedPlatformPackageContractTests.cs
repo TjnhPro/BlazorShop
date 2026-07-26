@@ -128,6 +128,53 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontRuntimeCapabilityRegistration_AllowsNarrowCatalogAndCartScopes()
+        {
+            var catalogServices = CreateRuntimeServices();
+            catalogServices.AddStorefrontCatalogRuntime();
+            using var catalogProvider = catalogServices.BuildServiceProvider();
+            using var catalogScope = catalogProvider.CreateScope();
+
+            Assert.NotNull(catalogScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeCatalogFacade>());
+            Assert.Null(catalogScope.ServiceProvider.GetService<IStorefrontRuntimeCartFacade>());
+            Assert.Null(catalogScope.ServiceProvider.GetService<IStorefrontRuntimeCheckoutFacade>());
+            Assert.Null(catalogScope.ServiceProvider.GetService<IStorefrontRuntimePaymentFacade>());
+
+            var cartServices = CreateRuntimeServices();
+            cartServices.AddStorefrontCartRuntime();
+            using var cartProvider = cartServices.BuildServiceProvider();
+            using var cartScope = cartProvider.CreateScope();
+
+            Assert.NotNull(cartScope.ServiceProvider.GetRequiredService<IStorefrontCartClient>());
+            Assert.NotNull(cartScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeCartFacade>());
+            Assert.Null(cartScope.ServiceProvider.GetService<IStorefrontRuntimeCheckoutFacade>());
+            Assert.Null(cartScope.ServiceProvider.GetService<IStorefrontRuntimePaymentFacade>());
+        }
+
+        [Fact]
+        public void StorefrontRuntimePlatformRegistrationAndCompatibilityWrappersResolveAllFacades()
+        {
+            var platformServices = CreateRuntimeServices();
+            platformServices.AddStorefrontPlatformRuntime();
+
+            using var platformProvider = platformServices.BuildServiceProvider();
+            using var platformScope = platformProvider.CreateScope();
+
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeCatalogFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeContentFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeNavigationFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeSeoFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeCartFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeCheckoutFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeAddressFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimeConsentFacade>());
+            Assert.NotNull(platformScope.ServiceProvider.GetRequiredService<IStorefrontRuntimePaymentFacade>());
+
+            var wrapperSource = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
+            Assert.Contains("return services.AddStorefrontPlatformRuntime(configureHttpClient);", wrapperSource, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontClientPackage_DoesNotReferenceRuntimeComponentsV2OrBackendProjects()
         {
             var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj");
@@ -187,6 +234,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
+        }
+
+        private static ServiceCollection CreateRuntimeServices()
+        {
+            var services = new ServiceCollection();
+            services.AddStorefrontRuntime(options =>
+            {
+                options.StoreKey = "sample";
+                options.CommerceNodeBaseUrl = "https://commerce-node.example/";
+            });
+
+            return services;
         }
 
         private static string ReadRuntimeSource()
