@@ -57,14 +57,17 @@ Starter consumer rules:
 
 - Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts.
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
-- Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior when a starter or generated storefront needs that shared component package; Starter-local neutral visual components may remain local.
+- Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior when a starter or generated storefront needs that shared component package.
+- Starter owns its neutral visual templates; Starter-local neutral visual components may remain local and must not copy Storefront V2 visual components.
 - Do not reference `BlazorShop.Storefront.V2`.
 - Do not reference backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 
 Generated/custom storefront consumer rules:
 
 - Use project names in the `BlazorShop.Storefront.{Name}` pattern after safe normalization.
-- Keep presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components inside the generated/custom storefront project.
+- `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, pages, visual analysis artifacts, and AI-tuned components inside the generated/custom storefront project.
+- Generated/custom storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior, but they must not use Storefront V2 visual markup as their presentation source.
+- StorefrontBuilder may replace product card, grid, gallery, purchase, cart, checkout, and account visual templates in the generated/custom project without changing shared behavior contracts.
 - Route protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
 - Use generated package contracts instead of guessing API response shapes.
 - Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or generated proof output from another store.

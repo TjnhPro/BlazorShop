@@ -496,20 +496,20 @@ Goal: make `Browser/*` primitives clearly behavior-only.
 
 Goal: ensure future storefronts can create their own visual templates.
 
-- [ ] Update Starter guidance:
-  - [ ] Starter may use `Storefront.Components` contracts/headless behavior.
-  - [ ] Starter owns its neutral visual templates.
-  - [ ] Starter must not copy V2 visual components.
-- [ ] Update generated storefront guidance:
-  - [ ] `Storefront.{Name}` owns generated markup/CSS.
-  - [ ] Generated storefront uses contracts/behavior, not V2 visual markup.
-  - [ ] AI Generator can replace product card/grid/gallery/purchase/cart/checkout/account visual templates without changing core behavior.
-- [ ] Do not add production browser QA for generated storefront in this phase unless implementation touches StorefrontBuilder.
+- [x] Update Starter guidance:
+  - [x] Starter may use `Storefront.Components` contracts/headless behavior.
+  - [x] Starter owns its neutral visual templates.
+  - [x] Starter must not copy V2 visual components.
+- [x] Update generated storefront guidance:
+  - [x] `Storefront.{Name}` owns generated markup/CSS.
+  - [x] Generated storefront uses contracts/behavior, not V2 visual markup.
+  - [x] AI Generator can replace product card/grid/gallery/purchase/cart/checkout/account visual templates without changing core behavior.
+- [x] Do not add production browser QA for generated storefront in this phase unless implementation touches StorefrontBuilder.
 
 ### HPR15 QA gate
 
-- [ ] Starter build/package proof still passes.
-- [ ] StorefrontBuilder static isolation tests still pass if related docs/gates are changed.
+- [x] Starter build/package proof still passes.
+- [x] StorefrontBuilder static isolation tests still pass if related docs/gates are changed.
 
 ## Phase HPR16 - Final Storefront.V2 QA
 

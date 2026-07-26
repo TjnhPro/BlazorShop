@@ -277,6 +277,7 @@ Use for:
 - Examples of generated `BlazorShop.Storefront.Client` package consumption.
 - Examples of `BlazorShop.Storefront.Runtime` package consumption for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Optional `BlazorShop.Storefront.Components` package consumption for reusable browser-safe UI components; Starter-local neutral components may remain local until shared reuse is needed.
+- Starter owns its neutral visual templates and may consume `Storefront.Components` contracts/headless behavior without copying Storefront V2 visual components.
 - Same-origin BFF examples for protected browser flows.
 - Store bootstrap, capability reading, feature placement, loading/error/empty states, and generation manifest conventions.
 - Deterministic generated storefront output under ignored artifact roots such as `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof`.
@@ -284,6 +285,7 @@ Use for:
 Do not:
 
 - Copy Storefront V2 source as the Starter baseline.
+- Copy Storefront V2 visual components or theme/layout markup into Starter.
 - Turn Storefront V2 into a neutral template.
 - Reference `BlazorShop.Storefront.V2`, backend/core/API projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Copy the manual `StorefrontApiClient` transport from Storefront V2.
@@ -309,6 +311,7 @@ Use for:
 - Reviewing generated pages, generated CSS, asset manifests, and QA artifacts.
 - Running StorefrontBuilder static validation, isolation, visual smoke QA, and commerce-regression checks.
 - Hosting presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components for exactly one generated/custom storefront.
+- Owning generated markup/CSS and replacing product card/grid/gallery/purchase/cart/checkout/account visual templates while reusing contracts/headless behavior.
 - Routing protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
 
 Do not:
@@ -317,6 +320,7 @@ Do not:
 - Treat generated proof output as a platform contract owner.
 - Backport store-specific CSS, assets, generated pages, or analysis artifacts into Starter.
 - Use generated proof output as evidence that generated storefronts may reference Storefront V2, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or backend/core/API projects.
+- Use Storefront V2 visual markup as the generated/custom storefront presentation source.
 - Guess Storefront API response shapes instead of using generated package contracts.
 
 ### `tools/BlazorShop.AI.StorefrontBuilder`

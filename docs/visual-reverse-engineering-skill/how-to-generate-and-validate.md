@@ -88,10 +88,12 @@ Run isolation:
 
 - Generated storefronts use `BlazorShop.Storefront.Client` package contracts for Storefront API transport and DTOs.
 - Generated storefronts use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
-- Generated storefronts may use `BlazorShop.Storefront.Components` for reusable browser-safe UI components; generated project-local components are allowed for store-specific presentation.
-- Presentation-specific CSS, assets, generated pages, and analysis artifacts stay in the generated/custom project.
+- Generated storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior for reusable browser-safe UI components; generated project-local components are allowed for store-specific presentation.
+- `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, generated pages, and analysis artifacts.
+- StorefrontBuilder may replace product card/grid/gallery/purchase/cart/checkout/account visual templates without changing shared behavior contracts.
 - Protected browser actions go through same-origin BFF endpoints.
 - Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
+- Do not use Storefront V2 visual markup as the generated/custom storefront presentation source.
 - Do not guess API response shapes; use generated package contracts.
 
 ## Browser QA
@@ -116,6 +118,7 @@ Review the resulting reports under the generated artifact's `docs/storefront-ana
 Check these points before promoting generated storefront output or committing tooling changes:
 
 - `BlazorShop.Storefront.Starter` has no store-specific visual output.
+- `BlazorShop.Storefront.Starter` owns neutral visual templates and does not copy Storefront V2 visual components.
 - The generated project references `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` as packages, and uses `BlazorShop.Storefront.Components` only as a package when shared browser-safe UI components are needed.
 - Browser code uses same-origin BFF routes for protected actions.
 - Required analysis artifacts exist.

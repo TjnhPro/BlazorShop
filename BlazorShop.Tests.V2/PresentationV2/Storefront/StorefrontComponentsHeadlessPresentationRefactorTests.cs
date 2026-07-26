@@ -797,6 +797,31 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("\"/api/", migratedFeatureRazor, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void StarterGeneratedGuidance_DefinesVisualOwnershipAfterHpr15Alignment()
+        {
+            var builderArchitecture = ReadRepositoryFile("docs/architecture/11-storefront-builder.md");
+            var folderGuide = ReadRepositoryFile("docs/architecture/05-project-and-folder-guide.md");
+            var visualReference = ReadRepositoryFile("docs/visual-reverse-engineering-skill/reference.md");
+            var howTo = ReadRepositoryFile("docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md");
+            var combinedDocs = string.Join(Environment.NewLine, builderArchitecture, folderGuide, visualReference, howTo);
+
+            foreach (var expected in new[]
+            {
+                "Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior",
+                "Starter owns its neutral visual templates",
+                "must not copy Storefront V2 visual components",
+                "`BlazorShop.Storefront.{Name}` owns generated markup",
+                "generated CSS",
+                "must not use Storefront V2 visual markup as their presentation source",
+                "StorefrontBuilder may replace product card, grid, gallery, purchase, cart, checkout, and account visual templates",
+                "without changing shared behavior contracts"
+            })
+            {
+                Assert.Contains(expected, combinedDocs, StringComparison.Ordinal);
+            }
+        }
+
         private static string[] EnumerateComponentFeatureFiles(string searchPattern)
         {
             var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
