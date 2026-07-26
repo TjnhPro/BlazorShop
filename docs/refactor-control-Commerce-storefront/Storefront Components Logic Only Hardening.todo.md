@@ -452,30 +452,30 @@ Goal: prevent shared `AccountApp` from owning V2 account route structure.
 
 ### Tasks
 
-- [ ] Introduce account route contract:
-  - [ ] `AccountRouteDescriptor`
-  - [ ] `AccountRouteMatch`
-  - [ ] optional `IAccountRouteParser` or pure `AccountRouteParser` data-driven helper.
-- [ ] Host-owned descriptor should define:
-  - [ ] route keys.
-  - [ ] URL paths.
-  - [ ] display labels.
-  - [ ] order detail pattern.
-  - [ ] receipt mode pattern.
-  - [ ] default route.
-  - [ ] unknown route behavior.
-- [ ] Move V2 `/account/*` constants into `StorefrontAccountViewOptions`.
-- [ ] Update `AccountApp.razor` compatibility wrapper to receive route descriptor/parser from host.
-- [ ] If `AccountApp` remains too opinionated:
-  - [ ] keep it as V2 compatibility wrapper only.
-  - [ ] move it out of shared Components in a later phase.
-  - [ ] use shared leaf contracts/headless behavior for generated storefronts.
-- [ ] Do not make account page count grow again; prefer fewer host pages that compose leaf components.
-- [ ] Add guardrail:
-  - [ ] shared `AccountNavigation` must not hardcode `/account/*`.
-  - [ ] shared `AccountApp` must not hardcode `/account/*` after migration.
-  - [ ] V2 options own route constants.
-- [ ] Update tests currently expecting `AccountApp` to parse hardcoded `profile`, `addresses`, `orders`, and `change-password`.
+- [x] Introduce account route contract:
+  - [x] `AccountRouteDescriptor`
+  - [x] `AccountRouteMatch`
+  - [x] optional `IAccountRouteParser` or pure `AccountRouteParser` data-driven helper.
+- [x] Host-owned descriptor should define:
+  - [x] route keys.
+  - [x] URL paths.
+  - [x] display labels.
+  - [x] order detail pattern.
+  - [x] receipt mode pattern.
+  - [x] default route.
+  - [x] unknown route behavior.
+- [x] Move V2 `/account/*` constants into `StorefrontAccountViewOptions`.
+- [x] Update `AccountApp.razor` compatibility wrapper to receive route descriptor/parser from host.
+- [x] If `AccountApp` remains too opinionated:
+  - [x] keep it as V2 compatibility wrapper only.
+  - [x] move it out of shared Components in a later phase.
+  - [x] use shared leaf contracts/headless behavior for generated storefronts.
+- [x] Do not make account page count grow again; prefer fewer host pages that compose leaf components.
+- [x] Add guardrail:
+  - [x] shared `AccountNavigation` must not hardcode `/account/*`.
+  - [x] shared `AccountApp` must not hardcode `/account/*` after migration.
+  - [x] V2 options own route constants.
+- [x] Update tests currently expecting `AccountApp` to parse hardcoded `profile`, `addresses`, `orders`, and `change-password`.
 
 ### Files Likely Touched
 
@@ -497,9 +497,20 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Account route interpretation is host-owned.
-- [ ] Shared account components can be reused by stores with different account URLs.
-- [ ] V2 account routes continue to work.
+- [x] Account route interpretation is host-owned.
+- [x] Shared account components can be reused by stores with different account URLs.
+- [x] V2 account routes continue to work.
+
+### CLH5 Notes - 2026-07-26
+
+- Added `AccountRouteDescriptor`, `AccountRouteMatch`, `AccountRouteKind`, and data-driven `AccountRouteParser` under `Contracts/Account`.
+- `AccountApp.razor` now receives `RouteDescriptor` and calls `AccountRouteParser.Resolve(Path, RouteDescriptor)` instead of hardcoding `/account/*` route constants or segment comparisons.
+- `StorefrontAccountViewOptions` owns the current V2 route descriptor and `AccountHostPage` passes it into `AccountApp`.
+- Verification passed:
+  - `rg -n "/account/profile|/account/addresses|/account/orders|/account/change-password" BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor` returned no matches.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontWasmRuntimeFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` passed `41/41`.
 
 ## Phase CLH6 - Move Visual Class-Bag Schemas Out Of Stable Headless API
 

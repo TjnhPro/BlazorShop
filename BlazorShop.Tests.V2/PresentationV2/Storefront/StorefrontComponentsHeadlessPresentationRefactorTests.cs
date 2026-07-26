@@ -25,6 +25,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static readonly string[] ExpectedContractModelAndEnumFiles =
         [
             "Account/AccountLabels.cs",
+            "Account/AccountRouteDescriptor.cs",
             "Cart/CartLabels.cs",
             "Catalog/ProductSummaryItem.cs",
             "Catalog/ProductSummaryLabels.cs",
@@ -75,7 +76,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(13, actual.Length);
+            Assert.Equal(14, actual.Length);
         }
 
         [Fact]
@@ -769,18 +770,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("ContentArticle = \"rounded-3xl border border-neutral-200/70 bg-white/95 shadow-lg\"", options, StringComparison.Ordinal);
             Assert.Contains("UnknownAlert = \"rounded-2xl border border-rose-200", options, StringComparison.Ordinal);
 
+            var accountRouteContract = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Account/AccountRouteDescriptor.cs");
+
             foreach (var expectedRoute in new[]
             {
-                "string.Equals(normalized, \"profile\"",
-                "string.Equals(normalized, \"addresses\"",
-                "string.Equals(normalized, \"orders\"",
-                "string.Equals(normalized, \"change-password\"",
+                "AccountRouteParser.Resolve(Path, RouteDescriptor)",
+                "RouteDescriptor=\"StorefrontAccountViewOptions.RouteDescriptor\""
+            })
+            {
+                Assert.Contains(expectedRoute, app + host, StringComparison.Ordinal);
+            }
+
+            foreach (var expectedRouteContract in new[]
+            {
+                "ProfileSegment",
+                "AddressesSegment",
+                "OrdersSegment",
+                "ChangePasswordSegment",
+                "ReceiptSegment",
                 "Uri.UnescapeDataString(segments[1])",
                 "AccountRouteKind.OrderDetail"
             })
             {
-                Assert.Contains(expectedRoute, app, StringComparison.Ordinal);
+                Assert.Contains(expectedRouteContract, accountRouteContract, StringComparison.Ordinal);
             }
+
+            Assert.DoesNotContain("string.Equals(normalized, \"profile\"", app, StringComparison.Ordinal);
 
             Assert.Contains("AccountProfileEditor", app, StringComparison.Ordinal);
             Assert.Contains("AccountAddressBook", app, StringComparison.Ordinal);

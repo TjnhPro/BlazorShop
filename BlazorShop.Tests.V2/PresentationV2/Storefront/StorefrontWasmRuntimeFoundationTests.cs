@@ -199,11 +199,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AccountOrderDetail", app, StringComparison.Ordinal);
             Assert.Contains("AccountChangePasswordForm", app, StringComparison.Ordinal);
             Assert.Contains("StorefrontFeatureDataMode.BrowserFetch", app, StringComparison.Ordinal);
-            Assert.Contains("string.Equals(normalized, \"profile\"", app, StringComparison.Ordinal);
-            Assert.Contains("string.Equals(normalized, \"addresses\"", app, StringComparison.Ordinal);
-            Assert.Contains("string.Equals(normalized, \"orders\"", app, StringComparison.Ordinal);
-            Assert.Contains("string.Equals(normalized, \"change-password\"", app, StringComparison.Ordinal);
-            Assert.Contains("Uri.UnescapeDataString(segments[1])", app, StringComparison.Ordinal);
+            Assert.Contains("RouteDescriptor=\"StorefrontAccountViewOptions.RouteDescriptor\"", host, StringComparison.Ordinal);
+            Assert.Contains("AccountRouteParser.Resolve(Path, RouteDescriptor)", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("string.Equals(normalized, \"profile\"", app, StringComparison.Ordinal);
             Assert.DoesNotContain("InitialProfile=\"_profile\"", host + app, StringComparison.Ordinal);
             Assert.DoesNotContain("GetCustomerProfileAsync", host, StringComparison.Ordinal);
         }

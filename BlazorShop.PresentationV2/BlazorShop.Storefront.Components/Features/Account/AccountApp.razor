@@ -1,5 +1,6 @@
 @namespace BlazorShop.Storefront.Components.Features.Account
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Contracts.Account
 @using BlazorShop.Storefront.Components.Headless.Account
 
 <PageTitle>@PageTitleText</PageTitle>
@@ -47,6 +48,9 @@
     public IReadOnlyList<AccountNavigationItem> NavigationItems { get; set; } = [];
 
     [Parameter]
+    public AccountRouteDescriptor RouteDescriptor { get; set; } = AccountRouteDescriptor.Empty;
+
+    [Parameter]
     public AccountNavigationClasses NavigationClasses { get; set; } = AccountNavigationClasses.Empty;
 
     [Parameter]
@@ -76,7 +80,7 @@
     [Parameter]
     public StorefrontAccountShellClasses ShellClasses { get; set; } = StorefrontAccountShellClasses.Empty;
 
-    private AccountRoute ActiveRoute => ResolveRoute(Path);
+    private AccountRouteMatch ActiveRoute => AccountRouteParser.Resolve(Path, RouteDescriptor);
 
     private string Title => ActiveRoute.Kind switch
     {
@@ -163,70 +167,4 @@
         }
     };
 
-    private static AccountRoute ResolveRoute(string? path)
-    {
-        var normalized = Normalize(path);
-        if (normalized.Length == 0 || string.Equals(normalized, "profile", StringComparison.OrdinalIgnoreCase))
-        {
-            return new AccountRoute(AccountRouteKind.Profile, AccountRoutes.Profile, null, false);
-        }
-
-        if (string.Equals(normalized, "addresses", StringComparison.OrdinalIgnoreCase))
-        {
-            return new AccountRoute(AccountRouteKind.Addresses, AccountRoutes.Addresses, null, false);
-        }
-
-        if (string.Equals(normalized, "orders", StringComparison.OrdinalIgnoreCase))
-        {
-            return new AccountRoute(AccountRouteKind.Orders, AccountRoutes.Orders, null, false);
-        }
-
-        if (string.Equals(normalized, "change-password", StringComparison.OrdinalIgnoreCase))
-        {
-            return new AccountRoute(AccountRouteKind.ChangePassword, AccountRoutes.ChangePassword, null, false);
-        }
-
-        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (segments.Length is 2 or 3 && string.Equals(segments[0], "orders", StringComparison.OrdinalIgnoreCase))
-        {
-            var receiptMode = segments.Length == 3 && string.Equals(segments[2], "receipt", StringComparison.OrdinalIgnoreCase);
-            if (segments.Length == 2 || receiptMode)
-            {
-                var reference = Uri.UnescapeDataString(segments[1]);
-                if (!string.IsNullOrWhiteSpace(reference))
-                {
-                    return new AccountRoute(AccountRouteKind.OrderDetail, AccountRoutes.Orders, reference, receiptMode);
-                }
-            }
-        }
-
-        return new AccountRoute(AccountRouteKind.Unknown, AccountRoutes.Profile, null, false);
-    }
-
-    private static string Normalize(string? path)
-    {
-        return string.IsNullOrWhiteSpace(path)
-            ? string.Empty
-            : path.Trim().Trim('/');
-    }
-
-    private enum AccountRouteKind
-    {
-        Unknown,
-        Profile,
-        Addresses,
-        Orders,
-        OrderDetail,
-        ChangePassword
-    }
-
-    private sealed record AccountRoute(AccountRouteKind Kind, string NavRoute, string? OrderReference, bool ReceiptMode);
-
-    private static class AccountRoutes
-    {
-        public const string Profile = "/account/profile";
-        public const string Addresses = "/account/addresses";
-        public const string Orders = "/account/orders";
-        public const string ChangePassword = "/account/change-password";
-    }
 }

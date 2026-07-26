@@ -1,5 +1,6 @@
 namespace BlazorShop.Storefront.Components.Account;
 
+using BlazorShop.Storefront.Components.Contracts.Account;
 using BlazorShop.Storefront.Components.Headless.Account;
 
 public static class StorefrontAccountViewOptions
@@ -35,6 +36,17 @@ public static class StorefrontAccountViewOptions
         new("addresses", "Addresses", "/account/addresses"),
         new("change-password", "Password", "/account/change-password")
     };
+
+    public static AccountRouteDescriptor RouteDescriptor { get; } = new(
+        "/account/profile",
+        "/account/addresses",
+        "/account/orders",
+        "/account/change-password",
+        "profile",
+        "addresses",
+        "orders",
+        "change-password",
+        "receipt");
 
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {
