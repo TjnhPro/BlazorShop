@@ -3,6 +3,7 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Storefront.Options;
     using BlazorShop.Storefront.Services.Contracts;
 
+    using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
 
     public class StorefrontPublicUrlResolver : IStorefrontPublicUrlResolver

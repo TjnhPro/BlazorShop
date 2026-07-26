@@ -394,7 +394,7 @@ Exit criteria:
 
 Muc tieu: SEO/discovery la application concern dung chung V2 va Starter.
 
-- [ ] Move/generalize tu V2 sang Presentation:
+- [x] Move/generalize tu V2 sang Presentation:
   - `StorefrontRoutes`
   - `StorefrontSeoComposer`
   - `StorefrontSeoSettingsProvider`
@@ -405,34 +405,45 @@ Muc tieu: SEO/discovery la application concern dung chung V2 va Starter.
   - `StorefrontSitemapService`
   - `SeoRuntimeLogger`
   - public URL resolver neu khong host-specific
-- [ ] Giu V2-only head visuals o V2:
+- [x] Giu V2-only head visuals o V2:
   - brand head visual
   - theme color
   - icons
   - font preload
   - theme CSS/script references
-- [ ] Tao Presentation endpoint mapping:
+- [x] Tao Presentation endpoint mapping:
 
 ```csharp
 app.MapStorefrontPresentationSeoEndpoints();
 ```
 
-- [ ] Replace V2:
+- [x] Replace V2:
   - `app.MapStorefrontSeoEndpoints()` -> `app.MapStorefrontPresentationSeoEndpoints()` hoac aggregated `MapStorefrontPresentation()`.
-- [ ] Replace Starter:
+- [x] Replace Starter:
   - remove `StarterSeoEndpoints`;
   - use Presentation robots/sitemap behavior.
-- [ ] Tests:
+- [x] Tests:
   - robots content type and sitemap link;
   - sitemap XML content type;
   - service unavailable returns 503 when SEO document cannot be generated;
   - product/category/content canonical;
   - search/cart/checkout/account noindex.
 
+2026-07-26 SPF5 evidence:
+
+- Moved storefront SEO/discovery route policy, sitemap/robots services, public URL resolver/options, indexing policy, structured-data composer/document types, route constants, SEO models, and SEO service contracts from `BlazorShop.Storefront.V2` into `BlazorShop.Storefront.Presentation`.
+- Added `MapStorefrontPresentationSeoEndpoints()` and switched both V2 and Starter to the shared Presentation endpoint mapping; removed `StorefrontSeoEndpoints` and `StarterSeoEndpoints`.
+- Moved reusable SEO head components into Presentation as `StorefrontSeoHead`, `StorefrontJsonLdScript`, and `StaticPageSeo`; V2 now keeps only host/visual head assets through `StorefrontApplicationHead`, `StorefrontApplicationScripts`, and `StorefrontBrandHead`.
+- Added SPF5 boundary tests for Presentation SEO ownership, shared SEO endpoint mapping, and V2-only brand-head ownership.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings.
+- Verification: focused `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~LayoutAssetFoundationTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontSitemapServiceTests|FullyQualifiedName~StorefrontStructuredDataComposerTests|FullyQualifiedName~StorefrontHomeMetadataTests|FullyQualifiedName~StorefrontRoutesTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests" --no-restore` passed 130/130 with existing MessagePack vulnerability and Browserslist warnings.
+
 Exit criteria:
 
-- [ ] SEO/discovery implementation khong con duplicated giua V2 va Starter.
-- [ ] V2 visual page views khong tu render `SeoHead`; Presentation page state lam viec do.
+- [x] SEO/discovery implementation khong con duplicated giua V2 va Starter.
+- [x] V2 visual page views khong tu render `SeoHead`; Presentation page state lam viec do.
 
 ## Phase SPF6 - Product Page Vertical Slice
 

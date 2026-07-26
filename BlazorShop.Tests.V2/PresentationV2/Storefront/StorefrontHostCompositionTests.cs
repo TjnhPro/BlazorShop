@@ -21,7 +21,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapStorefrontCartEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontSeoEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontMediaEndpoints();", program, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontApiClient", program, StringComparison.Ordinal);
             Assert.DoesNotContain("new HttpClient", program, StringComparison.Ordinal);
@@ -41,6 +41,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AddStorefrontRuntimeRegistration(configuration)", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontGeneratedClientRegistration()", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontBffEndpointDependencies()", services, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontPresentation(configuration)", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontSeoMediaAndDeploymentServices()", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontAuthSessionAndAntiforgeryPolicies(", services, StringComparison.Ordinal);
         }

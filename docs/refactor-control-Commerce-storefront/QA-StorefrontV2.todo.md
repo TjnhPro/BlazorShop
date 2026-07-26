@@ -542,12 +542,12 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 
 - [x] `/robots.txt` route is covered by automated smoke test.
 - [x] `/sitemap.xml` route is covered by automated smoke test.
-- [x] `SeoHead` renders title.
-- [x] `SeoHead` renders meta description.
-- [x] `SeoHead` renders canonical URL.
-- [x] `SeoHead` renders robots meta.
-- [x] `SeoHead` renders OpenGraph.
-- [x] `JsonLdScript` renders structured data.
+- [x] Presentation `StorefrontSeoHead` renders title.
+- [x] Presentation `StorefrontSeoHead` renders meta description.
+- [x] Presentation `StorefrontSeoHead` renders canonical URL.
+- [x] Presentation `StorefrontSeoHead` renders robots meta.
+- [x] Presentation `StorefrontSeoHead` renders OpenGraph.
+- [x] Presentation `StorefrontJsonLdScript` renders structured data.
   - 2026-07-09: verified `schema.org` structured data on home and product pages.
 - [x] `/sitemap.xml` uses `api/storefront/stores/{storeKey}/catalog/sitemap`. 2026-07-14: API client route switched to scoped catalog sitemap.
 - [x] `/robots.txt` points at V2 public sitemap URL.
@@ -557,6 +557,7 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 - [x] Storefront indexing policy centralizes private/search noindex routes and strips query/fragment/trailing-slash noise from canonical paths. 2026-07-15: `StorefrontIndexingPolicyTests`, route SEO audit, cart flow, and current-store middleware focused run passed 48/48.
 - [x] Storefront sitemap generation normalizes canonical paths and excludes private/search noindex routes before absolute URL generation. 2026-07-15: `StorefrontSitemapServiceTests`, sitemap/robots QA, and discovery document focused run passed 21/21.
 - [x] Storefront SEO/discovery release-gate suite passed after SEO Routing Slug Core. 2026-07-15 Phase 12: focused `StorefrontSitemapServiceTests`, `StorefrontRobots*`, `StorefrontIndexingPolicyTests`, `SeoMetadataBuilderTests`, and `StorefrontSeoComposerTests` run passed 26/26.
+- [x] Storefront SEO/discovery is shared through `BlazorShop.Storefront.Presentation`. 2026-07-26 SPF5: focused Presentation/Layout/PageComposition/SEO/Host/BFF guardrail suite passed 130/130; V2 and Starter both map `MapStorefrontPresentationSeoEndpoints()`.
 - [x] Missing route has no canonical and includes noindex.
 - [x] Commerce Node downtime has noindex 503 surface.
 - [ ] Visible browser QA: old slug in current store redirects to canonical slug.

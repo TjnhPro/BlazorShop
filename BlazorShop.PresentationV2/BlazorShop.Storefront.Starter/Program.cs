@@ -4,6 +4,8 @@ using BlazorShop.Storefront.Starter.Components;
 using BlazorShop.Storefront.Starter.Endpoints;
 using BlazorShop.Storefront.Starter.Features;
 using BlazorShop.Storefront.Presentation.App;
+using BlazorShop.Storefront.Presentation.DependencyInjection;
+using BlazorShop.Storefront.Presentation.Endpoints;
 using BlazorShop.Storefront.Starter.Options;
 using BlazorShop.Storefront.Starter.Services;
 
@@ -24,6 +26,7 @@ builder.Services.AddStorefrontRuntime(options =>
     options.PublicBaseUrl = starterOptions.PublicBaseUrl;
 });
 builder.Services.AddStorefrontPlatformRuntime();
+builder.Services.AddStorefrontPresentation(builder.Configuration);
 builder.Services.AddScoped<StorefrontBootstrapService>();
 builder.Services.AddSingleton(_ =>
     StarterFeatureManifest.Load(Path.Combine(builder.Environment.ContentRootPath, "Features", "feature-manifest.json")));
@@ -48,7 +51,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 app.MapStarterBffEndpoints();
-app.MapStarterSeoEndpoints();
+app.MapStorefrontPresentationSeoEndpoints();
 
 app.MapRazorComponents<StorefrontApp>();
 

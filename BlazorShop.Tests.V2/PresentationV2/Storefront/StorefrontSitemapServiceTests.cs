@@ -46,7 +46,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private static StorefrontSitemapService CreateService(GetPublicCatalogSitemap sitemap)
         {
-            var apiClient = new Mock<IStorefrontCatalogClient>();
+            var apiClient = new Mock<IStorefrontSitemapReader>();
             apiClient
                 .Setup(client => client.GetPublishedSitemapAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(StorefrontApiResult<GetPublicCatalogSitemap>.Success(sitemap));

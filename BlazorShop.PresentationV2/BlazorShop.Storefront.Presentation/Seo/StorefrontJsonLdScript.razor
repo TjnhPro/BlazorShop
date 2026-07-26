@@ -1,3 +1,5 @@
+@namespace BlazorShop.Storefront.Presentation.Seo
+
 @if (Document is not null && !Document.IsEmpty)
 {
     <script type="application/ld+json">@((MarkupString)Document.ToJson())</script>

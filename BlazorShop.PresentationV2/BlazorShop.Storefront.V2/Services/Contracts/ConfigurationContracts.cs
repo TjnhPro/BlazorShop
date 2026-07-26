@@ -9,34 +9,6 @@ namespace BlazorShop.Storefront.Services
 
     using Microsoft.Extensions.Options;
 
-
-    public sealed record StorefrontCurrentStore(
-        Guid PublicId,
-        string StoreKey,
-        string Name,
-        string Status,
-        string? BaseUrl,
-        string? PrimaryDomain,
-        bool ForceHttps,
-        string? CdnHost,
-        string? LogoUrl,
-        string? CompanyName,
-        string? CompanyEmail,
-        string? CompanyPhone,
-        string? CompanyAddress,
-        string? FaviconUrl,
-        string? PngIconUrl,
-        string? AppleTouchIconUrl,
-        string? MsTileImageUrl,
-        string? MsTileColor,
-        string DefaultCurrencyCode,
-        string DefaultCulture,
-        string? SupportEmail,
-        string? SupportPhone,
-        bool MaintenanceModeEnabled,
-        string? MaintenanceMessage,
-        string? HtmlBodyId);
-
     public sealed record StorefrontPublicConfiguration(
         StorefrontStoreIdentity StoreIdentity,
         StorefrontBranding Branding,

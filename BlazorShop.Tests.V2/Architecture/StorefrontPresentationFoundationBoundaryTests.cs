@@ -259,6 +259,88 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("ErrorContent", source, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void SeoAndDiscoveryServices_AreOwnedByPresentation()
+        {
+            var expectedPresentationFiles = new[]
+            {
+                "Models/StorefrontCatalogContentModels.cs",
+                "Options/StorefrontPublicUrlOptions.cs",
+                "Configuration/StorefrontPublicUrlOptionsValidator.cs",
+                "Services/StorefrontApiResult.cs",
+                "Services/StorefrontIndexingPolicy.cs",
+                "Services/StorefrontRoutes.cs",
+                "Services/Contracts/IStorefrontPublicUrlResolver.cs",
+                "Services/Contracts/IStorefrontRobotsService.cs",
+                "Services/Contracts/IStorefrontSeoComposer.cs",
+                "Services/Contracts/IStorefrontSeoDiscoveryReaders.cs",
+                "Services/Contracts/IStorefrontSeoSettingsProvider.cs",
+                "Services/Contracts/IStorefrontSitemapService.cs",
+                "Services/Contracts/IStorefrontStructuredDataComposer.cs",
+                "Seo/SeoRuntimeLogger.cs",
+                "Seo/StorefrontPublicUrlResolver.cs",
+                "Seo/StorefrontRobotsService.cs",
+                "Seo/StorefrontRuntimeSeoDiscoveryReaders.cs",
+                "Seo/StorefrontSeoComposer.cs",
+                "Seo/StorefrontSeoSettingsProvider.cs",
+                "Seo/StorefrontSitemapService.cs",
+                "Seo/StorefrontStructuredDataComposer.cs",
+                "Seo/StorefrontStructuredDataDocument.cs",
+            };
+
+            foreach (var relativeFile in expectedPresentationFiles)
+            {
+                Assert.True(
+                    File.Exists(RepositoryPath($"BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/{relativeFile}")),
+                    $"{relativeFile} must be owned by BlazorShop.Storefront.Presentation.");
+            }
+
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontSeoEndpoints.cs")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterSeoEndpoints.cs")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontSeoComposer.cs")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontSitemapService.cs")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontRobotsService.cs")));
+        }
+
+        [Fact]
+        public void V2AndStarter_MapSharedPresentationSeoEndpoints()
+        {
+            var v2Program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var starterProgram = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
+            var presentationEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationSeoEndpoints.cs");
+
+            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", v2Program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", starterProgram, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapStorefrontSeoEndpoints", v2Program, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapStarterSeoEndpoints", starterProgram, StringComparison.Ordinal);
+            Assert.Contains("MapStorefrontPresentationSeoEndpoints", presentationEndpoints, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.Robots", presentationEndpoints, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.Sitemap", presentationEndpoints, StringComparison.Ordinal);
+            Assert.Contains("StorefrontResponseHeaders.ApplyRobotsDocument", presentationEndpoints, StringComparison.Ordinal);
+            Assert.Contains("StorefrontResponseHeaders.ApplySitemapDocument", presentationEndpoints, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void SeoHeadComponents_ArePresentationOwnedWhileV2KeepsOnlyBrandHead()
+        {
+            var v2SeoFiles = Directory
+                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo"), "*.razor", SearchOption.TopDirectoryOnly)
+                .Select(path => Path.GetFileName(path))
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+            var v2Pages = Directory
+                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages"), "*.razor", SearchOption.AllDirectories)
+                .Select(File.ReadAllText)
+                .ToArray();
+
+            Assert.Equal(["StorefrontBrandHead.razor"], v2SeoFiles);
+            Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontSeoHead.razor")));
+            Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontJsonLdScript.razor")));
+            Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StaticPageSeo.razor")));
+            Assert.All(v2Pages, markup => Assert.DoesNotContain("<SeoHead", markup, StringComparison.Ordinal));
+            Assert.Contains(v2Pages, markup => markup.Contains("<StorefrontSeoHead", StringComparison.Ordinal));
+        }
+
         private static bool IsPresentationRuntimeOrClientReference(string reference)
         {
             return reference.Contains("/BlazorShop.Storefront.Presentation/", StringComparison.OrdinalIgnoreCase)

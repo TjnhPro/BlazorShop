@@ -1,16 +1,40 @@
 namespace BlazorShop.Storefront.Presentation.DependencyInjection;
 
 using System.Reflection;
+using BlazorShop.Storefront.Configuration;
+using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Presentation.Routing;
+using BlazorShop.Storefront.Services;
+using BlazorShop.Storefront.Services.Contracts;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 public static class StorefrontPresentationServiceCollectionExtensions
 {
-    public static IServiceCollection AddStorefrontPresentation(this IServiceCollection services)
+    public static IServiceCollection AddStorefrontPresentation(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        services.AddHttpContextAccessor();
+        services.AddMemoryCache();
+        services.AddSingleton<IValidateOptions<StorefrontPublicUrlOptions>, StorefrontPublicUrlOptionsValidator>();
+        services.AddOptions<StorefrontPublicUrlOptions>()
+            .Bind(configuration.GetSection(StorefrontPublicUrlOptions.SectionName))
+            .ValidateOnStart();
+
+        services.AddScoped<IStorefrontPublicUrlResolver, StorefrontPublicUrlResolver>();
+        services.AddScoped<IStorefrontSitemapReader, StorefrontRuntimeSitemapReader>();
+        services.AddScoped<IStorefrontSeoSettingsReader, StorefrontRuntimeSeoSettingsReader>();
+        services.AddScoped<IStorefrontRobotsService, StorefrontRobotsService>();
+        services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettingsProvider>();
+        services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
+        services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
+        services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
 
         return services;
     }

@@ -12,12 +12,12 @@ using System.Globalization;
 
     public class StorefrontSitemapService : IStorefrontSitemapService
     {
-        private readonly IStorefrontCatalogClient _apiClient;
+        private readonly IStorefrontSitemapReader _apiClient;
         private readonly IStorefrontPublicUrlResolver _publicUrlResolver;
         private readonly IStorefrontSeoSettingsProvider _seoSettingsProvider;
 
         public StorefrontSitemapService(
-            IStorefrontCatalogClient apiClient,
+            IStorefrontSitemapReader apiClient,
             IStorefrontPublicUrlResolver publicUrlResolver,
             IStorefrontSeoSettingsProvider seoSettingsProvider)
         {

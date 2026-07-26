@@ -4,17 +4,18 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services.Contracts;
 
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Caching.Memory;
 
     public class StorefrontSeoSettingsProvider : IStorefrontSeoSettingsProvider
     {
         private const string CacheKey = "storefront-seo-settings";
 
-        private readonly IStorefrontContentClient _apiClient;
+        private readonly IStorefrontSeoSettingsReader _apiClient;
         private readonly IConfiguration _configuration;
         private readonly IMemoryCache _memoryCache;
 
-        public StorefrontSeoSettingsProvider(IStorefrontContentClient apiClient, IConfiguration configuration, IMemoryCache memoryCache)
+        public StorefrontSeoSettingsProvider(IStorefrontSeoSettingsReader apiClient, IConfiguration configuration, IMemoryCache memoryCache)
         {
             _apiClient = apiClient;
             _configuration = configuration;

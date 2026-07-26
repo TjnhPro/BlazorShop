@@ -559,11 +559,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontSeoEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontMediaEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStaticAssets();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapDefaultEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapRazorComponents<App>()", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapRazorComponents<StorefrontApp>()", program, StringComparison.Ordinal);
             Assert.Contains(".AddInteractiveWebAssemblyRenderMode()", program, StringComparison.Ordinal);
 
             Assert.DoesNotContain("app.MapGet(\"/api/cart\"", program, StringComparison.Ordinal);

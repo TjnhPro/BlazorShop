@@ -2,6 +2,7 @@ namespace BlazorShop.Storefront.Configuration
 {
     using System.Threading.RateLimiting;
     using BlazorShop.Storefront.Options;
+    using BlazorShop.Storefront.Presentation.DependencyInjection;
     using BlazorShop.Storefront.Runtime;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
@@ -28,6 +29,7 @@ namespace BlazorShop.Storefront.Configuration
 
             services.AddStorefrontHostOptions(configuration);
             services.AddStorefrontRuntimeRegistration(configuration);
+            services.AddStorefrontPresentation(configuration);
             services.AddStorefrontAuthSessionAndAntiforgeryPolicies(
                 rateLimitingOptions,
                 configureRateLimiter,
@@ -47,7 +49,6 @@ namespace BlazorShop.Storefront.Configuration
             services.AddMemoryCache();
             services.AddSingleton<IValidateOptions<StorefrontApiOptions>, StorefrontApiOptionsValidator>();
             services.AddSingleton<IValidateOptions<ClientAppOptions>, StorefrontClientAppOptionsValidator>();
-            services.AddSingleton<IValidateOptions<StorefrontPublicUrlOptions>, StorefrontPublicUrlOptionsValidator>();
             services.AddSingleton<IValidateOptions<StorefrontStoreResolutionOptions>, StorefrontStoreResolutionOptionsValidator>();
             services.ConfigureOptions<StorefrontForwardedHeadersOptionsSetup>();
             services.AddOptions<StorefrontApiOptions>()
@@ -55,9 +56,6 @@ namespace BlazorShop.Storefront.Configuration
                 .ValidateOnStart();
             services.AddOptions<ClientAppOptions>()
                 .Bind(configuration.GetSection(ClientAppOptions.SectionName))
-                .ValidateOnStart();
-            services.AddOptions<StorefrontPublicUrlOptions>()
-                .Bind(configuration.GetSection(StorefrontPublicUrlOptions.SectionName))
                 .ValidateOnStart();
             services.AddOptions<StorefrontStoreResolutionOptions>()
                 .Bind(configuration.GetSection(StorefrontStoreResolutionOptions.SectionName))
@@ -133,13 +131,7 @@ namespace BlazorShop.Storefront.Configuration
 
         private static IServiceCollection AddStorefrontSeoMediaAndDeploymentServices(this IServiceCollection services)
         {
-            services.AddScoped<IStorefrontPublicUrlResolver, StorefrontPublicUrlResolver>();
-            services.AddScoped<IStorefrontRobotsService, StorefrontRobotsService>();
-            services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettingsProvider>();
-            services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
-            services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
             services.AddScoped<IStorefrontPagePresentationResolver, StorefrontPagePresentationResolver>();
-            services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
             services.AddScoped<StorefrontMediaProxyService>();
 
             return services;

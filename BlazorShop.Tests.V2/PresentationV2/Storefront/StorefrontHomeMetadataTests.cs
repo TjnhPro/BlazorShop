@@ -17,7 +17,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void SeoComposer_UsesHomeCanonicalForHomeMetadataPage()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontSeoComposer.cs");
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontSeoComposer.cs");
 
             Assert.Contains("ComposeHomePageAsync(GetStorefrontPage? homePage", source);
             Assert.Contains("RelativePath = StorefrontRoutes.Home", source);
@@ -27,7 +27,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontRoutes_DocumentsReservedHomeMetadataSlug()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontRoutes.cs");
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontRoutes.cs");
 
             Assert.Contains("HomeMetadataSlug = \"home\"", source);
         }

@@ -19,8 +19,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", endpointSources, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/consent/current\"", endpointSources, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/consent/revoke\"", endpointSources, StringComparison.Ordinal);
-            Assert.Contains("app.MapGet(StorefrontRoutes.Robots", endpointSources, StringComparison.Ordinal);
-            Assert.Contains("app.MapGet(StorefrontRoutes.Sitemap", endpointSources, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapGet(StorefrontRoutes.Robots", endpointSources, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapGet(StorefrontRoutes.Sitemap", endpointSources, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/media/products/{mediaPublicId:guid}\"", endpointSources, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/media/assets/{assetPublicId:guid}/{fileName}\"", endpointSources, StringComparison.Ordinal);
         }
@@ -56,8 +56,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "app.MapGet(\"/api/consent/current\"",
                 "app.MapPost(\"/api/consent\"",
                 "app.MapPost(\"/api/consent/revoke\"",
-                "app.MapGet(StorefrontRoutes.Robots",
-                "app.MapGet(StorefrontRoutes.Sitemap",
+                "endpoints.MapGet(StorefrontRoutes.Robots",
+                "endpoints.MapGet(StorefrontRoutes.Sitemap",
                 "app.MapGet(\"/media/products/{mediaPublicId:guid}\"",
                 "app.MapGet(\"/media/assets/{assetPublicId:guid}/{fileName}\"",
             };
@@ -192,10 +192,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private static string ReadEndpointSources()
         {
-            var endpointDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints");
+            var endpointDirectories = new[]
+            {
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints"),
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints"),
+            };
             return string.Join(
                 Environment.NewLine,
-                Directory.EnumerateFiles(endpointDirectory, "*.cs", SearchOption.AllDirectories)
+                endpointDirectories.SelectMany(endpointDirectory => Directory.EnumerateFiles(endpointDirectory, "*.cs", SearchOption.AllDirectories))
                     .OrderBy(path => path, StringComparer.Ordinal)
                     .Select(File.ReadAllText));
         }

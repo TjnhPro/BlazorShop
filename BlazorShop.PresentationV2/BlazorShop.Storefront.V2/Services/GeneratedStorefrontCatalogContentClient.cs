@@ -9,7 +9,7 @@ namespace BlazorShop.Storefront.Services
 
     using GeneratedClients = BlazorShop.Storefront.Client;
 
-    public sealed class GeneratedStorefrontCatalogContentClient : IStorefrontCatalogClient, IStorefrontContentClient
+    public sealed class GeneratedStorefrontCatalogContentClient : IStorefrontCatalogClient, IStorefrontContentClient, IStorefrontSitemapReader, IStorefrontSeoSettingsReader
     {
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
         {

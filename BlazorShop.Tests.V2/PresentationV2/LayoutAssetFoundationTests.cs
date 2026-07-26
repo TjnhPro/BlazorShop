@@ -14,18 +14,23 @@ namespace BlazorShop.Tests.PresentationV2
         [Fact]
         public void StorefrontRoot_DefinesExpectedAssetsWithoutDuplicates()
         {
-            var appMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/App.razor");
+            var appMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontApp.razor");
+            var headMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationHead.razor");
+            var scriptMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationScripts.razor");
 
-            Assert.Equal(StorefrontRootStylesheetAllowlist, ExtractStylesheetHrefs(appMarkup));
-            Assert.Equal(StorefrontRootScriptAllowlist, ExtractScriptSources(appMarkup));
-            Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", appMarkup);
+            Assert.Equal(StorefrontRootStylesheetAllowlist, ExtractStylesheetHrefs(headMarkup));
+            Assert.Equal(StorefrontRootScriptAllowlist, ExtractScriptSources(scriptMarkup));
+            Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", headMarkup);
             Assert.True(
-                appMarkup.IndexOf("<StorefrontBrandHead />", StringComparison.Ordinal) <
+                appMarkup.IndexOf("ComponentType=\"@ViewSet.ApplicationHead\"", StringComparison.Ordinal) <
                 appMarkup.IndexOf("<HeadOutlet />", StringComparison.Ordinal));
             Assert.True(
-                appMarkup.IndexOf("_framework/blazor.web.js", StringComparison.Ordinal) <
-                appMarkup.IndexOf("js/storefrontCommerce.js", StringComparison.Ordinal));
+                scriptMarkup.IndexOf("_framework/blazor.web.js", StringComparison.Ordinal) <
+                scriptMarkup.IndexOf("js/storefrontCommerce.js", StringComparison.Ordinal));
+            Assert.Contains("<StorefrontBrandHead />", headMarkup);
             AssertRootDoesNotReferenceLegacyPresentationAssets(appMarkup);
+            AssertRootDoesNotReferenceLegacyPresentationAssets(headMarkup);
+            AssertRootDoesNotReferenceLegacyPresentationAssets(scriptMarkup);
         }
 
         [Fact]
@@ -72,7 +77,7 @@ namespace BlazorShop.Tests.PresentationV2
         {
             var pageMarkup = ReadRepositoryFile(relativePath);
 
-            Assert.Contains("<SeoHead", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontSeoHead", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPageShell", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<Breadcrumb>", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<BreadcrumbNav", pageMarkup, StringComparison.Ordinal);
@@ -142,7 +147,7 @@ namespace BlazorShop.Tests.PresentationV2
         public void StorefrontRuntime_DoesNotApplyImmutableCachePolicyToDynamicPipeline()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
-            var responseHeaders = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontResponseHeaders.cs");
+            var responseHeaders = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/PagePatterns/StorefrontResponseHeaders.cs");
 
             Assert.DoesNotContain("OnPrepareResponse", program, StringComparison.Ordinal);
             Assert.DoesNotContain("max-age=31536000, immutable", program, StringComparison.OrdinalIgnoreCase);

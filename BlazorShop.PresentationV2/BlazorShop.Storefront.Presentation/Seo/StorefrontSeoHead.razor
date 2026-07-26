@@ -1,3 +1,5 @@
+@namespace BlazorShop.Storefront.Presentation.Seo
+
 @if (!string.IsNullOrWhiteSpace(Metadata.Title))
 {
     <PageTitle>@Metadata.Title</PageTitle>
@@ -36,7 +38,7 @@
 
     <meta name="robots" content="@(Metadata.RobotsIndex ? "index" : "noindex"),@(Metadata.RobotsFollow ? "follow" : "nofollow")" />
 
-    <JsonLdScript Document="StructuredData" />
+    <StorefrontJsonLdScript Document="StructuredData" />
 </HeadContent>
 
 @code {

@@ -238,7 +238,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("@inject IStorefrontPagePresentationResolver PresentationResolver", markup, StringComparison.Ordinal);
             Assert.Contains("@inject IStorefrontStructuredDataComposer StructuredDataComposer", markup, StringComparison.Ordinal);
-            Assert.Contains("<SeoHead Metadata=\"_metadata\" StructuredData=\"_structuredData\" />", markup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontSeoHead Metadata=\"_metadata\" StructuredData=\"_structuredData\" />", markup, StringComparison.Ordinal);
             Assert.Contains("PresentationResolver.Resolve(_page)", markup, StringComparison.Ordinal);
             Assert.Contains("ComposeStructuredDataAsync(routePath, _page, _presentation)", markup, StringComparison.Ordinal);
             Assert.Contains("data-storefront-page-template", markup, StringComparison.Ordinal);
