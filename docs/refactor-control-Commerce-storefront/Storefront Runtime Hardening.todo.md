@@ -255,47 +255,57 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Goal: make generated-client constructor drift a compile-time error.
 
+Status: completed in commit pending.
+
 ### Tasks
 
-- [ ] Split generated-client registration into a focused file if `StorefrontRuntimeServiceCollectionExtensions.cs` becomes too large:
-  - [ ] `StorefrontRuntimeGeneratedClientRegistration.cs`
-  - [ ] or a partial `StorefrontRuntimeServiceCollectionExtensions.GeneratedClients.cs` if the existing class is kept partial.
-- [ ] Keep named `HttpClient` registration as the single place that applies:
-  - [ ] `StorefrontRuntimeOptions.CommerceNodeBaseUrl`
-  - [ ] caller-supplied `configureHttpClient`
-  - [ ] future tracing/correlation/retry handler wiring.
-- [ ] Replace generic `CreateClient<TClient>` with explicit typed factory registrations for every generated client currently registered:
-  - [ ] `IStorefrontAddressClient`
-  - [ ] `IStorefrontAuthClient`
-  - [ ] `IStorefrontCartClient`
-  - [ ] `IStorefrontCatalogClient`
-  - [ ] `IStorefrontCheckoutClient`
-  - [ ] `IStorefrontConfigurationClient`
-  - [ ] `IStorefrontConsentClient`
-  - [ ] `IStorefrontContactClient`
-  - [ ] `IStorefrontCurrencyClient`
-  - [ ] `IStorefrontCustomerAddressesClient`
-  - [ ] `IStorefrontCustomerProfileClient`
-  - [ ] `IStorefrontNavigationClient`
-  - [ ] `IStorefrontNewsletterClient`
-  - [ ] `IStorefrontOrdersClient`
-  - [ ] `IStorefrontPagesClient`
-  - [ ] `IStorefrontPaymentsClient`
-  - [ ] `IStorefrontRecommendationsClient`
-  - [ ] `IStorefrontSeoClient`
-  - [ ] `IStorefrontStoreClient`
-- [ ] If generated constructors still require `(string baseUrl, HttpClient httpClient)`:
-  - [ ] call constructors explicitly with the current `string.Empty` argument.
-  - [ ] add a comment pointing to `Storefront OpenAPI Generated Client Hardening.todo.md` OCH5 for base URL cleanup.
-  - [ ] do not hide this behind reflection.
-- [ ] If OCH5 has already removed the generated base URL constructor parameter:
-  - [ ] call constructors explicitly with `HttpClient` only.
-  - [ ] update independent package consumer tests accordingly.
-- [ ] Ensure all typed factories share one helper for creating the named `HttpClient`, not one `IHttpClientFactory` call pattern duplicated with different client names.
-- [ ] Keep existing public registration method names in this phase:
-  - [ ] `AddStorefrontServerGeneratedClients`
-  - [ ] `AddStorefrontGeneratedClients`
-- [ ] Do not introduce capability registration yet; that is SRH7.
+- [x] Split generated-client registration into a focused file if `StorefrontRuntimeServiceCollectionExtensions.cs` becomes too large:
+  - [x] `StorefrontRuntimeGeneratedClientRegistration.cs`
+  - [x] or a partial `StorefrontRuntimeServiceCollectionExtensions.GeneratedClients.cs` if the existing class is kept partial.
+- [x] Keep named `HttpClient` registration as the single place that applies:
+  - [x] `StorefrontRuntimeOptions.CommerceNodeBaseUrl`
+  - [x] caller-supplied `configureHttpClient`
+  - [x] future tracing/correlation/retry handler wiring.
+- [x] Replace generic `CreateClient<TClient>` with explicit typed factory registrations for every generated client currently registered:
+  - [x] `IStorefrontAddressClient`
+  - [x] `IStorefrontAuthClient`
+  - [x] `IStorefrontCartClient`
+  - [x] `IStorefrontCatalogClient`
+  - [x] `IStorefrontCheckoutClient`
+  - [x] `IStorefrontConfigurationClient`
+  - [x] `IStorefrontConsentClient`
+  - [x] `IStorefrontContactClient`
+  - [x] `IStorefrontCurrencyClient`
+  - [x] `IStorefrontCustomerAddressesClient`
+  - [x] `IStorefrontCustomerProfileClient`
+  - [x] `IStorefrontNavigationClient`
+  - [x] `IStorefrontNewsletterClient`
+  - [x] `IStorefrontOrdersClient`
+  - [x] `IStorefrontPagesClient`
+  - [x] `IStorefrontPaymentsClient`
+  - [x] `IStorefrontRecommendationsClient`
+  - [x] `IStorefrontSeoClient`
+  - [x] `IStorefrontStoreClient`
+- [x] If generated constructors still require `(string baseUrl, HttpClient httpClient)`:
+  - [x] call constructors explicitly with the current `string.Empty` argument.
+  - [x] add a comment pointing to `Storefront OpenAPI Generated Client Hardening.todo.md` OCH5 for base URL cleanup.
+  - [x] do not hide this behind reflection.
+- [x] If OCH5 has already removed the generated base URL constructor parameter:
+  - [x] call constructors explicitly with `HttpClient` only.
+  - [x] update independent package consumer tests accordingly.
+- [x] Ensure all typed factories share one helper for creating the named `HttpClient`, not one `IHttpClientFactory` call pattern duplicated with different client names.
+- [x] Keep existing public registration method names in this phase:
+  - [x] `AddStorefrontServerGeneratedClients`
+  - [x] `AddStorefrontGeneratedClients`
+- [x] Do not introduce capability registration yet; that is SRH7.
+
+### SRH2 Notes
+
+- `StorefrontRuntimeServiceCollectionExtensions.cs` now registers each generated client through an explicit constructor call.
+- All generated client constructors already use `HttpClient` only after the earlier OpenAPI client hardening, so no `string.Empty` compatibility argument was needed.
+- The named `StorefrontGenerated` `HttpClient` remains the single `CommerceNodeBaseUrl`/caller configuration point.
+- Existing wrapper method names were preserved and capability registration was deferred to SRH7.
+- Client/Runtime builds passed, and focused shared package/generated-client tests passed.
 
 ### Files Likely Touched
 
@@ -314,9 +324,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Runtime source contains no `Activator.CreateInstance`.
-- [ ] A generated client constructor change fails at compile time.
-- [ ] V2 and Starter can still use the current registration methods.
+- [x] Runtime source contains no `Activator.CreateInstance`.
+- [x] A generated client constructor change fails at compile time.
+- [x] V2 and Starter can still use the current registration methods.
 
 ## Phase SRH3 - Normalize Cancellation Handling
 

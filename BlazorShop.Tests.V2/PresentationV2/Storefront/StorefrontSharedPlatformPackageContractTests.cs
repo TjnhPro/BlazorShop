@@ -54,13 +54,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("client.BaseAddress = new Uri(options.CommerceNodeBaseUrl, UriKind.Absolute)", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("CreateClient(GeneratedClientHttpClientName)", runtimeRegistration, StringComparison.Ordinal);
-            Assert.Contains("Activator.CreateInstance(typeof(TClient), httpClient)", runtimeRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("Activator.CreateInstance", runtimeRegistration, StringComparison.Ordinal);
             Assert.DoesNotContain("string.Empty, httpClient", runtimeRegistration, StringComparison.Ordinal);
             Assert.DoesNotContain("private string _baseUrl", generatedClient, StringComparison.Ordinal);
             Assert.DoesNotContain("string baseUrl, System.Net.Http.HttpClient httpClient", generatedClient, StringComparison.Ordinal);
         }
 
-        [Fact(Skip = "Enable in SRH2 after generated-client factories are typed.")]
+        [Fact]
         public void StorefrontRuntime_GeneratedClientRegistration_DoesNotUseActivator()
         {
             var runtimeSource = ReadRuntimeSource();
