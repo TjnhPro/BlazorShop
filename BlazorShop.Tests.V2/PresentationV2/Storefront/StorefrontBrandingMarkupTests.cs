@@ -309,8 +309,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var productCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor");
             var dealsPlacement = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsPlacement.cs");
 
-            Assert.Contains("<DealsBlock Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
-            Assert.Contains("<DealsBlock Placement=\"DealsPlacement.DedicatedPage\"", dealsPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.DedicatedPage\"", dealsPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", categoryPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"_productSummaries\"", searchPage, StringComparison.Ordinal);
@@ -318,7 +318,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontProductSummaryMapper.ToProductSummary", home + categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
 
             Assert.Contains("data-storefront-deals-block", dealsBlock, StringComparison.Ordinal);
-            Assert.Contains("<ProductSummaryGrid Items=\"Items\"", dealsBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ProductSummaryGrid", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-grid", productGrid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-card", productCard, StringComparison.Ordinal);
             Assert.Contains("data-storefront-add-to-cart", productCard, StringComparison.Ordinal);

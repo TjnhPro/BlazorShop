@@ -225,22 +225,22 @@ Goal: make grid layout store-owned.
 
 Goal: remove V2 deals section composition from shared components.
 
-- [ ] Move `DealsBlock` visual to V2, or replace it with V2-owned `DealsSection`.
-- [ ] Remove dependency chain `DealsBlock -> ProductSummaryGrid -> ProductSummaryCard` from shared package.
-- [ ] Decide `DealsPlacement` owner:
-  - [ ] Move to V2 if only V2 deals composition uses it.
-  - [ ] Keep in components contract only if Starter/generated storefront also needs the same placement enum.
-- [ ] Update V2 pages:
-  - [ ] `Home.razor`.
-  - [ ] `TodaysDeals.razor`.
-  - [ ] Any product detail footer deals placement if enabled later.
+- [x] Move `DealsBlock` visual to V2, or replace it with V2-owned `DealsSection`.
+- [x] Remove dependency chain `DealsBlock -> ProductSummaryGrid -> ProductSummaryCard` from shared package.
+- [x] Decide `DealsPlacement` owner:
+  - [x] Move to V2 if only V2 deals composition uses it.
+  - [x] Keep in components contract only if Starter/generated storefront also needs the same placement enum.
+- [x] Update V2 pages:
+  - [x] `Home.razor`.
+  - [x] `TodaysDeals.razor`.
+  - [x] Any product detail footer deals placement if enabled later.
 
 ### HPR4 QA gate
 
-- [ ] Home deals section renders.
-- [ ] Today's deals route renders.
-- [ ] Shared `DealsBlock.razor` removed or headless-only.
-- [ ] No shared component composes catalog card/grid visually.
+- [x] Home deals section renders.
+- [x] Today's deals route renders.
+- [x] Shared `DealsBlock.razor` removed or headless-only.
+- [x] No shared component composes catalog card/grid visually.
 
 ## Phase HPR5 - Product gallery headless state
 

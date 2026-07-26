@@ -63,13 +63,13 @@ else
 
     <section id="latest" class="relative z-[1]">
         <div class="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
-            <DealsBlock Placement="DealsPlacement.Home"
-                        Items="_latestProductSummaries"
-                        Eyebrow="Published Catalog"
-                        Title="Latest Products"
-                        EmptyMessage="No published products are available yet."
-                        ActionUrl="@StorefrontRoutes.NewReleases"
-                        ActionText="See All New Releases" />
+            <StorefrontDealsSection Placement="DealsPlacement.Home"
+                                    Items="_latestProductSummaries"
+                                    Eyebrow="Published Catalog"
+                                    Title="Latest Products"
+                                    EmptyMessage="No published products are available yet."
+                                    ActionUrl="@StorefrontRoutes.NewReleases"
+                                    ActionText="See All New Releases" />
         </div>
     </section>
 }
