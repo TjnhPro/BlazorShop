@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Features.Catalog;
+namespace BlazorShop.Storefront.Components.Contracts.Catalog;
 
 public sealed record ProductSummaryItem(
     Guid Id,

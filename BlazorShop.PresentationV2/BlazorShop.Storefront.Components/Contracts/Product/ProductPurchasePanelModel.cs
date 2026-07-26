@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Features.Product;
+namespace BlazorShop.Storefront.Components.Contracts.Product;
 
 public sealed record ProductPurchasePanelModel(
     Guid ProductId,
@@ -46,26 +46,3 @@ public sealed record ProductPurchasePanelModel(
         [],
         "/my-cart");
 }
-
-public sealed record ProductPurchaseOptionItem(
-    string Name,
-    bool IsRequired,
-    string? ControlType,
-    IReadOnlyList<ProductPurchaseOptionValueItem> Values);
-
-public sealed record ProductPurchaseOptionValueItem(
-    string Value,
-    string? ColorHex);
-
-public sealed record ProductPurchaseVariantItem(
-    Guid Id,
-    string DisplayName,
-    string AttributeText,
-    string OptionLabel,
-    string? SizeValue,
-    string? Sku,
-    int Stock,
-    bool IsDefault,
-    string UnitPriceValue,
-    string CurrencyCode,
-    string FormattedPrice);

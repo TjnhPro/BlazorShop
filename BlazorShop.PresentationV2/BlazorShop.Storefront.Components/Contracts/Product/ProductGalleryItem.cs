@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Features.Product;
+namespace BlazorShop.Storefront.Components.Contracts.Product;
 
 public sealed record ProductGalleryItem(
     string ImageUrl,

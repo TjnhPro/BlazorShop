@@ -22,12 +22,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Product/ProductPurchasePanel.razor"
         ];
 
-        private static readonly string[] ExpectedFeatureModelAndEnumFiles =
+        private static readonly string[] ExpectedContractModelAndEnumFiles =
         [
             "Catalog/ProductSummaryItem.cs",
             "Deals/DealsPlacement.cs",
             "Product/ProductGalleryItem.cs",
-            "Product/ProductPurchasePanelModels.cs"
+            "Product/ProductPurchaseOptionItem.cs",
+            "Product/ProductPurchaseOptionValueItem.cs",
+            "Product/ProductPurchasePanelModel.cs",
+            "Product/ProductPurchaseVariantItem.cs"
         ];
 
         private static readonly string[] ExpectedBrowserSupportFiles =
@@ -53,12 +56,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void FeatureModelInventory_RecordsAllCurrentFeatureModelsBeforeHeadlessMigration()
+        public void FeatureModelInventory_KeepsReusableModelsOutOfCompatibilityFeatures()
         {
             var actual = EnumerateComponentFeatureFiles("*.cs");
 
-            Assert.Equal(ExpectedFeatureModelAndEnumFiles, actual);
-            Assert.Equal(4, actual.Length);
+            Assert.Empty(actual);
+        }
+
+        [Fact]
+        public void ContractModelInventory_RecordsReusableProductAndCatalogContracts()
+        {
+            var actual = EnumerateComponentContractFiles("*.cs");
+
+            Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
+            Assert.Equal(7, actual.Length);
         }
 
         [Fact]
@@ -853,6 +864,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .EnumerateFiles(featureRoot, searchPattern, SearchOption.AllDirectories)
                 .Where(path => !string.Equals(Path.GetFileName(path), "README.md", StringComparison.OrdinalIgnoreCase))
                 .Select(path => Path.GetRelativePath(featureRoot, path).Replace('\\', '/'))
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        private static string[] EnumerateComponentContractFiles(string searchPattern)
+        {
+            var contractRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts");
+
+            return Directory
+                .EnumerateFiles(contractRoot, searchPattern, SearchOption.AllDirectories)
+                .Where(path => !string.Equals(Path.GetFileName(path), "README.md", StringComparison.OrdinalIgnoreCase))
+                .Select(path => Path.GetRelativePath(contractRoot, path).Replace('\\', '/'))
                 .Order(StringComparer.Ordinal)
                 .ToArray();
         }

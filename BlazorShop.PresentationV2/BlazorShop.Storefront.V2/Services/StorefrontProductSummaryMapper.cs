@@ -1,4 +1,4 @@
-using BlazorShop.Storefront.Components.Features.Catalog;
+using BlazorShop.Storefront.Components.Contracts.Catalog;
 using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services.Contracts;
 

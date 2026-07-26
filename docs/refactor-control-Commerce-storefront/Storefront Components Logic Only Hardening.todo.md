@@ -213,35 +213,35 @@ Goal: make reusable render/input contracts live under `Contracts`, not `Features
 
 ### Tasks
 
-- [ ] Create or populate contract files:
-  - [ ] `Contracts/Catalog/ProductSummaryItem.cs`
-  - [ ] `Contracts/Product/ProductGalleryItem.cs`
-  - [ ] `Contracts/Product/ProductPurchasePanelModel.cs`
-  - [ ] `Contracts/Product/ProductPurchaseOptionItem.cs`
-  - [ ] `Contracts/Product/ProductPurchaseOptionValueItem.cs`
-  - [ ] `Contracts/Product/ProductPurchaseVariantItem.cs`
-- [ ] Move namespaces from:
-  - [ ] `BlazorShop.Storefront.Components.Features.Catalog`
-  - [ ] `BlazorShop.Storefront.Components.Features.Product`
-  - [ ] into:
-  - [ ] `BlazorShop.Storefront.Components.Contracts.Catalog`
-  - [ ] `BlazorShop.Storefront.Components.Contracts.Product`
-- [ ] Update V2 usages:
-  - [ ] product summary mapper.
-  - [ ] category/search/new releases/home/todays deals pages.
-  - [ ] V2 product card/grid/deals section.
-  - [ ] product page gallery/purchase mappings.
-  - [ ] V2 product gallery/purchase panel.
-- [ ] Update shared compatibility Razor wrappers to import Contracts.
-- [ ] Update tests that read old model paths.
-- [ ] Keep compatibility forwarding types only if the namespace move causes too much immediate churn.
-- [ ] If forwarding is used:
-  - [ ] mark it as temporary in comments/tests.
-  - [ ] add a removal phase.
-  - [ ] do not let Headless depend on forwarding types.
-- [ ] Decide owner for `DealsPlacement`:
-  - [ ] move to V2 if only V2 uses it.
-  - [ ] move to `Contracts/Catalog` or `Contracts/Deals` only if multiple storefront hosts need the same placement enum.
+- [x] Create or populate contract files:
+  - [x] `Contracts/Catalog/ProductSummaryItem.cs`
+  - [x] `Contracts/Product/ProductGalleryItem.cs`
+  - [x] `Contracts/Product/ProductPurchasePanelModel.cs`
+  - [x] `Contracts/Product/ProductPurchaseOptionItem.cs`
+  - [x] `Contracts/Product/ProductPurchaseOptionValueItem.cs`
+  - [x] `Contracts/Product/ProductPurchaseVariantItem.cs`
+- [x] Move namespaces from:
+  - [x] `BlazorShop.Storefront.Components.Features.Catalog`
+  - [x] `BlazorShop.Storefront.Components.Features.Product`
+  - [x] into:
+  - [x] `BlazorShop.Storefront.Components.Contracts.Catalog`
+  - [x] `BlazorShop.Storefront.Components.Contracts.Product`
+- [x] Update V2 usages:
+  - [x] product summary mapper.
+  - [x] category/search/new releases/home/todays deals pages.
+  - [x] V2 product card/grid/deals section.
+  - [x] product page gallery/purchase mappings.
+  - [x] V2 product gallery/purchase panel.
+- [x] Update shared compatibility Razor wrappers to import Contracts.
+- [x] Update tests that read old model paths.
+- [x] Keep compatibility forwarding types only if the namespace move causes too much immediate churn.
+- [n/a] If forwarding is used:
+  - [n/a] mark it as temporary in comments/tests.
+  - [n/a] add a removal phase.
+  - [n/a] do not let Headless depend on forwarding types.
+- [x] Decide owner for `DealsPlacement`:
+  - [n/a] move to V2 if only V2 uses it.
+  - [x] move to `Contracts/Catalog` or `Contracts/Deals` only if multiple storefront hosts need the same placement enum.
 
 ### Files Likely Touched
 
@@ -262,9 +262,19 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done When
 
-- [ ] Primary reusable product/catalog models live under `Contracts`.
-- [ ] Headless and V2 can consume contract namespaces.
-- [ ] `Features` no longer owns reusable model definitions except temporary wrappers if explicitly documented.
+- [x] Primary reusable product/catalog models live under `Contracts`.
+- [x] Headless and V2 can consume contract namespaces.
+- [x] `Features` no longer owns reusable model definitions except temporary wrappers if explicitly documented.
+
+### CLH1 Notes - 2026-07-26
+
+- Moved `ProductSummaryItem`, `ProductGalleryItem`, `ProductPurchasePanelModel`, `ProductPurchaseOptionItem`, `ProductPurchaseOptionValueItem`, and `ProductPurchaseVariantItem` into `Contracts`.
+- Moved `DealsPlacement` into `Contracts/Deals` because the compatibility deals wrapper and V2 deals section both use the same placement enum.
+- No compatibility forwarding types were kept; callers now consume contract namespaces directly.
+- Verification passed:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontBrandingMarkupTests"` passed `37/37`.
 
 ## Phase CLH2 - Enforce Dependency Direction: Contracts -> Headless -> Features
 

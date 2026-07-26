@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Components.Headless.Product;
 
-using BlazorShop.Storefront.Components.Features.Product;
+using BlazorShop.Storefront.Components.Contracts.Product;
 
 public sealed record ProductGalleryState(
     IReadOnlyList<ProductGalleryItem> Items,

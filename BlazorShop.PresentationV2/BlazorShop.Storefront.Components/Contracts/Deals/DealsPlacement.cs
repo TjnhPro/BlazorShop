@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Features.Deals;
+namespace BlazorShop.Storefront.Components.Contracts.Deals;
 
 public enum DealsPlacement
 {
