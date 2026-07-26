@@ -27,6 +27,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         private const string StorefrontProviderSwaggerPath = "/swagger/storefront-provider/swagger.json";
         private const string PathSnapshotPath = "PresentationV2/CommerceNode/Snapshots/storefront-openapi.paths.snapshot.txt";
         private const string CanonicalStorefrontContractPath = "contracts/storefront/storefront.openapi.json";
+        private const string StorefrontBreakingChangeSnapshotPath = "BlazorShop.Tests.V2/PresentationV2/CommerceNode/Snapshots/storefront-openapi.snapshot.json";
 
         private static readonly string[] ProtectedOperationIds =
         [
@@ -253,13 +254,13 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public async Task StorefrontSwagger_BreakingChangeGuard_CurrentDocumentIsCompatibleWithBaseline()
         {
-            var expected = JsonNode.Parse(await File.ReadAllTextAsync(GetRepositoryAbsolutePath(CanonicalStorefrontContractPath)))?.AsObject()
-                ?? throw new InvalidOperationException("Canonical Storefront OpenAPI contract was not a JSON object.");
+            var expected = JsonNode.Parse(await File.ReadAllTextAsync(GetRepositoryAbsolutePath(StorefrontBreakingChangeSnapshotPath)))?.AsObject()
+                ?? throw new InvalidOperationException("Storefront OpenAPI breaking-change snapshot was not a JSON object.");
             var actual = await this.GetStorefrontSwaggerAsync();
             var failures = new List<string>();
 
             var expectedPaths = expected["paths"]?.AsObject()
-                ?? throw new InvalidOperationException("Canonical Storefront OpenAPI contract does not contain paths.");
+                ?? throw new InvalidOperationException("Storefront OpenAPI breaking-change snapshot does not contain paths.");
             var actualPaths = actual["paths"]?.AsObject()
                 ?? throw new InvalidOperationException("Storefront Swagger document does not contain paths.");
             AddRemovedKeys(failures, "path", expectedPaths, actualPaths);

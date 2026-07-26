@@ -396,6 +396,7 @@ Goal: fix the date query contract before using it again in Storefront pages.
 - [x] Add API behavior test:
   - [x] query with UTC/offset value filters products by `CreatedOn`.
   - [x] query without value keeps current newest sort behavior.
+  - [x] endpoint query model binding accepts offset-form `CreatedAfterUtc` and maps it to UTC before service execution.
 - [x] Only after contract is safe, update `NewReleases.razor` if business wants recent-window semantics:
   - [x] No recent-window product policy was selected in this phase; New Releases intentionally keeps newest-sort semantics.
   - [x] Avoided hardcoding arbitrary 7/14/30-day business policy.
