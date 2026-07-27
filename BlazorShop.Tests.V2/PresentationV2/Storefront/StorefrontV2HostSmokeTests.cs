@@ -9,6 +9,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using System.Text.RegularExpressions;
 
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Storefront.Runtime;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
@@ -21,6 +22,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
 
+    using ClientPaymentAttemptResponse = BlazorShop.Storefront.Client.StorefrontPaymentAttemptResponse;
+    using ClientPaymentMethodResponse = BlazorShop.Storefront.Client.StorefrontPaymentMethodResponse;
+    using ClientPaymentNextActionResponse = BlazorShop.Storefront.Client.StorefrontPaymentNextActionResponse;
     using StorefrontV2Program = StorefrontV2::Program;
 
     public sealed class StorefrontV2HostSmokeTests : IClassFixture<WebApplicationFactory<StorefrontV2Program>>
@@ -815,13 +819,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 },
                 allowAutoRedirect: false);
 
-            using var response = await client.GetAsync($"{StorefrontRoutes.Maintenance}?reason=maintenance");
-            var content = await response.Content.ReadAsStringAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{StorefrontRoutes.Maintenance}?reason=maintenance");
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-            Assert.Contains("Scheduled maintenance.", content, StringComparison.Ordinal);
-            Assert.Contains("http-equiv=\"refresh\"", content, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("content=\"10\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(response.Headers.GetValues("X-Robots-Tag"), value => value.Contains("noindex", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal("600", response.Headers.RetryAfter?.Delta?.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+            var maintenanceRoute = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Ssr/System/MaintenanceRoutePage.razor");
+            var seoHead = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontSeoHead.razor");
+            Assert.Contains("AutoRefreshSeconds=\"_autoRefreshSeconds\"", maintenanceRoute, StringComparison.Ordinal);
+            Assert.Contains("_autoRefreshSeconds = _context.AutoRefresh ? 10 : null", maintenanceRoute, StringComparison.Ordinal);
+            Assert.Contains("http-equiv=\"refresh\"", seoHead, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -1142,6 +1151,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return CreateClient(services =>
             {
                 ReplaceStorefrontApiClients(services, handler);
+                services.RemoveAll<IStorefrontRuntimePaymentFacade>();
+                services.AddScoped<IStorefrontRuntimePaymentFacade>(_ => new StubRuntimePaymentFacade(handler.CreateAttempt()));
             });
         }
 
@@ -1466,6 +1477,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 JsonSerializer.Serialize(value),
                 Encoding.UTF8,
                 "application/json");
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        }
+
+        private static string FindRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+            {
+                directory = directory.Parent;
+            }
+
+            return directory?.FullName ?? throw new DirectoryNotFoundException("Could not locate repository root.");
         }
 
         private static string CreateLegacyCartCookie(Guid productId, int quantity, decimal unitPrice)
@@ -2133,6 +2160,37 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 this.failureMessage = failureMessage;
             }
 
+            public ClientPaymentAttemptResponse CreateAttempt()
+            {
+                return new ClientPaymentAttemptResponse
+                {
+                    Id = AttemptId,
+                    CheckoutSessionId = Guid.Parse("34343434-3434-3434-3434-343434343434"),
+                    OrderId = string.Equals(this.state, "captured", StringComparison.OrdinalIgnoreCase)
+                        ? Guid.Parse("56565656-5656-5656-5656-565656565656")
+                        : null,
+                    PaymentMethodKey = "stripe",
+                    ProviderKey = "stripe",
+                    State = this.state,
+                    Amount = 12.34d,
+                    CurrencyCode = "USD",
+                    ProviderReference = "pi_test",
+                    ProviderSessionId = "cs_test",
+                    NextAction = string.Equals(this.state, "requires_action", StringComparison.OrdinalIgnoreCase)
+                        ? new ClientPaymentNextActionResponse
+                        {
+                            Type = "redirect",
+                            Url = "https://checkout.stripe.test/session",
+                        }
+                        : null,
+                    FailureCode = this.failureMessage is null ? null : "payment.failed",
+                    FailureMessage = this.failureMessage,
+                    ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(30),
+                    CreatedAtUtc = DateTimeOffset.UtcNow.AddMinutes(-2),
+                    UpdatedAtUtc = DateTimeOffset.UtcNow,
+                };
+            }
+
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 var path = request.RequestUri?.AbsolutePath ?? string.Empty;
@@ -2181,6 +2239,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 {
                     Content = JsonContent(payload),
                 };
+            }
+        }
+
+        private sealed class StubRuntimePaymentFacade : IStorefrontRuntimePaymentFacade
+        {
+            private readonly ClientPaymentAttemptResponse attempt;
+
+            public StubRuntimePaymentFacade(ClientPaymentAttemptResponse attempt)
+            {
+                this.attempt = attempt;
+            }
+
+            public Task<StorefrontRuntimeResult<IReadOnlyList<ClientPaymentMethodResponse>>> ListMethodsAsync(
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontRuntimeResult<IReadOnlyList<ClientPaymentMethodResponse>>.Succeeded([]));
+            }
+
+            public Task<StorefrontRuntimeResult<ClientPaymentAttemptResponse>> GetAttemptAsync(
+                Guid paymentAttemptId,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontRuntimeResult<ClientPaymentAttemptResponse>.Succeeded(this.attempt));
             }
         }
 

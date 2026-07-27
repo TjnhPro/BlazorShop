@@ -2,8 +2,6 @@
 @using BlazorShop.Storefront.Components.Contracts.Account
 @using BlazorShop.Storefront.Components.Headless.Account
 
-<PageTitle>@PageTitleText</PageTitle>
-
 <section class="@ShellClasses.Section" data-storefront-account-app>
     <div class="@ShellClasses.Layout">
         <StorefrontAccountNavigation
@@ -90,10 +88,6 @@
         AccountRouteKind.ChangePassword => "Change password",
         _ => "Account section not found"
     };
-
-    private string PageTitleText => ActiveRoute.Kind == AccountRouteKind.Unknown
-        ? "Account section not found"
-        : $"Account {Title}".Trim();
 
     private RenderFragment RenderActivePanel() => builder =>
     {

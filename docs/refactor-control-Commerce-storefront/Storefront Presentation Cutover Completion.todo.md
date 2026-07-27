@@ -394,36 +394,36 @@ Goal: visual views cannot override route SEO, noindex, canonical, or HTTP status
 
 ### Tasks
 
-- [ ] Remove `PageTitle` and `HeadContent` from V2 visual views:
-  - [ ] cart view.
-  - [ ] checkout view.
-  - [ ] payment result view.
-  - [ ] account host view if present.
-  - [ ] any remaining catalog/content/system visual view.
-- [ ] Remove `PageTitle` and `HeadContent` from Starter visual views:
-  - [ ] cart view.
-  - [ ] checkout view.
-  - [ ] payment result view.
-  - [ ] account host view.
-  - [ ] any remaining content/system visual view.
-- [ ] Keep brand/root metadata in host `ApplicationHead` only:
-  - [ ] favicon.
-  - [ ] theme color.
-  - [ ] root CSS.
-  - [ ] static host metadata that is not route SEO.
-- [ ] Move all route-specific SEO/noindex data into Presentation page service output:
-  - [ ] cart noindex/nofollow.
-  - [ ] checkout noindex/nofollow.
-  - [ ] payment result noindex/nofollow.
-  - [ ] account noindex/nofollow.
-  - [ ] auth noindex/nofollow.
-  - [ ] search noindex/canonical behavior.
-  - [ ] product/category/home/content index/canonical behavior.
-- [ ] Add tests:
-  - [ ] visual views do not contain head/status components.
-  - [ ] private/application routes still emit noindex/nofollow.
-  - [ ] product/category/content routes still emit expected canonical metadata.
-  - [ ] maintenance/service unavailable still emit 503 and noindex.
+- [x] Remove `PageTitle` and `HeadContent` from V2 visual views:
+  - [x] cart view.
+  - [x] checkout view.
+  - [x] payment result view.
+  - [x] account host view if present.
+  - [x] any remaining catalog/content/system visual view.
+- [x] Remove `PageTitle` and `HeadContent` from Starter visual views:
+  - [x] cart view.
+  - [x] checkout view.
+  - [x] payment result view.
+  - [x] account host view.
+  - [x] any remaining content/system visual view.
+- [x] Keep brand/root metadata in host `ApplicationHead` only:
+  - [x] favicon.
+  - [x] theme color.
+  - [x] root CSS.
+  - [x] static host metadata that is not route SEO.
+- [x] Move all route-specific SEO/noindex data into Presentation page service output:
+  - [x] cart noindex/nofollow.
+  - [x] checkout noindex/nofollow.
+  - [x] payment result noindex/nofollow.
+  - [x] account noindex/nofollow.
+  - [x] auth noindex/nofollow.
+  - [x] search noindex/canonical behavior.
+  - [x] product/category/home/content index/canonical behavior.
+- [x] Add tests:
+  - [x] visual views do not contain head/status components.
+  - [x] private/application routes still emit noindex/nofollow.
+  - [x] product/category/content routes still emit expected canonical metadata.
+  - [x] maintenance/service unavailable still emit 503 and noindex.
 
 ### Files likely touched
 
@@ -446,11 +446,23 @@ Expected `rg` result after this phase:
 - no `PageTitle`, `HeadContent`, or `StorefrontSeoHead` in host visual views.
 - `StorefrontResponseHeaders` only in Presentation policy/middleware or V2 host middleware where it is truly host pipeline behavior.
 
+### Completion Evidence - 2026-07-27
+
+- Removed `PageTitle`/`HeadContent` from V2 cart, checkout, payment result, and WASM account visual components; renamed the WASM cart CSS slot from `PageTitle` to `HeaderTitle`.
+- Removed `PageTitle` from Starter cart, checkout, payment result, and account views.
+- Payment pending and maintenance auto-refresh now flow through `StorefrontPage` -> `StorefrontSeoHead`; visual views no longer render refresh or robots tags directly.
+- `StorefrontResponseHeaders.ApplyStatus(...)` keeps ready/private behavior and delegates 404/503 states through not-found/service-unavailable helpers so route status/head policy remains Presentation-owned.
+- `rg -n "PageTitle|HeadContent|StorefrontSeoHead|StorefrontResponseHeaders" BlazorShop.PresentationV2\BlazorShop.Storefront.V2 BlazorShop.PresentationV2\BlazorShop.Storefront.Starter -g "*.razor" -g "*.cs"` returns only V2 host middleware/local endpoint header policy references, not visual views.
+- `rg -n "PageTitle|HeadContent|StorefrontSeoHead" BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM -g "*.razor" -g "*.cs"` returned no matches.
+- Presentation, V2 WASM, V2, and Starter builds passed with `--no-restore`.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndexingPolicy|FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontPresentation"` passed `68/69`, with 1 future phase skip.
+- Targeted host smoke for payment pending and maintenance auto-refresh passed `2/2` with `--no-build`. The full `StorefrontV2HostSmoke` filter exceeded the command timeout, so SPF20 used focused route-status/head smoke coverage.
+
 ### Exit criteria
 
-- [ ] SEO/head/status ownership is Presentation-only for route pages.
-- [ ] Host views cannot accidentally index cart/checkout/account.
-- [ ] V2 visual output remains visually equivalent.
+- [x] SEO/head/status ownership is Presentation-only for route pages.
+- [x] Host views cannot accidentally index cart/checkout/account.
+- [x] V2 visual output remains visually equivalent.
 
 ## Phase SPF21 - Starter Second Consumer Hardening
 

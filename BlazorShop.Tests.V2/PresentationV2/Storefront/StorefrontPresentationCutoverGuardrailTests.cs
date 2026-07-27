@@ -55,9 +55,17 @@ public sealed class StorefrontPresentationCutoverGuardrailTests
         AssertPresentationOwned(scoped.GetRequiredService<PresentationStoreConfigurationClient>());
     }
 
-    [Fact(Skip = CutoverTodo)]
+    [Fact]
     public void StorefrontVisualViews_DoNotOwnRoutesOrSeoHead()
     {
+        var violations = FindVisualHeadOwners(
+            [
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
+            ]);
+
+        Assert.Empty(violations);
     }
 
     [Fact(Skip = CutoverTodo)]
@@ -109,6 +117,34 @@ public sealed class StorefrontPresentationCutoverGuardrailTests
                     || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)))
             .Where(path => File.ReadLines(path).Any(line => line.TrimStart().StartsWith("@page ", StringComparison.Ordinal)))
             .Select(ToRepositoryRelativePath)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static string[] FindVisualHeadOwners(string[] relativeRoots)
+    {
+        var forbiddenTokens = new[]
+        {
+            "<PageTitle",
+            "<HeadContent",
+            "<StorefrontSeoHead",
+            "StorefrontResponseHeaders",
+        };
+
+        return relativeRoots
+            .Select(RepositoryPath)
+            .Where(Directory.Exists)
+            .SelectMany(root => Directory.EnumerateFiles(root, "*.razor", SearchOption.AllDirectories))
+            .Where(path => !path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)))
+            .Select(path => new
+            {
+                RelativePath = ToRepositoryRelativePath(path),
+                Source = File.ReadAllText(path),
+            })
+            .Where(file => forbiddenTokens.Any(token => file.Source.Contains(token, StringComparison.Ordinal)))
+            .Select(file => file.RelativePath)
             .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();
     }

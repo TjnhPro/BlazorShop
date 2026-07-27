@@ -7,7 +7,7 @@
 
 @if (CurrentState is StorefrontPageState.Ready<TContext> ready)
 {
-    <StorefrontSeoHead Metadata="@ResolveReadyMetadata(ready)" StructuredData="@StructuredData" />
+    <StorefrontSeoHead Metadata="@ResolveReadyMetadata(ready)" StructuredData="@StructuredData" AutoRefreshSeconds="@AutoRefreshSeconds" />
     @Body
 }
 else if (CurrentState is StorefrontPageState.LoadingState)
@@ -20,33 +20,27 @@ else if (CurrentState is StorefrontPageState.EmptyState empty)
 }
 else if (CurrentState is StorefrontPageState.NotFoundState notFound)
 {
-    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Page not found")" />
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Page not found")" AutoRefreshSeconds="@AutoRefreshSeconds" />
     @RenderOrDefault(NotFoundContent, "Page not found", notFound.Message ?? "The requested storefront page was not found.")
 }
 else if (CurrentState is StorefrontPageState.ServiceUnavailableState serviceUnavailable)
 {
-    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront unavailable")" />
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront unavailable")" AutoRefreshSeconds="@AutoRefreshSeconds" />
     @RenderOrDefault(ServiceUnavailableContent, "Storefront unavailable", serviceUnavailable.Message ?? "Storefront content is temporarily unavailable.")
 }
 else if (CurrentState is StorefrontPageState.UnauthorizedState unauthorized)
 {
-    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Sign in required")" />
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Sign in required")" AutoRefreshSeconds="@AutoRefreshSeconds" />
     @RenderOrDefault(UnauthorizedContent, "Sign in required", unauthorized.Message ?? "Sign in to continue.")
 }
 else if (CurrentState is StorefrontPageState.MaintenanceState maintenance)
 {
-    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront maintenance")" />
-    @if (AutoRefreshSeconds is > 0)
-    {
-        <HeadContent>
-            <meta http-equiv="refresh" content="@AutoRefreshSeconds.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
-        </HeadContent>
-    }
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront maintenance")" AutoRefreshSeconds="@AutoRefreshSeconds" />
     @RenderOrDefault(MaintenanceContent, "Storefront maintenance", maintenance.Message ?? "This storefront is temporarily in maintenance mode.")
 }
 else if (CurrentState is StorefrontPageState.ErrorState error)
 {
-    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront error")" />
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront error")" AutoRefreshSeconds="@AutoRefreshSeconds" />
     @RenderOrDefault(ErrorContent, "Storefront error", error.Message)
 }
 

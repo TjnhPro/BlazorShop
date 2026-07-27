@@ -1,15 +1,5 @@
 @using BlazorShop.Storefront.Presentation.Services.Checkout
 
-<PageTitle>Payment status</PageTitle>
-
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-    @if (Context.IsPending)
-    {
-        <meta http-equiv="refresh" content="5" />
-    }
-</HeadContent>
-
 <section class="mx-auto max-w-3xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
     <article class="@Context.PanelClass">
         <p class="text-sm font-semibold uppercase tracking-[0.2em] @Context.EyebrowClass">@Context.Eyebrow</p>

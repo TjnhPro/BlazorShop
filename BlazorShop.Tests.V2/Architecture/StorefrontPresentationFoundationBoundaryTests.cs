@@ -219,7 +219,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void PageStatePolicy_MapsStatusAndPrivateHeaders()
+        public async Task PageStatePolicy_MapsStatusAndPrivateHeaders()
         {
             var ready = StorefrontPageResultMapper.Ready(
                 StorefrontPageKind.Product,
@@ -237,6 +237,8 @@ namespace BlazorShop.Tests.Architecture
             StorefrontResponseHeaders.ApplyStatus(readyContext, ready);
             StorefrontResponseHeaders.ApplyStatus(notFoundContext, notFound);
             StorefrontResponseHeaders.ApplyStatus(serviceUnavailableContext, serviceUnavailable);
+            await notFoundContext.Response.StartAsync();
+            await serviceUnavailableContext.Response.StartAsync();
 
             Assert.Equal(418, readyContext.Response.StatusCode);
             Assert.Equal(StatusCodes.Status404NotFound, notFoundContext.Response.StatusCode);

@@ -38,6 +38,11 @@
 
     <meta name="robots" content="@(Metadata.RobotsIndex ? "index" : "noindex"),@(Metadata.RobotsFollow ? "follow" : "nofollow")" />
 
+    @if (AutoRefreshSeconds is > 0)
+    {
+        <meta http-equiv="refresh" content="@AutoRefreshSeconds.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+    }
+
     <StorefrontJsonLdScript Document="StructuredData" />
 </HeadContent>
 
@@ -47,4 +52,7 @@
 
     [Parameter]
     public StorefrontStructuredDataDocument? StructuredData { get; set; }
+
+    [Parameter]
+    public int? AutoRefreshSeconds { get; set; }
 }

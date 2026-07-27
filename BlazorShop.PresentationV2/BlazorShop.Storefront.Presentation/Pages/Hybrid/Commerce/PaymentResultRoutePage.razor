@@ -7,7 +7,7 @@
 @inject StorefrontPaymentResultPageService PageService
 @inject StorefrontFoundationViewSet ViewSet
 
-<StorefrontPage TContext="StorefrontPaymentResultPageContext" CurrentState="_state">
+<StorefrontPage TContext="StorefrontPaymentResultPageContext" CurrentState="_state" AutoRefreshSeconds="_autoRefreshSeconds">
     <Body>
         <StorefrontFoundationViewOutlet ComponentType="@ViewSet.PaymentResultPage" Context="_context" />
     </Body>
@@ -16,6 +16,7 @@
 @code {
     private StorefrontPaymentResultPageContext? _context;
     private StorefrontPageState _state = new StorefrontPageState.LoadingState();
+    private int? _autoRefreshSeconds;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -35,5 +36,6 @@
             StorefrontPageKind.PaymentResult,
             _context,
             new StorefrontPageDocument("Payment status", RobotsIndex: false, RobotsFollow: false));
+        _autoRefreshSeconds = _context.IsPending ? 5 : null;
     }
 }

@@ -16,7 +16,7 @@ public sealed record StorefrontCartViewClasses
 
     public string Eyebrow { get; init; } = string.Empty;
 
-    public string PageTitle { get; init; } = string.Empty;
+    public string HeaderTitle { get; init; } = string.Empty;
 
     public string BodyText { get; init; } = string.Empty;
 

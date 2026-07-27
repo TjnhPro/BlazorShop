@@ -16,7 +16,7 @@ public static class StorefrontCartViewOptions
         HeaderCard = "rounded-3xl border border-neutral-200/70 bg-white/90 p-8 shadow-lg",
         HeaderLayout = "flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between",
         Eyebrow = "text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500",
-        PageTitle = "mt-2 text-4xl font-extrabold tracking-tight text-neutral-900",
+        HeaderTitle = "mt-2 text-4xl font-extrabold tracking-tight text-neutral-900",
         BodyText = "mt-3 max-w-2xl text-base leading-7 text-neutral-700",
         CountBadge = "inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-900 shadow-sm",
         Alert = "rounded-2xl border px-4 py-3 text-sm leading-6",

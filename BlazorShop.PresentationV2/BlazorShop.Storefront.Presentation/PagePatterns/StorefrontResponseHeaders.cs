@@ -48,6 +48,18 @@ public static class StorefrontResponseHeaders
             return;
         }
 
+        if (state is StorefrontPageState.NotFoundState)
+        {
+            ApplyNotFound(httpContext);
+            return;
+        }
+
+        if (state is StorefrontPageState.ServiceUnavailableState || state is StorefrontPageState.MaintenanceState)
+        {
+            ApplyServiceUnavailable(httpContext);
+            return;
+        }
+
         httpContext.Response.StatusCode = StorefrontHttpStatusPolicy.ResolveStatusCode(state);
         if (StorefrontHttpStatusPolicy.IsPrivate(state))
         {
@@ -98,6 +110,7 @@ public static class StorefrontResponseHeaders
             return;
         }
 
+        response.StatusCode = statusCode;
         response.OnStarting(static state =>
         {
             var options = ((HttpResponse Response, int StatusCode, bool IncludeRetryAfter))state;
