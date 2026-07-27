@@ -1,18 +1,20 @@
-namespace BlazorShop.Storefront.Endpoints
+namespace BlazorShop.Storefront.Presentation.Endpoints
 {
-    using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Components.Browser;
+    using BlazorShop.Storefront.Configuration;
+    using BlazorShop.Storefront.Presentation.PagePatterns;
+    using BlazorShop.Storefront.Presentation.Services.Cart;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
 
     using Microsoft.AspNetCore.Antiforgery;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using static BlazorShop.Storefront.Endpoints.StorefrontLocalEndpointSupport;
-
-    public static class StorefrontCartEndpoints
+    public static class StorefrontPresentationCartEndpoints
     {
-        public static WebApplication MapStorefrontCartEndpoints(this WebApplication app)
+        public static WebApplication MapStorefrontPresentationCartEndpoints(this WebApplication app)
         {
             app.MapGet("/api/cart", async (
                 StorefrontCartTokenService cartTokenService,
@@ -24,8 +26,8 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await cartTokenService.ResolveAsync(httpContext, cancellationToken: cancellationToken);
                 var displayContext = await displayContextProvider.GetAsync(cancellationToken);
                 return result.Success
-                    ? Results.Ok(ToLocalCartResponse(result.Cart, displayContext, priceFormatter))
-                    : Results.Ok(ToLocalCartResponse(null, displayContext, priceFormatter));
+                    ? Results.Ok(StorefrontCartPresentationMapper.ToLocalCartResponse(result.Cart, displayContext, priceFormatter))
+                    : Results.Ok(StorefrontCartPresentationMapper.ToLocalCartResponse(null, displayContext, priceFormatter));
             });
             app.MapPost("/api/product-selection-preview", async (
                 StorefrontLocalProductSelectionPreviewRequest request,
@@ -40,7 +42,7 @@ namespace BlazorShop.Storefront.Endpoints
                 }
             
                 var displayContext = await displayContextProvider.GetAsync(cancellationToken);
-                var currencyCode = NormalizeCurrencyCode(request.CurrencyCode) ?? displayContext.CurrencyCode;
+                var currencyCode = StorefrontCartPresentationMapper.NormalizeCurrencyCode(request.CurrencyCode) ?? displayContext.CurrencyCode;
                 var result = await apiClient.PreviewProductSelectionAsync(
                     request.ProductId,
                     new StorefrontProductSelectionPreviewRequest
@@ -115,7 +117,7 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
             
                 return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-            }).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
+            }).RequireRateLimiting(StorefrontPresentationRateLimitPolicyNames.LocalCart);
             app.MapPut("/api/cart/lines/{lineId:guid}", async (
                 Guid lineId,
                 StorefrontLocalCartQuantityRequest request,
@@ -139,7 +141,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 var result = await cartTokenService.UpdateLineAsync(httpContext, lineId, request.Quantity, cancellationToken);
                 return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-            }).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
+            }).RequireRateLimiting(StorefrontPresentationRateLimitPolicyNames.LocalCart);
             app.MapDelete("/api/cart/lines/{lineId:guid}", async (
                 Guid lineId,
                 StorefrontCartTokenService cartTokenService,
@@ -157,7 +159,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 var result = await cartTokenService.RemoveLineAsync(httpContext, lineId, cancellationToken);
                 return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-            }).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
+            }).RequireRateLimiting(StorefrontPresentationRateLimitPolicyNames.LocalCart);
             app.MapDelete("/api/cart", async (
                 StorefrontCartTokenService cartTokenService,
                 IStorefrontDisplayContextProvider displayContextProvider,
@@ -174,7 +176,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
                 return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-            }).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
+            }).RequireRateLimiting(StorefrontPresentationRateLimitPolicyNames.LocalCart);
             app.MapPost("/api/cart/recalculate", async (
                 StorefrontLocalCartRecalculateRequest request,
                 StorefrontCartTokenService cartTokenService,
@@ -195,9 +197,61 @@ namespace BlazorShop.Storefront.Endpoints
                     new StorefrontCartRecalculateRequest { ExpectedVersion = request.ExpectedVersion },
                     cancellationToken);
                 return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-            }).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
+            }).RequireRateLimiting(StorefrontPresentationRateLimitPolicyNames.LocalCart);
 
             return app;
+        }
+
+        private static async Task<IResult> ToLocalCartMutationResultAsync(
+            StorefrontCartMutationResult result,
+            IStorefrontDisplayContextProvider displayContextProvider,
+            IStorefrontPriceFormatter priceFormatter,
+            CancellationToken cancellationToken)
+        {
+            if (result.Success)
+            {
+                var displayContext = await displayContextProvider.GetAsync(cancellationToken);
+                return Results.Ok(StorefrontCartPresentationMapper.ToLocalCartResponse(result.Cart, displayContext, priceFormatter));
+            }
+
+            return result.StatusCode == StatusCodes.Status409Conflict
+                ? LocalCartError(result.Message, StatusCodes.Status409Conflict, "conflict")
+                : LocalCartValidationError(result.Message);
+        }
+
+        private static async Task<IResult?> ValidateLocalCartAntiforgeryAsync(
+            HttpContext httpContext,
+            IAntiforgery antiforgery)
+        {
+            StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+
+            try
+            {
+                await antiforgery.ValidateRequestAsync(httpContext);
+                return null;
+            }
+            catch (AntiforgeryValidationException)
+            {
+                return LocalCartValidationError("Security validation failed. Refresh the page and try again.");
+            }
+        }
+
+        private static IResult LocalCartValidationError(string? message)
+        {
+            return LocalCartError(message, StatusCodes.Status400BadRequest, "validation_error");
+        }
+
+        private static IResult LocalCartError(string? message, int statusCode, string code)
+        {
+            return Results.Json(
+                new StorefrontLocalCartErrorResponse(
+                    string.IsNullOrWhiteSpace(message) ? "The request could not be completed." : message,
+                    code,
+                    System.Diagnostics.Activity.Current?.TraceId.ToString(),
+                    [],
+                    statusCode is StatusCodes.Status408RequestTimeout or StatusCodes.Status429TooManyRequests || statusCode >= 500,
+                    statusCode),
+                statusCode: statusCode);
         }
     }
 }

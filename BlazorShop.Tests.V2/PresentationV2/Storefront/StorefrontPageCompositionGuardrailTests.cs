@@ -25,7 +25,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Theory]
-        [InlineData("CartPage.razor", "@page \"/my-cart\"")]
         [InlineData("CheckoutPage.razor", "@page \"/checkout\"")]
         [InlineData("PaymentSuccessPage.razor", "@page \"/payment-success\"")]
         [InlineData("PaymentCancelPage.razor", "@page \"/payment-cancel\"")]
@@ -44,7 +43,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var expected = new[]
             {
-                new PageInventoryItem("Pages/Hybrid/Commerce/CartPage.razor", "/my-cart", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/PaymentSuccessPage.razor", "/payment-success", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/PaymentCancelPage.razor", "/payment-cancel", RenderOwnership.Hybrid),
@@ -69,10 +67,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void ContentSystemAndAuthRoutes_ArePresentationOwnedAndV2ProvidesViews()
+        public void ContentSystemAuthAndCartRoutes_ArePresentationOwnedAndV2ProvidesViews()
         {
             var routes = new Dictionary<string, string>(StringComparer.Ordinal)
             {
+                ["Pages/Ssr/Cart/CartRoutePage.razor"] = "@page \"/my-cart\"",
                 ["Pages/Ssr/Content/ContentRoutePage.razor"] = "@page \"/pages/{Slug}\"",
                 ["Pages/Ssr/Auth/SignInRoutePage.razor"] = "@page \"/signin\"",
                 ["Pages/Ssr/Auth/RegisterRoutePage.razor"] = "@page \"/register\"",
@@ -94,6 +93,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             var viewPaths = new[]
             {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Auth/V2AuthPageView.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/System/MaintenancePage.razor",
@@ -107,11 +107,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(" Context", viewMarkup, StringComparison.Ordinal);
             }
 
+            Assert.Contains("@page \"/cart\"", File.ReadAllText(Path.Combine(presentationRoot, "Pages/Ssr/Cart/CartRoutePage.razor".Replace('/', Path.DirectorySeparatorChar))), StringComparison.Ordinal);
+            Assert.Contains("CartPage = typeof(CartPage)", registration, StringComparison.Ordinal);
             Assert.Contains("ContentPage = typeof(StorefrontPage)", registration, StringComparison.Ordinal);
             Assert.Contains("AuthPage = typeof(V2AuthPageView)", registration, StringComparison.Ordinal);
             Assert.Contains("MaintenanceState = typeof(MaintenancePage)", registration, StringComparison.Ordinal);
             Assert.Contains("NotFoundState = typeof(NotFoundPage)", registration, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationAuthEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapPost(StorefrontRoutes.SignIn", v2AuthFormEndpoints, StringComparison.Ordinal);
             Assert.DoesNotContain("MapPost(StorefrontRoutes.Register", v2AuthFormEndpoints, StringComparison.Ordinal);
             Assert.DoesNotContain("MapPost(StorefrontRoutes.ForgotPassword", v2AuthFormEndpoints, StringComparison.Ordinal);
@@ -187,7 +190,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var expected = new[]
             {
                 new PageInventoryItem("Pages/Hybrid/Catalog/ProductPage.razor", "/product/{Slug}", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Hybrid/Commerce/CartPage.razor", "/cart", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/PaymentResultPage.razor", "/payment/result", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account", RenderOwnership.WasmHost),
@@ -204,6 +206,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 var markup = File.ReadAllText(pagePath);
                 Assert.Contains($"@page \"{item.Route}\"", markup, StringComparison.Ordinal);
             }
+
+            var starterCartView = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"));
+            Assert.DoesNotContain("@page \"", starterCartView, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCartPageContext", starterCartView, StringComparison.Ordinal);
         }
 
         [Fact]

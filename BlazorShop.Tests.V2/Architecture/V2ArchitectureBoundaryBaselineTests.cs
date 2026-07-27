@@ -325,9 +325,9 @@ namespace BlazorShop.Tests.Architecture
                 .ToArray();
 
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs", supportFiles);
-            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Cart.cs", supportFiles);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs", supportFiles);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", supportFiles);
+            Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartPresentationMapper.cs")));
             Assert.All(supportFiles, file => Assert.True(File.ReadLines(RepositoryPath(file)).Count() <= 320));
             Assert.All(supportFiles, file => Assert.Contains("internal static partial class StorefrontLocalEndpointSupport", ReadRepositoryFile(file), StringComparison.Ordinal));
         }

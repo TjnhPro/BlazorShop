@@ -26,7 +26,8 @@ The original `BlazorShop.Presentation` source has been removed from the active b
 | Control Plane API | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API` | Platform auth, users, permissions, nodes, stores, health, actions, audit, and gateway calls to Commerce Node. |
 | Control Plane Web | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web` | Blazor WebAssembly admin/control UI that calls only Control Plane API. |
 | Commerce Node API | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Node-local ecommerce admin APIs, Storefront APIs, task orchestration, media, deployment support, and Commerce Node database migration. |
-| Storefront V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Server-side public storefront, SEO documents, account/cart/checkout forms, and scoped Storefront API client. |
+| Storefront Presentation | `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation` | Shared storefront route shells and local browser/BFF application services for content, auth, system, and cart. |
+| Storefront V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Server-side public storefront, SEO documents, account/checkout forms, visual templates, and scoped Storefront API client. |
 | Storefront components | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Reusable Razor components for the Storefront V2 render modes. |
 | Storefront V2 WASM | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` | Interactive WebAssembly assembly used by Storefront V2. |
 | Shared Web V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Shared browser storage, cookie storage, auth session sync, API helpers, and toast utilities. |

@@ -5,6 +5,7 @@ using BlazorShop.Storefront.Components.Shared;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
+using BlazorShop.Storefront.Pages.Hybrid.Commerce;
 using BlazorShop.Storefront.Pages.Ssr.Content;
 using BlazorShop.Storefront.Pages.Ssr.System;
 using BlazorShop.Storefront.Theme.Pages.Auth;
@@ -32,7 +33,7 @@ public static class V2FoundationViewRegistration
                 DealsPage = typeof(TodaysDeals),
                 NewReleasesPage = typeof(NewReleases),
                 ContentPage = typeof(StorefrontPage),
-                CartPage = viewSet.CartPage,
+                CartPage = typeof(CartPage),
                 CheckoutPage = viewSet.CheckoutPage,
                 PaymentResultPage = viewSet.PaymentResultPage,
                 AuthPage = typeof(V2AuthPageView),

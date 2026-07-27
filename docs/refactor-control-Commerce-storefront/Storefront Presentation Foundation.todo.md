@@ -616,11 +616,11 @@ Exit criteria:
 
 ## Phase SPF9 - Cart Route and BFF Migration
 
-- [ ] Move cart route `/my-cart` into Presentation.
-- [ ] Decide route compatibility for Starter current `/cart`:
+- [x] Move cart route `/my-cart` into Presentation.
+- [x] Decide route compatibility for Starter current `/cart`:
   - preferred: Presentation supports V2 canonical `/my-cart` and optional host route alias;
   - if Starter keeps `/cart`, define alias explicitly in host route options.
-- [ ] Move cart application services:
+- [x] Move cart application services:
   - cart token resolution;
   - display context;
   - initial snapshot mapping;
@@ -628,7 +628,7 @@ Exit criteria:
   - product URL mapping;
   - price formatting orchestration;
   - cart page context.
-- [ ] Move cart BFF endpoint mapping:
+- [x] Move cart BFF endpoint mapping:
   - `GET /api/cart`
   - `POST /api/cart/lines`
   - update quantity
@@ -636,19 +636,19 @@ Exit criteria:
   - clear
   - recalculate
   - `POST /api/product-selection-preview`
-- [ ] Presentation owns:
+- [x] Presentation owns:
   - antiforgery validation;
   - rate-limit policy names;
   - local BFF envelope;
   - cart/customer cookie policy;
   - same-origin boundary.
-- [ ] WASM/V2 owns:
+- [x] WASM/V2 owns:
   - cart interactive component;
   - line markup;
   - quantity controls;
   - loading/toast/empty visual.
-- [ ] Remove Starter cart BFF duplicate after Presentation endpoint pass.
-- [ ] Tests:
+- [x] Remove Starter cart BFF duplicate after Presentation endpoint pass.
+- [x] Tests:
   - add item;
   - update quantity;
   - remove;
@@ -660,8 +660,8 @@ Exit criteria:
 
 Exit criteria:
 
-- [ ] V2 and Starter use same cart route/BFF application logic.
-- [ ] WASM still only calls same-origin `/api/cart/*`.
+- [x] V2 and Starter use same cart route/BFF application logic.
+- [x] WASM still only calls same-origin `/api/cart/*`.
 
 ## Phase SPF10 - Checkout and Payment Result Migration
 

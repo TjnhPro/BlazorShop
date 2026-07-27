@@ -4,6 +4,8 @@ namespace BlazorShop.Storefront.Services
 
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Services.Contracts;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Hosting;
 
     public sealed class StorefrontCartTokenService : IStorefrontCartMergeService
     {

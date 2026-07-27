@@ -32,7 +32,7 @@ V2 route ownership baseline:
 | new releases | `/new-releases` | `BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor` |
 | content | `/pages/{Slug}` | `BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor` |
 | auth | `/signin`, `/register`, `/forgot-password`, `/reset-password` | `BlazorShop.Storefront.V2/Pages/Ssr/Auth/*` |
-| cart | `/my-cart` | `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` |
+| cart | `/my-cart` | `BlazorShop.Storefront.Presentation/Pages/Ssr/Cart/CartRoutePage.razor` |
 | checkout | `/checkout` | `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor` |
 | payment | `/payment-success`, `/payment-cancel` | `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/*` |
 | account host | `/account`, `/account/{*Path}` | `BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor` |
@@ -66,7 +66,7 @@ rg -n "MapStorefront|MapStarter|MapGet|MapPost" BlazorShop.PresentationV2/Blazor
 V2 endpoint ownership baseline:
 
 - Auth form endpoints: `POST /signin`, `/register`, `/forgot-password`, `/reset-password`, `/logout`, account form posts, currency preference, and checkout form post through `StorefrontAuthFormEndpoints`.
-- Cart BFF endpoints: `GET /api/cart`, `POST /api/product-selection-preview`, `POST /api/cart/lines`, `PUT /api/cart/lines/{lineId:guid}`, `DELETE /api/cart/lines/{lineId:guid}`, `DELETE /api/cart`, `POST /api/cart/recalculate`.
+- Cart BFF endpoints: `GET /api/cart`, `POST /api/product-selection-preview`, `POST /api/cart/lines`, `PUT /api/cart/lines/{lineId:guid}`, `DELETE /api/cart/lines/{lineId:guid}`, `DELETE /api/cart`, `POST /api/cart/recalculate` now live in `BlazorShop.Storefront.Presentation`.
 - Checkout BFF endpoints: `GET /api/checkout`, `POST /api/checkout/addresses`, `/shipping-method`, `/payment-method`, `/review`, `/place-order`.
 - Account BFF endpoints: profile, addresses, orders, order receipt, and change password under `/api/account/*`.
 - Consent endpoints: `GET /api/consent/current`, `POST /api/consent`, `POST /api/consent/revoke`.

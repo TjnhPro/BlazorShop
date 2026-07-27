@@ -69,7 +69,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2_LocalCartEndpointsKeepBrowserPayloadCustomerSafe()
         {
-            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
+            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var addLineRoute = ExtractLambdaBody(cartEndpoints, "app.MapPost(\"/api/cart/lines\"");
             var updateLineRoute = ExtractLambdaBody(cartEndpoints, "app.MapPut(\"/api/cart/lines/{lineId:guid}\"");
 
@@ -90,7 +90,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2_CartTokenCookieIsHttpOnlyAndLegacyCartCookieIsDeletedAfterImport()
         {
-            var tokenService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontCartTokenService.cs");
+            var tokenService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartTokenService.cs");
 
             Assert.Contains("StorefrontCookieNames.CartToken", tokenService, StringComparison.Ordinal);
             Assert.Contains("HttpOnly = true", tokenService, StringComparison.Ordinal);
@@ -109,11 +109,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Environment.NewLine,
                 new[]
                 {
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CartContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CatalogContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/Contracts/StorefrontCartLocalContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontCartTokenService.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/CartContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/CatalogContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/Contracts/StorefrontCartLocalContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartTokenService.cs",
                 }.Select(ReadRepositoryFile));
 
             Assert.Contains("StorefrontSelectedAttribute", source, StringComparison.Ordinal);
@@ -127,18 +127,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2_CartPageConsumesServerProjection()
         {
-            var cartPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor.cs");
-            var support = ReadStorefrontLocalEndpointSupportSource();
+            var cartPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor");
+            var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartPresentationMapper.cs");
 
             Assert.DoesNotContain("GetProductByIdAsync", cartPage, StringComparison.Ordinal);
             Assert.DoesNotContain("LoadProductsAsync", cartPage, StringComparison.Ordinal);
-            Assert.Contains("cartItem.DisplayName", cartPage, StringComparison.Ordinal);
-            Assert.Contains("cartItem.LineTotal", cartPage, StringComparison.Ordinal);
-            Assert.Contains("cartItem.QuantityMaximum", cartPage, StringComparison.Ordinal);
-            Assert.Contains("cartItem.Warnings", cartPage, StringComparison.Ordinal);
-            Assert.Contains("CheckoutAllowed", cartPage, StringComparison.Ordinal);
-            Assert.Contains("GrandTotal", support, StringComparison.Ordinal);
-            Assert.Contains("Adjustments", support, StringComparison.Ordinal);
+            Assert.Contains("InitialCart=\"Context.Cart\"", cartPage, StringComparison.Ordinal);
+            Assert.Contains("InitialAlerts=\"Context.Alerts\"", cartPage, StringComparison.Ordinal);
+            Assert.Contains("cartItem.DisplayName", mapper, StringComparison.Ordinal);
+            Assert.Contains("cartItem.LineTotal", mapper, StringComparison.Ordinal);
+            Assert.Contains("cartItem.QuantityMaximum", mapper, StringComparison.Ordinal);
+            Assert.Contains("cartItem.Warnings", mapper, StringComparison.Ordinal);
+            Assert.Contains("CheckoutAllowed", mapper, StringComparison.Ordinal);
+            Assert.Contains("GrandTotal", mapper, StringComparison.Ordinal);
+            Assert.Contains("Adjustments", mapper, StringComparison.Ordinal);
         }
 
         private static string ExtractClassBody(string source, string className)

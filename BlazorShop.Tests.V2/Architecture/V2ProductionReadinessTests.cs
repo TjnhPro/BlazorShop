@@ -167,7 +167,10 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("StorefrontRateLimitPolicyNames.AuthStrict", commerceNodeProgram, StringComparison.Ordinal);
             Assert.Contains("StorefrontRateLimitPolicyNames.Cart", commerceNodeProgram, StringComparison.Ordinal);
             Assert.Contains("StorefrontRateLimitPolicyNames.Checkout", commerceNodeProgram, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRateLimitPolicies.LocalCartPolicyName", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs"), StringComparison.Ordinal);
+            Assert.Contains(
+                "StorefrontPresentationRateLimitPolicyNames.LocalCart",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs"),
+                StringComparison.Ordinal);
         }
 
         [Fact]

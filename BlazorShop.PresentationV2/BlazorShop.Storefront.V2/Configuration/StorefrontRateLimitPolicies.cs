@@ -9,7 +9,7 @@ namespace BlazorShop.Storefront.Configuration
 
     public static class StorefrontRateLimitPolicies
     {
-        public const string LocalCartPolicyName = "storefront-local-cart";
+        public const string LocalCartPolicyName = StorefrontPresentationRateLimitPolicyNames.LocalCart;
 
         public static void ConfigureStorefrontRateLimiter(
             RateLimiterOptions options,
@@ -42,7 +42,7 @@ namespace BlazorShop.Storefront.Configuration
             };
 
             options.AddPolicy(
-                LocalCartPolicyName,
+                StorefrontPresentationRateLimitPolicyNames.LocalCart,
                 httpContext => CreateStorefrontRateLimitPartition(httpContext, rateLimitingOptions.Cart));
         }
 
@@ -70,12 +70,4 @@ namespace BlazorShop.Storefront.Configuration
                 });
         }
     }
-
-    public sealed record StorefrontLocalCartErrorResponse(
-        string Message,
-        string? Code = null,
-        string? TraceId = null,
-        Dictionary<string, string[]>? FieldErrors = null,
-        bool? Retryable = null,
-        int? StatusCode = null);
 }

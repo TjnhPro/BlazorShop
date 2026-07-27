@@ -7,7 +7,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     public sealed class StorefrontBffBoundaryHardeningTests
     {
         [Fact]
-        public void LocalEndpointGroups_StayOwnedByStorefrontV2Bff()
+        public void LocalEndpointGroups_StayOwnedByStorefrontHostBff()
         {
             var endpointSources = ReadEndpointSources();
 
@@ -68,7 +68,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             Assert.Contains("StorefrontLocalApiErrorResponse", endpointSources, StringComparison.Ordinal);
-            Assert.Contains("StorefrontBrowserCart", endpointSources, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBrowserCart", ReadCartPresentationSources(), StringComparison.Ordinal);
             Assert.Contains("StorefrontBrowserCheckoutState", endpointSources, StringComparison.Ordinal);
             Assert.Contains("StorefrontBrowserCustomerProfile", endpointSources, StringComparison.Ordinal);
         }
@@ -76,8 +76,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void LocalEndpointContracts_AreSplitIntoCapabilitySpecificContractFiles()
         {
-            var endpointDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints");
-            var supportSources = Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs", SearchOption.TopDirectoryOnly)
+            var v2EndpointDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints");
+            var presentationEndpointDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints");
+            var supportSources = Directory.EnumerateFiles(v2EndpointDirectory, "StorefrontLocalEndpointSupport*.cs", SearchOption.TopDirectoryOnly)
                 .Select(File.ReadAllText)
                 .ToArray();
             var supportSource = string.Join(Environment.NewLine, supportSources);
@@ -91,7 +92,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("StorefrontCurrencyPreferenceForm", supportSource, StringComparison.Ordinal);
             Assert.DoesNotContain(supportSources, source => publicEndpointTypeDeclaration.IsMatch(source));
 
-            var contractSources = Directory.EnumerateFiles(Path.Combine(endpointDirectory, "Contracts"), "*.cs", SearchOption.TopDirectoryOnly)
+            var contractSources = Directory.EnumerateFiles(Path.Combine(v2EndpointDirectory, "Contracts"), "*.cs", SearchOption.TopDirectoryOnly)
+                .Concat(Directory.EnumerateFiles(Path.Combine(presentationEndpointDirectory, "Contracts"), "*.cs", SearchOption.TopDirectoryOnly))
                 .Select(File.ReadAllText)
                 .ToArray();
             var contractSource = string.Join(Environment.NewLine, contractSources);
@@ -200,6 +202,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return string.Join(
                 Environment.NewLine,
                 endpointDirectories.SelectMany(endpointDirectory => Directory.EnumerateFiles(endpointDirectory, "*.cs", SearchOption.AllDirectories))
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+        }
+
+        private static string ReadCartPresentationSources()
+        {
+            var cartRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart");
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(cartRoot, "*.cs", SearchOption.TopDirectoryOnly)
                     .OrderBy(path => path, StringComparer.Ordinal)
                     .Select(File.ReadAllText));
         }

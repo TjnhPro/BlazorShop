@@ -12,16 +12,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
             var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
-            var authEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs");
-            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
+            var authEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAuthEndpoints.cs");
+            var remainingFormEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs");
+            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
 
             Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program, StringComparison.Ordinal);
             Assert.Contains("app.UseAntiforgery();", pipeline, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(StorefrontRoutes.SignIn", authEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(StorefrontRoutes.Register", authEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(StorefrontRoutes.Logout", authEndpoints, StringComparison.Ordinal);
-            Assert.Contains("app.MapPost(StorefrontRoutes.CurrencyPreference", authEndpoints, StringComparison.Ordinal);
-            Assert.Contains("app.MapPost(StorefrontRoutes.Checkout", authEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(StorefrontRoutes.CurrencyPreference", remainingFormEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(StorefrontRoutes.Checkout", remainingFormEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/cart/lines\"", cartEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPut(\"/api/cart/lines/{lineId:guid}\"", cartEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapDelete(\"/api/cart/lines/{lineId:guid}\"", cartEndpoints, StringComparison.Ordinal);
@@ -63,12 +64,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CookieInventory_HasNamedEssentialAndPreferenceCookies()
         {
-            var authCookies = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontAuthCookies.cs");
+            var authCookies = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Auth/StorefrontAuthCookies.cs");
             var commerceRuntimeOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Configuration/CommerceNodeRuntimeOptions.cs");
-            var cartTokenService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontCartTokenService.cs");
+            var cartTokenService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartTokenService.cs");
             var authEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs");
             var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
-            var cookieNames = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontCookieNames.cs");
+            var cookieNames = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Configuration/StorefrontCookieNames.cs");
 
             Assert.Contains("Cart = \"my-cart\"", cookieNames, StringComparison.Ordinal);
             Assert.Contains("CartToken = \"bs-cart-token\"", cookieNames, StringComparison.Ordinal);

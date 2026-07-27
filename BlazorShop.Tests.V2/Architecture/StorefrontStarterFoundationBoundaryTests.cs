@@ -376,7 +376,6 @@ namespace BlazorShop.Tests.Architecture
             var expectedRoutes = new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"] = ["@page \"/product/{Slug}\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = ["@page \"/cart\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"] = ["@page \"/checkout\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/PaymentResultPage.razor"] = ["@page \"/payment/result\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"] = ["@page \"/account\"", "@page \"/account/{*Path}\""],
@@ -398,6 +397,7 @@ namespace BlazorShop.Tests.Architecture
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor"] = "StorefrontHomePageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/CategoryPage.razor"] = "StorefrontCategoryPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/SearchPage.razor"] = "StorefrontSearchPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = "StorefrontCartPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = "StorefrontCatalogProductsPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor"] = "StorefrontCatalogProductsPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = "StorefrontContentPageContext",

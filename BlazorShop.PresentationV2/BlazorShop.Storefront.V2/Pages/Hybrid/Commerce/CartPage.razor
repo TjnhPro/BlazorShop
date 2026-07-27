@@ -1,4 +1,4 @@
-@page "/my-cart"
+@using BlazorShop.Storefront.Presentation.Services.Cart
 
 <PageTitle>My Cart</PageTitle>
 
@@ -6,12 +6,22 @@
     <meta name="robots" content="noindex,nofollow" />
 </HeadContent>
 
-<StorefrontCartView InitialCart="_cart"
-                    InitialAlerts="_alerts"
+<StorefrontCartView InitialCart="Context.Cart"
+                    InitialAlerts="Context.Alerts"
                     DataMode="StorefrontFeatureDataMode.InitialSnapshot"
                     Actions="StorefrontCartViewOptions.Actions"
                     Classes="StorefrontCartViewOptions.Classes"
-                    CheckoutUrl="@StorefrontRoutes.Checkout"
-                    NewReleasesUrl="@StorefrontRoutes.NewReleases"
-                    TodaysDealsUrl="@StorefrontRoutes.TodaysDeals"
+                    CheckoutUrl="@Context.CheckoutUrl"
+                    NewReleasesUrl="@Context.NewReleasesUrl"
+                    TodaysDealsUrl="@Context.TodaysDealsUrl"
                     @rendermode="InteractiveWebAssembly" />
+
+@code {
+    [Parameter]
+    public StorefrontCartPageContext Context { get; set; } = new(
+        null,
+        [],
+        StorefrontRoutes.Checkout,
+        StorefrontRoutes.NewReleases,
+        StorefrontRoutes.TodaysDeals);
+}

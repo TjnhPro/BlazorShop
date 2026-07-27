@@ -262,13 +262,14 @@ Do not:
 
 Current ownership map:
 
+- `BlazorShop.Storefront.Presentation` owns storefront route composition and local browser/BFF application services for content, auth, system, cart, and other shared storefront SSR entry points.
 - `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
 - `BlazorShop.Storefront.Components` owns browser-safe reusable `Contracts`, `Headless` state/behavior, and `Browser` same-origin primitives only. Visual templates belong to Storefront V2, Starter, or generated/custom storefront projects.
-- `BlazorShop.Storefront.V2` owns route composition, SEO, BFF endpoints, session/cart-token handling, store resolution, deployment, static storefront assets, and storefront-specific design. Its WASM client assembly owns the interactive V2 root components that must hydrate in the browser.
+- `BlazorShop.Storefront.V2` owns SEO, remaining host BFF endpoints, session/cart-token handling, store resolution, deployment, static storefront assets, and storefront-specific design. Its WASM client assembly owns the interactive V2 root components that must hydrate in the browser.
 - `BlazorShop.Storefront.Runtime` owns neutral runtime primitives and server-side generated-client registration.
 - `Storefront.Features.*` projects are deferred until repeated neutral feature logic proves the need.
 
-Do not create feature packages just to move code out of Storefront V2. Extract only when it removes real duplication and can stay independent of Storefront V2 design, routes, BFF endpoints, and backend/core/API projects.
+Do not create feature packages just to move code out of Storefront V2. Extract only when it removes real duplication and can stay independent of Storefront V2 design, host-owned route shells, BFF endpoints, and backend/core/API projects.
 
 ### `BlazorShop.Storefront.Starter`
 

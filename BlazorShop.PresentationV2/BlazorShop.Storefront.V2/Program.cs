@@ -27,7 +27,7 @@ app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: fa
 app.MapDefaultEndpoints();
 app.MapStorefrontPresentationAuthEndpoints();
 app.MapStorefrontAuthFormEndpoints();
-app.MapStorefrontCartEndpoints();
+app.MapStorefrontPresentationCartEndpoints();
 app.MapStorefrontAccountEndpoints();
 app.MapStorefrontCheckoutEndpoints();
 app.MapStorefrontConsentEndpoints();

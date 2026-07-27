@@ -254,8 +254,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<StorefrontCartView", page, StringComparison.Ordinal);
             Assert.DoesNotContain("<CartView", page, StringComparison.Ordinal);
-            Assert.Contains("InitialCart=\"_cart\"", page, StringComparison.Ordinal);
-            Assert.Contains("InitialAlerts=\"_alerts\"", page, StringComparison.Ordinal);
+            Assert.Contains("InitialCart=\"Context.Cart\"", page, StringComparison.Ordinal);
+            Assert.Contains("InitialAlerts=\"Context.Alerts\"", page, StringComparison.Ordinal);
             Assert.Contains("DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"", page, StringComparison.Ordinal);
             Assert.Contains("Actions=\"StorefrontCartViewOptions.Actions\"", page, StringComparison.Ordinal);
             Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", page, StringComparison.Ordinal);
@@ -556,7 +556,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("app.MapStorefrontPresentationAuthEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontAuthFormEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontCartEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);

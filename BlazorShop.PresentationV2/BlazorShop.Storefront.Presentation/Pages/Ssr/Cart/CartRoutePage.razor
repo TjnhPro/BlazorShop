@@ -1,0 +1,29 @@
+@page "/my-cart"
+@page "/cart"
+@namespace BlazorShop.Storefront.Presentation.Pages.Ssr.Cart
+@inject StorefrontCartPageService CartPageService
+@inject StorefrontFoundationViewSet ViewSet
+
+<PageTitle>My Cart</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+@if (_context is not null)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.CartPage" Context="_context" />
+}
+
+@code {
+    private StorefrontCartPageContext? _context;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
+        _context = await CartPageService.GetAsync(HttpContext);
+    }
+}

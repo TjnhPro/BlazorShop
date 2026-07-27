@@ -124,8 +124,6 @@ namespace BlazorShop.Storefront.Configuration
             services.AddScoped<IStorefrontPageNavigationProvider, StorefrontPageNavigationProvider>();
             services.AddScoped<IStorefrontNavigationProvider, StorefrontNavigationProvider>();
             services.AddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
-            services.AddScoped<StorefrontCartTokenService>();
-            services.AddScoped<IStorefrontCartMergeService>(serviceProvider => serviceProvider.GetRequiredService<StorefrontCartTokenService>());
 
             return services;
         }

@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Endpoints
+namespace BlazorShop.Storefront.Presentation.Endpoints
 {
     using BlazorShop.Storefront.Services;
 

@@ -73,18 +73,20 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void StorefrontLocalCartMutations_HaveRateLimitPolicyAndTypedResponse()
         {
-            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
-            var support = ReadStorefrontLocalEndpointSupportSource();
+            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
+            var support = ReadStorefrontLocalEndpointSupportSource()
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
             var ratePolicies = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitPolicies.cs");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Options/StorefrontRateLimitingOptions.cs");
 
             Assert.Contains("Storefront:RateLimiting", options, StringComparison.Ordinal);
             Assert.Contains("UseRateLimiter", pipeline, StringComparison.Ordinal);
-            Assert.Equal(5, Regex.Matches(cartEndpoints, "RequireRateLimiting\\(StorefrontRateLimitPolicies\\.LocalCartPolicyName\\)").Count);
-            Assert.Contains("LocalCartPolicyName = \"storefront-local-cart\"", ratePolicies, StringComparison.Ordinal);
+            Assert.Equal(5, Regex.Matches(cartEndpoints, "RequireRateLimiting\\(StorefrontPresentationRateLimitPolicyNames\\.LocalCart\\)").Count);
+            Assert.Contains("LocalCartPolicyName = StorefrontPresentationRateLimitPolicyNames.LocalCart", ratePolicies, StringComparison.Ordinal);
             Assert.Contains("StorefrontRateLimitIdentity.ResolveLocalCartActor(httpContext)", ratePolicies, StringComparison.Ordinal);
-            Assert.Contains("StorefrontLocalCartErrorResponse(\"Too many cart requests. Try again shortly.\")", ratePolicies, StringComparison.Ordinal);
+            Assert.Contains("new StorefrontLocalCartErrorResponse(", ratePolicies, StringComparison.Ordinal);
+            Assert.Contains("\"Too many cart requests. Try again shortly.\"", ratePolicies, StringComparison.Ordinal);
             Assert.Contains("MetadataName.RetryAfter", ratePolicies, StringComparison.Ordinal);
             Assert.Contains("StorefrontResponseHeaders.ApplyPrivatePage", support, StringComparison.Ordinal);
         }

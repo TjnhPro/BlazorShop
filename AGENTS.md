@@ -40,6 +40,7 @@ Active shared core:
 
 Active V2 presentation/runtime:
 
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation`
 - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API`
 - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`
 - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
