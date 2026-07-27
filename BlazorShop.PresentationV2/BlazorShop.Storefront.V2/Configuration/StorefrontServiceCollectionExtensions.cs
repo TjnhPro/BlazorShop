@@ -28,10 +28,7 @@ namespace BlazorShop.Storefront.Configuration
 
             services.AddStorefrontHostOptions(configuration);
             services.AddStorefrontRuntimeRegistration(configuration);
-            services.AddStorefrontPlatformRuntime((serviceProvider, client) =>
-            {
-                configureHttpClient(client, serviceProvider.GetRequiredService<IConfiguration>());
-            });
+            services.AddStorefrontPlatformRuntime();
             services.AddStorefrontPresentation(configuration);
             services.AddStorefrontAuthSessionAndAntiforgeryPolicies(
                 rateLimitingOptions,

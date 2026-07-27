@@ -45,11 +45,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal("https://commerce.example/", uri.ToString());
         }
 
+        [Fact]
+        public void StorefrontRuntimeRegistration_UsesUnscopedCommerceNodeBaseAddress()
+        {
+            var source = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs"));
+
+            Assert.Contains("options.CommerceNodeBaseUrl = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(configuration).ToString();", source, StringComparison.Ordinal);
+            Assert.Contains("services.AddStorefrontPlatformRuntime();", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("services.AddStorefrontPlatformRuntime((serviceProvider, client)", source, StringComparison.Ordinal);
+        }
+
         private static IConfiguration BuildConfiguration(params (string Key, string Value)[] values)
         {
             return new ConfigurationBuilder()
                 .AddInMemoryCollection(values.Select(value => new KeyValuePair<string, string?>(value.Key, value.Value)))
                 .Build();
+        }
+
+        private static string RepositoryPath(string relativePath)
+        {
+            var root = AppContext.BaseDirectory;
+            while (!File.Exists(Path.Combine(root, "BlazorShop.sln")))
+            {
+                root = Directory.GetParent(root)?.FullName
+                    ?? throw new InvalidOperationException("Could not locate repository root.");
+            }
+
+            return Path.GetFullPath(Path.Combine(root, relativePath));
         }
     }
 }

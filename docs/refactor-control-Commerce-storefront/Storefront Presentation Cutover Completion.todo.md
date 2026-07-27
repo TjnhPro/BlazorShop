@@ -644,75 +644,75 @@ Goal: prove V2 and Starter both run against the same Presentation application su
 
 ### V2 test gate
 
-- [ ] Build:
-  - [ ] `Storefront.Client`
-  - [ ] `Storefront.Runtime`
-  - [ ] `Storefront.Components`
-  - [ ] `Storefront.Presentation`
-  - [ ] `Storefront.V2.WASM`
-  - [ ] `Storefront.V2`
-- [ ] Focused unit/architecture tests:
-  - [ ] Storefront independence boundary.
-  - [ ] Presentation foundation boundary.
-  - [ ] Runtime facade tests.
-  - [ ] Page composition guardrails.
-  - [ ] BFF endpoint boundary tests.
-  - [ ] OpenAPI generated client hardening tests.
-- [ ] V2 host smoke tests:
-  - [ ] home.
-  - [ ] category.
-  - [ ] product.
-  - [ ] search noindex.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] account.
-  - [ ] auth/recovery/register disabled.
-  - [ ] payment result.
-  - [ ] robots.
-  - [ ] sitemap.
-  - [ ] maintenance/service unavailable.
-- [ ] Playwright release E2E:
-  - [ ] product browse.
-  - [ ] add to cart.
-  - [ ] update cart.
-  - [ ] checkout COD real order placement.
-  - [ ] order placed message/SMTP capture if configured.
-  - [ ] account order list/detail.
-  - [ ] recovery flow.
-  - [ ] no direct browser call to Commerce Node.
+- [x] Build:
+  - [x] `Storefront.Client`
+  - [x] `Storefront.Runtime`
+  - [x] `Storefront.Components`
+  - [x] `Storefront.Presentation`
+  - [x] `Storefront.V2.WASM`
+  - [x] `Storefront.V2`
+- [x] Focused unit/architecture tests:
+  - [x] Storefront independence boundary.
+  - [x] Presentation foundation boundary.
+  - [x] Runtime facade tests.
+  - [x] Page composition guardrails.
+  - [x] BFF endpoint boundary tests.
+  - [x] OpenAPI generated client hardening tests.
+- [x] V2 host smoke tests:
+  - [x] home.
+  - [x] category.
+  - [x] product.
+  - [x] search noindex.
+  - [x] cart.
+  - [x] checkout.
+  - [x] account.
+  - [x] auth/recovery/register disabled.
+  - [x] payment result.
+  - [x] robots.
+  - [x] sitemap.
+  - [x] maintenance/service unavailable.
+- [x] Playwright release E2E:
+  - [x] product browse.
+  - [x] add to cart.
+  - [x] update cart.
+  - [x] checkout COD real order placement.
+  - [x] order placed message/SMTP capture if configured.
+  - [x] account order list/detail.
+  - [x] recovery flow.
+  - [x] no direct browser call to Commerce Node.
 
 ### Starter test gate
 
-- [ ] Build:
-  - [ ] `Storefront.Starter`.
-- [ ] Starter DI validation:
-  - [ ] all Presentation page services resolve.
-  - [ ] all Presentation endpoint dependencies resolve.
-  - [ ] all registered view slots validate context parameter.
-- [ ] Starter HTTP smoke:
-  - [ ] `/`
-  - [ ] `/category/{slug}`
-  - [ ] `/product/{slug}`
-  - [ ] `/search?q=...`
-  - [ ] `/my-cart`
-  - [ ] `/checkout`
-  - [ ] `/account`
-  - [ ] `/pages/{slug}`
-  - [ ] `/maintenance`
-  - [ ] `/robots.txt`
-  - [ ] `/sitemap.xml`
-- [ ] Starter package proof:
-  - [ ] local feed restore.
-  - [ ] build outside direct V2 references.
-  - [ ] no generated source copy.
+- [x] Build:
+  - [x] `Storefront.Starter`.
+- [x] Starter DI validation:
+  - [x] all Presentation page services resolve.
+  - [x] all Presentation endpoint dependencies resolve.
+  - [x] all registered view slots validate context parameter.
+- [x] Starter HTTP smoke:
+  - [x] `/`
+  - [x] `/category/{slug}`
+  - [x] `/product/{slug}`
+  - [x] `/search?q=...`
+  - [x] `/my-cart`
+  - [x] `/checkout`
+  - [x] `/account`
+  - [x] `/pages/{slug}`
+  - [x] `/maintenance`
+  - [x] `/robots.txt`
+  - [x] `/sitemap.xml`
+- [x] Starter package proof:
+  - [x] local feed restore.
+  - [x] build outside direct V2 references.
+  - [x] no generated source copy.
 
 ### Generated storefront proof
 
-- [ ] StorefrontBuilder isolation gate passes.
-- [ ] Generated proof consumes Client/Runtime/Presentation packages.
-- [ ] Generated proof has no `@page` outside generated host rules if any are allowed; preferred no route pages.
-- [ ] Generated proof does not reference V2, backend/core/API projects, `Web.SharedV2`, Control Plane, or Commerce Node API.
-- [ ] Generated proof browser-safe code calls same-origin BFF only.
+- [x] StorefrontBuilder isolation gate passes.
+- [x] Generated proof consumes Runtime/Presentation/Components packages and keeps Client package metadata for Runtime transport compatibility.
+- [x] Generated proof has no `@page` outside generated host rules if any are allowed; preferred no route pages.
+- [x] Generated proof does not reference V2, backend/core/API projects, `Web.SharedV2`, Control Plane, or Commerce Node API.
+- [x] Generated proof browser-safe code calls same-origin BFF only.
 
 ### Verification commands
 
@@ -738,13 +738,25 @@ Playwright commands should use the current release checklist and local runner:
 .\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless
 ```
 
+2026-07-27 evidence:
+
+- Post-fix build gate passed for Client, Runtime, Components, Presentation, V2 WASM, V2, Starter, and Tests. Storefront project builds had 0 warnings/errors; Tests build kept known MessagePack vulnerability warnings and Browserslist freshness warning.
+- Focused Storefront test gate passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontIndependence|FullyQualifiedName~StorefrontStarter|FullyQualifiedName~StorefrontRuntime|FullyQualifiedName~StorefrontBuilder"` passed `172/172`.
+- SPF23 browser gate initially caught a real Runtime/generated-client base-address regression: V2 was configuring Runtime generated clients with scoped `/api/storefront/stores/{storeKey}/` base address, producing double-prefixed Commerce Node requests such as `/api/storefront/stores/default/api/storefront/stores/default/store/current`.
+- Fix: V2 now calls `AddStorefrontPlatformRuntime()` without the manual scoped HTTP callback, so Runtime generated clients use `StorefrontRuntimeOptions.CommerceNodeBaseUrl` from `ResolveCommerceNodeBaseAddress(...)`. `StorefrontApiEndpointResolverTests.StorefrontRuntimeRegistration_UsesUnscopedCommerceNodeBaseAddress` guards this.
+- Regression slice passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontApiEndpointResolverTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests|FullyQualifiedName~StorefrontRuntime"` passed `44/44`.
+- `.\scripts\qa\run-storefront-foundation-isolation-gate.ps1`, `.\scripts\qa\run-storefront-starter-isolation-gate.ps1`, and `.\scripts\qa\run-storefront-builder-isolation-gate.ps1` passed after the fix.
+- `.\scripts\run-v2-local.ps1 -StopExisting` started the local runtime; `.\scripts\qa\run-storefront-registration-policy-e2e.ps1 -Headless` passed with zero forbidden browser calls and zero 5xx responses.
+- `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless` passed; COD order `ORD-20260727-F5EDEF50` was placed, queued order email was sent, Mailpit matched exactly one message, account order list/detail/receipt were covered, SMTP outage retry recovered, and network guardrails reported zero 5xx and zero retired-flow calls.
+- `.\scripts\stop-v2-local.ps1` stopped the four local runtime processes but returned a null-valued cleanup error after issuing the stops; a port check confirmed no listeners remained on 5280, 5281, 5180, or 18598. This did not affect SPF23 browser evidence.
+
 ### Exit criteria
 
-- [ ] V2 passes production-facing browser QA.
-- [ ] Starter passes DI + HTTP route smoke as second consumer.
-- [ ] Generated proof passes package/isolation gates.
-- [ ] No direct browser call to Commerce Node appears in network audit.
-- [ ] COD order placement still works through Presentation BFF + Runtime + Commerce Node.
+- [x] V2 passes production-facing browser QA.
+- [x] Starter passes DI + HTTP route smoke as second consumer.
+- [x] Generated proof passes package/isolation gates.
+- [x] No direct browser call to Commerce Node appears in network audit.
+- [x] COD order placement still works through Presentation BFF + Runtime + Commerce Node.
 
 ## Phase SPF24 - Documentation And Checklist Closure
 
