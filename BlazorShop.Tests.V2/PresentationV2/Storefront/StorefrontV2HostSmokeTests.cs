@@ -540,7 +540,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public async Task AccountChangePassword_PostSuccess_UsesBearerAndRedirectsSaved()
+        public async Task AccountChangePassword_LocalApiPostSuccess_UsesBearerAndReturnsSuccess()
         {
             var authClient = new StubStorefrontAuthClient(
                 changePasswordResult: StorefrontAuthResult<object>.Succeeded(null, "Password changed.", []));
@@ -559,8 +559,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var request = CreateChangePasswordPost(token, cookieHeader);
             using var response = await client.SendAsync(request);
 
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("/account/change-password?saved=1", response.Headers.Location?.ToString());
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Password changed.", content, StringComparison.Ordinal);
             Assert.Equal("access-token", authClient.LastChangePasswordBearerToken);
         }
 
@@ -1102,6 +1104,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     services.RemoveAll<IStorefrontCurrentStoreProvider>();
                     services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
                         StorefrontCurrentStoreResolution.Succeeded(CreateActiveCurrentStore())));
+                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                     configureServices(services);
                 });
             });
@@ -1330,20 +1333,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private static HttpRequestMessage CreateChangePasswordPost(string antiforgeryToken, string cookieHeader)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.AccountChangePassword)
-            {
-                Content = new FormUrlEncodedContent(
-                [
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
-                    new KeyValuePair<string, string>("CurrentPassword", "OldPassword123!"),
-                    new KeyValuePair<string, string>("NewPassword", "NewPassword123!"),
-                    new KeyValuePair<string, string>("ConfirmPassword", "NewPassword123!"),
-                ]),
-            };
-
-            request.Headers.Add("Cookie", cookieHeader);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            return request;
+            return CreateJsonRequest(
+                HttpMethod.Post,
+                "/api/account/change-password",
+                new
+                {
+                    CurrentPassword = "OldPassword123!",
+                    NewPassword = "NewPassword123!",
+                    ConfirmPassword = "NewPassword123!",
+                },
+                antiforgeryToken,
+                cookieHeader);
         }
 
         private static HttpRequestMessage CreateAccountAddressPost(string antiforgeryToken, string cookieHeader)

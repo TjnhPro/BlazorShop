@@ -310,7 +310,7 @@ Muc tieu: docs khong con mo ta transitional exception da xoa.
 
 Muc tieu: chung minh xoa manual client khong lam hong host composition va package boundaries.
 
-- [ ] Build core storefront packages:
+- [x] Build core storefront packages:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj
@@ -321,42 +321,61 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Store
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj
 ```
 
-- [ ] Chay focused Storefront architecture tests:
+- [x] Chay focused Storefront architecture tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"
 ```
 
-- [ ] Chay focused V2 host smoke tests:
+- [x] Chay focused V2 host smoke tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontV2HostSmokeTests"
 ```
 
-- [ ] Chay Starter host smoke tests:
+- [x] Chay Starter host smoke tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontStarterHostSmokeTests"
 ```
 
-- [ ] Chay isolation gates neu scripts ton tai trong repo:
+- [x] Chay isolation gates neu scripts ton tai trong repo:
 
 ```powershell
 .\scripts\qa\run-storefront-foundation-isolation-gate.ps1
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1
 ```
 
-- [ ] Chay source gates cuoi:
+- [x] Chay source gates cuoi:
 
 ```powershell
 rg -n "StorefrontApiClient|EnableLegacyFallback|LegacyCatalogBaseRoute|LegacySeoSettingsRoute" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"
 rg -n "AddHttpClient<StorefrontApiClient>|GetRequiredService<StorefrontApiClient>|new StorefrontApiClient" BlazorShop.PresentationV2 BlazorShop.Tests.V2 -g "!bin" -g "!obj"
 ```
 
-- [ ] Expected:
-  - [ ] V2 source: no matches.
-  - [ ] Tests: no active fixture still instantiates/registers concrete `StorefrontApiClient`.
-  - [ ] Docs: only historical notes may mention old client.
+- [x] Expected:
+  - [x] V2 source: no matches.
+  - [x] Tests: no active fixture still instantiates/registers concrete `StorefrontApiClient`.
+  - [x] Docs: only historical notes may mention old client.
+
+2026-07-27 F1.25.6 evidence:
+
+- Builds passed:
+  - `BlazorShop.Storefront.Client`
+  - `BlazorShop.Storefront.Runtime`
+  - `BlazorShop.Storefront.Presentation`
+  - `BlazorShop.Storefront.Components`
+  - `BlazorShop.Storefront.V2`
+  - `BlazorShop.Storefront.Starter`
+- Focused architecture/cutover slice passed: `51` passed, `0` failed.
+- Full V2 host smoke passed after fixture default generated-client handler and local account BFF test alignment: `56` passed, `0` failed.
+- Starter host smoke passed: `8` passed, `0` failed.
+- Isolation gates passed:
+  - `.\scripts\qa\run-storefront-foundation-isolation-gate.ps1`
+  - `.\scripts\qa\run-storefront-builder-isolation-gate.ps1`
+- Final source gates returned no matches:
+  - V2 source has no `StorefrontApiClient`, `EnableLegacyFallback`, `LegacyCatalogBaseRoute`, or `LegacySeoSettingsRoute`.
+  - Presentation/tests have no active `AddHttpClient<StorefrontApiClient>`, `GetRequiredService<StorefrontApiClient>`, or `new StorefrontApiClient` fixture path.
 
 ## Phase F1.25.7 - Browser COD va network regression
 
