@@ -6,6 +6,11 @@
     Message="Search can start from query SSR data and refresh after hydration when filters change."
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.RefreshAfterHydration" />
+@if (!string.IsNullOrWhiteSpace(Context.Q))
+{
+    <p>Results for @Context.Q</p>
+}
+<ProductGrid Products="@Context.ProductSummaries" />
 
 @code {
     [Parameter, EditorRequired]

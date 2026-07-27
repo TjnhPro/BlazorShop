@@ -21,8 +21,6 @@ using PresentationStoreConfigurationClient = BlazorShop.Storefront.Services.Cont
 
 public sealed class StorefrontPresentationCutoverGuardrailTests
 {
-    private const string CutoverTodo = "SPF16 guardrail placeholder; enable after the matching cutover phase implements the final state.";
-
     [Fact]
     public void StorefrontPresentation_DIGraph_IsHostIndependent()
     {
@@ -68,9 +66,28 @@ public sealed class StorefrontPresentationCutoverGuardrailTests
         Assert.Empty(violations);
     }
 
-    [Fact(Skip = CutoverTodo)]
+    [Fact]
     public void StorefrontStarter_ViewsRenderPresentationContextsOnly()
     {
+        var starterRoot = "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter";
+        var starterProject = ReadRepositoryFile($"{starterRoot}/BlazorShop.Storefront.Starter.csproj");
+        var starterHome = ReadRepositoryFile($"{starterRoot}/Pages/Ssr/Home/HomePage.razor");
+
+        Assert.DoesNotContain("StorefrontBootstrapService", starterProject, StringComparison.Ordinal);
+        Assert.False(File.Exists(RepositoryPath($"{starterRoot}/Services/StorefrontBootstrapService.cs")));
+        Assert.Contains("PackageReference Include=\"BlazorShop.Storefront.Client\"", starterProject, StringComparison.Ordinal);
+
+        Assert.Contains("StorefrontHomePageContext", starterHome, StringComparison.Ordinal);
+        Assert.Contains("Context.DisplayContext", starterHome, StringComparison.Ordinal);
+        Assert.Contains("Context.FeatureCapabilities", starterHome, StringComparison.Ordinal);
+        Assert.DoesNotContain("StarterStorefrontOptions", starterHome, StringComparison.Ordinal);
+        Assert.DoesNotContain("BootstrapService", starterHome, StringComparison.Ordinal);
+
+        var sourceViolations = FindStarterSourceViolations(starterRoot);
+        Assert.Empty(sourceViolations);
+
+        var viewViolations = FindStarterViewContextViolations($"{starterRoot}/Pages");
+        Assert.Empty(viewViolations);
     }
 
     [Fact]
@@ -144,6 +161,62 @@ public sealed class StorefrontPresentationCutoverGuardrailTests
                 Source = File.ReadAllText(path),
             })
             .Where(file => forbiddenTokens.Any(token => file.Source.Contains(token, StringComparison.Ordinal)))
+            .Select(file => file.RelativePath)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static string[] FindStarterSourceViolations(string relativeRoot)
+    {
+        var forbiddenTokens = new[]
+        {
+            "BlazorShop.Storefront.Client",
+            "IStorefrontStoreClient",
+            "IStorefrontConfigurationClient",
+            "IStorefrontCatalogClient",
+            "IStorefrontCartClient",
+            "IStorefrontCheckoutClient",
+            "IStorefrontPaymentClient",
+            "IStorefrontRuntime",
+            "OnInitializedAsync",
+        };
+
+        return Directory
+            .EnumerateFiles(RepositoryPath(relativeRoot), "*.*", SearchOption.AllDirectories)
+            .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+            .Where(path => !path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)))
+            .Select(path => new
+            {
+                RelativePath = ToRepositoryRelativePath(path),
+                Source = File.ReadAllText(path),
+            })
+            .Where(file => forbiddenTokens.Any(token => file.Source.Contains(token, StringComparison.Ordinal)))
+            .Select(file => file.RelativePath)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static string[] FindStarterViewContextViolations(string relativePagesRoot)
+    {
+        return Directory
+            .EnumerateFiles(RepositoryPath(relativePagesRoot), "*.razor", SearchOption.AllDirectories)
+            .Where(path => !Path.GetFileName(path).StartsWith("_", StringComparison.Ordinal))
+            .Where(path => !path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)))
+            .Select(path => new
+            {
+                RelativePath = ToRepositoryRelativePath(path),
+                Source = File.ReadAllText(path),
+            })
+            .Where(file => !file.Source.Contains("[Parameter, EditorRequired]", StringComparison.Ordinal)
+                || !file.Source.Contains(" Context { get; set; }", StringComparison.Ordinal)
+                || file.Source.Contains("@page", StringComparison.Ordinal)
+                || file.Source.Contains("@inject IStorefront", StringComparison.Ordinal)
+                || file.Source.Contains("OnInitializedAsync", StringComparison.Ordinal))
             .Select(file => file.RelativePath)
             .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();

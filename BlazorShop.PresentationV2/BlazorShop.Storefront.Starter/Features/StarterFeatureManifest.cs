@@ -2,7 +2,7 @@ namespace BlazorShop.Storefront.Starter.Features
 {
     using System.Text.Json;
     using System.Text.Json.Serialization;
-    using BlazorShop.Storefront.Runtime;
+    using BlazorShop.Storefront.Services;
 
     public sealed record StarterFeatureManifest(
         IReadOnlyDictionary<string, StarterFeatureDefinition> Features)
@@ -81,28 +81,24 @@ namespace BlazorShop.Storefront.Starter.Features
     public sealed class StarterFeatureActivationService
     {
         private readonly StarterFeatureManifest manifest;
-        private readonly IStorefrontCapabilityReader capabilityReader;
 
-        public StarterFeatureActivationService(
-            StarterFeatureManifest manifest,
-            IStorefrontCapabilityReader capabilityReader)
+        public StarterFeatureActivationService(StarterFeatureManifest manifest)
         {
             this.manifest = manifest;
-            this.capabilityReader = capabilityReader;
         }
 
         public StarterFeatureActivation Evaluate(
             string key,
             string placement,
-            IReadOnlyDictionary<string, StorefrontRuntimeCapability> backendCapabilities)
+            IReadOnlyDictionary<string, StorefrontCapability> backendCapabilities)
         {
             if (!this.manifest.Features.TryGetValue(key, out var definition))
             {
                 return new StarterFeatureActivation(key, false, false, false, false, false, "not_installed");
             }
 
-            var backendSupported = this.capabilityReader.IsSupported(backendCapabilities, key);
-            var storeEnabled = this.capabilityReader.IsEnabled(backendCapabilities, key);
+            var backendSupported = backendCapabilities.TryGetValue(key, out var capability) && capability.Supported;
+            var storeEnabled = backendCapabilities.TryGetValue(key, out capability) && capability.Supported && capability.Enabled;
             var placed = definition.Placements.Contains(placement, StringComparer.Ordinal);
 
             return new StarterFeatureActivation(
@@ -112,7 +108,16 @@ namespace BlazorShop.Storefront.Starter.Features
                 backendSupported,
                 storeEnabled,
                 placed,
-                storeEnabled && placed ? null : this.capabilityReader.GetReason(backendCapabilities, key));
+                storeEnabled && placed ? null : GetReason(backendCapabilities, key));
+        }
+
+        private static string? GetReason(
+            IReadOnlyDictionary<string, StorefrontCapability> backendCapabilities,
+            string key)
+        {
+            return backendCapabilities.TryGetValue(key, out var capability)
+                ? capability.Reason
+                : "not_installed";
         }
     }
 

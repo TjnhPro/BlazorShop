@@ -541,12 +541,13 @@ namespace BlazorShop.Tests.Architecture
             }
 
             Assert.Contains("JsonSerializer.Deserialize", parser, StringComparison.Ordinal);
-            Assert.Contains("IStorefrontCapabilityReader", parser, StringComparison.Ordinal);
             Assert.Contains("BackendSupported", parser, StringComparison.Ordinal);
             Assert.Contains("StoreEnabled", parser, StringComparison.Ordinal);
             Assert.Contains("PresentationPlaced", parser, StringComparison.Ordinal);
             Assert.Contains("StarterFeatureManifest.Load", program, StringComparison.Ordinal);
             Assert.Contains("FeatureActivationService.Evaluate", home, StringComparison.Ordinal);
+            Assert.Contains("Context.FeatureCapabilities", home, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefrontCapabilityReader", parser, StringComparison.Ordinal);
             Assert.DoesNotContain("Storefront.Features.", manifest, StringComparison.Ordinal);
         }
 

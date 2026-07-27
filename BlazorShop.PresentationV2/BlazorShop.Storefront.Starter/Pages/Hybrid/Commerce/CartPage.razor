@@ -9,6 +9,6 @@
 <CartLineList />
 
 @code {
-    [Parameter]
-    public StorefrontCartPageContext Context { get; set; } = new(null, [], "/checkout", "/new-releases", "/deals");
+    [Parameter, EditorRequired]
+    public StorefrontCartPageContext Context { get; set; } = default!;
 }

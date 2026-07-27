@@ -470,40 +470,40 @@ Goal: Starter becomes a true consumer of Presentation page contexts, not a separ
 
 ### Tasks
 
-- [ ] Remove `StorefrontBootstrapService` from Starter.
-- [ ] Remove direct generated client usage from Starter views.
-- [ ] Remove direct Runtime data facade usage from Starter visual pages unless the component is explicitly a server-only host extension.
-- [ ] Convert `Pages/Ssr/Home/HomePage.razor`:
-  - [ ] remove `BootstrapService`.
-  - [ ] remove direct `StorefrontOptions` display if the same information exists in `StorefrontHomePageContext`.
-  - [ ] render `Context.FeaturedProducts` or equivalent Presentation home context product data.
-  - [ ] render store identity from Presentation context.
-  - [ ] render feature visibility from a context/capability projection provided by Presentation, not by direct API fetch in the view.
-- [ ] Review all Starter visual views:
-  - [ ] each has `[Parameter, EditorRequired] public ... Context`.
-  - [ ] no `OnInitializedAsync` data fetch.
-  - [ ] no generated client injection.
-  - [ ] no Runtime facade injection for page data.
-  - [ ] only visual services like feature manifest/copy helpers remain if they do not call Commerce Node.
-- [ ] Keep Starter feature manifest as visual placement metadata only.
-- [ ] If Starter needs feature capability state, add it to Presentation context model rather than fetching inside visual view.
-- [ ] Add tests:
-  - [ ] Starter views render context only.
-  - [ ] Starter has no `StorefrontBootstrapService`.
-  - [ ] Starter source contains no `BlazorShop.Storefront.Client` usage unless it is a package reference required by Runtime/package proof.
-  - [ ] Starter does not inject generated client interfaces.
-  - [ ] Starter home view uses `StorefrontHomePageContext`.
-- [ ] Add HTTP parity proof:
-  - [ ] start Starter via `WebApplicationFactory<BlazorShop.Storefront.Starter.Program>`.
-  - [ ] stub Commerce Node responses through configured test handler/runtime.
-  - [ ] GET `/` renders home with fixture store/product data.
-  - [ ] GET `/product/{slug}` renders product.
-  - [ ] GET `/category/{slug}` renders category.
-  - [ ] GET `/search?q=...` renders noindex search page.
-  - [ ] GET `/my-cart` renders cart route shell.
-  - [ ] GET `/checkout` renders checkout route shell.
-  - [ ] GET `/account` renders account route shell.
-  - [ ] GET `/robots.txt` and `/sitemap.xml` use Presentation endpoints.
+- [x] Remove `StorefrontBootstrapService` from Starter.
+- [x] Remove direct generated client usage from Starter views.
+- [x] Remove direct Runtime data facade usage from Starter visual pages unless the component is explicitly a server-only host extension.
+- [x] Convert `Pages/Ssr/Home/HomePage.razor`:
+  - [x] remove `BootstrapService`.
+  - [x] remove direct `StorefrontOptions` display if the same information exists in `StorefrontHomePageContext`.
+  - [x] render `Context.FeaturedProducts` or equivalent Presentation home context product data.
+  - [x] render store identity from Presentation context.
+  - [x] render feature visibility from a context/capability projection provided by Presentation, not by direct API fetch in the view.
+- [x] Review all Starter visual views:
+  - [x] each has `[Parameter, EditorRequired] public ... Context`.
+  - [x] no `OnInitializedAsync` data fetch.
+  - [x] no generated client injection.
+  - [x] no Runtime facade injection for page data.
+  - [x] only visual services like feature manifest/copy helpers remain if they do not call Commerce Node.
+- [x] Keep Starter feature manifest as visual placement metadata only.
+- [x] If Starter needs feature capability state, add it to Presentation context model rather than fetching inside visual view.
+- [x] Add tests:
+  - [x] Starter views render context only.
+  - [x] Starter has no `StorefrontBootstrapService`.
+  - [x] Starter source contains no `BlazorShop.Storefront.Client` usage unless it is a package reference required by Runtime/package proof.
+  - [x] Starter does not inject generated client interfaces.
+  - [x] Starter home view uses `StorefrontHomePageContext`.
+- [x] Add HTTP parity proof:
+  - [x] start Starter via `WebApplicationFactory<BlazorShop.Storefront.Starter.Program>`.
+  - [x] stub Commerce Node responses through configured test handler/runtime.
+  - [x] GET `/` renders home with fixture store/product data.
+  - [x] GET `/product/{slug}` renders product.
+  - [x] GET `/category/{slug}` renders category.
+  - [x] GET `/search?q=...` renders noindex search page.
+  - [x] GET `/my-cart` renders cart route shell.
+  - [x] GET `/checkout` renders checkout route shell.
+  - [x] GET `/account` renders account route shell.
+  - [x] GET `/robots.txt` and `/sitemap.xml` use Presentation endpoints.
 
 ### Files likely touched
 
@@ -529,11 +529,19 @@ Expected `rg` result after this phase:
 - no direct generated client interface injection in Starter source.
 - `Storefront.Client` may remain only in package metadata if package proof still requires it, or be removed in SPF22 if no direct Starter use remains.
 
+2026-07-27 evidence:
+
+- `StorefrontHomePageContext` now carries `StorefrontDisplayContext` plus Presentation `StorefrontCapability` projections; Starter home renders store key/name/currency and feature visibility from that context.
+- Starter `Pages/**/*.razor` render Presentation contexts only; no visual page owns generated client/runtime facade data loading.
+- `StorefrontStarterHostSmokeTests` starts `WebApplicationFactory<BlazorShop.Storefront.Starter.Program>` and proves `/`, `/product/{slug}`, `/category/{slug}`, `/search?q=...`, `/my-cart`, `/checkout`, `/account`, `/robots.txt`, and `/sitemap.xml`.
+- `rg -n "StorefrontBootstrapService|IStorefrontStoreClient|IStorefrontConfigurationClient|IStorefrontCatalogClient|Storefront\.Client|OnInitializedAsync" BlazorShop.PresentationV2\BlazorShop.Storefront.Starter -g "*.cs" -g "*.razor"` returned no matches.
+- Starter build passed with `--no-restore`; `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontStarter|FullyQualifiedName~StorefrontPresentation"` passed `54/55` with 1 existing skip and known MessagePack/Browserslist warnings.
+
 ### Exit criteria
 
-- [ ] Starter visual views render only Presentation contexts.
-- [ ] Starter proves Presentation can power a second host.
-- [ ] Starter does not maintain a parallel home/catalog data path.
+- [x] Starter visual views render only Presentation contexts.
+- [x] Starter proves Presentation can power a second host.
+- [x] Starter does not maintain a parallel home/catalog data path.
 
 ## Phase SPF22 - Dependency And Package Cleanup
 

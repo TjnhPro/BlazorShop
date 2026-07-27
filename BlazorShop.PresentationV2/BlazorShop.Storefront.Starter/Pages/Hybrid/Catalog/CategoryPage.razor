@@ -1,15 +1,14 @@
 @namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
 
-<h1>Category</h1>
+<h1>@Context.CategoryPage.Category.Name</h1>
 <PlaceholderState
     Title="Category shell"
     Message="SSR snapshot supplies category and product listing data."
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
+<ProductGrid Products="@Context.ProductSummaries" />
 
 @code {
     [Parameter, EditorRequired]
     public StorefrontCategoryPageContext Context { get; set; } = default!;
-
-    private string CategoryName => Context.CategoryPage.Category.Name;
 }

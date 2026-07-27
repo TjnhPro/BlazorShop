@@ -13,6 +13,7 @@ public sealed class StorefrontHomePageService
     private readonly IStorefrontContentClient _contentClient;
     private readonly IStorefrontDisplayContextProvider _displayContextProvider;
     private readonly IStorefrontPriceFormatter _priceFormatter;
+    private readonly IStorefrontStoreConfigurationClient _storeConfigurationClient;
     private readonly IStorefrontSeoComposer _seoComposer;
     private readonly IStorefrontStructuredDataComposer _structuredDataComposer;
     private readonly ILogger<StorefrontHomePageService> _logger;
@@ -22,6 +23,7 @@ public sealed class StorefrontHomePageService
         IStorefrontContentClient contentClient,
         IStorefrontDisplayContextProvider displayContextProvider,
         IStorefrontPriceFormatter priceFormatter,
+        IStorefrontStoreConfigurationClient storeConfigurationClient,
         IStorefrontSeoComposer seoComposer,
         IStorefrontStructuredDataComposer structuredDataComposer,
         ILogger<StorefrontHomePageService> logger)
@@ -30,6 +32,7 @@ public sealed class StorefrontHomePageService
         _contentClient = contentClient;
         _displayContextProvider = displayContextProvider;
         _priceFormatter = priceFormatter;
+        _storeConfigurationClient = storeConfigurationClient;
         _seoComposer = seoComposer;
         _structuredDataComposer = structuredDataComposer;
         _logger = logger;
@@ -44,6 +47,7 @@ public sealed class StorefrontHomePageService
         var homeMetadataPageTask = _contentClient.GetPublishedPageBySlugAsync(StorefrontRoutes.HomeMetadataSlug);
         var structuredDataTask = _structuredDataComposer.ComposeHomePageAsync(cancellationToken);
         var categoriesTask = _catalogClient.GetPublishedCategoriesAsync(cancellationToken);
+        var publicConfigurationTask = _storeConfigurationClient.GetPublicConfigurationAsync(cancellationToken);
         var latestProductsTask = _catalogClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
         {
             PageNumber = 1,
@@ -51,7 +55,7 @@ public sealed class StorefrontHomePageService
             SortBy = ProductCatalogSortBy.Newest,
         }, displayContext.CurrencyCode, cancellationToken);
 
-        await Task.WhenAll(homeMetadataPageTask, structuredDataTask, categoriesTask, latestProductsTask);
+        await Task.WhenAll(homeMetadataPageTask, structuredDataTask, categoriesTask, publicConfigurationTask, latestProductsTask);
 
         var homeMetadataPageResult = await homeMetadataPageTask;
         var metadata = await _seoComposer.ComposeHomePageAsync(
@@ -62,6 +66,7 @@ public sealed class StorefrontHomePageService
 
         var categoriesResult = await categoriesTask;
         var latestProductsResult = await latestProductsTask;
+        var publicConfigurationResult = await publicConfigurationTask;
 
         if (categoriesResult.IsServiceUnavailable || latestProductsResult.IsServiceUnavailable)
         {
@@ -84,7 +89,11 @@ public sealed class StorefrontHomePageService
         var latestProductSummaries = latestProducts
             .Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, _priceFormatter))
             .ToArray();
-        var context = new StorefrontHomePageContext(categories, latestProductSummaries);
+        var context = new StorefrontHomePageContext(
+            categories,
+            latestProductSummaries,
+            displayContext,
+            MapCapabilities(publicConfigurationResult));
         var structuredData = await structuredDataTask;
 
         return new StorefrontCatalogPageResult<StorefrontHomePageContext>(
@@ -92,5 +101,16 @@ public sealed class StorefrontHomePageService
             metadata,
             structuredData,
             context);
+    }
+
+    private static IReadOnlyDictionary<string, StorefrontCapability> MapCapabilities(
+        StorefrontApiResult<StorefrontPublicConfiguration> result)
+    {
+        if (!result.IsSuccess || result.Value?.Features is not { Count: > 0 } features)
+        {
+            return new Dictionary<string, StorefrontCapability>(StringComparer.Ordinal);
+        }
+
+        return new Dictionary<string, StorefrontCapability>(features, StringComparer.Ordinal);
     }
 }

@@ -1,15 +1,14 @@
 @namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
-@inject IOptions<StarterStorefrontOptions> StorefrontOptions
 @inject StarterFeatureActivationService FeatureActivationService
 
-<h1>Storefront Starter</h1>
+<h1>@Context.DisplayContext.StoreName</h1>
 <p>This neutral shell consumes the generated Storefront client package.</p>
 
 <dl class="starter-config">
     <dt>Store key</dt>
-    <dd>@StorefrontOptions.Value.StoreKey</dd>
-    <dt>Commerce API</dt>
-    <dd>Configured server-side</dd>
+    <dd>@Context.DisplayContext.StoreKey</dd>
+    <dt>Currency</dt>
+    <dd>@Context.DisplayContext.CurrencyCode</dd>
     <dt>Render owner</dt>
     <dd>SSR</dd>
 </dl>
@@ -19,7 +18,7 @@
     <ProductGrid Products="@Context.LatestProductSummaries" />
 </section>
 
-@if (FeatureActivationService.Evaluate("recommendations", "home", EmptyCapabilities).Visible)
+@if (FeatureActivationService.Evaluate("recommendations", "home", Context.FeatureCapabilities).Visible)
 {
     <section class="starter-section" aria-labelledby="recommendations-title">
         <h2 id="recommendations-title">Recommended</h2>
@@ -28,9 +27,6 @@
 }
 
 @code {
-    private static readonly IReadOnlyDictionary<string, StorefrontRuntimeCapability> EmptyCapabilities =
-        new Dictionary<string, StorefrontRuntimeCapability>(StringComparer.Ordinal);
-
     [Parameter, EditorRequired]
     public StorefrontHomePageContext Context { get; set; } = default!;
 }
