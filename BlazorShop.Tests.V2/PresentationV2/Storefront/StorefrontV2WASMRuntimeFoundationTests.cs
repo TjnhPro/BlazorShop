@@ -554,6 +554,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
 
+            Assert.Contains("app.MapStorefrontPresentationAuthEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontAuthFormEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontCartEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);

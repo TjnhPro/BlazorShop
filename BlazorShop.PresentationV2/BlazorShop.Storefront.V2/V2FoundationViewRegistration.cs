@@ -1,9 +1,13 @@
 namespace BlazorShop.Storefront;
 
 using BlazorShop.Storefront.Components.Layout;
+using BlazorShop.Storefront.Components.Shared;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
+using BlazorShop.Storefront.Pages.Ssr.Content;
+using BlazorShop.Storefront.Pages.Ssr.System;
+using BlazorShop.Storefront.Theme.Pages.Auth;
 using BlazorShop.Storefront.Theme.Pages.Catalog;
 using BlazorShop.Storefront.Theme.Pages.Product;
 
@@ -27,15 +31,15 @@ public static class V2FoundationViewRegistration
                 SearchPage = typeof(SearchPage),
                 DealsPage = typeof(TodaysDeals),
                 NewReleasesPage = typeof(NewReleases),
-                ContentPage = viewSet.ContentPage,
+                ContentPage = typeof(StorefrontPage),
                 CartPage = viewSet.CartPage,
                 CheckoutPage = viewSet.CheckoutPage,
                 PaymentResultPage = viewSet.PaymentResultPage,
-                AuthPage = viewSet.AuthPage,
+                AuthPage = typeof(V2AuthPageView),
                 AccountPage = viewSet.AccountPage,
-                MaintenanceState = viewSet.MaintenanceState,
-                NotFoundState = viewSet.NotFoundState,
-                ServiceUnavailableState = viewSet.ServiceUnavailableState,
+                MaintenanceState = typeof(MaintenancePage),
+                NotFoundState = typeof(NotFoundPage),
+                ServiceUnavailableState = typeof(ServiceUnavailableState),
                 ErrorState = viewSet.ErrorState,
             };
         }).AddStorefrontPresentationRoutes(typeof(V2FoundationViewRegistration).Assembly);

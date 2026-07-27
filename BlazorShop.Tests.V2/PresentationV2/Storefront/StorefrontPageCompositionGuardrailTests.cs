@@ -25,18 +25,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Theory]
-        [InlineData("StorefrontPage.razor", "@page \"/pages/{Slug}\"")]
         [InlineData("CartPage.razor", "@page \"/my-cart\"")]
         [InlineData("CheckoutPage.razor", "@page \"/checkout\"")]
-        [InlineData("SignInPage.razor", "@page \"/signin\"")]
-        [InlineData("RegisterPage.razor", "@page \"/register\"")]
-        [InlineData("ForgotPasswordPage.razor", "@page \"/forgot-password\"")]
-        [InlineData("ResetPasswordPage.razor", "@page \"/reset-password\"")]
         [InlineData("PaymentSuccessPage.razor", "@page \"/payment-success\"")]
         [InlineData("PaymentCancelPage.razor", "@page \"/payment-cancel\"")]
         [InlineData("AccountHostPage.razor", "@page \"/account\"")]
         [InlineData("AccountHostPage.razor", "@page \"/account/{*Path}\"")]
-        [InlineData("MaintenancePage.razor", "@page \"/maintenance\"")]
         public void RoutePages_KeepExpectedRouteDeclarations(string fileName, string routeDeclaration)
         {
             var pagePath = FindStorefrontPageFile(fileName);
@@ -50,19 +44,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var expected = new[]
             {
-                new PageInventoryItem("Pages/Ssr/Content/StorefrontPage.razor", "/pages/{Slug}", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CartPage.razor", "/my-cart", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/PaymentSuccessPage.razor", "/payment-success", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/PaymentCancelPage.razor", "/payment-cancel", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Ssr/Auth/SignInPage.razor", "/signin", RenderOwnership.Ssr),
-                new PageInventoryItem("Pages/Ssr/Auth/RegisterPage.razor", "/register", RenderOwnership.Ssr),
-                new PageInventoryItem("Pages/Ssr/Auth/ForgotPasswordPage.razor", "/forgot-password", RenderOwnership.Ssr),
-                new PageInventoryItem("Pages/Ssr/Auth/ResetPasswordPage.razor", "/reset-password", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account", RenderOwnership.WasmHost),
                 new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account/{*Path}", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/Ssr/System/MaintenancePage.razor", "/maintenance", RenderOwnership.Ssr),
-                new PageInventoryItem("Pages/Ssr/System/NotFoundPage.razor", "/{*Path:nonfile}", RenderOwnership.Ssr),
             };
 
             var pageRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2");
@@ -77,8 +64,59 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             Assert.Equal(
-                [RenderOwnership.Hybrid, RenderOwnership.Ssr, RenderOwnership.WasmHost],
+                [RenderOwnership.Hybrid, RenderOwnership.WasmHost],
                 expected.Select(item => item.Ownership).Distinct().OrderBy(item => item.ToString()).ToArray());
+        }
+
+        [Fact]
+        public void ContentSystemAndAuthRoutes_ArePresentationOwnedAndV2ProvidesViews()
+        {
+            var routes = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["Pages/Ssr/Content/ContentRoutePage.razor"] = "@page \"/pages/{Slug}\"",
+                ["Pages/Ssr/Auth/SignInRoutePage.razor"] = "@page \"/signin\"",
+                ["Pages/Ssr/Auth/RegisterRoutePage.razor"] = "@page \"/register\"",
+                ["Pages/Ssr/Auth/ForgotPasswordRoutePage.razor"] = "@page \"/forgot-password\"",
+                ["Pages/Ssr/Auth/ResetPasswordRoutePage.razor"] = "@page \"/reset-password\"",
+                ["Pages/Ssr/System/MaintenanceRoutePage.razor"] = "@page \"/maintenance\"",
+                ["Pages/Ssr/System/NotFoundRoutePage.razor"] = "@page \"/{*Path:nonfile}\"",
+            };
+            var presentationRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation");
+            var registration = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs"));
+            var program = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"));
+            var v2AuthFormEndpoints = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs"));
+
+            foreach (var route in routes)
+            {
+                var routeMarkup = File.ReadAllText(Path.Combine(presentationRoot, route.Key.Replace('/', Path.DirectorySeparatorChar)));
+                Assert.Contains(route.Value, routeMarkup, StringComparison.Ordinal);
+            }
+
+            var viewPaths = new[]
+            {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Auth/V2AuthPageView.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/System/MaintenancePage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/System/NotFoundPage.razor",
+            };
+
+            foreach (var viewPath in viewPaths)
+            {
+                var viewMarkup = File.ReadAllText(RepositoryPath(viewPath));
+                Assert.DoesNotContain("@page \"", viewMarkup, StringComparison.Ordinal);
+                Assert.Contains(" Context", viewMarkup, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("ContentPage = typeof(StorefrontPage)", registration, StringComparison.Ordinal);
+            Assert.Contains("AuthPage = typeof(V2AuthPageView)", registration, StringComparison.Ordinal);
+            Assert.Contains("MaintenanceState = typeof(MaintenancePage)", registration, StringComparison.Ordinal);
+            Assert.Contains("NotFoundState = typeof(NotFoundPage)", registration, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationAuthEndpoints();", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapPost(StorefrontRoutes.SignIn", v2AuthFormEndpoints, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapPost(StorefrontRoutes.Register", v2AuthFormEndpoints, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapPost(StorefrontRoutes.ForgotPassword", v2AuthFormEndpoints, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapPost(StorefrontRoutes.ResetPassword", v2AuthFormEndpoints, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapPost(StorefrontRoutes.Logout", v2AuthFormEndpoints, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -149,15 +187,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var expected = new[]
             {
                 new PageInventoryItem("Pages/Hybrid/Catalog/ProductPage.razor", "/product/{Slug}", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Ssr/Content/ContentPage.razor", "/content/{Slug}", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CartPage.razor", "/cart", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),
                 new PageInventoryItem("Pages/Hybrid/Commerce/PaymentResultPage.razor", "/payment/result", RenderOwnership.Hybrid),
-                new PageInventoryItem("Pages/Ssr/Auth/AuthShellPage.razor", "/signin", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account", RenderOwnership.WasmHost),
                 new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account/{*Path}", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/Ssr/System/MaintenancePage.razor", "/maintenance", RenderOwnership.Ssr),
-                new PageInventoryItem("Pages/Ssr/System/NotFoundPage.razor", "/not-found", RenderOwnership.Ssr),
             };
 
             var pageRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter");
@@ -280,14 +314,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void DynamicContentRenderer_WiresTemplatePresentationAndStructuredData()
         {
-            var markup = File.ReadAllText(FindStorefrontPageFile("StorefrontPage.razor")!);
+            var routeMarkup = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Ssr/Content/ContentRoutePage.razor"));
+            var service = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Content/StorefrontContentPageService.cs"));
+            var viewMarkup = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor"));
 
-            Assert.Contains("@inject IStorefrontPagePresentationResolver PresentationResolver", markup, StringComparison.Ordinal);
-            Assert.Contains("@inject IStorefrontStructuredDataComposer StructuredDataComposer", markup, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontSeoHead Metadata=\"_metadata\" StructuredData=\"_structuredData\" />", markup, StringComparison.Ordinal);
-            Assert.Contains("PresentationResolver.Resolve(_page)", markup, StringComparison.Ordinal);
-            Assert.Contains("ComposeStructuredDataAsync(routePath, _page, _presentation)", markup, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-page-template", markup, StringComparison.Ordinal);
+            Assert.Contains("StorefrontContentPageService", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontSeoHead Metadata=\"_result.Metadata\" StructuredData=\"_result.StructuredData\" />", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontPagePresentationResolver", service, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontStructuredDataComposer", service, StringComparison.Ordinal);
+            Assert.Contains("presentationResolver.Resolve(page)", service, StringComparison.Ordinal);
+            Assert.Contains("ComposeStructuredDataAsync(routePath, page, presentation, metadata", service, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-page-template", viewMarkup, StringComparison.Ordinal);
         }
 
         private static string? FindStorefrontPageFile(string fileName)

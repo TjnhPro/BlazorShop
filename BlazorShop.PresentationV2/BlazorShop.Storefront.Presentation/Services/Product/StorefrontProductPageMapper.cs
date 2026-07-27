@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Presentation.Services.Product;
 
-using System.Globalization;
+using global::System.Globalization;
 using BlazorShop.Storefront.Components.Contracts.Product;
 using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services;

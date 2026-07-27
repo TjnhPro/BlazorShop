@@ -71,11 +71,10 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void StorefrontForms_RenderCaptchaTokenHooks()
         {
-            var signIn = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Auth/SignInPage.razor");
-            var register = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Auth/RegisterPage.razor");
+            var authView = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Auth/V2AuthPageView.razor");
 
-            Assert.Contains("data-storefront-captcha-token=\"login\"", signIn, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-captcha-token=\"registration\"", register, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-captcha-token=\"login\"", authView, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-captcha-token=\"registration\"", authView, StringComparison.Ordinal);
         }
 
         private static string ReadRepositoryFile(string relativePath)

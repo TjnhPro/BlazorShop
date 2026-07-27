@@ -375,10 +375,6 @@ namespace BlazorShop.Tests.Architecture
         {
             var expectedRoutes = new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = ["@page \"/content/{Slug}\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor"] = ["@page \"/signin\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/MaintenancePage.razor"] = ["@page \"/maintenance\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/NotFoundPage.razor"] = ["@page \"/not-found\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"] = ["@page \"/product/{Slug}\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = ["@page \"/cart\""],
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"] = ["@page \"/checkout\""],
@@ -404,6 +400,10 @@ namespace BlazorShop.Tests.Architecture
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/SearchPage.razor"] = "StorefrontSearchPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = "StorefrontCatalogProductsPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor"] = "StorefrontCatalogProductsPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = "StorefrontContentPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor"] = "StorefrontAuthPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/MaintenancePage.razor"] = "StorefrontSystemStateContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/NotFoundPage.razor"] = "StorefrontSystemStateContext",
             };
 
             foreach (var (relativePath, contextType) in starterViews)

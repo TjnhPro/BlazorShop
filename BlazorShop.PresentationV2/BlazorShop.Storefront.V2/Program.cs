@@ -25,6 +25,7 @@ app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);
 app.MapStaticAssets();
 app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: false));
 app.MapDefaultEndpoints();
+app.MapStorefrontPresentationAuthEndpoints();
 app.MapStorefrontAuthFormEndpoints();
 app.MapStorefrontCartEndpoints();
 app.MapStorefrontAccountEndpoints();

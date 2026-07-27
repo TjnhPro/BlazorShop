@@ -69,13 +69,14 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.DoesNotContain("<HeadContent>", pageShellMarkup, StringComparison.Ordinal);
         }
 
-        [Theory]
-        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor")]
-        public void StorefrontRoutedPages_UsePageShellWhileKeepingSeoBreadcrumbAndHeading(string relativePath)
+        [Fact]
+        public void StorefrontContentRouteAndView_SplitSeoFromVisualShell()
         {
-            var pageMarkup = ReadRepositoryFile(relativePath);
+            var routeMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Ssr/Content/ContentRoutePage.razor");
+            var pageMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor");
 
-            Assert.Contains("<StorefrontSeoHead", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<StorefrontSeoHead", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPageShell", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<Breadcrumb>", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<BreadcrumbNav", pageMarkup, StringComparison.Ordinal);

@@ -1,0 +1,44 @@
+@page "/pages/{Slug}"
+@namespace BlazorShop.Storefront.Presentation.Pages.Ssr.Content
+@using BlazorShop.Storefront.Presentation.PagePatterns
+@using BlazorShop.Storefront.Presentation.Services.Content
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@inject StorefrontContentPageService ContentPageService
+@inject StorefrontFoundationViewSet ViewSet
+
+<StorefrontSeoHead Metadata="_result.Metadata" StructuredData="_result.StructuredData" />
+
+@if (_result.State is StorefrontPageState.ServiceUnavailableState)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" Context="_serviceUnavailableContext" />
+}
+else if (_result.State is StorefrontPageState.NotFoundState)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" Context="_notFoundContext" />
+}
+else if (_result.Context is not null)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ContentPage" Context="_result.Context" />
+}
+
+@code {
+    private StorefrontContentPageResult _result = StorefrontContentPageResult.Empty;
+    private readonly StorefrontSystemStateContext _serviceUnavailableContext = StorefrontSystemStateContext.ServiceUnavailable(
+        "Page temporarily unavailable",
+        "The storefront is running, but the page API is not reachable right now. Start the API project or AppHost and refresh this page.");
+    private readonly StorefrontSystemStateContext _notFoundContext = StorefrontSystemStateContext.NotFound(
+        "Page not found",
+        "We couldn't find a published page for this address.");
+
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _result = await ContentPageService.GetAsync(Slug);
+        StorefrontResponseHeaders.ApplyStatus(HttpContext, _result.State);
+    }
+}

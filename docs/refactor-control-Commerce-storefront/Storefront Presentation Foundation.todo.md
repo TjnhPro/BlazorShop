@@ -571,38 +571,38 @@ Exit criteria:
 
 ## Phase SPF8 - Content, System, and Auth SSR Pages
 
-- [ ] Move content route logic:
+- [x] Move content route logic:
   - `/pages/{Slug}` from V2;
   - Starter content route mapping if still needed.
-- [ ] Move system route logic:
+- [x] Move system route logic:
   - maintenance;
   - not found/catch-all;
   - service unavailable state.
-- [ ] Move auth SSR route logic:
+- [x] Move auth SSR route logic:
   - sign in;
   - register;
   - forgot password;
   - reset password;
   - logout route/form handling.
-- [ ] Move auth form endpoint mapping into Presentation:
+- [x] Move auth form endpoint mapping into Presentation:
 
 ```csharp
 app.MapStorefrontPresentationAuthEndpoints();
 ```
 
-- [ ] Presentation owns:
+- [x] Presentation owns:
   - return URL validation;
   - register disabled policy handling;
   - form endpoint security;
   - auth cookies/session orchestration;
   - redirect result mapping;
   - noindex metadata.
-- [ ] V2/Starter owns:
+- [x] V2/Starter owns:
   - auth form visual;
   - field classes;
   - copy;
   - layout.
-- [ ] Tests:
+- [x] Tests:
   - sign in/register/recovery routes;
   - register disabled cannot submit;
   - unsafe return URL rejected/normalized;
@@ -611,8 +611,8 @@ app.MapStorefrontPresentationAuthEndpoints();
 
 Exit criteria:
 
-- [ ] Auth SSR routes/endpoints no longer live in V2/Starter.
-- [ ] Visual auth templates remain host-owned.
+- [x] Auth SSR routes/endpoints no longer live in V2/Starter.
+- [x] Visual auth templates remain host-owned.
 
 ## Phase SPF9 - Cart Route and BFF Migration
 

@@ -5,7 +5,7 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Services.Contracts;
 
-    public sealed class StorefrontCartTokenService
+    public sealed class StorefrontCartTokenService : IStorefrontCartMergeService
     {
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -189,6 +189,14 @@ namespace BlazorShop.Storefront.Services
 
             var result = await this.apiClient.MergeCurrentCustomerCartAsync(token, accessToken, cancellationToken);
             return this.ApplyMutationResult(httpContext, token, result);
+        }
+
+        async Task IStorefrontCartMergeService.MergeCurrentCustomerAsync(
+            HttpContext httpContext,
+            string accessToken,
+            CancellationToken cancellationToken)
+        {
+            await this.MergeCurrentCustomerAsync(httpContext, accessToken, cancellationToken);
         }
 
         private StorefrontCartMutationResult ApplyMutationResult(

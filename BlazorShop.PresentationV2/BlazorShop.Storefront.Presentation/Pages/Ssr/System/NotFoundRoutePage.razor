@@ -1,0 +1,33 @@
+@page "/{*Path:nonfile}"
+@namespace BlazorShop.Storefront.Presentation.Pages.Ssr.System
+@using BlazorShop.Storefront.Presentation.Services.System
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@inject IStorefrontSeoComposer SeoComposer
+@inject StorefrontFoundationViewSet ViewSet
+
+<StorefrontSeoHead Metadata="_metadata" />
+
+<StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" Context="_context" />
+
+@code {
+    private SeoMetadataDto _metadata = new();
+    private readonly StorefrontSystemStateContext _context = StorefrontSystemStateContext.NotFound(
+        "Page not found",
+        "The page you requested does not exist in the current storefront surface.");
+
+    [Parameter]
+    public string? Path { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StorefrontResponseHeaders.ApplyNotFound(HttpContext);
+
+        _metadata = await SeoComposer.ComposeNotFoundPageAsync(
+            "Page not found",
+            "/not-found",
+            "The page you requested does not exist in the current storefront surface.");
+    }
+}

@@ -1,14 +1,14 @@
-@page "/content/{Slug}"
+@namespace BlazorShop.Storefront.Starter.Theme.Pages.Content
+@using BlazorShop.Storefront.Presentation.Services.Content
 
-<PageTitle>Content</PageTitle>
-<h1>Content</h1>
+<h1>@Context.Page.Title</h1>
 <PlaceholderState
-    Title="Content page"
-    Message="SSR content reads will use the generated pages/content client."
+    Title="@Context.Page.Title"
+    Message="SSR content is supplied by the shared Presentation content route."
     RenderOwner="SSR"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
 
 @code {
-    [Parameter]
-    public string? Slug { get; set; }
+    [Parameter, EditorRequired]
+    public StorefrontContentPageContext Context { get; set; } = default!;
 }

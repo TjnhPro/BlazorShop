@@ -1,126 +1,32 @@
-@page "/pages/{Slug}"
-@inject IStorefrontContentClient ApiClient
-@inject IStorefrontSeoComposer SeoComposer
-@inject IStorefrontStructuredDataComposer StructuredDataComposer
-@inject IStorefrontPagePresentationResolver PresentationResolver
+@namespace BlazorShop.Storefront.Pages.Ssr.Content
+@using BlazorShop.Storefront.Presentation.Services.Content
 
-<StorefrontSeoHead Metadata="_metadata" StructuredData="_structuredData" />
+<StorefrontPageShell Class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+    <Breadcrumb>
+        <BreadcrumbNav Items="Context.Breadcrumbs" />
+    </Breadcrumb>
 
-@if (_isServiceUnavailable)
-{
-    <ServiceUnavailableState Title="Page temporarily unavailable"
-                             Message="The storefront is running, but the page API is not reachable right now. Start the API project or AppHost and refresh this page." />
-}
-else if (_isNotFound)
-{
-    <NotFoundState Title="Page not found"
-                   Message="We couldn't find a published page for this address." />
-}
-else if (_page is not null)
-{
-    <StorefrontPageShell Class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <Breadcrumb>
-            <BreadcrumbNav Items="_breadcrumbs" />
-        </Breadcrumb>
+    <ChildContent>
+        <article class="@Context.Presentation.ArticleClass" data-storefront-page-template="@Context.Presentation.TemplateKey" data-storefront-page-layout="@Context.Presentation.LayoutKind.ToString().ToLowerInvariant()">
+            <header class="mb-8">
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">@Context.Presentation.Eyebrow</p>
+                <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">@Context.Page.Title</h1>
+                @if (!string.IsNullOrWhiteSpace(Context.Page.Intro))
+                {
+                    <p class="mt-4 text-lg leading-8 text-neutral-700">@Context.Page.Intro</p>
+                }
+            </header>
 
-        <ChildContent>
-            <article class="@_presentation.ArticleClass" data-storefront-page-template="@_presentation.TemplateKey" data-storefront-page-layout="@_presentation.LayoutKind.ToString().ToLowerInvariant()">
-                <header class="mb-8">
-                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">@_presentation.Eyebrow</p>
-                    <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">@_page.Title</h1>
-                    @if (!string.IsNullOrWhiteSpace(_page.Intro))
-                    {
-                        <p class="mt-4 text-lg leading-8 text-neutral-700">@_page.Intro</p>
-                    }
-                </header>
-
-                <div class="@_presentation.BodyContainerClass">
-                    <div class="prose max-w-none prose-neutral">
-                        @((MarkupString)_page.BodyHtml)
-                    </div>
+            <div class="@Context.Presentation.BodyContainerClass">
+                <div class="prose max-w-none prose-neutral">
+                    @((MarkupString)Context.Page.BodyHtml)
                 </div>
-            </article>
-        </ChildContent>
-    </StorefrontPageShell>
-}
+            </div>
+        </article>
+    </ChildContent>
+</StorefrontPageShell>
 
 @code {
-    private GetStorefrontPage? _page;
-    private SeoMetadataDto _metadata = new();
-    private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
-    private StorefrontPagePresentation _presentation = StorefrontPagePresentation.Standard("standard");
-    private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs = [];
-    private bool _isServiceUnavailable;
-    private bool _isNotFound;
-
-    [Parameter]
-    public string Slug { get; set; } = string.Empty;
-
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var routePath = StorefrontRoutes.Page(Slug);
-        var pageResult = await ApiClient.GetPublishedPageBySlugAsync(Slug);
-
-        if (pageResult.IsServiceUnavailable)
-        {
-            _page = null;
-            _isServiceUnavailable = true;
-            _isNotFound = false;
-            _breadcrumbs = [];
-            _structuredData = StorefrontStructuredDataDocument.Empty;
-            _presentation = StorefrontPagePresentation.Standard("standard");
-            StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
-            _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
-                "Page temporarily unavailable",
-                routePath,
-                "The storefront is running, but the page API is not reachable right now.");
-            return;
-        }
-
-        _page = pageResult.Value;
-        if (_page is null)
-        {
-            _isServiceUnavailable = false;
-            _isNotFound = true;
-            _breadcrumbs = [];
-            _structuredData = StorefrontStructuredDataDocument.Empty;
-            _presentation = StorefrontPagePresentation.Standard("standard");
-            StorefrontResponseHeaders.ApplyNotFound(HttpContext);
-            _metadata = await SeoComposer.ComposeNotFoundPageAsync(
-                "Page not found",
-                routePath,
-                "We couldn't find a published page for this address.");
-            return;
-        }
-
-        _isServiceUnavailable = false;
-        _isNotFound = false;
-        _breadcrumbs =
-        [
-            new StorefrontBreadcrumbItem("Home", StorefrontRoutes.Home),
-            new StorefrontBreadcrumbItem(_page.Title),
-        ];
-        _presentation = PresentationResolver.Resolve(_page);
-        _metadata = await SeoComposer.ComposeStorefrontPageAsync(_page);
-        _structuredData = await ComposeStructuredDataAsync(routePath, _page, _presentation);
-    }
-
-    private async Task<StorefrontStructuredDataDocument> ComposeStructuredDataAsync(
-        string routePath,
-        GetStorefrontPage page,
-        StorefrontPagePresentation presentation)
-    {
-        var description = FirstNonEmpty(_metadata.MetaDescription, page.Intro);
-        return presentation.StructuredDataKind == StorefrontPageStructuredDataKind.FaqPage
-            ? await StructuredDataComposer.ComposeFaqPageAsync(page.Title, routePath, description, presentation.FaqEntries)
-            : await StructuredDataComposer.ComposeWebPageAsync(page.Title, routePath, description);
-    }
-
-    private static string? FirstNonEmpty(params string?[] values)
-    {
-        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
-    }
+    [Parameter, EditorRequired]
+    public StorefrontContentPageContext Context { get; set; } = default!;
 }

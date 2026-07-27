@@ -1,0 +1,53 @@
+@page "/register"
+@namespace BlazorShop.Storefront.Presentation.Pages.Ssr.Auth
+@using BlazorShop.Storefront.Presentation.Services.Auth
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@inject StorefrontAuthPageService AuthPageService
+@inject NavigationManager NavigationManager
+@inject StorefrontFoundationViewSet ViewSet
+
+<PageTitle>Create account</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+@if (_result.Context is not null)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AuthPage" Context="_result.Context" />
+}
+
+@code {
+    private StorefrontAuthPageResult _result = new(null, null);
+
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
+        _result = await AuthPageService.GetRegisterAsync(ReturnUrl, Error);
+        RedirectIfNeeded();
+    }
+
+    private void RedirectIfNeeded()
+    {
+        if (!_result.ShouldRedirect || _result.RedirectUrl is null)
+        {
+            return;
+        }
+
+        if (HttpContext is not null && !HttpContext.Response.HasStarted)
+        {
+            HttpContext.Response.Redirect(_result.RedirectUrl, permanent: false);
+            return;
+        }
+
+        NavigationManager.NavigateTo(_result.RedirectUrl, replace: true);
+    }
+}

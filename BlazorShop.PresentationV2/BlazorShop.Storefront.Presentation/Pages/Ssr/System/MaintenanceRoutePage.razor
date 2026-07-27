@@ -1,0 +1,127 @@
+@page "/maintenance"
+@namespace BlazorShop.Storefront.Presentation.Pages.Ssr.System
+@using BlazorShop.Storefront.Presentation.Services.System
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@using BlazorShop.Storefront.Services.Contracts
+@inject IStorefrontCurrentStoreProvider CurrentStoreProvider
+@inject NavigationManager NavigationManager
+@inject StorefrontFoundationViewSet ViewSet
+
+<PageTitle>@_context.Title</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+    @if (_context.AutoRefresh)
+    {
+        <meta http-equiv="refresh" content="10" />
+    }
+</HeadContent>
+
+@if (!_redirecting)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.MaintenanceState" Context="_context" />
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "reason")]
+    public string? Reason { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private StorefrontSystemStateContext _context = new(
+        "Store temporarily unavailable",
+        "Store unavailable",
+        "This storefront is not ready to serve shoppers right now.");
+    private bool _redirecting;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var resolution = await CurrentStoreProvider.ResolveAsync();
+
+        if (resolution.Status == StorefrontCurrentStoreResolutionStatus.Success)
+        {
+            _redirecting = true;
+            RedirectToHome();
+            return;
+        }
+
+        _redirecting = false;
+
+        var reason = string.IsNullOrWhiteSpace(Reason)
+            ? ToReason(resolution.Status)
+            : Reason.Trim().ToLowerInvariant();
+
+        _context = new StorefrontSystemStateContext(
+            ResolveTitle(reason),
+            ResolveEyebrow(reason),
+            ResolveMessage(reason, resolution),
+            resolution.Store,
+            reason,
+            string.Equals(reason, "maintenance", StringComparison.OrdinalIgnoreCase));
+
+        StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
+    }
+
+    private void RedirectToHome()
+    {
+        if (HttpContext is not null && !HttpContext.Response.HasStarted)
+        {
+            HttpContext.Response.Redirect(StorefrontRoutes.Home, permanent: false);
+            return;
+        }
+
+        NavigationManager.NavigateTo(StorefrontRoutes.Home, replace: true);
+    }
+
+    private static string ToReason(StorefrontCurrentStoreResolutionStatus status)
+    {
+        return status switch
+        {
+            StorefrontCurrentStoreResolutionStatus.Maintenance => "maintenance",
+            StorefrontCurrentStoreResolutionStatus.Closed => "closed",
+            StorefrontCurrentStoreResolutionStatus.NotReady => "not-ready",
+            StorefrontCurrentStoreResolutionStatus.NotFound => "not-found",
+            _ => "unavailable",
+        };
+    }
+
+    private static string ResolveTitle(string reason)
+    {
+        return reason switch
+        {
+            "maintenance" => "Store maintenance in progress",
+            "closed" => "Store is currently closed",
+            "not-ready" => "Store is not ready yet",
+            "not-found" => "Store was not found",
+            _ => "Store temporarily unavailable",
+        };
+    }
+
+    private static string ResolveEyebrow(string reason)
+    {
+        return reason switch
+        {
+            "maintenance" => "Maintenance",
+            "closed" => "Closed",
+            "not-ready" => "Provisioning",
+            "not-found" => "Not found",
+            _ => "Unavailable",
+        };
+    }
+
+    private static string ResolveMessage(string reason, StorefrontCurrentStoreResolution resolution)
+    {
+        if (reason == "maintenance" && !string.IsNullOrWhiteSpace(resolution.Message))
+        {
+            return resolution.Message;
+        }
+
+        return reason switch
+        {
+            "closed" => "This store is inactive right now. Admins can still manage it from the Control Plane.",
+            "not-ready" => "This store is still being prepared. Check back after provisioning finishes.",
+            "not-found" => "The configured storefront store key or domain does not match an available store.",
+            _ => "The storefront cannot serve shoppers right now.",
+        };
+    }
+}

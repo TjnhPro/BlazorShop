@@ -1,12 +1,14 @@
-@page "/not-found"
+@namespace BlazorShop.Storefront.Starter.Theme.Pages.System
+@using BlazorShop.Storefront.Presentation.Services.System
 
-<PageTitle>Not found</PageTitle>
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-</HeadContent>
-<h1>Not found</h1>
+<h1>@Context.Title</h1>
 <PlaceholderState
-    Title="Not found"
-    Message="Generated storefronts should map unknown routes to an explicit not-found state."
+    Title="@Context.Title"
+    Message="@Context.Message"
     RenderOwner="SSR"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontSystemStateContext Context { get; set; } = default!;
+}

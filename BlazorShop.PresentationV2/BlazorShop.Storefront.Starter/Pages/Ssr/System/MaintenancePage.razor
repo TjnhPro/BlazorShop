@@ -1,12 +1,14 @@
-@page "/maintenance"
+@namespace BlazorShop.Storefront.Starter.Theme.Pages.System
+@using BlazorShop.Storefront.Presentation.Services.System
 
-<PageTitle>Maintenance</PageTitle>
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-</HeadContent>
-<h1>Maintenance</h1>
+<h1>@Context.Title</h1>
 <PlaceholderState
-    Title="Maintenance"
-    Message="Maintenance state is driven by Storefront configuration and should return a private, noindex response."
+    Title="@Context.Title"
+    Message="@Context.Message"
     RenderOwner="SSR"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontSystemStateContext Context { get; set; } = default!;
+}
