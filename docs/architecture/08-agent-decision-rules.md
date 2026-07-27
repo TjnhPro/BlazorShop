@@ -134,7 +134,7 @@ StorefrontBuilder is development-time tooling. It may create or update generated
 
 Generated storefronts must:
 
-- Consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries when they need the full storefront application surface.
+- Consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Runtime owns the direct `BlazorShop.Storefront.Client` transport dependency; generated projects keep Client package metadata for compatibility instead of adding direct visual-source usage.
 - Provide views/assets/copy/host configuration instead of recreating Presentation-owned route/BFF/SEO/media logic.
 - Keep protected browser commands behind same-origin BFF endpoints.
 - Keep analysis and QA artifacts under `docs/storefront-analysis/`.

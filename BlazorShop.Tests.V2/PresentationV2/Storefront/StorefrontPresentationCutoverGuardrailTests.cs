@@ -75,7 +75,9 @@ public sealed class StorefrontPresentationCutoverGuardrailTests
 
         Assert.DoesNotContain("StorefrontBootstrapService", starterProject, StringComparison.Ordinal);
         Assert.False(File.Exists(RepositoryPath($"{starterRoot}/Services/StorefrontBootstrapService.cs")));
-        Assert.Contains("PackageReference Include=\"BlazorShop.Storefront.Client\"", starterProject, StringComparison.Ordinal);
+        Assert.DoesNotContain("PackageReference Include=\"BlazorShop.Storefront.Client\"", starterProject, StringComparison.Ordinal);
+        Assert.Contains("PackageReference Include=\"BlazorShop.Storefront.Runtime\"", starterProject, StringComparison.Ordinal);
+        Assert.Contains("ProjectReference Include=\"..\\BlazorShop.Storefront.Presentation\\BlazorShop.Storefront.Presentation.csproj\"", starterProject, StringComparison.Ordinal);
 
         Assert.Contains("StorefrontHomePageContext", starterHome, StringComparison.Ordinal);
         Assert.Contains("Context.DisplayContext", starterHome, StringComparison.Ordinal);

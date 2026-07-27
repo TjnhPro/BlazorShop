@@ -206,14 +206,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 $"Storefront.Client request/response DTOs must remain generated from OpenAPI:{Environment.NewLine}{string.Join(Environment.NewLine, handwrittenDtoOffenders)}");
         }
 
-        [Fact(Skip = "SPF16/SPF22 transitional guardrail: Starter still uses a monorepo ProjectReference until dependency cleanup selects and proves the final package mode.")]
+        [Fact]
         public void StorefrontStarter_UsesPackageFirstContractsAndNoForbiddenSourceDependencies()
         {
             var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
 
-            Assert.DoesNotContain("<ProjectReference", project, StringComparison.Ordinal);
-            Assert.Contains("Include=\"BlazorShop.Storefront.Client\"", project, StringComparison.Ordinal);
+            Assert.Contains(
+                "Include=\"..\\BlazorShop.Storefront.Presentation\\BlazorShop.Storefront.Presentation.csproj\"",
+                project,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain("Include=\"BlazorShop.Storefront.Client\"", project, StringComparison.Ordinal);
             Assert.Contains("Include=\"BlazorShop.Storefront.Runtime\"", project, StringComparison.Ordinal);
+            Assert.Contains("Include=\"BlazorShop.Storefront.Components\"", project, StringComparison.Ordinal);
 
             AssertNoSourceFragments(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
@@ -231,6 +235,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("../BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj", v2References);
             Assert.Contains("../BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj", runtimeReferences);
+            Assert.DoesNotContain("../BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj", v2References);
             Assert.DoesNotContain(v2References, reference => reference.Contains("BlazorShop.CommerceNode.API", StringComparison.OrdinalIgnoreCase));
             Assert.DoesNotContain(v2References, reference => reference.Contains("BlazorShop.ControlPlane", StringComparison.OrdinalIgnoreCase));
         }

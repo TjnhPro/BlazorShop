@@ -572,35 +572,35 @@ BlazorShop.Storefront.Runtime
 
 ### Tasks
 
-- [ ] Remove `BlazorShop.Storefront.Client` project reference from V2 if no V2 source uses generated client directly.
-- [ ] Remove `BlazorShop.Storefront.Client` package reference from Starter if Starter no longer directly compiles against generated DTO/client types.
-- [ ] Keep `Storefront.Runtime -> Storefront.Client`.
-- [ ] Keep `Storefront.Presentation -> Storefront.Runtime`.
-- [ ] Decide whether Starter should consume `Storefront.Presentation` as:
-  - [ ] `ProjectReference` in monorepo development only.
-  - [ ] `PackageReference` in independent proof.
-  - [ ] generated project always package reference.
-- [ ] Align tests with the chosen mode:
-  - [ ] monorepo source build allows ProjectReference to Presentation if documented.
-  - [ ] independent package proof rewrites/uses PackageReference for Presentation.
-  - [ ] no test simultaneously requires and rejects the same reference mode.
-- [ ] Update package version props:
-  - [ ] Client package.
-  - [ ] Runtime package.
-  - [ ] Presentation package.
-  - [ ] Components package if still needed.
-- [ ] Run package proof:
-  - [ ] pack Client.
-  - [ ] pack Runtime.
-  - [ ] pack Presentation.
-  - [ ] pack Components if consumed by Starter/generated.
-  - [ ] restore Starter or generated proof from local feed.
-  - [ ] build restored project with no source fallback.
-- [ ] Add guardrails:
-  - [ ] V2 no direct `BlazorShop.Storefront.Client` reference.
-  - [ ] Starter no direct `BlazorShop.Storefront.Client` usage in source.
-  - [ ] generated storefront no direct backend/core/API references.
-  - [ ] generated storefront no V2 reference.
+- [x] Remove `BlazorShop.Storefront.Client` project reference from V2 if no V2 source uses generated client directly.
+- [x] Remove `BlazorShop.Storefront.Client` package reference from Starter if Starter no longer directly compiles against generated DTO/client types.
+- [x] Keep `Storefront.Runtime -> Storefront.Client`.
+- [x] Keep `Storefront.Presentation -> Storefront.Runtime`.
+- [x] Decide whether Starter should consume `Storefront.Presentation` as:
+  - [x] `ProjectReference` in monorepo development only.
+  - [x] `PackageReference` in independent proof.
+  - [x] generated project always package reference.
+- [x] Align tests with the chosen mode:
+  - [x] monorepo source build allows ProjectReference to Presentation if documented.
+  - [x] independent package proof rewrites/uses PackageReference for Presentation.
+  - [x] no test simultaneously requires and rejects the same reference mode.
+- [x] Update package version props:
+  - [x] Client package.
+  - [x] Runtime package.
+  - [x] Presentation package.
+  - [x] Components package if still needed.
+- [x] Run package proof:
+  - [x] pack Client.
+  - [x] pack Runtime.
+  - [x] pack Presentation.
+  - [x] pack Components if consumed by Starter/generated.
+  - [x] restore Starter or generated proof from local feed.
+  - [x] build restored project with no source fallback.
+- [x] Add guardrails:
+  - [x] V2 no direct `BlazorShop.Storefront.Client` reference.
+  - [x] Starter no direct `BlazorShop.Storefront.Client` usage in source.
+  - [x] generated storefront no direct backend/core/API references.
+  - [x] generated storefront no V2 reference.
 
 ### Files likely touched
 
@@ -621,12 +621,22 @@ dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1
 ```
 
+2026-07-27 evidence:
+
+- `BlazorShop.Storefront.V2.csproj` no longer references `BlazorShop.Storefront.Client`; V2 keeps ServiceDefaults, Presentation, Runtime, Components, and V2 WASM.
+- `BlazorShop.Storefront.Starter.csproj` no longer has a direct `BlazorShop.Storefront.Client` PackageReference; it keeps Runtime and Components packages plus a monorepo Presentation ProjectReference.
+- `scripts/qa/run-storefront-starter-isolation-gate.ps1` now packs Client/Runtime/Presentation/Components, clears stale local `1.0.0-local` package cache entries, rewrites the isolated Starter Presentation ProjectReference to PackageReference, and restores/builds/publishes from the local feed.
+- `scripts/qa/run-storefront-builder-isolation-gate.ps1` now requires generated projects to directly reference Runtime, Presentation, and Components packages while keeping Client package metadata for Runtime transport compatibility.
+- Focused package/boundary tests passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontBuilder"` passed `79/79` with known MessagePack/Browserslist warnings.
+- Builds passed sequentially for V2 and Starter with `--no-restore`; the first parallel run hit a transient Runtime `obj` file lock and passed when rerun sequentially.
+- `.\scripts\qa\run-storefront-foundation-isolation-gate.ps1`, `.\scripts\qa\run-storefront-starter-isolation-gate.ps1`, and `.\scripts\qa\run-storefront-builder-isolation-gate.ps1` passed. The builder gate needed a fresh generated proof from `.\scripts\generate-storefront-sample.ps1 -Force` because the ignored generated artifact was stale.
+
 ### Exit criteria
 
-- [ ] V2 does not depend on generated Client directly unless a documented V2-only exception remains.
-- [ ] Starter has no direct generated-client source usage.
-- [ ] Independent package proof consumes the same platform surface a generated storefront will consume.
-- [ ] Architecture tests no longer conflict on Starter Presentation reference mode.
+- [x] V2 does not depend on generated Client directly unless a documented V2-only exception remains.
+- [x] Starter has no direct generated-client source usage.
+- [x] Independent package proof consumes the same platform surface a generated storefront will consume.
+- [x] Architecture tests no longer conflict on Starter Presentation reference mode.
 
 ## Phase SPF23 - Dual-host QA Release Gate
 

@@ -7,7 +7,7 @@ Use this workflow when creating or updating a generated storefront from the Stor
 - .NET SDK from `global.json`.
 - PowerShell.
 - Node dependencies installed in `tools/BlazorShop.AI.StorefrontBuilder` when browser QA is required.
-- Current Storefront API client/runtime/presentation packages build successfully.
+- Current Storefront API client/runtime/presentation/components packages build successfully.
 
 Install Node dependencies:
 
@@ -86,7 +86,7 @@ Run isolation:
 
 ## Compatibility Rules
 
-- Generated storefronts use `BlazorShop.Storefront.Client` package contracts for Storefront API transport and DTOs.
+- Generated storefronts use Runtime-backed Presentation contexts and BFF contracts instead of direct generated-client references in visual source.
 - Generated storefronts use `BlazorShop.Storefront.Presentation` for shared App/Routes/page services/BFF/SEO/media composition and provide project-local views/assets/copy.
 - Generated storefronts register project-local views as Presentation view slots; generated files must not declare `@page` routes or add route assemblies.
 - Generated storefronts use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
@@ -99,7 +99,7 @@ Run isolation:
 - Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Do not use Storefront V2 visual markup as the generated/custom storefront presentation source.
 - Do not copy Components `Features` wrappers as generated visual templates or stable presentation contracts.
-- Do not guess API response shapes; use generated package contracts.
+- Do not guess API response shapes; use generated package contracts through Runtime, Presentation BFF contracts, or explicitly documented host-local extensions.
 
 ## Browser QA
 
@@ -124,7 +124,7 @@ Check these points before promoting generated storefront output or committing to
 
 - `BlazorShop.Storefront.Starter` has no store-specific visual output.
 - `BlazorShop.Storefront.Starter` owns neutral visual templates and does not copy Storefront V2 visual components.
-- The generated project references `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` as packages, and uses `BlazorShop.Storefront.Components` only as a package when shared browser-safe UI components are needed.
+- The generated project references `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` as packages, and keeps `BlazorShop.Storefront.Client` version metadata because Runtime owns that generated transport dependency.
 - Browser code uses same-origin BFF routes for protected actions.
 - Generated visual files contain no `@page` route directives.
 - Required analysis artifacts exist.

@@ -14,7 +14,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
 | Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, and isolation-checks the canonical generated proof artifact. |
-| Isolation gate | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Verifies generated storefronts consume Client/Runtime/Presentation as packages and avoid forbidden project references. |
+| Isolation gate | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Verifies generated storefronts consume Runtime/Presentation/Components as packages, keep Client package metadata for Runtime transport compatibility, and avoid forbidden project references. |
 
 Generated storefront artifacts live under ignored output roots:
 
@@ -59,9 +59,10 @@ Generated storefronts must not:
 
 Starter consumer rules:
 
-- Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts. The package is generated from `contracts/storefront/storefront.openapi.json`.
+- In monorepo development, consume `BlazorShop.Storefront.Presentation` through a `ProjectReference`; in independent proof and generated projects, rewrite it to a `PackageReference`.
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use the `BlazorShop.Storefront.Presentation` package for shared App/Routes/page services/BFF/SEO/media composition. Starter/generated projects provide views, assets, copy, feature manifests, and host configuration.
+- Let Runtime own direct `BlazorShop.Storefront.Client` transport and generated DTO package usage. Starter/generator metadata still pins the Client package version because Runtime depends on it, but Starter/generated source should not directly compile against Client types unless a documented low-level transport extension explicitly requires it.
 - Register view slots through `StorefrontFoundationViewSet`; generated visual files must not declare `@page` or register route assemblies.
 - Register Runtime only in the generated server/BFF host. Use `AddStorefrontPlatformRuntime` for the full starter surface, or explicit `AddStorefront{Capability}Runtime` methods when a generated host intentionally supports a smaller surface.
 - Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior and Browser local API primitives when a starter or generated storefront needs that shared component package.
@@ -177,9 +178,9 @@ The static gate checks:
 - CSS token and generated style rules.
 - Composition files.
 - Protected-file guardrails.
-- Generated Client/Runtime/Presentation package references.
+- Generated Runtime/Presentation/Components package references plus Client compatibility metadata.
 
-The isolation gate additionally restores and builds the generated storefront, packs `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components`, and scans the generated project for forbidden references.
+The isolation gate additionally restores and builds the generated storefront, packs `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components`, and scans the generated project for forbidden references. Generated projects reference Runtime, Presentation, and Components directly; Client is packed and pinned as Runtime's generated transport dependency.
 
 Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run it against an already running generated storefront and commit the resulting QA report when behavior changes.
 

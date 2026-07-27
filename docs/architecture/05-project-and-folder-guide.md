@@ -304,8 +304,8 @@ Status:
 Use for:
 
 - Neutral visual templates for Presentation SSR, Hybrid, and WASM-host route shells.
-- Examples of generated `BlazorShop.Storefront.Client` package consumption.
-- Examples of `BlazorShop.Storefront.Presentation` consumption for shared App/Routes/page services/BFF/SEO/media composition.
+- Examples of generated Storefront API consumption through Runtime-backed Presentation contexts instead of direct generated-client use in visual source.
+- Examples of `BlazorShop.Storefront.Presentation` consumption for shared App/Routes/page services/BFF/SEO/media composition; monorepo development may use a ProjectReference, while independent proof and generated storefronts use a PackageReference.
 - Examples of `BlazorShop.Storefront.Runtime` package consumption for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Examples should use `AddStorefrontPlatformRuntime` for simple server/BFF composition or the specific `AddStorefront{Capability}Runtime` methods for intentionally narrow generated hosts.
 - Optional `BlazorShop.Storefront.Components` package consumption for reusable browser-safe UI components; Starter-local neutral components may remain local until shared reuse is needed.

@@ -18,7 +18,7 @@ StorefrontBuilder is development-time tooling. Do not add it as a production ASP
 Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
-- Consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries when they need the full storefront application surface.
+- Consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Runtime owns direct `BlazorShop.Storefront.Client` transport usage; generated projects keep Client package metadata for compatibility.
 - Use Storefront Presentation for shared App/Routes/page services/BFF/SEO/media composition. Generated projects provide views, assets, copy, feature manifests, and host configuration instead of recreating application logic.
 - Register generated visual components as Presentation view slots; generated files must not declare `@page` routes or add route assemblies.
 - Register `BlazorShop.Storefront.Runtime` only in the generated server/BFF host, with `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow hosts. Do not use retired compatibility aliases.

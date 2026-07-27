@@ -99,7 +99,7 @@ dotnet build $projectFile --configuration $Configuration --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
-foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Presentation")) {
+foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
         throw "[SFB-ISOLATION-001] Generated storefront must consume '$package' as a package reference."
     }

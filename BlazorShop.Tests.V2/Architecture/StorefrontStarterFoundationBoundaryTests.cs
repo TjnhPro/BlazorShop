@@ -65,7 +65,7 @@ namespace BlazorShop.Tests.Architecture
 
             foreach (var expected in new[]
             {
-                "Use the `BlazorShop.Storefront.Client` package",
+                "Runtime owns direct `BlazorShop.Storefront.Client` transport usage",
                 "Use the `BlazorShop.Storefront.Runtime` package",
                 "BlazorShop.Storefront.Components",
                 "same-origin BFF endpoints",
@@ -136,7 +136,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StarterProject_ConsumesStorefrontClientAsPackage()
+        public void StarterProject_ConsumesRuntimeComponentsPackagesAndPresentationProjectReference()
         {
             var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
             var versionProps = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StorefrontPackageVersions.props");
@@ -144,8 +144,9 @@ namespace BlazorShop.Tests.Architecture
             var compatibility = ReadRepositoryFile("docs/storefront-platform/storefront-package-compatibility.md");
             var changelog = ReadRepositoryFile("docs/storefront-platform/storefront-client-changelog.md");
 
-            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Client\" Version=\"$(StorefrontClientPackageVersion)\"", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("<PackageReference Include=\"BlazorShop.Storefront.Client\"", project, StringComparison.Ordinal);
             Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Runtime\" Version=\"$(StorefrontRuntimePackageVersion)\"", project, StringComparison.Ordinal);
+            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Components\" Version=\"$(StorefrontComponentsPackageVersion)\"", project, StringComparison.Ordinal);
             Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj""", project, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Client.csproj", project, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Runtime.csproj", project, StringComparison.Ordinal);
@@ -160,12 +161,13 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StarterProject_RestoresAndBuildsFromLocalStorefrontClientPackage()
+        public void StarterProject_RestoresAndBuildsFromLocalStorefrontPackages()
         {
             var repositoryRoot = FindRepositoryRoot();
             var packageFeed = RepositoryPath("artifacts/storefront-packages");
             var packageCache = RepositoryPath("obj/storefront-starter-foundation-boundary/nuget-packages");
             var starterProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
+            var presentationProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj");
             var componentsProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
 
             if (Directory.Exists(packageFeed))
@@ -206,6 +208,19 @@ namespace BlazorShop.Tests.Architecture
                 repositoryRoot);
 
             Assert.True(runtimePackResult.ExitCode == 0, FormatProcessFailure("Storefront runtime package did not pack.", runtimePackResult));
+
+            var presentationPackResult = RunProcess(
+                "dotnet",
+                [
+                    "pack",
+                    presentationProject,
+                    "--output",
+                    packageFeed,
+                    "/p:PackageVersion=1.0.0-local",
+                ],
+                repositoryRoot);
+
+            Assert.True(presentationPackResult.ExitCode == 0, FormatProcessFailure("Storefront presentation package did not pack.", presentationPackResult));
 
             var componentsPackResult = RunProcess(
                 "dotnet",
@@ -602,6 +617,10 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("dotnet pack $clientProject", script, StringComparison.Ordinal);
             Assert.Contains("dotnet pack $runtimeProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet pack $presentationProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet pack $componentsProject", script, StringComparison.Ordinal);
+            Assert.Contains("Rewrite isolated Starter to package mode", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Presentation", script, StringComparison.Ordinal);
             Assert.Contains("obj\\storefront-starter-isolation", script, StringComparison.Ordinal);
             Assert.Contains("Storefront.Sample", script, StringComparison.Ordinal);
             Assert.Contains("dotnet restore $starterProject", script, StringComparison.Ordinal);

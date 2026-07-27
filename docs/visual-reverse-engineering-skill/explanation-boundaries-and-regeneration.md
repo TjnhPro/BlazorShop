@@ -10,7 +10,7 @@ It must stay neutral because every generated storefront needs a stable base. If 
 
 ## Why Generated Storefronts Use Packages
 
-Generated projects consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` as packages so they can prove independence from the monorepo implementation details while reusing the shared storefront application engine.
+Generated projects consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` as packages so they can prove independence from the monorepo implementation details while reusing the shared storefront application engine. `BlazorShop.Storefront.Client` remains the generated transport package, but Runtime owns that direct dependency.
 
 This keeps generated storefronts from depending on:
 
@@ -19,7 +19,7 @@ This keeps generated storefronts from depending on:
 - Commerce Node API implementation classes.
 - Control Plane runtime behavior.
 
-The isolation gate enforces this by packing Client/Runtime/Presentation and scanning the generated storefront for forbidden project references and backend/core/API names. Generated storefronts do not recreate shared App/Routes/page services/BFF/SEO/media logic from scratch.
+The isolation gate enforces this by packing Client/Runtime/Presentation/Components, requiring direct package references to Runtime/Presentation/Components, keeping Client package metadata current, and scanning the generated storefront for forbidden project references and backend/core/API names. Generated storefronts do not recreate shared App/Routes/page services/BFF/SEO/media logic from scratch.
 
 ## Why Browser Commands Stay Same-Origin
 

@@ -2,6 +2,8 @@ param(
     [string]$Configuration = "Release",
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
+    [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
+    [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
     [switch]$Describe
 )
 
@@ -10,6 +12,8 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
+$presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
+$componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
 $starterSource = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter"
 $isolationRoot = Join-Path $repoRoot "obj\storefront-starter-isolation"
 $feedRoot = Join-Path $isolationRoot "feed"
@@ -36,7 +40,10 @@ if ($Describe) {
     Write-Host "Storefront Starter isolation gate"
     Write-Host "- Pack Storefront.Client to local feed"
     Write-Host "- Pack Storefront.Runtime to local feed"
+    Write-Host "- Pack Storefront.Presentation to local feed"
+    Write-Host "- Pack Storefront.Components to local feed"
     Write-Host "- Copy Starter source to obj/storefront-starter-isolation/Storefront.Sample"
+    Write-Host "- Rewrite Starter Presentation ProjectReference to a PackageReference"
     Write-Host "- Restore from local package feed"
     Write-Host "- Build isolated Starter/Sample copy"
     Write-Host "- Publish isolated Starter/Sample copy"
@@ -64,6 +71,23 @@ function Invoke-Step {
     & $Action
 }
 
+function Clear-StorefrontLocalPackageCache {
+    $globalPackageRoot = Join-Path ([Environment]::GetFolderPath("UserProfile")) ".nuget\packages"
+    $packages = @(
+        @{ Id = "blazorshop.storefront.client"; Version = $StorefrontClientPackageVersion },
+        @{ Id = "blazorshop.storefront.runtime"; Version = $StorefrontRuntimePackageVersion },
+        @{ Id = "blazorshop.storefront.presentation"; Version = $StorefrontPresentationPackageVersion },
+        @{ Id = "blazorshop.storefront.components"; Version = $StorefrontComponentsPackageVersion }
+    )
+
+    foreach ($package in $packages) {
+        $versionPath = Join-Path $globalPackageRoot "$($package.Id)\$($package.Version)"
+        if (Test-Path $versionPath) {
+            Remove-Item -LiteralPath $versionPath -Recurse -Force
+        }
+    }
+}
+
 Assert-UnderRepoObj $isolationRoot
 
 Invoke-Step "Clean isolation directory" {
@@ -76,6 +100,10 @@ Invoke-Step "Clean isolation directory" {
     New-Item -ItemType Directory -Force -Path $publishRoot | Out-Null
 }
 
+Invoke-Step "Clear local package cache" {
+    Clear-StorefrontLocalPackageCache
+}
+
 Invoke-Step "Pack Storefront.Client" {
     dotnet pack $clientProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontClientPackageVersion"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -86,12 +114,30 @@ Invoke-Step "Pack Storefront.Runtime" {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+Invoke-Step "Pack Storefront.Presentation" {
+    dotnet pack $presentationProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontPresentationPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+Invoke-Step "Pack Storefront.Components" {
+    dotnet pack $componentsProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontComponentsPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
 Invoke-Step "Copy Starter source into isolated sample directory" {
     Get-ChildItem -LiteralPath $starterSource -Force |
         Where-Object { $_.Name -notin @("bin", "obj") } |
         ForEach-Object {
             Copy-Item -LiteralPath $_.FullName -Destination $sampleRoot -Recurse -Force
         }
+}
+
+Invoke-Step "Rewrite isolated Starter to package mode" {
+    $projectContent = Get-Content -LiteralPath $starterProject -Raw
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Presentation" Version="$(StorefrontPresentationPackageVersion)" />')
+    Set-Content -LiteralPath $starterProject -Value $projectContent -Encoding UTF8
 }
 
 Invoke-Step "Write isolated local feed config" {
@@ -129,7 +175,7 @@ Invoke-Step "Check isolated source has no forbidden monorepo dependencies" {
 }
 
 Invoke-Step "Restore isolated Starter/Sample" {
-    dotnet restore $starterProject
+    dotnet restore $starterProject --no-cache --force-evaluate
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
