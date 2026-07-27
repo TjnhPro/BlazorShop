@@ -13,12 +13,13 @@
 | V2 | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API` | Active | Platform API for auth, users, permissions, nodes, stores, credentials, health, actions, audit, Commerce Node gateway calls, and startup migration for `ControlPlaneDbContext`. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web` | Active | Blazor WASM Control Plane UI. Calls only Control Plane API. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Active | Node-local ecommerce API, admin/control endpoints, scoped Storefront endpoints, task orchestration, deployment support, and startup migration for `CommerceNodeDbContext`. |
-| V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Active | Server-side storefront using Commerce Node Storefront APIs and store key route scope. |
-| V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Active | Reusable Razor components used by Storefront V2 interactive render modes. |
+| V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Active | Server-side production storefront host and visual implementation using Storefront Presentation/Runtime and store key route scope. |
+| V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Active | Browser-safe Storefront contracts, headless behavior, and same-origin browser primitives. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` | Active | Storefront V2 WebAssembly assembly for interactive browser components. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Active | Shared V2 browser storage, cookie storage, auth session, toast, and API helper utilities. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Active | Generated Storefront API transport and contracts from Commerce Node Storefront OpenAPI. No backend/core/API project references. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Active | Neutral Storefront runtime options, generated-client registration, capability, and error primitives shared by V2 and Starter. No backend/core/API project references. |
+| Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation` | Active | Shared Storefront App/Routes/page services/BFF/SEO/media composition and view-slot contracts consumed by V2, Starter, and generated storefronts. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Active | Neutral skeleton source for deterministic generated storefronts. It consumes package-based Storefront contracts and is not copied from Storefront V2. |
 | Tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Active dev-time | Visual reverse engineering, generated storefront creation, regeneration, static validation, and browser QA tooling. |
 | Tests | `BlazorShop.Tests.V2` | Active | V2 architecture, API contract, service, and smoke tests. |
@@ -38,7 +39,7 @@ Active V2 presentation projects reference shared core projects:
 - `BlazorShop.ControlPlane.API` references `Application`, `Infrastructure`, and `ServiceDefaults`.
 - `BlazorShop.CommerceNode.API` references `Application`, `Infrastructure`, and `ServiceDefaults`.
 - `BlazorShop.ControlPlane.Web` references `Application` and `Web.SharedV2`.
-- `BlazorShop.Storefront.V2` references `ServiceDefaults`, `Storefront.Client`, `Storefront.Components`, and `Storefront.V2.WASM`; it must not reference `Application`, `Domain`, `Infrastructure`, Commerce Node API, Control Plane API projects, or `Web.SharedV2`.
+- `BlazorShop.Storefront.V2` references `ServiceDefaults`, `Storefront.Presentation`, `Storefront.Runtime`, `Storefront.Components`, and `Storefront.V2.WASM`; it must not reference `Storefront.Client` directly, `Application`, `Domain`, `Infrastructure`, Commerce Node API, Control Plane API projects, or `Web.SharedV2`.
 - `BlazorShop.Storefront.V2.WASM` references `Storefront.Components`.
 - `BlazorShop.Storefront.Components` is a Razor component library with no BlazorShop project references.
 - `BlazorShop.Web.SharedV2` has no project references.
@@ -48,14 +49,18 @@ Headless Storefront target flow:
 ```text
 Public SSR:
   BlazorShop.Storefront.V2
-    -> generated Storefront client
-        -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
+    -> BlazorShop.Storefront.Presentation
+        -> BlazorShop.Storefront.Runtime
+            -> BlazorShop.Storefront.Client
+                -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
 
 Protected browser/WASM:
   BlazorShop.Storefront.V2.WASM / browser components
     -> same-origin BlazorShop.Storefront.V2 /api/*
-        -> generated Storefront client
-            -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
+        -> BlazorShop.Storefront.Presentation
+            -> BlazorShop.Storefront.Runtime
+                -> BlazorShop.Storefront.Client
+                    -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
 ```
 
 Target dependency rules:
@@ -63,8 +68,8 @@ Target dependency rules:
 - `BlazorShop.CommerceNode.API` is the headless ecommerce backend and Storefront API platform.
 - `BlazorShop.Storefront.V2` is the first real storefront consumer, not the neutral Starter.
 - `BlazorShop.Storefront.V2` owns Storefront-specific browser helpers locally and does not reference `Web.SharedV2`.
-- Generated storefronts consume Storefront OpenAPI/client contracts instead of copying Storefront V2 internals.
-- `BlazorShop.Storefront.Starter` is the neutral skeleton source for generated storefronts and must use the generated Storefront client package boundary.
+- Generated storefronts consume Storefront Runtime/Presentation/Components packages instead of copying Storefront V2 internals. Runtime owns direct generated Client transport usage.
+- `BlazorShop.Storefront.Starter` is the neutral skeleton source for generated storefronts and must use Runtime-backed Presentation contexts instead of direct generated-client source usage.
 - Generated storefront proof projects are disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}`, not active solution projects or platform contract owners.
 - `tools/BlazorShop.AI.StorefrontBuilder` is development-time tooling only and must not become a production runtime dependency.
 

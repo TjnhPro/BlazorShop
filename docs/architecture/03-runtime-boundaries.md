@@ -95,7 +95,7 @@ Responsibilities:
 
 Caller:
 
-- `BlazorShop.Storefront.V2`
+- Storefront Presentation/Runtime inside `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, and generated storefront hosts.
 
 Security:
 
@@ -195,15 +195,17 @@ Required generated storefront shape:
 ```text
 BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
   -> BlazorShop.Storefront.Presentation package
-  -> BlazorShop.Storefront.Client package
   -> BlazorShop.Storefront.Runtime package
-      -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
+      -> BlazorShop.Storefront.Client package
+          -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
+  -> BlazorShop.Storefront.Components package
 ```
 
 Rules:
 
 - Generated storefronts must not reference `BlazorShop.Storefront.V2`.
 - Generated storefronts that need full storefront routes/BFF/SEO/media composition must consume `BlazorShop.Storefront.Presentation` through a package boundary and provide project-local registered views/assets/copy.
+- Generated storefronts consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` directly. `BlazorShop.Storefront.Client` remains Runtime's generated transport dependency and is pinned in package metadata for compatibility.
 - Generated storefronts must not reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Browser code in generated storefronts must not call Commerce Node admin/control, Control Plane, or removed `api/internal/*` routes directly.
 - `BlazorShop.Storefront.Starter` is a neutral template input. Store-specific generated CSS, assets, pages, and analysis artifacts belong in the generated storefront project only.

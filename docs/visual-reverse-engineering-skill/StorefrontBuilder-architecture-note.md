@@ -41,7 +41,7 @@ The MVP does not change API contracts, Runtime security primitives, BFF security
 
 ## Consequence
 
-Generated storefronts consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries, keep browser commands behind same-origin Presentation BFF endpoints, and treat Commerce Node as the owner of ecommerce business truth.
+Generated storefronts consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` through package boundaries, keep `BlazorShop.Storefront.Client` metadata current for Runtime transport compatibility, keep browser commands behind same-origin Presentation BFF endpoints, and treat Commerce Node as the owner of ecommerce business truth.
 
 ## Current Proof
 

@@ -2,7 +2,7 @@
 
 ## Scope
 
-QA nay theo doi `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
+This QA checklist tracks `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
 
 Muc tieu hien tai:
 
@@ -783,6 +783,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront Presentation Cutover SPF21 Starter second-consumer hardening passed. 2026-07-27: Starter home now renders store identity, currency, product summaries, and feature capability visibility from `StorefrontHomePageContext`; Starter visual pages have required Presentation context parameters and no generated client/runtime facade data fetches. Source scan found no `StorefrontBootstrapService`, generated client interface injection, `Storefront.Client` source usage, or `OnInitializedAsync` in Starter source. Starter build passed, cutover/Starter guardrails passed, and `StorefrontStarterHostSmokeTests` proved `/`, `/product/{slug}`, `/category/{slug}`, `/search?q=...`, `/my-cart`, `/checkout`, `/account`, `/robots.txt`, and `/sitemap.xml` from `WebApplicationFactory<BlazorShop.Storefront.Starter.Program>`.
 - [x] Storefront Presentation Cutover SPF22 dependency/package cleanup passed. 2026-07-27: Storefront V2 no longer has a direct `Storefront.Client` project reference, Starter no longer has a direct `Storefront.Client` PackageReference or source usage, and Starter/generated package proof uses Runtime/Presentation/Components directly while Client stays packed/pinned as Runtime's generated transport dependency.
 - [x] Storefront Presentation Cutover SPF23 dual-host QA release gate passed. 2026-07-27: post-fix build/test/isolation gates passed; browser release QA caught and fixed the V2 Runtime generated-client double-prefix base-address regression, then registration policy and COD order/email E2E passed with no forbidden Commerce Node browser calls, no 5xx responses, Mailpit exactly-one order email proof, and account order list/detail/receipt coverage.
+- [x] Storefront Presentation Cutover SPF24 documentation/checklist closure passed. 2026-07-27: current architecture, agent, StorefrontBuilder, visual reverse engineering, and QA docs now describe Presentation-owned route/page/BFF/SEO/media composition, Runtime-owned generated Client transport, V2/Starter/generated visual-only host ownership, no host `@page` route pages, no host visual head ownership, and Runtime/Presentation/Components package consumption with Client pinned as Runtime metadata. Closure scans found no current-source violations, and the focused cutover/contract/package/page/starter/builder guardrail slice passed `152/152`.
 
 ## V2 Production Readiness Release Gate
 

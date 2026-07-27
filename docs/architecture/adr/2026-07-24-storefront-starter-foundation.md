@@ -41,7 +41,7 @@ Future deterministic scaffolding and AI-assisted storefront generation must trea
 
 Starter and generated storefront projects must not reference `BlazorShop.Storefront.V2`, `BlazorShop.Domain`, `BlazorShop.Application`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.ControlPlane.Web`.
 
-Starter must consume `BlazorShop.Storefront.Client` through `PackageReference` in the independent proof. A monorepo development project may exist, but the release gate must prove that an external project restores and builds from local/private packages.
+At foundation time, Starter consumed `BlazorShop.Storefront.Client` through `PackageReference` in the independent proof. The 2026-07-27 Presentation cutover superseded that direct edge: Starter now consumes Runtime/Presentation/Components directly, Runtime owns `BlazorShop.Storefront.Client`, and the release gate still packs/pins Client because Runtime depends on it. A monorepo development project may exist, but the release gate must prove that an external project restores and builds from local/private packages.
 
 Starter source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` and must not copy the manual `StorefrontApiClient` transport from Storefront V2. Generated client contracts are the default contract source. Manual HTTP exceptions require an exception registry entry with reason, owner, test, and revisit trigger.
 

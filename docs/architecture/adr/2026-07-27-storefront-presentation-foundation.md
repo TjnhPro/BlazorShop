@@ -13,7 +13,7 @@ Storefront V2 had become the canonical storefront and gradually accumulated App/
 - Presentation owns App/Routes, route shells, page services, same-origin BFF/local endpoints, SEO/discovery, media composition, and view-slot contracts.
 - Storefront V2, Starter, and generated storefronts consume Presentation and provide host configuration, view registrations, visual templates, assets, copy, and store-specific output.
 - Hosts call `UseStorefrontPresentation()` and `MapStorefrontPresentation()` instead of mapping individual route/BFF/SEO endpoint groups.
-- Generated StorefrontBuilder projects consume `BlazorShop.Storefront.Presentation` through a package boundary alongside Client and Runtime when they need the full storefront application surface.
+- Generated StorefrontBuilder projects consume `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Client remains Runtime's generated transport dependency and is pinned in generated package metadata.
 
 ## Boundaries
 
@@ -28,4 +28,4 @@ Generated storefronts must not recreate Presentation-owned App/Routes/page servi
 - Fixes to shared route, BFF, SEO, media, or page-service behavior benefit Storefront V2, Starter, and generated storefronts.
 - Storefront V2 becomes the active production host/visual implementation, not the owner of shared application composition.
 - Starter becomes the neutral second consumer rather than a parallel route/BFF/SEO implementation.
-- StorefrontBuilder isolation gates must pack and verify Client, Runtime, Presentation, and Components package boundaries.
+- StorefrontBuilder isolation gates must pack Client, Runtime, Presentation, and Components; generated projects directly reference Runtime, Presentation, and Components while Client is verified as Runtime's generated transport dependency.

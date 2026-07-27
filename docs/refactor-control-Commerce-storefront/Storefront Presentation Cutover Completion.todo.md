@@ -764,109 +764,119 @@ Goal: make architecture docs and QA checklists match the final code shape.
 
 ### Tasks
 
-- [ ] Update `AGENTS.md` if any boundary wording changes.
-- [ ] Update `docs/architecture/03-runtime-boundaries.md`:
-  - [ ] Presentation owns route/page/BFF/SEO/media application graph.
-  - [ ] Runtime remains server/BFF-only generated client integration.
-  - [ ] V2 owns host config/views/assets/copy.
-  - [ ] Starter/generated own host config/views/assets/copy.
-  - [ ] route ownership is Presentation-only.
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md`:
-  - [ ] exact final dependency shape.
-  - [ ] no route pages in V2/Starter/generated.
-  - [ ] no visual head/status ownership in hosts.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md`:
-  - [ ] Presentation local endpoint contracts.
-  - [ ] Runtime facade contract usage.
-  - [ ] no generated client direct use in host views.
-- [ ] Update `docs/architecture/11-storefront-builder.md`:
-  - [ ] generated storefronts register view slots.
-  - [ ] generated storefronts do not generate route/BFF/SEO logic.
-  - [ ] package proof includes Presentation.
-- [ ] Update `docs/visual-reverse-engineering-skill/*`:
-  - [ ] generated project route rules.
-  - [ ] visual-only view ownership.
-  - [ ] protected files/areas.
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
-  - [ ] route ownership checks.
-  - [ ] V2 browser e2e checks.
-  - [ ] no direct Commerce Node browser call.
-  - [ ] no visual `HeadContent`.
-- [ ] Add or update a QA checklist for Starter if needed:
-  - [ ] DI validation.
-  - [ ] HTTP route smoke.
-  - [ ] package proof.
-- [ ] Add completion notes to this file with command output summary.
+- [x] Update `AGENTS.md` if any boundary wording changes.
+- [x] Update `docs/architecture/03-runtime-boundaries.md`:
+  - [x] Presentation owns route/page/BFF/SEO/media application graph.
+  - [x] Runtime remains server/BFF-only generated client integration.
+  - [x] V2 owns host config/views/assets/copy.
+  - [x] Starter/generated own host config/views/assets/copy.
+  - [x] route ownership is Presentation-only.
+- [x] Update `docs/architecture/05-project-and-folder-guide.md`:
+  - [x] exact final dependency shape.
+  - [x] no route pages in V2/Starter/generated.
+  - [x] no visual head/status ownership in hosts.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md`:
+  - [x] Presentation local endpoint contracts.
+  - [x] Runtime facade contract usage.
+  - [x] no generated client direct use in host views.
+- [x] Update `docs/architecture/11-storefront-builder.md`:
+  - [x] generated storefronts register view slots.
+  - [x] generated storefronts do not generate route/BFF/SEO logic.
+  - [x] package proof includes Presentation.
+- [x] Update `docs/visual-reverse-engineering-skill/*`:
+  - [x] generated project route rules.
+  - [x] visual-only view ownership.
+  - [x] protected files/areas.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
+  - [x] route ownership checks.
+  - [x] V2 browser e2e checks.
+  - [x] no direct Commerce Node browser call.
+  - [x] no visual `HeadContent`.
+- [x] Add or update a QA checklist for Starter if needed:
+  - [x] DI validation.
+  - [x] HTTP route smoke.
+  - [x] package proof.
+- [x] Add completion notes to this file with command output summary.
 
 ### Verification
 
 ```powershell
-rg -n "V2 owns route|Starter owns route|AddStorefrontPresentationRoutes|AdditionalAssemblies|StorefrontBootstrapService|manual StorefrontApiClient transport from Storefront V2" AGENTS.md docs BlazorShop.PresentationV2 -g "*.md" -g "*.cs" -g "*.razor" -g "!bin" -g "!obj"
-dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~Architecture|FullyQualifiedName~Storefront"
+rg -n "V2 owns route|Starter owns route|AddStorefrontPresentationRoutes|manual StorefrontApiClient transport from Storefront V2" AGENTS.md docs\architecture docs\visual-reverse-engineering-skill docs\agents BlazorShop.PresentationV2 -g "*.md" -g "*.cs" -g "*.razor" -g "!bin" -g "!obj"
+rg -n "^@page" BlazorShop.PresentationV2\BlazorShop.Storefront.V2 BlazorShop.PresentationV2\BlazorShop.Storefront.Starter BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM artifacts\storefront-builder\generated\BlazorShop.Storefront.GeneratedProof -g "*.razor"
+rg -n -F "BlazorShop.Storefront.Client" BlazorShop.PresentationV2\BlazorShop.Storefront.V2 BlazorShop.PresentationV2\BlazorShop.Storefront.Starter -g "*.csproj" -g "*.cs" -g "*.razor"
+rg -n "PageTitle|HeadContent|StorefrontSeoHead" BlazorShop.PresentationV2\BlazorShop.Storefront.V2 BlazorShop.PresentationV2\BlazorShop.Storefront.Starter BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM -g "*.razor"
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontContractOwnership|FullyQualifiedName~StorefrontSharedPlatformPackageContract|FullyQualifiedName~StorefrontPresentationFoundationBoundary|FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontIndependence|FullyQualifiedName~StorefrontStarterFoundationBoundary|FullyQualifiedName~StorefrontBuilder|FullyQualifiedName~StorefrontPresentationCutover"
 ```
+
+2026-07-27 evidence:
+
+- Updated current source-of-truth docs: `AGENTS.md`, `docs/architecture/01-system-map.md`, `03-runtime-boundaries.md`, `05-project-and-folder-guide.md`, `10-v2-contract-ownership.md`, `11-storefront-builder.md`, Presentation/Starter ADR notes, `QA-StorefrontV2.todo.md`, and visual reverse engineering docs now describe the final Runtime/Presentation/Components package surface and Runtime-owned Client transport.
+- Added `docs/refactor-control-Commerce-storefront/QA-StorefrontStarter.todo.md` for Starter DI, HTTP smoke, route/head ownership, and package-proof checks.
+- Current-doc/source scans returned no matches for old V2/Starter route ownership, removed route assembly APIs, host route pages, host visual head components, or direct V2/Starter Client source usage.
+- The broad `FullyQualifiedName~Architecture|FullyQualifiedName~Storefront` command exceeded the 15-minute command timeout, so closure verification was split into the focused cutover/contract/package/page/starter/builder guardrail slice above. That focused slice passed `152/152`.
 
 ### Exit criteria
 
-- [ ] Current docs no longer conflict with final code.
-- [ ] Historical plans remain historical and are not treated as current truth when conflicting.
-- [ ] QA checklist can be used as a production release gate.
+- [x] Current docs no longer conflict with final code.
+- [x] Historical plans remain historical and are not treated as current truth when conflicting.
+- [x] QA checklist can be used as a production release gate.
 
 ## Final Definition Of Done
 
 ### Ownership
 
-- [ ] Presentation owns all route shells, page-state orchestration, page services, BFF/local endpoint mappings, route SEO/head/status, sitemap, robots, and media endpoint composition.
-- [ ] Runtime owns generated client registration, typed generated-client facades, error mapping, and server/BFF integration primitives.
-- [ ] V2 owns host config, host pipeline, static assets, view registration, visual templates, layout, copy, and V2 WASM component placement.
-- [ ] Starter owns neutral host config, view registration, visual templates, layout, copy, and starter feature placement metadata.
-- [ ] Generated storefronts own generated/custom host config, views, assets, copy, and visual output only.
+- [x] Presentation owns all route shells, page-state orchestration, page services, BFF/local endpoint mappings, route SEO/head/status, sitemap, robots, and media endpoint composition.
+- [x] Runtime owns generated client registration, typed generated-client facades, error mapping, and server/BFF integration primitives.
+- [x] V2 owns host config, host pipeline, static assets, view registration, visual templates, layout, copy, and V2 WASM component placement.
+- [x] Starter owns neutral host config, view registration, visual templates, layout, copy, and starter feature placement metadata.
+- [x] Generated storefronts own generated/custom host config, views, assets, copy, and visual output only.
 
 ### Dependencies
 
-- [ ] Presentation references Runtime and Components only.
-- [ ] Runtime references Client only.
-- [ ] Components references no Presentation/Runtime/Client/V2/backend projects and contains no Razor visual wrappers.
-- [ ] V2 does not reference Client directly unless a documented temporary exception remains.
-- [ ] Starter source does not use generated Client directly after Bootstrap removal.
-- [ ] V2.WASM does not reference Presentation, Runtime, or Client.
-- [ ] Generated storefronts do not reference V2, backend/core/API projects, or `Web.SharedV2`.
+- [x] Presentation references Runtime and Components only.
+- [x] Runtime references Client only.
+- [x] Components references no Presentation/Runtime/Client/V2/backend projects and contains no Razor visual wrappers.
+- [x] V2 does not reference Client directly unless a documented temporary exception remains.
+- [x] Starter source does not use generated Client directly after Bootstrap removal.
+- [x] V2.WASM does not reference Presentation, Runtime, or Client.
+- [x] Generated storefronts do not reference V2, backend/core/API projects, or `Web.SharedV2`.
 
 ### Routing and SEO
 
-- [ ] Only Presentation route pages contain `@page`.
-- [ ] Host visual views contain no `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or route status/header calls.
-- [ ] `StorefrontPage` handles all page states intentionally.
-- [ ] Private/application routes remain noindex/nofollow.
-- [ ] Product/category/content/home routes keep canonical SEO.
-- [ ] Maintenance/service unavailable routes keep 503 and noindex behavior where appropriate.
+- [x] Only Presentation route pages contain `@page`.
+- [x] Host visual views contain no `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or route status/header calls.
+- [x] `StorefrontPage` handles all page states intentionally.
+- [x] Private/application routes remain noindex/nofollow.
+- [x] Product/category/content/home routes keep canonical SEO.
+- [x] Maintenance/service unavailable routes keep 503 and noindex behavior where appropriate.
 
 ### Consumer proof
 
-- [ ] V2 and Starter both use the same Presentation App/Routes/page services/BFF/SEO/media pipeline.
-- [ ] Fixing route or BFF behavior in Presentation benefits both consumers.
-- [ ] Starter home/catalog/product/search/cart/checkout/account routes run without direct Starter data loading.
-- [ ] Generated proof consumes package boundaries and passes isolation gate.
+- [x] V2 and Starter both use the same Presentation App/Routes/page services/BFF/SEO/media pipeline.
+- [x] Fixing route or BFF behavior in Presentation benefits both consumers.
+- [x] Starter home/catalog/product/search/cart/checkout/account routes run without direct Starter data loading.
+- [x] Generated proof consumes package boundaries and passes isolation gate.
 
 ### QA
 
-- [ ] Focused build commands pass.
-- [ ] Architecture and boundary tests pass.
-- [ ] V2 host smoke tests pass or are updated to current Presentation behavior.
-- [ ] Starter host smoke tests pass.
-- [ ] StorefrontBuilder package/isolation gates pass.
-- [ ] Playwright release flows pass, including COD real order placement.
-- [ ] Browser network audit confirms no direct Commerce Node calls.
+- [x] Focused build commands pass.
+- [x] Architecture and boundary tests pass.
+- [x] V2 host smoke tests pass or are updated to current Presentation behavior.
+- [x] Starter host smoke tests pass.
+- [x] StorefrontBuilder package/isolation gates pass.
+- [x] Playwright release flows pass, including COD real order placement.
+- [x] Browser network audit confirms no direct Commerce Node calls.
 
 ## Risk Controls
 
-- [ ] Move adapters capability by capability; do not move all runtime mapping in one untested pass.
-- [ ] Keep Runtime facade behavior unchanged while moving ownership.
-- [ ] Add characterization tests before deleting V2 adapter files.
-- [ ] Do not move visual markup/copy into Presentation to simplify tests.
-- [ ] Do not let Starter call generated clients from views as a shortcut.
-- [ ] Do not remove V2 `Storefront.Client` reference until `rg` proves no source usage remains.
-- [ ] Do not remove route assembly support until all hosts prove visual slot rendering still works.
-- [ ] Keep browser Playwright QA after structural refactor because build tests will not catch hydration/BFF regressions.
+- [x] Move adapters capability by capability; do not move all runtime mapping in one untested pass.
+- [x] Keep Runtime facade behavior unchanged while moving ownership.
+- [x] Add characterization tests before deleting V2 adapter files.
+- [x] Do not move visual markup/copy into Presentation to simplify tests.
+- [x] Do not let Starter call generated clients from views as a shortcut.
+- [x] Do not remove V2 `Storefront.Client` reference until `rg` proves no source usage remains.
+- [x] Do not remove route assembly support until all hosts prove visual slot rendering still works.
+- [x] Keep browser Playwright QA after structural refactor because build tests will not catch hydration/BFF regressions.
 
 ## Decision Audit Trail
 

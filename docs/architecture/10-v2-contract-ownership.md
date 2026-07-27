@@ -50,7 +50,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Payment attempts/methods.
 - SEO, sitemap, pages, catalog, and rendering helpers.
 
-`BlazorShop.PresentationV2/BlazorShop.Storefront.Client` is the generated Storefront HTTP client package. It is generated from the canonical committed Storefront contract at `contracts/storefront/storefront.openapi.json`, not from test snapshots, and must not reference backend/core/API projects or `Storefront.V2`. Test snapshots remain breaking-change guardrails only. Storefront V2 migration should consume this generated client instead of adding handwritten API DTO clones.
+`BlazorShop.PresentationV2/BlazorShop.Storefront.Client` is the generated Storefront HTTP client package. It is generated from the canonical committed Storefront contract at `contracts/storefront/storefront.openapi.json`, not from test snapshots, and must not reference backend/core/API projects or `Storefront.V2`. Test snapshots remain breaking-change guardrails only. Storefront V2 should consume this generated client through Runtime/Presentation instead of adding handwritten API DTO clones or direct host-view usage.
 
 Generated StorefrontBuilder projects are not contract owners. They are disposable artifacts under ignored generated output roots, consume Storefront Runtime/Presentation/Components packages, hold generated visual output, and keep review artifacts under their local `docs/storefront-analysis/`. Client remains the generated API transport package owned by Runtime.
 
