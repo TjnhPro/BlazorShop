@@ -6,6 +6,8 @@ Purpose: close the remaining Storefront Presentation foundation gaps before trea
 
 This plan follows `Storefront Presentation Foundation.todo.md` but does not edit its historical SPF0-SPF15 evidence. The earlier plan records work that was completed at the time; this file records the follow-up blockers found after repo review.
 
+Prerequisite cleanup: `Storefront V2 Manual Client Retirement.todo.md` tracks the F1.25 removal of the remaining V2 handwritten Storefront API client before this cutover can be closed.
+
 ## Current Verified Context
 
 - [x] `BlazorShop.Storefront.Presentation` exists and owns shared App/Routes, route shells, page services, BFF/local endpoints, SEO/discovery, media composition, and view-slot contracts.

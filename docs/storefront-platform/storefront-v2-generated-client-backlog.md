@@ -1,12 +1,12 @@
 # Storefront V2 Generated Client Migration Backlog
 
-Storefront V2 is already compile-time decoupled from backend/core projects. The remaining handwritten transport is Track B and does not block Starter unless it reveals a Storefront API contract gap.
+Storefront V2 is compile-time decoupled from backend/core projects and no longer contains handwritten Commerce Node Storefront API transport. Any remaining generated-client work belongs in `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Runtime`, or `BlazorShop.Storefront.Client`; do not add a V2 manual client replacement.
 
 | Capability | Current state | Required before Sample QA | Notes |
 | --- | --- | --- | --- |
-| address | manual `StorefrontApiClient` path | no | Generated address clients exist; migrate when account/checkout address flows are next edited. |
-| cart | manual `StorefrontApiClient` path | no | Starter BFF tracer already uses generated cart client; V2 migration remains behavior-sensitive because cart-token handling is host-owned. |
-| checkout | manual `StorefrontApiClient` path | no | Keep checkout state/order placement backend-authoritative; migrate only with focused COD/browser QA. |
-| consent | manual `StorefrontApiClient` path | no | Consent visitor cookie remains server-owned. |
-| customer/account | manual auth/account transports | no | Auth remains the most likely exception because refresh-cookie behavior needs header/cookie handling. |
-| payment | manual payment/result path | no | Provider callbacks stay excluded from frontend client; result reads may migrate separately. |
+| address | retired V2 manual path | no | Address lookup uses Runtime/Presentation generated path; account address book uses same-origin Presentation BFF endpoints. |
+| cart | retired V2 manual path | no | Browser mutations stay same-origin `/api/cart/*`; Runtime cart facade owns Commerce Node calls and cart-token behavior. |
+| checkout | retired V2 manual path | no | Checkout state/order placement stays backend-authoritative through Runtime checkout/payment facades and Presentation BFF endpoints. |
+| consent | retired V2 manual path | no | Consent visitor cookie remains server-owned through Presentation consent endpoints and generated consent adapter. |
+| customer/account | retired V2 manual path | no | Auth/session/customer defaults live in Presentation; generated customer/order adapters create authorized generated clients per bearer token. |
+| payment | retired V2 manual path | no | Payment methods and attempts use Runtime/Presentation generated path; provider callbacks stay excluded from frontend clients. |

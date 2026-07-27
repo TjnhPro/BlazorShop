@@ -74,11 +74,11 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] API client auth calls Commerce Node scoped Storefront auth routes. 2026-07-14: client tests assert scoped login/register/logout routes.
 - [x] API client parses scoped auth token response without nested auth envelope. 2026-07-14: `StorefrontAuthClient` consumes `data.accessToken` / `data.expiresAtUtc`; auth client tests were updated.
 - [x] Storefront HTTP clients do not send `X-Store-Key` on scoped API requests. 2026-07-14: `ConfigureStorefrontHttpClient` now sets scoped base address and no default store header; `/` runtime log showed scoped CommerceNode URLs.
-- [x] API client can request consolidated public store configuration from `api/storefront/stores/{storeKey}/configuration`. 2026-07-15: `StorefrontV2ApiClientTests.GetPublicConfigurationAsync_ReadsStoreScopedConfiguration` passed and asserted the scoped path.
+- [x] Generated/Runtime path can request consolidated public store configuration from `api/storefront/stores/{storeKey}/configuration`. Historical note: 2026-07-15 manual V2 client tests first asserted the scoped path; 2026-07-27 F1.25 retired that manual client.
 - [x] API client models can read safe public payment metadata from consolidated configuration. 2026-07-15: `StorefrontPublicPaymentMethod` now includes short display text, icon URL, supported currencies, and supported countries; Storefront V2 build passed.
-- [x] API client can post product selection preview to `api/storefront/stores/{storeKey}/catalog/products/{productId}/selection-preview`. 2026-07-16 Phase 4: `StorefrontApiClient.PreviewProductSelectionAsync` added; CommerceNode controller/OpenAPI focused run passed 32/32.
-- [x] API client does not call legacy fallback when `Api:EnableLegacyFallback=false`.
-- [x] API client can use legacy fallback only when explicitly enabled.
+- [x] Generated/Runtime path can post product selection preview to `api/storefront/stores/{storeKey}/catalog/products/{productId}/selection-preview`. Historical note: 2026-07-16 Phase 4 added the first V2 client coverage; 2026-07-27 F1.25 retired the V2 manual client source.
+- [x] Storefront V2 has no legacy fallback option or legacy fallback route constants. 2026-07-27 F1.25 source gate: no `StorefrontApiClient`, `EnableLegacyFallback`, `LegacyCatalogBaseRoute`, or `LegacySeoSettingsRoute` in V2 source.
+- [x] Browser network assertions require same-origin Storefront BFF/static/media calls only; browser must not call Commerce Node `api/storefront/stores/{storeKey}/*` directly.
 - [x] Checkout anonymous redirect is covered by V2 host smoke test.
 - [x] Robots route is covered by V2 host smoke test.
 - [x] Sitemap route is covered by V2 host smoke test.
@@ -362,7 +362,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 
 ## Catalog Search MVP
 
-Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`, catalog query model, or CommerceNode published catalog search changes.
+Use this checklist whenever `StorefrontHeader`, `/search`, catalog query model, generated catalog adapter, Runtime catalog facade, or CommerceNode published catalog search changes.
 
 - [x] StorefrontV2 builds after adding header search and `/search`. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
 - [x] Focused StorefrontV2 tests pass after adding catalog search. 2026-07-10: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationV2.Storefront"` passed 23/23.
@@ -408,7 +408,7 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 - [x] Quantity update works.
 - [x] Remove item works.
 - [x] Clear cart works.
-- [x] Cart refreshes product details from `api/storefront/stores/{storeKey}/catalog/products/{id}`. 2026-07-14: `StorefrontApiClient` route switched to scoped catalog base.
+- [x] Cart refreshes product details from `api/storefront/stores/{storeKey}/catalog/products/{id}` through the Runtime/Presentation generated path. Historical note: 2026-07-14 manual V2 client route first switched to scoped catalog base; 2026-07-27 F1.25 retired that client.
 - [x] Invalid cart cookie does not crash page.
 - [~] Unavailable product in cart shows warning state. Code path exists in `CartPage` for missing catalog products; live QA used available seeded products only.
 - [x] Cart route stays private/noindex.
@@ -751,8 +751,8 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] CommerceNode Storefront API exposes anonymous country/state/config lookup endpoints for future checkout UI consumption. 2026-07-17 Phase 3: Storefront OpenAPI snapshots include `StorefrontAddress_ListCountries`, `StorefrontAddress_ListStates`, and `StorefrontAddress_GetConfiguration`.
 - [x] CommerceNode Storefront API exposes protected customer address book endpoints for future Storefront V2 account/checkout consumption. 2026-07-17 Phase 4: OpenAPI snapshots include list/create/update/delete/default address operations with Bearer security.
 - [x] CommerceNode checkout preview contract supports saved address IDs while preserving direct address entry. 2026-07-17 Phase 5: Storefront OpenAPI contract tests cover additive saved-address fields; Storefront V2 UI consumption remains Phase 6.
-- [x] Storefront V2 API client consumes address lookup/config and protected customer address-book endpoints. 2026-07-17 Phase 6: `StorefrontV2ApiClientTests` covers country/state/config lookup and Bearer customer address list route.
-- [x] Storefront V2 checkout UI renders API-backed country choices, state choices for the selected/default country, saved-address selector for authenticated customers, and manual-entry fallback. 2026-07-17 Phase 6: `StorefrontBrandingMarkupTests.CheckoutPage_RendersAddressLookupAndSavedAddressSelection` passed.
+- [x] Storefront V2 consumes address lookup/config and protected customer address-book endpoints through Runtime/Presentation generated paths. Historical note: 2026-07-17 Phase 6 used `StorefrontV2ApiClientTests`; 2026-07-27 F1.25 retired that manual client test file.
+- [x] Storefront V2 checkout UI renders API-backed country choices, state choices for the selected/default country, and manual-entry fallback. 2026-07-27 F1.25: `StorefrontBrandingMarkupTests.CheckoutPage_RendersAddressLookupThroughRuntimeFacade` asserts Runtime address facade usage after retiring the manual route file.
 - [x] Storefront V2 checkout host smoke remains green after address UI integration. 2026-07-17 Phase 6: `StorefrontV2HostSmokeTests` passed 34/34.
 - [x] Storefront V2 consumes address field configuration through the public Storefront API rather than embedding address requirements in Razor. 2026-07-17 Phase 7: configuration contract/static tests passed.
 - [x] Address Core Storefront release gate passed. 2026-07-17 Phase 8: focused Storefront client/static/host and backend contract release gate passed inside 134/134 run.
@@ -761,6 +761,8 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 ## V2 Architecture Boundary Hardening
 
 - [x] Storefront local endpoint mappings do not inject concrete `StorefrontApiClient`; they use feature interfaces/local support helpers instead. 2026-07-19 Phase 9: `StorefrontEndpointMappings_DoNotInjectConcreteApiClient` guards the endpoint folder.
+- [x] Storefront V2 source contains no manual Storefront API transport. 2026-07-27 F1.25: `StorefrontManualClientRetirementGuardrailTests` and source gate forbid `StorefrontApiClient`, `EnableLegacyFallback`, `LegacyCatalogBaseRoute`, and `LegacySeoSettingsRoute`.
+- [x] Storefront V2 browser/network regression must prove browser calls stay same-origin and do not call Commerce Node Storefront APIs directly. 2026-07-27 F1.25: network audit requirement added for cart/account/checkout/order COD flows.
 - [x] Storefront browser/network release checklist continues to reject direct calls to Commerce Admin, Control Plane, legacy API/Web, and `api/internal/*`. 2026-07-19 Phase 9: existing `Storefront Playwright E2E Release.todo.md` keeps `RUN-010` and per-route network evidence requirements; no browser route behavior changed in this phase.
 - [x] Storefront V2 host smoke is included in the active V2 test project and serialized to avoid WebApplicationFactory races. 2026-07-19 Phase 8/9: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed 439/439 including `StorefrontV2HostSmokeTests`.
 - [x] Storefront public schemas and shared model migration exceptions remain explicitly guarded. 2026-07-19 Phase 9: `WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration` freezes the remaining shared business-model folders until generated-client migration removes them.

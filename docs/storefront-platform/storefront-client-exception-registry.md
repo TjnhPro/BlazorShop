@@ -10,7 +10,7 @@
 
 | Capability | Exception | Reason | Owner | Test | Revisit trigger |
 | --- | --- | --- | --- | --- | --- |
-| none | none | SPF17 moved Presentation contract adapters and default auth/session/customer support to `BlazorShop.Storefront.Presentation`; V2 no longer binds `StorefrontApiClient` to Presentation contracts. | Storefront Platform | `StorefrontPresentationCutoverGuardrailTests.StorefrontPresentation_DIGraph_IsHostIndependent` | A V2-specific override for a Presentation contract is proposed. |
+| none | none | SPF17 moved Presentation contract adapters and default auth/session/customer support to `BlazorShop.Storefront.Presentation`; F1.25 removed the remaining V2 manual transport source and source gates now forbid `StorefrontApiClient`. | Storefront Platform | `StorefrontPresentationCutoverGuardrailTests.StorefrontPresentation_DIGraph_IsHostIndependent`; `StorefrontManualClientRetirementGuardrailTests.MvpBlocker_StorefrontV2ManualClientTransport_MustBeRetired` | A V2-specific override for a Presentation contract is proposed. |
 
 ## Retired In SPF17
 

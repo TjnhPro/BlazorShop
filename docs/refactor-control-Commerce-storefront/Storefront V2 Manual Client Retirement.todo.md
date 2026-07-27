@@ -279,23 +279,32 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Store
 
 Muc tieu: docs khong con mo ta transitional exception da xoa.
 
-- [ ] Cap nhat `docs/storefront-platform/storefront-client-exception-registry.md`:
-  - [ ] Giu trang thai `none | none`.
-  - [ ] Xoa references xem `StorefrontApiClient` la exception hien tai.
-  - [ ] Ghi evidence moi: V2 source gate forbids `StorefrontApiClient`.
-- [ ] Cap nhat `docs/storefront-platform/storefront-v2-generated-client-backlog.md`:
-  - [ ] Mark address/cart/checkout/consent/customer/payment manual path la retired.
-  - [ ] Neu con gap generated-client thuc su, ghi bang Runtime/Presentation backlog, khong ghi V2 manual client.
-- [ ] Cap nhat `docs/refactor-control-Commerce-storefront/Storefront Presentation Cutover Completion.todo.md`:
-  - [ ] Them link toi plan nay nhu prerequisite cleanup truoc khi dong cutover.
-  - [ ] Khong lap lai toan bo F1.25 trong file cu.
-- [ ] Cap nhat `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
-  - [ ] Xoa muc QA yeu cau manual `StorefrontApiClient`.
-  - [ ] Them gate V2 khong co manual transport.
-  - [ ] Them browser network assertion: browser chi goi same-origin BFF/static endpoints, khong goi Commerce Node API direct.
-- [ ] Cap nhat historical QA/plans neu can:
-  - [ ] Giua noi dung da qua va hien tai bang dong "Historical note".
-  - [ ] Khong de historical note bi tests doc nhu active exception.
+- [x] Cap nhat `docs/storefront-platform/storefront-client-exception-registry.md`:
+  - [x] Giu trang thai `none | none`.
+  - [x] Xoa references xem `StorefrontApiClient` la exception hien tai.
+  - [x] Ghi evidence moi: V2 source gate forbids `StorefrontApiClient`.
+- [x] Cap nhat `docs/storefront-platform/storefront-v2-generated-client-backlog.md`:
+  - [x] Mark address/cart/checkout/consent/customer/payment manual path la retired.
+  - [x] Neu con gap generated-client thuc su, ghi bang Runtime/Presentation backlog, khong ghi V2 manual client.
+- [x] Cap nhat `docs/refactor-control-Commerce-storefront/Storefront Presentation Cutover Completion.todo.md`:
+  - [x] Them link toi plan nay nhu prerequisite cleanup truoc khi dong cutover.
+  - [x] Khong lap lai toan bo F1.25 trong file cu.
+- [x] Cap nhat `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
+  - [x] Xoa muc QA yeu cau manual `StorefrontApiClient`.
+  - [x] Them gate V2 khong co manual transport.
+  - [x] Them browser network assertion: browser chi goi same-origin BFF/static endpoints, khong goi Commerce Node API direct.
+- [x] Cap nhat historical QA/plans neu can:
+  - [x] Giua noi dung da qua va hien tai bang dong "Historical note".
+  - [x] Khong de historical note bi tests doc nhu active exception.
+
+2026-07-27 F1.25.5 evidence:
+
+- `storefront-client-exception-registry.md` still records Storefront V2 as `none | none` and now cites F1.25 source gates as evidence that the manual client is forbidden.
+- `storefront-v2-generated-client-backlog.md` marks address/cart/checkout/consent/customer/account/payment V2 manual paths as retired and routes any future generated-client gaps to Runtime/Presentation/Client.
+- `Storefront Presentation Cutover Completion.todo.md` links this plan as prerequisite cleanup before cutover closure.
+- `QA-StorefrontV2.todo.md` now describes manual client mentions as historical where retained, adds a no-manual-transport source gate, and adds same-origin browser network assertions for Commerce Node Storefront API direct-call prevention.
+- `rg -n "manual ``StorefrontApiClient`` path|Current state.*manual|Api:EnableLegacyFallback=false|legacy fallback only|CheckoutPage_RendersAddressLookupAndSavedAddressSelection" docs/storefront-platform docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md -g "*.md"` returned no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests.StorefrontV2ManualClientExceptions_AreRegisteredWithOwnerTestAndRevisitTrigger"` passed: `6` passed, `0` failed.
 
 ## Phase F1.25.6 - Build, unit va architecture verification
 
