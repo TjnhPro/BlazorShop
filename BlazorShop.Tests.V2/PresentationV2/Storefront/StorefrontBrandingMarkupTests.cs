@@ -356,23 +356,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void CheckoutPage_RendersAddressLookupAndSavedAddressSelection()
+        public void CheckoutPage_RendersAddressLookupThroughRuntimeFacade()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor");
-            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor.cs");
+            var pageService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Checkout/StorefrontCheckoutPageService.cs");
+            var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
-            var apiRoutes = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiRoutes.cs");
 
-            Assert.Contains("data-storefront-address-select", markup);
             Assert.Contains("data-storefront-manual-address", markup);
             Assert.Contains("data-storefront-manual-address-field", markup);
-            Assert.Contains("GetAddressCountriesAsync", codeBehind);
-            Assert.Contains("GetAddressStatesAsync", codeBehind);
-            Assert.Contains("GetCustomerAddressesAsync", codeBehind);
-            Assert.Contains("GetAddressConfigurationAsync", codeBehind);
-            Assert.Contains("StorefrontAddressCountriesRoute", apiRoutes);
-            Assert.Contains("StorefrontAddressConfigurationRoute", apiRoutes);
-            Assert.Contains("customer/addresses", apiRoutes);
+            Assert.Contains("IStorefrontRuntimeAddressFacade addressFacade", pageService);
+            Assert.Contains("addressFacade.ListCountriesAsync", pageService);
+            Assert.Contains("addressFacade.ListStatesAsync", pageService);
+            Assert.Contains("addressFacade.GetConfigurationAsync", pageService);
+            Assert.Contains("GetCustomerAddressesAsync(session.AccessToken!", accountEndpoints);
             Assert.Contains("syncManualAddressFields", script);
             Assert.Contains("field.disabled = useSavedAddress", script);
         }

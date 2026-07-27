@@ -240,31 +240,40 @@ rg -n "AddHttpClient<StorefrontApiClient>|EnableLegacyFallback" BlazorShop.Prese
 
 Muc tieu: xoa hoan toan handwritten V2 application transport va route fallback.
 
-- [ ] Xoa cac files:
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Address.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Cart.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Catalog.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Configuration.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Consent.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Content.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Customer.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Payment.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiTransport.cs`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiRoutes.cs`
-- [ ] Sau khi xoa, chay source gate:
+- [x] Xoa cac files:
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Address.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Cart.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Catalog.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Configuration.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Consent.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Content.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Customer.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Payment.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiTransport.cs`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiRoutes.cs`
+- [x] Sau khi xoa, chay source gate:
 
 ```powershell
 rg -n "StorefrontApiClient|EnableLegacyFallback|LegacyCatalogBaseRoute|LegacySeoSettingsRoute" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"
 ```
 
-- [ ] Expected: no matches.
-- [ ] Build V2 de bat compile errors som:
+- [x] Expected: no matches.
+- [x] Build V2 de bat compile errors som:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
 ```
+
+2026-07-27 F1.25.4 evidence:
+
+- Deleted all V2 handwritten `StorefrontApiClient*.cs` partials, `StorefrontApiTransport.cs`, and `StorefrontApiRoutes.cs`.
+- Updated `StorefrontBrandingMarkupTests.CheckoutPage_RendersAddressLookupThroughRuntimeFacade` so it no longer reads the retired route file and instead asserts Checkout uses `IStorefrontRuntimeAddressFacade` plus account BFF address endpoints.
+- `rg -n "StorefrontApiClient|EnableLegacyFallback|LegacyCatalogBaseRoute|LegacySeoSettingsRoute" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"` returned no matches.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 warnings.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontManualClientRetirementGuardrailTests|FullyQualifiedName~StorefrontHostCompositionTests.StorefrontV2_DoesNotContainManualStorefrontApiClientTransport"` passed: `4` passed, `0` failed.
 
 ## Phase F1.25.5 - Cap nhat docs, registry va checklist
 
