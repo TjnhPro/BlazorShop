@@ -38,12 +38,14 @@ Generated/custom storefront compatibility rules:
 
 - Use `BlazorShop.Storefront.Client` package contracts for Storefront API transport and DTOs.
 - Treat `contracts/storefront/storefront.openapi.json` as the canonical Storefront API contract behind that package; run `scripts/qa/run-storefront-client-regeneration-gate.ps1` before package proof when the contract or generated client changes.
+- Use `BlazorShop.Storefront.Presentation` package contracts for shared App/Routes/page services/BFF/SEO/media composition.
 - Use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use `BlazorShop.Storefront.Components` contracts/headless behavior and Browser local API primitives only when reusable browser-safe UI components are needed; local presentation components can stay inside the generated storefront.
 - Treat `BlazorShop.Storefront.Components.Features` as retired. Normal generation consumes `Contracts`, `Headless`, and `Browser` primitives and emits project-local visual templates.
 - `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, pages, and analysis artifacts.
 - StorefrontBuilder may replace product card/grid/gallery/purchase/cart/checkout/account visual templates without changing shared behavior contracts.
 - Route protected browser actions through same-origin BFF endpoints.
+- Do not generate route/BFF/SEO/media application logic from scratch when Presentation already owns it.
 - Never reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Do not use Storefront V2 visual markup as the generated/custom storefront presentation source.
 - Do not copy Components `Features` wrappers as generated visual templates or stable presentation contracts.
@@ -127,7 +129,7 @@ Canonical generated proof:
 .\scripts\qa\run-storefront-builder-generated-proof.ps1
 ```
 
-Generated storefront validation must fail when generated source imports `BlazorShop.Storefront.Components.Features`; normal generation consumes `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
+Generated storefront validation must fail when generated source imports `BlazorShop.Storefront.Components.Features` or recreates protected Presentation-owned application logic; normal generation consumes Presentation plus `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
 
 Focused test filter:
 

@@ -18,6 +18,7 @@ This phase group must not generate store presentation yet. It locks the architec
 - Sample proof: `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`
 - Generated client package: `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`
 - Neutral runtime package: `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`
+- Shared application package: `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation`
 - Existing generator: `scripts/generate-storefront-sample.ps1`
 - Starter isolation gate: `scripts/qa/run-storefront-starter-isolation-gate.ps1`
 - Sample release gate: `scripts/qa/run-storefront-sample-release-gate.ps1`
@@ -32,11 +33,11 @@ This phase group must not generate store presentation yet. It locks the architec
 - StorefrontBuilder generates into `BlazorShop.Storefront.{Name}`.
 - StorefrontBuilder must not write store-specific presentation into `BlazorShop.Storefront.Starter`.
 - Starter remains the neutral source skeleton.
-- Generated storefronts consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
+- Generated storefronts consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries when they need the full storefront application surface.
 - Browser/WASM code must stay behind same-origin BFF endpoints.
 - Generated visual components must not call Commerce Node directly.
 - Generated code must not duplicate generated API DTOs.
-- Business truth stays in Commerce Node API, Storefront.Client, Runtime, and Starter BFF contracts.
+- Business truth stays in Commerce Node API, Storefront.Client, Runtime, and Presentation BFF contracts.
 
 ## S0 - Architecture And Scope Lock
 

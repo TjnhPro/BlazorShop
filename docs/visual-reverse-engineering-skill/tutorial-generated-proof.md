@@ -13,7 +13,7 @@ Run the canonical proof workflow:
 The command:
 
 - cleans `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof`;
-- packs `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime`;
+- packs `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components`;
 - generates `BlazorShop.Storefront.GeneratedProof` from `BlazorShop.Storefront.Starter`;
 - writes StorefrontBuilder review, asset, CSS, composition, and generated-file artifacts;
 - restores and builds the generated proof;

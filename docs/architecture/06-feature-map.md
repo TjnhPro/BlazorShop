@@ -127,16 +127,19 @@ Decision rule:
 - If the caller is Storefront V2 and the feature is public/customer behavior, it belongs to `api/storefront/stores/{storeKey}/*`.
 - `api/internal/*` was the migration compatibility path and has been removed from active V2 runtime guidance.
 
-## Storefront V2 UI
+## Storefront Presentation And V2 UI
 
 Project:
 
+- `BlazorShop.Storefront.Presentation`
 - `BlazorShop.Storefront.V2`
 - `BlazorShop.Storefront.Components`
 - `BlazorShop.Storefront.V2.WASM`
 
 Capabilities:
 
+- Shared storefront App/Routes/page services/BFF/SEO/media composition in `BlazorShop.Storefront.Presentation`.
+- Storefront V2 visual templates, host configuration, static assets, and interactive WASM placement.
 - Public storefront pages.
 - Dynamic informational pages at `/pages/{slug}` loaded from Commerce Node.
 - Product/category route rendering.
@@ -149,14 +152,15 @@ Capabilities:
 - Currency preference UI.
 - Consent/banner behavior.
 - Navigation menus loaded from Commerce Node.
-- Robots and sitemap documents.
-- SEO composition and structured data.
+- Robots and sitemap documents through Presentation.
+- SEO composition and structured data through Presentation.
 - Storefront API client with store key in the scoped route path.
 - Public media proxy routes for `/media/products/*` and `/media/assets/*`.
 
 Decision rule:
 
-- If the feature is visual/storefront page behavior, it belongs to Storefront V2.
+- If the feature is shared route, page-service, BFF, SEO, media, or local `/api/*` application behavior, it belongs to Storefront Presentation.
+- If the feature is Storefront V2 visual markup, layout, copy, static asset, or host configuration, it belongs to Storefront V2.
 - If the feature needs data, call Commerce Node Storefront APIs under `api/storefront/stores/{storeKey}/*`.
 
 ## StorefrontBuilder Dev-Time Generation
@@ -165,6 +169,7 @@ Projects/files:
 
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`
 - `tools/BlazorShop.AI.StorefrontBuilder`
 - `scripts/qa/run-storefront-builder-generated-proof.ps1`
@@ -173,7 +178,7 @@ Projects/files:
 
 Capabilities:
 
-- Generated Storefront API client and runtime package boundary.
+- Generated Storefront API client, runtime, and Presentation package boundary.
 - Neutral Starter skeleton for generated storefronts.
 - Deterministic generated storefront proof artifacts under ignored output roots.
 - Reference-site capture and review artifact generation.

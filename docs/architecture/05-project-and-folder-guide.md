@@ -143,38 +143,60 @@ Do not:
 - Persist platform-level users/permissions/credentials here.
 - Migrate `ControlPlaneDbContext` from this runtime.
 
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation`
+
+Important folders:
+
+- `App/` - shared Storefront root App/Routes and head/script slots.
+- `Pages/` - shared SSR, Hybrid, and WASM-host route shells.
+- `Endpoints/` - same-origin browser/BFF/local endpoint groups.
+- `Services/` - page services, route contexts, API adapter contracts, and generated Runtime-backed adapters.
+- `Seo/` - SEO metadata, canonical, robots, sitemap, and structured-data composition.
+- `Media/` - storefront media endpoint/proxy composition.
+- `Hosting/` - `UseStorefrontPresentation()` and `MapStorefrontPresentation()` aggregation helpers.
+- `ViewModels/` and `ViewSlots/` - host-provided view-slot contracts.
+
+Use for:
+
+- Shared storefront application orchestration.
+- Route composition and route-owned page contexts.
+- Same-origin browser/BFF contracts and endpoint groups.
+- SEO/discovery, media, auth/system/cart/checkout/account route shells, and local browser-safe endpoint behavior used by V2, Starter, and generated storefronts.
+
+Do not:
+
+- Add Storefront V2-specific visual markup, CSS, copy, or generated visual output.
+- Reference `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, generated storefront projects, Control Plane, Commerce Node API, Application, Domain, Infrastructure, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
+- Put ecommerce truth such as pricing, sellability, inventory, checkout validity, or order creation here.
+
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
 
 Important folders:
 
 - `Components/` - Razor components.
-- `Pages/` - server-side storefront pages, grouped by render ownership:
-  - `Pages/Ssr/` - server-rendered pages where WASM is not required for the primary function, such as auth, DB content, maintenance, and not-found pages.
-  - `Pages/Hybrid/` - SEO/snapshot route pages that compose interactive features, such as catalog, product, cart, checkout, and payment result pages.
-  - `Pages/WasmHost/` - server-owned route/security/bootstrap boundaries for WASM-owned features, currently customer account routes.
-- `Services/` - Storefront API clients, SEO, sitemap, robots, auth form handlers.
+- `Pages/` - host-provided view templates grouped by render ownership. These are view components registered into Storefront Presentation, not route owners.
+- `Services/` - host-specific service registration and any remaining host-local adapters.
 - `Options/` - Storefront API/public URL options.
 - `Configuration/` - options validators.
 - `wwwroot/` - static storefront assets.
 
 Use for:
 
-- Public/store-scoped storefront UI.
-- Storefront login/register/logout forms.
-- SEO and public discovery documents.
+- Public/store-scoped Storefront V2 visual implementation.
+- Host configuration and view registration for Storefront Presentation.
+- Storefront V2 layout, CSS/assets, final copy, and interactive V2 component placement.
 - Store key propagation to Commerce Node Storefront API.
-- Storefront-owned presentation/local endpoint contracts plus generated Storefront client adapters.
-- Server-owned route composition and static assets for interactive cart, checkout, and account surfaces hosted from the Storefront V2 WASM client assembly.
+- Static assets for interactive cart, checkout, account, and other surfaces hosted from the Storefront V2 WASM client assembly.
 
 Asset and layout rules:
 
-- Root Storefront CSS and scripts must stay explicit in `App/StorefrontApp.razor`.
+- Root Storefront CSS and scripts must stay explicit in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` through host-provided head/script slots.
 - `StorefrontBrandHead` must render before `HeadOutlet`, and brand/runtime metadata must not use layout-level `HeadContent`.
 - Page SEO metadata belongs in page/SEO components such as `SeoHead`.
 - Page-specific CSS should prefer scoped CSS or controlled app-owned classes in `wwwroot/css`.
 - Page-specific JavaScript should prefer `IJSRuntime` module imports. Add root scripts only when they must load with the root document, and update the root asset allowlist tests with the reason.
 - Store configuration must not accept arbitrary public script or stylesheet injection.
-- `MainLayout.razor` owns the global header, toast DOM region, `<main>`, and footer. Page-level structure belongs in optional components such as `StorefrontPageShell` and catalog-only components such as `CatalogFilterPanel`.
+- Storefront V2 layout views own the global header, toast DOM region, `<main>`, and footer through Presentation view slots. Page-level structure belongs in optional host views such as `StorefrontPageShell` and catalog-only components such as `CatalogFilterPanel`.
 
 Do not:
 
@@ -182,6 +204,7 @@ Do not:
 - Manage node credentials.
 - Reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, Commerce Node API, or Control Plane API projects.
 - Import `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
+- Map duplicate route/BFF/SEO endpoint groups that Storefront Presentation already owns.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
 
@@ -256,20 +279,20 @@ Use for:
 Do not:
 
 - Add Storefront V2 layout/design, CSS/assets, store-specific composition, backend business rules, provider secrets, or references to backend/core/API projects.
-- Reference Runtime from browser/WASM projects; browser actions must go through host-owned same-origin BFF endpoints.
+- Reference Runtime from browser/WASM projects; browser actions must go through Storefront Presentation same-origin BFF endpoints or an explicitly documented host-local extension.
 
 ### Storefront Feature Module Boundary
 
 Current ownership map:
 
-- `BlazorShop.Storefront.Presentation` owns storefront route composition and local browser/BFF application services for content, auth, system, cart, and other shared storefront SSR entry points.
+- `BlazorShop.Storefront.Presentation` owns storefront App/Routes, route composition, page services, SEO/discovery, media/local endpoint composition, and local browser/BFF application services for content, auth, system, cart, checkout, account, and other shared storefront entry points.
 - `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
 - `BlazorShop.Storefront.Components` owns browser-safe reusable `Contracts`, `Headless` state/behavior, and `Browser` same-origin primitives only. Visual templates belong to Storefront V2, Starter, or generated/custom storefront projects.
-- `BlazorShop.Storefront.V2` owns SEO, remaining host BFF endpoints, session/cart-token handling, store resolution, deployment, static storefront assets, and storefront-specific design. Its WASM client assembly owns the interactive V2 root components that must hydrate in the browser.
+- `BlazorShop.Storefront.V2` owns host configuration, session/cart-token policy, store resolution, deployment/static asset behavior, view registration, static storefront assets, and storefront-specific design. Its WASM client assembly owns the interactive V2 root components that must hydrate in the browser.
 - `BlazorShop.Storefront.Runtime` owns neutral runtime primitives and server-side generated-client registration.
 - `Storefront.Features.*` projects are deferred until repeated neutral feature logic proves the need.
 
-Do not create feature packages just to move code out of Storefront V2. Extract only when it removes real duplication and can stay independent of Storefront V2 design, host-owned route shells, BFF endpoints, and backend/core/API projects.
+Do not create feature packages just to move code out of Storefront V2. Extract only when it removes real duplication and can stay independent of Storefront V2 design, Presentation route shells/BFF endpoints, and backend/core/API projects.
 
 ### `BlazorShop.Storefront.Starter`
 
@@ -280,13 +303,14 @@ Status:
 
 Use for:
 
-- Neutral SSR, Hybrid, and WASM-host route skeletons.
+- Neutral visual templates for Presentation SSR, Hybrid, and WASM-host route shells.
 - Examples of generated `BlazorShop.Storefront.Client` package consumption.
+- Examples of `BlazorShop.Storefront.Presentation` consumption for shared App/Routes/page services/BFF/SEO/media composition.
 - Examples of `BlazorShop.Storefront.Runtime` package consumption for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Examples should use `AddStorefrontPlatformRuntime` for simple server/BFF composition or the specific `AddStorefront{Capability}Runtime` methods for intentionally narrow generated hosts.
 - Optional `BlazorShop.Storefront.Components` package consumption for reusable browser-safe UI components; Starter-local neutral components may remain local until shared reuse is needed.
 - Starter owns its neutral visual templates and may consume `Storefront.Components` contracts/headless behavior without copying Storefront V2 visual components.
-- Same-origin BFF examples for protected browser flows.
+- Same-origin Presentation BFF flows for protected browser actions.
 - Store bootstrap, capability reading, feature placement, loading/error/empty states, and generation manifest conventions.
 - Deterministic generated storefront output under ignored artifact roots such as `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof`.
 
@@ -320,7 +344,7 @@ Use for:
 - Running StorefrontBuilder static validation, isolation, visual smoke QA, and commerce-regression checks.
 - Hosting presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components for exactly one generated/custom storefront.
 - Owning generated markup/CSS and replacing product card/grid/gallery/purchase/cart/checkout/account visual templates while reusing contracts/headless behavior.
-- Routing protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
+- Routing protected browser actions through same-origin Presentation BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
 
 Do not:
 

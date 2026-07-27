@@ -9,12 +9,12 @@ This page records the current contract ownership boundary after Storefront V2 mo
 - Generated Storefront clients are frontend-readable contracts and must be regenerated from the canonical Storefront OpenAPI contract at `contracts/storefront/storefront.openapi.json` instead of hand-copied into frontend packages.
 - Storefront frontend view models are allowed when they are presentation or composition models.
 - Storefront frontend code must not add handwritten duplicate API DTO clones when the schema should come from OpenAPI-generated contracts.
-- Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
+- Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.Presentation/Endpoints/Contracts` or `BlazorShop.Storefront.Presentation/Services/Contracts` when the contract is shared by Presentation route/BFF/page services. A host may own a narrower local extension only when it is documented and not duplicated by Presentation.
 - Storefront component contracts are presentation contracts, not public HTTP API contracts. Use `BlazorShop.Storefront.Components/Contracts/*` for stable render/input models, `Headless/*` for state/behavior, and `Browser/*` for same-origin browser primitives. Store-specific visual templates are host-owned; Storefront V2 interactive root components that hydrate in the browser live in its WASM client assembly.
 - Storefront V2 source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter and generated storefront source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` or backend/core business namespaces.
 - Storefront Starter must consume generated Storefront client contracts by default and must not copy the manual `StorefrontApiClient` transport from Storefront V2.
-- Generated StorefrontBuilder projects must consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries and must not reference Storefront V2, `BlazorShop.Web.SharedV2`, or backend/core/API projects.
+- Generated StorefrontBuilder projects must consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries when they need the full storefront application surface. They must not reference Storefront V2, `BlazorShop.Web.SharedV2`, or backend/core/API projects.
 - Storefront Runtime is server/BFF-only. Server hosts use `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow composition; compatibility aliases such as `AddStorefrontServerGeneratedClients` and `AddStorefrontGeneratedClients` are not part of the current API surface. Browser/WASM code uses same-origin local endpoints and browser-safe Components primitives instead.
 - Starter manual HTTP exceptions are allowed only when documented in an exception registry with reason, owner, test, and revisit trigger.
 - The Starter generated-client adoption policy and exception registry live under `docs/storefront-platform/`.
@@ -39,7 +39,7 @@ This page records the current contract ownership boundary after Storefront V2 mo
 
 ## Existing Storefront V2 Contracts
 
-`BlazorShop.Storefront.V2/Services/Contracts` already owns Storefront-local contracts for:
+`BlazorShop.Storefront.Presentation` already owns shared Storefront-local contracts for:
 
 - Address lookup.
 - Cart and product-selection preview.
@@ -52,9 +52,9 @@ This page records the current contract ownership boundary after Storefront V2 mo
 
 `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` is the generated Storefront HTTP client package. It is generated from the canonical committed Storefront contract at `contracts/storefront/storefront.openapi.json`, not from test snapshots, and must not reference backend/core/API projects or `Storefront.V2`. Test snapshots remain breaking-change guardrails only. Storefront V2 migration should consume this generated client instead of adding handwritten API DTO clones.
 
-Generated StorefrontBuilder projects are not contract owners. They are disposable artifacts under ignored generated output roots, consume Storefront client/runtime packages, hold generated presentation output, and keep review artifacts under their local `docs/storefront-analysis/`.
+Generated StorefrontBuilder projects are not contract owners. They are disposable artifacts under ignored generated output roots, consume Storefront Client/Runtime/Presentation packages, hold generated visual output, and keep review artifacts under their local `docs/storefront-analysis/`.
 
-Generated storefronts must not infer Storefront API envelopes or field names from screenshots, examples, component models, or `Storefront.Components` render contracts. Server-side Runtime facades map typed generated client envelopes into host-facing runtime results; browser components consume host-owned BFF contracts or `Storefront.Components` presentation/headless contracts.
+Generated storefronts must not infer Storefront API envelopes or field names from screenshots, examples, component models, or `Storefront.Components` render contracts. Server-side Runtime facades map typed generated client envelopes into Presentation/host-facing runtime results; browser components consume Presentation BFF contracts, documented host-local extensions, or `Storefront.Components` presentation/headless contracts.
 
 ## Portable Component Models And Headless Contracts
 
@@ -62,9 +62,9 @@ Generated storefronts must not infer Storefront API envelopes or field names fro
 
 `BlazorShop.Storefront.Components/Headless/*` is the preferred home for browser-safe presentation state and action/event contracts that can be reused without Storefront V2 visual markup.
 
-`BlazorShop.Storefront.Components/Features/*` was a temporary compatibility surface and is retired. Reintroducing shared visual Razor wrappers requires a new architecture decision; normal storefront implementation must keep markup, CSS, layout, copy, and route composition in V2 host/WASM client, Starter, or generated/custom storefronts.
+`BlazorShop.Storefront.Components/Features/*` was a temporary compatibility surface and is retired. Reintroducing shared visual Razor wrappers requires a new architecture decision; normal storefront implementation must keep route composition in Storefront Presentation and keep markup, CSS, layout, copy, and visual templates in V2 host/WASM client, Starter, or generated/custom storefronts.
 
-These models are not public HTTP contracts. The Storefront V2 host maps API DTOs or local endpoint contracts into them before composition. They must not reference `Web.SharedV2`, `Application`, `Domain`, `Infrastructure`, Control Plane, Commerce Node runtime projects, Storefront API clients, or Storefront route helpers.
+These models are not public HTTP contracts. Storefront Presentation or a host maps API DTOs or local endpoint contracts into them before composition. They must not reference `Web.SharedV2`, `Application`, `Domain`, `Infrastructure`, Control Plane, Commerce Node runtime projects, Storefront API clients, or Storefront route helpers.
 
 Do not add admin-owned fields, store ownership fields, credentials, tokens, passwords, server-owned publication flags, or cost/internal accounting fields to these component models.
 

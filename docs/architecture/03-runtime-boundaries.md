@@ -128,26 +128,45 @@ Rules:
 - Do not add new `api/internal/*` controllers, Swagger documents, or Storefront clients.
 - Historical planning files may mention `api/internal/*` as migration context only.
 
-## Storefront V2 Boundary
+## Storefront Presentation Boundary
 
-`BlazorShop.Storefront.V2` is a server-side storefront. It renders public/store pages and calls Commerce Node Storefront APIs.
+`BlazorShop.Storefront.Presentation` is the shared storefront application engine. It owns App/Routes, route shells, page services, same-origin BFF/local endpoints, media/local endpoints, SEO/discovery composition, and view-slot contracts used by Storefront V2, Starter, and generated storefronts.
 
 Responsibilities:
 
-- Storefront pages and layout.
-- Storefront login/register/logout forms.
-- Sitemap and robots generation.
-- SEO composition and structured data.
-- Redirects to client account/checkout routes when needed.
+- Storefront App/Routes and SSR, hybrid, and WASM-hosted route shells.
+- Page services and context models for home, catalog, content, auth, system, cart, checkout, account, and payment surfaces.
+- Sitemap, robots, SEO metadata, canonical URL, structured data, redirects, and media/local endpoint composition.
+- Same-origin browser/BFF endpoint groups for cart, checkout, account, consent, preferences, media, and other browser-safe flows.
+- View-slot contracts that let each host provide visual templates without Presentation referencing V2, Starter, or generated projects.
+
+Do not:
+
+- Put Storefront V2-specific design, CSS, copy, or generated visual output here.
+- Reference `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, generated storefront projects, Control Plane, Commerce Node API, Application, Domain, Infrastructure, or `Web.SharedV2`.
+- Move ecommerce truth such as pricing, sellability, checkout validity, order creation, or inventory decisions out of Commerce Node Storefront APIs.
+
+Hosts call `UseStorefrontPresentation()` and `MapStorefrontPresentation()` instead of mapping individual route/BFF/SEO endpoint groups.
+
+## Storefront V2 Boundary
+
+`BlazorShop.Storefront.V2` is a server-side storefront host and visual implementation that consumes Storefront Presentation and calls Commerce Node Storefront APIs through the shared Presentation/Runtime/Client path.
+
+Responsibilities:
+
+- Storefront V2 host configuration, static assets, layout views, visual templates, and copy.
+- Storefront V2 view registration for Presentation route shells.
+- Current-store resolution, session/cookie behavior, auth/session policy, deployment/static asset behavior, and host-specific API adapter registration.
+- Redirect destinations and interactive root components for cart, checkout, account, and other WASM-hosted V2 surfaces.
 - Store key propagation to Commerce Node through route path `api/storefront/stores/{storeKey}/*`.
 
 It must not call Control Plane APIs and must not use Control Plane credentials.
 
 ### Browser/BFF Boundary
 
-Browser and WASM code calls same-origin Storefront V2 endpoints under `/api/*`. It must not call Commerce Node protected APIs directly, must not know the Commerce Node base URL, must not hold node credentials, and must not store Commerce access tokens in browser local storage.
+Browser and WASM code calls same-origin storefront endpoints under `/api/*`. It must not call Commerce Node protected APIs directly, must not know the Commerce Node base URL, must not hold node credentials, and must not store Commerce access tokens in browser local storage.
 
-Storefront Presentation/V2 BFF/local endpoints are responsible for:
+Storefront Presentation BFF/local endpoints are responsible for:
 
 - resolving the current store;
 - resolving the HttpOnly customer session;
@@ -157,7 +176,7 @@ Storefront Presentation/V2 BFF/local endpoints are responsible for:
 - normalizing Commerce API failures into local frontend-safe errors;
 - returning only local/browser-safe response shapes.
 
-Storefront Presentation/V2 BFF/local endpoints are not responsible for:
+Storefront Presentation BFF/local endpoints are not responsible for:
 
 - price calculation;
 - sellability calculation;
@@ -165,7 +184,7 @@ Storefront Presentation/V2 BFF/local endpoints are not responsible for:
 - checkout business rules;
 - order creation outside Commerce checkout/place-order APIs.
 
-Local `/api/*` contracts are Storefront V2 browser contracts. They may differ from Commerce Node Storefront API DTOs when the browser needs a smaller or presentation-specific shape, but they must not duplicate ecommerce business truth.
+Local `/api/*` contracts are storefront browser contracts owned by Storefront Presentation unless a host explicitly owns a narrower local extension. They may differ from Commerce Node Storefront API DTOs when the browser needs a smaller or presentation-specific shape, but they must not duplicate ecommerce business truth.
 
 ## Generated Storefront Boundary
 
@@ -175,6 +194,7 @@ Required generated storefront shape:
 
 ```text
 BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
+  -> BlazorShop.Storefront.Presentation package
   -> BlazorShop.Storefront.Client package
   -> BlazorShop.Storefront.Runtime package
       -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
@@ -183,6 +203,7 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
 Rules:
 
 - Generated storefronts must not reference `BlazorShop.Storefront.V2`.
+- Generated storefronts that need full storefront routes/BFF/SEO/media composition must consume `BlazorShop.Storefront.Presentation` through a package boundary and provide project-local registered views/assets/copy.
 - Generated storefronts must not reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Browser code in generated storefronts must not call Commerce Node admin/control, Control Plane, or removed `api/internal/*` routes directly.
 - `BlazorShop.Storefront.Starter` is a neutral template input. Store-specific generated CSS, assets, pages, and analysis artifacts belong in the generated storefront project only.

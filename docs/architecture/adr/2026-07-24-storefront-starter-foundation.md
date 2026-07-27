@@ -1,7 +1,7 @@
 # ADR: Storefront Starter Foundation
 
 Date: 2026-07-24
-Status: Accepted as historical Starter foundation; current generated proof policy is superseded by StorefrontBuilder Architecture
+Status: Accepted as historical Starter foundation; current generated proof and shared presentation policy is superseded by StorefrontBuilder Architecture and Storefront Presentation Foundation
 
 ## Context
 
@@ -54,3 +54,5 @@ Starter source must not import `BlazorShop.Web.SharedV2`/`Web.SharedV2` and must
 ## Amendment
 
 Later phases on 2026-07-24 introduced StorefrontBuilder tooling and then superseded committed generated proof projects with on-demand generated proof artifacts. `BlazorShop.Storefront.Runtime` and `BlazorShop.Storefront.Starter` remain active source projects. Generated storefront proofs are disposable artifacts under ignored output roots and must not be treated as active solution projects or contract owners. The current source of truth for generated storefront preparation is [StorefrontBuilder Architecture](../11-storefront-builder.md).
+
+On 2026-07-27, [Storefront Presentation Foundation](2026-07-27-storefront-presentation-foundation.md) made `BlazorShop.Storefront.Presentation` the shared App/Routes/page services/BFF/SEO/media owner. Starter now provides neutral view registrations, assets, copy, feature manifest, and placeholders rather than owning parallel route/BFF/SEO logic.

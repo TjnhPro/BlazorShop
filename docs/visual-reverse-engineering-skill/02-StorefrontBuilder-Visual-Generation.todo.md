@@ -16,6 +16,7 @@ This phase group depends on `01-StorefrontBuilder-Foundation.todo.md`.
 - Generated project target pattern: `BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}`
 - Generated client package boundary: `BlazorShop.Storefront.Client`
 - Runtime package boundary: `BlazorShop.Storefront.Runtime`
+- Presentation package boundary: `BlazorShop.Storefront.Presentation`
 - Existing feature activation example: `Features/feature-manifest.json`
 - Existing render ownership folders: `Pages/Ssr`, `Pages/Hybrid`, `Pages/WasmHost`
 - Existing BFF pattern: generated storefronts use `BlazorShop.Storefront.Presentation` aggregation (`UseStorefrontPresentation()` and `MapStorefrontPresentation()`) instead of generating Starter-specific BFF endpoint files.
@@ -256,6 +257,7 @@ Manifest must include:
 - [x] Starter contract version.
 - [x] Storefront.Client package version.
 - [x] Storefront.Runtime package version.
+- [x] Storefront.Presentation package version.
 - [x] Generated file root.
 - [x] Asset root.
 - [x] Shell composition.
@@ -325,7 +327,7 @@ Tasks:
 - [x] Accept `-StoreKey`.
 - [x] Copy Starter template.
 - [x] Rewrite namespace/root namespace safely.
-- [x] Keep package references to Storefront.Client and Storefront.Runtime.
+- [x] Keep package references to Storefront.Client, Storefront.Runtime, and Storefront.Presentation.
 - [x] Keep Starter BFF/security files protected.
 - [x] Preserve feature manifest unless generation plan changes allowed placements.
 - [x] Create `docs/storefront-analysis`.
@@ -362,7 +364,7 @@ Generated surfaces:
 Rules:
 
 - [x] Keep CSS under generated storefront `wwwroot`.
-- [x] Do not alter Runtime, generated client, or BFF code.
+- [x] Do not alter Runtime, generated client, or Presentation BFF code.
 - [x] Do not inject arbitrary third-party scripts.
 - [x] Use stable class naming.
 

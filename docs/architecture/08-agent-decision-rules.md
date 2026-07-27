@@ -121,7 +121,8 @@ Shared V2 UI/asset rules:
 
 - Treat `BlazorShop.Web.SharedV2` as a transitional Control Plane/shared browser-helper bucket. Do not add Storefront-specific files, namespaces, route helpers, cookie names, or business models there.
 - Share browser behavior helpers through `BlazorShop.Web.SharedV2` only when both active V2 frontends have a real use case. The helper must not be Storefront-specific.
-- Keep Storefront-specific header, footer, navigation, cart/toast DOM integration, SEO shell, and public commerce page structure in `BlazorShop.Storefront.V2`.
+- Keep shared Storefront App/Routes/page services/BFF/SEO/media composition in `BlazorShop.Storefront.Presentation`.
+- Keep Storefront-specific header, footer, navigation, cart/toast DOM integration, layout views, and public commerce visual templates in `BlazorShop.Storefront.V2`.
 - Keep Control Plane-specific nav/sidebar/topbar/page header and dense operational components in `BlazorShop.ControlPlane.Web`.
 - Do not create a shared visual shell or asset registry just to reduce superficial markup similarity.
 
@@ -133,7 +134,8 @@ StorefrontBuilder is development-time tooling. It may create or update generated
 
 Generated storefronts must:
 
-- Consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
+- Consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries when they need the full storefront application surface.
+- Provide views/assets/copy/host configuration instead of recreating Presentation-owned route/BFF/SEO/media logic.
 - Keep protected browser commands behind same-origin BFF endpoints.
 - Keep analysis and QA artifacts under `docs/storefront-analysis/`.
 

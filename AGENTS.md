@@ -101,7 +101,8 @@ Route ownership:
 StorefrontBuilder boundary:
 
 - StorefrontBuilder is development-time tooling only; it is not a production service or Commerce Node extension.
-- Generated storefronts are disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs. They consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries and must not be added to `BlazorShop.sln` by default.
+- Generated storefronts are disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs. They consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries and must not be added to `BlazorShop.sln` by default.
+- Storefront Presentation owns shared App/Routes/page services/BFF/SEO/media composition. Storefront V2, Starter, and generated storefronts provide host configuration, view registrations, assets, copy, and store-specific visual output.
 - Generated storefronts must not reference Storefront V2, backend/core/API projects, Control Plane Web, Commerce Node API, or `Web.SharedV2.Models` business contracts.
 - Store-specific generated CSS, assets, pages, analysis artifacts, and AI-tuned components must not be written back into `BlazorShop.Storefront.Starter`.
 - Protected browser actions in generated storefronts must go through same-origin BFF endpoints before Commerce Node Storefront APIs.

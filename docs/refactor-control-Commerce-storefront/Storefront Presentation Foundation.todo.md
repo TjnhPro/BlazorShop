@@ -907,20 +907,20 @@ Exit criteria:
 
 ## Phase SPF14 - Documentation and Architecture Update
 
-- [ ] Update `AGENTS.md` active project shape to include `BlazorShop.Storefront.Presentation`.
-- [ ] Update `docs/architecture/03-runtime-boundaries.md`:
+- [x] Update `AGENTS.md` active project shape to include `BlazorShop.Storefront.Presentation`.
+- [x] Update `docs/architecture/03-runtime-boundaries.md`:
   - Storefront Presentation application engine;
   - V2 host/visual boundary;
   - Starter/generated host/visual boundary.
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md`.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md`.
-- [ ] Update `docs/architecture/11-storefront-builder.md`.
-- [ ] Update `docs/agents/storefront-builder.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md` and reference docs.
-- [ ] Update QA checklist:
+- [x] Update `docs/architecture/05-project-and-folder-guide.md`.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md`.
+- [x] Update `docs/architecture/11-storefront-builder.md`.
+- [x] Update `docs/agents/storefront-builder.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md` and reference docs.
+- [x] Update QA checklist:
   - `QA-StorefrontV2.todo.md`
   - StorefrontBuilder isolation/release checklist if affected.
-- [ ] Add ADR:
+- [x] Add ADR:
 
 ```text
 docs/architecture/adr/YYYY-MM-DD-storefront-presentation-foundation.md
@@ -928,8 +928,16 @@ docs/architecture/adr/YYYY-MM-DD-storefront-presentation-foundation.md
 
 Exit criteria:
 
-- [ ] Current docs no longer say V2 owns route composition/BFF/SEO after migration.
-- [ ] Generated storefront docs no longer imply AI generator must recreate application logic.
+- [x] Current docs no longer say V2 owns route composition/BFF/SEO after migration.
+- [x] Generated storefront docs no longer imply AI generator must recreate application logic.
+
+Evidence:
+
+- Added `docs/architecture/adr/2026-07-27-storefront-presentation-foundation.md` and amended the 2026-07-24 ADRs to point to the new Presentation boundary.
+- Updated current architecture, agent, StorefrontBuilder, visual reverse engineering, and QA docs so Presentation owns shared App/Routes/page services/BFF/SEO/media composition; V2, Starter, and generated storefronts provide host configuration, views, assets, copy, and visual output.
+- Updated StorefrontBuilder docs/checklists so generated storefronts consume Client/Runtime/Presentation through package boundaries and must not recreate Presentation-owned application logic.
+- Verification: docs search for obsolete `Client/Runtime`-only package guidance, V2-owned route/BFF/SEO wording, and generated route/BFF/SEO recreation guidance returned no current-doc hits.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~V2ArchitectureBoundaryBaselineTests"` passed 133/133.
 
 ## Phase SPF15 - Build, Test, Package, and Browser QA
 

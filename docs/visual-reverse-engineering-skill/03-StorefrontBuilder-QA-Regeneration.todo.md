@@ -6,7 +6,7 @@ Phase group: S20-S29
 
 ## Purpose
 
-Prove the generated `BlazorShop.Storefront.{Name}` is buildable, visually useful, boundary-safe, idempotent, and does not break ecommerce flows supplied by Starter, Runtime, BFF, and Commerce Node Storefront APIs.
+Prove the generated `BlazorShop.Storefront.{Name}` is buildable, visually useful, boundary-safe, idempotent, and does not break ecommerce flows supplied by Starter views, Presentation BFF/routes/SEO, Runtime, and Commerce Node Storefront APIs.
 
 This phase group depends on:
 
@@ -101,6 +101,7 @@ Tasks:
 - [x] Build generated `BlazorShop.Storefront.{Name}`.
 - [x] Pack `BlazorShop.Storefront.Client`.
 - [x] Pack `BlazorShop.Storefront.Runtime`.
+- [x] Pack `BlazorShop.Storefront.Presentation`.
 - [x] Build generated storefront from packages, not project references.
 - [x] Confirm no dependency on `Storefront.V2`.
 - [x] Confirm no dependency on backend/core/API projects.

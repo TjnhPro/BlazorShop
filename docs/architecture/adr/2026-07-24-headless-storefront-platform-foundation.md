@@ -1,7 +1,7 @@
 # ADR: Headless Storefront Platform Foundation
 
 Date: 2026-07-24
-Status: Accepted; amended by Storefront Starter and StorefrontBuilder implementation
+Status: Accepted; amended by Storefront Starter, StorefrontBuilder, and Storefront Presentation implementation
 
 ## Context
 
@@ -47,3 +47,5 @@ Storefront V2 must not be copied into `Storefront.Starter`. Starter work, when a
 ## Amendment
 
 Later phases on 2026-07-24 introduced the neutral runtime package, Starter, Sample, and StorefrontBuilder proof projects. The current source of truth for that implemented surface is [StorefrontBuilder Architecture](../11-storefront-builder.md).
+
+On 2026-07-27, [Storefront Presentation Foundation](2026-07-27-storefront-presentation-foundation.md) moved shared App/Routes/page services/BFF/SEO/media composition out of Storefront V2 and into `BlazorShop.Storefront.Presentation`. Storefront V2 is now the production host/visual implementation for that shared application engine.

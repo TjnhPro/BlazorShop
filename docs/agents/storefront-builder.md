@@ -18,7 +18,8 @@ StorefrontBuilder is development-time tooling. Do not add it as a production ASP
 Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
-- Consume `BlazorShop.Storefront.Client` and `BlazorShop.Storefront.Runtime` through package boundaries.
+- Consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries when they need the full storefront application surface.
+- Use Storefront Presentation for shared App/Routes/page services/BFF/SEO/media composition. Generated projects provide views, assets, copy, feature manifests, and host configuration instead of recreating application logic.
 - Register `BlazorShop.Storefront.Runtime` only in the generated server/BFF host, with `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow hosts. Do not use retired compatibility aliases.
 - Use `BlazorShop.Storefront.Components` only through a package boundary when reusable browser-safe contracts/headless behavior or Browser local API primitives are needed.
 - Keep protected browser actions behind same-origin BFF endpoints.
@@ -37,6 +38,7 @@ Generated storefronts must not:
 - Copy Storefront V2 transport internals.
 - Copy or import retired `BlazorShop.Storefront.Components.Features` wrappers. Generated storefronts must use shared `Contracts`, `Headless`, and `Browser` primitives and render project-local DOM/CSS.
 - Use Components `Features` wrappers as the generated/custom storefront presentation source.
+- Generate route/BFF/SEO/media application logic from scratch when Storefront Presentation already owns the shared surface.
 - Write store-specific output into `BlazorShop.Storefront.Starter`.
 
 ## Protected Areas
@@ -46,6 +48,7 @@ Treat these as contract surfaces:
 - `BlazorShop.Storefront.Client` generated transport and DTOs.
 - `contracts/storefront/storefront.openapi.json` canonical Storefront OpenAPI contract and `scripts/qa/run-storefront-client-regeneration-gate.ps1` package release gate.
 - `BlazorShop.Storefront.Runtime` security, error, capability, and client-registration primitives.
+- `BlazorShop.Storefront.Presentation` App/Routes/page services/BFF/SEO/media composition and view-slot contracts.
 - `BlazorShop.Storefront.Components` browser-safe contracts/headless/browser primitives package; retired `Features` wrappers must not be reintroduced without a new architecture decision.
 - Generated storefront `StorefrontPackageVersions.props`.
 - Generated storefront `starter-generation.contract.yaml`.
