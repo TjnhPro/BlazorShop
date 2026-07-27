@@ -47,6 +47,7 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
                 [FromForm] StorefrontCheckoutForm form,
                 StorefrontCartTokenService cartTokenService,
                 IStorefrontRuntimeCheckoutFacade checkoutFacade,
+                IStorefrontSessionResolver sessionResolver,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
@@ -79,6 +80,7 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
                     cartToken,
                     startResult.Value.CheckoutSessionId.GetValueOrDefault(),
                     BuildCheckoutAddressStepRequest(form),
+                    await ResolveOptionalAccessTokenAsync(sessionResolver, cancellationToken),
                     cancellationToken);
                 if (!addressResult.Success || addressResult.Value is null)
                 {
@@ -180,6 +182,7 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
                 StorefrontCartTokenService cartTokenService,
                 IStorefrontDisplayContextProvider displayContextProvider,
                 IStorefrontPriceFormatter priceFormatter,
+                IStorefrontSessionResolver sessionResolver,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -194,6 +197,7 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
                     guard.CartToken!,
                     request.CheckoutSessionId,
                     ToCheckoutAddressStepRequest(request),
+                    await ResolveOptionalAccessTokenAsync(sessionResolver, cancellationToken),
                     cancellationToken);
                 return await ToLocalCheckoutStateResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
             }).RequireRateLimiting(StorefrontPresentationRateLimitPolicyNames.LocalCart);
@@ -341,6 +345,16 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
             }).RequireRateLimiting(StorefrontPresentationRateLimitPolicyNames.LocalCart);
 
             return app;
+        }
+
+        private static async Task<string?> ResolveOptionalAccessTokenAsync(
+            IStorefrontSessionResolver sessionResolver,
+            CancellationToken cancellationToken)
+        {
+            var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
+            return session.IsAuthenticated && !string.IsNullOrWhiteSpace(session.AccessToken)
+                ? session.AccessToken
+                : null;
         }
     }
 }

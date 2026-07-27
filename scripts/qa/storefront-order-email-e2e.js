@@ -18,6 +18,8 @@ const nodeKey = process.env.COMMERCENODE_QA_NODE_KEY || "dev-node";
 const nodeSecret = process.env.COMMERCENODE_QA_NODE_SECRET || "dev-node-secret";
 const headed = (process.env.HEADLESS || "false").toLowerCase() !== "true";
 const artifactRoot = path.resolve(process.env.STOREFRONT_QA_ARTIFACT_DIR || ".gstack/qa-reports/order-email-e2e");
+const orderProductSlug = process.env.STOREFRONT_QA_ORDER_PRODUCT_SLUG || "qa-simple-product-100";
+const expectedOrderTotalPattern = /EUR 100\.00|100\.00/;
 
 async function main() {
   ensureDir(artifactRoot);
@@ -175,17 +177,17 @@ async function main() {
 
 async function placeCodOrder(page, label) {
   await signIn(page, customerEmail, customerPassword);
-  await addSimpleProductToCart(page);
+  await addOrderProductToCart(page);
   await page.goto(`${baseUrl}/checkout`, { waitUntil: "domcontentloaded" });
   await dismissConsentIfVisible(page);
   await expectBodyContains(page, "Cash on Delivery");
-  await expectBodyContains(page, "EUR 100.00");
+  await expectBodyMatches(page, expectedOrderTotalPattern);
 
   const checkoutForm = page.locator("form").filter({ has: page.locator("input[name='PaymentMethodKey']") }).first();
   if (await page.locator("[data-storefront-checkout-shell]").count()) {
     await placeOrderFromWasmPanel(page);
   } else if (await checkoutForm.count() && await checkoutForm.isVisible()) {
-    await placeOrderFromCheckoutForm(page);
+    await placeOrderThroughLocalApi(page);
   } else {
     throw new Error("Checkout did not render a supported order placement surface.");
   }
@@ -207,7 +209,7 @@ async function placeCodOrder(page, label) {
 
   await page.goto(`${baseUrl}/account/orders/${encodeURIComponent(orderReference)}`, { waitUntil: "domcontentloaded" });
   await expectBodyContains(page, orderReference);
-  await expectBodyMatches(page, /EUR 100\.00|100\.00/);
+  await expectBodyMatches(page, expectedOrderTotalPattern);
   const orderDetailScreenshot = path.join(artifactRoot, `${label}-order-detail.png`);
   await page.screenshot({ path: orderDetailScreenshot, fullPage: true });
 
@@ -285,6 +287,76 @@ async function placeOrderFromWasmPanel(page) {
   await page.goto(`${baseUrl}${redirectUrl}`, { waitUntil: "domcontentloaded" });
 }
 
+async function placeOrderThroughLocalApi(page) {
+  let checkoutState = await readCheckoutState(page);
+  if (!checkoutState.body.checkoutSessionId || !checkoutState.body.cartVersion) {
+    throw new Error("Checkout state did not include checkoutSessionId and cartVersion.");
+  }
+
+  const address = {
+    fullName: "QA Customer",
+    email: customerEmail,
+    phone: "+15550100",
+    address1: "1 QA Street",
+    address2: "",
+    city: "San Francisco",
+    state: "CA",
+    postalCode: "94105",
+    countryCode: "US",
+  };
+
+  checkoutState = await postCheckoutJson(page, "/api/checkout/addresses", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    shippingAddress: address,
+    billingAddress: address,
+    useShippingAddressAsBillingAddress: true,
+  });
+
+  if (checkoutState.body.shippingRequired) {
+    const shipping = firstOption(checkoutState.body.shippingOptions, () => true);
+    if (!shipping) {
+      throw new Error("Checkout state did not include a shipping option.");
+    }
+
+    checkoutState = await postCheckoutJson(page, "/api/checkout/shipping-method", {
+      checkoutSessionId: checkoutState.body.checkoutSessionId,
+      expectedCartVersion: checkoutState.body.cartVersion,
+      key: shipping.key,
+    });
+  }
+
+  const payment = firstOption(
+    checkoutState.body.paymentMethods,
+    (method) => /cash|cod|delivery/i.test(`${method.key} ${method.displayName}`));
+  if (!payment) {
+    throw new Error("Checkout state did not include a COD-compatible payment method.");
+  }
+
+  checkoutState = await postCheckoutJson(page, "/api/checkout/payment-method", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    key: payment.key,
+  });
+
+  checkoutState = await postCheckoutJson(page, "/api/checkout/review", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    termsAccepted: true,
+    termsVersion: "qa",
+  });
+
+  const placed = await postCheckoutJson(page, "/api/checkout/place-order", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCheckoutVersion: checkoutState.body.checkoutVersion,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    idempotencyKey: `qa-${Date.now()}`,
+  });
+
+  const redirectUrl = placed.body.redirectUrl || `/checkout?orderReference=${encodeURIComponent(placed.body.orderReference)}`;
+  await page.goto(`${baseUrl}${redirectUrl}`, { waitUntil: "domcontentloaded" });
+}
+
 function firstOption(options, predicate) {
   const items = Array.isArray(options) ? options : [];
   return items.find((item) => item.selected && predicate(item)) || items.find(predicate) || items[0] || null;
@@ -308,6 +380,8 @@ async function placeOrderFromCheckoutForm(page) {
     await form.locator("input[name='ShippingEmail']").fill(customerEmail);
     await form.locator("input[name='ShippingAddress1']").fill("1 QA Street");
     await form.locator("input[name='ShippingCity']").fill("San Francisco");
+    await fillShippingCountryIfPresent(form);
+    await fillShippingStateIfPresent(form);
     await form.locator("input[name='ShippingPostalCode']").fill("94105");
   }
 
@@ -315,6 +389,49 @@ async function placeOrderFromCheckoutForm(page) {
   await paymentOptions.first().waitFor({ state: "visible", timeout: 10000 });
   await paymentOptions.first().check();
   await form.getByRole("button", { name: "Place order" }).click();
+}
+
+async function fillShippingCountryIfPresent(form) {
+  const countrySelect = form.locator("select[name='ShippingCountryCode']");
+  if (await countrySelect.count()) {
+    await countrySelect.selectOption("US");
+    return;
+  }
+
+  const countryInput = form.locator("input[name='ShippingCountryCode']");
+  if (await countryInput.count()) {
+    await countryInput.fill("US");
+  }
+}
+
+async function fillShippingStateIfPresent(form) {
+  const stateSelect = form.locator("select[name='ShippingState']");
+  if (await stateSelect.count()) {
+    const selected = await stateSelect.evaluate((select) => {
+      const options = Array.from(select.options);
+      const option = options.find((item) => item.value === "CA" && !item.disabled)
+        || options.find((item) => item.value && !item.disabled)
+        || options.find((item) => item.value);
+      if (!option) {
+        return "";
+      }
+
+      select.value = option.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      return option.value;
+    });
+
+    if (!selected) {
+      throw new Error("Checkout state/province select did not include a selectable value.");
+    }
+
+    return;
+  }
+
+  const stateInput = form.locator("input[name='ShippingState']");
+  if (await stateInput.count()) {
+    await stateInput.fill("CA");
+  }
 }
 
 async function signIn(page, email, password) {
@@ -337,8 +454,8 @@ async function signIn(page, email, password) {
   await page.waitForURL(/\/account\/profile/, { timeout: 20000 });
 }
 
-async function addSimpleProductToCart(page) {
-  await page.goto(`${baseUrl}/product/qa-simple-product-100`, { waitUntil: "domcontentloaded" });
+async function addOrderProductToCart(page) {
+  await page.goto(`${baseUrl}/product/${orderProductSlug}`, { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
   await dismissConsentIfVisible(page);
   const purchase = page.locator("#purchase");

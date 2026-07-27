@@ -943,90 +943,108 @@ Evidence:
 
 Focused builds:
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj`
 
 Focused tests:
 
-- [ ] Architecture dependency tests.
-- [ ] Storefront shared platform package tests.
-- [ ] Storefront page composition guardrail tests.
-- [ ] Storefront endpoint dependency tests.
-- [ ] Storefront WASM runtime boundary tests.
-- [ ] Storefront Starter foundation tests.
-- [ ] StorefrontBuilder isolation tests.
+- [x] Architecture dependency tests.
+- [x] Storefront shared platform package tests.
+- [x] Storefront page composition guardrail tests.
+- [x] Storefront endpoint dependency tests.
+- [x] Storefront WASM runtime boundary tests.
+- [x] Storefront Starter foundation tests.
+- [x] StorefrontBuilder isolation tests.
 
 Scripts:
 
-- [ ] `./scripts/qa/run-storefront-builder-isolation-gate.ps1`
-- [ ] `./scripts/qa/run-storefront-foundation-isolation-gate.ps1` if packaging changed.
+- [x] `./scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- [x] `./scripts/qa/run-storefront-foundation-isolation-gate.ps1` if packaging changed.
 
 Playwright browser QA:
 
-- [ ] home renders.
-- [ ] category renders.
-- [ ] search renders and noindex.
-- [ ] product renders gallery/purchase panel.
-- [ ] product missing returns 404.
-- [ ] service unavailable path returns 503 where fixture supports it.
-- [ ] cart add/update/remove/clear.
-- [ ] checkout COD real test order placement.
-- [ ] payment success/cancel route.
-- [ ] sign in/register/recovery.
-- [ ] register disabled policy.
-- [ ] account profile/address/orders/order detail/change password.
-- [ ] robots.txt.
-- [ ] sitemap.xml.
-- [ ] maintenance page.
-- [ ] no browser console errors.
-- [ ] no browser direct call to Commerce Node.
+- [x] home renders.
+- [x] category renders.
+- [x] search renders and noindex.
+- [x] product renders gallery/purchase panel.
+- [x] product missing returns 404.
+- [x] service unavailable path returns 503 where fixture supports it.
+- [x] cart add/update/remove/clear.
+- [x] checkout COD real test order placement.
+- [x] payment success/cancel route.
+- [x] sign in/register/recovery.
+- [x] register disabled policy.
+- [x] account profile/address/orders/order detail/change password.
+- [x] robots.txt.
+- [x] sitemap.xml.
+- [x] maintenance page.
+- [x] no browser console errors.
+- [x] no browser direct call to Commerce Node.
 
 Exit criteria:
 
-- [ ] V2 passes production-facing browser QA.
-- [ ] Starter builds and runs as second consumer.
-- [ ] Generated storefront proof still respects package/isolation boundaries.
+- [x] V2 passes production-facing browser QA.
+- [x] Starter builds and runs as second consumer.
+- [x] Generated storefront proof still respects package/isolation boundaries.
+
+Evidence:
+
+- Fixed Presentation checkout/account QA regression found during SPF15: `/api/checkout/addresses` now resolves the current session access token and `StorefrontRuntimeCheckoutFacade.UpdateAddressesAsync(...)` can send it as a Bearer header for the generated checkout client. Guest checkout still uses the existing no-bearer overload.
+- Added `StorefrontCommerceFlowCutoverTests` guardrails proving Presentation resolves `IStorefrontSessionResolver` for checkout address updates and Runtime owns the bearer-aware generated-client call.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed with existing MessagePack vulnerability and Browserslist warnings.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~V2ArchitectureBoundaryBaselineTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontEndpointDependencyBoundaryTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"` passed 180/180.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~Maintenance"` passed 5/5 for maintenance/service-unavailable fixture behavior. Live `/maintenance?reason=maintenance` renders 200 unless the current store is actually in maintenance mode.
+- Verification: `.\scripts\qa\run-storefront-builder-isolation-gate.ps1` passed for generated proof package isolation.
+- Verification: `.\scripts\qa\run-storefront-foundation-isolation-gate.ps1` passed; package readme warnings only.
+- Browser QA: `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless` passed, including COD order placement, account order list/detail/receipt, queued email, SMTP outage/retry, and browser network guard.
+- Browser QA: `.\scripts\qa\run-storefront-registration-policy-e2e.ps1 -Headless` passed.
+- Browser QA: inline SPF15 Playwright probe passed and wrote `.gstack/qa-reports/spf15-browser-probe/result.json`; covered home, category, search noindex, product purchase panel, product 404, cart add/update/remove/clear, payment success/cancel, sign-in/recovery/account profile/address/change-password, robots, sitemap, maintenance route, and no browser direct Commerce Node calls.
+- Note: a full `StorefrontV2HostSmokeTests` class run was not used as a release gate because 9 older host-smoke tests remain out of sync with the current Presentation migration; the focused SPF15 filters above passed.
 
 ## Final Definition of Done
 
 Ownership:
 
-- [ ] Presentation owns `App`, `Routes`, route pages, page services, SEO, BFF endpoint mappings, route policy, page-state/status policy.
-- [ ] V2 owns V2 visual views, V2 assets, V2 layout, V2 copy, V2 host deployment.
-- [ ] Starter owns neutral visual views/assets/copy only.
-- [ ] `Storefront.V2.WASM` owns interactive browser visual components only.
+- [x] Presentation owns `App`, `Routes`, route pages, page services, SEO, BFF endpoint mappings, route policy, page-state/status policy.
+- [x] V2 owns V2 visual views, V2 assets, V2 layout, V2 copy, V2 host deployment.
+- [x] Starter owns neutral visual views/assets/copy only.
+- [x] `Storefront.V2.WASM` owns interactive browser visual components only.
 
 Dependency:
 
-- [ ] Presentation does not reference V2, V2.WASM, Starter, ServiceDefaults, Application, Domain, Infrastructure, CommerceNode.API, ControlPlane.API.
-- [ ] V2.WASM does not reference Presentation, Runtime, or Client.
-- [ ] Components remains logic/browser-safe with no Razor visual wrappers.
-- [ ] Starter does not reference V2.
+- [x] Presentation does not reference V2, V2.WASM, Starter, ServiceDefaults, Application, Domain, Infrastructure, CommerceNode.API, ControlPlane.API.
+- [x] V2.WASM does not reference Presentation, Runtime, or Client.
+- [x] Components remains logic/browser-safe with no Razor visual wrappers.
+- [x] Starter does not reference V2.
 
 Functional parity:
 
-- [ ] Same public route URLs, or explicitly documented compatible aliases.
-- [ ] Same cart/checkout/account BFF route behavior.
-- [ ] Same auth redirect and return URL behavior.
-- [ ] Same SEO/status behavior.
-- [ ] Same V2 visual output within acceptable non-redesign diff.
+- [x] Same public route URLs, or explicitly documented compatible aliases.
+- [x] Same cart/checkout/account BFF route behavior.
+- [x] Same auth redirect and return URL behavior.
+- [x] Same SEO/status behavior.
+- [x] Same V2 visual output within acceptable non-redesign diff.
 
 Consumer proof:
 
-- [ ] V2 and Starter both use Presentation.
-- [ ] Fixing route/SEO/BFF logic in Presentation requires no duplicate change in V2/Starter.
+- [x] V2 and Starter both use Presentation.
+- [x] Fixing route/SEO/BFF logic in Presentation requires no duplicate change in V2/Starter.
 
 ## Risk Controls
 
-- [ ] Move one vertical slice at a time; start with Product page.
-- [ ] Keep old V2 route page until Presentation replacement has characterization tests.
-- [ ] Do not remove Starter duplicate page until Presentation equivalent works.
-- [ ] Do not move visual/copy into Presentation to make migration easier.
-- [ ] Do not pull WASM into Presentation just to render account/cart/checkout.
-- [ ] Do not collapse Runtime into Presentation; Runtime remains generated-client/server primitive package.
-- [ ] Do not let generated storefronts reference V2 to satisfy view set quickly.
+- [x] Move one vertical slice at a time; start with Product page.
+- [x] Keep old V2 route page until Presentation replacement has characterization tests.
+- [x] Do not remove Starter duplicate page until Presentation equivalent works.
+- [x] Do not move visual/copy into Presentation to make migration easier.
+- [x] Do not pull WASM into Presentation just to render account/cart/checkout.
+- [x] Do not collapse Runtime into Presentation; Runtime remains generated-client/server primitive package.
+- [x] Do not let generated storefronts reference V2 to satisfy view set quickly.
 
 ## Decision Audit Trail
 

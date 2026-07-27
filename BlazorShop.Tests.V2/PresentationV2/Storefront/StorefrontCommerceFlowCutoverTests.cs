@@ -168,6 +168,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StartAsync", checkoutFacade, StringComparison.Ordinal);
             Assert.Contains("LoadAsync", checkoutFacade, StringComparison.Ordinal);
             Assert.Contains("UpdateAddressesAsync", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("string? bearerToken", checkoutFacade, StringComparison.Ordinal);
+            Assert.Contains("AuthenticationHeaderValue(\"Bearer\"", checkoutFacade, StringComparison.Ordinal);
             Assert.Contains("SelectShippingMethodAsync", checkoutFacade, StringComparison.Ordinal);
             Assert.Contains("SelectPaymentMethodAsync", checkoutFacade, StringComparison.Ordinal);
             Assert.Contains("ReviewAsync", checkoutFacade, StringComparison.Ordinal);
@@ -193,6 +195,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("app.MapGet(\"/api/checkout\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/addresses\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontSessionResolver sessionResolver", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("ResolveOptionalAccessTokenAsync(sessionResolver, cancellationToken)", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/shipping-method\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/payment-method\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/review\"", checkoutEndpoints, StringComparison.Ordinal);

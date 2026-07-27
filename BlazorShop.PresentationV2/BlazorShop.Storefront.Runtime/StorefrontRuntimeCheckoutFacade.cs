@@ -1,8 +1,10 @@
 namespace BlazorShop.Storefront.Runtime
 {
+    using System.Net.Http.Headers;
     using BlazorShop.Storefront.Client;
 
     using GeneratedCheckoutClient = BlazorShop.Storefront.Client.IStorefrontCheckoutClient;
+    using GeneratedCheckoutClientImplementation = BlazorShop.Storefront.Client.StorefrontCheckoutClient;
 
     public interface IStorefrontRuntimeCheckoutFacade
     {
@@ -24,6 +26,13 @@ namespace BlazorShop.Storefront.Runtime
             string? cartToken,
             Guid checkoutSessionId,
             StorefrontCheckoutAddressStepRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> UpdateAddressesAsync(
+            string? cartToken,
+            Guid checkoutSessionId,
+            StorefrontCheckoutAddressStepRequest request,
+            string? bearerToken,
             CancellationToken cancellationToken = default);
 
         Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> SelectShippingMethodAsync(
@@ -53,13 +62,16 @@ namespace BlazorShop.Storefront.Runtime
     {
         private readonly IStorefrontRuntimeContext context;
         private readonly GeneratedCheckoutClient checkoutClient;
+        private readonly IHttpClientFactory httpClientFactory;
 
         public StorefrontRuntimeCheckoutFacade(
             IStorefrontRuntimeContext context,
-            GeneratedCheckoutClient checkoutClient)
+            GeneratedCheckoutClient checkoutClient,
+            IHttpClientFactory httpClientFactory)
         {
             this.context = context;
             this.checkoutClient = checkoutClient;
+            this.httpClientFactory = httpClientFactory;
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutPreviewResponse>> PreviewAsync(
@@ -114,13 +126,24 @@ namespace BlazorShop.Storefront.Runtime
             StorefrontCheckoutAddressStepRequest request,
             CancellationToken cancellationToken = default)
         {
+            return this.UpdateAddressesAsync(cartToken, checkoutSessionId, request, null, cancellationToken);
+        }
+
+        public Task<StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>> UpdateAddressesAsync(
+            string? cartToken,
+            Guid checkoutSessionId,
+            StorefrontCheckoutAddressStepRequest request,
+            string? bearerToken,
+            CancellationToken cancellationToken = default)
+        {
             if (checkoutSessionId == Guid.Empty)
             {
                 return Task.FromResult(StorefrontRuntimeSubmitResult<StorefrontCheckoutSessionResponse>.Failed(BadRequest("Checkout session is required.")));
             }
 
+            var client = this.CreateCheckoutClient(bearerToken);
             return ExecuteAsync<StorefrontCheckoutSessionResponseCommerceNodeApiResponse, StorefrontCheckoutSessionResponse>(
-                storeKey => this.checkoutClient.UpdateAddressesAsync(checkoutSessionId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
+                storeKey => client.UpdateAddressesAsync(checkoutSessionId, NormalizeToken(cartToken), storeKey, request, cancellationToken),
                 envelope => envelope.Success,
                 envelope => envelope.Data,
                 envelope => envelope.Message,
@@ -222,6 +245,18 @@ namespace BlazorShop.Storefront.Runtime
         private static string? NormalizeToken(string? cartToken)
         {
             return string.IsNullOrWhiteSpace(cartToken) ? null : cartToken.Trim();
+        }
+
+        private GeneratedCheckoutClient CreateCheckoutClient(string? bearerToken)
+        {
+            if (string.IsNullOrWhiteSpace(bearerToken))
+            {
+                return this.checkoutClient;
+            }
+
+            var httpClient = this.httpClientFactory.CreateClient(StorefrontRuntimeServiceCollectionExtensions.GeneratedClientHttpClientName);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken.Trim());
+            return new GeneratedCheckoutClientImplementation(httpClient);
         }
 
         private static StorefrontRuntimeError BadRequest(string message)
