@@ -1,10 +1,30 @@
-@page "/checkout"
+@using BlazorShop.Storefront.Presentation.Services.Checkout
 
 <PageTitle>Checkout</PageTitle>
 <h1>Checkout</h1>
 <PlaceholderState
-    Title="Checkout shell"
-    Message="Checkout state and order placement stay backend-authoritative through BFF commands."
+    Title="@Title"
+    Message="@Message"
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
-<CheckoutStepShell StepNumber="1" Title="Contact and shipping" />
+<CheckoutStepShell StepNumber="1" Title="Contact and shipping">
+    @if (Context.Lines.Count > 0)
+    {
+        <p>@Context.Lines.Count item(s) ready for checkout.</p>
+    }
+</CheckoutStepShell>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutPageContext Context { get; set; } = default!;
+
+    private string Title => Context.HasOrderReference
+        ? "Order placed"
+        : Context.Lines.Count == 0
+            ? "Cart is empty"
+            : "Checkout shell";
+
+    private string Message => Context.HasOrderReference
+        ? $"Order reference {Context.OrderReference}."
+        : Context.CheckoutState.Message ?? "Checkout state and order placement stay backend-authoritative through BFF commands.";
+}

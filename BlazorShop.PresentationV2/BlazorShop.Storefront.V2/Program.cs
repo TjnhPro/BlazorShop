@@ -29,7 +29,7 @@ app.MapStorefrontPresentationAuthEndpoints();
 app.MapStorefrontAuthFormEndpoints();
 app.MapStorefrontPresentationCartEndpoints();
 app.MapStorefrontAccountEndpoints();
-app.MapStorefrontCheckoutEndpoints();
+app.MapStorefrontPresentationCheckoutEndpoints();
 app.MapStorefrontConsentEndpoints();
 app.MapStorefrontPresentationSeoEndpoints();
 app.MapStorefrontMediaEndpoints();

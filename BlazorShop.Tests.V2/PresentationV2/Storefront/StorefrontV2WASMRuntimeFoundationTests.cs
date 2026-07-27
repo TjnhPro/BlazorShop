@@ -448,18 +448,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutPage_HostsInteractiveWasmCheckoutShellWithServerSnapshot()
         {
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor");
-            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor.cs");
+            var pageService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Checkout/StorefrontCheckoutPageService.cs");
+            var pageContext = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Checkout/StorefrontCheckoutPageContext.cs");
 
             Assert.Contains("<StorefrontCheckoutShell", page, StringComparison.Ordinal);
             Assert.DoesNotContain("<CheckoutShell", page, StringComparison.Ordinal);
-            Assert.Contains("InitialState=\"CheckoutState\"", page, StringComparison.Ordinal);
+            Assert.Contains("InitialState=\"Context.CheckoutState\"", page, StringComparison.Ordinal);
             Assert.Contains("DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"", page, StringComparison.Ordinal);
             Assert.Contains("ShowPanel=\"false\"", page, StringComparison.Ordinal);
             Assert.Contains("Actions=\"StorefrontCheckoutShellOptions.Actions\"", page, StringComparison.Ordinal);
             Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", page, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
-            Assert.Contains("StorefrontBrowserCheckoutState", codeBehind, StringComparison.Ordinal);
-            Assert.Contains("ToBrowserCheckoutState(checkoutSession)", codeBehind, StringComparison.Ordinal);
+            Assert.DoesNotContain("@page", page, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBrowserCheckoutState", pageContext, StringComparison.Ordinal);
+            Assert.Contains("ToBrowserCheckoutState(checkoutResult.Value", pageService, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -489,12 +491,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutLocalEndpoints_KeepCartTokenAndStaleVersionChecksServerSide()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
-            var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
-            var support = ReadStorefrontLocalEndpointSupportSource();
+            var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
+            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs");
             var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiTransport.cs");
 
-            Assert.Contains("app.MapStorefrontCheckoutEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/checkout\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/addresses\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/shipping-method\"", checkoutEndpoints, StringComparison.Ordinal);
@@ -503,14 +505,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("ValidateLocalCheckoutCommandAsync", support, StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.CartToken", support, StringComparison.Ordinal);
-            Assert.Contains("expectedCartVersion > 0 && expectedCartVersion != cartResult.Data.Version", support, StringComparison.Ordinal);
+            Assert.Contains("expectedCartVersion > 0 && expectedCartVersion != cartResolution.Cart.Version", support, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status409Conflict", support, StringComparison.Ordinal);
             Assert.Contains("Your cart changed. Review the latest cart and try checkout again.", support, StringComparison.Ordinal);
             Assert.Contains("ExpectedCheckoutVersion = request.ExpectedCheckoutVersion", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("IdempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey)", checkoutEndpoints, StringComparison.Ordinal);
-            Assert.Contains("IStorefrontSessionResolver sessionResolver", checkoutEndpoints, StringComparison.Ordinal);
-            Assert.Contains("customerSession.IsAuthenticated", checkoutEndpoints, StringComparison.Ordinal);
-            Assert.Contains("customerAccessToken", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeCheckoutFacade checkoutFacade", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("IAntiforgery antiforgery", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCookieNames.CartToken", checkoutEndpoints + support, StringComparison.Ordinal);
             Assert.Contains("string? bearerToken = null", apiClient, StringComparison.Ordinal);
             Assert.Contains("message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(\"Bearer\", bearerToken)", apiClient, StringComparison.Ordinal);
             Assert.Contains("\"Unable to update checkout address right now.\",", apiClient, StringComparison.Ordinal);
@@ -532,7 +534,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Payment.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Customer.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Checkout/StorefrontCheckoutPageService.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs",
                 }.Select(ReadRepositoryFile));
 
@@ -558,7 +562,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapStorefrontAuthFormEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontCheckoutEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontMediaEndpoints();", program, StringComparison.Ordinal);

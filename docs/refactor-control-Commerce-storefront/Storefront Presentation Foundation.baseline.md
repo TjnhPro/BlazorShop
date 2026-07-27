@@ -33,8 +33,8 @@ V2 route ownership baseline:
 | content | `/pages/{Slug}` | `BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor` |
 | auth | `/signin`, `/register`, `/forgot-password`, `/reset-password` | `BlazorShop.Storefront.V2/Pages/Ssr/Auth/*` |
 | cart | `/my-cart` | `BlazorShop.Storefront.Presentation/Pages/Ssr/Cart/CartRoutePage.razor` |
-| checkout | `/checkout` | `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor` |
-| payment | `/payment-success`, `/payment-cancel` | `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/*` |
+| checkout | `/checkout` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/CheckoutRoutePage.razor` |
+| payment | `/payment-success`, `/payment-cancel`, `/payment/result` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/PaymentResultRoutePage.razor` |
 | account host | `/account`, `/account/{*Path}` | `BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor` |
 | system | `/maintenance`, `/{*Path:nonfile}` | `BlazorShop.Storefront.V2/Pages/Ssr/System/*` |
 
@@ -50,8 +50,8 @@ Starter route ownership baseline:
 | content | `/content/{Slug}` | `BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor` |
 | auth | `/signin` | `BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor` |
 | cart | `/cart` | `BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor` |
-| checkout | `/checkout` | `BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor` |
-| payment | `/payment/result` | `BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/PaymentResultPage.razor` |
+| checkout | `/checkout` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/CheckoutRoutePage.razor`; Starter supplies `CheckoutPage` view |
+| payment | `/payment/result` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/PaymentResultRoutePage.razor`; Starter supplies `PaymentResultPage` view |
 | account host | `/account`, `/account/{*Path}` | `BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor` |
 | system | `/maintenance`, `/not-found` | `BlazorShop.Storefront.Starter/Pages/Ssr/System/*` |
 
@@ -67,7 +67,7 @@ V2 endpoint ownership baseline:
 
 - Auth form endpoints: `POST /signin`, `/register`, `/forgot-password`, `/reset-password`, `/logout`, account form posts, currency preference, and checkout form post through `StorefrontAuthFormEndpoints`.
 - Cart BFF endpoints: `GET /api/cart`, `POST /api/product-selection-preview`, `POST /api/cart/lines`, `PUT /api/cart/lines/{lineId:guid}`, `DELETE /api/cart/lines/{lineId:guid}`, `DELETE /api/cart`, `POST /api/cart/recalculate` now live in `BlazorShop.Storefront.Presentation`.
-- Checkout BFF endpoints: `GET /api/checkout`, `POST /api/checkout/addresses`, `/shipping-method`, `/payment-method`, `/review`, `/place-order`.
+- Checkout BFF endpoints: `GET /api/checkout`, `POST /api/checkout/addresses`, `/shipping-method`, `/payment-method`, `/review`, `/place-order` now live in `BlazorShop.Storefront.Presentation`.
 - Account BFF endpoints: profile, addresses, orders, order receipt, and change password under `/api/account/*`.
 - Consent endpoints: `GET /api/consent/current`, `POST /api/consent`, `POST /api/consent/revoke`.
 - SEO endpoints: `GET /robots.txt`, `GET /sitemap.xml`.

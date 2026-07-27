@@ -121,7 +121,7 @@ Endpoint groups currently present:
 
 - `/api/account/*` in `StorefrontAccountEndpoints.cs` and `StorefrontAuthFormEndpoints.cs`
 - `/api/cart` and `/api/product-selection-preview` in `StorefrontCartEndpoints.cs`
-- `/api/checkout/*` in `StorefrontCheckoutEndpoints.cs`
+- `/api/checkout/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs` (successor to the retired V2 `StorefrontCheckoutEndpoints.cs`)
 - `/api/consent/*` in `StorefrontConsentEndpoints.cs`
 - `/api/media/*` in `StorefrontMediaEndpoints.cs`
 - SEO/sitemap/robots helpers in `StorefrontSeoEndpoints.cs`

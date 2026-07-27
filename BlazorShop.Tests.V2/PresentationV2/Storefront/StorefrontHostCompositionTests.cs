@@ -19,7 +19,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontCheckoutEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontMediaEndpoints();", program, StringComparison.Ordinal);

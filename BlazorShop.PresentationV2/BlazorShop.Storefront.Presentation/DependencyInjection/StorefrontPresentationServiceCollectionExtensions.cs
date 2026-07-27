@@ -8,6 +8,7 @@ using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Services.Auth;
 using BlazorShop.Storefront.Presentation.Services.Cart;
 using BlazorShop.Storefront.Presentation.Services.Catalog;
+using BlazorShop.Storefront.Presentation.Services.Checkout;
 using BlazorShop.Storefront.Presentation.Services.Content;
 using BlazorShop.Storefront.Presentation.Services.Product;
 using BlazorShop.Storefront.Services;
@@ -45,11 +46,13 @@ public static class StorefrontPresentationServiceCollectionExtensions
         services.AddScoped<IStorefrontCartMergeService>(serviceProvider => serviceProvider.GetRequiredService<StorefrontCartTokenService>());
         services.AddScoped<StorefrontAuthPageService>();
         services.AddScoped<StorefrontCartPageService>();
+        services.AddScoped<StorefrontCheckoutPageService>();
         services.AddScoped<StorefrontContentPageService>();
         services.AddScoped<StorefrontCategoryPageService>();
         services.AddScoped<StorefrontDealsPageService>();
         services.AddScoped<StorefrontHomePageService>();
         services.AddScoped<StorefrontNewReleasesPageService>();
+        services.AddScoped<StorefrontPaymentResultPageService>();
         services.AddScoped<StorefrontProductPageService>();
         services.AddScoped<StorefrontSearchPageService>();
 

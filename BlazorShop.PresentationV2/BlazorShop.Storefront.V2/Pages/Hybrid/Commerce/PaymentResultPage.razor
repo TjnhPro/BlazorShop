@@ -1,0 +1,46 @@
+@using BlazorShop.Storefront.Presentation.Services.Checkout
+
+<PageTitle>Payment status</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+    @if (Context.IsPending)
+    {
+        <meta http-equiv="refresh" content="5" />
+    }
+</HeadContent>
+
+<section class="mx-auto max-w-3xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+    <article class="@Context.PanelClass">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] @Context.EyebrowClass">@Context.Eyebrow</p>
+        <h1 class="mt-2 text-4xl font-extrabold tracking-tight @Context.HeadingClass">@Context.Heading</h1>
+        <p class="mx-auto mt-3 max-w-xl text-base leading-7 @Context.BodyClass">@Context.Body</p>
+
+        @if (Context.Attempt is not null)
+        {
+            <dl class="mx-auto mt-6 grid max-w-md gap-3 text-left text-sm sm:grid-cols-2">
+                <div>
+                    <dt class="font-semibold @Context.MutedClass">Payment</dt>
+                    <dd class="mt-1 font-mono @Context.HeadingClass">@Context.Attempt.Id</dd>
+                </div>
+                <div>
+                    <dt class="font-semibold @Context.MutedClass">Status</dt>
+                    <dd class="mt-1 font-bold @Context.HeadingClass">@Context.Attempt.State</dd>
+                </div>
+            </dl>
+        }
+
+        <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            @if (Context.ShowRetry)
+            {
+                <a href="@StorefrontRoutes.Checkout" class="inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">Return to checkout</a>
+            }
+            <a href="@StorefrontRoutes.Home" class="inline-flex items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100">Continue shopping</a>
+        </div>
+    </article>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontPaymentResultPageContext Context { get; set; } = default!;
+}

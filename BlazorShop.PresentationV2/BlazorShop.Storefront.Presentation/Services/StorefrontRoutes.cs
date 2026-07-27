@@ -13,6 +13,7 @@ namespace BlazorShop.Storefront.Services
         public const string Checkout = "/checkout";
         public const string PaymentSuccess = "/payment-success";
         public const string PaymentCancel = "/payment-cancel";
+        public const string PaymentResult = "/payment/result";
         public const string SignIn = "/signin";
         public const string Register = "/register";
         public const string ForgotPassword = "/forgot-password";

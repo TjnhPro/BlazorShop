@@ -133,7 +133,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("LocalNotFound", endpointSources, StringComparison.Ordinal);
             Assert.Contains("LocalApiValidationError", endpointSources, StringComparison.Ordinal);
             Assert.Contains("LocalCartValidationError", endpointSources, StringComparison.Ordinal);
-            Assert.Contains("LocalConflict", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs"), StringComparison.Ordinal);
+            Assert.Contains("LocalConflict", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs"), StringComparison.Ordinal);
             Assert.DoesNotContain("Results.BadRequest(new StorefrontLocal", endpointSources, StringComparison.Ordinal);
         }
 

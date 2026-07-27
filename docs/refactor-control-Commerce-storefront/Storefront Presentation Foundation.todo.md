@@ -665,12 +665,12 @@ Exit criteria:
 
 ## Phase SPF10 - Checkout and Payment Result Migration
 
-- [ ] Move checkout route `/checkout` into Presentation.
-- [ ] Move payment result routes:
+- [x] Move checkout route `/checkout` into Presentation.
+- [x] Move payment result routes:
   - `/payment-success`
   - `/payment-cancel`
   - Starter payment result route compatibility if needed.
-- [ ] Move checkout initial context:
+- [x] Move checkout initial context:
   - cart resolution;
   - session/customer resolution;
   - address config;
@@ -678,14 +678,14 @@ Exit criteria:
   - cart version;
   - idempotency key;
   - checkout initial state.
-- [ ] Move checkout BFF endpoint mapping:
+- [x] Move checkout BFF endpoint mapping:
   - `GET /api/checkout`
   - addresses
   - shipping method
   - payment method
   - review
   - place order
-- [ ] Presentation owns:
+- [x] Presentation owns:
   - antiforgery;
   - cart version guard;
   - checkout command validation mapping;
@@ -693,16 +693,16 @@ Exit criteria:
   - payment redirect/client action result mapping;
   - private/noindex headers;
   - cart cookie clear after place-order when current behavior does so.
-- [ ] V2 owns:
+- [x] V2 owns:
   - checkout form markup;
   - order summary visual;
   - payment card visual;
   - button/copy/classes.
-- [ ] WASM owns:
+- [x] WASM owns:
   - browser-side step state;
   - interactive validation feedback;
   - same-origin BFF calls.
-- [ ] Tests:
+- [x] Tests:
   - empty cart state;
   - guest checkout if enabled;
   - saved address path if fixture exists;
@@ -711,10 +711,24 @@ Exit criteria:
   - duplicate submit/idempotency guard unchanged;
   - checkout noindex.
 
+2026-07-27 SPF10 evidence:
+
+- Added Presentation route pages for `/checkout`, `/payment-success`, `/payment-cancel`, and `/payment/result`.
+- Added `StorefrontCheckoutPageService` and `StorefrontPaymentResultPageService` in Presentation for initial checkout/payment-result context.
+- Added `StorefrontPresentationCheckoutEndpoints` and checkout local endpoint support in Presentation for same-origin checkout BFF and form POST orchestration.
+- V2 and Starter checkout/payment files are now foundation views with `Context` parameters and no `@page` declarations.
+- V2 `Program.cs` now maps `app.MapStorefrontPresentationCheckoutEndpoints();`.
+- Saved-address UI remains fixture-dependent; current migrated V2 view supports manual guest checkout and keeps saved-address bearer transport documented as a temporary exception in shared platform QA docs.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 errors.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed with existing MessagePack vulnerability and Browserslist warnings.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~V2ArchitectureBoundaryBaselineTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` passed 168/168.
+
 Exit criteria:
 
-- [ ] Checkout application orchestration nam trong Presentation.
-- [ ] V2/Starter checkout files are views, not route/BFF owners.
+- [x] Checkout application orchestration nam trong Presentation.
+- [x] V2/Starter checkout files are views, not route/BFF owners.
 
 ## Phase SPF11 - Account WasmHost and Account BFF Migration
 

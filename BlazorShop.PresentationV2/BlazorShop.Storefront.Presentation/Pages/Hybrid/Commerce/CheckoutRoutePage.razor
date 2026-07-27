@@ -1,0 +1,36 @@
+@page "/checkout"
+@namespace BlazorShop.Storefront.Presentation.Pages.Hybrid.Commerce
+@using BlazorShop.Storefront.Presentation.Services.Checkout
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@inject StorefrontCheckoutPageService PageService
+@inject StorefrontFoundationViewSet ViewSet
+
+<PageTitle>Checkout</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+@if (_context is not null)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.CheckoutPage" Context="_context" />
+}
+
+@code {
+    private StorefrontCheckoutPageContext? _context;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [SupplyParameterFromQuery(Name = "orderReference")]
+    public string? OrderReference { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
+        _context = await PageService.GetAsync(HttpContext, Error, OrderReference);
+    }
+}

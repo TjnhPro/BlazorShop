@@ -13,6 +13,7 @@ public static class StorefrontNavigationPolicy
             || path.StartsWith("/checkout", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/account", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/payment-", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/payment/", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/signin", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/register", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/forgot-password", StringComparison.OrdinalIgnoreCase)

@@ -332,13 +332,17 @@ namespace BlazorShop.Tests.Architecture
                 .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages"), "*.razor", SearchOption.AllDirectories)
                 .Select(File.ReadAllText)
                 .ToArray();
+            var presentationPages = Directory
+                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages"), "*.razor", SearchOption.AllDirectories)
+                .Select(File.ReadAllText)
+                .ToArray();
 
             Assert.Equal(["StorefrontBrandHead.razor"], v2SeoFiles);
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontSeoHead.razor")));
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontJsonLdScript.razor")));
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StaticPageSeo.razor")));
             Assert.All(v2Pages, markup => Assert.DoesNotContain("<SeoHead", markup, StringComparison.Ordinal));
-            Assert.Contains(v2Pages, markup => markup.Contains("<StorefrontSeoHead", StringComparison.Ordinal));
+            Assert.Contains(presentationPages, markup => markup.Contains("<StorefrontSeoHead", StringComparison.Ordinal));
         }
 
         [Fact]

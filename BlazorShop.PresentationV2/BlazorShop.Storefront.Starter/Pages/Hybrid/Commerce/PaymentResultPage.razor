@@ -1,9 +1,14 @@
-@page "/payment/result"
+@using BlazorShop.Storefront.Presentation.Services.Checkout
 
 <PageTitle>Payment result</PageTitle>
 <h1>Payment result</h1>
 <PlaceholderState
-    Title="Payment result"
-    Message="Provider callbacks stay out of the frontend client; result pages read safe order/payment state."
+    Title="@Context.Heading"
+    Message="@Context.Body"
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.BrowserFetch" />
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontPaymentResultPageContext Context { get; set; } = default!;
+}

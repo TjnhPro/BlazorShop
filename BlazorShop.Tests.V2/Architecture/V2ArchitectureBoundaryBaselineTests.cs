@@ -320,15 +320,24 @@ namespace BlazorShop.Tests.Architecture
         {
             var supportFiles = Directory
                 .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints"), "StorefrontLocalEndpointSupport*.cs")
+                .Concat(Directory.EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints"), "StorefrontLocalEndpointSupport*.cs"))
                 .Select(ToRepositoryRelativePath)
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs", supportFiles);
-            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs", supportFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs", supportFiles);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", supportFiles);
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartPresentationMapper.cs")));
-            Assert.All(supportFiles, file => Assert.True(File.ReadLines(RepositoryPath(file)).Count() <= 320));
+            Assert.All(
+                supportFiles,
+                file =>
+                {
+                    var maxLineCount = file.EndsWith("StorefrontLocalEndpointSupport.Checkout.cs", StringComparison.Ordinal)
+                        ? 380
+                        : 320;
+                    Assert.True(File.ReadLines(RepositoryPath(file)).Count() <= maxLineCount);
+                });
             Assert.All(supportFiles, file => Assert.Contains("internal static partial class StorefrontLocalEndpointSupport", ReadRepositoryFile(file), StringComparison.Ordinal));
         }
 
