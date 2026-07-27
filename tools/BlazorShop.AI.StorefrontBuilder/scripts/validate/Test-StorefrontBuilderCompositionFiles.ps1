@@ -15,6 +15,7 @@ function Assert-ContainsText([string]$RelativePath, [string]$Text, [string]$Rule
 }
 
 foreach ($check in @(
+    @("Components\Layout\ApplicationHead.razor", "css/storefront-builder.generated.css", "SFB-COMPOSITION-000"),
     @("Components\Layout\MainLayout.razor", "sfb-shell-header", "SFB-COMPOSITION-001"),
     @("Components\Layout\MainLayout.razor", "sfb-mobile-nav", "SFB-COMPOSITION-002"),
     @("Components\Layout\MainLayout.razor", "sfb-cart-badge", "SFB-COMPOSITION-003"),

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>
     <StorefrontRuntimePackageVersion>1.0.0-local</StorefrontRuntimePackageVersion>
+    <StorefrontPresentationPackageVersion>1.0.0-local</StorefrontPresentationPackageVersion>
     <StorefrontComponentsPackageVersion>1.0.0-local</StorefrontComponentsPackageVersion>
   </PropertyGroup>
 </Project>

@@ -4,6 +4,7 @@ param(
     [string]$Configuration = "Debug",
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
+    [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
     [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
     [switch]$Describe
 )
@@ -29,6 +30,7 @@ $projectFile = Join-Path $projectRoot "$Name.csproj"
 $packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
+$presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
 $componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
 
 if ($Describe) {
@@ -37,6 +39,7 @@ if ($Describe) {
     Write-Host "- build generated storefront"
     Write-Host "- pack BlazorShop.Storefront.Client"
     Write-Host "- pack BlazorShop.Storefront.Runtime"
+    Write-Host "- pack BlazorShop.Storefront.Presentation"
     Write-Host "- pack BlazorShop.Storefront.Components"
     Write-Host "- confirm package references, no Storefront.V2/Web.SharedV2/backend/core/API references"
     exit 0
@@ -51,6 +54,7 @@ function Clear-StorefrontLocalPackageCache {
     $packages = @(
         @{ Id = "blazorshop.storefront.client"; Version = $StorefrontClientPackageVersion },
         @{ Id = "blazorshop.storefront.runtime"; Version = $StorefrontRuntimePackageVersion },
+        @{ Id = "blazorshop.storefront.presentation"; Version = $StorefrontPresentationPackageVersion },
         @{ Id = "blazorshop.storefront.components"; Version = $StorefrontComponentsPackageVersion }
     )
 
@@ -84,6 +88,8 @@ dotnet pack $clientProject --configuration $Configuration --output $packageRoot 
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet pack $runtimeProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontRuntimePackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+dotnet pack $presentationProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontPresentationPackageVersion"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet pack $componentsProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontComponentsPackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-GeneratedNuGetConfig
@@ -93,7 +99,7 @@ dotnet build $projectFile --configuration $Configuration --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
-foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime")) {
+foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Presentation")) {
     if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
         throw "[SFB-ISOLATION-001] Generated storefront must consume '$package' as a package reference."
     }
@@ -112,7 +118,7 @@ Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
     }
 
 $metadata = Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw
-if (-not $metadata.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontComponentsPackageVersion", [System.StringComparison]::Ordinal)) {
+if (-not $metadata.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontPresentationPackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontComponentsPackageVersion", [System.StringComparison]::Ordinal)) {
     throw "[SFB-ISOLATION-003] Package compatibility metadata is missing."
 }
 

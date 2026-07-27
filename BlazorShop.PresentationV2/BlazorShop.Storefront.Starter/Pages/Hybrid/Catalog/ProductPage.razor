@@ -1,42 +1,14 @@
-@page "/product/{Slug}"
+@namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
 
-<PageTitle>@ProductTitle</PageTitle>
-<HeadContent>
-    <meta name="description" content="@ProductDescription" />
-    <link rel="canonical" href="@CanonicalUrl" />
-    <script type="application/ld+json">@((MarkupString)ProductJsonLd)</script>
-</HeadContent>
 <h1>Product detail</h1>
 <PlaceholderState
     Title="Product detail shell"
     Message="SSR snapshot supplies product data; browser interactivity may refresh after hydration."
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
-<ProductDetailShell ProductName="Product" />
+<ProductDetailShell ProductName="@Context.Product.Name" />
 
 @code {
-    [Parameter]
-    public string? Slug { get; set; }
-
-    private string ProductTitle => string.IsNullOrWhiteSpace(this.Slug)
-        ? "Product"
-        : $"Product {this.Slug}";
-
-    private string ProductDescription => $"Storefront product page for {NormalizeSlug(this.Slug)}.";
-
-    private string CanonicalUrl => $"/product/{NormalizeSlug(this.Slug)}";
-
-    private string ProductJsonLd => $$"""
-        {
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": "{{ProductTitle}}",
-          "url": "{{CanonicalUrl}}"
-        }
-        """;
-
-    private static string NormalizeSlug(string? slug)
-    {
-        return string.IsNullOrWhiteSpace(slug) ? "sample-product" : slug.Trim();
-    }
+    [Parameter, EditorRequired]
+    public StorefrontProductPageContext Context { get; set; } = default!;
 }

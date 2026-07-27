@@ -6,7 +6,7 @@ const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/g
 const target = readArg("--target") ?? "";
 
 const transforms = [
-  ["Components/App.razor", transformApp],
+  ["Components/Layout/ApplicationHead.razor", transformApplicationHead],
   ["Components/Layout/MainLayout.razor", transformLayout],
   ["Pages/Ssr/Home/HomePage.razor", transformHome],
   ["Pages/Hybrid/Catalog/CategoryPage.razor", transformCategory],
@@ -50,7 +50,7 @@ function transformLayout(content) {
     );
 }
 
-function transformApp(content) {
+function transformApplicationHead(content) {
   if (content.includes("css/storefront-builder.generated.css")) {
     return content;
   }

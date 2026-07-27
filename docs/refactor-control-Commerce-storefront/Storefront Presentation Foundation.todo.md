@@ -867,33 +867,43 @@ Exit criteria:
 
 Muc tieu: prove Presentation has at least two real consumers.
 
-- [ ] Starter references Presentation as package/project, not V2.
-- [ ] Starter removes route pages after equivalent Presentation route is active.
-- [ ] Starter keeps only:
+- [x] Starter references Presentation as package/project, not V2.
+- [x] Starter removes route pages after equivalent Presentation route is active.
+- [x] Starter keeps only:
   - neutral visual views;
   - neutral layout;
   - starter CSS/assets;
   - feature manifest;
   - copy;
   - optional unavailable placeholders.
-- [ ] Starter views accept Presentation contexts.
-- [ ] Starter does not copy V2 visual components.
-- [ ] Starter does not copy BFF/SEO/page-service logic.
-- [ ] Update Starter generation contract:
+- [x] Starter views accept Presentation contexts.
+- [x] Starter does not copy V2 visual components.
+- [x] Starter does not copy BFF/SEO/page-service logic.
+- [x] Update Starter generation contract:
   - generated storefronts consume Presentation;
   - generated storefronts provide views/assets/copy;
   - generated storefronts do not generate route/BFF/SEO logic from scratch.
-- [ ] Tests:
+- [x] Tests:
   - Starter build;
   - Starter no `@page`;
   - Starter no BFF/SEO endpoint duplicate;
   - Starter no V2 reference;
   - generated proof isolation still passes.
 
+Evidence:
+
+- Starter `ProductPage` is now a view-only component registered as `ProductPage` and accepts `StorefrontProductPageContext`; Starter has no remaining `@page` declarations.
+- Starter keeps CSS/assets/layout/view registration and ApplicationHead view injection while Presentation owns App/Routes/page services/BFF/SEO through `UseStorefrontPresentation()` and `MapStorefrontPresentation()`.
+- StorefrontBuilder generated projects consume `BlazorShop.Storefront.Presentation` as a package with `StorefrontPresentationPackageVersion`; generated proof rewrites Starter's project reference into a package reference.
+- Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings.
+- Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed with 0 errors and existing MessagePack/Browserslist warnings.
+- Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests"` passed 112/112.
+- Verification: `./scripts/qa/run-storefront-builder-generated-proof.ps1` passed including generated restore/build, static validation, and isolation gate.
+
 Exit criteria:
 
-- [ ] V2 and Starter both use same Presentation App/Routes/page services/BFF/SEO.
-- [ ] A fix in Presentation route logic benefits both.
+- [x] V2 and Starter both use same Presentation App/Routes/page services/BFF/SEO.
+- [x] A fix in Presentation route logic benefits both.
 
 ## Phase SPF14 - Documentation and Architecture Update
 

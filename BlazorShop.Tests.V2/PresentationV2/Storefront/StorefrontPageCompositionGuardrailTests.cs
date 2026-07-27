@@ -190,10 +190,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StarterPageInventory_RecordsCurrentSecondConsumerBaseline()
         {
-            var expected = new[]
-            {
-                new PageInventoryItem("Pages/Hybrid/Catalog/ProductPage.razor", "/product/{Slug}", RenderOwnership.Hybrid),
-            };
+            var expected = Array.Empty<PageInventoryItem>();
 
             var pageRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter");
 
@@ -210,6 +207,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var starterCheckoutView = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"));
             var starterPaymentResultView = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/PaymentResultPage.razor"));
             var starterAccountView = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"));
+            var starterProductView = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"));
             Assert.DoesNotContain("@page \"", starterCartView, StringComparison.Ordinal);
             Assert.Contains("StorefrontCartPageContext", starterCartView, StringComparison.Ordinal);
             Assert.DoesNotContain("@page \"", starterCheckoutView, StringComparison.Ordinal);
@@ -218,6 +216,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontPaymentResultPageContext", starterPaymentResultView, StringComparison.Ordinal);
             Assert.DoesNotContain("@page \"", starterAccountView, StringComparison.Ordinal);
             Assert.Contains("StorefrontAccountPageContext", starterAccountView, StringComparison.Ordinal);
+            Assert.DoesNotContain("@page \"", starterProductView, StringComparison.Ordinal);
+            Assert.Contains("StorefrontProductPageContext", starterProductView, StringComparison.Ordinal);
         }
 
         [Fact]

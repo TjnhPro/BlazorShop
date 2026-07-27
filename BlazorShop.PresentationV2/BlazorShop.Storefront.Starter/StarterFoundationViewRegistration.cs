@@ -22,12 +22,12 @@ public static class StarterFoundationViewRegistration
             var viewSet = StorefrontFoundationViewSet.CreateMinimal(typeof(StorefrontFoundationEmptyView));
             options.ViewSet = new StorefrontFoundationViewSet
             {
-                ApplicationHead = viewSet.ApplicationHead,
+                ApplicationHead = typeof(ApplicationHead),
                 ApplicationScripts = viewSet.ApplicationScripts,
                 MainLayout = typeof(MainLayout),
                 HomePage = typeof(HomePage),
                 CategoryPage = typeof(CategoryPage),
-                ProductPage = viewSet.ProductPage,
+                ProductPage = typeof(ProductPage),
                 SearchPage = typeof(SearchPage),
                 DealsPage = typeof(DealsPage),
                 NewReleasesPage = typeof(NewReleasesPage),

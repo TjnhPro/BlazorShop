@@ -10,6 +10,7 @@ param(
     [int]$RuntimeTimeoutSeconds = 45,
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
+    [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
     [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
     [switch]$RunBrowserQa,
     [switch]$Describe
@@ -22,6 +23,7 @@ $toolRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
 $packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
+$presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
 $componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
 
 function Resolve-RepoPath {
@@ -59,10 +61,13 @@ function Assert-UnderRoot {
 
 function Clear-StorefrontLocalPackageCache {
     $globalPackageRoot = Join-Path ([Environment]::GetFolderPath("UserProfile")) ".nuget\packages"
-    foreach ($package in @("blazorshop.storefront.client", "blazorshop.storefront.runtime", "blazorshop.storefront.components")) {
+    foreach ($package in @("blazorshop.storefront.client", "blazorshop.storefront.runtime", "blazorshop.storefront.presentation", "blazorshop.storefront.components")) {
         $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontClientPackageVersion"
         if ($package -eq "blazorshop.storefront.runtime") {
             $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontRuntimePackageVersion"
+        }
+        elseif ($package -eq "blazorshop.storefront.presentation") {
+            $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontPresentationPackageVersion"
         }
         elseif ($package -eq "blazorshop.storefront.components") {
             $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontComponentsPackageVersion"
@@ -132,7 +137,7 @@ $projectFile = Join-Path $projectRoot "$Name.csproj"
 if ($Describe) {
     Write-Host "StorefrontBuilder generated proof workflow"
     Write-Host "- Clean $projectRoot"
-    Write-Host "- Pack Storefront.Client and Storefront.Runtime"
+    Write-Host "- Pack Storefront.Client, Storefront.Runtime, Storefront.Presentation, and Storefront.Components"
     Write-Host "- Generate $Name from Storefront.Starter"
     Write-Host "- Write StorefrontBuilder review, asset, CSS, and generated-file artifacts"
     Write-Host "- Restore/build generated proof from local packages"
@@ -161,6 +166,11 @@ Invoke-Step "Pack Storefront.Client" {
 
 Invoke-Step "Pack Storefront.Runtime" {
     dotnet pack $runtimeProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontRuntimePackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+Invoke-Step "Pack Storefront.Presentation" {
+    dotnet pack $presentationProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontPresentationPackageVersion"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 

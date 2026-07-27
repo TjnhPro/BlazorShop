@@ -118,6 +118,12 @@ function Rewrite-GeneratedSource {
         "dotnet build $Name.csproj --no-restore"
     ) -join [Environment]::NewLine
     Set-Content -LiteralPath (Join-Path $projectRoot "README.md") -Value $readmeContent -Encoding UTF8
+
+    $projectContent = Get-Content -LiteralPath $generatedProject -Raw
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Presentation" Version="$(StorefrontPresentationPackageVersion)" />')
+    Set-Content -LiteralPath $generatedProject -Value $projectContent -Encoding UTF8
 }
 
 function Assert-GeneratedOutput {

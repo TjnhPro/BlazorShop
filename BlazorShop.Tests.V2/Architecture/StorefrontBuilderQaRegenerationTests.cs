@@ -86,6 +86,7 @@ namespace BlazorShop.Tests.Architecture
                 "BlazorShop.ControlPlane.API",
                 "StorefrontClientPackageVersion",
                 "StorefrontRuntimePackageVersion",
+                "StorefrontPresentationPackageVersion",
                 "StorefrontComponentsPackageVersion",
                 "Describe",
             })

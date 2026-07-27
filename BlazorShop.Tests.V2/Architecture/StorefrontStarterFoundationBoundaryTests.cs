@@ -151,6 +151,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("BlazorShop.Storefront.Runtime.csproj", project, StringComparison.Ordinal);
             Assert.Contains("<StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("<StorefrontRuntimePackageVersion>1.0.0-local</StorefrontRuntimePackageVersion>", versionProps, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPresentationPackageVersion>1.0.0-local</StorefrontPresentationPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("<StorefrontComponentsPackageVersion>1.0.0-local</StorefrontComponentsPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("local-storefront-packages", nugetConfig, StringComparison.Ordinal);
             Assert.Contains("| v1 | 1.x | compatible |", compatibility, StringComparison.Ordinal);
@@ -375,10 +376,7 @@ namespace BlazorShop.Tests.Architecture
         [Fact]
         public void StarterRouteSkeleton_RecordsRenderOwnershipAndHydrationModes()
         {
-            var expectedRoutes = new Dictionary<string, string[]>(StringComparer.Ordinal)
-            {
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"] = ["@page \"/product/{Slug}\""],
-            };
+            var expectedRoutes = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
             foreach (var (relativePath, routes) in expectedRoutes)
             {
@@ -395,6 +393,7 @@ namespace BlazorShop.Tests.Architecture
             {
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor"] = "StorefrontHomePageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/CategoryPage.razor"] = "StorefrontCategoryPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"] = "StorefrontProductPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/SearchPage.razor"] = "StorefrontSearchPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = "StorefrontCartPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"] = "StorefrontCheckoutPageContext",
