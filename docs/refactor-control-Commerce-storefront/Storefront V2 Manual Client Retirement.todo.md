@@ -381,64 +381,72 @@ rg -n "AddHttpClient<StorefrontApiClient>|GetRequiredService<StorefrontApiClient
 
 Muc tieu: vi cart/account/checkout/order flow tung dung manual client trong tests, phai verify bang trinh duyet that, khong chi smoke.
 
-- [ ] Start V2 local stack:
+- [x] Start V2 local stack:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Browser QA bang Playwright:
-  - [ ] Home page render dung store hien tai.
-  - [ ] Product list/detail render dung catalog data.
-  - [ ] Add-to-cart tu product detail.
-  - [ ] Cart page load, update quantity, remove item.
-  - [ ] Checkout start tu cart.
-  - [ ] Guest checkout COD place order that tren store test.
-  - [ ] Order completed page hien thi order number/reference.
-  - [ ] Account login.
-  - [ ] Customer account order list/detail doc duoc order cua user dung.
-  - [ ] Password recovery UI route load va submit theo policy hien tai.
-  - [ ] Register disabled policy khong cho submit neu store config khoa dang ky.
-- [ ] Browser network audit:
-  - [ ] Browser khong goi direct Commerce Node route `api/storefront/stores/{storeKey}/*`.
-  - [ ] Browser chi goi same-origin BFF/static/media routes cua Storefront host.
-  - [ ] Checkout mutation requests co antiforgery/session behavior dung theo Storefront Presentation.
-  - [ ] No unexpected legacy routes:
-    - [ ] `/api/public/catalog`
-    - [ ] `/api/seo/settings`
-    - [ ] legacy cart/checkout/order compatibility routes neu khong con active.
-- [ ] Luu QA ket qua vao `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` hoac release E2E checklist phu hop.
-- [ ] Stop local stack neu workflow yeu cau:
+- [x] Browser QA bang Playwright:
+  - [x] Home page render dung store hien tai.
+  - [x] Product list/detail render dung catalog data.
+  - [x] Add-to-cart tu product detail.
+  - [x] Cart page load, update quantity, remove item.
+  - [x] Checkout start tu cart.
+  - [x] Guest checkout COD place order that tren store test.
+  - [x] Order completed page hien thi order number/reference.
+  - [x] Account login.
+  - [x] Customer account order list/detail doc duoc order cua user dung.
+  - [x] Password recovery UI route load va submit theo policy hien tai.
+  - [x] Register disabled policy khong cho submit neu store config khoa dang ky.
+- [x] Browser network audit:
+  - [x] Browser khong goi direct Commerce Node route `api/storefront/stores/{storeKey}/*`.
+  - [x] Browser chi goi same-origin BFF/static/media routes cua Storefront host.
+  - [x] Checkout mutation requests co antiforgery/session behavior dung theo Storefront Presentation.
+  - [x] No unexpected legacy routes:
+    - [x] `/api/public/catalog`
+    - [x] `/api/seo/settings`
+    - [x] legacy cart/checkout/order compatibility routes neu khong con active.
+- [x] Luu QA ket qua vao `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` hoac release E2E checklist phu hop.
+- [x] Stop local stack neu workflow yeu cau:
 
 ```powershell
 .\scripts\stop-v2-local.ps1
 ```
 
+2026-07-27 F1.25.7 evidence:
+
+- Started V2 local stack with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`; command exited `0`.
+- `.\scripts\qa\run-storefront-registration-policy-e2e.ps1 -Headless` passed. Evidence: `.gstack/qa-reports/registration-policy-e2e/result.json`; checked disabled/standard registration policy, Control Plane save/restore, direct disabled register returns `403`, Storefront register enabled/disabled rendering, zero forbidden browser calls, and zero 5xx.
+- `.\scripts\qa\run-storefront-email-recovery-e2e.ps1 -Headless` passed. Evidence: `.gstack/qa-reports/email-recovery-e2e/result.json`; checked password recovery route/submit, reset browser flow, login with new password, unknown-user generic response, and zero 5xx.
+- `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless -TimeoutSeconds 1200` passed. Evidence: `.gstack/qa-reports/order-email-e2e/result.json`; checked product/cart/checkout COD order placement, order confirmation/list/detail/receipt for `ORD-20260727-AC16F60D`, account login/session, exactly one order email, SMTP outage retry, store sender isolation, zero 5xx, and `retiredFlowCallCount=0`.
+- Stopped V2 local stack with `.\scripts\stop-v2-local.ps1`; stopped Control Plane API/Web, Commerce Node API, and Storefront V2 processes.
+
 ## Final definition of done
 
-- [ ] `BlazorShop.Storefront.V2` khong con file/class/string `StorefrontApiClient`.
-- [ ] `BlazorShop.Storefront.V2` khong co class implement Presentation `IStorefront*Client`.
-- [ ] `BlazorShop.Storefront.V2` khong dang ky `AddHttpClient<StorefrontApiClient>`.
-- [ ] `BlazorShop.Storefront.V2` khong con `EnableLegacyFallback`.
-- [ ] `BlazorShop.Storefront.V2` khong con legacy route fallback constants.
-- [ ] Presentation DI graph host-independent pass.
-- [ ] Runtime generated-client/facade tests pass.
-- [ ] V2 host smoke pass.
-- [ ] Starter host smoke pass.
-- [ ] Storefront architecture tests pass.
-- [ ] Storefront isolation gates pass.
-- [ ] Browser COD checkout/order regression pass.
-- [ ] Browser network audit pass.
-- [ ] Docs/registry/checklists khong con active exception noi V2 co manual transport.
+- [x] `BlazorShop.Storefront.V2` khong con file/class/string `StorefrontApiClient`.
+- [x] `BlazorShop.Storefront.V2` khong co class implement Presentation `IStorefront*Client`.
+- [x] `BlazorShop.Storefront.V2` khong dang ky `AddHttpClient<StorefrontApiClient>`.
+- [x] `BlazorShop.Storefront.V2` khong con `EnableLegacyFallback`.
+- [x] `BlazorShop.Storefront.V2` khong con legacy route fallback constants.
+- [x] Presentation DI graph host-independent pass.
+- [x] Runtime generated-client/facade tests pass.
+- [x] V2 host smoke pass.
+- [x] Starter host smoke pass.
+- [x] Storefront architecture tests pass.
+- [x] Storefront isolation gates pass.
+- [x] Browser COD checkout/order regression pass.
+- [x] Browser network audit pass.
+- [x] Docs/registry/checklists khong con active exception noi V2 co manual transport.
 
 ## Risk controls
 
-- [ ] Migrate test fixtures truoc khi delete source de tranh mat coverage.
-- [ ] Khong xoa `Api:BaseUrl` neu no van la host configuration input cho Runtime/Presentation.
-- [ ] Khong xoa `Api:RefreshTokenRoute` neu auth/session resolver con doc.
-- [ ] Neu build fail do capability gap, fix gap trong `Storefront.Presentation` hoac `Storefront.Runtime`, khong tao lai V2 transport.
-- [ ] Neu can giu mot historical doc mention, mark ro `Historical note` va exclude khoi active guardrail input.
-- [ ] Khong them compatibility alias moi de "qua test"; test phai di theo canonical generated path.
+- [x] Migrate test fixtures truoc khi delete source de tranh mat coverage.
+- [x] Khong xoa `Api:BaseUrl` neu no van la host configuration input cho Runtime/Presentation.
+- [x] Khong xoa `Api:RefreshTokenRoute` neu auth/session resolver con doc.
+- [x] Neu build fail do capability gap, fix gap trong `Storefront.Presentation` hoac `Storefront.Runtime`, khong tao lai V2 transport.
+- [x] Neu can giu mot historical doc mention, mark ro `Historical note` va exclude khoi active guardrail input.
+- [x] Khong them compatibility alias moi de "qua test"; test phai di theo canonical generated path.
 
 ## Autoplan decision audit
 
