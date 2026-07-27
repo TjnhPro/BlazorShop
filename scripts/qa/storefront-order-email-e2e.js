@@ -20,8 +20,16 @@ const headed = (process.env.HEADLESS || "false").toLowerCase() !== "true";
 const artifactRoot = path.resolve(process.env.STOREFRONT_QA_ARTIFACT_DIR || ".gstack/qa-reports/order-email-e2e");
 const orderProductSlug = process.env.STOREFRONT_QA_ORDER_PRODUCT_SLUG || "qa-simple-product-100";
 const expectedOrderTotalPattern = /EUR 100\.00|100\.00/;
+const httpTimeoutMs = positiveInteger(process.env.STOREFRONT_QA_HTTP_TIMEOUT_MS, 15000);
+const runTimeoutMs = positiveInteger(process.env.STOREFRONT_QA_RUN_TIMEOUT_MS, 15 * 60 * 1000);
 
 async function main() {
+  const watchdog = setTimeout(() => {
+    console.error(`Storefront order email E2E runner timed out after ${runTimeoutMs}ms.`);
+    process.exit(124);
+  }, runTimeoutMs);
+  watchdog.unref?.();
+
   ensureDir(artifactRoot);
   const evidence = {
     generatedAt: new Date().toISOString(),
@@ -172,6 +180,7 @@ async function main() {
     await updateStoreEmailSettings(secondStoreKey, originalSecondSettings).catch(() => {});
     await browser.close();
     fs.writeFileSync(path.join(artifactRoot, "result.json"), JSON.stringify(evidence, null, 2));
+    clearTimeout(watchdog);
   }
 }
 
@@ -483,15 +492,21 @@ async function addOrderProductToCart(page) {
 }
 
 async function readCartCount(page) {
-  return await page.evaluate(async () => {
-    const response = await fetch("/api/cart", { credentials: "same-origin" });
-    if (!response.ok) {
-      return 0;
-    }
+  return await page.evaluate(async (timeoutMs) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch("/api/cart", { credentials: "same-origin", signal: controller.signal });
+      if (!response.ok) {
+        return 0;
+      }
 
-    const cart = await response.json();
-    return Number(cart.count || 0);
-  });
+      const cart = await response.json();
+      return Number(cart.count || 0);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }, httpTimeoutMs);
 }
 
 async function dismissConsentIfVisible(page) {
@@ -502,24 +517,37 @@ async function dismissConsentIfVisible(page) {
 }
 
 async function readCheckoutState(page) {
-  return await page.evaluate(async () => {
-    const response = await fetch("/api/checkout", { credentials: "same-origin" });
-    return { status: response.status, body: await response.json() };
-  });
+  return await page.evaluate(async (timeoutMs) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch("/api/checkout", { credentials: "same-origin", signal: controller.signal });
+      return { status: response.status, body: await response.json() };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }, httpTimeoutMs);
 }
 
 async function postCheckoutJson(page, url, payload) {
   const csrf = await readAntiforgery(page);
-  const result = await page.evaluate(async ({ targetUrl, body, csrf }) => {
-    const response = await fetch(targetUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json", [csrf.headerName]: csrf.token },
-      credentials: "same-origin",
-      body: JSON.stringify(body),
-    });
-    const text = await response.text();
-    return { status: response.status, body: text ? JSON.parse(text) : null };
-  }, { targetUrl: url, body: payload, csrf });
+  const result = await page.evaluate(async ({ targetUrl, body, csrf, timeoutMs }) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(targetUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json", [csrf.headerName]: csrf.token },
+        credentials: "same-origin",
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      const text = await response.text();
+      return { status: response.status, body: text ? JSON.parse(text) : null };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }, { targetUrl: url, body: payload, csrf, timeoutMs: httpTimeoutMs });
   if (result.status < 200 || result.status >= 300) {
     throw new Error(`${url} returned ${result.status}: ${JSON.stringify(result.body)}`);
   }
@@ -662,21 +690,37 @@ async function adminJson(pathAndQuery, options = {}) {
 }
 
 async function fetchJson(url, options = {}) {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(`${options.method || "GET"} ${url} returned ${response.status}: ${text}`);
-  }
-
-  const text = await response.text();
-  if (!text) {
-    return {};
-  }
-
+  const { timeoutMs = httpTimeoutMs, ...fetchOptions } = options;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return JSON.parse(text);
-  } catch {
-    return { raw: text };
+    const response = await fetch(url, {
+      ...fetchOptions,
+      signal: fetchOptions.signal || controller.signal,
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`${fetchOptions.method || "GET"} ${url} returned ${response.status}: ${text}`);
+    }
+
+    const text = await response.text();
+    if (!text) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { raw: text };
+    }
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error(`${fetchOptions.method || "GET"} ${url} timed out after ${timeoutMs}ms.`);
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -882,6 +926,11 @@ function ensureDir(directory) {
 
 function trimEnd(value, suffix) {
   return value.endsWith(suffix) ? value.slice(0, -suffix.length) : value;
+}
+
+function positiveInteger(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }
 
 function delay(ms) {

@@ -49,6 +49,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("X-Node-Secret", source, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void OrderEmailE2ERunner_HasProcessAndHttpTimeoutGuards()
+        {
+            var runner = ReadRepositoryFile("scripts/qa/run-storefront-order-email-e2e.ps1");
+            var source = ReadRepositoryFile("scripts/qa/storefront-order-email-e2e.js");
+
+            Assert.Contains("TimeoutSeconds", runner, StringComparison.Ordinal);
+            Assert.Contains("WaitForExit($TimeoutSeconds * 1000)", runner, StringComparison.Ordinal);
+            Assert.Contains("Stop-NodeProcessTree", runner, StringComparison.Ordinal);
+            Assert.Contains("taskkill.exe /PID $ProcessId /T /F", runner, StringComparison.Ordinal);
+            Assert.Contains("STOREFRONT_QA_RUN_TIMEOUT_MS", runner, StringComparison.Ordinal);
+
+            Assert.Contains("STOREFRONT_QA_HTTP_TIMEOUT_MS", source, StringComparison.Ordinal);
+            Assert.Contains("AbortController", source, StringComparison.Ordinal);
+            Assert.Contains("timed out after ${timeoutMs}ms", source, StringComparison.Ordinal);
+            Assert.Contains("watchdog.unref?.()", source, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
