@@ -1,8 +1,10 @@
 namespace BlazorShop.Storefront.Runtime
 {
+    using System.Net.Http.Headers;
     using BlazorShop.Storefront.Client;
 
     using GeneratedCartClient = BlazorShop.Storefront.Client.IStorefrontCartClient;
+    using GeneratedCartClientImplementation = BlazorShop.Storefront.Client.StorefrontCartClient;
 
     public interface IStorefrontRuntimeCartFacade
     {
@@ -44,19 +46,27 @@ namespace BlazorShop.Storefront.Runtime
             StorefrontCartRecalculateRequest request,
             CancellationToken cancellationToken = default);
 
+        Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> MergeCurrentCustomerAsync(
+            string? cartToken,
+            string? bearerToken,
+            CancellationToken cancellationToken = default);
+
     }
 
     public sealed class StorefrontRuntimeCartFacade : IStorefrontRuntimeCartFacade
     {
         private readonly IStorefrontRuntimeContext context;
         private readonly GeneratedCartClient cartClient;
+        private readonly IHttpClientFactory httpClientFactory;
 
         public StorefrontRuntimeCartFacade(
             IStorefrontRuntimeContext context,
-            GeneratedCartClient cartClient)
+            GeneratedCartClient cartClient,
+            IHttpClientFactory httpClientFactory)
         {
             this.context = context;
             this.cartClient = cartClient;
+            this.httpClientFactory = httpClientFactory;
         }
 
         public Task<StorefrontRuntimeSubmitResult<StorefrontCartSessionResponse>> CreateOrResumeSessionAsync(
@@ -182,6 +192,26 @@ namespace BlazorShop.Storefront.Runtime
                 cancellationToken);
         }
 
+        public Task<StorefrontRuntimeSubmitResult<StorefrontCartResponse>> MergeCurrentCustomerAsync(
+            string? cartToken,
+            string? bearerToken,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(bearerToken))
+            {
+                return Task.FromResult(StorefrontRuntimeSubmitResult<StorefrontCartResponse>.Failed(BadRequest("Customer identity is required.")));
+            }
+
+            var client = this.CreateCartClient(bearerToken);
+            return ExecuteAsync<StorefrontCartResponseCommerceNodeApiResponse, StorefrontCartResponse>(
+                storeKey => client.MergeCurrentCustomerAsync(NormalizeToken(cartToken), storeKey, cancellationToken),
+                envelope => envelope.Success,
+                envelope => envelope.Data,
+                envelope => envelope.Message,
+                "Unable to merge cart right now.",
+                cancellationToken);
+        }
+
         private async Task<StorefrontRuntimeSubmitResult<TData>> ExecuteAsync<TEnvelope, TData>(
             Func<string, Task<TEnvelope>> execute,
             Func<TEnvelope, bool?> successSelector,
@@ -203,6 +233,13 @@ namespace BlazorShop.Storefront.Runtime
         private static string? NormalizeToken(string? cartToken)
         {
             return string.IsNullOrWhiteSpace(cartToken) ? null : cartToken.Trim();
+        }
+
+        private GeneratedCartClient CreateCartClient(string bearerToken)
+        {
+            var httpClient = this.httpClientFactory.CreateClient(StorefrontRuntimeServiceCollectionExtensions.GeneratedClientHttpClientName);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken.Trim());
+            return new GeneratedCartClientImplementation(httpClient);
         }
 
         private static StorefrontRuntimeError BadRequest(string message)

@@ -6,11 +6,14 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Storefront.Runtime;
-    using BlazorShop.Storefront.Client;
     using Microsoft.AspNetCore.Http;
     using StorefrontAddressCountryResponse = BlazorShop.Storefront.Client.StorefrontAddressCountryResponse;
     using StorefrontAddressFieldConfigurationResponse = BlazorShop.Storefront.Client.StorefrontAddressFieldConfigurationResponse;
     using StorefrontAddressStateProvinceResponse = BlazorShop.Storefront.Client.StorefrontAddressStateProvinceResponse;
+    using StorefrontCheckoutPaymentMethodOptionResponse = BlazorShop.Storefront.Client.StorefrontCheckoutPaymentMethodOptionResponse;
+    using StorefrontCheckoutSessionResponse = BlazorShop.Storefront.Client.StorefrontCheckoutSessionResponse;
+    using StorefrontPaymentMethodResponse = BlazorShop.Storefront.Client.StorefrontPaymentMethodResponse;
+    using StorefrontProductResponse = BlazorShop.Storefront.Client.StorefrontProductResponse;
     using static BlazorShop.Storefront.Presentation.Endpoints.StorefrontLocalEndpointSupport;
     using StorefrontCartLineResponse = BlazorShop.Storefront.Services.StorefrontCartLineResponse;
 

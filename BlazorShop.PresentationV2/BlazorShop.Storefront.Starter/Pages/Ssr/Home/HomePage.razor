@@ -1,51 +1,36 @@
 @namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
 @inject IOptions<StarterStorefrontOptions> StorefrontOptions
-@inject StorefrontBootstrapService BootstrapService
 @inject StarterFeatureActivationService FeatureActivationService
 
-<h1>@(_snapshot?.StoreName ?? "Storefront Starter")</h1>
+<h1>Storefront Starter</h1>
 <p>This neutral shell consumes the generated Storefront client package.</p>
 
 <dl class="starter-config">
     <dt>Store key</dt>
-    <dd>@(_snapshot?.StoreKey ?? StorefrontOptions.Value.StoreKey)</dd>
+    <dd>@StorefrontOptions.Value.StoreKey</dd>
     <dt>Commerce API</dt>
     <dd>Configured server-side</dd>
     <dt>Render owner</dt>
     <dd>SSR</dd>
 </dl>
 
-@if (_snapshot?.Error is not null)
-{
-    <section class="starter-alert" data-error-code="@_snapshot.Error.Code">
-        <h2>Storefront unavailable</h2>
-        <p>@_snapshot.Error.Message</p>
-    </section>
-}
-else if (_snapshot is not null)
-{
-    <section class="starter-section" aria-labelledby="featured-products-title" data-hydration-mode="@StarterHydrationMode.InitialSnapshot">
-        <h2 id="featured-products-title">Featured products</h2>
-        <ProductGrid Products="@_snapshot.Products" CurrencyCode="@_snapshot.CurrencyCode" />
-    </section>
+<section class="starter-section" aria-labelledby="featured-products-title" data-hydration-mode="@StarterHydrationMode.InitialSnapshot">
+    <h2 id="featured-products-title">Featured products</h2>
+    <ProductGrid Products="@Context.LatestProductSummaries" />
+</section>
 
-    @if (FeatureActivationService.Evaluate("recommendations", "home", _snapshot.Features).Visible)
-    {
-        <section class="starter-section" aria-labelledby="recommendations-title">
-            <h2 id="recommendations-title">Recommended</h2>
-            <p>Recommendation placement is active for this store.</p>
-        </section>
-    }
+@if (FeatureActivationService.Evaluate("recommendations", "home", EmptyCapabilities).Visible)
+{
+    <section class="starter-section" aria-labelledby="recommendations-title">
+        <h2 id="recommendations-title">Recommended</h2>
+        <p>Recommendation placement is active for this store.</p>
+    </section>
 }
 
 @code {
+    private static readonly IReadOnlyDictionary<string, StorefrontRuntimeCapability> EmptyCapabilities =
+        new Dictionary<string, StorefrontRuntimeCapability>(StringComparer.Ordinal);
+
     [Parameter, EditorRequired]
     public StorefrontHomePageContext Context { get; set; } = default!;
-
-    private StarterBootstrapSnapshot? _snapshot;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _snapshot = await BootstrapService.LoadAsync(CancellationToken.None);
-    }
 }

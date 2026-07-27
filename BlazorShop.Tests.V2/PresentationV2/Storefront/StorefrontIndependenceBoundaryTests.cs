@@ -283,22 +283,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var registry = ReadRepositoryFile("docs/storefront-platform/storefront-client-exception-registry.md");
             var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
-            var cartAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCartClient.cs");
-            var checkoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCheckoutClient.cs");
+            var cartAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCartClient.cs");
+            var checkoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCheckoutClient.cs");
+            var customerAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCustomerClient.cs");
 
             Assert.Contains("## Storefront V2", registry, StringComparison.Ordinal);
-            Assert.Contains("StorefrontApiClient.MergeCurrentCustomerCartAsync", registry, StringComparison.Ordinal);
-            Assert.Contains("StorefrontApiClient.UpdateCheckoutAddressesAsync", registry, StringComparison.Ordinal);
-            Assert.Contains("IStorefrontCustomerClient", registry, StringComparison.Ordinal);
-            Assert.Contains("StorefrontAuthClient", registry, StringComparison.Ordinal);
+            Assert.Contains("| none | none | SPF17 moved Presentation contract adapters", registry, StringComparison.Ordinal);
+            Assert.Contains("## Retired In SPF17", registry, StringComparison.Ordinal);
             Assert.Contains("Owner", registry, StringComparison.Ordinal);
             Assert.Contains("Test", registry, StringComparison.Ordinal);
             Assert.Contains("Revisit trigger", registry, StringComparison.Ordinal);
 
             Assert.Contains("AddHttpClient<StorefrontApiClient>", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("MergeCurrentCustomerCartAsync", cartAdapter, StringComparison.Ordinal);
-            Assert.Contains("UpdateCheckoutAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("MergeCurrentCustomerAsync", cartAdapter, StringComparison.Ordinal);
+            Assert.Contains("UpdateAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("CreateAuthorizedHttpClient", customerAdapter, StringComparison.Ordinal);
         }
 
         private static void AssertNoProjectReferences(string relativeProjectPath, IReadOnlyCollection<string> forbiddenFragments)

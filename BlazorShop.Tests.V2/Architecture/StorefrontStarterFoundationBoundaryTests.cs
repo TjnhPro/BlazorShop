@@ -275,16 +275,11 @@ namespace BlazorShop.Tests.Architecture
         [Fact]
         public void StarterSsrAndPresentationAggregationTracerBullets_AreImplemented()
         {
-            var bootstrap = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs");
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
             var presentationAggregation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
             var presentationCart = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor");
 
-            Assert.Contains("GetCurrentAsync", bootstrap, StringComparison.Ordinal);
-            Assert.Contains("configurationClient.GetAsync", bootstrap, StringComparison.Ordinal);
-            Assert.Contains("QueryProductsAsync", bootstrap, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRuntimeErrorMapper.FromApiException", bootstrap, StringComparison.Ordinal);
             Assert.Contains("\"/api/cart/lines\"", presentationCart, StringComparison.Ordinal);
             Assert.Contains("ValidateRequestAsync", presentationCart, StringComparison.Ordinal);
             Assert.Contains("AddLineAsync", presentationCart, StringComparison.Ordinal);
@@ -295,8 +290,9 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("MapStorefrontPresentation", program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStarterBffEndpoints", program, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs")));
-            Assert.Contains("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
-            Assert.Contains("data-error-code", home, StringComparison.Ordinal);
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs")));
+            Assert.DoesNotContain("StorefrontBootstrapService", program + home, StringComparison.Ordinal);
+            Assert.Contains("Context.LatestProductSummaries", home, StringComparison.Ordinal);
         }
 
         [Theory]
@@ -415,7 +411,8 @@ namespace BlazorShop.Tests.Architecture
             }
 
             var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor");
-            Assert.Contains("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
+            Assert.DoesNotContain("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
+            Assert.Contains("Context.LatestProductSummaries", home, StringComparison.Ordinal);
             Assert.Contains("StarterHydrationMode.InitialSnapshot", home, StringComparison.Ordinal);
 
             var hydration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Composition/StarterHydrationMode.cs");

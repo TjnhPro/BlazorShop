@@ -16,14 +16,10 @@ namespace BlazorShop.Storefront.Services
         };
 
         private readonly IStorefrontRuntimeCheckoutFacade checkoutFacade;
-        private readonly StorefrontApiClient manualClient;
 
-        public GeneratedStorefrontCheckoutClient(
-            IStorefrontRuntimeCheckoutFacade checkoutFacade,
-            StorefrontApiClient manualClient)
+        public GeneratedStorefrontCheckoutClient(IStorefrontRuntimeCheckoutFacade checkoutFacade)
         {
             this.checkoutFacade = checkoutFacade;
-            this.manualClient = manualClient;
         }
 
         public async Task<StorefrontSubmitResult<StorefrontCheckoutPreviewResponse>> PreviewCheckoutAsync(
@@ -68,22 +64,11 @@ namespace BlazorShop.Storefront.Services
             CancellationToken cancellationToken = default,
             string? bearerToken = null)
         {
-            if (!string.IsNullOrWhiteSpace(bearerToken))
-            {
-                // The generated checkout client currently has no per-call bearer token parameter for saved-address checkout.
-                // Keep this auth-sensitive checkout exception in the V2 host until the account/auth cutover phase.
-                return await this.manualClient.UpdateCheckoutAddressesAsync(
-                    cartToken,
-                    checkoutSessionId,
-                    request,
-                    cancellationToken,
-                    bearerToken);
-            }
-
             var result = await this.checkoutFacade.UpdateAddressesAsync(
                 cartToken,
                 checkoutSessionId,
                 Project<GeneratedClients.StorefrontCheckoutAddressStepRequest>(request),
+                bearerToken,
                 cancellationToken);
             return MapSubmitResult<GeneratedClients.StorefrontCheckoutSessionResponse, StorefrontCheckoutSessionResponse>(
                 result,

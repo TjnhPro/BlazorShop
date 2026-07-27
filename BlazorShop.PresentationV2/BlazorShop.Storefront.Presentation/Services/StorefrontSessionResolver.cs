@@ -7,6 +7,7 @@ namespace BlazorShop.Storefront.Services
     using System.Text.Json;
 
     using BlazorShop.Storefront.Configuration;
+    using BlazorShop.Storefront.Runtime;
     using BlazorShop.Storefront.Services.Contracts;
 
     using Microsoft.AspNetCore.Http;
@@ -21,12 +22,18 @@ namespace BlazorShop.Storefront.Services
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
+        private readonly IStorefrontRuntimeContext _runtimeContext;
 
-        public StorefrontSessionResolver(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+        public StorefrontSessionResolver(
+            HttpClient httpClient,
+            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration,
+            IStorefrontRuntimeContext runtimeContext)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
+            _runtimeContext = runtimeContext;
         }
 
         public Task<StorefrontSessionInfo> GetCurrentUserAsync(CancellationToken cancellationToken = default)
@@ -112,7 +119,7 @@ namespace BlazorShop.Storefront.Services
             string? userAgent,
             CancellationToken cancellationToken)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, GetRefreshTokenRoute());
+            using var request = new HttpRequestMessage(HttpMethod.Post, BuildRoute(GetRefreshTokenRoute()));
             request.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
 
             if (!string.IsNullOrWhiteSpace(userAgent))
@@ -135,6 +142,16 @@ namespace BlazorShop.Storefront.Services
             }
 
             return new CachedRefreshSession(ParseSession(payload.AccessToken), setCookieHeaders);
+        }
+
+        private string BuildRoute(string route)
+        {
+            if (route.StartsWith("api/storefront/stores/", StringComparison.OrdinalIgnoreCase))
+            {
+                return route;
+            }
+
+            return $"api/storefront/stores/{Uri.EscapeDataString(_runtimeContext.RequireStoreKey())}/{route.TrimStart('/')}";
         }
 
         private static void CopySetCookieHeaders(IReadOnlyList<string> values, HttpResponse storefrontResponse)

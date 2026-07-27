@@ -38,7 +38,6 @@ namespace BlazorShop.Storefront.Configuration
                 configureRateLimiter,
                 configureHttpClient);
             services.AddStorefrontBffEndpointDependencies();
-            services.AddStorefrontGeneratedClientRegistration();
 
             return services;
         }
@@ -96,16 +95,6 @@ namespace BlazorShop.Storefront.Configuration
                 services.AddRateLimiter(options => configureRateLimiter(options, rateLimitingOptions));
             }
 
-            services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>()
-                .ConfigureHttpClient((serviceProvider, client) =>
-                {
-                    configureHttpClient(client, serviceProvider.GetRequiredService<IConfiguration>());
-                });
-            services.AddHttpClient<IStorefrontAuthClient, StorefrontAuthClient>()
-                .ConfigureHttpClient((serviceProvider, client) =>
-                {
-                    configureHttpClient(client, serviceProvider.GetRequiredService<IConfiguration>());
-                });
             services.AddHttpClient<StorefrontApiClient>()
                 .ConfigureHttpClient((serviceProvider, client) =>
                 {
@@ -121,33 +110,8 @@ namespace BlazorShop.Storefront.Configuration
                 .AddRazorComponents()
                 .AddInteractiveWebAssemblyComponents();
             services.AddScoped<IStorefrontClientAppUrlResolver, StorefrontClientAppUrlResolver>();
-            services.AddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
-            services.AddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
             services.AddScoped<IStorefrontPageNavigationProvider, StorefrontPageNavigationProvider>();
             services.AddScoped<IStorefrontNavigationProvider, StorefrontNavigationProvider>();
-            services.AddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
-
-            return services;
-        }
-
-        private static IServiceCollection AddStorefrontGeneratedClientRegistration(this IServiceCollection services)
-        {
-            services.AddStorefrontPlatformRuntime((_, client) =>
-            {
-                client.Timeout = TimeSpan.FromSeconds(2);
-            });
-            services.AddScoped<GeneratedStorefrontCatalogContentClient>();
-            services.AddScoped<GeneratedStorefrontCartClient>();
-            services.AddScoped<GeneratedStorefrontCheckoutClient>();
-            services.AddScoped<GeneratedStorefrontAddressClient>();
-            services.AddScoped<GeneratedStorefrontPaymentClient>();
-            services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontAddressClient>());
-            services.AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCartClient>());
-            services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
-            services.AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCheckoutClient>());
-            services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
-            services.AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontPaymentClient>());
 
             return services;
         }

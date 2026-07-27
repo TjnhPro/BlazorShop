@@ -16,14 +16,10 @@ namespace BlazorShop.Storefront.Services
         };
 
         private readonly IStorefrontRuntimeCartFacade cartFacade;
-        private readonly StorefrontApiClient manualClient;
 
-        public GeneratedStorefrontCartClient(
-            IStorefrontRuntimeCartFacade cartFacade,
-            StorefrontApiClient manualClient)
+        public GeneratedStorefrontCartClient(IStorefrontRuntimeCartFacade cartFacade)
         {
             this.cartFacade = cartFacade;
-            this.manualClient = manualClient;
         }
 
         public async Task<StorefrontSubmitResult<StorefrontCartSessionResponse>> CreateOrResumeCartSessionAsync(
@@ -111,14 +107,15 @@ namespace BlazorShop.Storefront.Services
                 "Unable to refresh cart right now.");
         }
 
-        public Task<StorefrontSubmitResult<StorefrontCartResponse>> MergeCurrentCustomerCartAsync(
+        public async Task<StorefrontSubmitResult<StorefrontCartResponse>> MergeCurrentCustomerCartAsync(
             string cartToken,
             string accessToken,
             CancellationToken cancellationToken = default)
         {
-            // The generated cart client currently has no per-call bearer token parameter for this protected endpoint.
-            // Keep this single auth-sensitive cart exception in the V2 host until the account/auth cutover phase.
-            return this.manualClient.MergeCurrentCustomerCartAsync(cartToken, accessToken, cancellationToken);
+            var result = await this.cartFacade.MergeCurrentCustomerAsync(cartToken, accessToken, cancellationToken);
+            return MapSubmitResult<GeneratedClients.StorefrontCartResponse, StorefrontCartResponse>(
+                result,
+                "Unable to merge cart right now.");
         }
 
         private static StorefrontSubmitResult<TTarget> MapSubmitResult<TSource, TTarget>(

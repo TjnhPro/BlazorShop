@@ -1,6 +1,5 @@
 namespace BlazorShop.Storefront.Presentation.Endpoints
 {
-    using BlazorShop.Storefront.Client;
     using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Presentation.PagePatterns;
@@ -9,6 +8,10 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
     using BlazorShop.Storefront.Services.Contracts;
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Http;
+    using StorefrontCheckoutAddressStepRequest = BlazorShop.Storefront.Client.StorefrontCheckoutAddressStepRequest;
+    using StorefrontCheckoutReviewResponse = BlazorShop.Storefront.Client.StorefrontCheckoutReviewResponse;
+    using StorefrontCheckoutSessionResponse = BlazorShop.Storefront.Client.StorefrontCheckoutSessionResponse;
+    using StorefrontCheckoutShippingAddress = BlazorShop.Storefront.Client.StorefrontCheckoutShippingAddress;
 
     internal static partial class StorefrontLocalEndpointSupport
     {

@@ -1,6 +1,8 @@
 namespace BlazorShop.Storefront.Services
 {
     using BlazorShop.Storefront.Services.Contracts;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
 
     public sealed class StorefrontCurrentStoreProvider : IStorefrontCurrentStoreProvider
     {

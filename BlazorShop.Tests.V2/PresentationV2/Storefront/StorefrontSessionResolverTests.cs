@@ -8,6 +8,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
+    using BlazorShop.Storefront.Runtime;
     using Xunit;
 
     using StorefrontV2::BlazorShop.Storefront.Services;
@@ -20,14 +21,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var handler = new RefreshTokenHandler(CreateAccessToken(), "__Host-blazorshop-refresh=initial%252Brefresh%252Ftoken");
             using var httpClient = new HttpClient(handler)
             {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
+                BaseAddress = new Uri("https://commerce-node.example/"),
             };
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers.Cookie = "__Host-blazorshop-refresh=initial%252Brefresh%252Ftoken";
             var accessor = new HttpContextAccessor { HttpContext = httpContext };
             var configuration = new ConfigurationBuilder().Build();
-            var firstResolver = new StorefrontSessionResolver(httpClient, accessor, configuration);
-            var secondResolver = new StorefrontSessionResolver(httpClient, accessor, configuration);
+            var firstResolver = new StorefrontSessionResolver(httpClient, accessor, configuration, new StubRuntimeContext("default"));
+            var secondResolver = new StorefrontSessionResolver(httpClient, accessor, configuration, new StubRuntimeContext("default"));
 
             var sessions = await Task.WhenAll(
                 firstResolver.GetCurrentUserAsync(),
@@ -49,7 +50,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var handler = new RefreshTokenHandler(CreateAccessToken(), refreshCookie);
             using var httpClient = new HttpClient(handler)
             {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
+                BaseAddress = new Uri("https://commerce-node.example/"),
             };
             var configuration = new ConfigurationBuilder().Build();
             var firstContext = new DefaultHttpContext();
@@ -60,11 +61,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var firstResolver = new StorefrontSessionResolver(
                 httpClient,
                 new HttpContextAccessor { HttpContext = firstContext },
-                configuration);
+                configuration,
+                new StubRuntimeContext("default"));
             var secondResolver = new StorefrontSessionResolver(
                 httpClient,
                 new HttpContextAccessor { HttpContext = secondContext },
-                configuration);
+                configuration,
+                new StubRuntimeContext("default"));
 
             var sessions = await Task.WhenAll(
                 firstResolver.GetCurrentUserAsync(),
@@ -143,6 +146,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     "__Host-blazorshop-refresh=rotated-refresh-token; path=/; secure; httponly; samesite=strict");
                 return response;
             }
+        }
+
+        private sealed class StubRuntimeContext : IStorefrontRuntimeContext
+        {
+            public StubRuntimeContext(string storeKey)
+            {
+                StoreKey = storeKey;
+            }
+
+            public string CommerceNodeBaseUrl => "https://commerce-node.example/";
+
+            public string StoreKey { get; }
+
+            public string? PublicBaseUrl => "https://storefront.example/";
         }
     }
 }

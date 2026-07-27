@@ -5,6 +5,7 @@ using BlazorShop.Storefront.Configuration;
 using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Presentation.Routing;
+using BlazorShop.Storefront.Runtime;
 using BlazorShop.Storefront.Presentation.Services.Account;
 using BlazorShop.Storefront.Presentation.Services.Auth;
 using BlazorShop.Storefront.Presentation.Services.Cart;
@@ -15,6 +16,7 @@ using BlazorShop.Storefront.Presentation.Services.Product;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 using BlazorShop.Storefront.Services.Media;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -42,6 +44,32 @@ public static class StorefrontPresentationServiceCollectionExtensions
         services.AddScoped<IStorefrontRobotsService, StorefrontRobotsService>();
         services.TryAddScoped<GeneratedStorefrontConfigurationClient>();
         services.TryAddScoped<GeneratedStorefrontConsentClient>();
+        services.TryAddScoped<GeneratedStorefrontCatalogContentClient>();
+        services.TryAddScoped<GeneratedStorefrontCartClient>();
+        services.TryAddScoped<GeneratedStorefrontCheckoutClient>();
+        services.TryAddScoped<GeneratedStorefrontAddressClient>();
+        services.TryAddScoped<GeneratedStorefrontPaymentClient>();
+        services.TryAddScoped<GeneratedStorefrontCustomerClient>();
+        services.TryAddScoped<StorefrontAuthClient>(serviceProvider => new StorefrontAuthClient(
+            serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(StorefrontRuntimeServiceCollectionExtensions.GeneratedClientHttpClientName),
+            serviceProvider.GetRequiredService<IStorefrontRuntimeContext>()));
+        services.TryAddScoped<StorefrontSessionResolver>(serviceProvider => new StorefrontSessionResolver(
+            serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(StorefrontRuntimeServiceCollectionExtensions.GeneratedClientHttpClientName),
+            serviceProvider.GetRequiredService<IHttpContextAccessor>(),
+            configuration,
+            serviceProvider.GetRequiredService<IStorefrontRuntimeContext>()));
+        services.TryAddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontAddressClient>());
+        services.TryAddScoped<IStorefrontAuthClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontAuthClient>());
+        services.TryAddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCartClient>());
+        services.TryAddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
+        services.TryAddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCheckoutClient>());
+        services.TryAddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
+        services.TryAddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCustomerClient>());
+        services.TryAddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
+        services.TryAddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
+        services.TryAddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontPaymentClient>());
+        services.TryAddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
+        services.TryAddScoped<IStorefrontSessionResolver>(serviceProvider => serviceProvider.GetRequiredService<StorefrontSessionResolver>());
         services.TryAddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConfigurationClient>());
         services.TryAddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConsentClient>());
         services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettingsProvider>();

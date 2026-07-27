@@ -5,6 +5,7 @@ namespace BlazorShop.Storefront.Services
     using System.Text.Json;
 
     using BlazorShop.Storefront.Models;
+    using BlazorShop.Storefront.Runtime;
     using BlazorShop.Storefront.Services.Contracts;
 
     public sealed class StorefrontAuthClient : IStorefrontAuthClient
@@ -20,16 +21,18 @@ namespace BlazorShop.Storefront.Services
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         private readonly HttpClient httpClient;
+        private readonly IStorefrontRuntimeContext runtimeContext;
 
-        public StorefrontAuthClient(HttpClient httpClient)
+        public StorefrontAuthClient(HttpClient httpClient, IStorefrontRuntimeContext runtimeContext)
         {
             this.httpClient = httpClient;
+            this.runtimeContext = runtimeContext;
         }
 
         public Task<StorefrontAuthResult<StorefrontTokenResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
         {
             return this.PostAsync<LoginUser, StorefrontTokenResponse>(
-                LoginRoute,
+                this.BuildRoute(LoginRoute),
                 user,
                 "Unable to sign in right now.",
                 cancellationToken);
@@ -38,7 +41,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontAuthResult<object>> RegisterAsync(CreateUser user, CancellationToken cancellationToken = default)
         {
             return this.PostAsync<CreateUser, object>(
-                RegisterRoute,
+                this.BuildRoute(RegisterRoute),
                 user,
                 "Unable to create your account right now.",
                 cancellationToken);
@@ -48,7 +51,7 @@ namespace BlazorShop.Storefront.Services
         {
             try
             {
-                using var response = await this.httpClient.GetAsync(RegistrationPolicyRoute, cancellationToken);
+                using var response = await this.httpClient.GetAsync(this.BuildRoute(RegistrationPolicyRoute), cancellationToken);
                 return await CreateResultAsync<StorefrontRegistrationPolicy>(
                     response,
                     "Unable to load registration policy right now.",
@@ -66,7 +69,7 @@ namespace BlazorShop.Storefront.Services
             CancellationToken cancellationToken = default)
         {
             return this.PostAsync<StorefrontForgotPasswordRequest, object>(
-                ForgotPasswordRoute,
+                this.BuildRoute(ForgotPasswordRoute),
                 new StorefrontForgotPasswordRequest
                 {
                     Email = email,
@@ -84,7 +87,7 @@ namespace BlazorShop.Storefront.Services
             CancellationToken cancellationToken = default)
         {
             return this.PostAsync<ResetPassword, object>(
-                ResetPasswordRoute,
+                this.BuildRoute(ResetPasswordRoute),
                 new ResetPassword
                 {
                     Email = email,
@@ -106,7 +109,7 @@ namespace BlazorShop.Storefront.Services
                 return StorefrontAuthResult<object>.Failed("Customer identity is required.");
             }
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, ChangePasswordRoute)
+            using var request = new HttpRequestMessage(HttpMethod.Post, this.BuildRoute(ChangePasswordRoute))
             {
                 Content = JsonContent.Create(changePassword, options: JsonOptions),
             };
@@ -120,7 +123,7 @@ namespace BlazorShop.Storefront.Services
             string? userAgent,
             CancellationToken cancellationToken = default)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, LogoutRoute);
+            using var request = new HttpRequestMessage(HttpMethod.Post, this.BuildRoute(LogoutRoute));
             if (!string.IsNullOrWhiteSpace(cookieHeader))
             {
                 request.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
@@ -165,6 +168,16 @@ namespace BlazorShop.Storefront.Services
             {
                 return StorefrontAuthResult<TData>.Failed(unavailableMessage);
             }
+        }
+
+        private string BuildRoute(string route)
+        {
+            if (route.StartsWith("api/storefront/stores/", StringComparison.OrdinalIgnoreCase))
+            {
+                return route;
+            }
+
+            return $"api/storefront/stores/{Uri.EscapeDataString(this.runtimeContext.RequireStoreKey())}/{route.TrimStart('/')}";
         }
 
         private static async Task<StorefrontAuthResult<TData>> CreateResultAsync<TData>(

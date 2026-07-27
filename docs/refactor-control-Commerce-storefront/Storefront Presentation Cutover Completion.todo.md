@@ -27,15 +27,15 @@ This plan follows `Storefront Presentation Foundation.todo.md` but does not edit
   - `IStorefrontSessionResolver`
   - `IStorefrontDisplayContextProvider`
   - `IStorefrontPriceFormatter`
-- [x] Several neutral/generated adapter implementations are still in `BlazorShop.Storefront.V2/Services`.
-- [x] V2 service registration currently completes the Presentation DI graph through `AddStorefrontGeneratedClientRegistration()` and V2-specific host registration.
-- [x] Starter calls `AddStorefrontPresentation()` and `AddStorefrontPlatformRuntime()`, but still keeps `StorefrontBootstrapService` and direct generated-client data loading in the home visual view.
+- [x] SPF17 moved neutral/generated adapter implementations out of `BlazorShop.Storefront.V2/Services` and into `BlazorShop.Storefront.Presentation/Services`.
+- [x] SPF17 moved Presentation contract registration into `AddStorefrontPresentation()`; V2 no longer calls `AddStorefrontGeneratedClientRegistration()`.
+- [x] SPF17 removed Starter `StorefrontBootstrapService`; Starter home now renders `StorefrontHomePageContext` supplied by Presentation.
 - [x] `StorefrontPageState` supports more states than `StorefrontPage.razor` renders.
 - [x] Several Presentation route pages still manually render `StorefrontSeoHead`, `PageTitle`, `HeadContent`, or call `StorefrontResponseHeaders` directly.
 - [x] V2 and Starter visual views still contain some `PageTitle`/`HeadContent` markup.
 - [x] `StorefrontRoutes.razor` still accepts host `AdditionalAssemblies`, and both V2/Starter register host assemblies as route assemblies.
 - [x] Starter has build/package proof, but not a real HTTP/DI parity proof equivalent to V2 host smoke tests.
-- [x] Some test baselines currently lock transitional behavior, including Starter bootstrap data loading.
+- [x] Some test baselines currently lock remaining transitional behavior for route/head ownership and package-mode cleanup.
 
 ## Goal
 
@@ -104,34 +104,34 @@ Goal: add guardrails that describe the desired final state before moving code.
 - Presentation page services/endpoints still require unowned or host-registered contracts including catalog/content/cart/checkout/address/payment/auth/customer/session/display/price/current-store services.
 - Host visual views and Presentation route pages still contain transitional `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or direct `StorefrontResponseHeaders` usage.
 - Route assembly discovery is still enabled through `StorefrontPresentationRouteOptions.AdditionalAssemblies` and `AddStorefrontPresentationRoutes(...)`.
-- Starter still contains `StorefrontBootstrapService` and a home view that performs direct bootstrap loading.
+- Starter still contained `StorefrontBootstrapService` and a home view that performed direct bootstrap loading before SPF17 removed it.
 - SPF16 added explicit cutover guardrail test names in `StorefrontPresentationCutoverGuardrailTests`; they are skipped until their target phase implements the final state.
 
 ### Tasks
 
-- [ ] Record current adapter ownership inventory:
-  - [ ] all classes under `BlazorShop.Storefront.V2/Services` that implement Presentation contracts.
-  - [ ] all Presentation endpoints/page services that inject contracts not registered by `AddStorefrontPresentation()`.
-  - [ ] all visual views containing `PageTitle`, `HeadContent`, `StorefrontSeoHead`, `StorefrontResponseHeaders`, or `@page`.
-  - [ ] all host route assembly registrations.
-- [ ] Add architecture tests that initially fail or are marked explicit todo until implementation:
-  - [ ] `AddStorefrontPresentation()` registers every contract needed by Presentation page services and endpoints when Runtime is registered.
-  - [ ] `BlazorShop.Storefront.V2/Services` does not contain generated adapter classes implementing Presentation contracts.
-  - [ ] Starter visual pages do not inject generated client, Runtime data facades, or `StorefrontBootstrapService`.
-  - [ ] no `.razor` file outside `BlazorShop.Storefront.Presentation/Pages` contains `@page`.
-  - [ ] no host visual view contains `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or `StorefrontResponseHeaders`.
-  - [ ] `StorefrontRoutes.razor` does not use host `AdditionalAssemblies` for route discovery.
-- [ ] Add DI validation tests:
-  - [ ] build service provider with Runtime + Presentation + V2 view registration.
-  - [ ] resolve every Presentation page service.
-  - [ ] resolve every Presentation local endpoint dependency contract.
-  - [ ] build service provider with Runtime + Presentation + Starter view registration.
-  - [ ] resolve the same services/contracts for Starter.
-- [ ] Add test names that make transitional state explicit:
-  - [ ] `StorefrontPresentation_DIGraph_IsHostIndependent`
-  - [ ] `StorefrontVisualViews_DoNotOwnRoutesOrSeoHead`
-  - [ ] `StorefrontStarter_ViewsRenderPresentationContextsOnly`
-  - [ ] `StorefrontRoutes_ArePresentationAssemblyOnly`
+- [x] Record current adapter ownership inventory:
+  - [x] all classes under `BlazorShop.Storefront.V2/Services` that implement Presentation contracts.
+  - [x] all Presentation endpoints/page services that inject contracts not registered by `AddStorefrontPresentation()`.
+  - [x] all visual views containing `PageTitle`, `HeadContent`, `StorefrontSeoHead`, `StorefrontResponseHeaders`, or `@page`.
+  - [x] all host route assembly registrations.
+- [x] Add architecture tests that initially fail or are marked explicit todo until implementation:
+  - [x] `AddStorefrontPresentation()` registers every contract needed by Presentation page services and endpoints when Runtime is registered.
+  - [x] `BlazorShop.Storefront.V2/Services` does not contain generated adapter classes implementing Presentation contracts.
+  - [x] Starter visual pages do not inject generated client, Runtime data facades, or `StorefrontBootstrapService`.
+  - [x] no `.razor` file outside `BlazorShop.Storefront.Presentation/Pages` contains `@page`.
+  - [x] no host visual view contains `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or `StorefrontResponseHeaders`.
+  - [x] `StorefrontRoutes.razor` does not use host `AdditionalAssemblies` for route discovery.
+- [x] Add DI validation tests:
+  - [x] build service provider with Runtime + Presentation + V2 view registration.
+  - [x] resolve every Presentation page service.
+  - [x] resolve every Presentation local endpoint dependency contract.
+  - [x] build service provider with Runtime + Presentation + Starter view registration.
+  - [x] resolve the same services/contracts for Starter.
+- [x] Add test names that make transitional state explicit:
+  - [x] `StorefrontPresentation_DIGraph_IsHostIndependent`
+  - [x] `StorefrontVisualViews_DoNotOwnRoutesOrSeoHead`
+  - [x] `StorefrontStarter_ViewsRenderPresentationContextsOnly`
+  - [x] `StorefrontRoutes_ArePresentationAssemblyOnly`
 
 ### Files likely touched
 
@@ -148,9 +148,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Exit criteria
 
-- [ ] Gaps are locked by tests.
-- [ ] No behavior has been moved yet.
-- [ ] Transitional expected failures are clearly isolated to this cutover plan.
+- [x] Gaps are locked by tests.
+- [x] No behavior has been moved yet.
+- [x] Transitional expected failures are clearly isolated to this cutover plan.
 
 ## Phase SPF17 - Presentation Adapter Ownership Cutover
 
@@ -168,38 +168,38 @@ Reason:
 
 ### Tasks
 
-- [ ] Move or recreate neutral adapters in `BlazorShop.Storefront.Presentation/Services`:
-  - [ ] catalog/content adapter backed by `IStorefrontRuntimeCatalogFacade`, `IStorefrontRuntimeContentFacade`, `IStorefrontRuntimeNavigationFacade`, and `IStorefrontRuntimeSeoFacade`.
-  - [ ] cart adapter backed by `IStorefrontRuntimeCartFacade`.
-  - [ ] checkout adapter backed by `IStorefrontRuntimeCheckoutFacade`.
-  - [ ] address adapter backed by `IStorefrontRuntimeAddressFacade`.
-  - [ ] payment adapter backed by `IStorefrontRuntimePaymentFacade`.
-  - [ ] store configuration adapter already exists; keep and verify.
-  - [ ] consent adapter already exists; keep and verify.
-- [ ] Replace V2-owned generated adapter registrations for Presentation contracts:
-  - [ ] remove `GeneratedStorefrontCatalogContentClient` registration from V2 service extension.
-  - [ ] remove `GeneratedStorefrontCartClient` registration from V2 service extension.
-  - [ ] remove `GeneratedStorefrontCheckoutClient` registration from V2 service extension.
-  - [ ] remove `GeneratedStorefrontAddressClient` registration from V2 service extension.
-  - [ ] remove `GeneratedStorefrontPaymentClient` registration from V2 service extension.
-  - [ ] keep V2 registrations only for truly V2-local services.
-- [ ] Classify and migrate default host support services:
-  - [ ] `IStorefrontDisplayContextProvider`: default Presentation implementation from current store/configuration/currency runtime state.
-  - [ ] `IStorefrontPriceFormatter`: default Presentation implementation using public currency/culture options.
-  - [ ] `IStorefrontSessionResolver`: Presentation contract with default same-origin/session implementation; V2 may override only if host policy needs it.
-  - [ ] `IStorefrontAuthClient`: Presentation adapter using Runtime account/auth capability or a documented host-specific implementation if Runtime lacks the operation.
-  - [ ] `IStorefrontCustomerClient`: Presentation adapter using Runtime account/customer capability.
-  - [ ] `IStorefrontCurrentStoreProvider`: Presentation default based on Runtime context/store current response; V2 can override resolution policy.
-- [ ] If Runtime lacks a facade method needed by Presentation:
-  - [ ] add the method to Runtime using generated client.
-  - [ ] keep business rules in Commerce Node.
-  - [ ] add focused Runtime facade tests.
-- [ ] Update `AddStorefrontPresentation()`:
-  - [ ] register all default adapters with `TryAddScoped`.
-  - [ ] allow V2/Starter/generated hosts to override via DI before/after with documented order.
-  - [ ] fail clearly if Runtime has not been registered.
-- [ ] Delete or deprecate V2 adapter files only after tests pass.
-- [ ] Update endpoint/page service tests to assert contract dependencies are satisfied by Presentation registration.
+- [x] Move or recreate neutral adapters in `BlazorShop.Storefront.Presentation/Services`:
+  - [x] catalog/content adapter backed by `IStorefrontRuntimeCatalogFacade`, `IStorefrontRuntimeContentFacade`, `IStorefrontRuntimeNavigationFacade`, and `IStorefrontRuntimeSeoFacade`.
+  - [x] cart adapter backed by `IStorefrontRuntimeCartFacade`.
+  - [x] checkout adapter backed by `IStorefrontRuntimeCheckoutFacade`.
+  - [x] address adapter backed by `IStorefrontRuntimeAddressFacade`.
+  - [x] payment adapter backed by `IStorefrontRuntimePaymentFacade`.
+  - [x] store configuration adapter already exists; keep and verify.
+  - [x] consent adapter already exists; keep and verify.
+- [x] Replace V2-owned generated adapter registrations for Presentation contracts:
+  - [x] remove `GeneratedStorefrontCatalogContentClient` registration from V2 service extension.
+  - [x] remove `GeneratedStorefrontCartClient` registration from V2 service extension.
+  - [x] remove `GeneratedStorefrontCheckoutClient` registration from V2 service extension.
+  - [x] remove `GeneratedStorefrontAddressClient` registration from V2 service extension.
+  - [x] remove `GeneratedStorefrontPaymentClient` registration from V2 service extension.
+  - [x] keep V2 registrations only for truly V2-local services.
+- [x] Classify and migrate default host support services:
+  - [x] `IStorefrontDisplayContextProvider`: default Presentation implementation from current store/configuration/currency runtime state.
+  - [x] `IStorefrontPriceFormatter`: default Presentation implementation using public currency/culture options.
+  - [x] `IStorefrontSessionResolver`: Presentation contract with default same-origin/session implementation; V2 may override only if host policy needs it.
+  - [x] `IStorefrontAuthClient`: Presentation adapter using Runtime account/auth capability or a documented host-specific implementation if Runtime lacks the operation.
+  - [x] `IStorefrontCustomerClient`: Presentation adapter using Runtime account/customer capability.
+  - [x] `IStorefrontCurrentStoreProvider`: Presentation default based on Runtime context/store current response; V2 can override resolution policy.
+- [x] If Runtime lacks a facade method needed by Presentation:
+  - [x] add the method to Runtime using generated client.
+  - [x] keep business rules in Commerce Node.
+  - [x] add focused Runtime facade tests.
+- [x] Update `AddStorefrontPresentation()`:
+  - [x] register all default adapters with `TryAddScoped`.
+  - [x] allow V2/Starter/generated hosts to override via DI before/after with documented order.
+  - [x] fail clearly if Runtime has not been registered.
+- [x] Delete or deprecate V2 adapter files only after tests pass.
+- [x] Update endpoint/page service tests to assert contract dependencies are satisfied by Presentation registration.
 
 ### Files likely touched
 
@@ -223,10 +223,20 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Exit criteria
 
-- [ ] Presentation + Runtime can satisfy Presentation services without V2 adapter registration.
-- [ ] V2 no longer owns generated adapter implementations required by Presentation.
-- [ ] Starter can resolve Presentation page/BFF graph without `StorefrontBootstrapService`.
-- [ ] No browser/WASM project references Runtime or Client.
+- [x] Presentation + Runtime can satisfy Presentation services without V2 adapter registration.
+- [x] V2 no longer owns generated adapter implementations required by Presentation.
+- [x] Starter can resolve Presentation page/BFF graph without `StorefrontBootstrapService`.
+- [x] No browser/WASM project references Runtime or Client.
+
+### SPF17 evidence - 2026-07-27
+
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj --no-restore`: passed.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj --no-restore`: passed.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore`: passed.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore`: passed.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntime|FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontEndpointDependency"`: passed `51/54`, with `3` future-phase cutover guardrails skipped.
+- Additional touched guardrails passed: `StorefrontCommerceFlowCutover|StorefrontGeneratedCatalogContent|StorefrontIndependenceBoundary|StorefrontV2WASMRuntimeFoundation|StorefrontV2AuthClient|StorefrontSessionResolver` passed `64/65` with `1` existing skip; `StorefrontStarterFoundationBoundary|StorefrontPresentationCutover` passed `27/30` with `3` future-phase skips.
+- Source scans found no `StorefrontBootstrapService`/direct generated-client bootstrap usage in Starter and no Runtime/Client references in browser/WASM projects.
 
 ## Phase SPF18 - StorefrontPage Mandatory Orchestration
 

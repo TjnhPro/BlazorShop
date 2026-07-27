@@ -100,9 +100,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2CartClient_UsesRuntimeFacadeForActiveCartCrud()
         {
             var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
             var runtimeFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCartFacade.cs");
-            var generatedAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCartClient.cs");
+            var generatedAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCartClient.cs");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var cartContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/Contracts/StorefrontCartLocalContracts.cs");
             var cartEndpointSupport = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartPresentationMapper.cs")
@@ -123,16 +124,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("ValidateAsync", runtimeFacade, StringComparison.Ordinal);
             Assert.Contains("RecalculateAsync", runtimeFacade, StringComparison.Ordinal);
 
-            Assert.Contains("AddScoped<GeneratedStorefrontCartClient>", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCartClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.DoesNotContain("GeneratedStorefrontCartClient", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<GeneratedStorefrontCartClient>", presentationServices, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCartClient>())", presentationServices, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeCartFacade cartFacade", generatedAdapter, StringComparison.Ordinal);
             Assert.Contains("this.cartFacade.AddLineAsync", generatedAdapter, StringComparison.Ordinal);
             Assert.Contains("this.cartFacade.UpdateLineAsync", generatedAdapter, StringComparison.Ordinal);
             Assert.Contains("this.cartFacade.RemoveLineAsync", generatedAdapter, StringComparison.Ordinal);
             Assert.Contains("this.cartFacade.ClearAsync", generatedAdapter, StringComparison.Ordinal);
             Assert.Contains("this.cartFacade.RecalculateAsync", generatedAdapter, StringComparison.Ordinal);
-            Assert.Contains("single auth-sensitive cart exception", generatedAdapter, StringComparison.Ordinal);
-            Assert.Contains("this.manualClient.MergeCurrentCustomerCartAsync", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.cartFacade.MergeCurrentCustomerAsync", generatedAdapter, StringComparison.Ordinal);
+            Assert.Contains("AuthenticationHeaderValue(\"Bearer\"", runtimeFacade, StringComparison.Ordinal);
 
             Assert.Contains("app.MapGet(\"/api/cart\"", cartEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/cart/lines\"", cartEndpoints, StringComparison.Ordinal);
@@ -150,11 +152,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2CheckoutAndPaymentClients_UseRuntimeFacadesForActiveGuestCheckout()
         {
             var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
             var checkoutFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCheckoutFacade.cs");
             var paymentFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimePaymentFacade.cs");
-            var checkoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCheckoutClient.cs");
-            var paymentAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontPaymentClient.cs");
+            var checkoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCheckoutClient.cs");
+            var paymentAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontPaymentClient.cs");
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
             var checkoutEndpointSupport = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs");
             var checkoutComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor")
@@ -178,18 +181,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("ListMethodsAsync", paymentFacade, StringComparison.Ordinal);
             Assert.Contains("GetAttemptAsync", paymentFacade, StringComparison.Ordinal);
 
-            Assert.Contains("AddScoped<GeneratedStorefrontCheckoutClient>", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<GeneratedStorefrontPaymentClient>", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCheckoutClient>())", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontPaymentClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.DoesNotContain("GeneratedStorefrontCheckoutClient", serviceCollection, StringComparison.Ordinal);
+            Assert.DoesNotContain("GeneratedStorefrontPaymentClient", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<GeneratedStorefrontCheckoutClient>", presentationServices, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<GeneratedStorefrontPaymentClient>", presentationServices, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCheckoutClient>())", presentationServices, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontPaymentClient>())", presentationServices, StringComparison.Ordinal);
             Assert.Contains("this.checkoutFacade.StartAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("this.checkoutFacade.UpdateAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("this.checkoutFacade.SelectShippingMethodAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("this.checkoutFacade.SelectPaymentMethodAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("this.checkoutFacade.ReviewAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("this.checkoutFacade.PlaceOrderAsync", checkoutAdapter, StringComparison.Ordinal);
-            Assert.Contains("auth-sensitive checkout exception", checkoutAdapter, StringComparison.Ordinal);
-            Assert.Contains("this.manualClient.UpdateCheckoutAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.UpdateAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("this.paymentFacade.ListMethodsAsync", paymentAdapter, StringComparison.Ordinal);
             Assert.Contains("this.paymentFacade.GetAttemptAsync", paymentAdapter, StringComparison.Ordinal);
 
@@ -214,13 +218,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
             var addressFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeAddressFacade.cs");
             var consentFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeConsentFacade.cs");
-            var addressAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontAddressClient.cs");
+            var addressAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontAddressClient.cs");
             var consentAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontConsentClient.cs");
             var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs");
             var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs");
             var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
-            var sessionResolver = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontSessionResolver.cs");
-            var authClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontAuthClient.cs");
+            var sessionResolver = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontSessionResolver.cs");
+            var authClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontAuthClient.cs");
 
             Assert.Contains("AddScoped<IStorefrontRuntimeAddressFacade, StorefrontRuntimeAddressFacade>", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontRuntimeConsentFacade, StorefrontRuntimeConsentFacade>", runtimeRegistration, StringComparison.Ordinal);
@@ -233,9 +237,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("SaveAsync", consentFacade, StringComparison.Ordinal);
             Assert.Contains("RevokeAsync", consentFacade, StringComparison.Ordinal);
 
-            Assert.Contains("AddScoped<GeneratedStorefrontAddressClient>", serviceCollection, StringComparison.Ordinal);
+            Assert.DoesNotContain("GeneratedStorefrontAddressClient", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<GeneratedStorefrontAddressClient>", presentationServices, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<GeneratedStorefrontConsentClient>", presentationServices, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontAddressClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontAddressClient>())", presentationServices, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConsentClient>())", presentationServices, StringComparison.Ordinal);
             Assert.DoesNotContain("AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
             Assert.DoesNotContain("AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);

@@ -6,7 +6,6 @@ using BlazorShop.Storefront.Presentation.App;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Hosting;
 using BlazorShop.Storefront.Starter.Options;
-using BlazorShop.Storefront.Starter.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +25,6 @@ builder.Services.AddStorefrontRuntime(options =>
 });
 builder.Services.AddStorefrontPlatformRuntime();
 builder.Services.AddStorefrontPresentation(builder.Configuration);
-builder.Services.AddScoped<StorefrontBootstrapService>();
 builder.Services.AddSingleton(_ =>
     StarterFeatureManifest.Load(Path.Combine(builder.Environment.ContentRootPath, "Features", "feature-manifest.json")));
 builder.Services.AddScoped<StarterFeatureActivationService>();

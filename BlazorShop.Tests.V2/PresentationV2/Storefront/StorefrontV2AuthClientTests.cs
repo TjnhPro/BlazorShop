@@ -6,6 +6,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using System.Text;
     using System.Text.Json;
 
+    using BlazorShop.Storefront.Runtime;
     using Xunit;
 
     using StorefrontV2::BlazorShop.Storefront.Models;
@@ -27,7 +28,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 return response;
             });
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.LoginAsync(new LoginUser { Email = "customer@example.test", Password = "Password123!" });
 
@@ -45,7 +46,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 HttpStatusCode.BadRequest,
                 """{"success":false,"message":"Invalid credentials.","data":null}"""));
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.LoginAsync(new LoginUser { Email = "customer@example.test", Password = "wrong" });
 
@@ -65,7 +66,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     """{"success":true,"message":"User created successfully.","data":{"id":"00000000-0000-0000-0000-000000000001"}}""");
             });
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.RegisterAsync(new CreateUser
             {
@@ -83,7 +84,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task RegisterAsync_WhenCommerceNodeUnavailable_ReturnsSafeFailure()
         {
-            var authClient = new StorefrontAuthClient(CreateClient(new ThrowingHandler()));
+            var authClient = CreateAuthClient(new ThrowingHandler());
 
             var result = await authClient.RegisterAsync(new CreateUser
             {
@@ -110,7 +111,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     """{"success":true,"message":"Registration policy returned.","data":{"mode":"disabled","registrationAllowed":false,"message":"Customer registration is disabled."}}""");
             });
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.GetRegistrationPolicyAsync();
 
@@ -137,7 +138,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     """{"success":true,"message":"If the email exists, reset instructions will be sent.","data":null}""");
             });
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.ForgotPasswordAsync("customer@example.test", "captcha-token");
 
@@ -162,7 +163,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 return JsonResponse(HttpStatusCode.OK, """{"success":true,"message":"Password reset.","data":null}""");
             });
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.ResetPasswordAsync(
                 "customer@example.test",
@@ -189,7 +190,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 return response;
             });
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.LogoutAsync("__Host-blazorshop-refresh=abc", "Storefront QA");
 
@@ -211,7 +212,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 return JsonResponse(HttpStatusCode.OK, """{"success":true,"message":"Password changed.","data":null}""");
             });
 
-            var authClient = new StorefrontAuthClient(CreateClient(handler));
+            var authClient = CreateAuthClient(handler);
 
             var result = await authClient.ChangePasswordAsync(
                 "access-token",
@@ -239,8 +240,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             return new HttpClient(handler)
             {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
+                BaseAddress = new Uri("https://commerce-node.example/"),
             };
+        }
+
+        private static StorefrontAuthClient CreateAuthClient(HttpMessageHandler handler)
+        {
+            return new StorefrontAuthClient(CreateClient(handler), new StubRuntimeContext("default"));
         }
 
         private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json)
@@ -305,6 +311,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 throw new HttpRequestException("Commerce Node unavailable.");
             }
+        }
+
+        private sealed class StubRuntimeContext : IStorefrontRuntimeContext
+        {
+            public StubRuntimeContext(string storeKey)
+            {
+                StoreKey = storeKey;
+            }
+
+            public string CommerceNodeBaseUrl => "https://commerce-node.example/";
+
+            public string StoreKey { get; }
+
+            public string? PublicBaseUrl => "https://storefront.example/";
         }
     }
 }

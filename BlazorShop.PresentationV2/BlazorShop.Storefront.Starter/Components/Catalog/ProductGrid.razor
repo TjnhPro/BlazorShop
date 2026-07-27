@@ -11,20 +11,17 @@ else
                 Name="@product.Name"
                 ImageUrl="@product.ImageUrl"
                 Price="@FormatPrice(product)"
-                Href="@($"/product/{product.Slug}")" />
+                Href="@(product.ProductUrl ?? $"/product/{product.Id}")" />
         }
     </div>
 }
 
 @code {
     [Parameter]
-    public IReadOnlyList<StarterProductSummary> Products { get; set; } = [];
+    public IReadOnlyList<ProductSummaryItem> Products { get; set; } = [];
 
-    [Parameter]
-    public string CurrencyCode { get; set; } = "USD";
-
-    private string? FormatPrice(StarterProductSummary product)
+    private static string? FormatPrice(ProductSummaryItem product)
     {
-        return product.Price is null ? null : $"{product.Price.Value:0.00} {CurrencyCode}";
+        return string.IsNullOrWhiteSpace(product.PriceDisplay) ? null : product.PriceDisplay;
     }
 }

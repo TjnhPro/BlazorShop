@@ -194,20 +194,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontDi_UsesGeneratedCatalogContentAdapterForCatalogContentNavigationAndSeo()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
-            var adapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontCatalogContentClient.cs");
+            var v2Services = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
+            var adapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCatalogContentClient.cs");
 
             Assert.Contains("GeneratedStorefrontCatalogContentClient", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("GeneratedStorefrontCatalogContentClient", v2Services, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeCatalogFacade", adapter, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeContentFacade", adapter, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeNavigationFacade", adapter, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeSeoFacade", adapter, StringComparison.Ordinal);
             Assert.DoesNotContain("IStorefrontRuntimeCatalogContentFacade catalogContentFacade", adapter, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontCatalogClient>", source, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontContentClient>", source, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontCatalogClient>", source, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontContentClient>", source, StringComparison.Ordinal);
             Assert.Contains("GetRequiredService<GeneratedStorefrontCatalogContentClient>", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", v2Services, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", v2Services, StringComparison.Ordinal);
         }
 
         [Fact]

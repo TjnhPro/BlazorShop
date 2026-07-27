@@ -39,10 +39,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("AddStorefrontHostOptions(configuration)", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontRuntimeRegistration(configuration)", services, StringComparison.Ordinal);
-            Assert.Contains("AddStorefrontGeneratedClientRegistration()", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontBffEndpointDependencies()", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontPresentation(configuration)", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontAuthSessionAndAntiforgeryPolicies(", services, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontGeneratedClientRegistration()", services, StringComparison.Ordinal);
             Assert.DoesNotContain("AddStorefrontSeoMediaAndDeploymentServices()", services, StringComparison.Ordinal);
         }
 
@@ -53,8 +53,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var allowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Configuration/StorefrontServiceCollectionExtensions.cs",
-                "Services/GeneratedStorefrontCartClient.cs",
-                "Services/GeneratedStorefrontCheckoutClient.cs",
                 "Services/StorefrontApiClient.Address.cs",
                 "Services/StorefrontApiClient.Cart.cs",
                 "Services/StorefrontApiClient.Catalog.cs",

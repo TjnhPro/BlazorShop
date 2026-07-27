@@ -534,11 +534,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Environment.NewLine,
                 new[]
                 {
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CheckoutContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/CheckoutContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/PaymentContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/OrderContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontCheckoutClient.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontPaymentClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontCheckoutClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontPaymentClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontCustomerClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Payment.cs",

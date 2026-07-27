@@ -159,7 +159,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             cartClient
                 .Setup(client => client.GetAsync(null, "default", cancellation.Token))
                 .Returns(Task.FromCanceled<StorefrontCartResponseCommerceNodeApiResponse>(cancellation.Token));
-            var facade = new StorefrontRuntimeCartFacade(context, cartClient.Object);
+            var facade = new StorefrontRuntimeCartFacade(context, cartClient.Object, new StubHttpClientFactory());
 
             await Assert.ThrowsAsync<TaskCanceledException>(() => facade.GetCartAsync(null, cancellation.Token));
         }
@@ -259,6 +259,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public string StoreKey { get; }
 
             public string? PublicBaseUrl => "http://localhost:18598";
+        }
+
+        private sealed class StubHttpClientFactory : IHttpClientFactory
+        {
+            public HttpClient CreateClient(string name)
+            {
+                return new HttpClient();
+            }
         }
     }
 }
