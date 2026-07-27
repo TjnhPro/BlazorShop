@@ -183,7 +183,7 @@ namespace BlazorShop.Tests.Architecture
                 "MapRazorComponents<StorefrontApp>()",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs"),
                 StringComparison.Ordinal);
-            Assert.Contains(
+            Assert.DoesNotContain(
                 "AdditionalAssemblies",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor"),
                 StringComparison.Ordinal);

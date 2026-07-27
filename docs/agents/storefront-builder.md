@@ -20,6 +20,7 @@ Generated storefronts must:
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
 - Consume `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` through package boundaries when they need the full storefront application surface.
 - Use Storefront Presentation for shared App/Routes/page services/BFF/SEO/media composition. Generated projects provide views, assets, copy, feature manifests, and host configuration instead of recreating application logic.
+- Register generated visual components as Presentation view slots; generated files must not declare `@page` routes or add route assemblies.
 - Register `BlazorShop.Storefront.Runtime` only in the generated server/BFF host, with `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow hosts. Do not use retired compatibility aliases.
 - Use `BlazorShop.Storefront.Components` only through a package boundary when reusable browser-safe contracts/headless behavior or Browser local API primitives are needed.
 - Keep protected browser actions behind same-origin BFF endpoints.
@@ -39,6 +40,7 @@ Generated storefronts must not:
 - Copy or import retired `BlazorShop.Storefront.Components.Features` wrappers. Generated storefronts must use shared `Contracts`, `Headless`, and `Browser` primitives and render project-local DOM/CSS.
 - Use Components `Features` wrappers as the generated/custom storefront presentation source.
 - Generate route/BFF/SEO/media application logic from scratch when Storefront Presentation already owns the shared surface.
+- Declare `@page` in generated visual files.
 - Write store-specific output into `BlazorShop.Storefront.Starter`.
 
 ## Protected Areas

@@ -1,7 +1,6 @@
 namespace BlazorShop.Storefront.Starter;
 
 using BlazorShop.Storefront.Presentation.DependencyInjection;
-using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Starter.Components.Layout;
 using BlazorShop.Storefront.Starter.Pages.Hybrid.Commerce;
@@ -42,6 +41,6 @@ public static class StarterFoundationViewRegistration
                 ServiceUnavailableState = typeof(NotFoundPage),
                 ErrorState = viewSet.ErrorState,
             };
-        }).AddStorefrontPresentationRoutes(typeof(Program).Assembly);
+        });
     }
 }

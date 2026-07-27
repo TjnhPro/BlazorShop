@@ -3,7 +3,6 @@ namespace BlazorShop.Storefront;
 using BlazorShop.Storefront.Components.Layout;
 using BlazorShop.Storefront.Components.Shared;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
-using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Pages.Hybrid.Commerce;
 using BlazorShop.Storefront.Pages.WasmHost.Account;
@@ -44,6 +43,6 @@ public static class V2FoundationViewRegistration
                 ServiceUnavailableState = typeof(ServiceUnavailableState),
                 ErrorState = viewSet.ErrorState,
             };
-        }).AddStorefrontPresentationRoutes(typeof(V2FoundationViewRegistration).Assembly);
+        });
     }
 }

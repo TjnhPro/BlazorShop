@@ -88,6 +88,7 @@ Run isolation:
 
 - Generated storefronts use `BlazorShop.Storefront.Client` package contracts for Storefront API transport and DTOs.
 - Generated storefronts use `BlazorShop.Storefront.Presentation` for shared App/Routes/page services/BFF/SEO/media composition and provide project-local views/assets/copy.
+- Generated storefronts register project-local views as Presentation view slots; generated files must not declare `@page` routes or add route assemblies.
 - Generated storefronts use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Generated storefronts may use `BlazorShop.Storefront.Components` contracts/headless behavior and Browser local API primitives for reusable browser-safe UI components; generated project-local components are allowed for store-specific presentation.
 - `BlazorShop.Storefront.Components.Features` is retired; generated storefronts should consume `Contracts`, `Headless`, and `Browser` primitives and own their visual templates locally.
@@ -125,6 +126,7 @@ Check these points before promoting generated storefront output or committing to
 - `BlazorShop.Storefront.Starter` owns neutral visual templates and does not copy Storefront V2 visual components.
 - The generated project references `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Presentation` as packages, and uses `BlazorShop.Storefront.Components` only as a package when shared browser-safe UI components are needed.
 - Browser code uses same-origin BFF routes for protected actions.
+- Generated visual files contain no `@page` route directives.
 - Required analysis artifacts exist.
 - Static gate, focused tests, and isolation gate pass.
 - Storefront client regeneration gate passes before package proof if the canonical Storefront contract or generated client changed.

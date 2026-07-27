@@ -65,9 +65,29 @@ public sealed class StorefrontPresentationCutoverGuardrailTests
     {
     }
 
-    [Fact(Skip = CutoverTodo)]
+    [Fact]
     public void StorefrontRoutes_ArePresentationAssemblyOnly()
     {
+        var routes = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor");
+        var presentationDi = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
+        var v2Registration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs");
+        var starterRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs");
+
+        Assert.Contains("AppAssembly=\"@typeof(StorefrontApp).Assembly\"", routes, StringComparison.Ordinal);
+        Assert.DoesNotContain("AdditionalAssemblies", routes, StringComparison.Ordinal);
+        Assert.DoesNotContain("StorefrontPresentationRouteOptions", presentationDi, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddStorefrontPresentationRoutes", presentationDi, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddStorefrontPresentationRoutes", v2Registration, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddStorefrontPresentationRoutes", starterRegistration, StringComparison.Ordinal);
+
+        var routeOwners = FindRazorPageOwners(
+            [
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
+            ]);
+
+        Assert.Empty(routeOwners);
     }
 
     private static void AssertPresentationOwned(object service)
@@ -76,5 +96,46 @@ public sealed class StorefrontPresentationCutoverGuardrailTests
             "BlazorShop.Storefront.V2",
             service.GetType().Assembly.GetName().Name,
             StringComparison.Ordinal);
+    }
+
+    private static string[] FindRazorPageOwners(string[] relativeRoots)
+    {
+        return relativeRoots
+            .Select(RepositoryPath)
+            .Where(Directory.Exists)
+            .SelectMany(root => Directory.EnumerateFiles(root, "*.razor", SearchOption.AllDirectories))
+            .Where(path => !path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)))
+            .Where(path => File.ReadLines(path).Any(line => line.TrimStart().StartsWith("@page ", StringComparison.Ordinal)))
+            .Select(ToRepositoryRelativePath)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static string ReadRepositoryFile(string relativePath)
+    {
+        return File.ReadAllText(RepositoryPath(relativePath));
+    }
+
+    private static string RepositoryPath(string relativePath)
+    {
+        return Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar));
+    }
+
+    private static string ToRepositoryRelativePath(string path)
+    {
+        return Path.GetRelativePath(FindRepositoryRoot(), path).Replace('\\', '/');
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+        {
+            directory = directory.Parent;
+        }
+
+        return directory?.FullName ?? throw new DirectoryNotFoundException("Could not locate repository root.");
     }
 }

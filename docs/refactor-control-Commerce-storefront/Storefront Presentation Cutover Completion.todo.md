@@ -333,21 +333,21 @@ Goal: ensure hosts cannot accidentally become route owners.
 
 ### Tasks
 
-- [ ] Remove host route assembly discovery from `StorefrontRoutes.razor`.
-- [ ] Remove `StorefrontPresentationRouteOptions.AdditionalAssemblies` if it is no longer needed.
-- [ ] Remove or obsolete `AddStorefrontPresentationRoutes(...)`.
-- [ ] Update V2 view registration:
-  - [ ] keep `AddV2FoundationViews()`.
-  - [ ] stop calling `AddStorefrontPresentationRoutes(typeof(V2FoundationViewRegistration).Assembly)`.
-- [ ] Update Starter view registration:
-  - [ ] keep `AddStarterFoundationViews()`.
-  - [ ] stop calling `AddStorefrontPresentationRoutes(typeof(Program).Assembly)`.
-- [ ] Keep `MapRazorComponents<StorefrontApp>()` host assembly registration only for visual component discovery/rendering, not route discovery.
-- [ ] Add guardrail:
-  - [ ] only `BlazorShop.Storefront.Presentation/Pages` may contain `@page`.
-  - [ ] `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, `BlazorShop.Storefront.V2.WASM`, and generated storefront source must not contain `@page`.
-  - [ ] generated storefront validation fails if generated visual files contain `@page`.
-- [ ] Update StorefrontBuilder docs/contracts so generated projects register view slots, not route assemblies.
+- [x] Remove host route assembly discovery from `StorefrontRoutes.razor`.
+- [x] Remove `StorefrontPresentationRouteOptions.AdditionalAssemblies` if it is no longer needed.
+- [x] Remove or obsolete `AddStorefrontPresentationRoutes(...)`.
+- [x] Update V2 view registration:
+  - [x] keep `AddV2FoundationViews()`.
+  - [x] stop calling `AddStorefrontPresentationRoutes(typeof(V2FoundationViewRegistration).Assembly)`.
+- [x] Update Starter view registration:
+  - [x] keep `AddStarterFoundationViews()`.
+  - [x] stop calling `AddStorefrontPresentationRoutes(typeof(Program).Assembly)`.
+- [x] Keep `MapRazorComponents<StorefrontApp>()` host assembly registration only for visual component discovery/rendering, not route discovery.
+- [x] Add guardrail:
+  - [x] only `BlazorShop.Storefront.Presentation/Pages` may contain `@page`.
+  - [x] `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, `BlazorShop.Storefront.V2.WASM`, and generated storefront source must not contain `@page`.
+  - [x] generated storefront validation fails if generated visual files contain `@page`.
+- [x] Update StorefrontBuilder docs/contracts so generated projects register view slots, not route assemblies.
 
 ### Files likely touched
 
@@ -369,11 +369,24 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Expected `rg` result after this phase: no matches outside Presentation route pages.
 
+### Completion Evidence - 2026-07-27
+
+- `StorefrontRoutes.razor` now uses only `AppAssembly="@typeof(StorefrontApp).Assembly"`; host route `AdditionalAssemblies` is removed from Presentation routing.
+- `StorefrontPresentationRouteOptions` and `AddStorefrontPresentationRoutes(...)` were removed; V2 and Starter view registration now only call `AddStorefrontFoundationViews(...)`.
+- Host `MapRazorComponents<StorefrontApp>().AddAdditionalAssemblies(...)` remains for component/view discovery only.
+- StorefrontBuilder static validation now fails generated visual files that declare `@page`, and current StorefrontBuilder docs require generated projects to register Presentation view slots instead of route assemblies.
+- `rg -n "^@page" BlazorShop.PresentationV2\BlazorShop.Storefront.V2 BlazorShop.PresentationV2\BlazorShop.Storefront.Starter BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM -g "*.razor"` returned no matches.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore` passed after rerunning sequentially; the first parallel run hit a transient MSBuild file lock.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore` passed after rerunning sequentially; the first parallel run hit a transient static-web-assets file lock.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontBuilder"` passed `70/70`.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPresentation"` passed `18/20`, with 2 future phase skips.
+
 ### Exit criteria
 
-- [ ] Presentation is the only route owner.
-- [ ] V2/Starter/generated storefronts can add visual components without adding routes.
-- [ ] Route discovery cannot drift by adding `@page` in host projects.
+- [x] Presentation is the only route owner.
+- [x] V2/Starter/generated storefronts can add visual components without adding routes.
+- [x] Route discovery cannot drift by adding `@page` in host projects.
 
 ## Phase SPF20 - Visual SEO And Head Cleanup
 

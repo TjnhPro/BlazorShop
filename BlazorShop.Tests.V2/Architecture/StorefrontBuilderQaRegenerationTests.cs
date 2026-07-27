@@ -46,7 +46,8 @@ namespace BlazorShop.Tests.Architecture
                 "Test-StorefrontBuilderGuard.ps1",
                 "Test-StorefrontBuilderIdempotency.ps1",
                 "generated-files.yaml",
-                "Duplicate route",
+                "Generated storefront visual files must not declare @page routes",
+                "Register Presentation view slots",
                 "Package compatibility metadata",
                 "PackageReference",
             })

@@ -26,20 +26,20 @@ foreach ($artifact in @("metadata.yaml", "asset-manifest.yaml", "generated-files
     }
 }
 
-$routes = @{}
+$routeDirectives = @()
 Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File -Include *.razor |
     Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
     ForEach-Object {
         $content = Get-Content -LiteralPath $_.FullName -Raw
         foreach ($match in [regex]::Matches($content, "(?m)^@page\s+`"([^`"]+)`"")) {
             $route = $match.Groups[1].Value
-            if ($routes.ContainsKey($route)) {
-                throw "[SFB-STATIC-002] Duplicate route '$route' in '$($_.FullName)' and '$($routes[$route])'."
-            }
-
-            $routes[$route] = $_.FullName
+            $routeDirectives += "'$route' in '$($_.FullName)'"
         }
     }
+
+if ($routeDirectives.Count -gt 0) {
+    throw "[SFB-STATIC-002] Generated storefront visual files must not declare @page routes. Register Presentation view slots instead: $($routeDirectives -join '; ')"
+}
 
 $versions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
 $project = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.csproj") -Raw

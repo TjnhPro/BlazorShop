@@ -62,6 +62,7 @@ Starter consumer rules:
 - Use the `BlazorShop.Storefront.Client` package for Storefront API transport and generated DTO contracts. The package is generated from `contracts/storefront/storefront.openapi.json`.
 - Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use the `BlazorShop.Storefront.Presentation` package for shared App/Routes/page services/BFF/SEO/media composition. Starter/generated projects provide views, assets, copy, feature manifests, and host configuration.
+- Register view slots through `StorefrontFoundationViewSet`; generated visual files must not declare `@page` or register route assemblies.
 - Register Runtime only in the generated server/BFF host. Use `AddStorefrontPlatformRuntime` for the full starter surface, or explicit `AddStorefront{Capability}Runtime` methods when a generated host intentionally supports a smaller surface.
 - Use `BlazorShop.Storefront.Components` only for reusable browser-safe contracts/headless behavior and Browser local API primitives when a starter or generated storefront needs that shared component package.
 - Do not import or recreate retired `BlazorShop.Storefront.Components.Features` wrappers. Generated storefronts consume shared `Contracts`, `Headless`, and `Browser` primitives, then own their project-local markup, CSS, layout, assets, and copy.
@@ -170,7 +171,7 @@ Canonical proof workflow:
 The static gate checks:
 
 - StorefrontBuilder JSON/YAML schemas.
-- Generated project name, folder, store key, package metadata, and route uniqueness.
+- Generated project name, folder, store key, package metadata, and no generated `@page` route directives.
 - Required analysis artifacts.
 - Asset manifest shape and referenced files.
 - CSS token and generated style rules.
