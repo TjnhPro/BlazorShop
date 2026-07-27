@@ -1,18 +1,21 @@
-namespace BlazorShop.Storefront.Endpoints
+namespace BlazorShop.Storefront.Presentation.Endpoints
 {
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Models;
+    using BlazorShop.Storefront.Presentation.PagePatterns;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using Microsoft.AspNetCore.Antiforgery;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using static BlazorShop.Storefront.Endpoints.StorefrontLocalEndpointSupport;
+    using static BlazorShop.Storefront.Presentation.Endpoints.StorefrontPresentationAccountEndpointSupport;
 
-    public static class StorefrontAccountEndpoints
+    public static class StorefrontPresentationAccountEndpoints
     {
-        public static WebApplication MapStorefrontAccountEndpoints(this WebApplication app)
+        public static WebApplication MapStorefrontPresentationAccountEndpoints(this WebApplication app)
         {
             app.MapGet("/api/account/profile", async (
                 IStorefrontSessionResolver sessionResolver,

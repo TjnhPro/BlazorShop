@@ -322,17 +322,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountHostPage_HostsInteractiveWasmAccountApp()
         {
             var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var route = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/WasmHost/Account/AccountRoutePage.razor");
+            var pageService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Account/StorefrontAccountPageService.cs");
             var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
-            Assert.Contains("@page \"/account\"", host, StringComparison.Ordinal);
-            Assert.Contains("@page \"/account/{*Path}\"", host, StringComparison.Ordinal);
+            Assert.Contains("@page \"/account\"", route, StringComparison.Ordinal);
+            Assert.Contains("@page \"/account/{*Path}\"", route, StringComparison.Ordinal);
             Assert.Contains("<StorefrontAccountApp", host, StringComparison.Ordinal);
             Assert.DoesNotContain("<AccountApp", host, StringComparison.Ordinal);
-            Assert.Contains("Path=\"@Path\"", host, StringComparison.Ordinal);
-            Assert.Contains("AntiforgeryFieldName=\"@_antiforgeryFieldName\"", host, StringComparison.Ordinal);
+            Assert.Contains("Path=\"@Context.Path\"", host, StringComparison.Ordinal);
+            Assert.Contains("AntiforgeryFieldName=\"@Context.AntiforgeryFieldName\"", host, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", host, StringComparison.Ordinal);
-            Assert.Contains("SessionResolver.GetCurrentUserAsync()", host, StringComparison.Ordinal);
-            Assert.Contains("StorefrontReturnUrl.BuildSignInUrl(CurrentReturnUrl())", host, StringComparison.Ordinal);
+            Assert.DoesNotContain("@page", host, StringComparison.Ordinal);
+            Assert.Contains("sessionResolver.GetCurrentUserAsync", pageService, StringComparison.Ordinal);
+            Assert.Contains("StorefrontReturnUrl.BuildSignInUrl(CurrentReturnUrl(httpContext))", pageService, StringComparison.Ordinal);
 
             Assert.Contains("StorefrontAccountProfileEditor", app, StringComparison.Ordinal);
             Assert.Contains("StorefrontAccountAddressBook", app, StringComparison.Ordinal);
@@ -351,13 +354,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountHost_UsesSingleShellWhileKeepingPageOwnedGuards()
         {
             var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var route = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/WasmHost/Account/AccountRoutePage.razor");
+            var pageService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Account/StorefrontAccountPageService.cs");
             var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
             var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountNavigation.razor");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
 
-            Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", host, StringComparison.Ordinal);
-            Assert.Contains("Antiforgery.GetAndStoreTokens(HttpContext)", host, StringComparison.Ordinal);
-            Assert.Contains("NavigationManager.ToBaseRelativePath(NavigationManager.Uri)", host, StringComparison.Ordinal);
+            Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", route, StringComparison.Ordinal);
+            Assert.Contains("antiforgery.GetAndStoreTokens(httpContext)", pageService, StringComparison.Ordinal);
+            Assert.Contains("StorefrontReturnUrl.Normalize(path + query, StorefrontRoutes.Account)", pageService, StringComparison.Ordinal);
             Assert.Contains("data-storefront-account-app", app, StringComparison.Ordinal);
             Assert.Contains("aria-label=\"Account navigation\"", navigation, StringComparison.Ordinal);
             Assert.Contains("/account/profile", options, StringComparison.Ordinal);
@@ -430,10 +435,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountLocalEndpoints_ResolveCurrentCustomerServerSide()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
-            var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAccountEndpoints.cs");
-            var support = ReadStorefrontLocalEndpointSupportSource();
+            var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs");
+            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Account.cs");
 
-            Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/account/profile\"", accountEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPut(\"/api/account/profile\"", accountEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/account/addresses\"", accountEndpoints, StringComparison.Ordinal);
@@ -527,17 +532,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 {
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CheckoutContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/PaymentContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/OrderContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/OrderContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontCheckoutClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontPaymentClient.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontCustomerClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontCustomerClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Payment.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Customer.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Checkout/StorefrontCheckoutPageService.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Account.cs",
                 }.Select(ReadRepositoryFile));
 
             Assert.Contains("StorefrontPublicPaymentMethod", source, StringComparison.Ordinal);
@@ -561,7 +566,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapStorefrontPresentationAuthEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontAuthFormEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);

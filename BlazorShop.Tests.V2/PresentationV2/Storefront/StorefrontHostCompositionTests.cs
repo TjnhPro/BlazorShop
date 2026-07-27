@@ -17,7 +17,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(logicalLines.Length <= 45, $"Program.cs has {logicalLines.Length} logical lines.");
             Assert.Contains("builder.Services.AddStorefrontV2Services(", program, StringComparison.Ordinal);
             Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);

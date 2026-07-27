@@ -5,6 +5,7 @@ using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Starter.Components.Layout;
 using BlazorShop.Storefront.Starter.Pages.Hybrid.Commerce;
+using BlazorShop.Storefront.Starter.Pages.WasmHost.Account;
 using BlazorShop.Storefront.Starter.Theme.Pages.Auth;
 using BlazorShop.Storefront.Starter.Theme.Pages.Catalog;
 using BlazorShop.Storefront.Starter.Theme.Pages.Content;
@@ -35,7 +36,7 @@ public static class StarterFoundationViewRegistration
                 CheckoutPage = typeof(CheckoutPage),
                 PaymentResultPage = typeof(PaymentResultPage),
                 AuthPage = typeof(AuthShellPage),
-                AccountPage = viewSet.AccountPage,
+                AccountPage = typeof(AccountHostPage),
                 MaintenanceState = typeof(MaintenancePage),
                 NotFoundState = typeof(NotFoundPage),
                 ServiceUnavailableState = typeof(NotFoundPage),

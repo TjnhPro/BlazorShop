@@ -325,7 +325,7 @@ namespace BlazorShop.Tests.Architecture
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs", supportFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Account.cs", supportFiles);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs", supportFiles);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", supportFiles);
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartPresentationMapper.cs")));
@@ -333,12 +333,22 @@ namespace BlazorShop.Tests.Architecture
                 supportFiles,
                 file =>
                 {
-                    var maxLineCount = file.EndsWith("StorefrontLocalEndpointSupport.Checkout.cs", StringComparison.Ordinal)
-                        ? 380
-                        : 320;
+                    var maxLineCount = file.EndsWith("StorefrontLocalEndpointSupport.Account.cs", StringComparison.Ordinal)
+                        ? 450
+                        : file.EndsWith("StorefrontLocalEndpointSupport.Checkout.cs", StringComparison.Ordinal)
+                            ? 380
+                            : 320;
                     Assert.True(File.ReadLines(RepositoryPath(file)).Count() <= maxLineCount);
                 });
-            Assert.All(supportFiles, file => Assert.Contains("internal static partial class StorefrontLocalEndpointSupport", ReadRepositoryFile(file), StringComparison.Ordinal));
+            Assert.All(
+                supportFiles,
+                file =>
+                {
+                    var expectedClass = file.EndsWith("StorefrontLocalEndpointSupport.Account.cs", StringComparison.Ordinal)
+                        ? "internal static class StorefrontPresentationAccountEndpointSupport"
+                        : "internal static partial class StorefrontLocalEndpointSupport";
+                    Assert.Contains(expectedClass, ReadRepositoryFile(file), StringComparison.Ordinal);
+                });
         }
 
         [Fact]

@@ -216,7 +216,7 @@ Seed source: `BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmen
 
 ## Auth, Recovery, Account WASM Browser Flow
 
-Ghi chú: account profile/address/order/change-password hiện là component WASM gọi same-origin `/api/account/*`; SSR page host vẫn chịu trách nhiệm auth redirect và initial render.
+Ghi chú: account profile/address/order/change-password hiện là component WASM gọi same-origin `/api/account/*`; Presentation account route host chịu trách nhiệm auth redirect, return URL, antiforgery bootstrap, noindex/private metadata, và initial render.
 
 - [x] `AUTH-001 P0` - Register standard policy tạo account synthetic một lần.
 - [x] `AUTH-002 P0` - Register disabled policy không cho submit. 2026-07-18: headed Chromium run `.\scripts\qa\run-storefront-registration-policy-e2e.ps1` set store `default` registration to disabled through Control Plane gateway, verified `/register` disabled state without register form/captcha token, direct CommerceNode register returned `403 auth.registration_disabled`, restored mode `standard`, and recorded no forbidden Storefront browser API calls or 5xx responses. Evidence: `.gstack/qa-reports/registration-policy-e2e/result.json`.

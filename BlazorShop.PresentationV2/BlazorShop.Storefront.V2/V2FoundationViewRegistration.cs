@@ -6,6 +6,7 @@ using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Routing;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Pages.Hybrid.Commerce;
+using BlazorShop.Storefront.Pages.WasmHost.Account;
 using BlazorShop.Storefront.Pages.Ssr.Content;
 using BlazorShop.Storefront.Pages.Ssr.System;
 using BlazorShop.Storefront.Theme.Pages.Auth;
@@ -37,7 +38,7 @@ public static class V2FoundationViewRegistration
                 CheckoutPage = typeof(CheckoutPage),
                 PaymentResultPage = typeof(PaymentResultPage),
                 AuthPage = typeof(V2AuthPageView),
-                AccountPage = viewSet.AccountPage,
+                AccountPage = typeof(AccountHostPage),
                 MaintenanceState = typeof(MaintenancePage),
                 NotFoundState = typeof(NotFoundPage),
                 ServiceUnavailableState = typeof(ServiceUnavailableState),

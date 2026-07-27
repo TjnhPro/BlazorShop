@@ -1,0 +1,53 @@
+@page "/account"
+@page "/account/{*Path}"
+@namespace BlazorShop.Storefront.Presentation.Pages.WasmHost.Account
+@using BlazorShop.Storefront.Presentation.Services.Account
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@inject StorefrontAccountPageService PageService
+@inject StorefrontFoundationViewSet ViewSet
+@inject NavigationManager NavigationManager
+
+<PageTitle>Account</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+@if (_result is StorefrontAccountPageResult.ReadyState ready)
+{
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AccountPage" Context="ready.Context" />
+}
+else
+{
+    <section class="mx-auto max-w-7xl px-4 py-12 text-sm text-neutral-600 sm:px-6 lg:px-8">
+        Redirecting to sign in...
+    </section>
+}
+
+@code {
+    private StorefrontAccountPageResult? _result;
+
+    [Parameter]
+    public string? Path { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [SupplyParameterFromQuery(Name = "saved")]
+    public string? Saved { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int Page { get; set; } = 1;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _result = await PageService.GetAsync(HttpContext, Path, Page, Error, Saved);
+        if (_result is StorefrontAccountPageResult.RedirectState redirect)
+        {
+            NavigationManager.NavigateTo(redirect.Url, replace: true);
+        }
+    }
+}

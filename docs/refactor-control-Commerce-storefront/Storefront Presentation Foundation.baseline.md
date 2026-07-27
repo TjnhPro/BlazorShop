@@ -35,7 +35,7 @@ V2 route ownership baseline:
 | cart | `/my-cart` | `BlazorShop.Storefront.Presentation/Pages/Ssr/Cart/CartRoutePage.razor` |
 | checkout | `/checkout` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/CheckoutRoutePage.razor` |
 | payment | `/payment-success`, `/payment-cancel`, `/payment/result` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/PaymentResultRoutePage.razor` |
-| account host | `/account`, `/account/{*Path}` | `BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor` |
+| account host | `/account`, `/account/{*Path}` | `BlazorShop.Storefront.Presentation/Pages/WasmHost/Account/AccountRoutePage.razor`; V2 supplies `AccountPage` view |
 | system | `/maintenance`, `/{*Path:nonfile}` | `BlazorShop.Storefront.V2/Pages/Ssr/System/*` |
 
 Starter route ownership baseline:
@@ -52,7 +52,7 @@ Starter route ownership baseline:
 | cart | `/cart` | `BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor` |
 | checkout | `/checkout` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/CheckoutRoutePage.razor`; Starter supplies `CheckoutPage` view |
 | payment | `/payment/result` | `BlazorShop.Storefront.Presentation/Pages/Hybrid/Commerce/PaymentResultRoutePage.razor`; Starter supplies `PaymentResultPage` view |
-| account host | `/account`, `/account/{*Path}` | `BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor` |
+| account host | `/account`, `/account/{*Path}` | `BlazorShop.Storefront.Presentation/Pages/WasmHost/Account/AccountRoutePage.razor`; Starter supplies `AccountPage` view |
 | system | `/maintenance`, `/not-found` | `BlazorShop.Storefront.Starter/Pages/Ssr/System/*` |
 
 ## Endpoint Mapping Inventory
@@ -65,10 +65,10 @@ rg -n "MapStorefront|MapStarter|MapGet|MapPost" BlazorShop.PresentationV2/Blazor
 
 V2 endpoint ownership baseline:
 
-- Auth form endpoints: `POST /signin`, `/register`, `/forgot-password`, `/reset-password`, `/logout`, account form posts, currency preference, and checkout form post through `StorefrontAuthFormEndpoints`.
+- Auth form endpoints: `POST /signin`, `/register`, `/forgot-password`, `/reset-password`, `/logout`, and currency preference through `StorefrontAuthFormEndpoints`; checkout/account form posts are retired in favor of Presentation BFF endpoints.
 - Cart BFF endpoints: `GET /api/cart`, `POST /api/product-selection-preview`, `POST /api/cart/lines`, `PUT /api/cart/lines/{lineId:guid}`, `DELETE /api/cart/lines/{lineId:guid}`, `DELETE /api/cart`, `POST /api/cart/recalculate` now live in `BlazorShop.Storefront.Presentation`.
 - Checkout BFF endpoints: `GET /api/checkout`, `POST /api/checkout/addresses`, `/shipping-method`, `/payment-method`, `/review`, `/place-order` now live in `BlazorShop.Storefront.Presentation`.
-- Account BFF endpoints: profile, addresses, orders, order receipt, and change password under `/api/account/*`.
+- Account BFF endpoints: profile, addresses, orders, order receipt, and change password under `/api/account/*` now live in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs`.
 - Consent endpoints: `GET /api/consent/current`, `POST /api/consent`, `POST /api/consent/revoke`.
 - SEO endpoints: `GET /robots.txt`, `GET /sitemap.xml`.
 - Media endpoints: product and asset media proxy routes under `/media/*`.

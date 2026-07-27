@@ -119,7 +119,7 @@ Migration order:
 
 Endpoint groups currently present:
 
-- `/api/account/*` in `StorefrontAccountEndpoints.cs` and `StorefrontAuthFormEndpoints.cs`
+- `/api/account/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs`; account form route posts were retired from V2 `StorefrontAuthFormEndpoints.cs`
 - `/api/cart` and `/api/product-selection-preview` in `StorefrontCartEndpoints.cs`
 - `/api/checkout/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs` (successor to the retired V2 `StorefrontCheckoutEndpoints.cs`)
 - `/api/consent/*` in `StorefrontConsentEndpoints.cs`

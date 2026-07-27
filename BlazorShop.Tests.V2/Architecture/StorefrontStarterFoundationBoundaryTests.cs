@@ -376,7 +376,6 @@ namespace BlazorShop.Tests.Architecture
             var expectedRoutes = new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"] = ["@page \"/product/{Slug}\""],
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"] = ["@page \"/account\"", "@page \"/account/{*Path}\""],
             };
 
             foreach (var (relativePath, routes) in expectedRoutes)
@@ -402,6 +401,7 @@ namespace BlazorShop.Tests.Architecture
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor"] = "StorefrontCatalogProductsPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = "StorefrontContentPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor"] = "StorefrontAuthPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"] = "StorefrontAccountPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/MaintenancePage.razor"] = "StorefrontSystemStateContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/NotFoundPage.razor"] = "StorefrontSystemStateContext",
             };

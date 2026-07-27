@@ -28,7 +28,7 @@ app.MapDefaultEndpoints();
 app.MapStorefrontPresentationAuthEndpoints();
 app.MapStorefrontAuthFormEndpoints();
 app.MapStorefrontPresentationCartEndpoints();
-app.MapStorefrontAccountEndpoints();
+app.MapStorefrontPresentationAccountEndpoints();
 app.MapStorefrontPresentationCheckoutEndpoints();
 app.MapStorefrontConsentEndpoints();
 app.MapStorefrontPresentationSeoEndpoints();

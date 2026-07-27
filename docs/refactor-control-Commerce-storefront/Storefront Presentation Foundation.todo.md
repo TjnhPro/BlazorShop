@@ -732,29 +732,29 @@ Exit criteria:
 
 ## Phase SPF11 - Account WasmHost and Account BFF Migration
 
-- [ ] Move account host routes:
+- [x] Move account host routes:
   - `/account`
   - `/account/{*Path}`
-- [ ] Move account host application logic:
+- [x] Move account host application logic:
   - session authorization;
   - sign-in redirect;
   - return URL;
   - antiforgery token bootstrap;
   - noindex/private metadata;
   - account route context.
-- [ ] Move account BFF endpoints:
+- [x] Move account BFF endpoints:
   - profile get/update;
   - addresses get/create/update/delete/default;
   - orders list;
   - order detail;
   - receipt;
   - change password.
-- [ ] Presentation owns:
+- [x] Presentation owns:
   - access-token/session resolution;
   - local browser-safe response mapping;
   - antiforgery validation;
   - authorization failure mapping.
-- [ ] `Storefront.V2.WASM` owns:
+- [x] `Storefront.V2.WASM` owns:
   - `StorefrontAccountApp`;
   - navigation;
   - profile editor;
@@ -763,21 +763,31 @@ Exit criteria:
   - receipt view;
   - change password form;
   - classes/copy.
-- [ ] V2 host registers account view type from `Storefront.V2.WASM`.
-- [ ] Starter either:
+- [x] V2 host registers account view type from `Storefront.V2.WASM`.
+- [x] Starter either:
   - provides neutral account visual;
   - or explicitly marks account visual unavailable while still sharing auth/account route policies.
-- [ ] Tests:
+- [x] Tests:
   - direct `/account/orders` unauthenticated redirects to sign-in with safe `returnUrl`;
   - authenticated account route hydrates;
   - antiforgery token available before WASM call;
   - account BFF denies unauthenticated;
   - profile/address/order/change-password browser flows pass.
 
+- Evidence:
+  - `Storefront.Presentation/Pages/WasmHost/Account/AccountRoutePage.razor` owns `/account` and `/account/{*Path}`, noindex metadata, private response path, auth redirect, safe return URL, and account context dispatch through `StorefrontFoundationViewOutlet`.
+  - `Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs` owns profile, addresses, orders, receipt, and change-password BFF routes with server-side session/access-token resolution, antiforgery validation, and local browser-safe error envelopes.
+  - V2 `AccountHostPage.razor` and Starter `AccountHostPage.razor` are view-only components registered as `AccountPage`; V2 WASM continues to own `StorefrontAccountApp`, navigation, profile, address book, orders, receipt, password form, classes, and copy.
+  - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+  - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+  - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings.
+  - Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed with existing MessagePack vulnerability and Browserslist warnings.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontBffBoundaryHardeningTests|FullyQualifiedName~V2ArchitectureBoundaryBaselineTests"` passed 151/151.
+
 Exit criteria:
 
-- [ ] Account route/security/bootstrap belongs to Presentation.
-- [ ] WASM still does not reference Presentation/Runtime/Client.
+- [x] Account route/security/bootstrap belongs to Presentation.
+- [x] WASM still does not reference Presentation/Runtime/Client.
 
 ## Phase SPF12 - Media, Consent, and Host Pipeline Aggregation
 

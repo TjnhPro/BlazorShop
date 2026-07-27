@@ -8,6 +8,9 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     using BlazorShop.Storefront.Runtime;
     using BlazorShop.Storefront.Client;
     using Microsoft.AspNetCore.Http;
+    using StorefrontAddressCountryResponse = BlazorShop.Storefront.Client.StorefrontAddressCountryResponse;
+    using StorefrontAddressFieldConfigurationResponse = BlazorShop.Storefront.Client.StorefrontAddressFieldConfigurationResponse;
+    using StorefrontAddressStateProvinceResponse = BlazorShop.Storefront.Client.StorefrontAddressStateProvinceResponse;
     using static BlazorShop.Storefront.Presentation.Endpoints.StorefrontLocalEndpointSupport;
     using StorefrontCartLineResponse = BlazorShop.Storefront.Services.StorefrontCartLineResponse;
 
