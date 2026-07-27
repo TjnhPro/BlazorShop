@@ -104,25 +104,25 @@ V2 host must not construct Commerce Node API transport routes directly.
 
 Muc tieu: phan loai tat ca usages truoc khi xoa, tranh xoa nham fixture dang bao ve behavior that.
 
-- [ ] Audit production source:
+- [x] Audit production source:
 
 ```powershell
 rg -n "StorefrontApiClient|EnableLegacyFallback|LegacyCatalogBaseRoute|LegacySeoSettingsRoute|AddHttpClient<StorefrontApiClient>" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"
 ```
 
-- [ ] Audit tests:
+- [x] Audit tests:
 
 ```powershell
 rg -n "StorefrontApiClient|EnableLegacyFallback|LegacyCatalogBaseRoute|AddHttpClient<StorefrontApiClient>" BlazorShop.Tests.V2 -g "!bin" -g "!obj"
 ```
 
-- [ ] Audit docs/backlog:
+- [x] Audit docs/backlog:
 
 ```powershell
 rg -n "StorefrontApiClient|EnableLegacyFallback|manual client|manual transport|legacy fallback" docs/storefront-platform docs/refactor-control-Commerce-storefront docs/architecture -g "*.md"
 ```
 
-- [ ] Lap bang replacement cho moi consumer test:
+- [x] Lap bang replacement cho moi consumer test:
 
 | Consumer | Current dependency | Replacement | Expected owner |
 | --- | --- | --- | --- |
@@ -135,16 +135,31 @@ rg -n "StorefrontApiClient|EnableLegacyFallback|manual client|manual transport|l
 | `StorefrontIndependenceBoundaryTests` | expects `AddHttpClient<StorefrontApiClient>` | invert assertion to forbid it | Architecture test |
 | `StorefrontHostCompositionTests` | documented exception allow-list | invert assertion to no exception files | Architecture test |
 
-- [ ] Xac minh generated/Runtime path co day du nhung capability ma manual client tung che:
-  - [ ] current store/configuration.
-  - [ ] catalog/search/product/page/navigation/SEO.
-  - [ ] cart session, add, update, remove, recalculate, merge current customer.
-  - [ ] checkout start, load, address update, shipping, payment, review, place order.
-  - [ ] payment method discovery va payment attempt.
-  - [ ] customer profile, address book, order list, order detail, receipt.
-  - [ ] consent read/write.
-- [ ] Neu phat hien gap that, bo sung vao `BlazorShop.Storefront.Presentation` hoac `BlazorShop.Storefront.Runtime` truoc khi xoa V2 manual client.
-- [ ] Khong them adapter moi trong V2 de thay the `StorefrontApiClient`.
+- [x] Xac minh generated/Runtime path co day du nhung capability ma manual client tung che:
+  - [x] current store/configuration.
+  - [x] catalog/search/product/page/navigation/SEO.
+  - [x] cart session, add, update, remove, recalculate, merge current customer.
+  - [x] checkout start, load, address update, shipping, payment, review, place order.
+  - [x] payment method discovery va payment attempt.
+  - [x] customer profile, address book, order list, order detail, receipt.
+  - [x] consent read/write.
+- [x] Neu phat hien gap that, bo sung vao `BlazorShop.Storefront.Presentation` hoac `BlazorShop.Storefront.Runtime` truoc khi xoa V2 manual client.
+- [x] Khong them adapter moi trong V2 de thay the `StorefrontApiClient`.
+
+2026-07-27 F1.25.1 evidence:
+
+- Production audit found `StorefrontApiClient` only in V2 DI registration, `StorefrontApiOptions.EnableLegacyFallback`, `appsettings*.json`, and the manual client partial/route/transport files.
+- Test audit found concrete-client fixtures in `StorefrontV2HostSmokeTests`, `StorefrontV2ApiClientTests`, provider tests, and cutover/ownership guardrails that still read or require the manual source.
+- Docs audit found active docs/backlog entries that must be converted in F1.25.5, plus historical foundation/shared-platform plans that may keep marked historical mentions.
+- Runtime/Presentation replacement coverage exists:
+  - `GeneratedStorefrontConfigurationClient` and `StorefrontRuntimeConfigurationFacade` cover current store/configuration/currency.
+  - `GeneratedStorefrontCatalogContentClient` and catalog/content/navigation/SEO runtime facades cover catalog/search/product/page/navigation/SEO.
+  - `GeneratedStorefrontCartClient` and `StorefrontRuntimeCartFacade` cover cart session, CRUD, recalculate, validate, and merge current customer with bearer support.
+  - `GeneratedStorefrontCheckoutClient` and `StorefrontRuntimeCheckoutFacade` cover checkout start/load/address update/shipping/payment/review/place order with optional bearer support.
+  - `GeneratedStorefrontPaymentClient` and `StorefrontRuntimePaymentFacade` cover payment methods and attempts.
+  - `GeneratedStorefrontCustomerClient`, Runtime account generated clients, `StorefrontAuthClient`, and `StorefrontSessionResolver` cover profile/address/order/receipt/auth/session flows.
+  - `GeneratedStorefrontConsentClient` and `StorefrontRuntimeConsentFacade` cover consent read/save/revoke.
+- No capability gap was found that requires a new V2 adapter.
 
 ## Phase F1.25.2 - Chuyen test fixture ra khoi concrete client
 
