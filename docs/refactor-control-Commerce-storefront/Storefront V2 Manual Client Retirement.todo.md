@@ -165,31 +165,45 @@ rg -n "StorefrontApiClient|EnableLegacyFallback|manual client|manual transport|l
 
 Muc tieu: tests phai mo phong Presentation/Runtime boundary, khong tiep tuc dung V2 manual transport lam mock backend.
 
-- [ ] Refactor `StorefrontV2HostSmokeTests`:
-  - [ ] Xoa helper dang `new StorefrontApiClient(...)`.
-  - [ ] Xoa registrations bind `IStorefront*Client` ve concrete `StorefrontApiClient`.
-  - [ ] Dung fake/stub Presentation client interfaces cho host smoke.
-  - [ ] Chi mock data can cho route/render dang test.
-  - [ ] Giu lai coverage cho account/cart/checkout/order rendering.
-- [ ] Refactor `StorefrontV2ApiClientTests`:
-  - [ ] Xoa tests chi verify manual route/fallback behavior.
-  - [ ] Chuyen behavior can giu sang Runtime facade tests neu behavior thuoc transport/result mapping.
-  - [ ] Chuyen behavior can giu sang Presentation generated adapter tests neu behavior thuoc contract projection.
-  - [ ] Xoa constructor helper `CreateApiClient`.
-- [ ] Refactor provider/page/navigation tests:
-  - [ ] `StorefrontDisplayContextProviderTests` dung fake `IStorefrontStoreConfigurationClient`.
-  - [ ] `StorefrontCurrentStoreProviderTests` dung fake `IStorefrontStoreConfigurationClient`.
-  - [ ] `StorefrontPageNavigationProviderTests` dung fake `IStorefrontContentClient`.
-- [ ] Refactor cutover/ownership tests:
-  - [ ] `StorefrontHostCompositionTests` khong con allow-list `Services/StorefrontApiClient*.cs`.
-  - [ ] `StorefrontIndependenceBoundaryTests` doi assertion thanh forbid `AddHttpClient<StorefrontApiClient>`.
-  - [ ] `StorefrontContractOwnershipTests` xoa assertion yeu cau manual exceptions trong QA docs.
-  - [ ] `StorefrontCommerceFlowCutoverTests` xoa source read cua manual client va thay bang assertion generated/Presentation path.
-- [ ] Chay focused test subset sau khi refactor fixtures:
+- [x] Refactor `StorefrontV2HostSmokeTests`:
+  - [x] Xoa helper dang `new StorefrontApiClient(...)`.
+  - [x] Xoa registrations bind `IStorefront*Client` ve concrete `StorefrontApiClient`.
+  - [x] Dung fake/stub Presentation client interfaces cho host smoke.
+  - [x] Chi mock data can cho route/render dang test.
+  - [x] Giu lai coverage cho account/cart/checkout/order rendering.
+- [x] Refactor `StorefrontV2ApiClientTests`:
+  - [x] Xoa tests chi verify manual route/fallback behavior.
+  - [x] Chuyen behavior can giu sang Runtime facade tests neu behavior thuoc transport/result mapping.
+  - [x] Chuyen behavior can giu sang Presentation generated adapter tests neu behavior thuoc contract projection.
+  - [x] Xoa constructor helper `CreateApiClient`.
+- [x] Refactor provider/page/navigation tests:
+  - [x] `StorefrontDisplayContextProviderTests` dung fake `IStorefrontStoreConfigurationClient`.
+  - [x] `StorefrontCurrentStoreProviderTests` dung fake `IStorefrontStoreConfigurationClient`.
+  - [x] `StorefrontPageNavigationProviderTests` dung fake `IStorefrontContentClient`.
+- [x] Refactor cutover/ownership tests:
+  - [x] `StorefrontHostCompositionTests` khong con allow-list `Services/StorefrontApiClient*.cs`.
+  - [x] `StorefrontIndependenceBoundaryTests` doi assertion thanh forbid `AddHttpClient<StorefrontApiClient>`.
+  - [x] `StorefrontContractOwnershipTests` xoa assertion yeu cau manual exceptions trong QA docs.
+  - [x] `StorefrontCommerceFlowCutoverTests` xoa source read cua manual client va thay bang assertion generated/Presentation path.
+- [x] Chay focused test subset sau khi refactor fixtures:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontV2HostSmokeTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontContractOwnershipTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests"
 ```
+
+2026-07-27 F1.25.2 evidence:
+
+- `StorefrontV2HostSmokeTests` no longer uses `StorefrontApiClient` fixture construction or binds `IStorefront*Client` to the retired concrete client. Account smoke coverage now uses `StubStorefrontCustomerClient`; non-account HTTP backend dependencies still use `ConfigureStorefrontGeneratedClient` with focused handlers.
+- Deleted `StorefrontV2ApiClientTests.cs` because it only asserted handwritten transport/fallback route behavior. Runtime facade and Presentation generated adapter assertions now carry the retained behavior surface.
+- Provider tests now use typed fake Presentation interfaces:
+  - `StorefrontDisplayContextProviderTests` and `StorefrontCurrentStoreProviderTests` fake `IStorefrontStoreConfigurationClient`.
+  - `StorefrontPageNavigationProviderTests` fakes `IStorefrontContentClient`.
+- Cutover/ownership guardrails were inverted away from manual client exception allow-lists and source reads. They now point at Runtime/Presentation generated paths and will go green after F1.25.3/F1.25.4 remove the remaining production source.
+- Verification:
+  - `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 warnings.
+  - Provider slice passed: `11` passed, `0` failed.
+  - Account smoke slice passed: `7` passed, `0` failed.
+  - Guardrail/cutover slice compiled and ran: `29` passed, `3` expected failures still blocking on F1.25.3/F1.25.4 source and DI removal.
 
 ## Phase F1.25.3 - Go bo DI registration va legacy fallback options
 

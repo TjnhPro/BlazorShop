@@ -501,8 +501,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var presentationAggregation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
             var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs");
-            var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs")
-                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiTransport.cs");
+            var runtimeCheckoutFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCheckoutFacade.cs");
+            var generatedCheckoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCheckoutClient.cs");
 
             Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationCheckoutEndpoints();", presentationAggregation, StringComparison.Ordinal);
@@ -522,9 +522,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("IStorefrontRuntimeCheckoutFacade checkoutFacade", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("IAntiforgery antiforgery", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.CartToken", checkoutEndpoints + support, StringComparison.Ordinal);
-            Assert.Contains("string? bearerToken = null", apiClient, StringComparison.Ordinal);
-            Assert.Contains("message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(\"Bearer\", bearerToken)", apiClient, StringComparison.Ordinal);
-            Assert.Contains("\"Unable to update checkout address right now.\",", apiClient, StringComparison.Ordinal);
+            Assert.Contains("string? bearerToken = null", runtimeCheckoutFacade, StringComparison.Ordinal);
+            Assert.Contains("AuthenticationHeaderValue(\"Bearer\", bearerToken)", runtimeCheckoutFacade, StringComparison.Ordinal);
+            Assert.Contains("this.checkoutFacade.UpdateAddressesAsync", generatedCheckoutAdapter, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -540,9 +540,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontCheckoutClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontPaymentClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontCustomerClient.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Payment.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Customer.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCheckoutFacade.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimePaymentFacade.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCustomerClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Checkout/StorefrontCheckoutPageService.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs",

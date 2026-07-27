@@ -18,7 +18,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var activeStorefrontSources = new[]
             {
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
-                ReadStorefrontApiClientSources(),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderList.razor"),
@@ -37,15 +38,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2CheckoutAndAccountFlow_UsesCanonicalRoutes()
         {
-            var apiClient = ReadStorefrontApiClientSources();
+            var runtimeCartFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCartFacade.cs");
+            var runtimeCheckoutFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCheckoutFacade.cs");
+            var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
+            var customerAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCustomerClient.cs");
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
             var checkoutShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
 
-            Assert.Contains("StorefrontCartSessionRoute = StorefrontCartRoute + \"/session\"", apiClient, StringComparison.Ordinal);
-            Assert.Contains("checkout/start", apiClient, StringComparison.Ordinal);
-            Assert.Contains("checkout/place-order", apiClient, StringComparison.Ordinal);
-            Assert.Contains("orders/current-user", apiClient, StringComparison.Ordinal);
-            Assert.Contains("GetCustomerOrderReceiptAsync", apiClient, StringComparison.Ordinal);
+            Assert.Contains("CreateOrResumeSessionAsync", runtimeCartFacade, StringComparison.Ordinal);
+            Assert.Contains("MergeCurrentCustomerAsync", runtimeCartFacade, StringComparison.Ordinal);
+            Assert.Contains("StartAsync", runtimeCheckoutFacade, StringComparison.Ordinal);
+            Assert.Contains("PlaceOrderAsync", runtimeCheckoutFacade, StringComparison.Ordinal);
+            Assert.Contains("StorefrontOrdersClient", runtimeRegistration, StringComparison.Ordinal);
+            Assert.Contains("GetCustomerOrderReceiptAsync", customerAdapter, StringComparison.Ordinal);
 
             Assert.Contains("app.MapPost(\"/api/checkout/review\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", checkoutEndpoints, StringComparison.Ordinal);
@@ -242,8 +247,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("TryAddScoped<GeneratedStorefrontConsentClient>", presentationServices, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontAddressClient>())", presentationServices, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConsentClient>())", presentationServices, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontApiClient", serviceCollection, StringComparison.Ordinal);
             Assert.Contains("this.addressFacade.ListCountriesAsync", addressAdapter, StringComparison.Ordinal);
             Assert.Contains("this.addressFacade.ListStatesAsync", addressAdapter, StringComparison.Ordinal);
             Assert.Contains("this.addressFacade.GetConfigurationAsync", addressAdapter, StringComparison.Ordinal);
@@ -257,18 +261,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("CopySetCookieHeaders", sessionResolver, StringComparison.Ordinal);
             Assert.Contains("request.Headers.Authorization", authClient, StringComparison.Ordinal);
             Assert.Contains("request.Headers.TryAddWithoutValidation(\"Cookie\"", authClient, StringComparison.Ordinal);
-        }
-
-        private static string ReadStorefrontApiClientSources()
-        {
-            var root = FindRepositoryRoot();
-            var servicesDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Services");
-            return string.Join(
-                Environment.NewLine,
-                Directory.GetFiles(servicesDirectory, "StorefrontApi*.cs")
-                    .Where(path => !path.EndsWith("StorefrontApiResult.cs", StringComparison.Ordinal))
-                    .Order(StringComparer.Ordinal)
-                    .Select(File.ReadAllText));
         }
 
         private static string ReadRepositoryFile(string relativePath)

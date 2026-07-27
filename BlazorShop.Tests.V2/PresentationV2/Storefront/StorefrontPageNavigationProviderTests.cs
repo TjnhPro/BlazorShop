@@ -2,112 +2,84 @@ extern alias StorefrontV2;
 
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
-    using System.Net;
-    using System.Text;
-
-    using Microsoft.Extensions.Options;
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Options;
+    using StorefrontV2::BlazorShop.Storefront.Models;
     using StorefrontV2::BlazorShop.Storefront.Services;
+    using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
 
     public sealed class StorefrontPageNavigationProviderTests
     {
         [Fact]
         public async Task GetLinksByLocationAsync_FiltersOrdersAndCachesWithinScope()
         {
-            var handler = new RecordingHandler(HttpStatusCode.OK, """
-                {
-                  "success": true,
-                  "message": "ok",
-                  "data": [
-                    {
-                      "pageKey": "cookie_information",
-                      "slug": "cookies",
-                      "title": "Cookie information",
-                      "navigationLocation": "footer_legal",
-                      "displayOrder": 320
-                    },
-                    {
-                      "pageKey": "terms_conditions",
-                      "slug": "terms",
-                      "title": "Terms and conditions",
-                      "navigationLocation": "footer_legal",
-                      "displayOrder": 300
-                    },
-                    {
-                      "pageKey": "about",
-                      "slug": "about-us",
-                      "title": "About us",
-                      "navigationLocation": "footer_company",
-                      "displayOrder": 100
-                    }
-                  ]
-                }
-                """);
-            using var client = CreateClient(handler);
-            var provider = new StorefrontPageNavigationProvider(CreateApiClient(client));
+            var apiClient = new StubContentClient(
+                StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>.Success(
+                [
+                    new StorefrontPageNavigationLinkDto("cookie_information", "cookies", "Cookie information", "footer_legal", 320),
+                    new StorefrontPageNavigationLinkDto("terms_conditions", "terms", "Terms and conditions", "footer_legal", 300),
+                    new StorefrontPageNavigationLinkDto("about", "about-us", "About us", "footer_company", 100),
+                ]));
+            var provider = new StorefrontPageNavigationProvider(apiClient);
 
             var first = await provider.GetLinksByLocationAsync("footer_legal");
             var second = await provider.GetLinksByLocationAsync("footer_legal");
 
             Assert.Equal(["terms", "cookies"], first.Select(link => link.Slug).ToArray());
             Assert.Equal(["terms", "cookies"], second.Select(link => link.Slug).ToArray());
-            Assert.Equal(1, handler.RequestCount);
+            Assert.Equal(1, apiClient.RequestCount);
         }
 
         [Fact]
         public async Task GetLinksAsync_WhenNavigationEndpointUnavailable_ReturnsEmptyList()
         {
-            var handler = new RecordingHandler(
-                HttpStatusCode.ServiceUnavailable,
-                """{"success":false,"message":"down","data":null}""");
-            using var client = CreateClient(handler);
-            var provider = new StorefrontPageNavigationProvider(CreateApiClient(client));
+            var apiClient = new StubContentClient(
+                StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>.ServiceUnavailable());
+            var provider = new StorefrontPageNavigationProvider(apiClient);
 
             var links = await provider.GetLinksAsync();
 
             Assert.Empty(links);
-            Assert.Equal(1, handler.RequestCount);
+            Assert.Equal(1, apiClient.RequestCount);
         }
 
-        private static StorefrontApiClient CreateApiClient(HttpClient client)
+        private sealed class StubContentClient : IStorefrontContentClient
         {
-            return new StorefrontApiClient(
-                client,
-                Options.Create(new StorefrontApiOptions()));
-        }
+            private readonly StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>> navigationResult;
 
-        private static HttpClient CreateClient(HttpMessageHandler handler)
-        {
-            return new HttpClient(handler)
+            public StubContentClient(StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>> navigationResult)
             {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
-            };
-        }
-
-        private sealed class RecordingHandler : HttpMessageHandler
-        {
-            private readonly HttpStatusCode statusCode;
-            private readonly string json;
-
-            public RecordingHandler(HttpStatusCode statusCode, string json)
-            {
-                this.statusCode = statusCode;
-                this.json = json;
+                this.navigationResult = navigationResult;
             }
 
             public int RequestCount { get; private set; }
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            public Task<StorefrontApiResult<GetStorefrontPage>> GetPublishedPageBySlugAsync(string slug, CancellationToken cancellationToken = default)
             {
-                Assert.Equal("/api/storefront/stores/default/pages/navigation", request.RequestUri?.AbsolutePath);
-                this.RequestCount++;
+                throw new NotSupportedException();
+            }
 
-                return Task.FromResult(new HttpResponseMessage(this.statusCode)
-                {
-                    Content = new StringContent(this.json, Encoding.UTF8, "application/json"),
-                });
+            public Task<StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>> GetPageNavigationLinksAsync(CancellationToken cancellationToken = default)
+            {
+                this.RequestCount++;
+                return Task.FromResult(this.navigationResult);
+            }
+
+            public Task<StorefrontApiResult<StoreNavigationPublicMenuDto>> GetNavigationMenuAsync(
+                string systemName,
+                CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<StorefrontApiResult<GetSeoSettings>> GetSeoSettingsAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<StorefrontApiResult<SeoRedirectResolutionDto>> GetRedirectResolutionAsync(string path, CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
             }
         }
     }

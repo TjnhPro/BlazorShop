@@ -62,18 +62,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void StorefrontV2_ManualClientExceptionsRemainDocumented()
+        public void StorefrontV2_ManualClientExceptionRegistryHasNoActiveExceptions()
         {
-            var qa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/Storefront V2 Shared Platform Functional MVP.qa.md");
+            var registry = ReadRepositoryFile("docs/storefront-platform/storefront-client-exception-registry.md");
 
-            Assert.Contains("StorefrontApiClient.MergeCurrentCustomerCartAsync", qa, StringComparison.Ordinal);
-            Assert.Contains("StorefrontApiClient.UpdateCheckoutAddressesAsync", qa, StringComparison.Ordinal);
-            Assert.Contains("saved-address checkout call carries a bearer token", qa, StringComparison.Ordinal);
-            Assert.Contains("IStorefrontCustomerClient", qa, StringComparison.Ordinal);
-            Assert.Contains("Protected customer profile, customer address book, and customer order self-service", qa, StringComparison.Ordinal);
-            Assert.Contains("StorefrontAuthClient", qa, StringComparison.Ordinal);
-            Assert.DoesNotContain("IStorefrontAddressClient` through manual", qa, StringComparison.Ordinal);
-            Assert.DoesNotContain("IStorefrontConsentClient` through manual", qa, StringComparison.Ordinal);
+            Assert.Contains("| none | none |", registry, StringComparison.Ordinal);
+            Assert.DoesNotContain("Active manual", registry, StringComparison.Ordinal);
         }
 
         private static string ReadSources(string relativeDirectory)

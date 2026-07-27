@@ -208,8 +208,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("TryAddScoped<IStorefrontCatalogClient>", source, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<IStorefrontContentClient>", source, StringComparison.Ordinal);
             Assert.Contains("GetRequiredService<GeneratedStorefrontCatalogContentClient>", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", v2Services, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", v2Services, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontApiClient", v2Services, StringComparison.Ordinal);
         }
 
         [Fact]

@@ -2,14 +2,9 @@ extern alias StorefrontV2;
 
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
-    using System.Net;
-    using System.Text;
-
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Options;
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Options;
     using StorefrontV2::BlazorShop.Storefront.Configuration;
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
@@ -82,76 +77,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers.Cookie = $"{StorefrontCookieNames.CurrencyPreference}=eur";
-            var apiClient = CreateApiClient(
-                """
-                {
-                  "success": true,
-                  "message": "ok",
-                  "data": {
-                    "storeIdentity": {
-                      "publicId": "00000000-0000-0000-0000-000000000001",
-                      "storeKey": "default",
-                      "name": "Default Store",
-                      "status": "active",
-                      "baseUrl": "https://store.example",
-                      "primaryDomain": "store.example",
-                      "forceHttps": true
-                    },
-                    "branding": {
-                      "cdnHost": null,
-                      "logoUrl": null,
-                      "companyName": null,
-                      "companyEmail": null,
-                      "companyPhone": null,
-                      "companyAddress": null,
-                      "faviconUrl": null,
-                      "pngIconUrl": null,
-                      "appleTouchIconUrl": null,
-                      "msTileImageUrl": null,
-                      "msTileColor": null,
-                      "supportEmail": null,
-                      "supportPhone": null,
-                      "htmlBodyId": null
-                    },
-                    "localeOptions": {
-                      "defaultCulture": "en-US",
-                      "supportedCultures": ["en-US"]
-                    },
-                    "currencyOptions": {
-                      "defaultCurrencyCode": "USD",
-                      "supportedCurrencyCodes": ["USD", "EUR"]
-                    },
-                    "maintenanceState": {
-                      "maintenanceModeEnabled": false,
-                      "maintenanceMessage": null
-                    },
-                    "featureFlags": {
-                      "customerAccountsEnabled": true,
-                      "cartEnabled": true,
-                      "checkoutEnabled": true,
-                      "paymentsEnabled": true,
-                      "newsletterEnabled": true,
-                      "recommendationsEnabled": true
-                    },
-                    "paymentMethods": [],
-                    "seoDefaults": {
-                      "siteName": null,
-                      "defaultTitleSuffix": null,
-                      "defaultMetaDescription": null,
-                      "defaultOgImage": null,
-                      "baseCanonicalUrl": null,
-                      "companyName": null,
-                      "companyLogoUrl": null,
-                      "companyPhone": null,
-                      "companyEmail": null,
-                      "companyAddress": null,
-                      "facebookUrl": null,
-                      "instagramUrl": null,
-                      "xUrl": null
-                    }
-                  }
-                }
-                """);
+            var apiClient = new StubStoreConfigurationClient(CreatePublicConfiguration(["USD", "EUR"]));
             var provider = new StorefrontDisplayContextProvider(
                 new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.Succeeded(CreateStore())),
                 apiClient,
@@ -229,6 +155,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private sealed class StubStoreConfigurationClient : IStorefrontStoreConfigurationClient
         {
+            private readonly StorefrontPublicConfiguration? publicConfiguration;
+
+            public StubStoreConfigurationClient(StorefrontPublicConfiguration? publicConfiguration = null)
+            {
+                this.publicConfiguration = publicConfiguration;
+            }
+
             public Task<StorefrontApiResult<StorefrontCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(StorefrontApiResult<StorefrontCurrentStore>.ServiceUnavailable());
@@ -236,7 +169,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public Task<StorefrontApiResult<StorefrontPublicConfiguration>> GetPublicConfigurationAsync(CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(StorefrontApiResult<StorefrontPublicConfiguration>.ServiceUnavailable());
+                return Task.FromResult(this.publicConfiguration is null
+                    ? StorefrontApiResult<StorefrontPublicConfiguration>.ServiceUnavailable()
+                    : StorefrontApiResult<StorefrontPublicConfiguration>.Success(this.publicConfiguration));
             }
 
             public Task<StorefrontSubmitResult<StorefrontCurrencyPreferenceResponse>> SetCurrencyPreferenceAsync(
@@ -247,35 +182,71 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
         }
 
-        private static StorefrontApiClient CreateApiClient(string json)
+        private static StorefrontPublicConfiguration CreatePublicConfiguration(IReadOnlyList<string> supportedCurrencyCodes)
         {
-            var handler = new StaticJsonHandler(json);
-            var client = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
-            };
-
-            return new StorefrontApiClient(
-                client,
-                Options.Create(new StorefrontApiOptions()));
-        }
-
-        private sealed class StaticJsonHandler : HttpMessageHandler
-        {
-            private readonly string _json;
-
-            public StaticJsonHandler(string json)
-            {
-                _json = json;
-            }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(_json, Encoding.UTF8, "application/json"),
-                });
-            }
+            return new StorefrontPublicConfiguration(
+                new StorefrontStoreIdentity(
+                    Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    "default",
+                    "Default Store",
+                    "active",
+                    "https://store.example",
+                    "store.example",
+                    ForceHttps: true),
+                new StorefrontBranding(
+                    CdnHost: null,
+                    LogoUrl: null,
+                    CompanyName: null,
+                    CompanyEmail: null,
+                    CompanyPhone: null,
+                    CompanyAddress: null,
+                    FaviconUrl: null,
+                    PngIconUrl: null,
+                    AppleTouchIconUrl: null,
+                    MsTileImageUrl: null,
+                    MsTileColor: null,
+                    SupportEmail: null,
+                    SupportPhone: null,
+                    HtmlBodyId: null),
+                new StorefrontLocaleOptions("en-US", ["en-US"]),
+                new StorefrontCurrencyOptions("USD", supportedCurrencyCodes),
+                new StorefrontConsentConfiguration(
+                    Enabled: false,
+                    BannerRequired: false,
+                    CurrentVersion: "v1",
+                    PolicyPagePath: "/privacy",
+                    Categories: [],
+                    VisitorCookieLifetimeDays: 365),
+                new StorefrontCaptchaConfiguration(
+                    Enabled: false,
+                    ProviderSystemName: string.Empty,
+                    PublicSiteKey: null,
+                    EnabledTargets: [],
+                    ActionNames: new Dictionary<string, string>()),
+                new StorefrontMaintenanceState(false, null),
+                new StorefrontFeatureFlags(
+                    CustomerAccountsEnabled: true,
+                    CartEnabled: true,
+                    CheckoutEnabled: true,
+                    PaymentsEnabled: true,
+                    NewsletterEnabled: true,
+                    RecommendationsEnabled: true),
+                new Dictionary<string, StorefrontCapability>(),
+                [],
+                new StorefrontSeoDefaults(
+                    SiteName: null,
+                    DefaultTitleSuffix: null,
+                    DefaultMetaDescription: null,
+                    DefaultOgImage: null,
+                    BaseCanonicalUrl: null,
+                    CompanyName: null,
+                    CompanyLogoUrl: null,
+                    CompanyPhone: null,
+                    CompanyEmail: null,
+                    CompanyAddress: null,
+                    FacebookUrl: null,
+                    InstagramUrl: null,
+                    XUrl: null));
         }
     }
 }

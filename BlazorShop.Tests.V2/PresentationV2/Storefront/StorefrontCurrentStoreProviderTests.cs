@@ -2,15 +2,10 @@ extern alias StorefrontV2;
 
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
-    using System.Net;
-    using System.Text;
-
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging.Abstractions;
-    using Microsoft.Extensions.Options;
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Options;
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
 
@@ -19,15 +14,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task ResolveAsync_WhenCurrentStoreSucceeds_CachesResultPerRequest()
         {
-            var handler = new RecordingHandler(_ => JsonResponse(HttpStatusCode.OK, CurrentStoreEnvelope()));
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
-            };
-
-            var apiClient = new StorefrontApiClient(
-                httpClient,
-                Options.Create(new StorefrontApiOptions()));
+            var apiClient = new StubStoreConfigurationClient(StorefrontApiResult<StorefrontCurrentStore>.Success(CreateStore()));
             var accessor = new HttpContextAccessor
             {
                 HttpContext = new DefaultHttpContext(),
@@ -43,21 +30,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(StorefrontCurrentStoreResolutionStatus.Success, first.Status);
             Assert.Same(first, second);
             Assert.Equal("default", first.Store?.StoreKey);
-            Assert.Equal(["/api/storefront/stores/default/store/current"], handler.RequestPaths);
+            Assert.Equal(1, apiClient.CurrentStoreCalls);
         }
 
         [Fact]
         public async Task ResolveAsync_WhenCurrentStoreIsMissing_ReturnsNotFound()
         {
-            var handler = new RecordingHandler(_ => JsonResponse(HttpStatusCode.NotFound, """{"success":false,"message":"missing","data":null}"""));
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/missing/"),
-            };
-
-            var apiClient = new StorefrontApiClient(
-                httpClient,
-                Options.Create(new StorefrontApiOptions()));
+            var apiClient = new StubStoreConfigurationClient(StorefrontApiResult<StorefrontCurrentStore>.NotFound());
             var provider = new StorefrontCurrentStoreProvider(
                 apiClient,
                 new HttpContextAccessor { HttpContext = new DefaultHttpContext() },
@@ -67,21 +46,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(StorefrontCurrentStoreResolutionStatus.NotFound, result.Status);
             Assert.Null(result.Store);
-            Assert.Equal(["/api/storefront/stores/missing/store/current"], handler.RequestPaths);
+            Assert.Equal(1, apiClient.CurrentStoreCalls);
         }
 
         [Fact]
         public async Task ResolveAsync_WhenCurrentStoreIsInMaintenance_ReturnsMaintenance()
         {
-            var handler = new RecordingHandler(_ => JsonResponse(HttpStatusCode.OK, CurrentStoreEnvelope(maintenanceModeEnabled: true)));
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
-            };
-
-            var apiClient = new StorefrontApiClient(
-                httpClient,
-                Options.Create(new StorefrontApiOptions()));
+            var apiClient = new StubStoreConfigurationClient(
+                StorefrontApiResult<StorefrontCurrentStore>.Success(CreateStore(maintenanceModeEnabled: true)));
             var provider = new StorefrontCurrentStoreProvider(
                 apiClient,
                 new HttpContextAccessor { HttpContext = new DefaultHttpContext() },
@@ -93,64 +65,63 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal("Maintenance window.", result.Message);
         }
 
-        private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json)
+        private static StorefrontCurrentStore CreateStore(bool maintenanceModeEnabled = false)
         {
-            return new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json"),
-            };
+            return new StorefrontCurrentStore(
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                "default",
+                "Default Store",
+                "active",
+                BaseUrl: "https://store.example/",
+                PrimaryDomain: "store.example",
+                ForceHttps: true,
+                CdnHost: null,
+                LogoUrl: null,
+                CompanyName: null,
+                CompanyEmail: null,
+                CompanyPhone: null,
+                CompanyAddress: null,
+                FaviconUrl: null,
+                PngIconUrl: null,
+                AppleTouchIconUrl: null,
+                MsTileImageUrl: null,
+                MsTileColor: null,
+                DefaultCurrencyCode: "USD",
+                DefaultCulture: "en-US",
+                SupportEmail: null,
+                SupportPhone: null,
+                MaintenanceModeEnabled: maintenanceModeEnabled,
+                MaintenanceMessage: "Maintenance window.",
+                HtmlBodyId: null);
         }
 
-        private static string CurrentStoreEnvelope(bool maintenanceModeEnabled = false)
+        private sealed class StubStoreConfigurationClient : IStorefrontStoreConfigurationClient
         {
-            var maintenance = maintenanceModeEnabled ? "true" : "false";
-            return $$"""
-                {
-                  "success": true,
-                  "message": "ok",
-                  "data": {
-                    "publicId": "11111111-1111-1111-1111-111111111111",
-                    "storeKey": "default",
-                    "name": "Default Store",
-                    "status": "Active",
-                    "baseUrl": "https://store.example/",
-                    "primaryDomain": "store.example",
-                    "forceHttps": true,
-                    "cdnHost": null,
-                    "logoUrl": null,
-                    "faviconUrl": null,
-                    "pngIconUrl": null,
-                    "appleTouchIconUrl": null,
-                    "msTileImageUrl": null,
-                    "msTileColor": null,
-                    "defaultCurrencyCode": "USD",
-                    "defaultCulture": "en-US",
-                    "supportEmail": null,
-                    "supportPhone": null,
-                    "maintenanceModeEnabled": {{maintenance}},
-                    "maintenanceMessage": "Maintenance window.",
-                    "htmlBodyId": null
-                  }
-                }
-                """;
-        }
+            private readonly StorefrontApiResult<StorefrontCurrentStore> currentStoreResult;
 
-        private sealed class RecordingHandler : HttpMessageHandler
-        {
-            private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
-            private readonly List<string> _requestPaths = [];
-
-            public RecordingHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
+            public StubStoreConfigurationClient(StorefrontApiResult<StorefrontCurrentStore> currentStoreResult)
             {
-                _handler = handler;
+                this.currentStoreResult = currentStoreResult;
             }
 
-            public IReadOnlyList<string> RequestPaths => _requestPaths;
+            public int CurrentStoreCalls { get; private set; }
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            public Task<StorefrontApiResult<StorefrontCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
             {
-                _requestPaths.Add(request.RequestUri?.AbsolutePath ?? string.Empty);
-                return Task.FromResult(_handler(request));
+                this.CurrentStoreCalls++;
+                return Task.FromResult(this.currentStoreResult);
+            }
+
+            public Task<StorefrontApiResult<StorefrontPublicConfiguration>> GetPublicConfigurationAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontApiResult<StorefrontPublicConfiguration>.ServiceUnavailable());
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCurrencyPreferenceResponse>> SetCurrencyPreferenceAsync(
+                StorefrontCurrencyPreferenceRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCurrencyPreferenceResponse>.Failed("Configuration unavailable."));
             }
         }
     }

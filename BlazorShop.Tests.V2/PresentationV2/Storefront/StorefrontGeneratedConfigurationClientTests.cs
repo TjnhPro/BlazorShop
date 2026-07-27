@@ -210,7 +210,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 {
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/ConsentContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontConsentClient.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Consent.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontConsentClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/ConfigurationContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontConfigurationClient.cs",
@@ -277,7 +277,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("ResolveCommerceNodeBaseAddress", source, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<IStorefrontStoreConfigurationClient>", presentationServices, StringComparison.Ordinal);
             Assert.Contains("GetRequiredService<GeneratedStorefrontConfigurationClient>", presentationServices, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontApiClient", source, StringComparison.Ordinal);
         }
 
         private static GeneratedStorefrontConfigurationClient CreateClient(RecordingHandler handler)

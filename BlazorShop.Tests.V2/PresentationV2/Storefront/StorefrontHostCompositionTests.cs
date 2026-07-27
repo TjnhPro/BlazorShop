@@ -47,41 +47,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void ManualStorefrontApiClient_RemainsIsolatedToDocumentedExceptionFiles()
+        public void StorefrontV2_DoesNotContainManualStorefrontApiClientTransport()
         {
             var root = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2");
-            var allowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "Configuration/StorefrontServiceCollectionExtensions.cs",
-                "Services/StorefrontApiClient.Address.cs",
-                "Services/StorefrontApiClient.Cart.cs",
-                "Services/StorefrontApiClient.Catalog.cs",
-                "Services/StorefrontApiClient.Checkout.cs",
-                "Services/StorefrontApiClient.Configuration.cs",
-                "Services/StorefrontApiClient.Consent.cs",
-                "Services/StorefrontApiClient.Content.cs",
-                "Services/StorefrontApiClient.Customer.cs",
-                "Services/StorefrontApiClient.Payment.cs",
-                "Services/StorefrontApiClient.cs",
-                "Services/StorefrontApiRoutes.cs",
-                "Services/StorefrontApiTransport.cs",
-            };
 
             var offenders = Directory
                 .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
-                .Where(path => File.ReadAllText(path).Contains("StorefrontApiClient", StringComparison.Ordinal))
+                .Where(path =>
+                {
+                    var source = File.ReadAllText(path);
+                    return source.Contains("StorefrontApiClient", StringComparison.Ordinal)
+                        || source.Contains("LegacyCatalogBaseRoute", StringComparison.Ordinal)
+                        || source.Contains("LegacySeoSettingsRoute", StringComparison.Ordinal);
+                })
                 .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
-                .Where(path => !allowedFiles.Contains(path))
                 .Order(StringComparer.Ordinal)
                 .ToArray();
 
             Assert.Empty(offenders);
-
-            var qa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/Storefront V2 Shared Platform Functional MVP.qa.md");
-            Assert.Contains("Manual Storefront API client", qa, StringComparison.Ordinal);
-            Assert.Contains("protected customer/account bearer-token methods", qa, StringComparison.Ordinal);
-            Assert.Contains("cart merge", qa, StringComparison.Ordinal);
-            Assert.Contains("saved-address checkout bearer exception", qa, StringComparison.Ordinal);
         }
 
         private static string ReadRepositoryFile(string relativePath)

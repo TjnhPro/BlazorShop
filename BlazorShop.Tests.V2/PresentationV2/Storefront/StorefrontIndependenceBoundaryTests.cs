@@ -299,8 +299,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Test", registry, StringComparison.Ordinal);
             Assert.Contains("Revisit trigger", registry, StringComparison.Ordinal);
 
-            Assert.Contains("AddHttpClient<StorefrontApiClient>", serviceCollection, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddHttpClient<StorefrontApiClient>", serviceCollection, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetRequiredService<StorefrontApiClient>", serviceCollection, StringComparison.Ordinal);
             Assert.Contains("MergeCurrentCustomerAsync", cartAdapter, StringComparison.Ordinal);
             Assert.Contains("UpdateAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("CreateAuthorizedHttpClient", customerAdapter, StringComparison.Ordinal);

@@ -451,14 +451,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(services =>
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
-                services.RemoveAll<StorefrontApiClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(new ServiceUnavailableHandler())
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.Checkout);
@@ -476,14 +470,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(services =>
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
-                services.RemoveAll<StorefrontApiClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(new ServiceUnavailableHandler())
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.Checkout);
@@ -500,18 +488,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task AccountProfile_WhenAuthenticated_RendersSafeProfileForm()
         {
+            var customerClient = new StubStorefrontCustomerClient();
             var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
             using var client = CreateClient(services =>
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
-                services.RemoveAll<StorefrontApiClient>();
+                services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(new AccountProfileHandler())
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
+                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.AccountProfile);
@@ -527,22 +512,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public async Task AccountProfile_PostSuccess_UsesBearerAndRedirectsSaved()
+        public async Task AccountProfile_LocalApiPutSuccess_UsesBearerAndReturnsProfile()
         {
-            var handler = new AccountProfileHandler();
+            var customerClient = new StubStorefrontCustomerClient();
             var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
             using var client = CreateClient(
                 services =>
                 {
                     services.RemoveAll<IStorefrontSessionResolver>();
-                    services.RemoveAll<StorefrontApiClient>();
+                    services.RemoveAll<IStorefrontCustomerClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
+                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -550,10 +531,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var request = CreateAccountProfilePost(token, cookieHeader);
             using var response = await client.SendAsync(request);
 
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("/account/profile?saved=1", response.Headers.Location?.ToString());
-            Assert.Contains("Bearer access-token", handler.AuthorizationHeaders);
-            Assert.Contains("PUT /api/storefront/stores/demo/customer/profile", handler.Requests);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("customer@example.test", content, StringComparison.Ordinal);
+            Assert.Contains("Bearer access-token", customerClient.AuthorizationHeaders);
+            Assert.Contains("PUT /api/storefront/stores/demo/customer/profile", customerClient.Requests);
         }
 
         [Fact]
@@ -584,18 +567,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task AccountOrders_WhenAuthenticated_RendersPagedOrders()
         {
+            var customerClient = new StubStorefrontCustomerClient();
             var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
             using var client = CreateClient(services =>
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
-                services.RemoveAll<StorefrontApiClient>();
+                services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(new AccountSelfServiceHandler())
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
+                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.AccountOrders);
@@ -611,18 +591,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task AccountAddresses_WhenAuthenticated_RendersAddressBook()
         {
+            var customerClient = new StubStorefrontCustomerClient();
             var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
             using var client = CreateClient(services =>
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
-                services.RemoveAll<StorefrontApiClient>();
+                services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(new AccountSelfServiceHandler())
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
+                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.AccountAddresses);
@@ -636,22 +613,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public async Task AccountAddresses_PostCreate_UsesBearerAndRedirectsSaved()
+        public async Task AccountAddresses_LocalApiPostCreate_UsesBearerAndReturnsAddress()
         {
-            var handler = new AccountSelfServiceHandler();
+            var customerClient = new StubStorefrontCustomerClient();
             var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
             using var client = CreateClient(
                 services =>
                 {
                     services.RemoveAll<IStorefrontSessionResolver>();
-                    services.RemoveAll<StorefrontApiClient>();
+                    services.RemoveAll<IStorefrontCustomerClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
+                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -659,31 +632,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var request = CreateAccountAddressPost(token, cookieHeader);
             using var response = await client.SendAsync(request);
 
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("/account/addresses?saved=1", response.Headers.Location?.ToString());
-            Assert.Contains("Bearer access-token", handler.AuthorizationHeaders);
-            Assert.Contains("POST /api/storefront/stores/demo/customer/addresses", handler.Requests);
-            Assert.Contains("\"firstName\":\"Customer\"", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("customerId", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("userId", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("storeId", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("1 Test Street", content, StringComparison.Ordinal);
+            Assert.Contains("Bearer access-token", customerClient.AuthorizationHeaders);
+            Assert.Contains("POST /api/storefront/stores/demo/customer/addresses", customerClient.Requests);
+            Assert.Contains("\"firstName\":\"Customer\"", customerClient.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", customerClient.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("userId", customerClient.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("storeId", customerClient.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
         public async Task AccountOrderDetail_WhenAuthenticated_RendersSafeOrderDetail()
         {
+            var customerClient = new StubStorefrontCustomerClient();
             var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
             using var client = CreateClient(services =>
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
-                services.RemoveAll<StorefrontApiClient>();
+                services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                services.AddScoped(_ => new StorefrontApiClient(
-                    new HttpClient(new AccountSelfServiceHandler())
-                    {
-                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                    },
-                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
+                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync("/account/orders/ORD-1");
@@ -704,7 +676,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 {
                     services.RemoveAll<IStorefrontSessionResolver>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
-                    ReplaceStorefrontApiClients(services, new CurrencyPreferenceHandler());
+                    ConfigureStorefrontGeneratedClient(services, new CurrencyPreferenceHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -732,15 +704,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 {
                     services.RemoveAll<IStorefrontSessionResolver>();
                     services.RemoveAll<IStorefrontAuthClient>();
-                    services.RemoveAll<StorefrontApiClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                     services.AddScoped<IStorefrontAuthClient>(_ => authClient);
-                    services.AddScoped(_ => new StorefrontApiClient(
-                        new HttpClient(new ServiceUnavailableHandler())
-                        {
-                            BaseAddress = new Uri("https://commerce-node.example/api/"),
-                        },
-                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -838,7 +804,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             using var client = CreateClient(services =>
             {
-                ReplaceStorefrontApiClients(services, new ServiceUnavailableHandler());
+                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.Cart);
@@ -855,7 +821,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var handler = new CartApiHandler(productId, initialQuantity: 2);
             using var client = CreateClient(services =>
             {
-                ReplaceStorefrontApiClients(services, handler);
+                ConfigureStorefrontGeneratedClient(services, handler);
             });
 
             using var request = new HttpRequestMessage(HttpMethod.Get, StorefrontRoutes.Cart);
@@ -881,7 +847,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    ReplaceStorefrontApiClients(services, new ServiceUnavailableHandler());
+                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -906,7 +872,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    ReplaceStorefrontApiClients(services, handler);
+                    ConfigureStorefrontGeneratedClient(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -944,7 +910,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    ReplaceStorefrontApiClients(services, handler);
+                    ConfigureStorefrontGeneratedClient(services, handler);
                 },
                 allowAutoRedirect: false,
                 configureHost: builder =>
@@ -988,7 +954,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    ReplaceStorefrontApiClients(services, handler);
+                    ConfigureStorefrontGeneratedClient(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1015,7 +981,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    ReplaceStorefrontApiClients(services, handler);
+                    ConfigureStorefrontGeneratedClient(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1040,7 +1006,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    ReplaceStorefrontApiClients(services, handler);
+                    ConfigureStorefrontGeneratedClient(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1063,7 +1029,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var client = CreateClient(
                 services =>
                 {
-                    ReplaceStorefrontApiClients(services, handler);
+                    ConfigureStorefrontGeneratedClient(services, handler);
                 },
                 allowAutoRedirect: false);
 
@@ -1150,40 +1116,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             return CreateClient(services =>
             {
-                ReplaceStorefrontApiClients(services, handler);
+                ConfigureStorefrontGeneratedClient(services, handler);
                 services.RemoveAll<IStorefrontRuntimePaymentFacade>();
                 services.AddScoped<IStorefrontRuntimePaymentFacade>(_ => new StubRuntimePaymentFacade(handler.CreateAttempt()));
             });
         }
 
-        private static void ReplaceStorefrontApiClients(IServiceCollection services, HttpMessageHandler handler)
+        private static void ConfigureStorefrontGeneratedClient(IServiceCollection services, HttpMessageHandler handler)
         {
-            services.RemoveAll<StorefrontApiClient>();
-            services.RemoveAll<IStorefrontAddressClient>();
-            services.RemoveAll<IStorefrontCartClient>();
-            services.RemoveAll<IStorefrontCatalogClient>();
-            services.RemoveAll<IStorefrontCheckoutClient>();
-            services.RemoveAll<IStorefrontConsentClient>();
-            services.RemoveAll<IStorefrontContentClient>();
-            services.RemoveAll<IStorefrontCustomerClient>();
-            services.RemoveAll<IStorefrontPaymentClient>();
-            services.RemoveAll<IStorefrontStoreConfigurationClient>();
-
-            services.AddScoped(_ => new StorefrontApiClient(
-                new HttpClient(handler)
-                {
-                    BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
-                },
-                Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
-            services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.PostConfigure<StorefrontRuntimeOptions>(options =>
+            {
+                options.CommerceNodeBaseUrl = "https://commerce-node.example/";
+                options.StoreKey = "demo";
+            });
+            services
+                .AddHttpClient(StorefrontRuntimeServiceCollectionExtensions.GeneratedClientHttpClientName)
+                .ConfigurePrimaryHttpMessageHandler(() => handler);
         }
 
         private static async Task<(string Token, string CookieHeader)> ReadAntiforgeryAsync(
@@ -1365,22 +1313,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private static HttpRequestMessage CreateAccountProfilePost(string antiforgeryToken, string cookieHeader)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.AccountProfile)
-            {
-                Content = new FormUrlEncodedContent(
-                [
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
-                    new KeyValuePair<string, string>("FullName", "Customer One"),
-                    new KeyValuePair<string, string>("Email", "customer@example.test"),
-                    new KeyValuePair<string, string>("FirstName", "Customer"),
-                    new KeyValuePair<string, string>("LastName", "One"),
-                    new KeyValuePair<string, string>("PreferredCurrencyCode", "USD"),
-                ]),
-            };
-
-            request.Headers.Add("Cookie", cookieHeader);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            return request;
+            return CreateJsonRequest(
+                HttpMethod.Put,
+                "/api/account/profile",
+                new
+                {
+                    FullName = "Customer One",
+                    Email = "customer@example.test",
+                    FirstName = "Customer",
+                    LastName = "One",
+                    PreferredCurrencyCode = "USD",
+                },
+                antiforgeryToken,
+                cookieHeader);
         }
 
         private static HttpRequestMessage CreateChangePasswordPost(string antiforgeryToken, string cookieHeader)
@@ -1403,27 +1348,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private static HttpRequestMessage CreateAccountAddressPost(string antiforgeryToken, string cookieHeader)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.AccountAddresses)
-            {
-                Content = new FormUrlEncodedContent(
-                [
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
-                    new KeyValuePair<string, string>("Action", "create"),
-                    new KeyValuePair<string, string>("FullName", "Customer One"),
-                    new KeyValuePair<string, string>("Email", "customer@example.test"),
-                    new KeyValuePair<string, string>("Phone", "5550100"),
-                    new KeyValuePair<string, string>("Address1", "1 Test Street"),
-                    new KeyValuePair<string, string>("City", "New York"),
-                    new KeyValuePair<string, string>("StateProvinceName", "New York"),
-                    new KeyValuePair<string, string>("PostalCode", "10000"),
-                    new KeyValuePair<string, string>("CountryCode", "US"),
-                    new KeyValuePair<string, string>("IsDefaultShipping", "true"),
-                ]),
-            };
-
-            request.Headers.Add("Cookie", cookieHeader);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            return request;
+            return CreateJsonRequest(
+                HttpMethod.Post,
+                "/api/account/addresses",
+                new
+                {
+                    FullName = "Customer One",
+                    Email = "customer@example.test",
+                    Phone = "5550100",
+                    Address1 = "1 Test Street",
+                    City = "New York",
+                    StateProvinceName = "New York",
+                    PostalCode = "10000",
+                    CountryCode = "US",
+                    IsDefaultShipping = true,
+                },
+                antiforgeryToken,
+                cookieHeader);
         }
 
         private static HttpRequestMessage CreateCurrencyPreferencePost(
@@ -1693,57 +1634,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
         }
 
-        private sealed class AccountProfileHandler : HttpMessageHandler
-        {
-            public List<string> Requests { get; } = [];
-
-            public List<string> AuthorizationHeaders { get; } = [];
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                this.Requests.Add($"{request.Method.Method} {request.RequestUri?.AbsolutePath}");
-                if (request.Headers.Authorization is not null)
-                {
-                    this.AuthorizationHeaders.Add($"{request.Headers.Authorization.Scheme} {request.Headers.Authorization.Parameter}");
-                }
-
-                if (!string.Equals(
-                    request.RequestUri?.AbsolutePath,
-                    "/api/storefront/stores/demo/customer/profile",
-                    StringComparison.Ordinal))
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
-                }
-
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(
-                        """
-                        {
-                          "success": true,
-                          "message": "Profile returned.",
-                          "data": {
-                            "customerPublicId": "22222222-2222-2222-2222-222222222222",
-                            "email": "customer@example.test",
-                            "fullName": "Customer One",
-                            "firstName": "Customer",
-                            "lastName": "One",
-                            "company": null,
-                            "phoneNumber": "5550100",
-                            "preferredLanguage": "en",
-                            "preferredCurrencyCode": "USD",
-                            "createdAtUtc": "2026-07-17T00:00:00Z",
-                            "lastActivityAtUtc": "2026-07-17T01:00:00Z"
-                          }
-                        }
-                        """,
-                        Encoding.UTF8,
-                        "application/json"),
-                });
-            }
-        }
-
-        private sealed class AccountSelfServiceHandler : HttpMessageHandler
+        private sealed class StubStorefrontCustomerClient : IStorefrontCustomerClient
         {
             public List<string> Requests { get; } = [];
 
@@ -1751,210 +1642,242 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public string LastAddressCommandBody { get; private set; } = string.Empty;
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            public Task<StorefrontSubmitResult<StorefrontCustomerProfileResponse>> GetCustomerProfileAsync(
+                string bearerToken,
+                CancellationToken cancellationToken = default)
             {
-                var path = request.RequestUri?.AbsolutePath ?? string.Empty;
-                this.Requests.Add($"{request.Method.Method} {path}");
-                if (request.Headers.Authorization is not null)
-                {
-                    this.AuthorizationHeaders.Add($"{request.Headers.Authorization.Scheme} {request.Headers.Authorization.Parameter}");
-                }
-
-                if (string.Equals(path, "/api/storefront/stores/demo/customer/addresses", StringComparison.Ordinal)
-                    && request.Method == HttpMethod.Post)
-                {
-                    this.LastAddressCommandBody = request.Content is null
-                        ? string.Empty
-                        : request.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
-                    return Task.FromResult(CreateJsonResponse(
-                        """
-                        {
-                          "success": true,
-                          "message": "Address saved.",
-                          "data": {
-                            "publicId": "11111111-1111-1111-1111-111111111111",
-                            "firstName": "Customer",
-                            "lastName": "One",
-                            "company": null,
-                            "address1": "1 Test Street",
-                            "address2": null,
-                            "city": "New York",
-                            "postalCode": "10000",
-                            "countryCode": "US",
-                            "stateProvinceCode": null,
-                            "stateProvinceName": "New York",
-                            "phone": "5550100",
-                            "email": "customer@example.test",
-                            "isDefaultShipping": true,
-                            "isDefaultBilling": false,
-                            "createdAtUtc": "2026-07-17T00:00:00Z",
-                            "updatedAtUtc": "2026-07-17T00:00:00Z"
-                          }
-                        }
-                        """));
-                }
-
-                var response = path switch
-                {
-                    "/api/storefront/stores/demo/orders/current-user" => CreateJsonResponse(
-                        """
-                        {
-                          "success": true,
-                          "message": "Orders loaded.",
-                          "data": {
-                            "items": [
-                              {
-                                "reference": "ORD-1",
-                                "createdOn": "2026-07-17T00:00:00Z",
-                                "orderStatus": "processing",
-                                "paymentStatus": "paid",
-                                "shippingStatus": "not_yet_shipped",
-                                "currencyCode": "USD",
-                                "totalAmount": 25.00,
-                                "itemCount": 2,
-                                "trackingSummary": {
-                                  "shippingCarrier": null,
-                                  "trackingNumber": null,
-                                  "trackingUrl": null,
-                                  "shippedOn": null,
-                                  "deliveredOn": null,
-                                  "lastTrackingEventAtUtc": null
-                                }
-                              }
-                            ],
-                            "pageNumber": 1,
-                            "pageSize": 10,
-                            "totalCount": 1,
-                            "totalPages": 1
-                          }
-                        }
-                        """),
-                    "/api/storefront/stores/demo/customer/addresses" => CreateJsonResponse(
-                        """
-                        {
-                          "success": true,
-                          "message": "Addresses loaded.",
-                          "data": [
-                            {
-                              "publicId": "11111111-1111-1111-1111-111111111111",
-                              "firstName": "Customer",
-                              "lastName": "One",
-                              "company": null,
-                              "address1": "1 Test Street",
-                              "address2": null,
-                              "city": "New York",
-                              "postalCode": "10000",
-                              "countryCode": "US",
-                              "stateProvinceCode": "NY",
-                              "stateProvinceName": "New York",
-                              "phone": "5550100",
-                              "email": "customer@example.test",
-                              "isDefaultShipping": true,
-                              "isDefaultBilling": false,
-                              "createdAtUtc": "2026-07-17T00:00:00Z",
-                              "updatedAtUtc": "2026-07-17T00:00:00Z"
-                            }
-                          ]
-                        }
-                        """),
-                    "/api/storefront/stores/demo/orders/current-user/ORD-1" => CreateJsonResponse(CreateOrderDetailJson(receiptMode: false)),
-                    "/api/storefront/stores/demo/orders/current-user/ORD-1/receipt" => CreateJsonResponse(CreateOrderDetailJson(receiptMode: true)),
-                    _ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
-                };
-
-                return Task.FromResult(response);
+                this.Record("GET /api/storefront/stores/demo/customer/profile", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerProfileResponse>.Succeeded(CreateProfile(), "Profile returned."));
             }
 
-            private static HttpResponseMessage CreateJsonResponse(string json)
+            public Task<StorefrontSubmitResult<StorefrontCustomerProfileResponse>> UpdateCustomerProfileAsync(
+                string bearerToken,
+                StorefrontCustomerProfileUpdateRequest request,
+                CancellationToken cancellationToken = default)
             {
-                return new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(json, Encoding.UTF8, "application/json"),
-                };
+                this.Record("PUT /api/storefront/stores/demo/customer/profile", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerProfileResponse>.Succeeded(CreateProfile(), "Profile saved."));
             }
 
-            private static string CreateOrderDetailJson(bool receiptMode)
+            public Task<StorefrontSubmitResult<IReadOnlyList<StorefrontCustomerAddressResponse>>> GetCustomerAddressesAsync(
+                string bearerToken,
+                CancellationToken cancellationToken = default)
             {
-                return $$"""
+                this.Record("GET /api/storefront/stores/demo/customer/addresses", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<IReadOnlyList<StorefrontCustomerAddressResponse>>.Succeeded(
+                    [CreateAddress()],
+                    "Addresses loaded."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> CreateCustomerAddressAsync(
+                string bearerToken,
+                StorefrontCustomerAddressRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record("POST /api/storefront/stores/demo/customer/addresses", bearerToken);
+                this.LastAddressCommandBody = JsonSerializer.Serialize(request, new JsonSerializerOptions
                 {
-                  "success": true,
-                  "message": "Order loaded.",
-                  "data": {
-                    "reference": "ORD-1",
-                    "status": "processing",
-                    "orderStatus": "processing",
-                    "paymentStatus": "paid",
-                    "paymentMethodKey": "cod",
-                    "paymentAt": null,
-                    "paymentSummary": null,
-                    "storeSnapshot": null,
-                    "currencyCode": "USD",
-                    "totalAmount": 25.00,
-                    "totalBreakdown": {
-                      "subtotal": 20.00,
-                      "shippingTotal": 5.00,
-                      "taxTotal": 0,
-                      "discountTotal": 0,
-                      "grandTotal": 25.00
-                    },
-                    "baseCurrencyCode": "USD",
-                    "baseTotalAmount": 25.00,
-                    "baseTotalBreakdown": null,
-                    "exchangeRate": null,
-                    "exchangeRateProviderKey": null,
-                    "exchangeRateSource": null,
-                    "exchangeRateEffectiveAtUtc": null,
-                    "exchangeRateExpiresAtUtc": null,
-                    "createdOn": "2026-07-17T00:00:00Z",
-                    "shippingStatus": "not_yet_shipped",
-                    "shippingCarrier": null,
-                    "trackingNumber": null,
-                    "trackingUrl": null,
-                    "shippedOn": null,
-                    "deliveredOn": null,
-                    "customerName": "Customer One",
-                    "customerEmail": "customer@example.test",
-                    "billingAddress": null,
-                    "shippingAddressSnapshot": null,
-                    "shippingAddress": {
-                      "fullName": "Customer One",
-                      "email": "customer@example.test",
-                      "phone": null,
-                      "address1": "1 Test Street",
-                      "address2": null,
-                      "city": "New York",
-                      "state": "NY",
-                      "postalCode": "10000",
-                      "countryCode": "US"
-                    },
-                    "shippingMethod": null,
-                    "completedAt": null,
-                    "cancelledAt": null,
-                    "trackingEvents": [],
-                    "historyEntries": [],
-                    "lines": [
-                      {
-                        "productId": "11111111-1111-1111-1111-111111111111",
-                        "productName": "Test Product",
-                        "sku": "SKU-1",
-                        "image": null,
-                        "productVariantId": null,
-                        "variantAttributes": [],
-                        "quantity": 2,
-                        "unitPrice": 10.00,
-                        "lineTotal": 20.00
-                      }
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerAddressResponse>.Succeeded(CreateAddress(), "Address saved."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> UpdateCustomerAddressAsync(
+                string bearerToken,
+                Guid addressId,
+                StorefrontCustomerAddressRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record($"PUT /api/storefront/stores/demo/customer/addresses/{addressId:D}", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerAddressResponse>.Succeeded(CreateAddress(), "Address saved."));
+            }
+
+            public Task<StorefrontSubmitResult<object>> DeleteCustomerAddressAsync(
+                string bearerToken,
+                Guid addressId,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record($"DELETE /api/storefront/stores/demo/customer/addresses/{addressId:D}", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<object>.Succeeded(null, "Address deleted."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> SetDefaultShippingAddressAsync(
+                string bearerToken,
+                Guid addressId,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record($"POST /api/storefront/stores/demo/customer/addresses/{addressId:D}/default-shipping", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerAddressResponse>.Succeeded(CreateAddress(), "Address saved."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> SetDefaultBillingAddressAsync(
+                string bearerToken,
+                Guid addressId,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record($"POST /api/storefront/stores/demo/customer/addresses/{addressId:D}/default-billing", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerAddressResponse>.Succeeded(CreateAddress(), "Address saved."));
+            }
+
+            public Task<StorefrontSubmitResult<PagedResult<StorefrontCustomerOrderListItemResponse>>> GetCustomerOrdersAsync(
+                string bearerToken,
+                int pageNumber = 1,
+                int pageSize = 10,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record("GET /api/storefront/stores/demo/orders/current-user", bearerToken);
+                var orders = new PagedResult<StorefrontCustomerOrderListItemResponse>
+                {
+                    Items =
+                    [
+                        new StorefrontCustomerOrderListItemResponse(
+                            "ORD-1",
+                            new DateTime(2026, 7, 17, 0, 0, 0, DateTimeKind.Utc),
+                            "processing",
+                            "paid",
+                            "not_yet_shipped",
+                            "USD",
+                            25.00m,
+                            2,
+                            new StorefrontCustomerOrderTrackingSummaryResponse(null, null, null, null, null, null)),
                     ],
-                    "actions": {
-                      "canRetryPayment": false,
-                      "canReorder": false,
-                      "canRequestReturn": false,
-                      "hasDownloads": false
-                    },
-                    "receiptMode": {{receiptMode.ToString().ToLowerInvariant()}}
-                  }
-                }
-                """;
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = 1,
+                };
+
+                return Task.FromResult(StorefrontSubmitResult<PagedResult<StorefrontCustomerOrderListItemResponse>>.Succeeded(orders, "Orders loaded."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>> GetCustomerOrderAsync(
+                string bearerToken,
+                string orderReference,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record($"GET /api/storefront/stores/demo/orders/current-user/{orderReference}", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>.Succeeded(
+                    CreateOrderDetail(receiptMode: false),
+                    "Order loaded."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>> GetCustomerOrderReceiptAsync(
+                string bearerToken,
+                string orderReference,
+                CancellationToken cancellationToken = default)
+            {
+                this.Record($"GET /api/storefront/stores/demo/orders/current-user/{orderReference}/receipt", bearerToken);
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>.Succeeded(
+                    CreateOrderDetail(receiptMode: true),
+                    "Order loaded."));
+            }
+
+            private void Record(string request, string bearerToken)
+            {
+                this.Requests.Add(request);
+                this.AuthorizationHeaders.Add($"Bearer {bearerToken}");
+            }
+
+            private static StorefrontCustomerProfileResponse CreateProfile()
+            {
+                return new StorefrontCustomerProfileResponse(
+                    Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    "customer@example.test",
+                    "Customer One",
+                    "Customer",
+                    "One",
+                    null,
+                    "5550100",
+                    "en",
+                    "USD",
+                    DateTimeOffset.Parse("2026-07-17T00:00:00Z"),
+                    DateTimeOffset.Parse("2026-07-17T01:00:00Z"));
+            }
+
+            private static StorefrontCustomerAddressResponse CreateAddress()
+            {
+                return new StorefrontCustomerAddressResponse(
+                    Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    "Customer",
+                    "One",
+                    null,
+                    "1 Test Street",
+                    null,
+                    "New York",
+                    "10000",
+                    "US",
+                    "NY",
+                    "New York",
+                    "5550100",
+                    "customer@example.test",
+                    true,
+                    false,
+                    DateTimeOffset.Parse("2026-07-17T00:00:00Z"),
+                    DateTimeOffset.Parse("2026-07-17T00:00:00Z"));
+            }
+
+            private static StorefrontCustomerOrderDetailResponse CreateOrderDetail(bool receiptMode)
+            {
+                return new StorefrontCustomerOrderDetailResponse(
+                    "ORD-1",
+                    "processing",
+                    "processing",
+                    "paid",
+                    "cod",
+                    null,
+                    null,
+                    null,
+                    "USD",
+                    25.00m,
+                    new StorefrontOrderTotalBreakdownResponse(20.00m, 5.00m, 0m, 0m, 25.00m),
+                    "USD",
+                    25.00m,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    new DateTime(2026, 7, 17, 0, 0, 0, DateTimeKind.Utc),
+                    "not_yet_shipped",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "Customer One",
+                    "customer@example.test",
+                    null,
+                    null,
+                    new StorefrontShippingAddressResponse(
+                        "Customer One",
+                        "customer@example.test",
+                        null,
+                        "1 Test Street",
+                        null,
+                        "New York",
+                        "NY",
+                        "10000",
+                        "US"),
+                    null,
+                    null,
+                    null,
+                    [],
+                    [],
+                    [
+                        new StorefrontOrderLineResponse(
+                            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                            "Test Product",
+                            "SKU-1",
+                            null,
+                            null,
+                            [],
+                            2,
+                            10.00m,
+                            20.00m),
+                    ],
+                    new StorefrontCustomerOrderActionFlagsResponse(false, false, false, false),
+                    receiptMode);
             }
         }
 
