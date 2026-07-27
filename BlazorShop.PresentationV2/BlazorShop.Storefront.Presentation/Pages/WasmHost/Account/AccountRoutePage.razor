@@ -7,25 +7,23 @@
 @inject StorefrontFoundationViewSet ViewSet
 @inject NavigationManager NavigationManager
 
-<PageTitle>Account</PageTitle>
-
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-</HeadContent>
-
-@if (_result is StorefrontAccountPageResult.ReadyState ready)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AccountPage" Context="ready.Context" />
-}
-else
-{
-    <section class="mx-auto max-w-7xl px-4 py-12 text-sm text-neutral-600 sm:px-6 lg:px-8">
-        Redirecting to sign in...
-    </section>
-}
+<StorefrontPage TContext="StorefrontAccountPageContext" CurrentState="_state">
+    <Body>
+        @if (_result is StorefrontAccountPageResult.ReadyState ready)
+        {
+            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AccountPage" Context="ready.Context" />
+        }
+    </Body>
+    <UnauthorizedContent>
+        <section class="mx-auto max-w-7xl px-4 py-12 text-sm text-neutral-600 sm:px-6 lg:px-8">
+            Redirecting to sign in...
+        </section>
+    </UnauthorizedContent>
+</StorefrontPage>
 
 @code {
     private StorefrontAccountPageResult? _result;
+    private StorefrontPageState _state = new StorefrontPageState.LoadingState();
 
     [Parameter]
     public string? Path { get; set; }
@@ -47,7 +45,17 @@ else
         _result = await PageService.GetAsync(HttpContext, Path, Page, Error, Saved);
         if (_result is StorefrontAccountPageResult.RedirectState redirect)
         {
+            _state = new StorefrontPageState.UnauthorizedState(StorefrontPageKind.Account, "Redirecting to sign in.");
             NavigationManager.NavigateTo(redirect.Url, replace: true);
+            return;
+        }
+
+        if (_result is StorefrontAccountPageResult.ReadyState ready)
+        {
+            _state = new StorefrontPageState.Ready<StorefrontAccountPageContext>(
+                StorefrontPageKind.Account,
+                ready.Context,
+                new StorefrontPageDocument("Account", RobotsIndex: false, RobotsFollow: false));
         }
     }
 }

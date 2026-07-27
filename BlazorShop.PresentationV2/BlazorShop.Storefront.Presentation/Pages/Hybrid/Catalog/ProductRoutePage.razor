@@ -7,20 +7,23 @@
 @inject StorefrontProductPageService ProductPageService
 @inject StorefrontFoundationViewSet ViewSet
 
-<StorefrontSeoHead Metadata="_result.Metadata" StructuredData="_result.StructuredData" />
-
-@if (_result.State is StorefrontPageState.ServiceUnavailableState)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
-}
-else if (_result.State is StorefrontPageState.NotFoundState)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" />
-}
-else if (_result.State is StorefrontPageState.Ready<StorefrontProductPageContext> ready)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ProductPage" Context="ready.Context" />
-}
+<StorefrontPage TContext="StorefrontProductPageContext"
+    CurrentState="_result.State"
+    Metadata="_result.Metadata"
+    StructuredData="_result.StructuredData">
+    <Body>
+        @if (_result.State is StorefrontPageState.Ready<StorefrontProductPageContext> ready)
+        {
+            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ProductPage" Context="ready.Context" />
+        }
+    </Body>
+    <NotFoundContent>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" />
+    </NotFoundContent>
+    <ServiceUnavailableContent>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
+    </ServiceUnavailableContent>
+</StorefrontPage>
 
 @code {
     private StorefrontProductPageResult _result = StorefrontProductPageResult.Empty;
@@ -28,12 +31,8 @@ else if (_result.State is StorefrontPageState.Ready<StorefrontProductPageContext
     [Parameter]
     public string Slug { get; set; } = string.Empty;
 
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
     protected override async Task OnParametersSetAsync()
     {
         _result = await ProductPageService.ResolveAsync(Slug);
-        StorefrontResponseHeaders.ApplyStatus(HttpContext, _result.State);
     }
 }

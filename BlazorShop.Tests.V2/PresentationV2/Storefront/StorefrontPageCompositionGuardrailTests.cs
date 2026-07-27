@@ -143,8 +143,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 var routeMarkup = File.ReadAllText(Path.Combine(presentationCatalogRoot, route.Key));
                 Assert.Contains(route.Value, routeMarkup, StringComparison.Ordinal);
-                Assert.Contains("StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
-                Assert.Contains("StorefrontResponseHeaders.ApplyStatus", routeMarkup, StringComparison.Ordinal);
+                Assert.Contains("<StorefrontPage", routeMarkup, StringComparison.Ordinal);
+                Assert.Contains("Metadata=\"_result.Metadata\"", routeMarkup, StringComparison.Ordinal);
+                Assert.Contains("StructuredData=\"_result.StructuredData\"", routeMarkup, StringComparison.Ordinal);
+                Assert.DoesNotContain("StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
+                Assert.DoesNotContain("StorefrontResponseHeaders.ApplyStatus", routeMarkup, StringComparison.Ordinal);
             }
 
             var viewPaths = new[]
@@ -333,7 +336,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var viewMarkup = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor"));
 
             Assert.Contains("StorefrontContentPageService", routeMarkup, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontSeoHead Metadata=\"_result.Metadata\" StructuredData=\"_result.StructuredData\" />", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPage TContext=\"StorefrontContentPageContext\"", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("Metadata=\"_result.Metadata\"", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("StructuredData=\"_result.StructuredData\"", routeMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
             Assert.Contains("IStorefrontPagePresentationResolver", service, StringComparison.Ordinal);
             Assert.Contains("IStorefrontStructuredDataComposer", service, StringComparison.Ordinal);
             Assert.Contains("presentationResolver.Resolve(page)", service, StringComparison.Ordinal);

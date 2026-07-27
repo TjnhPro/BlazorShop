@@ -2,16 +2,17 @@
 @inject StorefrontHomePageService HomePageService
 @inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
 
-<StorefrontSeoHead Metadata="_result.Metadata" StructuredData="_result.StructuredData" />
-
-@if (_result.State is StorefrontPageState.ServiceUnavailableState)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
-}
-else if (_result.Context is not null)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.HomePage" Context="_result.Context" />
-}
+<StorefrontPage TContext="StorefrontHomePageContext"
+    CurrentState="_result.State"
+    Metadata="_result.Metadata"
+    StructuredData="_result.StructuredData">
+    <Body>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.HomePage" Context="_result.Context" />
+    </Body>
+    <ServiceUnavailableContent>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
+    </ServiceUnavailableContent>
+</StorefrontPage>
 
 @code {
     private StorefrontCatalogPageResult<StorefrontHomePageContext> _result = StorefrontCatalogPageResult<StorefrontHomePageContext>.Empty;
@@ -19,12 +20,8 @@ else if (_result.Context is not null)
     private StorefrontFoundationViewSet ViewSet => FoundationOptions.Value.ViewSet
         ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");
 
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
     protected override async Task OnParametersSetAsync()
     {
         _result = await HomePageService.GetAsync();
-        StorefrontResponseHeaders.ApplyStatus(HttpContext, _result.State);
     }
 }

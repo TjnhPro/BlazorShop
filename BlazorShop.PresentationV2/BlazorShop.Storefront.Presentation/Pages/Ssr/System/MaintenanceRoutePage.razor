@@ -7,18 +7,19 @@
 @inject NavigationManager NavigationManager
 @inject StorefrontFoundationViewSet ViewSet
 
-<PageTitle>@_context.Title</PageTitle>
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-    @if (_context.AutoRefresh)
-    {
-        <meta http-equiv="refresh" content="10" />
-    }
-</HeadContent>
-
 @if (!_redirecting)
 {
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.MaintenanceState" Context="_context" />
+    <StorefrontPage TContext="StorefrontSystemStateContext" CurrentState="_state" Metadata="_metadata" AutoRefreshSeconds="_autoRefreshSeconds">
+        <Body>
+            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.MaintenanceState" Context="_context" />
+        </Body>
+        <MaintenanceContent>
+            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.MaintenanceState" Context="_context" />
+        </MaintenanceContent>
+        <ServiceUnavailableContent>
+            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" Context="_context" />
+        </ServiceUnavailableContent>
+    </StorefrontPage>
 }
 
 @code {
@@ -32,6 +33,9 @@
         "Store temporarily unavailable",
         "Store unavailable",
         "This storefront is not ready to serve shoppers right now.");
+    private StorefrontPageState _state = new StorefrontPageState.MaintenanceState("Store temporarily unavailable.");
+    private SeoMetadataDto _metadata = PrivateMetadata("Store temporarily unavailable");
+    private int? _autoRefreshSeconds;
     private bool _redirecting;
 
     protected override async Task OnParametersSetAsync()
@@ -58,8 +62,11 @@
             resolution.Store,
             reason,
             string.Equals(reason, "maintenance", StringComparison.OrdinalIgnoreCase));
-
-        StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
+        _state = string.Equals(reason, "maintenance", StringComparison.OrdinalIgnoreCase)
+            ? new StorefrontPageState.MaintenanceState(_context.Message)
+            : new StorefrontPageState.ServiceUnavailableState(StorefrontPageKind.ServiceUnavailable, _context.Message);
+        _metadata = PrivateMetadata(_context.Title);
+        _autoRefreshSeconds = _context.AutoRefresh ? 10 : null;
     }
 
     private void RedirectToHome()
@@ -122,6 +129,16 @@
             "not-ready" => "This store is still being prepared. Check back after provisioning finishes.",
             "not-found" => "The configured storefront store key or domain does not match an available store.",
             _ => "The storefront cannot serve shoppers right now.",
+        };
+    }
+
+    private static SeoMetadataDto PrivateMetadata(string title)
+    {
+        return new SeoMetadataDto
+        {
+            Title = title,
+            RobotsIndex = false,
+            RobotsFollow = false,
         };
     }
 }

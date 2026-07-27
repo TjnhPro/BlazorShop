@@ -5,19 +5,15 @@
 @inject StorefrontCheckoutPageService PageService
 @inject StorefrontFoundationViewSet ViewSet
 
-<PageTitle>Checkout</PageTitle>
-
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-</HeadContent>
-
-@if (_context is not null)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.CheckoutPage" Context="_context" />
-}
+<StorefrontPage TContext="StorefrontCheckoutPageContext" CurrentState="_state">
+    <Body>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.CheckoutPage" Context="_context" />
+    </Body>
+</StorefrontPage>
 
 @code {
     private StorefrontCheckoutPageContext? _context;
+    private StorefrontPageState _state = new StorefrontPageState.LoadingState();
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -30,7 +26,10 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
         _context = await PageService.GetAsync(HttpContext, Error, OrderReference);
+        _state = new StorefrontPageState.Ready<StorefrontCheckoutPageContext>(
+            StorefrontPageKind.Checkout,
+            _context,
+            new StorefrontPageDocument("Checkout", RobotsIndex: false, RobotsFollow: false));
     }
 }

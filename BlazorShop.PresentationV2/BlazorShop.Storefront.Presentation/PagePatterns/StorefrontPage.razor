@@ -1,41 +1,53 @@
 @typeparam TContext
 @namespace BlazorShop.Storefront.Presentation.PagePatterns
-@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Http
+@using BlazorShop.Storefront.Presentation.Seo
+@using BlazorShop.Storefront.Services
 @inject IHttpContextAccessor HttpContextAccessor
 
 @if (CurrentState is StorefrontPageState.Ready<TContext> ready)
 {
-    <HeadContent>
-        @if (!string.IsNullOrWhiteSpace(ready.Document.Title))
-        {
-            <title>@ready.Document.Title</title>
-        }
-
-        @if (!string.IsNullOrWhiteSpace(ready.Document.Description))
-        {
-            <meta name="description" content="@ready.Document.Description" />
-        }
-
-        <meta name="robots" content="@(ready.Document.RobotsIndex ? "index" : "noindex"),@(ready.Document.RobotsFollow ? "follow" : "nofollow")" />
-        @if (!string.IsNullOrWhiteSpace(ready.Document.CanonicalUrl))
-        {
-            <link rel="canonical" href="@ready.Document.CanonicalUrl" />
-        }
-    </HeadContent>
+    <StorefrontSeoHead Metadata="@ResolveReadyMetadata(ready)" StructuredData="@StructuredData" />
     @Body
 }
-else if (CurrentState is StorefrontPageState.NotFoundState)
+else if (CurrentState is StorefrontPageState.LoadingState)
 {
-    @NotFoundContent
+    @RenderOrDefault(LoadingContent, "Loading", "Loading storefront content.")
 }
-else if (CurrentState is StorefrontPageState.ServiceUnavailableState)
+else if (CurrentState is StorefrontPageState.EmptyState empty)
 {
-    @ServiceUnavailableContent
+    @RenderOrDefault(EmptyContent, "No content", empty.Message)
 }
-else if (CurrentState is StorefrontPageState.ErrorState)
+else if (CurrentState is StorefrontPageState.NotFoundState notFound)
 {
-    @ErrorContent
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Page not found")" />
+    @RenderOrDefault(NotFoundContent, "Page not found", notFound.Message ?? "The requested storefront page was not found.")
+}
+else if (CurrentState is StorefrontPageState.ServiceUnavailableState serviceUnavailable)
+{
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront unavailable")" />
+    @RenderOrDefault(ServiceUnavailableContent, "Storefront unavailable", serviceUnavailable.Message ?? "Storefront content is temporarily unavailable.")
+}
+else if (CurrentState is StorefrontPageState.UnauthorizedState unauthorized)
+{
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Sign in required")" />
+    @RenderOrDefault(UnauthorizedContent, "Sign in required", unauthorized.Message ?? "Sign in to continue.")
+}
+else if (CurrentState is StorefrontPageState.MaintenanceState maintenance)
+{
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront maintenance")" />
+    @if (AutoRefreshSeconds is > 0)
+    {
+        <HeadContent>
+            <meta http-equiv="refresh" content="@AutoRefreshSeconds.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+        </HeadContent>
+    }
+    @RenderOrDefault(MaintenanceContent, "Storefront maintenance", maintenance.Message ?? "This storefront is temporarily in maintenance mode.")
+}
+else if (CurrentState is StorefrontPageState.ErrorState error)
+{
+    <StorefrontSeoHead Metadata="@ResolveStateMetadata("Storefront error")" />
+    @RenderOrDefault(ErrorContent, "Storefront error", error.Message)
 }
 
 @code {
@@ -48,10 +60,31 @@ else if (CurrentState is StorefrontPageState.ErrorState)
     public RenderFragment Body { get; set; } = default!;
 
     [Parameter]
+    public SeoMetadataDto? Metadata { get; set; }
+
+    [Parameter]
+    public StorefrontStructuredDataDocument? StructuredData { get; set; }
+
+    [Parameter]
+    public int? AutoRefreshSeconds { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
     public RenderFragment? NotFoundContent { get; set; }
 
     [Parameter]
     public RenderFragment? ServiceUnavailableContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? UnauthorizedContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? MaintenanceContent { get; set; }
 
     [Parameter]
     public RenderFragment? ErrorContent { get; set; }
@@ -59,5 +92,53 @@ else if (CurrentState is StorefrontPageState.ErrorState)
     protected override void OnParametersSet()
     {
         StorefrontResponseHeaders.ApplyStatus(this.HttpContextAccessor.HttpContext, this.CurrentState);
+    }
+
+    private SeoMetadataDto ResolveReadyMetadata(StorefrontPageState.Ready<TContext> ready)
+    {
+        if (Metadata is not null)
+        {
+            return Metadata;
+        }
+
+        return new SeoMetadataDto
+        {
+            Title = ready.Document.Title,
+            MetaDescription = ready.Document.Description,
+            CanonicalUrl = ready.Document.CanonicalUrl,
+            RobotsIndex = ready.Document.RobotsIndex,
+            RobotsFollow = ready.Document.RobotsFollow,
+        };
+    }
+
+    private static SeoMetadataDto PrivateMetadata(string title)
+    {
+        return new SeoMetadataDto
+        {
+            Title = title,
+            RobotsIndex = false,
+            RobotsFollow = false,
+        };
+    }
+
+    private SeoMetadataDto ResolveStateMetadata(string title)
+    {
+        return Metadata ?? PrivateMetadata(title);
+    }
+
+    private static RenderFragment RenderOrDefault(RenderFragment? fragment, string title, string message)
+    {
+        return fragment ?? (builder =>
+        {
+            builder.OpenElement(0, "section");
+            builder.AddAttribute(1, "class", "storefront-state");
+            builder.OpenElement(2, "h1");
+            builder.AddContent(3, title);
+            builder.CloseElement();
+            builder.OpenElement(4, "p");
+            builder.AddContent(5, message);
+            builder.CloseElement();
+            builder.CloseElement();
+        });
     }
 }

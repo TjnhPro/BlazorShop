@@ -251,11 +251,15 @@ namespace BlazorShop.Tests.Architecture
             var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/PagePatterns/StorefrontPage.razor");
 
             Assert.Contains("@typeparam TContext", source, StringComparison.Ordinal);
-            Assert.Contains("<HeadContent>", source, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontSeoHead", source, StringComparison.Ordinal);
             Assert.Contains("StorefrontResponseHeaders.ApplyStatus", source, StringComparison.Ordinal);
             Assert.Contains("CurrentState is StorefrontPageState.Ready<TContext>", source, StringComparison.Ordinal);
+            Assert.Contains("LoadingContent", source, StringComparison.Ordinal);
+            Assert.Contains("EmptyContent", source, StringComparison.Ordinal);
             Assert.Contains("NotFoundContent", source, StringComparison.Ordinal);
             Assert.Contains("ServiceUnavailableContent", source, StringComparison.Ordinal);
+            Assert.Contains("UnauthorizedContent", source, StringComparison.Ordinal);
+            Assert.Contains("MaintenanceContent", source, StringComparison.Ordinal);
             Assert.Contains("ErrorContent", source, StringComparison.Ordinal);
         }
 
@@ -342,7 +346,9 @@ namespace BlazorShop.Tests.Architecture
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontJsonLdScript.razor")));
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StaticPageSeo.razor")));
             Assert.All(v2Pages, markup => Assert.DoesNotContain("<SeoHead", markup, StringComparison.Ordinal));
-            Assert.Contains(presentationPages, markup => markup.Contains("<StorefrontSeoHead", StringComparison.Ordinal));
+            var pageShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/PagePatterns/StorefrontPage.razor");
+            Assert.Contains("<StorefrontSeoHead", pageShell, StringComparison.Ordinal);
+            Assert.DoesNotContain(presentationPages, markup => markup.Contains("<StorefrontSeoHead", StringComparison.Ordinal));
         }
 
         [Fact]
@@ -355,8 +361,9 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("@page \"/product/{Slug}\"", route, StringComparison.Ordinal);
             Assert.Contains("StorefrontProductPageService", route, StringComparison.Ordinal);
-            Assert.Contains("StorefrontSeoHead", route, StringComparison.Ordinal);
-            Assert.Contains("StorefrontResponseHeaders.ApplyStatus", route, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPage TContext=\"StorefrontProductPageContext\"", route, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontSeoHead", route, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontResponseHeaders.ApplyStatus", route, StringComparison.Ordinal);
             Assert.Contains("IStorefrontCatalogClient", service, StringComparison.Ordinal);
             Assert.Contains("IStorefrontSeoComposer", service, StringComparison.Ordinal);
             Assert.Contains("IStorefrontStructuredDataComposer", service, StringComparison.Ordinal);

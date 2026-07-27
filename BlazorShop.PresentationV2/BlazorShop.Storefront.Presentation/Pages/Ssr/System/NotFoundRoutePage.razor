@@ -5,12 +5,18 @@
 @inject IStorefrontSeoComposer SeoComposer
 @inject StorefrontFoundationViewSet ViewSet
 
-<StorefrontSeoHead Metadata="_metadata" />
-
-<StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" Context="_context" />
+<StorefrontPage TContext="StorefrontSystemStateContext" CurrentState="_state" Metadata="_metadata">
+    <Body>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" Context="_context" />
+    </Body>
+    <NotFoundContent>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" Context="_context" />
+    </NotFoundContent>
+</StorefrontPage>
 
 @code {
     private SeoMetadataDto _metadata = new();
+    private readonly StorefrontPageState _state = new StorefrontPageState.NotFoundState(StorefrontPageKind.NotFound, "Page not found");
     private readonly StorefrontSystemStateContext _context = StorefrontSystemStateContext.NotFound(
         "Page not found",
         "The page you requested does not exist in the current storefront surface.");
@@ -18,13 +24,8 @@
     [Parameter]
     public string? Path { get; set; }
 
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
     protected override async Task OnInitializedAsync()
     {
-        StorefrontResponseHeaders.ApplyNotFound(HttpContext);
-
         _metadata = await SeoComposer.ComposeNotFoundPageAsync(
             "Page not found",
             "/not-found",

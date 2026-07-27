@@ -7,19 +7,15 @@
 @inject StorefrontPaymentResultPageService PageService
 @inject StorefrontFoundationViewSet ViewSet
 
-<PageTitle>Payment status</PageTitle>
-
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-</HeadContent>
-
-@if (_context is not null)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.PaymentResultPage" Context="_context" />
-}
+<StorefrontPage TContext="StorefrontPaymentResultPageContext" CurrentState="_state">
+    <Body>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.PaymentResultPage" Context="_context" />
+    </Body>
+</StorefrontPage>
 
 @code {
     private StorefrontPaymentResultPageContext? _context;
+    private StorefrontPageState _state = new StorefrontPageState.LoadingState();
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -32,9 +28,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
         var path = HttpContext?.Request.Path.Value ?? string.Empty;
         var isCancelRoute = path.StartsWith("/payment-cancel", StringComparison.OrdinalIgnoreCase);
         _context = await PageService.GetAsync(isCancelRoute, PaymentAttemptId, Provider);
+        _state = new StorefrontPageState.Ready<StorefrontPaymentResultPageContext>(
+            StorefrontPageKind.PaymentResult,
+            _context,
+            new StorefrontPageDocument("Payment status", RobotsIndex: false, RobotsFollow: false));
     }
 }

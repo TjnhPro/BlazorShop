@@ -244,58 +244,58 @@ Goal: make `StorefrontPage.razor` the one route-state/head/status wrapper for Pr
 
 ### Tasks
 
-- [ ] Extend `StorefrontPage.razor` to handle all `StorefrontPageState` cases:
-  - [ ] `LoadingState`
-  - [ ] `Ready<TContext>`
-  - [ ] `EmptyState`
-  - [ ] `NotFoundState`
-  - [ ] `ServiceUnavailableState`
-  - [ ] `UnauthorizedState`
-  - [ ] `MaintenanceState`
-  - [ ] `ErrorState`
-- [ ] Add optional render fragments or view-set hooks for:
-  - [ ] loading state.
-  - [ ] empty state.
-  - [ ] unauthorized/private state.
-  - [ ] maintenance state.
-  - [ ] service unavailable state.
-  - [ ] not found state.
-  - [ ] error state.
-- [ ] Move SEO/head composition into `StorefrontPage`:
-  - [ ] document title.
-  - [ ] description.
-  - [ ] robots.
-  - [ ] canonical.
-  - [ ] structured data hook.
-  - [ ] alternate/hreflang hook if already modeled.
-- [ ] Move status/header application into `StorefrontPage`:
-  - [ ] 200/explicit status for ready.
-  - [ ] 404 not found.
-  - [ ] 503 service unavailable/maintenance.
-  - [ ] noindex/nofollow private pages.
-  - [ ] private cache-control.
-- [ ] Convert Presentation route pages to use `StorefrontPage`:
-  - [ ] home.
-  - [ ] category.
-  - [ ] product.
-  - [ ] search.
-  - [ ] todays deals.
-  - [ ] new releases.
-  - [ ] content page.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] payment result.
-  - [ ] account route.
-  - [ ] auth routes.
-  - [ ] maintenance.
-  - [ ] not-found catch-all.
-- [ ] Route pages should only:
-  - [ ] bind route/query parameters.
-  - [ ] call one page service.
-  - [ ] pass state/context to `StorefrontPage`.
-  - [ ] select the registered view slot.
-- [ ] Add tests proving route pages no longer call `StorefrontResponseHeaders` directly.
-- [ ] Add tests proving route pages no longer render `StorefrontSeoHead`, `PageTitle`, or `HeadContent` directly except inside `StorefrontPage`.
+- [x] Extend `StorefrontPage.razor` to handle all `StorefrontPageState` cases:
+  - [x] `LoadingState`
+  - [x] `Ready<TContext>`
+  - [x] `EmptyState`
+  - [x] `NotFoundState`
+  - [x] `ServiceUnavailableState`
+  - [x] `UnauthorizedState`
+  - [x] `MaintenanceState`
+  - [x] `ErrorState`
+- [x] Add optional render fragments or view-set hooks for:
+  - [x] loading state.
+  - [x] empty state.
+  - [x] unauthorized/private state.
+  - [x] maintenance state.
+  - [x] service unavailable state.
+  - [x] not found state.
+  - [x] error state.
+- [x] Move SEO/head composition into `StorefrontPage`:
+  - [x] document title.
+  - [x] description.
+  - [x] robots.
+  - [x] canonical.
+  - [x] structured data hook.
+  - [x] alternate/hreflang hook if already modeled.
+- [x] Move status/header application into `StorefrontPage`:
+  - [x] 200/explicit status for ready.
+  - [x] 404 not found.
+  - [x] 503 service unavailable/maintenance.
+  - [x] noindex/nofollow private pages.
+  - [x] private cache-control.
+- [x] Convert Presentation route pages to use `StorefrontPage`:
+  - [x] home.
+  - [x] category.
+  - [x] product.
+  - [x] search.
+  - [x] todays deals.
+  - [x] new releases.
+  - [x] content page.
+  - [x] cart.
+  - [x] checkout.
+  - [x] payment result.
+  - [x] account route.
+  - [x] auth routes.
+  - [x] maintenance.
+  - [x] not-found catch-all.
+- [x] Route pages should only:
+  - [x] bind route/query parameters.
+  - [x] call one page service.
+  - [x] pass state/context to `StorefrontPage`.
+  - [x] select the registered view slot.
+- [x] Add tests proving route pages no longer call `StorefrontResponseHeaders` directly.
+- [x] Add tests proving route pages no longer render `StorefrontSeoHead`, `PageTitle`, or `HeadContent` directly except inside `StorefrontPage`.
 
 ### Files likely touched
 
@@ -311,11 +311,21 @@ Goal: make `StorefrontPage.razor` the one route-state/head/status wrapper for Pr
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontIndexingPolicy|FullyQualifiedName~StorefrontPresentation"
 ```
 
+### Completion Evidence - 2026-07-27
+
+- `StorefrontPage.razor` now owns `StorefrontSeoHead`, structured data, `StorefrontResponseHeaders.ApplyStatus(...)`, non-ready state rendering fragments, private metadata, and maintenance auto-refresh head output.
+- All Presentation `*RoutePage.razor` files under `BlazorShop.Storefront.Presentation/Pages` route through `StorefrontPage` and no longer directly render `StorefrontSeoHead`, `PageTitle`, `HeadContent`, or `StorefrontResponseHeaders`.
+- `rg -n "StorefrontSeoHead|PageTitle|HeadContent|StorefrontResponseHeaders" BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\Pages -g "*RoutePage.razor"` returned no matches.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore` passed.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontIndexingPolicy|FullyQualifiedName~StorefrontPresentation"` passed `66/69`, with 3 future phase skips.
+
 ### Exit criteria
 
-- [ ] Every Presentation route page uses `StorefrontPage` or an equivalent single base/wrapper.
-- [ ] Route pages no longer duplicate SEO/status/noindex handling.
-- [ ] All `StorefrontPageState` cases render intentionally.
+- [x] Every Presentation route page uses `StorefrontPage` or an equivalent single base/wrapper.
+- [x] Route pages no longer duplicate SEO/status/noindex handling.
+- [x] All `StorefrontPageState` cases render intentionally.
 
 ## Phase SPF19 - Route Ownership Lock
 

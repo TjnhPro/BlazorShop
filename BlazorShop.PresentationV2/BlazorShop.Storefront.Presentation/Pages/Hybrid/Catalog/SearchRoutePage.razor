@@ -2,16 +2,17 @@
 @inject StorefrontSearchPageService SearchPageService
 @inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
 
-<StorefrontSeoHead Metadata="_result.Metadata" StructuredData="_result.StructuredData" />
-
-@if (_result.State is StorefrontPageState.ServiceUnavailableState)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
-}
-else if (_result.Context is not null)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.SearchPage" Context="_result.Context" />
-}
+<StorefrontPage TContext="StorefrontSearchPageContext"
+    CurrentState="_result.State"
+    Metadata="_result.Metadata"
+    StructuredData="_result.StructuredData">
+    <Body>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.SearchPage" Context="_result.Context" />
+    </Body>
+    <ServiceUnavailableContent>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ServiceUnavailableState" />
+    </ServiceUnavailableContent>
+</StorefrontPage>
 
 @code {
     private StorefrontCatalogPageResult<StorefrontSearchPageContext> _result = StorefrontCatalogPageResult<StorefrontSearchPageContext>.Empty;
@@ -43,12 +44,8 @@ else if (_result.Context is not null)
     [SupplyParameterFromQuery(Name = "sortBy")]
     public string? SortByQuery { get; set; }
 
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
     protected override async Task OnParametersSetAsync()
     {
         _result = await SearchPageService.GetAsync(Q, Category, MinPrice, MaxPrice, InStock, Page, PageSize, SortByQuery);
-        StorefrontResponseHeaders.ApplyStatus(HttpContext, _result.State);
     }
 }

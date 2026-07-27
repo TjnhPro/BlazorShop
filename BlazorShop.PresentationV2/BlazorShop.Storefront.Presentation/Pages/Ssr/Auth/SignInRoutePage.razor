@@ -6,18 +6,15 @@
 @inject NavigationManager NavigationManager
 @inject StorefrontFoundationViewSet ViewSet
 
-<PageTitle>Sign in</PageTitle>
-<HeadContent>
-    <meta name="robots" content="noindex,nofollow" />
-</HeadContent>
-
-@if (_result.Context is not null)
-{
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AuthPage" Context="_result.Context" />
-}
+<StorefrontPage TContext="StorefrontAuthPageContext" CurrentState="_state">
+    <Body>
+        <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AuthPage" Context="_result.Context" />
+    </Body>
+</StorefrontPage>
 
 @code {
     private StorefrontAuthPageResult _result = new(null, null);
+    private StorefrontPageState _state = new StorefrontPageState.LoadingState();
 
     [SupplyParameterFromQuery(Name = "returnUrl")]
     public string? ReturnUrl { get; set; }
@@ -36,9 +33,20 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
         _result = await AuthPageService.GetSignInAsync(ReturnUrl, Error, Registered, PasswordReset);
+        SetReadyState("Sign in");
         RedirectIfNeeded();
+    }
+
+    private void SetReadyState(string title)
+    {
+        if (_result.Context is not null)
+        {
+            _state = new StorefrontPageState.Ready<StorefrontAuthPageContext>(
+                StorefrontPageKind.Auth,
+                _result.Context,
+                new StorefrontPageDocument(title, RobotsIndex: false, RobotsFollow: false));
+        }
     }
 
     private void RedirectIfNeeded()
