@@ -4,10 +4,7 @@ namespace BlazorShop.Storefront.Services
     using System.Net;
     using System.Net.Http.Json;
     using System.Text.Json;
-    using BlazorShop.Storefront.Options;
     using BlazorShop.Storefront.Services.Contracts;
-
-    using Microsoft.Extensions.Options;
 
 
     public partial class StorefrontApiClient :
@@ -30,10 +27,10 @@ namespace BlazorShop.Storefront.Services
         private readonly HttpClient _httpClient;
         private readonly bool _enableLegacyFallback;
 
-        public StorefrontApiClient(HttpClient httpClient, IOptions<StorefrontApiOptions> options)
+        public StorefrontApiClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _enableLegacyFallback = options.Value.EnableLegacyFallback;
+            _enableLegacyFallback = false;
         }
 
     }

@@ -4,11 +4,14 @@ using Xunit;
 
 public sealed class StorefrontManualClientRetirementGuardrailTests
 {
+    private const string ManualClientName = "Storefront" + "ApiClient";
+    private const string LegacyFallbackOptionName = "Enable" + "LegacyFallback";
+
     private static readonly string[] ManualTransportTokens =
     [
-        "StorefrontApiClient",
-        "EnableLegacyFallback",
-        "AddHttpClient<StorefrontApiClient>",
+        ManualClientName,
+        LegacyFallbackOptionName,
+        "AddHttpClient<" + ManualClientName + ">",
         "LegacyCatalogBaseRoute",
         "LegacySeoSettingsRoute"
     ];

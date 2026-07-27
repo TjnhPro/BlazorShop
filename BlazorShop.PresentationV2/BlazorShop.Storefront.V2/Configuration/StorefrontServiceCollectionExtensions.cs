@@ -92,12 +92,6 @@ namespace BlazorShop.Storefront.Configuration
                 services.AddRateLimiter(options => configureRateLimiter(options, rateLimitingOptions));
             }
 
-            services.AddHttpClient<StorefrontApiClient>()
-                .ConfigureHttpClient((serviceProvider, client) =>
-                {
-                    configureHttpClient(client, serviceProvider.GetRequiredService<IConfiguration>());
-                });
-
             return services;
         }
 

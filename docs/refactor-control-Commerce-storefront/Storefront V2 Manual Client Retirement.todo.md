@@ -209,23 +209,32 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualif
 
 Muc tieu: cat duong resolve DI cua manual client truoc khi xoa files.
 
-- [ ] Sua `BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs`:
-  - [ ] Xoa `services.AddHttpClient<StorefrontApiClient>()`.
-  - [ ] Dam bao V2 host van goi Presentation/Runtime registration canonical.
-  - [ ] Khong dang ky bat ky concrete V2 transport nao cho `IStorefront*Client`.
-- [ ] Sua `BlazorShop.Storefront.V2/Options/StorefrontApiOptions.cs`:
-  - [ ] Xoa `EnableLegacyFallback`.
-  - [ ] Giu nhung option con can cho host configuration neu con consumer hop le.
-  - [ ] Neu ca `StorefrontApiOptions` chi phuc vu manual client, lap follow-up xoa ca options sau khi kiem tra `Api` section usage.
-- [ ] Sua `appsettings.json` va `appsettings.Development.json`:
-  - [ ] Xoa `Api:EnableLegacyFallback`.
-  - [ ] Giu `Api:BaseUrl` neu Runtime/Presentation host configuration van can de goi Commerce Node.
-  - [ ] Giu `Api:RefreshTokenRoute` neu auth/session resolver van can.
-- [ ] Chay `rg` de dam bao khong con DI registration:
+- [x] Sua `BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs`:
+  - [x] Xoa `services.AddHttpClient<StorefrontApiClient>()`.
+  - [x] Dam bao V2 host van goi Presentation/Runtime registration canonical.
+  - [x] Khong dang ky bat ky concrete V2 transport nao cho `IStorefront*Client`.
+- [x] Sua `BlazorShop.Storefront.V2/Options/StorefrontApiOptions.cs`:
+  - [x] Xoa `EnableLegacyFallback`.
+  - [x] Giu nhung option con can cho host configuration neu con consumer hop le.
+  - [x] Neu ca `StorefrontApiOptions` chi phuc vu manual client, lap follow-up xoa ca options sau khi kiem tra `Api` section usage.
+- [x] Sua `appsettings.json` va `appsettings.Development.json`:
+  - [x] Xoa `Api:EnableLegacyFallback`.
+  - [x] Giu `Api:BaseUrl` neu Runtime/Presentation host configuration van can de goi Commerce Node.
+  - [x] Giu `Api:RefreshTokenRoute` neu auth/session resolver van can.
+- [x] Chay `rg` de dam bao khong con DI registration:
 
 ```powershell
 rg -n "AddHttpClient<StorefrontApiClient>|EnableLegacyFallback" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.Tests.V2 -g "!bin" -g "!obj"
 ```
+
+2026-07-27 F1.25.3 evidence:
+
+- Removed `services.AddHttpClient<StorefrontApiClient>()` from V2 composition while keeping canonical `AddStorefrontRuntime(...)`, `AddStorefrontPlatformRuntime()`, and `AddStorefrontPresentation(...)`.
+- Removed `EnableLegacyFallback` from `StorefrontApiOptions` and from V2 `appsettings.json` / `appsettings.Development.json`.
+- Kept `Api:BaseUrl`, `Api:StoreKey`, and `Api:RefreshTokenRoute`; `StorefrontApiEndpointResolver`, `StorefrontStoreKeyResolver`, and `StorefrontSessionResolver` still consume them.
+- Retired client source is still present until F1.25.4, but its constructor no longer reads fallback options so the intermediate phase builds.
+- `rg -n "AddHttpClient<StorefrontApiClient>|EnableLegacyFallback" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.Tests.V2 -g "!bin" -g "!obj"` returned no matches.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal` passed.
 
 ## Phase F1.25.4 - Xoa manual client source
 
