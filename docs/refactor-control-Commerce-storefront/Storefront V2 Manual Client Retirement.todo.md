@@ -1,6 +1,6 @@
 # Storefront V2 Manual Client Retirement Todo
 
-Status: In Progress
+Status: Completed
 Owner: Storefront Platform
 Created: 2026-07-27
 Scope: retire `StorefrontApiClient` manual transport from `BlazorShop.Storefront.V2`
@@ -27,21 +27,21 @@ Scope: retire `StorefrontApiClient` manual transport from `BlazorShop.Storefront
 
 ## Muc tieu
 
-- [ ] Khong con `StorefrontApiClient` trong `BlazorShop.Storefront.V2`.
-- [ ] Khong class nao trong V2 implement Presentation `IStorefront*Client` contracts.
-- [ ] V2 khong con manual Commerce Node Storefront API transport.
-- [ ] V2 khong con legacy fallback transport hoac route constants.
-- [ ] Presentation/Runtime generated transport la duong canonical duy nhat.
-- [ ] V2, Starter, architecture tests, isolation gates va browser COD regression van pass.
+- [x] Khong con `StorefrontApiClient` trong `BlazorShop.Storefront.V2`.
+- [x] Khong class nao trong V2 implement Presentation `IStorefront*Client` contracts.
+- [x] V2 khong con manual Commerce Node Storefront API transport.
+- [x] V2 khong con legacy fallback transport hoac route constants.
+- [x] Presentation/Runtime generated transport la duong canonical duy nhat.
+- [x] V2, Starter, architecture tests, isolation gates va browser COD regression van pass.
 
 ## Khong lam trong phase nay
 
-- [ ] Khong doi Commerce Node Storefront API contract.
-- [ ] Khong rewrite cart/checkout/order/payment business flow.
-- [ ] Khong doi visual layout cua Storefront V2.
-- [ ] Khong tach them package moi.
-- [ ] Khong xoa options host-local van can cho store key, base URL hoac auth/session neu Presentation van dung.
-- [ ] Khong xoa historical docs neu noi dung duoc danh dau ro la lich su.
+- [x] Khong doi Commerce Node Storefront API contract.
+- [x] Khong rewrite cart/checkout/order/payment business flow.
+- [x] Khong doi visual layout cua Storefront V2.
+- [x] Khong tach them package moi.
+- [x] Khong xoa options host-local van can cho store key, base URL hoac auth/session neu Presentation van dung.
+- [x] Khong xoa historical docs neu noi dung duoc danh dau ro la lich su.
 
 ## Phase F1.25.0 - Baseline va guardrail do
 
