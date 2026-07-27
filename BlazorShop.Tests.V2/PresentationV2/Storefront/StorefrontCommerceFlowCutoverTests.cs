@@ -211,9 +211,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var addressFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeAddressFacade.cs");
             var consentFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeConsentFacade.cs");
             var addressAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontAddressClient.cs");
-            var consentAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontConsentClient.cs");
+            var consentAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontConsentClient.cs");
             var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs");
-            var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontConsentEndpoints.cs");
+            var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs");
+            var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
             var sessionResolver = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontSessionResolver.cs");
             var authClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontAuthClient.cs");
 
@@ -229,9 +230,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("RevokeAsync", consentFacade, StringComparison.Ordinal);
 
             Assert.Contains("AddScoped<GeneratedStorefrontAddressClient>", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<GeneratedStorefrontConsentClient>", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<GeneratedStorefrontConsentClient>", presentationServices, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontAddressClient>())", serviceCollection, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConsentClient>())", serviceCollection, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConsentClient>())", presentationServices, StringComparison.Ordinal);
             Assert.DoesNotContain("AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
             Assert.DoesNotContain("AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", serviceCollection, StringComparison.Ordinal);
             Assert.Contains("this.addressFacade.ListCountriesAsync", addressAdapter, StringComparison.Ordinal);

@@ -1,5 +1,3 @@
-extern alias StorefrontV2;
-
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using System.Net;
@@ -11,8 +9,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     using StorefrontRuntimeConfigurationFacade = BlazorShop.Storefront.Runtime.StorefrontRuntimeConfigurationFacade;
     using IStorefrontRuntimeContext = BlazorShop.Storefront.Runtime.IStorefrontRuntimeContext;
-    using GeneratedStorefrontConfigurationClient = StorefrontV2::BlazorShop.Storefront.Services.GeneratedStorefrontConfigurationClient;
-    using StorefrontCurrencyPreferenceRequest = StorefrontV2::BlazorShop.Storefront.Services.StorefrontCurrencyPreferenceRequest;
+    using GeneratedStorefrontConfigurationClient = BlazorShop.Storefront.Services.GeneratedStorefrontConfigurationClient;
+    using StorefrontCurrencyPreferenceRequest = BlazorShop.Storefront.Services.StorefrontCurrencyPreferenceRequest;
 
     public sealed class StorefrontGeneratedConfigurationClientTests
     {
@@ -210,12 +208,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Environment.NewLine,
                 new[]
                 {
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/ConsentContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontConsentClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/ConsentContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/IStorefrontConsentClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Consent.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontConsentEndpoints.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/ConfigurationContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontConfigurationClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/ConfigurationContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontConfigurationClient.cs",
                 }.Select(ReadRepositoryFile));
 
             Assert.Contains("ResolveConsentVisitorKey(httpContext, createIfMissing: true)", source, StringComparison.Ordinal);
@@ -272,11 +270,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
 
-            Assert.Contains("GeneratedStorefrontConfigurationClient", source, StringComparison.Ordinal);
-            Assert.Contains("IStorefrontRuntimeConfigurationFacade", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontConfigurationClient.cs"), StringComparison.Ordinal);
+            var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
+
+            Assert.Contains("GeneratedStorefrontConfigurationClient", presentationServices, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontRuntimeConfigurationFacade", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontConfigurationClient.cs"), StringComparison.Ordinal);
             Assert.Contains("ResolveCommerceNodeBaseAddress", source, StringComparison.Ordinal);
-            Assert.Contains("AddScoped<IStorefrontStoreConfigurationClient>", source, StringComparison.Ordinal);
-            Assert.Contains("GetRequiredService<GeneratedStorefrontConfigurationClient>", source, StringComparison.Ordinal);
+            Assert.Contains("TryAddScoped<IStorefrontStoreConfigurationClient>", presentationServices, StringComparison.Ordinal);
+            Assert.Contains("GetRequiredService<GeneratedStorefrontConfigurationClient>", presentationServices, StringComparison.Ordinal);
             Assert.DoesNotContain("AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>())", source, StringComparison.Ordinal);
         }
 

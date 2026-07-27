@@ -19,19 +19,12 @@ namespace BlazorShop.Storefront.Configuration
 
             app.UseForwardedHeaders();
             app.UseStaticFiles();
-            app.Use(async (context, next) =>
-            {
-                StorefrontResponseHeaders.RegisterErrorStatusHeaders(context);
-                await next();
-            });
             app.UseMiddleware<StorefrontCurrentStoreMiddleware>();
             app.UseMiddleware<StorefrontPublicRedirectMiddleware>();
             if (rateLimitingOptions.Enabled)
             {
                 app.UseRateLimiter();
             }
-
-            app.UseAntiforgery();
 
             return app;
         }

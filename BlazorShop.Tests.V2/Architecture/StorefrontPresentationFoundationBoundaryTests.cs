@@ -309,8 +309,8 @@ namespace BlazorShop.Tests.Architecture
             var starterProgram = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
             var presentationEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationSeoEndpoints.cs");
 
-            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", v2Program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", starterProgram, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", v2Program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", starterProgram, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStorefrontSeoEndpoints", v2Program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStarterSeoEndpoints", starterProgram, StringComparison.Ordinal);
             Assert.Contains("MapStorefrontPresentationSeoEndpoints", presentationEndpoints, StringComparison.Ordinal);

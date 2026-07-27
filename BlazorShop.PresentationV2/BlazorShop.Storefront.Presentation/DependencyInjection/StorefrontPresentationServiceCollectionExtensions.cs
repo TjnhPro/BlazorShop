@@ -14,8 +14,10 @@ using BlazorShop.Storefront.Presentation.Services.Content;
 using BlazorShop.Storefront.Presentation.Services.Product;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Services.Media;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 public static class StorefrontPresentationServiceCollectionExtensions
@@ -38,6 +40,10 @@ public static class StorefrontPresentationServiceCollectionExtensions
         services.AddScoped<IStorefrontSitemapReader, StorefrontRuntimeSitemapReader>();
         services.AddScoped<IStorefrontSeoSettingsReader, StorefrontRuntimeSeoSettingsReader>();
         services.AddScoped<IStorefrontRobotsService, StorefrontRobotsService>();
+        services.TryAddScoped<GeneratedStorefrontConfigurationClient>();
+        services.TryAddScoped<GeneratedStorefrontConsentClient>();
+        services.TryAddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConfigurationClient>());
+        services.TryAddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConsentClient>());
         services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettingsProvider>();
         services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
         services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
@@ -57,6 +63,7 @@ public static class StorefrontPresentationServiceCollectionExtensions
         services.AddScoped<StorefrontPaymentResultPageService>();
         services.AddScoped<StorefrontProductPageService>();
         services.AddScoped<StorefrontSearchPageService>();
+        services.AddScoped<StorefrontMediaProxyService>();
 
         return services;
     }

@@ -18,7 +18,7 @@ This phase group depends on `01-StorefrontBuilder-Foundation.todo.md`.
 - Runtime package boundary: `BlazorShop.Storefront.Runtime`
 - Existing feature activation example: `Features/feature-manifest.json`
 - Existing render ownership folders: `Pages/Ssr`, `Pages/Hybrid`, `Pages/WasmHost`
-- Existing BFF pattern: `Endpoints/StarterBffEndpoints.cs`
+- Existing BFF pattern: generated storefronts use `BlazorShop.Storefront.Presentation` aggregation (`UseStorefrontPresentation()` and `MapStorefrontPresentation()`) instead of generating Starter-specific BFF endpoint files.
 - Existing hydration marker: `Composition/StarterHydrationMode.cs`
 
 ## S10 - Design Token Extraction

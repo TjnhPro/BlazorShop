@@ -1,16 +1,23 @@
 namespace BlazorShop.Storefront.Services.Media
 {
-    using BlazorShop.Storefront.Configuration;
+    using BlazorShop.Storefront.Runtime;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
 
     public sealed class StorefrontMediaProxyService
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IConfiguration configuration;
+        private readonly IStorefrontRuntimeContext runtimeContext;
 
-        public StorefrontMediaProxyService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public StorefrontMediaProxyService(
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration,
+            IStorefrontRuntimeContext runtimeContext)
         {
             this.httpClientFactory = httpClientFactory;
             this.configuration = configuration;
+            this.runtimeContext = runtimeContext;
         }
 
         public async Task<IResult> ProxyAsync(
@@ -18,15 +25,14 @@ namespace BlazorShop.Storefront.Services.Media
             HttpContext httpContext,
             CancellationToken cancellationToken)
         {
-            var storeKey = StorefrontApiEndpointResolver.ResolveStoreKey(configuration);
-            if (string.IsNullOrWhiteSpace(storeKey))
+            if (string.IsNullOrWhiteSpace(this.runtimeContext.StoreKey))
             {
                 return Results.NotFound();
             }
 
             var client = httpClientFactory.CreateClient();
             var targetUri = new Uri(
-                StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(configuration),
+                new Uri(this.runtimeContext.CommerceNodeBaseUrl, UriKind.Absolute),
                 $"{mediaPath}{httpContext.Request.QueryString}");
 
             using var request = new HttpRequestMessage(HttpMethod.Get, targetUri);

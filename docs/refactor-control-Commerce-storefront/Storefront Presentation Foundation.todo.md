@@ -23,17 +23,9 @@ Phase nay khong tao theme engine hoan chinh. Phase nay chi tao foundation view a
   - `Storefront.Components`
   - `Storefront.Runtime`
   - `Storefront.V2.WASM`
-- [x] `Storefront.V2/Program.cs` van map rieng:
-  - auth form endpoints
-  - cart endpoints
-  - account endpoints
-  - checkout endpoints
-  - consent endpoints
-  - SEO endpoints
-  - media endpoints
-  - Razor Components root `App`
+- [x] `Storefront.V2/Program.cs` no longer maps individual auth/cart/account/checkout/consent/SEO/media endpoint groups after SPF12; it calls `UseStorefrontPresentation()` and `MapStorefrontPresentation()`.
 - [x] `Storefront.V2` van co `App.razor`, `Routes.razor`, route pages trong `Pages/Ssr`, `Pages/Hybrid`, `Pages/WasmHost`.
-- [x] `Storefront.Starter` van co `Components/App.razor`, `Components/Routes.razor`, route pages, `StarterBffEndpoints`, va `StarterSeoEndpoints`.
+- [x] `Storefront.Starter` keeps `Components/App.razor`, `Components/Routes.razor`, and visual route/view files; `StarterBffEndpoints` and `StarterSeoEndpoints` are removed after SPF12.
 - [x] `ProductPage.razor` V2 la ung vien tach dau tien vi dang tron route, API call, SEO/status, structured data, breadcrumbs, gallery/purchase mapping, related products, markup, CSS classes va final copy trong cung file.
 
 ## Target Ownership
@@ -432,7 +424,7 @@ app.MapStorefrontPresentationSeoEndpoints();
 2026-07-26 SPF5 evidence:
 
 - Moved storefront SEO/discovery route policy, sitemap/robots services, public URL resolver/options, indexing policy, structured-data composer/document types, route constants, SEO models, and SEO service contracts from `BlazorShop.Storefront.V2` into `BlazorShop.Storefront.Presentation`.
-- Added `MapStorefrontPresentationSeoEndpoints()` and switched both V2 and Starter to the shared Presentation endpoint mapping; removed `StorefrontSeoEndpoints` and `StarterSeoEndpoints`.
+- Added `MapStorefrontPresentationSeoEndpoints()` and switched both V2 and Starter to the shared Presentation endpoint mapping; SPF12 superseded direct host calls with aggregated `MapStorefrontPresentation()`. Removed `StorefrontSeoEndpoints` and `StarterSeoEndpoints`.
 - Moved reusable SEO head components into Presentation as `StorefrontSeoHead`, `StorefrontJsonLdScript`, and `StaticPageSeo`; V2 now keeps only host/visual head assets through `StorefrontApplicationHead`, `StorefrontApplicationScripts`, and `StorefrontBrandHead`.
 - Added SPF5 boundary tests for Presentation SEO ownership, shared SEO endpoint mapping, and V2-only brand-head ownership.
 - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
@@ -791,24 +783,24 @@ Exit criteria:
 
 ## Phase SPF12 - Media, Consent, and Host Pipeline Aggregation
 
-- [ ] Move/shared endpoint mappings:
+- [x] Move/shared endpoint mappings:
   - consent current/save/revoke;
   - media proxy endpoints if behavior is storefront-application-owned;
   - favicon remains host-owned unless standardized.
-- [ ] Create aggregation:
+- [x] Create aggregation:
 
 ```csharp
 app.UseStorefrontPresentation();
 app.MapStorefrontPresentation();
 ```
 
-- [ ] Presentation owns:
+- [x] Presentation owns:
   - current-store guard integration points;
   - public redirect policy if it is route/application concern;
   - private page headers;
   - local BFF error envelope;
   - trace/correlation propagation into local endpoint responses.
-- [ ] Host still owns:
+- [x] Host still owns:
   - `builder.AddServiceDefaults()`;
   - environment logging;
   - HSTS/HTTPS;
@@ -816,7 +808,7 @@ app.MapStorefrontPresentation();
   - deployment config;
   - `MapDefaultEndpoints()`;
   - `MapStaticAssets()`.
-- [ ] V2 `Program.cs` target shape:
+- [x] V2 `Program.cs` target shape:
 
 ```csharp
 builder.AddServiceDefaults();
@@ -841,7 +833,7 @@ app.MapRazorComponents<StorefrontApp>()
 app.Run();
 ```
 
-- [ ] Starter target shape:
+- [x] Starter target shape:
 
 ```csharp
 builder.Services
@@ -855,10 +847,21 @@ app.MapStorefrontPresentation();
 app.MapRazorComponents<StorefrontApp>();
 ```
 
+- Evidence:
+  - Added `UseStorefrontPresentation()` and `MapStorefrontPresentation()` in `BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs`.
+  - Moved consent endpoints, media proxy endpoints, currency preference command, configuration/consent generated adapters, and related browser/runtime contracts into `BlazorShop.Storefront.Presentation`.
+  - V2 `Program.cs` now calls `UseStorefrontPresentation()` and `MapStorefrontPresentation()`; it keeps host concerns such as service defaults, V2 host pipeline, static assets, favicon, default endpoints, and Razor component host mapping.
+  - Starter `Program.cs` now calls `UseStorefrontPresentation()` and `MapStorefrontPresentation()`; duplicate `StarterBffEndpoints` was removed.
+  - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings.
+  - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+  - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings.
+  - Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed with existing MessagePack vulnerability and Browserslist warnings.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontHostCompositionTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontGeneratedConfigurationClientTests|FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~SecurityPrivacyPhase0InventoryTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests"` passed 153/153.
+
 Exit criteria:
 
-- [ ] V2 `Program.cs` no longer maps individual Storefront BFF/SEO endpoint groups.
-- [ ] Starter no longer owns duplicate BFF/SEO endpoint groups.
+- [x] V2 `Program.cs` no longer maps individual Storefront BFF/SEO endpoint groups.
+- [x] Starter no longer owns duplicate BFF/SEO endpoint groups.
 
 ## Phase SPF13 - Starter Consumer Migration
 

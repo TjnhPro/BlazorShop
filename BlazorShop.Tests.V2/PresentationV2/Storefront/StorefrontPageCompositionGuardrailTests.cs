@@ -80,7 +80,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var presentationRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation");
             var registration = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs"));
             var program = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"));
-            var v2AuthFormEndpoints = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs"));
+            var presentationAuthEndpoints = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAuthEndpoints.cs"));
 
             foreach (var route in routes)
             {
@@ -117,15 +117,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AuthPage = typeof(V2AuthPageView)", registration, StringComparison.Ordinal);
             Assert.Contains("MaintenanceState = typeof(MaintenancePage)", registration, StringComparison.Ordinal);
             Assert.Contains("NotFoundState = typeof(NotFoundPage)", registration, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationAuthEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
-            Assert.DoesNotContain("MapPost(StorefrontRoutes.SignIn", v2AuthFormEndpoints, StringComparison.Ordinal);
-            Assert.DoesNotContain("MapPost(StorefrontRoutes.Register", v2AuthFormEndpoints, StringComparison.Ordinal);
-            Assert.DoesNotContain("MapPost(StorefrontRoutes.ForgotPassword", v2AuthFormEndpoints, StringComparison.Ordinal);
-            Assert.DoesNotContain("MapPost(StorefrontRoutes.ResetPassword", v2AuthFormEndpoints, StringComparison.Ordinal);
-            Assert.DoesNotContain("MapPost(StorefrontRoutes.Logout", v2AuthFormEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("MapPost(StorefrontRoutes.SignIn", presentationAuthEndpoints, StringComparison.Ordinal);
+            Assert.Contains("MapPost(StorefrontRoutes.Register", presentationAuthEndpoints, StringComparison.Ordinal);
+            Assert.Contains("MapPost(StorefrontRoutes.ForgotPassword", presentationAuthEndpoints, StringComparison.Ordinal);
+            Assert.Contains("MapPost(StorefrontRoutes.ResetPassword", presentationAuthEndpoints, StringComparison.Ordinal);
+            Assert.Contains("MapPost(StorefrontRoutes.Logout", presentationAuthEndpoints, StringComparison.Ordinal);
         }
 
         [Fact]

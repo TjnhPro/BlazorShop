@@ -1,7 +1,6 @@
 using BlazorShop.Storefront.Configuration;
-using BlazorShop.Storefront.Endpoints;
 using BlazorShop.Storefront.Presentation.App;
-using BlazorShop.Storefront.Presentation.Endpoints;
+using BlazorShop.Storefront.Presentation.Hosting;
 using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront;
 
@@ -22,17 +21,11 @@ builder.Services.AddV2FoundationViews();
 var app = builder.Build();
 
 app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);
+app.UseStorefrontPresentation();
 app.MapStaticAssets();
 app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: false));
 app.MapDefaultEndpoints();
-app.MapStorefrontPresentationAuthEndpoints();
-app.MapStorefrontAuthFormEndpoints();
-app.MapStorefrontPresentationCartEndpoints();
-app.MapStorefrontPresentationAccountEndpoints();
-app.MapStorefrontPresentationCheckoutEndpoints();
-app.MapStorefrontConsentEndpoints();
-app.MapStorefrontPresentationSeoEndpoints();
-app.MapStorefrontMediaEndpoints();
+app.MapStorefrontPresentation();
 app.MapRazorComponents<StorefrontApp>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(

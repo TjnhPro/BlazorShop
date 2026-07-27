@@ -435,10 +435,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountLocalEndpoints_ResolveCurrentCustomerServerSide()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var presentationAggregation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
             var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs");
             var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Account.cs");
 
-            Assert.Contains("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationAccountEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/account/profile\"", accountEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPut(\"/api/account/profile\"", accountEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/account/addresses\"", accountEndpoints, StringComparison.Ordinal);
@@ -496,12 +498,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutLocalEndpoints_KeepCartTokenAndStaleVersionChecksServerSide()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var presentationAggregation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
             var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs");
             var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiTransport.cs");
 
-            Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationCheckoutEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/checkout\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/addresses\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/shipping-method\"", checkoutEndpoints, StringComparison.Ordinal);
@@ -531,7 +535,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 new[]
                 {
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CheckoutContracts.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/PaymentContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/PaymentContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/OrderContracts.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontCheckoutClient.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontPaymentClient.cs",
@@ -563,14 +567,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
 
-            Assert.Contains("app.MapStorefrontPresentationAuthEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontAuthFormEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontMediaEndpoints();", program, StringComparison.Ordinal);
+            var presentationAggregation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
+
+            Assert.Contains("app.UseStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationAuthEndpoints();", presentationAggregation, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationPreferenceEndpoints();", presentationAggregation, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationCartEndpoints();", presentationAggregation, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationAccountEndpoints();", presentationAggregation, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationCheckoutEndpoints();", presentationAggregation, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationConsentEndpoints();", presentationAggregation, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationSeoEndpoints();", presentationAggregation, StringComparison.Ordinal);
+            Assert.Contains("endpoints.MapStorefrontPresentationMediaEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("app.MapStaticAssets();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapDefaultEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapRazorComponents<StorefrontApp>()", program, StringComparison.Ordinal);

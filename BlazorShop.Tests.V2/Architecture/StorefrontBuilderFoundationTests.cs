@@ -82,7 +82,7 @@ namespace BlazorShop.Tests.Architecture
             {
                 "BlazorShop.Storefront.Client/Generated",
                 "BlazorShop.Storefront.Runtime",
-                "Endpoints/StarterBffEndpoints.cs",
+                "BlazorShop.Storefront.Presentation",
                 "Security/StarterReturnUrlValidator.cs",
                 "StorefrontPackageVersions.props",
                 "starter-generation.contract.yaml",
@@ -99,6 +99,7 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("id: product.purchase", contract, StringComparison.Ordinal);
             Assert.Contains("action: cart.add-line", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("Endpoints/StarterBffEndpoints.cs", contract, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -171,10 +172,10 @@ namespace BlazorShop.Tests.Architecture
             foreach (var expected in new[]
             {
                 "Browser local API primitives",
-                "CSS-neutral compatibility wrappers",
-                "not stable presentation contracts",
-                "not copy those wrappers as the visual baseline",
-                "do not copy them as generated visual templates",
+                "shared `Contracts`, `Headless`, and `Browser` primitives",
+                "render project-local DOM/CSS",
+                "project-local visual templates",
+                "generate project-local visual templates from evidence",
                 "Components `Features` wrappers as the generated/custom storefront presentation source",
             })
             {

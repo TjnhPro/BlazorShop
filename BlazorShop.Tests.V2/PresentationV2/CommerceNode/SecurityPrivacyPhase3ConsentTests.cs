@@ -75,7 +75,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         {
             var layout = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
             var banner = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Security/StorefrontConsentBanner.razor");
-            var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontConsentEndpoints.cs");
+            var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
 
             Assert.Contains("<StorefrontConsentBanner />", layout, StringComparison.Ordinal);

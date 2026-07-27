@@ -272,26 +272,28 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StarterSsrAndBffTracerBullets_AreImplemented()
+        public void StarterSsrAndPresentationAggregationTracerBullets_AreImplemented()
         {
             var bootstrap = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs");
-            var bff = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs");
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
+            var presentationAggregation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
+            var presentationCart = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor");
 
             Assert.Contains("GetCurrentAsync", bootstrap, StringComparison.Ordinal);
             Assert.Contains("configurationClient.GetAsync", bootstrap, StringComparison.Ordinal);
             Assert.Contains("QueryProductsAsync", bootstrap, StringComparison.Ordinal);
             Assert.Contains("StorefrontRuntimeErrorMapper.FromApiException", bootstrap, StringComparison.Ordinal);
-            Assert.Contains("\"/api/cart/lines\"", bff, StringComparison.Ordinal);
-            Assert.Contains("ValidateRequestAsync", bff, StringComparison.Ordinal);
-            Assert.Contains("CreateSessionAsync", bff, StringComparison.Ordinal);
-            Assert.Contains("AddLineAsync", bff, StringComparison.Ordinal);
-            Assert.Contains("HttpOnly = true", bff, StringComparison.Ordinal);
-            Assert.Contains("SameSite = SameSiteMode.Lax", bff, StringComparison.Ordinal);
+            Assert.Contains("\"/api/cart/lines\"", presentationCart, StringComparison.Ordinal);
+            Assert.Contains("ValidateRequestAsync", presentationCart, StringComparison.Ordinal);
+            Assert.Contains("AddLineAsync", presentationCart, StringComparison.Ordinal);
+            Assert.Contains("MapStorefrontPresentationCartEndpoints", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("UseStaticFiles", program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStaticAssets", program, StringComparison.Ordinal);
-            Assert.Contains("MapStarterBffEndpoints", program, StringComparison.Ordinal);
+            Assert.Contains("UseStorefrontPresentation", program, StringComparison.Ordinal);
+            Assert.Contains("MapStorefrontPresentation", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapStarterBffEndpoints", program, StringComparison.Ordinal);
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs")));
             Assert.Contains("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
             Assert.Contains("data-error-code", home, StringComparison.Ordinal);
         }

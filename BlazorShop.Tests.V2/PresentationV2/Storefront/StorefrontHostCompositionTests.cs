@@ -17,12 +17,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(logicalLines.Length <= 45, $"Program.cs has {logicalLines.Length} logical lines.");
             Assert.Contains("builder.Services.AddStorefrontV2Services(", program, StringComparison.Ordinal);
             Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontConsentEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontMediaEndpoints();", program, StringComparison.Ordinal);
+            Assert.Contains("app.UseStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("app.MapStorefrontPresentationAccountEndpoints();", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("app.MapStorefrontPresentationCartEndpoints();", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("app.MapStorefrontPresentationCheckoutEndpoints();", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("app.MapStorefrontPresentationSeoEndpoints();", program, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontApiClient", program, StringComparison.Ordinal);
             Assert.DoesNotContain("new HttpClient", program, StringComparison.Ordinal);
             Assert.DoesNotContain("AddHttpClient", program, StringComparison.Ordinal);
@@ -42,8 +42,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AddStorefrontGeneratedClientRegistration()", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontBffEndpointDependencies()", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontPresentation(configuration)", services, StringComparison.Ordinal);
-            Assert.Contains("AddStorefrontSeoMediaAndDeploymentServices()", services, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontAuthSessionAndAntiforgeryPolicies(", services, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontSeoMediaAndDeploymentServices()", services, StringComparison.Ordinal);
         }
 
         [Fact]

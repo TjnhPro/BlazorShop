@@ -4,7 +4,7 @@ StorefrontBuilder exists to create store-specific storefronts without turning th
 
 ## Why Starter Is Neutral
 
-`BlazorShop.Storefront.Starter` is the clean template input. It demonstrates the shape of a generated storefront, package consumption, same-origin BFF boundaries, and expected loading/error/empty states.
+`BlazorShop.Storefront.Starter` is the clean template input. It demonstrates the shape of a generated storefront, package consumption, Presentation-owned same-origin BFF boundaries, and expected loading/error/empty states.
 
 It must stay neutral because every generated storefront needs a stable base. If store-specific CSS, assets, AI-tuned sections, or reference-site artifacts are written back to Starter, the next storefront inherits accidental design and behavior from the previous one.
 

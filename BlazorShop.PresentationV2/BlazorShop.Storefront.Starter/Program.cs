@@ -1,11 +1,10 @@
 using BlazorShop.Storefront.Runtime;
 using BlazorShop.Storefront.Starter;
 using BlazorShop.Storefront.Starter.Components;
-using BlazorShop.Storefront.Starter.Endpoints;
 using BlazorShop.Storefront.Starter.Features;
 using BlazorShop.Storefront.Presentation.App;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
-using BlazorShop.Storefront.Presentation.Endpoints;
+using BlazorShop.Storefront.Presentation.Hosting;
 using BlazorShop.Storefront.Starter.Options;
 using BlazorShop.Storefront.Starter.Services;
 
@@ -49,9 +48,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAntiforgery();
-app.MapStarterBffEndpoints();
-app.MapStorefrontPresentationSeoEndpoints();
+app.UseStorefrontPresentation();
+app.MapStorefrontPresentation();
 
 app.MapRazorComponents<StorefrontApp>()
     .AddAdditionalAssemblies(typeof(StarterFoundationViewRegistration).Assembly);

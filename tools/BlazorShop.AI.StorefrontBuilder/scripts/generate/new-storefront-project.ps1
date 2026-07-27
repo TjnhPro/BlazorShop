@@ -65,13 +65,14 @@ $metadata = @(
     "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml",
     "generationMode: starter-copy-before-visual-generation",
     "protectedFiles:",
-    "  - Endpoints/StarterBffEndpoints.cs",
+    "  - BlazorShop.Storefront.Presentation",
     "  - Security/StarterReturnUrlValidator.cs",
     "  - StorefrontPackageVersions.props",
     "featureManifest: Features\feature-manifest.json",
     "packageReferences:",
     "  - BlazorShop.Storefront.Client",
     "  - BlazorShop.Storefront.Runtime",
+    "  - BlazorShop.Storefront.Presentation",
     "  - BlazorShop.Storefront.Components"
 ) -join [Environment]::NewLine
 

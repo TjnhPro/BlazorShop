@@ -19,7 +19,7 @@ This phase group depends on:
 - Existing sample release gate: `scripts/qa/run-storefront-sample-release-gate.ps1`
 - Existing AI guardrails: `docs/storefront-platform/storefront-ai-generator-plan.md`
 - Existing Starter route model: `Pages/Ssr`, `Pages/Hybrid`, `Pages/WasmHost`
-- Existing same-origin BFF pattern: `Endpoints/StarterBffEndpoints.cs`
+- Existing same-origin BFF pattern: generated storefronts use `BlazorShop.Storefront.Presentation` aggregation (`UseStorefrontPresentation()` and `MapStorefrontPresentation()`) instead of generating Starter-specific BFF endpoint files.
 - Existing public API contract standard: `docs/architecture/09-api-contract-standards.md`
 - Existing contract ownership standard: `docs/architecture/10-v2-contract-ownership.md`
 

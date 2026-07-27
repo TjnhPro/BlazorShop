@@ -119,12 +119,12 @@ Migration order:
 
 Endpoint groups currently present:
 
-- `/api/account/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs`; account form route posts were retired from V2 `StorefrontAuthFormEndpoints.cs`
+- `/api/account/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs`; account form route posts were retired from V2 before `StorefrontAuthFormEndpoints.cs` was removed in SPF12.
 - `/api/cart` and `/api/product-selection-preview` in `StorefrontCartEndpoints.cs`
 - `/api/checkout/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs` (successor to the retired V2 `StorefrontCheckoutEndpoints.cs`)
-- `/api/consent/*` in `StorefrontConsentEndpoints.cs`
-- `/api/media/*` in `StorefrontMediaEndpoints.cs`
-- SEO/sitemap/robots helpers in `StorefrontSeoEndpoints.cs`
+- `/api/consent/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs`
+- `/media/*` in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationMediaEndpoints.cs`
+- SEO/sitemap/robots helpers in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationSeoEndpoints.cs`
 
 Local DTOs still mixed into endpoint support:
 

@@ -1,18 +1,12 @@
-namespace BlazorShop.Storefront.Endpoints
+namespace BlazorShop.Storefront.Presentation.Endpoints
 {
-    using BlazorShop.Storefront.Configuration;
-    using BlazorShop.Storefront.Components.Browser;
-    using BlazorShop.Storefront.Services;
-    using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Storefront.Services.Media;
-    using Microsoft.AspNetCore.Antiforgery;
-    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
 
-    using static BlazorShop.Storefront.Endpoints.StorefrontLocalEndpointSupport;
-
-    public static class StorefrontMediaEndpoints
+    public static class StorefrontPresentationMediaEndpoints
     {
-        public static WebApplication MapStorefrontMediaEndpoints(this WebApplication app)
+        public static WebApplication MapStorefrontPresentationMediaEndpoints(this WebApplication app)
         {
             app.MapGet("/media/products/{mediaPublicId:guid}", async (
                 Guid mediaPublicId,

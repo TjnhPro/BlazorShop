@@ -10,6 +10,8 @@ packageDependencies:
     versionProperty: StorefrontClientPackageVersion
   - id: BlazorShop.Storefront.Runtime
     versionProperty: StorefrontRuntimePackageVersion
+  - id: BlazorShop.Storefront.Presentation
+    versionProperty: StorefrontPresentationPackageVersion
 allowedGeneratedZones:
   - Components/Layout
   - Components/Catalog
@@ -27,7 +29,7 @@ managedZones:
 protectedZones:
   - BlazorShop.Storefront.Client/Generated
   - BlazorShop.Storefront.Runtime
-  - Endpoints/StarterBffEndpoints.cs
+  - BlazorShop.Storefront.Presentation
   - Security/StarterReturnUrlValidator.cs
   - StorefrontPackageVersions.props
   - starter-generation.contract.yaml

@@ -281,7 +281,7 @@ namespace BlazorShop.Tests.Architecture
                 "BlazorShop.Storefront.Client",
                 "BlazorShop.Storefront.Runtime",
                 "BlazorShop.Storefront.Components",
-                "Endpoints/StarterBffEndpoints.cs",
+                "BlazorShop.Storefront.Presentation",
                 "Security/StarterReturnUrlValidator.cs",
             })
             {

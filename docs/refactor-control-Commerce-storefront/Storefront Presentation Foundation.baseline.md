@@ -65,18 +65,17 @@ rg -n "MapStorefront|MapStarter|MapGet|MapPost" BlazorShop.PresentationV2/Blazor
 
 V2 endpoint ownership baseline:
 
-- Auth form endpoints: `POST /signin`, `/register`, `/forgot-password`, `/reset-password`, `/logout`, and currency preference through `StorefrontAuthFormEndpoints`; checkout/account form posts are retired in favor of Presentation BFF endpoints.
+- Auth and preference endpoints: `POST /signin`, `/register`, `/forgot-password`, `/reset-password`, `/logout`, and `/currency` now live in `BlazorShop.Storefront.Presentation`.
 - Cart BFF endpoints: `GET /api/cart`, `POST /api/product-selection-preview`, `POST /api/cart/lines`, `PUT /api/cart/lines/{lineId:guid}`, `DELETE /api/cart/lines/{lineId:guid}`, `DELETE /api/cart`, `POST /api/cart/recalculate` now live in `BlazorShop.Storefront.Presentation`.
 - Checkout BFF endpoints: `GET /api/checkout`, `POST /api/checkout/addresses`, `/shipping-method`, `/payment-method`, `/review`, `/place-order` now live in `BlazorShop.Storefront.Presentation`.
 - Account BFF endpoints: profile, addresses, orders, order receipt, and change password under `/api/account/*` now live in `BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs`.
-- Consent endpoints: `GET /api/consent/current`, `POST /api/consent`, `POST /api/consent/revoke`.
+- Consent endpoints: `GET /api/consent/current`, `POST /api/consent`, `POST /api/consent/revoke` now live in `BlazorShop.Storefront.Presentation`.
 - SEO endpoints: `GET /robots.txt`, `GET /sitemap.xml`.
-- Media endpoints: product and asset media proxy routes under `/media/*`.
+- Media endpoints: product and asset media proxy routes under `/media/*` now live in `BlazorShop.Storefront.Presentation`.
 
 Starter endpoint ownership baseline:
 
-- `StarterSeoEndpoints`: `GET /robots.txt`, `GET /sitemap.xml`.
-- `StarterBffEndpoints`: `POST /api/starter/interaction`.
+- Starter endpoint groups have been removed as owners; Starter uses `MapStorefrontPresentation()` for shared browser BFF/SEO/media endpoints.
 
 ## Guardrail Tests Added
 

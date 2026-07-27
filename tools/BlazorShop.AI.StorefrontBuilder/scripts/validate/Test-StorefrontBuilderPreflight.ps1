@@ -113,9 +113,9 @@ if (-not (Test-Path (Resolve-RepoPath $FeatureManifestPath))) {
 
 $hasGeneratedClientProtection = $contract.IndexOf("BlazorShop.Storefront.Client/Generated", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
 $hasRuntimeProtection = $contract.IndexOf("BlazorShop.Storefront.Runtime", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
-$hasBffProtection = $contract.IndexOf("Endpoints/StarterBffEndpoints.cs", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
-if (-not $hasGeneratedClientProtection -or -not $hasRuntimeProtection -or -not $hasBffProtection) {
-    Fail-Preflight "SFB-PRE-014" "Protected path list is incomplete." "Generated client, Runtime, or BFF protected path is missing." "Update the Starter generation contract protectedZones."
+$hasPresentationProtection = $contract.IndexOf("BlazorShop.Storefront.Presentation", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+if (-not $hasGeneratedClientProtection -or -not $hasRuntimeProtection -or -not $hasPresentationProtection) {
+    Fail-Preflight "SFB-PRE-014" "Protected path list is incomplete." "Generated client, Runtime, or Presentation protected path is missing." "Update the Starter generation contract protectedZones."
 }
 
 Write-Host "StorefrontBuilder preflight passed for BlazorShop.Storefront.$Name in mode '$Mode'."
