@@ -1,0 +1,806 @@
+# Storefront Presentation Cutover Completion Todo
+
+Status: Planned
+Source: autoplan after investigate review on 2026-07-27
+Purpose: close the remaining Storefront Presentation foundation gaps before treating V2, Starter, and generated storefronts as true consumers of the shared Storefront application engine.
+
+This plan follows `Storefront Presentation Foundation.todo.md` but does not edit its historical SPF0-SPF15 evidence. The earlier plan records work that was completed at the time; this file records the follow-up blockers found after repo review.
+
+## Current Verified Context
+
+- [x] `BlazorShop.Storefront.Presentation` exists and owns shared App/Routes, route shells, page services, BFF/local endpoints, SEO/discovery, media composition, and view-slot contracts.
+- [x] Architecture docs now state that V2, Starter, and generated storefronts should provide host configuration, registered views, assets, copy, and visual output.
+- [x] `AddStorefrontPresentation()` registers only configuration and consent generated adapters by default:
+  - `GeneratedStorefrontConfigurationClient`
+  - `GeneratedStorefrontConsentClient`
+  - `IStorefrontStoreConfigurationClient`
+  - `IStorefrontConsentClient`
+- [x] Presentation page services and endpoints still require contracts that are not fully registered by `AddStorefrontPresentation()`:
+  - `IStorefrontCatalogClient`
+  - `IStorefrontContentClient`
+  - `IStorefrontCartClient`
+  - `IStorefrontCheckoutClient`
+  - `IStorefrontAddressClient`
+  - `IStorefrontPaymentClient`
+  - `IStorefrontAuthClient`
+  - `IStorefrontCustomerClient`
+  - `IStorefrontSessionResolver`
+  - `IStorefrontDisplayContextProvider`
+  - `IStorefrontPriceFormatter`
+- [x] Several neutral/generated adapter implementations are still in `BlazorShop.Storefront.V2/Services`.
+- [x] V2 service registration currently completes the Presentation DI graph through `AddStorefrontGeneratedClientRegistration()` and V2-specific host registration.
+- [x] Starter calls `AddStorefrontPresentation()` and `AddStorefrontPlatformRuntime()`, but still keeps `StorefrontBootstrapService` and direct generated-client data loading in the home visual view.
+- [x] `StorefrontPageState` supports more states than `StorefrontPage.razor` renders.
+- [x] Several Presentation route pages still manually render `StorefrontSeoHead`, `PageTitle`, `HeadContent`, or call `StorefrontResponseHeaders` directly.
+- [x] V2 and Starter visual views still contain some `PageTitle`/`HeadContent` markup.
+- [x] `StorefrontRoutes.razor` still accepts host `AdditionalAssemblies`, and both V2/Starter register host assemblies as route assemblies.
+- [x] Starter has build/package proof, but not a real HTTP/DI parity proof equivalent to V2 host smoke tests.
+- [x] Some test baselines currently lock transitional behavior, including Starter bootstrap data loading.
+
+## Goal
+
+Make `BlazorShop.Storefront.Presentation` a complete application engine that can be consumed by V2, Starter, and generated storefronts without host-owned duplicate application logic.
+
+After this plan:
+
+- Presentation can resolve its own page services and endpoint dependencies when paired with Runtime.
+- V2 does not own generated-client mapping required by Presentation page services.
+- Starter visual views render Presentation contexts only.
+- Route ownership is locked to Presentation.
+- Visual views cannot own route metadata, SEO head, HTTP status, or crawler headers.
+- V2 and Starter both pass DI validation and HTTP route smoke against the same Presentation route/BFF/SEO/media pipeline.
+- Generated storefronts have a clear package boundary proof path.
+
+## Non-goals
+
+- [ ] Do not change Commerce Node Storefront API route shape.
+- [ ] Do not rewrite cart, checkout, order, payment, pricing, inventory, sellability, or customer account business rules.
+- [ ] Do not redesign V2 or Starter visual layout.
+- [ ] Do not move V2 CSS, final copy, layout markup, or generated visual output into Presentation.
+- [ ] Do not move Runtime server/BFF primitives into browser/WASM.
+- [ ] Do not reintroduce Razor visual wrappers into `Storefront.Components`.
+- [ ] Do not build the AI generator in this phase.
+- [ ] Do not make React/Next/Nuxt skeletons in this phase.
+- [ ] Do not remove host policy hooks that are genuinely host-specific; classify them first.
+
+## Ownership Decision
+
+Use this classification before moving code:
+
+| Capability | Final owner | Notes |
+| --- | --- | --- |
+| Generated Storefront API adapter mapping for Presentation page services | Presentation | Should wrap Runtime facades or generated clients without V2 dependency. |
+| Browser/BFF endpoint support contracts and local response envelopes | Presentation | Shared by V2, Starter, and generated storefronts. |
+| Storefront route shells and page-state orchestration | Presentation | Only Presentation owns `@page`. |
+| SEO/head/crawler/status policy | Presentation | Visual views cannot override noindex/canonical/status. |
+| Current store resolution contract | Presentation | Default implementation may use Runtime context; V2 can override host-specific behavior. |
+| Session/cookie/auth policy | Presentation contract plus host configuration | V2 may configure cookie names/options, but endpoint/page dependencies must be satisfiable outside V2. |
+| Price/display formatting default | Presentation | Host may override through DI if a store needs visual-specific formatting. |
+| V2 visual views/layout/assets/copy | Storefront.V2 | No route ownership. |
+| Starter visual views/layout/assets/copy | Storefront.Starter | No API/data loading in views. |
+| Generated storefront visual views/assets/copy | Storefront.{Name} | Package consumer only. |
+
+## Phase Dependency Map
+
+```text
+SPF16 Baseline and failing guardrails
+  -> SPF17 Presentation adapter ownership cutover
+      -> SPF18 StorefrontPage mandatory orchestration
+          -> SPF19 Route ownership lock
+              -> SPF20 Visual SEO/head cleanup
+                  -> SPF21 Starter second-consumer hardening
+                      -> SPF22 Dependency and package cleanup
+                          -> SPF23 Dual-host QA release gate
+                              -> SPF24 Docs and checklist closure
+```
+
+## Phase SPF16 - Baseline And Failing Guardrails
+
+Goal: add guardrails that describe the desired final state before moving code.
+
+### Baseline Evidence - 2026-07-27
+
+- V2-owned generated adapters still present under `BlazorShop.Storefront.V2/Services`: `GeneratedStorefrontCatalogContentClient`, `GeneratedStorefrontCartClient`, `GeneratedStorefrontCheckoutClient`, `GeneratedStorefrontAddressClient`, and `GeneratedStorefrontPaymentClient`.
+- Presentation page services/endpoints still require unowned or host-registered contracts including catalog/content/cart/checkout/address/payment/auth/customer/session/display/price/current-store services.
+- Host visual views and Presentation route pages still contain transitional `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or direct `StorefrontResponseHeaders` usage.
+- Route assembly discovery is still enabled through `StorefrontPresentationRouteOptions.AdditionalAssemblies` and `AddStorefrontPresentationRoutes(...)`.
+- Starter still contains `StorefrontBootstrapService` and a home view that performs direct bootstrap loading.
+- SPF16 added explicit cutover guardrail test names in `StorefrontPresentationCutoverGuardrailTests`; they are skipped until their target phase implements the final state.
+
+### Tasks
+
+- [ ] Record current adapter ownership inventory:
+  - [ ] all classes under `BlazorShop.Storefront.V2/Services` that implement Presentation contracts.
+  - [ ] all Presentation endpoints/page services that inject contracts not registered by `AddStorefrontPresentation()`.
+  - [ ] all visual views containing `PageTitle`, `HeadContent`, `StorefrontSeoHead`, `StorefrontResponseHeaders`, or `@page`.
+  - [ ] all host route assembly registrations.
+- [ ] Add architecture tests that initially fail or are marked explicit todo until implementation:
+  - [ ] `AddStorefrontPresentation()` registers every contract needed by Presentation page services and endpoints when Runtime is registered.
+  - [ ] `BlazorShop.Storefront.V2/Services` does not contain generated adapter classes implementing Presentation contracts.
+  - [ ] Starter visual pages do not inject generated client, Runtime data facades, or `StorefrontBootstrapService`.
+  - [ ] no `.razor` file outside `BlazorShop.Storefront.Presentation/Pages` contains `@page`.
+  - [ ] no host visual view contains `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or `StorefrontResponseHeaders`.
+  - [ ] `StorefrontRoutes.razor` does not use host `AdditionalAssemblies` for route discovery.
+- [ ] Add DI validation tests:
+  - [ ] build service provider with Runtime + Presentation + V2 view registration.
+  - [ ] resolve every Presentation page service.
+  - [ ] resolve every Presentation local endpoint dependency contract.
+  - [ ] build service provider with Runtime + Presentation + Starter view registration.
+  - [ ] resolve the same services/contracts for Starter.
+- [ ] Add test names that make transitional state explicit:
+  - [ ] `StorefrontPresentation_DIGraph_IsHostIndependent`
+  - [ ] `StorefrontVisualViews_DoNotOwnRoutesOrSeoHead`
+  - [ ] `StorefrontStarter_ViewsRenderPresentationContextsOnly`
+  - [ ] `StorefrontRoutes_ArePresentationAssemblyOnly`
+
+### Files likely touched
+
+- `BlazorShop.Tests.V2/Architecture/StorefrontPresentationFoundationBoundaryTests.cs`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontPageCompositionGuardrailTests.cs`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontIndependenceBoundaryTests.cs`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
+
+### Verification
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontIndependence"
+```
+
+### Exit criteria
+
+- [ ] Gaps are locked by tests.
+- [ ] No behavior has been moved yet.
+- [ ] Transitional expected failures are clearly isolated to this cutover plan.
+
+## Phase SPF17 - Presentation Adapter Ownership Cutover
+
+Goal: make Presentation own the neutral application adapter graph instead of depending on V2 registration.
+
+### Design decision
+
+Prefer Presentation adapters backed by Runtime facades, not direct duplication of V2 manual HTTP transport.
+
+Reason:
+
+- Runtime already owns generated client registration and capability-scoped facades.
+- Presentation owns page/BFF contracts that adapt Runtime results into browser/page contexts.
+- V2 should not need to reference `Storefront.Client` just to satisfy Presentation.
+
+### Tasks
+
+- [ ] Move or recreate neutral adapters in `BlazorShop.Storefront.Presentation/Services`:
+  - [ ] catalog/content adapter backed by `IStorefrontRuntimeCatalogFacade`, `IStorefrontRuntimeContentFacade`, `IStorefrontRuntimeNavigationFacade`, and `IStorefrontRuntimeSeoFacade`.
+  - [ ] cart adapter backed by `IStorefrontRuntimeCartFacade`.
+  - [ ] checkout adapter backed by `IStorefrontRuntimeCheckoutFacade`.
+  - [ ] address adapter backed by `IStorefrontRuntimeAddressFacade`.
+  - [ ] payment adapter backed by `IStorefrontRuntimePaymentFacade`.
+  - [ ] store configuration adapter already exists; keep and verify.
+  - [ ] consent adapter already exists; keep and verify.
+- [ ] Replace V2-owned generated adapter registrations for Presentation contracts:
+  - [ ] remove `GeneratedStorefrontCatalogContentClient` registration from V2 service extension.
+  - [ ] remove `GeneratedStorefrontCartClient` registration from V2 service extension.
+  - [ ] remove `GeneratedStorefrontCheckoutClient` registration from V2 service extension.
+  - [ ] remove `GeneratedStorefrontAddressClient` registration from V2 service extension.
+  - [ ] remove `GeneratedStorefrontPaymentClient` registration from V2 service extension.
+  - [ ] keep V2 registrations only for truly V2-local services.
+- [ ] Classify and migrate default host support services:
+  - [ ] `IStorefrontDisplayContextProvider`: default Presentation implementation from current store/configuration/currency runtime state.
+  - [ ] `IStorefrontPriceFormatter`: default Presentation implementation using public currency/culture options.
+  - [ ] `IStorefrontSessionResolver`: Presentation contract with default same-origin/session implementation; V2 may override only if host policy needs it.
+  - [ ] `IStorefrontAuthClient`: Presentation adapter using Runtime account/auth capability or a documented host-specific implementation if Runtime lacks the operation.
+  - [ ] `IStorefrontCustomerClient`: Presentation adapter using Runtime account/customer capability.
+  - [ ] `IStorefrontCurrentStoreProvider`: Presentation default based on Runtime context/store current response; V2 can override resolution policy.
+- [ ] If Runtime lacks a facade method needed by Presentation:
+  - [ ] add the method to Runtime using generated client.
+  - [ ] keep business rules in Commerce Node.
+  - [ ] add focused Runtime facade tests.
+- [ ] Update `AddStorefrontPresentation()`:
+  - [ ] register all default adapters with `TryAddScoped`.
+  - [ ] allow V2/Starter/generated hosts to override via DI before/after with documented order.
+  - [ ] fail clearly if Runtime has not been registered.
+- [ ] Delete or deprecate V2 adapter files only after tests pass.
+- [ ] Update endpoint/page service tests to assert contract dependencies are satisfied by Presentation registration.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
+
+### Verification
+
+```powershell
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRuntime|FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontEndpointDependency"
+```
+
+### Exit criteria
+
+- [ ] Presentation + Runtime can satisfy Presentation services without V2 adapter registration.
+- [ ] V2 no longer owns generated adapter implementations required by Presentation.
+- [ ] Starter can resolve Presentation page/BFF graph without `StorefrontBootstrapService`.
+- [ ] No browser/WASM project references Runtime or Client.
+
+## Phase SPF18 - StorefrontPage Mandatory Orchestration
+
+Goal: make `StorefrontPage.razor` the one route-state/head/status wrapper for Presentation route shells.
+
+### Tasks
+
+- [ ] Extend `StorefrontPage.razor` to handle all `StorefrontPageState` cases:
+  - [ ] `LoadingState`
+  - [ ] `Ready<TContext>`
+  - [ ] `EmptyState`
+  - [ ] `NotFoundState`
+  - [ ] `ServiceUnavailableState`
+  - [ ] `UnauthorizedState`
+  - [ ] `MaintenanceState`
+  - [ ] `ErrorState`
+- [ ] Add optional render fragments or view-set hooks for:
+  - [ ] loading state.
+  - [ ] empty state.
+  - [ ] unauthorized/private state.
+  - [ ] maintenance state.
+  - [ ] service unavailable state.
+  - [ ] not found state.
+  - [ ] error state.
+- [ ] Move SEO/head composition into `StorefrontPage`:
+  - [ ] document title.
+  - [ ] description.
+  - [ ] robots.
+  - [ ] canonical.
+  - [ ] structured data hook.
+  - [ ] alternate/hreflang hook if already modeled.
+- [ ] Move status/header application into `StorefrontPage`:
+  - [ ] 200/explicit status for ready.
+  - [ ] 404 not found.
+  - [ ] 503 service unavailable/maintenance.
+  - [ ] noindex/nofollow private pages.
+  - [ ] private cache-control.
+- [ ] Convert Presentation route pages to use `StorefrontPage`:
+  - [ ] home.
+  - [ ] category.
+  - [ ] product.
+  - [ ] search.
+  - [ ] todays deals.
+  - [ ] new releases.
+  - [ ] content page.
+  - [ ] cart.
+  - [ ] checkout.
+  - [ ] payment result.
+  - [ ] account route.
+  - [ ] auth routes.
+  - [ ] maintenance.
+  - [ ] not-found catch-all.
+- [ ] Route pages should only:
+  - [ ] bind route/query parameters.
+  - [ ] call one page service.
+  - [ ] pass state/context to `StorefrontPage`.
+  - [ ] select the registered view slot.
+- [ ] Add tests proving route pages no longer call `StorefrontResponseHeaders` directly.
+- [ ] Add tests proving route pages no longer render `StorefrontSeoHead`, `PageTitle`, or `HeadContent` directly except inside `StorefrontPage`.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/PagePatterns/StorefrontPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/PagePatterns/StorefrontPageState.cs`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/**/*RoutePage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/*`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontPageCompositionGuardrailTests.cs`
+
+### Verification
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontIndexingPolicy|FullyQualifiedName~StorefrontPresentation"
+```
+
+### Exit criteria
+
+- [ ] Every Presentation route page uses `StorefrontPage` or an equivalent single base/wrapper.
+- [ ] Route pages no longer duplicate SEO/status/noindex handling.
+- [ ] All `StorefrontPageState` cases render intentionally.
+
+## Phase SPF19 - Route Ownership Lock
+
+Goal: ensure hosts cannot accidentally become route owners.
+
+### Tasks
+
+- [ ] Remove host route assembly discovery from `StorefrontRoutes.razor`.
+- [ ] Remove `StorefrontPresentationRouteOptions.AdditionalAssemblies` if it is no longer needed.
+- [ ] Remove or obsolete `AddStorefrontPresentationRoutes(...)`.
+- [ ] Update V2 view registration:
+  - [ ] keep `AddV2FoundationViews()`.
+  - [ ] stop calling `AddStorefrontPresentationRoutes(typeof(V2FoundationViewRegistration).Assembly)`.
+- [ ] Update Starter view registration:
+  - [ ] keep `AddStarterFoundationViews()`.
+  - [ ] stop calling `AddStorefrontPresentationRoutes(typeof(Program).Assembly)`.
+- [ ] Keep `MapRazorComponents<StorefrontApp>()` host assembly registration only for visual component discovery/rendering, not route discovery.
+- [ ] Add guardrail:
+  - [ ] only `BlazorShop.Storefront.Presentation/Pages` may contain `@page`.
+  - [ ] `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, `BlazorShop.Storefront.V2.WASM`, and generated storefront source must not contain `@page`.
+  - [ ] generated storefront validation fails if generated visual files contain `@page`.
+- [ ] Update StorefrontBuilder docs/contracts so generated projects register view slots, not route assemblies.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Routing/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs`
+- `tools/BlazorShop.AI.StorefrontBuilder/*`
+- `scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
+
+### Verification
+
+```powershell
+rg -n "^@page" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.Starter BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM -g "*.razor"
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontBuilder"
+```
+
+Expected `rg` result after this phase: no matches outside Presentation route pages.
+
+### Exit criteria
+
+- [ ] Presentation is the only route owner.
+- [ ] V2/Starter/generated storefronts can add visual components without adding routes.
+- [ ] Route discovery cannot drift by adding `@page` in host projects.
+
+## Phase SPF20 - Visual SEO And Head Cleanup
+
+Goal: visual views cannot override route SEO, noindex, canonical, or HTTP status.
+
+### Tasks
+
+- [ ] Remove `PageTitle` and `HeadContent` from V2 visual views:
+  - [ ] cart view.
+  - [ ] checkout view.
+  - [ ] payment result view.
+  - [ ] account host view if present.
+  - [ ] any remaining catalog/content/system visual view.
+- [ ] Remove `PageTitle` and `HeadContent` from Starter visual views:
+  - [ ] cart view.
+  - [ ] checkout view.
+  - [ ] payment result view.
+  - [ ] account host view.
+  - [ ] any remaining content/system visual view.
+- [ ] Keep brand/root metadata in host `ApplicationHead` only:
+  - [ ] favicon.
+  - [ ] theme color.
+  - [ ] root CSS.
+  - [ ] static host metadata that is not route SEO.
+- [ ] Move all route-specific SEO/noindex data into Presentation page service output:
+  - [ ] cart noindex/nofollow.
+  - [ ] checkout noindex/nofollow.
+  - [ ] payment result noindex/nofollow.
+  - [ ] account noindex/nofollow.
+  - [ ] auth noindex/nofollow.
+  - [ ] search noindex/canonical behavior.
+  - [ ] product/category/home/content index/canonical behavior.
+- [ ] Add tests:
+  - [ ] visual views do not contain head/status components.
+  - [ ] private/application routes still emit noindex/nofollow.
+  - [ ] product/category/content routes still emit expected canonical metadata.
+  - [ ] maintenance/service unavailable still emit 503 and noindex.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/**/*.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/**/*.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/**/*.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/**/*PageService.cs`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/PagePatterns/StorefrontPage.razor`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
+
+### Verification
+
+```powershell
+rg -n "PageTitle|HeadContent|StorefrontSeoHead|StorefrontResponseHeaders" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.Starter -g "*.razor" -g "*.cs"
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontIndexingPolicy|FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontV2HostSmoke"
+```
+
+Expected `rg` result after this phase:
+
+- no `PageTitle`, `HeadContent`, or `StorefrontSeoHead` in host visual views.
+- `StorefrontResponseHeaders` only in Presentation policy/middleware or V2 host middleware where it is truly host pipeline behavior.
+
+### Exit criteria
+
+- [ ] SEO/head/status ownership is Presentation-only for route pages.
+- [ ] Host views cannot accidentally index cart/checkout/account.
+- [ ] V2 visual output remains visually equivalent.
+
+## Phase SPF21 - Starter Second Consumer Hardening
+
+Goal: Starter becomes a true consumer of Presentation page contexts, not a separate data loader.
+
+### Tasks
+
+- [ ] Remove `StorefrontBootstrapService` from Starter.
+- [ ] Remove direct generated client usage from Starter views.
+- [ ] Remove direct Runtime data facade usage from Starter visual pages unless the component is explicitly a server-only host extension.
+- [ ] Convert `Pages/Ssr/Home/HomePage.razor`:
+  - [ ] remove `BootstrapService`.
+  - [ ] remove direct `StorefrontOptions` display if the same information exists in `StorefrontHomePageContext`.
+  - [ ] render `Context.FeaturedProducts` or equivalent Presentation home context product data.
+  - [ ] render store identity from Presentation context.
+  - [ ] render feature visibility from a context/capability projection provided by Presentation, not by direct API fetch in the view.
+- [ ] Review all Starter visual views:
+  - [ ] each has `[Parameter, EditorRequired] public ... Context`.
+  - [ ] no `OnInitializedAsync` data fetch.
+  - [ ] no generated client injection.
+  - [ ] no Runtime facade injection for page data.
+  - [ ] only visual services like feature manifest/copy helpers remain if they do not call Commerce Node.
+- [ ] Keep Starter feature manifest as visual placement metadata only.
+- [ ] If Starter needs feature capability state, add it to Presentation context model rather than fetching inside visual view.
+- [ ] Add tests:
+  - [ ] Starter views render context only.
+  - [ ] Starter has no `StorefrontBootstrapService`.
+  - [ ] Starter source contains no `BlazorShop.Storefront.Client` usage unless it is a package reference required by Runtime/package proof.
+  - [ ] Starter does not inject generated client interfaces.
+  - [ ] Starter home view uses `StorefrontHomePageContext`.
+- [ ] Add HTTP parity proof:
+  - [ ] start Starter via `WebApplicationFactory<BlazorShop.Storefront.Starter.Program>`.
+  - [ ] stub Commerce Node responses through configured test handler/runtime.
+  - [ ] GET `/` renders home with fixture store/product data.
+  - [ ] GET `/product/{slug}` renders product.
+  - [ ] GET `/category/{slug}` renders category.
+  - [ ] GET `/search?q=...` renders noindex search page.
+  - [ ] GET `/my-cart` renders cart route shell.
+  - [ ] GET `/checkout` renders checkout route shell.
+  - [ ] GET `/account` renders account route shell.
+  - [ ] GET `/robots.txt` and `/sitemap.xml` use Presentation endpoints.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/**/*.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Features/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontHomePageService.cs`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/*Context*`
+- `BlazorShop.Tests.V2/Architecture/StorefrontStarterFoundationBoundaryTests.cs`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontStarterHostSmokeTests.cs`
+
+### Verification
+
+```powershell
+rg -n "StorefrontBootstrapService|IStorefrontStoreClient|IStorefrontConfigurationClient|IStorefrontCatalogClient|Storefront\\.Client|OnInitializedAsync" BlazorShop.PresentationV2/BlazorShop.Storefront.Starter -g "*.cs" -g "*.razor"
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontStarter|FullyQualifiedName~StorefrontPresentation"
+```
+
+Expected `rg` result after this phase:
+
+- no `StorefrontBootstrapService`.
+- no direct generated client interface injection in Starter source.
+- `Storefront.Client` may remain only in package metadata if package proof still requires it, or be removed in SPF22 if no direct Starter use remains.
+
+### Exit criteria
+
+- [ ] Starter visual views render only Presentation contexts.
+- [ ] Starter proves Presentation can power a second host.
+- [ ] Starter does not maintain a parallel home/catalog data path.
+
+## Phase SPF22 - Dependency And Package Cleanup
+
+Goal: remove stale dependency edges after adapter and Starter cutover.
+
+### Target shape
+
+```text
+BlazorShop.Storefront.V2
+  -> ServiceDefaults
+  -> Storefront.Presentation
+  -> Storefront.Runtime
+  -> Storefront.Components
+  -> Storefront.V2.WASM
+
+BlazorShop.Storefront.Starter
+  -> Storefront.Presentation package/project during monorepo development
+  -> Storefront.Runtime package
+  -> Storefront.Components package if visual contracts are used
+
+BlazorShop.Storefront.Presentation
+  -> Storefront.Runtime
+  -> Storefront.Components
+
+BlazorShop.Storefront.Runtime
+  -> Storefront.Client
+```
+
+### Tasks
+
+- [ ] Remove `BlazorShop.Storefront.Client` project reference from V2 if no V2 source uses generated client directly.
+- [ ] Remove `BlazorShop.Storefront.Client` package reference from Starter if Starter no longer directly compiles against generated DTO/client types.
+- [ ] Keep `Storefront.Runtime -> Storefront.Client`.
+- [ ] Keep `Storefront.Presentation -> Storefront.Runtime`.
+- [ ] Decide whether Starter should consume `Storefront.Presentation` as:
+  - [ ] `ProjectReference` in monorepo development only.
+  - [ ] `PackageReference` in independent proof.
+  - [ ] generated project always package reference.
+- [ ] Align tests with the chosen mode:
+  - [ ] monorepo source build allows ProjectReference to Presentation if documented.
+  - [ ] independent package proof rewrites/uses PackageReference for Presentation.
+  - [ ] no test simultaneously requires and rejects the same reference mode.
+- [ ] Update package version props:
+  - [ ] Client package.
+  - [ ] Runtime package.
+  - [ ] Presentation package.
+  - [ ] Components package if still needed.
+- [ ] Run package proof:
+  - [ ] pack Client.
+  - [ ] pack Runtime.
+  - [ ] pack Presentation.
+  - [ ] pack Components if consumed by Starter/generated.
+  - [ ] restore Starter or generated proof from local feed.
+  - [ ] build restored project with no source fallback.
+- [ ] Add guardrails:
+  - [ ] V2 no direct `BlazorShop.Storefront.Client` reference.
+  - [ ] Starter no direct `BlazorShop.Storefront.Client` usage in source.
+  - [ ] generated storefront no direct backend/core/API references.
+  - [ ] generated storefront no V2 reference.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StorefrontPackageVersions.props`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/nuget.config`
+- `scripts/qa/run-storefront-foundation-isolation-gate.ps1`
+- `scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- `BlazorShop.Tests.V2/Architecture/*`
+
+### Verification
+
+```powershell
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore
+.\scripts\qa\run-storefront-foundation-isolation-gate.ps1
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1
+```
+
+### Exit criteria
+
+- [ ] V2 does not depend on generated Client directly unless a documented V2-only exception remains.
+- [ ] Starter has no direct generated-client source usage.
+- [ ] Independent package proof consumes the same platform surface a generated storefront will consume.
+- [ ] Architecture tests no longer conflict on Starter Presentation reference mode.
+
+## Phase SPF23 - Dual-host QA Release Gate
+
+Goal: prove V2 and Starter both run against the same Presentation application surface.
+
+### V2 test gate
+
+- [ ] Build:
+  - [ ] `Storefront.Client`
+  - [ ] `Storefront.Runtime`
+  - [ ] `Storefront.Components`
+  - [ ] `Storefront.Presentation`
+  - [ ] `Storefront.V2.WASM`
+  - [ ] `Storefront.V2`
+- [ ] Focused unit/architecture tests:
+  - [ ] Storefront independence boundary.
+  - [ ] Presentation foundation boundary.
+  - [ ] Runtime facade tests.
+  - [ ] Page composition guardrails.
+  - [ ] BFF endpoint boundary tests.
+  - [ ] OpenAPI generated client hardening tests.
+- [ ] V2 host smoke tests:
+  - [ ] home.
+  - [ ] category.
+  - [ ] product.
+  - [ ] search noindex.
+  - [ ] cart.
+  - [ ] checkout.
+  - [ ] account.
+  - [ ] auth/recovery/register disabled.
+  - [ ] payment result.
+  - [ ] robots.
+  - [ ] sitemap.
+  - [ ] maintenance/service unavailable.
+- [ ] Playwright release E2E:
+  - [ ] product browse.
+  - [ ] add to cart.
+  - [ ] update cart.
+  - [ ] checkout COD real order placement.
+  - [ ] order placed message/SMTP capture if configured.
+  - [ ] account order list/detail.
+  - [ ] recovery flow.
+  - [ ] no direct browser call to Commerce Node.
+
+### Starter test gate
+
+- [ ] Build:
+  - [ ] `Storefront.Starter`.
+- [ ] Starter DI validation:
+  - [ ] all Presentation page services resolve.
+  - [ ] all Presentation endpoint dependencies resolve.
+  - [ ] all registered view slots validate context parameter.
+- [ ] Starter HTTP smoke:
+  - [ ] `/`
+  - [ ] `/category/{slug}`
+  - [ ] `/product/{slug}`
+  - [ ] `/search?q=...`
+  - [ ] `/my-cart`
+  - [ ] `/checkout`
+  - [ ] `/account`
+  - [ ] `/pages/{slug}`
+  - [ ] `/maintenance`
+  - [ ] `/robots.txt`
+  - [ ] `/sitemap.xml`
+- [ ] Starter package proof:
+  - [ ] local feed restore.
+  - [ ] build outside direct V2 references.
+  - [ ] no generated source copy.
+
+### Generated storefront proof
+
+- [ ] StorefrontBuilder isolation gate passes.
+- [ ] Generated proof consumes Client/Runtime/Presentation packages.
+- [ ] Generated proof has no `@page` outside generated host rules if any are allowed; preferred no route pages.
+- [ ] Generated proof does not reference V2, backend/core/API projects, `Web.SharedV2`, Control Plane, or Commerce Node API.
+- [ ] Generated proof browser-safe code calls same-origin BFF only.
+
+### Verification commands
+
+```powershell
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore
+dotnet build BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontPageComposition|FullyQualifiedName~StorefrontIndependence|FullyQualifiedName~StorefrontStarter|FullyQualifiedName~StorefrontRuntime|FullyQualifiedName~StorefrontBuilder"
+.\scripts\qa\run-storefront-foundation-isolation-gate.ps1
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1
+```
+
+Playwright commands should use the current release checklist and local runner:
+
+```powershell
+.\scripts\run-v2-local.ps1 -StopExisting
+.\scripts\qa\run-storefront-registration-policy-e2e.ps1 -Headless
+.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless
+```
+
+### Exit criteria
+
+- [ ] V2 passes production-facing browser QA.
+- [ ] Starter passes DI + HTTP route smoke as second consumer.
+- [ ] Generated proof passes package/isolation gates.
+- [ ] No direct browser call to Commerce Node appears in network audit.
+- [ ] COD order placement still works through Presentation BFF + Runtime + Commerce Node.
+
+## Phase SPF24 - Documentation And Checklist Closure
+
+Goal: make architecture docs and QA checklists match the final code shape.
+
+### Tasks
+
+- [ ] Update `AGENTS.md` if any boundary wording changes.
+- [ ] Update `docs/architecture/03-runtime-boundaries.md`:
+  - [ ] Presentation owns route/page/BFF/SEO/media application graph.
+  - [ ] Runtime remains server/BFF-only generated client integration.
+  - [ ] V2 owns host config/views/assets/copy.
+  - [ ] Starter/generated own host config/views/assets/copy.
+  - [ ] route ownership is Presentation-only.
+- [ ] Update `docs/architecture/05-project-and-folder-guide.md`:
+  - [ ] exact final dependency shape.
+  - [ ] no route pages in V2/Starter/generated.
+  - [ ] no visual head/status ownership in hosts.
+- [ ] Update `docs/architecture/10-v2-contract-ownership.md`:
+  - [ ] Presentation local endpoint contracts.
+  - [ ] Runtime facade contract usage.
+  - [ ] no generated client direct use in host views.
+- [ ] Update `docs/architecture/11-storefront-builder.md`:
+  - [ ] generated storefronts register view slots.
+  - [ ] generated storefronts do not generate route/BFF/SEO logic.
+  - [ ] package proof includes Presentation.
+- [ ] Update `docs/visual-reverse-engineering-skill/*`:
+  - [ ] generated project route rules.
+  - [ ] visual-only view ownership.
+  - [ ] protected files/areas.
+- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
+  - [ ] route ownership checks.
+  - [ ] V2 browser e2e checks.
+  - [ ] no direct Commerce Node browser call.
+  - [ ] no visual `HeadContent`.
+- [ ] Add or update a QA checklist for Starter if needed:
+  - [ ] DI validation.
+  - [ ] HTTP route smoke.
+  - [ ] package proof.
+- [ ] Add completion notes to this file with command output summary.
+
+### Verification
+
+```powershell
+rg -n "V2 owns route|Starter owns route|AddStorefrontPresentationRoutes|AdditionalAssemblies|StorefrontBootstrapService|manual StorefrontApiClient transport from Storefront V2" AGENTS.md docs BlazorShop.PresentationV2 -g "*.md" -g "*.cs" -g "*.razor" -g "!bin" -g "!obj"
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~Architecture|FullyQualifiedName~Storefront"
+```
+
+### Exit criteria
+
+- [ ] Current docs no longer conflict with final code.
+- [ ] Historical plans remain historical and are not treated as current truth when conflicting.
+- [ ] QA checklist can be used as a production release gate.
+
+## Final Definition Of Done
+
+### Ownership
+
+- [ ] Presentation owns all route shells, page-state orchestration, page services, BFF/local endpoint mappings, route SEO/head/status, sitemap, robots, and media endpoint composition.
+- [ ] Runtime owns generated client registration, typed generated-client facades, error mapping, and server/BFF integration primitives.
+- [ ] V2 owns host config, host pipeline, static assets, view registration, visual templates, layout, copy, and V2 WASM component placement.
+- [ ] Starter owns neutral host config, view registration, visual templates, layout, copy, and starter feature placement metadata.
+- [ ] Generated storefronts own generated/custom host config, views, assets, copy, and visual output only.
+
+### Dependencies
+
+- [ ] Presentation references Runtime and Components only.
+- [ ] Runtime references Client only.
+- [ ] Components references no Presentation/Runtime/Client/V2/backend projects and contains no Razor visual wrappers.
+- [ ] V2 does not reference Client directly unless a documented temporary exception remains.
+- [ ] Starter source does not use generated Client directly after Bootstrap removal.
+- [ ] V2.WASM does not reference Presentation, Runtime, or Client.
+- [ ] Generated storefronts do not reference V2, backend/core/API projects, or `Web.SharedV2`.
+
+### Routing and SEO
+
+- [ ] Only Presentation route pages contain `@page`.
+- [ ] Host visual views contain no `PageTitle`, `HeadContent`, `StorefrontSeoHead`, or route status/header calls.
+- [ ] `StorefrontPage` handles all page states intentionally.
+- [ ] Private/application routes remain noindex/nofollow.
+- [ ] Product/category/content/home routes keep canonical SEO.
+- [ ] Maintenance/service unavailable routes keep 503 and noindex behavior where appropriate.
+
+### Consumer proof
+
+- [ ] V2 and Starter both use the same Presentation App/Routes/page services/BFF/SEO/media pipeline.
+- [ ] Fixing route or BFF behavior in Presentation benefits both consumers.
+- [ ] Starter home/catalog/product/search/cart/checkout/account routes run without direct Starter data loading.
+- [ ] Generated proof consumes package boundaries and passes isolation gate.
+
+### QA
+
+- [ ] Focused build commands pass.
+- [ ] Architecture and boundary tests pass.
+- [ ] V2 host smoke tests pass or are updated to current Presentation behavior.
+- [ ] Starter host smoke tests pass.
+- [ ] StorefrontBuilder package/isolation gates pass.
+- [ ] Playwright release flows pass, including COD real order placement.
+- [ ] Browser network audit confirms no direct Commerce Node calls.
+
+## Risk Controls
+
+- [ ] Move adapters capability by capability; do not move all runtime mapping in one untested pass.
+- [ ] Keep Runtime facade behavior unchanged while moving ownership.
+- [ ] Add characterization tests before deleting V2 adapter files.
+- [ ] Do not move visual markup/copy into Presentation to simplify tests.
+- [ ] Do not let Starter call generated clients from views as a shortcut.
+- [ ] Do not remove V2 `Storefront.Client` reference until `rg` proves no source usage remains.
+- [ ] Do not remove route assembly support until all hosts prove visual slot rendering still works.
+- [ ] Keep browser Playwright QA after structural refactor because build tests will not catch hydration/BFF regressions.
+
+## Decision Audit Trail
+
+| # | Phase | Decision | Classification | Principle | Rationale | Rejected |
+|---|-------|----------|----------------|-----------|-----------|----------|
+| 1 | Scope | Add a follow-up cutover plan instead of reopening SPF0-SPF15 history | Auto-decided | Traceability | SPF0-SPF15 contains historical evidence; new blockers should be tracked as explicit completion work. | Rewrite old plan evidence |
+| 2 | Adapter ownership | Presentation should own default adapters needed by its own page services/endpoints | Auto-decided | Boundary clarity | A shared application engine cannot depend on V2-only registration to resolve its core graph. | Keep adapters in V2 and require every host to reimplement them |
+| 3 | Adapter implementation | Prefer Runtime-backed Presentation adapters | Auto-decided | Avoid duplication | Runtime already owns generated-client/server integration; Presentation should adapt Runtime outputs to page/BFF contracts. | Copy V2 manual transport into Presentation |
+| 4 | Route ownership | Only Presentation should contain `@page` | Auto-decided | Maintainability | Hosts are visual implementations; letting host assemblies provide routes makes ownership hard to inspect. | Continue scanning host AdditionalAssemblies |
+| 5 | SEO/head ownership | Visual views must not render route head/status metadata | Auto-decided | Production safety | Cart/checkout/account noindex and canonical rules must not be overrideable by theme accident. | Allow themes to own PageTitle/HeadContent |
+| 6 | Starter proof | Starter must render Presentation contexts only | Auto-decided | Consumer proof | A second consumer is not proven if Starter separately fetches the same data. | Keep StorefrontBootstrapService as Starter-specific shortcut |
+| 7 | QA | Require V2 and Starter HTTP/DI proof plus Playwright release flows | Auto-decided | Real failure detection | Build-only tests already missed DI/route ownership gaps; browser/BFF behavior needs runtime proof. | Treat architecture tests as sufficient |
