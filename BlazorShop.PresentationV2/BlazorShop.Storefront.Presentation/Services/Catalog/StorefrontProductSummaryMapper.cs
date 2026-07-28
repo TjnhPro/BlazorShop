@@ -17,7 +17,8 @@ public static class StorefrontProductSummaryMapper
         var displayCurrencyCode = NormalizeCurrencyCode(product.DisplayCurrencyCode) ?? displayContext.DefaultCurrencyCode;
         var displayPrice = product.DisplayPrice ?? product.Price;
         var comparePrice = product.DisplayComparePrice ?? product.ComparePrice;
-        var canAddDirectly = !product.HasVariants && product.Purchasable && QuantityOneAllowed(product);
+        var purchasePaused = product.PurchaseBlockReasons.Contains("purchase_disabled", StringComparer.Ordinal);
+        var canAddDirectly = !product.HasVariants && product.Purchasable && !product.PurchaseBlockReasons.Any(IsDirectAddHardBlock) && QuantityOneAllowed(product);
         var directAddStockValue = product.ManageStock ? Math.Max(0, product.AvailableQuantity ?? product.Quantity) : 999999;
 
         return new ProductSummaryItem(
@@ -41,7 +42,8 @@ public static class StorefrontProductSummaryMapper
             displayPrice.ToString("0.00", CultureInfo.InvariantCulture),
             displayCurrencyCode,
             directAddStockValue,
-            PurchaseBlockMessage(product));
+            PurchaseBlockMessage(product),
+            purchasePaused);
     }
 
     private static bool QuantityOneAllowed(GetCatalogProduct product)
@@ -61,6 +63,17 @@ public static class StorefrontProductSummaryMapper
             _ => "Currently unavailable.",
         };
     }
+
+    private static bool IsDirectAddHardBlock(string reason) =>
+        reason is "not_visible"
+            or "not_published"
+            or "not_started"
+            or "expired"
+            or "purchase_disabled"
+            or "variant_inactive"
+            or "out_of_stock"
+            or "not_enough_stock"
+            or "above_max_quantity";
 
     private static string? NormalizeCurrencyCode(string? currencyCode)
     {

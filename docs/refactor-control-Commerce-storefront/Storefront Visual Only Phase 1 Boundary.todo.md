@@ -763,7 +763,7 @@ Goal: V2 product and product-card views render decisions prepared by Presentatio
 
 Current note: Presentation already has product mappers. This phase should consolidate existing mapper logic and remove V2 duplication, not create a second product business layer.
 
-- [ ] Extend Presentation product context/view models:
+- [x] Extend Presentation product context/view models:
 
 ```csharp
 StorefrontProductPageContext
@@ -775,51 +775,62 @@ StorefrontProductBadgeView
 StorefrontProductNavigationView
 ```
 
-- [ ] Presentation supplies:
-  - [ ] `CanAddToCart`.
-  - [ ] `AvailabilityState`.
-  - [ ] `AvailabilityLabel`.
-  - [ ] `StockLabel`.
-  - [ ] `PriceDisplay`.
-  - [ ] `ComparePriceDisplay`.
-  - [ ] `DefaultSkuLabel`.
-  - [ ] `DefaultGtinLabel`.
-  - [ ] `PurchaseMessage`.
-  - [ ] `PurchaseBlockMessage`.
-  - [ ] `MinQuantity`.
-  - [ ] `MaxQuantity`.
-  - [ ] `InitialStockValue`.
-  - [ ] variant option labels/prices/stock labels.
-  - [ ] fresh/new badge state.
-- [ ] Presentation catalog summary mapper supplies direct-add/card decisions:
-  - [ ] purchase paused.
-  - [ ] direct add allowed.
-  - [ ] direct add stock value.
-  - [ ] purchase block message.
-  - [ ] formatted display/compare prices.
-- [ ] V2 only controls:
-  - [ ] CSS class by `AvailabilityState`.
-  - [ ] badge placement.
-  - [ ] gallery layout.
-  - [ ] variant list layout.
-  - [ ] non-business visual copy.
-- [ ] Remove from V2 direct reads/calculations:
-  - [ ] `PurchaseBlockReasons`.
-  - [ ] `ManageStock`.
-  - [ ] `AvailableQuantity`.
-  - [ ] `MinOrderQuantity`.
-  - [ ] `MaxOrderQuantity`.
-  - [ ] `EffectivePrice` fallback.
-  - [ ] raw variant stock interpretation.
-  - [ ] raw fresh-arrival date arithmetic.
-- [ ] Add tests:
-  - [ ] mapper converts purchase block reason to display message.
-  - [ ] mapper sets add-to-cart disabled for hard block.
-  - [ ] mapper formats compare price only when greater than display price.
-  - [ ] mapper handles unmanaged stock.
-  - [ ] V2 product view no longer references raw business fields.
-- [ ] Exit criteria:
-  - [ ] V2 product views consume prepared context only.
+- [x] Presentation supplies:
+  - [x] `CanAddToCart`.
+  - [x] `AvailabilityState`.
+  - [x] `AvailabilityLabel`.
+  - [x] `StockLabel`.
+  - [x] `PriceDisplay`.
+  - [x] `ComparePriceDisplay`.
+  - [x] `DefaultSkuLabel`.
+  - [x] `DefaultGtinLabel`.
+  - [x] `PurchaseMessage`.
+  - [x] `PurchaseBlockMessage`.
+  - [x] `MinQuantity`.
+  - [x] `MaxQuantity`.
+  - [x] `InitialStockValue`.
+  - [x] variant option labels/prices/stock labels.
+  - [x] fresh/new badge state.
+- [x] Presentation catalog summary mapper supplies direct-add/card decisions:
+  - [x] purchase paused.
+  - [x] direct add allowed.
+  - [x] direct add stock value.
+  - [x] purchase block message.
+  - [x] formatted display/compare prices.
+- [x] V2 only controls:
+  - [x] CSS class by `AvailabilityState`.
+  - [x] badge placement.
+  - [x] gallery layout.
+  - [x] variant list layout.
+  - [x] non-business visual copy.
+- [x] Remove from V2 direct reads/calculations:
+  - [x] `PurchaseBlockReasons`.
+  - [x] `ManageStock`.
+  - [x] `AvailableQuantity`.
+  - [x] `MinOrderQuantity`.
+  - [x] `MaxOrderQuantity`.
+  - [x] `EffectivePrice` fallback.
+  - [x] raw variant stock interpretation.
+  - [x] raw fresh-arrival date arithmetic.
+- [x] Add tests:
+  - [x] mapper converts purchase block reason to display message.
+  - [x] mapper sets add-to-cart disabled for hard block.
+  - [x] mapper formats compare price only when greater than display price.
+  - [x] mapper handles unmanaged stock.
+  - [x] V2 product view no longer references raw business fields.
+- [x] Exit criteria:
+  - [x] V2 product views consume prepared context only.
+
+Evidence:
+
+- Extended Storefront Presentation product page context with pricing, availability, purchase, variant, badge, and navigation view records.
+- Consolidated product page decisions into `StorefrontProductPageMapper` and catalog card decisions into `StorefrontProductSummaryMapper`.
+- V2 product page now renders prepared context values and keeps only availability-state CSS mapping plus layout/badge placement.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontProductDecisionContextTests" -v:minimal`
+- Fixed-string/regex `rg` check for raw product business fields in `V2ProductPageView` found no matches.
 
 ## Phase F1.38 - Tighten required visual view registration
 

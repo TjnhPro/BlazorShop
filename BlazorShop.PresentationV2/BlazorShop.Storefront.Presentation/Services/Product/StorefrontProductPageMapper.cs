@@ -21,12 +21,21 @@ public static class StorefrontProductPageMapper
 
         var galleryItems = BuildGalleryItems(product);
         var purchasePanel = BuildPurchasePanel(product, galleryItems, displayContext, priceFormatter);
+        var displayCurrencyCode = ResolveDisplayCurrencyCode(product, displayContext);
+        var displayPriceAmount = ResolveDisplayPriceAmount(product);
+        var canSubmitInitialPurchase = CanSubmitInitialPurchase(product);
 
         return new StorefrontProductPageContext(
             product,
             BuildBreadcrumbs(product),
             galleryItems,
             purchasePanel,
+            BuildPricing(product, displayContext, priceFormatter, displayCurrencyCode, displayPriceAmount),
+            BuildAvailability(product),
+            BuildPurchase(product, canSubmitInitialPurchase),
+            BuildVariants(product, displayContext, priceFormatter, displayCurrencyCode),
+            new StorefrontProductBadgeView(IsFreshArrival(product.CreatedOn)),
+            BuildNavigation(product),
             relatedProducts
                 .Select(relatedProduct => StorefrontProductSummaryMapper.ToProductSummary(relatedProduct, displayContext, priceFormatter))
                 .ToArray(),
@@ -92,8 +101,8 @@ public static class StorefrontProductPageMapper
         StorefrontDisplayContext displayContext,
         IStorefrontPriceFormatter priceFormatter)
     {
-        var displayCurrencyCode = NormalizeCurrencyCode(product.DisplayCurrencyCode) ?? displayContext.DefaultCurrencyCode;
-        var displayPriceAmount = product.DisplayPrice ?? product.Price;
+        var displayCurrencyCode = ResolveDisplayCurrencyCode(product, displayContext);
+        var displayPriceAmount = ResolveDisplayPriceAmount(product);
         var activeVariationOptions = ActiveVariationOptions(product);
         var canSubmitInitialPurchase = CanSubmitInitialPurchase(product);
 
@@ -106,7 +115,7 @@ public static class StorefrontProductPageMapper
             product.Variants.FirstOrDefault(variant => variant.IsDefault)?.Sku ?? product.Sku,
             product.Gtin,
             galleryItems.FirstOrDefault()?.ImageUrl,
-            product.ManageStock == false ? 999999 : Math.Max(0, (product.AvailableQuantity > 0 ? product.AvailableQuantity : product.Quantity) ?? 0),
+            ResolveInitialStockValue(product),
             product.MinOrderQuantity,
             product.MaxOrderQuantity,
             product.QuantityStep,
@@ -144,6 +153,95 @@ public static class StorefrontProductPageMapper
                     FormatPrice(GetVariantDisplayPrice(variant, product), VariantCurrencyCode(variant, displayCurrencyCode), displayContext, priceFormatter)))
                 .ToArray(),
             StorefrontRoutes.Cart);
+    }
+
+    private static StorefrontProductPricingView BuildPricing(
+        GetProduct product,
+        StorefrontDisplayContext displayContext,
+        IStorefrontPriceFormatter priceFormatter,
+        string displayCurrencyCode,
+        decimal displayPriceAmount)
+    {
+        var comparePriceAmount = product.DisplayComparePrice ?? product.ComparePrice;
+
+        return new StorefrontProductPricingView(
+            product.Variants.Any() ? "From" : "Price",
+            FormatPrice(displayPriceAmount, displayCurrencyCode, displayContext, priceFormatter),
+            comparePriceAmount is not null && comparePriceAmount > displayPriceAmount
+                ? FormatPrice(comparePriceAmount.Value, displayCurrencyCode, displayContext, priceFormatter)
+                : null,
+            displayCurrencyCode);
+    }
+
+    private static StorefrontProductAvailabilityView BuildAvailability(GetProduct product)
+    {
+        var variantCount = product.Variants.Count();
+        if (variantCount > 0)
+        {
+            var availableVariantCount = product.Variants.Count(variant => variant.Stock > 0);
+            var state = availableVariantCount > 0 ? "available" : "out-of-stock";
+            return new StorefrontProductAvailabilityView(
+                state,
+                availableVariantCount > 0 ? "Available" : "Out of stock",
+                $"{availableVariantCount} options in stock",
+                $"{variantCount} options");
+        }
+
+        if (product.ManageStock == false)
+        {
+            return new StorefrontProductAvailabilityView("available", "Available", "Available", "Single option");
+        }
+
+        var stock = ResolveInitialStockValue(product);
+        return stock > 0
+            ? new StorefrontProductAvailabilityView("available", "Available", $"{stock} in stock", "Single option")
+            : new StorefrontProductAvailabilityView("out-of-stock", "Out of stock", "Out of stock", "Single option");
+    }
+
+    private static StorefrontProductPurchaseView BuildPurchase(GetProduct product, bool canSubmitInitialPurchase)
+    {
+        var defaultSku = product.Variants.FirstOrDefault(variant => variant.IsDefault)?.Sku ?? product.Sku;
+
+        return new StorefrontProductPurchaseView(
+            canSubmitInitialPurchase,
+            product.Variants.Any()
+                ? "Choose a size, add it to your cart, and review it in the storefront cart before checkout."
+                : product.Purchasable
+                    ? "Add this item now and review it in the storefront cart before checkout."
+                    : "This product cannot be added to cart right now.",
+            PurchaseBlockMessage(product),
+            string.IsNullOrWhiteSpace(defaultSku) ? string.Empty : $"SKU {defaultSku}",
+            string.IsNullOrWhiteSpace(product.Gtin) ? string.Empty : $"GTIN {product.Gtin}",
+            product.MinOrderQuantity,
+            product.MaxOrderQuantity,
+            ResolveInitialStockValue(product));
+    }
+
+    private static IReadOnlyList<StorefrontProductVariantView> BuildVariants(
+        GetProduct product,
+        StorefrontDisplayContext displayContext,
+        IStorefrontPriceFormatter priceFormatter,
+        string displayCurrencyCode)
+    {
+        return product.Variants
+            .Select(variant => new StorefrontProductVariantView(
+                variant.Id,
+                VariantDisplayName(variant),
+                VariantAttributeText(variant),
+                FormatPrice(GetVariantDisplayPrice(variant, product), VariantCurrencyCode(variant, displayCurrencyCode), displayContext, priceFormatter),
+                VariantStockLabel(variant),
+                variant.Stock > 0 ? "available" : "out-of-stock",
+                variant.IsDefault))
+            .ToArray();
+    }
+
+    private static StorefrontProductNavigationView BuildNavigation(GetProduct product)
+    {
+        return new StorefrontProductNavigationView(
+            product.Category?.Name,
+            !string.IsNullOrWhiteSpace(product.Category?.Slug) ? StorefrontRoutes.Category(product.Category.Slug) : null,
+            !string.IsNullOrWhiteSpace(product.FullDescription) ? product.FullDescription! : product.Description ?? string.Empty,
+            product.Name is { Length: > 0 } productName ? $"More about {productName}" : string.Empty);
     }
 
     private static IReadOnlyList<string> BuildInitialValidationMessages(GetProduct product, bool canSubmitInitialPurchase)
@@ -185,6 +283,33 @@ public static class StorefrontProductPageMapper
         "above_max_quantity" => $"Maximum order quantity is {product.MaxOrderQuantity}.",
         _ => "Currently unavailable.",
     };
+
+    private static int ResolveInitialStockValue(GetProduct product)
+    {
+        return product.ManageStock == false
+            ? 999999
+            : Math.Max(0, product.AvailableQuantity > 0 ? product.AvailableQuantity.Value : product.Quantity);
+    }
+
+    private static decimal ResolveDisplayPriceAmount(GetProduct product)
+    {
+        return product.DisplayPrice ?? product.Price;
+    }
+
+    private static string ResolveDisplayCurrencyCode(GetProduct product, StorefrontDisplayContext displayContext)
+    {
+        return NormalizeCurrencyCode(product.DisplayCurrencyCode) ?? displayContext.DefaultCurrencyCode;
+    }
+
+    private static bool IsFreshArrival(DateTime createdOn)
+    {
+        return DateTime.UtcNow.Subtract(createdOn).TotalDays <= 7;
+    }
+
+    private static string VariantStockLabel(GetProductVariant variant)
+    {
+        return variant.Stock > 0 ? $"{variant.Stock} in stock" : "Out of stock";
+    }
 
     private static string FormatPurchaseBlockReason(GetProduct product, string reason)
     {

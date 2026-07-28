@@ -19,4 +19,5 @@ public sealed record ProductSummaryItem(
     string? UnitPriceValue = null,
     string? CurrencyCode = null,
     int DirectAddStockValue = 0,
-    string? PurchaseBlockMessage = null);
+    string? PurchaseBlockMessage = null,
+    bool PurchasePaused = false);

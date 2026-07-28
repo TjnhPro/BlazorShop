@@ -1,6 +1,5 @@
 @namespace BlazorShop.Storefront.Theme.Pages.Product
 @using BlazorShop.Storefront.Presentation.Services.Product
-@inject IStorefrontPriceFormatter PriceFormatter
 
 <StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-8 pt-10 sm:px-6 lg:px-8">
         <Breadcrumb>
@@ -14,16 +13,16 @@
                 </div>
 
                 <div class="rounded-3xl border border-neutral-200/70 bg-white/90 p-8 shadow-lg">
-                    @if (!string.IsNullOrWhiteSpace(_product.Category?.Slug))
+                    @if (!string.IsNullOrWhiteSpace(_navigation.CategoryUrl))
                     {
-                        <a href="@StorefrontRoutes.Category(_product.Category.Slug)" class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500 hover:text-neutral-900">@_product.Category.Name</a>
+                        <a href="@_navigation.CategoryUrl" class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500 hover:text-neutral-900">@_navigation.CategoryName</a>
                     }
-                    else if (!string.IsNullOrWhiteSpace(_product.Category?.Name))
+                    else if (!string.IsNullOrWhiteSpace(_navigation.CategoryName))
                     {
-                        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">@_product.Category.Name</p>
+                        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">@_navigation.CategoryName</p>
                     }
 
-                    @if (IsFreshArrival)
+                    @if (_badges.IsFreshArrival)
                     {
                         <div class="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]">
                             <span class="inline-block rounded bg-green-600/90 px-2 py-0.5 text-white">New</span>
@@ -32,39 +31,39 @@
 
                     <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-neutral-900">@_product.Name</h1>
                     <div class="mt-5">
-                        <div class="text-sm text-neutral-500">@PrimaryPriceLabel</div>
+                        <div class="text-sm text-neutral-500">@_pricing.PrimaryPriceLabel</div>
                         <div class="mt-1 flex flex-wrap items-end gap-3">
-                            <span class="text-4xl font-black text-neutral-900" data-storefront-selection-price>@DisplayPrice</span>
-                            <span class="pb-1 text-lg font-semibold text-neutral-400 line-through @(HasComparePrice ? null : "hidden")" data-storefront-selection-compare>
-                                @(HasComparePrice ? FormatPrice(DisplayComparePriceAmount!.Value, DisplayCurrencyCode) : string.Empty)
+                            <span class="text-4xl font-black text-neutral-900" data-storefront-selection-price>@_pricing.PriceDisplay</span>
+                            <span class="pb-1 text-lg font-semibold text-neutral-400 line-through @(string.IsNullOrWhiteSpace(_pricing.ComparePriceDisplay) ? "hidden" : null)" data-storefront-selection-compare>
+                                @_pricing.ComparePriceDisplay
                             </span>
                         </div>
                     </div>
 
                     <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-neutral-600">
-                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700">@VariantSummary</span>
-                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(DefaultSkuLabel) ? "hidden" : null)" data-storefront-selection-sku>@DefaultSkuLabel</span>
-                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(DefaultGtinLabel) ? "hidden" : null)" data-storefront-selection-gtin>@DefaultGtinLabel</span>
-                        <span class="@StockBadgeClass" data-storefront-selection-stock>@StockSummary</span>
+                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700">@_availability.VariantSummary</span>
+                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(_purchase.DefaultSkuLabel) ? "hidden" : null)" data-storefront-selection-sku>@_purchase.DefaultSkuLabel</span>
+                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(_purchase.DefaultGtinLabel) ? "hidden" : null)" data-storefront-selection-gtin>@_purchase.DefaultGtinLabel</span>
+                        <span class="@StockBadgeClass" data-storefront-selection-stock>@_availability.StockLabel</span>
                     </div>
 
-                    <p class="mt-6 text-base leading-7 text-neutral-700">@ProductDescription</p>
+                    <p class="mt-6 text-base leading-7 text-neutral-700">@_navigation.ProductDescription</p>
 
                 <StorefrontProductPurchasePanel Model="_purchasePanel" />
 
-                @if (_product.Variants.Any())
+                @if (_variants.Count > 0)
                 {
                     <div class="mt-8">
                         <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Available Variants</h2>
                         <ul class="mt-4 grid gap-3 sm:grid-cols-2">
-                            @foreach (var variant in _product.Variants)
+                            @foreach (var variant in _variants)
                             {
                                 <li class="rounded-2xl border border-neutral-200 bg-neutral-50/80 px-4 py-3 text-sm text-neutral-700">
-                                    <div class="font-semibold text-neutral-900">@VariantDisplayName(variant)</div>
-                                    <div class="mt-1">@VariantAttributeText(variant)</div>
+                                    <div class="font-semibold text-neutral-900">@variant.DisplayName</div>
+                                    <div class="mt-1">@variant.AttributeText</div>
                                     <div class="mt-2 flex items-center justify-between gap-2">
-                                        <span class="font-semibold text-neutral-900">@FormatPrice(GetVariantDisplayPrice(variant), VariantCurrencyCode(variant))</span>
-                                        <span class="@(variant.Stock > 0 ? "text-emerald-700" : "text-rose-700")">@(variant.Stock > 0 ? $"{variant.Stock} in stock" : "Out of stock")</span>
+                                        <span class="font-semibold text-neutral-900">@variant.PriceDisplay</span>
+                                        <span class="@VariantStockClass(variant.AvailabilityState)">@variant.StockLabel</span>
                                     </div>
                                 </li>
                             }
@@ -73,10 +72,10 @@
                 }
 
                 <div class="mt-8 flex flex-wrap gap-3">
-                    @if (!string.IsNullOrWhiteSpace(_product.Category?.Slug) && !string.IsNullOrWhiteSpace(_product.Category?.Name))
+                    @if (!string.IsNullOrWhiteSpace(_navigation.CategoryUrl) && !string.IsNullOrWhiteSpace(_navigation.CategoryName))
                     {
-                        <a href="@StorefrontRoutes.Category(_product.Category.Slug)" class="inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">
-                            Back to @_product.Category.Name
+                        <a href="@_navigation.CategoryUrl" class="inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">
+                            Back to @_navigation.CategoryName
                         </a>
                     }
 
@@ -107,7 +106,7 @@
 
             @if (_relatedProducts.Count > 0)
             {
-                <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-neutral-900">More from @_product.Category?.Name</h2>
+                <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-neutral-900">More from @_navigation.CategoryName</h2>
                 <div class="mt-8">
                     <ProductGrid Items="_relatedProducts" EmptyMessage="No additional related products are available right now." />
                 </div>
@@ -116,10 +115,10 @@
             {
                 <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-neutral-900">Keep browsing the public catalog</h2>
                 <div class="mt-6 flex flex-wrap gap-3">
-                    @if (!string.IsNullOrWhiteSpace(_product.Category?.Slug) && !string.IsNullOrWhiteSpace(_product.Category?.Name))
+                    @if (!string.IsNullOrWhiteSpace(_navigation.CategoryUrl) && !string.IsNullOrWhiteSpace(_navigation.CategoryName))
                     {
-                        <a href="@StorefrontRoutes.Category(_product.Category.Slug)" class="inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">
-                            Explore @_product.Category.Name
+                        <a href="@_navigation.CategoryUrl" class="inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">
+                            Explore @_navigation.CategoryName
                         </a>
                     }
 
@@ -147,230 +146,35 @@
 
     private ProductPurchasePanelModel _purchasePanel => Context.PurchasePanel;
 
+    private StorefrontProductPricingView _pricing => Context.Pricing;
+
+    private StorefrontProductAvailabilityView _availability => Context.Availability;
+
+    private StorefrontProductPurchaseView _purchase => Context.Purchase;
+
+    private IReadOnlyList<StorefrontProductVariantView> _variants => Context.Variants;
+
+    private StorefrontProductBadgeView _badges => Context.Badges;
+
+    private StorefrontProductNavigationView _navigation => Context.Navigation;
+
     private IReadOnlyList<ProductSummaryItem> _relatedProducts => Context.RelatedProductSummaries;
 
-    private StorefrontDisplayContext _displayContext => Context.DisplayContext;
+    private string StockBadgeClass => AvailabilityBadgeClass(_availability.AvailabilityState);
 
-    private bool IsFreshArrival => _product is not null && DateTime.UtcNow.Subtract(_product.CreatedOn).TotalDays <= 7;
+    private string ProductSeoContentTitle => _navigation.ProductSeoContentTitle;
 
-    private string PrimaryPriceLabel => _product?.Variants.Any() == true ? "From" : "Price";
-
-    private bool HasComparePrice => DisplayComparePriceAmount is not null && DisplayComparePriceAmount > DisplayPriceAmount;
-
-    private bool HasVariationTemplate => ActiveVariationOptions.Count > 0;
-
-    private bool UsesVariantSelect => _product?.Variants.Any() == true && !HasVariationTemplate;
-
-    private IReadOnlyList<StorefrontVariationOptionDto> ActiveVariationOptions =>
-        _product?.VariationTemplate?.Options
-            .Where(option => !string.IsNullOrWhiteSpace(option.Name))
-            .Where(option => ActiveVariationValues(option).Count > 0)
-            .ToArray()
-        ?? [];
-
-    private string VariantSummary => _product?.Variants.Any() == true
-        ? string.Concat(_product.Variants.Count(), " options")
-        : "Single option";
-
-    private string CartUrl => StorefrontRoutes.Cart;
-
-    private string PurchaseMessage => _product?.Variants.Any() == true
-        ? "Choose a size, add it to your cart, and review it in the storefront cart before checkout."
-        : _product?.Purchasable == true
-            ? "Add this item now and review it in the storefront cart before checkout."
-            : "This product cannot be added to cart right now.";
-
-    private decimal DisplayPriceAmount => _product?.DisplayPrice ?? _product?.Price ?? 0m;
-
-    private decimal? DisplayComparePriceAmount => _product?.DisplayComparePrice ?? _product?.ComparePrice;
-
-    private string DisplayCurrencyCode => NormalizeCurrencyCode(_product?.DisplayCurrencyCode) ?? _displayContext.DefaultCurrencyCode;
-
-    private string BaseUnitPriceValue => DisplayPriceAmount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-
-    private string DisplayPrice => FormatPrice(DisplayPriceAmount, DisplayCurrencyCode);
-
-    private string DefaultSkuLabel => !string.IsNullOrWhiteSpace(DefaultSelectionSku)
-        ? $"SKU {DefaultSelectionSku}"
-        : string.Empty;
-
-    private string? DefaultSelectionSku => _product?.Variants.FirstOrDefault(variant => variant.IsDefault)?.Sku ?? _product?.Sku;
-
-    private string DefaultGtinLabel => !string.IsNullOrWhiteSpace(_product?.Gtin)
-        ? $"GTIN {_product.Gtin}"
-        : string.Empty;
-
-    private string ProductDescription => !string.IsNullOrWhiteSpace(_product?.FullDescription)
-        ? _product.FullDescription!
-        : _product?.Description ?? string.Empty;
-
-    private string StockSummary => _product?.Variants.Any() == true
-        ? $"{_product.Variants.Count(variant => variant.Stock > 0)} options in stock"
-        : _product?.ManageStock == false
-            ? "Available"
-            : (_product?.Quantity ?? 0) > 0
-            ? $"{_product!.Quantity} in stock"
-            : "Out of stock";
-
-    private string StockBadgeClass => StockSummary.StartsWith("Out", StringComparison.Ordinal)
-        ? "inline-flex items-center rounded-full bg-rose-50 px-3 py-1 font-semibold text-rose-700"
-        : "inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700";
-
-    private bool CanSubmitInitialPurchase =>
-        _product is not null
-        && !_product.PurchaseBlockReasons.Any(IsInitialPurchaseHardBlock);
-
-    private string AddToCartButtonClass => CanSubmitInitialPurchase
-        ? "inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600"
-        : "inline-flex cursor-not-allowed items-center rounded bg-neutral-300 px-4 py-2 font-semibold text-neutral-600 hover:bg-neutral-300";
-
-    private static bool IsInitialPurchaseHardBlock(string reason) =>
-        reason is "not_visible"
-            or "not_published"
-            or "not_started"
-            or "expired"
-            or "purchase_disabled"
-            or "variant_inactive"
-            or "out_of_stock"
-            or "not_enough_stock"
-            or "above_max_quantity";
-
-    private int InitialStockValue => _product?.ManageStock == false ? 999999 : Math.Max(0, _product?.AvailableQuantity ?? _product?.Quantity ?? 0);
-
-    private string PurchaseBlockMessage => _product?.PurchaseBlockReasons.FirstOrDefault() switch
+    private static string AvailabilityBadgeClass(string state)
     {
-        "purchase_disabled" => "Purchasing is paused.",
-        "out_of_stock" => "Currently out of stock.",
-        "below_min_quantity" => $"Minimum order quantity is {_product?.MinOrderQuantity ?? 1}.",
-        "above_max_quantity" => $"Maximum order quantity is {_product?.MaxOrderQuantity}.",
-        _ => "Currently unavailable.",
-    };
-
-    private string ProductSeoContentTitle => _product?.Name is { Length: > 0 } productName
-        ? $"More about {productName}"
-        : string.Empty;
-
-    private static string ScaleLabel(int scale)
-    {
-        return scale switch
-        {
-            1 => "Clothing",
-            2 => "Clothing EU",
-            10 => "Shoes EU",
-            11 => "Shoes US",
-            12 => "Shoes UK",
-            _ => "Variant",
-        };
+        return string.Equals(state, "out-of-stock", StringComparison.Ordinal)
+            ? "inline-flex items-center rounded-full bg-rose-50 px-3 py-1 font-semibold text-rose-700"
+            : "inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700";
     }
 
-    private string VariantPriceValue(GetProductVariant variant)
+    private static string VariantStockClass(string state)
     {
-        return GetVariantDisplayPrice(variant).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-    }
-
-    private string VariantOptionLabel(GetProductVariant variant)
-    {
-        var defaultLabel = variant.IsDefault ? " • Default" : string.Empty;
-        var stockLabel = variant.Stock > 0 ? $"{variant.Stock} left" : "Out of stock";
-        return $"{VariantDisplayName(variant)} • {FormatPrice(GetVariantDisplayPrice(variant), VariantCurrencyCode(variant))} • {stockLabel}{defaultLabel}";
-    }
-
-    private decimal GetVariantPrice(GetProductVariant variant)
-    {
-        return variant.EffectivePrice > 0 ? variant.EffectivePrice : variant.Price ?? _product?.Price ?? 0m;
-    }
-
-    private decimal GetVariantDisplayPrice(GetProductVariant variant)
-    {
-        return variant.DisplayPrice ?? GetVariantPrice(variant);
-    }
-
-    private string VariantCurrencyCode(GetProductVariant variant)
-    {
-        return NormalizeCurrencyCode(variant.DisplayCurrencyCode) ?? DisplayCurrencyCode;
-    }
-
-    private string FormatPrice(decimal amount, string currencyCode) => PriceFormatter.Format(amount, _displayContext with { CurrencyCode = currencyCode });
-
-    private static string? NormalizeCurrencyCode(string? currencyCode)
-    {
-        var normalized = currencyCode?.Trim().ToUpperInvariant();
-        return normalized is { Length: 3 } && normalized.All(char.IsLetter)
-            ? normalized
-            : null;
-    }
-
-    private static IReadOnlyList<StorefrontVariationValueDto> ActiveVariationValues(StorefrontVariationOptionDto option)
-    {
-        return option.Values
-            .Where(value => !string.IsNullOrWhiteSpace(value.Value))
-            .ToArray();
-    }
-
-    private static bool IsRadioControl(StorefrontVariationOptionDto option)
-    {
-        return string.Equals(option.ControlType, "radio", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsColorControl(StorefrontVariationOptionDto option)
-    {
-        return string.Equals(option.ControlType, "color", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool ShouldSelectOptionValue(StorefrontVariationOptionDto option, StorefrontVariationValueDto value)
-    {
-        var values = ActiveVariationValues(option);
-        return option.IsRequired
-            && values.Count > 0
-            && string.Equals(values[0].Value, value.Value, StringComparison.Ordinal);
-    }
-
-    private static string OptionInputId(StorefrontVariationOptionDto option)
-    {
-        return $"product-option-{SanitizeDomToken(option.Name)}";
-    }
-
-    private static string OptionInputName(StorefrontVariationOptionDto option)
-    {
-        return $"product_option_{SanitizeDomToken(option.Name)}";
-    }
-
-    private static string OptionValueInputId(StorefrontVariationOptionDto option, StorefrontVariationValueDto value)
-    {
-        return $"{OptionInputId(option)}-{SanitizeDomToken(value.Value)}";
-    }
-
-    private static string ColorSwatchStyle(StorefrontVariationValueDto value)
-    {
-        return !string.IsNullOrWhiteSpace(value.ColorHex)
-            ? $"background-color: {value.ColorHex};"
-            : "background-color: #f5f5f5;";
-    }
-
-    private static string SanitizeDomToken(string? value)
-    {
-        var raw = string.IsNullOrWhiteSpace(value) ? "option" : value.Trim().ToLowerInvariant();
-        var chars = raw.Select(character => char.IsLetterOrDigit(character) ? character : '-').ToArray();
-        var token = new string(chars).Trim('-');
-        return string.IsNullOrWhiteSpace(token) ? "option" : token;
-    }
-
-    private static string VariantDisplayName(GetProductVariant variant)
-    {
-        if (!string.IsNullOrWhiteSpace(variant.DisplayName))
-        {
-            return variant.DisplayName;
-        }
-
-        var attributeText = VariantAttributeText(variant);
-        return string.IsNullOrWhiteSpace(attributeText) ? variant.SizeValue : attributeText;
-    }
-
-    private static string VariantAttributeText(GetProductVariant variant)
-    {
-        var attributeText = string.Join(" / ", variant.Attributes.Select(attribute => $"{attribute.Name}: {attribute.Value}"));
-        return string.IsNullOrWhiteSpace(attributeText)
-            ? ScaleLabel(variant.SizeScale)
-            : attributeText;
+        return string.Equals(state, "out-of-stock", StringComparison.Ordinal)
+            ? "text-rose-700"
+            : "text-emerald-700";
     }
 }

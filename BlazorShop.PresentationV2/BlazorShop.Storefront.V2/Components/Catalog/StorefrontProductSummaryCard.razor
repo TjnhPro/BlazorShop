@@ -108,6 +108,10 @@
         {
             <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">Select variant on the product page before adding.</p>
         }
+        else if (Item.PurchasePaused)
+        {
+            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-600">@Item.PurchaseBlockMessage</p>
+        }
         else if (!Item.InStock)
         {
             <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-rose-600">Currently out of stock.</p>
