@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Product;
 
 using global::System.Globalization;
+using BlazorShop.Storefront.Components.Contracts.Catalog;
 using BlazorShop.Storefront.Components.Contracts.Product;
 using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services;
@@ -26,7 +27,9 @@ public static class StorefrontProductPageMapper
             BuildBreadcrumbs(product),
             galleryItems,
             purchasePanel,
-            relatedProducts,
+            relatedProducts
+                .Select(relatedProduct => StorefrontProductSummaryMapper.ToProductSummary(relatedProduct, displayContext, priceFormatter))
+                .ToArray(),
             displayContext);
     }
 

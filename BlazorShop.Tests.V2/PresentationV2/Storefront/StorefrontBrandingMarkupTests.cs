@@ -9,12 +9,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor");
 
-            Assert.Contains("@inject IStorefrontDisplayContextProvider DisplayContextProvider", markup);
-            Assert.Contains("@inject IStorefrontPageNavigationProvider PageNavigationProvider", markup);
-            Assert.Contains("BrandLogoUrl", markup);
+            Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontHeaderContext Context", markup);
+            Assert.Contains("Context.Brand.LogoUrl", markup);
             Assert.Contains("bs-storefront-header__brand-logo", markup);
-            Assert.Contains("DisplayContextProvider.GetAsync()", markup);
-            Assert.Contains("StorefrontPageContentRules.Header", markup);
+            Assert.Contains("Context.Navigation.HeaderLinks", markup);
+            Assert.Contains("Context.Search.Categories", markup);
+            Assert.Contains("Context.Currency.SupportedCurrencyCodes", markup);
+            Assert.Contains("<StorefrontAccountMenu Context=\"Context.AccountMenu\" />", markup);
+            Assert.DoesNotContain("OnInitializedAsync", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes.About", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes.CustomerService", markup, StringComparison.Ordinal);
         }
@@ -24,10 +27,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/StorefrontBrandHead.razor");
 
-            Assert.Contains("@inject IStorefrontDisplayContextProvider DisplayContextProvider", markup);
-            Assert.Contains("<link rel=\"icon\" href=\"@_displayContext.FaviconUrl\" />", markup);
-            Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"@_displayContext.PngIconUrl\" />", markup);
-            Assert.Contains("<link rel=\"apple-touch-icon\" href=\"@_displayContext.AppleTouchIconUrl\" />", markup);
+            Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontDisplayContext DisplayContext", markup);
+            Assert.Contains("<link rel=\"icon\" href=\"@DisplayContext.FaviconUrl\" />", markup);
+            Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"@DisplayContext.PngIconUrl\" />", markup);
+            Assert.Contains("<link rel=\"apple-touch-icon\" href=\"@DisplayContext.AppleTouchIconUrl\" />", markup);
             Assert.Contains("msapplication-TileImage", markup);
             Assert.Contains("document.documentElement.lang", markup);
             Assert.DoesNotContain("<HeadContent>", markup, StringComparison.Ordinal);
@@ -40,14 +44,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var applicationHead = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationHead.razor");
             var layoutMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
 
-            Assert.Contains("<StorefrontBrandHead />", applicationHead);
+            Assert.Contains("<StorefrontBrandHead DisplayContext=\"Context.Display\" />", applicationHead);
             Assert.Contains("<HeadOutlet />", appMarkup);
             Assert.True(
-                appMarkup.IndexOf("ComponentType=\"@ViewSet.ApplicationHead\"", StringComparison.Ordinal) <
+                appMarkup.IndexOf("<StorefrontFoundationApplicationHead />", StringComparison.Ordinal) <
                 appMarkup.IndexOf("<HeadOutlet />", StringComparison.Ordinal));
-            Assert.DoesNotContain("<StorefrontBrandHead />", layoutMarkup, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontHeader />", layoutMarkup);
-            Assert.Contains("<StorefrontFooter />", layoutMarkup);
+            Assert.DoesNotContain("<StorefrontBrandHead", layoutMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontHeader Context=\"Context.Header\" />", layoutMarkup);
+            Assert.Contains("<StorefrontFooter Context=\"Context.Footer\" />", layoutMarkup);
         }
 
         [Fact]
@@ -65,16 +69,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor");
 
-            Assert.Contains("@inject IStorefrontDisplayContextProvider DisplayContextProvider", markup);
-            Assert.Contains("@inject IStorefrontPageNavigationProvider PageNavigationProvider", markup);
-            Assert.Contains("DisplayContextProvider.GetAsync()", markup);
-            Assert.Contains("StorefrontPageContentRules.FooterCompany", markup);
-            Assert.Contains("StorefrontPageContentRules.FooterSupport", markup);
-            Assert.Contains("StorefrontPageContentRules.FooterLegal", markup);
-            Assert.Contains("ContactEmail", markup);
-            Assert.Contains("ContactPhone", markup);
-            Assert.Contains("_displayContext.CompanyAddress", markup);
-            Assert.Contains("mailto:@ContactEmail", markup);
+            Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontFooterContext Context", markup);
+            Assert.Contains("Context.Navigation.FooterCompanyLinks", markup);
+            Assert.Contains("Context.Navigation.FooterSupportLinks", markup);
+            Assert.Contains("Context.Navigation.FooterLegalLinks", markup);
+            Assert.Contains("Context.ContactEmail", markup);
+            Assert.Contains("Context.ContactPhone", markup);
+            Assert.Contains("Context.CompanyAddress", markup);
+            Assert.Contains("mailto:@Context.ContactEmail", markup);
+            Assert.DoesNotContain("OnInitializedAsync", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("BLAZORSHOP", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes.About", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes.Privacy", markup, StringComparison.Ordinal);
@@ -101,7 +105,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.DoesNotContain("€ {", markup, StringComparison.Ordinal);
             }
 
-            Assert.Contains("data-currency-code", ReadRepositoryFile(files[0]));
+            Assert.Contains(
+                "data-currency-code",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor"),
+                StringComparison.Ordinal);
             Assert.Contains(
                 "data-currency-code",
                 ReadRepositoryFile(files[1])
@@ -172,17 +179,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductCard_RendersSellabilitySafeActions()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor");
+            var summaryCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
+            var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontProductSummaryMapper.cs");
 
-            Assert.Contains("Product.Purchasable && QuantityOneAllowed", markup);
-            Assert.Contains("Product.MinOrderQuantity <= 1", markup);
-            Assert.Contains("Product.QuantityStep <= 1", markup);
-            Assert.Contains("Product.ManageStock ? Math.Max(0, Product.AvailableQuantity ?? Product.Quantity) : 999999", markup);
-            Assert.Contains("IsPurchasePaused", markup);
-            Assert.Contains("\"purchase_disabled\" => \"Purchasing is paused.\"", markup);
-            Assert.Contains("\"below_min_quantity\" => $\"Minimum order quantity is {Product.MinOrderQuantity}.\"", markup);
-            Assert.Contains("View Product", markup);
-            Assert.Contains("BrokenImageFallbackScript", markup);
-            Assert.Contains("data:image/svg+xml", markup);
+            Assert.Contains("<StorefrontProductSummaryCard Item=\"Item\" />", markup);
+            Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
+            Assert.Contains("product.Purchasable && QuantityOneAllowed(product)", mapper);
+            Assert.Contains("product.MinOrderQuantity <= 1", mapper);
+            Assert.Contains("product.QuantityStep <= 1", mapper);
+            Assert.Contains("product.ManageStock ? Math.Max(0, product.AvailableQuantity ?? product.Quantity) : 999999", mapper);
+            Assert.Contains("\"purchase_disabled\" => \"Purchasing is paused.\"", mapper);
+            Assert.Contains("\"below_min_quantity\" => $\"Minimum order quantity is {product.MinOrderQuantity}.\"", mapper);
+            Assert.Contains("View Product", summaryCard);
+            Assert.Contains("BrokenImageFallbackScript", summaryCard);
+            Assert.Contains("data:image/svg+xml", summaryCard);
         }
 
         [Fact]

@@ -1,36 +1,27 @@
-@inject IStorefrontDisplayContextProvider DisplayContextProvider
-
-@if (_displayContext is not null)
+@if (!string.IsNullOrWhiteSpace(DisplayContext.FaviconUrl))
 {
-    @if (!string.IsNullOrWhiteSpace(_displayContext.FaviconUrl))
-    {
-        <link rel="icon" href="@_displayContext.FaviconUrl" />
-    }
-    @if (!string.IsNullOrWhiteSpace(_displayContext.PngIconUrl))
-    {
-        <link rel="icon" type="image/png" href="@_displayContext.PngIconUrl" />
-    }
-    @if (!string.IsNullOrWhiteSpace(_displayContext.AppleTouchIconUrl))
-    {
-        <link rel="apple-touch-icon" href="@_displayContext.AppleTouchIconUrl" />
-    }
-    @if (!string.IsNullOrWhiteSpace(_displayContext.MsTileImageUrl))
-    {
-        <meta name="msapplication-TileImage" content="@_displayContext.MsTileImageUrl" />
-    }
-    @if (!string.IsNullOrWhiteSpace(_displayContext.MsTileColor))
-    {
-        <meta name="msapplication-TileColor" content="@_displayContext.MsTileColor" />
-    }
-    <meta name="bs-storefront-language" content="@_displayContext.LanguageCode" />
-    <script>document.documentElement.lang = '@_displayContext.LanguageCode';</script>
+    <link rel="icon" href="@DisplayContext.FaviconUrl" />
 }
+@if (!string.IsNullOrWhiteSpace(DisplayContext.PngIconUrl))
+{
+    <link rel="icon" type="image/png" href="@DisplayContext.PngIconUrl" />
+}
+@if (!string.IsNullOrWhiteSpace(DisplayContext.AppleTouchIconUrl))
+{
+    <link rel="apple-touch-icon" href="@DisplayContext.AppleTouchIconUrl" />
+}
+@if (!string.IsNullOrWhiteSpace(DisplayContext.MsTileImageUrl))
+{
+    <meta name="msapplication-TileImage" content="@DisplayContext.MsTileImageUrl" />
+}
+@if (!string.IsNullOrWhiteSpace(DisplayContext.MsTileColor))
+{
+    <meta name="msapplication-TileColor" content="@DisplayContext.MsTileColor" />
+}
+<meta name="bs-storefront-language" content="@DisplayContext.LanguageCode" />
+<script>document.documentElement.lang = '@DisplayContext.LanguageCode';</script>
 
 @code {
-    private StorefrontDisplayContext? _displayContext;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _displayContext = await DisplayContextProvider.GetAsync();
-    }
+    [Parameter, EditorRequired]
+    public StorefrontDisplayContext DisplayContext { get; set; } = StorefrontDisplayContext.Fallback;
 }

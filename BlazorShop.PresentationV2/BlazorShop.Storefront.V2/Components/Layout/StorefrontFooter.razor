@@ -1,27 +1,20 @@
-@inject IStorefrontDisplayContextProvider DisplayContextProvider
-@inject IStorefrontPageNavigationProvider PageNavigationProvider
-@inject IStorefrontNavigationProvider NavigationProvider
-
 <footer class="border-t border-white/10 bg-neutral-900 text-neutral-100">
     <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-                <div class="text-lg font-extrabold tracking-wider">@BrandName</div>
-                <p class="mt-1 text-sm text-neutral-300">@StoreLabel</p>
+                <div class="text-lg font-extrabold tracking-wider">@Context.Brand.Name</div>
+                <p class="mt-1 text-sm text-neutral-300">@Context.Brand.Label</p>
                 <p class="mt-3 text-sm leading-6 text-neutral-400">@BrandDescription</p>
             </div>
 
             <div>
                 <div class="text-sm font-semibold uppercase text-neutral-300">Shop</div>
                 <ul class="mt-3 space-y-2 text-sm text-neutral-300">
-                    @if (footerCompanyMenu is not null)
+                    @if (Context.Navigation.FooterCompanyMenu is not null)
                     {
-                        @foreach (var item in FlattenMenu(footerCompanyMenu.Items))
+                        @foreach (var item in Context.Navigation.FooterCompanyMenu.Links)
                         {
-                            @if (!string.IsNullOrWhiteSpace(item.Href))
-                            {
-                                <li><a href="@item.Href" target="@Target(item)" class="hover:text-white/80">@item.Label</a></li>
-                            }
+                            <li><a href="@item.Href" target="@item.Target" class="hover:text-white/80">@item.Label</a></li>
                         }
                     }
                     else
@@ -29,9 +22,9 @@
                         <li><a href="@StorefrontRoutes.Home" class="hover:text-white/80">Home</a></li>
                         <li><a href="@StorefrontRoutes.NewReleases" class="hover:text-white/80">New Releases</a></li>
                         <li><a href="@StorefrontRoutes.TodaysDeals" class="hover:text-white/80">Today's Deals</a></li>
-                        @foreach (var link in footerCompanyLinks)
+                        @foreach (var link in Context.Navigation.FooterCompanyLinks)
                         {
-                            <li><a href="@PageHref(link)" class="hover:text-white/80">@link.Title</a></li>
+                            <li><a href="@link.Href" target="@link.Target" class="hover:text-white/80">@link.Label</a></li>
                         }
                     }
                 </ul>
@@ -40,21 +33,18 @@
             <div>
                 <div class="text-sm font-semibold uppercase text-neutral-300">Support</div>
                 <ul class="mt-3 space-y-2 text-sm text-neutral-300">
-                    @if (footerSupportMenu is not null)
+                    @if (Context.Navigation.FooterSupportMenu is not null)
                     {
-                        @foreach (var item in FlattenMenu(footerSupportMenu.Items))
+                        @foreach (var item in Context.Navigation.FooterSupportMenu.Links)
                         {
-                            @if (!string.IsNullOrWhiteSpace(item.Href))
-                            {
-                                <li><a href="@item.Href" target="@Target(item)" class="hover:text-white/80">@item.Label</a></li>
-                            }
+                            <li><a href="@item.Href" target="@item.Target" class="hover:text-white/80">@item.Label</a></li>
                         }
                     }
                     else
                     {
-                        @foreach (var link in footerSupportLinks)
+                        @foreach (var link in Context.Navigation.FooterSupportLinks)
                         {
-                            <li><a href="@PageHref(link)" class="hover:text-white/80">@link.Title</a></li>
+                            <li><a href="@link.Href" target="@link.Target" class="hover:text-white/80">@link.Label</a></li>
                         }
                     }
                 </ul>
@@ -65,17 +55,17 @@
                 @if (HasContactDetails)
                 {
                     <ul class="mt-3 space-y-2 text-sm leading-6 text-neutral-300">
-                        @if (!string.IsNullOrWhiteSpace(ContactEmail))
+                        @if (!string.IsNullOrWhiteSpace(Context.ContactEmail))
                         {
-                            <li><a href="mailto:@ContactEmail" class="hover:text-white/80">@ContactEmail</a></li>
+                            <li><a href="mailto:@Context.ContactEmail" class="hover:text-white/80">@Context.ContactEmail</a></li>
                         }
-                        @if (!string.IsNullOrWhiteSpace(ContactPhone))
+                        @if (!string.IsNullOrWhiteSpace(Context.ContactPhone))
                         {
-                            <li><a href="@ContactPhoneHref" class="hover:text-white/80">@ContactPhone</a></li>
+                            <li><a href="@Context.ContactPhoneHref" class="hover:text-white/80">@Context.ContactPhone</a></li>
                         }
-                        @if (!string.IsNullOrWhiteSpace(_displayContext.CompanyAddress))
+                        @if (!string.IsNullOrWhiteSpace(Context.CompanyAddress))
                         {
-                            <li class="text-neutral-400">@_displayContext.CompanyAddress</li>
+                            <li class="text-neutral-400">@Context.CompanyAddress</li>
                         }
                     </ul>
                 }
@@ -91,23 +81,20 @@
         </div>
 
         <div class="mt-8 border-t border-white/10 pt-4 text-xs text-neutral-400 sm:flex sm:items-center sm:justify-between">
-            <p>© @DateTime.UtcNow.Year @BrandName. All rights reserved.</p>
+            <p>@Context.CopyrightLabel</p>
             <div class="mt-3 flex justify-center gap-4 sm:mt-0">
-                @if (footerLegalMenu is not null)
+                @if (Context.Navigation.FooterLegalMenu is not null)
                 {
-                    @foreach (var item in FlattenMenu(footerLegalMenu.Items))
+                    @foreach (var item in Context.Navigation.FooterLegalMenu.Links)
                     {
-                        @if (!string.IsNullOrWhiteSpace(item.Href))
-                        {
-                            <a href="@item.Href" target="@Target(item)" class="hover:text-white/80">@item.Label</a>
-                        }
+                        <a href="@item.Href" target="@item.Target" class="hover:text-white/80">@item.Label</a>
                     }
                 }
                 else
                 {
-                    @foreach (var link in footerLegalLinks)
+                    @foreach (var link in Context.Navigation.FooterLegalLinks)
                     {
-                        <a href="@PageHref(link)" class="hover:text-white/80">@link.Title</a>
+                        <a href="@link.Href" target="@link.Target" class="hover:text-white/80">@link.Label</a>
                     }
                 }
                 <button type="button" data-storefront-consent-manage class="hover:text-white/80">Privacy choices</button>
@@ -117,76 +104,14 @@
 </footer>
 
 @code {
-    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
-    private IReadOnlyList<StorefrontPageNavigationLinkDto> footerCompanyLinks = [];
-    private IReadOnlyList<StorefrontPageNavigationLinkDto> footerSupportLinks = [];
-    private IReadOnlyList<StorefrontPageNavigationLinkDto> footerLegalLinks = [];
-    private StoreNavigationPublicMenuDto? footerCompanyMenu;
-    private StoreNavigationPublicMenuDto? footerSupportMenu;
-    private StoreNavigationPublicMenuDto? footerLegalMenu;
+    [Parameter, EditorRequired]
+    public StorefrontFooterContext Context { get; set; } = default!;
 
-    private string BrandName => FirstNonEmpty(_displayContext.CompanyName, _displayContext.StoreName, "BlazorShop");
-
-    private string StoreLabel => string.Equals(_displayContext.StoreKey, StorefrontDisplayContext.Fallback.StoreKey, StringComparison.OrdinalIgnoreCase)
-        ? "Public shop"
-        : _displayContext.StoreKey;
-
-    private string BrandDescription => !string.IsNullOrWhiteSpace(_displayContext.CompanyAddress)
-        ? $"Products and support from {BrandName}."
+    private string BrandDescription => !string.IsNullOrWhiteSpace(Context.CompanyAddress)
+        ? $"Products and support from {Context.Brand.Name}."
         : "Quality products, fair prices, and route-based public shopping pages.";
 
-    private string? ContactEmail => FirstNonEmptyOrNull(_displayContext.SupportEmail, _displayContext.CompanyEmail);
-
-    private string? ContactPhone => FirstNonEmptyOrNull(_displayContext.SupportPhone, _displayContext.CompanyPhone);
-
-    private string? ContactPhoneHref => string.IsNullOrWhiteSpace(ContactPhone)
-        ? null
-        : $"tel:{ContactPhone.Replace(" ", string.Empty, StringComparison.Ordinal)}";
-
-    private bool HasContactDetails => !string.IsNullOrWhiteSpace(ContactEmail)
-        || !string.IsNullOrWhiteSpace(ContactPhone)
-        || !string.IsNullOrWhiteSpace(_displayContext.CompanyAddress);
-
-    protected override async Task OnInitializedAsync()
-    {
-        _displayContext = await DisplayContextProvider.GetAsync();
-        footerCompanyLinks = await PageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterCompany);
-        footerSupportLinks = await PageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterSupport);
-        footerLegalLinks = await PageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterLegal);
-        footerCompanyMenu = await NavigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterCompany);
-        footerSupportMenu = await NavigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterSupport);
-        footerLegalMenu = await NavigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterLegal);
-    }
-
-    private static string PageHref(StorefrontPageNavigationLinkDto link)
-    {
-        return StorefrontRoutes.Page(link.Slug);
-    }
-
-    private static string FirstNonEmpty(params string?[] values)
-    {
-        return FirstNonEmptyOrNull(values) ?? string.Empty;
-    }
-
-    private static string? FirstNonEmptyOrNull(params string?[] values)
-    {
-        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
-    }
-
-    private static string? Target(StoreNavigationPublicItemDto item)
-    {
-        return item.OpensInNewTab ? "_blank" : null;
-    }
-
-    private static IEnumerable<StoreNavigationPublicItemDto> FlattenMenu(IEnumerable<StoreNavigationPublicItemDto> items)
-    {
-        foreach (var item in items)
-        {
-            yield return item;
-            foreach (var child in FlattenMenu(item.Children))
-            {
-                yield return child;
-            }
-        }
-    }
+    private bool HasContactDetails => !string.IsNullOrWhiteSpace(Context.ContactEmail)
+        || !string.IsNullOrWhiteSpace(Context.ContactPhone)
+        || !string.IsNullOrWhiteSpace(Context.CompanyAddress);
 }

@@ -3,7 +3,7 @@
 
 <Router AppAssembly="@typeof(StorefrontApp).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@ViewSet.MainLayout" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(StorefrontFoundationLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>

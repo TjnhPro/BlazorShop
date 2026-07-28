@@ -1,10 +1,10 @@
-@if (Products.Count > 0)
+@if (Items.Count > 0)
 {
     <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        @foreach (var product in Products)
+        @foreach (var item in Items)
         {
-            <li class="h-full">
-                <ProductCard Product="product" />
+            <li class="h-full" @key="item.Id">
+                <ProductCard Item="item" />
             </li>
         }
     </ul>
@@ -18,7 +18,7 @@ else
 
 @code {
     [Parameter]
-    public IReadOnlyList<GetCatalogProduct> Products { get; set; } = Array.Empty<GetCatalogProduct>();
+    public IReadOnlyList<ProductSummaryItem> Items { get; set; } = [];
 
     [Parameter]
     public string EmptyMessage { get; set; } = "No products are available right now.";

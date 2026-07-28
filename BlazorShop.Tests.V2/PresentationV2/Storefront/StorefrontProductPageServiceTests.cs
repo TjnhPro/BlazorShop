@@ -44,7 +44,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Single(ready.Context.GalleryItems);
             Assert.Equal(product.Id, ready.Context.PurchasePanel.ProductId);
             Assert.True(ready.Context.PurchasePanel.CanSubmitInitialPurchase);
-            Assert.Single(ready.Context.RelatedProducts);
+            Assert.Single(ready.Context.RelatedProductSummaries);
         }
 
         [Fact]

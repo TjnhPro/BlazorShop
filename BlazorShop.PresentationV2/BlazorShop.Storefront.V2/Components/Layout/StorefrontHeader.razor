@@ -1,26 +1,21 @@
-@inject IStorefrontCatalogClient ApiClient
-@inject IStorefrontDisplayContextProvider DisplayContextProvider
-@inject IStorefrontPageNavigationProvider PageNavigationProvider
-@inject IStorefrontNavigationProvider NavigationProvider
-
 <header class="bs-storefront-header relative text-neutral-100">
     <div class="bs-storefront-header__shell">
         <div class="bs-storefront-header__desktop relative mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@BrandHomeLabel">
-                @if (!string.IsNullOrWhiteSpace(BrandLogoUrl))
+            <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
+                @if (!string.IsNullOrWhiteSpace(Context.Brand.LogoUrl))
                 {
-                    <img class="bs-storefront-header__brand-logo" src="@BrandLogoUrl" alt="" loading="eager" decoding="async" />
+                    <img class="bs-storefront-header__brand-logo" src="@Context.Brand.LogoUrl" alt="" loading="eager" decoding="async" />
                 }
-                <span class="bs-storefront-header__brand-mark">@BrandName</span>
-                <span class="bs-storefront-header__brand-label">@BrandLabel</span>
+                <span class="bs-storefront-header__brand-mark">@Context.Brand.Name</span>
+                <span class="bs-storefront-header__brand-label">@Context.Brand.Label</span>
             </a>
 
-            <form method="get" action="@StorefrontRoutes.Search" class="bs-storefront-search" role="search">
+            <form method="get" action="@Context.Search.Action" class="bs-storefront-search" role="search">
                 <select name="category" class="bs-storefront-search__select" aria-label="Search category">
                     <option value="">All</option>
-                    @foreach (var category in _searchCategories)
+                    @foreach (var category in Context.Search.Categories)
                     {
-                        <option value="@category.Slug">@category.Label</option>
+                        <option value="@category.Href">@category.Label</option>
                     }
                 </select>
                 <input name="q" class="bs-storefront-search__input" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off" />
@@ -31,14 +26,11 @@
             </form>
 
             <nav class="bs-storefront-header__desktop-nav flex flex-wrap items-center gap-2 text-sm font-medium lg:justify-center" aria-label="Primary shop navigation">
-                @if (mainMenu is not null)
+                @if (Context.Navigation.MainMenu is not null)
                 {
-                    @foreach (var item in mainMenu.Items)
+                    @foreach (var item in Context.Navigation.MainMenu.Links)
                     {
-                        @if (!string.IsNullOrWhiteSpace(item.Href))
-                        {
-                            <NavLink href="@item.Href" target="@Target(item)" class="bs-storefront-nav-link" ActiveClass="is-active">@item.Label</NavLink>
-                        }
+                        <NavLink href="@item.Href" target="@item.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@item.Label</NavLink>
                     }
                 }
                 else
@@ -46,21 +38,21 @@
                     <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
                     <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
                     <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
-                    @foreach (var link in headerLinks)
+                    @foreach (var link in Context.Navigation.HeaderLinks)
                     {
-                        <NavLink href="@PageHref(link)" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Title</NavLink>
+                        <NavLink href="@link.Href" target="@link.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Label</NavLink>
                     }
                 }
             </nav>
 
             <div class="bs-storefront-header__desktop-actions flex shrink-0 flex-wrap items-center gap-3 text-sm" aria-label="Shop actions">
-                @if (ShowCurrencySelector)
+                @if (Context.Currency.ShowSelector)
                 {
-                    <form method="post" action="@StorefrontRoutes.CurrencyPreference" class="bs-storefront-currency-form">
+                    <form method="post" action="@Context.Currency.PreferenceAction" class="bs-storefront-currency-form">
                         <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+                        <input type="hidden" name="ReturnUrl" value="@Context.Currency.ReturnUrl" />
                         <select name="CurrencyCode" class="bs-storefront-currency-select" aria-label="Currency">
-                            @foreach (var currencyCode in _displayContext.SupportedCurrencyCodes)
+                            @foreach (var currencyCode in Context.Currency.SupportedCurrencyCodes)
                             {
                                 <option value="@currencyCode" selected="@IsSelectedCurrency(currencyCode)">@currencyCode</option>
                             }
@@ -82,20 +74,20 @@
                     </svg>
                     <span data-storefront-cart-badge hidden class="bs-storefront-cart-badge">0</span>
                 </a>
-                <StorefrontAccountMenu />
+                <StorefrontAccountMenu Context="Context.AccountMenu" />
                 <a href="@StorefrontRoutes.NewReleases" class="bs-storefront-pill-button">New Releases</a>
                 <a href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-deal-button">Today's Deals</a>
             </div>
         </div>
 
         <div class="bs-storefront-header__mobile relative mx-auto max-w-7xl px-4 py-3 sm:px-6">
-            <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@BrandHomeLabel">
-                @if (!string.IsNullOrWhiteSpace(BrandLogoUrl))
+            <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
+                @if (!string.IsNullOrWhiteSpace(Context.Brand.LogoUrl))
                 {
-                    <img class="bs-storefront-header__brand-logo" src="@BrandLogoUrl" alt="" loading="eager" decoding="async" />
+                    <img class="bs-storefront-header__brand-logo" src="@Context.Brand.LogoUrl" alt="" loading="eager" decoding="async" />
                 }
-                <span class="bs-storefront-header__brand-mark">@BrandName</span>
-                <span class="bs-storefront-header__brand-label">@BrandLabel</span>
+                <span class="bs-storefront-header__brand-mark">@Context.Brand.Name</span>
+                <span class="bs-storefront-header__brand-label">@Context.Brand.Label</span>
             </a>
 
             <div class="bs-storefront-header__mobile-actions" aria-label="Shop shortcuts">
@@ -111,15 +103,15 @@
                     </svg>
                     <span data-storefront-cart-badge hidden class="bs-storefront-cart-badge">0</span>
                 </a>
-                <StorefrontAccountMenu />
+                <StorefrontAccountMenu Context="Context.AccountMenu" />
             </div>
 
-            <form method="get" action="@StorefrontRoutes.Search" class="bs-storefront-search bs-storefront-search--mobile" role="search">
+            <form method="get" action="@Context.Search.Action" class="bs-storefront-search bs-storefront-search--mobile" role="search">
                 <select name="category" class="bs-storefront-search__select" aria-label="Search category">
                     <option value="">All</option>
-                    @foreach (var category in _searchCategories)
+                    @foreach (var category in Context.Search.Categories)
                     {
-                        <option value="@category.Slug">@category.Label</option>
+                        <option value="@category.Href">@category.Label</option>
                     }
                 </select>
                 <input name="q" class="bs-storefront-search__input" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off" />
@@ -139,14 +131,11 @@
 
                 <div class="bs-storefront-header__mobile-panel">
                     <nav class="bs-storefront-header__mobile-nav" aria-label="Mobile shop navigation">
-                        @if (mainMenu is not null)
+                        @if (Context.Navigation.MainMenu is not null)
                         {
-                            @foreach (var item in FlattenMenu(mainMenu.Items))
+                            @foreach (var item in Context.Navigation.MainMenu.Links)
                             {
-                                @if (!string.IsNullOrWhiteSpace(item.Href))
-                                {
-                                    <NavLink href="@item.Href" target="@Target(item)" class="bs-storefront-nav-link" ActiveClass="is-active">@item.Label</NavLink>
-                                }
+                                <NavLink href="@item.Href" target="@item.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@item.Label</NavLink>
                             }
                         }
                         else
@@ -154,21 +143,21 @@
                             <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
                             <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
                             <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
-                            @foreach (var link in headerLinks)
+                            @foreach (var link in Context.Navigation.HeaderLinks)
                             {
-                                <NavLink href="@PageHref(link)" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Title</NavLink>
+                                <NavLink href="@link.Href" target="@link.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Label</NavLink>
                             }
                         }
                     </nav>
 
                     <div class="bs-storefront-header__mobile-panel-actions">
-                        @if (ShowCurrencySelector)
+                        @if (Context.Currency.ShowSelector)
                         {
-                            <form method="post" action="@StorefrontRoutes.CurrencyPreference" class="bs-storefront-currency-form bs-storefront-currency-form--mobile">
+                            <form method="post" action="@Context.Currency.PreferenceAction" class="bs-storefront-currency-form bs-storefront-currency-form--mobile">
                                 <AntiforgeryToken />
-                                <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+                                <input type="hidden" name="ReturnUrl" value="@Context.Currency.ReturnUrl" />
                                 <select name="CurrencyCode" class="bs-storefront-currency-select" aria-label="Currency">
-                                    @foreach (var currencyCode in _displayContext.SupportedCurrencyCodes)
+                                    @foreach (var currencyCode in Context.Currency.SupportedCurrencyCodes)
                                     {
                                         <option value="@currencyCode" selected="@IsSelectedCurrency(currencyCode)">@currencyCode</option>
                                     }
@@ -188,103 +177,11 @@
 </header>
 
 @code {
-    private const string DefaultBrandName = "BLAZORSHOP";
-    private const string DefaultBrandLabel = "PUBLIC SHOP";
-
-    private string BrandName { get; set; } = DefaultBrandName;
-
-    private string BrandLabel { get; set; } = DefaultBrandLabel;
-
-    private string? BrandLogoUrl { get; set; }
-
-    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
-
-    private string BrandHomeLabel => $"{BrandName} shop home";
-
-    private bool ShowCurrencySelector => _displayContext.SupportedCurrencyCodes.Count > 1;
-
-    private string ReturnUrl => HttpContext is null
-        ? StorefrontRoutes.Home
-        : $"{HttpContext.Request.PathBase}{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
-
-    private IReadOnlyList<SearchCategoryOption> _searchCategories = [];
-    private IReadOnlyList<StorefrontPageNavigationLinkDto> headerLinks = [];
-    private StoreNavigationPublicMenuDto? mainMenu;
-
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        _displayContext = await DisplayContextProvider.GetAsync();
-        BrandName = _displayContext.StoreName;
-        BrandLabel = string.IsNullOrWhiteSpace(_displayContext.CompanyName)
-            ? _displayContext.StoreKey.ToUpperInvariant()
-            : _displayContext.CompanyName;
-        BrandLogoUrl = _displayContext.LogoUrl;
-
-        var categories = await ApiClient.GetPublishedCategoryTreeAsync();
-        if (categories.IsSuccess && categories.Value is not null)
-        {
-            _searchCategories = FlattenCategories(categories.Value);
-        }
-
-        headerLinks = await PageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.Header);
-        mainMenu = await NavigationProvider.GetMenuAsync(StoreNavigationMenuNames.Main);
-    }
-
-    private static string PageHref(StorefrontPageNavigationLinkDto link)
-    {
-        return StorefrontRoutes.Page(link.Slug);
-    }
-
-    private static IReadOnlyList<SearchCategoryOption> FlattenCategories(IReadOnlyList<GetCategoryTreeNode> categories)
-    {
-        var options = new List<SearchCategoryOption>();
-
-        foreach (var category in categories)
-        {
-            AppendCategory(options, category, 0);
-        }
-
-        return options;
-    }
-
-    private static void AppendCategory(List<SearchCategoryOption> options, GetCategoryTreeNode category, int depth)
-    {
-        if (!string.IsNullOrWhiteSpace(category.Slug))
-        {
-            var prefix = depth <= 0 ? string.Empty : $"{new string('-', depth * 2)} ";
-            options.Add(new SearchCategoryOption(category.Slug, $"{prefix}{category.Name}"));
-        }
-
-        foreach (var child in category.Children)
-        {
-            AppendCategory(options, child, depth + 1);
-        }
-    }
+    [Parameter, EditorRequired]
+    public StorefrontHeaderContext Context { get; set; } = default!;
 
     private bool IsSelectedCurrency(string currencyCode)
     {
-        return string.Equals(currencyCode, _displayContext.CurrencyCode, StringComparison.Ordinal);
+        return string.Equals(currencyCode, Context.Currency.CurrentCurrencyCode, StringComparison.Ordinal);
     }
-
-    private static string? Target(StoreNavigationPublicItemDto item)
-    {
-        return item.OpensInNewTab ? "_blank" : null;
-    }
-
-    private static IEnumerable<StoreNavigationPublicItemDto> FlattenMenu(IEnumerable<StoreNavigationPublicItemDto> items)
-    {
-        foreach (var item in items)
-        {
-            yield return item;
-            foreach (var child in FlattenMenu(item.Children))
-            {
-                yield return child;
-            }
-        }
-    }
-
-    private sealed record SearchCategoryOption(string Slug, string Label);
 }

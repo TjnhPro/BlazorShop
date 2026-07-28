@@ -109,7 +109,7 @@
             {
                 <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-neutral-900">More from @_product.Category?.Name</h2>
                 <div class="mt-8">
-                    <ProductGrid Products="_relatedProducts" EmptyMessage="No additional related products are available right now." />
+                    <ProductGrid Items="_relatedProducts" EmptyMessage="No additional related products are available right now." />
                 </div>
             }
             else
@@ -147,7 +147,7 @@
 
     private ProductPurchasePanelModel _purchasePanel => Context.PurchasePanel;
 
-    private IReadOnlyList<GetCatalogProduct> _relatedProducts => Context.RelatedProducts;
+    private IReadOnlyList<ProductSummaryItem> _relatedProducts => Context.RelatedProductSummaries;
 
     private StorefrontDisplayContext _displayContext => Context.DisplayContext;
 

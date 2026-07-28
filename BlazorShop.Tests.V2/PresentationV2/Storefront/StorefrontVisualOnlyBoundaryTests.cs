@@ -58,6 +58,16 @@ public sealed class StorefrontVisualOnlyBoundaryTests
         "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints"
     ];
 
+    private static readonly string[] ShellVisualComponentFiles =
+    [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontAccountMenu.razor",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/StorefrontBrandHead.razor",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor"
+    ];
+
     [Fact]
     public void MvpBlocker_V2VisualFolders_MustNotInjectApplicationServicesOrFrameworkPlumbing()
     {
@@ -107,6 +117,29 @@ public sealed class StorefrontVisualOnlyBoundaryTests
         Assert.True(
             offenders.Length == 0,
             $"MVP blocker: Storefront V2 must not keep active application logic source folders after the visual-only cutover.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [Fact]
+    public void F1_33_V2ShellVisualComponents_RenderSuppliedContextOnly()
+    {
+        var forbiddenTokens = VisualApplicationTokens
+            .Concat(VisualDataLoadingLifecycleTokens)
+            .ToArray();
+        var offenders = ShellVisualComponentFiles
+            .Select(relativePath => new SourceFile(RepositoryPath(relativePath), relativePath))
+            .SelectMany(file =>
+            {
+                var source = File.ReadAllText(file.AbsolutePath);
+                return forbiddenTokens
+                    .Where(token => source.Contains(token, StringComparison.Ordinal))
+                    .Select(token => $"{file.RelativePath}: {token}");
+            })
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"F1.33: registered shell visual components must render supplied context only.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
     private static string[] FindSourceTokenOffenders(

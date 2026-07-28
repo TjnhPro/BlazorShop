@@ -1,0 +1,26 @@
+@namespace BlazorShop.Storefront.Presentation.Views.Foundation
+@inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
+@inject IStorefrontShellContextService ShellContextService
+
+@if (_parameters is not null)
+{
+    <DynamicComponent Type="@ViewSet.ApplicationHead" Parameters="_parameters" />
+}
+
+@code {
+    private StorefrontShellContext? _context;
+    private IDictionary<string, object>? _parameters;
+
+    private StorefrontFoundationViewSet ViewSet => this.FoundationOptions.Value.ViewSet
+        ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _context = await this.ShellContextService.GetAsync();
+        StorefrontFoundationViewTypeValidator.Validate(this.ViewSet.ApplicationHead, _context);
+        _parameters = new Dictionary<string, object>
+        {
+            [StorefrontFoundationViewTypeValidator.ContextParameterName] = _context,
+        };
+    }
+}

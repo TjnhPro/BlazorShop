@@ -555,36 +555,51 @@ Evidence:
 
 Goal: visual components render supplied context only.
 
-- [ ] Update Presentation layout/page contexts to include shell context:
-  - [ ] main layout context.
-  - [ ] page context wrappers where needed.
-  - [ ] auth/account/cart/checkout contexts where layout needs account/session/currency.
-- [ ] Update V2 components:
-  - [ ] `StorefrontHeader` receives `StorefrontHeaderContext`.
-  - [ ] `StorefrontFooter` receives `StorefrontFooterContext`.
-  - [ ] `StorefrontAccountMenu` receives `StorefrontAccountMenuContext`.
-  - [ ] `StorefrontBrandHead` receives brand/head context or moves to Presentation head slot data.
-  - [ ] `ProductCard` receives formatted summary model and display context data, not providers.
-- [ ] Remove from V2 visual components:
-  - [ ] `@inject IStorefrontCatalogClient`
-  - [ ] `@inject IStorefrontDisplayContextProvider`
-  - [ ] `@inject IStorefrontPageNavigationProvider`
-  - [ ] `@inject IStorefrontNavigationProvider`
-  - [ ] `@inject IStorefrontSessionResolver`
-  - [ ] `HttpContext`
-  - [ ] `OnInitializedAsync` data loading.
-- [ ] Keep allowed UI state:
-  - [ ] mobile menu open/close.
-  - [ ] modal/details open/close.
-  - [ ] CSS selection state.
-  - [ ] local browser-only progressive enhancement.
-- [ ] Add tests:
-  - [ ] visual-only guard now passes for layout/header/footer/account components.
-  - [ ] rendered header contains search/category/currency/account data from context.
-  - [ ] rendered footer contains company/legal/support links from context.
-- [ ] Exit criteria:
-  - [ ] zero service injection in registered V2 layout/header/footer/account menu.
-  - [ ] zero API/session/navigation loading in visual components.
+- [x] Update Presentation layout/page contexts to include shell context:
+  - [x] main layout context.
+  - [x] page context wrappers where needed.
+  - [x] auth/account/cart/checkout contexts where layout needs account/session/currency.
+- [x] Update V2 components:
+  - [x] `StorefrontHeader` receives `StorefrontHeaderContext`.
+  - [x] `StorefrontFooter` receives `StorefrontFooterContext`.
+  - [x] `StorefrontAccountMenu` receives `StorefrontAccountMenuContext`.
+  - [x] `StorefrontBrandHead` receives brand/head context or moves to Presentation head slot data.
+  - [x] `ProductCard` receives formatted summary model and display context data, not providers.
+- [x] Remove from V2 visual components:
+  - [x] `@inject IStorefrontCatalogClient`
+  - [x] `@inject IStorefrontDisplayContextProvider`
+  - [x] `@inject IStorefrontPageNavigationProvider`
+  - [x] `@inject IStorefrontNavigationProvider`
+  - [x] `@inject IStorefrontSessionResolver`
+  - [x] `HttpContext`
+  - [x] `OnInitializedAsync` data loading.
+- [x] Keep allowed UI state:
+  - [x] mobile menu open/close.
+  - [x] modal/details open/close.
+  - [x] CSS selection state.
+  - [x] local browser-only progressive enhancement.
+- [x] Add tests:
+  - [x] visual-only guard now passes for layout/header/footer/account components.
+  - [x] rendered header contains search/category/currency/account data from context.
+  - [x] rendered footer contains company/legal/support links from context.
+- [x] Exit criteria:
+  - [x] zero service injection in registered V2 layout/header/footer/account menu.
+  - [x] zero API/session/navigation loading in visual components.
+
+Evidence:
+
+- Added Presentation `StorefrontFoundationLayout` and `StorefrontFoundationApplicationHead` hosts. They load `StorefrontShellContext` and pass it into registered V2 visual components.
+- Updated V2 `MainLayout`, `StorefrontHeader`, `StorefrontFooter`, `StorefrontAccountMenu`, and `StorefrontBrandHead` to consume supplied context only.
+- Updated `ProductCard`/`ProductGrid` to consume `ProductSummaryItem`; related product summaries are now mapped in Presentation by `StorefrontProductPageMapper`.
+- Updated `StorefrontBrandingMarkupTests`, `StorefrontProductPageServiceTests`, and added `F1_33_V2ShellVisualComponents_RenderSuppliedContextOnly`.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontBrandingMarkupTests" -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontProductPageServiceTests" -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~F1_33_V2ShellVisualComponents_RenderSuppliedContextOnly" -v:minimal`
+  - `rg -n "@inject IStorefront|IStorefrontRuntime|HttpClient|IHttpClientFactory|IConfiguration|IOptions<|HttpContext|RequestDelegate|StorefrontApiEndpointResolver|StorefrontStoreKeyResolver|GetRequiredService|Map(Get|Post|Put|Delete)|OnInitializedAsync|OnParametersSetAsync" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontAccountMenu.razor BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/StorefrontBrandHead.razor BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor`
 
 ## Phase F1.34 - Move auth mutation contracts into fixed Presentation form patterns
 

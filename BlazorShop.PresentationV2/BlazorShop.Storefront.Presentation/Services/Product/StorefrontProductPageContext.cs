@@ -1,5 +1,6 @@
 namespace BlazorShop.Storefront.Presentation.Services.Product;
 
+using BlazorShop.Storefront.Components.Contracts.Catalog;
 using BlazorShop.Storefront.Components.Contracts.Product;
 using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services;
@@ -10,5 +11,5 @@ public sealed record StorefrontProductPageContext(
     IReadOnlyList<StorefrontBreadcrumbItem> Breadcrumbs,
     IReadOnlyList<ProductGalleryItem> GalleryItems,
     ProductPurchasePanelModel PurchasePanel,
-    IReadOnlyList<GetCatalogProduct> RelatedProducts,
+    IReadOnlyList<ProductSummaryItem> RelatedProductSummaries,
     StorefrontDisplayContext DisplayContext);
