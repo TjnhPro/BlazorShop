@@ -22,7 +22,7 @@ public static class StarterFoundationViewRegistration
             options.ViewSet = new StorefrontFoundationViewSet
             {
                 ApplicationHead = typeof(ApplicationHead),
-                ApplicationScripts = typeof(ApplicationScripts),
+                VisualScripts = typeof(ApplicationScripts),
                 MainLayout = typeof(MainLayout),
                 HomePage = typeof(HomePage),
                 CategoryPage = typeof(CategoryPage),

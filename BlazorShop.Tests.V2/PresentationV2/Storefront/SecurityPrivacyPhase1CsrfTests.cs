@@ -9,10 +9,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontApp.razor");
             var head = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationHead.razor");
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Security/StorefrontAntiforgeryHead.razor");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Components/Security/StorefrontAntiforgeryHead.razor");
 
-            Assert.Contains("ComponentType=\"@ViewSet.ApplicationHead\"", app, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontAntiforgeryHead />", head, StringComparison.Ordinal);
+            Assert.True(
+                app.IndexOf("<StorefrontAntiforgeryHead />", StringComparison.Ordinal) <
+                app.IndexOf("<StorefrontFoundationApplicationHead />", StringComparison.Ordinal));
+            Assert.Contains("<StorefrontFoundationApplicationHead />", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("<StorefrontAntiforgeryHead />", head, StringComparison.Ordinal);
             Assert.Contains("Antiforgery.GetAndStoreTokens", component, StringComparison.Ordinal);
             Assert.Contains("blazorshop-antiforgery-token", component, StringComparison.Ordinal);
             Assert.Contains("X-CSRF-TOKEN", component, StringComparison.Ordinal);
@@ -33,7 +36,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontCartMutationEndpoints_ValidateAntiforgery()
         {
             var support = ReadStorefrontLocalEndpointSupportSource();
-            var services = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var services = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationServiceCollectionExtensions.cs");
 
             Assert.Contains("options.HeaderName = \"X-CSRF-TOKEN\"", services, StringComparison.Ordinal);
             Assert.Contains("ValidateLocalCartAntiforgeryAsync", support, StringComparison.Ordinal);
@@ -44,7 +47,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadStorefrontLocalEndpointSupportSource()
         {
             var root = FindStorefrontSupportRepositoryRoot();
-            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Endpoints");
+            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.Presentation", "Endpoints");
             return string.Join(
                 Environment.NewLine,
                 Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs")

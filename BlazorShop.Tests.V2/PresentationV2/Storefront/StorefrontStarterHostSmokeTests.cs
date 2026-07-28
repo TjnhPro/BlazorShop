@@ -70,6 +70,21 @@ public sealed class StorefrontStarterHostSmokeTests : IClassFixture<WebApplicati
     }
 
     [Fact]
+    public async Task StarterRoot_RendersPresentationOwnedSecurityHeadAndCoreScripts()
+    {
+        using var client = CreateClient();
+
+        using var response = await client.GetAsync("/");
+        var content = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("name=\"blazorshop-antiforgery-token\"", content, StringComparison.Ordinal);
+        Assert.Contains("src=\"_framework/blazor.web.js\"", content, StringComparison.Ordinal);
+        Assert.Contains("src=\"_content/BlazorShop.Storefront.Presentation/js/storefront.application.js\"", content, StringComparison.Ordinal);
+        Assert.Contains("href=\"css/starter.css\"", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task StarterRobotsAndSitemap_UsePresentationEndpoints()
     {
         using var client = CreateClient();

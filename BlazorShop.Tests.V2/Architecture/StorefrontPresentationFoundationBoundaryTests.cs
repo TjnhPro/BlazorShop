@@ -106,7 +106,7 @@ namespace BlazorShop.Tests.Architecture
             var missingProduct = new StorefrontFoundationViewSet
             {
                 ApplicationHead = viewSet.ApplicationHead,
-                ApplicationScripts = viewSet.ApplicationScripts,
+                VisualScripts = viewSet.VisualScripts,
                 MainLayout = viewSet.MainLayout,
                 HomePage = viewSet.HomePage,
                 CategoryPage = viewSet.CategoryPage,
@@ -165,6 +165,19 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.True(result.Failed);
             Assert.Contains(result.Failures, failure => failure.Contains("route component", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenHostVisualScriptsTryToReplaceCoreScripts()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), visualScripts: typeof(StorefrontFoundationCoreScripts)),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("Presentation-owned core scripts", StringComparison.Ordinal));
         }
 
         [Fact]
@@ -252,7 +265,7 @@ namespace BlazorShop.Tests.Architecture
                 "StorefrontFoundationViewSet.CreateMinimal",
                 starterRegistration,
                 StringComparison.Ordinal);
-            Assert.Contains("ApplicationScripts = typeof(ApplicationScripts)", starterRegistration, StringComparison.Ordinal);
+            Assert.Contains("VisualScripts = typeof(ApplicationScripts)", starterRegistration, StringComparison.Ordinal);
             Assert.Contains("ErrorState = typeof(ErrorState)", starterRegistration, StringComparison.Ordinal);
             Assert.Contains(
                 "MapStorefrontApplication(",
@@ -524,6 +537,7 @@ namespace BlazorShop.Tests.Architecture
 
         private static StorefrontFoundationViewSet CopyViewSet(
             StorefrontFoundationViewSet source,
+            Type? visualScripts = null,
             Type? productPage = null,
             Type? checkoutPage = null,
             Type? errorState = null,
@@ -533,7 +547,7 @@ namespace BlazorShop.Tests.Architecture
             return new StorefrontFoundationViewSet
             {
                 ApplicationHead = source.ApplicationHead,
-                ApplicationScripts = source.ApplicationScripts,
+                VisualScripts = visualScripts ?? source.VisualScripts,
                 MainLayout = source.MainLayout,
                 HomePage = source.HomePage,
                 CategoryPage = source.CategoryPage,

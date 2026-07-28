@@ -7,12 +7,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    <StorefrontAntiforgeryHead />
     <StorefrontFoundationApplicationHead />
     <HeadOutlet />
 </head>
 <body>
     <StorefrontRoutes />
-    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.ApplicationScripts" />
+    <StorefrontFoundationCoreScripts />
+    <StorefrontFoundationViewOutlet ComponentType="@ViewSet.VisualScripts" />
 </body>
 </html>
 

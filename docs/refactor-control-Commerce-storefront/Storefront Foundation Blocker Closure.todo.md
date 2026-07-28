@@ -107,30 +107,41 @@ Goal: Presentation must render mandatory security/application bootstrap pieces r
 
 ### Tasks
 
-- [ ] Move mandatory antiforgery/security head rendering into `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor`.
-- [ ] Ensure security head renders before host visual head.
-- [ ] Keep host `ApplicationHead` for branding, SEO visuals, CSS links, and host-specific metadata only.
-- [ ] Add Presentation-owned core script component, for example:
-  - [ ] `StorefrontFoundationCoreScripts.razor`
-  - [ ] or equivalent internal component under `Views/Foundation`.
-- [ ] Load Blazor script and Presentation-owned core application script from Presentation, not from V2/Starter.
-- [ ] Rename `ApplicationScripts` slot to `VisualScripts` or add `VisualScripts` first with an obsolete compatibility alias if direct rename is too risky in one commit.
-- [ ] Update V2 and Starter view registration to use the visual script slot only.
-- [ ] Add startup validation that core security/scripts cannot be replaced by a host view.
+- [x] Move mandatory antiforgery/security head rendering into `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor`.
+- [x] Ensure security head renders before host visual head.
+- [x] Keep host `ApplicationHead` for branding, SEO visuals, CSS links, and host-specific metadata only.
+- [x] Add Presentation-owned core script component, for example:
+  - [x] `StorefrontFoundationCoreScripts.razor`
+  - [x] or equivalent internal component under `Views/Foundation`.
+- [x] Load Blazor script and Presentation-owned core application script from Presentation, not from V2/Starter.
+- [x] Rename `ApplicationScripts` slot to `VisualScripts` or add `VisualScripts` first with an obsolete compatibility alias if direct rename is too risky in one commit.
+- [x] Update V2 and Starter view registration to use the visual script slot only.
+- [x] Add startup validation that core security/scripts cannot be replaced by a host view.
 
 ### Tests
 
-- [ ] Unit/component test: `StorefrontApp` output contains antiforgery meta/component for V2 and Starter.
-- [ ] Unit/component test: V2 and Starter still render host `ApplicationHead`.
-- [ ] Architecture test: no host view set can omit Presentation core scripts.
-- [ ] Browser test: cart/consent mutation still sends antiforgery token after script move.
+- [x] Unit/component test: `StorefrontApp` output contains antiforgery meta/component for V2 and Starter.
+- [x] Unit/component test: V2 and Starter still render host `ApplicationHead`.
+- [x] Architecture test: no host view set can omit Presentation core scripts.
+- [x] Browser test: cart/consent mutation still sends antiforgery token after script move.
 
 ### Definition of Done
 
-- [ ] Security head is Presentation-owned.
-- [ ] Core application scripts are Presentation-owned.
-- [ ] Host script slot is visual-only.
-- [ ] V2/Starter cannot accidentally omit antiforgery or core app JS.
+- [x] Security head is Presentation-owned.
+- [x] Core application scripts are Presentation-owned.
+- [x] Host script slot is visual-only.
+- [x] V2/Starter cannot accidentally omit antiforgery or core app JS.
+
+### F1.46 Notes
+
+- Added `StorefrontFoundationCoreScripts.razor` and `wwwroot/js/storefront.application.js` in Presentation. F1.47 will move cart/consent/product-selection behavior into that static asset.
+- `StorefrontFoundationViewSet.VisualScripts` is the active host slot. `ApplicationScripts` remains as an obsolete compatibility alias for generated/template transition only.
+- Browser-level Playwright is deferred to F1.47 because behavior has not been split yet. F1.46 proof uses host smoke tests plus cart/consent mutation antiforgery smoke coverage.
+- Verification:
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~LayoutAssetFoundationTests.StorefrontRoot_DefinesExpectedAssetsWithoutDuplicates" -v:minimal` - passed 26/26.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.SignIn_RendersPresentationOwnedSecurityHeadAndCoreScriptsWithV2VisualHead|FullyQualifiedName~StorefrontStarterHostSmokeTests.StarterRoot_RendersPresentationOwnedSecurityHeadAndCoreScripts" -v:minimal` - passed 2/2.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.CartApi_PostLine_SetsHttpOnlyCartToken_AndDoesNotSendUnitPrice|FullyQualifiedName~StorefrontV2HostSmokeTests.CartApi_MutationWithoutAntiforgeryToken_ReturnsBadRequest|FullyQualifiedName~StorefrontV2HostSmokeTests.ConsentApi_PostWithAntiforgeryToken_ReturnsSavedState" -v:minimal` - passed 6/6.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` - passed generated proof/static validation/isolation gate.
 
 ## Phase F1.47 - Split Application JS From Visual JS
 

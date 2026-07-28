@@ -2,9 +2,24 @@ namespace BlazorShop.Storefront.Presentation.Views.Foundation;
 
 public sealed class StorefrontFoundationViewSet
 {
+    private Type? visualScripts;
+    private Type? VisualScriptsOrNull => this.visualScripts;
+
     public required Type ApplicationHead { get; init; }
 
-    public required Type ApplicationScripts { get; init; }
+    public Type VisualScripts
+    {
+        get => this.visualScripts
+            ?? throw new InvalidOperationException("A visual script component type must be registered.");
+        init => this.visualScripts = value;
+    }
+
+    [Obsolete("Use VisualScripts. ApplicationScripts is a compatibility alias and will be removed after generated storefront templates migrate.")]
+    public Type ApplicationScripts
+    {
+        get => this.VisualScripts;
+        init => this.visualScripts = value;
+    }
 
     public required Type MainLayout { get; init; }
 
@@ -47,7 +62,7 @@ public sealed class StorefrontFoundationViewSet
         return new StorefrontFoundationViewSet
         {
             ApplicationHead = componentType,
-            ApplicationScripts = componentType,
+            VisualScripts = componentType,
             MainLayout = componentType,
             HomePage = componentType,
             CategoryPage = componentType,
@@ -73,7 +88,7 @@ public sealed class StorefrontFoundationViewSet
         return
         [
             new(nameof(this.ApplicationHead), this.ApplicationHead),
-            new(nameof(this.ApplicationScripts), this.ApplicationScripts),
+            new(nameof(this.VisualScripts), this.VisualScriptsOrNull),
             new(nameof(this.MainLayout), this.MainLayout),
             new(nameof(this.HomePage), this.HomePage),
             new(nameof(this.CategoryPage), this.CategoryPage),

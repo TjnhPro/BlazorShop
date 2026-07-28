@@ -59,6 +59,12 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
                 failures.Add($"Foundation view slot '{slot.Name}' must not use StorefrontFoundationEmptyView.");
             }
 
+            if (slot.Name == nameof(StorefrontFoundationViewSet.VisualScripts)
+                && componentType == typeof(StorefrontFoundationCoreScripts))
+            {
+                failures.Add("Foundation view slot 'VisualScripts' must be host visual script markup and cannot replace Presentation-owned core scripts.");
+            }
+
             if (componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: true).Length > 0)
             {
                 failures.Add($"Foundation view slot '{slot.Name}' must be a visual component, not a route component.");

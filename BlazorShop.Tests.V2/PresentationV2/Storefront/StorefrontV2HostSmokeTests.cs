@@ -37,6 +37,26 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task SignIn_RendersPresentationOwnedSecurityHeadAndCoreScriptsWithV2VisualHead()
+        {
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.SignIn);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("name=\"blazorshop-antiforgery-token\"", content, StringComparison.Ordinal);
+            Assert.Contains("src=\"_framework/blazor.web.js\"", content, StringComparison.Ordinal);
+            Assert.Contains("src=\"_content/BlazorShop.Storefront.Presentation/js/storefront.application.js\"", content, StringComparison.Ordinal);
+            Assert.Contains("src=\"js/storefrontCommerce.js\"", content, StringComparison.Ordinal);
+            Assert.Contains("href=\"css/storefront.css\"", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task Checkout_WhenCartIsEmpty_ShowsEmptyCartState()
         {
             using var client = CreateClient(
@@ -905,6 +925,38 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task ConsentApi_PostWithAntiforgeryToken_ReturnsSavedState()
+        {
+            var consentClient = new StubStorefrontConsentClient();
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontConsentClient>();
+                    services.AddScoped<IStorefrontConsentClient>(_ => consentClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var request = CreateJsonRequest(
+                HttpMethod.Post,
+                "/api/consent",
+                new
+                {
+                    Preferences = true,
+                    Analytics = false,
+                    Marketing = true,
+                },
+                token,
+                cookieHeader);
+            using var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(consentClient.SaveCalled);
+            Assert.Contains("consentKey", content, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task CartApi_PostLine_WhenRateLimitExceeded_ReturnsTypedTooManyRequests()
         {
             var productId = Guid.Parse("12121212-1212-1212-1212-121212121212");
@@ -1531,6 +1583,59 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public string ResolveUrl(string? path)
             {
                 return $"{_baseUrl.TrimEnd('/')}/{(path ?? string.Empty).TrimStart('/')}";
+            }
+        }
+
+        private sealed class StubStorefrontConsentClient : IStorefrontConsentClient
+        {
+            public bool SaveCalled { get; private set; }
+
+            public Task<StorefrontSubmitResult<StorefrontConsentState>> GetConsentAsync(
+                string? visitorKey,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontConsentState>.Succeeded(
+                    CreateState(visitorKey),
+                    "Consent loaded."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontConsentState>> SaveConsentAsync(
+                string visitorKey,
+                StorefrontConsentSaveRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                this.SaveCalled = true;
+                return Task.FromResult(StorefrontSubmitResult<StorefrontConsentState>.Succeeded(
+                    CreateState(visitorKey, request),
+                    "Consent saved."));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontConsentState>> RevokeConsentAsync(
+                string visitorKey,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontConsentState>.Succeeded(
+                    CreateState(visitorKey) with { RevokedAtUtc = DateTimeOffset.UtcNow },
+                    "Consent revoked."));
+            }
+
+            private static StorefrontConsentState CreateState(
+                string? visitorKey,
+                StorefrontConsentSaveRequest? request = null)
+            {
+                return new StorefrontConsentState(
+                    true,
+                    false,
+                    "v1",
+                    string.IsNullOrWhiteSpace(visitorKey) ? "consent-key" : visitorKey,
+                    new StorefrontConsentCategorySelection(
+                        true,
+                        request?.Preferences ?? false,
+                        request?.Analytics ?? false,
+                        request?.Marketing ?? false),
+                    DateTimeOffset.UtcNow,
+                    null,
+                    DateTimeOffset.UtcNow.AddDays(180));
             }
         }
 

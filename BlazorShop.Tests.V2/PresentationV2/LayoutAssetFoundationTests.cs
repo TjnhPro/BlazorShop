@@ -7,7 +7,8 @@ namespace BlazorShop.Tests.PresentationV2
     public sealed partial class LayoutAssetFoundationTests
     {
         private static readonly string[] StorefrontRootStylesheetAllowlist = ["css/site.css", "css/storefront.css"];
-        private static readonly string[] StorefrontRootScriptAllowlist = ["_framework/blazor.web.js", "js/storefrontCommerce.js"];
+        private static readonly string[] StorefrontCoreScriptAllowlist = ["_framework/blazor.web.js", "_content/BlazorShop.Storefront.Presentation/js/storefront.application.js"];
+        private static readonly string[] StorefrontVisualScriptAllowlist = ["js/storefrontCommerce.js"];
         private static readonly string[] ControlPlaneRootStylesheetAllowlist = ["vendor/fontawesome/css/all.min.css", "css/site.css", "css/app.css"];
         private static readonly string[] ControlPlaneRootScriptAllowlist = ["_framework/blazor.webassembly.js", "js/downloads.js"];
 
@@ -16,20 +17,30 @@ namespace BlazorShop.Tests.PresentationV2
         {
             var appMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontApp.razor");
             var headMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationHead.razor");
+            var coreScriptMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationCoreScripts.razor");
             var scriptMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationScripts.razor");
 
             Assert.Equal(StorefrontRootStylesheetAllowlist, ExtractStylesheetHrefs(headMarkup));
-            Assert.Equal(StorefrontRootScriptAllowlist, ExtractScriptSources(scriptMarkup));
+            Assert.Equal(StorefrontCoreScriptAllowlist, ExtractScriptSources(coreScriptMarkup));
+            Assert.Equal(StorefrontVisualScriptAllowlist, ExtractScriptSources(scriptMarkup));
             Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", headMarkup);
+            Assert.True(
+                appMarkup.IndexOf("<StorefrontAntiforgeryHead />", StringComparison.Ordinal) <
+                appMarkup.IndexOf("<StorefrontFoundationApplicationHead />", StringComparison.Ordinal));
             Assert.True(
                 appMarkup.IndexOf("ComponentType=\"@ViewSet.ApplicationHead\"", StringComparison.Ordinal) <
                 appMarkup.IndexOf("<HeadOutlet />", StringComparison.Ordinal));
             Assert.True(
-                scriptMarkup.IndexOf("_framework/blazor.web.js", StringComparison.Ordinal) <
-                scriptMarkup.IndexOf("js/storefrontCommerce.js", StringComparison.Ordinal));
-            Assert.Contains("<StorefrontBrandHead />", headMarkup);
+                appMarkup.IndexOf("<StorefrontFoundationCoreScripts />", StringComparison.Ordinal) <
+                appMarkup.IndexOf("ComponentType=\"@ViewSet.VisualScripts\"", StringComparison.Ordinal));
+            Assert.True(
+                coreScriptMarkup.IndexOf("_framework/blazor.web.js", StringComparison.Ordinal) <
+                coreScriptMarkup.IndexOf("_content/BlazorShop.Storefront.Presentation/js/storefront.application.js", StringComparison.Ordinal));
+            Assert.Contains("<StorefrontBrandHead DisplayContext=\"Context.Display\" />", headMarkup);
+            Assert.DoesNotContain("<StorefrontAntiforgeryHead />", headMarkup, StringComparison.Ordinal);
             AssertRootDoesNotReferenceLegacyPresentationAssets(appMarkup);
             AssertRootDoesNotReferenceLegacyPresentationAssets(headMarkup);
+            AssertRootDoesNotReferenceLegacyPresentationAssets(coreScriptMarkup);
             AssertRootDoesNotReferenceLegacyPresentationAssets(scriptMarkup);
         }
 

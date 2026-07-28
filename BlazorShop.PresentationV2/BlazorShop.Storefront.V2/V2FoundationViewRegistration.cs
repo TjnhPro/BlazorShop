@@ -23,7 +23,7 @@ public static class V2FoundationViewRegistration
             options.ViewSet = new StorefrontFoundationViewSet
             {
                 ApplicationHead = typeof(StorefrontApplicationHead),
-                ApplicationScripts = typeof(StorefrontApplicationScripts),
+                VisualScripts = typeof(StorefrontApplicationScripts),
                 MainLayout = typeof(MainLayout),
                 HomePage = typeof(Home),
                 CategoryPage = typeof(CategoryPage),
