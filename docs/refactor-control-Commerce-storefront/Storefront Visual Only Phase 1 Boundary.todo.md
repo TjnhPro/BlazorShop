@@ -403,28 +403,37 @@ Evidence:
 
 Goal: redirect resolution and SEO runtime protection are shared application behavior, not V2 behavior.
 
-- [ ] Move from V2 to Presentation:
-  - [ ] `StorefrontPublicRedirectMiddleware`.
-  - [ ] `RedirectBlockReason`.
-  - [ ] redirect status validation.
-  - [ ] invalid target protection.
-  - [ ] loop protection.
-  - [ ] header-injection protection.
-  - [ ] SEO runtime logging hook.
-  - [ ] request filtering.
-- [ ] Register middleware from `UseStorefrontApplication()` after current-store guard and before route rendering.
-- [ ] Add tests:
-  - [ ] active redirect returns expected status.
-  - [ ] invalid external or header-injection target is blocked.
-  - [ ] redirect loop is blocked.
-  - [ ] missing redirect falls through to route rendering.
-  - [ ] store scope is preserved.
-- [ ] Remove from V2:
-  - [ ] `Services/StorefrontPublicRedirectMiddleware.cs`
-  - [ ] direct middleware registration.
-- [ ] Exit criteria:
-  - [ ] V2 and Starter share identical redirect behavior.
-  - [ ] V2 has no redirect middleware code.
+- [x] Move from V2 to Presentation:
+  - [x] `StorefrontPublicRedirectMiddleware`.
+  - [x] `RedirectBlockReason`.
+  - [x] redirect status validation.
+  - [x] invalid target protection.
+  - [x] loop protection.
+  - [x] header-injection protection.
+  - [x] SEO runtime logging hook.
+  - [x] request filtering.
+- [x] Register middleware from `UseStorefrontApplication()` after current-store guard and before route rendering.
+- [x] Add tests:
+  - [x] active redirect returns expected status.
+  - [x] invalid external or header-injection target is blocked.
+  - [x] redirect loop is blocked.
+  - [x] missing redirect falls through to route rendering.
+  - [x] store scope is preserved.
+- [x] Remove from V2:
+  - [x] `Services/StorefrontPublicRedirectMiddleware.cs`
+  - [x] direct middleware registration.
+- [x] Exit criteria:
+  - [x] V2 and Starter share identical redirect behavior.
+  - [x] V2 has no redirect middleware code.
+
+Evidence:
+
+- `StorefrontPublicRedirectMiddleware` is Presentation-owned and registered by `UseStorefrontApplication()` after the current-store guard.
+- Added `StorefrontPublicRedirectMiddlewareTests` for valid redirect, invalid external target, scheme-relative target, header-injection target, loop fall-through, missing redirect fall-through, and static asset skip.
+- Added `StorefrontV2Source_DoesNotOwnPublicRedirectApplicationPolicy` source gate.
+- Source gate `rg -n "StorefrontPublicRedirectMiddleware|UseMiddleware<StorefrontPublicRedirectMiddleware>|RedirectBlockReason" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"` returned no matches.
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 advisories.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPublicRedirectMiddlewareTests|FullyQualifiedName~StorefrontApplicationBootstrapTests" -v:minimal` passed: 13 passed, 0 failed.
 
 ## Phase F1.31 - Move rate limiting and BFF security policy
 

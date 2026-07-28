@@ -104,6 +104,24 @@ public sealed class StorefrontApplicationBootstrapTests
             $"Storefront V2 must not own current-store guard source or middleware registration.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
+    [Fact]
+    public void StorefrontV2Source_DoesNotOwnPublicRedirectApplicationPolicy()
+    {
+        var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
+            .Where(file => file.EndsWith(".cs", StringComparison.Ordinal) || file.EndsWith(".razor", StringComparison.Ordinal))
+            .Select(file => (File: file, Source: ReadRepositoryFile(file)))
+            .Where(file => file.File.EndsWith("StorefrontPublicRedirectMiddleware.cs", StringComparison.Ordinal)
+                || file.Source.Contains("UseMiddleware<StorefrontPublicRedirectMiddleware>", StringComparison.Ordinal)
+                || file.Source.Contains("RedirectBlockReason", StringComparison.Ordinal))
+            .Select(file => file.File)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"Storefront V2 must not own public redirect middleware, registration, or redirect policy source.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
     private static string ReadRepositoryFile(string relativePath)
     {
         return File.ReadAllText(Path.Combine(RepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
