@@ -439,14 +439,14 @@ Evidence:
 
 Goal: Presentation.Hosting owns browser/BFF security execution. Hosts only provide config values.
 
-- [ ] Move to Presentation.Hosting:
-  - [ ] `StorefrontRateLimitPolicies`
-  - [ ] `StorefrontRateLimitIdentity`
-  - [ ] `StorefrontRateLimitingOptions`
-  - [ ] `StorefrontRateLimitPolicyOptions`
-  - [ ] 429 response contract.
-  - [ ] private/no-cache response header behavior.
-- [ ] Keep configuration values host-local:
+- [x] Move to Presentation.Hosting:
+  - [x] `StorefrontRateLimitPolicies`
+  - [x] `StorefrontRateLimitIdentity`
+  - [x] `StorefrontRateLimitingOptions`
+  - [x] `StorefrontRateLimitPolicyOptions`
+  - [x] 429 response contract.
+  - [x] private/no-cache response header behavior.
+- [x] Keep configuration values host-local:
 
 ```json
 {
@@ -458,26 +458,37 @@ Goal: Presentation.Hosting owns browser/BFF security execution. Hosts only provi
 }
 ```
 
-- [ ] Presentation implementation owns:
-  - [ ] rate-limit policy names.
-  - [ ] store/route/actor partitioning.
-  - [ ] cart mutation limits.
-  - [ ] `Retry-After`.
-  - [ ] safe JSON error response.
-  - [ ] rate-limit error code.
-- [ ] Remove V2 imports/usages:
-  - [ ] `System.Threading.RateLimiting`
-  - [ ] `Microsoft.AspNetCore.RateLimiting`
-  - [ ] `StorefrontResponseHeaders`
-  - [ ] `StorefrontLocalCartErrorResponse`
-- [ ] Add tests:
-  - [ ] cart BFF rate limit partitions by store/route/actor.
-  - [ ] actor falls back to remote IP when cart token missing.
-  - [ ] `429` has retry/private/noindex headers.
-  - [ ] disabled rate limiting does not register middleware.
-- [ ] Exit criteria:
-  - [ ] V2 does not configure rate limiting policy.
-  - [ ] V2 only carries config values.
+- [x] Presentation implementation owns:
+  - [x] rate-limit policy names.
+  - [x] store/route/actor partitioning.
+  - [x] cart mutation limits.
+  - [x] `Retry-After`.
+  - [x] safe JSON error response.
+  - [x] rate-limit error code.
+- [x] Remove V2 imports/usages:
+  - [x] `System.Threading.RateLimiting`
+  - [x] `Microsoft.AspNetCore.RateLimiting`
+  - [x] `StorefrontResponseHeaders`
+  - [x] `StorefrontLocalCartErrorResponse`
+- [x] Add tests:
+  - [x] cart BFF rate limit partitions by store/route/actor.
+  - [x] actor falls back to remote IP when cart token missing.
+  - [x] `429` has retry/private/noindex headers.
+  - [x] disabled rate limiting does not register middleware.
+- [x] Exit criteria:
+  - [x] V2 does not configure rate limiting policy.
+  - [x] V2 only carries config values.
+
+Evidence:
+
+- Deleted dead V2 `Endpoints/StorefrontLocalEndpointSupport.cs` and duplicate V2 `Services/StorefrontResponseHeaders.cs`; Presentation owns local endpoint support and response headers.
+- Updated rate-limit source assertions to read Presentation hosting/configuration/options paths.
+- Added `StorefrontV2Source_DoesNotConfigureRateLimitingPolicy` source gate.
+- Source gate `rg -n "StorefrontRateLimitPolicies|StorefrontRateLimitIdentity|StorefrontRateLimitingOptions|StorefrontResponseHeaders|StorefrontLocalCartErrorResponse|AddRateLimiter|UseRateLimiter" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"` returned no matches.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 advisories.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~SecurityPrivacyPhase2RateLimitTests" -v:minimal` passed: 33 passed, 0 failed.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontApplicationBootstrapTests" -v:minimal` passed: 7 passed, 0 failed.
 
 ## Phase F1.32 - Create shell/navigation context service
 

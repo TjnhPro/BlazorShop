@@ -122,6 +122,32 @@ public sealed class StorefrontApplicationBootstrapTests
             $"Storefront V2 must not own public redirect middleware, registration, or redirect policy source.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
+    [Fact]
+    public void StorefrontV2Source_DoesNotConfigureRateLimitingPolicy()
+    {
+        var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
+            .Where(file => file.EndsWith(".cs", StringComparison.Ordinal) || file.EndsWith(".razor", StringComparison.Ordinal))
+            .Select(file => (File: file, Source: ReadRepositoryFile(file)))
+            .SelectMany(file => new[]
+                {
+                    "StorefrontRateLimitPolicies",
+                    "StorefrontRateLimitIdentity",
+                    "StorefrontRateLimitingOptions",
+                    "StorefrontResponseHeaders",
+                    "StorefrontLocalCartErrorResponse",
+                    "AddRateLimiter",
+                    "UseRateLimiter",
+                }
+                .Where(token => file.Source.Contains(token, StringComparison.Ordinal))
+                .Select(token => $"{file.File}: {token}"))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"Storefront V2 must not configure rate limiting policy; Presentation.Hosting owns BFF security policy.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
     private static string ReadRepositoryFile(string relativePath)
     {
         return File.ReadAllText(Path.Combine(RepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));

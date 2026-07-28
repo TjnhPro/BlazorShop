@@ -14,6 +14,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Xunit;
 
     using StorefrontV2::BlazorShop.Storefront.Options;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.PagePatterns;
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
 
@@ -69,7 +70,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(HttpStatusCode.Redirect, (HttpStatusCode)context.Response.StatusCode);
             Assert.Equal("/maintenance?reason=closed", context.Response.Headers.Location);
-            Assert.Equal(StorefrontResponseHeaders.NoIndexNoFollow, context.Response.Headers["X-Robots-Tag"]);
+            Assert.Equal(StorefrontHttpStatusPolicy.NoIndexNoFollow, context.Response.Headers["X-Robots-Tag"]);
         }
 
         private static string FindRepositoryRoot()

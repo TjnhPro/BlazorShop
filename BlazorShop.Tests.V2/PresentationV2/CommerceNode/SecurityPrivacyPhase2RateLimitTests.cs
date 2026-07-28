@@ -76,9 +76,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var support = ReadStorefrontLocalEndpointSupportSource()
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
-            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
-            var ratePolicies = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitPolicies.cs");
-            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Options/StorefrontRateLimitingOptions.cs");
+            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs");
+            var ratePolicies = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Configuration/StorefrontRateLimitPolicies.cs");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Options/StorefrontRateLimitingOptions.cs");
 
             Assert.Contains("Storefront:RateLimiting", options, StringComparison.Ordinal);
             Assert.Contains("UseRateLimiter", pipeline, StringComparison.Ordinal);
@@ -235,7 +235,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         private static string ReadStorefrontLocalEndpointSupportSource()
         {
             var root = FindStorefrontSupportRepositoryRoot();
-            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Endpoints");
+            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.Presentation", "Endpoints");
             return string.Join(
                 Environment.NewLine,
                 Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs")
