@@ -1,10 +1,9 @@
 namespace BlazorShop.Storefront.Services
 {
-
     using BlazorShop.Storefront.Models;
-using System.IO;
     using BlazorShop.Storefront.Services.Contracts;
 
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Extensions;
     using Microsoft.Extensions.Logging;
 

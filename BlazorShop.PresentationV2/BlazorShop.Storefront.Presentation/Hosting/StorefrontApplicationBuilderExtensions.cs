@@ -1,0 +1,72 @@
+namespace BlazorShop.Storefront.Presentation.Hosting;
+
+using System.Reflection;
+using BlazorShop.Storefront.Options;
+using BlazorShop.Storefront.Presentation.App;
+using BlazorShop.Storefront.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+
+public static class StorefrontApplicationBuilderExtensions
+{
+    public static WebApplication UseStorefrontApplication(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseWebAssemblyDebugging();
+        }
+        else
+        {
+            app.UseExceptionHandler("/error");
+            app.UseHsts();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseForwardedHeaders();
+        app.UseStaticFiles();
+        app.UseMiddleware<StorefrontCurrentStoreMiddleware>();
+        app.UseMiddleware<StorefrontPublicRedirectMiddleware>();
+
+        var rateLimitingOptions = app.Services.GetRequiredService<IOptions<StorefrontRateLimitingOptions>>().Value;
+        if (rateLimitingOptions.Enabled)
+        {
+            app.UseRateLimiter();
+        }
+
+        app.UseStorefrontPresentation();
+
+        return app;
+    }
+
+    public static WebApplication MapStorefrontApplication(
+        this WebApplication app,
+        Type viewRegistrationType,
+        params Assembly[] additionalAssemblies)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(viewRegistrationType);
+
+        app.MapStaticAssets();
+        app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: false));
+        app.MapStorefrontPresentation();
+
+        var componentAssemblies = new[] { viewRegistrationType.Assembly }
+            .Concat(additionalAssemblies)
+            .Distinct()
+            .ToArray();
+        var components = app.MapRazorComponents<StorefrontApp>();
+        if (additionalAssemblies.Length > 0)
+        {
+            components.AddInteractiveWebAssemblyRenderMode();
+        }
+
+        components.AddAdditionalAssemblies(componentAssemblies);
+
+        return app;
+    }
+}

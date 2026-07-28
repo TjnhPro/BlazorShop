@@ -4,6 +4,7 @@ namespace BlazorShop.Storefront.Configuration
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.HttpOverrides;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Options;
 
     public sealed class StorefrontForwardedHeadersOptionsSetup : IConfigureOptions<ForwardedHeadersOptions>

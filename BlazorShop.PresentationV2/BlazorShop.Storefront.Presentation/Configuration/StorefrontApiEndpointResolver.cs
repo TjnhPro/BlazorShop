@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Configuration
 {
     using BlazorShop.Storefront.Options;
+    using Microsoft.Extensions.Configuration;
 
     public static class StorefrontApiEndpointResolver
     {
@@ -21,6 +22,13 @@ namespace BlazorShop.Storefront.Configuration
                 && Uri.TryCreate(configuredBaseAddress, UriKind.Absolute, out var configuredUri))
             {
                 return configuredUri;
+            }
+
+            var storefrontCommerceNodeBaseAddress = configuration["Storefront:CommerceNodeBaseUrl"];
+            if (!string.IsNullOrWhiteSpace(storefrontCommerceNodeBaseAddress)
+                && Uri.TryCreate(storefrontCommerceNodeBaseAddress, UriKind.Absolute, out var storefrontUri))
+            {
+                return storefrontUri;
             }
 
             return new Uri("https+http://apiservice/api/");
@@ -62,6 +70,15 @@ namespace BlazorShop.Storefront.Configuration
         public static string? ResolveStoreKey(IConfiguration configuration)
         {
             return StorefrontStoreKeyResolver.Resolve(configuration);
+        }
+
+        public static string? ResolvePublicBaseUrl(IConfiguration configuration)
+        {
+            ArgumentNullException.ThrowIfNull(configuration);
+
+            return string.IsNullOrWhiteSpace(configuration["Storefront:PublicBaseUrl"])
+                ? null
+                : configuration["Storefront:PublicBaseUrl"]!.Trim();
         }
     }
 }

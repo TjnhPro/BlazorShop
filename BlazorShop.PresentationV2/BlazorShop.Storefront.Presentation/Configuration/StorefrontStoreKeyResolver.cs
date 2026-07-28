@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Configuration
 {
     using BlazorShop.Storefront.Options;
+    using Microsoft.Extensions.Configuration;
 
     public static class StorefrontStoreKeyResolver
     {
@@ -10,6 +11,7 @@ namespace BlazorShop.Storefront.Configuration
 
             return FirstNonEmpty(
                 configuration[$"{StorefrontApiOptions.SectionName}:StoreKey"],
+                configuration["Storefront:StoreKey"],
                 configuration["StoreKey"],
                 configuration["STORE_KEY"]);
         }

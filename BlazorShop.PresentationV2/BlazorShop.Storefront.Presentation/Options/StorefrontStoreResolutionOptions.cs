@@ -1,5 +1,7 @@
 namespace BlazorShop.Storefront.Options
 {
+    using Microsoft.Extensions.Hosting;
+
     public sealed class StorefrontStoreResolutionOptions
     {
         public const string SectionName = "StoreResolution";

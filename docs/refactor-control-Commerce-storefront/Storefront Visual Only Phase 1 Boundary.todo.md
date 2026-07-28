@@ -218,76 +218,89 @@ Evidence:
 
 Goal: Presentation owns full application registration, pipeline, and endpoint mapping. V2/Starter call one bootstrap API.
 
-- [ ] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationServiceCollectionExtensions`.
+- [x] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationServiceCollectionExtensions`.
 - [ ] Implement:
 
 ```csharp
 services.AddStorefrontApplication(configuration);
 ```
 
-- [ ] `AddStorefrontApplication` owns:
-  - [ ] Runtime options binding from configuration.
-  - [ ] `AddStorefrontRuntime(...)`.
-  - [ ] `AddStorefrontPlatformRuntime(...)`.
-  - [ ] `AddStorefrontPresentation(configuration)`.
-  - [ ] page services.
-  - [ ] BFF endpoint dependencies.
-  - [ ] antiforgery.
-  - [ ] rate limiter.
-  - [ ] current-store guard dependencies.
-  - [ ] public redirect dependencies.
-  - [ ] navigation/shell services.
-  - [ ] session services.
-  - [ ] view validation services.
-  - [ ] Razor components.
-  - [ ] optional WASM support flag.
-- [ ] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationBuilderExtensions`.
+- [x] `AddStorefrontApplication` owns:
+  - [x] Runtime options binding from configuration.
+  - [x] `AddStorefrontRuntime(...)`.
+  - [x] `AddStorefrontPlatformRuntime(...)`.
+  - [x] `AddStorefrontPresentation(configuration)`.
+  - [x] page services.
+  - [x] BFF endpoint dependencies.
+  - [x] antiforgery.
+  - [x] rate limiter.
+  - [x] current-store guard dependencies.
+  - [x] public redirect dependencies.
+  - [x] navigation/shell services.
+  - [x] session services.
+  - [x] view validation services.
+  - [x] Razor components.
+  - [x] optional WASM support flag.
+- [x] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationBuilderExtensions`.
 - [ ] Implement:
 
 ```csharp
 app.UseStorefrontApplication();
 ```
 
-- [ ] `UseStorefrontApplication` owns:
-  - [ ] forwarded headers.
-  - [ ] HTTPS/HSTS policy where host-neutral and safe.
-  - [ ] static files.
-  - [ ] current-store middleware.
-  - [ ] public redirect middleware.
-  - [ ] rate limiter.
-  - [ ] Presentation middleware.
-  - [ ] antiforgery ordering.
-- [ ] Implement:
+- [x] `UseStorefrontApplication` owns:
+  - [x] forwarded headers.
+  - [x] HTTPS/HSTS policy where host-neutral and safe.
+  - [x] static files.
+  - [x] current-store middleware.
+  - [x] public redirect middleware.
+  - [x] rate limiter.
+  - [x] Presentation middleware.
+  - [x] antiforgery ordering.
+- [x] Implement:
 
 ```csharp
 app.MapStorefrontApplication<TViewRegistration>();
 ```
 
-- [ ] `MapStorefrontApplication` owns:
-  - [ ] Presentation BFF endpoints.
-  - [ ] auth endpoints.
-  - [ ] cart endpoints.
-  - [ ] checkout endpoints.
-  - [ ] account endpoints.
-  - [ ] consent endpoints.
-  - [ ] preferences endpoints.
-  - [ ] media endpoints.
-  - [ ] robots.
-  - [ ] sitemap.
-  - [ ] favicon/default static helpers if host-neutral.
-  - [ ] Razor components with required additional assemblies.
-- [ ] Keep a lower-level escape hatch only if needed:
-  - [ ] `AddStorefrontPresentation(...)` may remain internal/public for tests.
-  - [ ] `UseStorefrontPresentation(...)` may remain if Starter/generated proof still needs it during migration.
-  - [ ] Mark old aliases obsolete only if external package compatibility requires it.
-- [ ] Switch V2 Program to call the new bootstrap but keep old V2 extension in place until tests pass.
-- [ ] Switch Starter Program to call the same bootstrap.
-- [ ] Exit criteria:
-  - [ ] V2 no longer calls `AddStorefrontV2Services`.
-  - [ ] V2 no longer calls `UseStorefrontV2HostPipeline`.
-  - [ ] V2 no longer passes `StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter`.
-  - [ ] V2 no longer passes `StorefrontApiEndpointResolver.ConfigureStorefrontHttpClient`.
-  - [ ] Starter no longer manually registers Runtime/Presentation/antiforgery/static files.
+- [x] `MapStorefrontApplication` owns:
+  - [x] Presentation BFF endpoints.
+  - [x] auth endpoints.
+  - [x] cart endpoints.
+  - [x] checkout endpoints.
+  - [x] account endpoints.
+  - [x] consent endpoints.
+  - [x] preferences endpoints.
+  - [x] media endpoints.
+  - [x] robots.
+  - [x] sitemap.
+  - [x] favicon/default static helpers if host-neutral.
+  - [x] Razor components with required additional assemblies.
+- [x] Keep a lower-level escape hatch only if needed:
+  - [x] `AddStorefrontPresentation(...)` may remain internal/public for tests.
+  - [x] `UseStorefrontPresentation(...)` may remain if Starter/generated proof still needs it during migration.
+  - [x] Mark old aliases obsolete only if external package compatibility requires it.
+- [x] Switch V2 Program to call the new bootstrap but keep old V2 extension in place until tests pass.
+- [x] Switch Starter Program to call the same bootstrap.
+- [x] Exit criteria:
+  - [x] V2 no longer calls `AddStorefrontV2Services`.
+  - [x] V2 no longer calls `UseStorefrontV2HostPipeline`.
+  - [x] V2 no longer passes `StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter`.
+  - [x] V2 no longer passes `StorefrontApiEndpointResolver.ConfigureStorefrontHttpClient`.
+  - [x] Starter no longer manually registers Runtime/Presentation/antiforgery/static files.
+
+Evidence:
+
+- Added `AddStorefrontApplication(builder.Configuration)`, `UseStorefrontApplication()`, and `MapStorefrontApplication(...)` in `BlazorShop.Storefront.Presentation.Hosting`.
+- `MapStorefrontApplication(...)` uses `typeof(ViewRegistration)` rather than a generic type argument because current V2/Starter registration classes are static.
+- Moved shared options, rate limiting, store resolution, current-store/public redirect middleware, and shell navigation providers/contracts from V2 source paths into `BlazorShop.Storefront.Presentation`.
+- V2 Program now calls shared bootstrap and passes only the V2 WASM assembly for component discovery.
+- Starter Program now calls shared bootstrap and no longer manually registers Runtime, Presentation, Razor components, antiforgery, or static-file middleware.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 advisories.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontApplicationBootstrapTests" -v:minimal` passed: 3 passed, 0 failed.
 
 ## Phase F1.28 - Move runtime/store configuration ownership
 

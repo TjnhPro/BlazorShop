@@ -4,8 +4,13 @@ namespace BlazorShop.Storefront.Services
 
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Options;
+    using BlazorShop.Storefront.Presentation.PagePatterns;
     using BlazorShop.Storefront.Services.Contracts;
 
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
     public sealed class StorefrontCurrentStoreMiddleware

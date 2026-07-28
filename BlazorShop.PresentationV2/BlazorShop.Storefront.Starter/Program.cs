@@ -1,9 +1,5 @@
-using BlazorShop.Storefront.Runtime;
 using BlazorShop.Storefront.Starter;
-using BlazorShop.Storefront.Starter.Components;
 using BlazorShop.Storefront.Starter.Features;
-using BlazorShop.Storefront.Presentation.App;
-using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Hosting;
 using BlazorShop.Storefront.Starter.Options;
 
@@ -15,42 +11,16 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddStorefrontRuntime(options =>
-{
-    var starterOptions = builder.Configuration.GetSection(StarterStorefrontOptions.SectionName).Get<StarterStorefrontOptions>()
-        ?? new StarterStorefrontOptions();
-    options.CommerceNodeBaseUrl = starterOptions.CommerceNodeBaseUrl;
-    options.StoreKey = starterOptions.StoreKey;
-    options.PublicBaseUrl = starterOptions.PublicBaseUrl;
-});
-builder.Services.AddStorefrontPlatformRuntime();
-builder.Services.AddStorefrontPresentation(builder.Configuration);
+builder.Services.AddStorefrontApplication(builder.Configuration);
 builder.Services.AddSingleton(_ =>
     StarterFeatureManifest.Load(Path.Combine(builder.Environment.ContentRootPath, "Features", "feature-manifest.json")));
 builder.Services.AddScoped<StarterFeatureActivationService>();
 builder.Services.AddStarterFoundationViews();
 
-builder.Services.AddRazorComponents();
-builder.Services.AddAntiforgery(options =>
-{
-    options.HeaderName = "X-CSRF-TOKEN";
-});
-
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseStorefrontPresentation();
-app.MapStorefrontPresentation();
-
-app.MapRazorComponents<StorefrontApp>()
-    .AddAdditionalAssemblies(typeof(StarterFoundationViewRegistration).Assembly);
+app.UseStorefrontApplication();
+app.MapStorefrontApplication(typeof(StarterFoundationViewRegistration));
 
 app.Run();
 

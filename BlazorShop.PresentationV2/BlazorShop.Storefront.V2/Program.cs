@@ -1,36 +1,20 @@
-using BlazorShop.Storefront.Configuration;
-using BlazorShop.Storefront.Presentation.App;
 using BlazorShop.Storefront.Presentation.Hosting;
-using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront;
 
 var builder = WebApplication.CreateBuilder(args);
-var storefrontRateLimitingOptions = builder.Configuration
-    .GetSection(StorefrontRateLimitingOptions.SectionName)
-    .Get<StorefrontRateLimitingOptions>() ?? new StorefrontRateLimitingOptions();
 
 builder.AddServiceDefaults();
 
-builder.Services.AddStorefrontV2Services(
-    builder.Configuration,
-    storefrontRateLimitingOptions,
-    StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter,
-    StorefrontApiEndpointResolver.ConfigureStorefrontHttpClient);
+builder.Services.AddStorefrontApplication(builder.Configuration);
 builder.Services.AddV2FoundationViews();
 
 var app = builder.Build();
 
-app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);
-app.UseStorefrontPresentation();
-app.MapStaticAssets();
-app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: false));
+app.UseStorefrontApplication();
 app.MapDefaultEndpoints();
-app.MapStorefrontPresentation();
-app.MapRazorComponents<StorefrontApp>()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(
-        typeof(V2FoundationViewRegistration).Assembly,
-        typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly);
+app.MapStorefrontApplication(
+    typeof(V2FoundationViewRegistration),
+    typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly);
 
 app.Run();
 

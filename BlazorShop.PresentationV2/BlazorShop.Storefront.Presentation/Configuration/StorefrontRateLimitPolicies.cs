@@ -3,9 +3,12 @@ namespace BlazorShop.Storefront.Configuration
     using System.Threading.RateLimiting;
 
     using BlazorShop.Storefront.Options;
-    using BlazorShop.Storefront.Services;
+    using BlazorShop.Storefront.Presentation.PagePatterns;
 
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.RateLimiting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
 
     public static class StorefrontRateLimitPolicies
     {

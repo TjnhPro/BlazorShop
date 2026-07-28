@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj" PrivateAssets="all" />
   </ItemGroup>
