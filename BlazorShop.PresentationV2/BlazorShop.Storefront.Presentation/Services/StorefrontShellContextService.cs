@@ -14,7 +14,6 @@ namespace BlazorShop.Storefront.Services
         private readonly IStorefrontPageNavigationProvider _pageNavigationProvider;
         private readonly IStorefrontNavigationProvider _navigationProvider;
         private readonly IStorefrontSessionResolver _sessionResolver;
-        private readonly IStorefrontClientAppUrlResolver _clientAppUrlResolver;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private Task<StorefrontShellContext>? _cachedTask;
 
@@ -24,7 +23,6 @@ namespace BlazorShop.Storefront.Services
             IStorefrontPageNavigationProvider pageNavigationProvider,
             IStorefrontNavigationProvider navigationProvider,
             IStorefrontSessionResolver sessionResolver,
-            IStorefrontClientAppUrlResolver clientAppUrlResolver,
             IHttpContextAccessor httpContextAccessor)
         {
             _displayContextProvider = displayContextProvider;
@@ -32,7 +30,6 @@ namespace BlazorShop.Storefront.Services
             _pageNavigationProvider = pageNavigationProvider;
             _navigationProvider = navigationProvider;
             _sessionResolver = sessionResolver;
-            _clientAppUrlResolver = clientAppUrlResolver;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -141,8 +138,8 @@ namespace BlazorShop.Storefront.Services
                     null,
                     null,
                     [
-                        new("Sign in", _clientAppUrlResolver.ResolveUrl(StorefrontRoutes.SignIn)),
-                        new("Register", _clientAppUrlResolver.ResolveUrl(StorefrontRoutes.Register)),
+                        new("Sign in", StorefrontRoutes.SignIn),
+                        new("Register", StorefrontRoutes.Register),
                     ],
                     StorefrontRoutes.Home);
             }
@@ -153,9 +150,9 @@ namespace BlazorShop.Storefront.Services
                 session.DisplayName,
                 session.Email,
                 [
-                    new("Profile", _clientAppUrlResolver.ResolveUrl(StorefrontRoutes.AccountProfile)),
-                    new("Orders", _clientAppUrlResolver.ResolveUrl(StorefrontRoutes.AccountOrders)),
-                    new("Addresses", _clientAppUrlResolver.ResolveUrl(StorefrontRoutes.AccountAddresses)),
+                    new("Profile", StorefrontRoutes.AccountProfile),
+                    new("Orders", StorefrontRoutes.AccountOrders),
+                    new("Addresses", StorefrontRoutes.AccountAddresses),
                 ],
                 StorefrontRoutes.Home);
         }

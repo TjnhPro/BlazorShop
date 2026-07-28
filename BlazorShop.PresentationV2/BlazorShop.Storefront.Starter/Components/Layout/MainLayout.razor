@@ -1,7 +1,8 @@
+@using BlazorShop.Storefront.Services.Contracts
 @inherits LayoutComponentBase
 
 <header class="starter-header">
-    <a class="starter-brand" href="/">Storefront Starter</a>
+    <a class="starter-brand" href="/">@Context.Header.Brand.Label</a>
     <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <a href="/search">Search</a>
@@ -21,5 +22,10 @@
 <div class="starter-toast-region" aria-live="polite" aria-atomic="true"></div>
 
 <footer class="starter-footer">
-    <span>Neutral storefront shell</span>
+    <span>@Context.Footer.CopyrightLabel</span>
 </footer>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontShellContext Context { get; set; } = default!;
+}

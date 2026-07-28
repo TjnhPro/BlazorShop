@@ -46,6 +46,13 @@ jobs:
       - name: Test
         run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal
 
+      - name: Storefront visual-only boundary gate
+        run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontApplicationBootstrapTests"
+
+      - name: Storefront client regeneration gate
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-client-regeneration-gate.ps1
+
       - name: Validate production compose config
         env:
           BLAZORSHOP_CONTROLPLANE_DB_PASSWORD: ci-controlplane-db-password

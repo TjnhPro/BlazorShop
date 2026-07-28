@@ -134,8 +134,12 @@ Rules:
 
 Responsibilities:
 
+- Storefront application bootstrap extensions, middleware order, and route/endpoint mapping used by visual hosts.
+- Runtime registration for the shared storefront application graph.
+- Current-store middleware, public redirect middleware, rate limiting, antiforgery policy, and BFF security behavior.
 - Storefront App/Routes and SSR, hybrid, and WASM-hosted route shells.
 - Page services and context models for home, catalog, content, auth, system, cart, checkout, account, and payment surfaces.
+- Header, footer, account menu, auth form, checkout form, currency/logout, cart, product purchase, price, and stock presentation contexts.
 - Sitemap, robots, SEO metadata, canonical URL, structured data, redirects, and media/local endpoint composition.
 - Same-origin browser/BFF endpoint groups for cart, checkout, account, consent, preferences, media, and other browser-safe flows.
 - View-slot contracts that let each host provide visual templates without Presentation referencing V2, Starter, or generated projects.
@@ -146,19 +150,20 @@ Do not:
 - Reference `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, generated storefront projects, Control Plane, Commerce Node API, Application, Domain, Infrastructure, or `Web.SharedV2`.
 - Move ecommerce truth such as pricing, sellability, checkout validity, order creation, or inventory decisions out of Commerce Node Storefront APIs.
 
-Hosts call `UseStorefrontPresentation()` and `MapStorefrontPresentation()` instead of mapping individual route/BFF/SEO endpoint groups.
+Hosts call `AddStorefrontApplication()`, `UseStorefrontApplication()`, and `MapStorefrontApplication()` instead of registering runtime services or mapping individual middleware, route, BFF, SEO, and media endpoint groups.
 
 ## Storefront V2 Boundary
 
-`BlazorShop.Storefront.V2` is a server-side storefront host and visual implementation that consumes Storefront Presentation and calls Commerce Node Storefront APIs through the shared Presentation/Runtime/Client path.
+`BlazorShop.Storefront.V2` is a thin server-side storefront host and visual implementation that consumes Storefront Presentation. Storefront V2 does not reference Runtime or Client directly; Commerce Node Storefront API calls flow through the shared Presentation/Runtime/Client path.
 
 Responsibilities:
 
-- Storefront V2 host configuration, static assets, layout views, visual templates, and copy.
+- Storefront V2 host configuration, static assets, layout views, visual templates, copy, and interactive V2 root components.
 - Storefront V2 view registration for Presentation route shells.
-- Current-store resolution, session/cookie behavior, auth/session policy, deployment/static asset behavior, and host-specific API adapter registration.
-- Redirect destinations and interactive root components for cart, checkout, account, and other WASM-hosted V2 surfaces.
-- Store key propagation to Commerce Node through route path `api/storefront/stores/{storeKey}/*`.
+- Host assembly selection for Presentation route discovery and static asset behavior.
+- Store key/base URL configuration consumed by Presentation/Runtime.
+
+Storefront V2 must not own application services, middleware, direct client/runtime injection, application data loading, manual mutation contracts, business decisions, route/SEO/status behavior, or BFF endpoint contracts. V2 visual components render Presentation contexts and may submit to Presentation-owned local routes/actions supplied in those contexts.
 
 It must not call Control Plane APIs and must not use Control Plane credentials.
 
@@ -213,13 +218,13 @@ Rules:
 
 ### Storefront Store Resolution
 
-Storefront V2 still resolves store scope from configuration, not from a host-derived public API route. The accepted configuration keys are:
+Storefront Presentation resolves storefront store scope from host configuration before catalog, settings, SEO, media, cart, checkout, or customer context is read. Storefront V2, Starter, and generated hosts provide configuration only; they do not own the current-store middleware. The accepted Storefront V2 configuration keys are:
 
 - `Api:StoreKey`
 - `StoreKey`
 - `STORE_KEY`
 
-Before reading catalog, settings, SEO, media, cart, checkout, or customer context, Storefront V2 resolves the current store through:
+Presentation/Runtime resolves the current store through:
 
 ```text
 GET api/storefront/stores/{storeKey}/store/current

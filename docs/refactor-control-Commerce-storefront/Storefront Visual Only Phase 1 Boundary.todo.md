@@ -1143,7 +1143,7 @@ Goal: close Phase 1 only after architecture, host, browser, and network gates pa
 
 ### Build gate
 
-- [ ] Build:
+- [x] Build:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj
@@ -1157,17 +1157,17 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.
 
 ### Architecture gate
 
-- [ ] Focused tests prove:
-  - [ ] V2 has zero application services.
-  - [ ] V2 has zero middleware.
-  - [ ] V2 has zero client/runtime injection.
-  - [ ] V2 has zero application data loading.
-  - [ ] V2 has zero manual mutation contracts.
-  - [ ] V2 has zero business decisions.
-  - [ ] V2 has zero route/SEO/status ownership.
-  - [ ] Starter has the same visual-only boundary.
-  - [ ] Generated proof has the same isolation boundary.
-- [ ] Run:
+- [x] Focused tests prove:
+  - [x] V2 has zero application services.
+  - [x] V2 has zero middleware.
+  - [x] V2 has zero client/runtime injection.
+  - [x] V2 has zero application data loading.
+  - [x] V2 has zero manual mutation contracts.
+  - [x] V2 has zero business decisions.
+  - [x] V2 has zero route/SEO/status ownership.
+  - [x] Starter has the same visual-only boundary.
+  - [x] Generated proof has the same isolation boundary.
+- [x] Run:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests"
@@ -1175,81 +1175,81 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualif
 
 ### Host-independent DI gate
 
-- [ ] Test `AddStorefrontApplication()` can resolve application graph without V2 or Starter registrations.
-- [ ] Test V2 and Starter only add view registrations and host assemblies.
-- [ ] Test no Presentation service references V2/Starter/generated storefront projects.
+- [x] Test `AddStorefrontApplication()` can resolve application graph without V2 or Starter registrations.
+- [x] Test V2 and Starter only add view registrations and host assemblies.
+- [x] Test no Presentation service references V2/Starter/generated storefront projects.
 
 ### HTTP smoke gate
 
-- [ ] Run V2 host smoke:
-  - [ ] `/`
-  - [ ] category route.
-  - [ ] product route.
-  - [ ] search route.
-  - [ ] content route.
-  - [ ] cart route.
-  - [ ] checkout route.
-  - [ ] payment result route.
-  - [ ] sign in.
-  - [ ] register.
-  - [ ] forgot password.
-  - [ ] reset password.
-  - [ ] account route.
-  - [ ] maintenance route.
-  - [ ] not found route.
-  - [ ] `robots.txt`.
-  - [ ] `sitemap.xml`.
-- [ ] Run Starter host smoke for the same route set where supported.
+- [x] Run V2 host smoke:
+  - [x] `/`
+  - [x] category route.
+  - [x] product route.
+  - [x] search route.
+  - [x] content route.
+  - [x] cart route.
+  - [x] checkout route.
+  - [x] payment result route.
+  - [x] sign in.
+  - [x] register.
+  - [x] forgot password.
+  - [x] reset password.
+  - [x] account route.
+  - [x] maintenance route.
+  - [x] not found route.
+  - [x] `robots.txt`.
+  - [x] `sitemap.xml`.
+- [x] Run Starter host smoke for the same route set where supported.
 
 ### Browser QA gate
 
-- [ ] Start local stack:
+- [x] Start local stack:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Playwright browser tests:
-  - [ ] product render.
-  - [ ] add to cart.
-  - [ ] cart update/remove.
-  - [ ] checkout start.
-  - [ ] COD place order.
-  - [ ] sign in.
-  - [ ] register disabled policy.
-  - [ ] password recovery UI submit path.
-  - [ ] account profile.
-  - [ ] address book.
-  - [ ] order list/detail.
-  - [ ] logout.
-  - [ ] currency preference.
-  - [ ] public redirect.
-  - [ ] store maintenance.
-  - [ ] not found.
+- [x] Playwright browser tests:
+  - [x] product render.
+  - [x] add to cart.
+  - [x] cart update/remove.
+  - [x] checkout start.
+  - [x] COD place order.
+  - [x] sign in.
+  - [x] register disabled policy.
+  - [x] password recovery UI submit path.
+  - [x] account profile.
+  - [x] address book.
+  - [x] order list/detail.
+  - [x] logout.
+  - [x] currency preference.
+  - [x] public redirect.
+  - [x] store maintenance.
+  - [x] not found.
 
 ### Network audit gate
 
-- [ ] Browser only calls:
-  - [ ] same-origin BFF endpoints.
-  - [ ] static assets.
-  - [ ] media.
-- [ ] Browser must not call:
-  - [ ] direct Commerce Node `api/storefront/stores/{storeKey}/*`.
-  - [ ] Commerce Admin `api/commerce/*`.
-  - [ ] Control Plane APIs.
-  - [ ] removed `api/internal/*`.
-  - [ ] legacy `/api/public/*`.
+- [x] Browser only calls:
+  - [x] same-origin BFF endpoints.
+  - [x] static assets.
+  - [x] media.
+- [x] Browser must not call:
+  - [x] direct Commerce Node `api/storefront/stores/{storeKey}/*`.
+  - [x] Commerce Admin `api/commerce/*`.
+  - [x] Control Plane APIs.
+  - [x] removed `api/internal/*`.
+  - [x] legacy `/api/public/*`.
 
 ### CI gate
 
-- [ ] Add required CI checks or documented CI commands for:
-  - [ ] visual-only architecture tests.
-  - [ ] host-independent DI tests.
-  - [ ] generated proof isolation.
-  - [ ] Storefront client regeneration gate if contract touched.
-  - [ ] browser E2E release suite before production.
+- [x] Add required CI checks or documented CI commands for:
+  - [x] visual-only architecture tests.
+  - [x] host-independent DI tests.
+  - [x] generated proof isolation.
+  - [x] Storefront client regeneration gate if contract touched.
+  - [x] browser E2E release suite before production.
 
-- [ ] Stop local stack if started:
+- [x] Stop local stack if started:
 
 ```powershell
 .\scripts\stop-v2-local.ps1
@@ -1257,30 +1257,40 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualif
 
 ## Final definition of done
 
-- [ ] Presentation owns application bootstrap.
-- [ ] Presentation owns Runtime registration.
-- [ ] Presentation owns current-store middleware.
-- [ ] Presentation owns public redirect middleware.
-- [ ] Presentation owns rate limiting and BFF security policy.
-- [ ] Presentation owns navigation providers.
-- [ ] Presentation creates Header/Footer/Account contexts.
-- [ ] V2 Header/Footer/Account only render context.
-- [ ] Presentation owns auth form contracts/patterns.
-- [ ] Presentation owns checkout form contract/pattern.
-- [ ] Presentation owns currency/logout mutation contracts/patterns.
-- [ ] Presentation owns product purchase/price/stock presentation decisions.
-- [ ] Required visual slots cannot silently fall back to empty components.
-- [ ] Context compatibility is validated at startup.
-- [ ] V2 does not inject `IStorefront*` services.
-- [ ] V2 does not use `HttpClient`, Runtime, or Client.
-- [ ] V2 has no Middleware, Services, or shared Contracts.
-- [ ] V2 has no direct Runtime project/package reference.
-- [ ] V2 only contains thin host shell and visual source.
-- [ ] Starter reaches the same visual-only boundary.
-- [ ] GeneratedProof works independently.
-- [ ] Architecture, smoke, browser QA, and network audit pass.
-- [ ] CI protects the boundary.
-- [ ] `docs/architecture/03-runtime-boundaries.md` and `docs/architecture/10-v2-contract-ownership.md` are updated to match the final ownership.
+- [x] Presentation owns application bootstrap.
+- [x] Presentation owns Runtime registration.
+- [x] Presentation owns current-store middleware.
+- [x] Presentation owns public redirect middleware.
+- [x] Presentation owns rate limiting and BFF security policy.
+- [x] Presentation owns navigation providers.
+- [x] Presentation creates Header/Footer/Account contexts.
+- [x] V2 Header/Footer/Account only render context.
+- [x] Presentation owns auth form contracts/patterns.
+- [x] Presentation owns checkout form contract/pattern.
+- [x] Presentation owns currency/logout mutation contracts/patterns.
+- [x] Presentation owns product purchase/price/stock presentation decisions.
+- [x] Required visual slots cannot silently fall back to empty components.
+- [x] Context compatibility is validated at startup.
+- [x] V2 does not inject `IStorefront*` services.
+- [x] V2 does not use `HttpClient`, Runtime, or Client.
+- [x] V2 has no Middleware, Services, or shared Contracts.
+- [x] V2 has no direct Runtime project/package reference.
+- [x] V2 only contains thin host shell and visual source.
+- [x] Starter reaches the same visual-only boundary.
+- [x] GeneratedProof works independently.
+- [x] Architecture, smoke, browser QA, and network audit pass.
+- [x] CI protects the boundary.
+- [x] `docs/architecture/03-runtime-boundaries.md` and `docs/architecture/10-v2-contract-ownership.md` are updated to match the final ownership.
+
+2026-07-28 evidence:
+
+- Build gate passed for Client, Runtime, Presentation, Components, V2.WASM, V2, and Starter with `dotnet build ... --no-restore -v:minimal`.
+- Architecture/host-independent gate passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontApplicationBootstrapTests" -v:minimal` passed 83/83.
+- V2 smoke was run by functional groups because the whole class exceeds short command timeouts: SignIn 4/4, checkout-empty 1/1, auth/register/recovery 21/21, account/currency/logout plus shell context 17/17, and SEO/system/cart/checkout/payment 19/19 passed. Starter host smoke passed 8/8.
+- Generated proof passed static isolation plus browser/network QA: `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -RunBrowserQa`.
+- Local V2 runtime started with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`; release smoke passed; `run-storefront-registration-policy-e2e.ps1 -Headless`, `run-storefront-email-recovery-e2e.ps1 -Headless`, and `run-storefront-order-email-e2e.ps1 -Headless` exited 0. Reports under `.gstack/qa-reports/` show registration disabled/enabled, password recovery reset/login, COD order placement, order list/detail/receipt, and network guardrails with no direct retired flow calls or 5xx responses.
+- Local runtime was stopped with `.\scripts\stop-v2-local.ps1`.
+- CI guardrails were added in `.github/workflows/ci.yml` and `.github/workflows/storefront-builder.yml` for visual-only boundary tests, client regeneration, generated proof isolation, and generated proof browser/network gates.
 
 ## Autoplan decision audit
 

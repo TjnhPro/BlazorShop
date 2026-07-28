@@ -144,7 +144,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     PageNavigationProvider,
                     NavigationProvider,
                     SessionResolver,
-                    new StubClientAppUrlResolver(),
                     httpContextAccessor);
             }
         }
@@ -250,14 +249,5 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
         }
 
-        private sealed class StubClientAppUrlResolver : IStorefrontClientAppUrlResolver
-        {
-            public string? ResolveBaseUrl() => null;
-
-            public string ResolveUrl(string? relativeOrAbsoluteUrl)
-            {
-                return string.IsNullOrWhiteSpace(relativeOrAbsoluteUrl) ? "/" : relativeOrAbsoluteUrl;
-            }
-        }
     }
 }

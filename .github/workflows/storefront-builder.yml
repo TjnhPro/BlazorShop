@@ -6,6 +6,7 @@ on:
       - "tools/BlazorShop.AI.StorefrontBuilder/**"
       - "BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/**"
       - "scripts/qa/run-storefront-builder-isolation-gate.ps1"
+      - "scripts/qa/run-storefront-builder-generated-proof.ps1"
       - "docs/visual-reverse-engineering-skill/**"
       - "BlazorShop.Tests.V2/**"
   workflow_dispatch:
@@ -43,14 +44,13 @@ jobs:
         run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontBuilder"
       - name: Idempotency tests
         run: ./tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderIdempotency.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
-      - name: Isolation gate describe mode
-        run: ./scripts/qa/run-storefront-builder-isolation-gate.ps1 -Describe
-      - name: Visual QA fixture smoke
+      - name: Generated proof isolation gate
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1
+      - name: Generated proof browser and network gate
         if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
-        run: node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs --base-url http://127.0.0.1:18991
-      - name: Commerce regression fixture smoke
-        if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
-        run: node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-commerce-regression.mjs --base-url http://127.0.0.1:18991
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -RunBrowserQa
 
   expensive-live-capture:
     if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
