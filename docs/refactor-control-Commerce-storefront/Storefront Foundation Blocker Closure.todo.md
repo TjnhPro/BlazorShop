@@ -258,53 +258,68 @@ Goal: visual hosts should receive semantic context and link descriptors instead 
 
 ### Tasks
 
-- [ ] Introduce Presentation-owned link/context descriptors for common visual actions:
-  - [ ] home.
-  - [ ] search.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] account root.
-  - [ ] account profile.
-  - [ ] account addresses.
-  - [ ] account orders.
-  - [ ] account password/change-password.
-  - [ ] login/signin.
-  - [ ] register.
-  - [ ] logout form target.
-  - [ ] new releases.
-  - [ ] today deals.
-  - [ ] customer service.
-  - [ ] cookie/privacy pages.
-  - [ ] category/product/page URL builders.
-- [ ] Update `StorefrontShellContext` or related context models to expose these descriptors.
-- [ ] Replace V2 visual usage of `StorefrontRoutes.*` where a context descriptor can be used.
-- [ ] Replace Starter hardcoded `/account/*`, `/cart`, `/search`, `/deals` where a context descriptor can be used.
-- [ ] Keep `StorefrontRoutes` internal to Presentation routing/services where it still belongs.
-- [ ] Add explicit startup validation for:
-  - [ ] `ApplicationHead` component type.
-  - [ ] `MainLayout` component type.
-  - [ ] required `Context` parameter.
-  - [ ] required `Body` parameter for layouts.
-  - [ ] compatibility with `StorefrontApplicationHeadContext`.
-  - [ ] compatibility with `StorefrontMainLayoutContext`.
-- [ ] Replace hardcoded `<html lang="en">` with server-rendered language and direction context.
-- [ ] Remove V2 inline script that mutates `document.documentElement.lang`.
-- [ ] Add `dir` support if display context includes or can infer right-to-left direction.
+- [x] Introduce Presentation-owned link/context descriptors for common visual actions:
+  - [x] home.
+  - [x] search.
+  - [x] cart.
+  - [x] checkout.
+  - [x] account root.
+  - [x] account profile.
+  - [x] account addresses.
+  - [x] account orders.
+  - [x] account password/change-password.
+  - [x] login/signin.
+  - [x] register.
+  - [x] logout form target.
+  - [x] new releases.
+  - [x] today deals.
+  - [x] customer service.
+  - [x] cookie/privacy pages.
+  - [x] category/product/page URL builders.
+- [x] Update `StorefrontShellContext` or related context models to expose these descriptors.
+- [x] Replace V2 visual usage of `StorefrontRoutes.*` where a context descriptor can be used.
+- [x] Replace Starter hardcoded `/account/*`, `/cart`, `/search`, `/deals` where a context descriptor can be used.
+- [x] Keep `StorefrontRoutes` internal to Presentation routing/services where it still belongs.
+- [x] Add explicit startup validation for:
+  - [x] `ApplicationHead` component type.
+  - [x] `MainLayout` component type.
+  - [x] required `Context` parameter.
+  - [x] required `Body` parameter for layouts.
+  - [x] compatibility with `StorefrontApplicationHeadContext`.
+  - [x] compatibility with `StorefrontMainLayoutContext`.
+- [x] Replace hardcoded `<html lang="en">` with server-rendered language and direction context.
+- [x] Remove V2 inline script that mutates `document.documentElement.lang`.
+- [x] Add `dir` support if display context includes or can infer right-to-left direction.
 
 ### Tests
 
-- [ ] Startup validation test: missing `ApplicationHead` context parameter fails clearly.
-- [ ] Startup validation test: missing `MainLayout` body/context parameter fails clearly.
-- [ ] Render test: document `lang` comes from Presentation display context.
-- [ ] Render test: V2 brand head no longer mutates document language with inline script.
-- [ ] Architecture test: V2/Starter visual folders do not reference `StorefrontRoutes` except approved temporary allowlist.
+- [x] Startup validation test: missing `ApplicationHead` context parameter fails clearly.
+- [x] Startup validation test: missing `MainLayout` body/context parameter fails clearly.
+- [x] Render test: document `lang` comes from Presentation display context.
+- [x] Render test: V2 brand head no longer mutates document language with inline script.
+- [x] Architecture test: V2/Starter visual folders do not reference `StorefrontRoutes` except approved temporary allowlist.
 
 ### Definition of Done
 
-- [ ] Route knowledge is mostly Presentation-owned.
-- [ ] Visual hosts consume semantic links/context.
-- [ ] Head/layout component mistakes fail at startup, not after a page is hit.
-- [ ] Document language/dir is server-rendered by Presentation.
+- [x] Route knowledge is mostly Presentation-owned.
+- [x] Visual hosts consume semantic links/context.
+- [x] Head/layout component mistakes fail at startup, not after a page is hit.
+- [x] Document language/dir is server-rendered by Presentation.
+
+### Notes
+
+- Added `StorefrontLinkContext` to Presentation shell/page contexts for common links and category/product/page URL builders; V2 and Starter visual Razor no longer reference `StorefrontRoutes`.
+- Made `StorefrontRoutes` internal to Presentation and exposed internals to `BlazorShop.Tests.V2` for route contract tests.
+- Added `TextDirection` to `StorefrontDisplayContext`; `StorefrontApp.razor` now renders `<html lang="@DocumentLanguage" dir="@DocumentDirection">` from server-side display context.
+- Removed the V2 brand head inline `document.documentElement.lang` mutation; brand head keeps only store-specific icon/language metadata.
+- Startup validation now checks `ApplicationHead` and `MainLayout` component types, required `Context`, and required layout `Body`. The active compatibility contract is `StorefrontShellContext` for both head/layout slots.
+- StorefrontBuilder composition was updated so generated layouts keep `sfb-cart-badge` while using Presentation link descriptors instead of hardcoded `/cart` or `/account`.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj -v:minimal` - passed.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj -v:minimal` - passed.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~StorefrontShellContextServiceTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~LayoutAssetFoundationTests|FullyQualifiedName~StorefrontBrandingMarkupTests" -v:minimal` - passed 102/102.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests" -v:minimal` - passed 12/12.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` - passed generated proof/static validation/isolation gate.
 
 ## Phase F1.50 - Consent Contract And Shell Resilience
 

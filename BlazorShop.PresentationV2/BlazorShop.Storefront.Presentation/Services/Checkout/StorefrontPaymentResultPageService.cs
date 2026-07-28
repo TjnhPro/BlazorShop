@@ -1,5 +1,6 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
+    using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Storefront.Runtime;
     using StorefrontPaymentAttemptResponse = BlazorShop.Storefront.Client.StorefrontPaymentAttemptResponse;
 
@@ -86,7 +87,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                     "text-amber-700",
                     isPending,
                     isSuccess,
-                    true);
+                    true,
+                    StorefrontLinkContext.Default);
             }
 
             var panelClass = isSuccess
@@ -141,7 +143,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                         : "text-rose-700",
                 isPending,
                 isSuccess,
-                showRetry);
+                showRetry,
+                StorefrontLinkContext.Default);
         }
 
         private static bool IsSuccessState(string? state)

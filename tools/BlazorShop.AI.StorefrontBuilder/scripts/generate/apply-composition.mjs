@@ -43,10 +43,10 @@ function transformLayout(content) {
   return content
     .replace('<header class="starter-header">', '<header class="starter-header sfb-shell-header">')
     .replace('<nav aria-label="Main navigation">', '<nav class="sfb-main-nav" aria-label="Main navigation">')
-    .replace('<a href="/cart" aria-label="Cart">Cart</a>', '<a class="sfb-cart-badge" href="/cart" aria-label="Cart">Cart <span>0</span></a>')
+    .replace('<a href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label</a>', '<a class="sfb-cart-badge" href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span>0</span></a>')
     .replace(
       "</header>",
-      '<nav class="sfb-mobile-nav" aria-label="Mobile navigation"><a href="/">Home</a><a href="/cart">Cart</a><a href="/account">Account</a></nav>\n</header>'
+      '<nav class="sfb-mobile-nav" aria-label="Mobile navigation"><a href="@Context.Links.Home.Href">@Context.Links.Home.Label</a><a href="@Context.Links.Cart.Href">@Context.Links.Cart.Label</a><a href="@Context.Links.AccountRoot.Href">@Context.Links.AccountRoot.Label</a></nav>\n</header>'
     );
 }
 

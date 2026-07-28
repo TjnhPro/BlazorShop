@@ -1,13 +1,13 @@
 @namespace BlazorShop.Storefront.V2.Components.Shared
 @using BlazorShop.Storefront.Presentation.Services.System
-@using BlazorShop.Storefront.Services
+@using BlazorShop.Storefront.Services.Contracts
 
 <section class="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
     <div class="rounded-3xl border border-rose-200 bg-rose-50/95 p-8 text-center shadow-lg">
         <p class="text-sm font-semibold uppercase tracking-[0.2em] text-rose-700">Storefront Error</p>
         <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-neutral-900">@ResolvedTitle</h1>
         <p class="mt-4 text-sm leading-6 text-neutral-700">@ResolvedMessage</p>
-        <a href="@StorefrontRoutes.Home" class="mt-6 inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">
+        <a href="@Links.Home.Href" class="mt-6 inline-flex items-center rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800">
             Return to Home
         </a>
     </div>
@@ -20,4 +20,6 @@
     private string ResolvedTitle => Context?.Title ?? "Storefront error";
 
     private string ResolvedMessage => Context?.Message ?? "The storefront could not complete the request.";
+
+    private StorefrontLinkContext Links => Context?.Links ?? StorefrontLinkContext.Default;
 }

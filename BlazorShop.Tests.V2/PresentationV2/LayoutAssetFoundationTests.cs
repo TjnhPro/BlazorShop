@@ -38,10 +38,31 @@ namespace BlazorShop.Tests.PresentationV2
                 coreScriptMarkup.IndexOf("_content/BlazorShop.Storefront.Presentation/js/storefront.application.js", StringComparison.Ordinal));
             Assert.Contains("<StorefrontBrandHead DisplayContext=\"Context.Display\" />", headMarkup);
             Assert.DoesNotContain("<StorefrontAntiforgeryHead />", headMarkup, StringComparison.Ordinal);
+            Assert.Contains("<html lang=\"@DocumentLanguage\" dir=\"@DocumentDirection\">", appMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<html lang=\"en\">", appMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("document.documentElement.lang", headMarkup, StringComparison.Ordinal);
             AssertRootDoesNotReferenceLegacyPresentationAssets(appMarkup);
             AssertRootDoesNotReferenceLegacyPresentationAssets(headMarkup);
             AssertRootDoesNotReferenceLegacyPresentationAssets(coreScriptMarkup);
             AssertRootDoesNotReferenceLegacyPresentationAssets(scriptMarkup);
+        }
+
+        [Fact]
+        public void StorefrontVisualHosts_UsePresentationLinkDescriptorsInsteadOfRouteConstants()
+        {
+            var visualFiles = Directory
+                .EnumerateFiles(Path.Combine(FindRepositoryRoot(), "BlazorShop.PresentationV2/BlazorShop.Storefront.V2"), "*.razor", SearchOption.AllDirectories)
+                .Concat(Directory.EnumerateFiles(Path.Combine(FindRepositoryRoot(), "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"), "*.razor", SearchOption.AllDirectories))
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            Assert.NotEmpty(visualFiles);
+            foreach (var file in visualFiles)
+            {
+                var source = File.ReadAllText(file);
+                Assert.DoesNotContain("StorefrontRoutes", source, StringComparison.Ordinal);
+            }
         }
 
         [Fact]
@@ -51,9 +72,9 @@ namespace BlazorShop.Tests.PresentationV2
             var brandHeadMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/StorefrontBrandHead.razor");
             var pageShellMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontPageShell.razor");
 
-            Assert.Contains("<StorefrontHeader />", layoutMarkup);
+            Assert.Contains("<StorefrontHeader Context=\"Context.Header\" />", layoutMarkup);
             Assert.Contains("<main class=\"bs-storefront-main flex-1\">", layoutMarkup);
-            Assert.Contains("<StorefrontFooter />", layoutMarkup);
+            Assert.Contains("<StorefrontFooter Context=\"Context.Footer\" />", layoutMarkup);
             Assert.Equal(1, CountOccurrences(layoutMarkup, "data-storefront-toast-region"));
             Assert.DoesNotContain("<HeadContent>", layoutMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("WasmProbe", layoutMarkup, StringComparison.Ordinal);
@@ -86,7 +107,8 @@ namespace BlazorShop.Tests.PresentationV2
             var routeMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Ssr/Content/ContentRoutePage.razor");
             var pageMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor");
 
-            Assert.Contains("<StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPage TContext=\"StorefrontContentPageContext\"", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("Metadata=\"_result.Metadata\"", routeMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<StorefrontSeoHead", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPageShell", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<Breadcrumb>", pageMarkup, StringComparison.Ordinal);
@@ -101,7 +123,8 @@ namespace BlazorShop.Tests.PresentationV2
             var routeMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/CategoryRoutePage.razor");
             var viewMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
 
-            Assert.Contains("<StorefrontSeoHead", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPage TContext=\"StorefrontCategoryPageContext\"", routeMarkup, StringComparison.Ordinal);
+            Assert.Contains("Metadata=\"_result.Metadata\"", routeMarkup, StringComparison.Ordinal);
             Assert.Contains("StorefrontCategoryPageService", routeMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPageShell", viewMarkup, StringComparison.Ordinal);
             Assert.Contains("<Breadcrumb>", viewMarkup, StringComparison.Ordinal);
@@ -145,15 +168,15 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("ShowPageSize=\"true\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("PageSize=\"Context.PageSize\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("InStock=\"Context.InStock\"", categoryMarkup, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.CategoryUrl(Context.Slug, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("Context.Links.CategoryUrl(Context.Slug, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", categoryMarkup, StringComparison.Ordinal);
 
             Assert.Contains("<CatalogFilterPanel", searchMarkup, StringComparison.Ordinal);
-            Assert.Contains("Action=\"@StorefrontRoutes.Search\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("Action=\"@Context.Links.Search.Href\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowCategory=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowSearch=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("SearchTerm=\"@Context.Q\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPageSize=\"true\"", searchMarkup, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("Context.Links.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("CatalogSearchPolicy.MinimumSearchTermLength", searchMarkup, StringComparison.Ordinal);
         }
 
@@ -161,12 +184,12 @@ namespace BlazorShop.Tests.PresentationV2
         public void StorefrontProgram_KeepsStaticAssetMiddleware()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
-            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
+            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs");
 
-            Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program);
+            Assert.Contains("app.UseStorefrontApplication();", program);
             Assert.Contains("app.UseStaticFiles();", pipeline);
-            Assert.Contains("app.MapStaticAssets();", program);
-            Assert.Contains("app.MapGet(\"/favicon.ico\", () => Results.Redirect(\"/icon-192.png\", permanent: false));", program);
+            Assert.Contains("app.MapStaticAssets();", pipeline);
+            Assert.Contains("app.MapGet(\"/favicon.ico\", () => Results.Redirect(applicationOptions.FaviconRedirectPath, permanent: false));", pipeline);
         }
 
         [Fact]
@@ -293,7 +316,7 @@ namespace BlazorShop.Tests.PresentationV2
             var projectGuide = ReadRepositoryFile("docs/architecture/05-project-and-folder-guide.md");
             var decisionRules = ReadRepositoryFile("docs/architecture/08-agent-decision-rules.md");
 
-            Assert.Contains("Root Storefront CSS and scripts must stay explicit in `App/StorefrontApp.razor`.", projectGuide);
+            Assert.Contains("Root Storefront CSS and scripts must stay explicit in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` through host-provided head/script slots.", projectGuide);
             Assert.Contains("Page-specific JavaScript should prefer `IJSRuntime` module imports.", projectGuide);
             Assert.Contains("Store configuration must not accept arbitrary public script or stylesheet injection.", projectGuide);
             Assert.Contains("Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` allowlisted by tests.", decisionRules);

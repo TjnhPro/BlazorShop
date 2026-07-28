@@ -1,5 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
+    using BlazorShop.Storefront.Services.Contracts;
+
     public sealed record StorefrontPaymentResultPageContext(
         bool IsCancelRoute,
         Guid? PaymentAttemptId,
@@ -16,7 +18,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
         string MutedClass,
         bool IsPending,
         bool IsSuccess,
-        bool ShowRetry)
+        bool ShowRetry,
+        StorefrontLinkContext Links)
     {
         public bool HasAttempt => Attempt is not null;
     }

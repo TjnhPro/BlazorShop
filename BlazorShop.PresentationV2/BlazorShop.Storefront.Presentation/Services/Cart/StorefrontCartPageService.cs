@@ -55,6 +55,7 @@ public sealed class StorefrontCartPageService
             alerts,
             StorefrontRoutes.Checkout,
             StorefrontRoutes.NewReleases,
-            StorefrontRoutes.TodaysDeals);
+            StorefrontRoutes.TodaysDeals,
+            StorefrontLinkContext.Default);
     }
 }

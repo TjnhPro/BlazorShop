@@ -69,7 +69,7 @@ public sealed class StorefrontDealsPageService
 
         var products = result.Value?.Items ?? [];
         var productSummaries = products.Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, _priceFormatter)).ToArray();
-        var context = new StorefrontDealsPageContext(productSummaries);
+        var context = new StorefrontDealsPageContext(productSummaries, StorefrontLinkContext.Default);
         var structuredData = await structuredDataTask;
 
         return new StorefrontCatalogPageResult<StorefrontDealsPageContext>(

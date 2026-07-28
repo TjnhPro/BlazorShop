@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
     using BlazorShop.Storefront.Components.Browser;
+    using BlazorShop.Storefront.Services.Contracts;
 
     public sealed record StorefrontCheckoutPageContext(
         string? Error,
@@ -24,7 +25,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
         string? ServerTaxTotalDisplay,
         string? ServerDiscountTotalDisplay,
         string DefaultShippingCountryCode,
-        string DefaultShippingStateCode)
+        string DefaultShippingStateCode,
+        StorefrontLinkContext Links)
     {
         public bool HasAddressCountries => AddressCountries.Count > 0;
 

@@ -9,4 +9,5 @@ public sealed record StorefrontHomePageContext(
     IReadOnlyList<GetCategory> Categories,
     IReadOnlyList<ProductSummaryItem> LatestProductSummaries,
     StorefrontDisplayContext DisplayContext,
-    IReadOnlyDictionary<string, StorefrontCapability> FeatureCapabilities);
+    IReadOnlyDictionary<string, StorefrontCapability> FeatureCapabilities,
+    StorefrontLinkContext Links);

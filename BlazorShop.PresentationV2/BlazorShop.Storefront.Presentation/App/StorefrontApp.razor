@@ -1,8 +1,9 @@
 @namespace BlazorShop.Storefront.Presentation.App
 @inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
+@inject IStorefrontShellContextService ShellContextService
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@DocumentLanguage" dir="@DocumentDirection">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,6 +20,21 @@
 </html>
 
 @code {
+    private StorefrontShellContext? _shellContext;
+
     private StorefrontFoundationViewSet ViewSet => this.FoundationOptions.Value.ViewSet
         ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");
+
+    private string DocumentLanguage => string.IsNullOrWhiteSpace(_shellContext?.Display.LanguageCode)
+        ? StorefrontDisplayContext.Fallback.LanguageCode
+        : _shellContext.Display.LanguageCode;
+
+    private string DocumentDirection => string.Equals(_shellContext?.Display.TextDirection, "rtl", StringComparison.Ordinal)
+        ? "rtl"
+        : "ltr";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _shellContext = await this.ShellContextService.GetAsync();
+    }
 }

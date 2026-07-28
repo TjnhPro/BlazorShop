@@ -81,6 +81,7 @@ namespace BlazorShop.Storefront.Services
             var display = await displayTask;
             var returnUrl = ResolveSafeReturnUrl();
             var brand = CreateBrand(display);
+            var links = StorefrontLinkContext.Create();
             var navigation = new StorefrontNavigationContext(
                 ToShellMenu(await mainMenuTask),
                 ToShellMenu(await footerCompanyMenuTask),
@@ -100,9 +101,9 @@ namespace BlazorShop.Storefront.Services
                 display.SupportedCurrencyCodes.Count > 1,
                 StorefrontRoutes.CurrencyPreference,
                 returnUrl);
-            var account = CreateAccountMenu(await sessionTask);
-            var header = new StorefrontHeaderContext(brand, navigation, search, currency, account, returnUrl);
-            var footer = CreateFooter(brand, navigation, display);
+            var account = CreateAccountMenu(await sessionTask, links);
+            var header = new StorefrontHeaderContext(brand, navigation, search, currency, account, links, returnUrl);
+            var footer = CreateFooter(brand, navigation, links, display);
 
             return new StorefrontShellContext(
                 display,
@@ -113,6 +114,7 @@ namespace BlazorShop.Storefront.Services
                 navigation,
                 search,
                 currency,
+                links,
                 returnUrl);
         }
 
@@ -128,7 +130,7 @@ namespace BlazorShop.Storefront.Services
             return IsSafeApplicationPath(returnUrl) ? returnUrl : StorefrontRoutes.Home;
         }
 
-        private StorefrontAccountMenuContext CreateAccountMenu(StorefrontSessionInfo session)
+        private static StorefrontAccountMenuContext CreateAccountMenu(StorefrontSessionInfo session, StorefrontLinkContext links)
         {
             if (!session.IsAuthenticated)
             {
@@ -138,10 +140,10 @@ namespace BlazorShop.Storefront.Services
                     null,
                     null,
                     [
-                        new("Sign in", StorefrontRoutes.SignIn),
-                        new("Register", StorefrontRoutes.Register),
+                        links.SignIn,
+                        links.Register,
                     ],
-                    StorefrontRoutes.Home);
+                    links.Home.Href);
             }
 
             return new StorefrontAccountMenuContext(
@@ -150,22 +152,24 @@ namespace BlazorShop.Storefront.Services
                 session.DisplayName,
                 session.Email,
                 [
-                    new("Profile", StorefrontRoutes.AccountProfile),
-                    new("Orders", StorefrontRoutes.AccountOrders),
-                    new("Addresses", StorefrontRoutes.AccountAddresses),
+                    links.AccountProfile,
+                    links.AccountOrders,
+                    links.AccountAddresses,
                 ],
-                StorefrontRoutes.Home);
+                links.Home.Href);
         }
 
         private static StorefrontFooterContext CreateFooter(
             StorefrontBrandContext brand,
             StorefrontNavigationContext navigation,
+            StorefrontLinkContext links,
             StorefrontDisplayContext display)
         {
             var contactPhone = FirstNonEmptyOrNull(display.SupportPhone, display.CompanyPhone);
             return new StorefrontFooterContext(
                 brand,
                 navigation,
+                links,
                 $"© {DateTime.UtcNow.Year} {brand.Name}. All rights reserved.",
                 FirstNonEmptyOrNull(display.SupportEmail, display.CompanyEmail),
                 contactPhone,

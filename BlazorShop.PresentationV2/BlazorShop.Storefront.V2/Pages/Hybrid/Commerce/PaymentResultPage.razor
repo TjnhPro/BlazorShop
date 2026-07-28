@@ -1,5 +1,4 @@
 @using BlazorShop.Storefront.Presentation.Services.Checkout
-@using BlazorShop.Storefront.Services
 
 <section class="mx-auto max-w-3xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
     <article class="@Context.PanelClass">
@@ -24,9 +23,9 @@
         <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             @if (Context.ShowRetry)
             {
-                <a href="@StorefrontRoutes.Checkout" class="inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">Return to checkout</a>
+                <a href="@Context.Links.Checkout.Href" class="inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">Return to checkout</a>
             }
-            <a href="@StorefrontRoutes.Home" class="inline-flex items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100">Continue shopping</a>
+            <a href="@Context.Links.Home.Href" class="inline-flex items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100">Continue shopping</a>
         </div>
     </article>
 </section>

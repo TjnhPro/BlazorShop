@@ -15,7 +15,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("bs-storefront-header__brand-logo", markup);
             Assert.Contains("Context.Navigation.HeaderLinks", markup);
             Assert.Contains("Context.Search.Categories", markup);
-            Assert.Contains("Context.Currency.SupportedCurrencyCodes", markup);
+            Assert.Contains("Context.Currency.ShowSelector", markup);
+            Assert.Contains("<StorefrontCurrencyPreferenceForm Context=\"Context.Currency\"", markup);
             Assert.Contains("<StorefrontAccountMenu Context=\"Context.AccountMenu\" />", markup);
             Assert.DoesNotContain("OnInitializedAsync", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes.About", markup, StringComparison.Ordinal);
@@ -33,7 +34,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"@DisplayContext.PngIconUrl\" />", markup);
             Assert.Contains("<link rel=\"apple-touch-icon\" href=\"@DisplayContext.AppleTouchIconUrl\" />", markup);
             Assert.Contains("msapplication-TileImage", markup);
-            Assert.Contains("document.documentElement.lang", markup);
+            Assert.Contains("<meta name=\"bs-storefront-language\" content=\"@DisplayContext.LanguageCode\" />", markup);
+            Assert.DoesNotContain("document.documentElement.lang", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("<HeadContent>", markup, StringComparison.Ordinal);
         }
 
@@ -187,7 +189,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<StorefrontProductSummaryCard Item=\"Item\" />", markup);
             Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
-            Assert.Contains("product.Purchasable && QuantityOneAllowed(product)", mapper);
+            Assert.Contains("product.Purchasable && !product.PurchaseBlockReasons.Any(IsDirectAddHardBlock) && QuantityOneAllowed(product)", mapper);
             Assert.Contains("product.MinOrderQuantity <= 1", mapper);
             Assert.Contains("product.QuantityStep <= 1", mapper);
             Assert.Contains("product.ManageStock ? Math.Max(0, product.AvailableQuantity ?? product.Quantity) : 999999", mapper);
@@ -217,7 +219,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("IsInitialPurchaseHardBlock", mapper);
             Assert.Contains("or \"purchase_disabled\"", mapper);
             Assert.Contains("or \"out_of_stock\"", mapper);
-            Assert.Contains("product.ManageStock == false ? 999999", mapper);
+            Assert.Contains("return product.ManageStock == false", mapper);
+            Assert.Contains("? 999999", mapper);
         }
 
         [Fact]

@@ -116,7 +116,8 @@ public sealed class StorefrontCategoryPageService
             maxPrice,
             inStock,
             sortBy,
-            slug);
+            slug,
+            StorefrontLinkContext.Default);
 
         var readyMetadata = await _seoComposer.ComposeCategoryPageAsync(categoryPage.Category, cancellationToken);
         var structuredData = await _structuredDataComposer.ComposeCategoryPageAsync(categoryPage.Category, cancellationToken);

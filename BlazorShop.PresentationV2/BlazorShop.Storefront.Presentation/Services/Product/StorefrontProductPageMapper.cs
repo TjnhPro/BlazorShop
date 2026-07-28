@@ -39,7 +39,8 @@ public static class StorefrontProductPageMapper
             relatedProducts
                 .Select(relatedProduct => StorefrontProductSummaryMapper.ToProductSummary(relatedProduct, displayContext, priceFormatter))
                 .ToArray(),
-            displayContext);
+            displayContext,
+            StorefrontLinkContext.Default);
     }
 
     private static IReadOnlyList<StorefrontBreadcrumbItem> BuildBreadcrumbs(GetProduct product)

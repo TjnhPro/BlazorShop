@@ -18,7 +18,8 @@ public sealed record StorefrontProductPageContext(
     StorefrontProductBadgeView Badges,
     StorefrontProductNavigationView Navigation,
     IReadOnlyList<ProductSummaryItem> RelatedProductSummaries,
-    StorefrontDisplayContext DisplayContext);
+    StorefrontDisplayContext DisplayContext,
+    StorefrontLinkContext Links);
 
 public sealed record StorefrontProductPricingView(
     string PrimaryPriceLabel,

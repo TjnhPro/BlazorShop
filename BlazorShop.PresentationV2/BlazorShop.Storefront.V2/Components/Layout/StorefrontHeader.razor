@@ -1,10 +1,9 @@
-@using BlazorShop.Storefront.Services
 @using BlazorShop.Storefront.Services.Contracts
 
 <header class="bs-storefront-header relative text-neutral-100">
     <div class="bs-storefront-header__shell">
         <div class="bs-storefront-header__desktop relative mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
+            <a href="@Context.Links.Home.Href" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
                 @if (!string.IsNullOrWhiteSpace(Context.Brand.LogoUrl))
                 {
                     <img class="bs-storefront-header__brand-logo" src="@Context.Brand.LogoUrl" alt="" loading="eager" decoding="async" />
@@ -38,9 +37,9 @@
                 }
                 else
                 {
-                    <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
-                    <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
-                    <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
+                    <NavLink href="@Context.Links.Home.Href" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.Home.Label</NavLink>
+                    <NavLink href="@Context.Links.NewReleases.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.NewReleases.Label</NavLink>
+                    <NavLink href="@Context.Links.TodaysDeals.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.TodaysDeals.Label</NavLink>
                     @foreach (var link in Context.Navigation.HeaderLinks)
                     {
                         <NavLink href="@link.Href" target="@link.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Label</NavLink>
@@ -60,7 +59,7 @@
                         </SubmitContent>
                     </StorefrontCurrencyPreferenceForm>
                 }
-                <a href="@StorefrontRoutes.Cart"
+                <a href="@Context.Links.Cart.Href"
                    class="bs-storefront-icon-button"
                    aria-label="Open cart"
                    title="Open cart">
@@ -73,13 +72,13 @@
                     <span data-storefront-cart-badge hidden class="bs-storefront-cart-badge">0</span>
                 </a>
                 <StorefrontAccountMenu Context="Context.AccountMenu" />
-                <a href="@StorefrontRoutes.NewReleases" class="bs-storefront-pill-button">New Releases</a>
-                <a href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-deal-button">Today's Deals</a>
+                <a href="@Context.Links.NewReleases.Href" class="bs-storefront-pill-button">@Context.Links.NewReleases.Label</a>
+                <a href="@Context.Links.TodaysDeals.Href" class="bs-storefront-deal-button">@Context.Links.TodaysDeals.Label</a>
             </div>
         </div>
 
         <div class="bs-storefront-header__mobile relative mx-auto max-w-7xl px-4 py-3 sm:px-6">
-            <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
+            <a href="@Context.Links.Home.Href" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
                 @if (!string.IsNullOrWhiteSpace(Context.Brand.LogoUrl))
                 {
                     <img class="bs-storefront-header__brand-logo" src="@Context.Brand.LogoUrl" alt="" loading="eager" decoding="async" />
@@ -89,7 +88,7 @@
             </a>
 
             <div class="bs-storefront-header__mobile-actions" aria-label="Shop shortcuts">
-                <a href="@StorefrontRoutes.Cart"
+                <a href="@Context.Links.Cart.Href"
                    class="bs-storefront-icon-button"
                    aria-label="Open cart"
                    title="Open cart">
@@ -138,9 +137,9 @@
                         }
                         else
                         {
-                            <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
-                            <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
-                            <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
+                            <NavLink href="@Context.Links.Home.Href" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.Home.Label</NavLink>
+                            <NavLink href="@Context.Links.NewReleases.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.NewReleases.Label</NavLink>
+                            <NavLink href="@Context.Links.TodaysDeals.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.TodaysDeals.Label</NavLink>
                             @foreach (var link in Context.Navigation.HeaderLinks)
                             {
                                 <NavLink href="@link.Href" target="@link.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Label</NavLink>
@@ -160,8 +159,8 @@
                                 </SubmitContent>
                             </StorefrontCurrencyPreferenceForm>
                         }
-                        <a href="@StorefrontRoutes.NewReleases" class="bs-storefront-pill-button">New Releases</a>
-                        <a href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-deal-button">Today's Deals</a>
+                        <a href="@Context.Links.NewReleases.Href" class="bs-storefront-pill-button">@Context.Links.NewReleases.Label</a>
+                        <a href="@Context.Links.TodaysDeals.Href" class="bs-storefront-deal-button">@Context.Links.TodaysDeals.Label</a>
                     </div>
                 </div>
             </details>

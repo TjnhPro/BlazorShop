@@ -1,4 +1,3 @@
-@using BlazorShop.Storefront.Services
 @using BlazorShop.Storefront.Services.Contracts
 
 <footer class="border-t border-white/10 bg-neutral-900 text-neutral-100">
@@ -22,9 +21,9 @@
                     }
                     else
                     {
-                        <li><a href="@StorefrontRoutes.Home" class="hover:text-white/80">Home</a></li>
-                        <li><a href="@StorefrontRoutes.NewReleases" class="hover:text-white/80">New Releases</a></li>
-                        <li><a href="@StorefrontRoutes.TodaysDeals" class="hover:text-white/80">Today's Deals</a></li>
+                        <li><a href="@Context.Links.Home.Href" class="hover:text-white/80">@Context.Links.Home.Label</a></li>
+                        <li><a href="@Context.Links.NewReleases.Href" class="hover:text-white/80">@Context.Links.NewReleases.Label</a></li>
+                        <li><a href="@Context.Links.TodaysDeals.Href" class="hover:text-white/80">@Context.Links.TodaysDeals.Label</a></li>
                         @foreach (var link in Context.Navigation.FooterCompanyLinks)
                         {
                             <li><a href="@link.Href" target="@link.Target" class="hover:text-white/80">@link.Label</a></li>
@@ -77,8 +76,8 @@
                     <p class="mt-3 text-sm leading-6 text-neutral-400">Visit customer service for store support and order questions.</p>
                 }
                 <div class="mt-4 flex flex-wrap gap-3">
-                    <a href="@StorefrontRoutes.NewReleases" class="inline-flex items-center rounded bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-white">Shop New</a>
-                    <a href="@StorefrontRoutes.TodaysDeals" class="inline-flex items-center rounded bg-amber-500 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-600">View Deals</a>
+                    <a href="@Context.Links.NewReleases.Href" class="inline-flex items-center rounded bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-white">Shop New</a>
+                    <a href="@Context.Links.TodaysDeals.Href" class="inline-flex items-center rounded bg-amber-500 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-600">View Deals</a>
                 </div>
             </div>
         </div>

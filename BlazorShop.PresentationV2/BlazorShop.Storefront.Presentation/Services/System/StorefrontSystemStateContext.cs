@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.System;
 
 using BlazorShop.Storefront.Services;
+using BlazorShop.Storefront.Services.Contracts;
 
 public sealed record StorefrontSystemStateContext(
     string Title,
@@ -8,7 +9,8 @@ public sealed record StorefrontSystemStateContext(
     string Message,
     StorefrontCurrentStore? Store = null,
     string? Reason = null,
-    bool AutoRefresh = false)
+    bool AutoRefresh = false,
+    StorefrontLinkContext? Links = null)
 {
     public static StorefrontSystemStateContext NotFound(string title, string message)
     {

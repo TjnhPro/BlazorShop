@@ -80,7 +80,7 @@ public sealed class StorefrontSearchPageService
 
         if (isTooShort)
         {
-            var context = new StorefrontSearchPageContext(normalizedQuery, category, searchCategories, [], true, 1, NormalizePageSize(pageSize), 0, 0, minPrice, maxPrice, inStock, sortBy);
+            var context = new StorefrontSearchPageContext(normalizedQuery, category, searchCategories, [], true, 1, NormalizePageSize(pageSize), 0, 0, minPrice, maxPrice, inStock, sortBy, StorefrontLinkContext.Default);
             return new StorefrontCatalogPageResult<StorefrontSearchPageContext>(
                 StorefrontPageResultMapper.Ready(StorefrontPageKind.Search, context, new StorefrontPageDocument("Search", "Search published products in the BlazorShop catalog.", StorefrontRoutes.Search, RobotsIndex: false)),
                 metadata,
@@ -107,7 +107,7 @@ public sealed class StorefrontSearchPageService
         var summaries = products.Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, _priceFormatter)).ToArray();
         var totalCount = productsResult.Value?.TotalCount ?? summaries.Length;
         var totalPages = Math.Min(10, productsResult.Value?.TotalPages ?? 0);
-        var contextReady = new StorefrontSearchPageContext(normalizedQuery, category, searchCategories, summaries, false, productsResult.Value?.PageNumber ?? Math.Max(1, page), productsResult.Value?.PageSize ?? NormalizePageSize(pageSize), totalCount, totalPages, minPrice, maxPrice, inStock, sortBy);
+        var contextReady = new StorefrontSearchPageContext(normalizedQuery, category, searchCategories, summaries, false, productsResult.Value?.PageNumber ?? Math.Max(1, page), productsResult.Value?.PageSize ?? NormalizePageSize(pageSize), totalCount, totalPages, minPrice, maxPrice, inStock, sortBy, StorefrontLinkContext.Default);
         var structuredData = StorefrontStructuredDataDocument.Empty;
 
         return new StorefrontCatalogPageResult<StorefrontSearchPageContext>(

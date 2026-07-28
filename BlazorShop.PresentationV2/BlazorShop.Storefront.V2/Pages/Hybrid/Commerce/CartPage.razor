@@ -1,5 +1,5 @@
 @using BlazorShop.Storefront.Presentation.Services.Cart
-@using BlazorShop.Storefront.Services
+@using BlazorShop.Storefront.Services.Contracts
 
 <StorefrontCartView InitialCart="Context.Cart"
                     InitialAlerts="Context.Alerts"
@@ -16,7 +16,8 @@
     public StorefrontCartPageContext Context { get; set; } = new(
         null,
         [],
-        StorefrontRoutes.Checkout,
-        StorefrontRoutes.NewReleases,
-        StorefrontRoutes.TodaysDeals);
+        StorefrontLinkContext.Default.Checkout.Href,
+        StorefrontLinkContext.Default.NewReleases.Href,
+        StorefrontLinkContext.Default.TodaysDeals.Href,
+        StorefrontLinkContext.Default);
 }

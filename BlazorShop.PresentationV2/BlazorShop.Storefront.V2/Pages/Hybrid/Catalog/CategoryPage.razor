@@ -1,6 +1,5 @@
 @namespace BlazorShop.Storefront.V2.Pages.Catalog
 @using BlazorShop.Storefront.Presentation.Services.Catalog
-@using BlazorShop.Storefront.Services
 
 <StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-6 pt-10 sm:px-6 lg:px-8">
     <Breadcrumb>
@@ -25,7 +24,7 @@
 
                 <div class="flex flex-wrap items-center gap-3">
                     <span class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 shadow">@CategoryResultCountText</span>
-                    <a href="@StorefrontRoutes.Home" class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">Back to Home</a>
+                    <a href="@Context.Links.Home.Href" class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">Back to Home</a>
                 </div>
             </div>
 
@@ -52,7 +51,7 @@
         <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Category product pages">
             @for (var pageNumber = 1; pageNumber <= Context.TotalPages; pageNumber++)
             {
-                <a href="@StorefrontRoutes.CategoryUrl(Context.Slug, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)"
+                <a href="@Context.Links.CategoryUrl(Context.Slug, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)"
                    class="@GetPageLinkClass(pageNumber)"
                    aria-current="@(pageNumber == Context.PageNumber ? "page" : null)">
                     @pageNumber

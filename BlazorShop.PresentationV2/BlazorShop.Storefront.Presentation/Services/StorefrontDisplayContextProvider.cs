@@ -52,6 +52,7 @@ namespace BlazorShop.Storefront.Services
                 storeName,
                 culture.Name,
                 string.IsNullOrWhiteSpace(culture.TwoLetterISOLanguageName) ? DefaultLanguageCode : culture.TwoLetterISOLanguageName,
+                culture.TextInfo.IsRightToLeft ? "rtl" : "ltr",
                 currencyCode,
                 NormalizeOptional(store.LogoUrl),
                 NormalizeOptional(store.FaviconUrl),

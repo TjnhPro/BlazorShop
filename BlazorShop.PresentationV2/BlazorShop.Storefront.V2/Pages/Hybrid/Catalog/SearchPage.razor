@@ -1,7 +1,6 @@
 @namespace BlazorShop.Storefront.V2.Pages.Catalog
 @using BlazorShop.Storefront.Models
 @using BlazorShop.Storefront.Presentation.Services.Catalog
-@using BlazorShop.Storefront.Services
 
 <section class="mx-auto max-w-7xl px-4 pb-6 pt-10 sm:px-6 lg:px-8">
     <div class="rounded-2xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg">
@@ -12,7 +11,7 @@
                 <p class="mt-3 max-w-3xl text-sm leading-6 text-neutral-700">@ScopeText</p>
             </div>
 
-            <CatalogFilterPanel Action="@StorefrontRoutes.Search"
+            <CatalogFilterPanel Action="@Context.Links.Search.Href"
                                 Class="grid gap-3 md:grid-cols-4 xl:grid-cols-8"
                                 Role="search"
                                 ShowCategory="true"
@@ -58,7 +57,7 @@
         <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
             @for (var pageNumber = 1; pageNumber <= Context.TotalPages; pageNumber++)
             {
-                <a href="@StorefrontRoutes.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)"
+                <a href="@Context.Links.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)"
                    class="@GetPageLinkClass(pageNumber)"
                    aria-current="@(pageNumber == Context.PageNumber ? "page" : null)">
                     @pageNumber

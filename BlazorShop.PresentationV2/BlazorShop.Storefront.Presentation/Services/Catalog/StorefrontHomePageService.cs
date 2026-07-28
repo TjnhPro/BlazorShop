@@ -93,7 +93,8 @@ public sealed class StorefrontHomePageService
             categories,
             latestProductSummaries,
             displayContext,
-            MapCapabilities(publicConfigurationResult));
+            MapCapabilities(publicConfigurationResult),
+            StorefrontLinkContext.Default);
         var structuredData = await structuredDataTask;
 
         return new StorefrontCatalogPageResult<StorefrontHomePageContext>(

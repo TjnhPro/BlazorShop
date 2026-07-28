@@ -2,19 +2,19 @@
 @inherits LayoutComponentBase
 
 <header class="starter-header">
-    <a class="starter-brand" href="/">@Context.Header.Brand.Label</a>
+    <a class="starter-brand" href="@Context.Links.Home.Href">@Context.Header.Brand.Label</a>
     <nav aria-label="Main navigation">
-        <a href="/">Home</a>
-        <a href="/search">Search</a>
-        <a href="/deals">Deals</a>
-        <a href="/cart" aria-label="Cart">Cart</a>
-        <a href="/account" aria-label="Account">Account</a>
+        <a href="@Context.Links.Home.Href">@Context.Links.Home.Label</a>
+        <a href="@Context.Links.Search.Href">@Context.Links.Search.Label</a>
+        <a href="@Context.Links.TodaysDeals.Href">Deals</a>
+        <a href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label</a>
+        <a href="@Context.Links.AccountRoot.Href" aria-label="Account">@Context.Links.AccountRoot.Label</a>
     </nav>
 </header>
 
 <main class="starter-main">
     <nav class="starter-breadcrumb" aria-label="Breadcrumb">
-        <a href="/">Home</a>
+        <a href="@Context.Links.Home.Href">@Context.Links.Home.Label</a>
     </nav>
     @Body
 </main>

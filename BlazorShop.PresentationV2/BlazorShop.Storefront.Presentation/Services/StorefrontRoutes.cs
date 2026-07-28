@@ -4,7 +4,7 @@ namespace BlazorShop.Storefront.Services
 
     using BlazorShop.Storefront.Models;
 
-    public static class StorefrontRoutes
+    internal static class StorefrontRoutes
     {
         public const string Home = "/";
         public const string HomeMetadataSlug = "home";

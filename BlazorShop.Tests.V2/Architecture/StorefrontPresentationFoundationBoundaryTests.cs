@@ -209,6 +209,34 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenApplicationHeadContextParameterIsMissing()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), applicationHead: typeof(MissingContextFoundationView)),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("ApplicationHead", StringComparison.Ordinal));
+            Assert.Contains(result.Failures, failure => failure.Contains("StorefrontShellContext", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenMainLayoutBodyParameterIsMissing()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), mainLayout: typeof(ValidFoundationView)),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("MainLayout", StringComparison.Ordinal));
+            Assert.Contains(result.Failures, failure => failure.Contains("Body", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public void FoundationViewOptionsValidator_PassesWhenContextTypeIsAssignable()
         {
             var result = new StorefrontFoundationViewOptionsValidator()
@@ -532,12 +560,14 @@ namespace BlazorShop.Tests.Architecture
 
         private static StorefrontFoundationViewSet CreateValidViewSet()
         {
-            return StorefrontFoundationViewSet.CreateMinimal(typeof(ValidFoundationView));
+            return StorefrontFoundationViewSet.CreateMinimal(typeof(ValidLayoutFoundationView));
         }
 
         private static StorefrontFoundationViewSet CopyViewSet(
             StorefrontFoundationViewSet source,
+            Type? applicationHead = null,
             Type? visualScripts = null,
+            Type? mainLayout = null,
             Type? productPage = null,
             Type? checkoutPage = null,
             Type? errorState = null,
@@ -546,9 +576,9 @@ namespace BlazorShop.Tests.Architecture
         {
             return new StorefrontFoundationViewSet
             {
-                ApplicationHead = source.ApplicationHead,
+                ApplicationHead = applicationHead ?? source.ApplicationHead,
                 VisualScripts = visualScripts ?? source.VisualScripts,
-                MainLayout = source.MainLayout,
+                MainLayout = mainLayout ?? source.MainLayout,
                 HomePage = source.HomePage,
                 CategoryPage = source.CategoryPage,
                 ProductPage = productPage ?? source.ProductPage,
@@ -581,6 +611,12 @@ namespace BlazorShop.Tests.Architecture
             {
                 return Task.CompletedTask;
             }
+        }
+
+        private sealed class ValidLayoutFoundationView : ValidFoundationView
+        {
+            [Parameter]
+            public RenderFragment Body { get; set; } = default!;
         }
 
         [Route("/route-foundation-view")]

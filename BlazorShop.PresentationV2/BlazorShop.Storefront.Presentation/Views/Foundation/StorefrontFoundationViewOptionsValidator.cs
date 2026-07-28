@@ -9,6 +9,7 @@ using BlazorShop.Storefront.Presentation.Services.Checkout;
 using BlazorShop.Storefront.Presentation.Services.Content;
 using BlazorShop.Storefront.Presentation.Services.Product;
 using BlazorShop.Storefront.Presentation.Services.System;
+using BlazorShop.Storefront.Services.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 
@@ -16,6 +17,8 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
 {
     private static readonly IReadOnlyDictionary<string, Type> ExpectedContextTypes = new Dictionary<string, Type>(StringComparer.Ordinal)
     {
+        [nameof(StorefrontFoundationViewSet.ApplicationHead)] = typeof(StorefrontShellContext),
+        [nameof(StorefrontFoundationViewSet.MainLayout)] = typeof(StorefrontShellContext),
         [nameof(StorefrontFoundationViewSet.HomePage)] = typeof(StorefrontHomePageContext),
         [nameof(StorefrontFoundationViewSet.CategoryPage)] = typeof(StorefrontCategoryPageContext),
         [nameof(StorefrontFoundationViewSet.ProductPage)] = typeof(StorefrontProductPageContext),
@@ -74,6 +77,11 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
             {
                 ValidateContextParameter(slot.Name, componentType, expectedContextType, failures);
             }
+
+            if (slot.Name == nameof(StorefrontFoundationViewSet.MainLayout))
+            {
+                ValidateBodyParameter(slot.Name, componentType, failures);
+            }
         }
 
         return failures.Count == 0
@@ -103,6 +111,28 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
         {
             failures.Add(
                 $"Foundation view slot '{slotName}' context parameter expects '{contextParameter.PropertyType.FullName}', which cannot accept '{expectedContextType.FullName}'.");
+        }
+    }
+
+    private static void ValidateBodyParameter(
+        string slotName,
+        Type componentType,
+        List<string> failures)
+    {
+        var bodyParameter = componentType.GetProperty(
+            nameof(LayoutComponentBase.Body),
+            BindingFlags.Instance | BindingFlags.Public);
+
+        if (bodyParameter is null
+            || bodyParameter.GetCustomAttribute<ParameterAttribute>() is null)
+        {
+            failures.Add($"Foundation view slot '{slotName}' must expose a public [Parameter] named '{nameof(LayoutComponentBase.Body)}'.");
+            return;
+        }
+
+        if (bodyParameter.PropertyType != typeof(RenderFragment))
+        {
+            failures.Add($"Foundation view slot '{slotName}' Body parameter must be '{typeof(RenderFragment).FullName}'.");
         }
     }
 }

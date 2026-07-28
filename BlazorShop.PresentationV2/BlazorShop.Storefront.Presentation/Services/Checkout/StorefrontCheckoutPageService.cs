@@ -123,7 +123,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 checkoutSession is null ? null : this.priceFormatter.Format(ToMoney(checkoutSession.TaxTotal), totalDisplayContext),
                 checkoutSession is null ? null : this.priceFormatter.Format(ToMoney(checkoutSession.DiscountTotal), totalDisplayContext),
                 addressCountries.FirstOrDefault()?.Code ?? "US",
-                string.Empty);
+                string.Empty,
+                StorefrontLinkContext.Default);
         }
 
         private static StorefrontCheckoutPageContext CreateOrderPlacedContext(
@@ -152,7 +153,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 null,
                 null,
                 "US",
-                string.Empty);
+                string.Empty,
+                StorefrontLinkContext.Default);
         }
 
         private static StorefrontCheckoutPageContext CreateEmptyContext(
@@ -181,7 +183,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 null,
                 null,
                 "US",
-                string.Empty);
+                string.Empty,
+                StorefrontLinkContext.Default);
         }
 
         private async Task<IReadOnlyList<StorefrontCheckoutPaymentMethodOptionView>> LoadPaymentMethodsAsync(

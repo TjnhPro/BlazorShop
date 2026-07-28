@@ -1,4 +1,4 @@
-@using BlazorShop.Storefront.Services
+@using BlazorShop.Storefront.Services.Contracts
 
 <section class="relative overflow-hidden">
     <div class="hero-bg">
@@ -15,8 +15,8 @@
                         <p class="mx-auto mt-6 max-w-2xl text-center text-lg text-neutral-700 sm:text-xl">Discover published products, featured deals, and popular categories across the BlazorShop shop.</p>
 
                         <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
-                            <a href="@StorefrontRoutes.NewReleases" class="inline-flex items-center rounded-md bg-neutral-900 px-6 py-3 text-white font-semibold hover:bg-neutral-800">Buy Now</a>
-                            <a href="@StorefrontRoutes.TodaysDeals" class="inline-flex items-center rounded-md bg-amber-500 px-6 py-3 text-white font-semibold hover:bg-amber-600">Today's Deals</a>
+                            <a href="@Links.NewReleases.Href" class="inline-flex items-center rounded-md bg-neutral-900 px-6 py-3 text-white font-semibold hover:bg-neutral-800">Buy Now</a>
+                            <a href="@Links.TodaysDeals.Href" class="inline-flex items-center rounded-md bg-amber-500 px-6 py-3 text-white font-semibold hover:bg-amber-600">@Links.TodaysDeals.Label</a>
                         </div>
 
                         <div class="mt-8 flex flex-wrap items-center justify-center gap-5 text-sm text-neutral-700">
@@ -39,3 +39,8 @@
         </div>
     </div>
 </section>
+
+@code {
+    [Parameter]
+    public StorefrontLinkContext Links { get; set; } = StorefrontLinkContext.Default;
+}

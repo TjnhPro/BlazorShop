@@ -1,9 +1,11 @@
+@using BlazorShop.Storefront.Services.Contracts
+
 <section class="starter-account-shell">
     <nav aria-label="Account navigation">
-        <a href="/account/profile">Profile</a>
-        <a href="/account/addresses">Addresses</a>
-        <a href="/account/orders">Orders</a>
-        <a href="/account/password">Password</a>
+        <a href="@Links.AccountProfile.Href">@Links.AccountProfile.Label</a>
+        <a href="@Links.AccountAddresses.Href">@Links.AccountAddresses.Label</a>
+        <a href="@Links.AccountOrders.Href">@Links.AccountOrders.Label</a>
+        <a href="@Links.AccountPassword.Href">@Links.AccountPassword.Label</a>
     </nav>
     <div>
         @if (ChildContent is null)
@@ -20,4 +22,7 @@
 @code {
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public StorefrontLinkContext Links { get; set; } = StorefrontLinkContext.Default;
 }

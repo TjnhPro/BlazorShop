@@ -596,8 +596,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("starter-footer", layout, StringComparison.Ordinal);
             Assert.Contains("starter-breadcrumb", layout, StringComparison.Ordinal);
             Assert.Contains("starter-toast-region", layout, StringComparison.Ordinal);
-            Assert.Contains("/cart", layout, StringComparison.Ordinal);
-            Assert.Contains("/account", layout, StringComparison.Ordinal);
+            Assert.Contains("Context.Links.Cart.Href", layout, StringComparison.Ordinal);
+            Assert.Contains("Context.Links.AccountRoot.Href", layout, StringComparison.Ordinal);
             Assert.Contains("@media (max-width: 720px)", css, StringComparison.Ordinal);
             Assert.Contains("border-radius: 8px", css, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2", css, StringComparison.Ordinal);
