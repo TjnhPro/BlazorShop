@@ -121,13 +121,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontLocalCart_PostsCurrencyCode()
         {
-            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var applicationScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var cartLocalContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/Contracts/StorefrontCartLocalContracts.cs");
 
-            Assert.Contains("CurrencyCode: (button.dataset.currencyCode", script);
-            Assert.Contains("CurrencyCode: payload.CurrencyCode || null", script);
+            Assert.Contains("CurrencyCode: descriptor.currencyCode || null", applicationScript);
+            Assert.Contains("CurrencyCode: selection.currencyCode || null", applicationScript);
             Assert.Contains("cartApiRoute = \"/api/cart\"", applicationScript);
             Assert.Contains("CurrencyCode = request.CurrencyCode", cartEndpoints);
             Assert.Contains("public string? CurrencyCode { get; set; }", cartLocalContracts);
@@ -152,28 +151,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("ProductPurchaseSelectionState", purchaseBehavior, StringComparison.Ordinal);
             Assert.DoesNotContain("GetProduct", purchasePanel + purchaseModels, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes", purchasePanel + purchaseModels, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-selection-preview", purchasePanel);
-            Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", purchasePanel);
+            Assert.Contains("data-storefront-product-purchase", purchasePanel);
+            Assert.Contains("data-selection-preview-route=\"@Actions.SelectionPreviewRoute\"", purchasePanel);
             Assert.DoesNotContain("StorefrontV2Default", purchaseBehavior, StringComparison.Ordinal);
             Assert.Contains("data-resolved-variant-id=\"@Model.ResolvedVariantId\"", purchasePanel);
             Assert.Contains("data-main-image-url=\"@Model.InitialMainImageUrl\"", purchasePanel);
             Assert.Contains("data-sku=\"@Model.InitialSku\"", purchasePanel);
             Assert.Contains("data-gtin=\"@Model.InitialGtin\"", purchasePanel);
-            Assert.Contains("data-storefront-attribute-control", purchasePanel);
-            Assert.Contains("data-storefront-selection-quantity", purchasePanel);
+            Assert.Contains("data-storefront-purchase-attribute", purchasePanel);
+            Assert.Contains("data-storefront-purchase-quantity", purchasePanel);
             Assert.Contains("data-storefront-selection-price", markup);
             Assert.Contains("data-storefront-selection-stock", markup);
             Assert.Contains("data-storefront-selection-sku", markup);
             Assert.Contains("data-storefront-selection-gtin", markup);
             Assert.Contains("InitialValidationMessages", purchaseModels, StringComparison.Ordinal);
 
-            Assert.Contains("const selectionPreviewSelector", script);
-            Assert.Contains("collectSelectedAttributes", script);
-            Assert.Contains("SelectedAttributes: payload.SelectedAttributes || null", script);
-            Assert.Contains("getStorefrontApplication().productSelection.preview", script);
+            Assert.Contains("storefront:product-purchase:selection-changed", script);
+            Assert.Contains("applySelectionVisual", script);
+            Assert.Contains("readSelectedAttributes", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js"));
+            Assert.Contains("SelectedAttributes: descriptor.selectedAttributes.length > 0 ? descriptor.selectedAttributes : null", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js"));
+            Assert.Contains("productSelection.preview(descriptor.previewRoute, payload)", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js"));
             Assert.Contains("/api/product-selection-preview", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js"));
-            Assert.Contains("syncGalleryMainImage(container, preview.primaryImageUrl)", script);
-            Assert.Contains("container.dataset.mainImageUrl = preview.primaryImageUrl", script);
+            Assert.Contains("syncGalleryMainImage(rootElement, selection.mainImageUrl)", script);
+            Assert.Contains("rootElement.dataset.mainImageUrl = selection.mainImageUrl", script);
 
             Assert.Contains("app.MapPost(\"/api/product-selection-preview\"", cartEndpoints);
             Assert.Contains("PreviewProductSelectionAsync", cartEndpoints);
@@ -212,7 +212,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("step=\"@Model.QuantityStep\"", purchasePanel);
             Assert.Contains("value=\"@Model.MinOrderQuantity\"", purchasePanel);
             Assert.Contains("disabled=\"@(!Model.CanSubmitInitialPurchase)\"", purchasePanel);
-            Assert.Contains("data-stock=\"@Model.InitialStockValue\"", purchasePanel);
+            Assert.DoesNotContain("data-stock=", purchasePanel, StringComparison.Ordinal);
             Assert.Contains("Free shipping", purchasePanel);
             Assert.Contains("@Model.DeliveryEstimateText", purchasePanel);
             Assert.Contains("BuildPurchasePanel", mapper);
@@ -354,8 +354,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<StorefrontProductSummaryGrid", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-grid", productGrid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-card", productCard, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-add-to-cart", productCard, StringComparison.Ordinal);
-            Assert.Contains("data-unit-price=\"@Item.UnitPriceValue\"", productCard, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase", productCard, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-command=\"cart.add-line\"", productCard, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase-submit", productCard, StringComparison.Ordinal);
             Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", productCard, StringComparison.Ordinal);
             Assert.Contains("ProductDetailFooter", dealsPlacement, StringComparison.Ordinal);
             Assert.DoesNotContain("IStorefront", dealsBlock + productGrid + productCard, StringComparison.Ordinal);

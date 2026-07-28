@@ -78,14 +78,14 @@
             {
                 <button type="button"
                         class="inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600"
-                        data-storefront-add-to-cart
+                        data-storefront-product-purchase
+                        data-storefront-command="cart.add-line"
+                        data-storefront-product-purchase-submit
                         data-default-label="Add to Cart"
                         data-success-label="Added"
                         data-product-id="@Item.Id"
                         data-product-name="@Item.Name"
-                        data-unit-price="@Item.UnitPriceValue"
-                        data-currency-code="@Item.CurrencyCode"
-                        data-stock="@Item.DirectAddStockValue">
+                        data-currency-code="@Item.CurrencyCode">
                     Add to Cart
                 </button>
             }

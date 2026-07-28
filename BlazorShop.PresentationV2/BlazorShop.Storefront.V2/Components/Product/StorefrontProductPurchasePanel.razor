@@ -2,9 +2,10 @@
 
 <div id="@Actions.PanelId"
      class="mt-8 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-5"
-     data-storefront-selection-preview
-     data-preview-route="@Actions.SelectionPreviewRoute"
+     data-storefront-product-purchase
+     data-selection-preview-route="@Actions.SelectionPreviewRoute"
      data-product-id="@Model.ProductId"
+     data-product-name="@Model.ProductName"
      data-currency-code="@Model.CurrencyCode"
      data-resolved-variant-id="@Model.ResolvedVariantId"
      data-main-image-url="@Model.InitialMainImageUrl"
@@ -57,8 +58,8 @@
                                            name="@OptionInputName(option)"
                                            value="@value.Value"
                                            checked="@ShouldSelectOptionValue(option, value)"
-                                           data-storefront-attribute-control
-                                           data-attribute-name="@option.Name"
+                                           data-storefront-purchase-attribute
+                                           data-storefront-purchase-attribute-name="@option.Name"
                                            class="h-4 w-4 accent-neutral-900" />
                                     <span>@value.Value</span>
                                 </label>
@@ -77,8 +78,8 @@
                                            name="@OptionInputName(option)"
                                            value="@value.Value"
                                            checked="@ShouldSelectOptionValue(option, value)"
-                                           data-storefront-attribute-control
-                                           data-attribute-name="@option.Name"
+                                           data-storefront-purchase-attribute
+                                           data-storefront-purchase-attribute-name="@option.Name"
                                            class="sr-only" />
                                     <span class="h-5 w-5 rounded-full border border-neutral-300" style="@ColorSwatchStyle(value)"></span>
                                     <span>@value.Value</span>
@@ -90,8 +91,8 @@
                     {
                         <select id="@OptionInputId(option)"
                                 class="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
-                                data-storefront-attribute-control
-                                data-attribute-name="@option.Name">
+                                data-storefront-purchase-attribute
+                                data-storefront-purchase-attribute-name="@option.Name">
                             @if (!option.IsRequired)
                             {
                                 <option value="">Select @option.Name</option>
@@ -113,17 +114,14 @@
             <label for="@Actions.VariantSelectId" class="block text-sm font-semibold text-neutral-900">Choose a variant</label>
             <select id="@Actions.VariantSelectId"
                     class="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
-                    data-storefront-variant-select>
+                    data-storefront-purchase-variant>
                 <option value="">Select a variant</option>
                 @foreach (var variant in Model.Variants)
                 {
                     <option value="@variant.Id"
                             selected="@variant.IsDefault"
                             data-size-value="@variant.SizeValue"
-                            data-display-name="@variant.DisplayName"
-                            data-unit-price="@variant.UnitPriceValue"
-                            data-currency-code="@variant.CurrencyCode"
-                            data-stock="@variant.Stock">
+                            data-display-name="@variant.DisplayName">
                         @variant.OptionLabel
                     </option>
                 }
@@ -140,23 +138,18 @@
                step="@Model.QuantityStep"
                value="@Model.MinOrderQuantity"
                class="mt-2 w-28 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
-               data-storefront-selection-quantity />
+               data-storefront-purchase-quantity />
     </div>
 
     <div class="mt-4 flex flex-wrap gap-3">
         <button type="button"
                 class="@AddToCartButtonClass"
-                data-storefront-add-to-cart
+                data-storefront-command="cart.add-line"
+                data-storefront-product-purchase-submit
                 data-default-label="Add to Cart"
                 data-success-label="Added"
-                data-product-id="@Model.ProductId"
-                data-product-name="@Model.ProductName"
                 data-resolved-variant-id="@Model.ResolvedVariantId"
-                data-unit-price="@Model.BaseUnitPriceValue"
-                data-currency-code="@Model.CurrencyCode"
-                data-preview-container="@Actions.PreviewContainerSelector"
-                data-variant-select="@(Snapshot.UsesVariantSelect ? Actions.VariantSelectSelector : null)"
-                data-stock="@Model.InitialStockValue"
+                data-storefront-purchase-variant-selector="@(Snapshot.UsesVariantSelect ? Actions.VariantSelectSelector : null)"
                 disabled="@(!Model.CanSubmitInitialPurchase)"
                 data-feedback-target="@Actions.FeedbackTargetSelector">
             Add to Cart
@@ -167,7 +160,7 @@
         </a>
     </div>
 
-    <p id="@Actions.FeedbackElementId" class="mt-3 text-sm font-medium text-emerald-700" aria-live="polite" data-storefront-selection-message>@Snapshot.InitialSelectionMessage</p>
+    <p id="@Actions.FeedbackElementId" class="mt-3 text-sm font-medium text-emerald-700" aria-live="polite" data-storefront-purchase-feedback>@Snapshot.InitialSelectionMessage</p>
 </div>
 
 @code {

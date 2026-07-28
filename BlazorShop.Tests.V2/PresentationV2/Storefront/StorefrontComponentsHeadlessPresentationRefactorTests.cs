@@ -250,8 +250,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("public sealed record ProductSummaryItem", productSummaryContract, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-card", v2Card, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-add-to-cart", v2Card, StringComparison.Ordinal);
-            Assert.Contains("data-unit-price=\"@Item.UnitPriceValue\"", v2Card, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase", v2Card, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-command=\"cart.add-line\"", v2Card, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase-submit", v2Card, StringComparison.Ordinal);
             Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", v2Card, StringComparison.Ordinal);
             Assert.Contains("rounded-2xl", v2Card, StringComparison.Ordinal);
             Assert.Contains("bg-white/95", v2Card, StringComparison.Ordinal);
@@ -386,8 +387,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontRoutes.ProductSelectionPreview", productMapper, StringComparison.Ordinal);
             Assert.Contains("Actions=\"Context.PurchaseActions\"", productPage, StringComparison.Ordinal);
             Assert.Contains("id=\"@Actions.PanelId\"", v2Panel, StringComparison.Ordinal);
-            Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", v2Panel, StringComparison.Ordinal);
-            Assert.Contains("data-preview-container=\"@Actions.PreviewContainerSelector\"", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("data-selection-preview-route=\"@Actions.SelectionPreviewRoute\"", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase-submit", v2Panel, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-preview-container", v2Panel, StringComparison.Ordinal);
             Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("disabled=\"@(!Model.CanSubmitInitialPurchase)\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("rounded-2xl", v2Panel, StringComparison.Ordinal);

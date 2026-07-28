@@ -1,9 +1,6 @@
 (function () {
-  const buttonSelector = "[data-storefront-add-to-cart]";
-  const badgeSelector = "[data-storefront-cart-badge]";
-  const selectionPreviewSelector = "[data-storefront-selection-preview]";
-  const selectionQuantitySelector = "[data-storefront-selection-quantity]";
-  const attributeControlSelector = "[data-storefront-attribute-control]";
+  const productPurchaseRootSelector = "[data-storefront-product-purchase]";
+  const productPurchaseSubmitSelector = "[data-storefront-product-purchase-submit]";
   const addressSelectSelector = "[data-storefront-address-select]";
   const manualAddressSelector = "[data-storefront-manual-address]";
   const manualAddressFieldSelector = "[data-storefront-manual-address-field]";
@@ -15,81 +12,26 @@
   const galleryNextSelector = "[data-storefront-gallery-next]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
-  const storefrontApplication = window.blazorShopStorefront?.application;
   const pendingToastStorageKey = "blazorshop:storefront:pending-toast";
   const buttonResetDelayMs = 1600;
   const toastDurationMs = 5000;
   const buttonResetTimers = new WeakMap();
-  const previewTimers = new WeakMap();
 
   function parseInteger(value, fallback = 0) {
     const parsed = Number.parseInt(value, 10);
     return Number.isFinite(parsed) ? parsed : fallback;
   }
 
-  function updateBadgesFromCount(cartCount) {
-    document.querySelectorAll(badgeSelector).forEach((badge) => {
-      badge.textContent = cartCount > 99 ? "99+" : String(cartCount);
-      badge.hidden = cartCount <= 0;
-      badge.classList.toggle("hidden", cartCount <= 0);
-    });
-  }
-
-  function applyCartSummary(summary) {
-    const count = parseInteger(summary?.count ?? summary?.Count, 0);
-    updateBadgesFromCount(count);
-  }
-
-  function getStorefrontApplication() {
-    if (!storefrontApplication) {
-      throw new Error("Storefront application commands are unavailable.");
-    }
-
-    return storefrontApplication;
-  }
-
-  async function refreshCartSummary() {
-    try {
-      const summary = await getStorefrontApplication().cart.current();
-      applyCartSummary(summary);
-    } catch {
-      updateBadgesFromCount(0);
+  function setText(element, text) {
+    if (element instanceof HTMLElement) {
+      element.textContent = text || "";
     }
   }
 
-  function setFeedback(button, message, isError) {
-    const feedbackSelector = button.dataset.feedbackTarget;
-    if (!feedbackSelector) {
-      return;
+  function toggleHidden(element, hidden) {
+    if (element instanceof HTMLElement) {
+      element.classList.toggle("hidden", Boolean(hidden));
     }
-
-    const feedbackElement = document.querySelector(feedbackSelector);
-    if (!(feedbackElement instanceof HTMLElement)) {
-      return;
-    }
-
-    feedbackElement.textContent = message;
-    feedbackElement.classList.remove("text-emerald-700", "text-red-700");
-    feedbackElement.classList.add(isError ? "text-red-700" : "text-emerald-700");
-  }
-
-  function flashButton(button) {
-    const defaultLabel = button.dataset.defaultLabel || button.textContent.trim();
-    const successLabel = button.dataset.successLabel || "Added";
-    button.dataset.defaultLabel = defaultLabel;
-    button.textContent = successLabel;
-
-    const existingTimer = buttonResetTimers.get(button);
-    if (existingTimer) {
-      window.clearTimeout(existingTimer);
-    }
-
-    const timer = window.setTimeout(() => {
-      button.textContent = button.dataset.defaultLabel || defaultLabel;
-      buttonResetTimers.delete(button);
-    }, buttonResetDelayMs);
-
-    buttonResetTimers.set(button, timer);
   }
 
   function resolveToastTheme(level) {
@@ -168,14 +110,6 @@
     window.setTimeout(dismiss, Math.max(1500, parseInteger(duration, toastDurationMs)));
   }
 
-  function queueToastForNextLoad(level, heading, message, duration = toastDurationMs) {
-    try {
-      window.sessionStorage.setItem(pendingToastStorageKey, JSON.stringify({ level, heading, message, duration }));
-    } catch {
-      // Ignore storage restrictions; the cart mutation itself already succeeded.
-    }
-  }
-
   function flushQueuedToast() {
     try {
       const raw = window.sessionStorage.getItem(pendingToastStorageKey);
@@ -195,117 +129,52 @@
     }
   }
 
-  function formatCartLabel(productName, sizeValue) {
-    const resolvedName = (productName || "product").trim() || "product";
-    const resolvedSize = (sizeValue || "").trim();
-    return resolvedSize ? `${resolvedName} (size ${resolvedSize})` : resolvedName;
-  }
-
-  function findPreviewContainer(button) {
-    const selector = button.dataset.previewContainer;
-    if (selector) {
-      const container = document.querySelector(selector);
-      if (container instanceof HTMLElement) {
-        return container;
-      }
+  function setFeedback(rootElement, submitter, message, isError) {
+    const selector = submitter?.dataset.feedbackTarget || rootElement?.dataset.feedbackTarget;
+    const feedbackElement = selector
+      ? document.querySelector(selector)
+      : rootElement?.querySelector("[data-storefront-purchase-feedback], [data-storefront-selection-message]");
+    if (!(feedbackElement instanceof HTMLElement)) {
+      return;
     }
 
-    return button.closest(selectionPreviewSelector);
+    feedbackElement.textContent = message || "";
+    feedbackElement.classList.remove("text-emerald-700", "text-red-700");
+    feedbackElement.classList.add(isError ? "text-red-700" : "text-emerald-700");
   }
 
-  function readSelectionQuantity(container) {
-    const input = container?.querySelector(selectionQuantitySelector);
-    if (!(input instanceof HTMLInputElement)) {
-      return 1;
-    }
-
-    const quantity = parseInteger(input.value, 1);
-    return Math.max(1, quantity);
-  }
-
-  function collectSelectedAttributes(container) {
-    if (!(container instanceof HTMLElement)) {
-      return [];
-    }
-
-    const attributes = [];
-    container.querySelectorAll(attributeControlSelector).forEach((control) => {
-      if (!(control instanceof HTMLElement)) {
-        return;
-      }
-
-      const name = (control.dataset.attributeName || "").trim();
-      if (!name) {
-        return;
-      }
-
-      if (control instanceof HTMLInputElement && control.type === "radio" && !control.checked) {
-        return;
-      }
-
-      const value = (control.value || "").trim();
-      if (!value) {
-        return;
-      }
-
-      if (attributes.some((attribute) => attribute.Name.toLowerCase() === name.toLowerCase())) {
-        return;
-      }
-
-      attributes.push({ Name: name, Value: value });
-    });
-
-    return attributes;
-  }
-
-  function resolveSelectedVariantId(button, container, includeResolvedVariant = true) {
-    const variantSelectSelector = button.dataset.variantSelect;
-    if (variantSelectSelector) {
-      const select = document.querySelector(variantSelectSelector);
-      if (select instanceof HTMLSelectElement && select.value) {
-        return select.value.trim();
-      }
-    }
-
-    return includeResolvedVariant
-      ? (container?.dataset.resolvedVariantId || button.dataset.resolvedVariantId || "").trim()
-      : "";
-  }
-
-  function buildSelectionPreviewPayload(container) {
-    const button = container.querySelector(buttonSelector);
+  function flashButton(button) {
     if (!(button instanceof HTMLButtonElement)) {
-      return { error: "This product cannot be previewed right now." };
+      return;
     }
 
-    const productId = (container.dataset.productId || button.dataset.productId || "").trim();
-    if (!productId) {
-      return { error: "This product cannot be previewed right now." };
+    const defaultLabel = button.dataset.defaultLabel || button.textContent.trim();
+    const successLabel = button.dataset.successLabel || "Added";
+    button.dataset.defaultLabel = defaultLabel;
+    button.textContent = successLabel;
+
+    const existingTimer = buttonResetTimers.get(button);
+    if (existingTimer) {
+      window.clearTimeout(existingTimer);
     }
 
-    const selectedAttributes = collectSelectedAttributes(container);
-    return {
-      payload: {
-        ProductId: productId,
-        ProductVariantId: resolveSelectedVariantId(button, container, false) || null,
-        SelectedAttributes: selectedAttributes.length > 0 ? selectedAttributes : null,
-        Quantity: readSelectionQuantity(container),
-        CurrencyCode: (container.dataset.currencyCode || button.dataset.currencyCode || "").trim() || null
-      },
-      button
-    };
+    const timer = window.setTimeout(() => {
+      button.textContent = button.dataset.defaultLabel || defaultLabel;
+      buttonResetTimers.delete(button);
+    }, buttonResetDelayMs);
+
+    buttonResetTimers.set(button, timer);
   }
 
-  function setText(element, text) {
-    if (element instanceof HTMLElement) {
-      element.textContent = text || "";
+  function findPurchaseRoot(source) {
+    if (!(source instanceof Element)) {
+      return null;
     }
-  }
 
-  function toggleHidden(element, hidden) {
-    if (element instanceof HTMLElement) {
-      element.classList.toggle("hidden", Boolean(hidden));
-    }
+    const root = source.matches(productPurchaseRootSelector)
+      ? source
+      : source.closest(productPurchaseRootSelector);
+    return root instanceof HTMLElement ? root : null;
   }
 
   function syncGalleryMainImage(container, imageUrl) {
@@ -346,6 +215,42 @@
     });
   }
 
+  function applySelectionVisual(rootElement, detail) {
+    const selection = detail?.selection || {};
+    const scope = rootElement?.closest("main") || document;
+    const price = scope.querySelector("[data-storefront-selection-price]");
+    const compare = scope.querySelector("[data-storefront-selection-compare]");
+    const stock = scope.querySelector("[data-storefront-selection-stock]");
+    const sku = scope.querySelector("[data-storefront-selection-sku]");
+    const submitter = detail?.submitter instanceof HTMLButtonElement
+      ? detail.submitter
+      : rootElement?.querySelector(productPurchaseSubmitSelector);
+
+    if (selection.valid) {
+      setText(price, selection.priceText || "");
+      setText(compare, selection.comparePriceText || "");
+      toggleHidden(compare, !selection.comparePriceText);
+      setText(stock, selection.stockText || "");
+      setText(sku, selection.skuText || "");
+      toggleHidden(sku, !selection.skuText);
+      syncGalleryMainImage(rootElement, selection.mainImageUrl);
+      if (rootElement instanceof HTMLElement) {
+        rootElement.dataset.mainImageUrl = selection.mainImageUrl || rootElement.dataset.mainImageUrl || "";
+      }
+    }
+
+    if (rootElement instanceof HTMLElement) {
+      const suppressUntil = parseInteger(rootElement.dataset.cartFeedbackSuppressUntil, 0);
+      if (Date.now() >= suppressUntil) {
+        setFeedback(rootElement, submitter, selection.message || "", !selection.ready);
+      }
+    }
+
+    if (submitter instanceof HTMLButtonElement) {
+      submitter.disabled = !selection.ready;
+    }
+  }
+
   function syncManualAddressFields(select) {
     if (!(select instanceof HTMLSelectElement)) {
       return;
@@ -365,182 +270,6 @@
     document.querySelectorAll(addressSelectSelector).forEach((select) => {
       syncManualAddressFields(select);
     });
-  }
-
-  function applySelectionPreview(container, preview) {
-    const button = container.querySelector(buttonSelector);
-    const price = container.closest("main")?.querySelector("[data-storefront-selection-price]") || document.querySelector("[data-storefront-selection-price]");
-    const compare = container.closest("main")?.querySelector("[data-storefront-selection-compare]") || document.querySelector("[data-storefront-selection-compare]");
-    const stock = container.closest("main")?.querySelector("[data-storefront-selection-stock]") || document.querySelector("[data-storefront-selection-stock]");
-    const sku = container.closest("main")?.querySelector("[data-storefront-selection-sku]") || document.querySelector("[data-storefront-selection-sku]");
-    const message = container.querySelector("[data-storefront-selection-message]");
-    const validationMessages = Array.isArray(preview.validationMessages)
-      ? preview.validationMessages.filter(Boolean)
-      : [];
-
-    if (preview.isValid) {
-      setText(price, preview.formattedUnitPrice || "");
-      setText(compare, preview.formattedComparePrice || "");
-      toggleHidden(compare, !preview.formattedComparePrice);
-      setText(stock, preview.isAvailable ? `${preview.stockQuantity} in stock` : "Out of stock");
-      setText(sku, preview.sku ? `SKU ${preview.sku}` : "");
-      toggleHidden(sku, !preview.sku);
-      syncGalleryMainImage(container, preview.primaryImageUrl);
-      container.dataset.mainImageUrl = preview.primaryImageUrl || container.dataset.mainImageUrl || "";
-    }
-
-    const suppressUntil = parseInteger(container.dataset.cartFeedbackSuppressUntil, 0);
-    if (Date.now() >= suppressUntil) {
-      setText(message, validationMessages[0] || (preview.canAddToCart ? "Selection ready." : "This selection is not available."));
-    }
-
-    if (button instanceof HTMLButtonElement) {
-      button.disabled = !preview.canAddToCart;
-      button.dataset.resolvedVariantId = preview.productVariantId || "";
-      button.dataset.canAddToCart = preview.canAddToCart ? "true" : "false";
-      if (preview.isValid) {
-        button.dataset.unitPrice = String(preview.unitPrice ?? button.dataset.unitPrice ?? "");
-        button.dataset.stock = String(preview.stockQuantity ?? button.dataset.stock ?? "0");
-      }
-
-      button.dataset.currencyCode = preview.currencyCode || button.dataset.currencyCode || "";
-    }
-
-    container.dataset.resolvedVariantId = preview.productVariantId || "";
-  }
-
-  async function previewSelection(container) {
-    const request = buildSelectionPreviewPayload(container);
-    if (request.error) {
-      return;
-    }
-
-    try {
-      const preview = await getStorefrontApplication().productSelection.preview(container.dataset.previewRoute, request.payload);
-      applySelectionPreview(container, preview);
-    } catch (error) {
-      const button = request.button;
-      if (button instanceof HTMLButtonElement) {
-        button.disabled = true;
-        setFeedback(button, error instanceof Error ? error.message : "This selection could not be previewed.", true);
-      }
-    }
-  }
-
-  function scheduleSelectionPreview(container) {
-    if (!(container instanceof HTMLElement)) {
-      return;
-    }
-
-    const existing = previewTimers.get(container);
-    if (existing) {
-      window.clearTimeout(existing);
-    }
-
-    const timer = window.setTimeout(() => {
-      previewTimers.delete(container);
-      void previewSelection(container);
-    }, 180);
-    previewTimers.set(container, timer);
-  }
-
-  function buildCartPayload(button) {
-    const productId = (button.dataset.productId || "").trim();
-    const productName = (button.dataset.productName || "Product").trim() || "Product";
-
-    if (!productId) {
-      return { error: "This product cannot be added right now." };
-    }
-
-    const payload = {
-      ProductId: productId,
-      CurrencyCode: (button.dataset.currencyCode || "").trim() || null,
-      Quantity: 1
-    };
-
-    const previewContainer = findPreviewContainer(button);
-    if (previewContainer instanceof HTMLElement) {
-      payload.Quantity = readSelectionQuantity(previewContainer);
-      const selectedAttributes = collectSelectedAttributes(previewContainer);
-      if (selectedAttributes.length > 0) {
-        payload.SelectedAttributes = selectedAttributes;
-      }
-
-      const resolvedVariantId = resolveSelectedVariantId(button, previewContainer);
-      if (resolvedVariantId) {
-        payload.ProductVariantId = resolvedVariantId;
-      }
-    }
-
-    const variantSelectSelector = button.dataset.variantSelect;
-    const productStock = parseInteger(button.dataset.stock, 0);
-    const canAddToCart = (button.dataset.canAddToCart || "").toLowerCase();
-    if (!variantSelectSelector && canAddToCart === "false") {
-      return { error: "This product is not available for purchase." };
-    }
-
-    if (!variantSelectSelector && canAddToCart !== "true" && productStock <= 0) {
-      return { error: "This product is out of stock." };
-    }
-
-    if (variantSelectSelector) {
-      const select = document.querySelector(variantSelectSelector);
-      if (!(select instanceof HTMLSelectElement)) {
-        return { error: "This product variant selector is unavailable right now." };
-      }
-
-      const selectedOption = select.selectedOptions[0];
-      if (!selectedOption || !selectedOption.value) {
-        return { error: "Select a variant before adding to cart." };
-      }
-
-      if (parseInteger(selectedOption.dataset.stock, 0) <= 0) {
-        return { error: "This variant is out of stock." };
-      }
-
-      payload.ProductVariantId = selectedOption.value.trim();
-      payload.SizeValue = selectedOption.dataset.displayName || selectedOption.dataset.sizeValue || selectedOption.textContent.trim();
-      payload.CurrencyCode = (selectedOption.dataset.currencyCode || payload.CurrencyCode || "").trim() || null;
-    }
-
-    return { payload, productName };
-  }
-
-  async function addToCart(button) {
-    const result = buildCartPayload(button);
-    if (result.error) {
-      setFeedback(button, result.error, true);
-      showToast("error", "Cart", result.error);
-      return;
-    }
-
-    const { payload, productName } = result;
-    const feedbackMessage = `Product ${formatCartLabel(productName, payload.SizeValue)} added to cart`;
-
-    button.disabled = true;
-    try {
-      const summary = await getStorefrontApplication().cart.addLine({
-        ProductId: payload.ProductId,
-        ProductVariantId: payload.ProductVariantId || null,
-        SelectedAttributes: payload.SelectedAttributes || null,
-        CurrencyCode: payload.CurrencyCode || null,
-        Quantity: payload.Quantity
-      });
-      applyCartSummary(summary);
-      const previewContainer = findPreviewContainer(button);
-      if (previewContainer instanceof HTMLElement) {
-        previewContainer.dataset.cartFeedbackSuppressUntil = String(Date.now() + buttonResetDelayMs);
-      }
-      setFeedback(button, feedbackMessage, false);
-      showToast("success", "Cart", feedbackMessage);
-      flashButton(button);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Cart could not be updated.";
-      setFeedback(button, message, true);
-      showToast("error", "Cart", message);
-    } finally {
-      button.disabled = false;
-    }
   }
 
   function resolveGalleryThumbnails(gallery) {
@@ -674,16 +403,7 @@
     if (thumbnail instanceof HTMLButtonElement) {
       event.preventDefault();
       selectGalleryThumbnail(thumbnail);
-      return;
     }
-
-    const button = event.target.closest(buttonSelector);
-    if (!(button instanceof HTMLButtonElement)) {
-      return;
-    }
-
-    event.preventDefault();
-    addToCart(button);
   }
 
   function handleKeyDown(event) {
@@ -717,49 +437,69 @@
 
   function handleChange(event) {
     const target = event.target;
-    if (target instanceof HTMLElement && target.matches(attributeControlSelector)) {
-      scheduleSelectionPreview(target.closest(selectionPreviewSelector));
-      return;
-    }
-
-    if (target instanceof HTMLInputElement && target.matches(selectionQuantitySelector)) {
-      scheduleSelectionPreview(target.closest(selectionPreviewSelector));
-      return;
-    }
-
-    if (target instanceof HTMLSelectElement && target.matches("[data-storefront-variant-select]")) {
-      const container = document.querySelector(selectionPreviewSelector);
-      scheduleSelectionPreview(container);
-      return;
-    }
-
     if (target instanceof HTMLSelectElement && target.matches(addressSelectSelector)) {
       syncManualAddressFields(target);
-      return;
     }
   }
 
-  function handleInput(event) {
-    const target = event.target;
-    if (target instanceof HTMLInputElement && target.matches(selectionQuantitySelector)) {
-      scheduleSelectionPreview(target.closest(selectionPreviewSelector));
+  function handleSelectionChanged(event) {
+    const rootElement = event.detail?.root instanceof HTMLElement
+      ? event.detail.root
+      : findPurchaseRoot(event.target);
+    if (rootElement) {
+      applySelectionVisual(rootElement, event.detail);
     }
+  }
+
+  function handleSelectionError(event) {
+    const rootElement = event.detail?.root instanceof HTMLElement ? event.detail.root : null;
+    const submitter = event.detail?.submitter instanceof HTMLButtonElement ? event.detail.submitter : null;
+    if (rootElement) {
+      setFeedback(rootElement, submitter, event.detail?.message || "This selection could not be previewed.", true);
+    }
+
+    if (submitter) {
+      submitter.disabled = true;
+    }
+  }
+
+  function handleAddLineSucceeded(event) {
+    const rootElement = event.detail?.root instanceof HTMLElement ? event.detail.root : null;
+    const submitter = event.detail?.submitter instanceof HTMLButtonElement ? event.detail.submitter : null;
+    const message = event.detail?.message || "Product added to cart";
+
+    if (rootElement) {
+      rootElement.dataset.cartFeedbackSuppressUntil = String(Date.now() + buttonResetDelayMs);
+      setFeedback(rootElement, submitter, message, false);
+    }
+
+    showToast("success", "Cart", message);
+    flashButton(submitter);
+  }
+
+  function handleAddLineFailed(event) {
+    const rootElement = event.detail?.root instanceof HTMLElement ? event.detail.root : null;
+    const submitter = event.detail?.submitter instanceof HTMLButtonElement ? event.detail.submitter : null;
+    const message = event.detail?.message || "Cart could not be updated.";
+
+    if (rootElement) {
+      setFeedback(rootElement, submitter, message, true);
+    }
+
+    showToast("error", "Cart", message);
   }
 
   function initialize() {
     flushQueuedToast();
     initCheckoutAddressSelection();
-    refreshCartSummary();
-    document.querySelectorAll(selectionPreviewSelector).forEach((container) => {
-      if (container instanceof HTMLElement) {
-        scheduleSelectionPreview(container);
-      }
-    });
     document.addEventListener("click", handleClick);
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("error", handleGalleryImageError, true);
     document.addEventListener("change", handleChange);
-    document.addEventListener("input", handleInput);
+    document.addEventListener("storefront:product-purchase:selection-changed", handleSelectionChanged);
+    document.addEventListener("storefront:product-purchase:selection-error", handleSelectionError);
+    document.addEventListener("storefront:product-purchase:add-line-succeeded", handleAddLineSucceeded);
+    document.addEventListener("storefront:product-purchase:add-line-failed", handleAddLineFailed);
   }
 
   if (document.readyState === "loading") {
