@@ -65,9 +65,43 @@ public sealed class StorefrontApplicationBootstrapTests
         Assert.DoesNotContain("MapStorefrontPresentation", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void StorefrontV2Source_DoesNotInterpretRuntimeOrStoreConfiguration()
+    {
+        var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
+            .Where(file => file.EndsWith(".cs", StringComparison.Ordinal) || file.EndsWith(".razor", StringComparison.Ordinal))
+            .Select(file => (File: file, Source: ReadRepositoryFile(file)))
+            .SelectMany(file => new[]
+                {
+                    "StorefrontApiEndpointResolver",
+                    "StorefrontStoreKeyResolver",
+                    "StorefrontApiOptions",
+                }
+                .Where(token => file.Source.Contains(token, StringComparison.Ordinal))
+                .Select(token => $"{file.File}: {token}"))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"Storefront V2 must keep configuration values only; Presentation.Hosting interprets runtime/store configuration.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
     private static string ReadRepositoryFile(string relativePath)
     {
         return File.ReadAllText(Path.Combine(RepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
+    }
+
+    private static IEnumerable<string> EnumerateSourceFiles(string relativeFolder)
+    {
+        var root = RepositoryRoot();
+        var absoluteFolder = Path.Combine(root, relativeFolder.Replace('/', Path.DirectorySeparatorChar));
+        return Directory.Exists(absoluteFolder)
+            ? Directory.EnumerateFiles(absoluteFolder, "*.*", SearchOption.AllDirectories)
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
+                    && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
+            : [];
     }
 
     private static string RepositoryRoot()

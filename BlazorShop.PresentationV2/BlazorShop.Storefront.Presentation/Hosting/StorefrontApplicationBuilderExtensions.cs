@@ -51,8 +51,14 @@ public static class StorefrontApplicationBuilderExtensions
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(viewRegistrationType);
 
+        var applicationOptions = app.Services.GetRequiredService<IOptions<StorefrontApplicationOptions>>().Value;
+
         app.MapStaticAssets();
-        app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: false));
+        if (!string.IsNullOrWhiteSpace(applicationOptions.FaviconRedirectPath))
+        {
+            app.MapGet("/favicon.ico", () => Results.Redirect(applicationOptions.FaviconRedirectPath, permanent: false));
+        }
+
         app.MapStorefrontPresentation();
 
         var componentAssemblies = new[] { viewRegistrationType.Assembly }
@@ -60,7 +66,7 @@ public static class StorefrontApplicationBuilderExtensions
             .Distinct()
             .ToArray();
         var components = app.MapRazorComponents<StorefrontApp>();
-        if (additionalAssemblies.Length > 0)
+        if (applicationOptions.EnableInteractiveWebAssembly && additionalAssemblies.Length > 0)
         {
             components.AddInteractiveWebAssemblyRenderMode();
         }

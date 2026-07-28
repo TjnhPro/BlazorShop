@@ -306,17 +306,17 @@ Evidence:
 
 Goal: V2 keeps configuration values only. Runtime/Presentation.Hosting interpret them.
 
-- [ ] Add Presentation hosting options:
-  - [ ] `StorefrontApplicationOptions`.
-  - [ ] `StorefrontStoreResolutionOptions` if not already shared.
-  - [ ] `StorefrontRuntimeBindingOptions`.
-  - [ ] `StorefrontPublicUrlOptions` integration.
-- [ ] Move or recreate validators in Presentation:
-  - [ ] store key required in production when current-store resolution is enabled.
-  - [ ] Commerce Node base URL required and absolute.
-  - [ ] public URL base URL validation.
-  - [ ] forwarded headers validation.
-- [ ] Move store key resolution to Runtime or Presentation.Hosting:
+- [x] Add Presentation hosting options:
+  - [x] `StorefrontApplicationOptions`.
+  - [x] `StorefrontStoreResolutionOptions` if not already shared.
+  - [x] `StorefrontRuntimeBindingOptions`.
+  - [x] `StorefrontPublicUrlOptions` integration.
+- [x] Move or recreate validators in Presentation:
+  - [x] store key required in production when current-store resolution is enabled.
+  - [x] Commerce Node base URL required and absolute.
+  - [x] public URL base URL validation.
+  - [x] forwarded headers validation.
+- [x] Move store key resolution to Runtime or Presentation.Hosting:
 
 ```text
 Api:StoreKey
@@ -324,27 +324,41 @@ StoreKey
 STORE_KEY
 ```
 
-- [ ] Move Commerce Node base URL resolution to Runtime/Presentation bootstrap:
-  - [ ] support current `Api:BaseUrl` if still used.
-  - [ ] support Starter options for package template compatibility.
-  - [ ] normalize trailing slash.
-  - [ ] produce generated client base address expected by Runtime.
-- [ ] Remove from V2 after switch:
-  - [ ] `Configuration/StorefrontApiEndpointResolver.cs`
-  - [ ] `Configuration/StorefrontStoreKeyResolver.cs`
-  - [ ] `Options/StorefrontApiOptions.cs` if no longer needed.
-  - [ ] V2-specific validators tied to API/store resolution.
-- [ ] Add source gate:
+- [x] Move Commerce Node base URL resolution to Runtime/Presentation bootstrap:
+  - [x] support current `Api:BaseUrl` if still used.
+  - [x] support Starter options for package template compatibility.
+  - [x] normalize trailing slash.
+  - [x] produce generated client base address expected by Runtime.
+- [x] Remove from V2 after switch:
+  - [x] `Configuration/StorefrontApiEndpointResolver.cs`
+  - [x] `Configuration/StorefrontStoreKeyResolver.cs`
+  - [x] `Options/StorefrontApiOptions.cs` if no longer needed.
+  - [x] V2-specific validators tied to API/store resolution.
+- [x] Add source gate:
 
 ```powershell
 rg -n "StorefrontApiEndpointResolver|StorefrontStoreKeyResolver|StorefrontApiOptions" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"
 ```
 
-- [ ] Expected after phase: no matches.
-- [ ] Exit criteria:
-  - [ ] V2 `appsettings*.json` keeps values only.
-  - [ ] V2 source has no configuration interpretation code.
-  - [ ] Runtime generated clients still call `api/storefront/stores/{storeKey}/*` through Runtime context.
+- [x] Expected after phase: no matches.
+- [x] Exit criteria:
+  - [x] V2 `appsettings*.json` keeps values only.
+  - [x] V2 source has no configuration interpretation code.
+  - [x] Runtime generated clients still call `api/storefront/stores/{storeKey}/*` through Runtime context.
+
+Evidence:
+
+- Added `StorefrontApplicationOptions` and `StorefrontRuntimeBindingOptions` under `BlazorShop.Storefront.Presentation/Options`.
+- `AddStorefrontApplication(...)` now binds `StorefrontApplicationOptions`, shared `StorefrontStoreResolutionOptions`, `StorefrontRuntimeBindingOptions`, `StorefrontPublicUrlOptions`, `StorefrontApiOptions`, `ClientAppOptions`, rate limiting, and forwarded headers in Presentation.
+- `StorefrontApiEndpointResolver` and `StorefrontStoreKeyResolver` are Presentation-owned and resolve `Api:BaseUrl`, `Api:StoreKey`, `Storefront:CommerceNodeBaseUrl`, `Storefront:StoreKey`, `StoreKey`, and `STORE_KEY`.
+- Removed old V2 configuration interpretation extensions after V2/Starter switched to `AddStorefrontApplication(...)`.
+- Source gate `rg -n "StorefrontApiEndpointResolver|StorefrontStoreKeyResolver|StorefrontApiOptions" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"` returned no matches.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 advisories.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontApplicationBootstrapTests" -v:minimal` passed: 4 passed, 0 failed.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontApiEndpointResolverTests" -v:minimal` passed: 8 passed, 0 failed.
 
 ## Phase F1.29 - Move current-store application guard
 

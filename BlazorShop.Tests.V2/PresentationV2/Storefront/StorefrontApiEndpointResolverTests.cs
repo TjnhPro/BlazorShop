@@ -10,6 +10,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     {
         [Theory]
         [InlineData("Api:StoreKey")]
+        [InlineData("Storefront:StoreKey")]
         [InlineData("StoreKey")]
         [InlineData("STORE_KEY")]
         public void ResolveScopedStorefrontApiBaseAddress_UsesConfiguredStoreKey(string keyName)
@@ -46,9 +47,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void ResolveCommerceNodeBaseAddress_UsesStarterRuntimeBindingFallback()
+        {
+            var configuration = BuildConfiguration(
+                ("Storefront:CommerceNodeBaseUrl", "https://starter-commerce.example"),
+                ("Storefront:StoreKey", "starter-store"));
+
+            var uri = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(configuration);
+
+            Assert.Equal("https://starter-commerce.example/", uri.ToString());
+            Assert.Equal("starter-store", StorefrontApiEndpointResolver.ResolveStoreKey(configuration));
+        }
+
+        [Fact]
         public void StorefrontRuntimeRegistration_UsesUnscopedCommerceNodeBaseAddress()
         {
-            var source = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs"));
+            var source = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationServiceCollectionExtensions.cs"));
 
             Assert.Contains("options.CommerceNodeBaseUrl = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(configuration).ToString();", source, StringComparison.Ordinal);
             Assert.Contains("services.AddStorefrontPlatformRuntime();", source, StringComparison.Ordinal);

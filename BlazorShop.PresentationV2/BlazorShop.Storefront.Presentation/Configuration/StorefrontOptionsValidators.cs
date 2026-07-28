@@ -29,7 +29,9 @@ namespace BlazorShop.Storefront.Configuration
                 return ValidateOptionsResult.Fail("Api:StoreKey must be at most 128 characters when configured.");
             }
 
-            if (_hostEnvironment.IsDevelopment() || HasServiceDiscoveryEndpoint("apiservice"))
+            if (_hostEnvironment.IsDevelopment()
+                || HasServiceDiscoveryEndpoint("apiservice")
+                || HasRuntimeCommerceNodeBaseUrl())
             {
                 return ValidateOptionsResult.Success;
             }
@@ -43,6 +45,11 @@ namespace BlazorShop.Storefront.Configuration
         {
             return IsAbsoluteHttpUrl(_configuration[$"Services:{serviceName}:https:0"])
                 || IsAbsoluteHttpUrl(_configuration[$"Services:{serviceName}:http:0"]);
+        }
+
+        private bool HasRuntimeCommerceNodeBaseUrl()
+        {
+            return IsAbsoluteHttpUrl(_configuration[$"{StorefrontRuntimeBindingOptions.SectionName}:CommerceNodeBaseUrl"]);
         }
 
         private static bool IsAbsoluteHttpUrl(string? value)
@@ -106,6 +113,35 @@ namespace BlazorShop.Storefront.Configuration
             return string.IsNullOrWhiteSpace(StorefrontStoreKeyResolver.Resolve(_configuration))
                 ? ValidateOptionsResult.Fail("Api:StoreKey, StoreKey, or STORE_KEY is required when StoreResolution:RequireCurrentStore is enabled.")
                 : ValidateOptionsResult.Success;
+        }
+    }
+
+    public sealed class StorefrontRuntimeBindingOptionsValidator : IValidateOptions<StorefrontRuntimeBindingOptions>
+    {
+        public ValidateOptionsResult Validate(string? name, StorefrontRuntimeBindingOptions options)
+        {
+            if (!string.IsNullOrWhiteSpace(options.CommerceNodeBaseUrl) && !IsAbsoluteHttpUrl(options.CommerceNodeBaseUrl))
+            {
+                return ValidateOptionsResult.Fail("Storefront:CommerceNodeBaseUrl must be an absolute http or https URL when configured.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.PublicBaseUrl) && !IsAbsoluteHttpUrl(options.PublicBaseUrl))
+            {
+                return ValidateOptionsResult.Fail("Storefront:PublicBaseUrl must be an absolute http or https URL when configured.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.StoreKey) && options.StoreKey.Trim().Length > 128)
+            {
+                return ValidateOptionsResult.Fail("Storefront:StoreKey must be at most 128 characters when configured.");
+            }
+
+            return ValidateOptionsResult.Success;
+        }
+
+        private static bool IsAbsoluteHttpUrl(string? value)
+        {
+            return Uri.TryCreate(value, UriKind.Absolute, out var uri)
+                   && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
         }
     }
 }

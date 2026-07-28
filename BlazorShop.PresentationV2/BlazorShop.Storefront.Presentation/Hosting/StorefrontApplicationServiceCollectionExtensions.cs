@@ -46,7 +46,11 @@ public static class StorefrontApplicationServiceCollectionExtensions
         services.AddSingleton<IValidateOptions<StorefrontApiOptions>, StorefrontApiOptionsValidator>();
         services.AddSingleton<IValidateOptions<ClientAppOptions>, StorefrontClientAppOptionsValidator>();
         services.AddSingleton<IValidateOptions<StorefrontStoreResolutionOptions>, StorefrontStoreResolutionOptionsValidator>();
+        services.AddSingleton<IValidateOptions<StorefrontRuntimeBindingOptions>, StorefrontRuntimeBindingOptionsValidator>();
         services.ConfigureOptions<StorefrontForwardedHeadersOptionsSetup>();
+        services.AddOptions<StorefrontApplicationOptions>()
+            .Bind(configuration.GetSection(StorefrontApplicationOptions.SectionName))
+            .ValidateOnStart();
         services.AddOptions<StorefrontApiOptions>()
             .Bind(configuration.GetSection(StorefrontApiOptions.SectionName))
             .ValidateOnStart();
@@ -55,6 +59,9 @@ public static class StorefrontApplicationServiceCollectionExtensions
             .ValidateOnStart();
         services.AddOptions<StorefrontStoreResolutionOptions>()
             .Bind(configuration.GetSection(StorefrontStoreResolutionOptions.SectionName))
+            .ValidateOnStart();
+        services.AddOptions<StorefrontRuntimeBindingOptions>()
+            .Bind(configuration.GetSection(StorefrontRuntimeBindingOptions.SectionName))
             .ValidateOnStart();
         services.AddOptions<StorefrontRateLimitingOptions>()
             .Bind(configuration.GetSection(StorefrontRateLimitingOptions.SectionName));

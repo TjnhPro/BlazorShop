@@ -11,7 +11,7 @@ namespace BlazorShop.Storefront.Configuration
 
             return FirstNonEmpty(
                 configuration[$"{StorefrontApiOptions.SectionName}:StoreKey"],
-                configuration["Storefront:StoreKey"],
+                configuration[$"{StorefrontRuntimeBindingOptions.SectionName}:StoreKey"],
                 configuration["StoreKey"],
                 configuration["STORE_KEY"]);
         }

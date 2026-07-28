@@ -24,7 +24,7 @@ namespace BlazorShop.Storefront.Configuration
                 return configuredUri;
             }
 
-            var storefrontCommerceNodeBaseAddress = configuration["Storefront:CommerceNodeBaseUrl"];
+            var storefrontCommerceNodeBaseAddress = configuration[$"{StorefrontRuntimeBindingOptions.SectionName}:CommerceNodeBaseUrl"];
             if (!string.IsNullOrWhiteSpace(storefrontCommerceNodeBaseAddress)
                 && Uri.TryCreate(storefrontCommerceNodeBaseAddress, UriKind.Absolute, out var storefrontUri))
             {
@@ -76,9 +76,9 @@ namespace BlazorShop.Storefront.Configuration
         {
             ArgumentNullException.ThrowIfNull(configuration);
 
-            return string.IsNullOrWhiteSpace(configuration["Storefront:PublicBaseUrl"])
+            return string.IsNullOrWhiteSpace(configuration[$"{StorefrontRuntimeBindingOptions.SectionName}:PublicBaseUrl"])
                 ? null
-                : configuration["Storefront:PublicBaseUrl"]!.Trim();
+                : configuration[$"{StorefrontRuntimeBindingOptions.SectionName}:PublicBaseUrl"]!.Trim();
         }
     }
 }
