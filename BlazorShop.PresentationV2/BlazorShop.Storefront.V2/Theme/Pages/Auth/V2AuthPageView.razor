@@ -27,125 +27,66 @@
 
                 @if (Context.Kind == StorefrontAuthPageKind.SignIn)
                 {
-                    <form method="post" action="@Context.PostAction" class="max-w-xl space-y-5">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@Context.SafeReturnUrl" />
-                        <input type="hidden" name="CaptchaToken" data-storefront-captcha-token="login" />
-
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Email address</span>
-                            <input name="Email" type="email" autocomplete="email" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                        </label>
-
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Password</span>
-                            <input name="Password" type="password" autocomplete="current-password" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                        </label>
-
-                        <div class="text-right text-sm">
-                            <a href="@Context.ForgotPasswordUrl" class="font-semibold text-neutral-800 hover:text-neutral-950">Forgot password?</a>
-                        </div>
-
-                        <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
-                            Sign in
-                        </button>
-                    </form>
+                    <StorefrontSignInForm Context="Context"
+                                          FormClass="@FormClass"
+                                          LabelClass="@LabelClass"
+                                          LabelTextClass="@LabelTextClass"
+                                          InputClass="@InputClass"
+                                          SubmitClass="@SubmitClass">
+                        <AdditionalContent>
+                            <div class="text-right text-sm">
+                                <a href="@Context.ForgotPasswordUrl" class="font-semibold text-neutral-800 hover:text-neutral-950">Forgot password?</a>
+                            </div>
+                        </AdditionalContent>
+                        <SubmitContent>Sign in</SubmitContent>
+                    </StorefrontSignInForm>
                 }
                 else if (Context.Kind == StorefrontAuthPageKind.Register)
                 {
-                    @if (!Context.RegistrationAllowed)
-                    {
-                        <div class="max-w-xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm font-medium text-amber-900" role="status">
-                            @Context.RegistrationMessage
-                        </div>
-                    }
-                    else
-                    {
-                        <form method="post" action="@Context.PostAction" class="max-w-xl space-y-5" data-storefront-register-form>
-                            <AntiforgeryToken />
-                            <input type="hidden" name="ReturnUrl" value="@Context.SafeReturnUrl" />
-                            <input type="hidden" name="CaptchaToken" data-storefront-captcha-token="registration" />
-
-                            <label class="block text-sm">
-                                <span class="font-semibold text-neutral-800">Full name</span>
-                                <input name="FullName" type="text" autocomplete="name" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                            </label>
-
-                            <label class="block text-sm">
-                                <span class="font-semibold text-neutral-800">Email address</span>
-                                <input name="Email" type="email" autocomplete="email" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                            </label>
-
-                            <label class="block text-sm">
-                                <span class="font-semibold text-neutral-800">Password</span>
-                                <input name="Password" type="password" autocomplete="new-password" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                            </label>
-
-                            <label class="block text-sm">
-                                <span class="font-semibold text-neutral-800">Confirm password</span>
-                                <input name="ConfirmPassword" type="password" autocomplete="new-password" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                            </label>
-
-                            <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
-                                Create account
-                            </button>
-                        </form>
-                    }
+                    <StorefrontRegisterForm Context="Context"
+                                            FormClass="@FormClass"
+                                            LabelClass="@LabelClass"
+                                            LabelTextClass="@LabelTextClass"
+                                            InputClass="@InputClass"
+                                            SubmitClass="@SubmitClass">
+                        <RegistrationDisabledContent>
+                            <div class="max-w-xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm font-medium text-amber-900" role="status">
+                                @Context.RegistrationMessage
+                            </div>
+                        </RegistrationDisabledContent>
+                        <SubmitContent>Create account</SubmitContent>
+                    </StorefrontRegisterForm>
                 }
                 else if (Context.Kind == StorefrontAuthPageKind.ForgotPassword)
                 {
-                    <form method="post" action="@Context.PostAction" class="max-w-xl space-y-5">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="CaptchaToken" data-storefront-captcha-token="password-recovery" />
-
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Email address</span>
-                            <input name="Email" type="email" autocomplete="email" required value="@Context.Email" class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                        </label>
-
-                        <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
-                            Send reset instructions
-                        </button>
-                    </form>
+                    <StorefrontForgotPasswordForm Context="Context"
+                                                  FormClass="@FormClass"
+                                                  LabelClass="@LabelClass"
+                                                  LabelTextClass="@LabelTextClass"
+                                                  InputClass="@InputClass"
+                                                  SubmitClass="@SubmitClass">
+                        <SubmitContent>Send reset instructions</SubmitContent>
+                    </StorefrontForgotPasswordForm>
                 }
                 else if (Context.Kind == StorefrontAuthPageKind.ResetPassword)
                 {
-                    @if (Context.MissingRecoveryData)
-                    {
-                        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900" role="alert">
-                            This reset link is incomplete or expired. Request a new password reset email.
-                        </div>
-                        <a href="@Context.ForgotPasswordUrl" class="mt-5 inline-flex items-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
-                            Request a new reset link
-                        </a>
-                    }
-                    else
-                    {
-                        <form method="post" action="@Context.PostAction" class="max-w-xl space-y-5">
-                            <AntiforgeryToken />
-                            <input type="hidden" name="Email" value="@Context.Email" />
-                            <input type="hidden" name="Token" value="@Context.Token" />
-
-                            <label class="block text-sm">
-                                <span class="font-semibold text-neutral-800">Email address</span>
-                                <input type="email" value="@Context.Email" disabled class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-neutral-100 px-3 text-sm text-neutral-700" />
-                            </label>
-
-                            <label class="block text-sm">
-                                <span class="font-semibold text-neutral-800">New password</span>
-                                <input name="Password" type="password" autocomplete="new-password" required minlength="8" class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                            </label>
-
-                            <label class="block text-sm">
-                                <span class="font-semibold text-neutral-800">Confirm new password</span>
-                                <input name="ConfirmPassword" type="password" autocomplete="new-password" required minlength="8" class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                            </label>
-
-                            <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
-                                Reset password
-                            </button>
-                        </form>
-                    }
+                    <StorefrontResetPasswordForm Context="Context"
+                                                 FormClass="@FormClass"
+                                                 LabelClass="@LabelClass"
+                                                 LabelTextClass="@LabelTextClass"
+                                                 InputClass="@InputClass"
+                                                 DisabledInputClass="@DisabledInputClass"
+                                                 SubmitClass="@SubmitClass">
+                        <MissingRecoveryContent>
+                            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900" role="alert">
+                                This reset link is incomplete or expired. Request a new password reset email.
+                            </div>
+                            <a href="@Context.ForgotPasswordUrl" class="mt-5 inline-flex items-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
+                                Request a new reset link
+                            </a>
+                        </MissingRecoveryContent>
+                        <SubmitContent>Reset password</SubmitContent>
+                    </StorefrontResetPasswordForm>
                 }
             </div>
 
@@ -176,6 +117,13 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontAuthPageContext Context { get; set; } = default!;
+
+    private const string FormClass = "max-w-xl space-y-5";
+    private const string LabelClass = "block text-sm";
+    private const string LabelTextClass = "font-semibold text-neutral-800";
+    private const string InputClass = "mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100";
+    private const string DisabledInputClass = "mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-neutral-100 px-3 text-sm text-neutral-700";
+    private const string SubmitClass = "inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800";
 
     private string FooterLead => Context.Kind switch
     {

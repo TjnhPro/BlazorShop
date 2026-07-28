@@ -1,4 +1,5 @@
 @namespace BlazorShop.Storefront.Starter.Theme.Pages.Auth
+@using BlazorShop.Storefront.Presentation.Components.Auth
 @using BlazorShop.Storefront.Presentation.Services.Auth
 
 <h1>@Context.Title</h1>
@@ -9,13 +10,81 @@
         <p>The requested return URL was rejected.</p>
     </section>
 }
-<PlaceholderState
-    Title="Auth form shell"
-    Message="Server-owned auth forms keep cookie and return-url decisions on the shared Presentation boundary."
-    RenderOwner="SSR"
-    HydrationMode="StarterHydrationMode.InitialSnapshot" />
+
+@if (!string.IsNullOrWhiteSpace(Context.SuccessMessage))
+{
+    <p class="starter-alert" role="status">@Context.SuccessMessage</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(Context.Error))
+{
+    <p class="starter-alert" role="alert">@Context.Error</p>
+}
+
+@if (Context.Kind == StorefrontAuthPageKind.SignIn)
+{
+    <StorefrontSignInForm Context="Context"
+                          FormClass="@FormClass"
+                          LabelClass="@LabelClass"
+                          LabelTextClass="@LabelTextClass"
+                          InputClass="@InputClass"
+                          SubmitClass="@SubmitClass">
+        <AdditionalContent>
+            <a href="@Context.ForgotPasswordUrl">Forgot password?</a>
+        </AdditionalContent>
+        <SubmitContent>Sign in</SubmitContent>
+    </StorefrontSignInForm>
+}
+else if (Context.Kind == StorefrontAuthPageKind.Register)
+{
+    <StorefrontRegisterForm Context="Context"
+                            FormClass="@FormClass"
+                            LabelClass="@LabelClass"
+                            LabelTextClass="@LabelTextClass"
+                            InputClass="@InputClass"
+                            SubmitClass="@SubmitClass">
+        <RegistrationDisabledContent>
+            <p class="starter-alert" role="status">@Context.RegistrationMessage</p>
+        </RegistrationDisabledContent>
+        <SubmitContent>Create account</SubmitContent>
+    </StorefrontRegisterForm>
+}
+else if (Context.Kind == StorefrontAuthPageKind.ForgotPassword)
+{
+    <StorefrontForgotPasswordForm Context="Context"
+                                  FormClass="@FormClass"
+                                  LabelClass="@LabelClass"
+                                  LabelTextClass="@LabelTextClass"
+                                  InputClass="@InputClass"
+                                  SubmitClass="@SubmitClass">
+        <SubmitContent>Send reset instructions</SubmitContent>
+    </StorefrontForgotPasswordForm>
+}
+else if (Context.Kind == StorefrontAuthPageKind.ResetPassword)
+{
+    <StorefrontResetPasswordForm Context="Context"
+                                 FormClass="@FormClass"
+                                 LabelClass="@LabelClass"
+                                 LabelTextClass="@LabelTextClass"
+                                 InputClass="@InputClass"
+                                 DisabledInputClass="@DisabledInputClass"
+                                 SubmitClass="@SubmitClass">
+        <MissingRecoveryContent>
+            <p class="starter-alert" role="alert">This reset link is incomplete or expired.</p>
+            <a href="@Context.ForgotPasswordUrl">Request a new reset link</a>
+        </MissingRecoveryContent>
+        <SubmitContent>Reset password</SubmitContent>
+    </StorefrontResetPasswordForm>
+}
 
 @code {
     [Parameter, EditorRequired]
     public StorefrontAuthPageContext Context { get; set; } = default!;
+
+    private const string FormClass = "starter-form";
+    private const string LabelClass = "starter-field";
+    private const string LabelTextClass = "starter-label";
+    private const string InputClass = "starter-input";
+    private const string DisabledInputClass = "starter-input";
+    private const string SubmitClass = "starter-button";
 }

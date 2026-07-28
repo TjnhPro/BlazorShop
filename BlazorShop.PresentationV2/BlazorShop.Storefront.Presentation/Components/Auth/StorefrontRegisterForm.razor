@@ -1,0 +1,84 @@
+@namespace BlazorShop.Storefront.Presentation.Components.Auth
+
+@if (!Context.RegistrationAllowed)
+{
+    @RegistrationDisabledContent
+}
+else
+{
+    <form method="post" action="@Context.PostAction" class="@FormClass" data-storefront-register-form>
+        <AntiforgeryToken />
+        <input type="hidden" name="@StorefrontAuthFormFieldNames.Register.ReturnUrl" value="@Context.SafeReturnUrl" />
+        <input type="hidden" name="@StorefrontAuthFormFieldNames.Register.CaptchaToken" data-storefront-captcha-token="@CaptchaPurpose" />
+
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@FullNameLabel</span>
+            <input name="@StorefrontAuthFormFieldNames.Register.FullName" type="text" autocomplete="name" required class="@InputClass" />
+        </label>
+
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@EmailLabel</span>
+            <input name="@StorefrontAuthFormFieldNames.Register.Email" type="email" autocomplete="email" required class="@InputClass" />
+        </label>
+
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@PasswordLabel</span>
+            <input name="@StorefrontAuthFormFieldNames.Register.Password" type="password" autocomplete="new-password" required class="@InputClass" />
+        </label>
+
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@ConfirmPasswordLabel</span>
+            <input name="@StorefrontAuthFormFieldNames.Register.ConfirmPassword" type="password" autocomplete="new-password" required class="@InputClass" />
+        </label>
+
+        @AdditionalContent
+
+        <button type="submit" class="@SubmitClass">
+            @SubmitContent
+        </button>
+    </form>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontAuthPageContext Context { get; set; } = default!;
+
+    [Parameter]
+    public string FormClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string LabelClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string LabelTextClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string InputClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SubmitClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string FullNameLabel { get; set; } = "Full name";
+
+    [Parameter]
+    public string EmailLabel { get; set; } = "Email address";
+
+    [Parameter]
+    public string PasswordLabel { get; set; } = "Password";
+
+    [Parameter]
+    public string ConfirmPasswordLabel { get; set; } = "Confirm password";
+
+    [Parameter]
+    public string CaptchaPurpose { get; set; } = "registration";
+
+    [Parameter]
+    public RenderFragment? AdditionalContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? RegistrationDisabledContent { get; set; }
+
+    [Parameter]
+    public RenderFragment SubmitContent { get; set; } = builder => builder.AddContent(0, "Create account");
+}

@@ -607,39 +607,56 @@ Goal: V2 owns visual arrangement and copy; Presentation owns auth browser mutati
 
 Current note: Presentation already has auth form models and endpoints. This phase adds fixed form components/patterns so hosts do not manually write security-sensitive fields.
 
-- [ ] Add Presentation form components or form builders:
-  - [ ] `StorefrontSignInForm`
-  - [ ] `StorefrontRegisterForm`
-  - [ ] `StorefrontForgotPasswordForm`
-  - [ ] `StorefrontResetPasswordForm`
-- [ ] Presentation owns:
-  - [ ] form method.
-  - [ ] form action.
-  - [ ] antiforgery token.
-  - [ ] return URL hidden field.
-  - [ ] captcha token field name and purpose.
-  - [ ] recovery token hidden field.
-  - [ ] required HTML attributes.
-  - [ ] field names matching endpoints.
-  - [ ] security contract.
-- [ ] V2 supplies:
-  - [ ] classes.
-  - [ ] labels.
-  - [ ] button content.
-  - [ ] validation placement.
-  - [ ] surrounding section layout.
-- [ ] Starter supplies neutral classes/copy in the same pattern.
-- [ ] Remove from V2 auth visual view:
-  - [ ] raw `<form method="post">` for sign-in/register/forgot/reset.
-  - [ ] direct `<AntiforgeryToken />` in auth view.
-  - [ ] hardcoded hidden names for `ReturnUrl`, `CaptchaToken`, `Email`, `Token`.
-- [ ] Add tests:
-  - [ ] auth forms post to Presentation auth routes.
-  - [ ] form field names match endpoint form DTOs.
-  - [ ] register disabled policy does not render submit form.
-  - [ ] reset form includes token/email only through Presentation pattern.
-- [ ] Exit criteria:
-  - [ ] V2 does not self-author auth POST contracts.
+- [x] Add Presentation form components or form builders:
+  - [x] `StorefrontSignInForm`
+  - [x] `StorefrontRegisterForm`
+  - [x] `StorefrontForgotPasswordForm`
+  - [x] `StorefrontResetPasswordForm`
+- [x] Presentation owns:
+  - [x] form method.
+  - [x] form action.
+  - [x] antiforgery token.
+  - [x] return URL hidden field.
+  - [x] captcha token field name and purpose.
+  - [x] recovery token hidden field.
+  - [x] required HTML attributes.
+  - [x] field names matching endpoints.
+  - [x] security contract.
+- [x] V2 supplies:
+  - [x] classes.
+  - [x] labels.
+  - [x] button content.
+  - [x] validation placement.
+  - [x] surrounding section layout.
+- [x] Starter supplies neutral classes/copy in the same pattern.
+- [x] Remove from V2 auth visual view:
+  - [x] raw `<form method="post">` for sign-in/register/forgot/reset.
+  - [x] direct `<AntiforgeryToken />` in auth view.
+  - [x] hardcoded hidden names for `ReturnUrl`, `CaptchaToken`, `Email`, `Token`.
+- [x] Add tests:
+  - [x] auth forms post to Presentation auth routes.
+  - [x] form field names match endpoint form DTOs.
+  - [x] register disabled policy does not render submit form.
+  - [x] reset form includes token/email only through Presentation pattern.
+- [x] Exit criteria:
+  - [x] V2 does not self-author auth POST contracts.
+
+Evidence:
+
+- Added Presentation auth form components and `StorefrontAuthFormFieldNames` constants backed by endpoint form DTO `nameof(...)` values.
+- Updated V2 `V2AuthPageView` to use Presentation form components while supplying classes, labels, button content, and surrounding layout.
+- Updated Starter `AuthShellPage` to use the same Presentation form components with neutral classes/copy.
+- Added `StorefrontAuthFormPatternTests`.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontAuthFormPatternTests" -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.SignIn_ReturnsStorefrontLoginPage" -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Register_WhenRegistrationDisabled_RendersDisabledStateWithoutSubmit" -v:minimal`
+  - Fixed-string `rg` checks for raw auth POST form/hidden field ownership in V2 and Starter auth views found no matches.
+- Note: a broader combined auth smoke-test filter timed out after 185s and was stopped; the two targeted auth render smoke tests above passed.
 
 ## Phase F1.35 - Move checkout form contract into Presentation
 
