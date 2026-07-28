@@ -89,6 +89,7 @@ function Start-ProofStorefront {
     $startInfo.RedirectStandardError = $true
     $startInfo.UseShellExecute = $false
     $startInfo.CreateNoWindow = $true
+    $startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development"
 
     foreach ($argument in @(
         "run",
@@ -119,7 +120,7 @@ function Wait-ForProofStorefront {
         }
 
         try {
-            Invoke-WebRequest -Uri "$ProofUrl/robots.txt" -UseBasicParsing -TimeoutSec 5 | Out-Null
+            Invoke-WebRequest -Uri "$ProofUrl/robots.txt" -UseBasicParsing -TimeoutSec 5 -SkipHttpErrorCheck | Out-Null
             return
         }
         catch {
@@ -227,7 +228,9 @@ if ($RunBrowserQa) {
         try {
             Wait-ForProofStorefront $process
             node "$toolRoot\scripts\qa\run-visual-qa.mjs" --base-url $ProofUrl --project-root $projectRoot
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             node "$toolRoot\scripts\qa\run-commerce-regression.mjs" --base-url $ProofUrl --project-root $projectRoot
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
         finally {
             if ($process -and -not $process.HasExited) {

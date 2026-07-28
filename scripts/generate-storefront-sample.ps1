@@ -82,6 +82,7 @@ function Rewrite-GeneratedSource {
         $content = $content.Replace('"StoreKey": "default"', "`"StoreKey`": `"$StoreKey`"")
         $content = $content.Replace('"CommerceNodeBaseUrl": "http://localhost:5180"', "`"CommerceNodeBaseUrl`": `"$CommerceNodeBaseUrl`"")
         $content = $content.Replace('"PublicBaseUrl": "http://localhost:18599"', "`"PublicBaseUrl`": `"$PublicBaseUrl`"")
+        $content = $content.Replace('"BaseUrl": "http://localhost:18599"', "`"BaseUrl`": `"$PublicBaseUrl`"")
         Set-Content -LiteralPath $file.FullName -Value $content -Encoding UTF8
     }
 

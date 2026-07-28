@@ -130,6 +130,8 @@ Canonical generated proof:
 .\scripts\qa\run-storefront-builder-generated-proof.ps1
 ```
 
+Add `-RunBrowserQa` to have the canonical proof workflow start the generated storefront in Development, run visual smoke QA and commerce-regression network checks, and write `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. Commerce selectors that require live catalog/product fixture data are reported as explicit fixture gaps rather than direct Commerce Node calls.
+
 Generated storefront validation must fail when generated source declares `@page`, imports `BlazorShop.Storefront.Components.Features`, or recreates protected Presentation-owned application logic; normal generation consumes Presentation plus `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
 
 Focused test filter:

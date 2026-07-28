@@ -20,10 +20,15 @@ foreach ($path in @($projectFile, $metadata, $featureManifest)) {
 }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
-foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime")) {
+foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
         throw "[SFB-PROJECT-004] Generated project is missing package reference '$package'."
     }
+}
+
+$packageVersions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
+if (-not $packageVersions.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal)) {
+    throw "[SFB-PROJECT-004] Generated project is missing Client package compatibility metadata."
 }
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw

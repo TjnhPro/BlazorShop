@@ -43,7 +43,7 @@ if ($routeDirectives.Count -gt 0) {
 
 $versions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
 $project = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.csproj") -Raw
-foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime")) {
+foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
         throw "[SFB-STATIC-003] Package version mismatch or missing package reference: $package"
     }
