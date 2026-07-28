@@ -894,7 +894,7 @@ Evidence:
 
 Goal: wrong slot context fails during application startup, not when a user visits the route.
 
-- [ ] Define expected context per slot:
+- [x] Define expected context per slot:
 
 | Slot | Expected context |
 | --- | --- |
@@ -915,20 +915,32 @@ Goal: wrong slot context fails during application startup, not when a user visit
 | `ServiceUnavailableState` | `StorefrontSystemStateContext` |
 | `ErrorState` | `StorefrontSystemStateContext` or explicit error context |
 
-- [ ] Update `StorefrontFoundationViewOptionsValidator` to validate:
-  - [ ] component implements `IComponent`.
-  - [ ] component has public `[Parameter] Context`.
-  - [ ] Context type is expected type or assignable.
-  - [ ] required slot is not empty fallback.
-  - [ ] component is not a route component when a visual view is expected.
-- [ ] Keep runtime `StorefrontFoundationViewTypeValidator` as defensive check.
-- [ ] Add tests:
-  - [ ] wrong product context fails `ValidateOnStart`.
-  - [ ] missing `Context` parameter fails `ValidateOnStart`.
-  - [ ] assignable context type passes.
-  - [ ] empty fallback in required slot fails.
-- [ ] Exit criteria:
-  - [ ] context mismatch is caught before first request.
+- [x] Update `StorefrontFoundationViewOptionsValidator` to validate:
+  - [x] component implements `IComponent`.
+  - [x] component has public `[Parameter] Context`.
+  - [x] Context type is expected type or assignable.
+  - [x] required slot is not empty fallback.
+  - [x] component is not a route component when a visual view is expected.
+- [x] Keep runtime `StorefrontFoundationViewTypeValidator` as defensive check.
+- [x] Add tests:
+  - [x] wrong product context fails `ValidateOnStart`.
+  - [x] missing `Context` parameter fails `ValidateOnStart`.
+  - [x] assignable context type passes.
+  - [x] empty fallback in required slot fails.
+- [x] Exit criteria:
+  - [x] context mismatch is caught before first request.
+
+Evidence:
+
+- Added expected context map to `StorefrontFoundationViewOptionsValidator` for all page/state slots while leaving app head/scripts/layout as context-free asset/layout slots.
+- Added dedicated `StorefrontDealsPageContext` and `StorefrontNewReleasesPageContext`, then updated Presentation routes/services plus V2/Starter views to use the slot-specific context types.
+- Kept `StorefrontFoundationViewTypeValidator` unchanged as runtime defensive validation.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests" -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests" -v:minimal`
 
 ## Phase F1.40 - Clean V2 `_Imports.razor`
 

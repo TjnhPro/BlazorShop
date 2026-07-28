@@ -31,12 +31,12 @@ public sealed class StorefrontDealsPageService
         _logger = logger;
     }
 
-    public Task<StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext>> GetAsync(CancellationToken cancellationToken = default)
+    public Task<StorefrontCatalogPageResult<StorefrontDealsPageContext>> GetAsync(CancellationToken cancellationToken = default)
     {
         return LoadAsync(StorefrontRoutes.TodaysDeals, "Today's Deals", "Explore published BlazorShop catalog entries curated as current featured deals.", "Today's deals are temporarily unavailable", 12, cancellationToken);
     }
 
-    private async Task<StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext>> LoadAsync(
+    private async Task<StorefrontCatalogPageResult<StorefrontDealsPageContext>> LoadAsync(
         string route,
         string title,
         string description,
@@ -60,7 +60,7 @@ public sealed class StorefrontDealsPageService
         {
             _logger.LogWarning("{Route} is temporarily unavailable.", route);
             metadata = await _seoComposer.ComposeServiceUnavailablePageAsync(unavailableTitle, route, "The storefront is running, but the catalog API is not reachable right now.", cancellationToken);
-            return new StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext>(
+            return new StorefrontCatalogPageResult<StorefrontDealsPageContext>(
                 StorefrontPageResultMapper.ServiceUnavailable(StorefrontPageKind.Deals, unavailableTitle),
                 metadata,
                 StorefrontStructuredDataDocument.Empty,
@@ -69,10 +69,10 @@ public sealed class StorefrontDealsPageService
 
         var products = result.Value?.Items ?? [];
         var productSummaries = products.Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, _priceFormatter)).ToArray();
-        var context = new StorefrontCatalogProductsPageContext(productSummaries);
+        var context = new StorefrontDealsPageContext(productSummaries);
         var structuredData = await structuredDataTask;
 
-        return new StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext>(
+        return new StorefrontCatalogPageResult<StorefrontDealsPageContext>(
             StorefrontPageResultMapper.Ready(StorefrontPageKind.Deals, context, new StorefrontPageDocument(title, description, route)),
             metadata,
             structuredData,

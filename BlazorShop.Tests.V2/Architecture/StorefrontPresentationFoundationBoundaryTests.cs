@@ -168,6 +168,46 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenExpectedContextDoesNotMatchSlot()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), productPage: typeof(WrongContextFoundationView)),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("ProductPage", StringComparison.Ordinal));
+            Assert.Contains(result.Failures, failure => failure.Contains("StorefrontProductPageContext", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenExpectedContextParameterIsMissing()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), productPage: typeof(MissingContextFoundationView)),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("ProductPage", StringComparison.Ordinal));
+            Assert.Contains(result.Failures, failure => failure.Contains("[Parameter]", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void FoundationViewOptionsValidator_PassesWhenContextTypeIsAssignable()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), productPage: typeof(AssignableContextFoundationView)),
+                });
+
+            Assert.False(result.Failed);
+        }
+
+        [Fact]
         public void FoundationViewTypeValidator_RequiresContextParameterWhenContextIsProvided()
         {
             var context = new FoundationContext("demo");
@@ -517,7 +557,7 @@ namespace BlazorShop.Tests.Architecture
         private class ValidFoundationView : IComponent
         {
             [Parameter]
-            public FoundationContext Context { get; set; } = default!;
+            public object Context { get; set; } = default!;
 
             public void Attach(RenderHandle renderHandle)
             {
@@ -550,6 +590,21 @@ namespace BlazorShop.Tests.Architecture
         {
             [Parameter]
             public string Context { get; set; } = string.Empty;
+
+            public void Attach(RenderHandle renderHandle)
+            {
+            }
+
+            public Task SetParametersAsync(ParameterView parameters)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        private sealed class AssignableContextFoundationView : IComponent
+        {
+            [Parameter]
+            public object Context { get; set; } = default!;
 
             public void Attach(RenderHandle renderHandle)
             {

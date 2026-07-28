@@ -2,7 +2,7 @@
 @inject StorefrontNewReleasesPageService NewReleasesPageService
 @inject IOptions<StorefrontFoundationViewOptions> FoundationOptions
 
-<StorefrontPage TContext="StorefrontCatalogProductsPageContext"
+<StorefrontPage TContext="StorefrontNewReleasesPageContext"
     CurrentState="_result.State"
     Metadata="_result.Metadata"
     StructuredData="_result.StructuredData">
@@ -15,7 +15,7 @@
 </StorefrontPage>
 
 @code {
-    private StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext> _result = StorefrontCatalogPageResult<StorefrontCatalogProductsPageContext>.Empty;
+    private StorefrontCatalogPageResult<StorefrontNewReleasesPageContext> _result = StorefrontCatalogPageResult<StorefrontNewReleasesPageContext>.Empty;
 
     private StorefrontFoundationViewSet ViewSet => FoundationOptions.Value.ViewSet
         ?? throw new InvalidOperationException("A StorefrontFoundationViewSet must be registered.");

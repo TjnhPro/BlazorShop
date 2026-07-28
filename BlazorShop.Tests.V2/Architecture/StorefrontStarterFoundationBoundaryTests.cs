@@ -299,10 +299,9 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("ValidateRequestAsync", presentationCart, StringComparison.Ordinal);
             Assert.Contains("AddLineAsync", presentationCart, StringComparison.Ordinal);
             Assert.Contains("MapStorefrontPresentationCartEndpoints", presentationAggregation, StringComparison.Ordinal);
-            Assert.Contains("UseStaticFiles", program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStaticAssets", program, StringComparison.Ordinal);
-            Assert.Contains("UseStorefrontPresentation", program, StringComparison.Ordinal);
-            Assert.Contains("MapStorefrontPresentation", program, StringComparison.Ordinal);
+            Assert.Contains("UseStorefrontApplication", program, StringComparison.Ordinal);
+            Assert.Contains("MapStorefrontApplication", program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStarterBffEndpoints", program, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs")));
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs")));
@@ -409,8 +408,8 @@ namespace BlazorShop.Tests.Architecture
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = "StorefrontCartPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"] = "StorefrontCheckoutPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/PaymentResultPage.razor"] = "StorefrontPaymentResultPageContext",
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = "StorefrontCatalogProductsPageContext",
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor"] = "StorefrontCatalogProductsPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = "StorefrontDealsPageContext",
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor"] = "StorefrontNewReleasesPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = "StorefrontContentPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor"] = "StorefrontAuthPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"] = "StorefrontAccountPageContext",
