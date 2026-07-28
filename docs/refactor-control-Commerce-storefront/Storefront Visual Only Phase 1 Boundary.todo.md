@@ -364,29 +364,40 @@ Evidence:
 
 Goal: current-store readiness and maintenance policy are Presentation-owned for every storefront host.
 
-- [ ] Move behavior from V2 `StorefrontCurrentStoreMiddleware` into Presentation.Hosting.
-- [ ] Presentation middleware owns:
-  - [ ] route skip policy for static assets and health endpoints.
-  - [ ] current-store resolution before catalog/settings/customer/cart/checkout/SEO/media reads.
-  - [ ] disabled/missing/unavailable store mapping.
-  - [ ] maintenance redirect/page behavior.
-  - [ ] `404` for missing store.
-  - [ ] `503` for unavailable or misconfigured store.
-  - [ ] response headers for private/noindex/no-cache where applicable.
-  - [ ] discovery document behavior for maintenance/not-ready store.
-- [ ] Keep store truth in Commerce Node Storefront API; Presentation only maps the runtime result into host behavior.
-- [ ] Remove from V2:
-  - [ ] `Services/StorefrontCurrentStoreMiddleware.cs`
-  - [ ] direct `UseMiddleware<StorefrontCurrentStoreMiddleware>()`
-- [ ] Add tests:
-  - [ ] Presentation middleware skips static assets.
-  - [ ] Presentation middleware protects storefront pages.
-  - [ ] unavailable store returns correct status/header.
-  - [ ] maintenance store redirects or renders maintenance according to existing policy.
-  - [ ] unknown store never falls back to another store.
-- [ ] Exit criteria:
-  - [ ] New Storefront host gets current-store behavior by calling `UseStorefrontApplication()`.
-  - [ ] V2 has no current-store middleware source.
+- [x] Move behavior from V2 `StorefrontCurrentStoreMiddleware` into Presentation.Hosting.
+- [x] Presentation middleware owns:
+  - [x] route skip policy for static assets and health endpoints.
+  - [x] current-store resolution before catalog/settings/customer/cart/checkout/SEO/media reads.
+  - [x] disabled/missing/unavailable store mapping.
+  - [x] maintenance redirect/page behavior.
+  - [x] `404` for missing store.
+  - [x] `503` for unavailable or misconfigured store.
+  - [x] response headers for private/noindex/no-cache where applicable.
+  - [x] discovery document behavior for maintenance/not-ready store.
+- [x] Keep store truth in Commerce Node Storefront API; Presentation only maps the runtime result into host behavior.
+- [x] Remove from V2:
+  - [x] `Services/StorefrontCurrentStoreMiddleware.cs`
+  - [x] direct `UseMiddleware<StorefrontCurrentStoreMiddleware>()`
+- [x] Add tests:
+  - [x] Presentation middleware skips static assets.
+  - [x] Presentation middleware protects storefront pages.
+  - [x] unavailable store returns correct status/header.
+  - [x] maintenance store redirects or renders maintenance according to existing policy.
+  - [x] unknown store never falls back to another store.
+- [x] Exit criteria:
+  - [x] New Storefront host gets current-store behavior by calling `UseStorefrontApplication()`.
+  - [x] V2 has no current-store middleware source.
+
+Evidence:
+
+- `StorefrontCurrentStoreMiddleware` is Presentation-owned and registered by `UseStorefrontApplication()`.
+- Added `StorefrontV2Source_DoesNotOwnCurrentStoreApplicationGuard` source gate to `StorefrontApplicationBootstrapTests`.
+- Preserved the existing `X-Robots-Tag` wire value `noindex, nofollow` after moving middleware onto `Presentation.PagePatterns.StorefrontResponseHeaders`.
+- Source gate `rg -n "StorefrontCurrentStoreMiddleware|UseMiddleware<StorefrontCurrentStoreMiddleware>" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"` returned no matches.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal` passed.
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 advisories.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontCurrentStoreMiddlewareTests|FullyQualifiedName~StorefrontCurrentStoreMiddlewareRegressionTests|FullyQualifiedName~StorefrontCurrentStoreProviderTests" -v:minimal` passed: 11 passed, 0 failed.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontApplicationBootstrapTests" -v:minimal` passed: 5 passed, 0 failed.
 
 ## Phase F1.30 - Move public redirect and SEO runtime policy
 

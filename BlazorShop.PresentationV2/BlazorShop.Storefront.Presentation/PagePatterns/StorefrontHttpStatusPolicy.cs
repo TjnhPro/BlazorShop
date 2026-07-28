@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 public static class StorefrontHttpStatusPolicy
 {
-    public const string NoIndexNoFollow = "noindex,nofollow";
+    public const string NoIndexNoFollow = "noindex, nofollow";
     public const string PrivateCacheControl = "no-store, no-cache, max-age=0";
 
     public static int ResolveStatusCode(StorefrontPageState state)
