@@ -175,7 +175,7 @@
     public ProductPurchasePanelModel Model { get; set; } = ProductPurchasePanelModel.Empty;
 
     [Parameter]
-    public ProductPurchaseActionDescriptor Actions { get; set; } = StorefrontProductPurchaseActionOptions.Default;
+    public ProductPurchaseActionDescriptor Actions { get; set; } = ProductPurchaseActionDescriptor.Empty;
 
     private ProductPurchaseSnapshot Snapshot => ProductPurchaseSnapshot.Create(Model, Actions);
 

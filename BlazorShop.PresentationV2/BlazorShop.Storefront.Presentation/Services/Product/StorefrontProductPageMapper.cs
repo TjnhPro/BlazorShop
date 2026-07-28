@@ -3,6 +3,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Product;
 using global::System.Globalization;
 using BlazorShop.Storefront.Components.Contracts.Catalog;
 using BlazorShop.Storefront.Components.Contracts.Product;
+using BlazorShop.Storefront.Components.Headless.Product;
 using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
@@ -30,6 +31,7 @@ public static class StorefrontProductPageMapper
             BuildBreadcrumbs(product),
             galleryItems,
             purchasePanel,
+            BuildPurchaseActions(),
             BuildPricing(product, displayContext, priceFormatter, displayCurrencyCode, displayPriceAmount),
             BuildAvailability(product),
             BuildPurchase(product, canSubmitInitialPurchase),
@@ -41,6 +43,16 @@ public static class StorefrontProductPageMapper
                 .ToArray(),
             displayContext,
             StorefrontLinkContext.Default);
+    }
+
+    private static ProductPurchaseActionDescriptor BuildPurchaseActions()
+    {
+        return new ProductPurchaseActionDescriptor(
+            "purchase",
+            StorefrontRoutes.ProductSelectionPreview,
+            "product-cart-feedback",
+            "product-variant-select",
+            "product-selection-quantity");
     }
 
     private static IReadOnlyList<StorefrontBreadcrumbItem> BuildBreadcrumbs(GetProduct product)

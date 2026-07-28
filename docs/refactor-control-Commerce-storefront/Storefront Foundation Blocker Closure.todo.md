@@ -388,83 +388,96 @@ Goal: replace narrow token checks with a reusable scanner that can validate V2, 
 
 ### Tasks
 
-- [ ] Create a shared test helper, for example `StorefrontVisualConsumerBoundaryValidator`.
-- [ ] Validate project references and package references:
-  - [ ] no backend/core/API project references.
-  - [ ] no Control Plane references.
-  - [ ] no Commerce Node references.
-  - [ ] no Storefront V2 reference from Starter/generated.
-  - [ ] no Runtime/Client direct reference unless the project is explicitly allowlisted.
-- [ ] Validate forbidden folders for visual hosts:
-  - [ ] `Services/`
-  - [ ] `Services/Contracts/`
-  - [ ] `Security/`
-  - [ ] `Middleware/`
-  - [ ] `Endpoints/`
-  - [ ] `Configuration/` except visual registration/configuration allowlist.
-  - [ ] `Options/` except visual options allowlist.
-  - [ ] `Models/` except visual view model allowlist.
-- [ ] Scan source files:
-  - [ ] `.cs`
-  - [ ] `.razor`
-  - [ ] `.cshtml` if present.
-  - [ ] `.js`
-  - [ ] `.mjs`
-  - [ ] `.ts`
-  - [ ] `.json` for protected metadata where relevant.
-  - [ ] `.yaml`/`.yml` generation contracts.
-- [ ] Forbid application transport tokens in visual hosts:
-  - [ ] `HttpClient`
-  - [ ] `IHttpClientFactory`
-  - [ ] `fetch(`
-  - [ ] `XMLHttpRequest`
-  - [ ] `/api/storefront/`
-  - [ ] `/api/cart`
-  - [ ] `/api/checkout`
-  - [ ] `/api/consent`
-  - [ ] `/api/product-selection-preview`
-  - [ ] antiforgery token lookup.
-- [ ] Forbid service locator patterns:
-  - [ ] `[Inject] IServiceProvider`
-  - [ ] `GetRequiredService<`
-  - [ ] `GetService<`
-  - [ ] constructor injection of application services in visual components.
-- [ ] Forbid presentation contract implementation in visual hosts:
-  - [ ] classes implementing `IStorefront*Client`.
-  - [ ] classes implementing Runtime facade/provider interfaces.
-  - [ ] manual transport clients.
-- [ ] Add positive allowlists:
-  - [ ] Program/bootstrap.
-  - [ ] view registration.
-  - [ ] visual components/pages/layouts.
-  - [ ] CSS/images/fonts/static visual assets.
-  - [ ] visual JS only.
-  - [ ] appsettings.
-- [ ] Produce clear failure messages:
-  - [ ] file path.
-  - [ ] forbidden token/folder/reference.
-  - [ ] owning package where logic should move.
-  - [ ] suggested remediation.
+- [x] Create a shared test helper, for example `StorefrontVisualConsumerBoundaryValidator`.
+- [x] Validate project references and package references:
+  - [x] no backend/core/API project references.
+  - [x] no Control Plane references.
+  - [x] no Commerce Node references.
+  - [x] no Storefront V2 reference from Starter/generated.
+  - [x] no Runtime/Client direct reference unless the project is explicitly allowlisted.
+- [x] Validate forbidden folders for visual hosts:
+  - [x] `Services/`
+  - [x] `Services/Contracts/`
+  - [x] `Security/`
+  - [x] `Middleware/`
+  - [x] `Endpoints/`
+  - [x] `Configuration/` except visual registration/configuration allowlist.
+  - [x] `Options/` except visual options allowlist.
+  - [x] `Models/` except visual view model allowlist.
+- [x] Scan source files:
+  - [x] `.cs`
+  - [x] `.razor`
+  - [x] `.cshtml` if present.
+  - [x] `.js`
+  - [x] `.mjs`
+  - [x] `.ts`
+  - [x] `.json` for protected metadata where relevant.
+  - [x] `.yaml`/`.yml` generation contracts.
+- [x] Forbid application transport tokens in visual hosts:
+  - [x] `HttpClient`
+  - [x] `IHttpClientFactory`
+  - [x] `fetch(`
+  - [x] `XMLHttpRequest`
+  - [x] `/api/storefront/`
+  - [x] `/api/cart`
+  - [x] `/api/checkout`
+  - [x] `/api/consent`
+  - [x] `/api/product-selection-preview`
+  - [x] antiforgery token lookup.
+- [x] Forbid service locator patterns:
+  - [x] `[Inject] IServiceProvider`
+  - [x] `GetRequiredService<`
+  - [x] `GetService<`
+  - [x] constructor injection of application services in visual components.
+- [x] Forbid presentation contract implementation in visual hosts:
+  - [x] classes implementing `IStorefront*Client`.
+  - [x] classes implementing Runtime facade/provider interfaces.
+  - [x] manual transport clients.
+- [x] Add positive allowlists:
+  - [x] Program/bootstrap.
+  - [x] view registration.
+  - [x] visual components/pages/layouts.
+  - [x] CSS/images/fonts/static visual assets.
+  - [x] visual JS only.
+  - [x] appsettings.
+- [x] Produce clear failure messages:
+  - [x] file path.
+  - [x] forbidden token/folder/reference.
+  - [x] owning package where logic should move.
+  - [x] suggested remediation.
 
 ### Tests
 
-- [ ] Replace or extend `StorefrontVisualOnlyBoundaryTests`.
-- [ ] Run validator against V2.
-- [ ] Run validator against Starter.
-- [ ] Run validator against generated proof project.
-- [ ] Add negative fixture tests that prove the scanner fails for:
-  - [ ] visual `HttpClient`.
-  - [ ] visual `fetch('/api/cart')`.
-  - [ ] visual `Services/` folder.
-  - [ ] direct Runtime reference.
-  - [ ] `IStorefrontCatalogClient` implementation.
+- [x] Replace or extend `StorefrontVisualOnlyBoundaryTests`.
+- [x] Run validator against V2.
+- [x] Run validator against Starter.
+- [x] Run validator against generated proof project.
+- [x] Add negative fixture tests that prove the scanner fails for:
+  - [x] visual `HttpClient`.
+  - [x] visual `fetch('/api/cart')`.
+  - [x] visual `Services/` folder.
+  - [x] direct Runtime reference.
+  - [x] `IStorefrontCatalogClient` implementation.
 
 ### Definition of Done
 
-- [ ] One shared validator protects all visual consumers.
-- [ ] Guardrail scans C#/Razor/JS/project metadata.
-- [ ] Failure messages are actionable.
-- [ ] Known current leaks are either fixed or explicitly allowlisted with removal date.
+- [x] One shared validator protects all visual consumers.
+- [x] Guardrail scans C#/Razor/JS/project metadata.
+- [x] Failure messages are actionable.
+- [x] Known current leaks are either fixed or explicitly allowlisted with removal date.
+
+Notes/evidence:
+
+- Added `StorefrontVisualConsumerBoundaryValidator` and validator tests that cover V2, Starter, the generated proof project, and negative fixtures.
+- Fixed current visual-host leaks instead of broad allowlisting: product purchase action route descriptors now come from Presentation, shared WASM antiforgery/cart interop JS lives in Components, and Starter visual copy no longer embeds BFF route literals.
+- Validator reports the violating file/reference/folder, the owning package, and remediation guidance for transport, service locator, contract implementation, and project reference failures.
+- Verification:
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests" -v:minimal` - passed 4/4.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests.ProductPurchasePanel_UsesHostActionDescriptorAfterHpr6Migration|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests.ProductPageVerticalSlice_IsPresentationRouteWithV2ViewOnly|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests" -v:minimal` - passed 18/18.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj -v:minimal` - passed.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj -v:minimal` - passed.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` - passed.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests" -v:minimal` - passed 4/4 after generated proof regeneration.
 
 ## Phase F1.52 - Generated Proof, Browser Functional Proof, And CI Closure
 

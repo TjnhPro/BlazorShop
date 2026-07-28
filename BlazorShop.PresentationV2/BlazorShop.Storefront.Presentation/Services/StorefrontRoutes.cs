@@ -38,6 +38,7 @@ namespace BlazorShop.Storefront.Services
         public const string TodaysDeals = "/todays-deals";
         public const string Search = "/search";
         public const string PagesBase = "/pages";
+        public const string ProductSelectionPreview = "/api/product-selection-preview";
 
         public static IReadOnlyList<StorefrontSitemapStaticRoute> SitemapStaticPages { get; } =
         [

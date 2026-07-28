@@ -51,7 +51,7 @@
 
                     <p class="mt-6 text-base leading-7 text-neutral-700">@_navigation.ProductDescription</p>
 
-                <StorefrontProductPurchasePanel Model="_purchasePanel" />
+                <StorefrontProductPurchasePanel Model="_purchasePanel" Actions="Context.PurchaseActions" />
 
                 @if (_variants.Count > 0)
                 {

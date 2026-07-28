@@ -73,12 +73,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("Microsoft.NET.Sdk.Razor", project, StringComparison.Ordinal);
             Assert.Contains("Microsoft.JSInterop", project, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/_Imports.razor")));
-            Assert.False(Directory.Exists(Path.Combine(componentRoot, "wwwroot")));
-            Assert.False(File.Exists(sharedInterop));
-            Assert.True(File.Exists(v2Interop));
-            Assert.Contains("./js/storefrontWasmInterop.js", browserSource, StringComparison.Ordinal);
-            Assert.Contains("./js/storefrontWasmInterop.js", cartView, StringComparison.Ordinal);
-            Assert.DoesNotContain("_content/BlazorShop.Storefront.Components", browserSource + cartView, StringComparison.Ordinal);
+            Assert.True(Directory.Exists(Path.Combine(componentRoot, "wwwroot")));
+            Assert.True(File.Exists(sharedInterop));
+            Assert.False(File.Exists(v2Interop));
+            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", browserSource, StringComparison.Ordinal);
+            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", cartView, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -350,8 +349,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs");
             var v2Panel = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
-            var v2ActionOptions = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchaseActionOptions.cs");
+            var productContext = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageContext.cs");
+            var productMapper = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
             var productPage = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
 
@@ -378,17 +379,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(expected, purchaseBehavior, StringComparison.Ordinal);
             }
 
-            Assert.Contains("StorefrontProductPurchaseActionOptions.Default", v2Panel, StringComparison.Ordinal);
+            Assert.Contains("ProductPurchaseActionDescriptor.Empty", v2Panel, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontV2Default", purchaseBehavior, StringComparison.Ordinal);
             Assert.DoesNotContain("/api/product-selection-preview", purchaseBehavior, StringComparison.Ordinal);
-            Assert.Contains("/api/product-selection-preview", v2ActionOptions, StringComparison.Ordinal);
+            Assert.Contains("ProductPurchaseActionDescriptor PurchaseActions", productContext, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.ProductSelectionPreview", productMapper, StringComparison.Ordinal);
+            Assert.Contains("Actions=\"Context.PurchaseActions\"", productPage, StringComparison.Ordinal);
             Assert.Contains("id=\"@Actions.PanelId\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("data-preview-route=\"@Actions.SelectionPreviewRoute\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("data-preview-container=\"@Actions.PreviewContainerSelector\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("disabled=\"@(!Model.CanSubmitInitialPurchase)\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("rounded-2xl", v2Panel, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", productPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" Actions=\"Context.PurchaseActions\" />", productPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductPurchasePanel Model=\"_purchasePanel\"", productPage, StringComparison.Ordinal);
         }
 

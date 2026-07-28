@@ -529,7 +529,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("StorefrontResponseHeaders", view, StringComparison.Ordinal);
             Assert.Contains("StorefrontProductPageContext", view, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductGallery Items=\"_galleryItems\" ProductName=\"@_product.Name\" />", view, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" Actions=\"Context.PurchaseActions\" />", view, StringComparison.Ordinal);
         }
 
         private static bool IsPresentationRuntimeOrClientReference(string reference)
