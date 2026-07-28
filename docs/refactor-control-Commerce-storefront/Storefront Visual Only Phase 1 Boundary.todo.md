@@ -1,0 +1,1090 @@
+# Storefront Visual Only Phase 1 Boundary Todo
+
+Status: In Progress
+Owner: Storefront Platform
+Created: 2026-07-27
+Scope: finish Phase 1 so `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, and future `BlazorShop.Storefront.{Name}` hosts are visual consumers of the shared Storefront application engine.
+
+## Verified current context
+
+- `BlazorShop.Storefront.V2/Program.cs` is already short, but still passes V2-owned rate limit and HTTP client resolver hooks into `AddStorefrontV2Services`.
+- `BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs` still composes Runtime, Presentation, antiforgery, rate limiting, Razor components, and shell/navigation services.
+- `BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs` still owns forwarded headers, static files, current-store middleware, public redirect middleware, and rate limiter ordering.
+- `BlazorShop.Storefront.V2` still has `Services/`, `Services/Contracts/`, `Configuration/`, `Options/`, `Models/`, and `Endpoints/`.
+- V2 layout/components still inject application services and load data:
+  - `Components/Layout/StorefrontHeader.razor`
+  - `Components/Layout/StorefrontFooter.razor`
+  - `Components/Layout/StorefrontAccountMenu.razor`
+  - `Components/Catalog/ProductCard.razor`
+  - `Components/Seo/StorefrontBrandHead.razor`
+- V2 auth and checkout visual views still write browser mutation form contracts directly:
+  - `Theme/Pages/Auth/V2AuthPageView.razor`
+  - `Pages/Hybrid/Commerce/CheckoutPage.razor`
+  - `Components/Layout/StorefrontHeader.razor`
+  - `Components/Layout/StorefrontAccountMenu.razor`
+- Product page decisions are partly duplicated between V2 and Presentation:
+  - Presentation has `StorefrontProductPageMapper` and `StorefrontProductSummaryMapper`.
+  - V2 still calculates fresh badge, compare state, stock text, SKU/GTIN labels, quantity fallback, and purchase block messages.
+- `StorefrontFoundationViewSet.CreateMinimal(...)` is still used by V2 and Starter registrations.
+- `StorefrontFoundationViewOptionsValidator` validates only `IComponent`; context compatibility is checked mostly when the slot renders.
+- V2 `_Imports.razor` still imports application namespaces such as `Storefront.Models`, `Storefront.Services`, `Storefront.Services.Contracts`, `System.Net.Http.Json`, and `Microsoft.AspNetCore.Http`.
+- V2 `.csproj` still directly references `BlazorShop.Storefront.Runtime`.
+- Starter also composes Runtime/Presentation/antiforgery/static files itself, so the cleanup cannot be V2-only.
+
+## Target final shape
+
+After Phase 1, V2 should only own:
+
+- [ ] `Program.cs` thin bootstrap.
+- [ ] `appsettings*.json` and deployment config values.
+- [ ] view registration.
+- [ ] layouts/pages/components visual markup.
+- [ ] `wwwroot/css`, `wwwroot/images`, `wwwroot/fonts`.
+- [ ] visual copy.
+- [ ] pure UI state.
+- [ ] WASM component placement.
+
+V2 must not own:
+
+- [ ] `Services/` application services.
+- [ ] `Services/Contracts/`.
+- [ ] middleware.
+- [ ] application configuration helpers.
+- [ ] business models.
+- [ ] Commerce Node API resolution.
+- [ ] store key resolution.
+- [ ] navigation data loading.
+- [ ] session loading.
+- [ ] application caching.
+- [ ] rate limiting policy.
+- [ ] auth/checkout form contracts.
+- [ ] business decisions.
+- [ ] direct Runtime/Client reference.
+
+Final V2 bootstrap target:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+
+builder.Services
+    .AddStorefrontApplication(builder.Configuration)
+    .AddV2PresentationViews();
+
+var app = builder.Build();
+
+app.UseStorefrontApplication();
+app.MapStorefrontApplication<V2FoundationViewRegistration>();
+
+app.Run();
+```
+
+The exact generic shape can be adjusted during implementation, but ownership must remain:
+
+```text
+Presentation = application engine, BFF, forms, page contexts, middleware, route endpoint mapping
+Runtime      = Commerce Node generated-client integration and store-scoped generated transport
+V2/Starter/{Name} = host config values, visual registration, markup, assets, copy
+```
+
+## Dependencies
+
+- [ ] Complete or keep in-flight with this plan: `Storefront V2 Manual Client Retirement.todo.md`.
+- [ ] Do not close this plan until F1.25 is closed:
+  - [ ] no `StorefrontApiClient` in V2.
+  - [ ] no V2 class implements Presentation `IStorefront*Client`.
+  - [ ] no V2 manual Commerce Node transport.
+- [ ] Update `docs/architecture/03-runtime-boundaries.md` during this plan because the current architecture doc still says V2 owns some current-store/session/host-specific API adapter behavior. This plan intentionally moves that ownership to Presentation/Runtime.
+
+## Non-goals
+
+- [ ] Do not rewrite Commerce Node storefront APIs.
+- [ ] Do not move ecommerce truth such as pricing, sellability, cart validity, checkout rules, or order placement out of Commerce Node APIs.
+- [ ] Do not redesign V2 visual UI unless a visual-only cutover exposes a real rendering bug.
+- [ ] Do not collapse Runtime into Presentation.
+- [ ] Do not make generated storefronts reference V2 or Starter.
+- [ ] Do not make browser/WASM call Commerce Node directly.
+- [ ] Do not remove V2.WASM browser components; only keep their boundary browser-safe.
+
+## Phase order
+
+```text
+F1.26  Visual-only guardrails red
+F1.27  Shared Storefront application bootstrap
+F1.28  Runtime/store configuration ownership
+F1.29  Current-store guard
+F1.30  Public redirect and SEO runtime policy
+F1.31  Rate limiting and BFF security policy
+F1.32  Shell/navigation context
+F1.33  Header/Footer/Account visual cutover
+F1.34  Auth fixed form patterns
+F1.35  Checkout fixed form pattern
+F1.36  Currency/logout mutation patterns
+F1.37  Product decision context
+F1.38  Required view registration validation
+F1.39  Startup context compatibility validation
+F1.40  V2 imports cleanup
+F1.41  V2 dependency/namespace cleanup
+F1.42  Starter visual-only parity
+F1.43  GeneratedProof isolation
+F1.44  QA and closure gate
+```
+
+Implementation rule for every phase:
+
+```text
+characterization/guardrail test
+-> Presentation/Runtime replacement
+-> host switch
+-> V2 and Starter proof
+-> delete V2-owned source
+-> permanent guardrail
+```
+
+## Phase F1.26 - Lock visual-only guardrails first
+
+Goal: create failing tests before moving code so Foundation cannot be closed while V2 still has application logic.
+
+- [x] Add an architecture test group, for example `StorefrontVisualOnlyBoundaryTests`.
+- [x] Test V2 visual folders:
+  - [x] `Components/`
+  - [x] `Pages/`
+  - [x] `Theme/Pages/`
+  - [x] `Layouts/` if introduced.
+- [x] In visual folders, forbid:
+
+```text
+@inject IStorefront*
+IStorefrontRuntime*
+HttpClient
+IHttpClientFactory
+IConfiguration
+IOptions<
+HttpContext
+RequestDelegate
+StorefrontApiEndpointResolver
+StorefrontStoreKeyResolver
+GetRequiredService
+MapGet
+MapPost
+MapPut
+MapDelete
+```
+
+- [x] In registered view components, forbid data-loading lifecycle methods unless the component is explicitly browser-only state and has no application service injection:
+
+```text
+OnInitializedAsync
+OnParametersSetAsync
+```
+
+- [x] Forbid V2 classes named like application services:
+
+```text
+*Middleware
+*Provider
+*Resolver
+*Client
+*PageService
+*Policy
+```
+
+- [x] Allow narrow visual helpers only:
+  - [x] `CssClassBuilder`.
+  - [x] `ImageAspectRatio`.
+  - [x] `VisualComponentOptions`.
+  - [x] other helpers with no DI, no HTTP, no config, no business fields.
+- [x] Add a V2 source-folder guard that disallows new active files under:
+  - [x] `Services/`
+  - [x] `Services/Contracts/`
+  - [x] `Middleware/`
+  - [x] `Configuration/` except temporary registration file during migration.
+  - [x] `Options/` except temporary host config DTO during migration.
+  - [x] `Models/` except pure visual state during migration.
+- [x] Exit criteria:
+  - [x] New tests are red against current source.
+  - [x] Test output names each blocker category, not one generic failure.
+  - [x] No wide allowlist that hides application logic.
+
+Evidence:
+
+- Added `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontVisualOnlyBoundaryTests.cs`.
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal` passed with existing `MessagePack` NU1902/NU1903 advisories.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests" -v:minimal` failed as expected: 4 failed, 0 passed.
+- Red blocker groups are visual application injection/framework plumbing, visual async data-loading lifecycle methods, application-service named classes, and active application logic folders.
+
+## Phase F1.27 - Create shared Storefront application bootstrap
+
+Goal: Presentation owns full application registration, pipeline, and endpoint mapping. V2/Starter call one bootstrap API.
+
+- [ ] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationServiceCollectionExtensions`.
+- [ ] Implement:
+
+```csharp
+services.AddStorefrontApplication(configuration);
+```
+
+- [ ] `AddStorefrontApplication` owns:
+  - [ ] Runtime options binding from configuration.
+  - [ ] `AddStorefrontRuntime(...)`.
+  - [ ] `AddStorefrontPlatformRuntime(...)`.
+  - [ ] `AddStorefrontPresentation(configuration)`.
+  - [ ] page services.
+  - [ ] BFF endpoint dependencies.
+  - [ ] antiforgery.
+  - [ ] rate limiter.
+  - [ ] current-store guard dependencies.
+  - [ ] public redirect dependencies.
+  - [ ] navigation/shell services.
+  - [ ] session services.
+  - [ ] view validation services.
+  - [ ] Razor components.
+  - [ ] optional WASM support flag.
+- [ ] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationBuilderExtensions`.
+- [ ] Implement:
+
+```csharp
+app.UseStorefrontApplication();
+```
+
+- [ ] `UseStorefrontApplication` owns:
+  - [ ] forwarded headers.
+  - [ ] HTTPS/HSTS policy where host-neutral and safe.
+  - [ ] static files.
+  - [ ] current-store middleware.
+  - [ ] public redirect middleware.
+  - [ ] rate limiter.
+  - [ ] Presentation middleware.
+  - [ ] antiforgery ordering.
+- [ ] Implement:
+
+```csharp
+app.MapStorefrontApplication<TViewRegistration>();
+```
+
+- [ ] `MapStorefrontApplication` owns:
+  - [ ] Presentation BFF endpoints.
+  - [ ] auth endpoints.
+  - [ ] cart endpoints.
+  - [ ] checkout endpoints.
+  - [ ] account endpoints.
+  - [ ] consent endpoints.
+  - [ ] preferences endpoints.
+  - [ ] media endpoints.
+  - [ ] robots.
+  - [ ] sitemap.
+  - [ ] favicon/default static helpers if host-neutral.
+  - [ ] Razor components with required additional assemblies.
+- [ ] Keep a lower-level escape hatch only if needed:
+  - [ ] `AddStorefrontPresentation(...)` may remain internal/public for tests.
+  - [ ] `UseStorefrontPresentation(...)` may remain if Starter/generated proof still needs it during migration.
+  - [ ] Mark old aliases obsolete only if external package compatibility requires it.
+- [ ] Switch V2 Program to call the new bootstrap but keep old V2 extension in place until tests pass.
+- [ ] Switch Starter Program to call the same bootstrap.
+- [ ] Exit criteria:
+  - [ ] V2 no longer calls `AddStorefrontV2Services`.
+  - [ ] V2 no longer calls `UseStorefrontV2HostPipeline`.
+  - [ ] V2 no longer passes `StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter`.
+  - [ ] V2 no longer passes `StorefrontApiEndpointResolver.ConfigureStorefrontHttpClient`.
+  - [ ] Starter no longer manually registers Runtime/Presentation/antiforgery/static files.
+
+## Phase F1.28 - Move runtime/store configuration ownership
+
+Goal: V2 keeps configuration values only. Runtime/Presentation.Hosting interpret them.
+
+- [ ] Add Presentation hosting options:
+  - [ ] `StorefrontApplicationOptions`.
+  - [ ] `StorefrontStoreResolutionOptions` if not already shared.
+  - [ ] `StorefrontRuntimeBindingOptions`.
+  - [ ] `StorefrontPublicUrlOptions` integration.
+- [ ] Move or recreate validators in Presentation:
+  - [ ] store key required in production when current-store resolution is enabled.
+  - [ ] Commerce Node base URL required and absolute.
+  - [ ] public URL base URL validation.
+  - [ ] forwarded headers validation.
+- [ ] Move store key resolution to Runtime or Presentation.Hosting:
+
+```text
+Api:StoreKey
+StoreKey
+STORE_KEY
+```
+
+- [ ] Move Commerce Node base URL resolution to Runtime/Presentation bootstrap:
+  - [ ] support current `Api:BaseUrl` if still used.
+  - [ ] support Starter options for package template compatibility.
+  - [ ] normalize trailing slash.
+  - [ ] produce generated client base address expected by Runtime.
+- [ ] Remove from V2 after switch:
+  - [ ] `Configuration/StorefrontApiEndpointResolver.cs`
+  - [ ] `Configuration/StorefrontStoreKeyResolver.cs`
+  - [ ] `Options/StorefrontApiOptions.cs` if no longer needed.
+  - [ ] V2-specific validators tied to API/store resolution.
+- [ ] Add source gate:
+
+```powershell
+rg -n "StorefrontApiEndpointResolver|StorefrontStoreKeyResolver|StorefrontApiOptions" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"
+```
+
+- [ ] Expected after phase: no matches.
+- [ ] Exit criteria:
+  - [ ] V2 `appsettings*.json` keeps values only.
+  - [ ] V2 source has no configuration interpretation code.
+  - [ ] Runtime generated clients still call `api/storefront/stores/{storeKey}/*` through Runtime context.
+
+## Phase F1.29 - Move current-store application guard
+
+Goal: current-store readiness and maintenance policy are Presentation-owned for every storefront host.
+
+- [ ] Move behavior from V2 `StorefrontCurrentStoreMiddleware` into Presentation.Hosting.
+- [ ] Presentation middleware owns:
+  - [ ] route skip policy for static assets and health endpoints.
+  - [ ] current-store resolution before catalog/settings/customer/cart/checkout/SEO/media reads.
+  - [ ] disabled/missing/unavailable store mapping.
+  - [ ] maintenance redirect/page behavior.
+  - [ ] `404` for missing store.
+  - [ ] `503` for unavailable or misconfigured store.
+  - [ ] response headers for private/noindex/no-cache where applicable.
+  - [ ] discovery document behavior for maintenance/not-ready store.
+- [ ] Keep store truth in Commerce Node Storefront API; Presentation only maps the runtime result into host behavior.
+- [ ] Remove from V2:
+  - [ ] `Services/StorefrontCurrentStoreMiddleware.cs`
+  - [ ] direct `UseMiddleware<StorefrontCurrentStoreMiddleware>()`
+- [ ] Add tests:
+  - [ ] Presentation middleware skips static assets.
+  - [ ] Presentation middleware protects storefront pages.
+  - [ ] unavailable store returns correct status/header.
+  - [ ] maintenance store redirects or renders maintenance according to existing policy.
+  - [ ] unknown store never falls back to another store.
+- [ ] Exit criteria:
+  - [ ] New Storefront host gets current-store behavior by calling `UseStorefrontApplication()`.
+  - [ ] V2 has no current-store middleware source.
+
+## Phase F1.30 - Move public redirect and SEO runtime policy
+
+Goal: redirect resolution and SEO runtime protection are shared application behavior, not V2 behavior.
+
+- [ ] Move from V2 to Presentation:
+  - [ ] `StorefrontPublicRedirectMiddleware`.
+  - [ ] `RedirectBlockReason`.
+  - [ ] redirect status validation.
+  - [ ] invalid target protection.
+  - [ ] loop protection.
+  - [ ] header-injection protection.
+  - [ ] SEO runtime logging hook.
+  - [ ] request filtering.
+- [ ] Register middleware from `UseStorefrontApplication()` after current-store guard and before route rendering.
+- [ ] Add tests:
+  - [ ] active redirect returns expected status.
+  - [ ] invalid external or header-injection target is blocked.
+  - [ ] redirect loop is blocked.
+  - [ ] missing redirect falls through to route rendering.
+  - [ ] store scope is preserved.
+- [ ] Remove from V2:
+  - [ ] `Services/StorefrontPublicRedirectMiddleware.cs`
+  - [ ] direct middleware registration.
+- [ ] Exit criteria:
+  - [ ] V2 and Starter share identical redirect behavior.
+  - [ ] V2 has no redirect middleware code.
+
+## Phase F1.31 - Move rate limiting and BFF security policy
+
+Goal: Presentation.Hosting owns browser/BFF security execution. Hosts only provide config values.
+
+- [ ] Move to Presentation.Hosting:
+  - [ ] `StorefrontRateLimitPolicies`
+  - [ ] `StorefrontRateLimitIdentity`
+  - [ ] `StorefrontRateLimitingOptions`
+  - [ ] `StorefrontRateLimitPolicyOptions`
+  - [ ] 429 response contract.
+  - [ ] private/no-cache response header behavior.
+- [ ] Keep configuration values host-local:
+
+```json
+{
+  "Storefront": {
+    "RateLimiting": {
+      "Enabled": true
+    }
+  }
+}
+```
+
+- [ ] Presentation implementation owns:
+  - [ ] rate-limit policy names.
+  - [ ] store/route/actor partitioning.
+  - [ ] cart mutation limits.
+  - [ ] `Retry-After`.
+  - [ ] safe JSON error response.
+  - [ ] rate-limit error code.
+- [ ] Remove V2 imports/usages:
+  - [ ] `System.Threading.RateLimiting`
+  - [ ] `Microsoft.AspNetCore.RateLimiting`
+  - [ ] `StorefrontResponseHeaders`
+  - [ ] `StorefrontLocalCartErrorResponse`
+- [ ] Add tests:
+  - [ ] cart BFF rate limit partitions by store/route/actor.
+  - [ ] actor falls back to remote IP when cart token missing.
+  - [ ] `429` has retry/private/noindex headers.
+  - [ ] disabled rate limiting does not register middleware.
+- [ ] Exit criteria:
+  - [ ] V2 does not configure rate limiting policy.
+  - [ ] V2 only carries config values.
+
+## Phase F1.32 - Create shell/navigation context service
+
+Goal: Header/Footer/Account/Menu/Search/Currency contexts are prepared by Presentation once per request.
+
+- [ ] Add Presentation context records:
+
+```csharp
+StorefrontShellContext
+StorefrontHeaderContext
+StorefrontFooterContext
+StorefrontAccountMenuContext
+StorefrontNavigationContext
+StorefrontSearchContext
+StorefrontCurrencyContext
+StorefrontBrandContext
+StorefrontShellLink
+StorefrontShellMenu
+```
+
+- [ ] Add service:
+
+```csharp
+IStorefrontShellContextService
+StorefrontShellContextService
+```
+
+- [ ] Service owns:
+  - [ ] load display context.
+  - [ ] load navigation menus.
+  - [ ] load content links.
+  - [ ] load search categories.
+  - [ ] load account session summary.
+  - [ ] prepare currency options.
+  - [ ] prepare safe return URLs.
+  - [ ] prepare safe application URLs.
+  - [ ] request-scoped caching.
+- [ ] Replace V2-only services by Presentation equivalents:
+  - [ ] `IStorefrontNavigationProvider`
+  - [ ] `IStorefrontPageNavigationProvider`
+  - [ ] `IStorefrontClientAppUrlResolver`
+- [ ] Add tests:
+  - [ ] context service loads data once per request.
+  - [ ] account summary is anonymous when no session exists.
+  - [ ] search categories are safe and sorted.
+  - [ ] currency context contains current/supported/default codes.
+  - [ ] safe return URL never becomes external.
+- [ ] Exit criteria:
+  - [ ] Header/Footer/Account menu can render from context only.
+  - [ ] V2 no longer owns navigation provider services.
+
+## Phase F1.33 - Remove data loading from Header/Footer/Account visual components
+
+Goal: visual components render supplied context only.
+
+- [ ] Update Presentation layout/page contexts to include shell context:
+  - [ ] main layout context.
+  - [ ] page context wrappers where needed.
+  - [ ] auth/account/cart/checkout contexts where layout needs account/session/currency.
+- [ ] Update V2 components:
+  - [ ] `StorefrontHeader` receives `StorefrontHeaderContext`.
+  - [ ] `StorefrontFooter` receives `StorefrontFooterContext`.
+  - [ ] `StorefrontAccountMenu` receives `StorefrontAccountMenuContext`.
+  - [ ] `StorefrontBrandHead` receives brand/head context or moves to Presentation head slot data.
+  - [ ] `ProductCard` receives formatted summary model and display context data, not providers.
+- [ ] Remove from V2 visual components:
+  - [ ] `@inject IStorefrontCatalogClient`
+  - [ ] `@inject IStorefrontDisplayContextProvider`
+  - [ ] `@inject IStorefrontPageNavigationProvider`
+  - [ ] `@inject IStorefrontNavigationProvider`
+  - [ ] `@inject IStorefrontSessionResolver`
+  - [ ] `HttpContext`
+  - [ ] `OnInitializedAsync` data loading.
+- [ ] Keep allowed UI state:
+  - [ ] mobile menu open/close.
+  - [ ] modal/details open/close.
+  - [ ] CSS selection state.
+  - [ ] local browser-only progressive enhancement.
+- [ ] Add tests:
+  - [ ] visual-only guard now passes for layout/header/footer/account components.
+  - [ ] rendered header contains search/category/currency/account data from context.
+  - [ ] rendered footer contains company/legal/support links from context.
+- [ ] Exit criteria:
+  - [ ] zero service injection in registered V2 layout/header/footer/account menu.
+  - [ ] zero API/session/navigation loading in visual components.
+
+## Phase F1.34 - Move auth mutation contracts into fixed Presentation form patterns
+
+Goal: V2 owns visual arrangement and copy; Presentation owns auth browser mutation contracts.
+
+Current note: Presentation already has auth form models and endpoints. This phase adds fixed form components/patterns so hosts do not manually write security-sensitive fields.
+
+- [ ] Add Presentation form components or form builders:
+  - [ ] `StorefrontSignInForm`
+  - [ ] `StorefrontRegisterForm`
+  - [ ] `StorefrontForgotPasswordForm`
+  - [ ] `StorefrontResetPasswordForm`
+- [ ] Presentation owns:
+  - [ ] form method.
+  - [ ] form action.
+  - [ ] antiforgery token.
+  - [ ] return URL hidden field.
+  - [ ] captcha token field name and purpose.
+  - [ ] recovery token hidden field.
+  - [ ] required HTML attributes.
+  - [ ] field names matching endpoints.
+  - [ ] security contract.
+- [ ] V2 supplies:
+  - [ ] classes.
+  - [ ] labels.
+  - [ ] button content.
+  - [ ] validation placement.
+  - [ ] surrounding section layout.
+- [ ] Starter supplies neutral classes/copy in the same pattern.
+- [ ] Remove from V2 auth visual view:
+  - [ ] raw `<form method="post">` for sign-in/register/forgot/reset.
+  - [ ] direct `<AntiforgeryToken />` in auth view.
+  - [ ] hardcoded hidden names for `ReturnUrl`, `CaptchaToken`, `Email`, `Token`.
+- [ ] Add tests:
+  - [ ] auth forms post to Presentation auth routes.
+  - [ ] form field names match endpoint form DTOs.
+  - [ ] register disabled policy does not render submit form.
+  - [ ] reset form includes token/email only through Presentation pattern.
+- [ ] Exit criteria:
+  - [ ] V2 does not self-author auth POST contracts.
+
+## Phase F1.35 - Move checkout form contract into Presentation
+
+Goal: checkout mutation contract is fixed and reusable; host only controls layout.
+
+- [ ] Add Presentation components/patterns:
+  - [ ] `StorefrontCheckoutForm`
+  - [ ] `StorefrontCheckoutAddressFields`
+  - [ ] `StorefrontCheckoutPaymentFields`
+  - [ ] `StorefrontCheckoutSubmit`
+  - [ ] optional `StorefrontCheckoutLegalAcknowledgement`
+- [ ] Presentation owns:
+  - [ ] `form action`.
+  - [ ] antiforgery.
+  - [ ] `CartVersion`.
+  - [ ] `IdempotencyKey`.
+  - [ ] checkout session identity if required.
+  - [ ] address field names.
+  - [ ] required country/state behavior.
+  - [ ] billing/shipping flags.
+  - [ ] payment method field name.
+  - [ ] submit semantics.
+- [ ] V2 owns:
+  - [ ] grid layout.
+  - [ ] section order.
+  - [ ] labels/copy.
+  - [ ] CSS classes.
+  - [ ] summary placement.
+- [ ] Starter uses the same Presentation form patterns.
+- [ ] Remove from V2 checkout view:
+  - [ ] raw `<form method="post">` for checkout.
+  - [ ] direct `<AntiforgeryToken />`.
+  - [ ] direct hidden `CartVersion`.
+  - [ ] direct hidden `IdempotencyKey`.
+  - [ ] direct `PaymentMethodKey` field ownership.
+  - [ ] direct `ShippingCountryCode` contract ownership.
+- [ ] Add tests:
+  - [ ] checkout form field names match Presentation endpoint DTO.
+  - [ ] idempotency key is always posted.
+  - [ ] cart version is always posted.
+  - [ ] country options render from context.
+  - [ ] single payment method still posts the canonical key.
+- [ ] Exit criteria:
+  - [ ] V2 checkout view renders form pattern, not security/field contract.
+
+## Phase F1.36 - Move currency and logout mutation patterns
+
+Goal: small mutation forms are fixed by Presentation, not manually written in Header/Account visual components.
+
+- [ ] Add Presentation components/patterns:
+  - [ ] `StorefrontCurrencyPreferenceForm`
+  - [ ] `StorefrontLogoutForm`
+- [ ] Presentation owns:
+  - [ ] action.
+  - [ ] method.
+  - [ ] antiforgery.
+  - [ ] hidden return URL.
+  - [ ] currency field name.
+  - [ ] safe return URL.
+- [ ] V2 owns:
+  - [ ] select/button markup through child content or class options.
+  - [ ] mobile/desktop placement.
+- [ ] Remove from V2:
+  - [ ] raw currency POST form in `StorefrontHeader`.
+  - [ ] raw logout POST form in `StorefrontAccountMenu`.
+  - [ ] direct `HttpContext` return URL construction.
+- [ ] Add tests:
+  - [ ] currency form posts `CurrencyCode` and safe `ReturnUrl`.
+  - [ ] logout form posts safe `ReturnUrl`.
+  - [ ] external return URL cannot be rendered.
+- [ ] Exit criteria:
+  - [ ] V2 visual components no longer author mutation form contracts.
+
+## Phase F1.37 - Consolidate product decision context in Presentation
+
+Goal: V2 product and product-card views render decisions prepared by Presentation.
+
+Current note: Presentation already has product mappers. This phase should consolidate existing mapper logic and remove V2 duplication, not create a second product business layer.
+
+- [ ] Extend Presentation product context/view models:
+
+```csharp
+StorefrontProductPageContext
+StorefrontProductPricingView
+StorefrontProductAvailabilityView
+StorefrontProductPurchaseView
+StorefrontProductVariantView
+StorefrontProductBadgeView
+StorefrontProductNavigationView
+```
+
+- [ ] Presentation supplies:
+  - [ ] `CanAddToCart`.
+  - [ ] `AvailabilityState`.
+  - [ ] `AvailabilityLabel`.
+  - [ ] `StockLabel`.
+  - [ ] `PriceDisplay`.
+  - [ ] `ComparePriceDisplay`.
+  - [ ] `DefaultSkuLabel`.
+  - [ ] `DefaultGtinLabel`.
+  - [ ] `PurchaseMessage`.
+  - [ ] `PurchaseBlockMessage`.
+  - [ ] `MinQuantity`.
+  - [ ] `MaxQuantity`.
+  - [ ] `InitialStockValue`.
+  - [ ] variant option labels/prices/stock labels.
+  - [ ] fresh/new badge state.
+- [ ] Presentation catalog summary mapper supplies direct-add/card decisions:
+  - [ ] purchase paused.
+  - [ ] direct add allowed.
+  - [ ] direct add stock value.
+  - [ ] purchase block message.
+  - [ ] formatted display/compare prices.
+- [ ] V2 only controls:
+  - [ ] CSS class by `AvailabilityState`.
+  - [ ] badge placement.
+  - [ ] gallery layout.
+  - [ ] variant list layout.
+  - [ ] non-business visual copy.
+- [ ] Remove from V2 direct reads/calculations:
+  - [ ] `PurchaseBlockReasons`.
+  - [ ] `ManageStock`.
+  - [ ] `AvailableQuantity`.
+  - [ ] `MinOrderQuantity`.
+  - [ ] `MaxOrderQuantity`.
+  - [ ] `EffectivePrice` fallback.
+  - [ ] raw variant stock interpretation.
+  - [ ] raw fresh-arrival date arithmetic.
+- [ ] Add tests:
+  - [ ] mapper converts purchase block reason to display message.
+  - [ ] mapper sets add-to-cart disabled for hard block.
+  - [ ] mapper formats compare price only when greater than display price.
+  - [ ] mapper handles unmanaged stock.
+  - [ ] V2 product view no longer references raw business fields.
+- [ ] Exit criteria:
+  - [ ] V2 product views consume prepared context only.
+
+## Phase F1.38 - Tighten required visual view registration
+
+Goal: production storefront cannot silently use empty fallback for required slots.
+
+- [ ] Replace production use of:
+
+```csharp
+StorefrontFoundationViewSet.CreateMinimal(...)
+```
+
+- [ ] V2 registration must create full explicit `StorefrontFoundationViewSet`:
+  - [ ] `ApplicationHead`.
+  - [ ] `ApplicationScripts`.
+  - [ ] `MainLayout`.
+  - [ ] `HomePage`.
+  - [ ] `CategoryPage`.
+  - [ ] `ProductPage`.
+  - [ ] `SearchPage`.
+  - [ ] `DealsPage`.
+  - [ ] `NewReleasesPage`.
+  - [ ] `ContentPage`.
+  - [ ] `CartPage`.
+  - [ ] `CheckoutPage`.
+  - [ ] `PaymentResultPage`.
+  - [ ] `AuthPage`.
+  - [ ] `AccountPage`.
+  - [ ] `MaintenanceState`.
+  - [ ] `NotFoundState`.
+  - [ ] `ServiceUnavailableState`.
+  - [ ] `ErrorState`.
+- [ ] Starter registration must do the same.
+- [ ] Keep `StorefrontFoundationEmptyView` only for:
+  - [ ] tests.
+  - [ ] optional visual slots, if optional slots are introduced.
+  - [ ] explicit no-op application asset slots only if documented.
+- [ ] Update validator:
+  - [ ] missing required slot fails startup.
+  - [ ] empty fallback in required production slot fails startup.
+  - [ ] route component assigned as visual slot fails if inappropriate.
+- [ ] Add tests:
+  - [ ] V2 registration does not call `CreateMinimal`.
+  - [ ] Starter registration does not call `CreateMinimal`.
+  - [ ] missing product/checkout/error slot fails options validation.
+- [ ] Exit criteria:
+  - [ ] production registration cannot hide missing visual work.
+
+## Phase F1.39 - Validate context compatibility at startup
+
+Goal: wrong slot context fails during application startup, not when a user visits the route.
+
+- [ ] Define expected context per slot:
+
+| Slot | Expected context |
+| --- | --- |
+| `HomePage` | `StorefrontHomePageContext` |
+| `CategoryPage` | `StorefrontCategoryPageContext` |
+| `ProductPage` | `StorefrontProductPageContext` |
+| `SearchPage` | `StorefrontSearchPageContext` |
+| `DealsPage` | `StorefrontDealsPageContext` |
+| `NewReleasesPage` | `StorefrontNewReleasesPageContext` |
+| `ContentPage` | `StorefrontContentPageContext` |
+| `CartPage` | `StorefrontCartPageContext` |
+| `CheckoutPage` | `StorefrontCheckoutPageContext` |
+| `PaymentResultPage` | `StorefrontPaymentResultPageContext` |
+| `AuthPage` | `StorefrontAuthPageContext` |
+| `AccountPage` | `StorefrontAccountPageContext` |
+| `MaintenanceState` | `StorefrontSystemStateContext` |
+| `NotFoundState` | `StorefrontSystemStateContext` |
+| `ServiceUnavailableState` | `StorefrontSystemStateContext` |
+| `ErrorState` | `StorefrontSystemStateContext` or explicit error context |
+
+- [ ] Update `StorefrontFoundationViewOptionsValidator` to validate:
+  - [ ] component implements `IComponent`.
+  - [ ] component has public `[Parameter] Context`.
+  - [ ] Context type is expected type or assignable.
+  - [ ] required slot is not empty fallback.
+  - [ ] component is not a route component when a visual view is expected.
+- [ ] Keep runtime `StorefrontFoundationViewTypeValidator` as defensive check.
+- [ ] Add tests:
+  - [ ] wrong product context fails `ValidateOnStart`.
+  - [ ] missing `Context` parameter fails `ValidateOnStart`.
+  - [ ] assignable context type passes.
+  - [ ] empty fallback in required slot fails.
+- [ ] Exit criteria:
+  - [ ] context mismatch is caught before first request.
+
+## Phase F1.40 - Clean V2 `_Imports.razor`
+
+Goal: visual developers should not get application/service namespaces globally.
+
+- [ ] Remove from V2 `_Imports.razor`:
+
+```text
+System.Net.Http.Json
+BlazorShop.Storefront.Models
+BlazorShop.Storefront.Services
+BlazorShop.Storefront.Services.Contracts
+Microsoft.AspNetCore.Http
+Runtime namespaces
+Client namespaces
+IConfiguration/IOptions-related namespaces if present
+```
+
+- [ ] Keep:
+  - [ ] Presentation page contexts.
+  - [ ] visual contracts.
+  - [ ] browser-safe Components primitives.
+  - [ ] Blazor rendering namespaces.
+  - [ ] V2 visual namespaces.
+  - [ ] V2.WASM component namespaces for component placement.
+- [ ] Fix compile errors by adding narrow file-level imports only when visual-safe.
+- [ ] Add guardrail:
+  - [ ] V2 `_Imports.razor` cannot import Services/Contracts/Runtime/Client/HttpContext.
+- [ ] Exit criteria:
+  - [ ] V2 visual source cannot inject application services just because global imports make it easy.
+
+## Phase F1.41 - Clean V2 dependency and namespace ownership
+
+Goal: V2 references only host visual dependencies.
+
+- [ ] Remove direct V2 project reference to:
+  - [ ] `BlazorShop.Storefront.Runtime`.
+  - [ ] `BlazorShop.Storefront.Client` if ever present.
+  - [ ] backend/core/API projects if ever present.
+- [ ] Keep V2 references:
+  - [ ] `BlazorShop.Storefront.Presentation`.
+  - [ ] `BlazorShop.Storefront.Components`.
+  - [ ] `BlazorShop.Storefront.V2.WASM`.
+  - [ ] `BlazorShop.ServiceDefaults` if bootstrap still requires it.
+  - [ ] `Microsoft.AspNetCore.Components.WebAssembly.Server` if V2 still hosts WASM.
+- [ ] Rename V2 namespaces away from generic shared names:
+
+```text
+BlazorShop.Storefront.V2.Layout
+BlazorShop.Storefront.V2.Pages
+BlazorShop.Storefront.V2.Components
+BlazorShop.Storefront.V2.Presentation
+BlazorShop.Storefront.V2.Visual
+```
+
+- [ ] Delete empty/non-visual directories:
+  - [ ] `Services/`
+  - [ ] `Services/Contracts/`
+  - [ ] `Configuration/`
+  - [ ] `Options/`
+  - [ ] `Models/`
+  - [ ] `Middleware/`
+  - [ ] `Endpoints/` if moved to Presentation.
+- [ ] Add tests:
+  - [ ] V2 csproj has no Runtime/Client reference.
+  - [ ] V2 has no source under forbidden folders.
+  - [ ] V2 namespaces do not use shared application namespace for non-visual source.
+- [ ] Exit criteria:
+  - [ ] V2 is visually identifiable by project references, folders, and namespaces.
+
+## Phase F1.42 - Prove Starter visual-only parity
+
+Goal: Starter is the neutral minimal visual consumer of the same Storefront application engine.
+
+- [ ] Switch Starter to:
+
+```csharp
+builder.Services
+    .AddStorefrontApplication(builder.Configuration)
+    .AddStarterFoundationViews();
+
+app.UseStorefrontApplication();
+app.MapStorefrontApplication<StarterFoundationViewRegistration>();
+```
+
+- [ ] Remove Starter manual registration:
+  - [ ] direct `AddStorefrontRuntime`.
+  - [ ] direct `AddStorefrontPlatformRuntime`.
+  - [ ] direct `AddStorefrontPresentation`.
+  - [ ] direct `AddRazorComponents`.
+  - [ ] direct `AddAntiforgery`.
+  - [ ] direct `UseStaticFiles`.
+  - [ ] direct `MapStorefrontPresentation`.
+  - [ ] direct `MapRazorComponents`, unless wrapped by `MapStorefrontApplication`.
+- [ ] Remove Starter application logic:
+  - [ ] service injection in pages.
+  - [ ] API loading.
+  - [ ] middleware.
+  - [ ] runtime registration.
+  - [ ] handwritten form contracts.
+  - [ ] business decisions.
+- [ ] Evaluate `StarterFeatureActivationService`:
+  - [ ] If it is visual feature toggle only, keep it under Starter visual/config namespace.
+  - [ ] If it affects capability/business behavior, move capability activation to Presentation/Runtime.
+- [ ] Add tests:
+  - [ ] Starter has no service injection in visual pages.
+  - [ ] Starter has no direct Runtime/Client usage in source.
+  - [ ] Starter host starts with shared bootstrap.
+- [ ] Exit criteria:
+  - [ ] `V2 = rich visual consumer`.
+  - [ ] `Starter = neutral visual consumer`.
+  - [ ] both use the same Presentation application engine.
+
+## Phase F1.43 - Generated storefront isolation proof
+
+Goal: prove a new storefront can be generated as visual-only without referencing V2/Starter/Runtime/Client directly.
+
+- [ ] Create or update `GeneratedProof` workflow under StorefrontBuilder QA.
+- [ ] Generated proof project contains only:
+  - [ ] `Program`.
+  - [ ] view registration.
+  - [ ] layouts.
+  - [ ] page views.
+  - [ ] visual components.
+  - [ ] CSS/assets.
+  - [ ] store-local copy.
+- [ ] Generated proof must not reference:
+  - [ ] V2.
+  - [ ] Starter.
+  - [ ] Runtime directly, unless package compatibility metadata still requires it and source does not compile against it.
+  - [ ] Client directly.
+  - [ ] Commerce Node API.
+  - [ ] Control Plane API/Web.
+  - [ ] Application/Domain/Infrastructure.
+  - [ ] `Web.SharedV2`.
+- [ ] Generated proof uses:
+  - [ ] `BlazorShop.Storefront.Presentation`.
+  - [ ] `BlazorShop.Storefront.Components`.
+  - [ ] Storefront application bootstrap.
+  - [ ] local view registration.
+- [ ] Add QA script checks:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1
+```
+
+- [ ] Exit criteria:
+  - [ ] generated proof builds.
+  - [ ] generated proof serves main routes.
+  - [ ] generated proof isolation gate passes.
+
+## Phase F1.44 - QA and closure gate
+
+Goal: close Phase 1 only after architecture, host, browser, and network gates pass.
+
+### Build gate
+
+- [ ] Build:
+
+```powershell
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
+dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj
+```
+
+### Architecture gate
+
+- [ ] Focused tests prove:
+  - [ ] V2 has zero application services.
+  - [ ] V2 has zero middleware.
+  - [ ] V2 has zero client/runtime injection.
+  - [ ] V2 has zero application data loading.
+  - [ ] V2 has zero manual mutation contracts.
+  - [ ] V2 has zero business decisions.
+  - [ ] V2 has zero route/SEO/status ownership.
+  - [ ] Starter has the same visual-only boundary.
+  - [ ] Generated proof has the same isolation boundary.
+- [ ] Run:
+
+```powershell
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests"
+```
+
+### Host-independent DI gate
+
+- [ ] Test `AddStorefrontApplication()` can resolve application graph without V2 or Starter registrations.
+- [ ] Test V2 and Starter only add view registrations and host assemblies.
+- [ ] Test no Presentation service references V2/Starter/generated storefront projects.
+
+### HTTP smoke gate
+
+- [ ] Run V2 host smoke:
+  - [ ] `/`
+  - [ ] category route.
+  - [ ] product route.
+  - [ ] search route.
+  - [ ] content route.
+  - [ ] cart route.
+  - [ ] checkout route.
+  - [ ] payment result route.
+  - [ ] sign in.
+  - [ ] register.
+  - [ ] forgot password.
+  - [ ] reset password.
+  - [ ] account route.
+  - [ ] maintenance route.
+  - [ ] not found route.
+  - [ ] `robots.txt`.
+  - [ ] `sitemap.xml`.
+- [ ] Run Starter host smoke for the same route set where supported.
+
+### Browser QA gate
+
+- [ ] Start local stack:
+
+```powershell
+.\scripts\run-v2-local.ps1 -StopExisting
+```
+
+- [ ] Playwright browser tests:
+  - [ ] product render.
+  - [ ] add to cart.
+  - [ ] cart update/remove.
+  - [ ] checkout start.
+  - [ ] COD place order.
+  - [ ] sign in.
+  - [ ] register disabled policy.
+  - [ ] password recovery UI submit path.
+  - [ ] account profile.
+  - [ ] address book.
+  - [ ] order list/detail.
+  - [ ] logout.
+  - [ ] currency preference.
+  - [ ] public redirect.
+  - [ ] store maintenance.
+  - [ ] not found.
+
+### Network audit gate
+
+- [ ] Browser only calls:
+  - [ ] same-origin BFF endpoints.
+  - [ ] static assets.
+  - [ ] media.
+- [ ] Browser must not call:
+  - [ ] direct Commerce Node `api/storefront/stores/{storeKey}/*`.
+  - [ ] Commerce Admin `api/commerce/*`.
+  - [ ] Control Plane APIs.
+  - [ ] removed `api/internal/*`.
+  - [ ] legacy `/api/public/*`.
+
+### CI gate
+
+- [ ] Add required CI checks or documented CI commands for:
+  - [ ] visual-only architecture tests.
+  - [ ] host-independent DI tests.
+  - [ ] generated proof isolation.
+  - [ ] Storefront client regeneration gate if contract touched.
+  - [ ] browser E2E release suite before production.
+
+- [ ] Stop local stack if started:
+
+```powershell
+.\scripts\stop-v2-local.ps1
+```
+
+## Final definition of done
+
+- [ ] Presentation owns application bootstrap.
+- [ ] Presentation owns Runtime registration.
+- [ ] Presentation owns current-store middleware.
+- [ ] Presentation owns public redirect middleware.
+- [ ] Presentation owns rate limiting and BFF security policy.
+- [ ] Presentation owns navigation providers.
+- [ ] Presentation creates Header/Footer/Account contexts.
+- [ ] V2 Header/Footer/Account only render context.
+- [ ] Presentation owns auth form contracts/patterns.
+- [ ] Presentation owns checkout form contract/pattern.
+- [ ] Presentation owns currency/logout mutation contracts/patterns.
+- [ ] Presentation owns product purchase/price/stock presentation decisions.
+- [ ] Required visual slots cannot silently fall back to empty components.
+- [ ] Context compatibility is validated at startup.
+- [ ] V2 does not inject `IStorefront*` services.
+- [ ] V2 does not use `HttpClient`, Runtime, or Client.
+- [ ] V2 has no Middleware, Services, or shared Contracts.
+- [ ] V2 has no direct Runtime project/package reference.
+- [ ] V2 only contains thin host shell and visual source.
+- [ ] Starter reaches the same visual-only boundary.
+- [ ] GeneratedProof works independently.
+- [ ] Architecture, smoke, browser QA, and network audit pass.
+- [ ] CI protects the boundary.
+- [ ] `docs/architecture/03-runtime-boundaries.md` and `docs/architecture/10-v2-contract-ownership.md` are updated to match the final ownership.
+
+## Autoplan decision audit
+
+| Decision | Result | Reason |
+| --- | --- | --- |
+| Make V2 visual-only | Approved | Current source proves V2 still owns application policy; future generated storefronts need a clean visual consumer pattern. |
+| Move bootstrap to Presentation | Approved | Presentation already owns App/Routes/BFF/page services and is the right application engine boundary. |
+| Keep Runtime separate | Approved | Runtime remains server/BFF generated-client integration; collapsing it into Presentation would blur package responsibilities. |
+| Move current-store and redirect middleware | Approved | These policies must be identical for V2, Starter, and generated storefronts. |
+| Move auth/checkout forms into Presentation patterns | Approved with constraint | Presentation owns field/security contract; hosts keep layout/classes/copy. |
+| Product decision logic | Approved as consolidation | Presentation already has mappers; remove V2 duplication instead of adding a second decision layer. |
+| Clean Starter too | Required | Starter currently composes application graph manually; visual-only boundary must apply to both rich and minimal hosts. |
+| GeneratedProof | Required | Without proof, generated storefronts can still drift into copying V2 logic. |
+| Browser QA | Required | Cart/account/checkout/order flows are integration-heavy; build/smoke tests are not enough for production confidence. |
