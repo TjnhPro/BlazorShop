@@ -120,11 +120,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontLocalCart_PostsCurrencyCode()
         {
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+            var applicationScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var cartLocalContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/Contracts/StorefrontCartLocalContracts.cs");
 
             Assert.Contains("CurrencyCode: (button.dataset.currencyCode", script);
             Assert.Contains("CurrencyCode: payload.CurrencyCode || null", script);
+            Assert.Contains("cartApiRoute = \"/api/cart\"", applicationScript);
             Assert.Contains("CurrencyCode = request.CurrencyCode", cartEndpoints);
             Assert.Contains("public string? CurrencyCode { get; set; }", cartLocalContracts);
         }
@@ -166,7 +168,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("const selectionPreviewSelector", script);
             Assert.Contains("collectSelectedAttributes", script);
             Assert.Contains("SelectedAttributes: payload.SelectedAttributes || null", script);
-            Assert.Contains("/api/product-selection-preview", script);
+            Assert.Contains("getStorefrontApplication().productSelection.preview", script);
+            Assert.Contains("/api/product-selection-preview", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js"));
             Assert.Contains("syncGalleryMainImage(container, preview.primaryImageUrl)", script);
             Assert.Contains("container.dataset.mainImageUrl = preview.primaryImageUrl", script);
 

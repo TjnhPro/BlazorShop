@@ -77,6 +77,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var banner = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Security/StorefrontConsentBanner.razor");
             var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+            var applicationScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
 
             Assert.Contains("<StorefrontConsentBanner />", layout, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-banner", banner, StringComparison.Ordinal);
@@ -86,8 +87,10 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("/api/consent/current", consentEndpoints, StringComparison.Ordinal);
             Assert.Contains("/api/consent/revoke", consentEndpoints, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-manage", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor"), StringComparison.Ordinal);
-            Assert.Contains("sendConsentRequest", script, StringComparison.Ordinal);
-            Assert.Contains("readAntiforgeryHeader", script, StringComparison.Ordinal);
+            Assert.Contains("getStorefrontApplication().consent.current()", script, StringComparison.Ordinal);
+            Assert.Contains("getStorefrontApplication().consent.save(selection)", script, StringComparison.Ordinal);
+            Assert.Contains("getStorefrontApplication().consent.revoke()", script, StringComparison.Ordinal);
+            Assert.Contains("readAntiforgeryHeader", applicationScript, StringComparison.Ordinal);
         }
 
         private static string ReadRepositoryFile(string relativePath)

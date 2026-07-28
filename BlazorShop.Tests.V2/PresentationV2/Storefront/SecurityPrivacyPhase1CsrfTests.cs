@@ -24,7 +24,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontCartJavaScript_SendsAntiforgeryHeaderForMutationsOnly()
         {
-            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
 
             Assert.Contains("blazorshop-antiforgery-token", script, StringComparison.Ordinal);
             Assert.Contains("blazorshop-antiforgery-header", script, StringComparison.Ordinal);

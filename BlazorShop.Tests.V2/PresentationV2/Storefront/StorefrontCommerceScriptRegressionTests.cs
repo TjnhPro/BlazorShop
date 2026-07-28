@@ -32,6 +32,35 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("if (!variantSelectSelector && canAddToCart !== \"true\" && productStock <= 0)", script);
         }
 
+        [Fact]
+        public void F1_47_V2Script_IsVisualOnlyAndPresentationOwnsApplicationTransport()
+        {
+            var visualScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+            var applicationScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
+
+            Assert.DoesNotContain("fetch(", visualScript, StringComparison.Ordinal);
+            Assert.DoesNotContain("/api/cart", visualScript, StringComparison.Ordinal);
+            Assert.DoesNotContain("/api/consent", visualScript, StringComparison.Ordinal);
+            Assert.DoesNotContain("/api/product-selection-preview", visualScript, StringComparison.Ordinal);
+            Assert.DoesNotContain("blazorshop-antiforgery-token", visualScript, StringComparison.Ordinal);
+            Assert.DoesNotContain("blazorshop-antiforgery-header", visualScript, StringComparison.Ordinal);
+            Assert.Contains("getStorefrontApplication().cart.addLine", visualScript, StringComparison.Ordinal);
+            Assert.Contains("getStorefrontApplication().consent.save", visualScript, StringComparison.Ordinal);
+            Assert.Contains("getStorefrontApplication().productSelection.preview", visualScript, StringComparison.Ordinal);
+
+            Assert.Contains("fetch(assertLocalRoute(route), options)", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("readAntiforgeryHeader", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("let payload = null;", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("if (text) {", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("payload = JSON.parse(text);", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("value.startsWith(\"//\")", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("storefront:cart:changed", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("storefront:cart:error", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("storefront:consent:changed", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("storefront:product-selection:changed", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("storefront:product-selection:error", applicationScript, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

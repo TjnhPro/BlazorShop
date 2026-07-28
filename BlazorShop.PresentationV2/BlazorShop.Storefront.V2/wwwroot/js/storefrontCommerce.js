@@ -1,5 +1,4 @@
 (function () {
-  const cartApiRoute = "/api/cart";
   const buttonSelector = "[data-storefront-add-to-cart]";
   const badgeSelector = "[data-storefront-cart-badge]";
   const selectionPreviewSelector = "[data-storefront-selection-preview]";
@@ -16,11 +15,9 @@
   const galleryNextSelector = "[data-storefront-gallery-next]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
-  const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
-  const antiforgeryHeaderSelector = 'meta[name="blazorshop-antiforgery-header"]';
   const consentBannerSelector = "[data-storefront-consent-banner]";
   const consentManageSelector = "[data-storefront-consent-manage]";
-  const cartChangedEventName = "blazorshop:cart-changed";
+  const storefrontApplication = window.blazorShopStorefront?.application;
   const pendingToastStorageKey = "blazorshop:storefront:pending-toast";
   const buttonResetDelayMs = 1600;
   const toastDurationMs = 5000;
@@ -43,43 +40,14 @@
   function applyCartSummary(summary) {
     const count = parseInteger(summary?.count ?? summary?.Count, 0);
     updateBadgesFromCount(count);
-    document.dispatchEvent(new CustomEvent(cartChangedEventName, { detail: { count } }));
   }
 
-  function readAntiforgeryHeader() {
-    const token = document.querySelector(antiforgeryTokenSelector)?.getAttribute("content");
-    const headerName = document.querySelector(antiforgeryHeaderSelector)?.getAttribute("content") || "X-CSRF-TOKEN";
-    return token ? { headerName, token } : null;
-  }
-
-  async function sendConsentRequest(route, method, body) {
-    const normalizedMethod = (method || "GET").toUpperCase();
-    const options = {
-      method: normalizedMethod,
-      credentials: "same-origin",
-      headers: { "Accept": "application/json" }
-    };
-
-    if (normalizedMethod !== "GET") {
-      const antiforgery = readAntiforgeryHeader();
-      if (antiforgery) {
-        options.headers[antiforgery.headerName] = antiforgery.token;
-      }
+  function getStorefrontApplication() {
+    if (!storefrontApplication) {
+      throw new Error("Storefront application commands are unavailable.");
     }
 
-    if (body !== undefined) {
-      options.headers["Content-Type"] = "application/json";
-      options.body = JSON.stringify(body);
-    }
-
-    const response = await fetch(route, options);
-    const text = await response.text();
-    const payload = text ? JSON.parse(text) : null;
-    if (!response.ok) {
-      throw new Error(payload?.message || payload?.Message || "Consent could not be updated.");
-    }
-
-    return payload;
+    return storefrontApplication;
   }
 
   function initConsentBanner() {
@@ -109,7 +77,7 @@
     };
 
     const save = async (selection) => {
-      const state = await sendConsentRequest("/api/consent", "POST", selection);
+      const state = await getStorefrontApplication().consent.save(selection);
       applyState({ ...state, bannerRequired: false });
     };
 
@@ -123,7 +91,7 @@
       void save({ preferences: true, analytics: true, marketing: true });
     });
     banner.querySelector("[data-storefront-consent-revoke]")?.addEventListener("click", () => {
-      void sendConsentRequest("/api/consent/revoke", "POST")
+      void getStorefrontApplication().consent.revoke()
         .then(applyState)
         .catch(() => banner.classList.add("hidden"));
     });
@@ -133,44 +101,14 @@
       });
     });
 
-    void sendConsentRequest("/api/consent/current", "GET")
+    void getStorefrontApplication().consent.current()
       .then(applyState)
       .catch(() => banner.classList.add("hidden"));
   }
 
-  async function sendCartRequest(route, method, body) {
-    const normalizedMethod = (method || "GET").toUpperCase();
-    const options = {
-      method: normalizedMethod,
-      credentials: "same-origin",
-      headers: { "Accept": "application/json" }
-    };
-
-    if (normalizedMethod !== "GET") {
-      const antiforgery = readAntiforgeryHeader();
-      if (antiforgery) {
-        options.headers[antiforgery.headerName] = antiforgery.token;
-      }
-    }
-
-    if (body !== undefined) {
-      options.headers["Content-Type"] = "application/json";
-      options.body = JSON.stringify(body);
-    }
-
-    const response = await fetch(route, options);
-    const text = await response.text();
-    const payload = text ? JSON.parse(text) : null;
-    if (!response.ok) {
-      throw new Error(payload?.message || payload?.Message || "Cart could not be updated.");
-    }
-
-    return payload;
-  }
-
   async function refreshCartSummary() {
     try {
-      const summary = await sendCartRequest(cartApiRoute, "GET");
+      const summary = await getStorefrontApplication().cart.current();
       applyCartSummary(summary);
     } catch {
       updateBadgesFromCount(0);
@@ -536,7 +474,7 @@
     }
 
     try {
-      const preview = await sendCartRequest(container.dataset.previewRoute || "/api/product-selection-preview", "POST", request.payload);
+      const preview = await getStorefrontApplication().productSelection.preview(container.dataset.previewRoute, request.payload);
       applySelectionPreview(container, preview);
     } catch (error) {
       const button = request.button;
@@ -639,7 +577,7 @@
 
     button.disabled = true;
     try {
-      const summary = await sendCartRequest(`${cartApiRoute}/lines`, "POST", {
+      const summary = await getStorefrontApplication().cart.addLine({
         ProductId: payload.ProductId,
         ProductVariantId: payload.ProductVariantId || null,
         SelectedAttributes: payload.SelectedAttributes || null,

@@ -149,45 +149,58 @@ Goal: move browser application behavior out of V2 while preserving existing brow
 
 ### Tasks
 
-- [ ] Create Presentation-owned static asset path for core app JS, for example `BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js`.
-- [ ] Move these behaviors from V2 JS into Presentation JS:
-  - [ ] same-origin local API client wrapper.
-  - [ ] antiforgery header/meta lookup.
-  - [ ] consent current/accept/revoke commands.
-  - [ ] cart get/add/update/remove/clear/recalculate commands.
-  - [ ] product-selection preview command.
-  - [ ] add-to-cart command orchestration.
-  - [ ] consistent error payload handling.
-  - [ ] semantic event dispatch for visual code.
-- [ ] Keep only V2 visual DOM behavior in V2 JS, for example:
-  - [ ] menu toggles.
-  - [ ] visual feedback animations.
-  - [ ] V2-specific CSS class toggles.
-  - [ ] V2-specific visual hooks that subscribe to Presentation app events.
-- [ ] Remove user-facing final copy from core JS where possible; emit status/code/default technical fallback.
-- [ ] Define a stable browser event contract:
-  - [ ] `storefront:cart:changed`
-  - [ ] `storefront:cart:error`
-  - [ ] `storefront:consent:changed`
-  - [ ] `storefront:product-selection:changed`
-  - [ ] `storefront:product-selection:error`
-- [ ] Ensure empty 204/empty-success responses are handled without JSON parse failure.
-- [ ] Ensure absolute/protocol-relative URLs remain rejected for local BFF calls.
+- [x] Create Presentation-owned static asset path for core app JS, for example `BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js`.
+- [x] Move these behaviors from V2 JS into Presentation JS:
+  - [x] same-origin local API client wrapper.
+  - [x] antiforgery header/meta lookup.
+  - [x] consent current/accept/revoke commands.
+  - [x] cart get/add/update/remove/clear/recalculate commands.
+  - [x] product-selection preview command.
+  - [x] add-to-cart command orchestration.
+  - [x] consistent error payload handling.
+  - [x] semantic event dispatch for visual code.
+- [x] Keep only V2 visual DOM behavior in V2 JS, for example:
+  - [x] menu toggles.
+  - [x] visual feedback animations.
+  - [x] V2-specific CSS class toggles.
+  - [x] V2-specific visual hooks that subscribe to Presentation app events.
+- [x] Remove user-facing final copy from core JS where possible; emit status/code/default technical fallback.
+- [x] Define a stable browser event contract:
+  - [x] `storefront:cart:changed`
+  - [x] `storefront:cart:error`
+  - [x] `storefront:consent:changed`
+  - [x] `storefront:product-selection:changed`
+  - [x] `storefront:product-selection:error`
+- [x] Ensure empty 204/empty-success responses are handled without JSON parse failure.
+- [x] Ensure absolute/protocol-relative URLs remain rejected for local BFF calls.
 
 ### Tests
 
-- [ ] JavaScript-focused Playwright test: consent accept/revoke/current flow still works.
-- [ ] JavaScript-focused Playwright test: product selection preview updates availability/quantity/add-to-cart state.
-- [ ] JavaScript-focused Playwright test: add-to-cart updates cart badge and cart page.
-- [ ] Architecture test: V2 `wwwroot/js` cannot contain `/api/cart`, `/api/consent`, `/api/product-selection-preview`, `fetch(`, or antiforgery token lookup unless explicitly allowlisted as visual-only.
-- [ ] Architecture test: Presentation owns same-origin BFF fetch calls.
+- [x] JavaScript-focused Playwright test: consent accept/revoke/current flow still works.
+- [x] JavaScript-focused Playwright test: product selection preview updates availability/quantity/add-to-cart state.
+- [x] JavaScript-focused Playwright test: add-to-cart updates cart badge and cart page.
+- [x] Architecture test: V2 `wwwroot/js` cannot contain `/api/cart`, `/api/consent`, `/api/product-selection-preview`, `fetch(`, or antiforgery token lookup unless explicitly allowlisted as visual-only.
+- [x] Architecture test: Presentation owns same-origin BFF fetch calls.
 
 ### Definition of Done
 
-- [ ] V2 has no application transport JavaScript.
-- [ ] Presentation JS owns browser application commands.
-- [ ] V2 JS is visual-only and replaceable by Starter/generated stores.
-- [ ] Existing user flows continue passing in browser.
+- [x] V2 has no application transport JavaScript.
+- [x] Presentation JS owns browser application commands.
+- [x] V2 JS is visual-only and replaceable by Starter/generated stores.
+- [x] Existing user flows continue passing in browser.
+
+### F1.47 Notes
+
+- `BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js` now owns same-origin `fetch`, antiforgery lookup, local route rejection, cart/consent/product-selection command APIs, empty-response-safe JSON parsing, and the `storefront:*` event contract.
+- `BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js` keeps DOM collection, visual feedback, toasts, gallery/address behavior, and calls `window.blazorShopStorefront.application`; it no longer contains `fetch(`, `/api/cart`, `/api/consent`, `/api/product-selection-preview`, or antiforgery meta lookup.
+- Verification:
+  - `node --check BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js` - passed.
+  - `node --check BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js` - passed.
+  - `node scripts/qa/storefront-application-js-split-proof.js` - passed Playwright JS proof for consent current/save/revoke, product-selection preview, add-to-cart badge update, antiforgery headers, and event dispatch.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests.StorefrontV2_RendersConsentBannerAndUsesLocalProxyEndpoints|FullyQualifiedName~StorefrontBrandingMarkupTests.StorefrontLocalCart_PostsCurrencyCode|FullyQualifiedName~StorefrontBrandingMarkupTests.ProductPage_UsesBackendSelectionPreviewForVariantAttributes" -v:minimal` - passed 9/9.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.SignIn_RendersPresentationOwnedSecurityHeadAndCoreScriptsWithV2VisualHead|FullyQualifiedName~StorefrontV2HostSmokeTests.CartApi_PostLine_SetsHttpOnlyCartToken_AndDoesNotSendUnitPrice|FullyQualifiedName~StorefrontV2HostSmokeTests.CartApi_MutationWithoutAntiforgeryToken_ReturnsBadRequest|FullyQualifiedName~StorefrontV2HostSmokeTests.ConsentApi_PostWithAntiforgeryToken_ReturnsSavedState" -v:minimal` - passed 7/7.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests" -v:minimal` - passed 12/12.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` - passed generated proof/static validation/isolation gate.
 
 ## Phase F1.48 - Starter And StorefrontBuilder Hardening
 
