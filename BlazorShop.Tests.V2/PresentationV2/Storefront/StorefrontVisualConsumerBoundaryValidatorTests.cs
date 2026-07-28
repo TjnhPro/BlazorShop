@@ -49,8 +49,7 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
                 "BlazorShop.Storefront.Components",
                 "Microsoft.AspNetCore.Components.WebAssembly.Server",
             ],
-            AllowedSourceRelativePaths: [],
-            AllowRuntimeClientPackageMetadata: true));
+            AllowedSourceRelativePaths: []));
 
         Assert.Empty(violations);
     }
@@ -91,7 +90,17 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
                 """);
             File.WriteAllText(
                 Path.Combine(fixtureRoot, "Components", "BadBrowser.js"),
-                "fetch('/api/consent'); new XMLHttpRequest();");
+                """
+                document.addEventListener("storefront:product-purchase:add-line-succeeded", () => {});
+                const app = window.blazorShopStorefront.application;
+                window.blazorShopStorefront.application.cart.clear();
+                app.cart.addLine({ ProductId: "1", ProductVariantId: "2", SelectedAttributes: [], CurrencyCode: "USD" });
+                app.productSelection.preview("/api/product-selection-preview", { productId: "1", productVariantId: "2", selectedAttributes: [], currencyCode: "USD" });
+                if (preview.canAddToCart && preview.stockQuantity > 0 && preview.isAvailable && preview.validationMessages.length === 0) {
+                    console.log(preview.unitPrice, preview.formattedUnitPrice, preview.formattedComparePrice, preview.sku, preview.gtin);
+                }
+                fetch('/api/consent'); new XMLHttpRequest();
+                """);
             File.WriteAllText(
                 Path.Combine(fixtureRoot, "Components", "BadClient.cs"),
                 "public sealed class BadClient : IStorefrontCartClient { }");
@@ -111,6 +120,15 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             Assert.Contains(violations, violation => violation.Forbidden == "fetch(");
             Assert.Contains(violations, violation => violation.Forbidden == "XMLHttpRequest");
             Assert.Contains(violations, violation => violation.Forbidden == ": IStorefront");
+            Assert.Contains(violations, violation => violation.Forbidden == "application.cart");
+            Assert.Contains(violations, violation => violation.Forbidden == "cart.addLine");
+            Assert.Contains(violations, violation => violation.Forbidden == "productSelection.preview");
+            Assert.Contains(violations, violation => violation.Forbidden == "ProductId:");
+            Assert.Contains(violations, violation => violation.Forbidden == "productId:");
+            Assert.Contains(violations, violation => violation.Forbidden == "canAddToCart");
+            Assert.Contains(violations, violation => violation.Forbidden == "stockQuantity");
+            Assert.Contains(violations, violation => violation.Forbidden == "formattedUnitPrice");
+            Assert.DoesNotContain(violations, violation => violation.Forbidden == "storefront:product-purchase:add-line-succeeded");
             Assert.All(violations, violation =>
             {
                 Assert.False(string.IsNullOrWhiteSpace(violation.RelativePath));

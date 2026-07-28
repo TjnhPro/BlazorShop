@@ -130,13 +130,19 @@ Canonical structure proof:
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 ```
 
-Canonical foundation functional proof:
+Canonical fast foundation functional proof:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
 ```
 
-`Structure` generates/restores/builds the proof project, runs static validation, runs isolation, and runs the shared visual consumer boundary validator. `FoundationFunctional` also verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. `-RunBrowserQa` remains a compatibility alias for functional proof.
+Canonical full foundation functional proof:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
+```
+
+`Structure` generates/restores/builds the proof project, runs static validation, runs isolation, and runs the shared visual consumer boundary validator. `FoundationFunctionalFast` uses mocked same-origin Presentation BFF routes in Playwright and writes `fast-foundation-functional-report.md` under the generated artifact. `FoundationFunctionalFull` verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. `FoundationFunctional` and `-RunBrowserQa` remain compatibility aliases for the full proof.
 
 Generated storefront validation must fail when generated source declares `@page`, imports `BlazorShop.Storefront.Components.Features`, or recreates protected Presentation-owned application logic; normal generation consumes Presentation plus `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
 

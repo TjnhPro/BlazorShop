@@ -28,6 +28,7 @@ jobs:
           cache: npm
           cache-dependency-path: |
             tools/openapi-generator-smoke/package-lock.json
+            tools/BlazorShop.AI.StorefrontBuilder/package-lock.json
             BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/package-lock.json
             BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json
 
@@ -36,6 +37,9 @@ jobs:
 
       - name: Restore OpenAPI generator smoke dependencies
         run: npm ci --prefix tools/openapi-generator-smoke
+
+      - name: Restore StorefrontBuilder node dependencies
+        run: npm ci --prefix tools/BlazorShop.AI.StorefrontBuilder
 
       - name: Restore
         run: dotnet restore BlazorShop.sln
@@ -52,6 +56,10 @@ jobs:
       - name: StorefrontBuilder generated proof structure gate
         shell: pwsh
         run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+
+      - name: StorefrontBuilder generated proof fast foundation functional gate
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
 
       - name: Storefront client regeneration gate
         shell: pwsh

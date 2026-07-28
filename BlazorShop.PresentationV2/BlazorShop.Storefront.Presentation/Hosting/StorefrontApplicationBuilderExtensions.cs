@@ -16,6 +16,8 @@ public static class StorefrontApplicationBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
+        app.UseForwardedHeaders();
+
         if (app.Environment.IsDevelopment())
         {
             app.UseWebAssemblyDebugging();
@@ -27,7 +29,6 @@ public static class StorefrontApplicationBuilderExtensions
         }
 
         app.UseHttpsRedirection();
-        app.UseForwardedHeaders();
         app.UseStaticFiles();
         app.UseMiddleware<StorefrontCurrentStoreMiddleware>();
         app.UseMiddleware<StorefrontPublicRedirectMiddleware>();

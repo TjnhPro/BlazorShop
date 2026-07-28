@@ -33,6 +33,17 @@ public sealed class StorefrontApplicationBootstrapTests
     }
 
     [Fact]
+    public void StorefrontApplicationBootstrap_RunsForwardedHeadersBeforeHttpsRedirection()
+    {
+        var app = ReadRepositoryFile(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs");
+
+        Assert.True(
+            app.IndexOf("app.UseForwardedHeaders();", StringComparison.Ordinal) <
+            app.IndexOf("app.UseHttpsRedirection();", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void StorefrontV2Program_UsesSharedApplicationBootstrap()
     {
         var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");

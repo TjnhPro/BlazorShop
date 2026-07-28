@@ -138,6 +138,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             await Assert.ThrowsAsync<InvalidOperationException>(() => dependencies.CreateService("/").GetAsync());
         }
 
+        [Fact]
+        public async Task GetAsync_WhenSessionResolverFails_RendersAnonymousShell()
+        {
+            var dependencies = new Dependencies();
+            dependencies.SessionResolver.ThrowOnLoad = true;
+
+            var context = await dependencies.CreateService("/").GetAsync();
+
+            Assert.False(context.AccountMenu.IsAuthenticated);
+            Assert.Contains(context.AccountMenu.Links, link => link.Label == "Sign in");
+            Assert.Equal(1, dependencies.SessionResolver.CallCount);
+        }
+
         private sealed class Dependencies
         {
             private readonly DefaultHttpContext _httpContext = new();
@@ -333,9 +346,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public int CallCount { get; private set; }
 
+            public bool ThrowOnLoad { get; set; }
+
             public Task<StorefrontSessionInfo> GetCurrentUserAsync(CancellationToken cancellationToken = default)
             {
                 CallCount++;
+                if (ThrowOnLoad)
+                {
+                    throw new InvalidOperationException("Session failed.");
+                }
+
                 return Task.FromResult(Session);
             }
         }

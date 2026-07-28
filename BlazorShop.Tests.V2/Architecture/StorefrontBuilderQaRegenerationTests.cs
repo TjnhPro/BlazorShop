@@ -298,7 +298,8 @@ namespace BlazorShop.Tests.Architecture
                 "Idempotency tests",
                 "Isolation gate describe mode",
                 "Generated proof structure gate",
-                "Generated proof foundation functional browser gate",
+                "Generated proof fast foundation functional browser gate",
+                "Generated proof full foundation functional browser gate",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/**",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/**",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/**",
@@ -317,7 +318,8 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("run_browser_gates", workflow, StringComparison.Ordinal);
             Assert.Contains("-ProofLevel Structure", workflow, StringComparison.Ordinal);
-            Assert.Contains("-ProofLevel FoundationFunctional", workflow, StringComparison.Ordinal);
+            Assert.Contains("-ProofLevel FoundationFunctionalFast", workflow, StringComparison.Ordinal);
+            Assert.Contains("-ProofLevel FoundationFunctionalFull", workflow, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -337,7 +339,8 @@ namespace BlazorShop.Tests.Architecture
                 "Run shared visual consumer boundary validator",
                 "RunBrowserQa",
                 "ProofLevel",
-                "FoundationFunctional",
+                "FoundationFunctionalFast",
+                "FoundationFunctionalFull",
             })
             {
                 Assert.Contains(marker, proof, StringComparison.Ordinal);
@@ -356,12 +359,13 @@ namespace BlazorShop.Tests.Architecture
 
             foreach (var marker in new[]
             {
-                "[ValidateSet(\"Structure\", \"FoundationFunctional\")]",
+                "[ValidateSet(\"Structure\", \"FoundationFunctionalFast\", \"FoundationFunctionalFull\", \"FoundationFunctional\")]",
                 "Assert-StorefrontFixtureData",
                 "SFB-PROOF-FIXTURE-003",
                 "SFB-PROOF-FIXTURE-006",
                 "SFB-PROOF-FIXTURE-007",
                 "SFB-PROOF-FIXTURE-009",
+                "run-fast-foundation-functional.mjs",
                 "Run shared visual consumer boundary validator",
                 "StorefrontVisualConsumerBoundaryValidatorTests.F1_51_SharedValidator_PassesGeneratedProofWhenPresent",
             })
@@ -391,9 +395,11 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("data-storefront-generated-add-to-cart", composition, StringComparison.Ordinal);
             Assert.DoesNotContain("app.cart.addLine", composition, StringComparison.Ordinal);
             Assert.Contains("StorefrontBuilder generated proof structure gate", workflow, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBuilder generated proof fast foundation functional gate", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontVisualConsumerBoundaryValidatorTests", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontStarterHostSmokeTests", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontHostCompositionTests", workflow, StringComparison.Ordinal);
+            Assert.DoesNotContain("$runFullFunctionalProof", proof, StringComparison.Ordinal);
         }
 
         private static string ReadRepositoryFile(string relativePath)

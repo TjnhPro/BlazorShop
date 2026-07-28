@@ -66,13 +66,14 @@ Use focused validation for StorefrontBuilder changes:
 ```powershell
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
-.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
 .\scripts\qa\run-storefront-client-regeneration-gate.ps1
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
 
-Use `Structure` proof for CI and fast package/boundary checks. Use `FoundationFunctional` before closing foundation phases or when generated browser behavior changes.
+Use `Structure` proof for package/boundary checks. Use `FoundationFunctionalFast` for PR-safe generated browser behavior checks. Use `FoundationFunctionalFull` before release closure or when fixture-backed live generated behavior changes.
 
 When generated page behavior changes, run browser QA against the generated storefront:
 

@@ -11,7 +11,7 @@ F1.44 closed the original visual-only checklist, but the follow-up review found 
 
 Current blocker closure is complete in `docs/refactor-control-Commerce-storefront/Storefront Foundation Blocker Closure.todo.md`. F1.45-F1.53 moved the remaining application behavior to Presentation, split core and visual scripts, hardened Starter/generated boundaries, added generated functional proof, renamed Presentation namespaces, and closed this Phase 1 plan with exact evidence.
 
-## Verified current context
+## Historical Baseline Before F1.26
 
 - `BlazorShop.Storefront.V2/Program.cs` is already short, but still passes V2-owned rate limit and HTTP client resolver hooks into `AddStorefrontV2Services`.
 - `BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs` still composes Runtime, Presentation, antiforgery, rate limiting, Razor components, and shell/navigation services.

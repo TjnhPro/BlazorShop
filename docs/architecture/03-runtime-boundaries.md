@@ -144,6 +144,7 @@ Responsibilities:
 - Header, footer, account menu, auth form, checkout form, currency/logout, cart, product purchase, price, and stock presentation contexts.
 - Sitemap, robots, SEO metadata, canonical URL, structured data, redirects, and media/local endpoint composition.
 - Same-origin browser/BFF endpoint groups for cart, checkout, account, consent, preferences, media, and other browser-safe flows.
+- Presentation-owned browser action binders for product purchase, product-selection preview, add-to-cart, cart badge, and consent. Visual hosts declare semantic `data-storefront-*` descriptors; Presentation reads descriptors, builds command payloads, calls local BFF/application commands, and publishes semantic browser events.
 - View-slot contracts that let each host provide visual templates without Presentation referencing V2, Starter, or generated projects.
 
 Do not:
@@ -165,7 +166,7 @@ Responsibilities:
 - Host assembly selection for Presentation route discovery and static asset behavior.
 - Store key/base URL configuration consumed by Presentation/Runtime.
 
-Storefront V2 must not own application services, middleware, direct client/runtime injection, application data loading, manual mutation contracts, business decisions, route/SEO/status behavior, or BFF endpoint contracts. V2 visual components render Presentation contexts and may submit to Presentation-owned local routes/actions supplied in those contexts.
+Storefront V2 must not own application services, middleware, direct client/runtime injection, application data loading, manual mutation contracts, browser command payload construction, product purchase/business result interpretation, business decisions, route/SEO/status behavior, or BFF endpoint contracts. V2 visual components render Presentation contexts and semantic descriptors. V2 visual JavaScript may listen to `storefront:*` semantic events, toggle CSS, manage gallery/focus/animation, and render event-provided visual feedback, but it must not call `window.blazorShopStorefront.application.cart.*`, `.consent.*`, or `.productSelection.*` directly.
 
 It must not call Control Plane APIs and must not use Control Plane credentials.
 
@@ -215,6 +216,7 @@ Rules:
 - Generated storefronts consume `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components` directly. Presentation exposes the required Runtime dependency, and Runtime owns the generated `BlazorShop.Storefront.Client` transport dependency. Generated hosts keep Client/Runtime version metadata only for package proof compatibility and must not direct-reference Runtime or Client.
 - Generated storefronts must not reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Browser code in generated storefronts must not call Commerce Node admin/control, Control Plane, or removed `api/internal/*` routes directly.
+- Generated storefront browser code must not emit copied browser application controllers. Product purchase/add-to-cart/consent behavior comes from Presentation binders over generated descriptors. If generated visual JavaScript is introduced, it must live under `wwwroot/js/visual`, register through the visual script slot, and stay event-only with no application command invocation or command payload construction.
 - `BlazorShop.Storefront.Starter` is a neutral template input. Store-specific generated CSS, assets, pages, and analysis artifacts belong in the generated storefront project only.
 - StorefrontBuilder tooling is development-time only and is documented in [StorefrontBuilder Architecture](11-storefront-builder.md).
 

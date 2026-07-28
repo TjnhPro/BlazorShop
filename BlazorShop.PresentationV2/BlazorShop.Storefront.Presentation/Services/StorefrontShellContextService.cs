@@ -61,7 +61,10 @@ namespace BlazorShop.Storefront.Presentation.Services
         private async Task<StorefrontShellContext> LoadAsync(CancellationToken cancellationToken)
         {
             var displayTask = _displayContextProvider.GetAsync(cancellationToken);
-            var sessionTask = _sessionResolver.GetCurrentUserAsync(cancellationToken);
+            var sessionTask = LoadOptionalAsync(
+                "storefront shell customer session",
+                () => _sessionResolver.GetCurrentUserAsync(cancellationToken),
+                StorefrontSessionInfo.Anonymous);
             var categoryTask = LoadOptionalApiValueAsync(
                 "storefront shell categories",
                 () => _catalogClient.GetPublishedCategoryTreeAsync(cancellationToken),
@@ -100,9 +103,7 @@ namespace BlazorShop.Storefront.Presentation.Services
                 fallback: null);
             var consentTask = LoadConsentContextAsync(cancellationToken);
 
-            await Task.WhenAll(
-                displayTask,
-                sessionTask);
+            await displayTask;
 
             var display = await displayTask;
             var session = await sessionTask;

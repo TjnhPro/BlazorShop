@@ -50,6 +50,49 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         "ManualStorefront",
     ];
 
+    private static readonly string[] ForbiddenBrowserCommandTokens =
+    [
+        ".application.cart.",
+        ".application.consent.",
+        ".application.productSelection.",
+        "application.cart",
+        "application.consent",
+        "application.productSelection",
+        "cart.addLine",
+        "cart.updateLine",
+        "cart.removeLine",
+        "cart.clear",
+        "cart.recalculate",
+        "productSelection.preview",
+        "consent.accept",
+        "consent.revoke",
+    ];
+
+    private static readonly string[] ForbiddenBrowserPayloadTokens =
+    [
+        "ProductId:",
+        "ProductVariantId:",
+        "SelectedAttributes:",
+        "CurrencyCode:",
+        "productId:",
+        "productVariantId:",
+        "selectedAttributes:",
+        "currencyCode:",
+    ];
+
+    private static readonly string[] ForbiddenBrowserBusinessTokens =
+    [
+        "canAddToCart",
+        "stockQuantity",
+        "isAvailable",
+        "validationMessages",
+        "unitPrice",
+        "formattedUnitPrice",
+        "formattedComparePrice",
+        "sku",
+        "gtin",
+    ];
+
     private static readonly string[] ForbiddenRootFolders =
     [
         "Services",
@@ -120,26 +163,29 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
             .Select(element => element.Attribute("Include")?.Value ?? string.Empty)
             .Where(value => !string.IsNullOrWhiteSpace(value)))
         {
+            var isRuntimeOrClient = package.Equals("BlazorShop.Storefront.Runtime", StringComparison.OrdinalIgnoreCase)
+                || package.Equals("BlazorShop.Storefront.Client", StringComparison.OrdinalIgnoreCase);
+            if (isRuntimeOrClient)
+            {
+                violations.Add(StorefrontVisualBoundaryViolation.Project(
+                    profile.RelativeProjectPath,
+                    $"PackageReference:{package}",
+                    "Visual consumers must not compile against Runtime/Client packages. Version metadata is allowed only in non-project files such as props or YAML."));
+                continue;
+            }
+
             if (profile.AllowedPackageReferences.Contains(package, StringComparer.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            var isRuntimeOrClient = package.Equals("BlazorShop.Storefront.Runtime", StringComparison.OrdinalIgnoreCase)
-                || package.Equals("BlazorShop.Storefront.Client", StringComparison.OrdinalIgnoreCase);
-            if (isRuntimeOrClient && profile.AllowRuntimeClientPackageMetadata)
-            {
-                continue;
-            }
-
-            if (isRuntimeOrClient
-                || package.StartsWith("BlazorShop.CommerceNode", StringComparison.OrdinalIgnoreCase)
+            if (package.StartsWith("BlazorShop.CommerceNode", StringComparison.OrdinalIgnoreCase)
                 || package.StartsWith("BlazorShop.ControlPlane", StringComparison.OrdinalIgnoreCase))
             {
                 violations.Add(StorefrontVisualBoundaryViolation.Project(
                     profile.RelativeProjectPath,
                     $"PackageReference:{package}",
-                    "Visual consumers should not compile against runtime/client/backend packages unless the generated package metadata allowlist explicitly permits it."));
+                    "Visual consumers should not compile against backend packages; move runtime logic behind Storefront Presentation."));
             }
         }
     }
@@ -200,6 +246,34 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
                     token,
                     "Move transport, service location, endpoint routing, and application-service implementations to Storefront Presentation."));
             }
+
+            if (IsBrowserScript(relativePath))
+            {
+                ValidateBrowserScriptTokens(relativePath, source, ForbiddenBrowserCommandTokens, "Application command invocation belongs in Storefront Presentation browser binders.", violations);
+                ValidateBrowserScriptTokens(relativePath, source, ForbiddenBrowserPayloadTokens, "Command payload construction belongs in Storefront Presentation browser binders.", violations);
+                ValidateBrowserScriptTokens(relativePath, source, ForbiddenBrowserBusinessTokens, "Business result interpretation belongs in Storefront Presentation browser binders or server-side services.", violations);
+            }
+        }
+    }
+
+    private static void ValidateBrowserScriptTokens(
+        string relativePath,
+        string source,
+        IEnumerable<string> tokens,
+        string remediation,
+        List<StorefrontVisualBoundaryViolation> violations)
+    {
+        foreach (var token in tokens)
+        {
+            if (!source.Contains(token, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            violations.Add(StorefrontVisualBoundaryViolation.Source(
+                relativePath,
+                token,
+                remediation));
         }
     }
 
@@ -229,6 +303,14 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
             || fileName.StartsWith("appsettings.", StringComparison.Ordinal);
     }
 
+    private static bool IsBrowserScript(string relativePath)
+    {
+        var extension = Path.GetExtension(relativePath);
+        return extension.Equals(".js", StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(".mjs", StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(".ts", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsBuildOutput(string path)
     {
         return path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
@@ -252,8 +334,7 @@ internal sealed record StorefrontVisualConsumerProfile(
     string RelativeProjectPath,
     IReadOnlyCollection<string> AllowedProjectReferenceFragments,
     IReadOnlyCollection<string> AllowedPackageReferences,
-    IReadOnlyCollection<string> AllowedSourceRelativePaths,
-    bool AllowRuntimeClientPackageMetadata = false)
+    IReadOnlyCollection<string> AllowedSourceRelativePaths)
 {
     public string AbsoluteProjectPath => Path.Combine(AbsoluteRoot, RelativeProjectPath.Replace('/', Path.DirectorySeparatorChar));
 }

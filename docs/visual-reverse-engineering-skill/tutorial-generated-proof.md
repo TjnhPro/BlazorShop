@@ -27,12 +27,22 @@ Expected final line:
 StorefrontBuilder generated proof completed at artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof.
 ```
 
-## Foundation Functional Proof
+## Fast Foundation Functional Proof
 
-Run the fixture-backed generated browser proof:
+Run the PR-safe generated browser proof:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
+```
+
+This proof uses mocked same-origin Presentation BFF routes in Playwright, checks generated product purchase descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and rejects direct Commerce Node browser calls.
+
+## Full Foundation Functional Proof
+
+Run the fixture-backed generated browser proof before release closure:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
 ```
 
 This proof checks fixture store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection.

@@ -57,10 +57,13 @@ jobs:
       - name: Generated proof structure gate
         shell: pwsh
         run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
-      - name: Generated proof foundation functional browser gate
+      - name: Generated proof fast foundation functional browser gate
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
+      - name: Generated proof full foundation functional browser gate
         if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
         shell: pwsh
-        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
+        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
 
   expensive-live-capture:
     if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'

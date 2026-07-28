@@ -19,6 +19,12 @@ Purpose: gom các testcase phù hợp và testcase còn thiếu thành checklist
 - [x] Product detail missing-image placeholder regression found by CAT-006 was fixed by binding `ProductGallery ProductName` to the actual product name, so the accessible placeholder name is `Image unavailable for QA Missing Image Product`.
 - [x] The ignored local `.gstack` runner was aligned with the tracked 2026-07-23 `WasmProbe` retirement by waiting for real Storefront feature markers instead of `WASM active`.
 
+## Browser Action Boundary Evidence - 2026-07-28
+
+- [x] V2 Playwright browser proof covers product descriptor rendering, selection preview through the same-origin Presentation binder route, add-to-cart, cart badge update, cart page content, and zero direct Commerce Node browser calls.
+- [x] StorefrontBuilder `FoundationFunctionalFast` is the PR-safe generated browser action gate for product descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and direct Commerce Node browser-call rejection.
+- [x] StorefrontBuilder `FoundationFunctionalFull` remains the manual/scheduled/release gate for fixture-backed generated host visual smoke and commerce regression checks.
+
 ## QA Evidence - 2026-07-18 Headed Chromium Full Release Pass
 
 Command:

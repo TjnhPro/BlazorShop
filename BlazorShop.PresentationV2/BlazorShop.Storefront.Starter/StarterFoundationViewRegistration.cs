@@ -6,10 +6,10 @@ using BlazorShop.Storefront.Starter.Components.Layout;
 using BlazorShop.Storefront.Starter.Components.States;
 using BlazorShop.Storefront.Starter.Pages.Hybrid.Commerce;
 using BlazorShop.Storefront.Starter.Pages.WasmHost.Account;
-using BlazorShop.Storefront.Starter.Theme.Pages.Auth;
-using BlazorShop.Storefront.Starter.Theme.Pages.Catalog;
-using BlazorShop.Storefront.Starter.Theme.Pages.Content;
-using BlazorShop.Storefront.Starter.Theme.Pages.System;
+using BlazorShop.Storefront.Starter.Pages.Auth;
+using BlazorShop.Storefront.Starter.Pages.Catalog;
+using BlazorShop.Storefront.Starter.Pages.Content;
+using BlazorShop.Storefront.Starter.Pages.System;
 
 public static class StarterFoundationViewRegistration
 {

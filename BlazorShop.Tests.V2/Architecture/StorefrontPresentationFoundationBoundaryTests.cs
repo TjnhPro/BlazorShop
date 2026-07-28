@@ -348,6 +348,38 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterSource_DoesNotUseThemePagesTerminology()
+        {
+            var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter")
+                .Select(file => (File: file, Source: ReadRepositoryFile(file)))
+                .Where(file => file.Source.Contains(".Theme.Pages", StringComparison.Ordinal)
+                    || file.Source.Contains("Theme/Pages", StringComparison.Ordinal)
+                    || file.Source.Contains("Theme\\Pages", StringComparison.Ordinal))
+                .Select(file => file.File)
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(offenders);
+        }
+
+        [Fact]
+        public void FoundationViewSet_DoesNotExposeMinimalProductionEscapeHatch()
+        {
+            var viewSet = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs");
+            var productionCallers = EnumerateSourceFiles("BlazorShop.PresentationV2")
+                .Where(file => !file.Contains("/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs", StringComparison.Ordinal))
+                .Select(file => (File: file, Source: ReadRepositoryFile(file)))
+                .Where(file => file.Source.Contains("CreateMinimal", StringComparison.Ordinal))
+                .Select(file => file.File)
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.DoesNotContain("public static StorefrontFoundationViewSet CreateMinimal", viewSet, StringComparison.Ordinal);
+            Assert.DoesNotContain("public Type ApplicationScripts", viewSet, StringComparison.Ordinal);
+            Assert.Empty(productionCallers);
+        }
+
+        [Fact]
         public void V2AndStarter_RetireOldAppAndRoutesRootFiles()
         {
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/App.razor")));
@@ -560,6 +592,19 @@ namespace BlazorShop.Tests.Architecture
             return File.ReadAllText(RepositoryPath(relativePath));
         }
 
+        private static IEnumerable<string> EnumerateSourceFiles(string relativeFolder)
+        {
+            var root = FindRepositoryRoot();
+            var absoluteFolder = Path.Combine(root, relativeFolder.Replace('/', Path.DirectorySeparatorChar));
+            return Directory.Exists(absoluteFolder)
+                ? Directory.EnumerateFiles(absoluteFolder, "*.*", SearchOption.AllDirectories)
+                    .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
+                        && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
+                        && Path.GetExtension(path) is ".cs" or ".razor" or ".csproj" or ".props" or ".json" or ".yaml" or ".yml" or ".md")
+                    .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
+                : [];
+        }
+
         private static string RepositoryPath(string relativePath)
         {
             return Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -590,7 +635,29 @@ namespace BlazorShop.Tests.Architecture
 
         private static StorefrontFoundationViewSet CreateValidViewSet()
         {
-            return StorefrontFoundationViewSet.CreateMinimal(typeof(ValidLayoutFoundationView));
+            return new StorefrontFoundationViewSet
+            {
+                ApplicationHead = typeof(ValidLayoutFoundationView),
+                VisualScripts = typeof(ValidLayoutFoundationView),
+                MainLayout = typeof(ValidLayoutFoundationView),
+                ConsentBanner = typeof(ValidLayoutFoundationView),
+                HomePage = typeof(ValidLayoutFoundationView),
+                CategoryPage = typeof(ValidLayoutFoundationView),
+                ProductPage = typeof(ValidLayoutFoundationView),
+                SearchPage = typeof(ValidLayoutFoundationView),
+                DealsPage = typeof(ValidLayoutFoundationView),
+                NewReleasesPage = typeof(ValidLayoutFoundationView),
+                ContentPage = typeof(ValidLayoutFoundationView),
+                CartPage = typeof(ValidLayoutFoundationView),
+                CheckoutPage = typeof(ValidLayoutFoundationView),
+                PaymentResultPage = typeof(ValidLayoutFoundationView),
+                AuthPage = typeof(ValidLayoutFoundationView),
+                AccountPage = typeof(ValidLayoutFoundationView),
+                MaintenanceState = typeof(ValidLayoutFoundationView),
+                NotFoundState = typeof(ValidLayoutFoundationView),
+                ServiceUnavailableState = typeof(ValidLayoutFoundationView),
+                ErrorState = typeof(ValidLayoutFoundationView),
+            };
         }
 
         private static StorefrontFoundationViewSet CopyViewSet(

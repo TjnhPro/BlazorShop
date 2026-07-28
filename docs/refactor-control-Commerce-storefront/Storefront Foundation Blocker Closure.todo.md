@@ -1,10 +1,12 @@
 # Storefront Foundation Blocker Closure Todo
 
-Status: Proposed
+Status: Completed; reopened browser-action closure tracked by `Storefront Browser Action Boundary Closure.todo.md`
 Owner: Storefront Platform
 Created: 2026-07-28
 Source plan: `Storefront Visual Only Phase 1 Boundary.todo.md`
 Scope: close the remaining high-priority Storefront Foundation blockers before MVP so V2, Starter, and future `Storefront.{Name}` hosts are visual consumers only.
+
+2026-07-28 browser-action follow-up: F1.54-F1.56 in `Storefront Browser Action Boundary Closure.todo.md` reopened the Foundation closure because V2/generated browser action orchestration and generated functional JS remained after F1.45-F1.53. That follow-up is now the active closure record for browser action ownership, generated fast/full proof split, and final guardrails.
 
 ## Why this exists
 

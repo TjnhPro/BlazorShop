@@ -13,7 +13,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
-| Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, isolation-checks, and optionally runs fixture-backed browser proof for the canonical generated proof artifact. |
+| Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, isolation-checks, and runs structure, fast functional, or full fixture-backed browser proof for the canonical generated proof artifact. |
 | Isolation gate | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Verifies generated storefronts consume Presentation/Components as direct packages, keep Client/Runtime package metadata for transitive package proof, and avoid forbidden Runtime/Client, project, V2, Web.SharedV2, backend, core, or API references. |
 
 Generated storefront artifacts live under ignored output roots:
@@ -118,6 +118,7 @@ Current review and QA artifacts:
 
 - `review-summary.md`
 - `regeneration-report.md`
+- `fast-foundation-functional-report.md`
 - `visual-qa-report.md`
 - `functional-commerce-report.md`
 - `mvp-poc-report.md`
@@ -169,10 +170,16 @@ Canonical structure proof workflow:
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 ```
 
-Canonical foundation functional proof workflow:
+Canonical fast foundation functional proof workflow:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
+```
+
+Canonical full foundation functional proof workflow:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
 ```
 
 ## Validation Gates
@@ -191,9 +198,9 @@ The static gate checks:
 
 The isolation gate additionally restores and builds the generated storefront, packs `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components`, and scans the generated project for forbidden references. Generated projects reference Presentation and Components directly; Runtime is consumed through Presentation, and Client is packed/pinned as Runtime's generated transport dependency.
 
-`Structure` proof generates/restores/builds the proof project, runs the static StorefrontBuilder gate, runs the isolation gate, and runs the shared visual consumer boundary validator. `FoundationFunctional` additionally requires fixture-backed store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection.
+`Structure` proof generates/restores/builds the proof project, runs the static StorefrontBuilder gate, runs the isolation gate, and runs the shared visual consumer boundary validator. `FoundationFunctionalFast` is the PR gate: it starts from deterministic generated proof markup, uses mocked same-origin Presentation BFF routes in Playwright, and proves product descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and no direct Commerce Node browser calls. `FoundationFunctionalFull` is the manual/scheduled/release gate: it requires fixture-backed store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection. `FoundationFunctional` remains a compatibility alias for the full gate.
 
-Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run it through `-ProofLevel FoundationFunctional` for closure gates, or against an already running generated storefront when diagnosing. Commit the resulting QA report only when a phase explicitly asks for tracked evidence.
+Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run the fast proof on PR and closure guardrail changes; run the full proof for manual, scheduled, and release validation. Commit the resulting QA report only when a phase explicitly asks for tracked evidence.
 
 ## Deferred Scope
 

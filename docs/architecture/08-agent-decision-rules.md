@@ -97,6 +97,7 @@ Storefront root assets are intentionally explicit:
 
 - Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` allowlisted by tests.
 - Keep `_framework/blazor.web.js`, then Presentation `_content/BlazorShop.Storefront.Presentation/js/storefront.application.js`, then host visual scripts such as `storefrontCommerce.js` unless a focused test and browser QA justify changing the order.
+- Keep browser action orchestration in Presentation-owned binders. Storefront V2, Starter, and generated visual JavaScript may subscribe to `storefront:*` semantic events and update visuals, but must not invoke `window.blazorShopStorefront.application.cart.*`, `.consent.*`, or `.productSelection.*`, construct command payloads, or interpret product purchase business fields such as stock, availability, SKU, GTIN, or price.
 - Use `SeoHead` and page-level `HeadContent` for metadata; do not move brand/runtime metadata into layout-level `HeadContent`.
 - Prefer JS module imports through `IJSRuntime` for page-specific behavior.
 - Do not add DB-configured or store-configured arbitrary public scripts/styles.
@@ -134,9 +135,9 @@ StorefrontBuilder is development-time tooling. It may create or update generated
 
 Generated storefronts must:
 
-- Consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Runtime owns the direct `BlazorShop.Storefront.Client` transport dependency; generated projects keep Client package metadata for compatibility instead of adding direct visual-source usage.
+- Consume `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Presentation exposes Runtime transitively, Runtime owns the direct `BlazorShop.Storefront.Client` transport dependency, and generated projects keep Runtime/Client package metadata for compatibility instead of adding direct visual-source usage or compile references.
 - Provide views/assets/copy/host configuration instead of recreating Presentation-owned route/BFF/SEO/media logic.
-- Keep protected browser commands behind same-origin BFF endpoints.
+- Declare browser action descriptors and keep protected browser commands behind Presentation-owned same-origin BFF endpoints.
 - Keep analysis and QA artifacts under `docs/storefront-analysis/`.
 
 Generated storefronts must not:
@@ -145,16 +146,20 @@ Generated storefronts must not:
 - Reference backend/core/API projects.
 - Call `api/commerce/*`, `api/control-plane/*`, or removed `api/internal/*` from browser code.
 - Do not: copy Storefront V2 transport internals.
+- Generate browser application controller scripts such as `wwwroot/js/storefront-builder.functional.js`; generated JavaScript is allowed only under `wwwroot/js/visual` and must be event-only.
 - Write store-specific visual output or analysis artifacts back into `BlazorShop.Storefront.Starter`.
 
 StorefrontBuilder changes need focused validation:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
-.\scripts\qa\run-storefront-builder-generated-proof.ps1
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
+
+Run `-ProofLevel FoundationFunctionalFull` for manual, scheduled, and release fixture-backed browser proof.
 
 ## Database Rule
 

@@ -1,6 +1,6 @@
 # Storefront Browser Action Boundary Closure Todo
 
-Status: In Progress
+Status: Complete
 Owner: Storefront Platform
 Created: 2026-07-28
 Related plans:
@@ -96,35 +96,35 @@ Visual host JS
 
 Visual host JS may:
 
-- [ ] subscribe to semantic events.
-- [ ] toggle CSS classes.
-- [ ] update visual-only text supplied by descriptor/event detail.
-- [ ] show toast/animation.
-- [ ] run gallery interaction.
-- [ ] manage focus/keyboard visual behavior.
-- [ ] read visual descriptors such as feedback target, animation target, and CSS class names.
+- [x] subscribe to semantic events.
+- [x] toggle CSS classes.
+- [x] update visual-only text supplied by descriptor/event detail.
+- [x] show toast/animation.
+- [x] run gallery interaction.
+- [x] manage focus/keyboard visual behavior.
+- [x] read visual descriptors such as feedback target, animation target, and CSS class names.
 
 Visual host JS must not:
 
-- [ ] call `window.blazorShopStorefront.application.cart.*`.
-- [ ] call `window.blazorShopStorefront.application.consent.*`.
-- [ ] call `window.blazorShopStorefront.application.productSelection.*`.
-- [ ] construct cart or product-selection command payloads.
-- [ ] decide purchasability from stock or variant state.
-- [ ] interpret `canAddToCart`, `stockQuantity`, SKU, GTIN, price, or availability as business state.
-- [ ] call same-origin BFF routes directly through `fetch`.
-- [ ] inject functional scripts through `ApplicationHead`.
+- [x] call `window.blazorShopStorefront.application.cart.*`.
+- [x] call `window.blazorShopStorefront.application.consent.*`.
+- [x] call `window.blazorShopStorefront.application.productSelection.*`.
+- [x] construct cart or product-selection command payloads.
+- [x] decide purchasability from stock or variant state.
+- [x] interpret `canAddToCart`, `stockQuantity`, SKU, GTIN, price, or availability as business state.
+- [x] call same-origin BFF routes directly through `fetch`.
+- [x] inject functional scripts through `ApplicationHead`.
 
 ## Non-goals
 
-- [ ] Do not change Commerce Node Storefront API contracts.
-- [ ] Do not change server-side sellability, pricing, stock, cart, checkout, or order rules.
-- [ ] Do not redesign V2 product page/gallery/purchase panel.
-- [ ] Do not rewrite all V2 JavaScript; split it into controller-owned and visual-owned pieces.
-- [ ] Do not require generated stores to write JavaScript for cart/product purchase.
-- [ ] Do not add React/Vue/etc.
-- [ ] Do not make `FoundationFunctional` run live payment/order E2E on every PR.
-- [ ] Do not remove Playwright live/full release checks; keep them for nightly/manual/release.
+- [x] Do not change Commerce Node Storefront API contracts.
+- [x] Do not change server-side sellability, pricing, stock, cart, checkout, or order rules.
+- [x] Do not redesign V2 product page/gallery/purchase panel.
+- [x] Do not rewrite all V2 JavaScript; split it into controller-owned and visual-owned pieces.
+- [x] Do not require generated stores to write JavaScript for cart/product purchase.
+- [x] Do not add React/Vue/etc.
+- [x] Do not make `FoundationFunctional` run live payment/order E2E on every PR.
+- [x] Do not remove Playwright live/full release checks; keep them for nightly/manual/release.
 
 ## Phase F1.54 - Browser Action Binding Ownership
 
@@ -464,60 +464,60 @@ Goal: make the final boundary hard to regress and fix remaining Foundation hosti
 
 ### Visual Host JS Command Guardrail
 
-- [ ] Extend `StorefrontVisualConsumerBoundaryValidator` to forbid command invocation tokens in visual host JS:
-  - [ ] `.application.cart.`
-  - [ ] `.application.consent.`
-  - [ ] `.application.productSelection.`
-  - [ ] `application.cart`
-  - [ ] `application.consent`
-  - [ ] `application.productSelection`
-  - [ ] `cart.addLine`
-  - [ ] `cart.updateLine`
-  - [ ] `cart.removeLine`
-  - [ ] `cart.clear`
-  - [ ] `cart.recalculate`
-  - [ ] `productSelection.preview`
-  - [ ] `consent.accept`
-  - [ ] `consent.revoke`
-- [ ] Extend validator to forbid command payload construction in visual host JS:
-  - [ ] `ProductId:`
-  - [ ] `ProductVariantId:`
-  - [ ] `SelectedAttributes:`
-  - [ ] `CurrencyCode:`
-  - [ ] `productId:`
-  - [ ] `productVariantId:`
-  - [ ] `selectedAttributes:`
-  - [ ] `currencyCode:`
-- [ ] Extend validator to forbid business result interpretation in visual host JS:
-  - [ ] `canAddToCart`
-  - [ ] `stockQuantity`
-  - [ ] `isAvailable`
-  - [ ] `validationMessages`
-  - [ ] `unitPrice`
-  - [ ] `formattedUnitPrice`
-  - [ ] `formattedComparePrice`
-  - [ ] `sku`
-  - [ ] `gtin`
-- [ ] Allow visual host JS to subscribe to semantic events:
-  - [ ] `addEventListener("storefront:cart:changed", ...)`
-  - [ ] `addEventListener("storefront:cart:error", ...)`
-  - [ ] `addEventListener("storefront:product-selection:changed", ...)`
-  - [ ] `addEventListener("storefront:product-purchase:add-line-succeeded", ...)`
-  - [ ] `addEventListener("storefront:product-purchase:add-line-failed", ...)`
-- [ ] Prefer AST-based JS validation if practical. If the phase uses token scan first, document it as a conservative guardrail and add negative fixtures for false-negative cases.
+- [x] Extend `StorefrontVisualConsumerBoundaryValidator` to forbid command invocation tokens in visual host JS:
+  - [x] `.application.cart.`
+  - [x] `.application.consent.`
+  - [x] `.application.productSelection.`
+  - [x] `application.cart`
+  - [x] `application.consent`
+  - [x] `application.productSelection`
+  - [x] `cart.addLine`
+  - [x] `cart.updateLine`
+  - [x] `cart.removeLine`
+  - [x] `cart.clear`
+  - [x] `cart.recalculate`
+  - [x] `productSelection.preview`
+  - [x] `consent.accept`
+  - [x] `consent.revoke`
+- [x] Extend validator to forbid command payload construction in visual host JS:
+  - [x] `ProductId:`
+  - [x] `ProductVariantId:`
+  - [x] `SelectedAttributes:`
+  - [x] `CurrencyCode:`
+  - [x] `productId:`
+  - [x] `productVariantId:`
+  - [x] `selectedAttributes:`
+  - [x] `currencyCode:`
+- [x] Extend validator to forbid business result interpretation in visual host JS:
+  - [x] `canAddToCart`
+  - [x] `stockQuantity`
+  - [x] `isAvailable`
+  - [x] `validationMessages`
+  - [x] `unitPrice`
+  - [x] `formattedUnitPrice`
+  - [x] `formattedComparePrice`
+  - [x] `sku`
+  - [x] `gtin`
+- [x] Allow visual host JS to subscribe to semantic events:
+  - [x] `addEventListener("storefront:cart:changed", ...)`
+  - [x] `addEventListener("storefront:cart:error", ...)`
+  - [x] `addEventListener("storefront:product-selection:changed", ...)`
+  - [x] `addEventListener("storefront:product-purchase:add-line-succeeded", ...)`
+  - [x] `addEventListener("storefront:product-purchase:add-line-failed", ...)`
+- [x] Prefer AST-based JS validation if practical. If the phase uses token scan first, document it as a conservative guardrail and add negative fixtures for false-negative cases. F1.56 uses a conservative JS token scan scoped to `.js`, `.mjs`, and `.ts` files with negative fixtures for command invocation, payload construction, business result interpretation, and allowed semantic event subscription.
 
 ### Runtime/Client Reference Guardrail
 
-- [ ] Remove `AllowRuntimeClientPackageMetadata` from `StorefrontVisualConsumerProfile`.
-- [ ] Shared validator must always reject actual `PackageReference Include="BlazorShop.Storefront.Runtime"`.
-- [ ] Shared validator must always reject actual `PackageReference Include="BlazorShop.Storefront.Client"`.
-- [ ] Compatibility version metadata is allowed only in non-project files such as `.props` or metadata YAML.
-- [ ] Update generated profile test to pass without Runtime/Client PackageReference exception.
-- [ ] Update failure messages to say metadata is allowed but compile reference is not.
+- [x] Remove `AllowRuntimeClientPackageMetadata` from `StorefrontVisualConsumerProfile`.
+- [x] Shared validator must always reject actual `PackageReference Include="BlazorShop.Storefront.Runtime"`.
+- [x] Shared validator must always reject actual `PackageReference Include="BlazorShop.Storefront.Client"`.
+- [x] Compatibility version metadata is allowed only in non-project files such as `.props` or metadata YAML.
+- [x] Update generated profile test to pass without Runtime/Client PackageReference exception.
+- [x] Update failure messages to say metadata is allowed but compile reference is not.
 
 ### Hosting Pipeline Fix
 
-- [ ] Change Presentation middleware order:
+- [x] Change Presentation middleware order:
 
 ```csharp
 app.UseForwardedHeaders();
@@ -532,7 +532,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 ```
 
-- [ ] Add architecture test:
+- [x] Add architecture test:
 
 ```text
 IndexOf("UseForwardedHeaders")
@@ -540,13 +540,13 @@ IndexOf("UseForwardedHeaders")
 IndexOf("UseHttpsRedirection")
 ```
 
-- [ ] Confirm Control Plane/Commerce Node existing order is not affected by this Storefront phase.
+- [x] Confirm Control Plane/Commerce Node existing order is not affected by this Storefront phase.
 
 ### Shell Session Fallback
 
-- [ ] Treat `displayTask` as critical.
-- [ ] Treat shell session summary as optional for public shell rendering.
-- [ ] Load session with fallback:
+- [x] Treat `displayTask` as critical.
+- [x] Treat shell session summary as optional for public shell rendering.
+- [x] Load session with fallback:
 
 ```csharp
 var sessionTask = LoadOptionalAsync(
@@ -555,38 +555,38 @@ var sessionTask = LoadOptionalAsync(
     StorefrontSessionInfo.Anonymous);
 ```
 
-- [ ] Keep account/auth/checkout route guards separate and strict.
-- [ ] Log session fallback warning without exposing internal details to the user.
-- [ ] Ensure authenticated-only pages still reject unauthorized users through page services/BFF guards.
+- [x] Keep account/auth/checkout route guards separate and strict.
+- [x] Log session fallback warning without exposing internal details to the user.
+- [x] Ensure authenticated-only pages still reject unauthorized users through page services/BFF guards.
 
 ### Required PR Functional Proof
 
-- [ ] Split `FoundationFunctional` into:
-  - [ ] `FoundationFunctionalFast` for PR required gate.
-  - [ ] `FoundationFunctionalFull` for nightly/manual/release.
-- [ ] Fast proof should use deterministic fixture or mocked local generated host data and cover:
-  - [ ] product page renders.
-  - [ ] product purchase descriptors exist.
-  - [ ] selection preview command is invoked through same-origin route.
-  - [ ] add-to-cart command is invoked through same-origin route.
-  - [ ] cart badge changes.
-  - [ ] cart page sees current cart.
-  - [ ] checkout form/route contract exists.
-  - [ ] consent current/save/revoke works.
-  - [ ] no browser request goes directly to Commerce Node.
-- [ ] Full proof remains manual/scheduled/release and can include:
-  - [ ] real COD order placement.
-  - [ ] email/message checks.
-  - [ ] payment sandbox.
-  - [ ] live fixture store.
-  - [ ] longer browser visual regression.
-- [ ] Update `.github/workflows/storefront-builder.yml` to run fast functional proof on PR.
-- [ ] Update `.github/workflows/ci.yml` to run fast functional proof or a clearly equivalent required status check.
-- [ ] Keep full proof under `workflow_dispatch` and `schedule`.
+- [x] Split `FoundationFunctional` into:
+  - [x] `FoundationFunctionalFast` for PR required gate.
+  - [x] `FoundationFunctionalFull` for nightly/manual/release.
+- [x] Fast proof should use deterministic fixture or mocked local generated host data and cover:
+  - [x] product page renders.
+  - [x] product purchase descriptors exist.
+  - [x] selection preview command is invoked through same-origin route.
+  - [x] add-to-cart command is invoked through same-origin route.
+  - [x] cart badge changes.
+  - [x] cart page sees current cart.
+  - [x] checkout form/route contract exists.
+  - [x] consent current/save/revoke works.
+  - [x] no browser request goes directly to Commerce Node.
+- [x] Full proof remains manual/scheduled/release and can include:
+  - [x] real COD order placement.
+  - [x] email/message checks.
+  - [x] payment sandbox.
+  - [x] live fixture store.
+  - [x] longer browser visual regression.
+- [x] Update `.github/workflows/storefront-builder.yml` to run fast functional proof on PR.
+- [x] Update `.github/workflows/ci.yml` to run fast functional proof or a clearly equivalent required status check.
+- [x] Keep full proof under `workflow_dispatch` and `schedule`.
 
 ### Starter Theme Terminology Cleanup
 
-- [ ] Rename Starter namespaces from:
+- [x] Rename Starter namespaces from:
 
 ```text
 BlazorShop.Storefront.Starter.Theme.Pages.*
@@ -599,10 +599,10 @@ BlazorShop.Storefront.Starter.Pages.*
 BlazorShop.Storefront.Starter.Views.Pages.*
 ```
 
-- [ ] Update `StarterFoundationViewRegistration.cs` usings.
-- [ ] Update Razor `@namespace` directives.
-- [ ] Update StorefrontBuilder template/generation assumptions if they depend on the old namespace.
-- [ ] Add guardrail:
+- [x] Update `StarterFoundationViewRegistration.cs` usings.
+- [x] Update Razor `@namespace` directives.
+- [x] Update StorefrontBuilder template/generation assumptions if they depend on the old namespace.
+- [x] Add guardrail:
 
 ```text
 Starter source must not contain ".Theme.Pages" or "Theme/Pages".
@@ -610,62 +610,80 @@ Starter source must not contain ".Theme.Pages" or "Theme/Pages".
 
 ### Remove `CreateMinimal()` Production Escape Hatch
 
-- [ ] Replace public `StorefrontFoundationViewSet.CreateMinimal(Type)` with explicit registration only.
-- [ ] If tests need it, use one of:
-  - [ ] internal `CreateTestFixture(...)` plus `InternalsVisibleTo`.
-  - [ ] test helper inside `BlazorShop.Tests.V2`.
-  - [ ] explicit fixture view set builder.
-- [ ] Remove obsolete `ApplicationScripts` compatibility alias if generated templates no longer use it.
-- [ ] Add architecture test:
-  - [ ] production source cannot call `CreateMinimal`.
-  - [ ] `CreateMinimal` is not public.
-  - [ ] `ApplicationScripts` alias is removed or marked with a clear removal gate.
+- [x] Replace public `StorefrontFoundationViewSet.CreateMinimal(Type)` with explicit registration only.
+- [x] If tests need it, use one of:
+  - [x] internal `CreateTestFixture(...)` plus `InternalsVisibleTo`.
+  - [x] test helper inside `BlazorShop.Tests.V2`.
+  - [x] explicit fixture view set builder.
+- [x] Remove obsolete `ApplicationScripts` compatibility alias if generated templates no longer use it.
+- [x] Add architecture test:
+  - [x] production source cannot call `CreateMinimal`.
+  - [x] `CreateMinimal` is not public.
+  - [x] `ApplicationScripts` alias is removed or marked with a clear removal gate.
 
 ### Documentation Closure
 
-- [ ] Set `Storefront Foundation Blocker Closure.todo.md` status to `Reopened` or equivalent until F1.54-F1.56 complete.
-- [ ] Move stale "Verified current context" in `Storefront Visual Only Phase 1 Boundary.todo.md` under a historical heading, for example:
+- [x] Set `Storefront Foundation Blocker Closure.todo.md` status to `Reopened` or equivalent until F1.54-F1.56 complete.
+- [x] Move stale "Verified current context" in `Storefront Visual Only Phase 1 Boundary.todo.md` under a historical heading, for example:
 
 ```text
 Historical baseline before F1.26
 ```
 
-- [ ] Ensure original Phase 1 doc does not claim complete while this plan remains open.
-- [ ] Update architecture docs:
-  - [ ] browser action binder ownership.
-  - [ ] visual host JS event-only rule.
-  - [ ] generated storefront JS zone rule.
-  - [ ] Runtime/Client direct reference rule.
-  - [ ] required fast functional proof.
-- [ ] Update QA checklists:
-  - [ ] `QA-StorefrontV2.todo.md`.
-  - [ ] `QA-StorefrontStarter.todo.md`.
-  - [ ] `Storefront Playwright E2E Release.todo.md` if release browser cases change.
-- [ ] Update old tests that currently assert the obsolete V2 command invocation behavior.
+- [x] Ensure original Phase 1 doc does not claim complete while this plan remains open.
+- [x] Update architecture docs:
+  - [x] browser action binder ownership.
+  - [x] visual host JS event-only rule.
+  - [x] generated storefront JS zone rule.
+  - [x] Runtime/Client direct reference rule.
+  - [x] required fast functional proof.
+- [x] Update QA checklists:
+  - [x] `QA-StorefrontV2.todo.md`.
+  - [x] `QA-StorefrontStarter.todo.md`.
+  - [x] `Storefront Playwright E2E Release.todo.md` if release browser cases change.
+- [x] Update old tests that currently assert the obsolete V2 command invocation behavior.
 
 ### Tests
 
-- [ ] `dotnet test BlazorShop.Tests.V2 --filter StorefrontVisualConsumerBoundaryValidatorTests`
-- [ ] `dotnet test BlazorShop.Tests.V2 --filter StorefrontCommerceScriptRegressionTests`
-- [ ] `dotnet test BlazorShop.Tests.V2 --filter StorefrontApplicationBootstrapTests`
-- [ ] `dotnet test BlazorShop.Tests.V2 --filter StorefrontBuilder`
-- [ ] generated structure proof.
-- [ ] generated fast foundation functional proof.
-- [ ] V2 Playwright product/add-to-cart/cart browser flow.
-- [ ] Starter/generated browser flow for product descriptors/add-to-cart.
+- [x] `dotnet test BlazorShop.Tests.V2 --filter StorefrontVisualConsumerBoundaryValidatorTests`
+- [x] `dotnet test BlazorShop.Tests.V2 --filter StorefrontCommerceScriptRegressionTests`
+- [x] `dotnet test BlazorShop.Tests.V2 --filter StorefrontApplicationBootstrapTests`
+- [x] `dotnet test BlazorShop.Tests.V2 --filter StorefrontBuilder`
+- [x] generated structure proof.
+- [x] generated fast foundation functional proof.
+- [x] V2 Playwright product/add-to-cart/cart browser flow.
+- [x] Starter/generated browser flow for product descriptors/add-to-cart.
 
 ### Definition of Done
 
-- [ ] Shared validator fails if V2 JS calls application commands.
-- [ ] Shared validator fails if generated JS calls application commands.
-- [ ] Shared validator always rejects direct Runtime/Client compile references.
-- [ ] Forwarded headers run before HTTPS redirect.
-- [ ] Public shell falls back to anonymous session summary when session lookup fails.
-- [ ] Fast generated browser functional proof runs on PR.
-- [ ] Full generated browser proof remains available for manual/scheduled/release.
-- [ ] Starter no longer uses `Theme.Pages` terminology.
-- [ ] `CreateMinimal()` is not a public production escape hatch.
-- [ ] Closure docs status is honest and linked to this plan.
+- [x] Shared validator fails if V2 JS calls application commands.
+- [x] Shared validator fails if generated JS calls application commands.
+- [x] Shared validator always rejects direct Runtime/Client compile references.
+- [x] Forwarded headers run before HTTPS redirect.
+- [x] Public shell falls back to anonymous session summary when session lookup fails.
+- [x] Fast generated browser functional proof runs on PR.
+- [x] Full generated browser proof remains available for manual/scheduled/release.
+- [x] Starter no longer uses `Theme.Pages` terminology.
+- [x] `CreateMinimal()` is not a public production escape hatch.
+- [x] Closure docs status is honest and linked to this plan.
+
+### F1.56 Evidence
+
+- [x] `node --check BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js` - passed.
+- [x] `node --check BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js` - passed.
+- [x] `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-fast-foundation-functional.mjs` - passed.
+- [x] `pwsh -NoProfile -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Describe` - passed and listed `Structure`, `FoundationFunctionalFast`, and `FoundationFunctionalFull`.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontVisualConsumerBoundaryValidatorTests -v:minimal` - passed 4/4.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontCommerceScriptRegressionTests -v:minimal` - passed 3/3.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontApplicationBootstrapTests -v:minimal` - passed 8/8.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontBuilder -v:minimal` - passed 34/34.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontShellContextServiceTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests" -v:minimal` - passed 37/37.
+- [x] `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` - passed.
+- [x] `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` - passed and wrote `fast-foundation-functional-report.md` under the ignored generated artifact.
+- [x] `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser` - passed.
+- [x] `node scripts/qa/storefront-browser-action-boundary-proof.js` - passed with same-origin `GET /api/cart`, `POST /api/product-selection-preview`, and `POST /api/cart/lines`; zero direct Commerce Node browser calls.
+- [x] `.\scripts\stop-v2-local.ps1` - stopped Control Plane API/Web, Commerce Node API, and Storefront V2.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontStarterHostSmokeTests -v:minimal` - passed 9/9.
 
 ## Execution Order
 

@@ -14,13 +14,6 @@ public sealed class StorefrontFoundationViewSet
         init => this.visualScripts = value;
     }
 
-    [Obsolete("Use VisualScripts. ApplicationScripts is a compatibility alias and will be removed after generated storefront templates migrate.")]
-    public Type ApplicationScripts
-    {
-        get => this.VisualScripts;
-        init => this.visualScripts = value;
-    }
-
     public required Type MainLayout { get; init; }
 
     public required Type ConsentBanner { get; init; }
@@ -56,35 +49,6 @@ public sealed class StorefrontFoundationViewSet
     public required Type ServiceUnavailableState { get; init; }
 
     public required Type ErrorState { get; init; }
-
-    public static StorefrontFoundationViewSet CreateMinimal(Type componentType)
-    {
-        ArgumentNullException.ThrowIfNull(componentType);
-
-        return new StorefrontFoundationViewSet
-        {
-            ApplicationHead = componentType,
-            VisualScripts = componentType,
-            MainLayout = componentType,
-            ConsentBanner = componentType,
-            HomePage = componentType,
-            CategoryPage = componentType,
-            ProductPage = componentType,
-            SearchPage = componentType,
-            DealsPage = componentType,
-            NewReleasesPage = componentType,
-            ContentPage = componentType,
-            CartPage = componentType,
-            CheckoutPage = componentType,
-            PaymentResultPage = componentType,
-            AuthPage = componentType,
-            AccountPage = componentType,
-            MaintenanceState = componentType,
-            NotFoundState = componentType,
-            ServiceUnavailableState = componentType,
-            ErrorState = componentType,
-        };
-    }
 
     public IReadOnlyList<StorefrontFoundationViewSlot> GetRequiredSlots()
     {

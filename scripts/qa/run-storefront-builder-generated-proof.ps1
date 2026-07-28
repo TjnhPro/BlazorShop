@@ -12,7 +12,7 @@ param(
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
     [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
     [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
-    [ValidateSet("Structure", "FoundationFunctional")]
+    [ValidateSet("Structure", "FoundationFunctionalFast", "FoundationFunctionalFull", "FoundationFunctional")]
     [string]$ProofLevel = "Structure",
     [string]$FixtureCategorySlug = "apparel",
     [string]$FixtureProductSlug = "qa-simple-product-100",
@@ -161,11 +161,13 @@ function Invoke-StorefrontFixtureEndpoint {
         return Get-EnvelopeData (Invoke-RestMethod -Uri $uri -Method Get -TimeoutSec 15)
     }
     catch {
-        throw "[SFB-PROOF-FIXTURE-001] Fixture endpoint failed: $uri. Start Commerce Node with the '$StoreKey' fixture store before running -ProofLevel FoundationFunctional. $($_.Exception.Message)"
+        throw "[SFB-PROOF-FIXTURE-001] Fixture endpoint failed: $uri. Start Commerce Node with the '$StoreKey' fixture store before running -ProofLevel FoundationFunctionalFull. $($_.Exception.Message)"
     }
 }
 
 function Assert-StorefrontFixtureData {
+    param([bool]$RequirePaymentMethod = $false)
+
     Write-Host "Checking fixture store '$StoreKey' at $CommerceNodeBaseUrl"
 
     $configuration = Invoke-StorefrontFixtureEndpoint "configuration"
@@ -212,12 +214,14 @@ function Assert-StorefrontFixtureData {
         throw "[SFB-PROOF-FIXTURE-008] Fixture content page '$FixturePageSlug' is missing."
     }
 
-    $paymentMethods = @(Invoke-StorefrontFixtureEndpoint "payments/methods")
-    $matchingMethod = $paymentMethods | Where-Object {
-        [string]$_.key -eq $RequiredPaymentMethodKey -or [string]$_.providerKey -eq $RequiredPaymentMethodKey
-    } | Select-Object -First 1
-    if ($null -eq $matchingMethod) {
-        throw "[SFB-PROOF-FIXTURE-009] Fixture store '$StoreKey' must expose '$RequiredPaymentMethodKey' payment capability before functional proof."
+    if ($RequirePaymentMethod) {
+        $paymentMethods = @(Invoke-StorefrontFixtureEndpoint "payments/methods")
+        $matchingMethod = $paymentMethods | Where-Object {
+            [string]$_.key -eq $RequiredPaymentMethodKey -or [string]$_.providerKey -eq $RequiredPaymentMethodKey
+        } | Select-Object -First 1
+        if ($null -eq $matchingMethod) {
+            throw "[SFB-PROOF-FIXTURE-009] Fixture store '$StoreKey' must expose '$RequiredPaymentMethodKey' payment capability before full functional proof."
+        }
     }
 }
 
@@ -227,7 +231,7 @@ $projectFile = Join-Path $projectRoot "$Name.csproj"
 
 if ($Describe) {
     Write-Host "StorefrontBuilder generated proof workflow"
-    Write-Host "- Proof levels: Structure, FoundationFunctional"
+    Write-Host "- Proof levels: Structure, FoundationFunctionalFast, FoundationFunctionalFull"
     Write-Host "- Clean $projectRoot"
     Write-Host "- Pack Storefront.Client, Storefront.Runtime, Storefront.Presentation, and Storefront.Components"
     Write-Host "- Generate $Name from Storefront.Starter"
@@ -235,8 +239,10 @@ if ($Describe) {
     Write-Host "- Restore/build generated proof from local packages"
     Write-Host "- Run static validation, isolation, and shared visual boundary gates"
     Write-Host "- Structure proof stops after project/package/boundary validation"
-    Write-Host "- FoundationFunctional proof probes fixture data, runs the generated host, and exercises browser behavior"
-    Write-Host "- -RunBrowserQa is treated as -ProofLevel FoundationFunctional for compatibility"
+    Write-Host "- FoundationFunctionalFast uses deterministic generated markup plus mocked same-origin Presentation BFF routes to exercise browser commerce behavior"
+    Write-Host "- FoundationFunctionalFull adds visual smoke QA and full payment capability fixture checks for manual/scheduled/release gates"
+    Write-Host "- FoundationFunctional remains a compatibility alias for FoundationFunctionalFull"
+    Write-Host "- -RunBrowserQa is treated as -ProofLevel FoundationFunctionalFull for compatibility"
     exit 0
 }
 
@@ -321,18 +327,29 @@ Invoke-Step "Run shared visual consumer boundary validator" {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-$runFunctionalProof = $RunBrowserQa -or $ProofLevel -eq "FoundationFunctional"
-if ($runFunctionalProof) {
+$runFastFunctionalProof = $ProofLevel -eq "FoundationFunctionalFast"
+$runLiveFunctionalProof = $RunBrowserQa -or $ProofLevel -in @("FoundationFunctionalFull", "FoundationFunctional")
+if ($runFastFunctionalProof) {
+    Invoke-Step "Run fast foundation functional browser proof" {
+        node "$toolRoot\scripts\qa\run-fast-foundation-functional.mjs" --project-root $projectRoot
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    }
+}
+
+if ($runLiveFunctionalProof) {
     Invoke-Step "Check fixture data for foundation functional proof" {
-        Assert-StorefrontFixtureData
+        Assert-StorefrontFixtureData -RequirePaymentMethod:$true
     }
 
     Invoke-Step "Run foundation functional browser proof" {
         $process = Start-ProofStorefront $projectFile
         try {
             Wait-ForProofStorefront $process
-            node "$toolRoot\scripts\qa\run-visual-qa.mjs" --base-url $ProofUrl --project-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            if ($runLiveFunctionalProof) {
+                node "$toolRoot\scripts\qa\run-visual-qa.mjs" --base-url $ProofUrl --project-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug
+                if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            }
+
             node "$toolRoot\scripts\qa\run-commerce-regression.mjs" --base-url $ProofUrl --project-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug --page-slug $FixturePageSlug
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
