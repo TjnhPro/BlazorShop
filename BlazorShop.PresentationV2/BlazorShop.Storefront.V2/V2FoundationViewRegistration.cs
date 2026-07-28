@@ -20,7 +20,6 @@ public static class V2FoundationViewRegistration
 
         return services.AddStorefrontFoundationViews(options =>
         {
-            var viewSet = StorefrontFoundationViewSet.CreateMinimal(typeof(StorefrontFoundationEmptyView));
             options.ViewSet = new StorefrontFoundationViewSet
             {
                 ApplicationHead = typeof(StorefrontApplicationHead),
@@ -41,7 +40,7 @@ public static class V2FoundationViewRegistration
                 MaintenanceState = typeof(MaintenancePage),
                 NotFoundState = typeof(NotFoundPage),
                 ServiceUnavailableState = typeof(ServiceUnavailableState),
-                ErrorState = viewSet.ErrorState,
+                ErrorState = typeof(ErrorState),
             };
         });
     }

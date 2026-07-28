@@ -102,8 +102,8 @@ namespace BlazorShop.Tests.Architecture
         [Fact]
         public void FoundationViewOptionsValidator_FailsWhenRequiredSlotIsMissing()
         {
-            var viewSet = StorefrontFoundationViewSet.CreateMinimal(typeof(ValidFoundationView));
-            viewSet = new StorefrontFoundationViewSet
+            var viewSet = CreateValidViewSet();
+            var missingProduct = new StorefrontFoundationViewSet
             {
                 ApplicationHead = viewSet.ApplicationHead,
                 ApplicationScripts = viewSet.ApplicationScripts,
@@ -125,12 +125,46 @@ namespace BlazorShop.Tests.Architecture
                 ServiceUnavailableState = viewSet.ServiceUnavailableState,
                 ErrorState = viewSet.ErrorState,
             };
+            var missingCheckout = CopyViewSet(viewSet, omitCheckoutPage: true);
+            var missingError = CopyViewSet(viewSet, omitErrorState: true);
 
+            var validator = new StorefrontFoundationViewOptionsValidator();
+            var productResult = validator.Validate(null, new StorefrontFoundationViewOptions { ViewSet = missingProduct });
+            var checkoutResult = validator.Validate(null, new StorefrontFoundationViewOptions { ViewSet = missingCheckout });
+            var errorResult = validator.Validate(null, new StorefrontFoundationViewOptions { ViewSet = missingError });
+
+            Assert.True(productResult.Failed);
+            Assert.True(checkoutResult.Failed);
+            Assert.True(errorResult.Failed);
+            Assert.Contains(productResult.Failures, failure => failure.Contains("ProductPage", StringComparison.Ordinal));
+            Assert.Contains(checkoutResult.Failures, failure => failure.Contains("CheckoutPage", StringComparison.Ordinal));
+            Assert.Contains(errorResult.Failures, failure => failure.Contains("ErrorState", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenRequiredSlotUsesEmptyFallback()
+        {
             var result = new StorefrontFoundationViewOptionsValidator()
-                .Validate(null, new StorefrontFoundationViewOptions { ViewSet = viewSet });
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), productPage: typeof(StorefrontFoundationEmptyView)),
+                });
 
             Assert.True(result.Failed);
-            Assert.Contains(result.Failures, failure => failure.Contains("ProductPage", StringComparison.Ordinal));
+            Assert.Contains(result.Failures, failure => failure.Contains("StorefrontFoundationEmptyView", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenVisualSlotUsesRouteComponent()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), productPage: typeof(RouteFoundationView)),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("route component", StringComparison.Ordinal));
         }
 
         [Fact]
@@ -163,24 +197,29 @@ namespace BlazorShop.Tests.Architecture
                 "AddV2FoundationViews",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
                 StringComparison.Ordinal);
-            Assert.Contains(
+            var v2Registration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs");
+            Assert.DoesNotContain(
                 "StorefrontFoundationViewSet.CreateMinimal",
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs"),
+                v2Registration,
                 StringComparison.Ordinal);
+            Assert.Contains("ErrorState = typeof(ErrorState)", v2Registration, StringComparison.Ordinal);
             Assert.Contains(
                 "AddStarterFoundationViews",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs"),
                 StringComparison.Ordinal);
-            Assert.Contains(
+            var starterRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs");
+            Assert.DoesNotContain(
                 "StorefrontFoundationViewSet.CreateMinimal",
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs"),
+                starterRegistration,
                 StringComparison.Ordinal);
+            Assert.Contains("ApplicationScripts = typeof(ApplicationScripts)", starterRegistration, StringComparison.Ordinal);
+            Assert.Contains("ErrorState = typeof(ErrorState)", starterRegistration, StringComparison.Ordinal);
             Assert.Contains(
-                "MapRazorComponents<StorefrontApp>()",
+                "MapStorefrontApplication(",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
                 StringComparison.Ordinal);
             Assert.Contains(
-                "MapRazorComponents<StorefrontApp>()",
+                "MapStorefrontApplication(",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs"),
                 StringComparison.Ordinal);
             Assert.DoesNotContain(
@@ -188,7 +227,7 @@ namespace BlazorShop.Tests.Architecture
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor"),
                 StringComparison.Ordinal);
             Assert.Contains(
-                "DefaultLayout=\"@ViewSet.MainLayout\"",
+                "DefaultLayout=\"@typeof(StorefrontFoundationLayout)\"",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/App/StorefrontRoutes.razor"),
                 StringComparison.Ordinal);
             Assert.Contains(
@@ -315,8 +354,8 @@ namespace BlazorShop.Tests.Architecture
             var starterProgram = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
             var presentationEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationSeoEndpoints.cs");
 
-            Assert.Contains("app.MapStorefrontPresentation();", v2Program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentation();", starterProgram, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontApplication(", v2Program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontApplication(", starterProgram, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStorefrontSeoEndpoints", v2Program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStarterSeoEndpoints", starterProgram, StringComparison.Ordinal);
             Assert.Contains("MapStorefrontPresentationSeoEndpoints", presentationEndpoints, StringComparison.Ordinal);
@@ -438,7 +477,44 @@ namespace BlazorShop.Tests.Architecture
 
         private sealed record FoundationContext(string Name);
 
-        private sealed class ValidFoundationView : IComponent
+        private static StorefrontFoundationViewSet CreateValidViewSet()
+        {
+            return StorefrontFoundationViewSet.CreateMinimal(typeof(ValidFoundationView));
+        }
+
+        private static StorefrontFoundationViewSet CopyViewSet(
+            StorefrontFoundationViewSet source,
+            Type? productPage = null,
+            Type? checkoutPage = null,
+            Type? errorState = null,
+            bool omitCheckoutPage = false,
+            bool omitErrorState = false)
+        {
+            return new StorefrontFoundationViewSet
+            {
+                ApplicationHead = source.ApplicationHead,
+                ApplicationScripts = source.ApplicationScripts,
+                MainLayout = source.MainLayout,
+                HomePage = source.HomePage,
+                CategoryPage = source.CategoryPage,
+                ProductPage = productPage ?? source.ProductPage,
+                SearchPage = source.SearchPage,
+                DealsPage = source.DealsPage,
+                NewReleasesPage = source.NewReleasesPage,
+                ContentPage = source.ContentPage,
+                CartPage = source.CartPage,
+                CheckoutPage = omitCheckoutPage ? null! : checkoutPage ?? source.CheckoutPage,
+                PaymentResultPage = source.PaymentResultPage,
+                AuthPage = source.AuthPage,
+                AccountPage = source.AccountPage,
+                MaintenanceState = source.MaintenanceState,
+                NotFoundState = source.NotFoundState,
+                ServiceUnavailableState = source.ServiceUnavailableState,
+                ErrorState = omitErrorState ? null! : errorState ?? source.ErrorState,
+            };
+        }
+
+        private class ValidFoundationView : IComponent
         {
             [Parameter]
             public FoundationContext Context { get; set; } = default!;
@@ -451,6 +527,11 @@ namespace BlazorShop.Tests.Architecture
             {
                 return Task.CompletedTask;
             }
+        }
+
+        [Route("/route-foundation-view")]
+        private sealed class RouteFoundationView : ValidFoundationView
+        {
         }
 
         private sealed class MissingContextFoundationView : IComponent

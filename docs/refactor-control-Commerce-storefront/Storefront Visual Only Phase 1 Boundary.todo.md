@@ -842,41 +842,53 @@ Goal: production storefront cannot silently use empty fallback for required slot
 StorefrontFoundationViewSet.CreateMinimal(...)
 ```
 
-- [ ] V2 registration must create full explicit `StorefrontFoundationViewSet`:
-  - [ ] `ApplicationHead`.
-  - [ ] `ApplicationScripts`.
-  - [ ] `MainLayout`.
-  - [ ] `HomePage`.
-  - [ ] `CategoryPage`.
-  - [ ] `ProductPage`.
-  - [ ] `SearchPage`.
-  - [ ] `DealsPage`.
-  - [ ] `NewReleasesPage`.
-  - [ ] `ContentPage`.
-  - [ ] `CartPage`.
-  - [ ] `CheckoutPage`.
-  - [ ] `PaymentResultPage`.
-  - [ ] `AuthPage`.
-  - [ ] `AccountPage`.
-  - [ ] `MaintenanceState`.
-  - [ ] `NotFoundState`.
-  - [ ] `ServiceUnavailableState`.
-  - [ ] `ErrorState`.
-- [ ] Starter registration must do the same.
-- [ ] Keep `StorefrontFoundationEmptyView` only for:
-  - [ ] tests.
-  - [ ] optional visual slots, if optional slots are introduced.
-  - [ ] explicit no-op application asset slots only if documented.
-- [ ] Update validator:
-  - [ ] missing required slot fails startup.
-  - [ ] empty fallback in required production slot fails startup.
-  - [ ] route component assigned as visual slot fails if inappropriate.
-- [ ] Add tests:
-  - [ ] V2 registration does not call `CreateMinimal`.
-  - [ ] Starter registration does not call `CreateMinimal`.
-  - [ ] missing product/checkout/error slot fails options validation.
-- [ ] Exit criteria:
-  - [ ] production registration cannot hide missing visual work.
+- [x] V2 registration must create full explicit `StorefrontFoundationViewSet`:
+  - [x] `ApplicationHead`.
+  - [x] `ApplicationScripts`.
+  - [x] `MainLayout`.
+  - [x] `HomePage`.
+  - [x] `CategoryPage`.
+  - [x] `ProductPage`.
+  - [x] `SearchPage`.
+  - [x] `DealsPage`.
+  - [x] `NewReleasesPage`.
+  - [x] `ContentPage`.
+  - [x] `CartPage`.
+  - [x] `CheckoutPage`.
+  - [x] `PaymentResultPage`.
+  - [x] `AuthPage`.
+  - [x] `AccountPage`.
+  - [x] `MaintenanceState`.
+  - [x] `NotFoundState`.
+  - [x] `ServiceUnavailableState`.
+  - [x] `ErrorState`.
+- [x] Starter registration must do the same.
+- [x] Keep `StorefrontFoundationEmptyView` only for:
+  - [x] tests.
+  - [x] optional visual slots, if optional slots are introduced.
+  - [x] explicit no-op application asset slots only if documented.
+- [x] Update validator:
+  - [x] missing required slot fails startup.
+  - [x] empty fallback in required production slot fails startup.
+  - [x] route component assigned as visual slot fails if inappropriate.
+- [x] Add tests:
+  - [x] V2 registration does not call `CreateMinimal`.
+  - [x] Starter registration does not call `CreateMinimal`.
+  - [x] missing product/checkout/error slot fails options validation.
+- [x] Exit criteria:
+  - [x] production registration cannot hide missing visual work.
+
+Evidence:
+
+- V2 and Starter foundation registrations now assign every required slot explicitly and no longer call `StorefrontFoundationViewSet.CreateMinimal`.
+- Added explicit V2 error state view, Starter error state context support, and documented Starter no-op `ApplicationScripts` slot.
+- `StorefrontFoundationViewOptionsValidator` now rejects null/non-component slots, `StorefrontFoundationEmptyView` in required slots, and route components in visual slots.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests" -v:minimal`
+- `rg -n "CreateMinimal" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs` found no matches.
 
 ## Phase F1.39 - Validate context compatibility at startup
 

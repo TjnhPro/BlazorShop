@@ -3,6 +3,7 @@ namespace BlazorShop.Storefront.Starter;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Starter.Components.Layout;
+using BlazorShop.Storefront.Starter.Components.States;
 using BlazorShop.Storefront.Starter.Pages.Hybrid.Commerce;
 using BlazorShop.Storefront.Starter.Pages.WasmHost.Account;
 using BlazorShop.Storefront.Starter.Theme.Pages.Auth;
@@ -18,11 +19,10 @@ public static class StarterFoundationViewRegistration
 
         return services.AddStorefrontFoundationViews(options =>
         {
-            var viewSet = StorefrontFoundationViewSet.CreateMinimal(typeof(StorefrontFoundationEmptyView));
             options.ViewSet = new StorefrontFoundationViewSet
             {
                 ApplicationHead = typeof(ApplicationHead),
-                ApplicationScripts = viewSet.ApplicationScripts,
+                ApplicationScripts = typeof(ApplicationScripts),
                 MainLayout = typeof(MainLayout),
                 HomePage = typeof(HomePage),
                 CategoryPage = typeof(CategoryPage),
@@ -38,8 +38,8 @@ public static class StarterFoundationViewRegistration
                 AccountPage = typeof(AccountHostPage),
                 MaintenanceState = typeof(MaintenancePage),
                 NotFoundState = typeof(NotFoundPage),
-                ServiceUnavailableState = typeof(NotFoundPage),
-                ErrorState = viewSet.ErrorState,
+                ServiceUnavailableState = typeof(MaintenancePage),
+                ErrorState = typeof(ErrorState),
             };
         });
     }

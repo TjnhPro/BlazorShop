@@ -1,6 +1,8 @@
+@using BlazorShop.Storefront.Presentation.Services.System
+
 <section class="starter-state starter-state-error" role="alert" data-error-code="@Code">
-    <h2>@Title</h2>
-    <p>@Message</p>
+    <h2>@ResolvedTitle</h2>
+    <p>@ResolvedMessage</p>
     @if (ChildContent is not null)
     {
         @ChildContent
@@ -19,4 +21,11 @@
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public StorefrontSystemStateContext? Context { get; set; }
+
+    private string ResolvedTitle => Context?.Title ?? Title;
+
+    private string ResolvedMessage => Context?.Message ?? Message;
 }

@@ -14,13 +14,27 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
             return ValidateOptionsResult.Fail("A StorefrontFoundationViewSet must be registered.");
         }
 
-        var failures = options.ViewSet
-            .GetRequiredSlots()
-            .Where(slot => slot.ComponentType is null || !typeof(IComponent).IsAssignableFrom(slot.ComponentType))
-            .Select(slot => $"Foundation view slot '{slot.Name}' must be a Blazor component type.")
-            .ToArray();
+        var failures = new List<string>();
+        foreach (var slot in options.ViewSet.GetRequiredSlots())
+        {
+            if (slot.ComponentType is null || !typeof(IComponent).IsAssignableFrom(slot.ComponentType))
+            {
+                failures.Add($"Foundation view slot '{slot.Name}' must be a Blazor component type.");
+                continue;
+            }
 
-        return failures.Length == 0
+            if (slot.ComponentType == typeof(StorefrontFoundationEmptyView))
+            {
+                failures.Add($"Foundation view slot '{slot.Name}' must not use StorefrontFoundationEmptyView.");
+            }
+
+            if (slot.ComponentType.GetCustomAttributes(typeof(RouteAttribute), inherit: true).Length > 0)
+            {
+                failures.Add($"Foundation view slot '{slot.Name}' must be a visual component, not a route component.");
+            }
+        }
+
+        return failures.Count == 0
             ? ValidateOptionsResult.Success
             : ValidateOptionsResult.Fail(failures);
     }
