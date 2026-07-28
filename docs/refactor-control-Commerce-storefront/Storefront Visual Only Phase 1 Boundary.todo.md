@@ -722,29 +722,40 @@ Evidence:
 
 Goal: small mutation forms are fixed by Presentation, not manually written in Header/Account visual components.
 
-- [ ] Add Presentation components/patterns:
-  - [ ] `StorefrontCurrencyPreferenceForm`
-  - [ ] `StorefrontLogoutForm`
-- [ ] Presentation owns:
-  - [ ] action.
-  - [ ] method.
-  - [ ] antiforgery.
-  - [ ] hidden return URL.
-  - [ ] currency field name.
-  - [ ] safe return URL.
-- [ ] V2 owns:
-  - [ ] select/button markup through child content or class options.
-  - [ ] mobile/desktop placement.
-- [ ] Remove from V2:
-  - [ ] raw currency POST form in `StorefrontHeader`.
-  - [ ] raw logout POST form in `StorefrontAccountMenu`.
-  - [ ] direct `HttpContext` return URL construction.
-- [ ] Add tests:
-  - [ ] currency form posts `CurrencyCode` and safe `ReturnUrl`.
-  - [ ] logout form posts safe `ReturnUrl`.
-  - [ ] external return URL cannot be rendered.
-- [ ] Exit criteria:
-  - [ ] V2 visual components no longer author mutation form contracts.
+- [x] Add Presentation components/patterns:
+  - [x] `StorefrontCurrencyPreferenceForm`
+  - [x] `StorefrontLogoutForm`
+- [x] Presentation owns:
+  - [x] action.
+  - [x] method.
+  - [x] antiforgery.
+  - [x] hidden return URL.
+  - [x] currency field name.
+  - [x] safe return URL.
+- [x] V2 owns:
+  - [x] select/button markup through child content or class options.
+  - [x] mobile/desktop placement.
+- [x] Remove from V2:
+  - [x] raw currency POST form in `StorefrontHeader`.
+  - [x] raw logout POST form in `StorefrontAccountMenu`.
+  - [x] direct `HttpContext` return URL construction.
+- [x] Add tests:
+  - [x] currency form posts `CurrencyCode` and safe `ReturnUrl`.
+  - [x] logout form posts safe `ReturnUrl`.
+  - [x] external return URL cannot be rendered.
+- [x] Exit criteria:
+  - [x] V2 visual components no longer author mutation form contracts.
+
+Evidence:
+
+- Added `StorefrontCurrencyPreferenceForm`, `StorefrontLogoutForm`, and canonical shell mutation field names under Storefront Presentation.
+- V2 header/account menu now consume Presentation shell mutation forms and retain only placement/classes/submit content.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontShellMutationFormPatternTests" -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontShellContextServiceTests.GetAsync_WhenRequestPathLooksExternal_FallsBackToHome" -v:minimal`
+- Fixed-string `rg` checks for raw POST/antiforgery ownership in `StorefrontHeader` and `StorefrontAccountMenu` found no matches.
 
 ## Phase F1.37 - Consolidate product decision context in Presentation
 

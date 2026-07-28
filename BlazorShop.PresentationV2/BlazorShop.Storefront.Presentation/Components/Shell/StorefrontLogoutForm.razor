@@ -1,0 +1,23 @@
+@namespace BlazorShop.Storefront.Presentation.Components.Shell
+
+<form method="post" action="@StorefrontRoutes.Logout" class="@FormClass" data-storefront-logout-form>
+    <AntiforgeryToken />
+    <input type="hidden" name="@StorefrontShellMutationFormFieldNames.Logout.ReturnUrl" value="@Context.LogoutReturnUrl" />
+    <button type="submit" class="@SubmitClass">
+        @ChildContent
+    </button>
+</form>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontAccountMenuContext Context { get; set; } = default!;
+
+    [Parameter]
+    public string FormClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SubmitClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = builder => builder.AddContent(0, "Sign out");
+}

@@ -48,19 +48,14 @@
             <div class="bs-storefront-header__desktop-actions flex shrink-0 flex-wrap items-center gap-3 text-sm" aria-label="Shop actions">
                 @if (Context.Currency.ShowSelector)
                 {
-                    <form method="post" action="@Context.Currency.PreferenceAction" class="bs-storefront-currency-form">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@Context.Currency.ReturnUrl" />
-                        <select name="CurrencyCode" class="bs-storefront-currency-select" aria-label="Currency">
-                            @foreach (var currencyCode in Context.Currency.SupportedCurrencyCodes)
-                            {
-                                <option value="@currencyCode" selected="@IsSelectedCurrency(currencyCode)">@currencyCode</option>
-                            }
-                        </select>
-                        <button type="submit" class="bs-storefront-currency-submit" aria-label="Apply currency" title="Apply currency">
+                    <StorefrontCurrencyPreferenceForm Context="Context.Currency"
+                                                      FormClass="bs-storefront-currency-form"
+                                                      SelectClass="bs-storefront-currency-select"
+                                                      SubmitClass="bs-storefront-currency-submit">
+                        <SubmitContent>
                             <i class="fa-solid fa-check" aria-hidden="true"></i>
-                        </button>
-                    </form>
+                        </SubmitContent>
+                    </StorefrontCurrencyPreferenceForm>
                 }
                 <a href="@StorefrontRoutes.Cart"
                    class="bs-storefront-icon-button"
@@ -153,19 +148,14 @@
                     <div class="bs-storefront-header__mobile-panel-actions">
                         @if (Context.Currency.ShowSelector)
                         {
-                            <form method="post" action="@Context.Currency.PreferenceAction" class="bs-storefront-currency-form bs-storefront-currency-form--mobile">
-                                <AntiforgeryToken />
-                                <input type="hidden" name="ReturnUrl" value="@Context.Currency.ReturnUrl" />
-                                <select name="CurrencyCode" class="bs-storefront-currency-select" aria-label="Currency">
-                                    @foreach (var currencyCode in Context.Currency.SupportedCurrencyCodes)
-                                    {
-                                        <option value="@currencyCode" selected="@IsSelectedCurrency(currencyCode)">@currencyCode</option>
-                                    }
-                                </select>
-                                <button type="submit" class="bs-storefront-currency-submit" aria-label="Apply currency" title="Apply currency">
+                            <StorefrontCurrencyPreferenceForm Context="Context.Currency"
+                                                              FormClass="bs-storefront-currency-form bs-storefront-currency-form--mobile"
+                                                              SelectClass="bs-storefront-currency-select"
+                                                              SubmitClass="bs-storefront-currency-submit">
+                                <SubmitContent>
                                     <i class="fa-solid fa-check" aria-hidden="true"></i>
-                                </button>
-                            </form>
+                                </SubmitContent>
+                            </StorefrontCurrencyPreferenceForm>
                         }
                         <a href="@StorefrontRoutes.NewReleases" class="bs-storefront-pill-button">New Releases</a>
                         <a href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-deal-button">Today's Deals</a>
@@ -179,9 +169,4 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontHeaderContext Context { get; set; } = default!;
-
-    private bool IsSelectedCurrency(string currencyCode)
-    {
-        return string.Equals(currencyCode, Context.Currency.CurrentCurrencyCode, StringComparison.Ordinal);
-    }
 }

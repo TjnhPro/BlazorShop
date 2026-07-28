@@ -1,0 +1,46 @@
+@namespace BlazorShop.Storefront.Presentation.Components.Shell
+
+<form method="post" action="@Context.PreferenceAction" class="@FormClass" data-storefront-currency-preference-form>
+    <AntiforgeryToken />
+    <input type="hidden" name="@StorefrontShellMutationFormFieldNames.CurrencyPreference.ReturnUrl" value="@Context.ReturnUrl" />
+    <select name="@StorefrontShellMutationFormFieldNames.CurrencyPreference.CurrencyCode" class="@SelectClass" aria-label="@AriaLabel">
+        @foreach (var currencyCode in Context.SupportedCurrencyCodes)
+        {
+            <option value="@currencyCode" selected="@IsSelectedCurrency(currencyCode)">@currencyCode</option>
+        }
+    </select>
+    <button type="submit" class="@SubmitClass" aria-label="@SubmitAriaLabel" title="@SubmitTitle">
+        @SubmitContent
+    </button>
+</form>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontCurrencyContext Context { get; set; } = default!;
+
+    [Parameter]
+    public string FormClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SelectClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SubmitClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string AriaLabel { get; set; } = "Currency";
+
+    [Parameter]
+    public string SubmitAriaLabel { get; set; } = "Apply currency";
+
+    [Parameter]
+    public string SubmitTitle { get; set; } = "Apply currency";
+
+    [Parameter]
+    public RenderFragment SubmitContent { get; set; } = builder => builder.AddContent(0, "Apply");
+
+    private bool IsSelectedCurrency(string currencyCode)
+    {
+        return string.Equals(currencyCode, Context.CurrentCurrencyCode, StringComparison.Ordinal);
+    }
+}

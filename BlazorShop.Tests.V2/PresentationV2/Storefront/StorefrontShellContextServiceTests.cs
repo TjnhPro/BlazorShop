@@ -98,6 +98,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal("/", context.ReturnUrl);
         }
 
+        [Fact]
+        public async Task GetAsync_WhenRequestPathLooksExternal_FallsBackToHome()
+        {
+            var dependencies = new Dependencies();
+            var service = dependencies.CreateService("//evil.example/path", "?x=1");
+
+            var context = await service.GetAsync();
+
+            Assert.Equal("/", context.ReturnUrl);
+            Assert.Equal("/", context.Currency.ReturnUrl);
+        }
+
         private sealed class Dependencies
         {
             private readonly DefaultHttpContext _httpContext = new();

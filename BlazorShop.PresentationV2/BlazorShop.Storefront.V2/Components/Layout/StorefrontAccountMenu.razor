@@ -19,11 +19,9 @@
                 {
                     <a href="@link.Href" target="@link.Target" class="bs-storefront-account-menu__link">@link.Label</a>
                 }
-                <form method="post" action="@StorefrontRoutes.Logout">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="@Context.LogoutReturnUrl" />
-                    <button type="submit" class="bs-storefront-account-menu__link bs-storefront-account-menu__button">Sign out</button>
-                </form>
+                <StorefrontLogoutForm Context="Context" SubmitClass="bs-storefront-account-menu__link bs-storefront-account-menu__button">
+                    Sign out
+                </StorefrontLogoutForm>
             </div>
         }
         else
