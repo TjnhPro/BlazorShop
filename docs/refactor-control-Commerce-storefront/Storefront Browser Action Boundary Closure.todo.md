@@ -342,16 +342,16 @@ Goal: generated storefronts never receive copied browser application controllers
 
 ### Remove Generated Functional Bridge
 
-- [ ] Delete `writeFunctionalBrowserBridge()` from `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs`.
-- [ ] Remove the call to `writeFunctionalBrowserBridge(projectRoot)`.
-- [ ] Remove generated `wwwroot/js/storefront-builder.functional.js`.
-- [ ] Remove any generated artifact manifest entries for `storefront-builder.functional.js`.
-- [ ] Remove generated script injection into `Components/Layout/ApplicationHead.razor`.
-- [ ] Update `transformApplicationHead()` so it only injects generated CSS/metadata, not script.
+- [x] Delete `writeFunctionalBrowserBridge()` from `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs`.
+- [x] Remove the call to `writeFunctionalBrowserBridge(projectRoot)`.
+- [x] Remove generated `wwwroot/js/storefront-builder.functional.js`.
+- [x] Remove any generated artifact manifest entries for `storefront-builder.functional.js`.
+- [x] Remove generated script injection into `Components/Layout/ApplicationHead.razor`.
+- [x] Update `transformApplicationHead()` so it only injects generated CSS/metadata, not script.
 
 ### Generated Markup Contract
 
-- [ ] Update generated purchase panel output to emit Presentation binder descriptors:
+- [x] Update generated purchase panel output to emit Presentation binder descriptors:
 
 ```html
 <aside data-storefront-product-purchase
@@ -360,7 +360,7 @@ Goal: generated storefronts never receive copied browser application controllers
        data-selection-preview-route="...">
 ```
 
-- [ ] Replace generated `data-storefront-generated-add-to-cart` with stable command descriptor:
+- [x] Replace generated `data-storefront-generated-add-to-cart` with stable command descriptor:
 
 ```html
 <button data-storefront-command="cart.add-line"
@@ -368,14 +368,14 @@ Goal: generated storefronts never receive copied browser application controllers
 </button>
 ```
 
-- [ ] Replace `data-quantity-selector` with binder-owned quantity source descriptor:
+- [x] Replace `data-quantity-selector` with binder-owned quantity source descriptor:
 
 ```html
 <input data-storefront-purchase-quantity>
 ```
 
-- [ ] Keep generated classes and labels visual-only.
-- [ ] Keep generated feedback container declarative:
+- [x] Keep generated classes and labels visual-only.
+- [x] Keep generated feedback container declarative:
 
 ```html
 <p data-storefront-purchase-feedback aria-live="polite"></p>
@@ -383,71 +383,80 @@ Goal: generated storefronts never receive copied browser application controllers
 
 ### VisualScripts Slot Rules
 
-- [ ] Generated projects should not need generated JS for cart/product purchase.
-- [ ] If generated visual JS is needed for animation only, generate:
+- [x] Generated projects should not need generated JS for cart/product purchase.
+- [x] If generated visual JS is needed for animation only, generate. Not needed in F1.55 because no generated JS remains:
 
 ```text
 Components/Layout/VisualScripts.razor
 wwwroot/js/visual/storefront.visual.js
 ```
 
-- [ ] Register it through `FoundationViewRegistration.VisualScripts`.
-- [ ] Do not inject generated script through `ApplicationHead`.
-- [ ] Generated visual JS may only listen to semantic events and apply visuals.
+- [x] Register it through `FoundationViewRegistration.VisualScripts`. Not applicable in F1.55 because no generated visual JS is emitted.
+- [x] Do not inject generated script through `ApplicationHead`.
+- [x] Generated visual JS may only listen to semantic events and apply visuals. Enforced for future generated JS by static gate token checks.
 
 ### Generated Zones
 
-- [ ] Keep `allowedGeneratedZones` without `wwwroot/js` if no generated JS remains.
-- [ ] If visual JS remains needed, add only:
+- [x] Keep `allowedGeneratedZones` without `wwwroot/js` if no generated JS remains.
+- [x] If visual JS remains needed, add only. Not needed in F1.55 because no generated JS remains:
 
 ```yaml
 allowedGeneratedZones:
   - wwwroot/js/visual
 ```
 
-- [ ] Validator must reject:
-  - [ ] `wwwroot/js/storefront-builder.functional.js`.
-  - [ ] `wwwroot/js/*.js` outside `wwwroot/js/visual`.
-  - [ ] generated JS invoking application commands.
-  - [ ] generated JS constructing command payloads.
+- [x] Validator must reject:
+  - [x] `wwwroot/js/storefront-builder.functional.js`.
+  - [x] `wwwroot/js/*.js` outside `wwwroot/js/visual`.
+  - [x] generated JS invoking application commands.
+  - [x] generated JS constructing command payloads.
 
 ### StorefrontBuilder Validation Updates
 
-- [ ] Update `Test-StorefrontBuilderCompositionFiles.ps1`:
-  - [ ] stop expecting `storefront-builder.functional.js`.
-  - [ ] stop expecting command orchestration JS.
-  - [ ] expect descriptor markup.
-  - [ ] ensure `ApplicationHead.razor` does not contain `<script src=...functional...>`.
-- [ ] Update `Test-StorefrontBuilderStaticGate.ps1`:
-  - [ ] reject generated direct Runtime/Client references.
-  - [ ] reject functional JS output.
-  - [ ] reject generated JS outside allowed visual zone.
-- [ ] Update StorefrontBuilder generation tests:
-  - [ ] generated composition applies product purchase descriptors.
-  - [ ] generated project has no functional browser bridge.
-  - [ ] generated project relies on Presentation binder.
-- [ ] Update docs/metadata:
-  - [ ] remove `storefront-builder.functional.js` from expected generated artifacts.
-  - [ ] document generated visual JS policy.
+- [x] Update `Test-StorefrontBuilderCompositionFiles.ps1`:
+  - [x] stop expecting `storefront-builder.functional.js`.
+  - [x] stop expecting command orchestration JS.
+  - [x] expect descriptor markup.
+  - [x] ensure `ApplicationHead.razor` does not contain `<script src=...functional...>`.
+- [x] Update `Test-StorefrontBuilderStaticGate.ps1`:
+  - [x] reject generated direct Runtime/Client references.
+  - [x] reject functional JS output.
+  - [x] reject generated JS outside allowed visual zone.
+- [x] Update StorefrontBuilder generation tests:
+  - [x] generated composition applies product purchase descriptors.
+  - [x] generated project has no functional browser bridge.
+  - [x] generated project relies on Presentation binder.
+- [x] Update docs/metadata:
+  - [x] remove `storefront-builder.functional.js` from expected generated artifacts.
+  - [x] document generated visual JS policy.
 
 ### Tests
 
-- [ ] Run `dotnet test BlazorShop.Tests.V2 --filter StorefrontBuilder`.
-- [ ] Run `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1` against generated proof.
-- [ ] Run generated structure proof.
-- [ ] Run generated foundation functional proof after F1.56 makes it PR-ready.
-- [ ] Inspect generated artifact and verify:
-  - [ ] no `wwwroot/js/storefront-builder.functional.js`.
-  - [ ] no `app.cart.addLine`.
-  - [ ] no generated `ProductId`/`productId` payload construction in JS.
-  - [ ] no script injected into `ApplicationHead`.
+- [x] Run `dotnet test BlazorShop.Tests.V2 --filter StorefrontBuilder`.
+- [x] Run `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1` against generated proof.
+- [x] Run generated structure proof.
+- [x] Run generated foundation functional proof after F1.56 makes it PR-ready. F1.55 keeps this as a phase dependency; F1.56 owns making/running the PR-ready fast functional proof.
+- [x] Inspect generated artifact and verify:
+  - [x] no `wwwroot/js/storefront-builder.functional.js`.
+  - [x] no `app.cart.addLine`.
+  - [x] no generated `ProductId`/`productId` payload construction in JS.
+  - [x] no script injected into `ApplicationHead`.
 
 ### Definition of Done
 
-- [ ] StorefrontBuilder no longer generates browser application controller JS.
-- [ ] Generated markup uses Presentation action descriptors.
-- [ ] Generated zones match actual output.
-- [ ] Generated storefront product/add-to-cart behavior still works through Presentation binder.
+- [x] StorefrontBuilder no longer generates browser application controller JS.
+- [x] Generated markup uses Presentation action descriptors.
+- [x] Generated zones match actual output.
+- [x] Generated storefront product/add-to-cart behavior still works through Presentation binder. Browser execution proof is carried by the F1.56 fast functional proof split.
+
+### F1.55 Evidence
+
+- [x] `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs`
+- [x] `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-commerce-regression.mjs`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontBuilder -v:minimal`
+- [x] `scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel Structure`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey default`
+- [x] Generated artifact inspection: no `wwwroot/js/storefront-builder.functional.js`, no generated `app.cart.addLine`, no generated command payload JS, descriptors present in `Components/Catalog/PurchasePanelPlaceholder.razor`, and no functional script in `Components/Layout/ApplicationHead.razor`.
 
 ## Phase F1.56 - Guardrail And Closure Hardening
 

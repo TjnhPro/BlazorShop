@@ -50,6 +50,9 @@ namespace BlazorShop.Tests.Architecture
                 "Register Presentation view slots",
                 "Package compatibility metadata",
                 "PackageReference",
+                "storefront-builder.functional.js",
+                "wwwroot/js/visual",
+                "Generated visual JS must not invoke application commands",
             })
             {
                 Assert.Contains(marker, validator, StringComparison.Ordinal);
@@ -61,6 +64,9 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-STATIC-002", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-STATIC-003", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-STATIC-004", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-005", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-006", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-007", validator, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -165,6 +171,9 @@ namespace BlazorShop.Tests.Architecture
                 "Browser does not call Commerce Node protected APIs directly",
                 "/api/storefront/",
                 "/api/commerce/",
+                "[data-storefront-product-purchase]",
+                "[data-storefront-product-purchase-submit]",
+                "[data-storefront-purchase-quantity]",
             })
             {
                 Assert.Contains(marker, runner, StringComparison.Ordinal);
@@ -174,6 +183,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("Functional Foundation Browser Report", runner, StringComparison.Ordinal);
             Assert.Contains("same-origin Presentation BFF", runner, StringComparison.Ordinal);
             Assert.DoesNotContain("explicit fixture gap is reported", runner, StringComparison.Ordinal);
+            Assert.DoesNotContain("[data-storefront-generated-add-to-cart]", runner, StringComparison.Ordinal);
+            Assert.DoesNotContain("window.blazorShopStorefront?.application", runner, StringComparison.Ordinal);
             Assert.Contains("run-commerce-regression.mjs", proof, StringComparison.Ordinal);
             Assert.Contains("FixtureCategorySlug", proof, StringComparison.Ordinal);
             Assert.Contains("FixtureProductSlug", proof, StringComparison.Ordinal);
@@ -360,10 +371,13 @@ namespace BlazorShop.Tests.Architecture
 
             foreach (var marker in new[]
             {
-                "storefront-builder.functional.js",
-                "data-storefront-generated-add-to-cart",
-                "window.blazorShopStorefront",
-                "app.cart.addLine",
+                "data-storefront-product-purchase",
+                "data-selection-preview-route",
+                "data-storefront-command=\"cart.add-line\"",
+                "data-storefront-product-purchase-submit",
+                "data-storefront-purchase-quantity",
+                "data-storefront-purchase-feedback",
+                "data-storefront-cart-badge",
                 "Context.Search.Categories",
                 "PurchasePanel=\"@Context.PurchasePanel\"",
                 "PurchaseActions=\"@Context.PurchaseActions\"",
@@ -372,6 +386,10 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains(marker, composition, StringComparison.Ordinal);
             }
 
+            Assert.Contains("content.replace", composition, StringComparison.Ordinal);
+            Assert.DoesNotContain("writeFunctionalBrowserBridge", composition, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-storefront-generated-add-to-cart", composition, StringComparison.Ordinal);
+            Assert.DoesNotContain("app.cart.addLine", composition, StringComparison.Ordinal);
             Assert.Contains("StorefrontBuilder generated proof structure gate", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontVisualConsumerBoundaryValidatorTests", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontStarterHostSmokeTests", workflow, StringComparison.Ordinal);

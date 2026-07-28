@@ -21,6 +21,13 @@ allowedGeneratedZones:
   - Pages/WasmHost
   - wwwroot/css
   - wwwroot/assets/generated
+browserActionPolicy:
+  owner: BlazorShop.Storefront.Presentation
+  productPurchaseDescriptor: data-storefront-product-purchase
+  addToCartDescriptor: data-storefront-command="cart.add-line"
+  generatedFunctionalJs: forbidden
+  generatedVisualJsZone: wwwroot/js/visual
+  generatedVisualJsStatus: disabled-until-allowed-zone-is-added
 managedZones:
   - Features/feature-manifest.json
   - docs/storefront-analysis

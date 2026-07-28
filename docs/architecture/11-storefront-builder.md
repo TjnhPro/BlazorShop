@@ -80,6 +80,8 @@ Generated/custom storefront consumer rules:
 - Generated/custom storefronts must not copy retired Components `Features` wrappers as their presentation source; no active shared wrapper source exists in `BlazorShop.Storefront.Components`.
 - StorefrontBuilder may replace product card, grid, gallery, purchase, cart, checkout, and account visual templates in the generated/custom project without changing shared behavior contracts.
 - Route protected browser actions through same-origin BFF endpoints before Storefront Runtime or Commerce Node Storefront APIs.
+- Product purchase, product-selection preview, add-to-cart, cart badge, and consent browser action binders are owned by `BlazorShop.Storefront.Presentation`. Generated markup declares semantic descriptors such as `data-storefront-product-purchase`, `data-selection-preview-route`, `data-storefront-purchase-quantity`, `data-storefront-command="cart.add-line"`, `data-storefront-product-purchase-submit`, and `data-storefront-cart-badge`.
+- Generated storefronts must not emit copied browser application controller JavaScript. `wwwroot/js/storefront-builder.functional.js` is forbidden. If a later phase needs generated visual JavaScript, it must live only under `wwwroot/js/visual`, register through the visual script slot, and listen to Presentation semantic events without invoking application commands or constructing command payloads.
 - Browser and WASM code must not reference `BlazorShop.Storefront.Runtime`; it consumes same-origin generated endpoints and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior.
 - Use generated package contracts instead of guessing API response shapes.
 - Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or generated proof output from another store.
@@ -183,6 +185,7 @@ The static gate checks:
 - Asset manifest shape and referenced files.
 - CSS token and generated style rules.
 - Composition files.
+- Browser action descriptor markup and absence of generated functional JavaScript outside an explicitly allowed visual-only script zone.
 - Protected-file guardrails.
 - Generated Runtime/Presentation/Components package references plus Client compatibility metadata.
 

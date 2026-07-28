@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
@@ -33,10 +33,8 @@ for (const [relativePath, transform] of transforms) {
   }
 }
 
-writeFunctionalBrowserBridge(projectRoot);
-
 console.log("StorefrontBuilder composition applied shell, home, catalog, product, and fallback page files from generation-plan.yaml.");
-console.log("Commerce commands remain bound through Starter slot/action contracts such as cart.add-line.");
+console.log("Commerce commands remain bound through Presentation product purchase descriptors such as cart.add-line.");
 
 function transformLayout(content) {
     if (content.includes("sfb-shell-header")) {
@@ -50,7 +48,7 @@ function transformLayout(content) {
       '<a href="@Context.Links.TodaysDeals.Href">Deals</a>',
       '<a href="@Context.Links.TodaysDeals.Href">Deals</a>\n        @foreach (var category in Context.Search.Categories)\n        {\n            <a href="@Context.Links.Category(category.Href)">@category.Label</a>\n        }'
     )
-    .replace('<a href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label</a>', '<a class="sfb-cart-badge" href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span>0</span></a>')
+    .replace('<a href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label</a>', '<a class="sfb-cart-badge" href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span data-storefront-cart-badge hidden>0</span></a>')
     .replace(
       "</header>",
       '<nav class="sfb-mobile-nav" aria-label="Mobile navigation"><a href="@Context.Links.Home.Href">@Context.Links.Home.Label</a><a href="@Context.Links.Cart.Href">@Context.Links.Cart.Label</a><a href="@Context.Links.AccountRoot.Href">@Context.Links.AccountRoot.Label</a></nav>\n</header>'
@@ -58,30 +56,13 @@ function transformLayout(content) {
 }
 
 function transformApplicationHead(content) {
-  if (content.includes("css/storefront-builder.generated.css") && content.includes("js/storefront-builder.functional.js")) {
-    return content;
-  }
+  let updated = content.replace(/\s*<script src="js\/storefront-builder\.functional\.js" defer><\/script>\r?\n?/g, "\n");
 
-  let updated = content;
   if (!updated.includes("css/storefront-builder.generated.css")) {
     updated = updated.replace(
       '<link rel="stylesheet" href="css/starter.css" />',
       '<link rel="stylesheet" href="css/starter.css" />\n    <link rel="stylesheet" href="css/storefront-builder.generated.css" />'
     );
-  }
-
-  if (!updated.includes("js/storefront-builder.functional.js")) {
-    if (updated.includes("</head>")) {
-      updated = updated.replace(
-        "</head>",
-        '    <script src="js/storefront-builder.functional.js" defer></script>\n</head>'
-      );
-    } else {
-      updated = updated.replace(
-        '<link rel="stylesheet" href="css/storefront-builder.generated.css" />',
-        '<link rel="stylesheet" href="css/storefront-builder.generated.css" />\n<script src="js/storefront-builder.functional.js" defer></script>'
-      );
-    }
   }
 
   return updated;
@@ -122,19 +103,19 @@ function transformGallery(content) {
 }
 
 function transformPurchasePanel(content) {
-  if (content.includes('data-action="cart.add-line"')) {
+  if (content.includes("data-storefront-product-purchase")) {
     return content;
   }
 
   return content
     .replace(
       '<aside class="starter-purchase-panel">',
-      '@using BlazorShop.Storefront.Components.Contracts.Product\n@using BlazorShop.Storefront.Components.Headless.Product\n\n<aside class="starter-purchase-panel sfb-product-purchase"\n       data-storefront-selection-preview\n       data-preview-route="@PurchaseActions.SelectionPreviewRoute"\n       data-product-id="@PurchasePanel.ProductId"\n       data-currency-code="@PurchasePanel.CurrencyCode">'
+      '@using BlazorShop.Storefront.Components.Contracts.Product\n@using BlazorShop.Storefront.Components.Headless.Product\n\n<aside class="starter-purchase-panel sfb-product-purchase"\n       data-storefront-product-purchase\n       data-selection-preview-route="@PurchaseActions.SelectionPreviewRoute"\n       data-product-id="@PurchasePanel.ProductId"\n       data-product-name="@PurchasePanel.ProductName"\n       data-resolved-variant-id="@PurchasePanel.ResolvedVariantId"\n       data-currency-code="@PurchasePanel.CurrencyCode">'
     )
     .replace('<aside class="starter-purchase-panel">', '<aside class="starter-purchase-panel sfb-product-purchase">')
     .replace(
       '<button class="starter-button" type="button" disabled>Add to cart</button>',
-      '<label class="sfb-quantity-control">Quantity <input data-storefront-generated-quantity type="number" min="@PurchasePanel.MinOrderQuantity" max="@PurchasePanel.MaxOrderQuantity" value="@PurchasePanel.MinOrderQuantity" /></label>\n    <button class="starter-button"\n            data-action="cart.add-line"\n            data-storefront-generated-add-to-cart\n            data-product-id="@PurchasePanel.ProductId"\n            data-product-name="@PurchasePanel.ProductName"\n            data-resolved-variant-id="@PurchasePanel.ResolvedVariantId"\n            data-currency-code="@PurchasePanel.CurrencyCode"\n            data-quantity-selector="[data-storefront-generated-quantity]"\n            data-feedback-target="[data-storefront-selection-message]"\n            type="button"\n            disabled="@(!PurchasePanel.CanSubmitInitialPurchase)">Add to cart</button>\n    <p data-storefront-selection-message aria-live="polite"></p>'
+      '<label class="sfb-quantity-control">Quantity <input data-storefront-purchase-quantity type="number" min="@PurchasePanel.MinOrderQuantity" max="@PurchasePanel.MaxOrderQuantity" value="@PurchasePanel.MinOrderQuantity" /></label>\n    <button class="starter-button"\n            data-storefront-command="cart.add-line"\n            data-storefront-product-purchase-submit\n            data-feedback-target="[data-storefront-purchase-feedback]"\n            type="button"\n            disabled="@(!PurchasePanel.CanSubmitInitialPurchase)">Add to cart</button>\n    <p data-storefront-purchase-feedback aria-live="polite"></p>'
     )
     .replace(
       'public string ProductName { get; set; } = "Product";',
@@ -160,79 +141,6 @@ function transformProductDetailShell(content) {
       'public string ProductName { get; set; } = "Product";',
       'public string ProductName { get; set; } = "Product";\n\n    [Parameter]\n    public BlazorShop.Storefront.Components.Contracts.Product.ProductPurchasePanelModel PurchasePanel { get; set; } = BlazorShop.Storefront.Components.Contracts.Product.ProductPurchasePanelModel.Empty;\n\n    [Parameter]\n    public BlazorShop.Storefront.Components.Headless.Product.ProductPurchaseActionDescriptor PurchaseActions { get; set; } = BlazorShop.Storefront.Components.Headless.Product.ProductPurchaseActionDescriptor.Empty;'
     );
-}
-
-function writeFunctionalBrowserBridge(rootPath) {
-  const output = join(rootPath, "wwwroot", "js", "storefront-builder.functional.js");
-  mkdirSync(join(rootPath, "wwwroot", "js"), { recursive: true });
-  writeFileSync(output, `(() => {
-  const root = window.blazorShopStorefront = window.blazorShopStorefront || {};
-
-  function readQuantity(button) {
-    const selector = button.dataset.quantitySelector;
-    const input = selector ? document.querySelector(selector) : null;
-    const value = Number.parseInt(input?.value || "1", 10);
-    return Number.isFinite(value) && value > 0 ? value : 1;
-  }
-
-  function optionalGuid(value) {
-    return value && value !== "00000000-0000-0000-0000-000000000000" ? value : null;
-  }
-
-  function writeFeedback(button, text) {
-    const target = button.dataset.feedbackTarget ? document.querySelector(button.dataset.feedbackTarget) : null;
-    if (target) {
-      target.textContent = text;
-    }
-  }
-
-  function updateCartBadge(summary) {
-    const count = Number.parseInt(summary?.count ?? summary?.Count ?? "0", 10);
-    if (!Number.isFinite(count)) {
-      return;
-    }
-
-    document.querySelectorAll(".sfb-cart-badge span, [data-storefront-cart-badge]").forEach((badge) => {
-      badge.textContent = count > 99 ? "99+" : String(count);
-      badge.hidden = count <= 0;
-      badge.classList.toggle("hidden", count <= 0);
-    });
-  }
-
-  async function addLine(button) {
-    const app = root.application;
-    if (!app?.cart?.addLine) {
-      throw new Error("Storefront application cart bridge is not available.");
-    }
-
-    const payload = {
-      productId: button.dataset.productId,
-      productVariantId: optionalGuid(button.dataset.resolvedVariantId),
-      currencyCode: button.dataset.currencyCode || null,
-      selectedAttributes: [],
-      quantity: readQuantity(button)
-    };
-
-    button.disabled = true;
-    try {
-      const summary = await app.cart.addLine(payload);
-      updateCartBadge(summary);
-      writeFeedback(button, "Added to cart.");
-    } finally {
-      button.disabled = false;
-    }
-  }
-
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-storefront-generated-add-to-cart]");
-    if (!button) {
-      return;
-    }
-
-    event.preventDefault();
-    void addLine(button).catch((error) => writeFeedback(button, error instanceof Error ? error.message : "Cart could not be updated."));
-  });
-})();\n`, "utf8");
 }
 
 function readArg(name) {

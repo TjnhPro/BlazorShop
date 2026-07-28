@@ -59,4 +59,45 @@ if (-not $versions.Contains("StorefrontClientPackageVersion", [System.StringComp
     throw "[SFB-STATIC-004] Package compatibility metadata is missing."
 }
 
+$functionalScript = Join-Path $ProjectRoot "wwwroot\js\storefront-builder.functional.js"
+if (Test-Path $functionalScript) {
+    throw "[SFB-STATIC-005] Generated storefront must not emit copied browser application controller JS: wwwroot/js/storefront-builder.functional.js"
+}
+
+$jsRoot = Join-Path $ProjectRoot "wwwroot\js"
+if (Test-Path $jsRoot) {
+    Get-ChildItem -LiteralPath $jsRoot -Recurse -File -Filter *.js |
+        Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
+        ForEach-Object {
+            $relativeToProject = [System.IO.Path]::GetRelativePath($ProjectRoot, $_.FullName).Replace("\", "/")
+            if (-not $relativeToProject.StartsWith("wwwroot/js/visual/", [System.StringComparison]::Ordinal)) {
+                throw "[SFB-STATIC-006] Generated storefront JS is only allowed in wwwroot/js/visual for event-only visuals: $relativeToProject"
+            }
+
+            $content = Get-Content -LiteralPath $_.FullName -Raw
+            foreach ($token in @(
+                ".application.cart.",
+                ".application.consent.",
+                ".application.productSelection.",
+                "application.cart",
+                "application.consent",
+                "application.productSelection",
+                "cart.addLine",
+                "productSelection.preview",
+                "ProductId:",
+                "ProductVariantId:",
+                "SelectedAttributes:",
+                "CurrencyCode:",
+                "productId:",
+                "productVariantId:",
+                "selectedAttributes:",
+                "currencyCode:"
+            )) {
+                if ($content.Contains($token, [System.StringComparison]::Ordinal)) {
+                    throw "[SFB-STATIC-007] Generated visual JS must not invoke application commands or construct command payloads: $relativeToProject contains $token"
+                }
+            }
+        }
+}
+
 Write-Host "StorefrontBuilder static validation gate passed for $ProjectRoot."

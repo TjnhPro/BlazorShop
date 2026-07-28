@@ -14,6 +14,18 @@ function Assert-ContainsText([string]$RelativePath, [string]$Text, [string]$Rule
     }
 }
 
+function Assert-DoesNotContainText([string]$RelativePath, [string]$Text, [string]$RuleId) {
+    $path = Join-Path $ProjectRoot $RelativePath
+    if (-not (Test-Path $path)) {
+        throw "[$RuleId] Missing generated composition file: $RelativePath"
+    }
+
+    $content = Get-Content -LiteralPath $path -Raw
+    if ($content.Contains($Text, [System.StringComparison]::Ordinal)) {
+        throw "[$RuleId] '$RelativePath' must not contain '$Text'."
+    }
+}
+
 foreach ($check in @(
     @("Components\Layout\ApplicationHead.razor", "css/storefront-builder.generated.css", "SFB-COMPOSITION-000"),
     @("Components\Layout\MainLayout.razor", "sfb-shell-header", "SFB-COMPOSITION-001"),
@@ -25,7 +37,12 @@ foreach ($check in @(
     @("Components\Catalog\ProductSummaryCard.razor", "sfb-product-card", "SFB-COMPOSITION-007"),
     @("Pages\Hybrid\Catalog\ProductPage.razor", "sfb-product-page", "SFB-COMPOSITION-008"),
     @("Components\Catalog\ProductGalleryPlaceholder.razor", "sfb-product-gallery", "SFB-COMPOSITION-009"),
-    @("Components\Catalog\PurchasePanelPlaceholder.razor", "data-action=`"cart.add-line`"", "SFB-COMMERCE-001"),
+    @("Components\Catalog\PurchasePanelPlaceholder.razor", "data-storefront-product-purchase", "SFB-COMMERCE-001"),
+    @("Components\Catalog\PurchasePanelPlaceholder.razor", "data-selection-preview-route", "SFB-COMMERCE-002"),
+    @("Components\Catalog\PurchasePanelPlaceholder.razor", "data-storefront-command=`"cart.add-line`"", "SFB-COMMERCE-003"),
+    @("Components\Catalog\PurchasePanelPlaceholder.razor", "data-storefront-product-purchase-submit", "SFB-COMMERCE-004"),
+    @("Components\Catalog\PurchasePanelPlaceholder.razor", "data-storefront-purchase-quantity", "SFB-COMMERCE-005"),
+    @("Components\Catalog\PurchasePanelPlaceholder.razor", "data-storefront-purchase-feedback", "SFB-COMMERCE-006"),
     @("Components\Catalog\PurchasePanelPlaceholder.razor", "sfb-quantity-control", "SFB-COMPOSITION-010"),
     @("Pages\Hybrid\Commerce\CartPage.razor", "sfb-fallback-page", "SFB-COMPOSITION-011"),
     @("Pages\Hybrid\Commerce\CheckoutPage.razor", "sfb-fallback-page", "SFB-COMPOSITION-012"),
@@ -36,7 +53,11 @@ foreach ($check in @(
 
 $purchasePanel = Get-Content -LiteralPath (Join-Path $ProjectRoot "Components\Catalog\PurchasePanelPlaceholder.razor") -Raw
 if ($purchasePanel.Contains("HttpClient", [System.StringComparison]::Ordinal) -or $purchasePanel.Contains("fetch(", [System.StringComparison]::Ordinal)) {
-    throw "[SFB-COMMERCE-002] Product purchase must not call direct HTTP or JS."
+    throw "[SFB-COMMERCE-007] Product purchase must not call direct HTTP or JS."
 }
+
+Assert-DoesNotContainText -RelativePath "Components\Layout\ApplicationHead.razor" -Text "storefront-builder.functional.js" -RuleId "SFB-COMMERCE-008"
+Assert-DoesNotContainText -RelativePath "Components\Catalog\PurchasePanelPlaceholder.razor" -Text "data-storefront-generated-add-to-cart" -RuleId "SFB-COMMERCE-009"
+Assert-DoesNotContainText -RelativePath "Components\Catalog\PurchasePanelPlaceholder.razor" -Text "data-storefront-generated-quantity" -RuleId "SFB-COMMERCE-010"
 
 Write-Host "StorefrontBuilder composition file validation passed for $ProjectRoot."

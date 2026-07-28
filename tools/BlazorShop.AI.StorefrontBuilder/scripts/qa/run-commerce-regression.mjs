@@ -41,7 +41,7 @@ try {
   await clickOrGoto(page, `a[href="/product/${productSlug}"]`, `/product/${productSlug}`, "Product link navigates");
   checks.push("Product renders");
   await expectVisible(page, ".sfb-product-gallery, .starter-product-gallery, .starter-gallery-placeholder, img", "Product gallery or image area renders");
-  await expectVisible(page, ".sfb-quantity-control input, [data-storefront-generated-quantity], [data-storefront-selection-quantity]", "Product quantity control renders");
+  await expectVisible(page, ".sfb-quantity-control input, [data-storefront-purchase-quantity]", "Product quantity control renders");
   await assertSeo(page, "Product SEO title/meta exists");
   await assertProductSelectionPreview(page);
   await addProductToCart(page);
@@ -251,27 +251,37 @@ async function assertSeo(page, label) {
 }
 
 async function assertProductSelectionPreview(page) {
-  const result = await page.evaluate(async () => {
-    const panel = document.querySelector("[data-storefront-selection-preview]");
-    const app = window.blazorShopStorefront?.application;
-    if (!panel || !app?.productSelection?.preview) {
-      return { ok: false, reason: "Product selection panel or Presentation preview bridge is missing." };
-    }
+  const descriptors = await page.evaluate(() => {
+    const panel = document.querySelector("[data-storefront-product-purchase]");
+    const quantity = document.querySelector("[data-storefront-purchase-quantity]");
+    const submit = document.querySelector("[data-storefront-product-purchase-submit]");
 
-    const payload = {
-      productId: panel.dataset.productId,
-      productVariantId: panel.dataset.resolvedVariantId || null,
-      selectedAttributes: [],
-      quantity: 1,
-      currencyCode: panel.dataset.currencyCode || null,
+    return {
+      productId: panel?.getAttribute("data-product-id") || "",
+      previewRoute: panel?.getAttribute("data-selection-preview-route") || "",
+      command: submit?.getAttribute("data-storefront-command") || "",
+      quantity: quantity?.value || "",
     };
-
-    const preview = await app.productSelection.preview(panel.dataset.previewRoute, payload);
-    return { ok: Boolean(preview?.canAddToCart ?? preview?.CanAddToCart), reason: preview?.message || preview?.Message || "" };
   });
 
-  if (!result.ok) {
-    failures.push(`Product selection preview runs when available: ${result.reason || "preview did not return an addable selection."}`);
+  if (!descriptors.productId || descriptors.previewRoute !== "/api/product-selection-preview" || descriptors.command !== "cart.add-line") {
+    failures.push(`Product selection preview runs when available: missing Presentation binder descriptors ${JSON.stringify(descriptors)}.`);
+    return;
+  }
+
+  const quantity = page.locator("[data-storefront-purchase-quantity]").first();
+  const previewResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.origin === new URL(baseUrl).origin
+      && url.pathname === "/api/product-selection-preview"
+      && response.request().method() === "POST";
+  });
+
+  await quantity.fill("2");
+  await quantity.dispatchEvent("change");
+  const response = await previewResponse;
+  if (!response.ok()) {
+    failures.push(`Product selection preview runs when available: /api/product-selection-preview returned ${response.status()}.`);
     return;
   }
 
@@ -279,9 +289,9 @@ async function assertProductSelectionPreview(page) {
 }
 
 async function addProductToCart(page) {
-  const button = page.locator("[data-storefront-generated-add-to-cart]").first();
+  const button = page.locator("[data-storefront-product-purchase-submit]").first();
   if ((await button.count()) === 0) {
-    failures.push("Add-to-cart succeeds through same-origin BFF: generated add-to-cart button is missing.");
+    failures.push("Add-to-cart succeeds through same-origin BFF: product purchase submit descriptor is missing.");
     return;
   }
 
