@@ -29,6 +29,54 @@ namespace BlazorShop.Storefront.Services
         bool Analytics,
         bool Marketing);
 
+    public sealed record StorefrontConsentContext(
+        bool VisualEnabled,
+        string PolicyPagePath,
+        StorefrontConsentActionContext Actions,
+        StorefrontConsentBrowserEvents Events)
+    {
+        public static StorefrontConsentContext Default { get; } = Create(null);
+
+        public static StorefrontConsentContext Create(StorefrontConsentConfiguration? configuration)
+        {
+            var policyPagePath = string.IsNullOrWhiteSpace(configuration?.PolicyPagePath)
+                ? "/pages/cookies"
+                : configuration.PolicyPagePath.Trim();
+
+            return new StorefrontConsentContext(
+                configuration?.Enabled ?? true,
+                policyPagePath,
+                StorefrontConsentActionContext.Default,
+                StorefrontConsentBrowserEvents.Default);
+        }
+    }
+
+    public sealed record StorefrontConsentActionContext(
+        string CurrentUrl,
+        string AcceptUrl,
+        string RevokeUrl,
+        string CurrentMethod,
+        string AcceptMethod,
+        string RevokeMethod)
+    {
+        public static StorefrontConsentActionContext Default { get; } = new(
+            "/api/consent/current",
+            "/api/consent",
+            "/api/consent/revoke",
+            "GET",
+            "POST",
+            "POST");
+    }
+
+    public sealed record StorefrontConsentBrowserEvents(
+        string Changed,
+        string ManageRequested)
+    {
+        public static StorefrontConsentBrowserEvents Default { get; } = new(
+            "storefront:consent:changed",
+            "storefront:consent:manage-requested");
+    }
+
     public sealed class StorefrontConsentSaveRequest
     {
         public bool Preferences { get; set; }

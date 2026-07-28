@@ -580,6 +580,7 @@ namespace BlazorShop.Tests.Architecture
                 "Components/Commerce/CartLineList.razor",
                 "Components/Commerce/CheckoutStepShell.razor",
                 "Components/Account/AccountShell.razor",
+                "Components/Layout/StarterConsentBanner.razor",
             };
 
             foreach (var component in expectedComponents)
@@ -590,6 +591,7 @@ namespace BlazorShop.Tests.Architecture
             }
 
             var layout = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Layout/MainLayout.razor");
+            var consent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Layout/StarterConsentBanner.razor");
             var css = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/wwwroot/css/starter.css");
 
             Assert.Contains("starter-header", layout, StringComparison.Ordinal);
@@ -598,6 +600,9 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("starter-toast-region", layout, StringComparison.Ordinal);
             Assert.Contains("Context.Links.Cart.Href", layout, StringComparison.Ordinal);
             Assert.Contains("Context.Links.AccountRoot.Href", layout, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-consent-banner", consent, StringComparison.Ordinal);
+            Assert.Contains("StorefrontConsentContext", consent, StringComparison.Ordinal);
+            Assert.Contains("starter-consent-banner", css, StringComparison.Ordinal);
             Assert.Contains("@media (max-width: 720px)", css, StringComparison.Ordinal);
             Assert.Contains("border-radius: 8px", css, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2", css, StringComparison.Ordinal);

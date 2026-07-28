@@ -1,0 +1,39 @@
+@namespace BlazorShop.Storefront.Starter.Components.Layout
+@using BlazorShop.Storefront.Services
+
+<section data-storefront-consent-banner
+         data-storefront-consent-enabled="@Context.VisualEnabled.ToString().ToLowerInvariant()"
+         data-storefront-consent-current-url="@Context.Actions.CurrentUrl"
+         data-storefront-consent-accept-url="@Context.Actions.AcceptUrl"
+         data-storefront-consent-revoke-url="@Context.Actions.RevokeUrl"
+         data-storefront-consent-current-method="@Context.Actions.CurrentMethod"
+         data-storefront-consent-accept-method="@Context.Actions.AcceptMethod"
+         data-storefront-consent-revoke-method="@Context.Actions.RevokeMethod"
+         data-storefront-consent-changed-event="@Context.Events.Changed"
+         data-storefront-consent-manage-event="@Context.Events.ManageRequested"
+         class="starter-consent-banner hidden"
+         aria-label="Cookie consent">
+    <p>Essential cookies keep this storefront working. Optional cookies can improve the experience.</p>
+    <a data-storefront-consent-policy href="@Context.PolicyPagePath">Cookie information</a>
+    <label>
+        <span>Preferences</span>
+        <input data-storefront-consent-preferences type="checkbox" />
+    </label>
+    <label>
+        <span>Analytics</span>
+        <input data-storefront-consent-analytics type="checkbox" />
+    </label>
+    <label>
+        <span>Marketing</span>
+        <input data-storefront-consent-marketing type="checkbox" />
+    </label>
+    <button type="button" data-storefront-consent-essential>Essential only</button>
+    <button type="button" data-storefront-consent-revoke>Revoke</button>
+    <button type="button" data-storefront-consent-selected>Save choices</button>
+    <button type="button" data-storefront-consent-all>Accept all</button>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontConsentContext Context { get; set; } = StorefrontConsentContext.Default;
+}

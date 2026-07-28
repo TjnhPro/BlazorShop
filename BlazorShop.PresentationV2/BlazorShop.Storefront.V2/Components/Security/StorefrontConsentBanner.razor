@@ -1,6 +1,16 @@
 @namespace BlazorShop.Storefront.V2.Components.Security
+@using BlazorShop.Storefront.Services
 
 <section data-storefront-consent-banner
+         data-storefront-consent-enabled="@Context.VisualEnabled.ToString().ToLowerInvariant()"
+         data-storefront-consent-current-url="@Context.Actions.CurrentUrl"
+         data-storefront-consent-accept-url="@Context.Actions.AcceptUrl"
+         data-storefront-consent-revoke-url="@Context.Actions.RevokeUrl"
+         data-storefront-consent-current-method="@Context.Actions.CurrentMethod"
+         data-storefront-consent-accept-method="@Context.Actions.AcceptMethod"
+         data-storefront-consent-revoke-method="@Context.Actions.RevokeMethod"
+         data-storefront-consent-changed-event="@Context.Events.Changed"
+         data-storefront-consent-manage-event="@Context.Events.ManageRequested"
          class="pointer-events-auto fixed inset-x-0 bottom-0 z-[100] hidden border-t border-slate-200 bg-white/95 px-4 py-4 shadow-2xl backdrop-blur sm:px-6"
          aria-label="Cookie consent">
     <div class="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -10,7 +20,7 @@
                 Essential cookies keep sign-in, cart, checkout, and security working. Optional preferences can improve the Storefront experience.
             </p>
             <a data-storefront-consent-policy
-               href="/pages/cookies"
+               href="@Context.PolicyPagePath"
                class="mt-2 inline-flex text-sm font-medium text-slate-950 underline underline-offset-4">
                 Cookie information
             </a>
@@ -53,3 +63,8 @@
         </div>
     </div>
 </section>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontConsentContext Context { get; set; } = StorefrontConsentContext.Default;
+}

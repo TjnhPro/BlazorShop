@@ -24,6 +24,7 @@ public static class StarterFoundationViewRegistration
                 ApplicationHead = typeof(ApplicationHead),
                 VisualScripts = typeof(ApplicationScripts),
                 MainLayout = typeof(MainLayout),
+                ConsentBanner = typeof(StarterConsentBanner),
                 HomePage = typeof(HomePage),
                 CategoryPage = typeof(CategoryPage),
                 ProductPage = typeof(ProductPage),

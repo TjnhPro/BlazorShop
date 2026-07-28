@@ -4,6 +4,7 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Storefront.Services.Contracts;
 
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
 
     public sealed class StorefrontShellContextService : IStorefrontShellContextService
     {
@@ -13,8 +14,10 @@ namespace BlazorShop.Storefront.Services
         private readonly IStorefrontCatalogClient _catalogClient;
         private readonly IStorefrontPageNavigationProvider _pageNavigationProvider;
         private readonly IStorefrontNavigationProvider _navigationProvider;
+        private readonly IStorefrontStoreConfigurationClient _storeConfigurationClient;
         private readonly IStorefrontSessionResolver _sessionResolver;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<StorefrontShellContextService> _logger;
         private Task<StorefrontShellContext>? _cachedTask;
 
         public StorefrontShellContextService(
@@ -22,15 +25,19 @@ namespace BlazorShop.Storefront.Services
             IStorefrontCatalogClient catalogClient,
             IStorefrontPageNavigationProvider pageNavigationProvider,
             IStorefrontNavigationProvider navigationProvider,
+            IStorefrontStoreConfigurationClient storeConfigurationClient,
             IStorefrontSessionResolver sessionResolver,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<StorefrontShellContextService> logger)
         {
             _displayContextProvider = displayContextProvider;
             _catalogClient = catalogClient;
             _pageNavigationProvider = pageNavigationProvider;
             _navigationProvider = navigationProvider;
+            _storeConfigurationClient = storeConfigurationClient;
             _sessionResolver = sessionResolver;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         public Task<StorefrontShellContext> GetAsync(CancellationToken cancellationToken = default)
@@ -55,30 +62,52 @@ namespace BlazorShop.Storefront.Services
         {
             var displayTask = _displayContextProvider.GetAsync(cancellationToken);
             var sessionTask = _sessionResolver.GetCurrentUserAsync(cancellationToken);
-            var categoryTask = _catalogClient.GetPublishedCategoryTreeAsync(cancellationToken);
-            var headerLinksTask = _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.Header, cancellationToken);
-            var footerCompanyLinksTask = _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterCompany, cancellationToken);
-            var footerSupportLinksTask = _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterSupport, cancellationToken);
-            var footerLegalLinksTask = _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterLegal, cancellationToken);
-            var mainMenuTask = _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.Main, cancellationToken);
-            var footerCompanyMenuTask = _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterCompany, cancellationToken);
-            var footerSupportMenuTask = _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterSupport, cancellationToken);
-            var footerLegalMenuTask = _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterLegal, cancellationToken);
+            var categoryTask = LoadOptionalApiValueAsync(
+                "storefront shell categories",
+                () => _catalogClient.GetPublishedCategoryTreeAsync(cancellationToken),
+                Array.Empty<GetCategoryTreeNode>());
+            var headerLinksTask = LoadOptionalAsync(
+                "storefront shell header page links",
+                () => _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.Header, cancellationToken),
+                Array.Empty<StorefrontPageNavigationLinkDto>());
+            var footerCompanyLinksTask = LoadOptionalAsync(
+                "storefront shell footer company page links",
+                () => _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterCompany, cancellationToken),
+                Array.Empty<StorefrontPageNavigationLinkDto>());
+            var footerSupportLinksTask = LoadOptionalAsync(
+                "storefront shell footer support page links",
+                () => _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterSupport, cancellationToken),
+                Array.Empty<StorefrontPageNavigationLinkDto>());
+            var footerLegalLinksTask = LoadOptionalAsync(
+                "storefront shell footer legal page links",
+                () => _pageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.FooterLegal, cancellationToken),
+                Array.Empty<StorefrontPageNavigationLinkDto>());
+            var mainMenuTask = LoadOptionalAsync(
+                "storefront shell main menu",
+                () => _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.Main, cancellationToken),
+                fallback: null);
+            var footerCompanyMenuTask = LoadOptionalAsync(
+                "storefront shell footer company menu",
+                () => _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterCompany, cancellationToken),
+                fallback: null);
+            var footerSupportMenuTask = LoadOptionalAsync(
+                "storefront shell footer support menu",
+                () => _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterSupport, cancellationToken),
+                fallback: null);
+            var footerLegalMenuTask = LoadOptionalAsync(
+                "storefront shell footer legal menu",
+                () => _navigationProvider.GetMenuAsync(StoreNavigationMenuNames.FooterLegal, cancellationToken),
+                fallback: null);
+            var consentTask = LoadConsentContextAsync(cancellationToken);
 
             await Task.WhenAll(
                 displayTask,
-                sessionTask,
-                categoryTask,
-                headerLinksTask,
-                footerCompanyLinksTask,
-                footerSupportLinksTask,
-                footerLegalLinksTask,
-                mainMenuTask,
-                footerCompanyMenuTask,
-                footerSupportMenuTask,
-                footerLegalMenuTask);
+                sessionTask);
 
             var display = await displayTask;
+            var session = await sessionTask;
+            var categories = await categoryTask;
+            var consent = await consentTask;
             var returnUrl = ResolveSafeReturnUrl();
             var brand = CreateBrand(display);
             var links = StorefrontLinkContext.Create();
@@ -93,7 +122,7 @@ namespace BlazorShop.Storefront.Services
                 ToShellLinks(await footerLegalLinksTask));
             var search = new StorefrontSearchContext(
                 StorefrontRoutes.Search,
-                ToSearchCategoryLinks((await categoryTask).IsSuccess ? (await categoryTask).Value : null));
+                ToSearchCategoryLinks(categories));
             var currency = new StorefrontCurrencyContext(
                 display.CurrencyCode,
                 display.DefaultCurrencyCode,
@@ -101,7 +130,7 @@ namespace BlazorShop.Storefront.Services
                 display.SupportedCurrencyCodes.Count > 1,
                 StorefrontRoutes.CurrencyPreference,
                 returnUrl);
-            var account = CreateAccountMenu(await sessionTask, links);
+            var account = CreateAccountMenu(session, links);
             var header = new StorefrontHeaderContext(brand, navigation, search, currency, account, links, returnUrl);
             var footer = CreateFooter(brand, navigation, links, display);
 
@@ -114,8 +143,55 @@ namespace BlazorShop.Storefront.Services
                 navigation,
                 search,
                 currency,
+                consent,
                 links,
                 returnUrl);
+        }
+
+        private async Task<StorefrontConsentContext> LoadConsentContextAsync(CancellationToken cancellationToken)
+        {
+            var configuration = await LoadOptionalApiValueAsync(
+                "storefront shell consent configuration",
+                () => _storeConfigurationClient.GetPublicConfigurationAsync(cancellationToken),
+                (StorefrontPublicConfiguration?)null);
+
+            return StorefrontConsentContext.Create(configuration?.Consent);
+        }
+
+        private async Task<T> LoadOptionalAsync<T>(string dependencyName, Func<Task<T>> load, T fallback)
+        {
+            try
+            {
+                return await load();
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Optional storefront shell dependency '{DependencyName}' failed; using fallback state.", dependencyName);
+                return fallback;
+            }
+        }
+
+        private async Task<T?> LoadOptionalApiValueAsync<T>(string dependencyName, Func<Task<StorefrontApiResult<T>>> load, T? fallback)
+        {
+            try
+            {
+                var result = await load();
+                if (result.IsSuccess)
+                {
+                    return result.Value;
+                }
+
+                _logger.LogWarning(
+                    "Optional storefront shell dependency '{DependencyName}' returned {ResultState}; using fallback state.",
+                    dependencyName,
+                    result.IsNotFound ? "not_found" : result.IsServiceUnavailable ? "service_unavailable" : "failed");
+                return fallback;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Optional storefront shell dependency '{DependencyName}' failed; using fallback state.", dependencyName);
+                return fallback;
+            }
         }
 
         private string ResolveSafeReturnUrl()

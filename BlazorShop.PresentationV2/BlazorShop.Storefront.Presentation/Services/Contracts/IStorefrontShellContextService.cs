@@ -17,6 +17,7 @@ namespace BlazorShop.Storefront.Services.Contracts
         StorefrontNavigationContext Navigation,
         StorefrontSearchContext Search,
         StorefrontCurrencyContext Currency,
+        StorefrontConsentContext Consent,
         StorefrontLinkContext Links,
         string ReturnUrl);
 

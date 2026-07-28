@@ -6,11 +6,13 @@
 @if (_parameters is not null)
 {
     <DynamicComponent Type="@ViewSet.MainLayout" Parameters="_parameters" />
+    <DynamicComponent Type="@ViewSet.ConsentBanner" Parameters="_consentParameters" />
 }
 
 @code {
     private StorefrontShellContext? _context;
     private IDictionary<string, object>? _parameters;
+    private IDictionary<string, object>? _consentParameters;
     private static readonly RenderFragment EmptyBody = _ => { };
 
     private StorefrontFoundationViewSet ViewSet => this.FoundationOptions.Value.ViewSet
@@ -24,6 +26,11 @@
         {
             [StorefrontFoundationViewTypeValidator.ContextParameterName] = _context,
             [nameof(this.Body)] = this.Body ?? EmptyBody,
+        };
+        StorefrontFoundationViewTypeValidator.Validate(this.ViewSet.ConsentBanner, _context.Consent);
+        _consentParameters = new Dictionary<string, object>
+        {
+            [StorefrontFoundationViewTypeValidator.ContextParameterName] = _context.Consent,
         };
     }
 }

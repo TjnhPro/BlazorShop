@@ -45,7 +45,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("blazorshop-antiforgery-token", visualScript, StringComparison.Ordinal);
             Assert.DoesNotContain("blazorshop-antiforgery-header", visualScript, StringComparison.Ordinal);
             Assert.Contains("getStorefrontApplication().cart.addLine", visualScript, StringComparison.Ordinal);
-            Assert.Contains("getStorefrontApplication().consent.save", visualScript, StringComparison.Ordinal);
+            Assert.DoesNotContain("getStorefrontApplication().consent", visualScript, StringComparison.Ordinal);
             Assert.Contains("getStorefrontApplication().productSelection.preview", visualScript, StringComparison.Ordinal);
 
             Assert.Contains("fetch(assertLocalRoute(route), options)", applicationScript, StringComparison.Ordinal);
@@ -57,6 +57,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("storefront:cart:changed", applicationScript, StringComparison.Ordinal);
             Assert.Contains("storefront:cart:error", applicationScript, StringComparison.Ordinal);
             Assert.Contains("storefront:consent:changed", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("storefront:consent:manage-requested", applicationScript, StringComparison.Ordinal);
             Assert.Contains("storefront:product-selection:changed", applicationScript, StringComparison.Ordinal);
             Assert.Contains("storefront:product-selection:error", applicationScript, StringComparison.Ordinal);
         }

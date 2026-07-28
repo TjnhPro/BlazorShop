@@ -327,46 +327,60 @@ Goal: consent behavior should be a platform capability, and optional shell data 
 
 ### Tasks
 
-- [ ] Move consent command/state ownership to Presentation:
-  - [ ] consent current endpoint.
-  - [ ] consent accept endpoint.
-  - [ ] consent revoke endpoint.
-  - [ ] consent context model.
-  - [ ] semantic browser events.
-- [ ] Define whether consent visual is required or optional:
-  - [ ] required: every host must register a consent visual component.
-  - [ ] optional: host explicitly disables consent visual through a capability setting.
-- [ ] Make Starter behavior explicit; do not silently omit consent.
-- [ ] Update V2 consent banner to use shared consent context/action descriptors.
-- [ ] Remove V2 consent transport logic from visual JS.
-- [ ] Split shell context loading into required and optional groups.
-- [ ] Required data should fail clearly:
-  - [ ] current store.
-  - [ ] display/store identity.
-  - [ ] session/auth summary if required for shell correctness.
-- [ ] Optional data should degrade:
-  - [ ] header menus.
-  - [ ] footer menus.
-  - [ ] categories.
-  - [ ] page navigation links.
-  - [ ] non-critical cart badge enhancements if local API fails.
-- [ ] Add structured logging for optional shell data failures.
-- [ ] Add fallback empty states for optional menus/categories without taking down the shell.
+- [x] Move consent command/state ownership to Presentation:
+  - [x] consent current endpoint.
+  - [x] consent accept endpoint.
+  - [x] consent revoke endpoint.
+  - [x] consent context model.
+  - [x] semantic browser events.
+- [x] Define whether consent visual is required or optional:
+  - [x] required: every host must register a consent visual component.
+  - [x] optional: host explicitly disables consent visual through a capability setting.
+- [x] Make Starter behavior explicit; do not silently omit consent.
+- [x] Update V2 consent banner to use shared consent context/action descriptors.
+- [x] Remove V2 consent transport logic from visual JS.
+- [x] Split shell context loading into required and optional groups.
+- [x] Required data should fail clearly:
+  - [x] current store.
+  - [x] display/store identity.
+  - [x] session/auth summary if required for shell correctness.
+- [x] Optional data should degrade:
+  - [x] header menus.
+  - [x] footer menus.
+  - [x] categories.
+  - [x] page navigation links.
+  - [x] non-critical cart badge enhancements if local API fails.
+- [x] Add structured logging for optional shell data failures.
+- [x] Add fallback empty states for optional menus/categories without taking down the shell.
 
 ### Tests
 
-- [ ] Unit test: optional menu failure still returns shell context with fallback menu state.
-- [ ] Unit test: required store/display failure returns maintenance/service-unavailable path as appropriate.
-- [ ] Playwright test: Starter renders explicit consent behavior.
-- [ ] Playwright test: V2 consent accept/revoke still works through Presentation app JS.
-- [ ] Architecture test: V2 consent component does not call BFF endpoints directly.
+- [x] Unit test: optional menu failure still returns shell context with fallback menu state.
+- [x] Unit test: required store/display failure returns maintenance/service-unavailable path as appropriate.
+- [x] Playwright test: Starter renders explicit consent behavior.
+- [x] Playwright test: V2 consent accept/revoke still works through Presentation app JS.
+- [x] Architecture test: V2 consent component does not call BFF endpoints directly.
 
 ### Definition of Done
 
-- [ ] Consent is consistent across V2 and Starter.
-- [ ] Consent transport is Presentation-owned.
-- [ ] Optional shell failures do not kill storefront rendering.
-- [ ] Required shell failures remain explicit and safe.
+- [x] Consent is consistent across V2 and Starter.
+- [x] Consent transport is Presentation-owned.
+- [x] Optional shell failures do not kill storefront rendering.
+- [x] Required shell failures remain explicit and safe.
+
+Notes/evidence:
+
+- `StorefrontConsentContext` now supplies policy/action/event descriptors from Presentation; `StorefrontFoundationViewSet.ConsentBanner` is a required visual slot.
+- V2 registers `StorefrontConsentBanner`; Starter registers `StarterConsentBanner` and always renders explicit consent descriptors, including disabled state when consent is disabled by configuration.
+- Presentation `storefront.application.js` owns consent current/accept/revoke browser behavior and semantic events; V2 `storefrontCommerce.js` no longer calls consent commands.
+- `StorefrontShellContextService` keeps display/session as required and wraps navigation menus, page links, category tree, and consent configuration as optional dependencies with structured warning logs and fallback empty states.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj -v:minimal` - passed.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj -v:minimal` - passed.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj -v:minimal` - passed.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontStarterHostSmokeTests|FullyQualifiedName~StorefrontShellContextServiceTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~LayoutAssetFoundationTests" -v:minimal` - passed 97/97.
+  - `node scripts/qa/storefront-application-js-split-proof.js` - passed.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` - passed.
 
 ## Phase F1.51 - Shared Visual Consumer Boundary Validator
 

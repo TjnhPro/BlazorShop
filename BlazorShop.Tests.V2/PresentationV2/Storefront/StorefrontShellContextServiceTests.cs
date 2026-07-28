@@ -3,6 +3,7 @@ extern alias StorefrontV2;
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
     using StorefrontV2::BlazorShop.Storefront.Models;
@@ -25,6 +26,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(1, dependencies.CatalogClient.CategoryTreeCalls);
             Assert.Equal(4, dependencies.PageNavigationProvider.LocationCalls);
             Assert.Equal(4, dependencies.NavigationProvider.MenuCalls);
+            Assert.Equal(1, dependencies.ConfigurationClient.PublicConfigurationCalls);
             Assert.Equal(1, dependencies.SessionResolver.CallCount);
             Assert.Equal("/checkout?step=review", first.ReturnUrl);
         }
@@ -110,6 +112,32 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal("/", context.Currency.ReturnUrl);
         }
 
+        [Fact]
+        public async Task GetAsync_WhenOptionalMenuFails_ReturnsFallbackMenuState()
+        {
+            var dependencies = new Dependencies();
+            dependencies.NavigationProvider.ThrowForSystemName = StoreNavigationMenuNames.Main;
+            dependencies.PageNavigationProvider.ThrowForLocation = StorefrontPageContentRules.FooterSupport;
+            dependencies.CatalogClient.ThrowOnCategoryTree = true;
+
+            var context = await dependencies.CreateService("/").GetAsync();
+
+            Assert.Null(context.Navigation.MainMenu);
+            Assert.Empty(context.Navigation.FooterSupportLinks);
+            Assert.Empty(context.Search.Categories);
+            Assert.NotNull(context.Header);
+            Assert.Equal("Demo Co", context.Brand.Name);
+        }
+
+        [Fact]
+        public async Task GetAsync_WhenRequiredDisplayFails_PropagatesFailure()
+        {
+            var dependencies = new Dependencies();
+            dependencies.DisplayProvider.ThrowOnLoad = true;
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => dependencies.CreateService("/").GetAsync());
+        }
+
         private sealed class Dependencies
         {
             private readonly DefaultHttpContext _httpContext = new();
@@ -121,6 +149,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public StubPageNavigationProvider PageNavigationProvider { get; } = new();
 
             public StubNavigationProvider NavigationProvider { get; } = new();
+
+            public StubConfigurationClient ConfigurationClient { get; } = new();
 
             public StubSessionResolver SessionResolver { get; } = new();
 
@@ -143,8 +173,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     CatalogClient,
                     PageNavigationProvider,
                     NavigationProvider,
+                    ConfigurationClient,
                     SessionResolver,
-                    httpContextAccessor);
+                    httpContextAccessor,
+                    NullLogger<StorefrontShellContextService>.Instance);
             }
         }
 
@@ -163,9 +195,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public int CallCount { get; private set; }
 
+            public bool ThrowOnLoad { get; set; }
+
             public Task<StorefrontDisplayContext> GetAsync(CancellationToken cancellationToken = default)
             {
                 CallCount++;
+                if (ThrowOnLoad)
+                {
+                    throw new InvalidOperationException("Display context failed.");
+                }
+
                 return Task.FromResult(Display);
             }
         }
@@ -179,9 +218,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public int CategoryTreeCalls { get; private set; }
 
+            public bool ThrowOnCategoryTree { get; set; }
+
             public Task<StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>> GetPublishedCategoryTreeAsync(CancellationToken cancellationToken = default)
             {
                 CategoryTreeCalls++;
+                if (ThrowOnCategoryTree)
+                {
+                    throw new InvalidOperationException("Category tree failed.");
+                }
+
                 return Task.FromResult(StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>.Success(Categories));
             }
 
@@ -204,6 +250,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             public int LocationCalls { get; private set; }
 
+            public string? ThrowForLocation { get; set; }
+
             public Task<IReadOnlyList<StorefrontPageNavigationLinkDto>> GetLinksAsync(CancellationToken cancellationToken = default)
             {
                 throw new NotSupportedException();
@@ -214,6 +262,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 CancellationToken cancellationToken = default)
             {
                 LocationCalls++;
+                if (string.Equals(ThrowForLocation, navigationLocation, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException("Page navigation failed.");
+                }
+
                 IReadOnlyList<StorefrontPageNavigationLinkDto> links =
                 [
                     new(navigationLocation, $"{navigationLocation}-page", $"{navigationLocation} page", navigationLocation, 10),
@@ -226,14 +279,52 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             public int MenuCalls { get; private set; }
 
+            public string? ThrowForSystemName { get; set; }
+
             public Task<StoreNavigationPublicMenuDto?> GetMenuAsync(string systemName, CancellationToken cancellationToken = default)
             {
                 MenuCalls++;
+                if (string.Equals(ThrowForSystemName, systemName, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException("Navigation failed.");
+                }
+
                 return Task.FromResult<StoreNavigationPublicMenuDto?>(new StoreNavigationPublicMenuDto(
                     systemName,
                     DateTimeOffset.UtcNow,
                     [new StoreNavigationPublicItemDto($"{systemName} link", $"/{systemName}", "url", null, false, [])]));
             }
+        }
+
+        private sealed class StubConfigurationClient : IStorefrontStoreConfigurationClient
+        {
+            public int PublicConfigurationCalls { get; private set; }
+
+            public Task<StorefrontApiResult<StorefrontCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+                => throw new NotSupportedException();
+
+            public Task<StorefrontApiResult<StorefrontPublicConfiguration>> GetPublicConfigurationAsync(CancellationToken cancellationToken = default)
+            {
+                PublicConfigurationCalls++;
+                return Task.FromResult(StorefrontApiResult<StorefrontPublicConfiguration>.Success(
+                    new StorefrontPublicConfiguration(
+                        new StorefrontStoreIdentity(Guid.NewGuid(), "demo", "Demo Store", "Active", null, null, false),
+                        new StorefrontBranding(null, null, "Demo Co", "hello@example.test", "+1 555 0100", "1 Test Street", null, null, null, null, null, "support@example.test", null, null),
+                        new StorefrontLocaleOptions("en-US", ["en-US"]),
+                        new StorefrontCurrencyOptions("USD", ["USD"]),
+                        new StorefrontConsentConfiguration(true, true, "v1", "/pages/cookies", [], 180),
+                        new StorefrontCaptchaConfiguration(false, string.Empty, null, [], new Dictionary<string, string>(StringComparer.Ordinal)),
+                        new StorefrontMaintenanceState(false, null),
+                        new StorefrontFeatureFlags(true, true, true, true, true, true),
+                        new Dictionary<string, StorefrontCapability>(StringComparer.Ordinal),
+                        [],
+                        new StorefrontSeoDefaults(null, null, null, null, null, null, null, null, null, null, null, null, null))));
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCurrencyPreferenceResponse>> SetCurrencyPreferenceAsync(
+                StorefrontCurrencyPreferenceRequest request,
+                CancellationToken cancellationToken = default)
+                => throw new NotSupportedException();
         }
 
         private sealed class StubSessionResolver : IStorefrontSessionResolver

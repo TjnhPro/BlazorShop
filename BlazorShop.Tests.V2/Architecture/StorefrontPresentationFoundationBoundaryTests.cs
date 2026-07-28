@@ -108,6 +108,7 @@ namespace BlazorShop.Tests.Architecture
                 ApplicationHead = viewSet.ApplicationHead,
                 VisualScripts = viewSet.VisualScripts,
                 MainLayout = viewSet.MainLayout,
+                ConsentBanner = viewSet.ConsentBanner,
                 HomePage = viewSet.HomePage,
                 CategoryPage = viewSet.CategoryPage,
                 ProductPage = null!,
@@ -237,6 +238,33 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenConsentBannerContextParameterIsMissing()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), consentBanner: typeof(MissingContextFoundationView)),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("ConsentBanner", StringComparison.Ordinal));
+            Assert.Contains(result.Failures, failure => failure.Contains("StorefrontConsentContext", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void FoundationViewOptionsValidator_FailsWhenConsentBannerIsMissing()
+        {
+            var result = new StorefrontFoundationViewOptionsValidator()
+                .Validate(null, new StorefrontFoundationViewOptions
+                {
+                    ViewSet = CopyViewSet(CreateValidViewSet(), omitConsentBanner: true),
+                });
+
+            Assert.True(result.Failed);
+            Assert.Contains(result.Failures, failure => failure.Contains("ConsentBanner", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public void FoundationViewOptionsValidator_PassesWhenContextTypeIsAssignable()
         {
             var result = new StorefrontFoundationViewOptionsValidator()
@@ -284,6 +312,7 @@ namespace BlazorShop.Tests.Architecture
                 v2Registration,
                 StringComparison.Ordinal);
             Assert.Contains("ErrorState = typeof(ErrorState)", v2Registration, StringComparison.Ordinal);
+            Assert.Contains("ConsentBanner = typeof(StorefrontConsentBanner)", v2Registration, StringComparison.Ordinal);
             Assert.Contains(
                 "AddStarterFoundationViews",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs"),
@@ -295,6 +324,7 @@ namespace BlazorShop.Tests.Architecture
                 StringComparison.Ordinal);
             Assert.Contains("VisualScripts = typeof(ApplicationScripts)", starterRegistration, StringComparison.Ordinal);
             Assert.Contains("ErrorState = typeof(ErrorState)", starterRegistration, StringComparison.Ordinal);
+            Assert.Contains("ConsentBanner = typeof(StarterConsentBanner)", starterRegistration, StringComparison.Ordinal);
             Assert.Contains(
                 "MapStorefrontApplication(",
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
@@ -568,9 +598,11 @@ namespace BlazorShop.Tests.Architecture
             Type? applicationHead = null,
             Type? visualScripts = null,
             Type? mainLayout = null,
+            Type? consentBanner = null,
             Type? productPage = null,
             Type? checkoutPage = null,
             Type? errorState = null,
+            bool omitConsentBanner = false,
             bool omitCheckoutPage = false,
             bool omitErrorState = false)
         {
@@ -579,6 +611,7 @@ namespace BlazorShop.Tests.Architecture
                 ApplicationHead = applicationHead ?? source.ApplicationHead,
                 VisualScripts = visualScripts ?? source.VisualScripts,
                 MainLayout = mainLayout ?? source.MainLayout,
+                ConsentBanner = omitConsentBanner ? null! : consentBanner ?? source.ConsentBanner,
                 HomePage = source.HomePage,
                 CategoryPage = source.CategoryPage,
                 ProductPage = productPage ?? source.ProductPage,

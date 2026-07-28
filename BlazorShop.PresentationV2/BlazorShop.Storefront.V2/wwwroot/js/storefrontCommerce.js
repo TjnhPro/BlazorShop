@@ -15,8 +15,6 @@
   const galleryNextSelector = "[data-storefront-gallery-next]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
-  const consentBannerSelector = "[data-storefront-consent-banner]";
-  const consentManageSelector = "[data-storefront-consent-manage]";
   const storefrontApplication = window.blazorShopStorefront?.application;
   const pendingToastStorageKey = "blazorshop:storefront:pending-toast";
   const buttonResetDelayMs = 1600;
@@ -48,62 +46,6 @@
     }
 
     return storefrontApplication;
-  }
-
-  function initConsentBanner() {
-    const banner = document.querySelector(consentBannerSelector);
-    if (!(banner instanceof HTMLElement)) {
-      return;
-    }
-
-    const preferences = banner.querySelector("[data-storefront-consent-preferences]");
-    const analytics = banner.querySelector("[data-storefront-consent-analytics]");
-    const marketing = banner.querySelector("[data-storefront-consent-marketing]");
-
-    if (!(preferences instanceof HTMLInputElement) || !(analytics instanceof HTMLInputElement) || !(marketing instanceof HTMLInputElement)) {
-      return;
-    }
-
-    const applyState = (state) => {
-      if (!state || state.enabled === false || state.bannerRequired === false) {
-        banner.classList.add("hidden");
-        return;
-      }
-
-      preferences.checked = Boolean(state.categories?.preferences);
-      analytics.checked = Boolean(state.categories?.analytics);
-      marketing.checked = Boolean(state.categories?.marketing);
-      banner.classList.remove("hidden");
-    };
-
-    const save = async (selection) => {
-      const state = await getStorefrontApplication().consent.save(selection);
-      applyState({ ...state, bannerRequired: false });
-    };
-
-    banner.querySelector("[data-storefront-consent-essential]")?.addEventListener("click", () => {
-      void save({ preferences: false, analytics: false, marketing: false });
-    });
-    banner.querySelector("[data-storefront-consent-selected]")?.addEventListener("click", () => {
-      void save({ preferences: preferences.checked, analytics: analytics.checked, marketing: marketing.checked });
-    });
-    banner.querySelector("[data-storefront-consent-all]")?.addEventListener("click", () => {
-      void save({ preferences: true, analytics: true, marketing: true });
-    });
-    banner.querySelector("[data-storefront-consent-revoke]")?.addEventListener("click", () => {
-      void getStorefrontApplication().consent.revoke()
-        .then(applyState)
-        .catch(() => banner.classList.add("hidden"));
-    });
-    document.querySelectorAll(consentManageSelector).forEach((button) => {
-      button.addEventListener("click", () => {
-        banner.classList.remove("hidden");
-      });
-    });
-
-    void getStorefrontApplication().consent.current()
-      .then(applyState)
-      .catch(() => banner.classList.add("hidden"));
   }
 
   async function refreshCartSummary() {
@@ -806,7 +748,6 @@
 
   function initialize() {
     flushQueuedToast();
-    initConsentBanner();
     initCheckoutAddressSelection();
     refreshCartSummary();
     document.querySelectorAll(selectionPreviewSelector).forEach((container) => {

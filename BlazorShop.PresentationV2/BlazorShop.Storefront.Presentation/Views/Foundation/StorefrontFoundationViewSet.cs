@@ -23,6 +23,8 @@ public sealed class StorefrontFoundationViewSet
 
     public required Type MainLayout { get; init; }
 
+    public required Type ConsentBanner { get; init; }
+
     public required Type HomePage { get; init; }
 
     public required Type CategoryPage { get; init; }
@@ -64,6 +66,7 @@ public sealed class StorefrontFoundationViewSet
             ApplicationHead = componentType,
             VisualScripts = componentType,
             MainLayout = componentType,
+            ConsentBanner = componentType,
             HomePage = componentType,
             CategoryPage = componentType,
             ProductPage = componentType,
@@ -90,6 +93,7 @@ public sealed class StorefrontFoundationViewSet
             new(nameof(this.ApplicationHead), this.ApplicationHead),
             new(nameof(this.VisualScripts), this.VisualScriptsOrNull),
             new(nameof(this.MainLayout), this.MainLayout),
+            new(nameof(this.ConsentBanner), this.ConsentBanner),
             new(nameof(this.HomePage), this.HomePage),
             new(nameof(this.CategoryPage), this.CategoryPage),
             new(nameof(this.ProductPage), this.ProductPage),

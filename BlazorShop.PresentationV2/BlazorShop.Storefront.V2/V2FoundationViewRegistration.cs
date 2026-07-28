@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.V2;
 
 using BlazorShop.Storefront.V2.Components.Layout;
+using BlazorShop.Storefront.V2.Components.Security;
 using BlazorShop.Storefront.V2.Components.Shared;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
@@ -25,6 +26,7 @@ public static class V2FoundationViewRegistration
                 ApplicationHead = typeof(StorefrontApplicationHead),
                 VisualScripts = typeof(StorefrontApplicationScripts),
                 MainLayout = typeof(MainLayout),
+                ConsentBanner = typeof(StorefrontConsentBanner),
                 HomePage = typeof(Home),
                 CategoryPage = typeof(CategoryPage),
                 ProductPage = typeof(V2ProductPageView),

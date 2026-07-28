@@ -82,6 +82,9 @@ public sealed class StorefrontStarterHostSmokeTests : IClassFixture<WebApplicati
         Assert.Contains("src=\"_framework/blazor.web.js\"", content, StringComparison.Ordinal);
         Assert.Contains("src=\"_content/BlazorShop.Storefront.Presentation/js/storefront.application.js\"", content, StringComparison.Ordinal);
         Assert.Contains("href=\"css/starter.css\"", content, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-consent-banner", content, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-consent-accept-url=\"/api/consent\"", content, StringComparison.Ordinal);
+        Assert.Contains("starter-consent-banner", content, StringComparison.Ordinal);
     }
 
     [Fact]

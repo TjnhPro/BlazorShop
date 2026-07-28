@@ -34,7 +34,17 @@ function pageHtml() {
 <body>
   <span data-storefront-cart-badge hidden>0</span>
   <button data-storefront-consent-manage type="button">Manage cookies</button>
-  <section data-storefront-consent-banner class="hidden">
+  <section data-storefront-consent-banner
+           data-storefront-consent-enabled="true"
+           data-storefront-consent-current-url="/api/consent/current"
+           data-storefront-consent-accept-url="/api/consent"
+           data-storefront-consent-revoke-url="/api/consent/revoke"
+           data-storefront-consent-current-method="GET"
+           data-storefront-consent-accept-method="POST"
+           data-storefront-consent-revoke-method="POST"
+           data-storefront-consent-changed-event="storefront:consent:changed"
+           data-storefront-consent-manage-event="storefront:consent:manage-requested"
+           class="starter-consent-banner hidden">
     <input type="checkbox" data-storefront-consent-preferences />
     <input type="checkbox" data-storefront-consent-analytics />
     <input type="checkbox" data-storefront-consent-marketing />
@@ -87,7 +97,7 @@ function pageHtml() {
   </template>
   <script>
     window.__storefrontProofEvents = [];
-    ["storefront:cart:changed", "storefront:cart:error", "storefront:consent:changed", "storefront:product-selection:changed", "storefront:product-selection:error"]
+    ["storefront:cart:changed", "storefront:cart:error", "storefront:consent:changed", "storefront:consent:manage-requested", "storefront:product-selection:changed", "storefront:product-selection:error"]
       .forEach((name) => document.addEventListener(name, (event) => window.__storefrontProofEvents.push({ name, detail: event.detail })));
   </script>
 </body>
@@ -196,19 +206,31 @@ async function main() {
     await page.addScriptTag({ path: visualScript });
 
     await page.waitForFunction(() => window.__storefrontProofEvents.some((event) => event.name === "storefront:consent:changed"));
+    await page.click("[data-storefront-consent-manage]");
+    await page.waitForFunction(() => window.__storefrontProofEvents.some((event) => event.name === "storefront:consent:manage-requested"));
     await page.click("[data-storefront-consent-selected]");
     await page.waitForFunction(() => window.__storefrontProofEvents.filter((event) => event.name === "storefront:consent:changed").length >= 2);
     await page.click("[data-storefront-consent-revoke]");
     await page.waitForFunction(() => window.__storefrontProofEvents.filter((event) => event.name === "storefront:consent:changed").length >= 3);
 
+    const previewAfterQuantityChange = page.waitForRequest((request) => {
+      const url = new URL(request.url());
+      if (request.method() !== "POST" || url.pathname !== "/api/product-selection-preview") {
+        return false;
+      }
+
+      const bodyText = request.postData() || "";
+      return bodyText ? JSON.parse(bodyText).Quantity === 3 : false;
+    });
     await page.fill("[data-storefront-selection-quantity]", "3");
+    await previewAfterQuantityChange;
     await page.waitForFunction(() => document.querySelector("[data-storefront-selection-price]")?.textContent === "$19.00");
     await page.click("[data-storefront-add-to-cart]");
     await page.waitForFunction(() => document.querySelector("[data-storefront-cart-badge]")?.textContent === "1");
 
-    const previewRequest = requests.find((request) => request.path === "/api/product-selection-preview");
+    const previewRequest = requests.filter((request) => request.path === "/api/product-selection-preview").at(-1);
     if (!previewRequest || previewRequest.body?.Quantity !== 3) {
-      throw new Error("Product selection preview request did not carry the visual selection payload.");
+      throw new Error(`Product selection preview request did not carry the visual selection payload: ${JSON.stringify(previewRequest?.body)}`);
     }
 
     const addLineRequest = requests.find((request) => request.path === "/api/cart/lines");
@@ -221,7 +243,7 @@ async function main() {
     }
 
     const eventNames = await page.evaluate(() => window.__storefrontProofEvents.map((event) => event.name));
-    for (const expected of ["storefront:cart:changed", "storefront:consent:changed", "storefront:product-selection:changed"]) {
+    for (const expected of ["storefront:cart:changed", "storefront:consent:changed", "storefront:consent:manage-requested", "storefront:product-selection:changed"]) {
       if (!eventNames.includes(expected)) {
         throw new Error(`Missing storefront application event ${expected}.`);
       }

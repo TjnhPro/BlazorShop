@@ -9,6 +9,7 @@ using BlazorShop.Storefront.Presentation.Services.Checkout;
 using BlazorShop.Storefront.Presentation.Services.Content;
 using BlazorShop.Storefront.Presentation.Services.Product;
 using BlazorShop.Storefront.Presentation.Services.System;
+using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
     {
         [nameof(StorefrontFoundationViewSet.ApplicationHead)] = typeof(StorefrontShellContext),
         [nameof(StorefrontFoundationViewSet.MainLayout)] = typeof(StorefrontShellContext),
+        [nameof(StorefrontFoundationViewSet.ConsentBanner)] = typeof(StorefrontConsentContext),
         [nameof(StorefrontFoundationViewSet.HomePage)] = typeof(StorefrontHomePageContext),
         [nameof(StorefrontFoundationViewSet.CategoryPage)] = typeof(StorefrontCategoryPageContext),
         [nameof(StorefrontFoundationViewSet.ProductPage)] = typeof(StorefrontProductPageContext),
