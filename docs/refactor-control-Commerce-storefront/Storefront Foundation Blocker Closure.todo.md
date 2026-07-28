@@ -485,60 +485,79 @@ Goal: generated project validation must prove both structure and real storefront
 
 ### Tasks
 
-- [ ] Split StorefrontBuilder proof into two levels:
-  - [ ] structure smoke proof: project generates, restores, builds, validates boundary.
-  - [ ] foundation functional proof: generated host runs against fixture store and exercises required browser behavior.
-- [ ] Expand generated browser proof to cover:
-  - [ ] home renders with header/footer.
-  - [ ] category/product links navigate.
-  - [ ] product gallery or product image area renders.
-  - [ ] product quantity control renders.
-  - [ ] product selection preview runs when available.
-  - [ ] add-to-cart succeeds through same-origin BFF.
-  - [ ] cart badge updates.
-  - [ ] cart page renders current item.
-  - [ ] checkout entry route loads or redirects according to auth/cart state.
-  - [ ] account link route loads or redirects according to auth state.
-  - [ ] consent accept/revoke path works.
-  - [ ] SEO title/meta exists for home/product/page.
-  - [ ] missing slug/not-found route renders visual not-found state.
-- [ ] Require fixture data for browser proof:
-  - [ ] at least one store.
-  - [ ] at least one category.
-  - [ ] at least one product with image.
-  - [ ] at least one purchasable product.
-  - [ ] COD or test payment-capable checkout path when functional proof includes order placement.
-- [ ] Update StorefrontBuilder CI path filters to include:
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/**`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/**`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Client/**`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/**`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/**`
-  - [ ] `tools/BlazorShop.AI.StorefrontBuilder/**`
-  - [ ] `scripts/qa/run-storefront-builder-*.ps1`
-  - [ ] relevant docs and validation scripts.
-- [ ] Ensure V2 Foundation CI still runs:
-  - [ ] focused architecture tests.
-  - [ ] V2 host smoke.
-  - [ ] Starter host smoke.
-  - [ ] StorefrontBuilder generated proof.
-  - [ ] COD/browser network regression where applicable.
+- [x] Split StorefrontBuilder proof into two levels:
+  - [x] structure smoke proof: project generates, restores, builds, validates boundary.
+  - [x] foundation functional proof: generated host runs against fixture store and exercises required browser behavior.
+- [x] Expand generated browser proof to cover:
+  - [x] home renders with header/footer.
+  - [x] category/product links navigate.
+  - [x] product gallery or product image area renders.
+  - [x] product quantity control renders.
+  - [x] product selection preview runs when available.
+  - [x] add-to-cart succeeds through same-origin BFF.
+  - [x] cart badge updates.
+  - [x] cart page renders current item.
+  - [x] checkout entry route loads or redirects according to auth/cart state.
+  - [x] account link route loads or redirects according to auth state.
+  - [x] consent accept/revoke path works.
+  - [x] SEO title/meta exists for home/product/page.
+  - [x] missing slug/not-found route renders visual not-found state.
+- [x] Require fixture data for browser proof:
+  - [x] at least one store.
+  - [x] at least one category.
+  - [x] at least one product with image.
+  - [x] at least one purchasable product.
+  - [x] COD or test payment-capable checkout path when functional proof includes order placement.
+- [x] Update StorefrontBuilder CI path filters to include:
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/**`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/**`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Client/**`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/**`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/**`
+  - [x] `tools/BlazorShop.AI.StorefrontBuilder/**`
+  - [x] `scripts/qa/run-storefront-builder-*.ps1`
+  - [x] relevant docs and validation scripts.
+- [x] Ensure V2 Foundation CI still runs:
+  - [x] focused architecture tests.
+  - [x] V2 host smoke.
+  - [x] Starter host smoke.
+  - [x] StorefrontBuilder generated proof.
+  - [x] COD/browser network regression where applicable.
 
 ### Tests
 
-- [ ] `dotnet test BlazorShop.Tests.V2 --filter StorefrontVisualOnlyBoundaryTests`
-- [ ] `dotnet test BlazorShop.Tests.V2 --filter StorefrontPresentation`
-- [ ] `scripts/qa/run-storefront-builder-generated-proof.ps1`
-- [ ] `scripts/qa/run-storefront-builder-isolation-gate.ps1`
-- [ ] Playwright V2 browser flow for product/add-to-cart/cart/checkout entry.
-- [ ] Playwright Starter/generated browser flow for structure plus functional foundation.
+- [x] `dotnet test BlazorShop.Tests.V2 --filter StorefrontVisualOnlyBoundaryTests`
+- [x] `dotnet test BlazorShop.Tests.V2 --filter StorefrontPresentation`
+- [x] `scripts/qa/run-storefront-builder-generated-proof.ps1`
+- [x] `scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- [x] Playwright V2 browser flow for product/add-to-cart/cart/checkout entry.
+- [x] Playwright Starter/generated browser flow for structure plus functional foundation.
 
 ### Definition of Done
 
-- [ ] Generated proof fails if a generated host owns app transport/security/service logic.
-- [ ] Generated proof fails if required fixture-backed storefront behavior is missing.
-- [ ] CI runs generated proof when any foundation package changes.
-- [ ] Foundation functional proof is required before Phase 1 closure.
+- [x] Generated proof fails if a generated host owns app transport/security/service logic.
+- [x] Generated proof fails if required fixture-backed storefront behavior is missing.
+- [x] CI runs generated proof when any foundation package changes.
+- [x] Foundation functional proof is required before Phase 1 closure.
+
+Notes/evidence:
+
+- `run-storefront-builder-generated-proof.ps1` now has explicit `Structure` and `FoundationFunctional` proof levels. Structure proof generates/restores/builds the proof project, runs StorefrontBuilder static validation, runs the isolation gate, and runs the shared visual consumer validator against the generated proof.
+- Foundation functional proof probes the configured fixture store before browser QA: store configuration, category `apparel`, product `qa-simple-product-100`, product image/media, purchasability/in-stock state, content page `customer-service`, and COD/test payment capability.
+- Generated composition now emits functional browser descriptors for shell category links, product purchase panel state, same-origin add-to-cart through `window.blazorShopStorefront.application.cart.addLine`, and cart badge feedback without generated direct Commerce Node browser transport.
+- StorefrontBuilder CI path filters include Presentation, Runtime, Client, Components, Starter, StorefrontBuilder tooling, generated proof scripts, and relevant docs. CI runs the structure proof on foundation/package changes; manual and scheduled StorefrontBuilder workflow runs require the `FoundationFunctional` browser proof.
+- Verification:
+  - `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs` - passed.
+  - `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-commerce-regression.mjs` - passed.
+  - `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs` - passed.
+  - `pwsh -NoProfile -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Describe` - passed and listed `Structure` and `FoundationFunctional`.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests" -v:minimal` - passed 15/15.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests" -v:minimal` - passed 12/12.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontPresentation" -v:minimal` - passed 30/30.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` - passed.
+  - `.\scripts\qa\run-storefront-builder-isolation-gate.ps1` - passed.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional -RuntimeTimeoutSeconds 90` - passed; generated visual smoke and functional commerce reports have zero failures.
+  - `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless -TimeoutSeconds 1200` - passed; result `passed`, COD orders `ORD-20260728-5A25BF61` and `ORD-20260728-F4C18066`, order email sent/retried, no 5xx responses, no retired flow calls.
 
 ## Phase F1.53 - Cleanup, Documentation, And Closure Gate
 

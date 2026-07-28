@@ -6,12 +6,14 @@ import { chromium } from "@playwright/test";
 const baseUrl = readArg("--base-url") ?? "http://127.0.0.1:18991";
 const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
 const screenshotRoot = readArg("--screenshot-root") ?? "output/playwright/storefront-builder-visual-qa";
+const categorySlug = readArg("--category-slug") ?? "apparel";
+const productSlug = readArg("--product-slug") ?? "qa-simple-product-100";
 const reportPath = `${projectRoot}/docs/storefront-analysis/visual-qa-report.md`;
 
 const pages = [
   ["shell-home", "/"],
-  ["catalog", "/category/sample-category"],
-  ["product", "/product/sample-product"],
+  ["catalog", `/category/${categorySlug}`],
+  ["product", `/product/${productSlug}`],
   ["cart", "/cart"],
   ["checkout", "/checkout"],
   ["account", "/account"],

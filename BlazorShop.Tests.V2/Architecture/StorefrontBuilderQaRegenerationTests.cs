@@ -143,19 +143,25 @@ namespace BlazorShop.Tests.Architecture
             foreach (var marker in new[]
             {
                 "Home renders",
+                "Home renders with header",
+                "Home renders with footer",
                 "Catalog renders",
                 "Product renders",
-                "Product link navigation works or explicit fixture gap is reported",
-                "Product route renders without catalog link",
-                "Product image/gallery region renders",
-                "Quantity control can change",
-                "Add-to-cart has explicit placeholder or observable result",
-                "Add-to-cart command produces an observable cart result",
+                "Category link navigates",
+                "Product link navigates",
+                "Product gallery or image area renders",
+                "Product quantity control renders",
+                "Product selection preview runs when available",
+                "Add-to-cart succeeds through same-origin BFF",
+                "Cart badge updates",
                 "Cart page renders",
-                "Checkout route renders",
-                "Account route renders",
-                "Login/register shell renders according to store policy",
-                "Product SEO initial HTML exists",
+                "Checkout entry route loads or redirects according to auth/cart state",
+                "Account link route loads or redirects according to auth state",
+                "Consent accept/revoke path works",
+                "Home SEO title/meta exists",
+                "Product SEO title/meta exists",
+                "Content page SEO title/meta exists",
+                "Missing slug/not-found route renders visual not-found state",
                 "Browser does not call Commerce Node protected APIs directly",
                 "/api/storefront/",
                 "/api/commerce/",
@@ -165,10 +171,12 @@ namespace BlazorShop.Tests.Architecture
             }
 
             Assert.Contains("functional-commerce-report.md", runner, StringComparison.Ordinal);
-            Assert.Contains("Functional Commerce Smoke Report", runner, StringComparison.Ordinal);
-            Assert.Contains("selector/placeholder smoke", runner, StringComparison.Ordinal);
-            Assert.Contains("PayPal/Stripe production providers are outside this MVP gate", runner, StringComparison.Ordinal);
+            Assert.Contains("Functional Foundation Browser Report", runner, StringComparison.Ordinal);
+            Assert.Contains("same-origin Presentation BFF", runner, StringComparison.Ordinal);
+            Assert.DoesNotContain("explicit fixture gap is reported", runner, StringComparison.Ordinal);
             Assert.Contains("run-commerce-regression.mjs", proof, StringComparison.Ordinal);
+            Assert.Contains("FixtureCategorySlug", proof, StringComparison.Ordinal);
+            Assert.Contains("FixtureProductSlug", proof, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -278,8 +286,14 @@ namespace BlazorShop.Tests.Architecture
                 "Generation fixture tests",
                 "Idempotency tests",
                 "Isolation gate describe mode",
-                "Visual QA fixture smoke",
-                "Commerce regression fixture smoke",
+                "Generated proof structure gate",
+                "Generated proof foundation functional browser gate",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/**",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/**",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/**",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/**",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/**",
+                "scripts/qa/run-storefront-builder-*.ps1",
                 "workflow_dispatch",
                 "schedule",
                 "Full external reference-site capture",
@@ -291,6 +305,8 @@ namespace BlazorShop.Tests.Architecture
             }
 
             Assert.Contains("run_browser_gates", workflow, StringComparison.Ordinal);
+            Assert.Contains("-ProofLevel Structure", workflow, StringComparison.Ordinal);
+            Assert.Contains("-ProofLevel FoundationFunctional", workflow, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -307,7 +323,10 @@ namespace BlazorShop.Tests.Architecture
                 "Build generated proof",
                 "Run static StorefrontBuilder validation",
                 "Run StorefrontBuilder isolation gate",
+                "Run shared visual consumer boundary validator",
                 "RunBrowserQa",
+                "ProofLevel",
+                "FoundationFunctional",
             })
             {
                 Assert.Contains(marker, proof, StringComparison.Ordinal);
@@ -315,6 +334,48 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("StorefrontBuilder generated proof completed", proof, StringComparison.Ordinal);
             Assert.Contains("Keep true visual generation improvements for the later StorefrontBuilder correction phases", plan, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void F1_52_GeneratedProof_SplitsStructureAndFoundationFunctionalProof()
+        {
+            var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
+            var composition = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs");
+            var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
+
+            foreach (var marker in new[]
+            {
+                "[ValidateSet(\"Structure\", \"FoundationFunctional\")]",
+                "Assert-StorefrontFixtureData",
+                "SFB-PROOF-FIXTURE-003",
+                "SFB-PROOF-FIXTURE-006",
+                "SFB-PROOF-FIXTURE-007",
+                "SFB-PROOF-FIXTURE-009",
+                "Run shared visual consumer boundary validator",
+                "StorefrontVisualConsumerBoundaryValidatorTests.F1_51_SharedValidator_PassesGeneratedProofWhenPresent",
+            })
+            {
+                Assert.Contains(marker, proof, StringComparison.Ordinal);
+            }
+
+            foreach (var marker in new[]
+            {
+                "storefront-builder.functional.js",
+                "data-storefront-generated-add-to-cart",
+                "window.blazorShopStorefront",
+                "app.cart.addLine",
+                "Context.Search.Categories",
+                "PurchasePanel=\"@Context.PurchasePanel\"",
+                "PurchaseActions=\"@Context.PurchaseActions\"",
+            })
+            {
+                Assert.Contains(marker, composition, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("StorefrontBuilder generated proof structure gate", workflow, StringComparison.Ordinal);
+            Assert.Contains("StorefrontVisualConsumerBoundaryValidatorTests", workflow, StringComparison.Ordinal);
+            Assert.Contains("StorefrontStarterHostSmokeTests", workflow, StringComparison.Ordinal);
+            Assert.Contains("StorefrontHostCompositionTests", workflow, StringComparison.Ordinal);
         }
 
         private static string ReadRepositoryFile(string relativePath)

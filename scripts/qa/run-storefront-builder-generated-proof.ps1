@@ -1,6 +1,6 @@
 param(
     [string]$Name = "BlazorShop.Storefront.GeneratedProof",
-    [string]$StoreKey = "sample",
+    [string]$StoreKey = "default",
     [string]$Url = "https://reference.example",
     [string]$OutputRoot = "artifacts/storefront-builder/generated",
     [string]$Configuration = "Debug",
@@ -12,6 +12,12 @@ param(
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
     [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
     [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
+    [ValidateSet("Structure", "FoundationFunctional")]
+    [string]$ProofLevel = "Structure",
+    [string]$FixtureCategorySlug = "apparel",
+    [string]$FixtureProductSlug = "qa-simple-product-100",
+    [string]$FixturePageSlug = "customer-service",
+    [string]$RequiredPaymentMethodKey = "cod",
     [switch]$RunBrowserQa,
     [switch]$Describe
 )
@@ -85,8 +91,8 @@ function Start-ProofStorefront {
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = "dotnet"
     $startInfo.WorkingDirectory = $repoRoot
-    $startInfo.RedirectStandardOutput = $true
-    $startInfo.RedirectStandardError = $true
+    $startInfo.RedirectStandardOutput = $false
+    $startInfo.RedirectStandardError = $false
     $startInfo.UseShellExecute = $false
     $startInfo.CreateNoWindow = $true
     $startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development"
@@ -114,9 +120,7 @@ function Wait-ForProofStorefront {
     $deadline = [DateTimeOffset]::UtcNow.AddSeconds($RuntimeTimeoutSeconds)
     while ([DateTimeOffset]::UtcNow -lt $deadline) {
         if ($Process.HasExited) {
-            $stdout = $Process.StandardOutput.ReadToEnd()
-            $stderr = $Process.StandardError.ReadToEnd()
-            throw "Generated proof exited before browser QA. stdout: $stdout stderr: $stderr"
+            throw "Generated proof exited before browser QA with exit code $($Process.ExitCode)."
         }
 
         try {
@@ -131,19 +135,108 @@ function Wait-ForProofStorefront {
     throw "Generated proof did not become ready at $ProofUrl within $RuntimeTimeoutSeconds seconds."
 }
 
+function Get-EnvelopeData {
+    param($Response)
+
+    if ($null -eq $Response) {
+        return $null
+    }
+
+    if ($null -ne $Response.data) {
+        return $Response.data
+    }
+
+    if ($null -ne $Response.Data) {
+        return $Response.Data
+    }
+
+    return $Response
+}
+
+function Invoke-StorefrontFixtureEndpoint {
+    param([string]$Path)
+
+    $uri = "$($CommerceNodeBaseUrl.TrimEnd('/'))/api/storefront/stores/$([uri]::EscapeDataString($StoreKey))/$Path"
+    try {
+        return Get-EnvelopeData (Invoke-RestMethod -Uri $uri -Method Get -TimeoutSec 15)
+    }
+    catch {
+        throw "[SFB-PROOF-FIXTURE-001] Fixture endpoint failed: $uri. Start Commerce Node with the '$StoreKey' fixture store before running -ProofLevel FoundationFunctional. $($_.Exception.Message)"
+    }
+}
+
+function Assert-StorefrontFixtureData {
+    Write-Host "Checking fixture store '$StoreKey' at $CommerceNodeBaseUrl"
+
+    $configuration = Invoke-StorefrontFixtureEndpoint "configuration"
+    if ($null -eq $configuration) {
+        throw "[SFB-PROOF-FIXTURE-002] Fixture store '$StoreKey' is missing public configuration."
+    }
+
+    $categories = @(Invoke-StorefrontFixtureEndpoint "catalog/categories")
+    if ($categories.Count -lt 1) {
+        throw "[SFB-PROOF-FIXTURE-003] Fixture store '$StoreKey' must expose at least one published category."
+    }
+
+    $category = Invoke-StorefrontFixtureEndpoint "catalog/categories/slug/$([uri]::EscapeDataString($FixtureCategorySlug))"
+    if ($null -eq $category) {
+        throw "[SFB-PROOF-FIXTURE-004] Fixture category '$FixtureCategorySlug' is missing."
+    }
+
+    $product = Invoke-StorefrontFixtureEndpoint "catalog/products/slug/$([uri]::EscapeDataString($FixtureProductSlug))"
+    if ($null -eq $product) {
+        throw "[SFB-PROOF-FIXTURE-005] Fixture product '$FixtureProductSlug' is missing."
+    }
+
+    $mediaGallery = @($product.mediaGallery)
+    $hasImage = -not [string]::IsNullOrWhiteSpace([string]$product.image)
+    if (-not $hasImage) {
+        foreach ($media in $mediaGallery) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$media.imageUrl) -or -not [string]::IsNullOrWhiteSpace([string]$media.thumbnailUrl)) {
+                $hasImage = $true
+                break
+            }
+        }
+    }
+
+    if (-not $hasImage) {
+        throw "[SFB-PROOF-FIXTURE-006] Fixture product '$FixtureProductSlug' must include a product image or media gallery item."
+    }
+
+    if ($product.purchasable -ne $true -or ($null -ne $product.inStock -and $product.inStock -ne $true)) {
+        throw "[SFB-PROOF-FIXTURE-007] Fixture product '$FixtureProductSlug' must be published, purchasable, and in stock."
+    }
+
+    $page = Invoke-StorefrontFixtureEndpoint "pages/$([uri]::EscapeDataString($FixturePageSlug))"
+    if ($null -eq $page) {
+        throw "[SFB-PROOF-FIXTURE-008] Fixture content page '$FixturePageSlug' is missing."
+    }
+
+    $paymentMethods = @(Invoke-StorefrontFixtureEndpoint "payments/methods")
+    $matchingMethod = $paymentMethods | Where-Object {
+        [string]$_.key -eq $RequiredPaymentMethodKey -or [string]$_.providerKey -eq $RequiredPaymentMethodKey
+    } | Select-Object -First 1
+    if ($null -eq $matchingMethod) {
+        throw "[SFB-PROOF-FIXTURE-009] Fixture store '$StoreKey' must expose '$RequiredPaymentMethodKey' payment capability before functional proof."
+    }
+}
+
 $generatedRoot = Resolve-RepoPath $OutputRoot
 $projectRoot = Join-Path $generatedRoot $Name
 $projectFile = Join-Path $projectRoot "$Name.csproj"
 
 if ($Describe) {
     Write-Host "StorefrontBuilder generated proof workflow"
+    Write-Host "- Proof levels: Structure, FoundationFunctional"
     Write-Host "- Clean $projectRoot"
     Write-Host "- Pack Storefront.Client, Storefront.Runtime, Storefront.Presentation, and Storefront.Components"
     Write-Host "- Generate $Name from Storefront.Starter"
     Write-Host "- Write StorefrontBuilder review, asset, CSS, and generated-file artifacts"
     Write-Host "- Restore/build generated proof from local packages"
-    Write-Host "- Run static validation and isolation gates"
-    Write-Host "- Optionally run browser QA with -RunBrowserQa"
+    Write-Host "- Run static validation, isolation, and shared visual boundary gates"
+    Write-Host "- Structure proof stops after project/package/boundary validation"
+    Write-Host "- FoundationFunctional proof probes fixture data, runs the generated host, and exercises browser behavior"
+    Write-Host "- -RunBrowserQa is treated as -ProofLevel FoundationFunctional for compatibility"
     exit 0
 }
 
@@ -219,17 +312,28 @@ Invoke-Step "Run StorefrontBuilder isolation gate" {
         -Configuration $Configuration `
         -StorefrontClientPackageVersion $StorefrontClientPackageVersion `
         -StorefrontRuntimePackageVersion $StorefrontRuntimePackageVersion `
+        -StorefrontPresentationPackageVersion $StorefrontPresentationPackageVersion `
         -StorefrontComponentsPackageVersion $StorefrontComponentsPackageVersion
 }
 
-if ($RunBrowserQa) {
-    Invoke-Step "Run browser QA" {
+Invoke-Step "Run shared visual consumer boundary validator" {
+    dotnet test "$repoRoot\BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests.F1_51_SharedValidator_PassesGeneratedProofWhenPresent" -v:minimal
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+$runFunctionalProof = $RunBrowserQa -or $ProofLevel -eq "FoundationFunctional"
+if ($runFunctionalProof) {
+    Invoke-Step "Check fixture data for foundation functional proof" {
+        Assert-StorefrontFixtureData
+    }
+
+    Invoke-Step "Run foundation functional browser proof" {
         $process = Start-ProofStorefront $projectFile
         try {
             Wait-ForProofStorefront $process
-            node "$toolRoot\scripts\qa\run-visual-qa.mjs" --base-url $ProofUrl --project-root $projectRoot
+            node "$toolRoot\scripts\qa\run-visual-qa.mjs" --base-url $ProofUrl --project-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            node "$toolRoot\scripts\qa\run-commerce-regression.mjs" --base-url $ProofUrl --project-root $projectRoot
+            node "$toolRoot\scripts\qa\run-commerce-regression.mjs" --base-url $ProofUrl --project-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug --page-slug $FixturePageSlug
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
         finally {

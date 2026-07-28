@@ -47,7 +47,11 @@ jobs:
         run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal
 
       - name: Storefront visual-only boundary gate
-        run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontApplicationBootstrapTests"
+        run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontApplicationBootstrapTests|FullyQualifiedName~StorefrontStarterHostSmokeTests|FullyQualifiedName~StorefrontHostCompositionTests"
+
+      - name: StorefrontBuilder generated proof structure gate
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 
       - name: Storefront client regeneration gate
         shell: pwsh
