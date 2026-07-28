@@ -233,7 +233,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var v2References = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj");
             var runtimeReferences = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj");
 
-            Assert.Contains("../BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj", v2References);
+            Assert.DoesNotContain("../BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj", v2References);
             Assert.Contains("../BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj", runtimeReferences);
             Assert.DoesNotContain("../BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj", v2References);
             Assert.DoesNotContain(v2References, reference => reference.Contains("BlazorShop.CommerceNode.API", StringComparison.OrdinalIgnoreCase));
@@ -287,7 +287,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2ManualClientExceptions_AreRegisteredWithOwnerTestAndRevisitTrigger()
         {
             var registry = ReadRepositoryFile("docs/storefront-platform/storefront-client-exception-registry.md");
-            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
             var cartAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCartClient.cs");
             var checkoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCheckoutClient.cs");
             var customerAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCustomerClient.cs");
@@ -300,8 +299,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Revisit trigger", registry, StringComparison.Ordinal);
 
             var manualClientName = "Storefront" + "ApiClient";
-            Assert.DoesNotContain($"AddHttpClient<{manualClientName}>", serviceCollection, StringComparison.Ordinal);
-            Assert.DoesNotContain($"GetRequiredService<{manualClientName}>", serviceCollection, StringComparison.Ordinal);
+            AssertNoSourceFragments(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
+                [$"AddHttpClient<{manualClientName}>", $"GetRequiredService<{manualClientName}>"]);
             Assert.Contains("MergeCurrentCustomerAsync", cartAdapter, StringComparison.Ordinal);
             Assert.Contains("UpdateAddressesAsync", checkoutAdapter, StringComparison.Ordinal);
             Assert.Contains("CreateAuthorizedHttpClient", customerAdapter, StringComparison.Ordinal);
@@ -353,6 +353,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static IEnumerable<SourceFile> EnumerateSourceFiles(string relativeDirectory)
         {
             var root = RepositoryPath(relativeDirectory);
+            if (!Directory.Exists(root))
+            {
+                return [];
+            }
+
             return Directory
                 .EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
                 .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)

@@ -1,5 +1,4 @@
 @namespace BlazorShop.Storefront.Starter.Theme.Pages.Catalog
-@inject StarterFeatureActivationService FeatureActivationService
 
 <h1>@Context.DisplayContext.StoreName</h1>
 <p>This neutral shell consumes the generated Storefront client package.</p>
@@ -18,7 +17,7 @@
     <ProductGrid Products="@Context.LatestProductSummaries" />
 </section>
 
-@if (FeatureActivationService.Evaluate("recommendations", "home", Context.FeatureCapabilities).Visible)
+@if (RecommendationsVisible)
 {
     <section class="starter-section" aria-labelledby="recommendations-title">
         <h2 id="recommendations-title">Recommended</h2>
@@ -29,4 +28,9 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontHomePageContext Context { get; set; } = default!;
+
+    private bool RecommendationsVisible =>
+        Context.FeatureCapabilities.TryGetValue("recommendations", out var recommendations)
+        && recommendations.Supported
+        && recommendations.Enabled;
 }

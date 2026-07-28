@@ -1037,7 +1037,7 @@ Evidence:
 
 Goal: Starter is the neutral minimal visual consumer of the same Storefront application engine.
 
-- [ ] Switch Starter to:
+- [x] Switch Starter to:
 
 ```csharp
 builder.Services
@@ -1048,33 +1048,45 @@ app.UseStorefrontApplication();
 app.MapStorefrontApplication<StarterFoundationViewRegistration>();
 ```
 
-- [ ] Remove Starter manual registration:
-  - [ ] direct `AddStorefrontRuntime`.
-  - [ ] direct `AddStorefrontPlatformRuntime`.
-  - [ ] direct `AddStorefrontPresentation`.
-  - [ ] direct `AddRazorComponents`.
-  - [ ] direct `AddAntiforgery`.
-  - [ ] direct `UseStaticFiles`.
-  - [ ] direct `MapStorefrontPresentation`.
-  - [ ] direct `MapRazorComponents`, unless wrapped by `MapStorefrontApplication`.
-- [ ] Remove Starter application logic:
-  - [ ] service injection in pages.
-  - [ ] API loading.
-  - [ ] middleware.
-  - [ ] runtime registration.
-  - [ ] handwritten form contracts.
-  - [ ] business decisions.
-- [ ] Evaluate `StarterFeatureActivationService`:
-  - [ ] If it is visual feature toggle only, keep it under Starter visual/config namespace.
-  - [ ] If it affects capability/business behavior, move capability activation to Presentation/Runtime.
-- [ ] Add tests:
-  - [ ] Starter has no service injection in visual pages.
-  - [ ] Starter has no direct Runtime/Client usage in source.
-  - [ ] Starter host starts with shared bootstrap.
-- [ ] Exit criteria:
-  - [ ] `V2 = rich visual consumer`.
-  - [ ] `Starter = neutral visual consumer`.
-  - [ ] both use the same Presentation application engine.
+- [x] Remove Starter manual registration:
+  - [x] direct `AddStorefrontRuntime`.
+  - [x] direct `AddStorefrontPlatformRuntime`.
+  - [x] direct `AddStorefrontPresentation`.
+  - [x] direct `AddRazorComponents`.
+  - [x] direct `AddAntiforgery`.
+  - [x] direct `UseStaticFiles`.
+  - [x] direct `MapStorefrontPresentation`.
+  - [x] direct `MapRazorComponents`, unless wrapped by `MapStorefrontApplication`.
+- [x] Remove Starter application logic:
+  - [x] service injection in pages.
+  - [x] API loading.
+  - [x] middleware.
+  - [x] runtime registration.
+  - [x] handwritten form contracts.
+  - [x] business decisions.
+- [x] Evaluate `StarterFeatureActivationService`:
+  - [x] If it is visual feature toggle only, keep it under Starter visual/config namespace.
+  - [x] If it affects capability/business behavior, move capability activation to Presentation/Runtime.
+- [x] Add tests:
+  - [x] Starter has no service injection in visual pages.
+  - [x] Starter has no direct Runtime/Client usage in source.
+  - [x] Starter host starts with shared bootstrap.
+- [x] Exit criteria:
+  - [x] `V2 = rich visual consumer`.
+  - [x] `Starter = neutral visual consumer`.
+  - [x] both use the same Presentation application engine.
+
+Evidence:
+
+- Starter `Program.cs` now composes only `AddStorefrontApplication(builder.Configuration).AddStarterFoundationViews()`, `UseStorefrontApplication()`, and `MapStorefrontApplication(typeof(StarterFoundationViewRegistration))`.
+- Removed Starter runtime/options/feature DI source (`StarterStorefrontOptions`, `StarterFeatureActivationService`) and empty `Services/`, `Endpoints/`, and `Options/` folders.
+- Kept `Features/feature-manifest.json` as generation metadata; runtime visibility in Starter HomePage now reads the supplied Presentation `Context.FeatureCapabilities` without service injection.
+- Removed Starter source imports for `BlazorShop.Storefront.Runtime`, feature service namespaces, options namespaces, and `Microsoft.Extensions.Options`.
+- Added F1.42 guardrails to `StorefrontVisualOnlyBoundaryTests` for Starter page injection, Runtime/Client source usage, and shared bootstrap ownership.
+- Updated older independence/cutover guardrails to treat retired V2 application folders and V2 Runtime reference as the expected state.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests" -v:minimal`
 
 ## Phase F1.43 - Generated storefront isolation proof
 

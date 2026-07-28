@@ -237,6 +237,84 @@ public sealed class StorefrontVisualOnlyBoundaryTests
             $"F1.41: Storefront V2 namespace declarations must be visibly V2-owned, not shared Storefront application namespaces.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
+    [Fact]
+    public void F1_42_StarterPages_DoNotInjectApplicationServices()
+    {
+        var offenders = EnumerateSourceFiles(["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages"], [".razor"])
+            .Where(file => !Path.GetFileName(file.AbsolutePath).StartsWith("_", StringComparison.Ordinal))
+            .SelectMany(file =>
+            {
+                var source = File.ReadAllText(file.AbsolutePath);
+                return source.Contains("@inject", StringComparison.Ordinal)
+                    ? new[] { $"{file.RelativePath}: @inject" }
+                    : Array.Empty<string>();
+            })
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"F1.42: Starter pages must render Presentation contexts and must not inject services.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [Fact]
+    public void F1_42_StarterSource_DoesNotUseRuntimeOrClientDirectly()
+    {
+        var forbiddenTokens = new[]
+        {
+            "BlazorShop.Storefront.Runtime",
+            "BlazorShop.Storefront.Client",
+            "IStorefrontRuntime",
+            "StorefrontApiClient",
+            "HttpClient",
+            "IHttpClientFactory",
+        };
+        var offenders = EnumerateSourceFiles(["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"], [".cs", ".razor"])
+            .SelectMany(file =>
+            {
+                var source = File.ReadAllText(file.AbsolutePath);
+                return forbiddenTokens
+                    .Where(token => source.Contains(token, StringComparison.Ordinal))
+                    .Select(token => $"{file.RelativePath}: {token}");
+            })
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"F1.42: Starter source must not compile against Runtime, Client, or manual transport APIs.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [Fact]
+    public void F1_42_StarterProgram_UsesSharedStorefrontApplicationBootstrap()
+    {
+        var program = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs"));
+        var forbiddenTokens = new[]
+        {
+            "AddStorefrontRuntime",
+            "AddStorefrontPlatformRuntime",
+            "AddStorefrontPresentation",
+            "AddRazorComponents",
+            "AddAntiforgery",
+            "UseStaticFiles",
+            "MapStorefrontPresentation",
+            "MapRazorComponents",
+            "StarterStorefrontOptions",
+            "StarterFeatureActivationService",
+            "StarterFeatureManifest.Load",
+        };
+
+        Assert.Contains("AddStorefrontApplication(builder.Configuration)", program, StringComparison.Ordinal);
+        Assert.Contains("AddStarterFoundationViews()", program, StringComparison.Ordinal);
+        Assert.Contains("UseStorefrontApplication()", program, StringComparison.Ordinal);
+        Assert.Contains("MapStorefrontApplication(typeof(StarterFoundationViewRegistration))", program, StringComparison.Ordinal);
+
+        foreach (var forbiddenToken in forbiddenTokens)
+        {
+            Assert.DoesNotContain(forbiddenToken, program, StringComparison.Ordinal);
+        }
+    }
+
     private static string[] FindSourceTokenOffenders(
         IReadOnlyCollection<string> relativeFolders,
         IReadOnlyCollection<string> forbiddenTokens,
