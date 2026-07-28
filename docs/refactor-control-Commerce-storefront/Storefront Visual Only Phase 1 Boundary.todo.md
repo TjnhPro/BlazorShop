@@ -5,6 +5,12 @@ Owner: Storefront Platform
 Created: 2026-07-27
 Scope: finish Phase 1 so `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, and future `BlazorShop.Storefront.{Name}` hosts are visual consumers of the shared Storefront application engine.
 
+## Pre-implementation closure evidence
+
+F1.44 closed the original visual-only checklist, but the follow-up review found remaining foundation blockers that still let visual hosts own security, browser application behavior, direct Runtime dependencies, and incomplete generated-store guardrails. Do not mark this Phase 1 plan as fully closable until `Storefront Foundation Blocker Closure.todo.md` is complete.
+
+Current blocker closure is tracked in `docs/refactor-control-Commerce-storefront/Storefront Foundation Blocker Closure.todo.md`. Its F1.45 baseline records source evidence and regression commands for the remaining leaks before implementation starts.
+
 ## Verified current context
 
 - `BlazorShop.Storefront.V2/Program.cs` is already short, but still passes V2-owned rate limit and HTTP client resolver hooks into `AddStorefrontV2Services`.
