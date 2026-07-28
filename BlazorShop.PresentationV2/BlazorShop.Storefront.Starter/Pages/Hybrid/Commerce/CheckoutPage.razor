@@ -1,4 +1,5 @@
 @using BlazorShop.Storefront.Presentation.Services.Checkout
+@using BlazorShop.Storefront.Presentation.Components.Checkout
 
 <h1>Checkout</h1>
 <PlaceholderState
@@ -10,6 +11,29 @@
     @if (Context.Lines.Count > 0)
     {
         <p>@Context.Lines.Count item(s) ready for checkout.</p>
+        @if (Context.PaymentMethods.Count > 0)
+        {
+            <StorefrontCheckoutForm Context="Context" FormClass="starter-form">
+                <StorefrontCheckoutAddressFields Context="Context"
+                                                ContactSectionClass="starter-form"
+                                                AddressSectionClass="starter-form"
+                                                AddressGridClass="starter-form"
+                                                LabelClass="starter-field"
+                                                AddressLineClass="starter-field"
+                                                LabelTextClass="starter-label"
+                                                InputClass="starter-input"
+                                                UppercaseInputClass="starter-input"
+                                                HeadingClass="starter-heading" />
+                <StorefrontCheckoutPaymentFields Context="Context"
+                                                SectionClass="starter-form"
+                                                HeadingClass="starter-heading"
+                                                OptionLabelClass="starter-field"
+                                                RadioClass="starter-radio"
+                                                OptionTitleClass="starter-label"
+                                                OptionDescriptionClass="starter-help" />
+                <StorefrontCheckoutSubmit Class="starter-button">Place order</StorefrontCheckoutSubmit>
+            </StorefrontCheckoutForm>
+        }
     }
 </CheckoutStepShell>
 

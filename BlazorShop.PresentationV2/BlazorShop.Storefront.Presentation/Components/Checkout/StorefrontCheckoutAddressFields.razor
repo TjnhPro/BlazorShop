@@ -1,0 +1,156 @@
+@namespace BlazorShop.Storefront.Presentation.Components.Checkout
+
+<section class="@ContactSectionClass">
+    <label class="@LabelClass">
+        <span class="@LabelTextClass">@CustomerEmailLabel</span>
+        <input name="@StorefrontCheckoutFormFieldNames.CustomerEmail" type="email" autocomplete="email" required class="@InputClass" />
+    </label>
+    <label class="@LabelClass">
+        <span class="@LabelTextClass">@CustomerNameLabel</span>
+        <input name="@StorefrontCheckoutFormFieldNames.CustomerName" autocomplete="name" required class="@InputClass" />
+    </label>
+</section>
+
+<section class="@AddressSectionClass">
+    @if (!string.IsNullOrWhiteSpace(ShippingHeading))
+    {
+        <h2 class="@HeadingClass">@ShippingHeading</h2>
+    }
+    <div class="@AddressGridClass" data-storefront-manual-address>
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@ShippingFullNameLabel</span>
+            <input name="@StorefrontCheckoutFormFieldNames.ShippingFullName" autocomplete="shipping name" data-storefront-manual-address-field class="@InputClass" />
+        </label>
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@ShippingEmailLabel</span>
+            <input name="@StorefrontCheckoutFormFieldNames.ShippingEmail" type="email" autocomplete="shipping email" data-storefront-manual-address-field class="@InputClass" />
+        </label>
+        @if (Context.PhoneEnabled)
+        {
+            <label class="@LabelClass">
+                <span class="@LabelTextClass">@ShippingPhoneLabel</span>
+                <input name="@StorefrontCheckoutFormFieldNames.ShippingPhone" autocomplete="shipping tel" required="@Context.PhoneRequired" data-storefront-manual-address-field class="@InputClass" />
+            </label>
+        }
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@ShippingCountryLabel</span>
+            @if (Context.HasAddressCountries)
+            {
+                <select name="@StorefrontCheckoutFormFieldNames.ShippingCountryCode" autocomplete="shipping country" data-storefront-manual-address-field class="@InputClass">
+                    @foreach (var country in Context.AddressCountries)
+                    {
+                        <option value="@country.Code" selected="@(string.Equals(country.Code, Context.DefaultShippingCountryCode, StringComparison.OrdinalIgnoreCase))">@country.Name</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <input name="@StorefrontCheckoutFormFieldNames.ShippingCountryCode" maxlength="2" value="@Context.DefaultShippingCountryCode" autocomplete="shipping country" data-storefront-manual-address-field class="@UppercaseInputClass" />
+            }
+        </label>
+        <label class="@AddressLineClass">
+            <span class="@LabelTextClass">@ShippingAddress1Label</span>
+            <input name="@StorefrontCheckoutFormFieldNames.ShippingAddress1" autocomplete="shipping address-line1" data-storefront-manual-address-field class="@InputClass" />
+        </label>
+        <label class="@AddressLineClass">
+            <span class="@LabelTextClass">@ShippingAddress2Label</span>
+            <input name="@StorefrontCheckoutFormFieldNames.ShippingAddress2" autocomplete="shipping address-line2" data-storefront-manual-address-field class="@InputClass" />
+        </label>
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@ShippingCityLabel</span>
+            <input name="@StorefrontCheckoutFormFieldNames.ShippingCity" autocomplete="shipping address-level2" data-storefront-manual-address-field class="@InputClass" />
+        </label>
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@ShippingStateLabel</span>
+            @if (Context.HasAddressStates)
+            {
+                <select name="@StorefrontCheckoutFormFieldNames.ShippingState" autocomplete="shipping address-level1" data-storefront-manual-address-field class="@InputClass">
+                    <option value="">@StatePlaceholder</option>
+                    @foreach (var state in Context.AddressStates)
+                    {
+                        <option value="@state.Code" selected="@(string.Equals(state.Code, Context.DefaultShippingStateCode, StringComparison.OrdinalIgnoreCase))">@state.Name</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <input name="@StorefrontCheckoutFormFieldNames.ShippingState" value="@Context.DefaultShippingStateCode" autocomplete="shipping address-level1" data-storefront-manual-address-field class="@InputClass" />
+            }
+        </label>
+        <label class="@LabelClass">
+            <span class="@LabelTextClass">@ShippingPostalCodeLabel</span>
+            <input name="@StorefrontCheckoutFormFieldNames.ShippingPostalCode" autocomplete="shipping postal-code" required="@Context.PostalCodeRequired" data-storefront-manual-address-field class="@InputClass" />
+        </label>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutPageContext Context { get; set; } = default!;
+
+    [Parameter]
+    public string ContactSectionClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string AddressSectionClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string AddressGridClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string LabelClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string AddressLineClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string LabelTextClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string InputClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string UppercaseInputClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string HeadingClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ShippingHeading { get; set; } = "Shipping address";
+
+    [Parameter]
+    public string CustomerEmailLabel { get; set; } = "Customer email";
+
+    [Parameter]
+    public string CustomerNameLabel { get; set; } = "Customer name";
+
+    [Parameter]
+    public string ShippingFullNameLabel { get; set; } = "Full name";
+
+    [Parameter]
+    public string ShippingEmailLabel { get; set; } = "Email";
+
+    [Parameter]
+    public string ShippingPhoneLabel { get; set; } = "Phone";
+
+    [Parameter]
+    public string ShippingCountryLabel { get; set; } = "Country";
+
+    [Parameter]
+    public string ShippingAddress1Label { get; set; } = "Address line 1";
+
+    [Parameter]
+    public string ShippingAddress2Label { get; set; } = "Address line 2";
+
+    [Parameter]
+    public string ShippingCityLabel { get; set; } = "City";
+
+    [Parameter]
+    public string ShippingStateLabel { get; set; } = "State / province";
+
+    [Parameter]
+    public string ShippingPostalCodeLabel { get; set; } = "Postal code";
+
+    [Parameter]
+    public string StatePlaceholder { get; set; } = "Select state / province";
+}

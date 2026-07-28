@@ -1,0 +1,23 @@
+@namespace BlazorShop.Storefront.Presentation.Components.Checkout
+
+<form method="post" action="@StorefrontRoutes.Checkout" class="@FormClass" data-storefront-checkout-form>
+    <AntiforgeryToken />
+    <input type="hidden" name="@StorefrontCheckoutFormFieldNames.CartVersion" value="@Context.CartVersion" />
+    <input type="hidden" name="@StorefrontCheckoutFormFieldNames.IdempotencyKey" value="@Context.IdempotencyKey" />
+    <input type="hidden" name="@StorefrontCheckoutFormFieldNames.UseShippingAddressAsBillingAddress" value="@UseShippingAddressAsBillingAddress" />
+    @ChildContent
+</form>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutPageContext Context { get; set; } = default!;
+
+    [Parameter]
+    public string FormClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool UseShippingAddressAsBillingAddress { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -662,45 +662,61 @@ Evidence:
 
 Goal: checkout mutation contract is fixed and reusable; host only controls layout.
 
-- [ ] Add Presentation components/patterns:
-  - [ ] `StorefrontCheckoutForm`
-  - [ ] `StorefrontCheckoutAddressFields`
-  - [ ] `StorefrontCheckoutPaymentFields`
-  - [ ] `StorefrontCheckoutSubmit`
-  - [ ] optional `StorefrontCheckoutLegalAcknowledgement`
-- [ ] Presentation owns:
-  - [ ] `form action`.
-  - [ ] antiforgery.
-  - [ ] `CartVersion`.
-  - [ ] `IdempotencyKey`.
-  - [ ] checkout session identity if required.
-  - [ ] address field names.
-  - [ ] required country/state behavior.
-  - [ ] billing/shipping flags.
-  - [ ] payment method field name.
-  - [ ] submit semantics.
-- [ ] V2 owns:
-  - [ ] grid layout.
-  - [ ] section order.
-  - [ ] labels/copy.
-  - [ ] CSS classes.
-  - [ ] summary placement.
-- [ ] Starter uses the same Presentation form patterns.
-- [ ] Remove from V2 checkout view:
-  - [ ] raw `<form method="post">` for checkout.
-  - [ ] direct `<AntiforgeryToken />`.
-  - [ ] direct hidden `CartVersion`.
-  - [ ] direct hidden `IdempotencyKey`.
-  - [ ] direct `PaymentMethodKey` field ownership.
-  - [ ] direct `ShippingCountryCode` contract ownership.
-- [ ] Add tests:
-  - [ ] checkout form field names match Presentation endpoint DTO.
-  - [ ] idempotency key is always posted.
-  - [ ] cart version is always posted.
-  - [ ] country options render from context.
-  - [ ] single payment method still posts the canonical key.
-- [ ] Exit criteria:
-  - [ ] V2 checkout view renders form pattern, not security/field contract.
+- [x] Add Presentation components/patterns:
+  - [x] `StorefrontCheckoutForm`
+  - [x] `StorefrontCheckoutAddressFields`
+  - [x] `StorefrontCheckoutPaymentFields`
+  - [x] `StorefrontCheckoutSubmit`
+  - [x] optional `StorefrontCheckoutLegalAcknowledgement`
+- [x] Presentation owns:
+  - [x] `form action`.
+  - [x] antiforgery.
+  - [x] `CartVersion`.
+  - [x] `IdempotencyKey`.
+  - [x] checkout session identity if required.
+  - [x] address field names.
+  - [x] required country/state behavior.
+  - [x] billing/shipping flags.
+  - [x] payment method field name.
+  - [x] submit semantics.
+- [x] V2 owns:
+  - [x] grid layout.
+  - [x] section order.
+  - [x] labels/copy.
+  - [x] CSS classes.
+  - [x] summary placement.
+- [x] Starter uses the same Presentation form patterns.
+- [x] Remove from V2 checkout view:
+  - [x] raw `<form method="post">` for checkout.
+  - [x] direct `<AntiforgeryToken />`.
+  - [x] direct hidden `CartVersion`.
+  - [x] direct hidden `IdempotencyKey`.
+  - [x] direct `PaymentMethodKey` field ownership.
+  - [x] direct `ShippingCountryCode` contract ownership.
+- [x] Add tests:
+  - [x] checkout form field names match Presentation endpoint DTO.
+  - [x] idempotency key is always posted.
+  - [x] cart version is always posted.
+  - [x] country options render from context.
+  - [x] single payment method still posts the canonical key.
+- [x] Exit criteria:
+  - [x] V2 checkout view renders form pattern, not security/field contract.
+
+Evidence:
+
+- Added Presentation checkout components and `StorefrontCheckoutFormFieldNames` constants backed by endpoint form DTO `nameof(...)` values.
+- Updated V2 checkout page to keep page grid/summary/layout while rendering the Presentation form/address/payment/submit pattern.
+- Updated Starter checkout page to use the same Presentation checkout form pattern.
+- Added `StorefrontCheckoutFormPatternTests` and updated the existing address lookup markup test to read address-field markers from the Presentation component.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontCheckoutFormPatternTests" -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontBrandingMarkupTests.CheckoutPage_RendersAddressLookupThroughRuntimeFacade" -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Checkout_PostWithStaleCartVersionRedirectsWithoutPlacingOrder" -v:minimal`
+  - Fixed-string `rg` checks for raw checkout POST form/field ownership in V2 and Starter checkout views found no matches.
 
 ## Phase F1.36 - Move currency and logout mutation patterns
 

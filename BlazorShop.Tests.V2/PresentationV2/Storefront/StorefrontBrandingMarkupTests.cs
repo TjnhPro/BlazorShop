@@ -369,12 +369,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutPage_RendersAddressLookupThroughRuntimeFacade()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor");
+            var addressFields = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Components/Checkout/StorefrontCheckoutAddressFields.razor");
             var pageService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Checkout/StorefrontCheckoutPageService.cs");
             var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
 
-            Assert.Contains("data-storefront-manual-address", markup);
-            Assert.Contains("data-storefront-manual-address-field", markup);
+            Assert.Contains("<StorefrontCheckoutAddressFields", markup);
+            Assert.Contains("data-storefront-manual-address", addressFields);
+            Assert.Contains("data-storefront-manual-address-field", addressFields);
             Assert.Contains("IStorefrontRuntimeAddressFacade addressFacade", pageService);
             Assert.Contains("addressFacade.ListCountriesAsync", pageService);
             Assert.Contains("addressFacade.ListStatesAsync", pageService);

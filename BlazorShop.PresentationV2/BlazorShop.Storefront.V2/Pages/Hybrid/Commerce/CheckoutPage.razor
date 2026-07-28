@@ -54,111 +54,30 @@
                     }
                     else
                     {
-                        <form method="post" action="@StorefrontRoutes.Checkout" class="space-y-6">
-                            <AntiforgeryToken />
-                            <input type="hidden" name="CartVersion" value="@Context.CartVersion" />
-                            <input type="hidden" name="IdempotencyKey" value="@Context.IdempotencyKey" />
-                            <input type="hidden" name="UseShippingAddressAsBillingAddress" value="true" />
+                        <StorefrontCheckoutForm Context="Context" FormClass="space-y-6">
+                            <StorefrontCheckoutAddressFields Context="Context"
+                                                            ContactSectionClass="grid gap-4 md:grid-cols-2"
+                                                            AddressSectionClass="space-y-4"
+                                                            AddressGridClass="grid gap-4 md:grid-cols-2"
+                                                            LabelClass="block text-sm"
+                                                            AddressLineClass="block text-sm md:col-span-2"
+                                                            LabelTextClass="font-semibold text-neutral-800"
+                                                            InputClass="@InputClass"
+                                                            UppercaseInputClass="@UppercaseInputClass"
+                                                            HeadingClass="text-lg font-bold text-neutral-950" />
 
-                            <section class="grid gap-4 md:grid-cols-2">
-                                <label class="block text-sm">
-                                    <span class="font-semibold text-neutral-800">Customer email</span>
-                                    <input name="CustomerEmail" type="email" autocomplete="email" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                </label>
-                                <label class="block text-sm">
-                                    <span class="font-semibold text-neutral-800">Customer name</span>
-                                    <input name="CustomerName" autocomplete="name" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                </label>
-                            </section>
+                            <StorefrontCheckoutPaymentFields Context="Context"
+                                                            SectionClass="space-y-3"
+                                                            HeadingClass="text-lg font-bold text-neutral-950"
+                                                            OptionLabelClass="flex cursor-pointer items-start gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm hover:bg-neutral-100"
+                                                            RadioClass="mt-1"
+                                                            OptionTitleClass="block font-bold text-neutral-950"
+                                                            OptionDescriptionClass="mt-1 block text-neutral-600" />
 
-                            <section class="space-y-4">
-                                <h2 class="text-lg font-bold text-neutral-950">Shipping address</h2>
-                                <div class="grid gap-4 md:grid-cols-2" data-storefront-manual-address>
-                                    <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">Full name</span>
-                                        <input name="ShippingFullName" autocomplete="shipping name" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                    </label>
-                                    <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">Email</span>
-                                        <input name="ShippingEmail" type="email" autocomplete="shipping email" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                    </label>
-                                    @if (Context.PhoneEnabled)
-                                    {
-                                        <label class="block text-sm">
-                                            <span class="font-semibold text-neutral-800">Phone</span>
-                                            <input name="ShippingPhone" autocomplete="shipping tel" required="@Context.PhoneRequired" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                        </label>
-                                    }
-                                    <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">Country</span>
-                                        @if (Context.HasAddressCountries)
-                                        {
-                                            <select name="ShippingCountryCode" autocomplete="shipping country" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100">
-                                                @foreach (var country in Context.AddressCountries)
-                                                {
-                                                    <option value="@country.Code" selected="@(string.Equals(country.Code, Context.DefaultShippingCountryCode, StringComparison.OrdinalIgnoreCase))">@country.Name</option>
-                                                }
-                                            </select>
-                                        }
-                                        else
-                                        {
-                                            <input name="ShippingCountryCode" maxlength="2" value="@Context.DefaultShippingCountryCode" autocomplete="shipping country" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm uppercase text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                        }
-                                    </label>
-                                    <label class="block text-sm md:col-span-2">
-                                        <span class="font-semibold text-neutral-800">Address line 1</span>
-                                        <input name="ShippingAddress1" autocomplete="shipping address-line1" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                    </label>
-                                    <label class="block text-sm md:col-span-2">
-                                        <span class="font-semibold text-neutral-800">Address line 2</span>
-                                        <input name="ShippingAddress2" autocomplete="shipping address-line2" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                    </label>
-                                    <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">City</span>
-                                        <input name="ShippingCity" autocomplete="shipping address-level2" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                    </label>
-                                    <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">State / province</span>
-                                        @if (Context.HasAddressStates)
-                                        {
-                                            <select name="ShippingState" autocomplete="shipping address-level1" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100">
-                                                <option value="">Select state / province</option>
-                                                @foreach (var state in Context.AddressStates)
-                                                {
-                                                    <option value="@state.Code" selected="@(string.Equals(state.Code, Context.DefaultShippingStateCode, StringComparison.OrdinalIgnoreCase))">@state.Name</option>
-                                                }
-                                            </select>
-                                        }
-                                        else
-                                        {
-                                            <input name="ShippingState" value="@Context.DefaultShippingStateCode" autocomplete="shipping address-level1" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                        }
-                                    </label>
-                                    <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">Postal code</span>
-                                        <input name="ShippingPostalCode" autocomplete="shipping postal-code" required="@Context.PostalCodeRequired" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                    </label>
-                                </div>
-                            </section>
-
-                            <section class="space-y-3">
-                                <h2 class="text-lg font-bold text-neutral-950">Payment</h2>
-                                @foreach (var method in Context.PaymentMethods)
-                                {
-                                    <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm hover:bg-neutral-100">
-                                        <input class="mt-1" type="radio" name="PaymentMethodKey" value="@method.Key" checked="@(method == Context.PaymentMethods[0])" />
-                                        <span>
-                                            <span class="block font-bold text-neutral-950">@method.DisplayName</span>
-                                            <span class="mt-1 block text-neutral-600">@method.Description</span>
-                                        </span>
-                                    </label>
-                                }
-                            </section>
-
-                            <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-amber-500 px-4 py-3 font-semibold text-white hover:bg-amber-600">
+                            <StorefrontCheckoutSubmit Class="inline-flex w-full items-center justify-center rounded bg-amber-500 px-4 py-3 font-semibold text-white hover:bg-amber-600">
                                 Place order
-                            </button>
-                        </form>
+                            </StorefrontCheckoutSubmit>
+                        </StorefrontCheckoutForm>
                     }
                 </div>
             </article>
@@ -213,4 +132,7 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontCheckoutPageContext Context { get; set; } = default!;
+
+    private const string InputClass = "mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100";
+    private const string UppercaseInputClass = "mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm uppercase text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100";
 }

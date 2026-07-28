@@ -1,0 +1,44 @@
+@namespace BlazorShop.Storefront.Presentation.Components.Checkout
+
+<section class="@SectionClass">
+    @if (!string.IsNullOrWhiteSpace(Heading))
+    {
+        <h2 class="@HeadingClass">@Heading</h2>
+    }
+    @foreach (var method in Context.PaymentMethods)
+    {
+        <label class="@OptionLabelClass">
+            <input class="@RadioClass" type="radio" name="@StorefrontCheckoutFormFieldNames.PaymentMethodKey" value="@method.Key" checked="@(method == Context.PaymentMethods[0])" />
+            <span>
+                <span class="@OptionTitleClass">@method.DisplayName</span>
+                <span class="@OptionDescriptionClass">@method.Description</span>
+            </span>
+        </label>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutPageContext Context { get; set; } = default!;
+
+    [Parameter]
+    public string SectionClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string HeadingClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Heading { get; set; } = "Payment";
+
+    [Parameter]
+    public string OptionLabelClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string RadioClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string OptionTitleClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string OptionDescriptionClass { get; set; } = string.Empty;
+}

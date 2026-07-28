@@ -1,0 +1,13 @@
+@namespace BlazorShop.Storefront.Presentation.Components.Checkout
+
+<button type="submit" class="@Class">
+    @ChildContent
+</button>
+
+@code {
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = builder => builder.AddContent(0, "Place order");
+}
