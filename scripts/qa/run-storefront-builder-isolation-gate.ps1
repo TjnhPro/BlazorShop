@@ -41,7 +41,7 @@ if ($Describe) {
     Write-Host "- pack BlazorShop.Storefront.Runtime"
     Write-Host "- pack BlazorShop.Storefront.Presentation"
     Write-Host "- pack BlazorShop.Storefront.Components"
-    Write-Host "- confirm package references, no Storefront.V2/Web.SharedV2/backend/core/API references"
+    Write-Host "- confirm visual package references, no direct Runtime/Client or Storefront.V2/Web.SharedV2/backend/core/API references"
     exit 0
 }
 
@@ -99,13 +99,19 @@ dotnet build $projectFile --configuration $Configuration --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
-foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
         throw "[SFB-ISOLATION-001] Generated storefront must consume '$package' as a package reference."
     }
 }
 
-$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API")
+foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
+    if ($project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+        throw "[SFB-ISOLATION-001] Generated storefront must not direct-reference '$package'."
+    }
+}
+
+$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "PackageReference Include=`"BlazorShop.Storefront.Runtime`"", "PackageReference Include=`"BlazorShop.Storefront.Client`"")
 Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
     Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
     ForEach-Object {

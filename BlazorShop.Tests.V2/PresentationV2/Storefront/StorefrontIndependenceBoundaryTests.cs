@@ -216,7 +216,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 project,
                 StringComparison.Ordinal);
             Assert.DoesNotContain("Include=\"BlazorShop.Storefront.Client\"", project, StringComparison.Ordinal);
-            Assert.Contains("Include=\"BlazorShop.Storefront.Runtime\"", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("Include=\"BlazorShop.Storefront.Runtime\"", project, StringComparison.Ordinal);
             Assert.Contains("Include=\"BlazorShop.Storefront.Components\"", project, StringComparison.Ordinal);
 
             AssertNoSourceFragments(

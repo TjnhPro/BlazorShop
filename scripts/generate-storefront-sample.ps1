@@ -41,6 +41,12 @@ $forbiddenPatterns = @(
     "Generated/StorefrontClient.g.cs"
 )
 
+$forbiddenTemplateDirectories = @(
+    "Security",
+    "Services",
+    "Middleware"
+)
+
 function Assert-OutputPath {
     $resolved = [System.IO.Path]::GetFullPath($projectRoot)
     $expectedPrefix = [System.IO.Path]::GetFullPath($generatedRoot)
@@ -60,7 +66,7 @@ function Copy-StarterTemplate {
 
     New-Item -ItemType Directory -Force -Path $projectRoot | Out-Null
     Get-ChildItem -LiteralPath $starterRoot -Force |
-        Where-Object { $_.Name -notin @("bin", "obj") } |
+        Where-Object { $_.Name -notin @("bin", "obj") -and (-not $_.PSIsContainer -or $_.Name -notin $forbiddenTemplateDirectories) } |
         ForEach-Object {
             Copy-Item -LiteralPath $_.FullName -Destination $projectRoot -Recurse -Force
         }

@@ -208,37 +208,49 @@ Goal: Starter and generated projects must not carry application/security/transpo
 
 ### Tasks
 
-- [ ] Move or delete `BlazorShop.Storefront.Starter/Security/StarterReturnUrlValidator.cs`.
-- [ ] If logic is still needed, move it to Presentation as a shared return URL validator/service.
-- [ ] Remove `Security/StarterReturnUrlValidator.cs` from Starter protected files.
-- [ ] Update StorefrontBuilder generator metadata to stop copying/protecting Starter security code.
-- [ ] Remove direct Runtime package reference from Starter if Presentation packaging can expose the required transitive dependency safely.
-- [ ] Update Presentation package/project metadata so visual hosts can consume Presentation without direct Runtime reference.
-- [ ] Update generated project template package references:
-  - [ ] keep `BlazorShop.Storefront.Presentation`.
-  - [ ] keep `BlazorShop.Storefront.Components`.
-  - [ ] remove direct `BlazorShop.Storefront.Runtime`.
-  - [ ] remove direct `BlazorShop.Storefront.Client` unless only kept as package metadata and explicitly documented.
-- [ ] Update architecture docs where they still describe generated storefronts as direct Runtime consumers.
-- [ ] If any temporary exception remains, add:
-  - [ ] reason.
-  - [ ] allowed project.
-  - [ ] removal condition.
-  - [ ] guardrail test that fails if exception expands.
+- [x] Move or delete `BlazorShop.Storefront.Starter/Security/StarterReturnUrlValidator.cs`.
+- [x] If logic is still needed, move it to Presentation as a shared return URL validator/service.
+- [x] Remove `Security/StarterReturnUrlValidator.cs` from Starter protected files.
+- [x] Update StorefrontBuilder generator metadata to stop copying/protecting Starter security code.
+- [x] Remove direct Runtime package reference from Starter if Presentation packaging can expose the required transitive dependency safely.
+- [x] Update Presentation package/project metadata so visual hosts can consume Presentation without direct Runtime reference.
+- [x] Update generated project template package references:
+  - [x] keep `BlazorShop.Storefront.Presentation`.
+  - [x] keep `BlazorShop.Storefront.Components`.
+  - [x] remove direct `BlazorShop.Storefront.Runtime`.
+  - [x] remove direct `BlazorShop.Storefront.Client` unless only kept as package metadata and explicitly documented.
+- [x] Update architecture docs where they still describe generated storefronts as direct Runtime consumers.
+- [x] If any temporary exception remains, add:
+  - [x] reason.
+  - [x] allowed project.
+  - [x] removal condition.
+  - [x] guardrail test that fails if exception expands.
 
 ### Tests
 
-- [ ] Build Starter after removing security helper.
-- [ ] Generate a sample StorefrontBuilder project.
-- [ ] Validate generated project has no `Security/`, `Services/`, `Middleware/`, or Runtime direct reference.
-- [ ] Validate protected files metadata no longer includes deleted security files.
-- [ ] Validate Presentation still composes Runtime successfully.
+- [x] Build Starter after removing security helper.
+- [x] Generate a sample StorefrontBuilder project.
+- [x] Validate generated project has no `Security/`, `Services/`, `Middleware/`, or Runtime direct reference.
+- [x] Validate protected files metadata no longer includes deleted security files.
+- [x] Validate Presentation still composes Runtime successfully.
 
 ### Definition of Done
 
-- [ ] Starter contains no application security implementation.
-- [ ] Generated projects contain no application security implementation.
-- [ ] Visual hosts do not direct-reference Runtime/Client, or the only remaining exception is documented with a removal gate.
+- [x] Starter contains no application security implementation.
+- [x] Generated projects contain no application security implementation.
+- [x] Visual hosts do not direct-reference Runtime/Client, or the only remaining exception is documented with a removal gate.
+
+### Notes
+
+- Deleted the Starter return URL validator helper and removed stale Starter `_Imports.razor` references; no replacement service was needed because Presentation-owned auth/navigation contracts already cover the active flow.
+- Starter and generated projects now direct-reference only `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components`. `BlazorShop.Storefront.Runtime` remains packaged as a transitive Presentation dependency, and `BlazorShop.Storefront.Client` remains packed only to satisfy Runtime's package dependency chain.
+- StorefrontBuilder generator, static validation, generated project validation, preflight, isolation gate, and sample release gate now reject direct Runtime/Client package references and application/security folders in generated output.
+- No temporary exception remains. Guardrails now fail if `Security/`, `Services/`, `Middleware/`, direct Runtime package references, or direct Client package references reappear in generated visual hosts.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj -v:minimal` - passed.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests.StorefrontStarter_ViewsRenderPresentationContextsOnly|FullyQualifiedName~StorefrontIndependenceBoundaryTests.StorefrontStarter_UsesPackageFirstContractsAndNoForbiddenSourceDependencies|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests" -v:minimal` - passed 51/51.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontStarterHostSmokeTests" -v:minimal` - passed 9/9.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1` - passed generated proof/static validation/isolation gate.
 
 ## Phase F1.49 - Route, Link, Head, And Layout Context Contracts
 

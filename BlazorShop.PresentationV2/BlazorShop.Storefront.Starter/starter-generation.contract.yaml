@@ -6,12 +6,10 @@ generatedProject:
   outputRoot: BlazorShop.PresentationV2
   safeNamePattern: ^[A-Z][A-Za-z0-9]*$
 packageDependencies:
-  - id: BlazorShop.Storefront.Client
-    versionProperty: StorefrontClientPackageVersion
-  - id: BlazorShop.Storefront.Runtime
-    versionProperty: StorefrontRuntimePackageVersion
   - id: BlazorShop.Storefront.Presentation
     versionProperty: StorefrontPresentationPackageVersion
+  - id: BlazorShop.Storefront.Components
+    versionProperty: StorefrontComponentsPackageVersion
 allowedGeneratedZones:
   - Components/Layout
   - Components/Catalog
@@ -27,10 +25,7 @@ managedZones:
   - Features/feature-manifest.json
   - docs/storefront-analysis
 protectedZones:
-  - BlazorShop.Storefront.Client/Generated
-  - BlazorShop.Storefront.Runtime
   - BlazorShop.Storefront.Presentation
-  - Security/StarterReturnUrlValidator.cs
   - StorefrontPackageVersions.props
   - starter-generation.contract.yaml
   - docs/storefront-analysis/generated-files.yaml

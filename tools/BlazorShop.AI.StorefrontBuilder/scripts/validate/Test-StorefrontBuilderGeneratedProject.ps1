@@ -20,9 +20,15 @@ foreach ($path in @($projectFile, $metadata, $featureManifest)) {
 }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
-foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
         throw "[SFB-PROJECT-004] Generated project is missing package reference '$package'."
+    }
+}
+
+foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
+    if ($project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+        throw "[SFB-PROJECT-004] Generated project must not direct-reference '$package'. Presentation/Runtime own application transport."
     }
 }
 
@@ -32,13 +38,20 @@ if (-not $packageVersions.Contains("StorefrontClientPackageVersion", [System.Str
 }
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
-foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "sourceStarterPath:", "protectedFiles:", "BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Components")) {
+foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "sourceStarterPath:", "protectedFiles:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $metadataText.Contains($required, [System.StringComparison]::Ordinal)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
 }
 
-$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "BlazorShop.ControlPlane.Web")
+$forbiddenDirectories = @("Security", "Services", "Middleware")
+foreach ($directory in $forbiddenDirectories) {
+    if (Test-Path (Join-Path $ProjectRoot $directory)) {
+        throw "[SFB-PROJECT-006] Generated project must not contain application/security folder '$directory'."
+    }
+}
+
+$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "BlazorShop.ControlPlane.Web", "PackageReference Include=`"BlazorShop.Storefront.Runtime`"", "PackageReference Include=`"BlazorShop.Storefront.Client`"")
 Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File |
     Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
     ForEach-Object {

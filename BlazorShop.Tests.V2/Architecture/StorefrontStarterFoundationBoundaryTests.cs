@@ -136,7 +136,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StarterProject_ConsumesRuntimeComponentsPackagesAndPresentationProjectReference()
+        public void StarterProject_ConsumesPresentationAndComponentsWithoutDirectRuntimeOrClient()
         {
             var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
             var versionProps = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StorefrontPackageVersions.props");
@@ -145,7 +145,7 @@ namespace BlazorShop.Tests.Architecture
             var changelog = ReadRepositoryFile("docs/storefront-platform/storefront-client-changelog.md");
 
             Assert.DoesNotContain("<PackageReference Include=\"BlazorShop.Storefront.Client\"", project, StringComparison.Ordinal);
-            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Runtime\" Version=\"$(StorefrontRuntimePackageVersion)\"", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("<PackageReference Include=\"BlazorShop.Storefront.Runtime\"", project, StringComparison.Ordinal);
             Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Components\" Version=\"$(StorefrontComponentsPackageVersion)\"", project, StringComparison.Ordinal);
             Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj""", project, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Client.csproj", project, StringComparison.Ordinal);

@@ -66,12 +66,9 @@ $metadata = @(
     "generationMode: starter-copy-before-visual-generation",
     "protectedFiles:",
     "  - BlazorShop.Storefront.Presentation",
-    "  - Security/StarterReturnUrlValidator.cs",
     "  - StorefrontPackageVersions.props",
     "featureManifest: Features\feature-manifest.json",
     "packageReferences:",
-    "  - BlazorShop.Storefront.Client",
-    "  - BlazorShop.Storefront.Runtime",
     "  - BlazorShop.Storefront.Presentation",
     "  - BlazorShop.Storefront.Components"
 ) -join [Environment]::NewLine

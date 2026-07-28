@@ -54,8 +54,8 @@ namespace BlazorShop.Tests.Architecture
                 "starterVersion:",
                 "targetFramework: net10.0",
                 "BlazorShop.Storefront.{Name}",
-                "BlazorShop.Storefront.Client",
-                "BlazorShop.Storefront.Runtime",
+                "BlazorShop.Storefront.Presentation",
+                "BlazorShop.Storefront.Components",
                 "allowedGeneratedZones:",
                 "managedZones:",
                 "protectedZones:",
@@ -80,10 +80,7 @@ namespace BlazorShop.Tests.Architecture
 
             foreach (var protectedZone in new[]
             {
-                "BlazorShop.Storefront.Client/Generated",
-                "BlazorShop.Storefront.Runtime",
                 "BlazorShop.Storefront.Presentation",
-                "Security/StarterReturnUrlValidator.cs",
                 "StorefrontPackageVersions.props",
                 "starter-generation.contract.yaml",
                 "docs/storefront-analysis/generated-files.yaml",
@@ -99,6 +96,8 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("id: product.purchase", contract, StringComparison.Ordinal);
             Assert.Contains("action: cart.add-line", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("id: BlazorShop.Storefront.Client", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("id: BlazorShop.Storefront.Runtime", contract, StringComparison.Ordinal);
             Assert.DoesNotContain("Endpoints/StarterBffEndpoints.cs", contract, StringComparison.Ordinal);
         }
 

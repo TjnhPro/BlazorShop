@@ -245,8 +245,10 @@ Invoke-Step "Publish generated storefront" {
 }
 
 Invoke-Step "Verify contract and source boundaries" {
-    Assert-ContainsText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Client"'
-    Assert-ContainsText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Runtime"'
+    Assert-ContainsText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Presentation"'
+    Assert-ContainsText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Components"'
+    Assert-DoesNotContainText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Client"'
+    Assert-DoesNotContainText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Runtime"'
     Assert-SourceDoesNotContain $forbiddenSourcePatterns
     Assert-ContainsText $generatedClient "IStorefrontCartClient"
     Assert-ContainsText $generatedClient "IStorefrontCheckoutClient"
@@ -299,7 +301,6 @@ Invoke-Step "Verify security and browser boundaries" {
     Assert-ContainsText (Join-Path $sampleRoot "Endpoints\StarterBffEndpoints.cs") "HttpOnly = true"
     Assert-ContainsText (Join-Path $sampleRoot "Endpoints\StarterBffEndpoints.cs") "SameSite = SameSiteMode.Lax"
     Assert-ContainsText (Join-Path $sampleRoot "Endpoints\StarterBffEndpoints.cs") '"/api/cart/lines"'
-    Assert-ContainsText (Join-Path $sampleRoot "Security\StarterReturnUrlValidator.cs") "IsSafeLocalReturnUrl"
     Assert-ContainsText (Join-Path $sampleRoot "Pages\Ssr\Auth\AuthShellPage.razor") "security.return_url"
     Assert-ContainsText (Join-Path $sampleRoot "Pages\Hybrid\Commerce\CartPage.razor") "same-origin /api/cart/*"
     Assert-ContainsText (Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\StorefrontRuntimeError.cs") "StorefrontRuntimeErrorMapper"

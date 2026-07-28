@@ -278,11 +278,8 @@ namespace BlazorShop.Tests.Architecture
                 "Features\\feature-manifest.json",
                 "docs\\storefront-analysis",
                 "metadata.yaml",
-                "BlazorShop.Storefront.Client",
-                "BlazorShop.Storefront.Runtime",
                 "BlazorShop.Storefront.Components",
                 "BlazorShop.Storefront.Presentation",
-                "Security/StarterReturnUrlValidator.cs",
             })
             {
                 Assert.Contains(text, generator, StringComparison.Ordinal);
