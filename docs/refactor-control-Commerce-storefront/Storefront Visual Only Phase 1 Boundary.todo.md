@@ -946,7 +946,7 @@ Evidence:
 
 Goal: visual developers should not get application/service namespaces globally.
 
-- [ ] Remove from V2 `_Imports.razor`:
+- [x] Remove from V2 `_Imports.razor`:
 
 ```text
 System.Net.Http.Json
@@ -959,18 +959,28 @@ Client namespaces
 IConfiguration/IOptions-related namespaces if present
 ```
 
-- [ ] Keep:
-  - [ ] Presentation page contexts.
-  - [ ] visual contracts.
-  - [ ] browser-safe Components primitives.
-  - [ ] Blazor rendering namespaces.
-  - [ ] V2 visual namespaces.
-  - [ ] V2.WASM component namespaces for component placement.
-- [ ] Fix compile errors by adding narrow file-level imports only when visual-safe.
-- [ ] Add guardrail:
-  - [ ] V2 `_Imports.razor` cannot import Services/Contracts/Runtime/Client/HttpContext.
-- [ ] Exit criteria:
-  - [ ] V2 visual source cannot inject application services just because global imports make it easy.
+- [x] Keep:
+  - [x] Presentation page contexts.
+  - [x] visual contracts.
+  - [x] browser-safe Components primitives.
+  - [x] Blazor rendering namespaces.
+  - [x] V2 visual namespaces.
+  - [x] V2.WASM component namespaces for component placement.
+- [x] Fix compile errors by adding narrow file-level imports only when visual-safe.
+- [x] Add guardrail:
+  - [x] V2 `_Imports.razor` cannot import Services/Contracts/Runtime/Client/HttpContext.
+- [x] Exit criteria:
+  - [x] V2 visual source cannot inject application services just because global imports make it easy.
+
+Evidence:
+
+- Removed global V2 imports for `System.Net.Http.Json`, Storefront models/services/contracts, Storefront Runtime/Client, and `Microsoft.AspNetCore.Http`.
+- Kept Presentation page-context namespaces and visual/component contracts in `_Imports.razor`.
+- Added narrow file-level imports for visual-safe route helpers, shell/display contracts, catalog enum usage, and the antiforgery head `HttpContext` dependency.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests.F1_40_V2Imports_DoNotExposeApplicationServiceOrTransportNamespaces" -v:minimal`
+- `rg -n "(@using global::System.Net.Http.Json|@using BlazorShop.Storefront.Models|@using BlazorShop.Storefront.Services$|@using BlazorShop.Storefront.Services.Contracts|@using BlazorShop.Storefront.Runtime|@using BlazorShop.Storefront.Client|@using Microsoft.AspNetCore.Http)" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor` found no matches.
 
 ## Phase F1.41 - Clean V2 dependency and namespace ownership
 

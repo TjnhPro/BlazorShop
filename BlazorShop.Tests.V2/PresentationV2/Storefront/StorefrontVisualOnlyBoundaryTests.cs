@@ -142,6 +142,31 @@ public sealed class StorefrontVisualOnlyBoundaryTests
             $"F1.33: registered shell visual components must render supplied context only.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
+    [Fact]
+    public void F1_40_V2Imports_DoNotExposeApplicationServiceOrTransportNamespaces()
+    {
+        var imports = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor"));
+        var forbiddenImports = new[]
+        {
+            "@using global::System.Net.Http.Json",
+            "@using BlazorShop.Storefront.Models",
+            "@using BlazorShop.Storefront.Services",
+            "@using BlazorShop.Storefront.Services.Contracts",
+            "@using BlazorShop.Storefront.Runtime",
+            "@using BlazorShop.Storefront.Client",
+            "@using Microsoft.AspNetCore.Http",
+        };
+
+        foreach (var forbiddenImport in forbiddenImports)
+        {
+            Assert.DoesNotContain(forbiddenImport, imports, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("@using BlazorShop.Storefront.Presentation.Services.Catalog", imports, StringComparison.Ordinal);
+        Assert.Contains("@using BlazorShop.Storefront.Presentation.Services.Product", imports, StringComparison.Ordinal);
+        Assert.Contains("@using BlazorShop.Storefront.Components.Contracts.Catalog", imports, StringComparison.Ordinal);
+    }
+
     private static string[] FindSourceTokenOffenders(
         IReadOnlyCollection<string> relativeFolders,
         IReadOnlyCollection<string> forbiddenTokens,

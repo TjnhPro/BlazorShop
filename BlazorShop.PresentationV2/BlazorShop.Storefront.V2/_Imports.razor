@@ -1,5 +1,4 @@
 @using global::System.Net
-@using global::System.Net.Http.Json
 @using BlazorShop.Storefront
 @using BlazorShop.Storefront.Components.Browser
 @using BlazorShop.Storefront.Components.Contracts.Catalog
@@ -19,6 +18,13 @@
 @using BlazorShop.Storefront.Presentation.Components.Auth
 @using BlazorShop.Storefront.Presentation.Components.Checkout
 @using BlazorShop.Storefront.Presentation.Components.Shell
+@using BlazorShop.Storefront.Presentation.Services.Account
+@using BlazorShop.Storefront.Presentation.Services.Auth
+@using BlazorShop.Storefront.Presentation.Services.Cart
+@using BlazorShop.Storefront.Presentation.Services.Catalog
+@using BlazorShop.Storefront.Presentation.Services.Checkout
+@using BlazorShop.Storefront.Presentation.Services.Content
+@using BlazorShop.Storefront.Presentation.Services.Product
 @using BlazorShop.Storefront.Presentation.Services.System
 @using BlazorShop.Storefront.Pages
 @using BlazorShop.Storefront.Pages.WasmHost.Account
@@ -26,13 +32,9 @@
 @using BlazorShop.Storefront.Theme.Pages.Auth
 @using BlazorShop.Storefront.Pages.Hybrid.Commerce
 @using BlazorShop.Storefront.Pages.Ssr.Content
-@using BlazorShop.Storefront.Models
-@using BlazorShop.Storefront.Services
-@using BlazorShop.Storefront.Services.Contracts
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Rendering
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@using Microsoft.AspNetCore.Http
