@@ -65,6 +65,7 @@ public static class StorefrontPresentationServiceCollectionExtensions
         services.TryAddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCustomerClient>());
         services.TryAddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
         services.TryAddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
+        services.TryAddScoped<IStorefrontShellContextService, StorefrontShellContextService>();
         services.TryAddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontPaymentClient>());
         services.TryAddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
         services.TryAddScoped<IStorefrontSessionResolver>(serviceProvider => serviceProvider.GetRequiredService<StorefrontSessionResolver>());

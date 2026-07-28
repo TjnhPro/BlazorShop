@@ -494,7 +494,7 @@ Evidence:
 
 Goal: Header/Footer/Account/Menu/Search/Currency contexts are prepared by Presentation once per request.
 
-- [ ] Add Presentation context records:
+- [x] Add Presentation context records:
 
 ```csharp
 StorefrontShellContext
@@ -509,36 +509,47 @@ StorefrontShellLink
 StorefrontShellMenu
 ```
 
-- [ ] Add service:
+- [x] Add service:
 
 ```csharp
 IStorefrontShellContextService
 StorefrontShellContextService
 ```
 
-- [ ] Service owns:
-  - [ ] load display context.
-  - [ ] load navigation menus.
-  - [ ] load content links.
-  - [ ] load search categories.
-  - [ ] load account session summary.
-  - [ ] prepare currency options.
-  - [ ] prepare safe return URLs.
-  - [ ] prepare safe application URLs.
-  - [ ] request-scoped caching.
-- [ ] Replace V2-only services by Presentation equivalents:
-  - [ ] `IStorefrontNavigationProvider`
-  - [ ] `IStorefrontPageNavigationProvider`
-  - [ ] `IStorefrontClientAppUrlResolver`
-- [ ] Add tests:
-  - [ ] context service loads data once per request.
-  - [ ] account summary is anonymous when no session exists.
-  - [ ] search categories are safe and sorted.
-  - [ ] currency context contains current/supported/default codes.
-  - [ ] safe return URL never becomes external.
-- [ ] Exit criteria:
-  - [ ] Header/Footer/Account menu can render from context only.
-  - [ ] V2 no longer owns navigation provider services.
+- [x] Service owns:
+  - [x] load display context.
+  - [x] load navigation menus.
+  - [x] load content links.
+  - [x] load search categories.
+  - [x] load account session summary.
+  - [x] prepare currency options.
+  - [x] prepare safe return URLs.
+  - [x] prepare safe application URLs.
+  - [x] request-scoped caching.
+- [x] Replace V2-only services by Presentation equivalents:
+  - [x] `IStorefrontNavigationProvider`
+  - [x] `IStorefrontPageNavigationProvider`
+  - [x] `IStorefrontClientAppUrlResolver`
+- [x] Add tests:
+  - [x] context service loads data once per request.
+  - [x] account summary is anonymous when no session exists.
+  - [x] search categories are safe and sorted.
+  - [x] currency context contains current/supported/default codes.
+  - [x] safe return URL never becomes external.
+- [x] Exit criteria:
+  - [x] Header/Footer/Account menu can render from context only.
+  - [x] V2 no longer owns navigation provider services.
+
+Evidence:
+
+- Added `IStorefrontShellContextService`, `StorefrontShellContextService`, and Presentation shell/header/footer/account/navigation/search/currency/brand records.
+- Registered the shell context service in Presentation DI and kept navigation/page/client-app URL provider ownership in Presentation.
+- Added `StorefrontShellContextServiceTests` for request caching, anonymous account state, sorted/safe categories, currency context, and safe return fallback.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore -v:minimal`
+  - `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontShellContextServiceTests" -v:minimal`
+  - `rg -n "StorefrontNavigationProvider|StorefrontPageNavigationProvider|StorefrontClientAppUrlResolver|IStorefrontNavigationProvider|IStorefrontPageNavigationProvider|IStorefrontClientAppUrlResolver" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 -g "!bin" -g "!obj"` only finds remaining visual component consumption to remove in F1.33, not provider ownership implementations.
 
 ## Phase F1.33 - Remove data loading from Header/Footer/Account visual components
 
