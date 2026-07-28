@@ -1,6 +1,5 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
-    using BlazorShop.Storefront.Client;
     using BlazorShop.Storefront.Components.Browser;
 
     public sealed record StorefrontCheckoutPageContext(
@@ -8,10 +7,10 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
         string? OrderReference,
         StorefrontBrowserCheckoutState CheckoutState,
         IReadOnlyList<StorefrontCheckoutPageLine> Lines,
-        IReadOnlyList<StorefrontCheckoutPaymentMethodOptionResponse> PaymentMethods,
-        IReadOnlyList<StorefrontAddressCountryResponse> AddressCountries,
-        IReadOnlyList<StorefrontAddressStateProvinceResponse> AddressStates,
-        StorefrontAddressFieldConfigurationResponse? AddressConfiguration,
+        IReadOnlyList<StorefrontCheckoutPaymentMethodOptionView> PaymentMethods,
+        IReadOnlyList<StorefrontCheckoutAddressCountryView> AddressCountries,
+        IReadOnlyList<StorefrontCheckoutAddressStateProvinceView> AddressStates,
+        StorefrontCheckoutAddressFieldConfigurationView? AddressConfiguration,
         int CartVersion,
         string IdempotencyKey,
         string GrandTotalDisplay,
@@ -49,4 +48,22 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     {
         public decimal LineTotal => UnitPrice * Quantity;
     }
+
+    public sealed record StorefrontCheckoutPaymentMethodOptionView(
+        string Key,
+        string DisplayName,
+        string? Description);
+
+    public sealed record StorefrontCheckoutAddressCountryView(
+        string Code,
+        string Name);
+
+    public sealed record StorefrontCheckoutAddressStateProvinceView(
+        string Code,
+        string Name);
+
+    public sealed record StorefrontCheckoutAddressFieldConfigurationView(
+        bool PhoneEnabled,
+        bool PhoneRequired,
+        bool PostalCodeRequired);
 }

@@ -1,12 +1,10 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
-    using BlazorShop.Storefront.Client;
-
     public sealed record StorefrontPaymentResultPageContext(
         bool IsCancelRoute,
         Guid? PaymentAttemptId,
         string? Provider,
-        StorefrontPaymentAttemptResponse? Attempt,
+        StorefrontPaymentResultAttemptView? Attempt,
         string LoadError,
         string Eyebrow,
         string Heading,
@@ -22,4 +20,9 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     {
         public bool HasAttempt => Attempt is not null;
     }
+
+    public sealed record StorefrontPaymentResultAttemptView(
+        Guid Id,
+        string State,
+        string? FailureMessage);
 }

@@ -986,17 +986,17 @@ Evidence:
 
 Goal: V2 references only host visual dependencies.
 
-- [ ] Remove direct V2 project reference to:
-  - [ ] `BlazorShop.Storefront.Runtime`.
-  - [ ] `BlazorShop.Storefront.Client` if ever present.
-  - [ ] backend/core/API projects if ever present.
-- [ ] Keep V2 references:
-  - [ ] `BlazorShop.Storefront.Presentation`.
-  - [ ] `BlazorShop.Storefront.Components`.
-  - [ ] `BlazorShop.Storefront.V2.WASM`.
-  - [ ] `BlazorShop.ServiceDefaults` if bootstrap still requires it.
-  - [ ] `Microsoft.AspNetCore.Components.WebAssembly.Server` if V2 still hosts WASM.
-- [ ] Rename V2 namespaces away from generic shared names:
+- [x] Remove direct V2 project reference to:
+  - [x] `BlazorShop.Storefront.Runtime`.
+  - [x] `BlazorShop.Storefront.Client` if ever present.
+  - [x] backend/core/API projects if ever present.
+- [x] Keep V2 references:
+  - [x] `BlazorShop.Storefront.Presentation`.
+  - [x] `BlazorShop.Storefront.Components`.
+  - [x] `BlazorShop.Storefront.V2.WASM`.
+  - [x] `BlazorShop.ServiceDefaults` if bootstrap still requires it.
+  - [x] `Microsoft.AspNetCore.Components.WebAssembly.Server` if V2 still hosts WASM.
+- [x] Rename V2 namespaces away from generic shared names:
 
 ```text
 BlazorShop.Storefront.V2.Layout
@@ -1006,20 +1006,32 @@ BlazorShop.Storefront.V2.Presentation
 BlazorShop.Storefront.V2.Visual
 ```
 
-- [ ] Delete empty/non-visual directories:
-  - [ ] `Services/`
-  - [ ] `Services/Contracts/`
-  - [ ] `Configuration/`
-  - [ ] `Options/`
-  - [ ] `Models/`
-  - [ ] `Middleware/`
-  - [ ] `Endpoints/` if moved to Presentation.
-- [ ] Add tests:
-  - [ ] V2 csproj has no Runtime/Client reference.
-  - [ ] V2 has no source under forbidden folders.
-  - [ ] V2 namespaces do not use shared application namespace for non-visual source.
-- [ ] Exit criteria:
-  - [ ] V2 is visually identifiable by project references, folders, and namespaces.
+- [x] Delete empty/non-visual directories:
+  - [x] `Services/`
+  - [x] `Services/Contracts/`
+  - [x] `Configuration/`
+  - [x] `Options/`
+  - [x] `Models/`
+  - [x] `Middleware/`
+  - [x] `Endpoints/` if moved to Presentation.
+- [x] Add tests:
+  - [x] V2 csproj has no Runtime/Client reference.
+  - [x] V2 has no source under forbidden folders.
+  - [x] V2 namespaces do not use shared application namespace for non-visual source.
+- [x] Exit criteria:
+  - [x] V2 is visually identifiable by project references, folders, and namespaces.
+
+Evidence:
+
+- Removed V2 direct `BlazorShop.Storefront.Runtime` project reference while keeping Presentation, Components, V2.WASM, ServiceDefaults, and WebAssembly Server dependencies.
+- Moved the antiforgery head component to `BlazorShop.Storefront.Presentation.Components.Security` so V2 no longer owns `IAntiforgery`/`HttpContext` logic in visual folders.
+- Wrapped checkout/payment result page context values in Presentation-owned view records so V2 no longer compiles against generated `BlazorShop.Storefront.Client` DTOs through public context properties.
+- Set V2 root namespace to `BlazorShop.Storefront.V2` and renamed explicit component/page namespaces to V2-owned namespaces.
+- Deleted empty V2 application folders under `Services/`, `Configuration/`, `Options/`, `Models/`, `Middleware/`, and `Endpoints/`.
+- Added F1.41 guardrails to `StorefrontVisualOnlyBoundaryTests` for V2 project references, forbidden source folders, and namespace declarations.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
+- `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests" -v:minimal`
 
 ## Phase F1.42 - Prove Starter visual-only parity
 

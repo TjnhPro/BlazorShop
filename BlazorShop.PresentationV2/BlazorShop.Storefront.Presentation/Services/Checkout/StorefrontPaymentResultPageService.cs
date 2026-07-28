@@ -1,7 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
-    using BlazorShop.Storefront.Client;
     using BlazorShop.Storefront.Runtime;
+    using StorefrontPaymentAttemptResponse = BlazorShop.Storefront.Client.StorefrontPaymentAttemptResponse;
 
     public sealed class StorefrontPaymentResultPageService
     {
@@ -43,14 +43,14 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                         : "Payment status was not found.");
             }
 
-            return CreateContext(isCancelRoute, paymentAttemptId, provider, result.Value, string.Empty);
+            return CreateContext(isCancelRoute, paymentAttemptId, provider, ToPaymentAttemptView(result.Value), string.Empty);
         }
 
         private static StorefrontPaymentResultPageContext CreateContext(
             bool isCancelRoute,
             Guid? paymentAttemptId,
             string? provider,
-            StorefrontPaymentAttemptResponse? attempt,
+            StorefrontPaymentResultAttemptView? attempt,
             string loadError)
         {
             var isSuccess = attempt is not null && IsSuccessState(attempt.State);
@@ -161,6 +161,15 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
             return string.Equals(state, "failed", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(state, "cancelled", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(state, "expired", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static StorefrontPaymentResultAttemptView ToPaymentAttemptView(
+            StorefrontPaymentAttemptResponse attempt)
+        {
+            return new StorefrontPaymentResultAttemptView(
+                attempt.Id ?? Guid.Empty,
+                attempt.State ?? string.Empty,
+                attempt.FailureMessage);
         }
     }
 }

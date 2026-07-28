@@ -167,6 +167,76 @@ public sealed class StorefrontVisualOnlyBoundaryTests
         Assert.Contains("@using BlazorShop.Storefront.Components.Contracts.Catalog", imports, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void F1_41_V2ProjectReferences_StayVisualHostOnly()
+    {
+        var project = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj"));
+        var forbiddenReferences = new[]
+        {
+            "BlazorShop.Storefront.Runtime",
+            "BlazorShop.Storefront.Client",
+            "BlazorShop.CommerceNode.API",
+            "BlazorShop.ControlPlane.API",
+            "BlazorShop.ControlPlane.Web",
+            "BlazorShop.Application",
+            "BlazorShop.Domain",
+            "BlazorShop.Infrastructure",
+            "BlazorShop.Web.SharedV2",
+        };
+
+        foreach (var forbiddenReference in forbiddenReferences)
+        {
+            Assert.DoesNotContain(forbiddenReference, project, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("BlazorShop.ServiceDefaults", project, StringComparison.Ordinal);
+        Assert.Contains("BlazorShop.Storefront.Components", project, StringComparison.Ordinal);
+        Assert.Contains("BlazorShop.Storefront.Presentation", project, StringComparison.Ordinal);
+        Assert.Contains("BlazorShop.Storefront.V2.WASM", project, StringComparison.Ordinal);
+        Assert.Contains("Microsoft.AspNetCore.Components.WebAssembly.Server", project, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void F1_41_V2ForbiddenApplicationFolders_HaveNoActiveSource()
+    {
+        var offenders = ApplicationLogicFolders
+            .SelectMany(folder => EnumerateSourceFiles([folder], [".cs", ".razor", ".json"]))
+            .Select(file => file.RelativePath)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"F1.41: Storefront V2 forbidden application folders must not contain active source.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [Fact]
+    public void F1_41_V2NamespaceDeclarations_UseV2VisualOwnership()
+    {
+        var offenders = EnumerateSourceFiles(["BlazorShop.PresentationV2/BlazorShop.Storefront.V2"], [".cs", ".razor"])
+            .SelectMany(file =>
+            {
+                var source = File.ReadAllText(file.AbsolutePath);
+                var declarations = source
+                    .Split(Environment.NewLine, StringSplitOptions.None)
+                    .Select((line, index) => new { Line = line.Trim(), LineNumber = index + 1 })
+                    .Where(entry => entry.Line.StartsWith("namespace BlazorShop.Storefront", StringComparison.Ordinal)
+                        || entry.Line.StartsWith("@namespace BlazorShop.Storefront", StringComparison.Ordinal))
+                    .Where(entry => !entry.Line.StartsWith("namespace BlazorShop.Storefront.V2", StringComparison.Ordinal)
+                        && !entry.Line.StartsWith("@namespace BlazorShop.Storefront.V2", StringComparison.Ordinal))
+                    .Select(entry => $"{file.RelativePath}:{entry.LineNumber}: {entry.Line}");
+
+                return declarations;
+            })
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"F1.41: Storefront V2 namespace declarations must be visibly V2-owned, not shared Storefront application namespaces.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
     private static string[] FindSourceTokenOffenders(
         IReadOnlyCollection<string> relativeFolders,
         IReadOnlyCollection<string> forbiddenTokens,

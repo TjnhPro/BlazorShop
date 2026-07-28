@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Product;
+namespace BlazorShop.Storefront.V2.Components.Product;
 
 using BlazorShop.Storefront.Components.Headless.Product;
 

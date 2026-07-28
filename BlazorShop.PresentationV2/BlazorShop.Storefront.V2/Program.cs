@@ -1,5 +1,5 @@
 using BlazorShop.Storefront.Presentation.Hosting;
-using BlazorShop.Storefront;
+using BlazorShop.Storefront.V2;
 
 var builder = WebApplication.CreateBuilder(args);
 

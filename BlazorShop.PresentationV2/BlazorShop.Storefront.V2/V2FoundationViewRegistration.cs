@@ -1,16 +1,16 @@
-namespace BlazorShop.Storefront;
+namespace BlazorShop.Storefront.V2;
 
-using BlazorShop.Storefront.Components.Layout;
-using BlazorShop.Storefront.Components.Shared;
+using BlazorShop.Storefront.V2.Components.Layout;
+using BlazorShop.Storefront.V2.Components.Shared;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
-using BlazorShop.Storefront.Pages.Hybrid.Commerce;
-using BlazorShop.Storefront.Pages.WasmHost.Account;
-using BlazorShop.Storefront.Pages.Ssr.Content;
-using BlazorShop.Storefront.Pages.Ssr.System;
-using BlazorShop.Storefront.Theme.Pages.Auth;
-using BlazorShop.Storefront.Theme.Pages.Catalog;
-using BlazorShop.Storefront.Theme.Pages.Product;
+using BlazorShop.Storefront.V2.Pages.Auth;
+using BlazorShop.Storefront.V2.Pages.Catalog;
+using BlazorShop.Storefront.V2.Pages.Content;
+using BlazorShop.Storefront.V2.Pages.Hybrid.Commerce;
+using BlazorShop.Storefront.V2.Pages.Product;
+using BlazorShop.Storefront.V2.Pages.System;
+using BlazorShop.Storefront.V2.Pages.WasmHost.Account;
 
 public static class V2FoundationViewRegistration
 {

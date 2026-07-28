@@ -7,9 +7,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Storefront.Runtime;
     using Microsoft.AspNetCore.Http;
-    using StorefrontAddressCountryResponse = BlazorShop.Storefront.Client.StorefrontAddressCountryResponse;
     using StorefrontAddressFieldConfigurationResponse = BlazorShop.Storefront.Client.StorefrontAddressFieldConfigurationResponse;
-    using StorefrontAddressStateProvinceResponse = BlazorShop.Storefront.Client.StorefrontAddressStateProvinceResponse;
     using StorefrontCheckoutPaymentMethodOptionResponse = BlazorShop.Storefront.Client.StorefrontCheckoutPaymentMethodOptionResponse;
     using StorefrontCheckoutSessionResponse = BlazorShop.Storefront.Client.StorefrontCheckoutSessionResponse;
     using StorefrontPaymentMethodResponse = BlazorShop.Storefront.Client.StorefrontPaymentMethodResponse;
@@ -89,7 +87,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
             var lines = BuildLines(cartItems, productsById, displayContext);
 
             var paymentMethods = checkoutSession is not null && checkoutSession.PaymentMethods.Count > 0
-                ? checkoutSession.PaymentMethods.ToArray()
+                ? checkoutSession.PaymentMethods.Select(ToCheckoutPaymentOptionView).ToArray()
                 : await LoadPaymentMethodsAsync(checkoutSession?.CurrencyCode ?? displayContext.CurrencyCode, cancellationToken);
 
             var addressCountries = await LoadAddressCountriesAsync(cancellationToken);
@@ -186,7 +184,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 string.Empty);
         }
 
-        private async Task<IReadOnlyList<StorefrontCheckoutPaymentMethodOptionResponse>> LoadPaymentMethodsAsync(
+        private async Task<IReadOnlyList<StorefrontCheckoutPaymentMethodOptionView>> LoadPaymentMethodsAsync(
             string currencyCode,
             CancellationToken cancellationToken)
         {
@@ -202,26 +200,28 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 .ToArray();
         }
 
-        private async Task<IReadOnlyList<StorefrontAddressCountryResponse>> LoadAddressCountriesAsync(
+        private async Task<IReadOnlyList<StorefrontCheckoutAddressCountryView>> LoadAddressCountriesAsync(
             CancellationToken cancellationToken)
         {
             var countriesResult = await this.addressFacade.ListCountriesAsync(cancellationToken);
             return countriesResult.Success && countriesResult.Value is not null
-                ? countriesResult.Value
+                ? countriesResult.Value.Select(country => new StorefrontCheckoutAddressCountryView(
+                    country.Code ?? string.Empty,
+                    country.Name ?? country.Code ?? string.Empty)).ToArray()
                 : [];
         }
 
-        private async Task<StorefrontAddressFieldConfigurationResponse?> LoadAddressConfigurationAsync(
+        private async Task<StorefrontCheckoutAddressFieldConfigurationView?> LoadAddressConfigurationAsync(
             CancellationToken cancellationToken)
         {
             var configurationResult = await this.addressFacade.GetConfigurationAsync(cancellationToken);
-            return configurationResult.Success
-                ? configurationResult.Value
+            return configurationResult.Success && configurationResult.Value is not null
+                ? ToAddressFieldConfigurationView(configurationResult.Value)
                 : null;
         }
 
-        private async Task<IReadOnlyList<StorefrontAddressStateProvinceResponse>> LoadAddressStatesAsync(
-            IReadOnlyList<StorefrontAddressCountryResponse> addressCountries,
+        private async Task<IReadOnlyList<StorefrontCheckoutAddressStateProvinceView>> LoadAddressStatesAsync(
+            IReadOnlyList<StorefrontCheckoutAddressCountryView> addressCountries,
             CancellationToken cancellationToken)
         {
             var countryCode = addressCountries.FirstOrDefault()?.Code;
@@ -232,7 +232,9 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
 
             var statesResult = await this.addressFacade.ListStatesAsync(countryCode, cancellationToken);
             return statesResult.Success && statesResult.Value is not null
-                ? statesResult.Value
+                ? statesResult.Value.Select(state => new StorefrontCheckoutAddressStateProvinceView(
+                    state.Code ?? string.Empty,
+                    state.Name ?? state.Code ?? string.Empty)).ToArray()
                 : [];
         }
 
@@ -305,19 +307,30 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
             return result;
         }
 
-        private static StorefrontCheckoutPaymentMethodOptionResponse ToCheckoutPaymentOption(StorefrontPaymentMethodResponse method)
+        private static StorefrontCheckoutPaymentMethodOptionView ToCheckoutPaymentOption(StorefrontPaymentMethodResponse method)
         {
-            return new StorefrontCheckoutPaymentMethodOptionResponse
-            {
-                Key = method.Key ?? string.Empty,
-                DisplayName = method.Name ?? method.Key ?? "Payment method",
-                Description = method.Description,
-                ShortDisplayText = method.ShortDisplayText,
-                IconUrl = method.IconUrl,
-                ProviderKey = method.Key,
-                NextActionKind = "none",
-                Selected = false,
-            };
+            return new StorefrontCheckoutPaymentMethodOptionView(
+                method.Key ?? string.Empty,
+                method.Name ?? method.Key ?? "Payment method",
+                method.Description);
+        }
+
+        private static StorefrontCheckoutPaymentMethodOptionView ToCheckoutPaymentOptionView(
+            StorefrontCheckoutPaymentMethodOptionResponse option)
+        {
+            return new StorefrontCheckoutPaymentMethodOptionView(
+                option.Key ?? string.Empty,
+                option.DisplayName ?? option.Key ?? "Payment method",
+                option.Description);
+        }
+
+        private static StorefrontCheckoutAddressFieldConfigurationView ToAddressFieldConfigurationView(
+            StorefrontAddressFieldConfigurationResponse configuration)
+        {
+            return new StorefrontCheckoutAddressFieldConfigurationView(
+                configuration.PhoneEnabled ?? true,
+                configuration.PhoneRequired ?? false,
+                configuration.PostalCodeRequired ?? true);
         }
 
         private static bool SupportsCurrency(StorefrontPaymentMethodResponse method, string currencyCode)

@@ -4,14 +4,13 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>BlazorShop.Storefront</RootNamespace>
+    <RootNamespace>BlazorShop.Storefront.V2</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\BlazorShop.ServiceDefaults\BlazorShop.ServiceDefaults.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />
-    <ProjectReference Include="..\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj" />
   </ItemGroup>
 
