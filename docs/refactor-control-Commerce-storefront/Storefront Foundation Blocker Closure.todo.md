@@ -565,38 +565,64 @@ Goal: remove stale references and make the final Foundation status honest.
 
 ### Tasks
 
-- [ ] Update `docs/architecture/03-runtime-boundaries.md` to reflect final direct dependency rule.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md` to reflect final StorefrontBuilder/Starter dependency shape.
-- [ ] Update `docs/architecture/11-storefront-builder.md` if generated project package references change.
-- [ ] Update `docs/agents/storefront-builder.md` with new proof levels and commands.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md` only if StorefrontBuilder output/protected files changed.
-- [ ] Update `QA-StorefrontV2.todo.md` with new browser checks.
-- [ ] Update `QA-StorefrontStarter.todo.md` with explicit consent/core-script/security checks.
-- [ ] Update old references to `storefrontCommerce.js` after the split.
-- [ ] Remove `Theme/Pages` or rename/move it into a clearly visual-owned folder that matches current folder guide.
-- [ ] Rename Presentation generic namespaces in a separate mechanical pass if blast radius is high:
-  - [ ] `BlazorShop.Storefront.Services` -> `BlazorShop.Storefront.Presentation.Services`
-  - [ ] `BlazorShop.Storefront.Services.Contracts` -> `BlazorShop.Storefront.Presentation.Contracts`
-  - [ ] `BlazorShop.Storefront.Options` -> `BlazorShop.Storefront.Presentation.Options`
-  - [ ] `BlazorShop.Storefront.Configuration` -> `BlazorShop.Storefront.Presentation.Configuration`
-  - [ ] `BlazorShop.Storefront.Models` -> `BlazorShop.Storefront.Presentation.Models`
-- [ ] Mark `Storefront Visual Only Phase 1 Boundary.todo.md` as complete only after this file is complete.
-- [ ] Close this file with exact commands run and pass/fail evidence.
+- [x] Update `docs/architecture/03-runtime-boundaries.md` to reflect final direct dependency rule.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md` to reflect final StorefrontBuilder/Starter dependency shape.
+- [x] Update `docs/architecture/11-storefront-builder.md` if generated project package references change.
+- [x] Update `docs/agents/storefront-builder.md` with new proof levels and commands.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md` only if StorefrontBuilder output/protected files changed.
+- [x] Update `QA-StorefrontV2.todo.md` with new browser checks.
+- [x] Update `QA-StorefrontStarter.todo.md` with explicit consent/core-script/security checks.
+- [x] Update old references to `storefrontCommerce.js` after the split.
+- [x] Remove `Theme/Pages` or rename/move it into a clearly visual-owned folder that matches current folder guide.
+- [x] Rename Presentation generic namespaces in a separate mechanical pass if blast radius is high:
+  - [x] `BlazorShop.Storefront.Services` -> `BlazorShop.Storefront.Presentation.Services`
+  - [x] `BlazorShop.Storefront.Services.Contracts` -> `BlazorShop.Storefront.Presentation.Contracts`
+  - [x] `BlazorShop.Storefront.Options` -> `BlazorShop.Storefront.Presentation.Options`
+  - [x] `BlazorShop.Storefront.Configuration` -> `BlazorShop.Storefront.Presentation.Configuration`
+  - [x] `BlazorShop.Storefront.Models` -> `BlazorShop.Storefront.Presentation.Models`
+- [x] Mark `Storefront Visual Only Phase 1 Boundary.todo.md` as complete only after this file is complete.
+- [x] Close this file with exact commands run and pass/fail evidence.
 
 ### Tests
 
-- [ ] Full focused Storefront test set.
-- [ ] StorefrontBuilder generated proof.
-- [ ] V2 Playwright browser proof.
-- [ ] Starter/generated browser proof.
-- [ ] `git grep` or equivalent scan proves stale strings are gone or intentionally allowlisted.
+- [x] Full focused Storefront test set.
+- [x] StorefrontBuilder generated proof.
+- [x] V2 Playwright browser proof.
+- [x] Starter/generated browser proof.
+- [x] `git grep` or equivalent scan proves stale strings are gone or intentionally allowlisted.
 
 ### Definition of Done
 
-- [ ] No stale docs say Foundation is complete before blockers are closed.
-- [ ] No stale docs describe generated stores as owning Runtime transport if target changed.
-- [ ] QA checklist contains browser-level release checks, not only smoke.
-- [ ] Closure evidence is present in this file and in the original Phase 1 file.
+- [x] No stale docs say Foundation is complete before blockers are closed.
+- [x] No stale docs describe generated stores as owning Runtime transport if target changed.
+- [x] QA checklist contains browser-level release checks, not only smoke.
+- [x] Closure evidence is present in this file and in the original Phase 1 file.
+
+Notes/evidence:
+
+- `BlazorShop.Storefront.V2/Theme/Pages/*` was moved into `BlazorShop.Storefront.V2/Pages/*`, matching the folder guide's visual-owned page template location.
+- Presentation generic namespaces were mechanically renamed to `BlazorShop.Storefront.Presentation.Services`, `BlazorShop.Storefront.Presentation.Contracts`, `BlazorShop.Storefront.Presentation.Options`, `BlazorShop.Storefront.Presentation.Configuration`, and `BlazorShop.Storefront.Presentation.Models`. `Services.System` was renamed to `Services.SystemPages` to avoid shadowing the BCL `System` namespace.
+- Architecture, StorefrontBuilder, visual reverse engineering, V2 QA, Starter QA, and the original Phase 1 plan now reflect the final dependency/proof shape. Historical F1.45 baseline references to old `storefrontCommerce.js` ownership are intentionally retained as pre-fix evidence.
+- Verification:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj -v:minimal` - passed.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj -v:minimal` - passed.
+  - `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -v:minimal` - passed.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~LayoutAssetFoundationTests" -v:minimal` - passed 59/59.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontStarterHostSmokeTests|FullyQualifiedName~StorefrontShellContextServiceTests|FullyQualifiedName~StorefrontDisplayContextProviderTests|FullyQualifiedName~StorefrontPageNavigationProviderTests|FullyQualifiedName~StorefrontProductPageServiceTests|FullyQualifiedName~StorefrontSitemapServiceTests|FullyQualifiedName~StorefrontStructuredDataComposerTests" -v:minimal` - passed 56/56.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.SignIn" -v:minimal` - passed 5/5.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Checkout_WhenCartIsEmpty|FullyQualifiedName~StorefrontV2HostSmokeTests.StorefrontFormPost|FullyQualifiedName~StorefrontV2HostSmokeTests.Register|FullyQualifiedName~StorefrontV2HostSmokeTests.ForgotPassword|FullyQualifiedName~StorefrontV2HostSmokeTests.ResetPassword" -v:minimal` - passed 22/22.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Account|FullyQualifiedName~StorefrontV2HostSmokeTests.CurrencyPreference|FullyQualifiedName~StorefrontV2HostSmokeTests.Logout|FullyQualifiedName~StorefrontShellContextServiceTests" -v:minimal` - passed 19/19.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Robots|FullyQualifiedName~StorefrontV2HostSmokeTests.Sitemap|FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance|FullyQualifiedName~StorefrontV2HostSmokeTests.Cart|FullyQualifiedName~StorefrontV2HostSmokeTests.Checkout_Post|FullyQualifiedName~StorefrontV2HostSmokeTests.Payment" -v:minimal` - passed 19/19.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests|FullyQualifiedName~SecurityPrivacyPhase4CaptchaTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~StorefrontBrandingMarkupTests" -v:minimal` - passed 30/30.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` - passed.
+  - `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser` - exited 0.
+  - `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional -RuntimeTimeoutSeconds 90` - passed; generated report has zero failures and no direct Commerce Node browser calls.
+  - `.\scripts\qa\run-storefront-order-email-e2e.ps1 -Headless -TimeoutSeconds 1200` - passed; result `passed`, COD orders `ORD-20260728-A08C276B` and `ORD-20260728-BAEEB48D`, no 5xx responses, no retired flow calls.
+  - `.\scripts\stop-v2-local.ps1` - exited 0 and stopped Control Plane API/Web, Commerce Node API, and Storefront V2.
+  - `rg -n "\[ \]" "docs/refactor-control-Commerce-storefront/Storefront Foundation Blocker Closure.todo.md" "docs/refactor-control-Commerce-storefront/Storefront Visual Only Phase 1 Boundary.todo.md"` - no results.
+  - `rg -n "namespace BlazorShop\.Storefront\.(Services|Options|Configuration|Models)|using BlazorShop\.Storefront\.(Services|Options|Configuration|Models)|@using BlazorShop\.Storefront\.(Services|Options|Configuration|Models)|global using BlazorShop\.Storefront\.(Services|Options|Configuration|Models)|Theme/Pages|Theme\\Pages|BlazorShop\.Storefront\.Presentation\.Services\.System\b" BlazorShop.PresentationV2 BlazorShop.Tests.V2 scripts tools .github -g "!*bin*" -g "!*obj*"` - no source/test/script/workflow results.
+  - `git diff --check` - passed with Git LF/CRLF working-copy warnings only.
+  - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~Storefront" -v:minimal` was attempted as a broad focused run but exceeded the 15-minute command timeout; the narrower groups above are the closure evidence, matching the existing baseline strategy for slow Storefront host tests.
 
 ## Implementation Order
 
@@ -644,7 +670,7 @@ Recorded during F1.45 before implementation changes.
   - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Account|FullyQualifiedName~StorefrontV2HostSmokeTests.CurrencyPreference|FullyQualifiedName~StorefrontV2HostSmokeTests.Logout|FullyQualifiedName~StorefrontShellContextServiceTests" -v:minimal` - passed 17/17.
   - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Robots|FullyQualifiedName~StorefrontV2HostSmokeTests.Sitemap|FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance|FullyQualifiedName~StorefrontV2HostSmokeTests.Cart|FullyQualifiedName~StorefrontV2HostSmokeTests.Checkout_Post|FullyQualifiedName~StorefrontV2HostSmokeTests.Payment" -v:minimal` - passed 19/19.
 - [x] Baseline failures: no baseline command failed. Known insufficiencies remain: generated scanner does not yet scan JS/security/service/middleware transport ownership broadly; generated proof still expects direct Runtime references; host smoke does not prove visual JS/browser event behavior; V2 smoke was split by filter because the full class is slow.
-- [x] Temporary allowlists: direct Runtime references in Starter/generated proof/Builder validation; V2 `storefrontCommerce.js` owns fetch, antiforgery, consent, product-selection, and cart behavior until F1.46-F1.48/F1.51 close the boundary.
+- [x] Historical F1.45 temporary allowlists: direct Runtime references in Starter/generated proof/Builder validation; V2 `storefrontCommerce.js` owned fetch, antiforgery, consent, product-selection, and cart behavior until F1.46-F1.48/F1.51 closed the boundary.
 - [x] Required fixture setup: generated proof creates an on-demand generated project under `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof`; V2/Starter smoke tests use in-test host fixtures and stubs; browser proof for later phases requires the local V2 stack or explicit Playwright harness.
 - [x] Baseline warnings: `MessagePack` NU1902/NU1903 advisories and outdated `caniuse-lite` warnings appear during restore/build; they pre-exist this docs-only baseline.
 

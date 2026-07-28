@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Services;
+namespace BlazorShop.Storefront.Presentation.Services;
 
 public sealed record StorefrontCurrentStore(
     Guid PublicId,

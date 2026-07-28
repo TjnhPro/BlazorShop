@@ -1,11 +1,11 @@
 namespace BlazorShop.Storefront.Presentation.Hosting;
 
-using BlazorShop.Storefront.Configuration;
-using BlazorShop.Storefront.Options;
+using BlazorShop.Storefront.Presentation.Configuration;
+using BlazorShop.Storefront.Presentation.Options;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Runtime;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.RateLimiting;

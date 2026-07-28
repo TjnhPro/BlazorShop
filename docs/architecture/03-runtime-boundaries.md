@@ -132,6 +132,8 @@ Rules:
 
 `BlazorShop.Storefront.Presentation` is the shared storefront application engine. It owns App/Routes, route shells, page services, same-origin BFF/local endpoints, media/local endpoints, SEO/discovery composition, and view-slot contracts used by Storefront V2, Starter, and generated storefronts.
 
+Its public namespace surface is explicitly Presentation-owned: `BlazorShop.Storefront.Presentation.Services`, `BlazorShop.Storefront.Presentation.Contracts`, `BlazorShop.Storefront.Presentation.Models`, `BlazorShop.Storefront.Presentation.Options`, and `BlazorShop.Storefront.Presentation.Configuration`. New shared storefront application contracts must not use the older generic `BlazorShop.Storefront.Services`, `BlazorShop.Storefront.Models`, `BlazorShop.Storefront.Options`, or `BlazorShop.Storefront.Configuration` namespaces.
+
 Responsibilities:
 
 - Storefront application bootstrap extensions, middleware order, and route/endpoint mapping used by visual hosts.
@@ -200,9 +202,9 @@ Required generated storefront shape:
 ```text
 BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
   -> BlazorShop.Storefront.Presentation package
-  -> BlazorShop.Storefront.Runtime package
-      -> BlazorShop.Storefront.Client package
-          -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
+      -> BlazorShop.Storefront.Runtime package
+          -> BlazorShop.Storefront.Client package
+              -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
   -> BlazorShop.Storefront.Components package
 ```
 

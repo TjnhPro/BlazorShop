@@ -1,6 +1,6 @@
-namespace BlazorShop.Storefront.Configuration
+namespace BlazorShop.Storefront.Presentation.Configuration
 {
-    using BlazorShop.Storefront.Options;
+    using BlazorShop.Storefront.Presentation.Options;
     using Microsoft.Extensions.Configuration;
 
     public static class StorefrontApiEndpointResolver

@@ -1,8 +1,8 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
 
-    using BlazorShop.Storefront.Models;
-using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Models;
+using BlazorShop.Storefront.Presentation.Contracts;
 
     public interface IStorefrontPagePresentationResolver
     {

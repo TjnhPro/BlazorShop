@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
     using BlazorShop.Storefront.Runtime;
     using StorefrontPaymentAttemptResponse = BlazorShop.Storefront.Client.StorefrontPaymentAttemptResponse;
 

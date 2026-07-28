@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     public sealed record StorefrontSubmitResult<TData>(bool Success, string Message, TData? Data, int? StatusCode = null)
     {

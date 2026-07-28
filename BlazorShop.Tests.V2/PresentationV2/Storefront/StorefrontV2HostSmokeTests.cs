@@ -18,9 +18,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Models;
-    using StorefrontV2::BlazorShop.Storefront.Services;
-    using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Models;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Services;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Contracts;
 
     using ClientPaymentAttemptResponse = BlazorShop.Storefront.Client.StorefrontPaymentAttemptResponse;
     using ClientPaymentMethodResponse = BlazorShop.Storefront.Client.StorefrontPaymentMethodResponse;

@@ -528,7 +528,7 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 - [x] Keep category/search server route query behavior.
 - [x] Keep sitemap/robots behavior.
 
-2026-07-24 evidence: Storefront V2 now routes catalog/content/navigation/SEO through `GeneratedStorefrontCatalogContentClient`, projects generated Storefront client DTOs into Storefront-owned presentation models under `BlazorShop.Storefront.Models`, and source guard `StorefrontV2_CatalogContentNavigationAndSeoUseStorefrontOwnedModels` blocks reintroducing Application/Web.SharedV2 catalog/content/SEO imports.
+2026-07-24 evidence: Storefront V2 now routes catalog/content/navigation/SEO through `GeneratedStorefrontCatalogContentClient`, projects generated Storefront client DTOs into Storefront-owned presentation models under `BlazorShop.Storefront.Presentation.Models`, and source guard `StorefrontV2_CatalogContentNavigationAndSeoUseStorefrontOwnedModels` blocks reintroducing Application/Web.SharedV2 catalog/content/SEO imports.
 
 ### F5.3 Auth, customer, account
 
@@ -539,7 +539,7 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 - [x] Keep forgot/reset/register disabled policy behavior.
 - [x] Keep customer order authorization through backend.
 
-2026-07-24 evidence: Storefront V2 auth request models moved to `BlazorShop.Storefront.Models`; source guard `StorefrontV2_AuthDoesNotUseApplicationUserIdentityDtos` blocks `Application.DTOs.UserIdentity` from returning. `StorefrontAuthClient` remains a manual Storefront transport for auth because F5.3 must preserve `Set-Cookie` capture/copy for HttpOnly refresh-cookie behavior.
+2026-07-24 evidence: Storefront V2 auth request models moved to `BlazorShop.Storefront.Presentation.Models`; source guard `StorefrontV2_AuthDoesNotUseApplicationUserIdentityDtos` blocks `Application.DTOs.UserIdentity` from returning. `StorefrontAuthClient` remains a manual Storefront transport for auth because F5.3 must preserve `Set-Cookie` capture/copy for HttpOnly refresh-cookie behavior.
 
 ### F5.4 Cart
 

@@ -13,7 +13,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
-| Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, and isolation-checks the canonical generated proof artifact. |
+| Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, isolation-checks, and optionally runs fixture-backed browser proof for the canonical generated proof artifact. |
 | Isolation gate | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Verifies generated storefronts consume Presentation/Components as direct packages, keep Client/Runtime package metadata for transitive package proof, and avoid forbidden Runtime/Client, project, V2, Web.SharedV2, backend, core, or API references. |
 
 Generated storefront artifacts live under ignored output roots:
@@ -60,7 +60,7 @@ Generated storefronts must not:
 Starter consumer rules:
 
 - In monorepo development, consume `BlazorShop.Storefront.Presentation` through a `ProjectReference`; in independent proof and generated projects, rewrite it to a `PackageReference`.
-- Use the `BlazorShop.Storefront.Runtime` package for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
+- Use `BlazorShop.Storefront.Presentation` for server-side storefront application registration. Presentation composes `BlazorShop.Storefront.Runtime` internally for generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use the `BlazorShop.Storefront.Presentation` package for shared App/Routes/page services/BFF/SEO/media composition. Starter/generated projects provide views, assets, copy, feature manifests, and host configuration.
 - Let Runtime own direct `BlazorShop.Storefront.Client` transport and generated DTO package usage. Presentation exposes the Runtime dependency to visual hosts. Starter/generator metadata still pins Client/Runtime package versions for package proof compatibility, but Starter/generated source must not directly compile against Runtime or Client types unless a documented low-level transport extension explicitly requires it.
 - Register view slots through `StorefrontFoundationViewSet`; generated visual files must not declare `@page` or register route assemblies.
@@ -161,10 +161,16 @@ Isolation gate:
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
 
-Canonical proof workflow:
+Canonical structure proof workflow:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-generated-proof.ps1
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+```
+
+Canonical foundation functional proof workflow:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
 ```
 
 ## Validation Gates
@@ -182,7 +188,9 @@ The static gate checks:
 
 The isolation gate additionally restores and builds the generated storefront, packs `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components`, and scans the generated project for forbidden references. Generated projects reference Presentation and Components directly; Runtime is consumed through Presentation, and Client is packed/pinned as Runtime's generated transport dependency.
 
-Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run it against an already running generated storefront and commit the resulting QA report when behavior changes.
+`Structure` proof generates/restores/builds the proof project, runs the static StorefrontBuilder gate, runs the isolation gate, and runs the shared visual consumer boundary validator. `FoundationFunctional` additionally requires fixture-backed store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection.
+
+Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run it through `-ProofLevel FoundationFunctional` for closure gates, or against an already running generated storefront when diagnosing. Commit the resulting QA report only when a phase explicitly asks for tracked evidence.
 
 ## Deferred Scope
 

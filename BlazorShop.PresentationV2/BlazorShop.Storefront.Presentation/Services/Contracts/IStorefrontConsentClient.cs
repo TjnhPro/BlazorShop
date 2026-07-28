@@ -1,6 +1,6 @@
-namespace BlazorShop.Storefront.Services.Contracts
+namespace BlazorShop.Storefront.Presentation.Contracts
 {
-    using BlazorShop.Storefront.Services;
+    using BlazorShop.Storefront.Presentation.Services;
 
     public interface IStorefrontConsentClient
     {

@@ -1,7 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
     using BlazorShop.Storefront.Components.Browser;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     public sealed record StorefrontCheckoutPageContext(
         string? Error,

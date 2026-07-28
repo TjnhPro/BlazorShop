@@ -3,8 +3,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Presentation.Endpoints;
     using BlazorShop.Storefront.Presentation.PagePatterns;
-    using BlazorShop.Storefront.Services;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Services;
+    using BlazorShop.Storefront.Presentation.Contracts;
     using BlazorShop.Storefront.Runtime;
     using Microsoft.AspNetCore.Http;
     using StorefrontAddressFieldConfigurationResponse = BlazorShop.Storefront.Client.StorefrontAddressFieldConfigurationResponse;
@@ -13,7 +13,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     using StorefrontPaymentMethodResponse = BlazorShop.Storefront.Client.StorefrontPaymentMethodResponse;
     using StorefrontProductResponse = BlazorShop.Storefront.Client.StorefrontProductResponse;
     using static BlazorShop.Storefront.Presentation.Endpoints.StorefrontLocalEndpointSupport;
-    using StorefrontCartLineResponse = BlazorShop.Storefront.Services.StorefrontCartLineResponse;
+    using StorefrontCartLineResponse = BlazorShop.Storefront.Presentation.Services.StorefrontCartLineResponse;
 
     public sealed class StorefrontCheckoutPageService
     {

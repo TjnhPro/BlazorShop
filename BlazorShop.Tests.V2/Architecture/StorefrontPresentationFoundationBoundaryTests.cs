@@ -509,7 +509,7 @@ namespace BlazorShop.Tests.Architecture
             var route = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/ProductRoutePage.razor");
             var service = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageService.cs");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
-            var view = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
+            var view = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
 
             Assert.Contains("@page \"/product/{Slug}\"", route, StringComparison.Ordinal);
             Assert.Contains("StorefrontProductPageService", route, StringComparison.Ordinal);

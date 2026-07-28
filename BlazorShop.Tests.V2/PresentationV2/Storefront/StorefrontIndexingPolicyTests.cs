@@ -4,8 +4,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Models;
-    using StorefrontV2::BlazorShop.Storefront.Services;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Models;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Services;
 
     public sealed class StorefrontIndexingPolicyTests
     {

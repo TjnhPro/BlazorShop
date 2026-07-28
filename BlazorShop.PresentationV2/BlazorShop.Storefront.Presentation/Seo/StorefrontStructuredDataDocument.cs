@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Text.Encodings.Web;
     using System.Text.Json;

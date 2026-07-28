@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Configuration
+namespace BlazorShop.Storefront.Presentation.Configuration
 {
     using System.Security.Cryptography;
     using System.Text;

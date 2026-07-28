@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Collections.Concurrent;
     using System.Net.Http.Json;
@@ -6,9 +6,9 @@ namespace BlazorShop.Storefront.Services
     using System.Text;
     using System.Text.Json;
 
-    using BlazorShop.Storefront.Configuration;
+    using BlazorShop.Storefront.Presentation.Configuration;
     using BlazorShop.Storefront.Runtime;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;

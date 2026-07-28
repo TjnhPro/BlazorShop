@@ -1,11 +1,11 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Globalization;
     using System.Net;
     using System.Net.Http.Json;
     using System.Text.Json;
 
-    using BlazorShop.Storefront.Options;
+    using BlazorShop.Storefront.Presentation.Options;
 
     using Microsoft.Extensions.Options;
 

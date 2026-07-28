@@ -156,7 +156,7 @@ public sealed class StorefrontProductDecisionContextTests
     [Fact]
     public void V2ProductView_DoesNotReferenceRawBusinessFields()
     {
-        var view = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
+        var view = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
 
         foreach (var forbidden in new[]
         {

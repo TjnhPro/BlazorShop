@@ -1,8 +1,8 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Globalization;
 
-    using BlazorShop.Storefront.Models;
+    using BlazorShop.Storefront.Presentation.Models;
 
     internal static class StorefrontRoutes
     {

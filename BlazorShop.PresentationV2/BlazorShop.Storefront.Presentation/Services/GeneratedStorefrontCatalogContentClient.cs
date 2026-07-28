@@ -1,11 +1,11 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Text.Json;
     using System.Text.Json.Serialization;
 
-    using BlazorShop.Storefront.Models;
+    using BlazorShop.Storefront.Presentation.Models;
     using BlazorShop.Storefront.Runtime;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     using GeneratedClients = BlazorShop.Storefront.Client;
 

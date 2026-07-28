@@ -1,9 +1,9 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Globalization;
 
-    using BlazorShop.Storefront.Configuration;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Configuration;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     using Microsoft.AspNetCore.Http;
 

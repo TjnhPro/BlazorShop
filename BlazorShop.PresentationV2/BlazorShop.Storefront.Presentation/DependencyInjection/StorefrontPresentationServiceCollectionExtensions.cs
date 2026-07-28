@@ -1,7 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.DependencyInjection;
 
-using BlazorShop.Storefront.Configuration;
-using BlazorShop.Storefront.Options;
+using BlazorShop.Storefront.Presentation.Configuration;
+using BlazorShop.Storefront.Presentation.Options;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.Runtime;
 using BlazorShop.Storefront.Presentation.Services.Account;
@@ -11,9 +11,9 @@ using BlazorShop.Storefront.Presentation.Services.Catalog;
 using BlazorShop.Storefront.Presentation.Services.Checkout;
 using BlazorShop.Storefront.Presentation.Services.Content;
 using BlazorShop.Storefront.Presentation.Services.Product;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
-using BlazorShop.Storefront.Services.Media;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
+using BlazorShop.Storefront.Presentation.Services.Media;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

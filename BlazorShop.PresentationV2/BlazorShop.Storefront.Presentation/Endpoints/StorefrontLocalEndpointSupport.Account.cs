@@ -2,12 +2,12 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
 {
     using System.Diagnostics;
     using System.Globalization;
-    using BlazorShop.Storefront.Configuration;
+    using BlazorShop.Storefront.Presentation.Configuration;
     using BlazorShop.Storefront.Components.Browser;
-    using BlazorShop.Storefront.Models;
+    using BlazorShop.Storefront.Presentation.Models;
     using BlazorShop.Storefront.Presentation.PagePatterns;
-    using BlazorShop.Storefront.Services;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Services;
+    using BlazorShop.Storefront.Presentation.Contracts;
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Http;
     internal static class StorefrontPresentationAccountEndpointSupport
@@ -212,7 +212,7 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
         };
     }
 
-        internal static StorefrontBrowserAccountOrderList ToBrowserOrderList(BlazorShop.Storefront.Models.PagedResult<StorefrontCustomerOrderListItemResponse> orders)
+        internal static StorefrontBrowserAccountOrderList ToBrowserOrderList(BlazorShop.Storefront.Presentation.Models.PagedResult<StorefrontCustomerOrderListItemResponse> orders)
     {
         return new StorefrontBrowserAccountOrderList(
             orders.Items.Select(ToBrowserOrderListItem).ToArray(),

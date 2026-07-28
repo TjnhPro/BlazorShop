@@ -9,7 +9,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Microsoft.Extensions.Configuration;
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Configuration;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Configuration;
 
     public sealed class StorefrontV2ForwardedHeadersOptionsTests
     {

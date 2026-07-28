@@ -11,7 +11,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using BlazorShop.Storefront.Runtime;
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Services;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Services;
 
     public sealed class StorefrontSessionResolverTests
     {

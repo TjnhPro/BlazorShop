@@ -1,9 +1,9 @@
 namespace BlazorShop.Storefront.Presentation.Services.Catalog;
 
 using BlazorShop.Storefront.Components.Contracts.Catalog;
-using BlazorShop.Storefront.Models;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Models;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 
 public sealed record StorefrontSearchPageContext(
     string? Q,

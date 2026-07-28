@@ -8,9 +8,9 @@ using BlazorShop.Storefront.Presentation.Services.Catalog;
 using BlazorShop.Storefront.Presentation.Services.Checkout;
 using BlazorShop.Storefront.Presentation.Services.Content;
 using BlazorShop.Storefront.Presentation.Services.Product;
-using BlazorShop.Storefront.Presentation.Services.System;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Services.SystemPages;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 

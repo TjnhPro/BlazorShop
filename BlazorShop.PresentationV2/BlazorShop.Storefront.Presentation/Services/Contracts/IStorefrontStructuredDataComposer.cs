@@ -1,9 +1,9 @@
-namespace BlazorShop.Storefront.Services.Contracts
+namespace BlazorShop.Storefront.Presentation.Contracts
 {
+    using BlazorShop.Storefront.Presentation.Models;
+    using BlazorShop.Storefront.Presentation.Services;
 
-
-    using BlazorShop.Storefront.Models;
-public interface IStorefrontStructuredDataComposer
+    public interface IStorefrontStructuredDataComposer
     {
         Task<StorefrontStructuredDataDocument> ComposeHomePageAsync(CancellationToken cancellationToken = default);
 

@@ -8,7 +8,6 @@ public sealed class StorefrontVisualOnlyBoundaryTests
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Layouts"
     ];
 
@@ -149,9 +148,9 @@ public sealed class StorefrontVisualOnlyBoundaryTests
         var forbiddenImports = new[]
         {
             "@using global::System.Net.Http.Json",
-            "@using BlazorShop.Storefront.Models",
-            "@using BlazorShop.Storefront.Services",
-            "@using BlazorShop.Storefront.Services.Contracts",
+            "@using BlazorShop.Storefront.Presentation.Models",
+            "@using BlazorShop.Storefront.Presentation.Services",
+            "@using BlazorShop.Storefront.Presentation.Contracts",
             "@using BlazorShop.Storefront.Runtime",
             "@using BlazorShop.Storefront.Client",
             "@using Microsoft.AspNetCore.Http",
@@ -159,7 +158,12 @@ public sealed class StorefrontVisualOnlyBoundaryTests
 
         foreach (var forbiddenImport in forbiddenImports)
         {
-            Assert.DoesNotContain(forbiddenImport, imports, StringComparison.Ordinal);
+            var importLines = imports
+                .Split(["\r\n", "\n"], StringSplitOptions.None)
+                .Select(line => line.Trim())
+                .ToArray();
+
+            Assert.DoesNotContain(forbiddenImport, importLines);
         }
 
         Assert.Contains("@using BlazorShop.Storefront.Presentation.Services.Catalog", imports, StringComparison.Ordinal);

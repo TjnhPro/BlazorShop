@@ -1,10 +1,10 @@
 namespace BlazorShop.Storefront.Presentation.Services.Content;
 
-using BlazorShop.Storefront.Models;
+using BlazorShop.Storefront.Presentation.Models;
 using BlazorShop.Storefront.Presentation.PagePatterns;
 using BlazorShop.Storefront.Presentation.Seo;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 
 public sealed class StorefrontContentPageService
 {

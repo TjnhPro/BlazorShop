@@ -18,10 +18,10 @@ StorefrontBuilder is development-time tooling. Do not add it as a production ASP
 Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
-- Consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Runtime owns direct `BlazorShop.Storefront.Client` transport usage; generated projects keep Client package metadata for compatibility.
+- Consume `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Presentation composes Runtime internally, Runtime owns direct `BlazorShop.Storefront.Client` transport usage, and generated projects keep Client/Runtime package metadata for compatibility proof only.
 - Use Storefront Presentation for shared App/Routes/page services/BFF/SEO/media composition. Generated projects provide views, assets, copy, feature manifests, and host configuration instead of recreating application logic.
 - Register generated visual components as Presentation view slots; generated files must not declare `@page` routes or add route assemblies.
-- Register `BlazorShop.Storefront.Runtime` only in the generated server/BFF host, with `AddStorefrontPlatformRuntime` for the full surface or explicit `AddStorefront{Capability}Runtime` methods for narrow hosts. Do not use retired compatibility aliases.
+- Register Storefront Presentation in the generated server/BFF host with `AddStorefrontApplication()`, `UseStorefrontApplication()`, and `MapStorefrontApplication()`. Do not register Runtime directly in generated visual hosts unless a documented low-level extension explicitly reopens that boundary.
 - Use `BlazorShop.Storefront.Components` only through a package boundary when reusable browser-safe contracts/headless behavior or Browser local API primitives are needed.
 - Keep protected browser actions behind same-origin BFF endpoints.
 - Keep review artifacts under `docs/storefront-analysis/`.
@@ -65,11 +65,14 @@ Use focused validation for StorefrontBuilder changes:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
-.\scripts\qa\run-storefront-builder-generated-proof.ps1
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
 .\scripts\qa\run-storefront-client-regeneration-gate.ps1
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
+
+Use `Structure` proof for CI and fast package/boundary checks. Use `FoundationFunctional` before closing foundation phases or when generated browser behavior changes.
 
 When generated page behavior changes, run browser QA against the generated storefront:
 

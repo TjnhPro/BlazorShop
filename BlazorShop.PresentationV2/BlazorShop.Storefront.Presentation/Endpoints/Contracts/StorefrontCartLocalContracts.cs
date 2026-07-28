@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Presentation.Endpoints
 {
-    using BlazorShop.Storefront.Services;
+    using BlazorShop.Storefront.Presentation.Services;
 
     public sealed class StorefrontLocalCartLineRequest
     {

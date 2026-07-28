@@ -9,8 +9,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     using StorefrontRuntimeConfigurationFacade = BlazorShop.Storefront.Runtime.StorefrontRuntimeConfigurationFacade;
     using IStorefrontRuntimeContext = BlazorShop.Storefront.Runtime.IStorefrontRuntimeContext;
-    using GeneratedStorefrontConfigurationClient = BlazorShop.Storefront.Services.GeneratedStorefrontConfigurationClient;
-    using StorefrontCurrencyPreferenceRequest = BlazorShop.Storefront.Services.StorefrontCurrencyPreferenceRequest;
+    using GeneratedStorefrontConfigurationClient = BlazorShop.Storefront.Presentation.Services.GeneratedStorefrontConfigurationClient;
+    using StorefrontCurrencyPreferenceRequest = BlazorShop.Storefront.Presentation.Services.StorefrontCurrencyPreferenceRequest;
 
     public sealed class StorefrontGeneratedConfigurationClientTests
     {

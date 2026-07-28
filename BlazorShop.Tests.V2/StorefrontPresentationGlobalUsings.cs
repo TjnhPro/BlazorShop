@@ -1,4 +1,4 @@
-global using BlazorShop.Storefront.Models;
-global using BlazorShop.Storefront.Options;
-global using BlazorShop.Storefront.Services;
-global using BlazorShop.Storefront.Services.Contracts;
+global using BlazorShop.Storefront.Presentation.Models;
+global using BlazorShop.Storefront.Presentation.Options;
+global using BlazorShop.Storefront.Presentation.Services;
+global using BlazorShop.Storefront.Presentation.Contracts;

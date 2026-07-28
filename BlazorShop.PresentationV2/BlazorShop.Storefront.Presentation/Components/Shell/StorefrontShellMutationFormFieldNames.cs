@@ -10,6 +10,6 @@ internal static class StorefrontShellMutationFormFieldNames
 
     public static class Logout
     {
-        public const string ReturnUrl = nameof(global::BlazorShop.Storefront.Services.StorefrontLogoutForm.ReturnUrl);
+        public const string ReturnUrl = nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontLogoutForm.ReturnUrl);
     }
 }

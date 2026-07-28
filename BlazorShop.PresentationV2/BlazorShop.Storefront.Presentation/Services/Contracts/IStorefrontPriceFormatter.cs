@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Services.Contracts
+namespace BlazorShop.Storefront.Presentation.Contracts
 {
     public interface IStorefrontPriceFormatter
     {

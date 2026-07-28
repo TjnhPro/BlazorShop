@@ -40,7 +40,7 @@ Generated/custom storefront compatibility rules:
 - Treat `contracts/storefront/storefront.openapi.json` as the canonical Storefront API contract behind the Runtime-owned `BlazorShop.Storefront.Client` package; run `scripts/qa/run-storefront-client-regeneration-gate.ps1` before package proof when the contract or generated client changes.
 - Use `BlazorShop.Storefront.Presentation` package contracts for shared App/Routes/page services/BFF/SEO/media composition.
 - Register generated visual components as Presentation view slots; generated source must not declare `@page` routes or add route assemblies.
-- Use `BlazorShop.Storefront.Runtime` for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
+- Use Storefront Presentation for server-side storefront application registration. Presentation composes Runtime internally for generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use `BlazorShop.Storefront.Components` contracts/headless behavior and Browser local API primitives only when reusable browser-safe UI components are needed; local presentation components can stay inside the generated storefront.
 - Treat `BlazorShop.Storefront.Components.Features` as retired. Normal generation consumes `Contracts`, `Headless`, and `Browser` primitives and emits project-local visual templates.
 - `BlazorShop.Storefront.{Name}` owns generated markup, generated CSS, store-specific assets, pages, and analysis artifacts.
@@ -124,13 +124,19 @@ Isolation gate:
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
 
-Canonical generated proof:
+Canonical structure proof:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-generated-proof.ps1
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 ```
 
-Add `-RunBrowserQa` to have the canonical proof workflow start the generated storefront in Development, run visual smoke QA and commerce-regression network checks, and write `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. Commerce selectors that require live catalog/product fixture data are reported as explicit fixture gaps rather than direct Commerce Node calls.
+Canonical foundation functional proof:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctional
+```
+
+`Structure` generates/restores/builds the proof project, runs static validation, runs isolation, and runs the shared visual consumer boundary validator. `FoundationFunctional` also verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. `-RunBrowserQa` remains a compatibility alias for functional proof.
 
 Generated storefront validation must fail when generated source declares `@page`, imports `BlazorShop.Storefront.Components.Features`, or recreates protected Presentation-owned application logic; normal generation consumes Presentation plus `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
 
@@ -159,8 +165,8 @@ dotnet run --no-build --project artifacts/storefront-builder/generated/BlazorSho
 Then run:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof --category-slug apparel --product-slug qa-simple-product-100
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof --category-slug apparel --product-slug qa-simple-product-100 --page-slug customer-service
 ```
 
 Browser QA writes `visual-qa-report.md` and `functional-commerce-report.md` under the generated artifact. Do not commit generated proof output by default.

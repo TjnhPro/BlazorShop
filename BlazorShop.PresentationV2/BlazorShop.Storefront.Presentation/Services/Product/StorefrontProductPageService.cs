@@ -1,9 +1,9 @@
 namespace BlazorShop.Storefront.Presentation.Services.Product;
 
-using BlazorShop.Storefront.Models;
+using BlazorShop.Storefront.Presentation.Models;
 using BlazorShop.Storefront.Presentation.PagePatterns;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 using Microsoft.Extensions.Logging;
 
 public sealed class StorefrontProductPageService

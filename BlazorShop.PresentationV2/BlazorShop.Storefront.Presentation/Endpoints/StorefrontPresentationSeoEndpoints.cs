@@ -1,8 +1,8 @@
 namespace BlazorShop.Storefront.Presentation.Endpoints;
 
 using BlazorShop.Storefront.Presentation.PagePatterns;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;

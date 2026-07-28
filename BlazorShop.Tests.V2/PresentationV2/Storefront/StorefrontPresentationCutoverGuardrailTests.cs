@@ -5,19 +5,19 @@ using BlazorShop.Storefront.Runtime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using PresentationAddressClient = BlazorShop.Storefront.Services.Contracts.IStorefrontAddressClient;
-using PresentationAuthClient = BlazorShop.Storefront.Services.Contracts.IStorefrontAuthClient;
-using PresentationCartClient = BlazorShop.Storefront.Services.Contracts.IStorefrontCartClient;
-using PresentationCatalogClient = BlazorShop.Storefront.Services.Contracts.IStorefrontCatalogClient;
-using PresentationCheckoutClient = BlazorShop.Storefront.Services.Contracts.IStorefrontCheckoutClient;
-using PresentationContentClient = BlazorShop.Storefront.Services.Contracts.IStorefrontContentClient;
-using PresentationCustomerClient = BlazorShop.Storefront.Services.Contracts.IStorefrontCustomerClient;
-using PresentationCurrentStoreProvider = BlazorShop.Storefront.Services.Contracts.IStorefrontCurrentStoreProvider;
-using PresentationDisplayContextProvider = BlazorShop.Storefront.Services.Contracts.IStorefrontDisplayContextProvider;
-using PresentationPaymentClient = BlazorShop.Storefront.Services.Contracts.IStorefrontPaymentClient;
-using PresentationPriceFormatter = BlazorShop.Storefront.Services.Contracts.IStorefrontPriceFormatter;
-using PresentationSessionResolver = BlazorShop.Storefront.Services.Contracts.IStorefrontSessionResolver;
-using PresentationStoreConfigurationClient = BlazorShop.Storefront.Services.Contracts.IStorefrontStoreConfigurationClient;
+using PresentationAddressClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontAddressClient;
+using PresentationAuthClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontAuthClient;
+using PresentationCartClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontCartClient;
+using PresentationCatalogClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontCatalogClient;
+using PresentationCheckoutClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontCheckoutClient;
+using PresentationContentClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontContentClient;
+using PresentationCustomerClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontCustomerClient;
+using PresentationCurrentStoreProvider = BlazorShop.Storefront.Presentation.Contracts.IStorefrontCurrentStoreProvider;
+using PresentationDisplayContextProvider = BlazorShop.Storefront.Presentation.Contracts.IStorefrontDisplayContextProvider;
+using PresentationPaymentClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontPaymentClient;
+using PresentationPriceFormatter = BlazorShop.Storefront.Presentation.Contracts.IStorefrontPriceFormatter;
+using PresentationSessionResolver = BlazorShop.Storefront.Presentation.Contracts.IStorefrontSessionResolver;
+using PresentationStoreConfigurationClient = BlazorShop.Storefront.Presentation.Contracts.IStorefrontStoreConfigurationClient;
 
 public sealed class StorefrontPresentationCutoverGuardrailTests
 {

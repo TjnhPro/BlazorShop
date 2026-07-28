@@ -320,7 +320,7 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("Page-specific JavaScript should prefer `IJSRuntime` module imports.", projectGuide);
             Assert.Contains("Store configuration must not accept arbitrary public script or stylesheet injection.", projectGuide);
             Assert.Contains("Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` allowlisted by tests.", decisionRules);
-            Assert.Contains("Keep `blazor.web.js` before `storefrontCommerce.js`", decisionRules);
+            Assert.Contains("Keep `_framework/blazor.web.js`, then Presentation `_content/BlazorShop.Storefront.Presentation/js/storefront.application.js`, then host visual scripts such as `storefrontCommerce.js`", decisionRules);
             Assert.Contains("Do not add DB-configured or store-configured arbitrary public scripts/styles.", decisionRules);
             Assert.Contains("Dynamic Storefront pages, maintenance pages, current-store/config reads, checkout/auth pages, SEO documents, and error states must not receive immutable cache headers.", decisionRules);
             Assert.Contains("Browser static assets and `wwwroot` config must point only to Control Plane API", decisionRules);

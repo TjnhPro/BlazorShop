@@ -3,10 +3,10 @@ extern alias Starter;
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
 using System.Net;
-using BlazorShop.Storefront.Models;
+using BlazorShop.Storefront.Presentation.Models;
 using BlazorShop.Storefront.Runtime;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;

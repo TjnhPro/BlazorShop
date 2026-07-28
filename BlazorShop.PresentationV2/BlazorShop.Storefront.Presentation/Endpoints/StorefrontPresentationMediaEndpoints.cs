@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Presentation.Endpoints
 {
-    using BlazorShop.Storefront.Services.Media;
+    using BlazorShop.Storefront.Presentation.Services.Media;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
 

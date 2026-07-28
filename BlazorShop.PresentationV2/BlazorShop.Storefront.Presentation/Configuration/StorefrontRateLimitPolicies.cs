@@ -1,8 +1,8 @@
-namespace BlazorShop.Storefront.Configuration
+namespace BlazorShop.Storefront.Presentation.Configuration
 {
     using System.Threading.RateLimiting;
 
-    using BlazorShop.Storefront.Options;
+    using BlazorShop.Storefront.Presentation.Options;
     using BlazorShop.Storefront.Presentation.PagePatterns;
 
     using Microsoft.AspNetCore.Http;

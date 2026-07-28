@@ -4,7 +4,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Services;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Services;
 
     public sealed class StorefrontPageCompositionGuardrailTests
     {
@@ -96,7 +96,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/PaymentResultPage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Auth/V2AuthPageView.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Auth/V2AuthPageView.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/System/MaintenancePage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/System/NotFoundPage.razor",
             };
@@ -179,7 +179,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductRoute_IsPresentationOwnedAndV2ProvidesView()
         {
             var route = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/ProductRoutePage.razor"));
-            var view = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor"));
+            var view = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor"));
             var registration = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs"));
 
             Assert.Contains("@page \"/product/{Slug}\"", route, StringComparison.Ordinal);

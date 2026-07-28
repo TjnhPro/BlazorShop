@@ -29,14 +29,14 @@ public sealed class StorefrontAuthFormPatternTests
     {
         var fieldNames = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Components/Auth/StorefrontAuthFormFieldNames.cs");
 
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontLoginForm.Email)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontLoginForm.Password)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontLoginForm.CaptchaToken)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontLoginForm.ReturnUrl)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontRegisterForm.FullName)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontRegisterForm.ConfirmPassword)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontForgotPasswordForm.CaptchaToken)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontResetPasswordForm.Token)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontLoginForm.Email)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontLoginForm.Password)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontLoginForm.CaptchaToken)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontLoginForm.ReturnUrl)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontRegisterForm.FullName)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontRegisterForm.ConfirmPassword)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontForgotPasswordForm.CaptchaToken)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontResetPasswordForm.Token)", fieldNames);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public sealed class StorefrontAuthFormPatternTests
     [Fact]
     public void V2AuthView_DoesNotSelfAuthorAuthPostContracts()
     {
-        var v2 = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Auth/V2AuthPageView.razor");
+        var v2 = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Auth/V2AuthPageView.razor");
         var starter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor");
         var hostViews = string.Concat(v2, starter);
 
@@ -74,7 +74,7 @@ public sealed class StorefrontAuthFormPatternTests
     public void ResetForm_IncludesTokenAndEmailOnlyThroughPresentationPattern()
     {
         var reset = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Components/Auth/StorefrontResetPasswordForm.razor");
-        var v2 = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Auth/V2AuthPageView.razor");
+        var v2 = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Auth/V2AuthPageView.razor");
 
         Assert.Contains("name=\"@StorefrontAuthFormFieldNames.ResetPassword.Email\"", reset);
         Assert.Contains("name=\"@StorefrontAuthFormFieldNames.ResetPassword.Token\"", reset);

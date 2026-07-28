@@ -1,8 +1,8 @@
 namespace BlazorShop.Storefront.Presentation.Services.Account
 {
     using BlazorShop.Storefront.Presentation.PagePatterns;
-    using BlazorShop.Storefront.Services;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Services;
+    using BlazorShop.Storefront.Presentation.Contracts;
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Http;
 

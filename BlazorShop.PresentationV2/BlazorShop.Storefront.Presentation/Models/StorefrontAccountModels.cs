@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Models
+namespace BlazorShop.Storefront.Presentation.Models
 {
     public sealed class LoginUser
     {

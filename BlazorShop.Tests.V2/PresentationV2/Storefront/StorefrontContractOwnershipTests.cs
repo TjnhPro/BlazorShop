@@ -31,7 +31,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("BlazorShop.Storefront.Components", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2.WASM", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2", sources, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.Storefront.Services", sources, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Presentation.Services", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Web.SharedV2", sources, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Components", project, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2.WASM", project, StringComparison.Ordinal);

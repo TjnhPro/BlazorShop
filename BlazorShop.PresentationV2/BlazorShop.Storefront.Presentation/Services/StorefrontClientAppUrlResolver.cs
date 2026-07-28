@@ -1,7 +1,7 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
-    using BlazorShop.Storefront.Options;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Options;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     using Microsoft.Extensions.Options;
 

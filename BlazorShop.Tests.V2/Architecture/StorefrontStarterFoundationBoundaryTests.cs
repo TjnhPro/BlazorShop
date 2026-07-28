@@ -66,7 +66,7 @@ namespace BlazorShop.Tests.Architecture
             foreach (var expected in new[]
             {
                 "Runtime owns direct `BlazorShop.Storefront.Client` transport usage",
-                "Use the `BlazorShop.Storefront.Runtime` package",
+                "Presentation composes Runtime internally",
                 "BlazorShop.Storefront.Components",
                 "same-origin BFF endpoints",
                 "Do not reference `BlazorShop.Storefront.V2`",

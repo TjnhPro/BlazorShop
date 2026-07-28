@@ -15,9 +15,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using CommerceNodeApi::BlazorShop.CommerceNode.API.Configuration;
     using CommerceNodeApi::BlazorShop.CommerceNode.API.Controllers;
     using CommerceNodeRateLimitIdentity = CommerceNodeApi::BlazorShop.CommerceNode.API.Configuration.StorefrontRateLimitIdentity;
-    using StorefrontV2::BlazorShop.Storefront.Configuration;
-    using StorefrontRateLimitIdentity = StorefrontV2::BlazorShop.Storefront.Configuration.StorefrontRateLimitIdentity;
-    using StorefrontV2::BlazorShop.Storefront.Options;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Configuration;
+    using StorefrontRateLimitIdentity = StorefrontV2::BlazorShop.Storefront.Presentation.Configuration.StorefrontRateLimitIdentity;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Options;
 
     public sealed class SecurityPrivacyPhase2RateLimitTests
     {

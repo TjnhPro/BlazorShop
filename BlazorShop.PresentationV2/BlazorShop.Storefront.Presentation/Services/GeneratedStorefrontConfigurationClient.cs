@@ -1,7 +1,7 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using BlazorShop.Storefront.Runtime;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     public sealed class GeneratedStorefrontConfigurationClient : IStorefrontStoreConfigurationClient
     {

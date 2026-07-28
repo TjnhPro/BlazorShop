@@ -36,7 +36,7 @@ public sealed class StorefrontShellMutationFormPatternTests
 
         Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Endpoints.StorefrontCurrencyPreferenceForm.CurrencyCode)", fieldNames);
         Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Endpoints.StorefrontCurrencyPreferenceForm.ReturnUrl)", fieldNames);
-        Assert.Contains("nameof(global::BlazorShop.Storefront.Services.StorefrontLogoutForm.ReturnUrl)", fieldNames);
+        Assert.Contains("nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontLogoutForm.ReturnUrl)", fieldNames);
     }
 
     [Fact]

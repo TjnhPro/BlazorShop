@@ -1,6 +1,6 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
 

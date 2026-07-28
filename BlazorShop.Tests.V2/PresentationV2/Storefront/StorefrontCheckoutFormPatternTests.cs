@@ -44,7 +44,7 @@ public sealed class StorefrontCheckoutFormPatternTests
             "ShippingCountryCode",
         })
         {
-            Assert.Contains($"nameof(global::BlazorShop.Storefront.Services.StorefrontCheckoutForm.{field})", fieldNames);
+            Assert.Contains($"nameof(global::BlazorShop.Storefront.Presentation.Services.StorefrontCheckoutForm.{field})", fieldNames);
         }
     }
 

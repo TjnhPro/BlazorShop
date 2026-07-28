@@ -1,8 +1,8 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Globalization;
 
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     public sealed class StorefrontPriceFormatter : IStorefrontPriceFormatter
     {

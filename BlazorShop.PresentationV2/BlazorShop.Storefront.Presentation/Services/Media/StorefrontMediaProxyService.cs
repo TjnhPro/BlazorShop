@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Services.Media
+namespace BlazorShop.Storefront.Presentation.Services.Media
 {
     using BlazorShop.Storefront.Runtime;
     using Microsoft.AspNetCore.Http;

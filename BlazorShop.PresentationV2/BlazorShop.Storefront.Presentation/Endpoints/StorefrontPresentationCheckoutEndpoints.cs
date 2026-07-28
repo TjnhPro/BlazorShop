@@ -1,11 +1,11 @@
 namespace BlazorShop.Storefront.Presentation.Endpoints
 {
     using BlazorShop.Storefront.Components.Browser;
-    using BlazorShop.Storefront.Configuration;
+    using BlazorShop.Storefront.Presentation.Configuration;
     using BlazorShop.Storefront.Presentation.PagePatterns;
     using BlazorShop.Storefront.Runtime;
-    using BlazorShop.Storefront.Services;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Services;
+    using BlazorShop.Storefront.Presentation.Contracts;
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;

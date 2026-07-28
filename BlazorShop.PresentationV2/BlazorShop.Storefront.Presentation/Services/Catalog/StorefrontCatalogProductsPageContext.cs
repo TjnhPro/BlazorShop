@@ -1,7 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Catalog;
 
 using BlazorShop.Storefront.Components.Contracts.Catalog;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Contracts;
 
 public record StorefrontCatalogProductsPageContext(
     IReadOnlyList<ProductSummaryItem> ProductSummaries,

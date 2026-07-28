@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Configuration
+namespace BlazorShop.Storefront.Presentation.Configuration
 {
     public static class StorefrontRoleNames
     {

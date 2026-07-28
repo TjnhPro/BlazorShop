@@ -1,7 +1,7 @@
-namespace BlazorShop.Storefront.Services.Contracts;
+namespace BlazorShop.Storefront.Presentation.Contracts;
 
-using BlazorShop.Storefront.Models;
-using BlazorShop.Storefront.Services;
+using BlazorShop.Storefront.Presentation.Models;
+using BlazorShop.Storefront.Presentation.Services;
 
 public interface IStorefrontSitemapReader
 {

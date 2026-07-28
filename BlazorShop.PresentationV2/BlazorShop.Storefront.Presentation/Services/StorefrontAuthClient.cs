@@ -1,12 +1,12 @@
-namespace BlazorShop.Storefront.Services
+namespace BlazorShop.Storefront.Presentation.Services
 {
     using System.Net.Http.Headers;
     using System.Net.Http.Json;
     using System.Text.Json;
 
-    using BlazorShop.Storefront.Models;
+    using BlazorShop.Storefront.Presentation.Models;
     using BlazorShop.Storefront.Runtime;
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     public sealed class StorefrontAuthClient : IStorefrontAuthClient
     {

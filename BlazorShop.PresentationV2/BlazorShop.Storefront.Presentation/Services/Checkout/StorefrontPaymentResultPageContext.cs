@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
-    using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     public sealed record StorefrontPaymentResultPageContext(
         bool IsCancelRoute,

@@ -6,8 +6,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Microsoft.Extensions.Options;
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Options;
-    using StorefrontV2::BlazorShop.Storefront.Services;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Options;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Services;
 
     public sealed class StorefrontV2PublicUrlResolverTests
     {

@@ -483,7 +483,7 @@ Services/Product/StorefrontProductPageMapper.cs
 - [x] Tao V2 view:
 
 ```text
-Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor
+Storefront.V2/Pages/Product/V2ProductPageView.razor
 ```
 
 - [x] Product route page render V2 view qua `StorefrontFoundationViewOutlet`.
@@ -501,7 +501,7 @@ Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor
 - Added `BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog/ProductRoutePage.razor`.
 - Added `BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageService.cs`, `StorefrontProductPageContext.cs`, and `StorefrontProductPageMapper.cs`.
 - Moved product contracts and breadcrumb/formatter/display-context abstractions into `BlazorShop.Storefront.Presentation`.
-- Moved V2 product page markup into `BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor` and removed its route/SSR orchestration.
+- Moved V2 product page markup into `BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor` and removed its route/SSR orchestration.
 - Updated V2 foundation registration so `ProductPage` is the V2 view while Presentation owns the route.
 - Updated guardrails for App shell ownership, product page ownership, and root asset placement.
 - Verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed.

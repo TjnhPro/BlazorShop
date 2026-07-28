@@ -1,9 +1,9 @@
 namespace BlazorShop.Storefront.Presentation.Endpoints;
 
 using BlazorShop.Storefront.Components.Browser;
-using BlazorShop.Storefront.Models;
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Models;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Options
+namespace BlazorShop.Storefront.Presentation.Options
 {
     public sealed class StorefrontPublicUrlOptions
     {

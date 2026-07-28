@@ -4,8 +4,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Services;
-    using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Services;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Contracts;
 
     public sealed class StorefrontPriceFormatterTests
     {

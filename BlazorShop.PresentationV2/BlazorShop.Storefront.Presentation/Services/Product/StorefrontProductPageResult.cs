@@ -1,8 +1,8 @@
 namespace BlazorShop.Storefront.Presentation.Services.Product;
 
-using BlazorShop.Storefront.Models;
+using BlazorShop.Storefront.Presentation.Models;
 using BlazorShop.Storefront.Presentation.PagePatterns;
-using BlazorShop.Storefront.Services;
+using BlazorShop.Storefront.Presentation.Services;
 
 public sealed record StorefrontProductPageResult(
     StorefrontPageState State,

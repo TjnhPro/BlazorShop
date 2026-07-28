@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Options
+namespace BlazorShop.Storefront.Presentation.Options
 {
     using Microsoft.Extensions.Hosting;
 

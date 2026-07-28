@@ -1,15 +1,15 @@
 # Storefront Visual Only Phase 1 Boundary Todo
 
-Status: In Progress
+Status: Complete
 Owner: Storefront Platform
 Created: 2026-07-27
 Scope: finish Phase 1 so `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, and future `BlazorShop.Storefront.{Name}` hosts are visual consumers of the shared Storefront application engine.
 
 ## Pre-implementation closure evidence
 
-F1.44 closed the original visual-only checklist, but the follow-up review found remaining foundation blockers that still let visual hosts own security, browser application behavior, direct Runtime dependencies, and incomplete generated-store guardrails. Do not mark this Phase 1 plan as fully closable until `Storefront Foundation Blocker Closure.todo.md` is complete.
+F1.44 closed the original visual-only checklist, but the follow-up review found remaining foundation blockers that still let visual hosts own security, browser application behavior, direct Runtime dependencies, and incomplete generated-store guardrails.
 
-Current blocker closure is tracked in `docs/refactor-control-Commerce-storefront/Storefront Foundation Blocker Closure.todo.md`. Its F1.45 baseline records source evidence and regression commands for the remaining leaks before implementation starts.
+Current blocker closure is complete in `docs/refactor-control-Commerce-storefront/Storefront Foundation Blocker Closure.todo.md`. F1.45-F1.53 moved the remaining application behavior to Presentation, split core and visual scripts, hardened Starter/generated boundaries, added generated functional proof, renamed Presentation namespaces, and closed this Phase 1 plan with exact evidence.
 
 ## Verified current context
 
@@ -24,7 +24,7 @@ Current blocker closure is tracked in `docs/refactor-control-Commerce-storefront
   - `Components/Catalog/ProductCard.razor`
   - `Components/Seo/StorefrontBrandHead.razor`
 - V2 auth and checkout visual views still write browser mutation form contracts directly:
-  - `Theme/Pages/Auth/V2AuthPageView.razor`
+  - `Pages/Auth/V2AuthPageView.razor`
   - `Pages/Hybrid/Commerce/CheckoutPage.razor`
   - `Components/Layout/StorefrontHeader.razor`
   - `Components/Layout/StorefrontAccountMenu.razor`
@@ -41,31 +41,31 @@ Current blocker closure is tracked in `docs/refactor-control-Commerce-storefront
 
 After Phase 1, V2 should only own:
 
-- [ ] `Program.cs` thin bootstrap.
-- [ ] `appsettings*.json` and deployment config values.
-- [ ] view registration.
-- [ ] layouts/pages/components visual markup.
-- [ ] `wwwroot/css`, `wwwroot/images`, `wwwroot/fonts`.
-- [ ] visual copy.
-- [ ] pure UI state.
-- [ ] WASM component placement.
+- [x] `Program.cs` thin bootstrap.
+- [x] `appsettings*.json` and deployment config values.
+- [x] view registration.
+- [x] layouts/pages/components visual markup.
+- [x] `wwwroot/css`, `wwwroot/images`, `wwwroot/fonts`.
+- [x] visual copy.
+- [x] pure UI state.
+- [x] WASM component placement.
 
 V2 must not own:
 
-- [ ] `Services/` application services.
-- [ ] `Services/Contracts/`.
-- [ ] middleware.
-- [ ] application configuration helpers.
-- [ ] business models.
-- [ ] Commerce Node API resolution.
-- [ ] store key resolution.
-- [ ] navigation data loading.
-- [ ] session loading.
-- [ ] application caching.
-- [ ] rate limiting policy.
-- [ ] auth/checkout form contracts.
-- [ ] business decisions.
-- [ ] direct Runtime/Client reference.
+- [x] `Services/` application services.
+- [x] `Services/Contracts/`.
+- [x] middleware.
+- [x] application configuration helpers.
+- [x] business models.
+- [x] Commerce Node API resolution.
+- [x] store key resolution.
+- [x] navigation data loading.
+- [x] session loading.
+- [x] application caching.
+- [x] rate limiting policy.
+- [x] auth/checkout form contracts.
+- [x] business decisions.
+- [x] direct Runtime/Client reference.
 
 Final V2 bootstrap target:
 
@@ -96,22 +96,22 @@ V2/Starter/{Name} = host config values, visual registration, markup, assets, cop
 
 ## Dependencies
 
-- [ ] Complete or keep in-flight with this plan: `Storefront V2 Manual Client Retirement.todo.md`.
-- [ ] Do not close this plan until F1.25 is closed:
-  - [ ] no `StorefrontApiClient` in V2.
-  - [ ] no V2 class implements Presentation `IStorefront*Client`.
-  - [ ] no V2 manual Commerce Node transport.
-- [ ] Update `docs/architecture/03-runtime-boundaries.md` during this plan because the current architecture doc still says V2 owns some current-store/session/host-specific API adapter behavior. This plan intentionally moves that ownership to Presentation/Runtime.
+- [x] Complete or keep in-flight with this plan: `Storefront V2 Manual Client Retirement.todo.md`.
+- [x] Do not close this plan until F1.25 is closed:
+  - [x] no `StorefrontApiClient` in V2.
+  - [x] no V2 class implements Presentation `IStorefront*Client`.
+  - [x] no V2 manual Commerce Node transport.
+- [x] Update `docs/architecture/03-runtime-boundaries.md` during this plan because the current architecture doc still says V2 owns some current-store/session/host-specific API adapter behavior. This plan intentionally moves that ownership to Presentation/Runtime.
 
 ## Non-goals
 
-- [ ] Do not rewrite Commerce Node storefront APIs.
-- [ ] Do not move ecommerce truth such as pricing, sellability, cart validity, checkout rules, or order placement out of Commerce Node APIs.
-- [ ] Do not redesign V2 visual UI unless a visual-only cutover exposes a real rendering bug.
-- [ ] Do not collapse Runtime into Presentation.
-- [ ] Do not make generated storefronts reference V2 or Starter.
-- [ ] Do not make browser/WASM call Commerce Node directly.
-- [ ] Do not remove V2.WASM browser components; only keep their boundary browser-safe.
+- [x] Do not rewrite Commerce Node storefront APIs.
+- [x] Do not move ecommerce truth such as pricing, sellability, cart validity, checkout rules, or order placement out of Commerce Node APIs.
+- [x] Do not redesign V2 visual UI unless a visual-only cutover exposes a real rendering bug.
+- [x] Do not collapse Runtime into Presentation.
+- [x] Do not make generated storefronts reference V2 or Starter.
+- [x] Do not make browser/WASM call Commerce Node directly.
+- [x] Do not remove V2.WASM browser components; only keep their boundary browser-safe.
 
 ## Phase order
 
@@ -156,7 +156,7 @@ Goal: create failing tests before moving code so Foundation cannot be closed whi
 - [x] Test V2 visual folders:
   - [x] `Components/`
   - [x] `Pages/`
-  - [x] `Theme/Pages/`
+  - [x] `Pages/`
   - [x] `Layouts/` if introduced.
 - [x] In visual folders, forbid:
 
@@ -225,7 +225,7 @@ Evidence:
 Goal: Presentation owns full application registration, pipeline, and endpoint mapping. V2/Starter call one bootstrap API.
 
 - [x] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationServiceCollectionExtensions`.
-- [ ] Implement:
+- [x] Implement:
 
 ```csharp
 services.AddStorefrontApplication(configuration);
@@ -248,7 +248,7 @@ services.AddStorefrontApplication(configuration);
   - [x] Razor components.
   - [x] optional WASM support flag.
 - [x] Add `BlazorShop.Storefront.Presentation.Hosting.StorefrontApplicationBuilderExtensions`.
-- [ ] Implement:
+- [x] Implement:
 
 ```csharp
 app.UseStorefrontApplication();
@@ -842,7 +842,7 @@ Evidence:
 
 Goal: production storefront cannot silently use empty fallback for required slots.
 
-- [ ] Replace production use of:
+- [x] Replace production use of:
 
 ```csharp
 StorefrontFoundationViewSet.CreateMinimal(...)
@@ -956,9 +956,9 @@ Goal: visual developers should not get application/service namespaces globally.
 
 ```text
 System.Net.Http.Json
-BlazorShop.Storefront.Models
-BlazorShop.Storefront.Services
-BlazorShop.Storefront.Services.Contracts
+BlazorShop.Storefront.Presentation.Models
+BlazorShop.Storefront.Presentation.Services
+BlazorShop.Storefront.Presentation.Contracts
 Microsoft.AspNetCore.Http
 Runtime namespaces
 Client namespaces
@@ -986,7 +986,7 @@ Evidence:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -v:minimal`
 - `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore -v:minimal`
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests.F1_40_V2Imports_DoNotExposeApplicationServiceOrTransportNamespaces" -v:minimal`
-- `rg -n "(@using global::System.Net.Http.Json|@using BlazorShop.Storefront.Models|@using BlazorShop.Storefront.Services$|@using BlazorShop.Storefront.Services.Contracts|@using BlazorShop.Storefront.Runtime|@using BlazorShop.Storefront.Client|@using Microsoft.AspNetCore.Http)" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor` found no matches.
+- `rg -n "(@using global::System.Net.Http.Json|@using BlazorShop.Storefront.Presentation.Models|@using BlazorShop.Storefront.Presentation.Services$|@using BlazorShop.Storefront.Presentation.Contracts|@using BlazorShop.Storefront.Runtime|@using BlazorShop.Storefront.Client|@using Microsoft.AspNetCore.Http)" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor` found no matches.
 
 ## Phase F1.41 - Clean V2 dependency and namespace ownership
 

@@ -11,8 +11,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     using StorefrontRuntimeCatalogContentFacade = BlazorShop.Storefront.Runtime.StorefrontRuntimeCatalogContentFacade;
     using IStorefrontRuntimeContext = BlazorShop.Storefront.Runtime.IStorefrontRuntimeContext;
-    using StorefrontV2::BlazorShop.Storefront.Models;
-    using GeneratedStorefrontCatalogContentClient = StorefrontV2::BlazorShop.Storefront.Services.GeneratedStorefrontCatalogContentClient;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Models;
+    using GeneratedStorefrontCatalogContentClient = StorefrontV2::BlazorShop.Storefront.Presentation.Services.GeneratedStorefrontCatalogContentClient;
 
     public sealed class StorefrontGeneratedCatalogContentClientTests
     {

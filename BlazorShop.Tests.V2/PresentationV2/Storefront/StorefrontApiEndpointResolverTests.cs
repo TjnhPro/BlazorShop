@@ -3,7 +3,7 @@ extern alias StorefrontV2;
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using Microsoft.Extensions.Configuration;
-    using StorefrontV2::BlazorShop.Storefront.Configuration;
+    using StorefrontV2::BlazorShop.Storefront.Presentation.Configuration;
     using Xunit;
 
     public sealed class StorefrontApiEndpointResolverTests

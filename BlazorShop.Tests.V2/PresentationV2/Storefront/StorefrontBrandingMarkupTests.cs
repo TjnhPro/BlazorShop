@@ -94,7 +94,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var files = new[]
             {
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor",
             };
@@ -136,7 +136,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductPage_UsesBackendSelectionPreviewForVariantAttributes()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
             var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
             var purchaseModels = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchasePanelModel.cs");
@@ -145,7 +145,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor")));
 
-            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" />", markup);
+            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" Actions=\"Context.PurchaseActions\" />", markup);
             Assert.Contains("BuildPurchasePanel", mapper, StringComparison.Ordinal);
             Assert.Contains("ProductPurchasePanelModel", purchaseModels, StringComparison.Ordinal);
             Assert.Contains("ProductPurchaseActionDescriptor", purchaseBehavior, StringComparison.Ordinal);
@@ -203,7 +203,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductPage_RendersSellabilityAndQuantityMetadata()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
             var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
 
@@ -226,7 +226,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductPage_RendersProductImageGalleryComponent()
         {
-            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Theme/Pages/Product/V2ProductPageView.razor");
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor")));
             var galleryState = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductGalleryState.cs");

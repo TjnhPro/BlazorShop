@@ -1,7 +1,7 @@
-namespace BlazorShop.Storefront.Presentation.Services.System;
+namespace BlazorShop.Storefront.Presentation.Services.SystemPages;
 
-using BlazorShop.Storefront.Services;
-using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Contracts;
 
 public sealed record StorefrontSystemStateContext(
     string Title,

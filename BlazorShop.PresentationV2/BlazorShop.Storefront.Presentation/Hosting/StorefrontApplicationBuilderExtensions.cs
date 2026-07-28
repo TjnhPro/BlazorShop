@@ -1,9 +1,9 @@
 namespace BlazorShop.Storefront.Presentation.Hosting;
 
 using System.Reflection;
-using BlazorShop.Storefront.Options;
+using BlazorShop.Storefront.Presentation.Options;
 using BlazorShop.Storefront.Presentation.App;
-using BlazorShop.Storefront.Services;
+using BlazorShop.Storefront.Presentation.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

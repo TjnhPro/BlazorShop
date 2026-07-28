@@ -65,7 +65,7 @@ Verification:
 
 Implementation notes:
 
-- Added V2-local `StorefrontCookieNames` in `BlazorShop.Storefront.Configuration` with unchanged values: `my-cart`, `bs-cart-token`, and `bs-currency`.
+- Added V2-local `StorefrontCookieNames` in `BlazorShop.Storefront.Presentation.Configuration` with unchanged values: `my-cart`, `bs-cart-token`, and `bs-currency`.
 - Added V2-local `StorefrontRoleNames.Admin` with unchanged value `Admin`.
 - Replaced Storefront V2 source imports of `BlazorShop.Web.SharedV2` in cart, checkout, auth, consent, media, SEO, local endpoint support, rate-limit identity, display context, cart-token service, and session resolver.
 - Updated focused tests to reference the Storefront V2-local constants where they need cookie names.
