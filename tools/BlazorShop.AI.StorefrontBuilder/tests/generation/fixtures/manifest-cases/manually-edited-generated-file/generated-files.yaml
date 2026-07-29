@@ -1,16 +1,16 @@
 schemaVersion: 1.0.0
 artifactKind: generated-files
-artifactId: generated-files.manual-edit-conflict
+artifactId: generated-files.manual-generated
 files:
-  - filePath: Components/Layout/MainLayout.razor
+  - filePath: Components/Catalog/ProductSummaryCard.razor
     ownership: generated
-    capability: shell/layout
+    capability: catalog
     scope: component
     generatorVersion: 2.5.0
-    sourceArtifactIds: composition-manifest.yaml
+    sourceArtifactIds: metadata.yaml
     sourceSpecHash: sha256:fixture
-    generatedHash: sha256:fixture
-    currentHash: sha256:manual
+    generatedHash: sha256:before
+    currentHash: sha256:after
     lastGeneratedTimestamp: deterministic
     manualEditDetected: true
     conflictStatus: manual-edit

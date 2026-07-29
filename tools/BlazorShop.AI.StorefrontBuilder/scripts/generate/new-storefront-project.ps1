@@ -16,6 +16,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")
 . (Join-Path $PSScriptRoot "StorefrontBuilderProjectSafety.ps1")
 
+# Accept a friendly {Name} suffix and emit BlazorShop.Storefront.{Name}; Copy Starter through scripts\generate-storefront-sample.ps1 before StorefrontBuilder metadata is layered.
 $projectName = Normalize-StorefrontProjectName -Name $Name
 $normalizedStoreKey = Normalize-StorefrontStoreKey -StoreKey $StoreKey
 $outputRootPath = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot $OutputRoot

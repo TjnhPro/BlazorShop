@@ -327,53 +327,59 @@ Goal: make `docs/storefront-analysis/generated-files.yaml` a real regeneration s
 
 Tasks:
 
-- [ ] Define the final manifest schema for each generated file:
-  - [ ] `filePath`;
-  - [ ] `ownership`;
-  - [ ] `capability`;
-  - [ ] `scope`;
-  - [ ] `generatorVersion`;
-  - [ ] `sourceArtifactIds`;
-  - [ ] `sourceSpecHash`;
-  - [ ] `generatedHash`;
-  - [ ] `currentHash`;
-  - [ ] `lastGeneratedTimestamp`;
-  - [ ] `manualEditDetected`;
-  - [ ] `conflictStatus`;
-  - [ ] `conflictReason`;
-  - [ ] `protected`;
-  - [ ] `obsolete`;
-  - [ ] `templateVersion`.
-- [ ] Standardize ownership values:
-  - [ ] `generated`;
-  - [ ] `managed`;
-  - [ ] `user-owned`;
-  - [ ] `protected`;
-  - [ ] `artifact-only`.
-- [ ] Add manifest reader/writer helper scripts.
-- [ ] Replace fixed manifest generation in `update-generated-files-manifest.mjs` with actual file scanning and hashing.
-- [ ] Detect manual edits by comparing stored `generatedHash` to current file hash.
-- [ ] Mark user-owned/protected files so regeneration never overwrites them.
-- [ ] Detect missing generated files and report whether they should be recreated or left removed.
-- [ ] Detect obsolete files from old templates and report cleanup actions instead of deleting blindly.
-- [ ] Record capability ownership for pages/components/CSS/assets:
-  - [ ] shell/layout;
-  - [ ] home;
-  - [ ] catalog;
-  - [ ] product;
-  - [ ] cart;
-  - [ ] checkout;
-  - [ ] account;
-  - [ ] auth/recovery;
-  - [ ] content;
-  - [ ] SEO/media/consent support.
-- [ ] Make manifest validation reject:
-  - [ ] missing required fields;
-  - [ ] invalid ownership values;
-  - [ ] hash mismatch without conflict status;
-  - [ ] protected file marked generated;
-  - [ ] file path outside project root;
-  - [ ] duplicate file entries.
+- [x] Define the final manifest schema for each generated file:
+  - [x] `filePath`;
+  - [x] `ownership`;
+  - [x] `capability`;
+  - [x] `scope`;
+  - [x] `generatorVersion`;
+  - [x] `sourceArtifactIds`;
+  - [x] `sourceSpecHash`;
+  - [x] `generatedHash`;
+  - [x] `currentHash`;
+  - [x] `lastGeneratedTimestamp`;
+  - [x] `manualEditDetected`;
+  - [x] `conflictStatus`;
+  - [x] `conflictReason`;
+  - [x] `protected`;
+  - [x] `obsolete`;
+  - [x] `templateVersion`.
+- [x] Standardize ownership values:
+  - [x] `generated`;
+  - [x] `managed`;
+  - [x] `user-owned`;
+  - [x] `protected`;
+  - [x] `artifact-only`.
+- [x] Add manifest reader/writer helper scripts.
+- [x] Replace fixed manifest generation in `update-generated-files-manifest.mjs` with actual file scanning and hashing.
+- [x] Detect manual edits by comparing stored `generatedHash` to current file hash.
+- [x] Mark user-owned/protected files so regeneration never overwrites them.
+- [x] Detect missing generated files and report whether they should be recreated or left removed.
+- [x] Detect obsolete files from old templates and report cleanup actions instead of deleting blindly.
+- [x] Record capability ownership for pages/components/CSS/assets:
+  - [x] shell/layout;
+  - [x] home;
+  - [x] catalog;
+  - [x] product;
+  - [x] cart;
+  - [x] checkout;
+  - [x] account;
+  - [x] auth/recovery;
+  - [x] content;
+  - [x] SEO/media/consent support.
+- [x] Make manifest validation reject:
+  - [x] missing required fields;
+  - [x] invalid ownership values;
+  - [x] hash mismatch without conflict status;
+  - [x] protected file marked generated;
+  - [x] file path outside project root;
+  - [x] duplicate file entries.
+
+2026-07-29 Phase 2.5 implementation notes:
+- Added `generated-file-manifest.mjs` as the manifest reader/writer/scanner helper with line-ending-normalized SHA-256 hashing.
+- `update-generated-files-manifest.mjs` now scans actual project files, classifies ownership/capability/scope, preserves previous generated hashes for manual edits, and writes conflict-aware reports.
+- `Test-StorefrontBuilderIdempotency.ps1` now parses manifest entries and rejects missing fields, invalid ownership, duplicate/path traversal entries, hash mismatch without conflict status, and protected file modification.
+- Added manifest fixtures for unchanged generated, manually edited generated, manually edited user-owned, protected modified, missing generated, obsolete generated, duplicate entry, and traversal cases.
 
 Implementation notes:
 
@@ -391,21 +397,26 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Add fixtures for:
 
-- [ ] unchanged generated file;
-- [ ] manually edited generated file;
-- [ ] manually edited user-owned file;
-- [ ] protected file modified;
-- [ ] missing generated file;
-- [ ] obsolete generated file;
-- [ ] duplicate manifest entry;
-- [ ] manifest path traversal.
+- [x] unchanged generated file;
+- [x] manually edited generated file;
+- [x] manually edited user-owned file;
+- [x] protected file modified;
+- [x] missing generated file;
+- [x] obsolete generated file;
+- [x] duplicate manifest entry;
+- [x] manifest path traversal.
 
 Exit gate:
 
-- [ ] Manifest is computed from actual project files.
-- [ ] Manual edits are detected reliably.
-- [ ] Protected and user-owned files cannot be overwritten by regeneration.
-- [ ] Conflict reports identify exact files, reason, and next action.
+- [x] Manifest is computed from actual project files.
+- [x] Manual edits are detected reliably.
+- [x] Protected and user-owned files cannot be overwritten by regeneration.
+- [x] Conflict reports identify exact files, reason, and next action.
+
+2026-07-29 Phase 2.5 verification:
+- `.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope conflicts` passed.
+- `.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample` passed.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontBuilder" --logger "trx;LogFileName=storefront-builder-phase25-rerun.trx" --blame-hang --blame-hang-timeout 5m` passed `37/37`.
 
 ## Phase 2.6 - Safe Update And Regenerate Engine
 

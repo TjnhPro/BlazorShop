@@ -1,0 +1,20 @@
+schemaVersion: 1.0.0
+artifactKind: generated-files
+artifactId: generated-files.protected-modified
+files:
+  - filePath: StorefrontPackageVersions.props
+    ownership: protected
+    capability: SEO/media/consent support
+    scope: project
+    generatorVersion: 2.5.0
+    sourceArtifactIds: metadata.yaml
+    sourceSpecHash: sha256:fixture
+    generatedHash: sha256:before
+    currentHash: sha256:after
+    lastGeneratedTimestamp: deterministic
+    manualEditDetected: true
+    conflictStatus: protected-modified
+    conflictReason: "Protected file changed after manifest generation."
+    protected: true
+    obsolete: false
+    templateVersion: starter-contract-1

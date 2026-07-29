@@ -1,20 +1,20 @@
 schemaVersion: 1.0.0
 artifactKind: generated-files
-artifactId: generated-files.manual-edit-conflict
+artifactId: generated-files.unchanged
 files:
   - filePath: Components/Layout/MainLayout.razor
     ownership: generated
     capability: shell/layout
     scope: component
     generatorVersion: 2.5.0
-    sourceArtifactIds: composition-manifest.yaml
+    sourceArtifactIds: metadata.yaml
     sourceSpecHash: sha256:fixture
-    generatedHash: sha256:fixture
-    currentHash: sha256:manual
+    generatedHash: sha256:same
+    currentHash: sha256:same
     lastGeneratedTimestamp: deterministic
-    manualEditDetected: true
-    conflictStatus: manual-edit
-    conflictReason: "Generated file differs from the last generated hash."
+    manualEditDetected: false
+    conflictStatus: none
+    conflictReason: none
     protected: false
     obsolete: false
     templateVersion: starter-contract-1

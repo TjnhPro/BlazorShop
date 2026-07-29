@@ -1,0 +1,20 @@
+schemaVersion: 1.0.0
+artifactKind: generated-files
+artifactId: generated-files.user-owned
+files:
+  - filePath: README.md
+    ownership: user-owned
+    capability: shell/layout
+    scope: project
+    generatorVersion: 2.5.0
+    sourceArtifactIds: none
+    sourceSpecHash: sha256:fixture
+    generatedHash: sha256:before
+    currentHash: sha256:after
+    lastGeneratedTimestamp: deterministic
+    manualEditDetected: true
+    conflictStatus: user-owned-modified
+    conflictReason: "User-owned file changed and must be preserved."
+    protected: false
+    obsolete: false
+    templateVersion: starter-contract-1

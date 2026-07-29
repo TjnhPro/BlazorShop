@@ -304,6 +304,7 @@ namespace BlazorShop.Tests.Architecture
         {
             var command = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1");
             var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/update-generated-files-manifest.mjs");
+            var helper = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs");
             var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderIdempotency.ps1");
             var fixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manual-edit-conflict/generated-files.yaml");
 
@@ -311,18 +312,51 @@ namespace BlazorShop.Tests.Architecture
             {
                 "filePath",
                 "ownership",
+                "capability",
+                "scope",
                 "generatorVersion",
                 "sourceArtifactIds",
                 "sourceSpecHash",
                 "generatedHash",
+                "currentHash",
                 "lastGeneratedTimestamp",
                 "manualEditDetected",
                 "conflictStatus",
+                "conflictReason",
+                "protected",
+                "obsolete",
+                "templateVersion",
             })
             {
-                Assert.Contains(marker, generator, StringComparison.Ordinal);
+                Assert.Contains(marker, helper, StringComparison.Ordinal);
                 Assert.Contains(marker, validator, StringComparison.Ordinal);
             }
+
+            foreach (var marker in new[]
+            {
+                "scanProjectFiles",
+                "readPreviousManifest",
+                "buildManifestEntries",
+                "writeManifestYaml",
+                "buildRegenerationReport",
+                "replace(/\\r\\n/g, \"\\n\")",
+                "ownershipValues",
+                "\"generated\"",
+                "\"managed\"",
+                "\"user-owned\"",
+                "\"protected\"",
+                "\"artifact-only\"",
+                "manual-edit",
+                "user-owned-modified",
+                "protected-modified",
+                "missing",
+                "obsolete",
+            })
+            {
+                Assert.Contains(marker, helper, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("generated-file-manifest.mjs", generator, StringComparison.Ordinal);
 
             foreach (var scope in new[] { "all", "page", "component", "css", "validate", "conflicts" })
             {
@@ -333,6 +367,29 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-IDEMPOTENCY-002", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-003", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-005", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-006", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-007", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-008", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-009", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-010", validator, StringComparison.Ordinal);
+
+            foreach (var fixturePath in new[]
+            {
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/unchanged-generated-file/generated-files.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/manually-edited-generated-file/generated-files.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/manually-edited-user-owned-file/generated-files.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/protected-file-modified/generated-files.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/missing-generated-file/generated-files.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/obsolete-generated-file/generated-files.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/duplicate-manifest-entry/generated-files.yaml",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manifest-cases/manifest-path-traversal/generated-files.yaml",
+            })
+            {
+                var manifestCase = ReadRepositoryFile(fixturePath);
+                Assert.Contains("filePath:", manifestCase, StringComparison.Ordinal);
+                Assert.Contains("currentHash:", manifestCase, StringComparison.Ordinal);
+                Assert.Contains("conflictReason:", manifestCase, StringComparison.Ordinal);
+            }
         }
 
         [Fact]

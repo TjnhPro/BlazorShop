@@ -1,0 +1,20 @@
+schemaVersion: 1.0.0
+artifactKind: generated-files
+artifactId: generated-files.missing
+files:
+  - filePath: Pages/Ssr/Home/HomePage.razor
+    ownership: generated
+    capability: home
+    scope: page
+    generatorVersion: 2.5.0
+    sourceArtifactIds: metadata.yaml
+    sourceSpecHash: sha256:fixture
+    generatedHash: sha256:before
+    currentHash: none
+    lastGeneratedTimestamp: deterministic
+    manualEditDetected: false
+    conflictStatus: missing
+    conflictReason: "Generated file is missing; regenerate it or mark it obsolete."
+    protected: false
+    obsolete: false
+    templateVersion: starter-contract-1

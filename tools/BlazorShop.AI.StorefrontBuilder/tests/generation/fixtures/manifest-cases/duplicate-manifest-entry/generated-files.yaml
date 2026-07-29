@@ -1,0 +1,36 @@
+schemaVersion: 1.0.0
+artifactKind: generated-files
+artifactId: generated-files.duplicate
+files:
+  - filePath: Components/Layout/MainLayout.razor
+    ownership: generated
+    capability: shell/layout
+    scope: component
+    generatorVersion: 2.5.0
+    sourceArtifactIds: metadata.yaml
+    sourceSpecHash: sha256:fixture
+    generatedHash: sha256:same
+    currentHash: sha256:same
+    lastGeneratedTimestamp: deterministic
+    manualEditDetected: false
+    conflictStatus: none
+    conflictReason: none
+    protected: false
+    obsolete: false
+    templateVersion: starter-contract-1
+  - filePath: Components/Layout/MainLayout.razor
+    ownership: generated
+    capability: shell/layout
+    scope: component
+    generatorVersion: 2.5.0
+    sourceArtifactIds: metadata.yaml
+    sourceSpecHash: sha256:fixture
+    generatedHash: sha256:same
+    currentHash: sha256:same
+    lastGeneratedTimestamp: deterministic
+    manualEditDetected: false
+    conflictStatus: none
+    conflictReason: none
+    protected: false
+    obsolete: false
+    templateVersion: starter-contract-1

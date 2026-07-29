@@ -1,0 +1,20 @@
+schemaVersion: 1.0.0
+artifactKind: generated-files
+artifactId: generated-files.obsolete
+files:
+  - filePath: Pages/Legacy/OldPage.razor
+    ownership: generated
+    capability: content
+    scope: page
+    generatorVersion: 2.5.0
+    sourceArtifactIds: metadata.yaml
+    sourceSpecHash: sha256:fixture
+    generatedHash: sha256:before
+    currentHash: sha256:before
+    lastGeneratedTimestamp: deterministic
+    manualEditDetected: false
+    conflictStatus: obsolete
+    conflictReason: "Previously generated file is no longer owned by the current template."
+    protected: false
+    obsolete: true
+    templateVersion: starter-contract-1
