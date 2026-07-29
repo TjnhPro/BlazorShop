@@ -12,6 +12,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private const string GeneratorConfigPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/nswag.storefront.client.json";
         private const string GeneratorScriptPath = "scripts/generate-storefront-client.ps1";
         private const string RegenerationGateScriptPath = "scripts/qa/run-storefront-client-regeneration-gate.ps1";
+        private static readonly TimeSpan ProcessTimeout = TimeSpan.FromMinutes(3);
 
         [Fact]
         public void StorefrontClientProject_HasNoBackendOrStorefrontV2References()
@@ -278,11 +279,54 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             using var process = Process.Start(startInfo)
                 ?? throw new InvalidOperationException($"Failed to start process '{fileName}'.");
-            var standardOutput = process.StandardOutput.ReadToEnd();
-            var standardError = process.StandardError.ReadToEnd();
+
+            var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+            var standardErrorTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(ProcessTimeout))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+
+                process.WaitForExit();
+                var timedOutOutput = standardOutputTask.GetAwaiter().GetResult();
+                var timedOutError = standardErrorTask.GetAwaiter().GetResult();
+                return new ProcessResult(
+                    -1,
+                    timedOutOutput,
+                    BuildTimeoutError(fileName, arguments, workingDirectory, timedOutOutput, timedOutError));
+            }
+
             process.WaitForExit();
+            var standardOutput = standardOutputTask.GetAwaiter().GetResult();
+            var standardError = standardErrorTask.GetAwaiter().GetResult();
 
             return new ProcessResult(process.ExitCode, standardOutput, standardError);
+        }
+
+        private static string BuildTimeoutError(
+            string fileName,
+            IReadOnlyList<string> arguments,
+            string workingDirectory,
+            string standardOutput,
+            string standardError)
+        {
+            return string.Join(
+                Environment.NewLine,
+                $"Process exceeded the {ProcessTimeout.TotalMinutes:0} minute test step timeout.",
+                $"Command: {fileName}",
+                $"Arguments: {string.Join(" ", arguments)}",
+                $"Working directory: {workingDirectory}",
+                $"Timeout: {ProcessTimeout}",
+                "stdout:",
+                standardOutput,
+                "stderr:",
+                standardError);
         }
 
         private sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);

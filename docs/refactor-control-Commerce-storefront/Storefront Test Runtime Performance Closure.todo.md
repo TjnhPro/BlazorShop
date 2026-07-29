@@ -325,33 +325,36 @@ Goal: prevent local/CI hangs from child processes in architecture/package tests.
 
 ### Implementation
 
-- [ ] Update `LegacyRemovalGuardrailTests.RunProcess` to:
-  - [ ] Read stdout asynchronously.
-  - [ ] Read stderr asynchronously.
-  - [ ] Use an explicit per-process timeout.
-  - [ ] Kill the entire process tree on timeout.
-  - [ ] Return failure output that includes command, arguments, working directory, timeout, stdout, and stderr.
-- [ ] Update `StorefrontGeneratedClientFoundationTests.RunProcess` with the same protections.
-- [ ] Compare with `StorefrontStarterFoundationBoundaryTests.RunProcess` and keep behavior consistent.
-- [ ] Do not change what the guardrail scripts assert.
+- [x] Update `LegacyRemovalGuardrailTests.RunProcess` to:
+  - [x] Read stdout asynchronously.
+  - [x] Read stderr asynchronously.
+  - [x] Use an explicit per-process timeout.
+  - [x] Kill the entire process tree on timeout.
+  - [x] Return failure output that includes command, arguments, working directory, timeout, stdout, and stderr.
+- [x] Update `StorefrontGeneratedClientFoundationTests.RunProcess` with the same protections.
+- [x] Compare with `StorefrontStarterFoundationBoundaryTests.RunProcess` and keep behavior consistent.
+  - Both touched helpers now use a 3-minute process timeout and process-tree kill, matching the existing starter boundary helper.
+- [x] Do not change what the guardrail scripts assert.
 
 ### Tests
 
-- [ ] Run timeout-guarded process test subset:
+- [x] Run timeout-guarded process test subset:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~LegacyRemovalGuardrailTests|FullyQualifiedName~StorefrontGeneratedClientFoundationTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests" --logger "trx;LogFileName=process-helper-f176.trx" --blame-hang --blame-hang-timeout 6m
 ```
 
+Result: passed 32/32 in `1m01s`; TRX `BlazorShop.Tests.V2/TestResults/process-helper-f176.trx`.
+
 ### Acceptance Criteria
 
-- [ ] No process helper in the touched classes uses sync `ReadToEnd()` followed by unbounded `WaitForExit()`.
-- [ ] Timeout failure messages are actionable.
-- [ ] Focused process tests pass.
+- [x] No process helper in the touched classes uses sync `ReadToEnd()` followed by unbounded `WaitForExit()`.
+- [x] Timeout failure messages are actionable.
+- [x] Focused process tests pass.
 
 ### Commit
 
-- [ ] Commit message: `F1.76 add timeouts to storefront process guardrails`
+- [x] Commit message: `F1.76 add timeouts to storefront process guardrails`
 
 ## Phase F1.77 - Parallelization Boundary Review
 

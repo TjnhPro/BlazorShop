@@ -6,6 +6,8 @@ namespace BlazorShop.Tests.Architecture
 
     public sealed class LegacyRemovalGuardrailTests
     {
+        private static readonly TimeSpan ProcessTimeout = TimeSpan.FromMinutes(3);
+
         [Fact]
         public void Phase0_LegacyRemovalGuardrailScript_SupportsInventoryAndActiveStrictModes()
         {
@@ -81,11 +83,53 @@ namespace BlazorShop.Tests.Architecture
             using var process = Process.Start(startInfo)
                 ?? throw new InvalidOperationException($"Failed to start process '{fileName}'.");
 
-            var standardOutput = process.StandardOutput.ReadToEnd();
-            var standardError = process.StandardError.ReadToEnd();
+            var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+            var standardErrorTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(ProcessTimeout))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+
+                process.WaitForExit();
+                var timedOutOutput = standardOutputTask.GetAwaiter().GetResult();
+                var timedOutError = standardErrorTask.GetAwaiter().GetResult();
+                return new ProcessResult(
+                    -1,
+                    timedOutOutput,
+                    BuildTimeoutError(fileName, arguments, workingDirectory, timedOutOutput, timedOutError));
+            }
+
             process.WaitForExit();
+            var standardOutput = standardOutputTask.GetAwaiter().GetResult();
+            var standardError = standardErrorTask.GetAwaiter().GetResult();
 
             return new ProcessResult(process.ExitCode, standardOutput, standardError);
+        }
+
+        private static string BuildTimeoutError(
+            string fileName,
+            IReadOnlyList<string> arguments,
+            string workingDirectory,
+            string standardOutput,
+            string standardError)
+        {
+            return string.Join(
+                Environment.NewLine,
+                $"Process exceeded the {ProcessTimeout.TotalMinutes:0} minute test step timeout.",
+                $"Command: {fileName}",
+                $"Arguments: {string.Join(" ", arguments)}",
+                $"Working directory: {workingDirectory}",
+                $"Timeout: {ProcessTimeout}",
+                "stdout:",
+                standardOutput,
+                "stderr:",
+                standardError);
         }
 
         private static string RepositoryPath(string relativePath)
