@@ -416,6 +416,30 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("$runFullFunctionalProof", proof, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void F1_62_FastFoundationFunctionalProof_UsesActualGeneratedHostAndStaticAssets()
+        {
+            var runner = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-fast-foundation-functional.mjs");
+
+            foreach (var marker in new[]
+            {
+                "startGeneratedHost",
+                "startFakeCommerceNode",
+                "Presentation core script loads through static web assets",
+                "actual generated Razor emitted purchase descriptors",
+                "_content/BlazorShop.Storefront.Presentation/js/storefront.application.js",
+                "Mock mode: generated ASP.NET host renders Razor/static web assets",
+            })
+            {
+                Assert.Contains(marker, runner, StringComparison.Ordinal);
+            }
+
+            Assert.DoesNotContain("function pageHtml", runner, StringComparison.Ordinal);
+            Assert.DoesNotContain("function htmlShell", runner, StringComparison.Ordinal);
+            Assert.DoesNotContain("resourceType() === \"document\"", runner, StringComparison.Ordinal);
+            Assert.DoesNotContain("page.addScriptTag", runner, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

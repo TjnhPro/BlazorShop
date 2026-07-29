@@ -31,7 +31,7 @@ These findings were verified against the current codebase before writing this pl
 - [x] Starter product page passes only `ProductName` into `ProductDetailShell`. 2026-07-29 F1.61 now passes `PurchasePanel` and `PurchaseActions`.
 - [x] Starter `PurchasePanelPlaceholder` renders a permanently disabled button and does not emit product purchase descriptors. 2026-07-29 F1.61 Starter baseline now emits canonical purchase descriptors.
 - [x] StorefrontBuilder still patches Starter by string replacement to add `PurchasePanel`, `PurchaseActions`, and product purchase descriptors. 2026-07-29 F1.61 removed behavior injection transforms; generator keeps visual class transforms only.
-- [ ] Fast foundation functional proof uses mocked `pageHtml()` and injects Presentation script manually instead of launching an actual generated host.
+- [x] Fast foundation functional proof uses mocked `pageHtml()` and injects Presentation script manually instead of launching an actual generated host. 2026-07-29 F1.62 replaced the synthetic HTML proof with an actual generated host plus fake Commerce Node/server-side fixture responses.
 - [x] Visual boundary validator still relies on broad substring tokens such as `sku` and `gtin`, causing false positives for presentation-ready `selection.skuText` and `selection.gtinText`. 2026-07-29 F1.59 narrowed browser business tokens to raw `preview.*` and bracket forms.
 - [ ] Presentation still supports legacy selector aliases such as `data-storefront-selection-preview`, `data-storefront-add-to-cart`, and `data-storefront-generated-quantity`.
 
@@ -296,33 +296,40 @@ Goal: make the required fast proof run a real generated storefront host with Pre
 
 ### Implementation
 
-- [ ] Replace `run-fast-foundation-functional.mjs` document fulfillment with an actual generated host launch.
-- [ ] Use deterministic fake same-origin BFF responses for `/api/cart`, `/api/cart/lines`, `/api/product-selection-preview`, `/api/consent/*`, and required checkout/account endpoints.
-- [ ] Let the generated host render Razor markup and load static web assets normally.
-- [ ] Do not manually inject `storefront.application.js` with `page.addScriptTag`.
-- [ ] Verify the rendered page contains generated product purchase descriptors from the actual generated Razor output.
-- [ ] Verify the browser loads Presentation core script via static web asset path.
-- [ ] Keep live Commerce Node/COD regression as nightly/release or explicit full proof.
-- [ ] Make PR proof fail if generated host cannot start, cannot load Presentation assets, or actual DOM does not match binder expectations.
+- [x] Replace `run-fast-foundation-functional.mjs` document fulfillment with an actual generated host launch.
+- [x] Use deterministic fake same-origin BFF responses for `/api/cart`, `/api/cart/lines`, `/api/product-selection-preview`, `/api/consent/*`, and required checkout/account endpoints.
+- [x] Let the generated host render Razor markup and load static web assets normally.
+- [x] Do not manually inject `storefront.application.js` with `page.addScriptTag`.
+- [x] Verify the rendered page contains generated product purchase descriptors from the actual generated Razor output.
+- [x] Verify the browser loads Presentation core script via static web asset path.
+- [x] Keep live Commerce Node/COD regression as nightly/release or explicit full proof.
+- [x] Make PR proof fail if generated host cannot start, cannot load Presentation assets, or actual DOM does not match binder expectations.
 
 ### Tests
 
-- [ ] Update the fast proof script to record host URL, startup logs, requests, and screenshots on failure.
-- [ ] Add assertions for:
-  - [ ] no direct Commerce Node browser calls.
-  - [ ] same-origin BFF calls happen for preview and add-to-cart.
-  - [ ] cart badge updates.
-  - [ ] SKU/GTIN update when preview response changes.
-  - [ ] command descriptor is required.
-  - [ ] checkout/account shell routes render without direct Commerce transport.
-- [ ] Update CI workflow so PR proof runs structure plus actual generated host fast proof.
+- [x] Update the fast proof script to record host URL, startup logs, requests, and screenshots on failure.
+- [x] Add assertions for:
+  - [x] no direct Commerce Node browser calls.
+  - [x] same-origin BFF calls happen for preview and add-to-cart.
+  - [x] cart badge updates.
+  - [x] SKU/GTIN update when preview response changes.
+  - [x] command descriptor is required.
+  - [x] checkout/account shell routes render without direct Commerce transport.
+- [x] Update CI workflow so PR proof runs structure plus actual generated host fast proof. Existing workflow already runs `-ProofLevel Structure` and `-ProofLevel FoundationFunctionalFast`; F1.62 updated the fast proof implementation behind that gate.
 
 ### Acceptance Criteria
 
-- [ ] Fast proof verifies actual generated host behavior, not hand-built HTML.
-- [ ] Static web asset loading from Presentation is proven.
-- [ ] Generated Razor DOM, view registration, and browser binders are tested together.
-- [ ] PR gate can catch missing core script, wrong static asset path, bad descriptors, or runtime host startup failures.
+- [x] Fast proof verifies actual generated host behavior, not hand-built HTML.
+- [x] Static web asset loading from Presentation is proven.
+- [x] Generated Razor DOM, view registration, and browser binders are tested together.
+- [x] PR gate can catch missing core script, wrong static asset path, bad descriptors, or runtime host startup failures.
+
+2026-07-29 F1.62 evidence:
+- `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-fast-foundation-functional.mjs` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings/errors.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontStarterFoundationBoundaryTests" --no-restore` passed 38/38; existing MessagePack vulnerability warnings and Browserslist notice remain.
+- `node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-fast-foundation-functional.mjs --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof` passed.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` passed after regenerating the proof storefront, restoring/building it, running static validation, isolation gate, visual boundary validator, and the actual generated host browser proof.
 
 ## Phase F1.63 - Guardrail Precision And Legacy Alias Removal
 
@@ -404,7 +411,7 @@ Goal: close the work with browser proof, architecture docs, and QA checklist upd
 3. [ ] F1.60 Command descriptor enforcement and private binder surface.
 4. [ ] F1.58 Checkout address form behavior cleanup.
 5. [ ] F1.61 Starter functional reference.
-6. [ ] F1.62 Actual generated host fast proof.
+6. [x] F1.62 Actual generated host fast proof.
 7. [ ] F1.63 Guardrail precision and legacy alias removal.
 8. [ ] F1.64 QA and documentation closure.
 

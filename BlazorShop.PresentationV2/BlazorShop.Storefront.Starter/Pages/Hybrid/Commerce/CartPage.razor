@@ -6,9 +6,15 @@
     Message="Cart browser commands call Presentation-owned same-origin BFF endpoints."
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
-<CartLineList />
+<CartLineList Lines="@CartLines" />
 
 @code {
     [Parameter, EditorRequired]
     public StorefrontCartPageContext Context { get; set; } = default!;
+
+    private IReadOnlyList<CartLineList.StarterCartLine> CartLines =>
+        Context.Cart?.Lines
+            .Select(line => new CartLineList.StarterCartLine(line.DisplayName, line.Quantity))
+            .ToArray()
+        ?? [];
 }
