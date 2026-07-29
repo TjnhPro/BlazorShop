@@ -249,32 +249,38 @@ Goal: make first-time generated project creation safe, deterministic, and recove
 
 Tasks:
 
-- [ ] Harden project name normalization in `build-storefront.ps1` and `new-storefront-project.ps1`.
-- [ ] Support the accepted naming model:
-  - [ ] user may pass a friendly suffix such as `Demo`;
-  - [ ] generator emits `BlazorShop.Storefront.Demo`;
-  - [ ] user may also pass the full `BlazorShop.Storefront.Demo` name;
-  - [ ] unsafe names, traversal, separators, empty segments, lowercase project suffix, and reserved names fail before file writes.
-- [ ] Validate `StoreKey` before file writes.
-- [ ] Generate into a temporary staging directory first.
-- [ ] Validate staged project structure before replacing or creating the final output path.
-- [ ] If target exists and `-Force` is false, fail without changing target.
-- [ ] If target exists and `-Force` is true, replace only after staging succeeds.
-- [ ] Ensure deletion/replacement only happens under approved generated output roots.
-- [ ] On failure, clean staging and leave the previous target unchanged.
-- [ ] Write metadata with:
-  - [ ] generator version;
-  - [ ] timestamp;
-  - [ ] source Starter path/version;
-  - [ ] Starter contract version;
-  - [ ] Storefront contract hash;
-  - [ ] package versions;
-  - [ ] command mode;
-  - [ ] normalized project name;
-  - [ ] store key;
-  - [ ] output root.
-- [ ] Ensure `plan-only` and `validate-only` do not write generated project files.
-- [ ] Ensure `generate` and `full` modes have the same project creation semantics.
+- [x] Harden project name normalization in `build-storefront.ps1` and `new-storefront-project.ps1`.
+- [x] Support the accepted naming model:
+  - [x] user may pass a friendly suffix such as `Demo`;
+  - [x] generator emits `BlazorShop.Storefront.Demo`;
+  - [x] user may also pass the full `BlazorShop.Storefront.Demo` name;
+  - [x] unsafe names, traversal, separators, empty segments, lowercase project suffix, and reserved names fail before file writes.
+- [x] Validate `StoreKey` before file writes.
+- [x] Generate into a temporary staging directory first.
+- [x] Validate staged project structure before replacing or creating the final output path.
+- [x] If target exists and `-Force` is false, fail without changing target.
+- [x] If target exists and `-Force` is true, replace only after staging succeeds.
+- [x] Ensure deletion/replacement only happens under approved generated output roots.
+- [x] On failure, clean staging and leave the previous target unchanged.
+- [x] Write metadata with:
+  - [x] generator version;
+  - [x] timestamp;
+  - [x] source Starter path/version;
+  - [x] Starter contract version;
+  - [x] Storefront contract hash;
+  - [x] package versions;
+  - [x] command mode;
+  - [x] normalized project name;
+  - [x] store key;
+  - [x] output root.
+- [x] Ensure `plan-only` and `validate-only` do not write generated project files.
+- [x] Ensure `generate` and `full` modes have the same project creation semantics.
+
+2026-07-29 Phase 2.4 implementation notes:
+- Added `StorefrontBuilderProjectSafety.ps1` for shared project name normalization, store key validation, approved output-root checks, and guarded deletes.
+- `new-storefront-project.ps1` now generates into an approved-root `.staging` directory, validates the staged project, then moves it into the final path; forced replacement uses a `.replace-backup` restore path.
+- `build-storefront.ps1` now uses the same normalization and passes command mode into generation for both `generate` and `full`.
+- Generated metadata now records generator version, UTC timestamp, command mode, normalized project name, output root, source Starter version, Starter contract version, Storefront contract hash, and package versions.
 
 Implementation notes:
 
@@ -293,19 +299,27 @@ QA:
 
 Add focused negative tests for:
 
-- [ ] unsafe project name;
-- [ ] unsafe store key;
-- [ ] existing target without `-Force`;
-- [ ] target outside generated root;
-- [ ] staged failure leaves old target unchanged;
-- [ ] `plan-only` writes no generated project files.
+- [x] unsafe project name;
+- [x] unsafe store key;
+- [x] existing target without `-Force`;
+- [x] target outside generated root;
+- [x] staged failure leaves old target unchanged;
+- [x] `plan-only` writes no generated project files.
 
 Exit gate:
 
-- [ ] Generated project creation is atomic from the user's point of view.
-- [ ] Failed creation cannot leave a half-generated project in the final path.
-- [ ] `-Force` cannot delete outside approved generated artifact roots.
-- [ ] Metadata is accurate and schema-valid.
+- [x] Generated project creation is atomic from the user's point of view.
+- [x] Failed creation cannot leave a half-generated project in the final path.
+- [x] `-Force` cannot delete outside approved generated artifact roots.
+- [x] Metadata is accurate and schema-valid.
+
+2026-07-29 Phase 2.4 verification:
+- `.\tools\BlazorShop.AI.StorefrontBuilder\tests\generation\Test-StorefrontBuilderCreateHardening.ps1` passed.
+- `.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Url https://example.test -Name Demo -StoreKey sample -Mode plan-only` passed without creating generated project files.
+- `.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Url https://example.test -Name Demo -StoreKey sample -Mode generate -Force` passed through staging and final publish.
+- `.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo -Name BlazorShop.Storefront.Demo -StoreKey sample` passed.
+- `.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo -Name BlazorShop.Storefront.Demo` passed.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontBuilderQaRegenerationTests" --logger "trx;LogFileName=storefront-builder-phase24-guardrails.trx" --blame-hang --blame-hang-timeout 5m` passed `14/14`.
 
 ## Phase 2.5 - File Ownership Manifest Engine
 

@@ -39,7 +39,7 @@ if (-not $packageVersions.Contains("StorefrontClientPackageVersion", [System.Str
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
 $canonicalContractPath = "contracts/storefront/storefront.openapi.json"
-foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+foreach ($required in @("generatorVersion:", "createdUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterVersion:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $metadataText.Contains($required, [System.StringComparison]::Ordinal)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
@@ -53,6 +53,11 @@ if (-not $contractHashMatch.Success) {
 $starterVersionMatch = [regex]::Match($metadataText, "(?m)^starterContractVersion:\s*\S+\s*$")
 if (-not $starterVersionMatch.Success) {
     throw "[SFB-PROJECT-008] metadata.yaml must contain starterContractVersion from the Starter generation contract."
+}
+
+$createdUtcMatch = [regex]::Match($metadataText, "(?m)^createdUtc:\s*\d{4}-\d{2}-\d{2}T.+Z\s*$")
+if (-not $createdUtcMatch.Success) {
+    throw "[SFB-PROJECT-009] metadata.yaml must contain an ISO-8601 UTC createdUtc timestamp."
 }
 
 foreach ($packageVersionMarker in @("BlazorShop.Storefront.Client:", "BlazorShop.Storefront.Runtime:", "BlazorShop.Storefront.Presentation:", "BlazorShop.Storefront.Components:")) {

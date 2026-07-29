@@ -93,6 +93,14 @@ namespace BlazorShop.Tests.Architecture
                 "Algorithm SHA256",
                 "storefrontContractPath:",
                 "storefrontContractSha256:",
+                "generatorVersion:",
+                "createdUtc:",
+                "sourceStarterVersion:",
+                "starterContractVersion:",
+                "packageVersions:",
+                "commandMode:",
+                "normalizedProjectName:",
+                "outputRoot:",
             })
             {
                 Assert.Contains(marker, projectGenerator, StringComparison.Ordinal);
@@ -103,6 +111,71 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("\"pattern\": \"^[a-f0-9]{64}$\"", metadataSchema, StringComparison.Ordinal);
             Assert.Contains("\"storefrontContractPath\": \"contracts/storefront/storefront.openapi.json\"", validFixture, StringComparison.Ordinal);
             Assert.Contains("\"storefrontContractSha256\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\"", validFixture, StringComparison.Ordinal);
+            Assert.Contains("\"starterContractVersion\": \"1\"", validFixture, StringComparison.Ordinal);
+            Assert.Contains("\"packageVersions\"", validFixture, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CreateGeneratorHardening_UsesNormalizationStagingAndAtomicReplacement()
+        {
+            var helper = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/StorefrontBuilderProjectSafety.ps1");
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1");
+            var command = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/build-storefront.ps1");
+            var negativeTests = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/Test-StorefrontBuilderCreateHardening.ps1");
+
+            foreach (var marker in new[]
+            {
+                "Normalize-StorefrontProjectName",
+                "Normalize-StorefrontStoreKey",
+                "Resolve-ApprovedStorefrontBuilderOutputRoot",
+                "Assert-StorefrontBuilderPathUnderRoot",
+                "Remove-StorefrontBuilderPath",
+                "artifacts\\storefront-builder\\generated",
+                "obj\\storefront-builder\\generated",
+                "SFB-PROJECT-001",
+                "SFB-PROJECT-002",
+                "SFB-PROJECT-010",
+            })
+            {
+                Assert.Contains(marker, helper, StringComparison.Ordinal);
+            }
+
+            foreach (var marker in new[]
+            {
+                ".staging",
+                ".replace-backup",
+                "Move-Item -LiteralPath $projectRoot -Destination $backupProjectRoot",
+                "Move-Item -LiteralPath $backupProjectRoot -Destination $projectRoot",
+                "Move-Item -LiteralPath $stagedProjectRoot -Destination $projectRoot",
+                "Test-StorefrontBuilderGeneratedProject.ps1",
+                "SFB-PROJECT-011",
+                "generatorVersion:",
+                "createdUtc:",
+                "commandMode:",
+                "normalizedProjectName:",
+            })
+            {
+                Assert.Contains(marker, generator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("-CommandMode generate", command, StringComparison.Ordinal);
+            Assert.Contains("-CommandMode full", command, StringComparison.Ordinal);
+            Assert.Contains("Normalize-StorefrontProjectName", command, StringComparison.Ordinal);
+            Assert.Contains("Normalize-StorefrontStoreKey", command, StringComparison.Ordinal);
+
+            foreach (var marker in new[]
+            {
+                "DemoExisting",
+                "DemoPlan",
+                "plan-only",
+                "SFB-PROJECT-001",
+                "SFB-PROJECT-002",
+                "SFB-PROJECT-010",
+                "SFB-PROJECT-011",
+            })
+            {
+                Assert.Contains(marker, negativeTests, StringComparison.Ordinal);
+            }
         }
 
         [Fact]

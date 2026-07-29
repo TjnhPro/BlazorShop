@@ -11,10 +11,15 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$projectName = if ($Name.StartsWith("BlazorShop.Storefront.", [System.StringComparison]::Ordinal)) { $Name } else { "BlazorShop.Storefront.$Name" }
-$projectRoot = Join-Path $OutputRoot $projectName
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+. (Join-Path $PSScriptRoot "scripts\generate\StorefrontBuilderProjectSafety.ps1")
 
-Write-Host "StorefrontBuilder mode=$Mode url=$Url name=$projectName storeKey=$StoreKey output=$projectRoot"
+$projectName = Normalize-StorefrontProjectName -Name $Name
+$normalizedStoreKey = Normalize-StorefrontStoreKey -StoreKey $StoreKey
+$resolvedOutputRoot = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot $OutputRoot
+$projectRoot = Join-Path $resolvedOutputRoot $projectName
+
+Write-Host "StorefrontBuilder mode=$Mode url=$Url name=$projectName storeKey=$normalizedStoreKey output=$projectRoot"
 
 switch ($Mode) {
     "analyze-only" {
@@ -24,7 +29,7 @@ switch ($Mode) {
         node "$PSScriptRoot/scripts/generate/plan-generation-files.mjs" --project-name $projectName --output-root $OutputRoot --dry-run
     }
     "generate" {
-        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -OutputRoot $OutputRoot -Force:$Force
+        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $normalizedStoreKey -OutputRoot $OutputRoot -CommandMode generate -Force:$Force
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
         node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --project-root $projectRoot
         node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
@@ -35,16 +40,16 @@ switch ($Mode) {
         & "$PSScriptRoot/regenerate-storefront.ps1" -ProjectRoot $projectRoot -Scope all
     }
     "validate-only" {
-        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $StoreKey
+        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $normalizedStoreKey
     }
     "full" {
-        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -OutputRoot $OutputRoot -Force:$Force
+        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $normalizedStoreKey -OutputRoot $OutputRoot -CommandMode full -Force:$Force
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
         node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --project-root $projectRoot
         node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
         node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $projectRoot
         node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot
-        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $StoreKey
+        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $normalizedStoreKey
         if (-not $SkipVisualQa) { Write-Host "Visual QA runner: scripts/qa/run-visual-qa.mjs" }
         if (-not $SkipCommerceRegression) { Write-Host "Commerce regression runner: scripts/qa/run-commerce-regression.mjs" }
     }
