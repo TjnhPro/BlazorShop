@@ -1,16 +1,16 @@
 @using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser
+@using BlazorShop.Storefront.Browser.Account
 @using BlazorShop.Storefront.Components.Headless.Account
-@inject IServiceProvider Services
+@inject IStorefrontBrowserAccountController AccountController
 
 <div class="@Classes.Root" data-storefront-account-addresses>
-    @if (!string.IsNullOrWhiteSpace(_success))
+    @if (!string.IsNullOrWhiteSpace(AccountState.AddressSuccess))
     {
-        <div class="@Classes.StatusAlert" role="status">@_success</div>
+        <div class="@Classes.StatusAlert" role="status">@AccountState.AddressSuccess</div>
     }
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(AccountState.AddressError))
     {
-        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@AccountState.AddressError</div>
     }
 
     <section class="@Classes.AddSection">
@@ -19,23 +19,23 @@
             <AntiforgeryToken />
             @RenderAntiforgeryField()
             <input type="hidden" name="Action" value="create" />
-            @RenderAddressInputs(_newAddress, false)
+            @RenderAddressInputs(AccountState.NewAddress, false)
             <div class="@Classes.ActionRow">
-                <button class="@Classes.PrimaryButton" type="submit" disabled="@_saving">Save address</button>
+                <button class="@Classes.PrimaryButton" type="submit" disabled="@AccountState.AddressSaving">Save address</button>
             </div>
         </form>
     </section>
 
-    @if (_addresses.Count == 0)
+    @if (AccountState.Addresses.Count == 0)
     {
         <p class="@Classes.EmptyState">No saved addresses yet.</p>
     }
     else
     {
         <div class="@Classes.ListGrid">
-            @foreach (var address in _addresses)
+            @foreach (var address in AccountState.Addresses)
             {
-                var form = _forms[address.PublicId];
+                var form = AccountState.AddressForms[address.PublicId];
                 <section class="@Classes.Card" @key="address.PublicId">
                     <div class="@Classes.BadgeRow">
                         @if (address.IsDefaultShipping)
@@ -105,19 +105,11 @@
     [Parameter]
     public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
 
-    private IReadOnlyList<StorefrontBrowserCustomerAddress> _addresses = [];
-    private readonly Dictionary<Guid, StorefrontBrowserCustomerAddressRequest> _forms = [];
-    private StorefrontBrowserCustomerAddressRequest _newAddress = new();
-    private string? _error;
-    private string? _success;
-    private bool _saving;
+    private StorefrontBrowserAccountState AccountState => AccountController.State;
 
     protected override void OnParametersSet()
     {
-        _addresses = InitialAddresses;
-        _error = InitialError;
-        _success = InitialSuccess;
-        SyncForms();
+        AccountController.InitializeAddresses(InitialAddresses, InitialError, InitialSuccess, DataMode, Actions);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -127,109 +119,45 @@
             return;
         }
 
-        await RefreshAsync();
-    }
-
-    private async Task CreateAsync()
-    {
-        await MutateAsync(client => client.PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>(
-            Actions.CreateAddressRoute,
-            _newAddress));
-        _newAddress = new();
-    }
-
-    private Task UpdateAsync(Guid addressId)
-    {
-        return _forms.TryGetValue(addressId, out var form)
-            ? MutateAsync(client => client.PutJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>(
-                Actions.UpdateAddressRoute(addressId),
-                form))
-            : Task.CompletedTask;
-    }
-
-    private Task DeleteAsync(Guid addressId)
-    {
-        return MutateAsync(client => client.DeleteAsync<StorefrontBrowserAccountCommandResult>(Actions.DeleteAddressRoute(addressId)));
-    }
-
-    private Task SetDefaultAsync(Guid addressId, bool shipping)
-    {
-        var route = shipping ? Actions.DefaultShippingRoute(addressId) : Actions.DefaultBillingRoute(addressId);
-        return MutateAsync(client => client.PostJsonAsync<object, StorefrontBrowserCustomerAddress>(
-            route,
-            new { }));
-    }
-
-    private async Task MutateAsync<T>(Func<StorefrontLocalApiClient, Task<StorefrontLocalApiResult<T>>> action)
-    {
-        if (!OperatingSystem.IsBrowser())
+        if (await AccountController.HydrateAddressesAsync())
         {
-            return;
-        }
-
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
-        {
-            return;
-        }
-
-        _saving = true;
-        _error = null;
-        _success = null;
-        var result = await action(apiClient);
-        _saving = false;
-        if (!result.Success)
-        {
-            _error = result.Message;
-            return;
-        }
-
-        _success = "Address book updated.";
-        await RefreshAsync();
-    }
-
-    private async Task RefreshAsync()
-    {
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
-        {
-            return;
-        }
-
-        var result = await apiClient.GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(Actions.CurrentAddressesRoute);
-        if (result.Success && result.Data is not null)
-        {
-            _addresses = result.Data;
-            SyncForms();
             StateHasChanged();
         }
     }
 
-    private void SyncForms()
+    private async Task CreateAsync()
     {
-        _forms.Clear();
-        foreach (var address in _addresses)
+        if (await AccountController.CreateAddressAsync())
         {
-            _forms[address.PublicId] = new StorefrontBrowserCustomerAddressRequest
-            {
-                FullName = address.FullName,
-                Company = address.Company,
-                Email = address.Email,
-                Phone = address.Phone,
-                Address1 = address.Address1,
-                Address2 = address.Address2,
-                City = address.City,
-                PostalCode = address.PostalCode,
-                CountryCode = address.CountryCode,
-                StateProvinceCode = address.StateProvinceCode,
-                StateProvinceName = address.StateProvinceName,
-                IsDefaultShipping = address.IsDefaultShipping,
-                IsDefaultBilling = address.IsDefaultBilling,
-            };
+            StateHasChanged();
         }
     }
 
-    private RenderFragment RenderAddressInputs(StorefrontBrowserCustomerAddressRequest form, bool compact) => builder =>
+    private async Task UpdateAsync(Guid addressId)
+    {
+        if (await AccountController.UpdateAddressAsync(addressId))
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteAsync(Guid addressId)
+    {
+        if (await AccountController.DeleteAddressAsync(addressId))
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task SetDefaultAsync(Guid addressId, bool shipping)
+    {
+        if (await AccountController.SetDefaultAddressAsync(addressId, shipping))
+        {
+            StateHasChanged();
+        }
+    }
+
+    private RenderFragment RenderAddressInputs(StorefrontBrowserAccountAddressForm form, bool compact) => builder =>
     {
         AddTextInput(builder, 0, form, nameof(form.FullName), "Full name", "name", true, value => form.FullName = value ?? string.Empty, form.FullName, compact);
         AddTextInput(builder, 10, form, nameof(form.Company), "Company", "organization", false, value => form.Company = value, form.Company, compact);
@@ -260,7 +188,7 @@
     private void AddTextInput(
         RenderTreeBuilder builder,
         int sequence,
-        StorefrontBrowserCustomerAddressRequest form,
+        StorefrontBrowserAccountAddressForm form,
         string name,
         string label,
         string autocomplete,

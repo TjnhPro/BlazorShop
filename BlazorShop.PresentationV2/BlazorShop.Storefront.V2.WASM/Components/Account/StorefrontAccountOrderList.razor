@@ -1,14 +1,14 @@
 @using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser
+@using BlazorShop.Storefront.Browser.Account
 @using BlazorShop.Storefront.Components.Headless.Account
-@inject IServiceProvider Services
+@inject IStorefrontBrowserAccountController AccountController
 
 <div class="@Classes.Root" data-storefront-account-orders>
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(AccountState.OrdersError))
     {
-        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@AccountState.OrdersError</div>
     }
-    else if (_orders.Items.Count == 0)
+    else if (AccountState.Orders.Items.Count == 0)
     {
         <p class="@Classes.EmptyState">No orders yet.</p>
     }
@@ -27,7 +27,7 @@
                     </tr>
                 </thead>
                 <tbody class="@Classes.TableBody">
-                    @foreach (var order in _orders.Items)
+                    @foreach (var order in AccountState.Orders.Items)
                     {
                         <tr>
                             <td class="@Classes.ReferenceCell">
@@ -65,13 +65,11 @@
     [Parameter]
     public StorefrontAccountOrderListClasses Classes { get; set; } = StorefrontAccountOrderListClasses.Empty;
 
-    private StorefrontBrowserAccountOrderList _orders = new([], 1, 10, 0, 0);
-    private string? _error;
+    private StorefrontBrowserAccountState AccountState => AccountController.State;
 
     protected override void OnParametersSet()
     {
-        _orders = InitialOrders;
-        _error = InitialError;
+        AccountController.InitializeOrders(InitialOrders, InitialError, DataMode, Actions, PageNumber);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -81,17 +79,8 @@
             return;
         }
 
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
+        if (await AccountController.HydrateOrdersAsync())
         {
-            return;
-        }
-
-        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderList>(Actions.OrderListRoute(PageNumber));
-        if (result.Success && result.Data is not null)
-        {
-            _orders = result.Data;
-            _error = null;
             StateHasChanged();
         }
     }

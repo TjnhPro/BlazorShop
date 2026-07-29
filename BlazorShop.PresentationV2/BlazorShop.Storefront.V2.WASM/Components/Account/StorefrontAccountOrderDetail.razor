@@ -1,39 +1,40 @@
 @using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser
+@using BlazorShop.Storefront.Browser.Account
 @using BlazorShop.Storefront.Components.Headless.Account
-@inject IServiceProvider Services
+@inject IStorefrontBrowserAccountController AccountController
 
 <div class="@Classes.Root" data-storefront-account-order-detail>
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(AccountState.OrderDetailError))
     {
-        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@AccountState.OrderDetailError</div>
     }
-    else if (_order is not null)
+    else if (AccountState.OrderDetail is not null)
     {
+        var order = AccountState.OrderDetail;
         <div class="@Classes.MetricsGrid">
             <div>
                 <p class="@Classes.MetricLabel">Order status</p>
-                <p class="@Classes.MetricValue">@_order.OrderStatus</p>
+                <p class="@Classes.MetricValue">@order.OrderStatus</p>
             </div>
             <div>
                 <p class="@Classes.MetricLabel">Payment</p>
-                <p class="@Classes.MetricValue">@_order.PaymentStatus</p>
+                <p class="@Classes.MetricValue">@order.PaymentStatus</p>
             </div>
             <div>
                 <p class="@Classes.MetricLabel">Total</p>
-                <p class="@Classes.MetricValue">@_order.TotalDisplay</p>
+                <p class="@Classes.MetricValue">@order.TotalDisplay</p>
             </div>
         </div>
 
         <div class="@Classes.AddressGrid">
-            @RenderAddress("Shipping address", _order.ShippingAddress)
-            @RenderAddress("Billing address", _order.BillingAddress ?? _order.ShippingAddress)
+            @RenderAddress("Shipping address", order.ShippingAddress)
+            @RenderAddress("Billing address", order.BillingAddress ?? order.ShippingAddress)
         </div>
 
         <section class="@Classes.ItemsSection">
             <h2 class="@Classes.SectionTitle">Items</h2>
             <div class="@Classes.ItemsList">
-                @foreach (var line in _order.Lines)
+                @foreach (var line in order.Lines)
                 {
                     <div class="@Classes.LineRow">
                         <div>
@@ -53,11 +54,11 @@
         <section class="@Classes.TotalsSection">
             <h2 class="@Classes.SectionTitle">Totals</h2>
             <div class="@Classes.TotalsBody">
-                <div class="@Classes.TotalRow"><span>Subtotal</span><span>@_order.Totals.SubtotalDisplay</span></div>
-                <div class="@Classes.TotalRow"><span>Shipping</span><span>@_order.Totals.ShippingDisplay</span></div>
-                <div class="@Classes.TotalRow"><span>Tax</span><span>@_order.Totals.TaxDisplay</span></div>
-                <div class="@Classes.TotalRow"><span>Discount</span><span>@_order.Totals.DiscountDisplay</span></div>
-                <div class="@Classes.GrandTotalRow"><span>Grand total</span><span>@_order.Totals.GrandTotalDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>Subtotal</span><span>@order.Totals.SubtotalDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>Shipping</span><span>@order.Totals.ShippingDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>Tax</span><span>@order.Totals.TaxDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>Discount</span><span>@order.Totals.DiscountDisplay</span></div>
+                <div class="@Classes.GrandTotalRow"><span>Grand total</span><span>@order.Totals.GrandTotalDisplay</span></div>
             </div>
         </section>
     }
@@ -85,13 +86,11 @@
     [Parameter]
     public StorefrontAccountOrderDetailClasses Classes { get; set; } = StorefrontAccountOrderDetailClasses.Empty;
 
-    private StorefrontBrowserAccountOrderDetail? _order;
-    private string? _error;
+    private StorefrontBrowserAccountState AccountState => AccountController.State;
 
     protected override void OnParametersSet()
     {
-        _order = InitialOrder;
-        _error = InitialError;
+        AccountController.InitializeOrderDetail(InitialOrder, InitialError, DataMode, Actions, OrderReference, ReceiptMode);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -104,20 +103,8 @@
             return;
         }
 
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
+        if (await AccountController.HydrateOrderDetailAsync())
         {
-            return;
-        }
-
-        var route = ReceiptMode
-            ? Actions.ReceiptRoute(OrderReference)
-            : Actions.OrderDetailRoute(OrderReference);
-        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderDetail>(route);
-        if (result.Success && result.Data is not null)
-        {
-            _order = result.Data;
-            _error = null;
             StateHasChanged();
         }
     }

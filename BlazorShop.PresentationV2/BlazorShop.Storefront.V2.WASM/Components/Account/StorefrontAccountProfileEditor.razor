@@ -1,19 +1,19 @@
 @using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser
+@using BlazorShop.Storefront.Browser.Account
 @using BlazorShop.Storefront.Components.Headless.Account
-@inject IServiceProvider Services
+@inject IStorefrontBrowserAccountController AccountController
 
 <div class="@Classes.Root" data-storefront-account-profile>
-    @if (!string.IsNullOrWhiteSpace(_success))
+    @if (!string.IsNullOrWhiteSpace(AccountState.ProfileSuccess))
     {
-        <div class="@Classes.StatusAlert" role="status">@_success</div>
+        <div class="@Classes.StatusAlert" role="status">@AccountState.ProfileSuccess</div>
     }
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(AccountState.ProfileError))
     {
-        <div class="@Classes.ErrorAlert" role="alert">@_error</div>
+        <div class="@Classes.ErrorAlert" role="alert">@AccountState.ProfileError</div>
     }
 
-    @if (_profile is null)
+    @if (AccountState.Profile is null)
     {
         <p class="@Classes.MissingProfile">Profile could not be loaded.</p>
     }
@@ -24,38 +24,38 @@
             @RenderAntiforgeryField()
             <label class="@Classes.WideField">
                 <span class="@Classes.LabelText">Email address</span>
-                <input name="Email" type="email" autocomplete="email" required @bind="_form.Email" class="@Classes.Input" />
+                <input name="Email" type="email" autocomplete="email" required @bind="AccountState.ProfileForm.Email" class="@Classes.Input" />
             </label>
             <label class="@Classes.WideField">
                 <span class="@Classes.LabelText">Display name</span>
-                <input name="FullName" type="text" autocomplete="name" required @bind="_form.FullName" class="@Classes.Input" />
+                <input name="FullName" type="text" autocomplete="name" required @bind="AccountState.ProfileForm.FullName" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
                 <span class="@Classes.LabelText">First name</span>
-                <input name="FirstName" type="text" autocomplete="given-name" @bind="_form.FirstName" class="@Classes.Input" />
+                <input name="FirstName" type="text" autocomplete="given-name" @bind="AccountState.ProfileForm.FirstName" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
                 <span class="@Classes.LabelText">Last name</span>
-                <input name="LastName" type="text" autocomplete="family-name" @bind="_form.LastName" class="@Classes.Input" />
+                <input name="LastName" type="text" autocomplete="family-name" @bind="AccountState.ProfileForm.LastName" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
                 <span class="@Classes.LabelText">Company</span>
-                <input name="Company" type="text" autocomplete="organization" @bind="_form.Company" class="@Classes.Input" />
+                <input name="Company" type="text" autocomplete="organization" @bind="AccountState.ProfileForm.Company" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
                 <span class="@Classes.LabelText">Phone</span>
-                <input name="PhoneNumber" type="tel" autocomplete="tel" @bind="_form.PhoneNumber" class="@Classes.Input" />
+                <input name="PhoneNumber" type="tel" autocomplete="tel" @bind="AccountState.ProfileForm.PhoneNumber" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
                 <span class="@Classes.LabelText">Language</span>
-                <input name="PreferredLanguage" type="text" @bind="_form.PreferredLanguage" class="@Classes.Input" />
+                <input name="PreferredLanguage" type="text" @bind="AccountState.ProfileForm.PreferredLanguage" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
                 <span class="@Classes.LabelText">Currency</span>
-                <input name="PreferredCurrencyCode" type="text" maxlength="3" @bind="_form.PreferredCurrencyCode" class="@Classes.CurrencyInput" />
+                <input name="PreferredCurrencyCode" type="text" maxlength="3" @bind="AccountState.ProfileForm.PreferredCurrencyCode" class="@Classes.CurrencyInput" />
             </label>
             <div class="@Classes.ActionRow">
-                <button type="submit" disabled="@_saving" class="@Classes.SubmitButton">@(_saving ? "Saving..." : "Save profile")</button>
+                <button type="submit" disabled="@AccountState.ProfileSaving" class="@Classes.SubmitButton">@(AccountState.ProfileSaving ? "Saving..." : "Save profile")</button>
             </div>
         </form>
     }
@@ -86,31 +86,11 @@
     [Parameter]
     public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
 
-    private StorefrontBrowserCustomerProfile? _profile;
-    private StorefrontBrowserCustomerProfileUpdateRequest _form = new();
-    private string? _error;
-    private string? _success;
-    private bool _saving;
+    private StorefrontBrowserAccountState AccountState => AccountController.State;
 
     protected override void OnParametersSet()
     {
-        _profile = InitialProfile;
-        _error = InitialError;
-        _success = InitialSuccess;
-        if (_profile is not null && string.IsNullOrWhiteSpace(_form.Email))
-        {
-            _form = new StorefrontBrowserCustomerProfileUpdateRequest
-            {
-                Email = _profile.Email,
-                FullName = _profile.FullName,
-                FirstName = _profile.FirstName,
-                LastName = _profile.LastName,
-                Company = _profile.Company,
-                PhoneNumber = _profile.PhoneNumber,
-                PreferredLanguage = _profile.PreferredLanguage,
-                PreferredCurrencyCode = _profile.PreferredCurrencyCode,
-            };
-        }
+        AccountController.InitializeProfile(InitialProfile, InitialError, InitialSuccess, DataMode, Actions);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -120,57 +100,18 @@
             return;
         }
 
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
+        if (await AccountController.HydrateProfileAsync())
         {
-            return;
-        }
-
-        var result = await apiClient.GetAsync<StorefrontBrowserCustomerProfile>(Actions.LoadProfileRoute);
-        if (result.Success && result.Data is not null)
-        {
-            _profile = result.Data;
-            _form = new StorefrontBrowserCustomerProfileUpdateRequest
-            {
-                Email = result.Data.Email,
-                FullName = result.Data.FullName,
-                FirstName = result.Data.FirstName,
-                LastName = result.Data.LastName,
-                Company = result.Data.Company,
-                PhoneNumber = result.Data.PhoneNumber,
-                PreferredLanguage = result.Data.PreferredLanguage,
-                PreferredCurrencyCode = result.Data.PreferredCurrencyCode,
-            };
             StateHasChanged();
         }
     }
 
     private async Task SaveAsync()
     {
-        if (!OperatingSystem.IsBrowser())
+        if (OperatingSystem.IsBrowser() && await AccountController.SaveProfileAsync())
         {
-            return;
+            StateHasChanged();
         }
-
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
-        {
-            return;
-        }
-
-        _saving = true;
-        _error = null;
-        _success = null;
-        var result = await apiClient.PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(Actions.SaveProfileRoute, _form);
-        _saving = false;
-        if (result.Success && result.Data is not null)
-        {
-            _profile = result.Data;
-            _success = "Profile updated.";
-            return;
-        }
-
-        _error = result.Message;
     }
 
     private RenderFragment RenderAntiforgeryField() => builder =>

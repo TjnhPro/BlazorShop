@@ -570,6 +570,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountProfileEditor.razor");
             var password = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountChangePasswordForm.razor");
+            var accountController = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Account/StorefrontBrowserAccountController.cs");
             var behavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var options = ReadRepositoryFile(
@@ -595,12 +597,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("PasswordForm", options, StringComparison.Ordinal);
             Assert.Contains("SubmitButton", options, StringComparison.Ordinal);
 
-            Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(Actions.LoadProfileRoute)", profile, StringComparison.Ordinal);
-            Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(Actions.SaveProfileRoute", profile, StringComparison.Ordinal);
-            Assert.Contains("PostJsonAsync<object, StorefrontBrowserAccountCommandResult>", password, StringComparison.Ordinal);
-            Assert.Contains("Actions.ChangePasswordRoute", password, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(_profileActions.LoadProfileRoute", accountController, StringComparison.Ordinal);
+            Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>", accountController, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<object, StorefrontBrowserAccountCommandResult>", accountController, StringComparison.Ordinal);
+            Assert.Contains("_passwordActions.ChangePasswordRoute", accountController, StringComparison.Ordinal);
             Assert.Contains("class=\"@Classes.", profile + password, StringComparison.Ordinal);
-            Assert.Contains("Passwords do not match.", password, StringComparison.Ordinal);
+            Assert.Contains("Passwords do not match.", accountController, StringComparison.Ordinal);
+            Assert.Contains("AccountController.SaveProfileAsync()", profile, StringComparison.Ordinal);
+            Assert.Contains("AccountController.ChangePasswordAsync()", password, StringComparison.Ordinal);
 
             foreach (var sharedSource in new[] { profile, password })
             {
@@ -634,6 +638,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var addresses = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountAddressBook.razor");
+            var accountController = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Account/StorefrontBrowserAccountController.cs");
             var behavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var options = ReadRepositoryFile(
@@ -661,13 +667,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("CompactWideField", options, StringComparison.Ordinal);
             Assert.Contains("FullWideField", options, StringComparison.Ordinal);
 
-            Assert.Contains("GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(Actions.CurrentAddressesRoute)", addresses, StringComparison.Ordinal);
-            Assert.Contains("PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>", addresses, StringComparison.Ordinal);
-            Assert.Contains("Actions.CreateAddressRoute", addresses, StringComparison.Ordinal);
-            Assert.Contains("Actions.UpdateAddressRoute(addressId)", addresses, StringComparison.Ordinal);
-            Assert.Contains("Actions.DeleteAddressRoute(addressId)", addresses, StringComparison.Ordinal);
-            Assert.Contains("Actions.DefaultShippingRoute(addressId)", addresses, StringComparison.Ordinal);
-            Assert.Contains("Actions.DefaultBillingRoute(addressId)", addresses, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(_addressActions.CurrentAddressesRoute", accountController, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>", accountController, StringComparison.Ordinal);
+            Assert.Contains("_addressActions.CreateAddressRoute", accountController, StringComparison.Ordinal);
+            Assert.Contains("_addressActions.UpdateAddressRoute(addressId)", accountController, StringComparison.Ordinal);
+            Assert.Contains("_addressActions.DeleteAddressRoute(addressId)", accountController, StringComparison.Ordinal);
+            Assert.Contains("_addressActions.DefaultShippingRoute(addressId)", accountController, StringComparison.Ordinal);
+            Assert.Contains("_addressActions.DefaultBillingRoute(addressId)", accountController, StringComparison.Ordinal);
+            Assert.Contains("AccountController.CreateAddressAsync()", addresses, StringComparison.Ordinal);
+            Assert.Contains("AccountController.UpdateAddressAsync(addressId)", addresses, StringComparison.Ordinal);
             Assert.Contains("class=\"@Classes.", addresses, StringComparison.Ordinal);
             Assert.Contains("Classes.CompactInput", addresses, StringComparison.Ordinal);
             Assert.Contains("Classes.FullInput", addresses, StringComparison.Ordinal);
@@ -699,6 +707,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderList.razor");
             var orderDetail = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderDetail.razor");
+            var accountController = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Account/StorefrontBrowserAccountController.cs");
             var behavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs");
             var options = ReadRepositoryFile(
@@ -726,11 +736,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontAccountOrderListClasses", options, StringComparison.Ordinal);
             Assert.Contains("StorefrontAccountOrderDetailClasses", options, StringComparison.Ordinal);
 
-            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>(Actions.OrderListRoute(PageNumber))", orderList, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>(_orderActions.OrderListRoute(_ordersPageNumber)", accountController, StringComparison.Ordinal);
             Assert.Contains("href=\"@Actions.OrderDetailHref(order.Reference)\"", orderList, StringComparison.Ordinal);
-            Assert.Contains("Actions.ReceiptRoute(OrderReference)", orderDetail, StringComparison.Ordinal);
-            Assert.Contains("Actions.OrderDetailRoute(OrderReference)", orderDetail, StringComparison.Ordinal);
-            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderDetail>(route)", orderDetail, StringComparison.Ordinal);
+            Assert.Contains("_orderActions.ReceiptRoute(_orderReference)", accountController, StringComparison.Ordinal);
+            Assert.Contains("_orderActions.OrderDetailRoute(_orderReference)", accountController, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderDetail>(route", accountController, StringComparison.Ordinal);
+            Assert.Contains("AccountController.HydrateOrdersAsync()", orderList, StringComparison.Ordinal);
+            Assert.Contains("AccountController.HydrateOrderDetailAsync()", orderDetail, StringComparison.Ordinal);
             Assert.Contains("class=\"@Classes.", orderList + orderDetail, StringComparison.Ordinal);
             Assert.Contains("Classes.AddressSection", orderDetail, StringComparison.Ordinal);
             Assert.Contains("Classes.AddressStrongLine", orderDetail, StringComparison.Ordinal);

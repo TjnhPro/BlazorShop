@@ -9,6 +9,7 @@ builder.AddServiceDefaults();
 builder.Services.AddStorefrontApplication(builder.Configuration);
 builder.Services.AddStorefrontBrowserCart();
 builder.Services.AddStorefrontBrowserCheckout();
+builder.Services.AddStorefrontBrowserAccount();
 builder.Services.AddV2FoundationViews();
 
 var app = builder.Build();

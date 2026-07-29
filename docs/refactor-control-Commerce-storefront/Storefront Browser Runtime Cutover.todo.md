@@ -270,53 +270,53 @@ Goal: move account profile, address book, order list/detail, and password mutati
 
 ### Implementation
 
-- [ ] Create Browser account controllers/services:
-  - [ ] `IStorefrontBrowserAccountController`
-  - [ ] `StorefrontBrowserAccountController`
-  - [ ] optional smaller services: `ProfileController`, `AddressBookController`, `OrderHistoryController`, `PasswordController`.
-- [ ] Move profile orchestration:
-  - [ ] load profile.
-  - [ ] create/update `StorefrontBrowserCustomerProfileUpdateRequest`.
-  - [ ] map success/error state.
-- [ ] Move address book orchestration:
-  - [ ] load addresses.
-  - [ ] create/update/delete/default address.
-  - [ ] create `StorefrontBrowserCustomerAddressRequest`.
-  - [ ] maintain edit/new form state.
-- [ ] Move order list/detail loading:
-  - [ ] paging request/route execution.
-  - [ ] selected order detail load.
-  - [ ] error state.
-- [ ] Move password mutation:
-  - [ ] command execution.
-  - [ ] success/error mapping.
-- [ ] Convert V2.WASM account components to visual views:
-  - [ ] render account state.
-  - [ ] bind input values to Browser-owned form state or view model.
-  - [ ] call high-level controller methods.
-  - [ ] no local API calls.
-  - [ ] no request DTO construction.
-- [ ] Keep V2 account route composition and visual navigation in V2.WASM unless route interpretation is later moved to a host descriptor.
+- [x] Create Browser account controllers/services:
+  - [x] `IStorefrontBrowserAccountController`
+  - [x] `StorefrontBrowserAccountController`
+  - [x] optional smaller services: `ProfileController`, `AddressBookController`, `OrderHistoryController`, `PasswordController`.
+- [x] Move profile orchestration:
+  - [x] load profile.
+  - [x] create/update `StorefrontBrowserCustomerProfileUpdateRequest`.
+  - [x] map success/error state.
+- [x] Move address book orchestration:
+  - [x] load addresses.
+  - [x] create/update/delete/default address.
+  - [x] create `StorefrontBrowserCustomerAddressRequest`.
+  - [x] maintain edit/new form state.
+- [x] Move order list/detail loading:
+  - [x] paging request/route execution.
+  - [x] selected order detail load.
+  - [x] error state.
+- [x] Move password mutation:
+  - [x] command execution.
+  - [x] success/error mapping.
+- [x] Convert V2.WASM account components to visual views:
+  - [x] render account state.
+  - [x] bind input values to Browser-owned form state or view model.
+  - [x] call high-level controller methods.
+  - [x] no local API calls.
+  - [x] no request DTO construction.
+- [x] Keep V2 account route composition and visual navigation in V2.WASM unless route interpretation is later moved to a host descriptor.
 
 ### Tests
 
-- [ ] Add Browser unit tests for profile load/save.
-- [ ] Add Browser unit tests for address create/update/delete/default.
-- [ ] Add Browser unit tests for order list/detail load.
-- [ ] Add Browser unit tests for change password command.
-- [ ] Invert V2.WASM account tests:
-  - [ ] account components must not contain `StorefrontLocalApiClient`.
-  - [ ] must not contain `GetAsync<`, `PostJsonAsync<`, `PutJsonAsync<`, `DeleteAsync<`.
-  - [ ] must not contain `StorefrontBrowserCustomerProfileUpdateRequest`.
-  - [ ] must not contain `StorefrontBrowserCustomerAddressRequest`.
-  - [ ] must not inject `IServiceProvider`.
-- [ ] Keep V2 account visual tests for layout, classes, and rendered states.
+- [x] Add Browser unit tests for profile load/save.
+- [x] Add Browser unit tests for address create/update/delete/default.
+- [x] Add Browser unit tests for order list/detail load.
+- [x] Add Browser unit tests for change password command.
+- [x] Invert V2.WASM account tests:
+  - [x] account components must not contain `StorefrontLocalApiClient`.
+  - [x] must not contain `GetAsync<`, `PostJsonAsync<`, `PutJsonAsync<`, `DeleteAsync<`.
+  - [x] must not contain `StorefrontBrowserCustomerProfileUpdateRequest`.
+  - [x] must not contain `StorefrontBrowserCustomerAddressRequest`.
+  - [x] must not inject `IServiceProvider`.
+- [x] Keep V2 account visual tests for layout, classes, and rendered states.
 
 ### Acceptance Criteria
 
-- [ ] Account application logic is owned by Browser runtime.
-- [ ] V2 account components are visual composition only.
-- [ ] Account profile/address/order/password browser behavior remains functional.
+- [x] Account application logic is owned by Browser runtime.
+- [x] V2 account components are visual composition only.
+- [x] Account profile/address/order/password browser behavior remains functional.
 
 ## Phase F1.69 - V2.WASM Visual Consumer Guardrail
 
@@ -503,10 +503,10 @@ Goal: remove stale tests, invert old expectations, and prove full unfiltered tes
 
 ## Execution Order
 
-1. [ ] F1.65 Browser runtime project foundation.
-2. [ ] F1.66 Cart browser controller cutover.
-3. [ ] F1.67 Checkout browser controller cutover.
-4. [ ] F1.68 Account browser controller cutover.
+1. [x] F1.65 Browser runtime project foundation.
+2. [x] F1.66 Cart browser controller cutover.
+3. [x] F1.67 Checkout browser controller cutover.
+4. [x] F1.68 Account browser controller cutover.
 5. [ ] F1.69 V2.WASM visual consumer guardrail.
 6. [ ] F1.70 Semantic event encapsulation.
 7. [ ] F1.71 Enhanced navigation and alias cleanup.
