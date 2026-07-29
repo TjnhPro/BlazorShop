@@ -1,6 +1,6 @@
 # Storefront Browser Semantics Boundary Closure Todo
 
-Status: Proposed
+Status: Completed
 Owner: Storefront Platform
 Created: 2026-07-28
 Related plans:
@@ -33,7 +33,7 @@ These findings were verified against the current codebase before writing this pl
 - [x] StorefrontBuilder still patches Starter by string replacement to add `PurchasePanel`, `PurchaseActions`, and product purchase descriptors. 2026-07-29 F1.61 removed behavior injection transforms; generator keeps visual class transforms only.
 - [x] Fast foundation functional proof uses mocked `pageHtml()` and injects Presentation script manually instead of launching an actual generated host. 2026-07-29 F1.62 replaced the synthetic HTML proof with an actual generated host plus fake Commerce Node/server-side fixture responses.
 - [x] Visual boundary validator still relies on broad substring tokens such as `sku` and `gtin`, causing false positives for presentation-ready `selection.skuText` and `selection.gtinText`. 2026-07-29 F1.59 narrowed browser business tokens to raw `preview.*` and bracket forms.
-- [ ] Presentation still supports legacy selector aliases such as `data-storefront-selection-preview`, `data-storefront-add-to-cart`, and `data-storefront-generated-quantity`.
+- [x] Presentation still supports legacy selector aliases such as `data-storefront-selection-preview`, `data-storefront-add-to-cart`, and `data-storefront-generated-quantity`. 2026-07-29 F1.63 removed these aliases from Presentation binder selectors and added static absence guardrails.
 
 ## Architecture Decision
 
@@ -67,9 +67,9 @@ Visual hosts may:
 
 - [x] render `checked` or `selected` from explicit contract state. 2026-07-29 F1.57 V2 purchase panel renders from `ProductPurchaseOptionValueItem.IsSelected`.
 - [x] display presentation-ready event values such as `selection.priceText`, `selection.stockText`, `selection.skuText`, and `selection.gtinText`. 2026-07-29 F1.59 V2 consumes these semantic values in `applySelectionVisual(...)`.
-- [ ] toggle CSS classes and visual visibility from semantic event values.
-- [ ] manage gallery keyboard navigation and visual thumbnail state.
-- [ ] focus fields, animate sections, and show toast copy supplied by the host or event descriptor.
+- [x] toggle CSS classes and visual visibility from semantic event values. 2026-07-29 F1.64 V2 proof covers semantic price/stock/SKU/GTIN visibility updates.
+- [x] manage gallery keyboard navigation and visual thumbnail state. 2026-07-29 F1.64 kept gallery visual behavior in V2; Presentation supplies semantic image URLs only.
+- [x] focus fields, animate sections, and show toast copy supplied by the host or event descriptor. 2026-07-29 F1.64 docs preserve this as visual-host responsibility.
 
 Visual hosts must not:
 
@@ -78,17 +78,17 @@ Visual hosts must not:
 - [x] decide which checkout form fields participate in form submission. 2026-07-29 F1.58 removed V2 field disabling/submission semantics.
 - [x] read raw preview fields such as `preview.sku`, `preview.gtin`, `preview.stockQuantity`, or `preview.canAddToCart`. 2026-07-29 F1.59 V2 regression tests forbid raw preview reads.
 - [x] call command-capable `application.*` or `bindings.*` methods from visual scripts. 2026-07-29 F1.60 visual validator forbids direct application/bindings command use.
-- [ ] rely on legacy selectors after canonical descriptors are available.
+- [x] rely on legacy selectors after canonical descriptors are available. 2026-07-29 F1.63 removed legacy selector aliases and converted QA selectors to canonical descriptors.
 - [x] patch behavior contracts into Starter through fragile string replacement. 2026-07-29 F1.61 moved purchase descriptors into Starter baseline.
 
 ## Non-goals
 
 - [x] Do not change Commerce Node product-selection preview response shape in this phase unless a contract bug blocks selected-state mapping. 2026-07-29 F1.59 kept response shape unchanged; Presentation still normalizes raw preview fields.
-- [ ] Do not redesign the V2 product page layout.
+- [x] Do not redesign the V2 product page layout. 2026-07-29 F1.64 changed docs/QA/proof only; V2 layout remains unchanged.
 - [x] Do not add full saved-address checkout UX unless an active endpoint and markup already exist. 2026-07-29 F1.58 did not add saved-address UX; no active selector markup exists.
-- [ ] Do not move gallery visual behavior into Presentation; gallery interaction can stay visual as long as it consumes semantic image URLs.
-- [ ] Do not replace all validator logic with AST in the first implementation phase if targeted token tightening is enough to unblock P0/P1.
-- [ ] Do not run live COD checkout as part of the fast generated proof; keep full live Commerce proof for release/nightly.
+- [x] Do not move gallery visual behavior into Presentation; gallery interaction can stay visual as long as it consumes semantic image URLs. 2026-07-29 F1.64 documented this boundary and kept gallery JS in V2.
+- [x] Do not replace all validator logic with AST in the first implementation phase if targeted token tightening is enough to unblock P0/P1. 2026-07-29 F1.63 used precise raw-preview regex guardrails and opened AST/ESLint as follow-up only if needed.
+- [x] Do not run live COD checkout as part of the fast generated proof; keep full live Commerce proof for release/nightly. 2026-07-29 F1.64 fast generated proof stayed mocked same-origin BFF; live COD remains in release E2E.
 
 ## Phase F1.57 - Product Option Selection Contract
 
@@ -389,42 +389,56 @@ Goal: close the work with browser proof, architecture docs, and QA checklist upd
 
 ### Implementation
 
-- [ ] Update `docs/architecture/03-runtime-boundaries.md` with the browser semantics boundary.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md` to state selected product option state belongs to Presentation/storefront contracts, not V2 visual markup.
-- [ ] Update StorefrontBuilder docs to say generated stores inherit functional descriptors from Starter and Presentation binders.
-- [ ] Update `QA-StorefrontV2.todo.md` with product variant visual projection checks.
-- [ ] Update `QA-StorefrontStarter.todo.md` with Starter functional purchase descriptor checks.
-- [ ] Update `Storefront Playwright E2E Release.todo.md` with SKU/GTIN variant update and command descriptor negative case.
-- [ ] Mark this todo complete only after all tests and docs are updated.
+- [x] Update `docs/architecture/03-runtime-boundaries.md` with the browser semantics boundary.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md` to state selected product option state belongs to Presentation/storefront contracts, not V2 visual markup.
+- [x] Update StorefrontBuilder docs to say generated stores inherit functional descriptors from Starter and Presentation binders.
+- [x] Update `QA-StorefrontV2.todo.md` with product variant visual projection checks.
+- [x] Update `QA-StorefrontStarter.todo.md` with Starter functional purchase descriptor checks.
+- [x] Update `Storefront Playwright E2E Release.todo.md` with SKU/GTIN variant update and command descriptor negative case.
+- [x] Mark this todo complete only after all tests and docs are updated.
 
 ### Verification Commands
 
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontCommerceScriptRegressionTests`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontVisualConsumerBoundaryValidatorTests`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontBuilderQaRegenerationTests`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontStarterFoundationBoundaryTests`
-- [ ] `pwsh tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1 -ProjectRoot <generated-project>`
-- [ ] `node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-fast-foundation-functional.mjs --project-root <generated-project>`
-- [ ] Focused Playwright browser run against V2 product page proving option change updates price, stock, image, SKU, and GTIN.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontCommerceScriptRegressionTests`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontVisualConsumerBoundaryValidatorTests`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontBuilderQaRegenerationTests`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontStarterFoundationBoundaryTests`
+- [x] `pwsh tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1 -ProjectRoot <generated-project>`
+- [x] `node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-fast-foundation-functional.mjs --project-root <generated-project>`
+- [x] Focused Playwright browser run against V2 product page proving option change updates price, stock, image, SKU, and GTIN.
 
 ### Acceptance Criteria
 
-- [ ] V2, Starter, and generated storefronts are visual consumers for product purchase semantics.
-- [ ] Presentation owns browser command dispatch and checkout form submission semantics.
-- [ ] Fast generated proof launches an actual generated host.
-- [ ] QA checklist covers the real browser failures this phase is intended to catch.
-- [ ] Documentation reflects the final ownership model.
+- [x] V2, Starter, and generated storefronts are visual consumers for product purchase semantics.
+- [x] Presentation owns browser command dispatch and checkout form submission semantics.
+- [x] Fast generated proof launches an actual generated host.
+- [x] QA checklist covers the real browser failures this phase is intended to catch.
+- [x] Documentation reflects the final ownership model.
+
+2026-07-29 evidence:
+- Runtime boundary, V2 contract ownership, StorefrontBuilder architecture, and StorefrontBuilder agent docs now state that Presentation owns browser command dispatch, selected product option semantics, and generated/Starter descriptor-driven behavior.
+- Storefront V2, Starter, and Playwright release QA checklists now include product variant visual projection, Starter functional descriptor inheritance, SKU/GTIN update, and command descriptor negative-case coverage.
+- Added `scripts/qa/storefront-browser-semantics-v2-proof.js` as a focused Playwright proof for the real V2 product page. It opens `/product/catalog-qa-t-shirt`, selects Red/XL, intercepts same-origin `/api/product-selection-preview` with deterministic semantic values, and verifies price `$21.99`, stock `3 in stock`, image `variant=red-xl`, SKU `QA-TSHIRT-RED-XL`, GTIN `000111222333`, enabled submit button, and zero direct Commerce Node browser calls.
+- `node --check scripts\qa\storefront-browser-semantics-v2-proof.js` passed.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --filter StorefrontCommerceScriptRegressionTests --no-restore` passed 4/4.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --filter StorefrontVisualConsumerBoundaryValidatorTests --no-restore` passed 4/4.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --filter StorefrontBuilderQaRegenerationTests --no-restore` passed 12/12.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --filter StorefrontStarterFoundationBoundaryTests --no-restore` passed 26/26.
+- `pwsh tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderStaticGate.ps1 -ProjectRoot artifacts\storefront-builder\generated\BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey default` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-fast-foundation-functional.mjs --project-root artifacts\storefront-builder\generated\BlazorShop.Storefront.GeneratedProof` passed.
+- `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser` started the local V2 runtime.
+- `node scripts\qa\storefront-browser-semantics-v2-proof.js` passed with same-origin calls `GET /api/cart` and `POST /api/product-selection-preview` only.
 
 ## Execution Order
 
-1. [ ] F1.57 Product option selected-state contract.
-2. [ ] F1.59 SKU/GTIN visual projection.
-3. [ ] F1.60 Command descriptor enforcement and private binder surface.
-4. [ ] F1.58 Checkout address form behavior cleanup.
-5. [ ] F1.61 Starter functional reference.
+1. [x] F1.57 Product option selected-state contract.
+2. [x] F1.59 SKU/GTIN visual projection.
+3. [x] F1.60 Command descriptor enforcement and private binder surface.
+4. [x] F1.58 Checkout address form behavior cleanup.
+5. [x] F1.61 Starter functional reference.
 6. [x] F1.62 Actual generated host fast proof.
-7. [ ] F1.63 Guardrail precision and legacy alias removal.
-8. [ ] F1.64 QA and documentation closure.
+7. [x] F1.63 Guardrail precision and legacy alias removal.
+8. [x] F1.64 QA and documentation closure.
 
 This order intentionally fixes customer-visible product correctness before proof infrastructure. Starter and generator cleanup come after the canonical browser binder behavior is stable.
 

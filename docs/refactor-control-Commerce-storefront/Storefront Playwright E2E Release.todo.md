@@ -25,6 +25,12 @@ Purpose: gom các testcase phù hợp và testcase còn thiếu thành checklist
 - [x] StorefrontBuilder `FoundationFunctionalFast` is the PR-safe generated browser action gate for product descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and direct Commerce Node browser-call rejection.
 - [x] StorefrontBuilder `FoundationFunctionalFull` remains the manual/scheduled/release gate for fixture-backed generated host visual smoke and commerce regression checks.
 
+## Browser Semantics Boundary Evidence - 2026-07-29
+
+- [x] V2 product variant visual projection proof covers option change on `/product/catalog-qa-t-shirt`, same-origin product-selection preview, semantic event rendering for price, stock, image, SKU, and GTIN, and zero direct Commerce Node browser calls.
+- [x] Generated host fast proof covers canonical command descriptor negative behavior: malformed product purchase submitters do not trigger `cart.add-line`, while `[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]` remains functional.
+- [x] Storefront visual boundary validator blocks visual scripts from reading raw preview business fields including `preview.sku`, `preview.gtin`, `preview.stockQuantity`, `preview.canAddToCart`, and simple bracket variants.
+
 ## QA Evidence - 2026-07-18 Headed Chromium Full Release Pass
 
 Command:

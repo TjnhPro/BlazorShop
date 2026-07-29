@@ -19,7 +19,7 @@ Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
 - Consume `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Presentation composes Runtime internally, Runtime owns direct `BlazorShop.Storefront.Client` transport usage, and generated projects keep Client/Runtime package metadata for compatibility proof only.
-- Use Storefront Presentation for shared App/Routes/page services/BFF/SEO/media composition. Generated projects provide views, assets, copy, feature manifests, and host configuration instead of recreating application logic.
+- Use Storefront Presentation for shared App/Routes/page services/BFF/SEO/media composition. Generated projects provide views, assets, copy, feature manifests, host configuration, and Starter-derived semantic descriptors instead of recreating application logic.
 - Register generated visual components as Presentation view slots; generated files must not declare `@page` routes or add route assemblies.
 - Register Storefront Presentation in the generated server/BFF host with `AddStorefrontApplication()`, `UseStorefrontApplication()`, and `MapStorefrontApplication()`. Do not register Runtime directly in generated visual hosts unless a documented low-level extension explicitly reopens that boundary.
 - Use `BlazorShop.Storefront.Components` only through a package boundary when reusable browser-safe contracts/headless behavior or Browser local API primitives are needed.
@@ -29,6 +29,7 @@ Generated storefronts must:
 - Keep presentation-specific CSS, assets, generated pages, visual analysis artifacts, and AI-tuned components inside the generated/custom project.
 - Use generated package contracts instead of guessing Storefront API response shapes.
 - Keep browser and WASM code on same-origin generated endpoints and browser-safe Components contracts/headless behavior; do not reference Runtime from browser code.
+- Render product-selection semantics from Presentation events, such as price, stock, image, SKU, and GTIN labels. Do not read raw preview fields or rebuild add-to-cart/product-selection payloads in generated visual JavaScript.
 
 Generated storefronts must not:
 
