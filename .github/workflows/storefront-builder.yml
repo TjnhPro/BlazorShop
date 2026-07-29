@@ -63,10 +63,63 @@ jobs:
       - name: Generated proof fast foundation functional browser gate
         shell: pwsh
         run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
-      - name: Generated proof full foundation functional browser gate
-        if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
+      - name: Full proof fixture wrapper describe mode
         shell: pwsh
-        run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
+        run: ./scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1 -Describe
+
+  full-fixture-proof:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: tools/BlazorShop.AI.StorefrontBuilder/package-lock.json
+      - name: Install StorefrontBuilder node dependencies
+        working-directory: tools/BlazorShop.AI.StorefrontBuilder
+        run: npm ci
+      - name: Verify Docker prerequisites
+        shell: pwsh
+        run: |
+          docker version
+          docker compose version
+      - name: Run self-contained full fixture proof
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1
+      - name: Print fixture runtime logs on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          if (Test-Path .gstack/run-v2-local) {
+            Get-ChildItem .gstack/run-v2-local -File | ForEach-Object {
+              Write-Host "== $($_.Name) =="
+              Get-Content -LiteralPath $_.FullName -Tail 200
+            }
+          }
+          if (Test-Path artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/docs/storefront-analysis/full-proof-with-fixture-report.md) {
+            Write-Host "== full-proof-with-fixture-report.md =="
+            Get-Content artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/docs/storefront-analysis/full-proof-with-fixture-report.md
+          }
+      - name: Stop fixture runtime
+        if: always()
+        shell: pwsh
+        run: ./scripts/stop-v2-local.ps1 -StopDocker
+      - name: Upload full proof reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-builder-full-proof-reports
+          if-no-files-found: warn
+          path: |
+            .gstack/run-v2-local/**
+            artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/docs/storefront-analysis/**
+            artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/playwright-report/**
+            artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/test-results/**
 
   expensive-live-capture:
     if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'

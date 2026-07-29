@@ -326,30 +326,30 @@ Goal: make scheduled/manual `FoundationFunctionalFull` proof run on a clean runn
 
 Tasks:
 
-- [ ] Add a CI-safe wrapper script, preferred name:
-  - [ ] `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1`.
-- [ ] Wrapper responsibilities:
-  - [ ] stop existing V2 processes if present;
-  - [ ] start required Docker dependencies;
-  - [ ] start Control Plane/Commerce Node/Storefront fixture runtime through the existing local runner or a dedicated fixture runner;
-  - [ ] wait for Commerce Node health;
-  - [ ] verify fixture store configuration;
-  - [ ] verify fixture category/product/page data;
-  - [ ] verify COD/test payment method;
-  - [ ] run `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull`;
-  - [ ] collect generated reports;
-  - [ ] stop services in `finally`.
-- [ ] Prefer reusing `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser` if it is stable on GitHub Windows runners.
-- [ ] If `run-v2-local.ps1` is too broad for CI, add a narrower fixture runtime script and document why.
-- [ ] Update `.github/workflows/storefront-builder.yml`:
-  - [ ] PR keeps `Structure`, regeneration ownership, and `FoundationFunctionalFast`;
-  - [ ] scheduled/manual full proof calls the new fixture wrapper;
-  - [ ] full proof uploads reports as artifacts;
-  - [ ] failure logs include process output and fixture endpoint checks.
-- [ ] Ensure workflow installs .NET, Node, npm dependencies, and any Docker prerequisites before full proof.
-- [ ] Ensure ports used by fixture runtime are documented and not conflicting with generated proof host.
-- [ ] Ensure workflow teardown runs even when proof fails.
-- [ ] Add a describe mode for the wrapper so agents can inspect what it does without starting services.
+- [x] Add a CI-safe wrapper script, preferred name:
+  - [x] `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1`.
+- [x] Wrapper responsibilities:
+  - [x] stop existing V2 processes if present;
+  - [x] start required Docker dependencies;
+  - [x] start Control Plane/Commerce Node/Storefront fixture runtime through the existing local runner or a dedicated fixture runner;
+  - [x] wait for Commerce Node health;
+  - [x] verify fixture store configuration;
+  - [x] verify fixture category/product/page data;
+  - [x] verify COD/test payment method;
+  - [x] run `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull`;
+  - [x] collect generated reports;
+  - [x] stop services in `finally`.
+- [x] Prefer reusing `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser` if it is stable on GitHub Windows runners.
+- [x] If `run-v2-local.ps1` is too broad for CI, add a narrower fixture runtime script and document why. Not needed: Phase 2.8E reuses `run-v2-local.ps1 -StopExisting -NoOpenBrowser` successfully.
+- [x] Update `.github/workflows/storefront-builder.yml`:
+  - [x] PR keeps `Structure`, regeneration ownership, and `FoundationFunctionalFast`;
+  - [x] scheduled/manual full proof calls the new fixture wrapper;
+  - [x] full proof uploads reports as artifacts;
+  - [x] failure logs include process output and fixture endpoint checks.
+- [x] Ensure workflow installs .NET, Node, npm dependencies, and any Docker prerequisites before full proof.
+- [x] Ensure ports used by fixture runtime are documented and not conflicting with generated proof host.
+- [x] Ensure workflow teardown runs even when proof fails.
+- [x] Add a describe mode for the wrapper so agents can inspect what it does without starting services.
 
 Implementation notes:
 
@@ -376,10 +376,10 @@ Manual release verification:
 
 Exit gate:
 
-- [ ] Scheduled workflow can run full proof on a clean runner.
-- [ ] Full proof starts and stops its own fixture runtime.
-- [ ] Proof reports are uploaded as CI artifacts.
-- [ ] A failed fixture bootstrap fails with problem, cause, and fix.
+- [x] Scheduled workflow can run full proof on a clean runner.
+- [x] Full proof starts and stops its own fixture runtime.
+- [x] Proof reports are uploaded as CI artifacts.
+- [x] A failed fixture bootstrap fails with problem, cause, and fix.
 
 ## Phase 2.8F - Documentation And Closure Evidence
 
