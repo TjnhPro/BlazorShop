@@ -55,9 +55,15 @@ public sealed class StorefrontApplicationBootstrapTests
 
         Assert.True(logicalLines.Length <= 45, $"Program.cs has {logicalLines.Length} logical lines.");
         Assert.Contains("AddStorefrontApplication(builder.Configuration)", source, StringComparison.Ordinal);
+        Assert.Contains("AddStorefrontBrowserControllers()", source, StringComparison.Ordinal);
+        Assert.Contains("AddV2FoundationViews()", source, StringComparison.Ordinal);
         Assert.Contains("UseStorefrontApplication()", source, StringComparison.Ordinal);
         Assert.Contains("MapStorefrontApplication(", source, StringComparison.Ordinal);
         Assert.Contains("typeof(V2FoundationViewRegistration)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddStorefrontBrowserCart()", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddStorefrontBrowserCheckout()", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddStorefrontBrowserAccount()", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddStorefrontBrowserRuntime", source, StringComparison.Ordinal);
         Assert.DoesNotContain("AddStorefrontV2Services", source, StringComparison.Ordinal);
         Assert.DoesNotContain("UseStorefrontV2HostPipeline", source, StringComparison.Ordinal);
         Assert.DoesNotContain("StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter", source, StringComparison.Ordinal);

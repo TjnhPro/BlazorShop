@@ -317,47 +317,49 @@ Goal: keep V2 server host thin while preserving server prerender support for Bro
 
 ### Implementation
 
-- [ ] Add a server-safe aggregate extension in `BlazorShop.Storefront.Browser`:
+- [x] Add a server-safe aggregate extension in `BlazorShop.Storefront.Browser`:
 
 ```csharp
 services.AddStorefrontBrowserControllers();
 ```
 
-- [ ] `AddStorefrontBrowserControllers()` registers only:
-  - [ ] cart controller.
-  - [ ] checkout controller.
-  - [ ] account controller.
-- [ ] `AddStorefrontBrowserControllers()` must not register:
-  - [ ] `HttpClient` with `IWebAssemblyHostEnvironment.BaseAddress`.
-  - [ ] `StorefrontLocalApiClient`.
-  - [ ] antiforgery token reader.
-  - [ ] Browser-only JS/event transport primitives unless they are safe and required for server prerender.
-- [ ] Update `AddStorefrontBrowserRuntime(builder.HostEnvironment)` to call:
-  - [ ] browser local transport registration.
-  - [ ] `AddStorefrontBrowserControllers()`.
-- [ ] Update V2 server `Program.cs`:
-  - [ ] Replace `AddStorefrontBrowserCart()`, `AddStorefrontBrowserCheckout()`, and `AddStorefrontBrowserAccount()` with `AddStorefrontBrowserControllers()`.
-- [ ] Keep V2.WASM `Program.cs` using `AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
-- [ ] Do not call `AddStorefrontBrowserRuntime()` from V2 server host.
+- [x] `AddStorefrontBrowserControllers()` registers only:
+  - [x] cart controller.
+  - [x] checkout controller.
+  - [x] account controller.
+- [x] `AddStorefrontBrowserControllers()` must not register:
+  - [x] `HttpClient` with `IWebAssemblyHostEnvironment.BaseAddress`.
+  - [x] `StorefrontLocalApiClient`.
+  - [x] antiforgery token reader.
+  - [x] Browser-only JS/event transport primitives unless they are safe and required for server prerender.
+- [x] Update `AddStorefrontBrowserRuntime(builder.HostEnvironment)` to call:
+  - [x] browser local transport registration.
+  - [x] `AddStorefrontBrowserControllers()`.
+- [x] Update V2 server `Program.cs`:
+  - [x] Replace `AddStorefrontBrowserCart()`, `AddStorefrontBrowserCheckout()`, and `AddStorefrontBrowserAccount()` with `AddStorefrontBrowserControllers()`.
+- [x] Keep V2.WASM `Program.cs` using `AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
+- [x] Do not call `AddStorefrontBrowserRuntime()` from V2 server host.
 
 ### Tests
 
-- [ ] Add Browser DI test proving `AddStorefrontBrowserControllers()` registers all three controllers.
-- [ ] Add Browser DI test proving `AddStorefrontBrowserControllers()` does not register `StorefrontLocalApiClient` or WASM-only dependencies.
-- [ ] Update visual boundary validator to allow aggregate server registration and forbid individual controller registration from V2 server `Program.cs`.
-- [ ] Keep `V2.WASM Program.cs` test requiring `AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
-- [ ] Add/adjust host composition test proving V2 server uses only:
-  - [ ] `AddStorefrontApplication`.
-  - [ ] `AddStorefrontBrowserControllers`.
-  - [ ] `AddV2FoundationViews`.
-  - [ ] `UseStorefrontApplication`.
-  - [ ] `MapStorefrontApplication`.
+- [x] Add Browser DI test proving `AddStorefrontBrowserControllers()` registers all three controllers.
+- [x] Add Browser DI test proving `AddStorefrontBrowserControllers()` does not register `StorefrontLocalApiClient` or WASM-only dependencies.
+- [x] Update visual boundary validator to allow aggregate server registration and forbid individual controller registration from V2 server `Program.cs`.
+- [x] Keep `V2.WASM Program.cs` test requiring `AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
+- [x] Add/adjust host composition test proving V2 server uses only:
+  - [x] `AddStorefrontApplication`.
+  - [x] `AddStorefrontBrowserControllers`.
+  - [x] `AddV2FoundationViews`.
+  - [x] `UseStorefrontApplication`.
+  - [x] `MapStorefrontApplication`.
+  - Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore` passed with known MessagePack/Browserslist warnings.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontBrowserRuntimeFoundationTests|FullyQualifiedName~StorefrontApplicationBootstrapTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests" --logger "trx;LogFileName=browser-boundary-f183.trx" --blame-hang --blame-hang-timeout 5m` passed 46/46.
 
 ### Acceptance Criteria
 
-- [ ] V2 server Program no longer knows individual cart/checkout/account Browser capabilities.
-- [ ] Browser has separate server-prerender and WASM-runtime registration paths.
-- [ ] No WASM-only HttpClient setup enters the server host.
+- [x] V2 server Program no longer knows individual cart/checkout/account Browser capabilities.
+- [x] Browser has separate server-prerender and WASM-runtime registration paths.
+- [x] No WASM-only HttpClient setup enters the server host.
 
 ## Phase F1.84 - Visual Boundary Guardrail Tightening
 

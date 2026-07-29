@@ -207,6 +207,68 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
     }
 
     [Fact]
+    public void F1_83_SharedValidator_FailsServerBrowserRegistrationNegativeFixture()
+    {
+        var fixtureRoot = CreateFixtureRoot();
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "BadServer.csproj"),
+                """
+                <Project Sdk="Microsoft.NET.Sdk.Web">
+                  <ItemGroup>
+                    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />
+                    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+                    <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "Program.cs"),
+                """
+                using BlazorShop.Storefront.Browser;
+
+                var builder = WebApplication.CreateBuilder(args);
+                builder.Services.AddStorefrontApplication(builder.Configuration);
+                builder.Services.AddStorefrontBrowserCart();
+                builder.Services.AddStorefrontBrowserCheckout();
+                builder.Services.AddStorefrontBrowserAccount();
+                builder.Services.AddStorefrontBrowserRuntime(builder.HostEnvironment);
+                builder.Services.AddV2FoundationViews();
+                var app = builder.Build();
+                app.UseStorefrontApplication();
+                app.MapStorefrontApplication();
+                app.Run();
+                """);
+
+            var violations = validator.Validate(new StorefrontVisualConsumerProfile(
+                "BadServer",
+                fixtureRoot,
+                "BadServer.csproj",
+                AllowedProjectReferenceFragments:
+                [
+                    "BlazorShop.Storefront.Browser",
+                    "BlazorShop.Storefront.Components",
+                    "BlazorShop.Storefront.Presentation",
+                ],
+                AllowedPackageReferences: [],
+                AllowedSourceRelativePaths: []));
+
+            Assert.Contains(violations, violation => violation.Forbidden == "AddStorefrontBrowserCart");
+            Assert.Contains(violations, violation => violation.Forbidden == "AddStorefrontBrowserCheckout");
+            Assert.Contains(violations, violation => violation.Forbidden == "AddStorefrontBrowserAccount");
+            Assert.Contains(violations, violation => violation.Forbidden == "AddStorefrontBrowserRuntime");
+        }
+        finally
+        {
+            if (Directory.Exists(fixtureRoot))
+            {
+                Directory.Delete(fixtureRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void F1_69_SharedValidator_FailsWasmOrchestrationNegativeFixture()
     {
         var fixtureRoot = CreateFixtureRoot();

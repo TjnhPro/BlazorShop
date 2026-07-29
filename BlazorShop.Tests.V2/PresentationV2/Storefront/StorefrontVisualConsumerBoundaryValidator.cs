@@ -101,6 +101,14 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         "AddStorefrontBrowserAccount",
     ];
 
+    private static readonly string[] ForbiddenServerBrowserProgramTokens =
+    [
+        "AddStorefrontBrowserCart",
+        "AddStorefrontBrowserCheckout",
+        "AddStorefrontBrowserAccount",
+        "AddStorefrontBrowserRuntime",
+    ];
+
     private static readonly string[] ForbiddenBrowserCommandTokens =
     [
         ".application.cart.",
@@ -331,9 +339,20 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
             "Bootstrap files may compose the Storefront application and view registrations only; move service registration, middleware, endpoint mapping, and transport setup to Storefront Presentation or Browser runtime.",
             violations);
 
-        if (!fileName.Equals("Program.cs", StringComparison.Ordinal)
-            || !profile.Name.Contains("WASM", StringComparison.OrdinalIgnoreCase))
+        if (!fileName.Equals("Program.cs", StringComparison.Ordinal))
         {
+            return;
+        }
+
+        if (!profile.Name.Contains("WASM", StringComparison.OrdinalIgnoreCase))
+        {
+            ValidateSourceTokens(
+                relativePath,
+                source,
+                ForbiddenServerBrowserProgramTokens,
+                "Server visual hosts must use AddStorefrontBrowserControllers for prerender-safe controller registration and must not register WASM runtime transport or individual Browser capabilities.",
+                violations);
+
             return;
         }
 

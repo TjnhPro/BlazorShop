@@ -24,10 +24,17 @@ public static class StorefrontBrowserServiceCollectionExtensions
         services.AddScoped<IStorefrontAntiforgeryTokenReader, StorefrontAntiforgeryTokenReader>();
         services.AddScoped<StorefrontLocalApiClient>();
         services.AddScoped<IStorefrontBrowserCartEventPublisher, StorefrontBrowserCartEventPublisher>();
+        services.AddStorefrontBrowserControllers();
+
+        return services;
+    }
+
+    public static IServiceCollection AddStorefrontBrowserControllers(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
         services.AddStorefrontBrowserCart();
         services.AddStorefrontBrowserCheckout();
         services.AddStorefrontBrowserAccount();
-
         return services;
     }
 

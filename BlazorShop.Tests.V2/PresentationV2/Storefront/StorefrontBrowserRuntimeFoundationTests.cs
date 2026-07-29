@@ -276,9 +276,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             services.AddScoped<IStorefrontAntiforgeryTokenReader, StubAntiforgeryTokenReader>();
             services.AddScoped<StorefrontLocalApiClient>();
             services.AddScoped<IStorefrontBrowserCartEventPublisher, StubCartEventPublisher>();
-            services.AddStorefrontBrowserCart();
-            services.AddStorefrontBrowserCheckout();
-            services.AddStorefrontBrowserAccount();
+            services.AddStorefrontBrowserControllers();
 
             Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserCartController>(services));
             Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserCheckoutController>(services));
@@ -286,6 +284,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(ServiceLifetime.Scoped, FindLifetime<IStorefrontAntiforgeryTokenReader>(services));
             Assert.Equal(ServiceLifetime.Scoped, FindLifetime<StorefrontLocalApiClient>(services));
             Assert.Equal(ServiceLifetime.Scoped, FindLifetime<IStorefrontBrowserCartEventPublisher>(services));
+        }
+
+        [Fact]
+        public void AddStorefrontBrowserControllers_RegistersOnlyControllerServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddStorefrontBrowserControllers();
+
+            Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserCartController>(services));
+            Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserCheckoutController>(services));
+            Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserAccountController>(services));
+            Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(StorefrontLocalApiClient));
+            Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(IStorefrontAntiforgeryTokenReader));
+            Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(IStorefrontBrowserCartEventPublisher));
+            Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(HttpClient));
         }
 
         private static string ReadSourceTree(string relativeRoot)
