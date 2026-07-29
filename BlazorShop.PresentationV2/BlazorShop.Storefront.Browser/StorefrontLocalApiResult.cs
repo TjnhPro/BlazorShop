@@ -69,6 +69,21 @@ public sealed record StorefrontLocalApiError(
             string.IsNullOrWhiteSpace(response?.Message) ? null : response.Message);
     }
 
+    public static StorefrontLocalApiError Semantic(
+        HttpStatusCode statusCode,
+        string code,
+        string defaultMessage,
+        bool retryable)
+    {
+        return new StorefrontLocalApiError(
+            statusCode,
+            code,
+            TraceId: null,
+            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase),
+            retryable,
+            defaultMessage);
+    }
+
     private static string DefaultCode(HttpStatusCode statusCode)
     {
         var value = (int)statusCode;

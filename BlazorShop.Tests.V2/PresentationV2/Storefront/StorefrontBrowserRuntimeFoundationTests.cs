@@ -97,6 +97,79 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task LocalApiClient_HttpRequestExceptionReturnsRetryableNetworkError()
+        {
+            using var httpClient = new HttpClient(new ThrowingHandler(new HttpRequestException("offline")))
+            {
+                BaseAddress = new Uri("https://storefront.example/"),
+            };
+            var client = new StorefrontLocalApiClient(
+                httpClient,
+                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
+
+            var result = await client.GetAsync<MutationResult>("/api/cart");
+
+            Assert.False(result.Success);
+            Assert.Equal("network_error", result.Error?.Code);
+            Assert.True(result.Error?.Retryable);
+        }
+
+        [Fact]
+        public async Task LocalApiClient_TimeoutNotCausedByCallerCancellationReturnsRetryableTimeout()
+        {
+            using var httpClient = new HttpClient(new ThrowingHandler(new TaskCanceledException("timeout")))
+            {
+                BaseAddress = new Uri("https://storefront.example/"),
+            };
+            var client = new StorefrontLocalApiClient(
+                httpClient,
+                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
+
+            var result = await client.GetAsync<MutationResult>("/api/cart");
+
+            Assert.False(result.Success);
+            Assert.Equal("timeout", result.Error?.Code);
+            Assert.True(result.Error?.Retryable);
+        }
+
+        [Fact]
+        public async Task LocalApiClient_CallerCancellationPropagatesOperationCanceledException()
+        {
+            using var httpClient = new HttpClient(new ThrowingHandler(new TaskCanceledException("cancelled")))
+            {
+                BaseAddress = new Uri("https://storefront.example/"),
+            };
+            var client = new StorefrontLocalApiClient(
+                httpClient,
+                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync<MutationResult>("/api/cart", cancellation.Token));
+        }
+
+        [Fact]
+        public async Task LocalApiClient_MalformedSuccessfulJsonReturnsInvalidResponse()
+        {
+            var handler = new RecordingHandler(
+                HttpStatusCode.OK,
+                new StringContent("{ malformed json", Encoding.UTF8, "application/json"));
+            using var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://storefront.example/"),
+            };
+            var client = new StorefrontLocalApiClient(
+                httpClient,
+                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
+
+            var result = await client.GetAsync<MutationResult>("/api/cart");
+
+            Assert.False(result.Success);
+            Assert.Equal("invalid_response", result.Error?.Code);
+            Assert.True(result.Error?.Retryable);
+        }
+
+        [Fact]
         public async Task LocalApiClient_PreservesStructuredErrorDetails()
         {
             var fieldErrors = new Dictionary<string, string[]>
@@ -332,6 +405,21 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     Content = content,
                     RequestMessage = request,
                 });
+            }
+        }
+
+        private sealed class ThrowingHandler : HttpMessageHandler
+        {
+            private readonly Exception _exception;
+
+            public ThrowingHandler(Exception exception)
+            {
+                _exception = exception;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                return Task.FromException<HttpResponseMessage>(_exception);
             }
         }
 

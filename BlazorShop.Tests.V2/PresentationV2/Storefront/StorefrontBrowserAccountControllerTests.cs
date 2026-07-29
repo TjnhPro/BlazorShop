@@ -104,6 +104,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task SaveProfileAsync_ExceptionResetsSavingFlag()
+        {
+            var controller = CreateController(new FailingHandler());
+            controller.InitializeProfile(CreateProfile("Original Buyer"), null, null, StorefrontFeatureDataMode.InitialSnapshot, ProfileActions);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.SaveProfileAsync());
+
+            Assert.False(controller.State.ProfileSaving);
+        }
+
+        [Fact]
         public async Task HydrateAddressesAsync_LoadsAddressesAndBuildsForms()
         {
             var addressId = Guid.NewGuid();
@@ -150,6 +161,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"fullName\":\"New Address\"", handler.RequestBodies[0], StringComparison.Ordinal);
             Assert.Contains("\"isDefaultShipping\":true", handler.RequestBodies[0], StringComparison.Ordinal);
             Assert.Single(controller.State.Addresses);
+        }
+
+        [Fact]
+        public async Task CreateAddressAsync_ExceptionResetsSavingFlag()
+        {
+            var controller = CreateController(new FailingHandler());
+            controller.InitializeAddresses([], null, null, StorefrontFeatureDataMode.InitialSnapshot, AddressActions);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.CreateAddressAsync());
+
+            Assert.False(controller.State.AddressSaving);
         }
 
         [Fact]
@@ -353,6 +375,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Null(controller.State.PasswordError);
         }
 
+        [Fact]
+        public async Task ChangePasswordAsync_ExceptionResetsSavingFlag()
+        {
+            var controller = CreateController(new FailingHandler());
+            controller.InitializePassword(null, null, PasswordActions);
+            controller.State.PasswordForm.CurrentPassword = "old-password";
+            controller.State.PasswordForm.NewPassword = "new-password";
+            controller.State.PasswordForm.ConfirmPassword = "new-password";
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.ChangePasswordAsync());
+
+            Assert.False(controller.State.PasswordSaving);
+        }
+
         private static readonly StorefrontAccountProfileActionDescriptor ProfileActions = new(
             "/account/profile",
             "/api/account/profile",
@@ -377,7 +413,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "/api/account/orders/{orderReference}/receipt",
             "/account/orders/{orderReference}");
 
-        private static StorefrontBrowserAccountController CreateController(QueueingHandler handler)
+        private static StorefrontBrowserAccountController CreateController(HttpMessageHandler handler)
         {
             var services = new ServiceCollection();
             services.AddSingleton(_ => new HttpClient(handler)
@@ -491,6 +527,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 var json = JsonSerializer.Serialize(value, new JsonSerializerOptions(JsonSerializerDefaults.Web));
                 return new StringContent(json, Encoding.UTF8, "application/json");
+            }
+        }
+
+        private sealed class FailingHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                return Task.FromException<HttpResponseMessage>(new InvalidOperationException("transport failed"));
             }
         }
     }

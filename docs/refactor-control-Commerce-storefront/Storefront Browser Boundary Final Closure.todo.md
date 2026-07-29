@@ -267,46 +267,49 @@ Goal: normalize browser transport failures and guarantee mutation flags reset on
 
 ### Implementation
 
-- [ ] Extend `StorefrontLocalApiError` or related browser error model with semantic codes:
-  - [ ] `network_error`.
-  - [ ] `timeout`.
-  - [ ] `invalid_response`.
-  - [ ] `request_cancelled` if a non-propagated cancellation result is needed.
-- [ ] Update `StorefrontLocalApiClient.SendAsync()`:
-  - [ ] Propagate `OperationCanceledException` when the caller cancellation token is cancelled.
-  - [ ] Map timeout `TaskCanceledException` not caused by caller cancellation to a retryable timeout result.
-  - [ ] Map `HttpRequestException` to a retryable network error result.
-  - [ ] Map malformed JSON on success responses to an invalid-response result.
-  - [ ] Preserve current same-origin route validation behavior.
-  - [ ] Preserve current non-success HTTP error body parsing behavior.
-- [ ] Update cart controller mutation methods:
-  - [ ] Use `try/finally` for line mutation busy states where a throw can leave state stuck.
-  - [ ] Ensure failed transport results set user-safe error state and return.
-- [ ] Update checkout controller:
-  - [ ] Wrap `PlaceOrderAsync` loading state in `try/finally`.
-  - [ ] Wrap `LoadAsync` loading state in `try/finally`.
-  - [ ] Do not swallow caller cancellation as a user-facing timeout.
-- [ ] Update account controller:
-  - [ ] Wrap profile save, password change, address mutations, and order load busy/saving flags in `try/finally`.
-  - [ ] Surface semantic browser errors through existing state fields without hardcoding final storefront copy where practical.
-- [ ] Keep technical fallback message only as a non-final default. Storefront visual host/localization remains responsible for final copy.
+- [x] Extend `StorefrontLocalApiError` or related browser error model with semantic codes:
+  - [x] `network_error`.
+  - [x] `timeout`.
+  - [x] `invalid_response`.
+  - [x] `request_cancelled` if a non-propagated cancellation result is needed.
+    - Caller cancellation is propagated instead of converted to a result, so no `request_cancelled` result code was needed.
+- [x] Update `StorefrontLocalApiClient.SendAsync()`:
+  - [x] Propagate `OperationCanceledException` when the caller cancellation token is cancelled.
+  - [x] Map timeout `TaskCanceledException` not caused by caller cancellation to a retryable timeout result.
+  - [x] Map `HttpRequestException` to a retryable network error result.
+  - [x] Map malformed JSON on success responses to an invalid-response result.
+  - [x] Preserve current same-origin route validation behavior.
+  - [x] Preserve current non-success HTTP error body parsing behavior.
+- [x] Update cart controller mutation methods:
+  - [x] Use `try/finally` for line mutation busy states where a throw can leave state stuck.
+  - [x] Ensure failed transport results set user-safe error state and return.
+- [x] Update checkout controller:
+  - [x] Wrap `PlaceOrderAsync` loading state in `try/finally`.
+  - [x] Wrap `LoadAsync` loading state in `try/finally`.
+  - [x] Do not swallow caller cancellation as a user-facing timeout.
+- [x] Update account controller:
+  - [x] Wrap profile save, password change, address mutations, and order load busy/saving flags in `try/finally`.
+  - [x] Surface semantic browser errors through existing state fields without hardcoding final storefront copy where practical.
+- [x] Keep technical fallback message only as a non-final default. Storefront visual host/localization remains responsible for final copy.
 
 ### Tests
 
-- [ ] `StorefrontLocalApiClient` test: `HttpRequestException` returns `network_error` and retryable metadata.
-- [ ] `StorefrontLocalApiClient` test: timeout not caused by caller cancellation returns `timeout`.
-- [ ] `StorefrontLocalApiClient` test: caller cancellation propagates `OperationCanceledException`.
-- [ ] `StorefrontLocalApiClient` test: HTTP 200 with malformed JSON returns `invalid_response`.
-- [ ] `StorefrontLocalApiClient` test: empty successful body stays supported.
-- [ ] Checkout controller test: exception/result failure always resets `State.Loading`.
-- [ ] Account controller tests: save/address mutation failures always reset saving flags.
-- [ ] Cart controller tests: line mutation failures always reset busy flags.
+- [x] `StorefrontLocalApiClient` test: `HttpRequestException` returns `network_error` and retryable metadata.
+- [x] `StorefrontLocalApiClient` test: timeout not caused by caller cancellation returns `timeout`.
+- [x] `StorefrontLocalApiClient` test: caller cancellation propagates `OperationCanceledException`.
+- [x] `StorefrontLocalApiClient` test: HTTP 200 with malformed JSON returns `invalid_response`.
+- [x] `StorefrontLocalApiClient` test: empty successful body stays supported.
+- [x] Checkout controller test: exception/result failure always resets `State.Loading`.
+- [x] Account controller tests: save/address mutation failures always reset saving flags.
+- [x] Cart controller tests: line mutation failures always reset busy flags.
+  - Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore` passed with known MessagePack/Browserslist warnings.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontBrowserRuntimeFoundationTests|FullyQualifiedName~StorefrontBrowserCartControllerTests|FullyQualifiedName~StorefrontBrowserCheckoutControllerTests|FullyQualifiedName~StorefrontBrowserAccountControllerTests" --logger "trx;LogFileName=browser-boundary-f182.trx" --blame-hang --blame-hang-timeout 5m` passed 57/57.
 
 ### Acceptance Criteria
 
-- [ ] Browser transport failures produce stable semantic errors instead of unhandled exceptions where appropriate.
-- [ ] Caller cancellation is not mislabeled as timeout.
-- [ ] Loading/saving/busy flags cannot remain stuck after failed browser requests.
+- [x] Browser transport failures produce stable semantic errors instead of unhandled exceptions where appropriate.
+- [x] Caller cancellation is not mislabeled as timeout.
+- [x] Loading/saving/busy flags cannot remain stuck after failed browser requests.
 
 ## Phase F1.83 - Browser Registration And Host Composition Cleanup
 

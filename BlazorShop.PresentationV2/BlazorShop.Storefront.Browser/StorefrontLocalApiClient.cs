@@ -75,20 +75,51 @@ public sealed class StorefrontLocalApiClient
             request.Content = JsonContent.Create(body, options: JsonOptions);
         }
 
-        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            return StorefrontLocalApiResult<TResponse>.Failed(ReadError(response.StatusCode, responseBody));
-        }
+            using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                return StorefrontLocalApiResult<TResponse>.Failed(ReadError(response.StatusCode, responseBody));
+            }
 
-        if (string.IsNullOrWhiteSpace(responseBody))
+            if (string.IsNullOrWhiteSpace(responseBody))
+            {
+                return StorefrontLocalApiResult<TResponse>.Succeeded(response.StatusCode, default);
+            }
+
+            var data = JsonSerializer.Deserialize<TResponse>(responseBody, JsonOptions);
+            return StorefrontLocalApiResult<TResponse>.Succeeded(response.StatusCode, data);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return StorefrontLocalApiResult<TResponse>.Succeeded(response.StatusCode, default);
+            throw;
         }
-
-        var data = JsonSerializer.Deserialize<TResponse>(responseBody, JsonOptions);
-        return StorefrontLocalApiResult<TResponse>.Succeeded(response.StatusCode, data);
+        catch (TaskCanceledException)
+        {
+            return StorefrontLocalApiResult<TResponse>.Failed(StorefrontLocalApiError.Semantic(
+                System.Net.HttpStatusCode.RequestTimeout,
+                "timeout",
+                "The storefront request timed out. Try again.",
+                retryable: true));
+        }
+        catch (HttpRequestException)
+        {
+            return StorefrontLocalApiResult<TResponse>.Failed(StorefrontLocalApiError.Semantic(
+                System.Net.HttpStatusCode.ServiceUnavailable,
+                "network_error",
+                "The storefront network request could not be completed. Try again.",
+                retryable: true));
+        }
+        catch (JsonException)
+        {
+            return StorefrontLocalApiResult<TResponse>.Failed(StorefrontLocalApiError.Semantic(
+                System.Net.HttpStatusCode.OK,
+                "invalid_response",
+                "The storefront response could not be read. Try again.",
+                retryable: true));
+        }
     }
 
     private static string NormalizeLocalRoute(string route)

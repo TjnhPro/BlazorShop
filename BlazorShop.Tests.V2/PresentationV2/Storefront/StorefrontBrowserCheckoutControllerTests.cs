@@ -203,6 +203,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.False(controller.State.Loading);
         }
 
+        [Fact]
+        public async Task RefreshAsync_ExceptionResetsLoading()
+        {
+            var sessionId = Guid.NewGuid();
+            var controller = CreateController(new FailingHandler());
+            controller.Initialize(CreateState(sessionId, cartVersion: 1, checkoutVersion: 1), showPanel: true, StorefrontFeatureDataMode.BrowserFetch, Actions);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.RefreshAsync());
+
+            Assert.False(controller.State.Loading);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_ExceptionResetsLoading()
+        {
+            var sessionId = Guid.NewGuid();
+            var controller = CreateController(new FailingHandler());
+            controller.Initialize(CreateState(sessionId, cartVersion: 1, checkoutVersion: 1), showPanel: true, StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.PlaceOrderAsync());
+
+            Assert.False(controller.State.Loading);
+        }
+
         private static readonly StorefrontCheckoutActionDescriptor Actions = new(
             "/api/checkout",
             "/api/checkout/shipping-method",
@@ -210,7 +234,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "/api/checkout/review",
             "/api/checkout/place-order");
 
-        private static StorefrontBrowserCheckoutController CreateController(QueueingHandler handler)
+        private static StorefrontBrowserCheckoutController CreateController(HttpMessageHandler handler)
         {
             var services = new ServiceCollection();
             services.AddSingleton(_ => new HttpClient(handler)
@@ -312,6 +336,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 var json = JsonSerializer.Serialize(value, new JsonSerializerOptions(JsonSerializerDefaults.Web));
                 return new StringContent(json, Encoding.UTF8, "application/json");
+            }
+        }
+
+        private sealed class FailingHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                return Task.FromException<HttpResponseMessage>(new InvalidOperationException("transport failed"));
             }
         }
     }

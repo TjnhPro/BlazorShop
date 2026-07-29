@@ -204,6 +204,42 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal("Cart changed. Refresh and try again.", controller.State.Alerts.Single().Message);
         }
 
+        [Fact]
+        public async Task UpdateQuantityAsync_ExceptionResetsBusyLine()
+        {
+            var lineId = Guid.NewGuid();
+            var controller = CreateController(new FailingHandler(), new RecordingCartEventPublisher());
+            controller.Initialize(CreateCart(lineId), [], StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.UpdateQuantityAsync(lineId, "2"));
+
+            Assert.False(controller.State.BusyLineId.HasValue);
+        }
+
+        [Fact]
+        public async Task RemoveLineAsync_ExceptionResetsBusyLine()
+        {
+            var lineId = Guid.NewGuid();
+            var controller = CreateController(new FailingHandler(), new RecordingCartEventPublisher());
+            controller.Initialize(CreateCart(lineId), [], StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.RemoveLineAsync(lineId));
+
+            Assert.False(controller.State.BusyLineId.HasValue);
+        }
+
+        [Fact]
+        public async Task ClearAsync_ExceptionResetsClearingState()
+        {
+            var lineId = Guid.NewGuid();
+            var controller = CreateController(new FailingHandler(), new RecordingCartEventPublisher());
+            controller.Initialize(CreateCart(lineId), [], StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => controller.ClearAsync());
+
+            Assert.False(controller.State.Clearing);
+        }
+
         private static readonly StorefrontCartActionDescriptor Actions = new(
             "/api/cart",
             "/api/cart/lines/{lineId}",
@@ -366,6 +402,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     Content = new StringContent(json, Encoding.UTF8, "application/json"),
                     RequestMessage = request,
                 };
+            }
+        }
+
+        private sealed class FailingHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                return Task.FromException<HttpResponseMessage>(new InvalidOperationException("transport failed"));
             }
         }
     }

@@ -111,17 +111,24 @@ public sealed class StorefrontBrowserCheckoutController : IStorefrontBrowserChec
         State.ApiAvailable = true;
         State.Loading = true;
         State.Error = null;
-        var result = await apiClient.PostJsonAsync<StorefrontBrowserCheckoutPlaceOrderRequest, StorefrontBrowserCheckoutPlaceOrderResult>(
-            _actions.PlaceOrderRoute,
-            new StorefrontBrowserCheckoutPlaceOrderRequest
-            {
-                CheckoutSessionId = sessionId,
-                ExpectedCheckoutVersion = State.Checkout.CheckoutVersion,
-                ExpectedCartVersion = State.Checkout.CartVersion,
-                IdempotencyKey = _idempotencyKey,
-            },
-            cancellationToken).ConfigureAwait(false);
-        State.Loading = false;
+        StorefrontLocalApiResult<StorefrontBrowserCheckoutPlaceOrderResult> result;
+        try
+        {
+            result = await apiClient.PostJsonAsync<StorefrontBrowserCheckoutPlaceOrderRequest, StorefrontBrowserCheckoutPlaceOrderResult>(
+                _actions.PlaceOrderRoute,
+                new StorefrontBrowserCheckoutPlaceOrderRequest
+                {
+                    CheckoutSessionId = sessionId,
+                    ExpectedCheckoutVersion = State.Checkout.CheckoutVersion,
+                    ExpectedCartVersion = State.Checkout.CartVersion,
+                    IdempotencyKey = _idempotencyKey,
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            State.Loading = false;
+        }
 
         if (!result.Success || result.Data is null)
         {
@@ -168,8 +175,15 @@ public sealed class StorefrontBrowserCheckoutController : IStorefrontBrowserChec
         State.ApiAvailable = true;
         State.Loading = true;
         State.Error = null;
-        var result = await action(apiClient).ConfigureAwait(false);
-        State.Loading = false;
+        StorefrontLocalApiResult<StorefrontBrowserCheckoutState> result;
+        try
+        {
+            result = await action(apiClient).ConfigureAwait(false);
+        }
+        finally
+        {
+            State.Loading = false;
+        }
         if (result.Success && result.Data is not null)
         {
             ApplyCheckoutState(result.Data);

@@ -105,21 +105,28 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
         State.ProfileSaving = true;
         State.ProfileError = null;
         State.ProfileSuccess = null;
-        var result = await apiClient.PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(
-            _profileActions.SaveProfileRoute,
-            new StorefrontBrowserCustomerProfileUpdateRequest
-            {
-                Email = State.ProfileForm.Email,
-                FullName = State.ProfileForm.FullName,
-                FirstName = State.ProfileForm.FirstName,
-                LastName = State.ProfileForm.LastName,
-                Company = State.ProfileForm.Company,
-                PhoneNumber = State.ProfileForm.PhoneNumber,
-                PreferredLanguage = State.ProfileForm.PreferredLanguage,
-                PreferredCurrencyCode = State.ProfileForm.PreferredCurrencyCode,
-            },
-            cancellationToken).ConfigureAwait(false);
-        State.ProfileSaving = false;
+        StorefrontLocalApiResult<StorefrontBrowserCustomerProfile> result;
+        try
+        {
+            result = await apiClient.PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(
+                _profileActions.SaveProfileRoute,
+                new StorefrontBrowserCustomerProfileUpdateRequest
+                {
+                    Email = State.ProfileForm.Email,
+                    FullName = State.ProfileForm.FullName,
+                    FirstName = State.ProfileForm.FirstName,
+                    LastName = State.ProfileForm.LastName,
+                    Company = State.ProfileForm.Company,
+                    PhoneNumber = State.ProfileForm.PhoneNumber,
+                    PreferredLanguage = State.ProfileForm.PreferredLanguage,
+                    PreferredCurrencyCode = State.ProfileForm.PreferredCurrencyCode,
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            State.ProfileSaving = false;
+        }
         if (result.Success && result.Data is not null)
         {
             State.Profile = result.Data;
@@ -318,16 +325,23 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
             return true;
         }
 
-        var result = await apiClient.PostJsonAsync<object, StorefrontBrowserAccountCommandResult>(
-            _passwordActions.ChangePasswordRoute,
-            new
-            {
-                State.PasswordForm.CurrentPassword,
-                State.PasswordForm.NewPassword,
-                State.PasswordForm.ConfirmPassword,
-            },
-            cancellationToken).ConfigureAwait(false);
-        State.PasswordSaving = false;
+        StorefrontLocalApiResult<StorefrontBrowserAccountCommandResult> result;
+        try
+        {
+            result = await apiClient.PostJsonAsync<object, StorefrontBrowserAccountCommandResult>(
+                _passwordActions.ChangePasswordRoute,
+                new
+                {
+                    State.PasswordForm.CurrentPassword,
+                    State.PasswordForm.NewPassword,
+                    State.PasswordForm.ConfirmPassword,
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            State.PasswordSaving = false;
+        }
         if (result.Success && result.Data?.Success == true)
         {
             State.PasswordForm.Clear();
@@ -352,8 +366,15 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
         State.AddressSaving = true;
         State.AddressError = null;
         State.AddressSuccess = null;
-        var result = await action(apiClient).ConfigureAwait(false);
-        State.AddressSaving = false;
+        StorefrontLocalApiResult<T> result;
+        try
+        {
+            result = await action(apiClient).ConfigureAwait(false);
+        }
+        finally
+        {
+            State.AddressSaving = false;
+        }
         if (!result.Success)
         {
             State.AddressError = result.Message;
