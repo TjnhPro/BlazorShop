@@ -5,6 +5,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     using Xunit;
 
+    [Collection("V2 serial host and process tests")]
     public sealed class StorefrontGeneratedClientFoundationTests
     {
         private const string ClientProjectPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj";

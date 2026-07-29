@@ -362,35 +362,39 @@ Goal: reduce unnecessary serial execution without making WebApplicationFactory, 
 
 ### Implementation
 
-- [ ] Inventory test classes that require serial execution:
-  - [ ] Shared package feed/output folders.
-  - [ ] Generated source/output folders.
-  - [ ] WebApplicationFactory tests sharing mutable host state.
-  - [ ] External process tests.
-- [ ] Replace assembly-wide `DisableTestParallelization = true` only if safe.
-- [ ] Prefer xUnit collection-level serialization for unsafe groups.
-- [ ] Allow pure unit/source/static guardrail tests to run in parallel.
-- [ ] Update `docs/architecture/07-deployment-and-local-run.md` if the active V2 test behavior changes.
+- [x] Inventory test classes that require serial execution:
+  - [x] Shared package feed/output folders.
+  - [x] Generated source/output folders.
+  - [x] WebApplicationFactory tests sharing mutable host state.
+  - [x] External process tests.
+- [x] Replace assembly-wide `DisableTestParallelization = true` only if safe.
+  - Removed `BlazorShop.Tests.V2/TestAssemblyConfiguration.cs`.
+- [x] Prefer xUnit collection-level serialization for unsafe groups.
+  - Added `V2 serial host and process tests` and applied it to WebApplicationFactory host tests plus fixed-output process/package tests.
+- [x] Allow pure unit/source/static guardrail tests to run in parallel.
+- [x] Update `docs/architecture/07-deployment-and-local-run.md` if the active V2 test behavior changes.
 
 ### Tests
 
-- [ ] Run focused architecture and Storefront tests with hang guard:
+- [x] Run focused architecture and Storefront tests with hang guard:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~Architecture|FullyQualifiedName~PresentationV2.Storefront" --logger "trx;LogFileName=parallel-boundary-f177.trx" --blame-hang --blame-hang-timeout 10m
 ```
 
-- [ ] If parallelization changes, run the same focused command twice to catch race flakiness.
+- [x] If parallelization changes, run the same focused command twice to catch race flakiness.
+  - First run: passed 618/618 in `1m42s`; TRX `BlazorShop.Tests.V2/TestResults/parallel-boundary-f177.trx`.
+  - Rerun: passed 618/618 in `1m38s`; TRX `BlazorShop.Tests.V2/TestResults/parallel-boundary-f177-rerun.trx`.
 
 ### Acceptance Criteria
 
-- [ ] Serial-only tests are isolated by collection or equivalent mechanism.
-- [ ] Pure tests are no longer blocked by global serial execution, if safe.
-- [ ] No file/package output races occur in repeated focused runs.
+- [x] Serial-only tests are isolated by collection or equivalent mechanism.
+- [x] Pure tests are no longer blocked by global serial execution, if safe.
+- [x] No file/package output races occur in repeated focused runs.
 
 ### Commit
 
-- [ ] Commit message: `F1.77 narrow V2 test parallelization boundary`
+- [x] Commit message: `F1.77 narrow V2 test parallelization boundary`
 
 ## Phase F1.78 - Full Release Test Performance Closure
 

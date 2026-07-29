@@ -18,6 +18,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
     using CommerceNodeProgram = CommerceNodeApi::Program;
 
+    [Collection("V2 serial host and process tests")]
     public sealed class CommerceNodeStorefrontPaymentContractTests : IClassFixture<WebApplicationFactory<CommerceNodeProgram>>
     {
         private readonly WebApplicationFactory<CommerceNodeProgram> factory;

@@ -21,6 +21,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using StorefrontContractMappings = CommerceNodeApi::BlazorShop.CommerceNode.API.Contracts.Storefront.StorefrontContractMappings;
     using StorefrontProductCatalogQuery = CommerceNodeApi::BlazorShop.CommerceNode.API.Contracts.Storefront.StorefrontProductCatalogQuery;
 
+    [Collection("V2 serial host and process tests")]
     public sealed class CommerceNodeStorefrontOpenApiContractTests : IClassFixture<WebApplicationFactory<CommerceNodeProgram>>
     {
         private const string StorefrontSwaggerPath = "/swagger/storefront/swagger.json";

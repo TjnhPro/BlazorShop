@@ -8,6 +8,7 @@ namespace BlazorShop.Tests.Architecture
 
     using Xunit;
 
+    [Collection("V2 serial host and process tests")]
     public sealed class StorefrontStarterFoundationBoundaryTests
     {
         private static readonly string[] StarterProjectPaths =

@@ -4,6 +4,7 @@ namespace BlazorShop.Tests.Architecture
 
     using Xunit;
 
+    [Collection("V2 serial host and process tests")]
     public sealed class LegacyRemovalGuardrailTests
     {
         private static readonly TimeSpan ProcessTimeout = TimeSpan.FromMinutes(3);

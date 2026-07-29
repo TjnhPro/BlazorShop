@@ -64,7 +64,7 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 `BlazorShop.sln` is now the V2 canonical solution. It includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`. Legacy `BlazorShop.Presentation/*`, `BlazorShop.AppHost`, the old mixed `BlazorShop.Tests` project, and the temporary `BlazorShop.V2.slnf` transition file have been removed.
 
-`BlazorShop.Tests.V2` owns the active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront V2 WASM/browser host tests directly. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
+`BlazorShop.Tests.V2` owns the active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront V2 WASM/browser host tests directly. Pure unit/source guardrail tests may run in parallel. WebApplicationFactory host tests and process/package tests that touch fixed output folders or process-wide settings are isolated in the `V2 serial host and process tests` xUnit collection. Long-running local or CI test commands should include `--blame-hang --blame-hang-timeout` so child-process or host-startup failures cannot hang indefinitely.
 
 GitHub Actions uses `ci-v2` as the active release gate. That job restores/builds `BlazorShop.sln`, runs `BlazorShop.Tests.V2`, validates the canonical production compose file, and builds the V2 container images. The old mixed `BlazorShop.Tests` project has been retired.
 

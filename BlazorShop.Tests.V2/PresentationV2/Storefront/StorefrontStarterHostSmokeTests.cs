@@ -40,6 +40,7 @@ using RuntimeProductSelectionPreviewRequest = BlazorShop.Storefront.Client.Store
 using RuntimeProductSelectionPreviewResponse = BlazorShop.Storefront.Client.StorefrontProductSelectionPreviewResponse;
 using RuntimeSearchSuggestionResponse = BlazorShop.Storefront.Client.StorefrontSearchSuggestionResponse;
 
+[Collection("V2 serial host and process tests")]
 public sealed class StorefrontStarterHostSmokeTests : IClassFixture<WebApplicationFactory<StarterProgram>>
 {
     private readonly WebApplicationFactory<StarterProgram> factory;

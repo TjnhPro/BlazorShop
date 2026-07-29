@@ -27,6 +27,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using ClientPaymentNextActionResponse = BlazorShop.Storefront.Client.StorefrontPaymentNextActionResponse;
     using StorefrontV2Program = StorefrontV2::Program;
 
+    [Collection("V2 serial host and process tests")]
     public sealed class StorefrontV2HostSmokeTests : IClassFixture<WebApplicationFactory<StorefrontV2Program>>
     {
         private const string HttpClientResilienceEnvironmentVariable = "ServiceDefaults__HttpClientResilience__Enabled";
