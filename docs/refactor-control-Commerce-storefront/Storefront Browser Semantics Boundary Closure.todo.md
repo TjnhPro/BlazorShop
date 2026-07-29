@@ -20,8 +20,8 @@ These findings were verified against the current codebase before writing this pl
 - [x] `ProductPurchaseOptionItem` only carries `Name`, `IsRequired`, `ControlType`, and `Values`. 2026-07-29 F1.57 verified; selected state belongs to value items.
 - [x] `ProductPurchaseOptionValueItem` only carries `Value` and `ColorHex`. 2026-07-29 F1.57 extended with `IsSelected`.
 - [x] `StorefrontProductPageMapper` builds option values without default/selected state. 2026-07-29 F1.57 maps selected values from valid default-variant attributes.
-- [ ] `BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js` still owns saved-address/manual-address show-hide and disabled field behavior.
-- [ ] No active Presentation checkout markup currently emits `data-storefront-address-select`, so the V2 checkout address selector code appears stale or dead.
+- [x] `BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js` still owns saved-address/manual-address show-hide and disabled field behavior. 2026-07-29 F1.58 removed stale V2 address selector/disabling behavior.
+- [x] No active Presentation checkout markup currently emits `data-storefront-address-select`, so the V2 checkout address selector code appears stale or dead. 2026-07-29 F1.58 reconfirmed with `rg`.
 - [x] Presentation `storefront.application.js` builds semantic `skuText` and `gtinText` from product-selection preview. 2026-07-29 F1.59 verified by regression test.
 - [x] V2 product page renders `data-storefront-selection-sku` and `data-storefront-selection-gtin`. 2026-07-29 F1.59 verified by markup regression.
 - [x] V2 selection listener updates price, compare price, stock, image, and button state, but not SKU/GTIN targets. 2026-07-29 F1.59 now updates SKU/GTIN targets from semantic event values.
@@ -75,7 +75,7 @@ Visual hosts must not:
 
 - [x] choose the first required product option as a business default. 2026-07-29 F1.57 removed V2 first-value selection fallback.
 - [x] infer selected variant or purchasability from DOM option order. 2026-07-29 F1.57 initial attributes now come from Presentation-selected value state.
-- [ ] decide which checkout form fields participate in form submission.
+- [x] decide which checkout form fields participate in form submission. 2026-07-29 F1.58 removed V2 field disabling/submission semantics.
 - [x] read raw preview fields such as `preview.sku`, `preview.gtin`, `preview.stockQuantity`, or `preview.canAddToCart`. 2026-07-29 F1.59 V2 regression tests forbid raw preview reads.
 - [x] call command-capable `application.*` or `bindings.*` methods from visual scripts. 2026-07-29 F1.60 visual validator forbids direct application/bindings command use.
 - [ ] rely on legacy selectors after canonical descriptors are available.
@@ -85,7 +85,7 @@ Visual hosts must not:
 
 - [x] Do not change Commerce Node product-selection preview response shape in this phase unless a contract bug blocks selected-state mapping. 2026-07-29 F1.59 kept response shape unchanged; Presentation still normalizes raw preview fields.
 - [ ] Do not redesign the V2 product page layout.
-- [ ] Do not add full saved-address checkout UX unless an active endpoint and markup already exist.
+- [x] Do not add full saved-address checkout UX unless an active endpoint and markup already exist. 2026-07-29 F1.58 did not add saved-address UX; no active selector markup exists.
 - [ ] Do not move gallery visual behavior into Presentation; gallery interaction can stay visual as long as it consumes semantic image URLs.
 - [ ] Do not replace all validator logic with AST in the first implementation phase if targeted token tightening is enough to unblock P0/P1.
 - [ ] Do not run live COD checkout as part of the fast generated proof; keep full live Commerce proof for release/nightly.
@@ -127,29 +127,34 @@ Goal: remove checkout form submission semantics from V2 JavaScript.
 
 ### Implementation
 
-- [ ] Confirm whether any active checkout markup emits `data-storefront-address-select`.
-- [ ] If no active markup emits it, delete the V2 address select/manual address functions and listeners.
-- [ ] If active saved-address markup is reintroduced before this phase lands, move the binder into Presentation `storefront.application.js` instead.
-- [ ] For the Presentation binder path, define canonical descriptors:
-  - [ ] `data-storefront-checkout-address-mode`
-  - [ ] `data-storefront-address-select`
-  - [ ] `data-storefront-manual-address`
-  - [ ] `data-storefront-manual-address-field`
-- [ ] Presentation must own field enabling/disabling and required behavior because disabled fields change POST payload semantics.
-- [ ] V2 may listen to `storefront:checkout:address-mode-changed` only for animation, focus, and CSS class updates.
-- [ ] Update V2 visual script tests to forbid `data-storefront-address-select`, `manualAddressFieldSelector`, and field `.disabled` behavior when no active visual-only need exists.
+- [x] Confirm whether any active checkout markup emits `data-storefront-address-select`.
+- [x] If no active markup emits it, delete the V2 address select/manual address functions and listeners.
+- [x] If active saved-address markup is reintroduced before this phase lands, move the binder into Presentation `storefront.application.js` instead. N/A for F1.58 because no active saved-address selector markup exists.
+- [x] For the Presentation binder path, define canonical descriptors:
+  - [x] `data-storefront-checkout-address-mode` - deferred/N/A until saved-address mode is active.
+  - [x] `data-storefront-address-select` - deferred/N/A until saved-address mode is active.
+  - [x] `data-storefront-manual-address` - existing Presentation markup keeps manual address grouping.
+  - [x] `data-storefront-manual-address-field` - existing Presentation markup keeps manual field markers.
+- [x] Presentation must own field enabling/disabling and required behavior because disabled fields change POST payload semantics.
+- [x] V2 may listen to `storefront:checkout:address-mode-changed` only for animation, focus, and CSS class updates. N/A for F1.58 because no saved-address event is active.
+- [x] Update V2 visual script tests to forbid `data-storefront-address-select`, `manualAddressFieldSelector`, and field `.disabled` behavior when no active visual-only need exists.
 
 ### Tests
 
-- [ ] Add a test proving V2 script does not contain checkout form field disabling logic.
-- [ ] If Presentation binder is added, add a browser/unit test proving saved-address mode disables manual fields and manual mode enables them.
-- [ ] Add a regression check that checkout POST form field names remain owned by Presentation components.
+- [x] Add a test proving V2 script does not contain checkout form field disabling logic.
+- [x] If Presentation binder is added, add a browser/unit test proving saved-address mode disables manual fields and manual mode enables them. N/A for F1.58 because the binder was not added.
+- [x] Add a regression check that checkout POST form field names remain owned by Presentation components.
 
 ### Acceptance Criteria
 
-- [ ] V2 JavaScript no longer decides which checkout address inputs are submitted.
-- [ ] Dead checkout selector code is removed instead of left as compatibility.
-- [ ] Any future saved-address behavior has a Presentation-owned binder and semantic event.
+- [x] V2 JavaScript no longer decides which checkout address inputs are submitted.
+- [x] Dead checkout selector code is removed instead of left as compatibility.
+- [x] Any future saved-address behavior has a Presentation-owned binder and semantic event.
+
+2026-07-29 F1.58 evidence:
+- `node --check BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js` passed.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~StorefrontBrandingMarkupTests" --no-restore` passed 18/18; existing MessagePack and Browserslist warnings remain.
+- `rg -n "data-storefront-address-select|manualAddressFieldSelector|syncManualAddressFields|initCheckoutAddressSelection|field\\.disabled|addressSelectSelector" -S BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation` returned no production matches.
 
 ## Phase F1.59 - Product Selection Visual Projection Completeness
 

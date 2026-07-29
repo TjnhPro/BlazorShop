@@ -389,13 +389,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<StorefrontCheckoutAddressFields", markup);
             Assert.Contains("data-storefront-manual-address", addressFields);
             Assert.Contains("data-storefront-manual-address-field", addressFields);
+            Assert.Contains("StorefrontCheckoutFormFieldNames.ShippingFullName", addressFields, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckoutFormFieldNames.ShippingCountryCode", addressFields, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckoutFormFieldNames.ShippingPostalCode", addressFields, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeAddressFacade addressFacade", pageService);
             Assert.Contains("addressFacade.ListCountriesAsync", pageService);
             Assert.Contains("addressFacade.ListStatesAsync", pageService);
             Assert.Contains("addressFacade.GetConfigurationAsync", pageService);
             Assert.Contains("GetCustomerAddressesAsync(session.AccessToken!", accountEndpoints);
-            Assert.Contains("syncManualAddressFields", script);
-            Assert.Contains("field.disabled = useSavedAddress", script);
+            Assert.DoesNotContain("data-storefront-address-select", markup + addressFields + script, StringComparison.Ordinal);
+            Assert.DoesNotContain("manualAddressFieldSelector", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("syncManualAddressFields", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("field.disabled", script, StringComparison.Ordinal);
         }
 
         private static string ReadStorefrontLocalEndpointSupportSource()

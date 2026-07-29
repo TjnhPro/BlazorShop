@@ -1,9 +1,6 @@
 (function () {
   const productPurchaseRootSelector = "[data-storefront-product-purchase]";
   const productPurchaseSubmitSelector = "[data-storefront-product-purchase-submit]";
-  const addressSelectSelector = "[data-storefront-address-select]";
-  const manualAddressSelector = "[data-storefront-manual-address]";
-  const manualAddressFieldSelector = "[data-storefront-manual-address-field]";
   const productGallerySelector = "[data-storefront-product-gallery]";
   const galleryThumbnailSelector = "[data-storefront-gallery-thumbnail]";
   const galleryMainImageSelector = "[data-storefront-gallery-main-image]";
@@ -254,27 +251,6 @@
     }
   }
 
-  function syncManualAddressFields(select) {
-    if (!(select instanceof HTMLSelectElement)) {
-      return;
-    }
-
-    const manualAddress = document.querySelector(manualAddressSelector);
-    const useSavedAddress = Boolean((select.value || "").trim());
-    toggleHidden(manualAddress, useSavedAddress);
-    document.querySelectorAll(manualAddressFieldSelector).forEach((field) => {
-      if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement) {
-        field.disabled = useSavedAddress;
-      }
-    });
-  }
-
-  function initCheckoutAddressSelection() {
-    document.querySelectorAll(addressSelectSelector).forEach((select) => {
-      syncManualAddressFields(select);
-    });
-  }
-
   function resolveGalleryThumbnails(gallery) {
     return [...gallery.querySelectorAll(galleryThumbnailSelector)]
       .filter((thumbnail) => thumbnail instanceof HTMLButtonElement)
@@ -438,13 +414,6 @@
     showGalleryImageFallback(event.target);
   }
 
-  function handleChange(event) {
-    const target = event.target;
-    if (target instanceof HTMLSelectElement && target.matches(addressSelectSelector)) {
-      syncManualAddressFields(target);
-    }
-  }
-
   function handleSelectionChanged(event) {
     const rootElement = event.detail?.root instanceof HTMLElement
       ? event.detail.root
@@ -494,11 +463,9 @@
 
   function initialize() {
     flushQueuedToast();
-    initCheckoutAddressSelection();
     document.addEventListener("click", handleClick);
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("error", handleGalleryImageError, true);
-    document.addEventListener("change", handleChange);
     document.addEventListener("storefront:product-purchase:selection-changed", handleSelectionChanged);
     document.addEventListener("storefront:product-purchase:selection-error", handleSelectionError);
     document.addEventListener("storefront:product-purchase:add-line-succeeded", handleAddLineSucceeded);

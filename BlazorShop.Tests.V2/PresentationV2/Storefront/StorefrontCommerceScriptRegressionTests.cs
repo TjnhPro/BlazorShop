@@ -27,6 +27,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "preview.canAddToCart",
                 "canAddToCart",
                 "stockQuantity",
+                "data-storefront-address-select",
+                "manualAddressFieldSelector",
+                "syncManualAddressFields",
+                "initCheckoutAddressSelection",
+                "field.disabled",
             };
 
             foreach (var forbiddenToken in forbiddenTokens)
