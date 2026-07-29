@@ -239,9 +239,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var source = ReadSourceTree("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser");
             var componentsSource = ReadSourceTree("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser");
 
-            Assert.Contains("<Project Sdk=\"Microsoft.NET.Sdk\">", project, StringComparison.Ordinal);
+            Assert.Contains("<Project Sdk=\"Microsoft.NET.Sdk.Razor\">", project, StringComparison.Ordinal);
             Assert.Contains("<TargetFramework>net10.0</TargetFramework>", project, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Components.csproj", project, StringComparison.Ordinal);
+            Assert.True(File.Exists(ResolveRepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/wwwroot/js/storefrontWasmInterop.js")));
             Assert.Contains("StorefrontLocalApiClient", source, StringComparison.Ordinal);
             Assert.Contains("IStorefrontAntiforgeryTokenReader", source, StringComparison.Ordinal);
             Assert.Contains("StorefrontBrowserCartEventPublisher", source, StringComparison.Ordinal);

@@ -194,7 +194,10 @@
 
     private async Task PlaceOrderAsync()
     {
-        var outcome = await CheckoutController.PlaceOrderAsync();
+        var outcomeTask = CheckoutController.PlaceOrderAsync();
+        StateHasChanged();
+
+        var outcome = await outcomeTask;
         if (!string.IsNullOrWhiteSpace(outcome.RedirectUrl))
         {
             NavigationManager.NavigateTo(outcome.RedirectUrl, forceLoad: true);

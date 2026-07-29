@@ -156,14 +156,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             var tokenReader = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontAntiforgeryTokenReader.cs");
             var cartEventPublisher = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontBrowserCartEventPublisher.cs");
-            var interop = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
+            var interop = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/wwwroot/js/storefrontWasmInterop.js");
             Assert.Contains("IStorefrontBrowserCartEventPublisher", cartEventPublisher, StringComparison.Ordinal);
             Assert.Contains("PublishCartChangedAsync(int count", cartEventPublisher, StringComparison.Ordinal);
             Assert.DoesNotContain("IJSRuntime JS", component, StringComparison.Ordinal);
             Assert.DoesNotContain("IJSObjectReference", component, StringComparison.Ordinal);
             Assert.Contains("publishCartChanged", cartEventPublisher, StringComparison.Ordinal);
-            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", cartEventPublisher, StringComparison.Ordinal);
-            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", tokenReader, StringComparison.Ordinal);
+            Assert.Contains("./_content/BlazorShop.Storefront.Browser/js/storefrontWasmInterop.js", cartEventPublisher, StringComparison.Ordinal);
+            Assert.Contains("./_content/BlazorShop.Storefront.Browser/js/storefrontWasmInterop.js", tokenReader, StringComparison.Ordinal);
             Assert.Contains("[data-storefront-cart-badge]", interop, StringComparison.Ordinal);
             Assert.Contains("storefront:cart:changed", interop, StringComparison.Ordinal);
             Assert.DoesNotContain("blazorshop:cart-changed", interop, StringComparison.Ordinal);
@@ -370,6 +370,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("CheckoutController.SelectPaymentAsync(key)", component, StringComparison.Ordinal);
             Assert.Contains("CheckoutController.ReviewAsync()", component, StringComparison.Ordinal);
             Assert.Contains("CheckoutController.PlaceOrderAsync()", component, StringComparison.Ordinal);
+            Assert.Contains("var outcomeTask = CheckoutController.PlaceOrderAsync();", component, StringComparison.Ordinal);
+            Assert.Contains("StateHasChanged();", component, StringComparison.Ordinal);
             Assert.DoesNotContain("\"/api/checkout", options, StringComparison.Ordinal);
             Assert.Contains("public bool ShowPanel { get; set; } = true;", component, StringComparison.Ordinal);
             Assert.Contains("DataMode != StorefrontFeatureDataMode.InitialSnapshot", component, StringComparison.Ordinal);

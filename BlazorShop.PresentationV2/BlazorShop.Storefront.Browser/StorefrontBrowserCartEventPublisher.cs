@@ -13,7 +13,7 @@ public sealed class StorefrontBrowserCartEventPublisher : IStorefrontBrowserCart
         _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
             jsRuntime.InvokeAsync<IJSObjectReference>(
                 "import",
-                "./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js").AsTask());
+                "./_content/BlazorShop.Storefront.Browser/js/storefrontWasmInterop.js").AsTask());
     }
 
     public async ValueTask PublishCartChangedAsync(int count, CancellationToken cancellationToken = default)

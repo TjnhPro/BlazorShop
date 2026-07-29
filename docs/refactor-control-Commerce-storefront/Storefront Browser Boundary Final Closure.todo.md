@@ -428,62 +428,67 @@ Goal: prove the boundary closure works in a real browser, not only through stati
 
 ### Preconditions
 
-- [ ] Local V2 environment can be started with:
+- [x] Local V2 environment can be started with:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Store test fixture has:
-  - [ ] a published product that can be added to cart.
-  - [ ] COD payment enabled for test order placement if checkout E2E is run.
-  - [ ] an account test user or documented guest flow.
+- [x] Store test fixture has:
+  - [x] a published product that can be added to cart.
+  - [x] COD payment enabled for test order placement if checkout E2E is run.
+  - [x] an account test user or documented guest flow.
 
 ### Playwright Cases
 
-- [ ] Cart re-entry:
-  - [ ] Open product page.
-  - [ ] Add product to cart.
-  - [ ] Open cart page and verify line exists.
-  - [ ] Navigate away.
-  - [ ] Add another product or change quantity through a browser action.
-  - [ ] Return to cart.
-  - [ ] Verify cart shows current server state, not stale initial snapshot.
-- [ ] Checkout session re-entry:
-  - [ ] Open cart with active item.
-  - [ ] Start checkout.
-  - [ ] Record visible checkout/session/cart version data if exposed.
-  - [ ] Return to cart and mutate cart.
-  - [ ] Return to checkout.
-  - [ ] Verify checkout reflects changed cart and blocking warnings/state are current.
-- [ ] Checkout idempotency:
-  - [ ] Submit place order with COD in test store.
-  - [ ] Prevent double submit in UI.
-  - [ ] Confirm one successful order reference is produced.
-  - [ ] Retry only where the same attempt semantics are expected.
-- [ ] Account identity re-entry:
-  - [ ] Login as user A.
-  - [ ] Open profile/address/orders.
-  - [ ] Logout.
-  - [ ] Login as user B in same browser session.
-  - [ ] Verify user A profile/address/order data is not visible.
-- [ ] Browser transport failure visual state:
-  - [ ] Simulate or intercept one cart/checkout/account BFF request failure.
-  - [ ] Verify loading/saving/busy state resets.
-  - [ ] Verify user sees a recoverable error state.
+- [x] Cart re-entry:
+  - [x] Open product page.
+  - [x] Add product to cart.
+  - [x] Open cart page and verify line exists.
+  - [x] Navigate away.
+  - [x] Add another product or change quantity through a browser action.
+  - [x] Return to cart.
+  - [x] Verify cart shows current server state, not stale initial snapshot.
+- [x] Checkout session re-entry:
+  - [x] Open cart with active item.
+  - [x] Start checkout.
+  - [x] Record visible checkout/session/cart version data if exposed.
+  - [x] Return to cart and mutate cart.
+  - [x] Return to checkout.
+  - [x] Verify checkout reflects changed cart and blocking warnings/state are current.
+- [x] Checkout idempotency:
+  - [x] Submit place order with COD in test store.
+  - [x] Prevent double submit in UI.
+  - [x] Confirm one successful order reference is produced.
+  - [x] Retry only where the same attempt semantics are expected.
+- [x] Account identity re-entry:
+  - [x] Login as user A.
+  - [x] Open profile/address/orders.
+  - [x] Logout.
+  - [x] Login as user B in same browser session.
+  - [x] Verify user A profile/address/order data is not visible.
+- [x] Browser transport failure visual state:
+  - [x] Simulate or intercept one cart/checkout/account BFF request failure.
+  - [x] Verify loading/saving/busy state resets.
+  - [x] Verify user sees a recoverable error state.
+
+2026-07-29 F1.85 evidence:
+- Playwright re-entry probe passed on `http://localhost:18598`: cart count changed from 1 to 2 after returning to cart, checkout re-entry kept a current checkout form after cart mutation, account profile identity changed from generated user A to generated user B in the same browser session, `DELETE /api/cart` 503 was surfaced without a stuck clear-cart button, `checkoutSubmitDisabled=true`, direct Commerce calls `0`, console warnings/errors `0`.
+- Runtime failures found and fixed during the probe: anonymous `/account/profile` no longer stack-overflows Kestrel and now renders the unauthorized redirect state; `storefrontWasmInterop.js` moved to the Browser static web asset package and returns HTTP 200 from `_content/BlazorShop.Storefront.Browser/js/storefrontWasmInterop.js`.
+- COD order E2E passed with `scripts/qa/run-storefront-order-email-e2e.ps1 -Headless`: order `ORD-20260729-4CE10AF3`, exactly one order email, queued SMTP retry restored, response5xx `0`, retiredFlowCallCount `0`.
 
 ### Artifacts
 
-- [ ] Save Playwright screenshots or traces for failures.
-- [ ] Update `Storefront Playwright E2E Release.todo.md` if any release checklist steps need new cases.
-- [ ] Update `QA-StorefrontV2.todo.md` if the manual QA matrix needs the re-entry checks.
+- [x] Save Playwright screenshots or traces for failures.
+- [x] Update `Storefront Playwright E2E Release.todo.md` if any release checklist steps need new cases.
+- [x] Update `QA-StorefrontV2.todo.md` if the manual QA matrix needs the re-entry checks.
 
 ### Acceptance Criteria
 
-- [ ] Real browser re-entry does not show stale cart, checkout, or account state.
-- [ ] COD order placement remains functional.
-- [ ] Browser mutation failure does not leave stuck loading/busy UI.
-- [ ] Existing Storefront V2 smoke flow still passes.
+- [x] Real browser re-entry does not show stale cart, checkout, or account state.
+- [x] COD order placement remains functional.
+- [x] Browser mutation failure does not leave stuck loading/busy UI.
+- [x] Existing Storefront V2 smoke flow still passes.
 
 ## Phase F1.86 - Documentation And Closure
 

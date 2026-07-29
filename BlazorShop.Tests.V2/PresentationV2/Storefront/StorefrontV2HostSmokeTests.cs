@@ -508,6 +508,25 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task AccountProfile_WhenAnonymous_RendersUnauthorizedRedirectState()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                },
+                allowAutoRedirect: false);
+
+            using var response = await client.GetAsync(StorefrontRoutes.AccountProfile);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Contains("Redirecting to sign in", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontAccountApp", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task AccountProfile_WhenAuthenticated_RendersSafeProfileForm()
         {
             var customerClient = new StubStorefrontCustomerClient();

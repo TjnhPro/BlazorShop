@@ -8,6 +8,8 @@ public sealed class StorefrontCheckoutFormPatternTests
     public void CheckoutForm_OwnsPostActionAntiforgeryCartVersionAndIdempotency()
     {
         var form = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Components/Checkout/StorefrontCheckoutForm.razor");
+        var submit = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Components/Checkout/StorefrontCheckoutSubmit.razor");
+        var applicationScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
 
         Assert.Contains("<form method=\"post\" action=\"@StorefrontRoutes.Checkout\"", form);
         Assert.Contains("<AntiforgeryToken />", form);
@@ -16,6 +18,13 @@ public sealed class StorefrontCheckoutFormPatternTests
         Assert.Contains("name=\"@StorefrontCheckoutFormFieldNames.IdempotencyKey\"", form);
         Assert.Contains("value=\"@Context.IdempotencyKey\"", form);
         Assert.Contains("name=\"@StorefrontCheckoutFormFieldNames.UseShippingAddressAsBillingAddress\"", form);
+        Assert.Contains("data-storefront-checkout-form", form);
+        Assert.Contains("data-storefront-checkout-submit", submit);
+        Assert.Contains("checkoutFormSelector = \"[data-storefront-checkout-form]\"", applicationScript);
+        Assert.Contains("checkoutSubmitSelector = \"[data-storefront-checkout-submit]\"", applicationScript);
+        Assert.Contains("boundCheckoutForms", applicationScript);
+        Assert.Contains("candidate.addEventListener(\"submit\", () => disableCheckoutSubmitters(candidate))", applicationScript);
+        Assert.Contains("button.disabled = true", applicationScript);
     }
 
     [Fact]

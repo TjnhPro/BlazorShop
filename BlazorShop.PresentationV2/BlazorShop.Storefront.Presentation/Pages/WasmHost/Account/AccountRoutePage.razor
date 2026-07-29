@@ -46,7 +46,15 @@
         if (_result is StorefrontAccountPageResult.RedirectState redirect)
         {
             _state = new StorefrontPageState.UnauthorizedState(StorefrontPageKind.Account, "Redirecting to sign in.");
-            NavigationManager.NavigateTo(redirect.Url, replace: true);
+            if (HttpContext is not null && !HttpContext.Response.HasStarted)
+            {
+                HttpContext.Response.Redirect(redirect.Url);
+            }
+            else
+            {
+                NavigationManager.NavigateTo(redirect.Url, replace: true);
+            }
+
             return;
         }
 

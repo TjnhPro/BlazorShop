@@ -14,10 +14,13 @@
   const productPurchaseAttributeSelector = "[data-storefront-purchase-attribute]";
   const productPurchaseVariantSelector = "[data-storefront-purchase-variant]";
   const cartBadgeSelector = "[data-storefront-cart-badge]";
+  const checkoutFormSelector = "[data-storefront-checkout-form]";
+  const checkoutSubmitSelector = "[data-storefront-checkout-submit]";
   const purchasePreviewTimers = new WeakMap();
   const purchaseState = new WeakMap();
   const boundConsentBanners = new WeakSet();
   const boundConsentManageButtons = new WeakSet();
+  const boundCheckoutForms = new WeakSet();
   let bindingsInitialized = false;
   const events = {
     cartChanged: "storefront:cart:changed",
@@ -345,6 +348,25 @@
     void consent.current(actions)
       .then(applyState)
       .catch(() => banner.classList.add("hidden"));
+  }
+
+  function disableCheckoutSubmitters(form) {
+    form.querySelectorAll(checkoutSubmitSelector).forEach((button) => {
+      if (button instanceof HTMLButtonElement) {
+        button.disabled = true;
+      }
+    });
+  }
+
+  function bindCheckoutForms(context = document) {
+    queryAllWithin(context, checkoutFormSelector).forEach((candidate) => {
+      if (!(candidate instanceof HTMLFormElement) || boundCheckoutForms.has(candidate)) {
+        return;
+      }
+
+      boundCheckoutForms.add(candidate);
+      candidate.addEventListener("submit", () => disableCheckoutSubmitters(candidate));
+    });
   }
 
   function updateCartBadges(count) {
@@ -728,6 +750,7 @@
 
   function refreshPageBindings(context = document) {
     bindConsent(context);
+    bindCheckoutForms(context);
     refreshCartBadges();
     refreshProductPurchaseRoots(context);
   }

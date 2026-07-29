@@ -58,9 +58,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var project = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
-            var componentRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components");
             var v2Interop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontWasmInterop.js");
             var sharedInterop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
+            var browserInterop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/wwwroot/js/storefrontWasmInterop.js");
             var browserRuntimeSource = ReadSourceTree(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser"));
             var cartView = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
@@ -69,10 +69,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("Microsoft.NET.Sdk.Razor", project, StringComparison.Ordinal);
             Assert.DoesNotContain("Microsoft.JSInterop", project, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/_Imports.razor")));
-            Assert.True(Directory.Exists(Path.Combine(componentRoot, "wwwroot")));
-            Assert.True(File.Exists(sharedInterop));
+            Assert.False(File.Exists(sharedInterop));
+            Assert.True(File.Exists(browserInterop));
             Assert.False(File.Exists(v2Interop));
-            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", browserRuntimeSource, StringComparison.Ordinal);
+            Assert.Contains("./_content/BlazorShop.Storefront.Browser/js/storefrontWasmInterop.js", browserRuntimeSource, StringComparison.Ordinal);
             Assert.Contains("IStorefrontBrowserCartController", cartView, StringComparison.Ordinal);
         }
 

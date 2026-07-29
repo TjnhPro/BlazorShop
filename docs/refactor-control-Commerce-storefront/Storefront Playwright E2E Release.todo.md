@@ -31,6 +31,12 @@ Purpose: gom các testcase phù hợp và testcase còn thiếu thành checklist
 - [x] Generated host fast proof covers canonical command descriptor negative behavior: malformed product purchase submitters do not trigger `cart.add-line`, while `[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]` remains functional.
 - [x] Storefront visual boundary validator blocks visual scripts from reading raw preview business fields including `preview.sku`, `preview.gtin`, `preview.stockQuantity`, `preview.canAddToCart`, and simple bracket variants.
 
+## Browser Boundary Final Closure Evidence - 2026-07-29
+
+- [x] V2 re-entry proof covers cart return after add-to-cart, checkout return after cart mutation, account profile identity reset from generated user A to generated user B in one browser session, checkout submit button disable on submit, same-origin cart transport failure recovery, zero direct Commerce Node browser calls, and zero console warnings/errors.
+- [x] Browser static interop asset proof verifies `_content/BlazorShop.Storefront.Browser/js/storefrontWasmInterop.js` returns HTTP 200 `text/javascript`; the retired `_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js` path returns 404 and is no longer imported by Browser services.
+- [x] COD order placement remains covered by `scripts/qa/run-storefront-order-email-e2e.ps1 -Headless`: `ORD-20260729-4CE10AF3`, exactly one order email, SMTP retry restoration, response5xx `0`, retiredFlowCallCount `0`.
+
 ## QA Evidence - 2026-07-18 Headed Chromium Full Release Pass
 
 Command:
