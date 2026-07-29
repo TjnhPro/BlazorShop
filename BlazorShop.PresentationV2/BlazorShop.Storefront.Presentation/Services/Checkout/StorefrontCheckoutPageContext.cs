@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Checkout
 {
     using BlazorShop.Storefront.Components.Browser;
+    using BlazorShop.Storefront.Components.Headless.Checkout;
     using BlazorShop.Storefront.Presentation.Contracts;
 
     public sealed record StorefrontCheckoutPageContext(
@@ -28,6 +29,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
         string DefaultShippingStateCode,
         StorefrontLinkContext Links)
     {
+        public StorefrontCheckoutActionDescriptor CheckoutActions { get; init; } = StorefrontCheckoutActionDescriptor.Empty;
+
         public bool HasAddressCountries => AddressCountries.Count > 0;
 
         public bool HasAddressStates => AddressStates.Count > 0;

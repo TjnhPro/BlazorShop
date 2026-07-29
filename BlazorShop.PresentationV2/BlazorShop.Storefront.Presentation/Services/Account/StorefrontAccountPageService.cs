@@ -2,6 +2,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Account
 {
     using BlazorShop.Storefront.Presentation.PagePatterns;
     using BlazorShop.Storefront.Presentation.Services;
+    using BlazorShop.Storefront.Presentation.Services.Browser;
     using BlazorShop.Storefront.Presentation.Contracts;
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Http;
@@ -10,13 +11,16 @@ namespace BlazorShop.Storefront.Presentation.Services.Account
     {
         private readonly IAntiforgery antiforgery;
         private readonly IStorefrontSessionResolver sessionResolver;
+        private readonly StorefrontBrowserActionDescriptorProvider actionDescriptorProvider;
 
         public StorefrontAccountPageService(
             IAntiforgery antiforgery,
-            IStorefrontSessionResolver sessionResolver)
+            IStorefrontSessionResolver sessionResolver,
+            StorefrontBrowserActionDescriptorProvider actionDescriptorProvider)
         {
             this.antiforgery = antiforgery;
             this.sessionResolver = sessionResolver;
+            this.actionDescriptorProvider = actionDescriptorProvider;
         }
 
         public async Task<StorefrontAccountPageResult> GetAsync(
@@ -42,7 +46,15 @@ namespace BlazorShop.Storefront.Presentation.Services.Account
                 error,
                 saved,
                 tokens?.FormFieldName,
-                tokens?.RequestToken));
+                tokens?.RequestToken)
+            {
+                ProfileActions = this.actionDescriptorProvider.CreateAccountProfileActions(),
+                PasswordActions = this.actionDescriptorProvider.CreateAccountPasswordActions(),
+                AddressActions = this.actionDescriptorProvider.CreateAccountAddressActions(),
+                OrderActions = this.actionDescriptorProvider.CreateAccountOrderActions(),
+                RouteDescriptor = this.actionDescriptorProvider.CreateAccountRouteDescriptor(),
+                NavigationItems = this.actionDescriptorProvider.CreateAccountNavigationItems(),
+            });
         }
 
         private static string CurrentReturnUrl(HttpContext? httpContext)

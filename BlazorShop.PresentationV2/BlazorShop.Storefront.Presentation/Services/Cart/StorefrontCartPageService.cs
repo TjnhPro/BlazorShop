@@ -2,6 +2,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Cart;
 
 using BlazorShop.Storefront.Components.Browser;
 using BlazorShop.Storefront.Presentation.Services;
+using BlazorShop.Storefront.Presentation.Services.Browser;
 using BlazorShop.Storefront.Presentation.Contracts;
 using Microsoft.AspNetCore.Http;
 
@@ -10,15 +11,18 @@ public sealed class StorefrontCartPageService
     private readonly StorefrontCartTokenService cartTokenService;
     private readonly IStorefrontDisplayContextProvider displayContextProvider;
     private readonly IStorefrontPriceFormatter priceFormatter;
+    private readonly StorefrontBrowserActionDescriptorProvider actionDescriptorProvider;
 
     public StorefrontCartPageService(
         StorefrontCartTokenService cartTokenService,
         IStorefrontDisplayContextProvider displayContextProvider,
-        IStorefrontPriceFormatter priceFormatter)
+        IStorefrontPriceFormatter priceFormatter,
+        StorefrontBrowserActionDescriptorProvider actionDescriptorProvider)
     {
         this.cartTokenService = cartTokenService;
         this.displayContextProvider = displayContextProvider;
         this.priceFormatter = priceFormatter;
+        this.actionDescriptorProvider = actionDescriptorProvider;
     }
 
     public async Task<StorefrontCartPageContext> GetAsync(
@@ -31,7 +35,7 @@ public sealed class StorefrontCartPageService
         if (!cartResolution.Success)
         {
             alerts.Add(new StorefrontBrowserCartAlert("error", cartResolution.Message));
-            return CreateContext(null, alerts);
+            return CreateContext(null, alerts, this.actionDescriptorProvider);
         }
 
         var cart = StorefrontCartPresentationMapper.ToLocalCartResponse(
@@ -43,12 +47,13 @@ public sealed class StorefrontCartPageService
             alerts.Add(new StorefrontBrowserCartAlert("warning", warning.Message));
         }
 
-        return CreateContext(cart, alerts);
+        return CreateContext(cart, alerts, this.actionDescriptorProvider);
     }
 
     private static StorefrontCartPageContext CreateContext(
         StorefrontBrowserCart? cart,
-        IReadOnlyList<StorefrontBrowserCartAlert> alerts)
+        IReadOnlyList<StorefrontBrowserCartAlert> alerts,
+        StorefrontBrowserActionDescriptorProvider actionDescriptorProvider)
     {
         return new StorefrontCartPageContext(
             cart,
@@ -56,6 +61,9 @@ public sealed class StorefrontCartPageService
             StorefrontRoutes.Checkout,
             StorefrontRoutes.NewReleases,
             StorefrontRoutes.TodaysDeals,
-            StorefrontLinkContext.Default);
+            StorefrontLinkContext.Default)
+        {
+            CartActions = actionDescriptorProvider.CreateCartActions(),
+        };
     }
 }

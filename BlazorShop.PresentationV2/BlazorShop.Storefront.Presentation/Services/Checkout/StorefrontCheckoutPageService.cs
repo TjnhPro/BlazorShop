@@ -4,6 +4,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
     using BlazorShop.Storefront.Presentation.Endpoints;
     using BlazorShop.Storefront.Presentation.PagePatterns;
     using BlazorShop.Storefront.Presentation.Services;
+    using BlazorShop.Storefront.Presentation.Services.Browser;
     using BlazorShop.Storefront.Presentation.Contracts;
     using BlazorShop.Storefront.Runtime;
     using Microsoft.AspNetCore.Http;
@@ -24,6 +25,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
         private readonly IStorefrontRuntimePaymentFacade paymentFacade;
         private readonly IStorefrontRuntimeAddressFacade addressFacade;
         private readonly IStorefrontRuntimeCatalogFacade catalogFacade;
+        private readonly StorefrontBrowserActionDescriptorProvider actionDescriptorProvider;
 
         public StorefrontCheckoutPageService(
             StorefrontCartTokenService cartTokenService,
@@ -32,7 +34,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
             IStorefrontRuntimeCheckoutFacade checkoutFacade,
             IStorefrontRuntimePaymentFacade paymentFacade,
             IStorefrontRuntimeAddressFacade addressFacade,
-            IStorefrontRuntimeCatalogFacade catalogFacade)
+            IStorefrontRuntimeCatalogFacade catalogFacade,
+            StorefrontBrowserActionDescriptorProvider actionDescriptorProvider)
         {
             this.cartTokenService = cartTokenService;
             this.displayContextProvider = displayContextProvider;
@@ -41,6 +44,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
             this.paymentFacade = paymentFacade;
             this.addressFacade = addressFacade;
             this.catalogFacade = catalogFacade;
+            this.actionDescriptorProvider = actionDescriptorProvider;
         }
 
         public async Task<StorefrontCheckoutPageContext> GetAsync(
@@ -53,7 +57,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
 
             if (!string.IsNullOrWhiteSpace(orderReference))
             {
-                return CreateOrderPlacedContext(orderReference.Trim(), displayContext);
+                return CreateOrderPlacedContext(orderReference.Trim(), displayContext, this.actionDescriptorProvider);
             }
 
             var cartResolution = await this.cartTokenService.ResolveAsync(httpContext, cancellationToken: cancellationToken);
@@ -61,7 +65,8 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
             {
                 return CreateEmptyContext(
                     error ?? cartResolution.Message,
-                    displayContext);
+                    displayContext,
+                    this.actionDescriptorProvider);
             }
 
             var cartItems = cartResolution.Cart?.Lines ?? [];
@@ -124,12 +129,16 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 checkoutSession is null ? null : this.priceFormatter.Format(ToMoney(checkoutSession.DiscountTotal), totalDisplayContext),
                 addressCountries.FirstOrDefault()?.Code ?? "US",
                 string.Empty,
-                StorefrontLinkContext.Default);
+                StorefrontLinkContext.Default)
+            {
+                CheckoutActions = this.actionDescriptorProvider.CreateCheckoutActions(),
+            };
         }
 
         private static StorefrontCheckoutPageContext CreateOrderPlacedContext(
             string orderReference,
-            StorefrontDisplayContext displayContext)
+            StorefrontDisplayContext displayContext,
+            StorefrontBrowserActionDescriptorProvider actionDescriptorProvider)
         {
             return new StorefrontCheckoutPageContext(
                 null,
@@ -154,12 +163,16 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 null,
                 "US",
                 string.Empty,
-                StorefrontLinkContext.Default);
+                StorefrontLinkContext.Default)
+            {
+                CheckoutActions = actionDescriptorProvider.CreateCheckoutActions(),
+            };
         }
 
         private static StorefrontCheckoutPageContext CreateEmptyContext(
             string? error,
-            StorefrontDisplayContext displayContext)
+            StorefrontDisplayContext displayContext,
+            StorefrontBrowserActionDescriptorProvider actionDescriptorProvider)
         {
             return new StorefrontCheckoutPageContext(
                 error,
@@ -184,7 +197,10 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                 null,
                 "US",
                 string.Empty,
-                StorefrontLinkContext.Default);
+                StorefrontLinkContext.Default)
+            {
+                CheckoutActions = actionDescriptorProvider.CreateCheckoutActions(),
+            };
         }
 
         private async Task<IReadOnlyList<StorefrontCheckoutPaymentMethodOptionView>> LoadPaymentMethodsAsync(

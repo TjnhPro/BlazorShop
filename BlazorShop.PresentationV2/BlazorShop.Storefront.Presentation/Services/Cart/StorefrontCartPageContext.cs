@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Presentation.Services.Cart;
 
 using BlazorShop.Storefront.Components.Browser;
+using BlazorShop.Storefront.Components.Headless.Cart;
 using BlazorShop.Storefront.Presentation.Contracts;
 
 public sealed record StorefrontCartPageContext(
@@ -9,4 +10,7 @@ public sealed record StorefrontCartPageContext(
     string CheckoutUrl,
     string NewReleasesUrl,
     string TodaysDealsUrl,
-    StorefrontLinkContext Links);
+    StorefrontLinkContext Links)
+{
+    public StorefrontCartActionDescriptor CartActions { get; init; } = StorefrontCartActionDescriptor.Empty;
+}
