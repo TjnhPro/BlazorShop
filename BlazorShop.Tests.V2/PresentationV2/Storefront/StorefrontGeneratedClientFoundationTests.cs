@@ -50,6 +50,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"version\": \"14.7.1\"", ReadRepositoryFile(".config/dotnet-tools.json"), StringComparison.Ordinal);
             Assert.Contains("contracts/storefront/storefront.openapi.json", config, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Tests.V2", config, StringComparison.Ordinal);
+            Assert.DoesNotContain("PresentationV2/CommerceNode/Snapshots", config, StringComparison.Ordinal);
             Assert.DoesNotContain("storefront-openapi.snapshot.json", config, StringComparison.Ordinal);
             Assert.Contains("\"openApiToCSharpClient\"", config, StringComparison.Ordinal);
             Assert.Contains("\"namespace\": \"BlazorShop.Storefront.Client\"", config, StringComparison.Ordinal);
@@ -60,6 +61,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"parameterDateTimeFormat\": \"O\"", config, StringComparison.Ordinal);
             Assert.Contains("documentGenerator.fromDocument.url", script, StringComparison.Ordinal);
             Assert.Contains("contracts/storefront/storefront.openapi.json", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("PresentationV2/CommerceNode/Snapshots", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("storefront-openapi.snapshot.json", script, StringComparison.Ordinal);
             Assert.Contains("Canonical Storefront OpenAPI contract was not found", script, StringComparison.Ordinal);
             Assert.Contains("dotnet nswag run", script, StringComparison.Ordinal);
 

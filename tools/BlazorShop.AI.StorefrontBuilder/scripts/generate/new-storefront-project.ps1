@@ -26,9 +26,15 @@ $outputRootPath = Resolve-RepoPath $OutputRoot
 $projectRoot = Join-Path $outputRootPath $Name
 $generator = Join-Path $repoRoot "scripts\generate-storefront-sample.ps1"
 $featureManifest = Join-Path $projectRoot "Features\feature-manifest.json"
+$storefrontContractPath = "contracts/storefront/storefront.openapi.json"
+$storefrontContractFullPath = Resolve-RepoPath $storefrontContractPath
 
 if ($Name -notmatch "^BlazorShop\.Storefront\.[A-Z][A-Za-z0-9]*$") {
     throw "[SFB-PROJECT-001] Name must match BlazorShop.Storefront.{Name} with a safe PascalCase suffix."
+}
+
+if (-not (Test-Path -LiteralPath $storefrontContractFullPath)) {
+    throw "[SFB-PROJECT-007] Canonical Storefront OpenAPI contract is missing: $storefrontContractPath"
 }
 
 $resolvedOutput = [System.IO.Path]::GetFullPath($projectRoot)
@@ -55,12 +61,15 @@ if ($Force) {
 
 $analysisRoot = Join-Path $projectRoot "docs\storefront-analysis"
 New-Item -ItemType Directory -Force -Path $analysisRoot | Out-Null
+$storefrontContractSha256 = (Get-FileHash -LiteralPath $storefrontContractFullPath -Algorithm SHA256).Hash.ToLowerInvariant()
 
 $metadata = @(
     "schemaVersion: 1.0.0",
     "artifactKind: generated-storefront-metadata",
     "projectName: $Name",
     "storeKey: $StoreKey",
+    "storefrontContractPath: $storefrontContractPath",
+    "storefrontContractSha256: $storefrontContractSha256",
     "sourceStarterPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
     "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml",
     "generationMode: starter-copy-before-visual-generation",

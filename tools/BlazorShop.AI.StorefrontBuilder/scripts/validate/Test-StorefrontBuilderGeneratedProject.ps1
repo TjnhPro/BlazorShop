@@ -38,10 +38,16 @@ if (-not $packageVersions.Contains("StorefrontClientPackageVersion", [System.Str
 }
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
-foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "sourceStarterPath:", "protectedFiles:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+$canonicalContractPath = "contracts/storefront/storefront.openapi.json"
+foreach ($required in @("projectName: $Name", "storeKey: $StoreKey", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "protectedFiles:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $metadataText.Contains($required, [System.StringComparison]::Ordinal)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
+}
+
+$contractHashMatch = [regex]::Match($metadataText, "(?m)^storefrontContractSha256:\s*([a-f0-9]{64})\s*$")
+if (-not $contractHashMatch.Success) {
+    throw "[SFB-PROJECT-007] metadata.yaml must contain lowercase SHA-256 storefrontContractSha256 for the canonical Storefront OpenAPI contract."
 }
 
 $forbiddenDirectories = @("Security", "Services", "Middleware")

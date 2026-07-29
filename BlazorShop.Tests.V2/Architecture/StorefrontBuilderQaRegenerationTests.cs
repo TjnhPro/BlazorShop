@@ -36,6 +36,7 @@ namespace BlazorShop.Tests.Architecture
         {
             var command = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/validate-storefront.ps1");
             var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1");
+            var projectValidator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1");
             var fixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/bad-static-project/Pages/Duplicate.razor");
 
             foreach (var marker in new[]
@@ -71,6 +72,37 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-STATIC-007", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-STATIC-008", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-STATIC-009", validator, StringComparison.Ordinal);
+            Assert.Contains("canonicalContractPath", projectValidator, StringComparison.Ordinal);
+            Assert.Contains("contracts/storefront/storefront.openapi.json", projectValidator, StringComparison.Ordinal);
+            Assert.Contains("storefrontContractSha256:", projectValidator, StringComparison.Ordinal);
+            Assert.Contains("[a-f0-9]{64}", projectValidator, StringComparison.Ordinal);
+            Assert.Contains("SFB-PROJECT-007", projectValidator, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void GeneratedMetadata_RecordsCanonicalStorefrontContractIdentity()
+        {
+            var projectGenerator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1");
+            var metadataSchema = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/schemas/metadata.schema.json");
+            var validFixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/schemas/fixtures/valid/metadata.json");
+
+            foreach (var marker in new[]
+            {
+                "contracts/storefront/storefront.openapi.json",
+                "Get-FileHash",
+                "Algorithm SHA256",
+                "storefrontContractPath:",
+                "storefrontContractSha256:",
+            })
+            {
+                Assert.Contains(marker, projectGenerator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("\"storefrontContractPath\"", metadataSchema, StringComparison.Ordinal);
+            Assert.Contains("\"storefrontContractSha256\"", metadataSchema, StringComparison.Ordinal);
+            Assert.Contains("\"pattern\": \"^[a-f0-9]{64}$\"", metadataSchema, StringComparison.Ordinal);
+            Assert.Contains("\"storefrontContractPath\": \"contracts/storefront/storefront.openapi.json\"", validFixture, StringComparison.Ordinal);
+            Assert.Contains("\"storefrontContractSha256\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\"", validFixture, StringComparison.Ordinal);
         }
 
         [Fact]
