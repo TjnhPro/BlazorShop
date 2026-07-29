@@ -30,6 +30,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     public sealed class StorefrontV2HostSmokeTests : IClassFixture<WebApplicationFactory<StorefrontV2Program>>
     {
         private const string HttpClientResilienceEnvironmentVariable = "ServiceDefaults__HttpClientResilience__Enabled";
+        private static readonly Guid DefaultCartProductId = Guid.Parse("99999999-9999-9999-9999-999999999999");
 
         private readonly WebApplicationFactory<StorefrontV2Program> _factory;
 
@@ -474,7 +475,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
-                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.Checkout);
@@ -493,7 +493,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 services.RemoveAll<IStorefrontSessionResolver>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
-                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.Checkout);
@@ -518,7 +517,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                 services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
-                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.AccountProfile);
@@ -545,7 +543,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     services.RemoveAll<IStorefrontCustomerClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                     services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
-                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -599,7 +596,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                 services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
-                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.AccountOrders);
@@ -623,7 +619,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                 services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
-                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync(StorefrontRoutes.AccountAddresses);
@@ -648,7 +643,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     services.RemoveAll<IStorefrontCustomerClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                     services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
-                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
@@ -679,7 +673,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 services.RemoveAll<IStorefrontCustomerClient>();
                 services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                 services.AddScoped<IStorefrontCustomerClient>(_ => customerClient);
-                ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
             });
 
             using var response = await client.GetAsync("/account/orders/ORD-1");
@@ -730,11 +723,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     services.RemoveAll<IStorefrontAuthClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
                     services.AddScoped<IStorefrontAuthClient>(_ => authClient);
-                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
                 },
                 allowAutoRedirect: false);
 
-            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Terms);
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
             using var request = CreateLogoutPost(token, AppendCookie(cookieHeader, "__Host-blazorshop-refresh=abc"));
             using var response = await client.SendAsync(request);
 
@@ -824,7 +816,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public async Task Cart_RendersEmptyCartWithoutCommerceNode()
+        public async Task Cart_WhenGeneratedClientUnavailable_RendersCartFallbackWithoutCommerceNode()
         {
             using var client = CreateClient(services =>
             {
@@ -869,10 +861,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public async Task CartApi_MutationWithoutAntiforgeryToken_ReturnsBadRequest(string method, string path)
         {
             using var client = CreateClient(
-                services =>
-                {
-                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
-                },
+                _ => { },
                 allowAutoRedirect: false);
 
             using var request = new HttpRequestMessage(new HttpMethod(method), path);
@@ -1163,7 +1152,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                         services.RemoveAll<IStorefrontCurrentStoreProvider>();
                         services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
                             StorefrontCurrentStoreResolution.Succeeded(CreateActiveCurrentStore())));
-                        ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
+                        ConfigureStorefrontGeneratedClient(services, new CartApiHandler(DefaultCartProductId));
                         configureServices(services);
                     });
                 });

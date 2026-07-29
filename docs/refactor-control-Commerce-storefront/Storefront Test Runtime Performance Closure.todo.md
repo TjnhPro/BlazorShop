@@ -285,33 +285,39 @@ Goal: stop using `ServiceUnavailableHandler` as a generic "do not call real Comm
 
 ### Implementation
 
-- [ ] Review all `new ServiceUnavailableHandler()` usages in `StorefrontV2HostSmokeTests`.
-- [ ] Split them into:
-  - [ ] Tests that explicitly validate `503`/service-unavailable UI.
-  - [ ] Tests that only need deterministic page data or no real network.
-- [ ] Replace non-`503` usages with explicit fake clients/facades or minimal success handlers.
-- [ ] Keep `503` tests narrow and named so future agents understand they intentionally exercise unavailable-dependency semantics.
-- [ ] Avoid broad helper abstractions unless duplication remains after the split.
+- [x] Review all `new ServiceUnavailableHandler()` usages in `StorefrontV2HostSmokeTests`.
+- [x] Split them into:
+  - [x] Tests that explicitly validate `503`/service-unavailable UI.
+  - [x] Tests that only need deterministic page data or no real network.
+- [x] Replace non-`503` usages with explicit fake clients/facades or minimal success handlers.
+  - `CreateClient(...)` now uses a default empty `CartApiHandler` success fake for generated Storefront client calls.
+  - Account/auth/local API tests no longer register `ServiceUnavailableHandler` just to avoid a real Commerce Node call.
+- [x] Keep `503` tests narrow and named so future agents understand they intentionally exercise unavailable-dependency semantics.
+  - Remaining host smoke usage is `Cart_WhenGeneratedClientUnavailable_RendersCartFallbackWithoutCommerceNode`.
+- [x] Avoid broad helper abstractions unless duplication remains after the split.
 
 ### Tests
 
-- [ ] Run focused host smoke tests with hang guard:
+- [x] Run focused host smoke tests with hang guard:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontV2HostSmokeTests" --logger "trx;LogFileName=storefront-host-smoke-f175.trx" --blame-hang --blame-hang-timeout 5m
 ```
 
-- [ ] Parse the TRX and list any remaining `>=10s` Storefront host tests.
+- [x] Parse the TRX and list any remaining `>=10s` Storefront host tests.
+  - Result: passed 58/58 in `14s`; TRX `BlazorShop.Tests.V2/TestResults/storefront-host-smoke-f175.trx`.
+  - Parsed duration: 58 tests / `14.4s`, max test `0.6s`, slow tests `>=10s`: 0 / `0s`.
 
 ### Acceptance Criteria
 
-- [ ] Tests that do not assert service-unavailable behavior no longer depend on `503` fake responses.
-- [ ] Service-unavailable coverage remains explicit.
-- [ ] Host smoke test runtime is lower than F1.74 or unchanged for a clearly documented reason.
+- [x] Tests that do not assert service-unavailable behavior no longer depend on `503` fake responses.
+- [x] Service-unavailable coverage remains explicit.
+- [x] Host smoke test runtime is lower than F1.74 or unchanged for a clearly documented reason.
+  - Runtime is effectively unchanged from F1.74 because F1.74 already removed retry/backoff; F1.75 is semantic fake cleanup.
 
 ### Commit
 
-- [ ] Commit message: `F1.75 clarify storefront host smoke fakes`
+- [x] Commit message: `F1.75 clarify storefront host smoke fakes`
 
 ## Phase F1.76 - Process Helper Timeout Closure
 
