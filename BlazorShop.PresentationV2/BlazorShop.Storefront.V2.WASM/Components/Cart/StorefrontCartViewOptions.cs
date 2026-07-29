@@ -2,12 +2,6 @@ namespace BlazorShop.Storefront.V2.WASM.Components.Cart;
 
 public static class StorefrontCartViewOptions
 {
-    public static BlazorShop.Storefront.Components.Headless.Cart.StorefrontCartActionDescriptor Actions { get; } = new(
-        "/api/cart",
-        "/api/cart/lines/{lineId}",
-        "/api/cart/lines/{lineId}",
-        "/api/cart");
-
     public static StorefrontCartViewClasses Classes { get; } = new()
     {
         PageSection = "mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8",

@@ -1,53 +1,7 @@
 namespace BlazorShop.Storefront.V2.WASM.Components.Account;
 
-using BlazorShop.Storefront.Components.Contracts.Account;
-using BlazorShop.Storefront.Components.Headless.Account;
-
 public static class StorefrontAccountViewOptions
 {
-    public static StorefrontAccountProfileActionDescriptor ProfileActions { get; } = new(
-        "/account/profile",
-        "/api/account/profile",
-        "/api/account/profile");
-
-    public static StorefrontAccountPasswordActionDescriptor PasswordActions { get; } = new(
-        "/account/change-password",
-        "/api/account/change-password");
-
-    public static StorefrontAccountAddressActionDescriptor AddressActions { get; } = new(
-        "/account/addresses",
-        "/api/account/addresses",
-        "/api/account/addresses",
-        "/api/account/addresses/{addressId}",
-        "/api/account/addresses/{addressId}",
-        "/api/account/addresses/{addressId}/default-shipping",
-        "/api/account/addresses/{addressId}/default-billing");
-
-    public static StorefrontAccountOrderActionDescriptor OrderActions { get; } = new(
-        "/api/account/orders?page={pageNumber}",
-        "/api/account/orders/{orderReference}",
-        "/api/account/orders/{orderReference}/receipt",
-        "/account/orders/{orderReference}");
-
-    public static AccountNavigationItem[] NavigationItems { get; } =
-    {
-        new("profile", "Profile", "/account/profile"),
-        new("orders", "Orders", "/account/orders"),
-        new("addresses", "Addresses", "/account/addresses"),
-        new("change-password", "Password", "/account/change-password")
-    };
-
-    public static AccountRouteDescriptor RouteDescriptor { get; } = new(
-        "/account/profile",
-        "/account/addresses",
-        "/account/orders",
-        "/account/change-password",
-        "profile",
-        "addresses",
-        "orders",
-        "change-password",
-        "receipt");
-
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {
         Nav = "rounded-3xl border border-neutral-200/70 bg-white/95 p-3 text-sm shadow-lg lg:sticky lg:top-24",

@@ -154,46 +154,48 @@ Goal: remove application route defaults from V2.WASM options and make V2 pages p
 
 ### Implementation
 
-- [ ] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor`:
-  - [ ] Replace `Actions="StorefrontCartViewOptions.Actions"` with `Actions="@Context.CartActions"`.
-- [ ] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor`:
-  - [ ] Replace `Actions="StorefrontCheckoutShellOptions.Actions"` with `Actions="@Context.CheckoutActions"` in both shell render sites.
-- [ ] Update `BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor`:
-  - [ ] Replace `NavigationItems="StorefrontAccountViewOptions.NavigationItems"` with `NavigationItems="@Context.NavigationItems"`.
-  - [ ] Replace `RouteDescriptor="StorefrontAccountViewOptions.RouteDescriptor"` with `RouteDescriptor="@Context.RouteDescriptor"`.
-  - [ ] Replace `ProfileActions`, `PasswordActions`, `AddressActions`, and `OrderActions` with context properties.
-- [ ] Remove `StorefrontCartViewOptions.Actions`.
-- [ ] Remove `StorefrontCheckoutShellOptions.Actions`.
-- [ ] Remove these members from `StorefrontAccountViewOptions`:
-  - [ ] `ProfileActions`.
-  - [ ] `PasswordActions`.
-  - [ ] `AddressActions`.
-  - [ ] `OrderActions`.
-  - [ ] `NavigationItems`.
-  - [ ] `RouteDescriptor`.
-- [ ] Keep visual members in V2.WASM options:
-  - [ ] cart classes.
-  - [ ] checkout classes.
-  - [ ] account navigation/form/address/order/shell classes.
-  - [ ] V2 copy/icon/visual defaults if present.
-- [ ] Do not move V2 visual classes to Presentation.
+- [x] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor`:
+  - [x] Replace `Actions="StorefrontCartViewOptions.Actions"` with `Actions="@Context.CartActions"`.
+- [x] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor`:
+  - [x] Replace `Actions="StorefrontCheckoutShellOptions.Actions"` with `Actions="@Context.CheckoutActions"` in both shell render sites.
+- [x] Update `BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor`:
+  - [x] Replace `NavigationItems="StorefrontAccountViewOptions.NavigationItems"` with `NavigationItems="@Context.NavigationItems"`.
+  - [x] Replace `RouteDescriptor="StorefrontAccountViewOptions.RouteDescriptor"` with `RouteDescriptor="@Context.RouteDescriptor"`.
+  - [x] Replace `ProfileActions`, `PasswordActions`, `AddressActions`, and `OrderActions` with context properties.
+- [x] Remove `StorefrontCartViewOptions.Actions`.
+- [x] Remove `StorefrontCheckoutShellOptions.Actions`.
+- [x] Remove these members from `StorefrontAccountViewOptions`:
+  - [x] `ProfileActions`.
+  - [x] `PasswordActions`.
+  - [x] `AddressActions`.
+  - [x] `OrderActions`.
+  - [x] `NavigationItems`.
+  - [x] `RouteDescriptor`.
+- [x] Keep visual members in V2.WASM options:
+  - [x] cart classes.
+  - [x] checkout classes.
+  - [x] account navigation/form/address/order/shell classes.
+  - [x] V2 copy/icon/visual defaults if present.
+- [x] Do not move V2 visual classes to Presentation.
 
 ### Tests
 
-- [ ] Invert `StorefrontV2WASMRuntimeFoundationTests` expectations:
-  - [ ] cart options must not contain `"/api/cart"`.
-  - [ ] checkout options must not contain `"/api/checkout"`.
-  - [ ] account options must not contain `"/api/account"` or hardcoded `/account/*` navigation routes.
-- [ ] Update cart page tests to require `Actions="@Context.CartActions"`.
-- [ ] Update checkout page tests to require `Actions="@Context.CheckoutActions"`.
-- [ ] Update account host page tests to require context-provided actions/navigation/routes.
-- [ ] Keep tests proving V2.WASM components accept descriptor parameters and delegate to Browser controllers.
+- [x] Invert `StorefrontV2WASMRuntimeFoundationTests` expectations:
+  - [x] cart options must not contain `"/api/cart"`.
+  - [x] checkout options must not contain `"/api/checkout"`.
+  - [x] account options must not contain `"/api/account"` or hardcoded `/account/*` navigation routes.
+- [x] Update cart page tests to require `Actions="@Context.CartActions"`.
+- [x] Update checkout page tests to require `Actions="@Context.CheckoutActions"`.
+- [x] Update account host page tests to require context-provided actions/navigation/routes.
+- [x] Keep tests proving V2.WASM components accept descriptor parameters and delegate to Browser controllers.
+  - Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore` passed with known MessagePack/Browserslist warnings.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontBrowserActionDescriptorProviderTests" --logger "trx;LogFileName=browser-boundary-f180.trx" --blame-hang --blame-hang-timeout 5m` passed 47/47.
 
 ### Acceptance Criteria
 
-- [ ] V2.WASM options contain visual defaults only.
-- [ ] V2 server pages pass browser action descriptors from Presentation contexts.
-- [ ] No V2.WASM static option owns a BFF route or account route parsing rule.
+- [x] V2.WASM options contain visual defaults only.
+- [x] V2 server pages pass browser action descriptors from Presentation contexts.
+- [x] No V2.WASM static option owns a BFF route or account route parsing rule.
 
 ## Phase F1.81 - Browser Controller Lifetime Hardening
 

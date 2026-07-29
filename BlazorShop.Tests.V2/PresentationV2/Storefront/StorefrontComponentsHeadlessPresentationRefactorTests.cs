@@ -442,10 +442,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("sm:", cartView, StringComparison.Ordinal);
             Assert.DoesNotContain("lg:", cartView, StringComparison.Ordinal);
 
-            Assert.Contains("\"/api/cart\"", cartOptions, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/cart", cartOptions, StringComparison.Ordinal);
             Assert.Contains("rounded-3xl", cartOptions, StringComparison.Ordinal);
             Assert.Contains("max-w-7xl", cartOptions, StringComparison.Ordinal);
-            Assert.Contains("Actions=\"StorefrontCartViewOptions.Actions\"", cartPage, StringComparison.Ordinal);
+            Assert.Contains("Actions=\"@Context.CartActions\"", cartPage, StringComparison.Ordinal);
             Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", cartPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontCartView", cartPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<CartView", cartPage, StringComparison.Ordinal);
@@ -498,10 +498,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("bg-neutral-", checkoutShell, StringComparison.Ordinal);
             Assert.DoesNotContain("lg:", checkoutShell, StringComparison.Ordinal);
 
-            Assert.Contains("\"/api/checkout\"", checkoutOptions, StringComparison.Ordinal);
-            Assert.Contains("\"/api/checkout/place-order\"", checkoutOptions, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/checkout", checkoutOptions, StringComparison.Ordinal);
             Assert.Contains("rounded", checkoutOptions, StringComparison.Ordinal);
-            Assert.Contains("Actions=\"StorefrontCheckoutShellOptions.Actions\"", checkoutPage, StringComparison.Ordinal);
+            Assert.Contains("Actions=\"@Context.CheckoutActions\"", checkoutPage, StringComparison.Ordinal);
             Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", checkoutPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontCheckoutShell", checkoutPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<CheckoutShell", checkoutPage, StringComparison.Ordinal);
@@ -550,14 +549,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("text-neutral-", navigation, StringComparison.Ordinal);
             Assert.DoesNotContain("hover:", navigation, StringComparison.Ordinal);
 
-            Assert.Contains("new(\"profile\", \"Profile\", \"/account/profile\")", options, StringComparison.Ordinal);
-            Assert.Contains("new(\"orders\", \"Orders\", \"/account/orders\")", options, StringComparison.Ordinal);
-            Assert.Contains("new(\"addresses\", \"Addresses\", \"/account/addresses\")", options, StringComparison.Ordinal);
-            Assert.Contains("new(\"change-password\", \"Password\", \"/account/change-password\")", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/profile", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/orders", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/addresses", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("/account/change-password", options, StringComparison.Ordinal);
             Assert.Contains("rounded-3xl border border-neutral-200/70 bg-white/95", options, StringComparison.Ordinal);
             Assert.Contains("hover:bg-neutral-100", options, StringComparison.Ordinal);
 
-            Assert.Contains("NavigationItems=\"StorefrontAccountViewOptions.NavigationItems\"", host, StringComparison.Ordinal);
+            Assert.Contains("NavigationItems=\"@Context.NavigationItems\"", host, StringComparison.Ordinal);
             Assert.Contains("NavigationClasses=\"StorefrontAccountViewOptions.NavigationClasses\"", host, StringComparison.Ordinal);
             Assert.Contains("Items=\"NavigationItems\"", app, StringComparison.Ordinal);
             Assert.Contains("Classes=\"NavigationClasses\"", app, StringComparison.Ordinal);
@@ -617,15 +616,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.DoesNotContain("sm:", sharedSource, StringComparison.Ordinal);
             }
 
-            Assert.Contains("ProfileActions", options, StringComparison.Ordinal);
-            Assert.Contains("PasswordActions", options, StringComparison.Ordinal);
-            Assert.Contains("\"/api/account/profile\"", options, StringComparison.Ordinal);
-            Assert.Contains("\"/api/account/change-password\"", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontAccountProfileActionDescriptor", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontAccountPasswordActionDescriptor", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/account", options, StringComparison.Ordinal);
             Assert.Contains("ProfileForm = \"grid max-w-3xl gap-5 sm:grid-cols-2\"", options, StringComparison.Ordinal);
             Assert.Contains("SubmitButton = \"inline-flex items-center rounded bg-amber-500", options, StringComparison.Ordinal);
 
-            Assert.Contains("ProfileActions=\"StorefrontAccountViewOptions.ProfileActions\"", host, StringComparison.Ordinal);
-            Assert.Contains("PasswordActions=\"StorefrontAccountViewOptions.PasswordActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("ProfileActions=\"@Context.ProfileActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("PasswordActions=\"@Context.PasswordActions\"", host, StringComparison.Ordinal);
             Assert.Contains("AccountFormClasses=\"StorefrontAccountViewOptions.FormClasses\"", host, StringComparison.Ordinal);
             Assert.Contains("nameof(StorefrontAccountProfileEditor.Actions)", app, StringComparison.Ordinal);
             Assert.Contains("nameof(StorefrontAccountChangePasswordForm.Actions)", app, StringComparison.Ordinal);
@@ -688,13 +686,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("sm:", addresses, StringComparison.Ordinal);
             Assert.DoesNotContain("xl:", addresses, StringComparison.Ordinal);
 
-            Assert.Contains("AddressActions", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontAccountAddressActionDescriptor", options, StringComparison.Ordinal);
             Assert.Contains("AddressClasses", options, StringComparison.Ordinal);
-            Assert.Contains("\"/api/account/addresses\"", options, StringComparison.Ordinal);
-            Assert.Contains("\"/api/account/addresses/{addressId}/default-shipping\"", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/account", options, StringComparison.Ordinal);
             Assert.Contains("ListGrid = \"grid gap-4 xl:grid-cols-2\"", options, StringComparison.Ordinal);
 
-            Assert.Contains("AddressActions=\"StorefrontAccountViewOptions.AddressActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("AddressActions=\"@Context.AddressActions\"", host, StringComparison.Ordinal);
             Assert.Contains("AddressClasses=\"StorefrontAccountViewOptions.AddressClasses\"", host, StringComparison.Ordinal);
             Assert.Contains("nameof(StorefrontAccountAddressBook.Actions)", app, StringComparison.Ordinal);
             Assert.Contains("nameof(StorefrontAccountAddressBook.Classes)", app, StringComparison.Ordinal);
@@ -761,14 +758,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.DoesNotContain("lg:", sharedSource, StringComparison.Ordinal);
             }
 
-            Assert.Contains("OrderActions", options, StringComparison.Ordinal);
-            Assert.Contains("\"/api/account/orders?page={pageNumber}\"", options, StringComparison.Ordinal);
-            Assert.Contains("\"/api/account/orders/{orderReference}/receipt\"", options, StringComparison.Ordinal);
-            Assert.Contains("\"/account/orders/{orderReference}\"", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontAccountOrderActionDescriptor", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/account", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/account/orders", options, StringComparison.Ordinal);
             Assert.Contains("OrderListClasses", options, StringComparison.Ordinal);
             Assert.Contains("OrderDetailClasses", options, StringComparison.Ordinal);
 
-            Assert.Contains("OrderActions=\"StorefrontAccountViewOptions.OrderActions\"", host, StringComparison.Ordinal);
+            Assert.Contains("OrderActions=\"@Context.OrderActions\"", host, StringComparison.Ordinal);
             Assert.Contains("OrderListClasses=\"StorefrontAccountViewOptions.OrderListClasses\"", host, StringComparison.Ordinal);
             Assert.Contains("OrderDetailClasses=\"StorefrontAccountViewOptions.OrderDetailClasses\"", host, StringComparison.Ordinal);
             Assert.Contains("nameof(StorefrontAccountOrderList.Actions)", app, StringComparison.Ordinal);
@@ -778,13 +774,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void AccountNavigationItems_UseConcreteSharedArrayForWasmHydration()
+        public void AccountNavigationItems_AreProvidedByPresentationContextForWasmHydration()
         {
             var options = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
+            var host = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var app = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
-            Assert.Contains("public static AccountNavigationItem[] NavigationItems { get; }", options, StringComparison.Ordinal);
+            Assert.DoesNotContain("NavigationItems", options, StringComparison.Ordinal);
             Assert.DoesNotContain("public static IReadOnlyList<AccountNavigationItem> NavigationItems", options, StringComparison.Ordinal);
+            Assert.Contains("NavigationItems=\"@Context.NavigationItems\"", host, StringComparison.Ordinal);
+            Assert.Contains("IReadOnlyList<AccountNavigationItem> NavigationItems", app, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -813,7 +815,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             foreach (var expectedRoute in new[]
             {
                 "AccountRouteParser.Resolve(Path, RouteDescriptor)",
-                "RouteDescriptor=\"StorefrontAccountViewOptions.RouteDescriptor\""
+                "RouteDescriptor=\"@Context.RouteDescriptor\""
             })
             {
                 Assert.Contains(expectedRoute, app + host, StringComparison.Ordinal);

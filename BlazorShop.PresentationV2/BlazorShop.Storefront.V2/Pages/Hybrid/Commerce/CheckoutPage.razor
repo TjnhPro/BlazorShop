@@ -14,7 +14,7 @@
     {
         <StorefrontCheckoutShell InitialState="Context.CheckoutState"
                                  DataMode="StorefrontFeatureDataMode.InitialSnapshot"
-                                 Actions="StorefrontCheckoutShellOptions.Actions"
+                                 Actions="@Context.CheckoutActions"
                                  Classes="StorefrontCheckoutShellOptions.Classes"
                                  ShowPanel="false"
                                  @rendermode="InteractiveWebAssembly" />
@@ -28,7 +28,7 @@
     {
         <StorefrontCheckoutShell InitialState="Context.CheckoutState"
                                  DataMode="StorefrontFeatureDataMode.InitialSnapshot"
-                                 Actions="StorefrontCheckoutShellOptions.Actions"
+                                 Actions="@Context.CheckoutActions"
                                  Classes="StorefrontCheckoutShellOptions.Classes"
                                  ShowPanel="false"
                                  @rendermode="InteractiveWebAssembly" />

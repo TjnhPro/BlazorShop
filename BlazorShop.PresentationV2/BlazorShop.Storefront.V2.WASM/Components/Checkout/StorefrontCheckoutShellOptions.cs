@@ -2,13 +2,6 @@ namespace BlazorShop.Storefront.V2.WASM.Components.Checkout;
 
 public static class StorefrontCheckoutShellOptions
 {
-    public static BlazorShop.Storefront.Components.Headless.Checkout.StorefrontCheckoutActionDescriptor Actions { get; } = new(
-        "/api/checkout",
-        "/api/checkout/shipping-method",
-        "/api/checkout/payment-method",
-        "/api/checkout/review",
-        "/api/checkout/place-order");
-
     public static StorefrontCheckoutViewClasses Classes { get; } = new()
     {
         Shell = "mb-6 rounded border border-neutral-200 bg-white px-5 py-4",
