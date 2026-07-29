@@ -18,17 +18,6 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         ".yml",
     ];
 
-    private static readonly string[] ForbiddenProjectReferenceFragments =
-    [
-        "BlazorShop.Application",
-        "BlazorShop.Domain",
-        "BlazorShop.Infrastructure",
-        "BlazorShop.CommerceNode.API",
-        "BlazorShop.ControlPlane.API",
-        "BlazorShop.ControlPlane.Web",
-        "BlazorShop.Web.SharedV2",
-    ];
-
     private static readonly string[] ForbiddenSourceTokens =
     [
         "HttpClient",
@@ -212,47 +201,25 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
                 continue;
             }
 
-            if (ForbiddenProjectReferenceFragments.Any(fragment => reference.Contains(fragment, StringComparison.OrdinalIgnoreCase))
-                || reference.Contains("BlazorShop.Storefront.Runtime", StringComparison.OrdinalIgnoreCase)
-                || reference.Contains("BlazorShop.Storefront.Client", StringComparison.OrdinalIgnoreCase)
-                || reference.Contains("BlazorShop.Storefront.V2", StringComparison.OrdinalIgnoreCase)
-                || reference.Contains("BlazorShop.Storefront.", StringComparison.OrdinalIgnoreCase))
-            {
-                violations.Add(StorefrontVisualBoundaryViolation.Project(
-                    profile.RelativeProjectPath,
-                    $"ProjectReference:{reference}",
-                    "Visual consumers should depend on Storefront Presentation/Components only; move runtime/client/backend logic behind Presentation."));
-            }
+            violations.Add(StorefrontVisualBoundaryViolation.Project(
+                profile.RelativeProjectPath,
+                $"ProjectReference:{reference}",
+                "Visual consumer project references must be explicitly allowlisted by profile; move runtime/client/backend logic behind Presentation or Browser."));
         }
 
         foreach (var package in document.Descendants("PackageReference")
             .Select(element => element.Attribute("Include")?.Value ?? string.Empty)
             .Where(value => !string.IsNullOrWhiteSpace(value)))
         {
-            var isRuntimeOrClient = package.Equals("BlazorShop.Storefront.Runtime", StringComparison.OrdinalIgnoreCase)
-                || package.Equals("BlazorShop.Storefront.Client", StringComparison.OrdinalIgnoreCase);
-            if (isRuntimeOrClient)
-            {
-                violations.Add(StorefrontVisualBoundaryViolation.Project(
-                    profile.RelativeProjectPath,
-                    $"PackageReference:{package}",
-                    "Visual consumers must not compile against Runtime/Client packages. Version metadata is allowed only in non-project files such as props or YAML."));
-                continue;
-            }
-
             if (profile.AllowedPackageReferences.Contains(package, StringComparer.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            if (package.StartsWith("BlazorShop.CommerceNode", StringComparison.OrdinalIgnoreCase)
-                || package.StartsWith("BlazorShop.ControlPlane", StringComparison.OrdinalIgnoreCase))
-            {
-                violations.Add(StorefrontVisualBoundaryViolation.Project(
-                    profile.RelativeProjectPath,
-                    $"PackageReference:{package}",
-                    "Visual consumers should not compile against backend packages; move runtime logic behind Storefront Presentation."));
-            }
+            violations.Add(StorefrontVisualBoundaryViolation.Project(
+                profile.RelativeProjectPath,
+                $"PackageReference:{package}",
+                "Visual consumer package references must be explicitly allowlisted by profile. Runtime/Client package metadata belongs outside visual projects."));
         }
     }
 
@@ -305,8 +272,7 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
                 source,
                 ForbiddenSourceTokens,
                 "Move transport, service location, endpoint routing, and application-service implementations to Storefront Presentation.",
-                violations,
-                token => IsAllowedSourceToken(profile, relativePath, token));
+                violations);
             ValidateSourcePatterns(relativePath, source, ForbiddenSourcePatterns, "Move Browser request DTO construction into BlazorShop.Storefront.Browser controllers.", violations);
             ValidateBootstrapSource(profile, relativePath, source, violations);
 
@@ -378,16 +344,6 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
                 "missing AddStorefrontBrowserRuntime(builder.HostEnvironment)",
                 "V2.WASM bootstrap must use the Browser runtime registration extension instead of registering transport/application services directly."));
         }
-    }
-
-    private static bool IsAllowedSourceToken(StorefrontVisualConsumerProfile profile, string relativePath, string token)
-    {
-        if (profile.AllowedRouteDescriptorRelativePaths?.Contains(relativePath, StringComparer.OrdinalIgnoreCase) != true)
-        {
-            return false;
-        }
-
-        return token is "/api/cart" or "/api/checkout" or "/api/consent" or "/api/product-selection-preview";
     }
 
     private static BrowserForbiddenPattern RawPreviewPattern(string fieldName)
@@ -532,8 +488,7 @@ internal sealed record StorefrontVisualConsumerProfile(
     string RelativeProjectPath,
     IReadOnlyCollection<string> AllowedProjectReferenceFragments,
     IReadOnlyCollection<string> AllowedPackageReferences,
-    IReadOnlyCollection<string> AllowedSourceRelativePaths,
-    IReadOnlyCollection<string>? AllowedRouteDescriptorRelativePaths = null)
+    IReadOnlyCollection<string> AllowedSourceRelativePaths)
 {
     public string AbsoluteProjectPath => Path.Combine(AbsoluteRoot, RelativeProjectPath.Replace('/', Path.DirectorySeparatorChar));
 }

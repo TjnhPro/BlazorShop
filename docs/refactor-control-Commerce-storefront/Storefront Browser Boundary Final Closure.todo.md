@@ -367,45 +367,45 @@ Goal: make static tests enforce the final boundary instead of legalizing the old
 
 ### Implementation
 
-- [ ] Remove `AllowedRouteDescriptorRelativePaths` from `StorefrontVisualConsumerProfile`.
-- [ ] Remove `IsAllowedSourceToken()` exception logic for route descriptors.
-- [ ] Keep `/api/cart`, `/api/checkout`, `/api/consent`, and `/api/product-selection-preview` forbidden in visual consumer source.
-- [ ] Apply the no-`/api/` visual rule to:
-  - [ ] `BlazorShop.Storefront.V2`.
-  - [ ] `BlazorShop.Storefront.V2.WASM`.
-  - [ ] `BlazorShop.Storefront.Starter`.
-  - [ ] generated visual source scanned by StorefrontBuilder proof.
-- [ ] Keep allowed route tokens only in Presentation, Browser tests, endpoint tests, or explicitly non-visual source.
-- [ ] Convert project reference validation to strict allowlist:
-  - [ ] if a `ProjectReference` is not explicitly allowed for the profile, fail.
-  - [ ] do not only fail known forbidden names.
-- [ ] Convert package reference validation to strict allowlist where practical:
-  - [ ] allow framework packages needed by the visual host.
-  - [ ] allow `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Components`, and `BlazorShop.Storefront.Browser` only where that profile needs them.
-  - [ ] keep Runtime/Client package metadata outside visual `.csproj` as already required.
-- [ ] Update tests that currently assert route ownership in V2.WASM options:
-  - [ ] `StorefrontV2WASMRuntimeFoundationTests`.
-  - [ ] `StorefrontCommerceFlowCutoverTests`.
-  - [ ] `StorefrontComponentsHeadlessPresentationRefactorTests`.
-  - [ ] Any visual-only boundary test that still treats V2.WASM options as descriptor owners.
-- [ ] Add negative validator fixture:
-  - [ ] unknown `Customer.Storefront.Services.csproj` reference fails.
-  - [ ] unknown `MyCompany.Application.csproj` reference fails.
-  - [ ] `/api/cart` in any V2.WASM option file fails.
-- [ ] Add positive validator fixture:
-  - [ ] V2.WASM can reference Browser and Components.
-  - [ ] V2 server can reference Presentation, Browser, Components, ServiceDefaults if currently needed.
-  - [ ] Starter can reference Presentation and Components under current architecture.
+- [x] Remove `AllowedRouteDescriptorRelativePaths` from `StorefrontVisualConsumerProfile`.
+- [x] Remove `IsAllowedSourceToken()` exception logic for route descriptors.
+- [x] Keep `/api/cart`, `/api/checkout`, `/api/consent`, and `/api/product-selection-preview` forbidden in visual consumer source.
+- [x] Apply the no-`/api/` visual rule to:
+  - [x] `BlazorShop.Storefront.V2`.
+  - [x] `BlazorShop.Storefront.V2.WASM`.
+  - [x] `BlazorShop.Storefront.Starter`.
+  - [x] generated visual source scanned by StorefrontBuilder proof.
+- [x] Keep allowed route tokens only in Presentation, Browser tests, endpoint tests, or explicitly non-visual source.
+- [x] Convert project reference validation to strict allowlist:
+  - [x] if a `ProjectReference` is not explicitly allowed for the profile, fail.
+  - [x] do not only fail known forbidden names.
+- [x] Convert package reference validation to strict allowlist where practical:
+  - [x] allow framework packages needed by the visual host.
+  - [x] allow `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Components`, and `BlazorShop.Storefront.Browser` only where that profile needs them.
+  - [x] keep Runtime/Client package metadata outside visual `.csproj` as already required.
+- [x] Update tests that currently assert route ownership in V2.WASM options:
+  - [x] `StorefrontV2WASMRuntimeFoundationTests`.
+  - [x] `StorefrontCommerceFlowCutoverTests`.
+  - [x] `StorefrontComponentsHeadlessPresentationRefactorTests`.
+  - [x] Any visual-only boundary test that still treats V2.WASM options as descriptor owners.
+- [x] Add negative validator fixture:
+  - [x] unknown `Customer.Storefront.Services.csproj` reference fails.
+  - [x] unknown `MyCompany.Application.csproj` reference fails.
+  - [x] `/api/cart` in any V2.WASM option file fails.
+- [x] Add positive validator fixture:
+  - [x] V2.WASM can reference Browser and Components.
+  - [x] V2 server can reference Presentation, Browser, Components, ServiceDefaults if currently needed.
+  - [x] Starter can reference Presentation and Components under current architecture.
 
 ### Tests
 
-- [ ] Run focused architecture tests:
+- [x] Run focused architecture tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests" --no-restore
 ```
 
-- [ ] Run focused Presentation/browser tests:
+- [x] Run focused Presentation/browser tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontBrowser|FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests" --no-restore
@@ -413,10 +413,14 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualif
 
 ### Acceptance Criteria
 
-- [ ] Visual boundary validator no longer contains route descriptor exceptions.
-- [ ] Visual projects fail if they contain same-origin `/api/*` browser action routes.
-- [ ] Unknown project/package references fail by default unless explicitly allowed.
-- [ ] Tests protect the new ownership model rather than preserving V2.WASM route ownership.
+- [x] Visual boundary validator no longer contains route descriptor exceptions.
+- [x] Visual projects fail if they contain same-origin `/api/*` browser action routes.
+- [x] Unknown project/package references fail by default unless explicitly allowed.
+- [x] Tests protect the new ownership model rather than preserving V2.WASM route ownership.
+  - Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore` passed with known MessagePack/Browserslist warnings.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests" --logger "trx;LogFileName=browser-boundary-f184-architecture.trx" --blame-hang --blame-hang-timeout 5m` passed 36/36.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontBrowser|FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests" --logger "trx;LogFileName=browser-boundary-f184-browser-presentation.trx" --blame-hang --blame-hang-timeout 5m` passed 112/112.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests" --logger "trx;LogFileName=browser-boundary-f184-route-owner-tests.trx" --blame-hang --blame-hang-timeout 5m` passed 35/35.
 
 ## Phase F1.85 - Browser Re-entry Playwright QA
 

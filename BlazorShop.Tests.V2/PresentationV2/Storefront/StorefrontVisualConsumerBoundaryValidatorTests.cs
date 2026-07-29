@@ -269,6 +269,74 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
     }
 
     [Fact]
+    public void F1_84_SharedValidator_FailsUnknownReferencesAndVisualApiRoutes()
+    {
+        var fixtureRoot = CreateFixtureRoot();
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "BadWasm.csproj"),
+                """
+                <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+                  <ItemGroup>
+                    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
+                    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />
+                    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+                    <ProjectReference Include="..\Customer.Storefront.Services\Customer.Storefront.Services.csproj" />
+                    <ProjectReference Include="..\MyCompany.Application\MyCompany.Application.csproj" />
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "Program.cs"),
+                """
+                using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+                using BlazorShop.Storefront.Browser;
+
+                var builder = WebAssemblyHostBuilder.CreateDefault(args);
+                builder.Services.AddStorefrontBrowserRuntime(builder.HostEnvironment);
+                await builder.Build().RunAsync();
+                """);
+            Directory.CreateDirectory(Path.Combine(fixtureRoot, "Components", "Cart"));
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "Components", "Cart", "StorefrontCartViewOptions.cs"),
+                """
+                public static class StorefrontCartViewOptions
+                {
+                    public const string CurrentCartRoute = "/api/cart";
+                }
+                """);
+
+            var violations = validator.Validate(new StorefrontVisualConsumerProfile(
+                "BadWASM",
+                fixtureRoot,
+                "BadWasm.csproj",
+                AllowedProjectReferenceFragments:
+                [
+                    "BlazorShop.Storefront.Browser",
+                    "BlazorShop.Storefront.Components",
+                ],
+                AllowedPackageReferences:
+                [
+                    "Microsoft.AspNetCore.Components.WebAssembly",
+                ],
+                AllowedSourceRelativePaths: []));
+
+            Assert.Contains(violations, violation => violation.Forbidden.Contains("ProjectReference:../Customer.Storefront.Services/Customer.Storefront.Services.csproj", StringComparison.Ordinal));
+            Assert.Contains(violations, violation => violation.Forbidden.Contains("ProjectReference:../MyCompany.Application/MyCompany.Application.csproj", StringComparison.Ordinal));
+            Assert.Contains(violations, violation => violation.RelativePath == "Components/Cart/StorefrontCartViewOptions.cs"
+                && violation.Forbidden == "/api/cart");
+        }
+        finally
+        {
+            if (Directory.Exists(fixtureRoot))
+            {
+                Directory.Delete(fixtureRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void F1_69_SharedValidator_FailsWasmOrchestrationNegativeFixture()
     {
         var fixtureRoot = CreateFixtureRoot();
@@ -415,12 +483,7 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             [
                 "Microsoft.AspNetCore.Components.WebAssembly",
             ],
-            AllowedSourceRelativePaths: [],
-            AllowedRouteDescriptorRelativePaths:
-            [
-                "Components/Cart/StorefrontCartViewOptions.cs",
-                "Components/Checkout/StorefrontCheckoutShellOptions.cs",
-            ]);
+            AllowedSourceRelativePaths: []);
     }
 
     private static string CreateFixtureRoot()

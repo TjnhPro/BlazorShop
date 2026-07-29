@@ -151,7 +151,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StatusCodes.Status409Conflict", cartEndpointSupport, StringComparison.Ordinal);
             Assert.Contains("ValidateLocalCartAntiforgeryAsync", cartEndpoints, StringComparison.Ordinal);
             Assert.Contains("_actions.CurrentCartRoute", cartComponents, StringComparison.Ordinal);
-            Assert.Contains("\"/api/cart\"", cartOptions, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/cart", cartOptions, StringComparison.Ordinal);
             Assert.DoesNotContain("localhost:5180", cartComponents, StringComparison.Ordinal);
         }
 
@@ -215,7 +215,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status409Conflict", checkoutEndpointSupport + checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("_actions.CurrentCheckoutRoute", checkoutComponents, StringComparison.Ordinal);
-            Assert.Contains("\"/api/checkout", checkoutOptions, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"/api/checkout", checkoutOptions, StringComparison.Ordinal);
             Assert.DoesNotContain("localhost:5180", checkoutComponents, StringComparison.Ordinal);
         }
 
