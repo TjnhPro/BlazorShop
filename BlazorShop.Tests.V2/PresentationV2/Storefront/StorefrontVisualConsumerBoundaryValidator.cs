@@ -33,6 +33,7 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
     [
         "HttpClient",
         "IHttpClientFactory",
+        "StorefrontLocalApiClient",
         "fetch(",
         "XMLHttpRequest",
         "/api/storefront/",
@@ -42,13 +43,62 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         "/api/product-selection-preview",
         "blazorshop-antiforgery-token",
         "blazorshop-antiforgery-header",
+        "IServiceProvider",
         "[Inject] IServiceProvider",
+        "GetAsync<",
+        "PostJsonAsync<",
+        "PutJsonAsync<",
+        "DeleteAsync<",
         "GetRequiredService<",
+        "GetRequiredService(",
         "GetService<",
+        "GetService(",
+        "IdempotencyKey",
+        "ExpectedCartVersion",
+        "ExpectedCheckoutVersion",
         ": IStorefront",
         ": StorefrontRuntime",
         "StorefrontApiClient",
         "ManualStorefront",
+    ];
+
+    private static readonly BrowserForbiddenPattern[] ForbiddenSourcePatterns =
+    [
+        new(
+            "StorefrontBrowser*Request",
+            new Regex(@"\bStorefrontBrowser[A-Za-z0-9_]*Request\b", RegexOptions.CultureInvariant)),
+    ];
+
+    private static readonly string[] ForbiddenBootstrapTokens =
+    [
+        "AddHttpClient",
+        "AddScoped<",
+        "AddScoped(",
+        "AddSingleton<",
+        "AddSingleton(",
+        "AddTransient<",
+        "AddTransient(",
+        "MapGet(",
+        "MapPost(",
+        "MapPut(",
+        "MapDelete(",
+        "MapMethods(",
+        "MapGroup(",
+        "UseMiddleware",
+        "UseWhen(",
+        "AddStorefrontRuntime",
+        "AddStorefrontPlatformRuntime",
+        "AddStorefrontPresentation(",
+        "UseStorefrontPresentation(",
+        "MapStorefrontPresentation(",
+        "MapRazorComponents<",
+    ];
+
+    private static readonly string[] ForbiddenWasmProgramTokens =
+    [
+        "AddStorefrontBrowserCart",
+        "AddStorefrontBrowserCheckout",
+        "AddStorefrontBrowserAccount",
     ];
 
     private static readonly string[] ForbiddenBrowserCommandTokens =
@@ -236,24 +286,21 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         {
             var relativePath = ToProfileRelativePath(profile, file);
             if (profile.AllowedSourceRelativePaths.Contains(relativePath, StringComparer.OrdinalIgnoreCase)
-                || IsAllowedBootstrapFile(relativePath))
+                || IsAppSettingsFile(relativePath))
             {
                 continue;
             }
 
             var source = File.ReadAllText(file);
-            foreach (var token in ForbiddenSourceTokens)
-            {
-                if (!source.Contains(token, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                violations.Add(StorefrontVisualBoundaryViolation.Source(
-                    relativePath,
-                    token,
-                    "Move transport, service location, endpoint routing, and application-service implementations to Storefront Presentation."));
-            }
+            ValidateSourceTokens(
+                relativePath,
+                source,
+                ForbiddenSourceTokens,
+                "Move transport, service location, endpoint routing, and application-service implementations to Storefront Presentation.",
+                violations,
+                token => IsAllowedSourceToken(profile, relativePath, token));
+            ValidateSourcePatterns(relativePath, source, ForbiddenSourcePatterns, "Move Browser request DTO construction into BlazorShop.Storefront.Browser controllers.", violations);
+            ValidateBootstrapSource(profile, relativePath, source, violations);
 
             if (IsBrowserScript(relativePath))
             {
@@ -262,6 +309,66 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
                 ValidateBrowserScriptPatterns(relativePath, source, ForbiddenBrowserBusinessPatterns, "Business result interpretation belongs in Storefront Presentation browser binders or server-side services.", violations);
             }
         }
+    }
+
+    private static void ValidateBootstrapSource(
+        StorefrontVisualConsumerProfile profile,
+        string relativePath,
+        string source,
+        List<StorefrontVisualBoundaryViolation> violations)
+    {
+        var fileName = Path.GetFileName(relativePath);
+        if (!fileName.Equals("Program.cs", StringComparison.Ordinal)
+            && !fileName.EndsWith("FoundationViewRegistration.cs", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        ValidateSourceTokens(
+            relativePath,
+            source,
+            ForbiddenBootstrapTokens,
+            "Bootstrap files may compose the Storefront application and view registrations only; move service registration, middleware, endpoint mapping, and transport setup to Storefront Presentation or Browser runtime.",
+            violations);
+
+        if (!fileName.Equals("Program.cs", StringComparison.Ordinal)
+            || !profile.Name.Contains("WASM", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        ValidateSourceTokens(
+            relativePath,
+            source,
+            ForbiddenWasmProgramTokens,
+            "V2.WASM Program.cs must call AddStorefrontBrowserRuntime only; Browser runtime owns feature service registration.",
+            violations);
+
+        if (!source.Contains("WebAssemblyHostBuilder.CreateDefault(args)", StringComparison.Ordinal))
+        {
+            violations.Add(StorefrontVisualBoundaryViolation.Source(
+                relativePath,
+                "missing WebAssemblyHostBuilder.CreateDefault(args)",
+                "V2.WASM bootstrap should only create the WASM host builder and delegate runtime registration to Browser."));
+        }
+
+        if (!source.Contains("AddStorefrontBrowserRuntime(builder.HostEnvironment)", StringComparison.Ordinal))
+        {
+            violations.Add(StorefrontVisualBoundaryViolation.Source(
+                relativePath,
+                "missing AddStorefrontBrowserRuntime(builder.HostEnvironment)",
+                "V2.WASM bootstrap must use the Browser runtime registration extension instead of registering transport/application services directly."));
+        }
+    }
+
+    private static bool IsAllowedSourceToken(StorefrontVisualConsumerProfile profile, string relativePath, string token)
+    {
+        if (profile.AllowedRouteDescriptorRelativePaths?.Contains(relativePath, StringComparer.OrdinalIgnoreCase) != true)
+        {
+            return false;
+        }
+
+        return token is "/api/cart" or "/api/checkout" or "/api/consent" or "/api/product-selection-preview";
     }
 
     private static BrowserForbiddenPattern RawPreviewPattern(string fieldName)
@@ -279,6 +386,17 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         string remediation,
         List<StorefrontVisualBoundaryViolation> violations)
     {
+        ValidateSourceTokens(relativePath, source, tokens, remediation, violations);
+    }
+
+    private static void ValidateSourceTokens(
+        string relativePath,
+        string source,
+        IEnumerable<string> tokens,
+        string remediation,
+        List<StorefrontVisualBoundaryViolation> violations,
+        Func<string, bool>? isAllowed = null)
+    {
         foreach (var token in tokens)
         {
             if (!source.Contains(token, StringComparison.Ordinal))
@@ -286,9 +404,35 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
                 continue;
             }
 
+            if (isAllowed?.Invoke(token) == true)
+            {
+                continue;
+            }
+
             violations.Add(StorefrontVisualBoundaryViolation.Source(
                 relativePath,
                 token,
+                remediation));
+        }
+    }
+
+    private static void ValidateSourcePatterns(
+        string relativePath,
+        string source,
+        IEnumerable<BrowserForbiddenPattern> patterns,
+        string remediation,
+        List<StorefrontVisualBoundaryViolation> violations)
+    {
+        foreach (var pattern in patterns)
+        {
+            if (!pattern.Pattern.IsMatch(source))
+            {
+                continue;
+            }
+
+            violations.Add(StorefrontVisualBoundaryViolation.Source(
+                relativePath,
+                pattern.Forbidden,
                 remediation));
         }
     }
@@ -331,12 +475,10 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         }
     }
 
-    private static bool IsAllowedBootstrapFile(string relativePath)
+    private static bool IsAppSettingsFile(string relativePath)
     {
         var fileName = Path.GetFileName(relativePath);
-        return fileName.Equals("Program.cs", StringComparison.Ordinal)
-            || fileName.EndsWith("FoundationViewRegistration.cs", StringComparison.Ordinal)
-            || fileName.Equals("appsettings.json", StringComparison.Ordinal)
+        return fileName.Equals("appsettings.json", StringComparison.Ordinal)
             || fileName.StartsWith("appsettings.", StringComparison.Ordinal);
     }
 
@@ -371,7 +513,8 @@ internal sealed record StorefrontVisualConsumerProfile(
     string RelativeProjectPath,
     IReadOnlyCollection<string> AllowedProjectReferenceFragments,
     IReadOnlyCollection<string> AllowedPackageReferences,
-    IReadOnlyCollection<string> AllowedSourceRelativePaths)
+    IReadOnlyCollection<string> AllowedSourceRelativePaths,
+    IReadOnlyCollection<string>? AllowedRouteDescriptorRelativePaths = null)
 {
     public string AbsoluteProjectPath => Path.Combine(AbsoluteRoot, RelativeProjectPath.Replace('/', Path.DirectorySeparatorChar));
 }

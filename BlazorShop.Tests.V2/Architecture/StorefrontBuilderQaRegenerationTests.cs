@@ -53,6 +53,8 @@ namespace BlazorShop.Tests.Architecture
                 "storefront-builder.functional.js",
                 "wwwroot/js/visual",
                 "Generated visual JS must not invoke application commands",
+                "Generated visual source must not own browser transport",
+                "Generated bootstrap files may only compose Storefront application and view registrations",
             })
             {
                 Assert.Contains(marker, validator, StringComparison.Ordinal);
@@ -67,6 +69,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-STATIC-005", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-STATIC-006", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-STATIC-007", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-008", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-STATIC-009", validator, StringComparison.Ordinal);
         }
 
         [Fact]

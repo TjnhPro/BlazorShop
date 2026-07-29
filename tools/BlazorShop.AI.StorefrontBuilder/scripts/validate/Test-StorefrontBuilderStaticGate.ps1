@@ -59,6 +59,76 @@ if (-not $versions.Contains("StorefrontClientPackageVersion", [System.StringComp
     throw "[SFB-STATIC-004] Package compatibility metadata is missing."
 }
 
+$sourceFiles = Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File -Include *.cs,*.razor,*.js,*.mjs,*.ts |
+    Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" }
+
+$forbiddenSourceTokens = @(
+    "StorefrontLocalApiClient",
+    "GetAsync<",
+    "PostJsonAsync<",
+    "PutJsonAsync<",
+    "DeleteAsync<",
+    "IServiceProvider",
+    "GetService(",
+    "GetService<",
+    "GetRequiredService(",
+    "GetRequiredService<",
+    "IdempotencyKey",
+    "ExpectedCartVersion",
+    "ExpectedCheckoutVersion",
+    "HttpClient",
+    "fetch(",
+    "XMLHttpRequest"
+)
+
+foreach ($sourceFile in $sourceFiles) {
+    $relativeToProject = [System.IO.Path]::GetRelativePath($ProjectRoot, $sourceFile.FullName).Replace("\", "/")
+    $content = Get-Content -LiteralPath $sourceFile.FullName -Raw
+    foreach ($token in $forbiddenSourceTokens) {
+        if ($content.Contains($token, [System.StringComparison]::Ordinal)) {
+            throw "[SFB-STATIC-008] Generated visual source must not own browser transport, service location, or Browser request DTO orchestration: $relativeToProject contains $token"
+        }
+    }
+
+    if ([regex]::IsMatch($content, "\bStorefrontBrowser[A-Za-z0-9_]*Request\b")) {
+        throw "[SFB-STATIC-008] Generated visual source must not construct Browser request DTOs: $relativeToProject contains StorefrontBrowser*Request"
+    }
+}
+
+$forbiddenBootstrapTokens = @(
+    "AddHttpClient",
+    "AddScoped<",
+    "AddScoped(",
+    "AddSingleton<",
+    "AddSingleton(",
+    "AddTransient<",
+    "AddTransient(",
+    "MapGet(",
+    "MapPost(",
+    "MapPut(",
+    "MapDelete(",
+    "MapMethods(",
+    "MapGroup(",
+    "UseMiddleware",
+    "UseWhen(",
+    "AddStorefrontRuntime",
+    "AddStorefrontPlatformRuntime",
+    "AddStorefrontPresentation(",
+    "UseStorefrontPresentation(",
+    "MapStorefrontPresentation(",
+    "MapRazorComponents<"
+)
+
+foreach ($sourceFile in $sourceFiles | Where-Object { $_.Name -eq "Program.cs" -or $_.Name.EndsWith("FoundationViewRegistration.cs", [System.StringComparison]::Ordinal) }) {
+    $relativeToProject = [System.IO.Path]::GetRelativePath($ProjectRoot, $sourceFile.FullName).Replace("\", "/")
+    $content = Get-Content -LiteralPath $sourceFile.FullName -Raw
+    foreach ($token in $forbiddenBootstrapTokens) {
+        if ($content.Contains($token, [System.StringComparison]::Ordinal)) {
+            throw "[SFB-STATIC-009] Generated bootstrap files may only compose Storefront application and view registrations: $relativeToProject contains $token"
+        }
+    }
+}
+
 $functionalScript = Join-Path $ProjectRoot "wwwroot\js\storefront-builder.functional.js"
 if (Test-Path $functionalScript) {
     throw "[SFB-STATIC-005] Generated storefront must not emit copied browser application controller JS: wwwroot/js/storefront-builder.functional.js"

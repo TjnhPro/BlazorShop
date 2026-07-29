@@ -324,52 +324,52 @@ Goal: make `V2.WASM` subject to the same visual-consumer constraints as V2, Star
 
 ### Implementation
 
-- [ ] Add a dedicated `StorefrontV2WasmProfile()` to `StorefrontVisualConsumerBoundaryValidatorTests`.
-- [ ] Allow only these V2.WASM project references:
-  - [ ] `BlazorShop.Storefront.Components`
-  - [ ] `BlazorShop.Storefront.Browser`
-- [ ] Allow framework packages required for WASM hosting only.
-- [ ] For V2.WASM source, forbid:
-  - [ ] `StorefrontLocalApiClient`
-  - [ ] `GetAsync<`
-  - [ ] `PostJsonAsync<`
-  - [ ] `PutJsonAsync<`
-  - [ ] `DeleteAsync<`
-  - [ ] `IServiceProvider`
-  - [ ] `GetService(`
-  - [ ] `GetRequiredService<`
-  - [ ] `IdempotencyKey`
-  - [ ] `ExpectedCartVersion`
-  - [ ] `ExpectedCheckoutVersion`
-  - [ ] `StorefrontBrowser*Request`
-  - [ ] `HttpClient`
-  - [ ] `fetch(`
-  - [ ] `XMLHttpRequest`
-- [ ] Do not blanket-skip `Program.cs`.
-- [ ] Add bootstrap-specific validation:
-  - [ ] V2.WASM `Program.cs` may create builder.
-  - [ ] may configure base-address `HttpClient` only through Browser runtime registration if Browser runtime owns it.
-  - [ ] may call `AddStorefrontBrowserRuntime()`.
-  - [ ] must not register custom application services, endpoints, middleware, Runtime, Client, or Commerce Node options.
-- [ ] Add bootstrap-specific validation for `*FoundationViewRegistration.cs` in V2 and Starter:
-  - [ ] may call view registration helpers.
-  - [ ] may map visual component types.
-  - [ ] must not register services, middleware, callbacks, or endpoint lambdas.
-- [ ] Apply the bootstrap guardrail to future generated `Storefront.{Name}` projects through the shared validator.
+- [x] Add a dedicated `StorefrontV2WasmProfile()` to `StorefrontVisualConsumerBoundaryValidatorTests`.
+- [x] Allow only these V2.WASM project references:
+  - [x] `BlazorShop.Storefront.Components`
+  - [x] `BlazorShop.Storefront.Browser`
+- [x] Allow framework packages required for WASM hosting only.
+- [x] For V2.WASM source, forbid:
+  - [x] `StorefrontLocalApiClient`
+  - [x] `GetAsync<`
+  - [x] `PostJsonAsync<`
+  - [x] `PutJsonAsync<`
+  - [x] `DeleteAsync<`
+  - [x] `IServiceProvider`
+  - [x] `GetService(`
+  - [x] `GetRequiredService<`
+  - [x] `IdempotencyKey`
+  - [x] `ExpectedCartVersion`
+  - [x] `ExpectedCheckoutVersion`
+  - [x] `StorefrontBrowser*Request`
+  - [x] `HttpClient`
+  - [x] `fetch(`
+  - [x] `XMLHttpRequest`
+- [x] Do not blanket-skip `Program.cs`.
+- [x] Add bootstrap-specific validation:
+  - [x] V2.WASM `Program.cs` may create builder.
+  - [x] may configure base-address `HttpClient` only through Browser runtime registration if Browser runtime owns it.
+  - [x] may call `AddStorefrontBrowserRuntime()`.
+  - [x] must not register custom application services, endpoints, middleware, Runtime, Client, or Commerce Node options.
+- [x] Add bootstrap-specific validation for `*FoundationViewRegistration.cs` in V2 and Starter:
+  - [x] may call view registration helpers.
+  - [x] may map visual component types.
+  - [x] must not register services, middleware, callbacks, or endpoint lambdas.
+- [x] Apply the bootstrap guardrail to future generated `Storefront.{Name}` projects through the shared validator.
 
 ### Tests
 
-- [ ] `StorefrontVisualConsumerBoundaryValidatorTests` passes V2.WASM profile after cutover.
-- [ ] Negative fixture proves V2.WASM-style forbidden tokens fail.
-- [ ] Negative fixture proves `Program.cs` with `AddHttpClient`, `MapPost`, `UseMiddleware`, or `AddScoped` application services fails.
-- [ ] Negative fixture proves `FoundationViewRegistration.cs` with service registration fails.
-- [ ] Update StorefrontBuilder static gate to reuse or mirror bootstrap rules.
+- [x] `StorefrontVisualConsumerBoundaryValidatorTests` passes V2.WASM profile after cutover.
+- [x] Negative fixture proves V2.WASM-style forbidden tokens fail.
+- [x] Negative fixture proves `Program.cs` with `AddHttpClient`, `MapPost`, `UseMiddleware`, or `AddScoped` application services fails.
+- [x] Negative fixture proves `FoundationViewRegistration.cs` with service registration fails.
+- [x] Update StorefrontBuilder static gate to reuse or mirror bootstrap rules.
 
 ### Acceptance Criteria
 
-- [ ] V2.WASM is no longer an unvalidated visual consumer.
-- [ ] Bootstrap files are not validator escape hatches.
-- [ ] Future generated storefronts cannot hide application logic in `Program.cs`.
+- [x] V2.WASM is no longer an unvalidated visual consumer.
+- [x] Bootstrap files are not validator escape hatches.
+- [x] Future generated storefronts cannot hide application logic in `Program.cs`.
 
 ## Phase F1.70 - Semantic Event Encapsulation
 
@@ -507,7 +507,7 @@ Goal: remove stale tests, invert old expectations, and prove full unfiltered tes
 2. [x] F1.66 Cart browser controller cutover.
 3. [x] F1.67 Checkout browser controller cutover.
 4. [x] F1.68 Account browser controller cutover.
-5. [ ] F1.69 V2.WASM visual consumer guardrail.
+5. [x] F1.69 V2.WASM visual consumer guardrail.
 6. [ ] F1.70 Semantic event encapsulation.
 7. [ ] F1.71 Enhanced navigation and alias cleanup.
 8. [ ] F1.72 Test cleanup and full suite closure.

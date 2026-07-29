@@ -23,6 +23,14 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
     }
 
     [Fact]
+    public void F1_69_SharedValidator_PassesStorefrontV2Wasm()
+    {
+        var violations = validator.Validate(StorefrontV2WasmProfile());
+
+        Assert.Empty(violations);
+    }
+
+    [Fact]
     public void F1_51_SharedValidator_PassesGeneratedProofWhenPresent()
     {
         var generatedRoot = RepositoryPath("artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
@@ -114,6 +122,29 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             File.WriteAllText(
                 Path.Combine(fixtureRoot, "Components", "BadClient.cs"),
                 "public sealed class BadClient : IStorefrontCartClient { }");
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "Program.cs"),
+                """
+                var builder = WebApplication.CreateBuilder(args);
+                builder.Services.AddHttpClient();
+                builder.Services.AddScoped<BadService>();
+                var app = builder.Build();
+                app.UseMiddleware<BadMiddleware>();
+                app.MapPost("/bad", () => Results.Ok());
+                app.Run();
+                """);
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "StarterFoundationViewRegistration.cs"),
+                """
+                public static class StarterFoundationViewRegistration
+                {
+                    public static IServiceCollection AddStarterFoundationViews(this IServiceCollection services)
+                    {
+                        services.AddScoped<BadService>();
+                        return services.AddStorefrontFoundationViews(options => { });
+                    }
+                }
+                """);
 
             var violations = validator.Validate(new StorefrontVisualConsumerProfile(
                 "BadFixture",
@@ -127,8 +158,13 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             Assert.Contains(violations, violation => violation.Forbidden.Contains("PackageReference:BlazorShop.Storefront.Runtime", StringComparison.Ordinal));
             Assert.Contains(violations, violation => violation.Forbidden == "folder:Services");
             Assert.Contains(violations, violation => violation.Forbidden == "GetRequiredService<");
+            Assert.Contains(violations, violation => violation.Forbidden == "IServiceProvider");
             Assert.Contains(violations, violation => violation.Forbidden == "fetch(");
             Assert.Contains(violations, violation => violation.Forbidden == "XMLHttpRequest");
+            Assert.Contains(violations, violation => violation.Forbidden == "AddHttpClient");
+            Assert.Contains(violations, violation => violation.Forbidden == "AddScoped<");
+            Assert.Contains(violations, violation => violation.Forbidden == "MapPost(");
+            Assert.Contains(violations, violation => violation.Forbidden == "UseMiddleware");
             Assert.Contains(violations, violation => violation.Forbidden == ": IStorefront");
             Assert.Contains(violations, violation => violation.Forbidden == "application.cart");
             Assert.Contains(violations, violation => violation.Forbidden == "blazorShopStorefront.application");
@@ -170,6 +206,98 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
         }
     }
 
+    [Fact]
+    public void F1_69_SharedValidator_FailsWasmOrchestrationNegativeFixture()
+    {
+        var fixtureRoot = CreateFixtureRoot();
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "BadWasm.csproj"),
+                """
+                <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+                  <ItemGroup>
+                    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
+                    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />
+                    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "Program.cs"),
+                """
+                using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+                using BlazorShop.Storefront.Browser;
+
+                var builder = WebAssemblyHostBuilder.CreateDefault(args);
+                builder.Services.AddStorefrontBrowserCart();
+                builder.Services.AddHttpClient("bad");
+                await builder.Build().RunAsync();
+                """);
+            Directory.CreateDirectory(Path.Combine(fixtureRoot, "Components"));
+            File.WriteAllText(
+                Path.Combine(fixtureRoot, "Components", "BadAccount.razor"),
+                """
+                @inject IServiceProvider Services
+                @code {
+                    private StorefrontLocalApiClient? client;
+                    private HttpClient? httpClient;
+                    private StorefrontBrowserCartUpdateQuantityRequest? request;
+                    private string IdempotencyKey = "";
+                    private int ExpectedCartVersion;
+                    private int ExpectedCheckoutVersion;
+
+                    private async Task Submit()
+                    {
+                        var api = Services.GetService<StorefrontLocalApiClient>();
+                        await api!.GetAsync<object>("/api/cart");
+                        await api.PostJsonAsync<StorefrontBrowserCartUpdateQuantityRequest, object>("/api/cart", request!);
+                        await api.PutJsonAsync<StorefrontBrowserCartUpdateQuantityRequest, object>("/api/cart", request!);
+                        await api.DeleteAsync<object>("/api/cart");
+                    }
+                }
+                """);
+
+            var violations = validator.Validate(new StorefrontVisualConsumerProfile(
+                "BadWASM",
+                fixtureRoot,
+                "BadWasm.csproj",
+                AllowedProjectReferenceFragments:
+                [
+                    "BlazorShop.Storefront.Components",
+                    "BlazorShop.Storefront.Browser",
+                ],
+                AllowedPackageReferences:
+                [
+                    "Microsoft.AspNetCore.Components.WebAssembly",
+                ],
+                AllowedSourceRelativePaths: []));
+
+            Assert.Contains(violations, violation => violation.Forbidden == "StorefrontLocalApiClient");
+            Assert.Contains(violations, violation => violation.Forbidden == "GetAsync<");
+            Assert.Contains(violations, violation => violation.Forbidden == "PostJsonAsync<");
+            Assert.Contains(violations, violation => violation.Forbidden == "PutJsonAsync<");
+            Assert.Contains(violations, violation => violation.Forbidden == "DeleteAsync<");
+            Assert.Contains(violations, violation => violation.Forbidden == "StorefrontBrowser*Request");
+            Assert.Contains(violations, violation => violation.Forbidden == "IServiceProvider");
+            Assert.Contains(violations, violation => violation.Forbidden == "GetService<");
+            Assert.Contains(violations, violation => violation.Forbidden == "IdempotencyKey");
+            Assert.Contains(violations, violation => violation.Forbidden == "ExpectedCartVersion");
+            Assert.Contains(violations, violation => violation.Forbidden == "ExpectedCheckoutVersion");
+            Assert.Contains(violations, violation => violation.Forbidden == "HttpClient");
+            Assert.Contains(violations, violation => violation.Forbidden == "AddHttpClient");
+            Assert.Contains(violations, violation => violation.Forbidden == "AddStorefrontBrowserCart");
+            Assert.Contains(violations, violation => violation.Forbidden == "missing AddStorefrontBrowserRuntime(builder.HostEnvironment)");
+        }
+        finally
+        {
+            if (Directory.Exists(fixtureRoot))
+            {
+                Directory.Delete(fixtureRoot, recursive: true);
+            }
+        }
+    }
+
     private static StorefrontVisualConsumerProfile StorefrontV2Profile()
     {
         return new StorefrontVisualConsumerProfile(
@@ -179,6 +307,7 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             AllowedProjectReferenceFragments:
             [
                 "BlazorShop.ServiceDefaults",
+                "BlazorShop.Storefront.Browser",
                 "BlazorShop.Storefront.Components",
                 "BlazorShop.Storefront.Presentation",
                 "BlazorShop.Storefront.V2.WASM",
@@ -207,6 +336,29 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
                 "Microsoft.AspNetCore.Components.WebAssembly.Server",
             ],
             AllowedSourceRelativePaths: []);
+    }
+
+    private static StorefrontVisualConsumerProfile StorefrontV2WasmProfile()
+    {
+        return new StorefrontVisualConsumerProfile(
+            "StorefrontV2WASM",
+            RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM"),
+            "BlazorShop.Storefront.V2.WASM.csproj",
+            AllowedProjectReferenceFragments:
+            [
+                "BlazorShop.Storefront.Components",
+                "BlazorShop.Storefront.Browser",
+            ],
+            AllowedPackageReferences:
+            [
+                "Microsoft.AspNetCore.Components.WebAssembly",
+            ],
+            AllowedSourceRelativePaths: [],
+            AllowedRouteDescriptorRelativePaths:
+            [
+                "Components/Cart/StorefrontCartViewOptions.cs",
+                "Components/Checkout/StorefrontCheckoutShellOptions.cs",
+            ]);
     }
 
     private static string CreateFixtureRoot()
