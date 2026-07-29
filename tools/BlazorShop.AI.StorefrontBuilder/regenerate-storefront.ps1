@@ -478,6 +478,63 @@ function Invoke-RegenerationCandidateGeneration {
     }
 }
 
+function Remove-CandidateManifestEntries {
+    param(
+        [Parameter(Mandatory = $true)][string]$ManifestPath,
+        [Parameter(Mandatory = $true)][string[]]$FilePaths
+    )
+
+    if (-not (Test-Path -LiteralPath $ManifestPath)) {
+        return
+    }
+
+    $normalizedPaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($filePath in $FilePaths) {
+        if (-not [string]::IsNullOrWhiteSpace($filePath)) {
+            [void]$normalizedPaths.Add($filePath.Replace("\", "/"))
+        }
+    }
+
+    if ($normalizedPaths.Count -eq 0) {
+        return
+    }
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $currentBlock = [System.Collections.Generic.List[string]]::new()
+    $skipBlock = $false
+
+    $flushBlock = {
+        if ($currentBlock.Count -gt 0 -and -not $skipBlock) {
+            foreach ($line in $currentBlock) {
+                $lines.Add($line)
+            }
+        }
+
+        $currentBlock.Clear()
+        $skipBlock = $false
+    }
+
+    foreach ($line in [System.IO.File]::ReadAllLines($ManifestPath)) {
+        if ($line -match '^\s+- filePath:\s*(.+?)\s*$') {
+            & $flushBlock
+            $currentBlock.Add($line)
+            $pathValue = $Matches[1].Trim().Trim('"')
+            $skipBlock = $normalizedPaths.Contains($pathValue.Replace("\", "/"))
+            continue
+        }
+
+        if ($currentBlock.Count -gt 0) {
+            $currentBlock.Add($line)
+            continue
+        }
+
+        $lines.Add($line)
+    }
+
+    & $flushBlock
+    [System.IO.File]::WriteAllLines($ManifestPath, $lines, [System.Text.Encoding]::UTF8)
+}
+
 $resolvedProjectRoot = Resolve-InputPath $ProjectRoot
 if (-not (Test-Path -LiteralPath $resolvedProjectRoot)) {
     throw "[SFB-REGEN-000] Project root does not exist: $resolvedProjectRoot"
@@ -498,6 +555,11 @@ $candidateOutputRoot = Join-Path $resolvedOutputRoot ".regeneration-candidate\$o
 $candidateProjectRoot = Join-Path $candidateOutputRoot $projectName
 $candidateReportPath = Join-Path $candidateProjectRoot "docs\storefront-analysis\regeneration-report.md"
 $backupRoot = Join-Path $resolvedOutputRoot ".regeneration-backup\$projectName-$operationId"
+$preserveCandidateArtifacts = $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS -eq "1"
+$candidateDropPaths = @()
+if (-not [string]::IsNullOrWhiteSpace($env:SFB_DROP_CANDIDATE_FILE_PATHS)) {
+    $candidateDropPaths = @($env:SFB_DROP_CANDIDATE_FILE_PATHS -split "," | ForEach-Object { $_.Trim().Replace("\", "/") } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+}
 $validationResult = "not-requested"
 $buildResult = "not-requested"
 $plan = [System.Collections.Generic.List[hashtable]]::new()
@@ -520,6 +582,13 @@ if ($Scope -eq "conflicts") {
 try {
     Invoke-RegenerationCandidateGeneration -CandidateOutputRoot $candidateOutputRoot -ProjectName $projectName -StoreKey $storeKey
 
+    foreach ($dropPath in $candidateDropPaths) {
+        $resolvedDropPath = Join-Path $candidateProjectRoot $dropPath
+        if (Test-Path -LiteralPath $resolvedDropPath) {
+            Remove-Item -LiteralPath $resolvedDropPath -Force
+        }
+    }
+
     $candidateMetadataPath = Join-Path $candidateProjectRoot "docs\storefront-analysis\metadata.yaml"
     if ($Scope -eq "foundation" -and (Test-Path -LiteralPath $metadataPath) -and (Test-Path -LiteralPath $candidateMetadataPath)) {
         Update-CandidateFoundationMetadata -TargetMetadataPath $metadataPath -CandidateMetadataPath $candidateMetadataPath
@@ -531,6 +600,11 @@ try {
         Copy-Item -LiteralPath $metadataPath -Destination $candidateMetadataPath -Force
         node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $candidateProjectRoot
         if ($LASTEXITCODE -ne 0) { throw "[SFB-REGEN-013] Failed to preserve target metadata in regeneration candidate." }
+    }
+
+    if ($candidateDropPaths.Count -gt 0) {
+        $candidateManifestPath = Join-Path $candidateProjectRoot "docs\storefront-analysis\generated-files.yaml"
+        Remove-CandidateManifestEntries -ManifestPath $candidateManifestPath -FilePaths $candidateDropPaths
     }
 
     $originalEntries = Read-GeneratedFileManifestEntries -ManifestPath $manifestPath
@@ -564,7 +638,7 @@ try {
 
     if ($BuildAfterApply) {
         $projectFile = Join-Path $resolvedProjectRoot "$projectName.csproj"
-        dotnet build $projectFile --no-restore
+        dotnet build $projectFile
         if ($LASTEXITCODE -ne 0) {
             $buildResult = "failed"
             throw "[SFB-REGEN-010] Post-regeneration build failed."
@@ -599,7 +673,7 @@ catch {
     throw
 }
 finally {
-    if (Test-Path -LiteralPath $candidateOutputRoot) {
+    if (-not $preserveCandidateArtifacts -and (Test-Path -LiteralPath $candidateOutputRoot)) {
         Remove-Item -LiteralPath $candidateOutputRoot -Recurse -Force
     }
 

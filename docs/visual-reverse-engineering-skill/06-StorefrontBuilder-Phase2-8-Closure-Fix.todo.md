@@ -252,52 +252,52 @@ Goal: replace shape-only checks with tests that prove real update behavior.
 
 Tasks:
 
-- [ ] Add a test fixture that modifies a Starter source file or controlled template source, then proves a generated target file updates.
-- [ ] Add page-scope positive test:
-  - [ ] modify candidate HomePage source/input;
-  - [ ] run `-Scope page -Target HomePage`;
-  - [ ] prove HomePage updates;
-  - [ ] prove ProductPage and unrelated files do not update.
-- [ ] Add component-scope positive test:
-  - [ ] modify candidate ProductSummaryCard source/input;
-  - [ ] run `-Scope component -Target ProductSummaryCard`;
-  - [ ] prove ProductSummaryCard updates;
-  - [ ] prove page files do not update.
-- [ ] Add `WhatIf` plan correctness test:
-  - [ ] prepare candidate with create/update/obsolete/conflict cases;
-  - [ ] run `-WhatIf`;
-  - [ ] assert report contains those exact planned actions;
-  - [ ] assert target tree hash does not change.
-- [ ] Add missing generated Razor page test:
-  - [ ] delete generated HomePage;
-  - [ ] run regeneration;
-  - [ ] prove file is recreated from fresh candidate.
-- [ ] Add missing generated component test:
-  - [ ] delete generated product component;
-  - [ ] run regeneration;
-  - [ ] prove file is recreated from fresh candidate.
-- [ ] Add obsolete file test:
-  - [ ] simulate Starter/template no longer producing a generated file;
-  - [ ] run `-WhatIf`;
-  - [ ] prove obsolete candidate is reported;
-  - [ ] prove file is not deleted by default.
-- [ ] Add manual-edit conflict test with candidate change:
-  - [ ] manually edit target generated file;
-  - [ ] change candidate for same file;
-  - [ ] prove conflict is reported and target edit is preserved.
-- [ ] Add user-owned preservation test with candidate present.
-- [ ] Add platform protected test:
-  - [ ] visual regeneration cannot update `StorefrontPackageVersions.props`;
-  - [ ] foundation update can plan and apply it.
-- [ ] Replace rollback string check with a real integration test:
-  - [ ] prepare candidate update;
-  - [ ] force post-apply build failure;
-  - [ ] run with `-BuildAfterApply`;
-  - [ ] assert command fails;
-  - [ ] assert full target tree hash matches pre-update hash;
-  - [ ] assert failure report exists or stderr has actionable code.
-- [ ] Add test for `sourceSpecHash` semantics if file-specific source identity is implemented in this phase.
-- [ ] Keep CI-friendly tests independent of live Commerce Node.
+- [x] Add a test fixture that modifies a Starter source file or controlled template source, then proves a generated target file updates.
+- [x] Add page-scope positive test:
+  - [x] modify candidate HomePage source/input;
+  - [x] run `-Scope page -Target HomePage`;
+  - [x] prove HomePage updates;
+  - [x] prove ProductPage and unrelated files do not update.
+- [x] Add component-scope positive test:
+  - [x] modify candidate ProductSummaryCard source/input;
+  - [x] run `-Scope component -Target ProductSummaryCard`;
+  - [x] prove ProductSummaryCard updates;
+  - [x] prove page files do not update.
+- [x] Add `WhatIf` plan correctness test:
+  - [x] prepare candidate with create/update/obsolete/conflict cases;
+  - [x] run `-WhatIf`;
+  - [x] assert report contains those exact planned actions;
+  - [x] assert target tree hash does not change.
+- [x] Add missing generated Razor page test:
+  - [x] delete generated HomePage;
+  - [x] run regeneration;
+  - [x] prove file is recreated from fresh candidate.
+- [x] Add missing generated component test:
+  - [x] delete generated product component;
+  - [x] run regeneration;
+  - [x] prove file is recreated from fresh candidate.
+- [x] Add obsolete file test:
+  - [x] simulate Starter/template no longer producing a generated file;
+  - [x] run `-WhatIf`;
+  - [x] prove obsolete candidate is reported;
+  - [x] prove file is not deleted by default.
+- [x] Add manual-edit conflict test with candidate change:
+  - [x] manually edit target generated file;
+  - [x] change candidate for same file;
+  - [x] prove conflict is reported and target edit is preserved.
+- [x] Add user-owned preservation test with candidate present.
+- [x] Add platform protected test:
+  - [x] visual regeneration cannot update `StorefrontPackageVersions.props`;
+  - [x] foundation update can plan and apply it.
+- [x] Replace rollback string check with a real integration test:
+  - [x] prepare candidate update;
+  - [x] force post-apply build failure;
+  - [x] run with `-BuildAfterApply`;
+  - [x] assert command fails;
+  - [x] assert full target tree hash matches pre-update hash;
+  - [x] assert failure report exists or stderr has actionable code.
+- [x] Add test for `sourceSpecHash` semantics if file-specific source identity is implemented in this phase.
+- [x] Keep CI-friendly tests independent of live Commerce Node.
 
 Implementation notes:
 
@@ -315,10 +315,10 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Exit gate:
 
-- [ ] Tests fail against target-copy regeneration.
-- [ ] Tests pass only when fresh candidate planning is active.
-- [ ] Tests prove positive updates, not only absence of unexpected writes.
-- [ ] Rollback is proven by real failed build, not by source string inspection.
+- [x] Tests fail against target-copy regeneration.
+- [x] Tests pass only when fresh candidate planning is active.
+- [x] Tests prove positive updates, not only absence of unexpected writes.
+- [x] Rollback is proven by real failed build, not by source string inspection.
 
 ## Phase 2.8E - Self-Contained CI Full Proof
 
