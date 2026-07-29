@@ -1,9 +1,8 @@
 @using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Browser
 @using BlazorShop.Storefront.Components.Headless.Cart
-@using Microsoft.JSInterop
-@implements IAsyncDisposable
 @inject IServiceProvider Services
-@inject IJSRuntime JS
+@inject IStorefrontBrowserCartEventPublisher CartEvents
 
 <section class="@Classes.PageSection">
     <div class="@Classes.Layout">
@@ -188,7 +187,6 @@
     private StorefrontBrowserCart? _cart;
     private List<StorefrontBrowserCartAlert> _alerts = [];
     private StorefrontLocalApiClient? _apiClient;
-    private Lazy<Task<IJSObjectReference>>? _moduleTask;
     private Guid? _busyLineId;
     private bool _clearing;
 
@@ -243,10 +241,6 @@
         _apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
         if (_apiClient is not null)
         {
-            _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
-                JS.InvokeAsync<IJSObjectReference>(
-                    "import",
-                    "./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js").AsTask());
             if (ShouldFetchAfterHydration())
             {
                 await LoadCartAsync();
@@ -387,23 +381,6 @@
 
     private async Task PublishCartChangedAsync(int count)
     {
-        if (_moduleTask is null)
-        {
-            return;
-        }
-
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("publishCartChanged", count);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_moduleTask?.IsValueCreated != true)
-        {
-            return;
-        }
-
-        var module = await _moduleTask.Value;
-        await module.DisposeAsync();
+        await CartEvents.PublishCartChangedAsync(count);
     }
 }

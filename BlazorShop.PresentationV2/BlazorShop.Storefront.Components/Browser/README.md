@@ -1,10 +1,9 @@
-# Storefront Browser Primitives
+# Storefront Browser Contracts
 
-`Browser` contains behavior-only primitives for interactive storefront components that call same-origin BFF endpoints.
+`Browser` contains shared browser-facing contracts for interactive storefront components and same-origin BFF endpoints.
 
-- `StorefrontLocalApiClient` accepts only relative local routes and rejects absolute or protocol-relative URLs.
 - Browser models describe BFF request and response data only; they must not contain theme, layout, admin, or backend-internal fields.
-- Antiforgery abstractions belong here because protected browser mutations stay behind the host storefront BFF.
+- API clients, antiforgery readers, mutation orchestration, browser state services, and same-origin route validation belong to `BlazorShop.Storefront.Browser`.
 - Visual ownership stays with the host storefront project, not this folder.
 
 Do not add Commerce Node base URLs, Control Plane URLs, node credentials, access tokens, route ownership policy, or CSS/theme decisions here.

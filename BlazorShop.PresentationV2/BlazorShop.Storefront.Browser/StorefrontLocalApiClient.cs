@@ -1,7 +1,9 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace BlazorShop.Storefront.Components.Browser;
+using BlazorShop.Storefront.Components.Browser;
+
+namespace BlazorShop.Storefront.Browser;
 
 public sealed class StorefrontLocalApiClient
 {

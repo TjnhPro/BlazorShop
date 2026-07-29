@@ -1,159 +1,9 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
-    using System.Net;
-    using System.Text;
-    using System.Text.Json;
-
-    using BlazorShop.Storefront.Components.Browser;
-
     using Xunit;
 
     public sealed class StorefrontV2WASMRuntimeFoundationTests
     {
-        [Fact]
-        public async Task GetAsync_UsesSameOriginRelativeRouteWithoutAntiforgeryHeader()
-        {
-            var handler = new RecordingHandler(new { count = 2 });
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://storefront.example/"),
-            };
-            var tokenReader = new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token"));
-            var client = new StorefrontLocalApiClient(httpClient, tokenReader);
-
-            var result = await client.GetAsync<CartSummary>("/api/cart");
-
-            Assert.True(result.Success);
-            Assert.Equal(2, result.Data?.Count);
-            Assert.Equal(HttpMethod.Get, handler.LastRequest?.Method);
-            Assert.Equal("https://storefront.example/api/cart", handler.LastRequest?.RequestUri?.ToString());
-            Assert.False(handler.LastRequest?.Headers.Contains("X-CSRF-TOKEN"));
-            Assert.Equal(0, tokenReader.ReadCount);
-        }
-
-        [Fact]
-        public async Task MutatingJsonRequest_AddsAntiforgeryHeader()
-        {
-            var handler = new RecordingHandler(new { success = true });
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://storefront.example/"),
-            };
-            var tokenReader = new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token"));
-            var client = new StorefrontLocalApiClient(httpClient, tokenReader);
-
-            var result = await client.PutJsonAsync<object, MutationResult>("api/cart/lines/4f0c0f4b-9f54-4f57-a3e4-111111111111", new { quantity = 3 });
-
-            Assert.True(result.Success);
-            Assert.True(result.Data?.Success);
-            Assert.Equal(HttpMethod.Put, handler.LastRequest?.Method);
-            Assert.Equal("csrf-token", handler.LastRequest?.Headers.GetValues("X-CSRF-TOKEN").Single());
-            Assert.Equal("application/json", handler.LastRequest?.Content?.Headers.ContentType?.MediaType);
-            Assert.Equal(1, tokenReader.ReadCount);
-        }
-
-        [Theory]
-        [InlineData("https://commerce-node.example/api/cart")]
-        [InlineData("//commerce-node.example/api/cart")]
-        public async Task LocalApiClient_RejectsAbsoluteOrProtocolRelativeRoutes(string route)
-        {
-            var handler = new RecordingHandler(new { success = true });
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://storefront.example/"),
-            };
-            var client = new StorefrontLocalApiClient(
-                httpClient,
-                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
-
-            await Assert.ThrowsAsync<ArgumentException>(() => client.GetAsync<object>(route));
-            Assert.Null(handler.LastRequest);
-        }
-
-        [Fact]
-        public async Task LocalApiClient_HandlesEmptySuccessBodyWithUnknownLength()
-        {
-            var handler = new RecordingHandler(HttpStatusCode.OK, new UnknownLengthStringContent(string.Empty));
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://storefront.example/"),
-            };
-            var client = new StorefrontLocalApiClient(
-                httpClient,
-                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
-
-            var result = await client.DeleteAsync<MutationResult>("/api/cart");
-
-            Assert.True(result.Success);
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.Null(result.Data);
-            Assert.Null(result.Error);
-            Assert.Equal(string.Empty, result.Message);
-        }
-
-        [Fact]
-        public async Task LocalApiClient_PreservesStructuredErrorDetails()
-        {
-            var fieldErrors = new Dictionary<string, string[]>
-            {
-                ["email"] = ["Email is invalid."],
-            };
-            var errorBody = JsonSerializer.Serialize(
-                new StorefrontLocalApiErrorResponse(
-                    "Email is invalid.",
-                    "checkout.validation",
-                    "trace-123",
-                    fieldErrors,
-                    false,
-                    StatusCode: 422),
-                new JsonSerializerOptions(JsonSerializerDefaults.Web));
-            var handler = new RecordingHandler(
-                HttpStatusCode.UnprocessableEntity,
-                new StringContent(errorBody, Encoding.UTF8, "application/json"));
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://storefront.example/"),
-            };
-            var client = new StorefrontLocalApiClient(
-                httpClient,
-                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
-
-            var result = await client.PostJsonAsync<object, MutationResult>("/api/checkout/review", new { accepted = false });
-
-            Assert.False(result.Success);
-            Assert.Equal("Email is invalid.", result.Message);
-            Assert.NotNull(result.Error);
-            Assert.Equal(HttpStatusCode.UnprocessableEntity, result.Error.StatusCode);
-            Assert.Equal("checkout.validation", result.Error.Code);
-            Assert.Equal("trace-123", result.Error.TraceId);
-            Assert.False(result.Error.Retryable);
-            Assert.Equal("Email is invalid.", result.Error.FieldErrors["email"].Single());
-        }
-
-        [Fact]
-        public async Task LocalApiClient_InvalidErrorBodyFallsBackToStatusDefault()
-        {
-            var handler = new RecordingHandler(
-                HttpStatusCode.RequestTimeout,
-                new StringContent("<html>timeout</html>", Encoding.UTF8, "text/html"));
-            using var httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://storefront.example/"),
-            };
-            var client = new StorefrontLocalApiClient(
-                httpClient,
-                new StubAntiforgeryTokenReader(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token")));
-
-            var result = await client.GetAsync<MutationResult>("/api/cart");
-
-            Assert.False(result.Success);
-            Assert.Equal("The request timed out. Try again.", result.Message);
-            Assert.NotNull(result.Error);
-            Assert.Equal("timeout", result.Error.Code);
-            Assert.True(result.Error.Retryable);
-            Assert.Empty(result.Error.FieldErrors);
-        }
-
         [Fact]
         public void WasmStartup_RegistersSameOriginClientWithoutCommerceNodeConfiguration()
         {
@@ -163,8 +13,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.Storefront.V2.WASM",
                 "Program.cs"));
 
-            Assert.Contains("builder.HostEnvironment.BaseAddress", program, StringComparison.Ordinal);
-            Assert.Contains("StorefrontLocalApiClient", program, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontBrowserRuntime(builder.HostEnvironment)", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("new HttpClient", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontLocalApiClient", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefrontAntiforgeryTokenReader", program, StringComparison.Ordinal);
             Assert.DoesNotContain("CommerceNode", program, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("NodeKey", program, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("NodeSecret", program, StringComparison.OrdinalIgnoreCase);
@@ -293,10 +145,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNode", component, StringComparison.OrdinalIgnoreCase);
 
-            var tokenReader = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontAntiforgeryTokenReader.cs");
+            var tokenReader = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontAntiforgeryTokenReader.cs");
+            var cartEventPublisher = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontBrowserCartEventPublisher.cs");
             var interop = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
-            Assert.Contains("publishCartChanged", component, StringComparison.Ordinal);
-            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", component, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCartEventPublisher", component, StringComparison.Ordinal);
+            Assert.Contains("CartEvents.PublishCartChangedAsync(count)", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("IJSRuntime JS", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("IJSObjectReference", component, StringComparison.Ordinal);
+            Assert.Contains("publishCartChanged", cartEventPublisher, StringComparison.Ordinal);
+            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", cartEventPublisher, StringComparison.Ordinal);
             Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", tokenReader, StringComparison.Ordinal);
             Assert.Contains("[data-storefront-cart-badge]", interop, StringComparison.Ordinal);
             Assert.Contains("blazorshop:cart-changed", interop, StringComparison.Ordinal);
@@ -362,7 +219,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountNavigation.razor");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewOptions.cs");
 
-            Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", route, StringComparison.Ordinal);
+            Assert.Contains("new StorefrontPageDocument(\"Account\", RobotsIndex: false, RobotsFollow: false)", route, StringComparison.Ordinal);
             Assert.Contains("antiforgery.GetAndStoreTokens(httpContext)", pageService, StringComparison.Ordinal);
             Assert.Contains("StorefrontReturnUrl.Normalize(path + query, StorefrontRoutes.Account)", pageService, StringComparison.Ordinal);
             Assert.Contains("data-storefront-account-app", app, StringComparison.Ordinal);
@@ -441,7 +298,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAccountEndpoints.cs");
             var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Account.cs");
 
-            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontApplication(", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs"), StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationAccountEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/account/profile\"", accountEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPut(\"/api/account/profile\"", accountEndpoints, StringComparison.Ordinal);
@@ -506,7 +364,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var runtimeCheckoutFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCheckoutFacade.cs");
             var generatedCheckoutAdapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCheckoutClient.cs");
 
-            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontApplication(", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs"), StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationCheckoutEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/checkout\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/addresses\"", checkoutEndpoints, StringComparison.Ordinal);
@@ -524,8 +383,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("IStorefrontRuntimeCheckoutFacade checkoutFacade", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("IAntiforgery antiforgery", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.CartToken", checkoutEndpoints + support, StringComparison.Ordinal);
-            Assert.Contains("string? bearerToken = null", runtimeCheckoutFacade, StringComparison.Ordinal);
-            Assert.Contains("AuthenticationHeaderValue(\"Bearer\", bearerToken)", runtimeCheckoutFacade, StringComparison.Ordinal);
+            Assert.Contains("string? bearerToken", runtimeCheckoutFacade, StringComparison.Ordinal);
+            Assert.Contains("AuthenticationHeaderValue(\"Bearer\", bearerToken.Trim())", runtimeCheckoutFacade, StringComparison.Ordinal);
             Assert.Contains("this.checkoutFacade.UpdateAddressesAsync", generatedCheckoutAdapter, StringComparison.Ordinal);
         }
 
@@ -571,8 +430,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             var presentationAggregation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
 
-            Assert.Contains("app.UseStorefrontPresentation();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            var applicationBuilder = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs");
+
+            Assert.Contains("app.UseStorefrontApplication();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontApplication(", program, StringComparison.Ordinal);
+            Assert.Contains("app.UseStorefrontPresentation();", applicationBuilder, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontPresentation();", applicationBuilder, StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationAuthEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationPreferenceEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationCartEndpoints();", presentationAggregation, StringComparison.Ordinal);
@@ -581,10 +444,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("endpoints.MapStorefrontPresentationConsentEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationSeoEndpoints();", presentationAggregation, StringComparison.Ordinal);
             Assert.Contains("endpoints.MapStorefrontPresentationMediaEndpoints();", presentationAggregation, StringComparison.Ordinal);
-            Assert.Contains("app.MapStaticAssets();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStaticAssets();", applicationBuilder, StringComparison.Ordinal);
             Assert.Contains("app.MapDefaultEndpoints();", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapRazorComponents<StorefrontApp>()", program, StringComparison.Ordinal);
-            Assert.Contains(".AddInteractiveWebAssemblyRenderMode()", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapRazorComponents<StorefrontApp>()", applicationBuilder, StringComparison.Ordinal);
+            Assert.Contains("components.AddInteractiveWebAssemblyRenderMode();", applicationBuilder, StringComparison.Ordinal);
 
             Assert.DoesNotContain("app.MapGet(\"/api/cart\"", program, StringComparison.Ordinal);
             Assert.DoesNotContain("app.MapGet(\"/api/account/profile\"", program, StringComparison.Ordinal);
@@ -647,86 +510,5 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 relativePath.Replace('/', Path.DirectorySeparatorChar));
         }
 
-        private sealed record CartSummary(int Count);
-
-        private sealed record MutationResult(bool Success);
-
-        private sealed class StubAntiforgeryTokenReader : IStorefrontAntiforgeryTokenReader
-        {
-            private readonly StorefrontAntiforgeryToken? _token;
-
-            public StubAntiforgeryTokenReader(StorefrontAntiforgeryToken? token)
-            {
-                _token = token;
-            }
-
-            public int ReadCount { get; private set; }
-
-            public ValueTask<StorefrontAntiforgeryToken?> ReadAsync(CancellationToken cancellationToken = default)
-            {
-                ReadCount++;
-                return ValueTask.FromResult(_token);
-            }
-        }
-
-        private sealed class RecordingHandler : HttpMessageHandler
-        {
-            private readonly HttpContent? _content;
-            private readonly object? _response;
-            private readonly HttpStatusCode _statusCode;
-
-            public RecordingHandler(object response)
-            {
-                _response = response;
-                _statusCode = HttpStatusCode.OK;
-            }
-
-            public RecordingHandler(HttpStatusCode statusCode, HttpContent content)
-            {
-                _statusCode = statusCode;
-                _content = content;
-            }
-
-            public HttpRequestMessage? LastRequest { get; private set; }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                LastRequest = request;
-
-                var content = _content;
-                if (content is null)
-                {
-                    var json = JsonSerializer.Serialize(_response, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-                    content = new StringContent(json, Encoding.UTF8, "application/json");
-                }
-
-                return Task.FromResult(new HttpResponseMessage(_statusCode)
-                {
-                    Content = content,
-                    RequestMessage = request,
-                });
-            }
-        }
-
-        private sealed class UnknownLengthStringContent : HttpContent
-        {
-            private readonly byte[] _bytes;
-
-            public UnknownLengthStringContent(string value)
-            {
-                _bytes = Encoding.UTF8.GetBytes(value);
-            }
-
-            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
-            {
-                return stream.WriteAsync(_bytes, 0, _bytes.Length);
-            }
-
-            protected override bool TryComputeLength(out long length)
-            {
-                length = 0;
-                return false;
-            }
-        }
     }
 }

@@ -1,6 +1,8 @@
 using System.Net;
 
-namespace BlazorShop.Storefront.Components.Browser;
+using BlazorShop.Storefront.Components.Browser;
+
+namespace BlazorShop.Storefront.Browser;
 
 public sealed record StorefrontLocalApiResult<T>(
     bool Success,
@@ -108,11 +110,3 @@ public sealed record StorefrontLocalApiError(
         return value is 408 or 429 || value >= 500;
     }
 }
-
-public sealed record StorefrontLocalApiErrorResponse(
-    string? Message = null,
-    string? Code = null,
-    string? TraceId = null,
-    Dictionary<string, string[]>? FieldErrors = null,
-    bool? Retryable = null,
-    int? StatusCode = null);

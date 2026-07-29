@@ -1,3 +1,3 @@
-namespace BlazorShop.Storefront.Components.Browser;
+namespace BlazorShop.Storefront.Browser;
 
 public sealed record StorefrontAntiforgeryToken(string HeaderName, string Token);

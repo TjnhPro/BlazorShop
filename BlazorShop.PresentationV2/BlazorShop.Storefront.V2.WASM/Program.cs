@@ -1,14 +1,9 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-using BlazorShop.Storefront.Components.Browser;
+using BlazorShop.Storefront.Browser;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped(_ => new HttpClient
-{
-    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress),
-});
-builder.Services.AddScoped<IStorefrontAntiforgeryTokenReader, StorefrontAntiforgeryTokenReader>();
-builder.Services.AddScoped<StorefrontLocalApiClient>();
+builder.Services.AddStorefrontBrowserRuntime(builder.HostEnvironment);
 
 await builder.Build().RunAsync();

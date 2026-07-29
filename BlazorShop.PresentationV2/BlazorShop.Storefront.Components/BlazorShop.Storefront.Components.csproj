@@ -12,8 +12,4 @@
     <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.JSInterop" Version="10.0.6" />
-  </ItemGroup>
-
 </Project>

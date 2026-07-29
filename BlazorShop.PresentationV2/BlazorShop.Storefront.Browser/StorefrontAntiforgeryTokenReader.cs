@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace BlazorShop.Storefront.Components.Browser;
+namespace BlazorShop.Storefront.Browser;
 
 public sealed class StorefrontAntiforgeryTokenReader : IStorefrontAntiforgeryTokenReader, IAsyncDisposable
 {

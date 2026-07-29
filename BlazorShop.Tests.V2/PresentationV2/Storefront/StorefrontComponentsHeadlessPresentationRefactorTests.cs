@@ -23,17 +23,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Product/ProductPurchaseVariantItem.cs"
         ];
 
-        private static readonly string[] ExpectedBrowserSupportFiles =
+        private static readonly string[] ExpectedBrowserContractFiles =
         [
-            "IStorefrontAntiforgeryTokenReader.cs",
-            "StorefrontAntiforgeryToken.cs",
-            "StorefrontAntiforgeryTokenReader.cs",
             "StorefrontBrowserAccountModels.cs",
             "StorefrontBrowserCartModels.cs",
             "StorefrontBrowserCheckoutModels.cs",
             "StorefrontFeatureDataMode.cs",
-            "StorefrontLocalApiClient.cs",
-            "StorefrontLocalApiResult.cs"
+            "StorefrontLocalApiErrorResponse.cs"
         ];
 
         [Fact]
@@ -65,19 +61,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var componentRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components");
             var v2Interop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontWasmInterop.js");
             var sharedInterop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
-            var browserSource = ReadComponentLayerSource("Browser");
+            var browserRuntimeSource = ReadSourceTree(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser"));
             var cartView = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
 
             Assert.Contains("<Project Sdk=\"Microsoft.NET.Sdk\">", project, StringComparison.Ordinal);
             Assert.DoesNotContain("Microsoft.NET.Sdk.Razor", project, StringComparison.Ordinal);
-            Assert.Contains("Microsoft.JSInterop", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("Microsoft.JSInterop", project, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/_Imports.razor")));
             Assert.True(Directory.Exists(Path.Combine(componentRoot, "wwwroot")));
             Assert.True(File.Exists(sharedInterop));
             Assert.False(File.Exists(v2Interop));
-            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", browserSource, StringComparison.Ordinal);
-            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", cartView, StringComparison.Ordinal);
+            Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", browserRuntimeSource, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCartEventPublisher", cartView, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -116,7 +112,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void BrowserSupportInventory_RecordsCurrentSameOriginSupportPrimitives()
+        public void BrowserContractInventory_RecordsCurrentSharedBffContracts()
         {
             var browserRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser");
             var actual = Directory
@@ -126,7 +122,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .Order(StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.Equal(ExpectedBrowserSupportFiles, actual);
+            Assert.Equal(ExpectedBrowserContractFiles, actual);
         }
 
         [Fact]
@@ -832,7 +828,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void BrowserPrimitives_RemainBehaviorOnlyAfterHpr14Cleanup()
+        public void BrowserContracts_RemainDataOnlyAfterRuntimeCutover()
         {
             var browserRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser");
             var browserSource = string.Join(
@@ -842,13 +838,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     .Select(File.ReadAllText));
             var browserReadme = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/README.md");
-            var localApiClient = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/StorefrontLocalApiClient.cs");
             Assert.Contains("same-origin BFF endpoints", browserReadme, StringComparison.Ordinal);
             Assert.Contains("Visual ownership stays with the host storefront project", browserReadme, StringComparison.Ordinal);
-            Assert.Contains("route.StartsWith(\"//\", StringComparison.Ordinal)", localApiClient, StringComparison.Ordinal);
-            Assert.Contains("route.Contains(\"://\", StringComparison.Ordinal)", localApiClient, StringComparison.Ordinal);
-            Assert.Contains("same-origin relative routes", localApiClient, StringComparison.Ordinal);
+            Assert.Contains("API clients, antiforgery readers, mutation orchestration", browserReadme, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontLocalApiClient", browserSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefrontAntiforgeryTokenReader", browserSource, StringComparison.Ordinal);
 
             foreach (var visualToken in new[]
             {

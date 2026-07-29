@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Browser;
+namespace BlazorShop.Storefront.Browser;
 
 public interface IStorefrontAntiforgeryTokenReader
 {
