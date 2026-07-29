@@ -247,6 +247,36 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Empty(offenders);
         }
 
+        [Fact]
+        public void Phase2BoundaryFreeze_KeepsRuntimePresentationBrowserAndVisualHostsInTheirRoles()
+        {
+            var browserProject = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj");
+            var wasmProject = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
+            var v2Source = ReadSourceTree("BlazorShop.PresentationV2/BlazorShop.Storefront.V2", [".cs", ".razor", ".csproj"]);
+            var starterSource = ReadSourceTree("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter", [".cs", ".razor", ".csproj"]);
+            var browserSource = ReadSourceTree("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser", [".cs", ".csproj"]);
+            var presentationRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationServiceCollectionExtensions.cs");
+
+            Assert.DoesNotContain("BlazorShop.Storefront.Runtime", browserProject, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Client", browserProject, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Runtime", wasmProject, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Client", wasmProject, StringComparison.Ordinal);
+
+            foreach (var visualSource in new[] { v2Source, starterSource })
+            {
+                Assert.DoesNotContain("StorefrontApiClient", visualSource, StringComparison.Ordinal);
+                Assert.DoesNotContain(": IStorefront", visualSource, StringComparison.Ordinal);
+                Assert.DoesNotContain("api/storefront/stores", visualSource, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("CommerceNodeBaseUrl", visualSource, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("StorefrontLocalApiClient", browserSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("api/storefront/stores", browserSource, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("CommerceNodeBaseUrl", browserSource, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontPlatformRuntime", presentationRegistration, StringComparison.Ordinal);
+            Assert.Contains("MapStorefrontApplication", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationEndpointRouteBuilderExtensions.cs"), StringComparison.Ordinal);
+        }
+
         private static IReadOnlyList<string> ReadProjectReferences(string projectPath)
         {
             var project = XDocument.Load(RepositoryPath(projectPath));
@@ -288,6 +318,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return string.Join(
                 Environment.NewLine,
                 Directory.EnumerateFiles(runtimeDirectory, "*.cs", SearchOption.AllDirectories)
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+        }
+
+        private static string ReadSourceTree(string relativeRoot, IReadOnlyCollection<string> extensions)
+        {
+            var root = RepositoryPath(relativeRoot);
+
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
+                    .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                    .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                    .Where(path => extensions.Contains(Path.GetExtension(path)))
                     .OrderBy(path => path, StringComparer.Ordinal)
                     .Select(File.ReadAllText));
         }

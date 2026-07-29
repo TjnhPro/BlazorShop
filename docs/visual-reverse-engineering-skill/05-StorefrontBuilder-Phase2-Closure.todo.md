@@ -135,16 +135,20 @@ Goal: lock the host-independent application boundary before changing generator b
 
 Tasks:
 
-- [ ] Keep Runtime as server/BFF-only; WASM/browser projects must not reference Runtime directly.
-- [ ] Keep Runtime typed generated-client factories; block `Activator.CreateInstance` from returning.
-- [ ] Keep Runtime typed response mapping; block reflection envelope mapping such as `GetProperty("Success")`.
-- [ ] Keep Runtime cancellation behavior that propagates caller cancellation and maps only real timeout/network failures.
-- [ ] Keep capability-scoped registration methods such as `AddStorefrontCatalogRuntime`, `AddStorefrontCartRuntime`, `AddStorefrontCheckoutRuntime`, and `AddStorefrontPlatformRuntime`.
-- [ ] Keep Presentation as the shared application package for App/Routes/page services/BFF/SEO/media composition.
-- [ ] Keep browser mutations flowing through same-origin Presentation BFF endpoints, not direct Commerce Node API calls.
-- [ ] Keep `BlazorShop.Storefront.Browser` as the browser-safe project name and browser-safe WASM/reference surface.
-- [ ] Keep V2 visual-only: no `StorefrontApiClient`, no class implementing `IStorefront*Client`, no manual Commerce Node Storefront transport.
-- [ ] Add or tighten architecture tests that scan V2, Starter, generated proof, Browser, Runtime, Client, and Presentation boundaries.
+- [x] Keep Runtime as server/BFF-only; WASM/browser projects must not reference Runtime directly.
+- [x] Keep Runtime typed generated-client factories; block `Activator.CreateInstance` from returning.
+- [x] Keep Runtime typed response mapping; block reflection envelope mapping such as `GetProperty("Success")`.
+- [x] Keep Runtime cancellation behavior that propagates caller cancellation and maps only real timeout/network failures.
+- [x] Keep capability-scoped registration methods such as `AddStorefrontCatalogRuntime`, `AddStorefrontCartRuntime`, `AddStorefrontCheckoutRuntime`, and `AddStorefrontPlatformRuntime`.
+- [x] Keep Presentation as the shared application package for App/Routes/page services/BFF/SEO/media composition.
+- [x] Keep browser mutations flowing through same-origin Presentation BFF endpoints, not direct Commerce Node API calls.
+- [x] Keep `BlazorShop.Storefront.Browser` as the browser-safe project name and browser-safe WASM/reference surface.
+- [x] Keep V2 visual-only: no `StorefrontApiClient`, no class implementing `IStorefront*Client`, no manual Commerce Node Storefront transport.
+- [x] Add or tighten architecture tests that scan V2, Starter, generated proof, Browser, Runtime, Client, and Presentation boundaries.
+
+2026-07-29 Phase 2.2 implementation notes:
+- Added `Phase2BoundaryFreeze_KeepsRuntimePresentationBrowserAndVisualHostsInTheirRoles` to lock Browser/WASM Runtime exclusion, V2/Starter transport exclusion, Browser same-origin-only behavior, and Presentation application registration ownership.
+- Existing shared platform tests continue to block Runtime `Activator.CreateInstance`, reflection envelope mapping, removed Runtime aliases, and invalid package references.
 
 Implementation notes:
 
@@ -162,12 +166,16 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Exit gate:
 
-- [ ] No V2 source contains `StorefrontApiClient`.
-- [ ] No V2 source implements `IStorefront*Client`.
-- [ ] No WASM/browser project references Runtime.
-- [ ] Runtime still owns generated transport.
-- [ ] Presentation still owns BFF/routes/SEO/media composition.
-- [ ] Browser controllers only call same-origin local endpoints.
+- [x] No V2 source contains `StorefrontApiClient`.
+- [x] No V2 source implements `IStorefront*Client`.
+- [x] No WASM/browser project references Runtime.
+- [x] Runtime still owns generated transport.
+- [x] Presentation still owns BFF/routes/SEO/media composition.
+- [x] Browser controllers only call same-origin local endpoints.
+
+2026-07-29 Phase 2.2 verification:
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontVisualOnlyBoundary|FullyQualifiedName~StorefrontBrowser|FullyQualifiedName~StorefrontRuntime" --logger "trx;LogFileName=storefront-builder-phase22.trx" --blame-hang --blame-hang-timeout 5m` passed `110/110`.
+- Source scans found no `StorefrontApiClient` in V2/Starter/V2.WASM/StorefrontBuilder generated surfaces, no `Activator.CreateInstance` or `GetProperty("Success")` in Runtime, and no direct Commerce Node Storefront route use in Browser/V2/Starter visual source.
 
 ## Phase 2.3 - Starter Contract Freeze
 
