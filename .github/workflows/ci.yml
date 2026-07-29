@@ -61,6 +61,10 @@ jobs:
         shell: pwsh
         run: ./scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
 
+      - name: StorefrontBuilder regeneration ownership gate
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-regeneration-gate.ps1
+
       - name: Storefront client regeneration gate
         shell: pwsh
         run: ./scripts/qa/run-storefront-client-regeneration-gate.ps1

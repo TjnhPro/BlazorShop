@@ -225,6 +225,91 @@ function Assert-StorefrontFixtureData {
     }
 }
 
+function Get-ProofFileHashes {
+    param([string]$Root)
+
+    $hashes = @{}
+    Get-ChildItem -LiteralPath $Root -Recurse -File |
+        Where-Object {
+            $relative = [System.IO.Path]::GetRelativePath($Root, $_.FullName).Replace("\", "/")
+            $relative -notmatch "(^|/)(bin|obj|\.regeneration-staging|\.regeneration-backup)/"
+        } |
+        ForEach-Object {
+            $relative = [System.IO.Path]::GetRelativePath($Root, $_.FullName).Replace("\", "/")
+            $content = (Get-Content -LiteralPath $_.FullName -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
+            $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
+            $hashes[$relative] = [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+        }
+
+    return $hashes
+}
+
+function Compare-ProofFileHashes {
+    param(
+        [hashtable]$Before,
+        [hashtable]$After
+    )
+
+    $changes = [System.Collections.Generic.List[string]]::new()
+    foreach ($key in ($Before.Keys + $After.Keys | Sort-Object -Unique)) {
+        if (-not $Before.ContainsKey($key)) {
+            $changes.Add("created $key")
+        }
+        elseif (-not $After.ContainsKey($key)) {
+            $changes.Add("deleted $key")
+        }
+        elseif ($Before[$key] -ne $After[$key]) {
+            $changes.Add("modified $key")
+        }
+    }
+
+    return $changes
+}
+
+function Invoke-GeneratedProofRegenerationLifecycle {
+    $regenerator = Join-Path $toolRoot "regenerate-storefront.ps1"
+    $manifestPath = Join-Path $projectRoot "docs\storefront-analysis\generated-files.yaml"
+    $manualConflictFile = Join-Path $projectRoot "Components\Catalog\PurchasePanelPlaceholder.razor"
+
+    Invoke-Step "Run post-regeneration build proof" {
+        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
+    }
+
+    Invoke-Step "Run regenerate no-op proof" {
+        $before = Get-ProofFileHashes -Root $projectRoot
+        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
+        $after = Get-ProofFileHashes -Root $projectRoot
+        $diff = Compare-ProofFileHashes -Before $before -After $after
+        if ($diff.Count -gt 0) {
+            throw "[SFB-PROOF-REGEN-001] No-op regeneration changed files: $($diff -join ', ')"
+        }
+    }
+
+    Invoke-Step "Run manual-edit conflict fixture proof" {
+        $original = Get-Content -LiteralPath $manualConflictFile -Raw
+        try {
+            Add-Content -LiteralPath $manualConflictFile -Value "`n<!-- StorefrontBuilder manual conflict proof -->"
+            & $regenerator -ProjectRoot $projectRoot -Scope conflicts
+            $manifest = Get-Content -LiteralPath $manifestPath -Raw
+            foreach ($marker in @(
+                "Components/Catalog/PurchasePanelPlaceholder.razor",
+                "manualEditDetected: true",
+                "conflictStatus: manual-edit"
+            )) {
+                if (-not $manifest.Contains($marker, [System.StringComparison]::Ordinal)) {
+                    throw "[SFB-PROOF-REGEN-002] Manual-edit conflict proof did not record marker '$marker'."
+                }
+            }
+        }
+        finally {
+            [System.IO.File]::WriteAllText($manualConflictFile, $original, [System.Text.UTF8Encoding]::new($false))
+        }
+
+        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
+    }
+}
+
 $generatedRoot = Resolve-RepoPath $OutputRoot
 $projectRoot = Join-Path $generatedRoot $Name
 $projectFile = Join-Path $projectRoot "$Name.csproj"
@@ -238,7 +323,10 @@ if ($Describe) {
     Write-Host "- Write StorefrontBuilder review, asset, CSS, and generated-file artifacts"
     Write-Host "- Restore/build generated proof from local packages"
     Write-Host "- Run static validation, isolation, and shared visual boundary gates"
-    Write-Host "- Structure proof stops after project/package/boundary validation"
+    Write-Host "- Run post-regeneration validate/build proof"
+    Write-Host "- Run deterministic no-op regeneration proof"
+    Write-Host "- Run manual-edit conflict fixture proof"
+    Write-Host "- Structure proof stops after project/package/boundary/regeneration lifecycle validation"
     Write-Host "- FoundationFunctionalFast uses deterministic generated markup plus mocked same-origin Presentation BFF routes to exercise browser commerce behavior"
     Write-Host "- FoundationFunctionalFull adds visual smoke QA and full payment capability fixture checks for manual/scheduled/release gates"
     Write-Host "- FoundationFunctional remains a compatibility alias for FoundationFunctionalFull"
@@ -326,6 +414,8 @@ Invoke-Step "Run shared visual consumer boundary validator" {
     dotnet test "$repoRoot\BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests.F1_51_SharedValidator_PassesGeneratedProofWhenPresent" -v:minimal
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
+
+Invoke-GeneratedProofRegenerationLifecycle
 
 $runFastFunctionalProof = $ProofLevel -eq "FoundationFunctionalFast"
 $runLiveFunctionalProof = $RunBrowserQa -or $ProofLevel -in @("FoundationFunctionalFull", "FoundationFunctional")

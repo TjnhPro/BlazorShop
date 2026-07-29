@@ -19,7 +19,10 @@ The command:
 - restores and builds the generated proof;
 - runs the static StorefrontBuilder validation gate;
 - runs the package/reference isolation gate;
-- runs the shared visual consumer boundary validator.
+- runs the shared visual consumer boundary validator;
+- runs a post-regeneration validate/build proof;
+- runs a deterministic no-op regeneration proof;
+- runs a manual-edit conflict fixture proof and restores the generated proof.
 
 Expected final line:
 
@@ -36,6 +39,16 @@ Run the PR-safe generated browser proof:
 ```
 
 This proof uses mocked same-origin Presentation BFF routes in Playwright, checks generated product purchase descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and rejects direct Commerce Node browser calls.
+
+## Regeneration Ownership Gate
+
+Run the CI-friendly ownership gate when regeneration behavior or generated-file ownership changes:
+
+```powershell
+.\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+```
+
+This gate uses ignored output under `obj/storefront-builder/generated`, proves no-op determinism, scoped CSS/page/component updates, manual generated-file conflicts, user-owned preservation, protected-file rejection, and obsolete-file reporting without live Commerce Node data.
 
 ## Full Foundation Functional Proof
 

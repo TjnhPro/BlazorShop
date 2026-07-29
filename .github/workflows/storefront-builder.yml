@@ -51,6 +51,9 @@ jobs:
         run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontBuilder"
       - name: Idempotency tests
         run: ./tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderIdempotency.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
+      - name: Regeneration ownership gate
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-builder-regeneration-gate.ps1
       - name: Isolation gate describe mode
         shell: pwsh
         run: ./scripts/qa/run-storefront-builder-isolation-gate.ps1 -Describe

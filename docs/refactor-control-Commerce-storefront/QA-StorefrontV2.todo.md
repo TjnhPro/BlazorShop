@@ -4,6 +4,11 @@
 
 This QA checklist tracks `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
 
+Release-proof split:
+
+- Generated Storefront proof is the release proof for StorefrontBuilder-generated artifacts. Use `scripts/qa/run-storefront-builder-generated-proof.ps1` plus `scripts/qa/run-storefront-builder-regeneration-gate.ps1` to prove generated project recreation, package/reference isolation, safe regeneration, manual-edit conflicts, and generated browser behavior.
+- Storefront V2 remains the canonical product host QA surface for production V2 runtime behavior, Commerce Node fixture-backed flows, deployment smoke, and product-specific browser regressions.
+
 Muc tieu hien tai:
 
 - Xac nhan Storefront V2 copy/reuse tu legacy Storefront ma khong sua legacy project.

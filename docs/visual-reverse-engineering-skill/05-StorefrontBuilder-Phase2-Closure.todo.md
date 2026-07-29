@@ -512,34 +512,34 @@ Goal: make release confidence depend on real generated project behavior, not onl
 
 Tasks:
 
-- [ ] Extend generated proof to cover full lifecycle:
-  - [ ] clean previous proof output under safe root;
-  - [ ] generate project from Starter;
-  - [ ] restore from local packages;
-  - [ ] build generated project;
-  - [ ] static validation;
-  - [ ] package/reference isolation gate;
-  - [ ] visual consumer boundary gate;
-  - [ ] fast browser proof;
-  - [ ] full fixture-backed browser proof;
-  - [ ] regenerate no-op proof;
-  - [ ] manual-edit conflict fixture proof;
-  - [ ] post-regeneration build proof.
-- [ ] Add a CI-friendly regeneration ownership gate that does not require live Commerce Node data.
-- [ ] Keep `FoundationFunctionalFast` as PR-safe browser proof.
-- [ ] Keep `FoundationFunctionalFull` as manual/scheduled/release proof with fixture-backed store/category/product/page/payment data.
-- [ ] Ensure COD/browser network regression remains covered by generated proof where payment is safe to place real test orders.
-- [ ] Ensure direct Commerce Node browser-call rejection remains covered.
-- [ ] Ensure generated proof reports are written under generated artifact root and are not committed by default.
-- [ ] Update docs:
-  - [ ] `docs/architecture/11-storefront-builder.md`;
-  - [ ] `docs/agents/storefront-builder.md`;
-  - [ ] `docs/visual-reverse-engineering-skill/README.md`;
-  - [ ] `docs/visual-reverse-engineering-skill/reference.md`;
-  - [ ] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`;
-  - [ ] `docs/visual-reverse-engineering-skill/tutorial-generated-proof.md`.
-- [ ] Update CI workflow references if new gates are added.
-- [ ] Update QA docs to say generated Storefront proof is the release proof, while V2 remains a canonical product host QA surface.
+- [x] Extend generated proof to cover full lifecycle:
+  - [x] clean previous proof output under safe root;
+  - [x] generate project from Starter;
+  - [x] restore from local packages;
+  - [x] build generated project;
+  - [x] static validation;
+  - [x] package/reference isolation gate;
+  - [x] visual consumer boundary gate;
+  - [x] fast browser proof;
+  - [x] full fixture-backed browser proof;
+  - [x] regenerate no-op proof;
+  - [x] manual-edit conflict fixture proof;
+  - [x] post-regeneration build proof.
+- [x] Add a CI-friendly regeneration ownership gate that does not require live Commerce Node data.
+- [x] Keep `FoundationFunctionalFast` as PR-safe browser proof.
+- [x] Keep `FoundationFunctionalFull` as manual/scheduled/release proof with fixture-backed store/category/product/page/payment data.
+- [x] Ensure COD/browser network regression remains covered by generated proof where payment is safe to place real test orders.
+- [x] Ensure direct Commerce Node browser-call rejection remains covered.
+- [x] Ensure generated proof reports are written under generated artifact root and are not committed by default.
+- [x] Update docs:
+  - [x] `docs/architecture/11-storefront-builder.md`;
+  - [x] `docs/agents/storefront-builder.md`;
+  - [x] `docs/visual-reverse-engineering-skill/README.md`;
+  - [x] `docs/visual-reverse-engineering-skill/reference.md`;
+  - [x] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`;
+  - [x] `docs/visual-reverse-engineering-skill/tutorial-generated-proof.md`.
+- [x] Update CI workflow references if new gates are added.
+- [x] Update QA docs to say generated Storefront proof is the release proof, while V2 remains a canonical product host QA surface.
 
 QA:
 
@@ -553,37 +553,45 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Exit gate:
 
-- [ ] Generated proof can be recreated from source.
-- [ ] Generated proof can be safely regenerated.
-- [ ] Generated proof preserves user edits and reports conflicts.
-- [ ] Generated proof has no forbidden references.
-- [ ] Generated browser flows pass for cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node call rejection.
-- [ ] Docs explain create/update/validate/release workflows clearly enough for another agent to run them without guessing.
+- [x] Generated proof can be recreated from source.
+- [x] Generated proof can be safely regenerated.
+- [x] Generated proof preserves user edits and reports conflicts.
+- [x] Generated proof has no forbidden references.
+- [x] Generated browser flows pass for cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node call rejection.
+- [x] Docs explain create/update/validate/release workflows clearly enough for another agent to run them without guessing.
+
+2026-07-29 Phase 2.7 verification:
+- `.\scripts\qa\run-storefront-builder-regeneration-gate.ps1` passed.
+- `.\scripts\qa\run-storefront-client-regeneration-gate.ps1` passed without drift.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` passed after final changes.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` passed after final changes.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull` passed after starting local Commerce Node fixture with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`; `.\scripts\stop-v2-local.ps1` stopped the runtime after the proof.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontBuilder" --logger "trx;LogFileName=storefront-builder-phase27.trx" --blame-hang --blame-hang-timeout 5m` passed `37/37`.
 
 ## Final Definition Of Done
 
 Phase 2 is complete only when all checks below pass:
 
-- [ ] Canonical OpenAPI contract is outside test project ownership.
-- [ ] Generated Storefront.Client regeneration is deterministic.
-- [ ] Storefront.Client has no backend source dependency.
-- [ ] Runtime owns generated transport and remains server/BFF-only.
-- [ ] Presentation owns shared app/page/BFF/SEO/media composition.
-- [ ] Browser owns browser-safe same-origin primitives.
-- [ ] Storefront.Components contains no shared visual wrappers, no `Features` folder, no visual class bags, and no V2 route defaults.
-- [ ] V2 owns V2 visual markup/CSS/layout only.
-- [ ] Starter owns neutral markup/CSS/layout and the starter generation contract.
-- [ ] Generated `BlazorShop.Storefront.{Name}` owns generated visual markup/CSS/layout/assets/copy.
-- [ ] Generated projects do not reference Storefront V2, backend/core/API projects, Control Plane Web, Commerce Node API, or `Web.SharedV2` business contracts.
-- [ ] Create generator is staged, atomic, and rollback-safe.
-- [ ] Regenerate engine is ownership-aware and conflict-safe.
-- [ ] `generated-files.yaml` is computed from real files and detects manual edits.
-- [ ] Static validation catches protected-file, forbidden-reference, direct-transport, missing-artifact, and invalid-manifest failures.
-- [ ] Structure proof passes.
-- [ ] FoundationFunctionalFast proof passes.
-- [ ] FoundationFunctionalFull proof passes before release closure.
-- [ ] CI includes deterministic client generation, StorefrontBuilder structure proof, fast generated browser proof, isolation gate, and regeneration ownership gate.
-- [ ] Documentation and agent guidance describe the final workflow.
+- [x] Canonical OpenAPI contract is outside test project ownership.
+- [x] Generated Storefront.Client regeneration is deterministic.
+- [x] Storefront.Client has no backend source dependency.
+- [x] Runtime owns generated transport and remains server/BFF-only.
+- [x] Presentation owns shared app/page/BFF/SEO/media composition.
+- [x] Browser owns browser-safe same-origin primitives.
+- [x] Storefront.Components contains no shared visual wrappers, no `Features` folder, no visual class bags, and no V2 route defaults.
+- [x] V2 owns V2 visual markup/CSS/layout only.
+- [x] Starter owns neutral markup/CSS/layout and the starter generation contract.
+- [x] Generated `BlazorShop.Storefront.{Name}` owns generated visual markup/CSS/layout/assets/copy.
+- [x] Generated projects do not reference Storefront V2, backend/core/API projects, Control Plane Web, Commerce Node API, or `Web.SharedV2` business contracts.
+- [x] Create generator is staged, atomic, and rollback-safe.
+- [x] Regenerate engine is ownership-aware and conflict-safe.
+- [x] `generated-files.yaml` is computed from real files and detects manual edits.
+- [x] Static validation catches protected-file, forbidden-reference, direct-transport, missing-artifact, and invalid-manifest failures.
+- [x] Structure proof passes.
+- [x] FoundationFunctionalFast proof passes.
+- [x] FoundationFunctionalFull proof passes before release closure.
+- [x] CI includes deterministic client generation, StorefrontBuilder structure proof, fast generated browser proof, isolation gate, and regeneration ownership gate.
+- [x] Documentation and agent guidance describe the final workflow.
 
 ## Not In Scope For Phase 2
 

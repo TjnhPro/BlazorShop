@@ -69,12 +69,13 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
+.\scripts\qa\run-storefront-builder-regeneration-gate.ps1
 .\scripts\qa\run-storefront-client-regeneration-gate.ps1
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
 
-Use `Structure` proof for package/boundary checks. Use `FoundationFunctionalFast` for PR-safe generated browser behavior checks. Use `FoundationFunctionalFull` before release closure or when fixture-backed live generated behavior changes.
+Use `Structure` proof for package/boundary checks plus generated lifecycle proof: post-regeneration build, deterministic no-op regeneration, and manual-edit conflict reporting. Use `run-storefront-builder-regeneration-gate.ps1` for CI-friendly ownership/regeneration checks that do not require live Commerce Node data. Use `FoundationFunctionalFast` for PR-safe generated browser behavior checks. Use `FoundationFunctionalFull` before release closure or when fixture-backed live generated behavior changes.
 
 When generated page behavior changes, run browser QA against the generated storefront:
 

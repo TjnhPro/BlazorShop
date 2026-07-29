@@ -502,6 +502,7 @@ namespace BlazorShop.Tests.Architecture
                 "Protected file guard tests",
                 "Generation fixture tests",
                 "Idempotency tests",
+                "Regeneration ownership gate",
                 "Isolation gate describe mode",
                 "Generated proof structure gate",
                 "Generated proof fast foundation functional browser gate",
@@ -523,6 +524,7 @@ namespace BlazorShop.Tests.Architecture
             }
 
             Assert.Contains("run_browser_gates", workflow, StringComparison.Ordinal);
+            Assert.Contains("run-storefront-builder-regeneration-gate.ps1", workflow, StringComparison.Ordinal);
             Assert.Contains("-ProofLevel Structure", workflow, StringComparison.Ordinal);
             Assert.Contains("-ProofLevel FoundationFunctionalFast", workflow, StringComparison.Ordinal);
             Assert.Contains("-ProofLevel FoundationFunctionalFull", workflow, StringComparison.Ordinal);
@@ -543,6 +545,9 @@ namespace BlazorShop.Tests.Architecture
                 "Run static StorefrontBuilder validation",
                 "Run StorefrontBuilder isolation gate",
                 "Run shared visual consumer boundary validator",
+                "Run post-regeneration build proof",
+                "Run regenerate no-op proof",
+                "Run manual-edit conflict fixture proof",
                 "RunBrowserQa",
                 "ProofLevel",
                 "FoundationFunctionalFast",
@@ -577,6 +582,9 @@ namespace BlazorShop.Tests.Architecture
                 "SFB-PROOF-FIXTURE-009",
                 "run-fast-foundation-functional.mjs",
                 "Run shared visual consumer boundary validator",
+                "Invoke-GeneratedProofRegenerationLifecycle",
+                "SFB-PROOF-REGEN-001",
+                "SFB-PROOF-REGEN-002",
                 "StorefrontVisualConsumerBoundaryValidatorTests.F1_51_SharedValidator_PassesGeneratedProofWhenPresent",
             })
             {
@@ -620,6 +628,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("app.cart.addLine", composition, StringComparison.Ordinal);
             Assert.Contains("StorefrontBuilder generated proof structure gate", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontBuilder generated proof fast foundation functional gate", workflow, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBuilder regeneration ownership gate", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontVisualConsumerBoundaryValidatorTests", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontStarterHostSmokeTests", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontApplicationBootstrapTests", workflow, StringComparison.Ordinal);

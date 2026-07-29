@@ -61,6 +61,27 @@ Regenerate a narrower target:
 
 Use `-Scope conflicts` before manual edits to generated files when you need to confirm idempotency state.
 
+Preview before applying:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -Scope all `
+  -WhatIf
+```
+
+Require validation and build after applying:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -Scope all `
+  -ValidateAfterApply `
+  -BuildAfterApply
+```
+
+Manual edits to generated/managed files are not overwritten automatically. They are recorded in `docs/storefront-analysis/generated-files.yaml` and summarized by `docs/storefront-analysis/regeneration-report.md`; resolve the file intentionally, then rerun `-Scope conflicts`.
+
 ## Validate
 
 Run the static gate:
@@ -82,6 +103,18 @@ Run isolation:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo -Name BlazorShop.Storefront.Demo
+```
+
+Run the CI-friendly regeneration ownership gate:
+
+```powershell
+.\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+```
+
+Run the canonical generated proof:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 ```
 
 ## Compatibility Rules
@@ -129,6 +162,8 @@ Check these points before promoting generated storefront output or committing to
 - Generated visual files contain no `@page` route directives.
 - Required analysis artifacts exist.
 - Static gate, focused tests, and isolation gate pass.
+- Regeneration ownership gate passes when generated ownership, manifest, or regeneration behavior changed.
+- Generated proof `Structure` passes before release closure because it recreates the proof, builds it, validates package/reference boundaries, proves safe regeneration, proves no-op determinism, and proves manual-edit conflict reporting.
 - Storefront client regeneration gate passes before package proof if the canonical Storefront contract or generated client changed.
 - Browser QA reports are current when page behavior changed.
 - Generated storefront artifacts remain out of `BlazorShop.sln` unless a separate architecture decision promotes them.
