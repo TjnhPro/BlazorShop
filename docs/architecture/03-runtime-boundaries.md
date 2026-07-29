@@ -144,7 +144,8 @@ Responsibilities:
 - Header, footer, account menu, auth form, checkout form, currency/logout, cart, product purchase, price, and stock presentation contexts.
 - Sitemap, robots, SEO metadata, canonical URL, structured data, redirects, and media/local endpoint composition.
 - Same-origin browser/BFF endpoint groups for cart, checkout, account, consent, preferences, media, and other browser-safe flows.
-- Presentation-owned browser action binders for product purchase, product-selection preview, add-to-cart, cart badge, and consent. Visual hosts declare semantic `data-storefront-*` descriptors; Presentation reads descriptors, builds command payloads, calls local BFF/application commands, normalizes selected product option state, and publishes semantic browser events.
+- Presentation-owned browser action binders for product purchase, product-selection preview, add-to-cart, cart badge, checkout submit guarding, and consent. Visual hosts declare semantic `data-storefront-*` descriptors; Presentation reads descriptors, builds command payloads, calls local BFF/application commands, normalizes selected product option state, and publishes semantic browser events.
+- Browser action descriptors for cart, checkout, and account. Page services place those descriptors on Presentation page contexts such as `StorefrontCartPageContext`, `StorefrontCheckoutPageContext`, and `StorefrontAccountPageContext`; V2.WASM visual options must not create fallback `/api/*` route descriptors.
 - View-slot contracts that let each host provide visual templates without Presentation referencing V2, Starter, or generated projects.
 
 Do not:
@@ -174,7 +175,15 @@ It must not call Control Plane APIs and must not use Control Plane credentials.
 
 Browser and WASM code calls same-origin storefront endpoints under `/api/*`. It must not call Commerce Node protected APIs directly, must not know the Commerce Node base URL, must not hold node credentials, and must not store Commerce access tokens in browser local storage.
 
-`BlazorShop.Storefront.Browser` owns browser-side local API transport primitives and high-level cart, checkout, and account controllers for interactive WASM flows. V2.WASM visual components render controller state and call controller methods; they must not construct Browser request DTOs, resolve services manually, or call `StorefrontLocalApiClient` directly. Public browser events expose visual projections only, while command payload state remains inside Presentation/Browser closures.
+`BlazorShop.Storefront.Browser` owns browser-side local API transport primitives, the Browser-owned `storefrontWasmInterop.js` static web asset, and high-level cart, checkout, and account controllers for interactive WASM flows. V2.WASM visual components render controller state and call controller methods; they must not construct Browser request DTOs, create default `/api/*` descriptors, resolve services manually, or call `StorefrontLocalApiClient` directly. Public browser events expose visual projections only, while command payload state remains inside Presentation/Browser closures.
+
+Browser controller registration is split by runtime:
+
+- V2.WASM calls `AddStorefrontBrowserRuntime(builder.HostEnvironment)` to register browser-side local API transport, JS interop, and interactive controllers.
+- Server hosts such as Storefront V2 call the aggregate `AddStorefrontBrowserControllers()` path through Storefront Application registration when they need controller services for SSR/prerender composition.
+- Server hosts must not call the WASM runtime extension, and V2.WASM remains the only project that calls the host-environment Browser runtime extension.
+
+Browser controllers are scoped/component-owned runtime services, not app-wide page snapshot stores. They can receive an initial Presentation snapshot from the visual component, but they must reset loading/saving/busy flags through `try/finally`, normalize transport failures through `StorefrontLocalApiClient`, and refresh or reinitialize when cart, checkout session, or account identity changes.
 
 Storefront Presentation BFF/local endpoints are responsible for:
 

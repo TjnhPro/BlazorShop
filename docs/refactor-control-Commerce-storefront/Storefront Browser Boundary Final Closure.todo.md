@@ -69,22 +69,22 @@ Storefront Browser
 Rules:
 
 - [x] Presentation page services create or receive action descriptors and attach them to page contexts.
-- [ ] V2.WASM options must not contain same-origin `/api/*` routes.
-- [ ] V2.WASM visual components may accept descriptors as parameters but must not create default route descriptors with live endpoints.
-- [ ] `Storefront.Components` may keep descriptor contract types, but not V2 default route values.
-- [ ] Browser controllers must not behave like app-wide mutable singletons for page snapshots.
-- [ ] Browser transport failures must return stable semantic errors unless the caller cancellation token requested cancellation.
-- [ ] V2 server host may compose Browser controller registration through one aggregate extension, but must not use the WASM runtime extension.
+- [x] V2.WASM options must not contain same-origin `/api/*` routes.
+- [x] V2.WASM visual components may accept descriptors as parameters but must not create default route descriptors with live endpoints.
+- [x] `Storefront.Components` may keep descriptor contract types, but not V2 default route values.
+- [x] Browser controllers must not behave like app-wide mutable singletons for page snapshots.
+- [x] Browser transport failures must return stable semantic errors unless the caller cancellation token requested cancellation.
+- [x] V2 server host may compose Browser controller registration through one aggregate extension, but must not use the WASM runtime extension.
 
 ## Non-goals
 
-- [ ] Do not change Commerce Node Storefront API route shape.
-- [ ] Do not change Presentation BFF endpoint route shape except through a deliberate follow-up API migration.
-- [ ] Do not redesign V2 cart, checkout, or account markup.
-- [ ] Do not move V2 CSS/classes/copy into Presentation or Browser.
-- [ ] Do not add React/Vue/Next skeletons in this phase.
-- [ ] Do not change checkout business rules, payment providers, cart pricing, stock, order placement, or customer authorization logic.
-- [ ] Do not rewrite all Storefront Browser controllers. Harden the existing controllers in place.
+- [x] Do not change Commerce Node Storefront API route shape.
+- [x] Do not change Presentation BFF endpoint route shape except through a deliberate follow-up API migration.
+- [x] Do not redesign V2 cart, checkout, or account markup.
+- [x] Do not move V2 CSS/classes/copy into Presentation or Browser.
+- [x] Do not add React/Vue/Next skeletons in this phase.
+- [x] Do not change checkout business rules, payment providers, cart pricing, stock, order placement, or customer authorization logic.
+- [x] Do not rewrite all Storefront Browser controllers. Harden the existing controllers in place.
 
 ## Phase F1.79 - Presentation Action Descriptor Ownership
 
@@ -496,73 +496,83 @@ Goal: update architecture docs and close the Browser boundary as an intentional 
 
 ### Documentation
 
-- [ ] Update `docs/architecture/03-runtime-boundaries.md` if implementation adds `AddStorefrontBrowserControllers()` or changes Browser registration language.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md` to state:
-  - [ ] Presentation owns cart/checkout/account browser action descriptors.
-  - [ ] V2.WASM options are visual-only.
-  - [ ] Browser controllers are not app-wide snapshot owners.
-- [ ] Update related Browser plans:
-  - [ ] Mark this plan phases complete as they land.
-  - [ ] Cross-link this plan from `Storefront Browser Runtime Cutover.todo.md`.
-- [ ] Update QA checklists:
-  - [ ] `QA-StorefrontV2.todo.md`.
-  - [ ] `Storefront Playwright E2E Release.todo.md` if browser release gates change.
+- [x] Update `docs/architecture/03-runtime-boundaries.md` if implementation adds `AddStorefrontBrowserControllers()` or changes Browser registration language.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md` to state:
+  - [x] Presentation owns cart/checkout/account browser action descriptors.
+  - [x] V2.WASM options are visual-only.
+  - [x] Browser controllers are not app-wide snapshot owners.
+- [x] Update related Browser plans:
+  - [x] Mark this plan phases complete as they land.
+  - [x] Cross-link this plan from `Storefront Browser Runtime Cutover.todo.md`.
+- [x] Update QA checklists:
+  - [x] `QA-StorefrontV2.todo.md`.
+  - [x] `Storefront Playwright E2E Release.todo.md` if browser release gates change.
 
 ### Verification
 
-- [ ] Run focused tests from phases F1.79-F1.84.
-- [ ] Run full Storefront-focused test group:
+- [x] Run focused tests from phases F1.79-F1.84.
+- [x] Run full Storefront-focused test group:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~Storefront" --no-restore
 ```
 
-- [ ] Run full suite if the implementation touches shared Presentation/Browser registrations broadly:
+- [x] Run full suite if the implementation touches shared Presentation/Browser registrations broadly:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 ```
 
-- [ ] Run Playwright re-entry proof before production/MVP closure.
+- [x] Run Playwright re-entry proof before production/MVP closure.
+
+2026-07-29 F1.86 verification:
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests" --logger "trx;LogFileName=browser-boundary-f186-architecture.trx" --blame-hang --blame-hang-timeout 5m` passed `36/36`.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontBrowser|FullyQualifiedName~StorefrontPresentation|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests" --logger "trx;LogFileName=browser-boundary-f186-browser-presentation.trx" --blame-hang --blame-hang-timeout 5m` passed `112/112`.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontCommerceFlowCutoverTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests" --logger "trx;LogFileName=browser-boundary-f186-route-owner.trx" --blame-hang --blame-hang-timeout 5m` passed `35/35`.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontCheckoutFormPatternTests|FullyQualifiedName~StorefrontV2HostSmokeTests&FullyQualifiedName~Account|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontBrowserRuntimeFoundationTests" --logger "trx;LogFileName=browser-boundary-f186-regressions.trx" --blame-hang --blame-hang-timeout 5m` passed `72/72`.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~Storefront" --logger "trx;LogFileName=browser-boundary-f186-storefront.trx" --blame-hang --blame-hang-timeout 5m` passed `905/907`, with 2 existing skipped cart service tests.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --logger "trx;LogFileName=browser-boundary-f186-full-suite.trx" --blame-hang --blame-hang-timeout 5m` passed `1673/1675`, with the same 2 existing skipped cart service tests.
+- Source scans found no forbidden `/api/cart`, `/api/checkout`, `/api/account`, `/api/consent`, or `/api/product-selection-preview` tokens in Storefront V2 or V2.WASM visual source.
+- F1.85 Playwright re-entry proof remains the production/MVP closure browser evidence for this final phase.
 
 ### Acceptance Criteria
 
-- [ ] Architecture docs match implemented Browser/Presentation/V2 boundaries.
-- [ ] Historical plans no longer claim completed boundary while these final blockers remain open.
-- [ ] QA checklist contains browser re-entry cases.
-- [ ] The closure commit can be reviewed without relying on old V2.WASM route exceptions.
+- [x] Architecture docs match implemented Browser/Presentation/V2 boundaries.
+- [x] Historical plans no longer claim completed boundary while these final blockers remain open.
+- [x] QA checklist contains browser re-entry cases.
+- [x] The closure commit can be reviewed without relying on old V2.WASM route exceptions.
 
 ## Final Definition Of Done
 
-- [ ] No `/api/cart`, `/api/checkout`, `/api/account`, `/api/consent`, or `/api/product-selection-preview` action route is present in V2 or V2.WASM visual source.
-- [ ] Cart actions come from `StorefrontCartPageContext`.
-- [ ] Checkout actions come from `StorefrontCheckoutPageContext`.
-- [ ] Account actions, navigation, and route parsing come from `StorefrontAccountPageContext`.
-- [ ] `StorefrontCartViewOptions.Actions` is removed.
-- [ ] `StorefrontCheckoutShellOptions.Actions` is removed.
-- [ ] `StorefrontAccountViewOptions.*Actions`, `NavigationItems`, and `RouteDescriptor` are removed.
-- [ ] Browser controllers are transient or component-owned, and tests prove they do not keep stale page snapshots.
-- [ ] Checkout idempotency key rotates when checkout session changes and does not duplicate orders.
-- [ ] Account state resets when customer/session identity changes.
-- [ ] `StorefrontLocalApiClient` normalizes network, timeout, and invalid-response failures.
-- [ ] Controller loading/saving/busy flags reset through `try/finally`.
-- [ ] V2 server Program uses aggregate Browser controller registration.
-- [ ] V2.WASM Program remains the only place that calls `AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
-- [ ] `AllowedRouteDescriptorRelativePaths` is removed from the visual boundary validator.
-- [ ] Visual dependency validator uses strict allowlist behavior.
-- [ ] Focused architecture tests pass.
-- [ ] Focused Browser/Presentation controller tests pass.
-- [ ] Storefront V2 browser re-entry Playwright proof passes.
-- [ ] Documentation and QA checklists are updated.
+- [x] No `/api/cart`, `/api/checkout`, `/api/account`, `/api/consent`, or `/api/product-selection-preview` action route is present in V2 or V2.WASM visual source.
+- [x] Cart actions come from `StorefrontCartPageContext`.
+- [x] Checkout actions come from `StorefrontCheckoutPageContext`.
+- [x] Account actions, navigation, and route parsing come from `StorefrontAccountPageContext`.
+- [x] `StorefrontCartViewOptions.Actions` is removed.
+- [x] `StorefrontCheckoutShellOptions.Actions` is removed.
+- [x] `StorefrontAccountViewOptions.*Actions`, `NavigationItems`, and `RouteDescriptor` are removed.
+- [x] Browser controllers are transient or component-owned, and tests prove they do not keep stale page snapshots.
+- [x] Checkout idempotency key rotates when checkout session changes and does not duplicate orders.
+- [x] Account state resets when customer/session identity changes.
+- [x] `StorefrontLocalApiClient` normalizes network, timeout, and invalid-response failures.
+- [x] Controller loading/saving/busy flags reset through `try/finally`.
+- [x] V2 server Program uses aggregate Browser controller registration.
+- [x] V2.WASM Program remains the only place that calls `AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
+- [x] `AllowedRouteDescriptorRelativePaths` is removed from the visual boundary validator.
+- [x] Visual dependency validator uses strict allowlist behavior.
+- [x] Focused architecture tests pass.
+- [x] Focused Browser/Presentation controller tests pass.
+- [x] Storefront V2 browser re-entry Playwright proof passes.
+- [x] Documentation and QA checklists are updated.
 
 ## Suggested Commit Slices
 
 Keep implementation reviewable in this order:
 
-1. [ ] Commit 1: Presentation descriptors and V2 option cleanup.
-2. [ ] Commit 2: Browser controller lifetime and idempotency hardening.
-3. [ ] Commit 3: Browser transport reliability and loading flag cleanup.
-4. [ ] Commit 4: aggregate Browser registration and visual validator tightening.
-5. [ ] Commit 5: Playwright QA checklist/docs closure.
+1. [x] Commit 1: Presentation descriptors and V2 option cleanup.
+2. [x] Commit 2: Browser controller lifetime and idempotency hardening.
+3. [x] Commit 3: Browser transport reliability and loading flag cleanup.
+4. [x] Commit 4: aggregate Browser registration and visual validator tightening.
+5. [x] Commit 5: Playwright QA checklist/docs closure.
 
 Do not combine all phases into one large commit unless the branch is explicitly being squashed before review.

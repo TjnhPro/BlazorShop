@@ -6,6 +6,7 @@ Created: 2026-07-29
 Related plans:
 - `Storefront Browser Semantics Boundary Closure.todo.md`
 - `Storefront Browser Action Boundary Closure.todo.md`
+- `Storefront Browser Boundary Final Closure.todo.md`
 - `Storefront Components Logic Only Hardening.todo.md`
 - `Storefront Components Compatibility Removal.todo.md`
 - `Storefront V2 Shared Platform Functional MVP.todo.md`
