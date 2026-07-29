@@ -328,6 +328,51 @@ async function main() {
       throw new Error("Add-to-cart command leaked client-supplied unit price.");
     }
 
+    const addLineCountBeforeEnhancedNavigation = requests.filter((request) => request.path === "/api/cart/lines").length;
+    const enhancedPreviewRequest = page.waitForRequest((request) => {
+      const url = new URL(request.url());
+      if (request.method() !== "POST" || url.pathname !== "/api/product-selection-preview") {
+        return false;
+      }
+
+      const bodyText = request.postData() || "";
+      return bodyText ? JSON.parse(bodyText).Quantity === 4 : false;
+    });
+    await page.evaluate(() => {
+      document.querySelector("main").innerHTML = `
+        <span data-storefront-cart-badge hidden>0</span>
+        <span data-storefront-selection-price></span>
+        <span data-storefront-selection-compare></span>
+        <span data-storefront-selection-stock></span>
+        <span data-storefront-selection-sku></span>
+        <span data-storefront-selection-gtin></span>
+        <div id="enhanced-purchase"
+             data-storefront-product-purchase
+             data-selection-preview-route="/api/product-selection-preview"
+             data-product-id="33333333-3333-3333-3333-333333333333"
+             data-product-name="Enhanced Product"
+             data-currency-code="USD">
+          <input type="number" value="4" data-storefront-purchase-quantity />
+          <button type="button"
+                  data-storefront-command="cart.add-line"
+                  data-storefront-product-purchase-submit
+                  data-feedback-target="#enhanced-cart-feedback">
+            Add to Cart
+          </button>
+          <p id="enhanced-cart-feedback" data-storefront-selection-message></p>
+        </div>`;
+      document.dispatchEvent(new Event("enhancedload"));
+      document.dispatchEvent(new Event("enhancedload"));
+    });
+    await enhancedPreviewRequest;
+    await page.waitForFunction(() => document.querySelector("[data-storefront-selection-price]")?.textContent === "$19.00");
+    await page.click("#enhanced-purchase [data-storefront-product-purchase-submit]");
+    await page.waitForFunction(() => document.querySelector("main [data-storefront-cart-badge]")?.textContent === "1");
+    const enhancedAddLineCount = requests.filter((request) => request.path === "/api/cart/lines").length - addLineCountBeforeEnhancedNavigation;
+    if (enhancedAddLineCount !== 1) {
+      throw new Error(`Enhanced navigation product submitted ${enhancedAddLineCount} add-to-cart requests.`);
+    }
+
     const eventNames = await page.evaluate(() => window.__storefrontProofEvents.map((event) => event.name));
     for (const expected of ["storefront:cart:changed", "storefront:consent:changed", "storefront:consent:manage-requested", "storefront:product-selection:changed"]) {
       if (!eventNames.includes(expected)) {

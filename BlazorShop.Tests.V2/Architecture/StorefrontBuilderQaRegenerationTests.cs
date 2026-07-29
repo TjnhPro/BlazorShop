@@ -359,6 +359,7 @@ namespace BlazorShop.Tests.Architecture
         {
             var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
             var composition = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs");
+            var starterLayout = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Layout/MainLayout.razor");
             var starterProductPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor");
             var starterProductShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Catalog/ProductDetailShell.razor");
             var starterPurchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Catalog/PurchasePanelPlaceholder.razor");
@@ -406,6 +407,9 @@ namespace BlazorShop.Tests.Architecture
             }
 
             Assert.Contains("content.replace", composition, StringComparison.Ordinal);
+            Assert.Contains("<span data-storefront-cart-badge hidden>0</span>", starterLayout, StringComparison.Ordinal);
+            Assert.Contains("sfb-cart-badge", composition, StringComparison.Ordinal);
+            Assert.DoesNotContain("@Context.Links.Cart.Label</a>', '<a class=\"sfb-cart-badge\"", composition, StringComparison.Ordinal);
             Assert.DoesNotContain("PurchasePanel=\"@Context.PurchasePanel\"", composition, StringComparison.Ordinal);
             Assert.DoesNotContain("PurchaseActions=\"@Context.PurchaseActions\"", composition, StringComparison.Ordinal);
             Assert.DoesNotContain("ProductPurchasePanelModel.Empty", composition, StringComparison.Ordinal);

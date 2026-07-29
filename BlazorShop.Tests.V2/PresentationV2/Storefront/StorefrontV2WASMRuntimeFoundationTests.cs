@@ -174,7 +174,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var applicationScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
 
-            Assert.Contains("bindCartBadge", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("refreshCartBadges", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("refreshPageBindings(document)", applicationScript, StringComparison.Ordinal);
             Assert.Contains("void cart.current()", applicationScript, StringComparison.Ordinal);
             Assert.DoesNotContain("refreshCartSummary", script, StringComparison.Ordinal);
             Assert.DoesNotContain("setInterval(refreshCartSummary", script, StringComparison.Ordinal);

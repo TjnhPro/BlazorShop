@@ -47,7 +47,7 @@ function transformLayout(content) {
       '<a href="@Context.Links.TodaysDeals.Href">Deals</a>',
       '<a href="@Context.Links.TodaysDeals.Href">Deals</a>\n        @foreach (var category in Context.Search.Categories)\n        {\n            <a href="@Context.Links.Category(category.Href)">@category.Label</a>\n        }'
     )
-    .replace('<a href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label</a>', '<a class="sfb-cart-badge" href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span data-storefront-cart-badge hidden>0</span></a>')
+    .replace('<a href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span data-storefront-cart-badge hidden>0</span></a>', '<a class="sfb-cart-badge" href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span data-storefront-cart-badge hidden>0</span></a>')
     .replace(
       "</header>",
       '<nav class="sfb-mobile-nav" aria-label="Mobile navigation"><a href="@Context.Links.Home.Href">@Context.Links.Home.Label</a><a href="@Context.Links.Cart.Href">@Context.Links.Cart.Label</a><a href="@Context.Links.AccountRoot.Href">@Context.Links.AccountRoot.Label</a></nav>\n</header>'

@@ -429,40 +429,40 @@ Goal: make browser bindings safe across Blazor enhanced navigation and remove st
 
 ### Implementation
 
-- [ ] Refactor Presentation browser initialization:
-  - [ ] `initializeGlobalListenersOnce()`
-  - [ ] `refreshPageBindings(document)`
-- [ ] Keep global delegated event listeners idempotent.
-- [ ] Run page refresh binding on:
-  - [ ] initial DOM load.
-  - [ ] `enhancedload`.
-- [ ] Use `WeakSet` or `data-storefront-bound` for node-specific listener bindings.
-- [ ] Refresh cart badges after enhanced navigation if a new badge appears.
-- [ ] Run product initial preview for new product roots after enhanced navigation.
-- [ ] Initialize consent banner for a newly inserted banner after enhanced navigation.
-- [ ] Remove remaining browser aliases when no consumer exists:
-  - [ ] `data-storefront-selection-quantity`.
-  - [ ] `dataset.previewRoute`.
-  - [ ] `dataset.variantSelect`.
-  - [ ] `dataset.attributeName`.
-  - [ ] legacy `blazorshop:cart-changed`.
-- [ ] Add Starter cart badge descriptor directly in `MainLayout.razor`.
-- [ ] Remove generator string replacement that adds cart badge descriptor.
+- [x] Refactor Presentation browser initialization:
+  - [x] `initializeGlobalListenersOnce()`
+  - [x] `refreshPageBindings(document)`
+- [x] Keep global delegated event listeners idempotent.
+- [x] Run page refresh binding on:
+  - [x] initial DOM load.
+  - [x] `enhancedload`.
+- [x] Use `WeakSet` or `data-storefront-bound` for node-specific listener bindings.
+- [x] Refresh cart badges after enhanced navigation if a new badge appears.
+- [x] Run product initial preview for new product roots after enhanced navigation.
+- [x] Initialize consent banner for a newly inserted banner after enhanced navigation.
+- [x] Remove remaining browser aliases when no consumer exists:
+  - [x] `data-storefront-selection-quantity`.
+  - [x] `dataset.previewRoute`.
+  - [x] `dataset.variantSelect`.
+  - [x] `dataset.attributeName`.
+  - [x] legacy `blazorshop:cart-changed`.
+- [x] Add Starter cart badge descriptor directly in `MainLayout.razor`.
+- [x] Remove generator string replacement that adds cart badge descriptor.
 
 ### Tests
 
-- [ ] Playwright test: Home -> Product via enhanced navigation runs initial product preview.
-- [ ] Playwright test: Product -> Cart -> Product does not double-submit add-to-cart.
-- [ ] Playwright test: new cart badge after navigation receives count refresh.
-- [ ] Static tests prove removed aliases no longer exist in Presentation, V2, Starter, generator, or generated proof.
-- [ ] StorefrontBuilder composition tests prove Starter already owns cart badge descriptor.
+- [x] Playwright test: Home -> Product via enhanced navigation runs initial product preview.
+- [x] Playwright test: Product -> Cart -> Product does not double-submit add-to-cart.
+- [x] Playwright test: new cart badge after navigation receives count refresh.
+- [x] Static tests prove removed aliases no longer exist in Presentation, V2, Starter, generator, or generated proof.
+- [x] StorefrontBuilder composition tests prove Starter already owns cart badge descriptor.
 
 ### Acceptance Criteria
 
-- [ ] Enhanced navigation does not leave new DOM unbound.
-- [ ] Binding initialization stays idempotent.
-- [ ] Browser contract has one canonical selector set.
-- [ ] Starter is a stronger functional baseline without generator behavior patching.
+- [x] Enhanced navigation does not leave new DOM unbound.
+- [x] Binding initialization stays idempotent.
+- [x] Browser contract has one canonical selector set.
+- [x] Starter is a stronger functional baseline without generator behavior patching.
 
 ## Phase F1.72 - Test Cleanup And Full Suite Closure
 
@@ -509,7 +509,7 @@ Goal: remove stale tests, invert old expectations, and prove full unfiltered tes
 4. [x] F1.68 Account browser controller cutover.
 5. [x] F1.69 V2.WASM visual consumer guardrail.
 6. [x] F1.70 Semantic event encapsulation.
-7. [ ] F1.71 Enhanced navigation and alias cleanup.
+7. [x] F1.71 Enhanced navigation and alias cleanup.
 8. [ ] F1.72 Test cleanup and full suite closure.
 
 Reasoning: create the browser-safe owner first, move the largest active flows one capability at a time, then lock the boundary with validator/tests and close browser event/enhanced navigation issues.

@@ -10,12 +10,14 @@
   const productPurchaseRootSelector = "[data-storefront-product-purchase]";
   const productPurchaseSubmitMarkerSelector = "[data-storefront-product-purchase-submit]";
   const productPurchaseSubmitSelector = '[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]';
-  const productPurchaseQuantitySelector = "[data-storefront-purchase-quantity], [data-storefront-selection-quantity]";
+  const productPurchaseQuantitySelector = "[data-storefront-purchase-quantity]";
   const productPurchaseAttributeSelector = "[data-storefront-purchase-attribute]";
   const productPurchaseVariantSelector = "[data-storefront-purchase-variant]";
   const cartBadgeSelector = "[data-storefront-cart-badge]";
   const purchasePreviewTimers = new WeakMap();
   const purchaseState = new WeakMap();
+  const boundConsentBanners = new WeakSet();
+  const boundConsentManageButtons = new WeakSet();
   let bindingsInitialized = false;
   const events = {
     cartChanged: "storefront:cart:changed",
@@ -260,12 +262,41 @@
     }
   };
 
-  function bindConsent() {
-    const banner = document.querySelector(consentBannerSelector);
+  function queryAllWithin(context, selector) {
+    const rootElement = context instanceof Element && context.matches(selector)
+      ? [context]
+      : [];
+    const descendants = context?.querySelectorAll
+      ? [...context.querySelectorAll(selector)]
+      : [];
+    return [...rootElement, ...descendants];
+  }
+
+  function bindConsent(context = document) {
+    queryAllWithin(context, consentBannerSelector).forEach((candidate) => bindConsentBanner(candidate));
+    queryAllWithin(context, consentManageSelector).forEach((button) => {
+      if (!(button instanceof HTMLElement) || boundConsentManageButtons.has(button)) {
+        return;
+      }
+
+      boundConsentManageButtons.add(button);
+      button.addEventListener("click", () => {
+        publishConsentManageRequested();
+        document.querySelector(consentBannerSelector)?.classList.remove("hidden");
+      });
+    });
+  }
+
+  function bindConsentBanner(banner) {
     if (!(banner instanceof HTMLElement)) {
       return;
     }
 
+    if (boundConsentBanners.has(banner)) {
+      return;
+    }
+
+    boundConsentBanners.add(banner);
     if (banner.dataset.storefrontConsentEnabled === "false") {
       banner.classList.add("hidden");
       return;
@@ -311,13 +342,6 @@
         .then(applyState)
         .catch(() => banner.classList.add("hidden"));
     });
-    document.querySelectorAll(consentManageSelector).forEach((button) => {
-      button.addEventListener("click", () => {
-        publishConsentManageRequested();
-        banner.classList.remove("hidden");
-      });
-    });
-
     void consent.current(actions)
       .then(applyState)
       .catch(() => banner.classList.add("hidden"));
@@ -335,11 +359,7 @@
     });
   }
 
-  function bindCartBadge() {
-    document.addEventListener(events.cartChanged, (event) => {
-      updateCartBadges(parseInteger(event.detail?.count, 0));
-    });
-
+  function refreshCartBadges() {
     void cart.current()
       .catch(() => updateCartBadges(0));
   }
@@ -380,7 +400,7 @@
         return;
       }
 
-      const name = (control.dataset.storefrontPurchaseAttributeName || control.dataset.attributeName || "").trim();
+      const name = (control.dataset.storefrontPurchaseAttributeName || "").trim();
       if (!name) {
         return;
       }
@@ -405,7 +425,7 @@
   }
 
   function findVariantSelect(rootElement, submitter) {
-    const explicitSelector = submitter?.dataset.storefrontPurchaseVariantSelector || submitter?.dataset.variantSelect;
+    const explicitSelector = submitter?.dataset.storefrontPurchaseVariantSelector;
     if (explicitSelector) {
       const explicit = document.querySelector(explicitSelector);
       if (explicit instanceof HTMLSelectElement) {
@@ -434,7 +454,7 @@
       productId,
       productName: (rootElement.dataset.productName || submitter?.dataset.productName || "Product").trim() || "Product",
       currencyCode: (rootElement.dataset.currencyCode || submitter?.dataset.currencyCode || "").trim(),
-      previewRoute: (rootElement.dataset.selectionPreviewRoute || rootElement.dataset.previewRoute || submitter?.dataset.selectionPreviewRoute || submitter?.dataset.previewRoute || "").trim(),
+      previewRoute: (rootElement.dataset.selectionPreviewRoute || submitter?.dataset.selectionPreviewRoute || "").trim(),
       quantity: readQuantity(rootElement),
       selectedAttributes: readSelectedAttributes(rootElement),
       selectedVariantId: readVariantId(rootElement, submitter, false),
@@ -610,7 +630,7 @@
 
   async function addPurchaseLine(rootElement, submitter) {
     let selection = purchaseState.get(rootElement);
-    if (!selection || rootElement.dataset.selectionPreviewRoute || rootElement.dataset.previewRoute) {
+    if (!selection || rootElement.dataset.selectionPreviewRoute) {
       selection = await previewPurchase(rootElement, submitter);
     }
 
@@ -622,13 +642,26 @@
     return cart.addLine(payload);
   }
 
-  function bindProductPurchase() {
-    document.querySelectorAll(productPurchaseRootSelector).forEach((rootCandidate) => {
+  function refreshProductPurchaseRoots(context = document) {
+    queryAllWithin(context, productPurchaseRootSelector).forEach((rootCandidate) => {
       if (rootCandidate instanceof HTMLElement) {
         schedulePurchasePreview(rootCandidate);
       }
     });
+  }
 
+  function initializeGlobalListenersOnce() {
+    if (bindingsInitialized) {
+      return;
+    }
+
+    bindingsInitialized = true;
+    document.addEventListener(events.cartChanged, (event) => {
+      updateCartBadges(parseInteger(event.detail?.count, 0));
+    });
+    document.addEventListener("enhancedload", () => {
+      refreshPageBindings(document);
+    });
     document.addEventListener("change", (event) => {
       const rootElement = findPurchaseRoot(event.target);
       if (rootElement) {
@@ -693,19 +726,20 @@
     });
   }
 
-  function initializeBindings() {
-    if (bindingsInitialized) {
-      return;
-    }
+  function refreshPageBindings(context = document) {
+    bindConsent(context);
+    refreshCartBadges();
+    refreshProductPurchaseRoots(context);
+  }
 
-    bindingsInitialized = true;
-    bindConsent();
-    bindCartBadge();
-    bindProductPurchase();
+  function initializeBindings() {
+    initializeGlobalListenersOnce();
+    refreshPageBindings(document);
   }
 
   root.events = Object.freeze({ ...events });
   root.initialize = initializeBindings;
+  root.refreshPageBindings = refreshPageBindings;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeBindings, { once: true });

@@ -79,6 +79,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 "root.events = Object.freeze({ ...events })",
                 "root.initialize = initializeBindings",
+                "root.refreshPageBindings = refreshPageBindings",
+                "initializeGlobalListenersOnce",
+                "refreshPageBindings(document)",
+                "document.addEventListener(\"enhancedload\"",
+                "new WeakSet()",
                 "let bindingsInitialized = false",
                 "if (bindingsInitialized)",
                 "productPurchaseRootSelector",
@@ -195,10 +200,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var forbiddenAliases = new[]
             {
                 LegacyAlias("selection-preview"),
+                LegacyAlias("selection-quantity"),
                 LegacyAlias("add-to-cart"),
                 LegacyAlias("generated-quantity"),
                 LegacyAlias("attribute-control"),
                 LegacyAlias("variant-select"),
+                "dataset.previewRoute",
+                "dataset.variantSelect",
+                "dataset.attributeName",
+                "blazorshop:cart-changed",
             };
             var failures = new List<string>();
 
