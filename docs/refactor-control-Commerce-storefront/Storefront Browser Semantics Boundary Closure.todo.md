@@ -337,40 +337,51 @@ Goal: remove stale compatibility selectors and make visual boundary validation p
 
 ### Implementation
 
-- [ ] Remove Presentation legacy selector aliases:
-  - [ ] `data-storefront-selection-preview`
-  - [ ] `data-storefront-add-to-cart`
-  - [ ] `data-storefront-generated-quantity`
-  - [ ] `data-storefront-attribute-control`
-  - [ ] `data-storefront-variant-select`
-- [ ] Remove tests that assert compatibility alias comments or alias support.
-- [ ] Add tests that assert legacy aliases are absent from Presentation script, V2, Starter, generated output, and StorefrontBuilder transforms.
-- [ ] Replace broad visual JS forbidden tokens for `sku` and `gtin` with precise raw-data patterns.
-- [ ] Keep semantic projection tokens allowed:
-  - [ ] `selection.skuText`
-  - [ ] `selection.gtinText`
-  - [ ] `selection.stockText`
-  - [ ] `selection.priceText`
-- [ ] Add validator coverage for bracket/dynamic forms where practical:
-  - [ ] `preview["sku"]`
-  - [ ] `preview['gtin']`
-  - [ ] `preview["stockQuantity"]`
-  - [ ] `preview['canAddToCart']`
-- [ ] Open a follow-up task for AST/ESLint validator if substring rules remain insufficient.
+- [x] Remove Presentation legacy selector aliases:
+  - [x] `data-storefront-selection-preview`
+  - [x] `data-storefront-add-to-cart`
+  - [x] `data-storefront-generated-quantity`
+  - [x] `data-storefront-attribute-control`
+  - [x] `data-storefront-variant-select`
+- [x] Remove tests that assert compatibility alias comments or alias support.
+- [x] Add tests that assert legacy aliases are absent from Presentation script, V2, Starter, generated output, and StorefrontBuilder transforms.
+- [x] Replace broad visual JS forbidden tokens for `sku` and `gtin` with precise raw-data patterns.
+- [x] Keep semantic projection tokens allowed:
+  - [x] `selection.skuText`
+  - [x] `selection.gtinText`
+  - [x] `selection.stockText`
+  - [x] `selection.priceText`
+- [x] Add validator coverage for bracket/dynamic forms where practical:
+  - [x] `preview["sku"]`
+  - [x] `preview['gtin']`
+  - [x] `preview["stockQuantity"]`
+  - [x] `preview['canAddToCart']`
+- [x] Open a follow-up task for AST/ESLint validator if substring rules remain insufficient.
 
 ### Tests
 
-- [ ] Update `StorefrontVisualConsumerBoundaryValidatorTests`.
-- [ ] Update `StorefrontCommerceScriptRegressionTests`.
-- [ ] Run Storefront V2 architecture/visual boundary tests.
-- [ ] Run StorefrontBuilder static gate and composition validation.
+- [x] Update `StorefrontVisualConsumerBoundaryValidatorTests`.
+- [x] Update `StorefrontCommerceScriptRegressionTests`.
+- [x] Run Storefront V2 architecture/visual boundary tests.
+- [x] Run StorefrontBuilder static gate and composition validation.
 
 ### Acceptance Criteria
 
-- [ ] Legacy selector aliases are gone.
-- [ ] Visual consumers can render semantic event values without false positives.
-- [ ] Visual consumers cannot read raw preview business fields.
-- [ ] Validator covers the known bypass patterns used by simple bracket notation.
+- [x] Legacy selector aliases are gone.
+- [x] Visual consumers can render semantic event values without false positives.
+- [x] Visual consumers cannot read raw preview business fields.
+- [x] Validator covers the known bypass patterns used by simple bracket notation.
+
+2026-07-29 evidence:
+- Presentation binder now accepts only canonical product purchase descriptors: `data-storefront-product-purchase`, `data-storefront-command="cart.add-line"`, `data-storefront-product-purchase-submit`, `data-storefront-purchase-quantity`, `data-storefront-purchase-attribute`, and `data-storefront-purchase-variant`.
+- `StorefrontCommerceScriptRegressionTests.F1_63_LegacySelectorAliases_AreAbsentFromBrowserSourcesAndGeneratedTransforms` guards Presentation, Storefront V2, Starter, generated proof output when present, and StorefrontBuilder generate transforms.
+- `StorefrontVisualConsumerBoundaryValidator` now uses raw preview field regexes for dot and bracket access, so semantic event projection tokens such as `selection.skuText`, `selection.gtinText`, `selection.stockText`, and `selection.priceText` remain allowed.
+- Follow-up task: if visual boundary bypasses move beyond simple dot/bracket forms, replace the regex guardrail with AST/ESLint-based JavaScript validation.
+- `rg -n "data-storefront-selection-preview|data-storefront-add-to-cart|data-storefront-generated-quantity|data-storefront-attribute-control|data-storefront-variant-select" BlazorShop.PresentationV2 scripts tools\BlazorShop.AI.StorefrontBuilder\scripts\generate BlazorShop.Tests.V2 -S` returned no matches.
+- `node --check BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\wwwroot\js\storefront.application.js` passed.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests" --no-restore` passed 20/20.
+- `pwsh tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderCompositionFiles.ps1 -ProjectRoot artifacts\storefront-builder\generated\BlazorShop.Storefront.GeneratedProof` passed.
+- `pwsh tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderStaticGate.ps1 -ProjectRoot artifacts\storefront-builder\generated\BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey default` passed.
 
 ## Phase F1.64 - QA And Documentation Closure
 

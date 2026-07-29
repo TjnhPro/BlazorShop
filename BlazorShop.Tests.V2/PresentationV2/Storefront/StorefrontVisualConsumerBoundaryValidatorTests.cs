@@ -106,6 +106,9 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
                 if (preview["canAddToCart"] && preview['stockQuantity'] > 0) {
                     console.log(preview["sku"], preview['gtin']);
                 }
+                if (preview [ "sku" ] || preview [ 'gtin' ] || preview [ "stockQuantity" ] || preview [ 'canAddToCart' ]) {
+                    console.log("bracket spacing bypass");
+                }
                 fetch('/api/consent'); new XMLHttpRequest();
                 """);
             File.WriteAllText(
@@ -142,10 +145,10 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             Assert.Contains(violations, violation => violation.Forbidden == "preview.formattedUnitPrice");
             Assert.Contains(violations, violation => violation.Forbidden == "preview.sku");
             Assert.Contains(violations, violation => violation.Forbidden == "preview.gtin");
-            Assert.Contains(violations, violation => violation.Forbidden == "preview[\"canAddToCart\"]");
-            Assert.Contains(violations, violation => violation.Forbidden == "preview['stockQuantity']");
-            Assert.Contains(violations, violation => violation.Forbidden == "preview[\"sku\"]");
-            Assert.Contains(violations, violation => violation.Forbidden == "preview['gtin']");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.canAddToCart");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.stockQuantity");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.sku");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.gtin");
             Assert.DoesNotContain(violations, violation => violation.Forbidden == "skuText");
             Assert.DoesNotContain(violations, violation => violation.Forbidden == "gtinText");
             Assert.DoesNotContain(violations, violation => violation.Forbidden == "stockText");

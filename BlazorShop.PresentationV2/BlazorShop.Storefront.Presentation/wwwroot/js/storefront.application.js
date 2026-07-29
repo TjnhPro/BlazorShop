@@ -8,13 +8,12 @@
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
   const antiforgeryHeaderSelector = 'meta[name="blazorshop-antiforgery-header"]';
   const legacyCartChangedEventName = "blazorshop:cart-changed";
-  // Compatibility aliases remain only for non-command descriptors until F1.63 removes them.
-  const productPurchaseRootSelector = "[data-storefront-product-purchase], [data-storefront-selection-preview]";
+  const productPurchaseRootSelector = "[data-storefront-product-purchase]";
   const productPurchaseSubmitMarkerSelector = "[data-storefront-product-purchase-submit]";
   const productPurchaseSubmitSelector = '[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]';
-  const productPurchaseQuantitySelector = "[data-storefront-purchase-quantity], [data-storefront-selection-quantity], [data-storefront-generated-quantity]";
-  const productPurchaseAttributeSelector = "[data-storefront-purchase-attribute], [data-storefront-attribute-control]";
-  const productPurchaseVariantSelector = "[data-storefront-purchase-variant], [data-storefront-variant-select]";
+  const productPurchaseQuantitySelector = "[data-storefront-purchase-quantity], [data-storefront-selection-quantity]";
+  const productPurchaseAttributeSelector = "[data-storefront-purchase-attribute]";
+  const productPurchaseVariantSelector = "[data-storefront-purchase-variant]";
   const cartBadgeSelector = "[data-storefront-cart-badge]";
   const purchasePreviewTimers = new WeakMap();
   const purchaseState = new WeakMap();

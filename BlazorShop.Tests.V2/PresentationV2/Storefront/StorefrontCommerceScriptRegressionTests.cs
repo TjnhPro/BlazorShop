@@ -64,7 +64,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "root.initialize = initializeBindings",
                 "let bindingsInitialized = false",
                 "if (bindingsInitialized)",
-                "Compatibility aliases remain only for non-command descriptors until F1.63 removes them.",
                 "productPurchaseRootSelector",
                 "productPurchaseSubmitMarkerSelector = \"[data-storefront-product-purchase-submit]\"",
                 "productPurchaseSubmitSelector = '[data-storefront-command=\"cart.add-line\"][data-storefront-product-purchase-submit]'",
@@ -101,7 +100,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 "root.application",
                 "root.bindings",
-                "data-storefront-add-to-cart]",
+                LegacyAlias("add-to-cart") + "]",
                 "addToCart: { addPurchaseLine }",
                 "productSelection: { previewPurchase }",
             })
@@ -126,9 +125,85 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("storefront:product-selection:error", applicationScript, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void F1_63_LegacySelectorAliases_AreAbsentFromBrowserSourcesAndGeneratedTransforms()
+        {
+            var sourceRoots = new[]
+            {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
+                "tools/BlazorShop.AI.StorefrontBuilder/scripts/generate",
+            };
+            var generatedRoot = Path.Combine(FindRepositoryRoot(), "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+            var forbiddenAliases = new[]
+            {
+                LegacyAlias("selection-preview"),
+                LegacyAlias("add-to-cart"),
+                LegacyAlias("generated-quantity"),
+                LegacyAlias("attribute-control"),
+                LegacyAlias("variant-select"),
+            };
+            var failures = new List<string>();
+
+            foreach (var sourceRoot in sourceRoots)
+            {
+                AssertAliasesAbsent(Path.Combine(FindRepositoryRoot(), sourceRoot), forbiddenAliases, failures);
+            }
+
+            if (Directory.Exists(generatedRoot))
+            {
+                AssertAliasesAbsent(generatedRoot, forbiddenAliases, failures);
+            }
+
+            Assert.Empty(failures);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
+        }
+
+        private static string LegacyAlias(string suffix)
+        {
+            return "data-storefront-" + suffix;
+        }
+
+        private static void AssertAliasesAbsent(string root, IReadOnlyCollection<string> forbiddenAliases, List<string> failures)
+        {
+            var sourceExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".cs",
+                ".razor",
+                ".cshtml",
+                ".js",
+                ".mjs",
+                ".ts",
+                ".json",
+                ".yaml",
+                ".yml",
+                ".ps1",
+            };
+
+            foreach (var file in Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories))
+            {
+                if (!sourceExtensions.Contains(Path.GetExtension(file))
+                    || file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
+                    || file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
+                    || file.Contains($"{Path.DirectorySeparatorChar}node_modules{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var source = File.ReadAllText(file);
+                foreach (var forbiddenAlias in forbiddenAliases)
+                {
+                    if (source.Contains(forbiddenAlias, StringComparison.Ordinal))
+                    {
+                        failures.Add($"{Path.GetRelativePath(FindRepositoryRoot(), file)} contains {forbiddenAlias}");
+                    }
+                }
+            }
         }
 
         private static string FindRepositoryRoot()

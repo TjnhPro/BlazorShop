@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 internal sealed class StorefrontVisualConsumerBoundaryValidator
@@ -87,35 +88,17 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
         "currencyCode:",
     ];
 
-    private static readonly string[] ForbiddenBrowserBusinessTokens =
+    private static readonly BrowserForbiddenPattern[] ForbiddenBrowserBusinessPatterns =
     [
-        "preview.canAddToCart",
-        "preview.stockQuantity",
-        "preview.isAvailable",
-        "preview.validationMessages",
-        "preview.unitPrice",
-        "preview.formattedUnitPrice",
-        "preview.formattedComparePrice",
-        "preview.sku",
-        "preview.gtin",
-        "preview[\"canAddToCart\"]",
-        "preview['canAddToCart']",
-        "preview[\"stockQuantity\"]",
-        "preview['stockQuantity']",
-        "preview[\"isAvailable\"]",
-        "preview['isAvailable']",
-        "preview[\"validationMessages\"]",
-        "preview['validationMessages']",
-        "preview[\"unitPrice\"]",
-        "preview['unitPrice']",
-        "preview[\"formattedUnitPrice\"]",
-        "preview['formattedUnitPrice']",
-        "preview[\"formattedComparePrice\"]",
-        "preview['formattedComparePrice']",
-        "preview[\"sku\"]",
-        "preview['sku']",
-        "preview[\"gtin\"]",
-        "preview['gtin']",
+        RawPreviewPattern("canAddToCart"),
+        RawPreviewPattern("stockQuantity"),
+        RawPreviewPattern("isAvailable"),
+        RawPreviewPattern("validationMessages"),
+        RawPreviewPattern("unitPrice"),
+        RawPreviewPattern("formattedUnitPrice"),
+        RawPreviewPattern("formattedComparePrice"),
+        RawPreviewPattern("sku"),
+        RawPreviewPattern("gtin"),
     ];
 
     private static readonly string[] ForbiddenRootFolders =
@@ -276,9 +259,17 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
             {
                 ValidateBrowserScriptTokens(relativePath, source, ForbiddenBrowserCommandTokens, "Application command invocation belongs in Storefront Presentation browser binders.", violations);
                 ValidateBrowserScriptTokens(relativePath, source, ForbiddenBrowserPayloadTokens, "Command payload construction belongs in Storefront Presentation browser binders.", violations);
-                ValidateBrowserScriptTokens(relativePath, source, ForbiddenBrowserBusinessTokens, "Business result interpretation belongs in Storefront Presentation browser binders or server-side services.", violations);
+                ValidateBrowserScriptPatterns(relativePath, source, ForbiddenBrowserBusinessPatterns, "Business result interpretation belongs in Storefront Presentation browser binders or server-side services.", violations);
             }
         }
+    }
+
+    private static BrowserForbiddenPattern RawPreviewPattern(string fieldName)
+    {
+        var escaped = Regex.Escape(fieldName);
+        return new BrowserForbiddenPattern(
+            $"preview.{fieldName}",
+            new Regex($@"\bpreview\s*(?:\.\s*{escaped}|\[\s*[""']{escaped}[""']\s*\])", RegexOptions.CultureInvariant));
     }
 
     private static void ValidateBrowserScriptTokens(
@@ -298,6 +289,27 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
             violations.Add(StorefrontVisualBoundaryViolation.Source(
                 relativePath,
                 token,
+                remediation));
+        }
+    }
+
+    private static void ValidateBrowserScriptPatterns(
+        string relativePath,
+        string source,
+        IEnumerable<BrowserForbiddenPattern> patterns,
+        string remediation,
+        List<StorefrontVisualBoundaryViolation> violations)
+    {
+        foreach (var pattern in patterns)
+        {
+            if (!pattern.Pattern.IsMatch(source))
+            {
+                continue;
+            }
+
+            violations.Add(StorefrontVisualBoundaryViolation.Source(
+                relativePath,
+                pattern.Forbidden,
                 remediation));
         }
     }
@@ -363,6 +375,8 @@ internal sealed record StorefrontVisualConsumerProfile(
 {
     public string AbsoluteProjectPath => Path.Combine(AbsoluteRoot, RelativeProjectPath.Replace('/', Path.DirectorySeparatorChar));
 }
+
+internal sealed record BrowserForbiddenPattern(string Forbidden, Regex Pattern);
 
 internal sealed record StorefrontVisualBoundaryViolation(
     string RelativePath,

@@ -469,7 +469,7 @@ async function addOrderProductToCart(page) {
   await dismissConsentIfVisible(page);
   const purchase = page.locator("#purchase");
   await page.waitForFunction(() => {
-    const button = document.querySelector("#purchase [data-storefront-add-to-cart]");
+    const button = document.querySelector("#purchase [data-storefront-command='cart.add-line'][data-storefront-product-purchase-submit]");
     return button && !button.disabled;
   }, { timeout: 15000 });
 
