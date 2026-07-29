@@ -1,6 +1,6 @@
 # Storefront Test Runtime Performance Closure Todo
 
-Status: In Progress
+Status: Complete
 Owner: Storefront Platform
 Created: 2026-07-29
 Autoplan mode: CEO -> Design -> Eng -> DX, auto-decisions recorded below
@@ -41,13 +41,13 @@ Target outcome:
 
 ## Non-goals
 
-- [ ] Do not remove production HTTP resilience from active V2 runtimes.
-- [ ] Do not change Commerce Node Storefront API route shape.
-- [ ] Do not change Storefront V2 public page behavior.
-- [ ] Do not remove host smoke coverage for auth, cart, checkout, SEO, maintenance, account, and BFF flows.
-- [ ] Do not move Storefront V2 browser/application ownership across boundaries.
-- [ ] Do not introduce a new test framework.
-- [ ] Do not run full test commands without timeout/hang guards.
+- [x] Do not remove production HTTP resilience from active V2 runtimes.
+- [x] Do not change Commerce Node Storefront API route shape.
+- [x] Do not change Storefront V2 public page behavior.
+- [x] Do not remove host smoke coverage for auth, cart, checkout, SEO, maintenance, account, and BFF flows.
+- [x] Do not move Storefront V2 browser/application ownership across boundaries.
+- [x] Do not introduce a new test framework.
+- [x] Do not run full test commands without timeout/hang guards.
 
 ## What Already Exists
 
@@ -99,10 +99,10 @@ Alternatives considered:
 
 NOT in scope:
 
-- [ ] Browser Playwright suite redesign.
-- [ ] Rewriting all host smoke tests into unit tests.
-- [ ] Replacing `WebApplicationFactory` globally.
-- [ ] Removing production `ServiceDefaults`.
+- [x] Browser Playwright suite redesign.
+- [x] Rewriting all host smoke tests into unit tests.
+- [x] Replacing `WebApplicationFactory` globally.
+- [x] Removing production `ServiceDefaults`.
 
 Dream state delta:
 
@@ -130,10 +130,10 @@ Reason: this plan does not change user-facing UI, visual hierarchy, interaction 
 
 Key engineering risks:
 
-- [ ] Do not accidentally disable production retry/backoff.
-- [ ] Do not hide real service-unavailable page behavior by replacing every `503` test with success fakes.
-- [ ] Do not make parallel tests race on package feeds, generated output folders, static process outputs, or shared WebApplicationFactory state.
-- [ ] Do not run validation without timeout/hang guards.
+- [x] Do not accidentally disable production retry/backoff.
+- [x] Do not hide real service-unavailable page behavior by replacing every `503` test with success fakes.
+- [x] Do not make parallel tests race on package feeds, generated output folders, static process outputs, or shared WebApplicationFactory state.
+- [x] Do not run validation without timeout/hang guards.
 
 Test diagram:
 
@@ -402,47 +402,75 @@ Goal: prove the suite still passes and record the new performance baseline.
 
 ### Implementation
 
-- [ ] Update this todo with final timings.
-- [ ] Update `QA-StorefrontV2.todo.md` with the performance closure evidence.
-- [ ] If any architecture doc changed, ensure `docs/architecture/07-deployment-and-local-run.md` still reflects active V2 test behavior.
-- [ ] Document any remaining slow test class with a reason and owner.
+- [x] Update this todo with final timings.
+- [x] Update `QA-StorefrontV2.todo.md` with the performance closure evidence.
+- [x] If any architecture doc changed, ensure `docs/architecture/07-deployment-and-local-run.md` still reflects active V2 test behavior.
+- [x] Document any remaining slow test class with a reason and owner.
+  - `LegacyRemovalGuardrailTests`: `37.3s`; owner Architecture/Storefront Platform; reason is a repository-wide legacy-reference PowerShell scan.
+  - `StorefrontStarterFoundationBoundaryTests`: `20.7s` class total; owner Storefront Platform; reason is local package pack/restore/build proof for Starter package isolation.
 
 ### Tests
 
-- [ ] Run full V2 test suite with hang guard:
+- [x] Run full V2 test suite with hang guard:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore --logger "trx;LogFileName=storefront-test-runtime-f178-final.trx" --blame-hang --blame-hang-timeout 20m
 ```
 
-- [ ] Parse final TRX:
-  - [ ] Total duration.
-  - [ ] Top 15 tests by duration.
-  - [ ] Class duration totals.
-  - [ ] Count and sum of tests `>=10s`.
-- [ ] Compare final numbers against baseline.
+- [x] Parse final TRX:
+  - [x] Total duration.
+    - Full test command result: passed `1643`, skipped `2`, failed `0`, total `1645`, duration `1m57s`.
+    - TRX window: `2026-07-29T14:23:55.6750971+07:00` -> `2026-07-29T14:25:56.0150960+07:00`.
+  - [x] Top 15 tests by duration.
+    - `37.3s` `LegacyRemovalGuardrailTests.Phase0_LegacyRemovalGuardrailScript_SupportsInventoryAndActiveStrictModes`
+    - `20.6s` `StorefrontStarterFoundationBoundaryTests.StarterProject_RestoresAndBuildsFromLocalStorefrontPackages`
+    - `4.2s` five `StorefrontStarterHostSmokeTests` route/root cases
+    - `4.1s` `StorefrontGeneratedClientFoundationTests.StorefrontClientPackage_BuildsIndependentConsumerWithoutBackendSourceReferences`
+    - `2.1s` `ControlPlaneNodeServiceTests.CreateAsync_RejectsDuplicateActiveNodeKey`
+    - `2.1s` `StoreCurrencyServiceTests.UpdateAsync_KeepsBaseCurrencyEnabledAndInvalidatesPublicConfiguration`
+    - `2.1s` `CommerceNodeAdminShipmentServiceTests.UpsertShipmentAsync_WhenTrackingChanges_AppendsTrackingUpdatedEvent`
+    - `1.9s` `CommerceNodeOrderQueryServiceTests.GetOrdersForUserAsync_CurrentlyMissesV2OrdersLinkedOnlyByCustomerId`
+    - `1.8s` `ProductMediaServiceTests.ListAsync_PreservesStoredAltText`
+    - `1.7s` `MessageTemplateResolverTests.ResolveAsync_FallsBackToGlobalDefaultWhenStoreTemplateMissing`
+    - `1.6s` `StorefrontOrderEmailE2ERunnerTests.OrderEmailE2ERunner_UsesCheckoutMailpitAndTransactionalMessageEvidence`
+  - [x] Class duration totals.
+    - `LegacyRemovalGuardrailTests`: 1 test / `37.3s`.
+    - `StorefrontStarterHostSmokeTests`: 9 tests / `21.4s`.
+    - `StorefrontStarterFoundationBoundaryTests`: 26 tests / `20.7s`.
+    - `StorefrontV2HostSmokeTests`: 58 tests / `15.2s`.
+    - `CommerceNodeStorefrontOpenApiContractTests`: 44 tests / `10.1s`.
+  - [x] Count and sum of tests `>=10s`.
+    - 2 tests / `58s`.
+- [x] Compare final numbers against baseline.
+  - Baseline full TRX: `14m34s`; final full run: `1m57s`.
+  - Baseline `StorefrontV2HostSmokeTests`: `756.2s`; final: `15.2s`.
+  - Baseline slow tests `>=10s`: 34 / `815.9s`; final: 2 / `58s`.
 
 ### Acceptance Criteria
 
-- [ ] Full suite passes: `0 failed`.
-- [ ] No test command was run without a hang guard.
-- [ ] `StorefrontV2HostSmokeTests` runtime is materially lower than `756.2s`, or remaining cost is documented test-by-test.
-- [ ] No unbounded process helper remains in the affected tests.
-- [ ] QA evidence is recorded.
+- [x] Full suite passes: `0 failed`.
+- [x] No test command was run without a hang guard.
+- [x] `StorefrontV2HostSmokeTests` runtime is materially lower than `756.2s`, or remaining cost is documented test-by-test.
+- [x] No unbounded process helper remains in the affected tests.
+- [x] QA evidence is recorded.
 
 ### Commit
 
-- [ ] Commit message: `F1.78 close storefront test runtime performance`
+- [x] Commit message: `F1.78 close storefront test runtime performance`
 
 ## Final Verification Checklist
 
-- [ ] `dotnet build BlazorShop.sln -c Release --no-restore`
-- [ ] Focused Storefront host smoke test TRX generated with hang guard.
-- [ ] Focused process helper TRX generated with hang guard.
-- [ ] Full `BlazorShop.Tests.V2` Release TRX generated with hang guard.
-- [ ] TRX duration comparison recorded.
-- [ ] `QA-StorefrontV2.todo.md` updated.
-- [ ] One commit per phase, in order.
+- [x] `dotnet build BlazorShop.sln -c Release --no-restore`
+  - Result: passed with existing MessagePack NU1902/NU1903 and Browserslist warnings.
+- [x] Focused Storefront host smoke test TRX generated with hang guard.
+  - `BlazorShop.Tests.V2/TestResults/storefront-host-smoke-f175.trx`
+- [x] Focused process helper TRX generated with hang guard.
+  - `BlazorShop.Tests.V2/TestResults/process-helper-f176.trx`
+- [x] Full `BlazorShop.Tests.V2` Release TRX generated with hang guard.
+  - `BlazorShop.Tests.V2/TestResults/storefront-test-runtime-f178-final.trx`
+- [x] TRX duration comparison recorded.
+- [x] `QA-StorefrontV2.todo.md` updated.
+- [x] One commit per phase, in order.
 
 ## Resume Notes
 
