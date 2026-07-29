@@ -1,7 +1,7 @@
 @using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser
+@using BlazorShop.Storefront.Browser.Checkout
 @using BlazorShop.Storefront.Components.Headless.Checkout
-@inject IServiceProvider Services
+@inject IStorefrontBrowserCheckoutController CheckoutController
 @inject NavigationManager NavigationManager
 
 @if (ShowPanel)
@@ -11,42 +11,42 @@
             <div>
                 <p class="@Classes.Eyebrow">Checkout state</p>
                 <h2 class="@Classes.Title">@Title</h2>
-                @if (!string.IsNullOrWhiteSpace(_state.Message))
+                @if (!string.IsNullOrWhiteSpace(CurrentCheckout.Message))
                 {
-                    <p class="@Classes.BodyText">@_state.Message</p>
+                    <p class="@Classes.BodyText">@CurrentCheckout.Message</p>
                 }
             </div>
-            <button type="button" class="@Classes.RefreshButton" @onclick="RefreshAsync" disabled="@_loading">
-                @(_loading ? "Refreshing..." : "Refresh")
+            <button type="button" class="@Classes.RefreshButton" @onclick="RefreshAsync" disabled="@ControllerState.Loading">
+                @(ControllerState.Loading ? "Refreshing..." : "Refresh")
             </button>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(_error))
+        @if (!string.IsNullOrWhiteSpace(ControllerState.Error))
         {
-            <div class="@Classes.Error" role="alert">@_error</div>
+            <div class="@Classes.Error" role="alert">@ControllerState.Error</div>
         }
 
-        @if (_state.HasCart)
+        @if (CurrentCheckout.HasCart)
         {
             <div class="@Classes.MetricsGrid">
                 <div class="@Classes.MetricCard">
                     <p class="@Classes.Eyebrow">Cart version</p>
-                    <p class="@Classes.MetricValue" data-storefront-checkout-cart-version>@_state.CartVersion</p>
+                    <p class="@Classes.MetricValue" data-storefront-checkout-cart-version>@CurrentCheckout.CartVersion</p>
                 </div>
                 <div class="@Classes.MetricCard">
                     <p class="@Classes.Eyebrow">Checkout version</p>
-                    <p class="@Classes.MetricValue">@_state.CheckoutVersion</p>
+                    <p class="@Classes.MetricValue">@CurrentCheckout.CheckoutVersion</p>
                 </div>
                 <div class="@Classes.MetricCard">
                     <p class="@Classes.Eyebrow">Total</p>
-                    <p class="@Classes.MetricValue">@_state.GrandTotalDisplay</p>
+                    <p class="@Classes.MetricValue">@CurrentCheckout.GrandTotalDisplay</p>
                 </div>
             </div>
 
-            @if (_state.Issues.Count > 0)
+            @if (CurrentCheckout.Issues.Count > 0)
             {
                 <div class="@Classes.IssuePanel">
-                    @foreach (var issue in _state.Issues)
+                    @foreach (var issue in CurrentCheckout.Issues)
                     {
                         <p>@issue.Message</p>
                     }
@@ -57,17 +57,17 @@
                 <section class="@Classes.OptionPanel">
                     <h3>Shipping</h3>
                     <div class="@Classes.OptionList">
-                        @if (!_state.ShippingRequired)
+                        @if (!CurrentCheckout.ShippingRequired)
                         {
                             <p>Shipping is not required for this cart.</p>
                         }
-                        else if (_state.ShippingOptions.Count == 0)
+                        else if (CurrentCheckout.ShippingOptions.Count == 0)
                         {
                             <p>Shipping is not available yet.</p>
                         }
                         else
                         {
-                            @foreach (var option in _state.ShippingOptions)
+                            @foreach (var option in CurrentCheckout.ShippingOptions)
                             {
                                 <label class="@Classes.OptionLabel">
                                     <input type="radio" name="wasmShippingOption" checked="@option.Selected" @onchange="() => SelectShippingAsync(option.Key)" />
@@ -87,7 +87,7 @@
                 <section class="@Classes.OptionPanel">
                     <h3>Payment</h3>
                     <div class="@Classes.OptionList">
-                        @foreach (var method in _state.PaymentMethods)
+                        @foreach (var method in CurrentCheckout.PaymentMethods)
                         {
                             <label class="@Classes.OptionLabel">
                                 <input type="radio" name="wasmPaymentMethod" checked="@method.Selected" @onchange="() => SelectPaymentAsync(method.Key)" />
@@ -104,12 +104,12 @@
                 </section>
             </div>
 
-            <button type="button" class="@Classes.PrimaryButton" @onclick="ReviewAsync" disabled="@_loading">
+            <button type="button" class="@Classes.PrimaryButton" @onclick="ReviewAsync" disabled="@ControllerState.Loading">
                 Review latest checkout
             </button>
-            @if (_state.PlaceOrderAllowed)
+            @if (CurrentCheckout.PlaceOrderAllowed)
             {
-                <button type="button" class="@Classes.SecondaryButton" @onclick="PlaceOrderAsync" disabled="@_loading">
+                <button type="button" class="@Classes.SecondaryButton" @onclick="PlaceOrderAsync" disabled="@ControllerState.Loading">
                     Place order
                 </button>
             }
@@ -119,7 +119,7 @@
 
 @code {
     [Parameter]
-    public StorefrontBrowserCheckoutState InitialState { get; set; } = EmptyState("Checkout is not available yet.");
+    public StorefrontBrowserCheckoutState InitialState { get; set; } = StorefrontBrowserCheckoutDefaults.EmptyState("Checkout is not available yet.");
 
     [Parameter]
     public bool ShowPanel { get; set; } = true;
@@ -133,18 +133,17 @@
     [Parameter]
     public StorefrontCheckoutViewClasses Classes { get; set; } = StorefrontCheckoutViewClasses.Empty;
 
-    private StorefrontBrowserCheckoutState _state = EmptyState("Checkout is not available yet.");
-    private string? _error;
-    private bool _loading;
-    private string _idempotencyKey = Guid.NewGuid().ToString("N");
+    private StorefrontBrowserCheckoutControllerState ControllerState => CheckoutController.State;
 
-    private string Title => !_state.HasCart ? "Cart is empty" : $"{_state.CurrentStep} ready";
+    private StorefrontBrowserCheckoutState CurrentCheckout => ControllerState.Checkout;
 
-    private StorefrontCheckoutViewState ViewState => StorefrontCheckoutViewState.FromState(_state, _loading, _error);
+    private string Title => !CurrentCheckout.HasCart ? "Cart is empty" : $"{CurrentCheckout.CurrentStep} ready";
+
+    private StorefrontCheckoutViewState ViewState => StorefrontCheckoutViewState.FromState(CurrentCheckout, ControllerState.Loading, ControllerState.Error);
 
     protected override void OnParametersSet()
     {
-        _state = InitialState;
+        CheckoutController.Initialize(InitialState, ShowPanel, DataMode, Actions);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -154,146 +153,55 @@
             && OperatingSystem.IsBrowser()
             && DataMode != StorefrontFeatureDataMode.InitialSnapshot)
         {
-            await RefreshAsync();
+            if (await CheckoutController.HydrateAsync())
+            {
+                StateHasChanged();
+            }
         }
     }
 
     private async Task RefreshAsync()
     {
-        if (!ShowPanel || string.IsNullOrWhiteSpace(Actions.CurrentCheckoutRoute))
+        if (await CheckoutController.RefreshAsync())
         {
-            return;
+            StateHasChanged();
         }
-
-        await LoadAsync(client => client.GetAsync<StorefrontBrowserCheckoutState>(Actions.CurrentCheckoutRoute));
     }
 
     private async Task SelectShippingAsync(string key)
     {
-        if (_state.CheckoutSessionId is not { } sessionId)
+        if (await CheckoutController.SelectShippingAsync(key))
         {
-            return;
+            StateHasChanged();
         }
-
-        await LoadAsync(client => client.PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>(
-            Actions.ShippingMethodRoute,
-            new StorefrontBrowserCheckoutSelectionRequest
-            {
-                CheckoutSessionId = sessionId,
-                ExpectedCartVersion = _state.CartVersion,
-                Key = key,
-            }));
     }
 
     private async Task SelectPaymentAsync(string key)
     {
-        if (_state.CheckoutSessionId is not { } sessionId)
+        if (await CheckoutController.SelectPaymentAsync(key))
         {
-            return;
+            StateHasChanged();
         }
-
-        await LoadAsync(client => client.PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>(
-            Actions.PaymentMethodRoute,
-            new StorefrontBrowserCheckoutSelectionRequest
-            {
-                CheckoutSessionId = sessionId,
-                ExpectedCartVersion = _state.CartVersion,
-                Key = key,
-            }));
     }
 
     private async Task ReviewAsync()
     {
-        if (_state.CheckoutSessionId is not { } sessionId)
+        if (await CheckoutController.ReviewAsync())
         {
-            return;
+            StateHasChanged();
         }
-
-        await LoadAsync(client => client.PostJsonAsync<StorefrontBrowserCheckoutReviewRequest, StorefrontBrowserCheckoutState>(
-            Actions.ReviewRoute,
-            new StorefrontBrowserCheckoutReviewRequest
-            {
-                CheckoutSessionId = sessionId,
-                ExpectedCartVersion = _state.CartVersion,
-                TermsAccepted = true,
-            }));
     }
 
     private async Task PlaceOrderAsync()
     {
-        if (_state.CheckoutSessionId is not { } sessionId)
+        var outcome = await CheckoutController.PlaceOrderAsync();
+        if (!string.IsNullOrWhiteSpace(outcome.RedirectUrl))
         {
-            return;
+            NavigationManager.NavigateTo(outcome.RedirectUrl, forceLoad: true);
         }
-
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
+        else if (outcome.Changed)
         {
-            return;
+            StateHasChanged();
         }
-
-        _loading = true;
-        _error = null;
-        var result = await apiClient.PostJsonAsync<StorefrontBrowserCheckoutPlaceOrderRequest, StorefrontBrowserCheckoutPlaceOrderResult>(
-            Actions.PlaceOrderRoute,
-            new StorefrontBrowserCheckoutPlaceOrderRequest
-            {
-                CheckoutSessionId = sessionId,
-                ExpectedCheckoutVersion = _state.CheckoutVersion,
-                ExpectedCartVersion = _state.CartVersion,
-                IdempotencyKey = _idempotencyKey,
-            });
-        _loading = false;
-        if (!result.Success || result.Data is null)
-        {
-            _error = result.Message;
-            return;
-        }
-
-        if (!string.IsNullOrWhiteSpace(result.Data.RedirectUrl))
-        {
-            NavigationManager.NavigateTo(result.Data.RedirectUrl, forceLoad: true);
-        }
-    }
-
-    private async Task LoadAsync(Func<StorefrontLocalApiClient, Task<StorefrontLocalApiResult<StorefrontBrowserCheckoutState>>> action)
-    {
-        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (apiClient is null)
-        {
-            return;
-        }
-
-        _loading = true;
-        _error = null;
-        var result = await action(apiClient);
-        _loading = false;
-        if (result.Success && result.Data is not null)
-        {
-            _state = result.Data;
-            return;
-        }
-
-        _error = result.Message;
-    }
-
-    private static StorefrontBrowserCheckoutState EmptyState(string message)
-    {
-        return new StorefrontBrowserCheckoutState(
-            false,
-            message,
-            null,
-            0,
-            0,
-            "empty",
-            "cart",
-            false,
-            false,
-            false,
-            string.Empty,
-            [],
-            [],
-            [],
-            []);
     }
 }

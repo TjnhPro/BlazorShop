@@ -54,8 +54,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("app.MapPost(\"/api/checkout/review\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", checkoutEndpoints, StringComparison.Ordinal);
-            Assert.Contains("Actions.ReviewRoute", checkoutShell, StringComparison.Ordinal);
-            Assert.Contains("Actions.PlaceOrderRoute", checkoutShell, StringComparison.Ordinal);
+            var checkoutController = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Checkout/StorefrontBrowserCheckoutController.cs");
+            Assert.Contains("_actions.ReviewRoute", checkoutController, StringComparison.Ordinal);
+            Assert.Contains("_actions.PlaceOrderRoute", checkoutController, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -167,6 +168,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
             var checkoutEndpointSupport = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs");
             var checkoutComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Checkout/StorefrontBrowserCheckoutController.cs")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontLocalApiClient.cs");
             var checkoutOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
 
@@ -212,7 +214,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("app.MapPost(\"/api/checkout/review\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status409Conflict", checkoutEndpointSupport + checkoutEndpoints, StringComparison.Ordinal);
-            Assert.Contains("Actions.CurrentCheckoutRoute", checkoutComponents, StringComparison.Ordinal);
+            Assert.Contains("_actions.CurrentCheckoutRoute", checkoutComponents, StringComparison.Ordinal);
             Assert.Contains("\"/api/checkout", checkoutOptions, StringComparison.Ordinal);
             Assert.DoesNotContain("localhost:5180", checkoutComponents, StringComparison.Ordinal);
         }

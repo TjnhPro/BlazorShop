@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using BlazorShop.Storefront.Browser.Cart;
+using BlazorShop.Storefront.Browser.Checkout;
 
 namespace BlazorShop.Storefront.Browser;
 
@@ -39,6 +40,7 @@ public static class StorefrontBrowserServiceCollectionExtensions
     public static IServiceCollection AddStorefrontBrowserCheckout(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddScoped<IStorefrontBrowserCheckoutController, StorefrontBrowserCheckoutController>();
         return services;
     }
 

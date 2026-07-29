@@ -340,23 +340,41 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void CheckoutWasmShell_UsesSameOriginLocalCheckoutEndpoints()
+        public void CheckoutWasmShell_DelegatesSameOriginLocalCheckoutEndpointsToBrowserController()
         {
             var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Checkout/StorefrontBrowserCheckoutController.cs");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
 
-            Assert.Contains("GetAsync<StorefrontBrowserCheckoutState>(Actions.CurrentCheckoutRoute)", component, StringComparison.Ordinal);
-            Assert.Contains("PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>", component, StringComparison.Ordinal);
-            Assert.Contains("Actions.ShippingMethodRoute", component, StringComparison.Ordinal);
-            Assert.Contains("Actions.PaymentMethodRoute", component, StringComparison.Ordinal);
-            Assert.Contains("Actions.ReviewRoute", component, StringComparison.Ordinal);
-            Assert.Contains("Actions.PlaceOrderRoute", component, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserCheckoutState>(_actions.CurrentCheckoutRoute", controller, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>", controller, StringComparison.Ordinal);
+            Assert.Contains("_actions.ShippingMethodRoute", controller, StringComparison.Ordinal);
+            Assert.Contains("_actions.PaymentMethodRoute", controller, StringComparison.Ordinal);
+            Assert.Contains("_actions.ReviewRoute", controller, StringComparison.Ordinal);
+            Assert.Contains("_actions.PlaceOrderRoute", controller, StringComparison.Ordinal);
+            Assert.Contains("ExpectedCheckoutVersion = State.Checkout.CheckoutVersion", controller, StringComparison.Ordinal);
+            Assert.Contains("ExpectedCartVersion = State.Checkout.CartVersion", controller, StringComparison.Ordinal);
+            Assert.Contains("IdempotencyKey = _idempotencyKey", controller, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCheckoutController", component, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.SelectShippingAsync(key)", component, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.SelectPaymentAsync(key)", component, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.ReviewAsync()", component, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.PlaceOrderAsync()", component, StringComparison.Ordinal);
             Assert.Contains("\"/api/checkout/place-order\"", options, StringComparison.Ordinal);
             Assert.Contains("public bool ShowPanel { get; set; } = true;", component, StringComparison.Ordinal);
             Assert.Contains("DataMode != StorefrontFeatureDataMode.InitialSnapshot", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-shell", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-cart-version", component, StringComparison.Ordinal);
             Assert.DoesNotContain("\"/api/checkout", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontBrowserCheckoutSelectionRequest", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontBrowserCheckoutReviewRequest", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontBrowserCheckoutPlaceOrderRequest", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("ExpectedCheckoutVersion", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("ExpectedCartVersion", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("IdempotencyKey", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("IServiceProvider", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetAsync<", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("PostJsonAsync<", component, StringComparison.Ordinal);
             Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNode", component, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("accessToken", component, StringComparison.OrdinalIgnoreCase);

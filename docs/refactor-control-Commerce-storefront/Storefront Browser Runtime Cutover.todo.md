@@ -210,59 +210,59 @@ Goal: move checkout workflow orchestration from `StorefrontCheckoutShell.razor` 
 
 ### Implementation
 
-- [ ] Create checkout controller/state services in Browser:
-  - [ ] `IStorefrontBrowserCheckoutController`
-  - [ ] `StorefrontBrowserCheckoutController`
-  - [ ] `StorefrontBrowserCheckoutStateMachine`
-  - [ ] `StorefrontBrowserCheckoutCommandState`
-  - [ ] `StorefrontBrowserCheckoutError`
-- [ ] Move workflow ownership out of V2.WASM:
-  - [ ] load checkout state.
-  - [ ] select shipping method.
-  - [ ] select payment method.
-  - [ ] review checkout.
-  - [ ] place order.
-  - [ ] create `StorefrontBrowserCheckoutSelectionRequest`.
-  - [ ] create `StorefrontBrowserCheckoutReviewRequest`.
-  - [ ] create `StorefrontBrowserCheckoutPlaceOrderRequest`.
-  - [ ] maintain idempotency key.
-  - [ ] pass expected cart/checkout versions.
-  - [ ] loading/error state.
-  - [ ] redirect result handling.
-- [ ] Decide redirect ownership:
-  - [ ] Browser controller returns `RedirectUrl` in a command result.
-  - [ ] V2 visual shell may call `NavigationManager.NavigateTo(...)` only as a visual host navigation effect.
-  - [ ] No request DTO or checkout version logic remains in V2 visual shell.
-- [ ] Keep `StorefrontCheckoutActionDescriptor` in Components if it remains a stable browser contract.
-- [ ] Convert `V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor` to render state and call high-level Browser controller methods.
-- [ ] Keep V2 classes/copy/button labels in V2.WASM.
+- [x] Create checkout controller/state services in Browser:
+  - [x] `IStorefrontBrowserCheckoutController`
+  - [x] `StorefrontBrowserCheckoutController`
+  - [x] `StorefrontBrowserCheckoutStateMachine`
+  - [x] `StorefrontBrowserCheckoutCommandState`
+  - [x] `StorefrontBrowserCheckoutError`
+- [x] Move workflow ownership out of V2.WASM:
+  - [x] load checkout state.
+  - [x] select shipping method.
+  - [x] select payment method.
+  - [x] review checkout.
+  - [x] place order.
+  - [x] create `StorefrontBrowserCheckoutSelectionRequest`.
+  - [x] create `StorefrontBrowserCheckoutReviewRequest`.
+  - [x] create `StorefrontBrowserCheckoutPlaceOrderRequest`.
+  - [x] maintain idempotency key.
+  - [x] pass expected cart/checkout versions.
+  - [x] loading/error state.
+  - [x] redirect result handling.
+- [x] Decide redirect ownership:
+  - [x] Browser controller returns `RedirectUrl` in a command result.
+  - [x] V2 visual shell may call `NavigationManager.NavigateTo(...)` only as a visual host navigation effect.
+  - [x] No request DTO or checkout version logic remains in V2 visual shell.
+- [x] Keep `StorefrontCheckoutActionDescriptor` in Components if it remains a stable browser contract.
+- [x] Convert `V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor` to render state and call high-level Browser controller methods.
+- [x] Keep V2 classes/copy/button labels in V2.WASM.
 
 ### Tests
 
-- [ ] Add Browser unit tests for checkout controller:
-  - [ ] select shipping command uses session ID and expected cart version.
-  - [ ] select payment command uses session ID and expected cart version.
-  - [ ] review command includes terms accepted and expected cart version.
-  - [ ] place order includes expected checkout version, expected cart version, and idempotency key.
-  - [ ] idempotency key remains stable across a single checkout placement attempt.
-  - [ ] failed result maps error state and does not redirect.
-  - [ ] successful result returns redirect URL.
-- [ ] Invert V2.WASM tests:
-  - [ ] checkout shell must not contain `StorefrontLocalApiClient`.
-  - [ ] must not contain `PostJsonAsync<`.
-  - [ ] must not contain `StorefrontBrowserCheckoutSelectionRequest`.
-  - [ ] must not contain `StorefrontBrowserCheckoutReviewRequest`.
-  - [ ] must not contain `StorefrontBrowserCheckoutPlaceOrderRequest`.
-  - [ ] must not contain `ExpectedCartVersion`, `ExpectedCheckoutVersion`, or `IdempotencyKey`.
-  - [ ] must not inject `IServiceProvider`.
-- [ ] Add browser regression for checkout interactive shell after cutover.
+- [x] Add Browser unit tests for checkout controller:
+  - [x] select shipping command uses session ID and expected cart version.
+  - [x] select payment command uses session ID and expected cart version.
+  - [x] review command includes terms accepted and expected cart version.
+  - [x] place order includes expected checkout version, expected cart version, and idempotency key.
+  - [x] idempotency key remains stable across a single checkout placement attempt.
+  - [x] failed result maps error state and does not redirect.
+  - [x] successful result returns redirect URL.
+- [x] Invert V2.WASM tests:
+  - [x] checkout shell must not contain `StorefrontLocalApiClient`.
+  - [x] must not contain `PostJsonAsync<`.
+  - [x] must not contain `StorefrontBrowserCheckoutSelectionRequest`.
+  - [x] must not contain `StorefrontBrowserCheckoutReviewRequest`.
+  - [x] must not contain `StorefrontBrowserCheckoutPlaceOrderRequest`.
+  - [x] must not contain `ExpectedCartVersion`, `ExpectedCheckoutVersion`, or `IdempotencyKey`.
+  - [x] must not inject `IServiceProvider`.
+- [x] Add browser regression for checkout interactive shell after cutover.
 
 ### Acceptance Criteria
 
-- [ ] Checkout workflow is owned by Browser runtime.
-- [ ] V2 checkout shell is visual and delegates commands.
-- [ ] Place-order still uses same-origin BFF and keeps idempotency guarantees.
-- [ ] Current COD checkout path remains testable.
+- [x] Checkout workflow is owned by Browser runtime.
+- [x] V2 checkout shell is visual and delegates commands.
+- [x] Place-order still uses same-origin BFF and keeps idempotency guarantees.
+- [x] Current COD checkout path remains testable.
 
 ## Phase F1.68 - Account Browser Controller Cutover
 

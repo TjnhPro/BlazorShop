@@ -456,6 +456,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var checkoutShell = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+            var checkoutController = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Checkout/StorefrontBrowserCheckoutController.cs");
             var checkoutBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Checkout/StorefrontCheckoutBehavior.cs");
             var checkoutOptions = ReadRepositoryFile(
@@ -479,11 +481,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(expected, checkoutBehavior, StringComparison.Ordinal);
             }
 
-            Assert.Contains("Actions.CurrentCheckoutRoute", checkoutShell, StringComparison.Ordinal);
-            Assert.Contains("Actions.ShippingMethodRoute", checkoutShell, StringComparison.Ordinal);
-            Assert.Contains("Actions.PaymentMethodRoute", checkoutShell, StringComparison.Ordinal);
-            Assert.Contains("Actions.ReviewRoute", checkoutShell, StringComparison.Ordinal);
-            Assert.Contains("Actions.PlaceOrderRoute", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("_actions.CurrentCheckoutRoute", checkoutController, StringComparison.Ordinal);
+            Assert.Contains("_actions.ShippingMethodRoute", checkoutController, StringComparison.Ordinal);
+            Assert.Contains("_actions.PaymentMethodRoute", checkoutController, StringComparison.Ordinal);
+            Assert.Contains("_actions.ReviewRoute", checkoutController, StringComparison.Ordinal);
+            Assert.Contains("_actions.PlaceOrderRoute", checkoutController, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.SelectShippingAsync(key)", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.SelectPaymentAsync(key)", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.ReviewAsync()", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.PlaceOrderAsync()", checkoutShell, StringComparison.Ordinal);
             Assert.Contains("class=\"@Classes.", checkoutShell, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-shell", checkoutShell, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-cart-version", checkoutShell, StringComparison.Ordinal);
