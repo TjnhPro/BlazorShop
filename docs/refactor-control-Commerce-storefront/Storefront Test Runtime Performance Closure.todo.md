@@ -237,36 +237,47 @@ Goal: make fake `503` Storefront host smoke tests deterministic and fast while k
 
 ### Implementation
 
-- [ ] Add a narrow configuration gate around default `HttpClient` resilience registration in `BlazorShop.ServiceDefaults/Extensions.cs`.
-  - [ ] Default value must keep resilience enabled.
-  - [ ] Test-only config must be explicit, for example `ServiceDefaults:HttpClientResilience:Enabled=false`.
-  - [ ] Do not disable OpenTelemetry, health checks, or service discovery unless proven necessary.
-- [ ] Update `StorefrontV2HostSmokeTests.CreateClient(...)` to set the test-only config before the test host builds.
-- [ ] Add a counting handler around `ServiceUnavailableHandler` or a dedicated test handler to prove retry attempts are not happening in the opted-out host.
-- [ ] Keep at least one source/behavior guard proving production default remains enabled.
-- [ ] Do not change public Storefront routes, BFF endpoints, or page output expectations.
+- [x] Add a narrow configuration gate around default `HttpClient` resilience registration in `BlazorShop.ServiceDefaults/Extensions.cs`.
+  - [x] Default value must keep resilience enabled.
+  - [x] Test-only config must be explicit, for example `ServiceDefaults:HttpClientResilience:Enabled=false`.
+  - [x] Do not disable OpenTelemetry, health checks, or service discovery unless proven necessary.
+- [x] Update `StorefrontV2HostSmokeTests.CreateClient(...)` to set the test-only config before the test host builds.
+  - Uses `ServiceDefaults__HttpClientResilience__Enabled=false` around `CreateClient()` so `Program.cs` sees the setting before calling `AddServiceDefaults()`.
+- [x] Add a counting handler around `ServiceUnavailableHandler` or a dedicated test handler to prove retry attempts are not happening in the opted-out host.
+  - Added `ServiceDefaultsHttpClientResilienceTests.AddServiceDefaults_WhenHttpClientResilienceDisabled_DoesNotRetryTransientFailures`.
+- [x] Keep at least one source/behavior guard proving production default remains enabled.
+  - Added `ServiceDefaultsHttpClientResilienceTests.AddServiceDefaults_KeepsHttpClientResilienceEnabledByDefault`.
+- [x] Do not change public Storefront routes, BFF endpoints, or page output expectations.
 
 ### Tests
 
-- [ ] Run focused host smoke tests with hang guard:
+- [x] Run focused host smoke tests with hang guard:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontV2HostSmokeTests" --logger "trx;LogFileName=storefront-host-smoke-f174.trx" --blame-hang --blame-hang-timeout 5m
 ```
 
-- [ ] Parse `storefront-host-smoke-f174.trx` and compare slowest tests against baseline.
-- [ ] Run focused ServiceDefaults guard tests if added.
+Execution note: after an initial timed-out build/test invocation left MSBuild/testhost child processes behind, the process tree for that invocation was stopped, `dotnet build-server shutdown` was run, the test project was rebuilt, and the host smoke subset was rerun with `--no-build` plus the same hang guard.
+
+Result: passed 58/58 in `14s`; TRX `BlazorShop.Tests.V2/TestResults/storefront-host-smoke-f174.trx`.
+
+- [x] Parse `storefront-host-smoke-f174.trx` and compare slowest tests against baseline.
+  - F1.73 focused baseline: 58 tests / `747.2s`, slow tests `>=10s`: 32 / `740.2s`.
+  - F1.74 focused result: 58 tests / `14.9s`, slow tests `>=10s`: 0 / `0s`.
+- [x] Run focused ServiceDefaults guard tests if added.
+  - `dotnet test ... --no-build --filter "FullyQualifiedName~ServiceDefaultsHttpClientResilienceTests" --logger "trx;LogFileName=service-defaults-resilience-f174.trx" --blame-hang --blame-hang-timeout 3m`
+  - Result: passed 2/2 in `145ms`.
 
 ### Acceptance Criteria
 
-- [ ] Slow `ServiceUnavailableHandler` host smoke tests no longer spend `10s+` on retry/backoff.
-- [ ] Production default resilience remains on.
-- [ ] No Storefront V2 behavior expectations are weakened.
-- [ ] Focused tests pass with timeout/hang guard.
+- [x] Slow `ServiceUnavailableHandler` host smoke tests no longer spend `10s+` on retry/backoff.
+- [x] Production default resilience remains on.
+- [x] No Storefront V2 behavior expectations are weakened.
+- [x] Focused tests pass with timeout/hang guard.
 
 ### Commit
 
-- [ ] Commit message: `F1.74 disable storefront host retry backoff in tests`
+- [x] Commit message: `F1.74 disable storefront host retry backoff in tests`
 
 ## Phase F1.75 - Storefront Host Smoke Fake Cleanup
 

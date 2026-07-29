@@ -29,6 +29,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     public sealed class StorefrontV2HostSmokeTests : IClassFixture<WebApplicationFactory<StorefrontV2Program>>
     {
+        private const string HttpClientResilienceEnvironmentVariable = "ServiceDefaults__HttpClientResilience__Enabled";
+
         private readonly WebApplicationFactory<StorefrontV2Program> _factory;
 
         public StorefrontV2HostSmokeTests(WebApplicationFactory<StorefrontV2Program> factory)
@@ -1148,23 +1150,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             bool allowAutoRedirect = true,
             Action<IWebHostBuilder>? configureHost = null)
         {
-            var configuredFactory = _factory.WithWebHostBuilder(builder =>
-            {
-                configureHost?.Invoke(builder);
-                builder.ConfigureServices(services =>
-                {
-                    services.RemoveAll<IStorefrontCurrentStoreProvider>();
-                    services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
-                        StorefrontCurrentStoreResolution.Succeeded(CreateActiveCurrentStore())));
-                    ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
-                    configureServices(services);
-                });
-            });
+            var previousResilienceValue = Environment.GetEnvironmentVariable(HttpClientResilienceEnvironmentVariable);
+            Environment.SetEnvironmentVariable(HttpClientResilienceEnvironmentVariable, "false");
 
-            return configuredFactory.CreateClient(new WebApplicationFactoryClientOptions
+            try
             {
-                AllowAutoRedirect = allowAutoRedirect,
-            });
+                var configuredFactory = _factory.WithWebHostBuilder(builder =>
+                {
+                    configureHost?.Invoke(builder);
+                    builder.ConfigureServices(services =>
+                    {
+                        services.RemoveAll<IStorefrontCurrentStoreProvider>();
+                        services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
+                            StorefrontCurrentStoreResolution.Succeeded(CreateActiveCurrentStore())));
+                        ConfigureStorefrontGeneratedClient(services, new ServiceUnavailableHandler());
+                        configureServices(services);
+                    });
+                });
+
+                return configuredFactory.CreateClient(new WebApplicationFactoryClientOptions
+                {
+                    AllowAutoRedirect = allowAutoRedirect,
+                });
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(HttpClientResilienceEnvironmentVariable, previousResilienceValue);
+            }
         }
 
         private HttpClient CreateClientWithPaymentAttemptHandler(PaymentAttemptStatusHandler handler)
