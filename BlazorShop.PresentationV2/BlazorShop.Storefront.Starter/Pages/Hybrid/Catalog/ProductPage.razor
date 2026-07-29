@@ -6,7 +6,9 @@
     Message="SSR snapshot supplies product data; browser interactivity may refresh after hydration."
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
-<ProductDetailShell ProductName="@Context.Product.Name" />
+<ProductDetailShell ProductName="@Context.Product.Name"
+                    PurchasePanel="@Context.PurchasePanel"
+                    PurchaseActions="@Context.PurchaseActions" />
 
 @code {
     [Parameter, EditorRequired]

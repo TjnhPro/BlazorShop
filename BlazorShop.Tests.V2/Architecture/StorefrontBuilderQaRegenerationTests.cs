@@ -355,6 +355,9 @@ namespace BlazorShop.Tests.Architecture
         {
             var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
             var composition = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs");
+            var starterProductPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor");
+            var starterProductShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Catalog/ProductDetailShell.razor");
+            var starterPurchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Catalog/PurchasePanelPlaceholder.razor");
             var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
 
             foreach (var marker in new[]
@@ -375,22 +378,33 @@ namespace BlazorShop.Tests.Architecture
 
             foreach (var marker in new[]
             {
+                "data-storefront-cart-badge",
+                "Context.Search.Categories",
+                "sfb-product-purchase",
+            })
+            {
+                Assert.Contains(marker, composition, StringComparison.Ordinal);
+            }
+
+            foreach (var marker in new[]
+            {
                 "data-storefront-product-purchase",
                 "data-selection-preview-route",
                 "data-storefront-command=\"cart.add-line\"",
                 "data-storefront-product-purchase-submit",
                 "data-storefront-purchase-quantity",
                 "data-storefront-purchase-feedback",
-                "data-storefront-cart-badge",
-                "Context.Search.Categories",
                 "PurchasePanel=\"@Context.PurchasePanel\"",
                 "PurchaseActions=\"@Context.PurchaseActions\"",
             })
             {
-                Assert.Contains(marker, composition, StringComparison.Ordinal);
+                Assert.Contains(marker, starterProductPage + starterProductShell + starterPurchasePanel, StringComparison.Ordinal);
             }
 
             Assert.Contains("content.replace", composition, StringComparison.Ordinal);
+            Assert.DoesNotContain("PurchasePanel=\"@Context.PurchasePanel\"", composition, StringComparison.Ordinal);
+            Assert.DoesNotContain("PurchaseActions=\"@Context.PurchaseActions\"", composition, StringComparison.Ordinal);
+            Assert.DoesNotContain("ProductPurchasePanelModel.Empty", composition, StringComparison.Ordinal);
             Assert.DoesNotContain("writeFunctionalBrowserBridge", composition, StringComparison.Ordinal);
             Assert.DoesNotContain("data-storefront-generated-add-to-cart", composition, StringComparison.Ordinal);
             Assert.DoesNotContain("app.cart.addLine", composition, StringComparison.Ordinal);

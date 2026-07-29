@@ -1,10 +1,47 @@
-<aside class="starter-purchase-panel">
+@using BlazorShop.Storefront.Components.Contracts.Product
+@using BlazorShop.Storefront.Components.Headless.Product
+
+<aside id="@PurchaseActions.PanelId"
+       class="starter-purchase-panel"
+       data-storefront-product-purchase
+       data-selection-preview-route="@PurchaseActions.SelectionPreviewRoute"
+       data-product-id="@PurchasePanel.ProductId"
+       data-product-name="@PurchasePanel.ProductName"
+       data-resolved-variant-id="@PurchasePanel.ResolvedVariantId"
+       data-currency-code="@PurchasePanel.CurrencyCode">
     <h2>@ProductName</h2>
     <p>Purchase controls stay backed by Commerce Node validation.</p>
-    <button class="starter-button" type="button" disabled>Add to cart</button>
+    <label class="starter-quantity-control">
+        Quantity
+        <input id="@PurchaseActions.QuantityInputId"
+               data-storefront-purchase-quantity
+               type="number"
+               min="@PurchasePanel.MinOrderQuantity"
+               max="@PurchasePanel.MaxOrderQuantity"
+               value="@PurchasePanel.MinOrderQuantity" />
+    </label>
+    <button class="starter-button"
+            type="button"
+            data-storefront-command="cart.add-line"
+            data-storefront-product-purchase-submit
+            data-feedback-target="@PurchaseActions.FeedbackTargetSelector"
+            disabled="@(!PurchasePanel.CanSubmitInitialPurchase)">
+        Add to cart
+    </button>
+    <p id="@PurchaseActions.FeedbackElementId" data-storefront-purchase-feedback aria-live="polite">@InitialMessage</p>
 </aside>
 
 @code {
     [Parameter]
     public string ProductName { get; set; } = "Product";
+
+    [Parameter]
+    public ProductPurchasePanelModel PurchasePanel { get; set; } = ProductPurchasePanelModel.Empty;
+
+    [Parameter]
+    public ProductPurchaseActionDescriptor PurchaseActions { get; set; } = ProductPurchaseActionDescriptor.Empty;
+
+    private string InitialMessage => PurchasePanel.InitialValidationMessages.Count > 0
+        ? PurchasePanel.InitialValidationMessages[0]
+        : PurchasePanel.CanSubmitInitialPurchase ? PurchasePanel.PurchaseMessage : PurchasePanel.PurchaseBlockMessage;
 }

@@ -25,6 +25,7 @@ browserActionPolicy:
   owner: BlazorShop.Storefront.Presentation
   productPurchaseDescriptor: data-storefront-product-purchase
   addToCartDescriptor: data-storefront-command="cart.add-line"
+  productPurchaseBaseline: Starter emits product purchase descriptors before generation; generators may only restyle or reposition them.
   generatedFunctionalJs: forbidden
   generatedVisualJsZone: wwwroot/js/visual
   generatedVisualJsStatus: disabled-until-allowed-zone-is-added

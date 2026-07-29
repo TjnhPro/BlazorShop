@@ -424,6 +424,30 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains(contextType, source, StringComparison.Ordinal);
             }
 
+            var productPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor");
+            var productShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Catalog/ProductDetailShell.razor");
+            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Catalog/PurchasePanelPlaceholder.razor");
+            Assert.Contains("PurchasePanel=\"@Context.PurchasePanel\"", productPage, StringComparison.Ordinal);
+            Assert.Contains("PurchaseActions=\"@Context.PurchaseActions\"", productPage, StringComparison.Ordinal);
+            Assert.Contains("ProductPurchasePanelModel", productShell + purchasePanel, StringComparison.Ordinal);
+            Assert.Contains("ProductPurchaseActionDescriptor", productShell + purchasePanel, StringComparison.Ordinal);
+            foreach (var descriptor in new[]
+            {
+                "data-storefront-product-purchase",
+                "data-selection-preview-route",
+                "data-product-id",
+                "data-product-name",
+                "data-resolved-variant-id",
+                "data-currency-code",
+                "data-storefront-command=\"cart.add-line\"",
+                "data-storefront-product-purchase-submit",
+                "data-storefront-purchase-quantity",
+                "data-storefront-purchase-feedback",
+            })
+            {
+                Assert.Contains(descriptor, purchasePanel, StringComparison.Ordinal);
+            }
+
             var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor");
             Assert.DoesNotContain("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
             Assert.Contains("Context.LatestProductSummaries", home, StringComparison.Ordinal);

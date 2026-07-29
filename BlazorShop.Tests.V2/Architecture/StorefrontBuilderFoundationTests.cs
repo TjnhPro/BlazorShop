@@ -59,6 +59,7 @@ namespace BlazorShop.Tests.Architecture
                 "allowedGeneratedZones:",
                 "browserActionPolicy:",
                 "productPurchaseDescriptor: data-storefront-product-purchase",
+                "productPurchaseBaseline: Starter emits product purchase descriptors before generation",
                 "generatedFunctionalJs: forbidden",
                 "generatedVisualJsZone: wwwroot/js/visual",
                 "managedZones:",

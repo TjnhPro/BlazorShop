@@ -12,7 +12,6 @@ const transforms = [
   ["Pages/Hybrid/Catalog/CategoryPage.razor", transformCategory],
   ["Components/Catalog/ProductSummaryCard.razor", transformProductCard],
   ["Pages/Hybrid/Catalog/ProductPage.razor", transformProductPage],
-  ["Components/Catalog/ProductDetailShell.razor", transformProductDetailShell],
   ["Components/Catalog/ProductGalleryPlaceholder.razor", transformGallery],
   ["Components/Catalog/PurchasePanelPlaceholder.razor", transformPurchasePanel],
   ["Pages/Hybrid/Commerce/CartPage.razor", transformFallbackPage],
@@ -91,11 +90,7 @@ function transformProductCard(content) {
 
 function transformProductPage(content) {
   return content
-    .replace("<h1>", '<h1 class="sfb-product-page">')
-    .replace(
-      '<ProductDetailShell ProductName="@Context.Product.Name" />',
-      '<ProductDetailShell ProductName="@Context.Product.Name" PurchasePanel="@Context.PurchasePanel" PurchaseActions="@Context.PurchaseActions" />'
-    );
+    .replace("<h1>", '<h1 class="sfb-product-page">');
 }
 
 function transformGallery(content) {
@@ -103,44 +98,17 @@ function transformGallery(content) {
 }
 
 function transformPurchasePanel(content) {
-  if (content.includes("data-storefront-product-purchase")) {
+  if (content.includes("sfb-product-purchase")) {
     return content;
   }
 
   return content
-    .replace(
-      '<aside class="starter-purchase-panel">',
-      '@using BlazorShop.Storefront.Components.Contracts.Product\n@using BlazorShop.Storefront.Components.Headless.Product\n\n<aside class="starter-purchase-panel sfb-product-purchase"\n       data-storefront-product-purchase\n       data-selection-preview-route="@PurchaseActions.SelectionPreviewRoute"\n       data-product-id="@PurchasePanel.ProductId"\n       data-product-name="@PurchasePanel.ProductName"\n       data-resolved-variant-id="@PurchasePanel.ResolvedVariantId"\n       data-currency-code="@PurchasePanel.CurrencyCode">'
-    )
-    .replace('<aside class="starter-purchase-panel">', '<aside class="starter-purchase-panel sfb-product-purchase">')
-    .replace(
-      '<button class="starter-button" type="button" disabled>Add to cart</button>',
-      '<label class="sfb-quantity-control">Quantity <input data-storefront-purchase-quantity type="number" min="@PurchasePanel.MinOrderQuantity" max="@PurchasePanel.MaxOrderQuantity" value="@PurchasePanel.MinOrderQuantity" /></label>\n    <button class="starter-button"\n            data-storefront-command="cart.add-line"\n            data-storefront-product-purchase-submit\n            data-feedback-target="[data-storefront-purchase-feedback]"\n            type="button"\n            disabled="@(!PurchasePanel.CanSubmitInitialPurchase)">Add to cart</button>\n    <p data-storefront-purchase-feedback aria-live="polite"></p>'
-    )
-    .replace(
-      'public string ProductName { get; set; } = "Product";',
-      'public string ProductName { get; set; } = "Product";\n\n    [Parameter]\n    public ProductPurchasePanelModel PurchasePanel { get; set; } = ProductPurchasePanelModel.Empty;\n\n    [Parameter]\n    public ProductPurchaseActionDescriptor PurchaseActions { get; set; } = ProductPurchaseActionDescriptor.Empty;'
-    );
+    .replace('class="starter-purchase-panel"', 'class="starter-purchase-panel sfb-product-purchase"')
+    .replace('class="starter-quantity-control"', 'class="starter-quantity-control sfb-quantity-control"');
 }
 
 function transformFallbackPage(content) {
   return content.replace("<h1>", '<h1 class="sfb-fallback-page">');
-}
-
-function transformProductDetailShell(content) {
-  if (content.includes("PurchasePanel=\"@PurchasePanel\"")) {
-    return content;
-  }
-
-  return content
-    .replace(
-      "<PurchasePanelPlaceholder ProductName=\"@ProductName\" />",
-      '<PurchasePanelPlaceholder ProductName="@ProductName" PurchasePanel="@PurchasePanel" PurchaseActions="@PurchaseActions" />'
-    )
-    .replace(
-      'public string ProductName { get; set; } = "Product";',
-      'public string ProductName { get; set; } = "Product";\n\n    [Parameter]\n    public BlazorShop.Storefront.Components.Contracts.Product.ProductPurchasePanelModel PurchasePanel { get; set; } = BlazorShop.Storefront.Components.Contracts.Product.ProductPurchasePanelModel.Empty;\n\n    [Parameter]\n    public BlazorShop.Storefront.Components.Headless.Product.ProductPurchaseActionDescriptor PurchaseActions { get; set; } = BlazorShop.Storefront.Components.Headless.Product.ProductPurchaseActionDescriptor.Empty;'
-    );
 }
 
 function readArg(name) {

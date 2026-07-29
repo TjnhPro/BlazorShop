@@ -1,9 +1,20 @@
+@using BlazorShop.Storefront.Components.Contracts.Product
+@using BlazorShop.Storefront.Components.Headless.Product
+
 <section class="starter-detail-shell">
     <ProductGalleryPlaceholder Label="@ProductName" />
-    <PurchasePanelPlaceholder ProductName="@ProductName" />
+    <PurchasePanelPlaceholder ProductName="@ProductName"
+                              PurchasePanel="@PurchasePanel"
+                              PurchaseActions="@PurchaseActions" />
 </section>
 
 @code {
     [Parameter]
     public string ProductName { get; set; } = "Product";
+
+    [Parameter]
+    public ProductPurchasePanelModel PurchasePanel { get; set; } = ProductPurchasePanelModel.Empty;
+
+    [Parameter]
+    public ProductPurchaseActionDescriptor PurchaseActions { get; set; } = ProductPurchaseActionDescriptor.Empty;
 }

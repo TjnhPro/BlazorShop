@@ -28,9 +28,9 @@ These findings were verified against the current codebase before writing this pl
 - [x] Presentation product purchase binder selects `[data-storefront-product-purchase-submit]` and legacy aliases without enforcing `data-storefront-command="cart.add-line"`. 2026-07-29 F1.60 submit handling now requires `data-storefront-command="cart.add-line"`.
 - [x] Presentation script publicly exposes command-capable methods under `window.blazorShopStorefront.application` and `window.blazorShopStorefront.bindings`. 2026-07-29 F1.60 removed command-capable public exports.
 - [x] `root.bindings.addToCart.addPurchaseLine` and `root.bindings.productSelection.previewPurchase` have no verified visual consumer and can re-enable command calls from visual hosts. 2026-07-29 F1.60 removed `root.bindings`.
-- [ ] Starter product page passes only `ProductName` into `ProductDetailShell`.
-- [ ] Starter `PurchasePanelPlaceholder` renders a permanently disabled button and does not emit product purchase descriptors.
-- [ ] StorefrontBuilder still patches Starter by string replacement to add `PurchasePanel`, `PurchaseActions`, and product purchase descriptors.
+- [x] Starter product page passes only `ProductName` into `ProductDetailShell`. 2026-07-29 F1.61 now passes `PurchasePanel` and `PurchaseActions`.
+- [x] Starter `PurchasePanelPlaceholder` renders a permanently disabled button and does not emit product purchase descriptors. 2026-07-29 F1.61 Starter baseline now emits canonical purchase descriptors.
+- [x] StorefrontBuilder still patches Starter by string replacement to add `PurchasePanel`, `PurchaseActions`, and product purchase descriptors. 2026-07-29 F1.61 removed behavior injection transforms; generator keeps visual class transforms only.
 - [ ] Fast foundation functional proof uses mocked `pageHtml()` and injects Presentation script manually instead of launching an actual generated host.
 - [x] Visual boundary validator still relies on broad substring tokens such as `sku` and `gtin`, causing false positives for presentation-ready `selection.skuText` and `selection.gtinText`. 2026-07-29 F1.59 narrowed browser business tokens to raw `preview.*` and bracket forms.
 - [ ] Presentation still supports legacy selector aliases such as `data-storefront-selection-preview`, `data-storefront-add-to-cart`, and `data-storefront-generated-quantity`.
@@ -79,7 +79,7 @@ Visual hosts must not:
 - [x] read raw preview fields such as `preview.sku`, `preview.gtin`, `preview.stockQuantity`, or `preview.canAddToCart`. 2026-07-29 F1.59 V2 regression tests forbid raw preview reads.
 - [x] call command-capable `application.*` or `bindings.*` methods from visual scripts. 2026-07-29 F1.60 visual validator forbids direct application/bindings command use.
 - [ ] rely on legacy selectors after canonical descriptors are available.
-- [ ] patch behavior contracts into Starter through fragile string replacement.
+- [x] patch behavior contracts into Starter through fragile string replacement. 2026-07-29 F1.61 moved purchase descriptors into Starter baseline.
 
 ## Non-goals
 
@@ -251,38 +251,44 @@ Goal: make Starter the canonical minimal functional reference instead of relying
 
 ### Implementation
 
-- [ ] Update Starter `Pages/Hybrid/Catalog/ProductPage.razor` to pass:
-  - [ ] `PurchasePanel="@Context.PurchasePanel"`
-  - [ ] `PurchaseActions="@Context.PurchaseActions"`
-- [ ] Update Starter `ProductDetailShell.razor` to accept and forward `ProductPurchasePanelModel` and `ProductPurchaseActionDescriptor`.
-- [ ] Update Starter `PurchasePanelPlaceholder.razor` to emit canonical product purchase descriptors:
-  - [ ] `data-storefront-product-purchase`
-  - [ ] `data-selection-preview-route`
-  - [ ] `data-product-id`
-  - [ ] `data-product-name`
-  - [ ] `data-resolved-variant-id`
-  - [ ] `data-currency-code`
-  - [ ] `data-storefront-command="cart.add-line"`
-  - [ ] `data-storefront-product-purchase-submit`
-  - [ ] `data-storefront-purchase-quantity`
-  - [ ] `data-storefront-purchase-feedback`
-- [ ] Keep Starter UI visually neutral and minimal.
-- [ ] Remove generator transforms that patch missing `PurchasePanel` and `PurchaseActions` into Starter.
-- [ ] Keep generator transforms limited to layout, classes, copy, placement, and generated visual CSS.
-- [ ] Update `starter-generation.contract.yaml` to state these descriptors are part of Starter baseline, not generated behavior injection.
+- [x] Update Starter `Pages/Hybrid/Catalog/ProductPage.razor` to pass:
+  - [x] `PurchasePanel="@Context.PurchasePanel"`
+  - [x] `PurchaseActions="@Context.PurchaseActions"`
+- [x] Update Starter `ProductDetailShell.razor` to accept and forward `ProductPurchasePanelModel` and `ProductPurchaseActionDescriptor`.
+- [x] Update Starter `PurchasePanelPlaceholder.razor` to emit canonical product purchase descriptors:
+  - [x] `data-storefront-product-purchase`
+  - [x] `data-selection-preview-route`
+  - [x] `data-product-id`
+  - [x] `data-product-name`
+  - [x] `data-resolved-variant-id`
+  - [x] `data-currency-code`
+  - [x] `data-storefront-command="cart.add-line"`
+  - [x] `data-storefront-product-purchase-submit`
+  - [x] `data-storefront-purchase-quantity`
+  - [x] `data-storefront-purchase-feedback`
+- [x] Keep Starter UI visually neutral and minimal.
+- [x] Remove generator transforms that patch missing `PurchasePanel` and `PurchaseActions` into Starter.
+- [x] Keep generator transforms limited to layout, classes, copy, placement, and generated visual CSS.
+- [x] Update `starter-generation.contract.yaml` to state these descriptors are part of Starter baseline, not generated behavior injection.
 
 ### Tests
 
-- [ ] Update Starter foundation tests to assert product page passes purchase contracts.
-- [ ] Update StorefrontBuilder regeneration tests to assert generator no longer string-replaces missing purchase contracts.
-- [ ] Update composition validation to require descriptors in Starter baseline and generated output.
-- [ ] Build Starter and generated proof project.
+- [x] Update Starter foundation tests to assert product page passes purchase contracts.
+- [x] Update StorefrontBuilder regeneration tests to assert generator no longer string-replaces missing purchase contracts.
+- [x] Update composition validation to require descriptors in Starter baseline and generated output.
+- [x] Build Starter and generated proof project.
 
 ### Acceptance Criteria
 
-- [ ] Starter can demonstrate product purchase descriptor pattern without generator mutation.
-- [ ] Generated storefront behavior no longer depends on exact Starter source text for functional contract insertion.
-- [ ] Generator remains visual/composition-only for product purchase.
+- [x] Starter can demonstrate product purchase descriptor pattern without generator mutation.
+- [x] Generated storefront behavior no longer depends on exact Starter source text for functional contract insertion.
+- [x] Generator remains visual/composition-only for product purchase.
+
+2026-07-29 F1.61 evidence:
+- `node --check tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings/errors.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests|FullyQualifiedName~StorefrontBuilderFoundationTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests" --no-restore` passed 64/64 on rerun; the first attempt timed out before result.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` passed after stopping stale `testhost` process `9944` from the prior timed-out test run; generated proof build, static validation, isolation gate, and visual boundary validator all passed.
 
 ## Phase F1.62 - Actual Generated Host Fast Proof
 
