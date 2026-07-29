@@ -41,6 +41,7 @@ export function buildManifestEntries(projectRoot, previousEntries) {
       ? previous.generatedHash
       : undefined;
     const manualEditDetected = Boolean(previousGeneratedHash && previousGeneratedHash !== file.hash);
+    const unchangedFromPrevious = previous?.currentHash === file.hash && previous?.lastGeneratedTimestamp;
     const conflict = classifyConflict(descriptor.ownership, manualEditDetected, file.filePath, previous);
 
     entries.push({
@@ -53,7 +54,7 @@ export function buildManifestEntries(projectRoot, previousEntries) {
       sourceSpecHash,
       generatedHash: manualEditDetected ? previousGeneratedHash : file.hash,
       currentHash: file.hash,
-      lastGeneratedTimestamp: manualEditDetected && previous?.lastGeneratedTimestamp ? previous.lastGeneratedTimestamp : now,
+      lastGeneratedTimestamp: (manualEditDetected || unchangedFromPrevious) && previous?.lastGeneratedTimestamp ? previous.lastGeneratedTimestamp : now,
       manualEditDetected: String(manualEditDetected),
       conflictStatus: conflict.status,
       conflictReason: conflict.reason,

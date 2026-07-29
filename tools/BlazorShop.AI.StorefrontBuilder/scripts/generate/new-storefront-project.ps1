@@ -58,6 +58,29 @@ $stagedProjectRoot = Join-Path $stagingOutputRoot $projectName
 $backupProjectRoot = Join-Path (Join-Path $outputRootPath ".replace-backup") "$projectName-$operationId"
 $movedExistingTarget = $false
 
+function Set-GeneratedNuGetConfig {
+    param([Parameter(Mandatory = $true)][string]$ProjectRoot)
+
+    $nugetConfigPath = Join-Path $ProjectRoot "nuget.config"
+    if (-not (Test-Path -LiteralPath $nugetConfigPath)) {
+        return
+    }
+
+    $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
+    $relativePackageFeed = [System.IO.Path]::GetRelativePath($ProjectRoot, $packageFeed).Replace('\', '/')
+    $nugetConfig = @(
+        '<?xml version="1.0" encoding="utf-8"?>',
+        '<configuration>',
+        '  <packageSources>',
+        '    <clear />',
+        "    <add key=`"local-storefront-packages`" value=`"$relativePackageFeed`" />",
+        '    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />',
+        '  </packageSources>',
+        '</configuration>'
+    ) -join [Environment]::NewLine
+    Set-Content -LiteralPath $nugetConfigPath -Value $nugetConfig -Encoding UTF8
+}
+
 try {
     New-Item -ItemType Directory -Force -Path $stagingOutputRoot | Out-Null
 
@@ -125,6 +148,7 @@ try {
     }
 
     Move-Item -LiteralPath $stagedProjectRoot -Destination $projectRoot
+    Set-GeneratedNuGetConfig -ProjectRoot $projectRoot
 
     if ($movedExistingTarget) {
         Remove-StorefrontBuilderPath -Path $backupProjectRoot -ApprovedRoot $outputRootPath

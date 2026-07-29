@@ -307,6 +307,7 @@ namespace BlazorShop.Tests.Architecture
             var helper = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs");
             var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderIdempotency.ps1");
             var fixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/manual-edit-conflict/generated-files.yaml");
+            var regenerationSafety = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/Test-StorefrontBuilderRegenerationSafety.ps1");
 
             foreach (var marker in new[]
             {
@@ -363,6 +364,28 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains(scope, command, StringComparison.Ordinal);
             }
 
+            foreach (var marker in new[]
+            {
+                "New-RegenerationPlan",
+                "Copy-ChangedFile",
+                "Write-RegenerationReport",
+                "skip unchanged",
+                "skip user-owned",
+                "skip protected",
+                "conflict manual edit",
+                "obsolete candidate",
+                "delete only if explicitly allowed",
+                ".regeneration-staging",
+                ".regeneration-backup",
+                "ValidateAfterApply",
+                "BuildAfterApply",
+                "Copy-Item -LiteralPath $backupRoot -Destination $resolvedProjectRoot",
+                "WhatIf completed without writing generated project files.",
+            })
+            {
+                Assert.Contains(marker, command, StringComparison.Ordinal);
+            }
+
             Assert.Contains("manualEditDetected: true", fixture, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-002", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-003", validator, StringComparison.Ordinal);
@@ -372,6 +395,23 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-IDEMPOTENCY-008", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-009", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-010", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-011", validator, StringComparison.Ordinal);
+
+            foreach (var marker in new[]
+            {
+                "WhatIf wrote files",
+                "No-op regeneration produced file diffs",
+                "CSS scope touched unrelated files",
+                "Page scope touched unrelated files",
+                "Component scope touched unrelated files",
+                "Manual Razor edit was not reported as conflict",
+                "User-owned custom file was overwritten",
+                "SFB-IDEMPOTENCY-002",
+                "Rollback restore path is missing",
+            })
+            {
+                Assert.Contains(marker, regenerationSafety, StringComparison.Ordinal);
+            }
 
             foreach (var fixturePath in new[]
             {

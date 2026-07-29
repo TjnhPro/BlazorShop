@@ -40,6 +40,20 @@ function Unquote-ManifestValue {
     return $trimmed
 }
 
+function Get-NormalizedFileHash {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return "none"
+    }
+
+    $content = (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
+    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
+    $hex = [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    return "sha256:$hex"
+}
+
 $manifestPath = Join-Path $ProjectRoot "docs\storefront-analysis\generated-files.yaml"
 $reportPath = Join-Path $ProjectRoot "docs\storefront-analysis\regeneration-report.md"
 foreach ($path in @($manifestPath, $reportPath)) {
@@ -104,6 +118,15 @@ foreach ($entry in $entries) {
     $rootWithSeparator = $resolvedProjectRoot.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
     if (-not $resolvedFilePath.StartsWith($rootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "[SFB-IDEMPOTENCY-008] Manifest file path resolves outside project root: $filePath"
+    }
+
+    $actualHash = Get-NormalizedFileHash -Path $resolvedFilePath
+    if ($entry["currentHash"] -ne "none" -and $actualHash -ne $entry["currentHash"]) {
+        if ($entry["ownership"] -eq "protected") {
+            throw "[SFB-IDEMPOTENCY-002] Protected files must never be modified: $filePath"
+        }
+
+        throw "[SFB-IDEMPOTENCY-011] Manifest currentHash is stale for '$filePath'. Rerun conflict detection."
     }
 
     if ($validOwnership -notcontains $entry["ownership"]) {

@@ -424,44 +424,44 @@ Goal: make generated storefronts safely updatable after humans tune them.
 
 Tasks:
 
-- [ ] Replace the current simplistic regeneration flow with an ownership-aware staged update engine.
-- [ ] Keep public command shape:
-  - [ ] `-Scope all`;
-  - [ ] `-Scope page`;
-  - [ ] `-Scope component`;
-  - [ ] `-Scope css`;
-  - [ ] `-Scope validate`;
-  - [ ] `-Scope conflicts`;
-  - [ ] `-WhatIf`.
-- [ ] For every scope, compute a planned file action list before writing:
-  - [ ] create;
-  - [ ] update;
-  - [ ] skip unchanged;
-  - [ ] skip user-owned;
-  - [ ] skip protected;
-  - [ ] conflict manual edit;
-  - [ ] obsolete candidate;
-  - [ ] delete only if explicitly allowed.
-- [ ] Stage regenerated output before applying it to the generated project.
-- [ ] Apply changes only when:
-  - [ ] target file is generated/managed;
-  - [ ] current hash matches last generated hash; or
-  - [ ] conflict policy explicitly allows replacement.
-- [ ] Preserve human-edited files and emit conflicts instead of overwriting.
-- [ ] Keep `-WhatIf` as a true no-write dry run.
-- [ ] Run validate/build after applying changes when requested by the caller or proof script.
-- [ ] Roll back applied changes if post-regeneration build/validation fails.
-- [ ] Write a regeneration report with:
-  - [ ] command;
-  - [ ] scope;
-  - [ ] changed files;
-  - [ ] skipped files;
-  - [ ] conflicts;
-  - [ ] obsolete candidates;
-  - [ ] validation/build result;
-  - [ ] next recommended action.
-- [ ] Update `generated-files.yaml` only after successful apply.
-- [ ] Keep generated project package versions and contract hash in sync with metadata.
+- [x] Replace the current simplistic regeneration flow with an ownership-aware staged update engine.
+- [x] Keep public command shape:
+  - [x] `-Scope all`;
+  - [x] `-Scope page`;
+  - [x] `-Scope component`;
+  - [x] `-Scope css`;
+  - [x] `-Scope validate`;
+  - [x] `-Scope conflicts`;
+  - [x] `-WhatIf`.
+- [x] For every scope, compute a planned file action list before writing:
+  - [x] create;
+  - [x] update;
+  - [x] skip unchanged;
+  - [x] skip user-owned;
+  - [x] skip protected;
+  - [x] conflict manual edit;
+  - [x] obsolete candidate;
+  - [x] delete only if explicitly allowed.
+- [x] Stage regenerated output before applying it to the generated project.
+- [x] Apply changes only when:
+  - [x] target file is generated/managed;
+  - [x] current hash matches last generated hash; or
+  - [x] conflict policy explicitly allows replacement.
+- [x] Preserve human-edited files and emit conflicts instead of overwriting.
+- [x] Keep `-WhatIf` as a true no-write dry run.
+- [x] Run validate/build after applying changes when requested by the caller or proof script.
+- [x] Roll back applied changes if post-regeneration build/validation fails.
+- [x] Write a regeneration report with:
+  - [x] command;
+  - [x] scope;
+  - [x] changed files;
+  - [x] skipped files;
+  - [x] conflicts;
+  - [x] obsolete candidates;
+  - [x] validation/build result;
+  - [x] next recommended action.
+- [x] Update `generated-files.yaml` only after successful apply.
+- [x] Keep generated project package versions and contract hash in sync with metadata.
 
 Implementation notes:
 
@@ -480,23 +480,31 @@ QA:
 
 Add end-to-end regeneration tests for:
 
-- [ ] no-op regeneration produces no file diff;
-- [ ] CSS-only regeneration touches only CSS and related manifest/report files;
-- [ ] page-only regeneration touches only selected page files and manifest/report files;
-- [ ] component-only regeneration touches only selected component files and manifest/report files;
-- [ ] manually edited generated Razor file becomes conflict;
-- [ ] manually edited CSS becomes conflict or managed update according to declared ownership;
-- [ ] user-owned custom file is preserved;
-- [ ] protected file modification fails validation;
-- [ ] obsolete generated file is reported, not deleted silently;
-- [ ] failed post-update build rolls back generated changes.
+- [x] no-op regeneration produces no file diff;
+- [x] CSS-only regeneration touches only CSS and related manifest/report files;
+- [x] page-only regeneration touches only selected page files and manifest/report files;
+- [x] component-only regeneration touches only selected component files and manifest/report files;
+- [x] manually edited generated Razor file becomes conflict;
+- [x] manually edited CSS becomes conflict or managed update according to declared ownership;
+- [x] user-owned custom file is preserved;
+- [x] protected file modification fails validation;
+- [x] obsolete generated file is reported, not deleted silently;
+- [x] failed post-update build rolls back generated changes.
 
 Exit gate:
 
-- [ ] Regeneration is safe for real edited generated stores.
-- [ ] No user-owned or protected file can be overwritten.
-- [ ] No-op regeneration is deterministic.
-- [ ] Conflict output is specific enough for a developer or AI agent to resolve without guessing.
+- [x] Regeneration is safe for real edited generated stores.
+- [x] No user-owned or protected file can be overwritten.
+- [x] No-op regeneration is deterministic.
+- [x] Conflict output is specific enough for a developer or AI agent to resolve without guessing.
+
+2026-07-29 Phase 2.6 verification:
+- `.\tools\BlazorShop.AI.StorefrontBuilder\tests\generation\Test-StorefrontBuilderRegenerationSafety.ps1` passed.
+- `.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -WhatIf` passed.
+- `.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all` passed.
+- `.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope conflicts` passed.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` passed.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontBuilder" --logger "trx;LogFileName=storefront-builder-phase26-rerun.trx" --blame-hang --blame-hang-timeout 5m` passed `37/37`.
 
 ## Phase 2.7 - Generated Proof, QA, CI, And Documentation Closure
 
