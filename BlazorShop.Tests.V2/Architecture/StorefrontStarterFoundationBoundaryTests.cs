@@ -505,6 +505,7 @@ namespace BlazorShop.Tests.Architecture
                 "/my-cart",
                 "/checkout",
                 "/account",
+                "/account/{*Path}",
                 "/signin",
                 "/register",
                 "/forgot-password",
@@ -512,6 +513,8 @@ namespace BlazorShop.Tests.Architecture
                 "/payment/result",
                 "/payment-success",
                 "/payment-cancel",
+                "/todays-deals",
+                "/new-releases",
                 "/maintenance",
                 "/{*Path:nonfile}",
             })
@@ -520,6 +523,14 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains($"@page \"{route}\"", presentationRoutes, StringComparison.Ordinal);
             }
 
+            foreach (var accountChildRoute in new[] { "/account/profile", "/account/addresses", "/account/orders", "/account/change-password" })
+            {
+                Assert.Contains($"- {accountChildRoute}", contract, StringComparison.Ordinal);
+                Assert.Contains("path: Pages/WasmHost/Account/AccountHostPage.razor", contract, StringComparison.Ordinal);
+            }
+
+            Assert.DoesNotContain("route: /payment/success", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("route: /payment/cancel", contract, StringComparison.Ordinal);
             Assert.Contains("path: Components/States/ErrorState.razor", contract, StringComparison.Ordinal);
 
             foreach (var slot in new[]
@@ -589,6 +600,35 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains(metadataMarker, generator, StringComparison.Ordinal);
                 Assert.Contains(metadataMarker, validator, StringComparison.Ordinal);
             }
+        }
+
+        [Fact]
+        public void StarterGenerationContract_MatchesPresentationPageRoutes()
+        {
+            var presentationRoutes = ReadPresentationPageRoutes();
+            var contractRouteMetadata = ReadStarterContractRouteMetadata();
+
+            var missing = presentationRoutes
+                .Where(route => !IsRouteCoveredByContract(route, contractRouteMetadata))
+                .OrderBy(route => route, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(missing);
+        }
+
+        [Fact]
+        public void StarterGenerationContract_CoversGeneratorRelevantRouteConstants()
+        {
+            var storefrontRoutes = ReadGeneratorRelevantStorefrontRouteConstants();
+            var contractRouteMetadata = ReadStarterContractRouteMetadata();
+
+            var missing = storefrontRoutes
+                .Where(route => !IsRouteCoveredByContract(route.Route, contractRouteMetadata))
+                .Select(route => $"{route.Name}: {route.Route}")
+                .OrderBy(route => route, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(missing);
         }
 
         [Fact]
@@ -897,6 +937,158 @@ namespace BlazorShop.Tests.Architecture
                 .Select(path => Path.GetRelativePath(FindRepositoryRoot(), path).Replace('\\', '/'))
                 .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+        }
+
+        private static IReadOnlyList<string> ReadPresentationPageRoutes()
+        {
+            return Directory
+                .EnumerateFiles(
+                    RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages"),
+                    "*.razor",
+                    SearchOption.AllDirectories)
+                .SelectMany(File.ReadLines)
+                .Select(TryReadPageDirectiveRoute)
+                .Where(route => !string.IsNullOrWhiteSpace(route))
+                .Select(route => route!)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(route => route, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        private static IReadOnlyList<(string Name, string Route)> ReadGeneratorRelevantStorefrontRouteConstants()
+        {
+            var ignoredConstantNames = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "CurrencyPreference",
+                "PagesBase",
+                "ProductSelectionPreview",
+                "Robots",
+                "Sitemap",
+            };
+
+            return File
+                .ReadLines(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontRoutes.cs"))
+                .Select(TryReadStorefrontRouteConstant)
+                .Where(route => route.HasValue)
+                .Select(route => route!.Value)
+                .Where(route => !ignoredConstantNames.Contains(route.Name))
+                .Where(route => route.Route.StartsWith("/", StringComparison.Ordinal))
+                .Where(route => !route.Route.StartsWith("/api/", StringComparison.Ordinal))
+                .OrderBy(route => route.Name, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        private static IReadOnlySet<string> ReadStarterContractRouteMetadata()
+        {
+            var routes = new SortedSet<string>(StringComparer.Ordinal);
+
+            foreach (var line in File.ReadLines(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml")))
+            {
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("route: ", StringComparison.Ordinal))
+                {
+                    routes.Add(trimmed["route: ".Length..]);
+                    continue;
+                }
+
+                if (trimmed.StartsWith("- route: ", StringComparison.Ordinal))
+                {
+                    routes.Add(trimmed["- route: ".Length..]);
+                    continue;
+                }
+
+                if (trimmed.StartsWith("- /", StringComparison.Ordinal))
+                {
+                    routes.Add(trimmed["- ".Length..]);
+                }
+            }
+
+            return routes;
+        }
+
+        private static string? TryReadPageDirectiveRoute(string line)
+        {
+            var trimmed = line.Trim();
+            const string marker = "@page \"";
+
+            if (!trimmed.StartsWith(marker, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            var routeEnd = trimmed.IndexOf('"', marker.Length);
+            return routeEnd < 0 ? null : trimmed[marker.Length..routeEnd];
+        }
+
+        private static (string Name, string Route)? TryReadStorefrontRouteConstant(string line)
+        {
+            var trimmed = line.Trim();
+            const string declaration = "public const string ";
+
+            if (!trimmed.StartsWith(declaration, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            var separator = trimmed.IndexOf(" = \"", StringComparison.Ordinal);
+            if (separator < 0)
+            {
+                return null;
+            }
+
+            var name = trimmed[declaration.Length..separator].Trim();
+            var valueStart = separator + " = \"".Length;
+            var valueEnd = trimmed.IndexOf('"', valueStart);
+            if (valueEnd < 0)
+            {
+                return null;
+            }
+
+            return (name, trimmed[valueStart..valueEnd]);
+        }
+
+        private static bool IsRouteCoveredByContract(string route, IReadOnlySet<string> contractRouteMetadata)
+        {
+            return contractRouteMetadata.Contains(route)
+                || contractRouteMetadata.Any(contractRoute => RouteTemplateCoversRoute(contractRoute, route));
+        }
+
+        private static bool RouteTemplateCoversRoute(string routeTemplate, string route)
+        {
+            if (routeTemplate.StartsWith("/{*", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (routeTemplate.EndsWith("/{*Path}", StringComparison.Ordinal))
+            {
+                var prefix = routeTemplate[..^"{*Path}".Length];
+                return route.StartsWith(prefix, StringComparison.Ordinal);
+            }
+
+            var parameterStart = routeTemplate.IndexOf('{', StringComparison.Ordinal);
+            if (parameterStart < 0)
+            {
+                return false;
+            }
+
+            var parameterEnd = routeTemplate.IndexOf('}', parameterStart);
+            if (parameterEnd < 0)
+            {
+                return false;
+            }
+
+            var prefixBeforeParameter = routeTemplate[..parameterStart];
+            var suffixAfterParameter = routeTemplate[(parameterEnd + 1)..];
+            if (!route.StartsWith(prefixBeforeParameter, StringComparison.Ordinal)
+                || !route.EndsWith(suffixAfterParameter, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var routeParameterValue = route[prefixBeforeParameter.Length..^suffixAfterParameter.Length];
+            return routeParameterValue.Length > 0
+                && !routeParameterValue.Contains('/', StringComparison.Ordinal);
         }
 
         private static bool IsForbiddenStarterProjectReference(string reference)

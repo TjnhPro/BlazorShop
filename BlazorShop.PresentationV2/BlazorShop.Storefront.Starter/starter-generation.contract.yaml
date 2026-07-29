@@ -270,3 +270,12 @@ routes:
     path: Pages/WasmHost/Account/AccountHostPage.razor
     renderOwner: WASM-host
     hydrationMode: BrowserFetch
+  - route: /account/{*Path}
+    path: Pages/WasmHost/Account/AccountHostPage.razor
+    renderOwner: WASM-host
+    hydrationMode: BrowserFetch
+    childRoutes:
+      - /account/profile
+      - /account/addresses
+      - /account/orders
+      - /account/change-password

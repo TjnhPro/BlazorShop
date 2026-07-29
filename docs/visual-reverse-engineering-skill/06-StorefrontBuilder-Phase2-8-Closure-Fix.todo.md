@@ -1,0 +1,516 @@
+# StorefrontBuilder Phase 2.8 Closure Fix.todo
+
+Status: Proposed
+Owner: Storefront Platform
+Created: 2026-07-29
+Scope: final StorefrontBuilder Phase 2 blockers after review
+
+## Purpose
+
+Close the remaining Phase 2 blockers without reopening the entire StorefrontBuilder foundation. This plan focuses on the verified gaps that still matter for production readiness:
+
+- the Starter route contract must match the Presentation route surface;
+- regeneration must update an existing generated storefront from the current Starter/template candidate, not from a copy of itself;
+- `-WhatIf` must produce the same action plan as apply mode without writing files;
+- platform metadata and package compatibility updates must be explicit and safe;
+- tests must prove positive updates, missing files, obsolete files, and real rollback;
+- scheduled full proof must bootstrap its fixture runtime on a clean CI runner.
+
+Do not start AI Generator integration until this file is complete and verified.
+
+## Current Codebase Findings
+
+These findings are based on the current codebase, not the stale state from earlier reviews.
+
+- `starter-generation.contract.yaml` already contains more routes than the review claimed: `/`, `/pages/{Slug}`, auth/recovery routes, `/maintenance`, `/{*Path:nonfile}`, `/category/{Slug}`, `/product/{Slug}`, `/search`, `/cart`, `/my-cart`, `/checkout`, `/payment/result`, `/payment-success`, `/payment-cancel`, `/todays-deals`, `/new-releases`, and `/account`.
+- Presentation owns additional account route shape through `@page "/account/{*Path}"` and route constants such as `/account/profile`, `/account/addresses`, `/account/orders`, and `/account/change-password`.
+- Payment result routes in the current code are `/payment-success`, `/payment-cancel`, and `/payment/result`; do not introduce `/payment/success` or `/payment/cancel` unless Presentation changes first.
+- `new-storefront-project.ps1` already uses staging and atomic replacement for first-time generation.
+- `regenerate-storefront.ps1` still builds regeneration staging by copying the target project, then applying transforms. That is not a true update from current Starter/template source.
+- `apply-composition.mjs` still uses a hard-coded transform list and says it applies from `generation-plan.yaml` even though it does not read the plan.
+- `-WhatIf` still reads the current manifest and prints `plan skip unchanged`; it does not create a candidate or compute a real action plan.
+- `generated-file-manifest.mjs` now computes hashes, current hash, manual-edit flags, and missing entries, but `sourceSpecHash` is still a project snapshot hash, not the file-specific source spec/template identity needed for future AI Generator work.
+- Regeneration tests cover no-write `WhatIf`, no-op, simple scoped safety, manual-edit conflict, user-owned preservation, protected-file detection, and string-level rollback marker checks, but they do not prove positive page/component updates, fresh-template create/obsolete behavior, or real rollback after failed build.
+- `storefront-builder.yml` runs `FoundationFunctionalFull` on schedule/manual, but does not start PostgreSQL, Commerce Node, migrations, fixture seeding, or health checks before invoking the proof.
+
+## Corrected Blocker List
+
+| Blocker | Current verdict | Closure approach |
+| --- | --- | --- |
+| Starter contract route inventory incomplete | Partially true | Add route parity checks and account wildcard/subroute metadata; do not duplicate stale `/payment/success` names. |
+| Regenerate is not a real update engine | True | Generate a fresh candidate from current Starter/template plus existing analysis inputs, then diff candidate against target. |
+| `-WhatIf` is not a real plan | True | Run the full candidate/planning pipeline and stop before apply. |
+| Package versions and contract hash not synced on update | True | Add an explicit foundation/platform update path with planned managed changes. |
+| Missing/obsolete file handling weak | True | Base create/obsolete decisions on fresh candidate vs target, not target copy vs target. |
+| Regeneration tests mostly prove shape | True | Add positive update, missing recreate, obsolete, and rollback integration tests. |
+| Scheduled full proof not self-contained | True | Add a CI wrapper that starts fixture runtime, runs full proof, uploads artifacts, and stops runtime. |
+| Phase 2 closure document still `Status: Proposed` | True but final step | Only mark complete after all Phase 2.8 gates pass. |
+
+## Phase Order
+
+1. Phase 2.8A - Starter Route Contract Truth
+2. Phase 2.8B - Fresh Candidate Regeneration Pipeline
+3. Phase 2.8C - Platform Metadata Upgrade Path
+4. Phase 2.8D - Regeneration Test Hardening
+5. Phase 2.8E - Self-Contained CI Full Proof
+6. Phase 2.8F - Documentation And Closure Evidence
+
+These phases should be implemented in order. Phase 2.8B depends on route truth from 2.8A. Phase 2.8D depends on the new pipeline. Phase 2.8E should run after local proof is stable.
+
+## Phase 2.8A - Starter Route Contract Truth
+
+Goal: make `starter-generation.contract.yaml` a truthful generator contract for the Presentation route surface.
+
+Tasks:
+
+- [x] Treat Presentation `@page` directives and `StorefrontRoutes` constants as the source of route truth.
+- [x] Keep the current payment routes:
+  - [x] `/payment-success`;
+  - [x] `/payment-cancel`;
+  - [x] `/payment/result`.
+- [x] Do not add stale routes:
+  - [x] `/payment/success`;
+  - [x] `/payment/cancel`.
+- [x] Add Starter contract route metadata for account wildcard behavior:
+  - [x] `/account`;
+  - [x] `/account/{*Path}` or an equivalent account route group/wildcard declaration.
+- [x] Add account subroute metadata if the generator needs explicit visual state awareness:
+  - [x] `/account/profile`;
+  - [x] `/account/addresses`;
+  - [x] `/account/orders`;
+  - [x] `/account/change-password`.
+- [x] Decide whether account subroutes are represented as concrete `routes` entries or as `routeAliases`/`childRoutes`.
+- [x] Keep all account route entries pointing to the same account WASM host visual surface unless Presentation actually creates separate account route pages.
+- [x] Verify catalog routes remain present:
+  - [x] `/category/{Slug}`;
+  - [x] `/product/{Slug}`;
+  - [x] `/search`;
+  - [x] `/todays-deals`;
+  - [x] `/new-releases`.
+- [x] Verify commerce routes remain present:
+  - [x] `/cart`;
+  - [x] `/my-cart`;
+  - [x] `/checkout`;
+  - [x] payment result routes.
+- [x] Verify system routes remain present:
+  - [x] `/maintenance`;
+  - [x] `/{*Path:nonfile}`.
+- [x] Add a route parity test that parses Presentation `@page` directives and compares them to Starter contract routes or route groups.
+- [x] Add a route constants parity test for public route constants that are generator-relevant but may not appear as `@page` directives.
+- [x] Ensure route parity tests fail when Presentation adds a generated-storefront-relevant route but Starter contract is not updated.
+- [x] Ensure the test intentionally ignores non-page same-origin BFF endpoints such as `/api/cart`, `/api/checkout`, `/api/account/*`, `/robots.txt`, and `/sitemap.xml`.
+- [x] Update route documentation in `docs/architecture/11-storefront-builder.md` only after tests define the final route inventory rule.
+
+Implementation notes:
+
+- Prefer a small parser/test helper over hand-maintaining a duplicate route list in multiple test files.
+- If YAML parsing is not already available in tests, use a minimal route extraction helper for `route:` lines and documented route group fields.
+- Keep generated visual files route-less; route declarations remain in Presentation.
+
+QA:
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests"
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPageCompositionGuardrailTests"
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+```
+
+Exit gate:
+
+- [x] Starter contract and Presentation route surface agree.
+- [x] Account wildcard/subroute behavior is explicit enough for the generator.
+- [x] Payment route names match current Presentation code.
+- [x] Adding a new Presentation storefront page route without Starter contract metadata fails a test.
+
+## Phase 2.8B - Fresh Candidate Regeneration Pipeline
+
+Goal: make regeneration compare the current target project against a fresh candidate generated from current Starter/template source.
+
+Tasks:
+
+- [ ] Replace target-copy staging as the primary candidate source.
+- [ ] Introduce a fresh candidate generation step:
+  - [ ] read current generated project metadata;
+  - [ ] resolve project name;
+  - [ ] resolve store key;
+  - [ ] resolve output root;
+  - [ ] create candidate under an approved `.regeneration-candidate` root;
+  - [ ] generate from current Starter using the same project name and store key;
+  - [ ] copy or reuse existing analysis artifacts that are legitimate generation inputs;
+  - [ ] run visual foundation generation against candidate;
+  - [ ] run composition generation against candidate;
+  - [ ] build candidate manifest from candidate files.
+- [ ] Define which existing generated artifact files are inputs vs outputs:
+  - [ ] `review-summary.md`;
+  - [ ] `asset-manifest.yaml`;
+  - [ ] `generation-plan.yaml`;
+  - [ ] `composition-manifest.yaml`;
+  - [ ] `metadata.yaml`;
+  - [ ] `generated-files.yaml`;
+  - [ ] `regeneration-report.md`.
+- [ ] Stop claiming `apply-composition.mjs` reads `generation-plan.yaml` unless it actually does.
+- [ ] Either make `apply-composition.mjs` read the generation plan or rename/log it as deterministic Starter transform.
+- [ ] Add a single planning function used by both `-WhatIf` and apply mode.
+- [ ] Plan actions by comparing:
+  - [ ] original manifest generated hash;
+  - [ ] current target file hash;
+  - [ ] fresh candidate file hash;
+  - [ ] candidate manifest ownership;
+  - [ ] target-only generated files;
+  - [ ] candidate-only generated files.
+- [ ] Produce these action types:
+  - [ ] `create`;
+  - [ ] `update`;
+  - [ ] `skip unchanged`;
+  - [ ] `skip out-of-scope`;
+  - [ ] `skip user-owned`;
+  - [ ] `skip protected`;
+  - [ ] `conflict manual edit`;
+  - [ ] `obsolete candidate`;
+  - [ ] `platform metadata update`;
+  - [ ] `validation failed`.
+- [ ] Treat target-only generated/managed files missing from fresh candidate as obsolete candidates.
+- [ ] Treat candidate-only generated/managed files as create candidates.
+- [ ] Treat manually edited generated files as conflicts when candidate content differs.
+- [ ] Preserve manually edited files when candidate content is unchanged but report the manual edit state.
+- [ ] Ensure all path decisions stay under the generated project root.
+- [ ] Keep rollback backup under an approved generated output root.
+- [ ] Write a regeneration report before apply and after apply.
+- [ ] `-WhatIf` must run the full candidate/planning pipeline and exit before copying any changed file into target.
+- [ ] Apply mode must copy only planned safe changes from candidate to target.
+- [ ] Apply mode must update target `generated-files.yaml` only after successful apply and optional validation/build.
+- [ ] If validation/build fails, restore target from backup and leave a failure report if possible.
+
+Implementation notes:
+
+- Do not semantic-merge Razor or CSS in this phase.
+- Do not let visual regeneration overwrite platform protected files unless Phase 2.8C explicitly requests a foundation update.
+- Keep `build-storefront.ps1 -Mode update` as the high-level entrypoint, but route it through the fresh candidate planner.
+
+QA:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -WhatIf
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -ValidateAfterApply -BuildAfterApply
+.\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+```
+
+Exit gate:
+
+- [ ] Regeneration candidate comes from current Starter/template source, not from copying the target project.
+- [ ] `-WhatIf` reports real create/update/conflict/obsolete actions and writes no target files.
+- [ ] Apply mode uses the same plan as `-WhatIf`.
+- [ ] Missing generated Razor/component files can be recreated from candidate.
+- [ ] Removed template files become obsolete candidates.
+
+## Phase 2.8C - Platform Metadata Upgrade Path
+
+Goal: keep visual regeneration separate from platform foundation upgrades while still allowing generated projects to update package and contract metadata.
+
+Tasks:
+
+- [ ] Add an explicit platform update operation. Preferred shape:
+  - [ ] `regenerate-storefront.ps1 -Scope foundation`;
+  - [ ] or `regenerate-storefront.ps1 -Scope all -UpdatePlatformMetadata`.
+- [ ] Use one clear command shape; avoid supporting two overlapping public APIs unless compatibility requires it.
+- [ ] Update generated project metadata from current sources:
+  - [ ] `metadata.yaml.storefrontContractSha256`;
+  - [ ] `metadata.yaml.storefrontContractPath`;
+  - [ ] `metadata.yaml.sourceStarterVersion`;
+  - [ ] `metadata.yaml.starterContractVersion`;
+  - [ ] `metadata.yaml.packageVersions`;
+  - [ ] `metadata.yaml.generatorVersion`;
+  - [ ] `metadata.yaml.updatedUtc`.
+- [ ] Update `StorefrontPackageVersions.props` only in the explicit platform update operation.
+- [ ] Keep `StorefrontPackageVersions.props` protected for visual scopes.
+- [ ] Represent platform-updated files in the plan as `platform metadata update`, not as ordinary visual `update`.
+- [ ] Copy current `starter-generation.contract.yaml` into generated project only during explicit foundation update.
+- [ ] Ensure foundation update still respects safe path/backup/rollback rules.
+- [ ] Ensure metadata updates are schema validated.
+- [ ] Ensure package version updates do not introduce direct Runtime/Client source references in generated projects.
+- [ ] Ensure generated projects continue to consume Presentation/Components directly and Runtime/Client only through package metadata/proof expectations.
+
+Implementation notes:
+
+- If a new ownership value is needed, prefer a narrow value such as `platform-managed` over weakening all `protected` handling.
+- The default `-Scope all` should remain a visual/content regeneration unless the explicit platform update switch/scope is supplied.
+
+QA:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope foundation -WhatIf
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope foundation -ValidateAfterApply -BuildAfterApply
+.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+```
+
+Exit gate:
+
+- [ ] Generated metadata can be intentionally upgraded to current contract/package/starter versions.
+- [ ] Visual regeneration cannot silently change platform metadata.
+- [ ] Foundation update is planned, reported, validated, and rollback-safe.
+- [ ] Isolation gate still passes after metadata/package update.
+
+## Phase 2.8D - Regeneration Test Hardening
+
+Goal: replace shape-only checks with tests that prove real update behavior.
+
+Tasks:
+
+- [ ] Add a test fixture that modifies a Starter source file or controlled template source, then proves a generated target file updates.
+- [ ] Add page-scope positive test:
+  - [ ] modify candidate HomePage source/input;
+  - [ ] run `-Scope page -Target HomePage`;
+  - [ ] prove HomePage updates;
+  - [ ] prove ProductPage and unrelated files do not update.
+- [ ] Add component-scope positive test:
+  - [ ] modify candidate ProductSummaryCard source/input;
+  - [ ] run `-Scope component -Target ProductSummaryCard`;
+  - [ ] prove ProductSummaryCard updates;
+  - [ ] prove page files do not update.
+- [ ] Add `WhatIf` plan correctness test:
+  - [ ] prepare candidate with create/update/obsolete/conflict cases;
+  - [ ] run `-WhatIf`;
+  - [ ] assert report contains those exact planned actions;
+  - [ ] assert target tree hash does not change.
+- [ ] Add missing generated Razor page test:
+  - [ ] delete generated HomePage;
+  - [ ] run regeneration;
+  - [ ] prove file is recreated from fresh candidate.
+- [ ] Add missing generated component test:
+  - [ ] delete generated product component;
+  - [ ] run regeneration;
+  - [ ] prove file is recreated from fresh candidate.
+- [ ] Add obsolete file test:
+  - [ ] simulate Starter/template no longer producing a generated file;
+  - [ ] run `-WhatIf`;
+  - [ ] prove obsolete candidate is reported;
+  - [ ] prove file is not deleted by default.
+- [ ] Add manual-edit conflict test with candidate change:
+  - [ ] manually edit target generated file;
+  - [ ] change candidate for same file;
+  - [ ] prove conflict is reported and target edit is preserved.
+- [ ] Add user-owned preservation test with candidate present.
+- [ ] Add platform protected test:
+  - [ ] visual regeneration cannot update `StorefrontPackageVersions.props`;
+  - [ ] foundation update can plan and apply it.
+- [ ] Replace rollback string check with a real integration test:
+  - [ ] prepare candidate update;
+  - [ ] force post-apply build failure;
+  - [ ] run with `-BuildAfterApply`;
+  - [ ] assert command fails;
+  - [ ] assert full target tree hash matches pre-update hash;
+  - [ ] assert failure report exists or stderr has actionable code.
+- [ ] Add test for `sourceSpecHash` semantics if file-specific source identity is implemented in this phase.
+- [ ] Keep CI-friendly tests independent of live Commerce Node.
+
+Implementation notes:
+
+- Tests may use temporary copies of Starter and generated proof under `obj/storefront-builder/generated`.
+- Avoid tests that mutate tracked Starter files.
+- Prefer real script invocation for update pipeline tests because PowerShell path safety is part of the behavior.
+
+QA:
+
+```powershell
+.\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+```
+
+Exit gate:
+
+- [ ] Tests fail against target-copy regeneration.
+- [ ] Tests pass only when fresh candidate planning is active.
+- [ ] Tests prove positive updates, not only absence of unexpected writes.
+- [ ] Rollback is proven by real failed build, not by source string inspection.
+
+## Phase 2.8E - Self-Contained CI Full Proof
+
+Goal: make scheduled/manual `FoundationFunctionalFull` proof run on a clean runner without manual local setup.
+
+Tasks:
+
+- [ ] Add a CI-safe wrapper script, preferred name:
+  - [ ] `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1`.
+- [ ] Wrapper responsibilities:
+  - [ ] stop existing V2 processes if present;
+  - [ ] start required Docker dependencies;
+  - [ ] start Control Plane/Commerce Node/Storefront fixture runtime through the existing local runner or a dedicated fixture runner;
+  - [ ] wait for Commerce Node health;
+  - [ ] verify fixture store configuration;
+  - [ ] verify fixture category/product/page data;
+  - [ ] verify COD/test payment method;
+  - [ ] run `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull`;
+  - [ ] collect generated reports;
+  - [ ] stop services in `finally`.
+- [ ] Prefer reusing `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser` if it is stable on GitHub Windows runners.
+- [ ] If `run-v2-local.ps1` is too broad for CI, add a narrower fixture runtime script and document why.
+- [ ] Update `.github/workflows/storefront-builder.yml`:
+  - [ ] PR keeps `Structure`, regeneration ownership, and `FoundationFunctionalFast`;
+  - [ ] scheduled/manual full proof calls the new fixture wrapper;
+  - [ ] full proof uploads reports as artifacts;
+  - [ ] failure logs include process output and fixture endpoint checks.
+- [ ] Ensure workflow installs .NET, Node, npm dependencies, and any Docker prerequisites before full proof.
+- [ ] Ensure ports used by fixture runtime are documented and not conflicting with generated proof host.
+- [ ] Ensure workflow teardown runs even when proof fails.
+- [ ] Add a describe mode for the wrapper so agents can inspect what it does without starting services.
+
+Implementation notes:
+
+- Keep the expensive live/full proof out of normal PR unless manually requested.
+- Do not make scheduled CI depend on developer machine state.
+- Do not mark Phase 2 closed based only on a local manual `run-v2-local.ps1` proof.
+
+QA:
+
+```powershell
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1 -Describe
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
+```
+
+Manual release verification:
+
+```powershell
+.\scripts\qa\run-storefront-client-regeneration-gate.ps1
+.\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
+```
+
+Exit gate:
+
+- [ ] Scheduled workflow can run full proof on a clean runner.
+- [ ] Full proof starts and stops its own fixture runtime.
+- [ ] Proof reports are uploaded as CI artifacts.
+- [ ] A failed fixture bootstrap fails with problem, cause, and fix.
+
+## Phase 2.8F - Documentation And Closure Evidence
+
+Goal: align docs, historical plans, and closure status with the fixed implementation.
+
+Tasks:
+
+- [ ] Update `docs/architecture/11-storefront-builder.md` with:
+  - [ ] fresh candidate regeneration model;
+  - [ ] real `-WhatIf` behavior;
+  - [ ] foundation/platform metadata update command;
+  - [ ] CI full proof bootstrap expectation;
+  - [ ] route contract truth rule.
+- [ ] Update `docs/agents/storefront-builder.md` with:
+  - [ ] new required commands;
+  - [ ] when to run regeneration gate vs full fixture proof;
+  - [ ] no target-copy regeneration assumption.
+- [ ] Update visual reverse engineering docs:
+  - [ ] `README.md`;
+  - [ ] `reference.md`;
+  - [ ] `how-to-generate-and-validate.md`;
+  - [ ] `tutorial-generated-proof.md`;
+  - [ ] `explanation-boundaries-and-regeneration.md`.
+- [ ] Update `05-StorefrontBuilder-Phase2-Closure.todo.md` factual status:
+  - [ ] remove stale known-gap lines if they contradict current implementation evidence;
+  - [ ] keep historical evidence where accurate;
+  - [ ] mark `Status: Complete` only after all Phase 2.8 exit gates pass;
+  - [ ] add `Completed: <date>`;
+  - [ ] add `Evidence commit: <sha>` after commit exists.
+- [ ] Keep this Phase 2.8 todo file as the final closure-fix evidence.
+- [ ] Add a final verification section with exact command outputs summarized.
+- [ ] Ensure generated proof artifacts under `artifacts/` or `obj/` remain uncommitted unless a phase explicitly promotes them.
+
+QA:
+
+```powershell
+rg -n "target-copy|skip unchanged|payment/success|payment/cancel|Status: Proposed" docs/visual-reverse-engineering-skill docs/architecture/11-storefront-builder.md docs/agents/storefront-builder.md
+git status --short
+```
+
+Exit gate:
+
+- [ ] Docs describe the implementation that actually exists.
+- [ ] Phase 2 closure status is not marked complete until all gates pass.
+- [ ] Another agent can run generate, WhatIf, update, validation, fast proof, and full proof without guessing.
+
+## Final Release Gate
+
+Run the full release gate only after Phases 2.8A-2.8F are complete:
+
+```powershell
+.\scripts\qa\run-storefront-client-regeneration-gate.ps1
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
+.\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
+```
+
+Phase 2 can be closed only when:
+
+- [ ] route contract parity passes;
+- [ ] fresh candidate regeneration passes;
+- [ ] real `-WhatIf` plan passes;
+- [ ] platform metadata update path passes;
+- [ ] positive update tests pass;
+- [ ] missing/obsolete tests pass;
+- [ ] real rollback test passes;
+- [ ] CI-friendly regeneration ownership gate passes;
+- [ ] full fixture proof runs self-contained;
+- [ ] docs and closure status are updated.
+
+## Not In Scope
+
+- [ ] AI visual generation prompt orchestration.
+- [ ] Semantic Razor/CSS merge.
+- [ ] React/Next/Vue storefront skeletons.
+- [ ] Production deployment of generated stores.
+- [ ] New Commerce Node domain features.
+- [ ] Payment/shipping/tax provider expansion.
+- [ ] Storefront V2 visual redesign.
+
+## Autoplan Review Report
+
+CEO review:
+
+- Keep this as a closure-fix sprint, not a second Phase 2 rewrite.
+- The commercial risk is overwriting edited generated stores or claiming CI confidence without a clean-runner full proof.
+- The most valuable outcome is boring and verifiable: generate, edit, WhatIf, update, build, isolate, browser-test, full-proof.
+
+Engineering review:
+
+- The key architectural correction is fresh candidate generation. Without it, missing/obsolete/update planning cannot be trusted.
+- Route contract truth should be test-driven from Presentation route ownership, because hand-maintained route lists already drifted once.
+- Platform metadata updates should be explicit because `StorefrontPackageVersions.props` is intentionally protected for visual regeneration.
+
+DX review:
+
+- `-WhatIf` must show exact create/update/conflict/obsolete actions, otherwise developers cannot trust update mode.
+- Error messages in new scripts should include problem, cause, and fix.
+- The full proof wrapper should have `-Describe` and clear fixture bootstrap failures.
+
+Design review:
+
+- No visual redesign is needed.
+- Starter remains neutral; generated projects own visual output.
+- The generator should preserve component mobility by binding to Presentation semantic descriptors, not by recreating application behavior.
+
+Decision audit:
+
+| # | Decision | Rationale | Rejected |
+| --- | --- | --- | --- |
+| 1 | Create a new Phase 2.8 file instead of rewriting 05 immediately | Preserve historical plan/evidence and isolate closure fixes. | Editing 05 as if the original plan was still current. |
+| 2 | Use current Presentation route names, not stale review route examples | `/payment-success` and `/payment-cancel` are current code. | Adding `/payment/success` and `/payment/cancel`. |
+| 3 | Make fresh candidate generation the center of regeneration | This is the root cause behind WhatIf, missing, obsolete, and update gaps. | More patching around target-copy staging. |
+| 4 | Separate platform metadata update from visual regeneration | Package/contract upgrades should be explicit and reviewable. | Letting `-Scope all` silently rewrite protected platform files. |
+| 5 | Add self-contained full proof wrapper | Scheduled CI must not depend on manual local setup. | Documenting manual pre-run as sufficient for scheduled proof. |
+
+## Suggested Commit Slices
+
+1. Route contract parity and Starter contract update.
+2. Fresh candidate planner and true `-WhatIf`.
+3. Foundation/platform metadata update path.
+4. Positive regeneration and rollback integration tests.
+5. CI full proof fixture wrapper and workflow update.
+6. Docs and Phase 2 closure evidence cleanup.
+
+Each commit should update this checklist from `[ ]` to `[x]` only after the listed QA for that phase passes.
