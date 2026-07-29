@@ -204,26 +204,26 @@ Goal: keep visual regeneration separate from platform foundation upgrades while 
 
 Tasks:
 
-- [ ] Add an explicit platform update operation. Preferred shape:
-  - [ ] `regenerate-storefront.ps1 -Scope foundation`;
-  - [ ] or `regenerate-storefront.ps1 -Scope all -UpdatePlatformMetadata`.
-- [ ] Use one clear command shape; avoid supporting two overlapping public APIs unless compatibility requires it.
-- [ ] Update generated project metadata from current sources:
-  - [ ] `metadata.yaml.storefrontContractSha256`;
-  - [ ] `metadata.yaml.storefrontContractPath`;
-  - [ ] `metadata.yaml.sourceStarterVersion`;
-  - [ ] `metadata.yaml.starterContractVersion`;
-  - [ ] `metadata.yaml.packageVersions`;
-  - [ ] `metadata.yaml.generatorVersion`;
-  - [ ] `metadata.yaml.updatedUtc`.
-- [ ] Update `StorefrontPackageVersions.props` only in the explicit platform update operation.
-- [ ] Keep `StorefrontPackageVersions.props` protected for visual scopes.
-- [ ] Represent platform-updated files in the plan as `platform metadata update`, not as ordinary visual `update`.
-- [ ] Copy current `starter-generation.contract.yaml` into generated project only during explicit foundation update.
-- [ ] Ensure foundation update still respects safe path/backup/rollback rules.
-- [ ] Ensure metadata updates are schema validated.
-- [ ] Ensure package version updates do not introduce direct Runtime/Client source references in generated projects.
-- [ ] Ensure generated projects continue to consume Presentation/Components directly and Runtime/Client only through package metadata/proof expectations.
+- [x] Add an explicit platform update operation. Preferred shape:
+  - [x] `regenerate-storefront.ps1 -Scope foundation`;
+  - [x] or `regenerate-storefront.ps1 -Scope all -UpdatePlatformMetadata`.
+- [x] Use one clear command shape; avoid supporting two overlapping public APIs unless compatibility requires it.
+- [x] Update generated project metadata from current sources:
+  - [x] `metadata.yaml.storefrontContractSha256`;
+  - [x] `metadata.yaml.storefrontContractPath`;
+  - [x] `metadata.yaml.sourceStarterVersion`;
+  - [x] `metadata.yaml.starterContractVersion`;
+  - [x] `metadata.yaml.packageVersions`;
+  - [x] `metadata.yaml.generatorVersion`;
+  - [x] `metadata.yaml.updatedUtc`.
+- [x] Update `StorefrontPackageVersions.props` only in the explicit platform update operation.
+- [x] Keep `StorefrontPackageVersions.props` protected for visual scopes.
+- [x] Represent platform-updated files in the plan as `platform metadata update`, not as ordinary visual `update`.
+- [x] Copy current `starter-generation.contract.yaml` into generated project only during explicit foundation update.
+- [x] Ensure foundation update still respects safe path/backup/rollback rules.
+- [x] Ensure metadata updates are schema validated.
+- [x] Ensure package version updates do not introduce direct Runtime/Client source references in generated projects.
+- [x] Ensure generated projects continue to consume Presentation/Components directly and Runtime/Client only through package metadata/proof expectations.
 
 Implementation notes:
 
@@ -241,10 +241,10 @@ QA:
 
 Exit gate:
 
-- [ ] Generated metadata can be intentionally upgraded to current contract/package/starter versions.
-- [ ] Visual regeneration cannot silently change platform metadata.
-- [ ] Foundation update is planned, reported, validated, and rollback-safe.
-- [ ] Isolation gate still passes after metadata/package update.
+- [x] Generated metadata can be intentionally upgraded to current contract/package/starter versions.
+- [x] Visual regeneration cannot silently change platform metadata.
+- [x] Foundation update is planned, reported, validated, and rollback-safe.
+- [x] Isolation gate still passes after metadata/package update.
 
 ## Phase 2.8D - Regeneration Test Hardening
 

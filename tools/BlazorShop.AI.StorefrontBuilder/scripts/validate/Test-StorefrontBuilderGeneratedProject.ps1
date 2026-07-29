@@ -39,7 +39,7 @@ if (-not $packageVersions.Contains("StorefrontClientPackageVersion", [System.Str
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
 $canonicalContractPath = "contracts/storefront/storefront.openapi.json"
-foreach ($required in @("generatorVersion:", "createdUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterVersion:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterVersion:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
     if (-not $metadataText.Contains($required, [System.StringComparison]::Ordinal)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
@@ -58,6 +58,11 @@ if (-not $starterVersionMatch.Success) {
 $createdUtcMatch = [regex]::Match($metadataText, "(?m)^createdUtc:\s*\d{4}-\d{2}-\d{2}T.+Z\s*$")
 if (-not $createdUtcMatch.Success) {
     throw "[SFB-PROJECT-009] metadata.yaml must contain an ISO-8601 UTC createdUtc timestamp."
+}
+
+$updatedUtcMatch = [regex]::Match($metadataText, "(?m)^updatedUtc:\s*\d{4}-\d{2}-\d{2}T.+Z\s*$")
+if (-not $updatedUtcMatch.Success) {
+    throw "[SFB-PROJECT-009] metadata.yaml must contain an ISO-8601 UTC updatedUtc timestamp."
 }
 
 foreach ($packageVersionMarker in @("BlazorShop.Storefront.Client:", "BlazorShop.Storefront.Runtime:", "BlazorShop.Storefront.Presentation:", "BlazorShop.Storefront.Components:")) {

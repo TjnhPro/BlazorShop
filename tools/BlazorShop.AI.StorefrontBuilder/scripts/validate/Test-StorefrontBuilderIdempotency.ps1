@@ -126,7 +126,7 @@ foreach ($entry in $entries) {
             throw "[SFB-IDEMPOTENCY-002] Protected files must never be modified: $filePath"
         }
 
-        throw "[SFB-IDEMPOTENCY-011] Manifest currentHash is stale for '$filePath'. Rerun conflict detection."
+        throw "[SFB-IDEMPOTENCY-011] Manifest currentHash is stale for '$filePath'. Expected '$($entry["currentHash"])' but found '$actualHash'. Rerun conflict detection."
     }
 
     if ($validOwnership -notcontains $entry["ownership"]) {

@@ -95,6 +95,7 @@ namespace BlazorShop.Tests.Architecture
                 "storefrontContractSha256:",
                 "generatorVersion:",
                 "createdUtc:",
+                "updatedUtc:",
                 "sourceStarterVersion:",
                 "starterContractVersion:",
                 "packageVersions:",
@@ -108,9 +109,11 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("\"storefrontContractPath\"", metadataSchema, StringComparison.Ordinal);
             Assert.Contains("\"storefrontContractSha256\"", metadataSchema, StringComparison.Ordinal);
+            Assert.Contains("\"updatedUtc\"", metadataSchema, StringComparison.Ordinal);
             Assert.Contains("\"pattern\": \"^[a-f0-9]{64}$\"", metadataSchema, StringComparison.Ordinal);
             Assert.Contains("\"storefrontContractPath\": \"contracts/storefront/storefront.openapi.json\"", validFixture, StringComparison.Ordinal);
             Assert.Contains("\"storefrontContractSha256\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\"", validFixture, StringComparison.Ordinal);
+            Assert.Contains("\"updatedUtc\": \"2026-07-24T00:00:00Z\"", validFixture, StringComparison.Ordinal);
             Assert.Contains("\"starterContractVersion\": \"1\"", validFixture, StringComparison.Ordinal);
             Assert.Contains("\"packageVersions\"", validFixture, StringComparison.Ordinal);
         }
@@ -151,6 +154,7 @@ namespace BlazorShop.Tests.Architecture
                 "SFB-PROJECT-011",
                 "generatorVersion:",
                 "createdUtc:",
+                "updatedUtc:",
                 "commandMode:",
                 "normalizedProjectName:",
             })

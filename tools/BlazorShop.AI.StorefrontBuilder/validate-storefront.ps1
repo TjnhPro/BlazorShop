@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectRoot,
     [string]$Name = "",
-    [string]$StoreKey = ""
+    [string]$StoreKey = "",
+    [switch]$SkipIdempotency
 )
 
 $ErrorActionPreference = "Stop"
@@ -45,4 +46,4 @@ if ([string]::IsNullOrWhiteSpace($StoreKey)) {
 }
 
 # validate-storefront command entrypoint.
-& "$PSScriptRoot/scripts/validate/Test-StorefrontBuilderStaticGate.ps1" -ProjectRoot $resolvedProjectRoot -Name $Name -StoreKey $StoreKey
+& "$PSScriptRoot/scripts/validate/Test-StorefrontBuilderStaticGate.ps1" -ProjectRoot $resolvedProjectRoot -Name $Name -StoreKey $StoreKey -SkipIdempotency:$SkipIdempotency

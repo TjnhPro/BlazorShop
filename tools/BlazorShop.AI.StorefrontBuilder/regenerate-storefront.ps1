@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectRoot,
-    [ValidateSet("all", "page", "component", "css", "validate", "conflicts")]
+    [ValidateSet("all", "page", "component", "css", "foundation", "validate", "conflicts")]
     [string]$Scope = "all",
     [string]$Target = "",
     [switch]$WhatIf,
@@ -79,6 +79,15 @@ function Get-NormalizedFileHash {
     return "sha256:$hex"
 }
 
+function Test-PlatformMetadataPath {
+    param([string]$FilePath)
+
+    $normalized = $FilePath.Replace("\", "/")
+    return $normalized -eq "docs/storefront-analysis/metadata.yaml" `
+        -or $normalized -eq "StorefrontPackageVersions.props" `
+        -or $normalized -eq "starter-generation.contract.yaml"
+}
+
 function Test-ScopeMatch {
     param(
         [hashtable]$Entry,
@@ -88,6 +97,10 @@ function Test-ScopeMatch {
 
     if ($Scope -eq "all") {
         return $true
+    }
+
+    if ($Scope -eq "foundation") {
+        return Test-PlatformMetadataPath -FilePath $Entry["filePath"]
     }
 
     if ($Scope -eq "css") {
@@ -149,6 +162,19 @@ function New-RegenerationPlan {
             $action = "skip out-of-scope"
             $reason = "Entry is outside requested scope."
         }
+        elseif ($Scope -eq "foundation" -and (Test-PlatformMetadataPath -FilePath $filePath)) {
+            if ($candidateHash -eq "none") {
+                $action = "skip protected"
+                $reason = "Current Starter candidate does not produce this platform file."
+            }
+            elseif ($targetHash -eq $candidateHash) {
+                $reason = "Platform metadata already matches the current Starter/template source."
+            }
+            else {
+                $action = "platform metadata update"
+                $reason = "Explicit foundation update refreshes generated metadata, package compatibility metadata, or Starter contract copy."
+            }
+        }
         elseif ($ownership -eq "protected") {
             $action = "skip protected"
             $reason = "Protected files are never overwritten."
@@ -203,7 +229,7 @@ function New-RegenerationPlan {
             reason = $reason
             ownership = $ownership
             scope = $entry["scope"]
-            changed = ($action -eq "create" -or $action -eq "update")
+            changed = ($action -eq "create" -or $action -eq "update" -or $action -eq "platform metadata update")
             targetHash = $targetHash
             candidateHash = $candidateHash
             previousGeneratedHash = $previousGeneratedHash
@@ -225,6 +251,7 @@ function Write-RegenerationReport {
     )
 
     $changed = @($Plan | Where-Object { $_["changed"] -eq $true })
+    $platformUpdates = @($Plan | Where-Object { $_["action"] -eq "platform metadata update" })
     $skipped = @($Plan | Where-Object { $_["action"].StartsWith("skip", [System.StringComparison]::Ordinal) })
     $conflicts = @($Plan | Where-Object { $_["action"].StartsWith("conflict", [System.StringComparison]::Ordinal) })
     $obsolete = @($Plan | Where-Object { $_["action"] -eq "obsolete candidate" })
@@ -236,6 +263,7 @@ function Write-RegenerationReport {
     $lines.Add("- Regenerate one page: supported by `-Scope page -Target <path>`.")
     $lines.Add("- Regenerate one component: supported by `-Scope component -Target <path>`.")
     $lines.Add("- Regenerate only CSS tokens: supported by `-Scope css`.")
+    $lines.Add("- Update platform metadata/package contract files: supported by `-Scope foundation`.")
     $lines.Add("- Validate without writing: supported by `-WhatIf` or `-Scope validate`.")
     $lines.Add("- Show conflict report: supported by `-Scope conflicts`.")
     $lines.Add("- No-op result: no unexpected file changes.")
@@ -251,6 +279,10 @@ function Write-RegenerationReport {
     $lines.Add("## Changed Files")
     $lines.Add("")
     Add-PlanLines -Lines $lines -Items $changed
+    $lines.Add("")
+    $lines.Add("## Platform Metadata Updates")
+    $lines.Add("")
+    Add-PlanLines -Lines $lines -Items $platformUpdates
     $lines.Add("")
     $lines.Add("## Skipped Files")
     $lines.Add("")
@@ -339,6 +371,94 @@ function Read-GeneratedStorefrontMetadata {
     }
 }
 
+function Get-YamlTopLevelBlock {
+    param(
+        [string[]]$Lines,
+        [string]$Key
+    )
+
+    for ($index = 0; $index -lt $Lines.Count; $index++) {
+        if ($Lines[$index] -match "^$([regex]::Escape($Key)):\s*") {
+            $end = $index + 1
+            while ($end -lt $Lines.Count -and ($Lines[$end] -match "^\s+" -or [string]::IsNullOrWhiteSpace($Lines[$end]))) {
+                $end++
+            }
+
+            return @{
+                Start = $index
+                End = $end
+                Lines = @($Lines[$index..($end - 1)])
+            }
+        }
+    }
+
+    return $null
+}
+
+function Set-YamlTopLevelBlock {
+    param(
+        [string]$BaseText,
+        [string]$SourceText,
+        [string]$Key
+    )
+
+    $baseLines = @($BaseText -split "\r?\n")
+    $sourceLines = @($SourceText -split "\r?\n")
+    if ($baseLines.Count -gt 0 -and $baseLines[$baseLines.Count - 1] -eq "") {
+        $baseLines = if ($baseLines.Count -gt 1) { @($baseLines[0..($baseLines.Count - 2)]) } else { @() }
+    }
+    if ($sourceLines.Count -gt 0 -and $sourceLines[$sourceLines.Count - 1] -eq "") {
+        $sourceLines = if ($sourceLines.Count -gt 1) { @($sourceLines[0..($sourceLines.Count - 2)]) } else { @() }
+    }
+
+    $baseBlock = Get-YamlTopLevelBlock -Lines $baseLines -Key $Key
+    $sourceBlock = Get-YamlTopLevelBlock -Lines $sourceLines -Key $Key
+    if ($null -eq $sourceBlock) {
+        return $BaseText
+    }
+
+    if ($null -eq $baseBlock) {
+        return (($baseLines + $sourceBlock.Lines) -join "`n") + "`n"
+    }
+
+    $merged = [System.Collections.Generic.List[string]]::new()
+    for ($index = 0; $index -lt $baseBlock.Start; $index++) {
+        $merged.Add($baseLines[$index])
+    }
+    foreach ($line in $sourceBlock.Lines) {
+        $merged.Add($line)
+    }
+    for ($index = $baseBlock.End; $index -lt $baseLines.Count; $index++) {
+        $merged.Add($baseLines[$index])
+    }
+
+    return ($merged -join "`n") + "`n"
+}
+
+function Update-CandidateFoundationMetadata {
+    param(
+        [Parameter(Mandatory = $true)][string]$TargetMetadataPath,
+        [Parameter(Mandatory = $true)][string]$CandidateMetadataPath
+    )
+
+    $targetText = Get-Content -LiteralPath $TargetMetadataPath -Raw
+    $candidateText = Get-Content -LiteralPath $CandidateMetadataPath -Raw
+    $merged = $targetText
+    foreach ($key in @(
+        "generatorVersion",
+        "storefrontContractSha256",
+        "storefrontContractPath",
+        "sourceStarterVersion",
+        "starterContractVersion",
+        "packageVersions",
+        "updatedUtc"
+    )) {
+        $merged = Set-YamlTopLevelBlock -BaseText $merged -SourceText $candidateText -Key $key
+    }
+
+    Set-Content -LiteralPath $CandidateMetadataPath -Value $merged -Encoding UTF8
+}
+
 function Invoke-RegenerationCandidateGeneration {
     param(
         [Parameter(Mandatory = $true)][string]$CandidateOutputRoot,
@@ -400,6 +520,19 @@ if ($Scope -eq "conflicts") {
 try {
     Invoke-RegenerationCandidateGeneration -CandidateOutputRoot $candidateOutputRoot -ProjectName $projectName -StoreKey $storeKey
 
+    $candidateMetadataPath = Join-Path $candidateProjectRoot "docs\storefront-analysis\metadata.yaml"
+    if ($Scope -eq "foundation" -and (Test-Path -LiteralPath $metadataPath) -and (Test-Path -LiteralPath $candidateMetadataPath)) {
+        Update-CandidateFoundationMetadata -TargetMetadataPath $metadataPath -CandidateMetadataPath $candidateMetadataPath
+        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $candidateProjectRoot --intentional-changes "docs/storefront-analysis/metadata.yaml"
+        if ($LASTEXITCODE -ne 0) { throw "[SFB-REGEN-014] Failed to prepare foundation metadata in regeneration candidate." }
+    }
+    elseif ($Scope -ne "foundation" -and (Test-Path -LiteralPath $metadataPath)) {
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $candidateMetadataPath) | Out-Null
+        Copy-Item -LiteralPath $metadataPath -Destination $candidateMetadataPath -Force
+        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $candidateProjectRoot
+        if ($LASTEXITCODE -ne 0) { throw "[SFB-REGEN-013] Failed to preserve target metadata in regeneration candidate." }
+    }
+
     $originalEntries = Read-GeneratedFileManifestEntries -ManifestPath $manifestPath
     $candidateEntries = Read-GeneratedFileManifestEntries -ManifestPath (Join-Path $candidateProjectRoot "docs\storefront-analysis\generated-files.yaml")
     $plan = New-RegenerationPlan -TargetProjectRoot $resolvedProjectRoot -CandidateProjectRoot $candidateProjectRoot -TargetEntries $originalEntries -CandidateEntries $candidateEntries -Scope $Scope -Target $Target
@@ -420,7 +553,7 @@ try {
     }
 
     if ($ValidateAfterApply) {
-        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $resolvedProjectRoot
+        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $resolvedProjectRoot -SkipIdempotency
         if ($LASTEXITCODE -ne 0) {
             $validationResult = "failed"
             throw "[SFB-REGEN-011] Post-regeneration validation failed."
@@ -440,7 +573,9 @@ try {
         $buildResult = "passed"
     }
 
-    node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $resolvedProjectRoot
+    $intentionalChanges = @($plan | Where-Object { $_["changed"] -eq $true } | ForEach-Object { $_["filePath"] })
+    $intentionalChangesArgument = [string]::Join(",", $intentionalChanges)
+    node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $resolvedProjectRoot --intentional-changes $intentionalChangesArgument
     if ($LASTEXITCODE -ne 0) { throw "[SFB-REGEN-012] Failed to update the target generated-file manifest." }
 
     & "$PSScriptRoot/scripts/validate/Test-StorefrontBuilderIdempotency.ps1" -ProjectRoot $resolvedProjectRoot

@@ -9,11 +9,12 @@ import {
 } from "./generated-file-manifest.mjs";
 
 const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
+const intentionalChanges = new Set(readListArg("--intentional-changes"));
 const output = `${projectRoot}/docs/storefront-analysis/generated-files.yaml`;
 const report = `${projectRoot}/docs/storefront-analysis/regeneration-report.md`;
 
 const previousEntries = readPreviousManifest(output);
-const entries = buildManifestEntries(projectRoot, previousEntries);
+const entries = buildManifestEntries(projectRoot, previousEntries, intentionalChanges);
 
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, writeManifestYaml(entries), "utf8");
@@ -23,4 +24,16 @@ console.log(`Updated generated file manifest at ${output}`);
 function readArg(name) {
   const index = process.argv.indexOf(name);
   return index === -1 ? undefined : process.argv[index + 1];
+}
+
+function readListArg(name) {
+  const value = readArg(name);
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((item) => item.trim().replaceAll("\\", "/"))
+    .filter(Boolean);
 }

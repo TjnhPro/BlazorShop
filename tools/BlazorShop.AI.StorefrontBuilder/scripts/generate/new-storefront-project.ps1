@@ -104,12 +104,14 @@ try {
 
     [xml]$packageVersionDocument = Get-Content -LiteralPath $versionPropsPath -Raw
     $packageVersions = $packageVersionDocument.Project.PropertyGroup
+    $metadataTimestampUtc = [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ")
 
     $metadata = @(
         "schemaVersion: 1.0.0",
         "artifactKind: generated-storefront-metadata",
         "generatorVersion: $script:StorefrontBuilderGeneratorVersion",
-        "createdUtc: $([System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ"))",
+        "createdUtc: $metadataTimestampUtc",
+        "updatedUtc: $metadataTimestampUtc",
         "commandMode: $CommandMode",
         "projectName: $projectName",
         "normalizedProjectName: $projectName",

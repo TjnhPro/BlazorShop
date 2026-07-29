@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Name,
     [Parameter(Mandatory = $true)]
-    [string]$StoreKey
+    [string]$StoreKey,
+    [switch]$SkipIdempotency
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,7 +18,9 @@ $repoRoot = Resolve-Path (Join-Path $toolRoot "..\..")
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCss.ps1") -ProjectRoot $ProjectRoot
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCompositionFiles.ps1") -ProjectRoot $ProjectRoot
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderGuard.ps1") -ProjectRoot $ProjectRoot
-& (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderIdempotency.ps1") -ProjectRoot $ProjectRoot
+if (-not $SkipIdempotency) {
+    & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderIdempotency.ps1") -ProjectRoot $ProjectRoot
+}
 
 $analysisRoot = Join-Path $ProjectRoot "docs\storefront-analysis"
 foreach ($artifact in @("metadata.yaml", "asset-manifest.yaml", "generated-files.yaml")) {

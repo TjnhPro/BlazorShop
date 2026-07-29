@@ -27,7 +27,7 @@ export function readPreviousManifest(manifestPath) {
   return new Map(entries.map((entry) => [entry.filePath, entry]));
 }
 
-export function buildManifestEntries(projectRoot, previousEntries) {
+export function buildManifestEntries(projectRoot, previousEntries, intentionalUpdatePaths = new Set()) {
   const now = new Date().toISOString();
   const scanned = scanProjectFiles(projectRoot);
   const sourceSpecHash = `sha256:${sha(scanned.map((file) => `${file.filePath}:${file.hash}`).join("|") || sourceSpecSeed)}`;
@@ -40,7 +40,8 @@ export function buildManifestEntries(projectRoot, previousEntries) {
     const previousGeneratedHash = previous?.generatedHash && previous.generatedHash !== "none"
       ? previous.generatedHash
       : undefined;
-    const manualEditDetected = Boolean(previousGeneratedHash && previousGeneratedHash !== file.hash);
+    const intentionalUpdate = intentionalUpdatePaths.has(file.filePath);
+    const manualEditDetected = !intentionalUpdate && Boolean(previousGeneratedHash && previousGeneratedHash !== file.hash);
     const unchangedFromPrevious = previous?.currentHash === file.hash && previous?.lastGeneratedTimestamp;
     const conflict = classifyConflict(descriptor.ownership, manualEditDetected, file.filePath, previous);
 
@@ -54,7 +55,7 @@ export function buildManifestEntries(projectRoot, previousEntries) {
       sourceSpecHash,
       generatedHash: manualEditDetected ? previousGeneratedHash : file.hash,
       currentHash: file.hash,
-      lastGeneratedTimestamp: (manualEditDetected || unchangedFromPrevious) && previous?.lastGeneratedTimestamp ? previous.lastGeneratedTimestamp : now,
+      lastGeneratedTimestamp: (manualEditDetected || (unchangedFromPrevious && !intentionalUpdate)) && previous?.lastGeneratedTimestamp ? previous.lastGeneratedTimestamp : now,
       manualEditDetected: String(manualEditDetected),
       conflictStatus: conflict.status,
       conflictReason: conflict.reason,
@@ -218,6 +219,10 @@ function sha(value) {
 function classifyFile(filePath) {
   if (filePath === "StorefrontPackageVersions.props" || filePath === "starter-generation.contract.yaml") {
     return descriptor("protected", "SEO/media/consent support", "project", ["metadata.yaml"]);
+  }
+
+  if (filePath === "docs/storefront-analysis/metadata.yaml") {
+    return descriptor("managed", "platform metadata", "project", ["metadata.yaml"]);
   }
 
   if (filePath.startsWith("docs/storefront-analysis/")) {
