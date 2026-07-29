@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
+using BlazorShop.Storefront.Components.Headless.Product;
 using BlazorShop.Storefront.Presentation.Services.Product;
 using Xunit;
 
@@ -151,6 +152,112 @@ public sealed class StorefrontProductDecisionContextTests
         Assert.Equal("USD 45.00", variant.PriceDisplay);
         Assert.Equal("Out of stock", variant.StockLabel);
         Assert.Equal("out-of-stock", variant.AvailabilityState);
+    }
+
+    [Fact]
+    public void ProductPageMapper_SelectsVariationOptionValuesFromDefaultVariantAttributes()
+    {
+        var context = MapProduct(new GetProduct
+        {
+            Id = Guid.NewGuid(),
+            Name = "Template product",
+            Price = 50m,
+            Purchasable = true,
+            CreatedOn = DateTime.UtcNow.AddDays(-30),
+            VariationTemplate = new StorefrontVariationTemplateDto(
+                "Color and size",
+                "color-size",
+                [
+                    new StorefrontVariationOptionDto(
+                        "Color",
+                        "radio",
+                        true,
+                        [
+                            new StorefrontVariationValueDto("Red", "#ff0000"),
+                            new StorefrontVariationValueDto("Blue", "#0000ff"),
+                        ]),
+                    new StorefrontVariationOptionDto(
+                        "Size",
+                        "select",
+                        true,
+                        [
+                            new StorefrontVariationValueDto("Small"),
+                            new StorefrontVariationValueDto("Large"),
+                        ]),
+                ]),
+            Variants =
+            [
+                new GetProductVariant
+                {
+                    Id = Guid.NewGuid(),
+                    Sku = "BLUE-L",
+                    Stock = 5,
+                    IsDefault = true,
+                    Attributes =
+                    [
+                        new ProductVariantAttributeDto { Name = "Color", Value = "Blue" },
+                        new ProductVariantAttributeDto { Name = "Size", Value = "Large" },
+                    ],
+                },
+            ],
+        });
+
+        var color = Assert.Single(context.PurchasePanel.VariationOptions, option => option.Name == "Color");
+        var size = Assert.Single(context.PurchasePanel.VariationOptions, option => option.Name == "Size");
+
+        Assert.False(Assert.Single(color.Values, value => value.Value == "Red").IsSelected);
+        Assert.True(Assert.Single(color.Values, value => value.Value == "Blue").IsSelected);
+        Assert.False(Assert.Single(size.Values, value => value.Value == "Small").IsSelected);
+        Assert.True(Assert.Single(size.Values, value => value.Value == "Large").IsSelected);
+
+        var selection = ProductPurchaseSelectionState.FromSnapshot(context.PurchasePanel);
+        Assert.Equal("Blue", selection.SelectedAttributes["Color"]);
+        Assert.Equal("Large", selection.SelectedAttributes["Size"]);
+    }
+
+    [Fact]
+    public void ProductPageMapper_DoesNotSelectFirstRequiredVariationValueWithoutValidDefaultVariant()
+    {
+        var context = MapProduct(new GetProduct
+        {
+            Id = Guid.NewGuid(),
+            Name = "Template product without default",
+            Price = 50m,
+            Purchasable = true,
+            CreatedOn = DateTime.UtcNow.AddDays(-30),
+            VariationTemplate = new StorefrontVariationTemplateDto(
+                "Color",
+                "color",
+                [
+                    new StorefrontVariationOptionDto(
+                        "Color",
+                        "radio",
+                        true,
+                        [
+                            new StorefrontVariationValueDto("Red", "#ff0000"),
+                            new StorefrontVariationValueDto("Blue", "#0000ff"),
+                        ]),
+                ]),
+            Variants =
+            [
+                new GetProductVariant
+                {
+                    Id = Guid.NewGuid(),
+                    Sku = "BLUE",
+                    Stock = 5,
+                    IsDefault = true,
+                    Attributes =
+                    [
+                        new ProductVariantAttributeDto { Name = "Color", Value = "Green" },
+                    ],
+                },
+            ],
+        });
+
+        var color = Assert.Single(context.PurchasePanel.VariationOptions);
+
+        Assert.All(color.Values, value => Assert.False(value.IsSelected));
+        Assert.Empty(ProductPurchaseSelectionState.FromSnapshot(context.PurchasePanel).SelectedAttributes);
     }
 
     [Fact]

@@ -159,6 +159,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("data-sku=\"@Model.InitialSku\"", purchasePanel);
             Assert.Contains("data-gtin=\"@Model.InitialGtin\"", purchasePanel);
             Assert.Contains("data-storefront-purchase-attribute", purchasePanel);
+            Assert.Contains("checked=\"@value.IsSelected\"", purchasePanel);
+            Assert.Contains("selected=\"@value.IsSelected\"", purchasePanel);
+            Assert.DoesNotContain("ShouldSelectOptionValue", purchasePanel, StringComparison.Ordinal);
+            Assert.DoesNotContain("values[0]", purchasePanel, StringComparison.Ordinal);
+            Assert.Contains("bool IsSelected", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseOptionValueItem.cs"), StringComparison.Ordinal);
             Assert.Contains("data-storefront-purchase-quantity", purchasePanel);
             Assert.Contains("data-storefront-selection-price", markup);
             Assert.Contains("data-storefront-selection-stock", markup);

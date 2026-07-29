@@ -38,7 +38,7 @@ public sealed record ProductPurchaseSelectionState(
     {
         return new ProductPurchaseSelectionState(
             model.ResolvedVariantId,
-            new Dictionary<string, string>(StringComparer.Ordinal),
+            ResolveSelectedAttributes(model),
             model.MinOrderQuantity,
             model.InitialValidationMessages,
             model.CanSubmitInitialPurchase,
@@ -47,6 +47,21 @@ public sealed record ProductPurchaseSelectionState(
             false,
             null,
             false);
+    }
+
+    private static IReadOnlyDictionary<string, string> ResolveSelectedAttributes(ProductPurchasePanelModel model)
+    {
+        return model.VariationOptions
+            .Select(option => new
+            {
+                option.Name,
+                Value = option.Values.FirstOrDefault(value => value.IsSelected)?.Value,
+            })
+            .Where(selection => !string.IsNullOrWhiteSpace(selection.Name) && !string.IsNullOrWhiteSpace(selection.Value))
+            .ToDictionary(
+                selection => selection.Name,
+                selection => selection.Value!,
+                StringComparer.Ordinal);
     }
 }
 

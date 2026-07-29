@@ -117,15 +117,17 @@ public static class StorefrontProductPageMapper
         var displayCurrencyCode = ResolveDisplayCurrencyCode(product, displayContext);
         var displayPriceAmount = ResolveDisplayPriceAmount(product);
         var activeVariationOptions = ActiveVariationOptions(product);
+        var selectedVariationAttributes = ResolveSelectedVariationAttributes(product, activeVariationOptions);
         var canSubmitInitialPurchase = CanSubmitInitialPurchase(product);
+        var defaultVariant = product.Variants.FirstOrDefault(variant => variant.IsDefault);
 
         return new ProductPurchasePanelModel(
             product.Id,
             string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
             displayCurrencyCode,
             displayPriceAmount.ToString("0.00", CultureInfo.InvariantCulture),
-            product.Variants.FirstOrDefault(variant => variant.IsDefault)?.Id,
-            product.Variants.FirstOrDefault(variant => variant.IsDefault)?.Sku ?? product.Sku,
+            defaultVariant?.Id,
+            defaultVariant?.Sku ?? product.Sku,
             product.Gtin,
             galleryItems.FirstOrDefault()?.ImageUrl,
             ResolveInitialStockValue(product),
@@ -148,7 +150,10 @@ public static class StorefrontProductPageMapper
                     option.IsRequired,
                     option.ControlType,
                     ActiveVariationValues(option)
-                        .Select(value => new ProductPurchaseOptionValueItem(value.Value!, value.ColorHex))
+                        .Select(value => new ProductPurchaseOptionValueItem(
+                            value.Value!,
+                            value.ColorHex,
+                            IsSelectedVariationValue(option, value, selectedVariationAttributes)))
                         .ToArray()))
                 .ToArray(),
             product.Variants
@@ -391,6 +396,64 @@ public static class StorefrontProductPageMapper
         return option.Values
             .Where(value => !string.IsNullOrWhiteSpace(value.Value))
             .ToArray();
+    }
+
+    private static IReadOnlyDictionary<string, string> ResolveSelectedVariationAttributes(
+        GetProduct product,
+        IReadOnlyList<StorefrontVariationOptionDto> activeVariationOptions)
+    {
+        if (activeVariationOptions.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        var defaultVariant = product.Variants.FirstOrDefault(variant => variant.IsDefault);
+        if (defaultVariant is null)
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        var selectedAttributes = defaultVariant.Attributes
+            .Where(attribute => !string.IsNullOrWhiteSpace(attribute.Name) && !string.IsNullOrWhiteSpace(attribute.Value))
+            .ToDictionary(
+                attribute => attribute.Name.Trim(),
+                attribute => attribute.Value.Trim(),
+                StringComparer.OrdinalIgnoreCase);
+
+        if (selectedAttributes.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        var validSelections = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var option in activeVariationOptions)
+        {
+            var optionName = option.Name!.Trim();
+            if (!selectedAttributes.TryGetValue(optionName, out var selectedValue))
+            {
+                continue;
+            }
+
+            var hasMatchingValue = ActiveVariationValues(option)
+                .Any(value => string.Equals(value.Value, selectedValue, StringComparison.Ordinal));
+            if (hasMatchingValue)
+            {
+                validSelections[optionName] = selectedValue;
+            }
+        }
+
+        return validSelections;
+    }
+
+    private static bool IsSelectedVariationValue(
+        StorefrontVariationOptionDto option,
+        StorefrontVariationValueDto value,
+        IReadOnlyDictionary<string, string> selectedVariationAttributes)
+    {
+        return !string.IsNullOrWhiteSpace(option.Name)
+            && !string.IsNullOrWhiteSpace(value.Value)
+            && selectedVariationAttributes.TryGetValue(option.Name.Trim(), out var selectedValue)
+            && string.Equals(selectedValue, value.Value, StringComparison.Ordinal);
     }
 
     private static string? NormalizeCurrencyCode(string? currencyCode)

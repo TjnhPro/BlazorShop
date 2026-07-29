@@ -57,7 +57,7 @@
                                            type="radio"
                                            name="@OptionInputName(option)"
                                            value="@value.Value"
-                                           checked="@ShouldSelectOptionValue(option, value)"
+                                           checked="@value.IsSelected"
                                            data-storefront-purchase-attribute
                                            data-storefront-purchase-attribute-name="@option.Name"
                                            class="h-4 w-4 accent-neutral-900" />
@@ -77,7 +77,7 @@
                                            type="radio"
                                            name="@OptionInputName(option)"
                                            value="@value.Value"
-                                           checked="@ShouldSelectOptionValue(option, value)"
+                                           checked="@value.IsSelected"
                                            data-storefront-purchase-attribute
                                            data-storefront-purchase-attribute-name="@option.Name"
                                            class="sr-only" />
@@ -100,7 +100,7 @@
 
                             @foreach (var value in ActiveVariationValues(option))
                             {
-                                <option value="@value.Value" selected="@ShouldSelectOptionValue(option, value)">@value.Value</option>
+                                <option value="@value.Value" selected="@value.IsSelected">@value.Value</option>
                             }
                         </select>
                     }
@@ -191,14 +191,6 @@
     private static bool IsColorControl(ProductPurchaseOptionItem option)
     {
         return string.Equals(option.ControlType, "color", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool ShouldSelectOptionValue(ProductPurchaseOptionItem option, ProductPurchaseOptionValueItem value)
-    {
-        var values = ActiveVariationValues(option);
-        return option.IsRequired
-            && values.Count > 0
-            && string.Equals(values[0].Value, value.Value, StringComparison.Ordinal);
     }
 
     private static string OptionInputId(ProductPurchaseOptionItem option)
