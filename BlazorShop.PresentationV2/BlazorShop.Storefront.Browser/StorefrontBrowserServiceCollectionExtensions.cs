@@ -34,21 +34,21 @@ public static class StorefrontBrowserServiceCollectionExtensions
     public static IServiceCollection AddStorefrontBrowserCart(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.TryAddScoped<IStorefrontBrowserCartController, StorefrontBrowserCartController>();
+        services.TryAddTransient<IStorefrontBrowserCartController, StorefrontBrowserCartController>();
         return services;
     }
 
     public static IServiceCollection AddStorefrontBrowserCheckout(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.TryAddScoped<IStorefrontBrowserCheckoutController, StorefrontBrowserCheckoutController>();
+        services.TryAddTransient<IStorefrontBrowserCheckoutController, StorefrontBrowserCheckoutController>();
         return services;
     }
 
     public static IServiceCollection AddStorefrontBrowserAccount(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.TryAddScoped<IStorefrontBrowserAccountController, StorefrontBrowserAccountController>();
+        services.TryAddTransient<IStorefrontBrowserAccountController, StorefrontBrowserAccountController>();
         return services;
     }
 }

@@ -88,7 +88,7 @@ public sealed class StorefrontBrowserActionDescriptorProviderTests
         Assert.Contains("StorefrontAccountAddressActionDescriptor AddressActions", accountContext, StringComparison.Ordinal);
         Assert.Contains("StorefrontAccountOrderActionDescriptor OrderActions", accountContext, StringComparison.Ordinal);
         Assert.Contains("AccountRouteDescriptor RouteDescriptor", accountContext, StringComparison.Ordinal);
-        Assert.Contains("IReadOnlyList<AccountNavigationItem> NavigationItems", accountContext, StringComparison.Ordinal);
+        Assert.Contains("AccountNavigationItem[] NavigationItems", accountContext, StringComparison.Ordinal);
         Assert.Contains("ProfileActions = this.actionDescriptorProvider.CreateAccountProfileActions()", accountService, StringComparison.Ordinal);
         Assert.Contains("PasswordActions = this.actionDescriptorProvider.CreateAccountPasswordActions()", accountService, StringComparison.Ordinal);
         Assert.Contains("AddressActions = this.actionDescriptorProvider.CreateAccountAddressActions()", accountService, StringComparison.Ordinal);

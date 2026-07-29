@@ -98,6 +98,76 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task PlaceOrderAsync_KeepsIdempotencyKeyForRetryWithinSameSession()
+        {
+            var sessionId = Guid.NewGuid();
+            var error = JsonSerializer.Serialize(
+                new StorefrontLocalApiErrorResponse("Try again.", "checkout.retry", null, null, true, 503),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var handler = new QueueingHandler(
+                new StringContent(error, Encoding.UTF8, "application/json"), HttpStatusCode.ServiceUnavailable,
+                new StringContent(error, Encoding.UTF8, "application/json"), HttpStatusCode.ServiceUnavailable);
+            var controller = CreateController(handler);
+            controller.Initialize(CreateState(sessionId, cartVersion: 6, checkoutVersion: 9), showPanel: true, StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            await controller.PlaceOrderAsync();
+            await controller.PlaceOrderAsync();
+
+            Assert.Equal(ExtractIdempotencyKey(handler.RequestBodies[0]), ExtractIdempotencyKey(handler.RequestBodies[1]));
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_RotatesIdempotencyKeyWhenCheckoutSessionChanges()
+        {
+            var firstSessionId = Guid.NewGuid();
+            var secondSessionId = Guid.NewGuid();
+            var error = JsonSerializer.Serialize(
+                new StorefrontLocalApiErrorResponse("Try again.", "checkout.retry", null, null, true, 503),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var handler = new QueueingHandler(
+                new StringContent(error, Encoding.UTF8, "application/json"), HttpStatusCode.ServiceUnavailable,
+                new StringContent(error, Encoding.UTF8, "application/json"), HttpStatusCode.ServiceUnavailable);
+            var controller = CreateController(handler);
+            controller.Initialize(CreateState(firstSessionId, cartVersion: 6, checkoutVersion: 9), showPanel: true, StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            await controller.PlaceOrderAsync();
+            controller.Initialize(CreateState(secondSessionId, cartVersion: 1, checkoutVersion: 1), showPanel: true, StorefrontFeatureDataMode.InitialSnapshot, Actions);
+            await controller.PlaceOrderAsync();
+
+            Assert.NotEqual(ExtractIdempotencyKey(handler.RequestBodies[0]), ExtractIdempotencyKey(handler.RequestBodies[1]));
+            Assert.Contains($"\"checkoutSessionId\":\"{secondSessionId:D}\"", handler.RequestBodies[1], StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_RotatesIdempotencyKeyAfterSuccessfulOrderPlacement()
+        {
+            var sessionId = Guid.NewGuid();
+            var handler = new QueueingHandler(
+                new StorefrontBrowserCheckoutPlaceOrderResult(true, "Placed", "ORDER-1", "/orders/ORDER-1"),
+                new StorefrontBrowserCheckoutPlaceOrderResult(true, "Placed", "ORDER-1", "/orders/ORDER-1"));
+            var controller = CreateController(handler);
+            controller.Initialize(CreateState(sessionId, cartVersion: 6, checkoutVersion: 9), showPanel: true, StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            await controller.PlaceOrderAsync();
+            await controller.PlaceOrderAsync();
+
+            Assert.NotEqual(ExtractIdempotencyKey(handler.RequestBodies[0]), ExtractIdempotencyKey(handler.RequestBodies[1]));
+        }
+
+        [Fact]
+        public void Initialize_AcceptsNewerCheckoutSnapshot()
+        {
+            var sessionId = Guid.NewGuid();
+            var controller = CreateController(new QueueingHandler(CreateState(sessionId, cartVersion: 1, checkoutVersion: 1)));
+            controller.Initialize(CreateState(sessionId, cartVersion: 1, checkoutVersion: 1), showPanel: true, StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            controller.Initialize(CreateState(sessionId, cartVersion: 3, checkoutVersion: 4), showPanel: true, StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            Assert.Equal(3, controller.State.Checkout.CartVersion);
+            Assert.Equal(4, controller.State.Checkout.CheckoutVersion);
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_MapsFailureToErrorWithoutRedirect()
         {
             var sessionId = Guid.NewGuid();
@@ -173,6 +243,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Issues: []);
         }
 
+        private static string ExtractIdempotencyKey(string requestBody)
+        {
+            using var document = JsonDocument.Parse(requestBody);
+            return document.RootElement.GetProperty("idempotencyKey").GetString()
+                ?? throw new InvalidOperationException("Place-order request did not contain idempotencyKey.");
+        }
+
         private sealed class StaticTokenReader : IStorefrontAntiforgeryTokenReader
         {
             public ValueTask<StorefrontAntiforgeryToken?> ReadAsync(CancellationToken cancellationToken = default)
@@ -185,6 +262,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             private readonly Queue<(HttpContent Content, HttpStatusCode StatusCode)> _responses = new();
 
+            public QueueingHandler(params object[] responses)
+            {
+                foreach (var response in responses)
+                {
+                    _responses.Enqueue((JsonContent(response), HttpStatusCode.OK));
+                }
+            }
+
             public QueueingHandler(object response)
                 : this(JsonContent(response), HttpStatusCode.OK)
             {
@@ -193,6 +278,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public QueueingHandler(HttpContent content, HttpStatusCode statusCode)
             {
                 _responses.Enqueue((content, statusCode));
+            }
+
+            public QueueingHandler(
+                HttpContent firstContent,
+                HttpStatusCode firstStatusCode,
+                HttpContent secondContent,
+                HttpStatusCode secondStatusCode)
+            {
+                _responses.Enqueue((firstContent, firstStatusCode));
+                _responses.Enqueue((secondContent, secondStatusCode));
             }
 
             public List<HttpRequestMessage> Requests { get; } = [];

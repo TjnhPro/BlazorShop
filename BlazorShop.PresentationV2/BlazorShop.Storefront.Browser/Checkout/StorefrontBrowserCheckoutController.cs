@@ -11,6 +11,7 @@ public sealed class StorefrontBrowserCheckoutController : IStorefrontBrowserChec
     private StorefrontFeatureDataMode _dataMode = StorefrontFeatureDataMode.BrowserFetch;
     private bool _showPanel = true;
     private bool _initialized;
+    private Guid? _checkoutSessionId;
     private string _idempotencyKey = Guid.NewGuid().ToString("N");
 
     public StorefrontBrowserCheckoutController(IServiceProvider services)
@@ -31,12 +32,12 @@ public sealed class StorefrontBrowserCheckoutController : IStorefrontBrowserChec
         _actions = actions ?? StorefrontCheckoutActionDescriptor.Empty;
         State.ApiAvailable = ResolveApiClient() is not null;
 
-        if (_initialized)
+        if (_initialized && !ShouldAcceptInitialState(initialState))
         {
             return;
         }
 
-        State.Checkout = initialState;
+        ApplyCheckoutState(initialState);
         _initialized = true;
     }
 
@@ -128,6 +129,11 @@ public sealed class StorefrontBrowserCheckoutController : IStorefrontBrowserChec
             return new StorefrontBrowserCheckoutPlaceOrderOutcome(true, RedirectUrl: null);
         }
 
+        if (result.Data.Success)
+        {
+            RotateIdempotencyKey();
+        }
+
         return new StorefrontBrowserCheckoutPlaceOrderOutcome(true, result.Data.RedirectUrl);
     }
 
@@ -166,7 +172,7 @@ public sealed class StorefrontBrowserCheckoutController : IStorefrontBrowserChec
         State.Loading = false;
         if (result.Success && result.Data is not null)
         {
-            State.Checkout = result.Data;
+            ApplyCheckoutState(result.Data);
             return true;
         }
 
@@ -177,5 +183,66 @@ public sealed class StorefrontBrowserCheckoutController : IStorefrontBrowserChec
     private StorefrontLocalApiClient? ResolveApiClient()
     {
         return _services.GetService<StorefrontLocalApiClient>();
+    }
+
+    private bool ShouldAcceptInitialState(StorefrontBrowserCheckoutState initialState)
+    {
+        var current = State.Checkout;
+        if (initialState.CheckoutSessionId != current.CheckoutSessionId)
+        {
+            return true;
+        }
+
+        if (initialState.CheckoutVersion > current.CheckoutVersion
+            || initialState.CartVersion > current.CartVersion)
+        {
+            return true;
+        }
+
+        if ((initialState.CheckoutVersion > 0 && initialState.CheckoutVersion < current.CheckoutVersion)
+            || (initialState.CartVersion > 0 && initialState.CartVersion < current.CartVersion))
+        {
+            return false;
+        }
+
+        return initialState.HasCart != current.HasCart
+            || !LineIdentityMatches(initialState.Lines, current.Lines);
+    }
+
+    private void ApplyCheckoutState(StorefrontBrowserCheckoutState checkout)
+    {
+        if (checkout.CheckoutSessionId != _checkoutSessionId)
+        {
+            _checkoutSessionId = checkout.CheckoutSessionId;
+            RotateIdempotencyKey();
+        }
+
+        State.Checkout = checkout;
+    }
+
+    private void RotateIdempotencyKey()
+    {
+        _idempotencyKey = Guid.NewGuid().ToString("N");
+    }
+
+    private static bool LineIdentityMatches(
+        IReadOnlyList<StorefrontBrowserCheckoutLine> left,
+        IReadOnlyList<StorefrontBrowserCheckoutLine> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < left.Count; index++)
+        {
+            if (left[index].LineId != right[index].LineId
+                || left[index].Quantity != right[index].Quantity)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

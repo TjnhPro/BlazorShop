@@ -5,7 +5,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using System.Text.Json;
 
     using BlazorShop.Storefront.Browser;
+    using BlazorShop.Storefront.Browser.Account;
+    using BlazorShop.Storefront.Browser.Cart;
+    using BlazorShop.Storefront.Browser.Checkout;
     using BlazorShop.Storefront.Components.Browser;
+    using Microsoft.Extensions.DependencyInjection;
 
     using Xunit;
 
@@ -191,6 +195,26 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
         }
 
+        [Fact]
+        public void BrowserControllerRegistrations_AreTransientWhileRuntimeInfrastructureStaysScoped()
+        {
+            var services = new ServiceCollection();
+
+            services.AddScoped<IStorefrontAntiforgeryTokenReader, StubAntiforgeryTokenReader>();
+            services.AddScoped<StorefrontLocalApiClient>();
+            services.AddScoped<IStorefrontBrowserCartEventPublisher, StubCartEventPublisher>();
+            services.AddStorefrontBrowserCart();
+            services.AddStorefrontBrowserCheckout();
+            services.AddStorefrontBrowserAccount();
+
+            Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserCartController>(services));
+            Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserCheckoutController>(services));
+            Assert.Equal(ServiceLifetime.Transient, FindLifetime<IStorefrontBrowserAccountController>(services));
+            Assert.Equal(ServiceLifetime.Scoped, FindLifetime<IStorefrontAntiforgeryTokenReader>(services));
+            Assert.Equal(ServiceLifetime.Scoped, FindLifetime<StorefrontLocalApiClient>(services));
+            Assert.Equal(ServiceLifetime.Scoped, FindLifetime<IStorefrontBrowserCartEventPublisher>(services));
+        }
+
         private static string ReadSourceTree(string relativeRoot)
         {
             var root = ResolveRepositoryPath(relativeRoot);
@@ -238,6 +262,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private sealed class StubAntiforgeryTokenReader : IStorefrontAntiforgeryTokenReader
         {
+            public StubAntiforgeryTokenReader()
+                : this(new StorefrontAntiforgeryToken("X-CSRF-TOKEN", "csrf-token"))
+            {
+            }
+
             private readonly StorefrontAntiforgeryToken? _token;
 
             public StubAntiforgeryTokenReader(StorefrontAntiforgeryToken? token)
@@ -252,6 +281,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 ReadCount++;
                 return ValueTask.FromResult(_token);
             }
+        }
+
+        private sealed class StubCartEventPublisher : IStorefrontBrowserCartEventPublisher
+        {
+            public ValueTask PublishCartChangedAsync(int count, CancellationToken cancellationToken = default)
+            {
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        private static ServiceLifetime FindLifetime<TService>(IServiceCollection services)
+        {
+            return services.Last(descriptor => descriptor.ServiceType == typeof(TService)).Lifetime;
         }
 
         private sealed class RecordingHandler : HttpMessageHandler

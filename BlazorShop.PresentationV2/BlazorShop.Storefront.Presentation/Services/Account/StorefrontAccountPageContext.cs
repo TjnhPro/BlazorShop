@@ -21,6 +21,6 @@ namespace BlazorShop.Storefront.Presentation.Services.Account
 
         public AccountRouteDescriptor RouteDescriptor { get; init; } = AccountRouteDescriptor.Empty;
 
-        public IReadOnlyList<AccountNavigationItem> NavigationItems { get; init; } = [];
+        public AccountNavigationItem[] NavigationItems { get; init; } = [];
     }
 }

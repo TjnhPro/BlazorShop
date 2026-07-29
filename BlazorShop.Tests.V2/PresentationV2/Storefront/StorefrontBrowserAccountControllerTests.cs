@@ -32,6 +32,37 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void InitializeProfile_IdentityChangeClearsPreviousAccountState()
+        {
+            var firstCustomerId = Guid.NewGuid();
+            var secondCustomerId = Guid.NewGuid();
+            var addressId = Guid.NewGuid();
+            var controller = CreateController(new QueueingHandler(CreateProfile("Updated Buyer", secondCustomerId)));
+            controller.InitializeProfile(CreateProfile("Original Buyer", firstCustomerId), "old profile error", "old profile success", StorefrontFeatureDataMode.InitialSnapshot, ProfileActions);
+            controller.InitializeAddresses([CreateAddress(addressId, "Original Buyer")], "old address error", "old address success", StorefrontFeatureDataMode.InitialSnapshot, AddressActions);
+            controller.InitializeOrders(new StorefrontBrowserAccountOrderList(
+                [new StorefrontBrowserAccountOrderListItem("ORDER-1", "Today", "Pending", "Pending", "Pending", "$25.00", 1)],
+                1,
+                10,
+                1,
+                1), "old orders error", StorefrontFeatureDataMode.InitialSnapshot, OrderActions, pageNumber: 1);
+            controller.InitializeOrderDetail(CreateOrderDetail("ORDER-1", receiptMode: false), "old detail error", StorefrontFeatureDataMode.InitialSnapshot, OrderActions, "ORDER-1", receiptMode: false);
+
+            controller.InitializeProfile(CreateProfile("Second Buyer", secondCustomerId), null, null, StorefrontFeatureDataMode.InitialSnapshot, ProfileActions);
+
+            Assert.Equal(secondCustomerId, controller.State.Profile?.CustomerPublicId);
+            Assert.Equal("Second Buyer", controller.State.ProfileForm.FullName);
+            Assert.Empty(controller.State.Addresses);
+            Assert.Empty(controller.State.AddressForms);
+            Assert.Empty(controller.State.Orders.Items);
+            Assert.Null(controller.State.OrderDetail);
+            Assert.Null(controller.State.ProfileError);
+            Assert.Null(controller.State.AddressError);
+            Assert.Null(controller.State.OrdersError);
+            Assert.Null(controller.State.OrderDetailError);
+        }
+
+        [Fact]
         public async Task SaveProfileAsync_SendsUpdateRequestAndAppliesSuccess()
         {
             var handler = new QueueingHandler(CreateProfile("Updated Buyer"));
@@ -201,6 +232,38 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void InitializeOrders_PageChangeAcceptsNewInitialOrderList()
+        {
+            var controller = CreateController(new QueueingHandler(new StorefrontBrowserAccountOrderList([], 1, 10, 0, 0)));
+            controller.InitializeOrders(
+                new StorefrontBrowserAccountOrderList(
+                    [new StorefrontBrowserAccountOrderListItem("ORDER-1", "Today", "Pending", "Pending", "Pending", "$25.00", 1)],
+                    PageNumber: 1,
+                    PageSize: 10,
+                    TotalCount: 2,
+                    TotalPages: 2),
+                null,
+                StorefrontFeatureDataMode.InitialSnapshot,
+                OrderActions,
+                pageNumber: 1);
+
+            controller.InitializeOrders(
+                new StorefrontBrowserAccountOrderList(
+                    [new StorefrontBrowserAccountOrderListItem("ORDER-2", "Tomorrow", "Complete", "Paid", "Shipped", "$40.00", 2)],
+                    PageNumber: 2,
+                    PageSize: 10,
+                    TotalCount: 2,
+                    TotalPages: 2),
+                null,
+                StorefrontFeatureDataMode.InitialSnapshot,
+                OrderActions,
+                pageNumber: 2);
+
+            Assert.Equal(2, controller.State.Orders.PageNumber);
+            Assert.Equal("ORDER-2", controller.State.Orders.Items.Single().Reference);
+        }
+
+        [Fact]
         public async Task HydrateOrderDetailAsync_LoadsDetailAndReceiptRoutes()
         {
             var detail = CreateOrderDetail("ORDER 100", receiptMode: false);
@@ -224,6 +287,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(receiptChanged);
             Assert.True(receiptController.State.OrderDetail?.ReceiptMode);
             Assert.Equal("https://storefront.example/api/account/orders/ORDER 100/receipt", receiptHandler.Requests.Single().RequestUri?.ToString());
+        }
+
+        [Fact]
+        public void InitializeOrderDetail_ReferenceChangeAcceptsNewInitialDetail()
+        {
+            var controller = CreateController(new QueueingHandler(CreateOrderDetail("ORDER-2", receiptMode: false)));
+            controller.InitializeOrderDetail(
+                CreateOrderDetail("ORDER-1", receiptMode: false),
+                null,
+                StorefrontFeatureDataMode.InitialSnapshot,
+                OrderActions,
+                "ORDER-1",
+                receiptMode: false);
+
+            controller.InitializeOrderDetail(
+                CreateOrderDetail("ORDER-2", receiptMode: false),
+                null,
+                StorefrontFeatureDataMode.InitialSnapshot,
+                OrderActions,
+                "ORDER-2",
+                receiptMode: false);
+
+            Assert.Equal("ORDER-2", controller.State.OrderDetail?.Reference);
         }
 
         [Fact]
@@ -304,10 +390,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return new StorefrontBrowserAccountController(provider);
         }
 
-        private static StorefrontBrowserCustomerProfile CreateProfile(string fullName)
+        private static StorefrontBrowserCustomerProfile CreateProfile(string fullName, Guid? customerPublicId = null)
         {
             return new StorefrontBrowserCustomerProfile(
-                Guid.NewGuid(),
+                customerPublicId ?? Guid.NewGuid(),
                 "taylor@example.test",
                 fullName,
                 "Taylor",

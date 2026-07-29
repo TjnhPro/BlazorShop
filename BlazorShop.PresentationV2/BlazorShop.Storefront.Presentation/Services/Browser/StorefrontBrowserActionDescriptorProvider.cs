@@ -63,7 +63,7 @@ public sealed class StorefrontBrowserActionDescriptorProvider
             StorefrontRoutes.AccountOrderDetail);
     }
 
-    public IReadOnlyList<AccountNavigationItem> CreateAccountNavigationItems()
+    public AccountNavigationItem[] CreateAccountNavigationItems()
     {
         return
         [

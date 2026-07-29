@@ -49,6 +49,42 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void Initialize_AcceptsNewerInitialSnapshot()
+        {
+            var firstLineId = Guid.NewGuid();
+            var secondLineId = Guid.NewGuid();
+            var controller = CreateController(new QueueingHandler(CreateCart(firstLineId)), new RecordingCartEventPublisher());
+
+            controller.Initialize(CreateCart(firstLineId, count: 1, version: 1), [], StorefrontFeatureDataMode.InitialSnapshot, Actions);
+            controller.Initialize(CreateCart(secondLineId, count: 5, version: 2), [], StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            Assert.Equal(5, controller.State.Cart?.Count);
+            Assert.Equal(2, controller.State.Cart?.Version);
+            Assert.Equal(secondLineId, controller.State.Lines.Single().LineId);
+        }
+
+        [Fact]
+        public async Task Initialize_DoesNotOverwriteCurrentMutationWithOlderSnapshot()
+        {
+            var lineId = Guid.NewGuid();
+            var handler = new BlockingHandler(CreateCart(lineId, count: 4, quantity: 4, version: 4));
+            var controller = CreateController(handler, new RecordingCartEventPublisher());
+            controller.Initialize(CreateCart(lineId, count: 2, quantity: 2, version: 3), [], StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            var updateTask = controller.UpdateQuantityAsync(lineId, "4");
+            await handler.WaitForRequestAsync();
+            controller.Initialize(CreateCart(Guid.NewGuid(), count: 1, version: 1), [], StorefrontFeatureDataMode.InitialSnapshot, Actions);
+
+            Assert.Equal(2, controller.State.Cart?.Count);
+            Assert.Equal(lineId, controller.State.BusyLineId);
+
+            handler.Release();
+            Assert.True(await updateTask);
+            Assert.Equal(4, controller.State.Cart?.Count);
+            Assert.False(controller.State.BusyLineId.HasValue);
+        }
+
+        [Fact]
         public async Task UpdateQuantityAsync_RejectsBelowMinimumWithoutApiCall()
         {
             var lineId = Guid.NewGuid();
@@ -193,6 +229,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static StorefrontBrowserCart CreateCart(
             Guid lineId,
             int count = 1,
+            int version = 1,
             int quantity = 1,
             int quantityMinimum = 1,
             IReadOnlyList<StorefrontBrowserCartLine>? lines = null)
@@ -200,7 +237,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var cartLines = lines ?? [CreateLine(lineId, quantity, quantityMinimum)];
             return new StorefrontBrowserCart(
                 count,
-                Version: 1,
+                version,
                 cartLines,
                 "USD",
                 Subtotal: 10,

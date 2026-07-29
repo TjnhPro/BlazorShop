@@ -203,57 +203,63 @@ Goal: prevent stale SSR snapshots, stale account identity, and checkout idempote
 
 ### Implementation
 
-- [ ] Decide implementation style based on current component injection:
-  - [ ] Preferred narrow change: register browser controllers as transient.
-  - [ ] Alternative if component sharing is needed: use component-owned scope through an owning wrapper/component pattern.
-- [ ] Change controller registrations in `StorefrontBrowserServiceCollectionExtensions`:
-  - [ ] `IStorefrontBrowserCartController`.
-  - [ ] `IStorefrontBrowserCheckoutController`.
-  - [ ] `IStorefrontBrowserAccountController`.
-- [ ] Keep `StorefrontLocalApiClient`, antiforgery token reader, and browser event publisher scoped if that remains appropriate for WASM runtime infrastructure.
-- [ ] Cart controller hardening:
-  - [ ] Replace single `_initialized` behavior with snapshot-aware initialization.
-  - [ ] Accept a newer initial snapshot when cart version/count/line identity proves it changed.
-  - [ ] If version comparison is unavailable or ambiguous, prefer the latest component-provided snapshot over stale in-memory state.
-  - [ ] Keep browser mutation state if the same component instance is mid-mutation.
-- [ ] Checkout controller hardening:
-  - [ ] Track the current `CheckoutSessionId`.
-  - [ ] Rotate `_idempotencyKey` when `CheckoutSessionId` changes.
-  - [ ] Keep the same key for retries within the same place-order attempt/session.
-  - [ ] Clear or rotate the key after successful order placement.
-  - [ ] Reinitialize from a newer SSR snapshot when the checkout session or version changes.
-- [ ] Account controller hardening:
-  - [ ] Define an identity key from current profile/customer data when available.
-  - [ ] Reset profile/address/order state when the identity key changes.
-  - [ ] Reset order detail state when order reference changes.
-  - [ ] Reset orders state when page number changes.
-  - [ ] Do not show profile/address/order state from a previous signed-in user after logout/login.
-- [ ] Keep current public controller interfaces unless a method needs an identity/version parameter to support safe reinitialization.
+- [x] Decide implementation style based on current component injection:
+  - [x] Preferred narrow change: register browser controllers as transient.
+  - [x] Alternative if component sharing is needed: use component-owned scope through an owning wrapper/component pattern.
+- [x] Change controller registrations in `StorefrontBrowserServiceCollectionExtensions`:
+  - [x] `IStorefrontBrowserCartController`.
+  - [x] `IStorefrontBrowserCheckoutController`.
+  - [x] `IStorefrontBrowserAccountController`.
+- [x] Keep `StorefrontLocalApiClient`, antiforgery token reader, and browser event publisher scoped if that remains appropriate for WASM runtime infrastructure.
+- [x] Cart controller hardening:
+  - [x] Replace single `_initialized` behavior with snapshot-aware initialization.
+  - [x] Accept a newer initial snapshot when cart version/count/line identity proves it changed.
+  - [x] If version comparison is unavailable or ambiguous, prefer the latest component-provided snapshot over stale in-memory state.
+  - [x] Keep browser mutation state if the same component instance is mid-mutation.
+- [x] Checkout controller hardening:
+  - [x] Track the current `CheckoutSessionId`.
+  - [x] Rotate `_idempotencyKey` when `CheckoutSessionId` changes.
+  - [x] Keep the same key for retries within the same place-order attempt/session.
+  - [x] Clear or rotate the key after successful order placement.
+  - [x] Reinitialize from a newer SSR snapshot when the checkout session or version changes.
+- [x] Account controller hardening:
+  - [x] Define an identity key from current profile/customer data when available.
+  - [x] Reset profile/address/order state when the identity key changes.
+  - [x] Reset order detail state when order reference changes.
+  - [x] Reset orders state when page number changes.
+  - [x] Do not show profile/address/order state from a previous signed-in user after logout/login.
+- [x] Keep current public controller interfaces unless a method needs an identity/version parameter to support safe reinitialization.
+  - Kept the public controller interfaces unchanged.
+  - Fixed account navigation payload materialization to `AccountNavigationItem[]` so Presentation context values serialize across the WASM render boundary without compiler collection types.
 
 ### Tests
 
-- [ ] Cart controller test: initialize with snapshot A, initialize again with newer snapshot B, state uses B.
-- [ ] Cart controller test: current same component mutation is not overwritten by an older snapshot.
-- [ ] Checkout controller test: same `CheckoutSessionId` retry keeps idempotency key.
-- [ ] Checkout controller test: new `CheckoutSessionId` rotates idempotency key.
-- [ ] Checkout controller test: successful place order clears or rotates key for the next checkout session.
-- [ ] Account controller test: profile identity change clears previous profile state.
-- [ ] Account controller test: orders page change accepts new initial order list.
-- [ ] Account controller test: order reference change accepts new order detail snapshot.
-- [ ] DI test: Browser runtime registers controllers with the chosen lifetime.
+- [x] Cart controller test: initialize with snapshot A, initialize again with newer snapshot B, state uses B.
+- [x] Cart controller test: current same component mutation is not overwritten by an older snapshot.
+- [x] Checkout controller test: same `CheckoutSessionId` retry keeps idempotency key.
+- [x] Checkout controller test: new `CheckoutSessionId` rotates idempotency key.
+- [x] Checkout controller test: successful place order clears or rotates key for the next checkout session.
+- [x] Account controller test: profile identity change clears previous profile state.
+- [x] Account controller test: orders page change accepts new initial order list.
+- [x] Account controller test: order reference change accepts new order detail snapshot.
+- [x] DI test: Browser runtime registers controllers with the chosen lifetime.
+  - Verification: `dotnet build BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-restore` passed with known MessagePack/Browserslist warnings.
+  - Verification: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --filter "FullyQualifiedName~StorefrontBrowserCartControllerTests|FullyQualifiedName~StorefrontBrowserCheckoutControllerTests|FullyQualifiedName~StorefrontBrowserAccountControllerTests|FullyQualifiedName~StorefrontBrowserRuntimeFoundationTests|FullyQualifiedName~StorefrontBrowserActionDescriptorProviderTests" --logger "trx;LogFileName=browser-boundary-f181.trx" --blame-hang --blame-hang-timeout 5m` passed 49/49.
 
 ### Browser QA
 
-- [ ] Playwright: open cart, navigate away, add product, return to cart, verify new line appears.
-- [ ] Playwright: start checkout, navigate back to cart, change cart, return to checkout, verify checkout reflects current cart/version.
-- [ ] Playwright: logout/login as another customer in same browser session, verify account data is not stale.
+- [x] Playwright: open cart, navigate away, add product, return to cart, verify new line appears.
+- [x] Playwright: start checkout, navigate back to cart, change cart, return to checkout, verify checkout reflects current cart/version.
+- [x] Playwright: logout/login as another customer in same browser session, verify account data is not stale.
+  - Browser QA: `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser` started `http://localhost:18598`; inline Playwright cart/checkout probe passed with same-origin `/api/cart`, `/api/product-selection-preview`, and `/api/cart/lines` calls and zero direct Commerce Node browser calls.
+  - Browser QA: inline Playwright account probe registered/signed in `qa.boundary.first.*`, logged out, registered/signed in `qa.boundary.second.*` in the same browser session, verified profile email changed to the second customer, and recorded zero direct Commerce Node browser calls.
 
 ### Acceptance Criteria
 
-- [ ] Browser controllers no longer behave like app-wide mutable singletons for page state.
-- [ ] SSR snapshot refresh is not ignored after enhanced navigation.
-- [ ] Checkout idempotency key lifetime matches checkout session/attempt behavior.
-- [ ] Account state cannot leak across customer/session changes.
+- [x] Browser controllers no longer behave like app-wide mutable singletons for page state.
+- [x] SSR snapshot refresh is not ignored after enhanced navigation.
+- [x] Checkout idempotency key lifetime matches checkout session/attempt behavior.
+- [x] Account state cannot leak across customer/session changes.
 
 ## Phase F1.82 - Browser Transport Reliability Closure
 

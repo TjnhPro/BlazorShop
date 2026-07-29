@@ -28,7 +28,7 @@ public sealed class StorefrontBrowserCartController : IStorefrontBrowserCartCont
         _actions = actions ?? StorefrontCartActionDescriptor.Empty;
         State.ApiAvailable = ResolveApiClient() is not null;
 
-        if (_initialized)
+        if (_initialized && !ShouldAcceptInitialSnapshot(initialCart))
         {
             return;
         }
@@ -174,6 +174,62 @@ public sealed class StorefrontBrowserCartController : IStorefrontBrowserCartCont
             StorefrontFeatureDataMode.RefreshAfterHydration => true,
             _ => State.Cart is null
         };
+    }
+
+    private bool ShouldAcceptInitialSnapshot(StorefrontBrowserCart? initialCart)
+    {
+        if (!_initialized)
+        {
+            return true;
+        }
+
+        if (State.BusyLineId.HasValue || State.Clearing)
+        {
+            return false;
+        }
+
+        var currentCart = State.Cart;
+        if (currentCart is null || initialCart is null)
+        {
+            return true;
+        }
+
+        if (currentCart.Version > 0 && initialCart.Version > 0)
+        {
+            if (initialCart.Version > currentCart.Version)
+            {
+                return true;
+            }
+
+            if (initialCart.Version < currentCart.Version)
+            {
+                return false;
+            }
+        }
+
+        return initialCart.Count != currentCart.Count
+            || !LineIdentityMatches(initialCart.Lines, currentCart.Lines);
+    }
+
+    private static bool LineIdentityMatches(
+        IReadOnlyList<StorefrontBrowserCartLine> left,
+        IReadOnlyList<StorefrontBrowserCartLine> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < left.Count; index++)
+        {
+            if (left[index].LineId != right[index].LineId
+                || left[index].Quantity != right[index].Quantity)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private async Task<bool> ApplyCartResultAsync(

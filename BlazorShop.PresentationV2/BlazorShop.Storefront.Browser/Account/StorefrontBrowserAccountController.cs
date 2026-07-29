@@ -15,6 +15,7 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
     private StorefrontAccountAddressActionDescriptor _addressActions = StorefrontAccountAddressActionDescriptor.Empty;
     private StorefrontAccountOrderActionDescriptor _orderActions = StorefrontAccountOrderActionDescriptor.Empty;
     private StorefrontAccountPasswordActionDescriptor _passwordActions = StorefrontAccountPasswordActionDescriptor.Empty;
+    private string? _profileIdentityKey;
     private int _ordersPageNumber = 1;
     private string? _orderReference;
     private bool _receiptMode;
@@ -34,6 +35,13 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
     {
         _profileDataMode = dataMode;
         _profileActions = actions ?? StorefrontAccountProfileActionDescriptor.Empty;
+        var identityKey = CreateProfileIdentityKey(initialProfile);
+        if (_profileInitialized
+            && !string.Equals(identityKey, _profileIdentityKey, StringComparison.Ordinal))
+        {
+            ResetAccountStateForIdentityChange();
+        }
+
         if (_profileInitialized)
         {
             return;
@@ -47,6 +55,7 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
             CopyProfileToForm(initialProfile);
         }
 
+        _profileIdentityKey = identityKey;
         _profileInitialized = true;
     }
 
@@ -66,9 +75,18 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
         var result = await apiClient.GetAsync<StorefrontBrowserCustomerProfile>(_profileActions.LoadProfileRoute, cancellationToken).ConfigureAwait(false);
         if (result.Success && result.Data is not null)
         {
+            var identityKey = CreateProfileIdentityKey(result.Data);
+            if (_profileInitialized
+                && !string.Equals(identityKey, _profileIdentityKey, StringComparison.Ordinal))
+            {
+                ResetAccountStateForIdentityChange();
+            }
+
             State.Profile = result.Data;
             State.ProfileError = null;
             CopyProfileToForm(result.Data);
+            _profileIdentityKey = identityKey;
+            _profileInitialized = true;
             return true;
         }
 
@@ -118,7 +136,7 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
     {
         _addressDataMode = dataMode;
         _addressActions = actions ?? StorefrontAccountAddressActionDescriptor.Empty;
-        if (_addressesInitialized)
+        if (_addressesInitialized && AddressSnapshotMatches(initialAddresses))
         {
             return;
         }
@@ -192,8 +210,9 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
     {
         _ordersDataMode = dataMode;
         _orderActions = actions ?? StorefrontAccountOrderActionDescriptor.Empty;
+        var pageChanged = pageNumber != _ordersPageNumber;
         _ordersPageNumber = pageNumber;
-        if (_ordersInitialized)
+        if (_ordersInitialized && !pageChanged && OrderListSnapshotMatches(initialOrders))
         {
             return;
         }
@@ -232,9 +251,11 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
     {
         _orderDetailDataMode = dataMode;
         _orderActions = actions ?? StorefrontAccountOrderActionDescriptor.Empty;
+        var referenceChanged = !string.Equals(orderReference, _orderReference, StringComparison.Ordinal)
+            || receiptMode != _receiptMode;
         _orderReference = orderReference;
         _receiptMode = receiptMode;
-        if (_orderDetailInitialized)
+        if (_orderDetailInitialized && !referenceChanged && OrderDetailSnapshotMatches(initialOrder))
         {
             return;
         }
@@ -373,6 +394,93 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
         }
     }
 
+    private void ResetAccountStateForIdentityChange()
+    {
+        State.Profile = null;
+        ClearProfileForm();
+        State.ProfileError = null;
+        State.ProfileSuccess = null;
+        State.ProfileSaving = false;
+        State.Addresses = [];
+        State.AddressForms.Clear();
+        State.NewAddress = new StorefrontBrowserAccountAddressForm();
+        State.AddressError = null;
+        State.AddressSuccess = null;
+        State.AddressSaving = false;
+        State.Orders = new StorefrontBrowserAccountOrderList([], 1, 10, 0, 0);
+        State.OrdersError = null;
+        State.OrderDetail = null;
+        State.OrderDetailError = null;
+        State.PasswordForm.Clear();
+        State.PasswordError = null;
+        State.PasswordSuccess = null;
+        State.PasswordSaving = false;
+
+        _profileInitialized = false;
+        _addressesInitialized = false;
+        _ordersInitialized = false;
+        _orderDetailInitialized = false;
+        _ordersPageNumber = 1;
+        _orderReference = null;
+        _receiptMode = false;
+    }
+
+    private void ClearProfileForm()
+    {
+        State.ProfileForm.FullName = string.Empty;
+        State.ProfileForm.Email = string.Empty;
+        State.ProfileForm.FirstName = null;
+        State.ProfileForm.LastName = null;
+        State.ProfileForm.Company = null;
+        State.ProfileForm.PhoneNumber = null;
+        State.ProfileForm.PreferredLanguage = null;
+        State.ProfileForm.PreferredCurrencyCode = null;
+    }
+
+    private bool AddressSnapshotMatches(IReadOnlyList<StorefrontBrowserCustomerAddress> initialAddresses)
+    {
+        if (initialAddresses.Count != State.Addresses.Count)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < initialAddresses.Count; index++)
+        {
+            if (initialAddresses[index].PublicId != State.Addresses[index].PublicId)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool OrderListSnapshotMatches(StorefrontBrowserAccountOrderList initialOrders)
+    {
+        if (initialOrders.PageNumber != State.Orders.PageNumber
+            || initialOrders.TotalCount != State.Orders.TotalCount
+            || initialOrders.Items.Count != State.Orders.Items.Count)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < initialOrders.Items.Count; index++)
+        {
+            if (!string.Equals(initialOrders.Items[index].Reference, State.Orders.Items[index].Reference, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool OrderDetailSnapshotMatches(StorefrontBrowserAccountOrderDetail? initialOrder)
+    {
+        return string.Equals(initialOrder?.Reference, State.OrderDetail?.Reference, StringComparison.Ordinal)
+            && initialOrder?.ReceiptMode == State.OrderDetail?.ReceiptMode;
+    }
+
     private void CopyProfileToForm(StorefrontBrowserCustomerProfile profile)
     {
         State.ProfileForm.Email = profile.Email;
@@ -423,6 +531,11 @@ public sealed class StorefrontBrowserAccountController : IStorefrontBrowserAccou
             IsDefaultShipping = form.IsDefaultShipping,
             IsDefaultBilling = form.IsDefaultBilling,
         };
+    }
+
+    private static string? CreateProfileIdentityKey(StorefrontBrowserCustomerProfile? profile)
+    {
+        return profile?.CustomerPublicId.ToString("D");
     }
 
     private StorefrontLocalApiClient? ResolveApiClient()
