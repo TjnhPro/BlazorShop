@@ -90,7 +90,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("/api/consent/revoke", consentEndpoints, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-manage", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor"), StringComparison.Ordinal);
             Assert.DoesNotContain("getStorefrontApplication().consent", script, StringComparison.Ordinal);
-            Assert.Contains("initConsentBanner()", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("bindConsent()", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("root.initialize = initializeBindings", applicationScript, StringComparison.Ordinal);
             Assert.Contains("consent.current(actions)", applicationScript, StringComparison.Ordinal);
             Assert.Contains("consent.accept(selection, actions)", applicationScript, StringComparison.Ordinal);
             Assert.Contains("consent.revoke(actions)", applicationScript, StringComparison.Ordinal);

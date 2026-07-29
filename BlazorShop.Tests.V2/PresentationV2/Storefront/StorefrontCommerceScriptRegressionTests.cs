@@ -13,6 +13,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "getStorefrontApplication().cart.addLine",
                 "getStorefrontApplication().productSelection.preview",
                 "window.blazorShopStorefront?.application",
+                "window.blazorShopStorefront.application",
+                "blazorShopStorefront.bindings",
                 ".application.cart.",
                 ".application.productSelection.",
                 "ProductId:",
@@ -53,11 +55,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             foreach (var marker in new[]
             {
-                "root.bindings",
-                "productPurchase: { bindAll: bindProductPurchase }",
-                "cartBadge: { bindAll: bindCartBadge }",
-                "F1.54 compatibility aliases remain until generated markup migrates in F1.55.",
+                "root.events = Object.freeze({ ...events })",
+                "root.initialize = initializeBindings",
+                "let bindingsInitialized = false",
+                "if (bindingsInitialized)",
+                "Compatibility aliases remain only for non-command descriptors until F1.63 removes them.",
                 "productPurchaseRootSelector",
+                "productPurchaseSubmitMarkerSelector = \"[data-storefront-product-purchase-submit]\"",
+                "productPurchaseSubmitSelector = '[data-storefront-command=\"cart.add-line\"][data-storefront-product-purchase-submit]'",
                 "readPurchaseDescriptor",
                 "readSelectedAttributes",
                 "buildSelectionPreviewPayload",
@@ -85,6 +90,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             })
             {
                 Assert.Contains(marker, applicationScript, StringComparison.Ordinal);
+            }
+
+            foreach (var forbidden in new[]
+            {
+                "root.application",
+                "root.bindings",
+                "data-storefront-add-to-cart]",
+                "addToCart: { addPurchaseLine }",
+                "productSelection: { previewPurchase }",
+            })
+            {
+                Assert.DoesNotContain(forbidden, applicationScript, StringComparison.Ordinal);
             }
         }
 

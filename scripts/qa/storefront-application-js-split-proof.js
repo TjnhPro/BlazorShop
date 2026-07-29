@@ -58,31 +58,30 @@ function pageHtml() {
     <span data-storefront-selection-compare></span>
     <span data-storefront-selection-stock></span>
     <span data-storefront-selection-sku></span>
+    <span data-storefront-selection-gtin></span>
     <div id="purchase"
-         data-storefront-selection-preview
-         data-preview-route="/api/product-selection-preview"
+         data-storefront-product-purchase
+         data-selection-preview-route="/api/product-selection-preview"
          data-product-id="11111111-1111-1111-1111-111111111111"
+         data-product-name="Proof Product"
          data-currency-code="USD">
       <input type="radio"
              name="Color"
              value="Black"
              checked
-             data-storefront-attribute-control
-             data-attribute-name="Color" />
-      <input type="number" value="2" data-storefront-selection-quantity />
+             data-storefront-purchase-attribute
+             data-storefront-purchase-attribute-name="Color" />
+      <input type="number" value="2" data-storefront-purchase-quantity />
       <button type="button"
-              data-storefront-add-to-cart
+              data-storefront-command="cart.add-line"
+              data-storefront-product-purchase-submit
               data-default-label="Add to Cart"
               data-success-label="Added"
-              data-product-id="11111111-1111-1111-1111-111111111111"
-              data-product-name="Proof Product"
-              data-currency-code="USD"
-              data-preview-container="#purchase"
-              data-stock="10"
-              data-can-add-to-cart="true"
               data-feedback-target="#product-cart-feedback">
         Add to Cart
       </button>
+      <button type="button" data-storefront-product-purchase-submit data-proof-missing-command>Missing command</button>
+      <button type="button" data-storefront-command="cart.remove-line" data-storefront-product-purchase-submit data-proof-wrong-command>Wrong command</button>
       <p id="product-cart-feedback" data-storefront-selection-message></p>
     </div>
   </main>
@@ -180,6 +179,7 @@ async function main() {
           isAvailable: true,
           stockQuantity: 7,
           sku: "SKU-PROOF",
+          gtin: "GTIN-PROOF",
           primaryImageUrl: "",
           validationMessages: [],
           productVariantId: "22222222-2222-2222-2222-222222222222",
@@ -204,6 +204,14 @@ async function main() {
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
     await page.addScriptTag({ path: presentationScript });
     await page.addScriptTag({ path: visualScript });
+    await page.evaluate(() => {
+      if (window.blazorShopStorefront.application || window.blazorShopStorefront.bindings) {
+        throw new Error("Presentation script exposed command-capable public internals.");
+      }
+
+      window.blazorShopStorefront.initialize();
+      window.blazorShopStorefront.initialize();
+    });
 
     await page.waitForFunction(() => window.__storefrontProofEvents.some((event) => event.name === "storefront:consent:changed"));
     await page.click("[data-storefront-consent-manage]");
@@ -222,10 +230,19 @@ async function main() {
       const bodyText = request.postData() || "";
       return bodyText ? JSON.parse(bodyText).Quantity === 3 : false;
     });
-    await page.fill("[data-storefront-selection-quantity]", "3");
+    await page.fill("[data-storefront-purchase-quantity]", "3");
     await previewAfterQuantityChange;
     await page.waitForFunction(() => document.querySelector("[data-storefront-selection-price]")?.textContent === "$19.00");
-    await page.click("[data-storefront-add-to-cart]");
+
+    await page.click("[data-proof-missing-command]");
+    await page.waitForFunction(() => document.querySelector("#product-cart-feedback")?.textContent?.includes("Missing storefront command descriptor."));
+    await page.click("[data-proof-wrong-command]");
+    await page.waitForFunction(() => document.querySelector("#product-cart-feedback")?.textContent?.includes("Unsupported storefront command"));
+    if (requests.some((request) => request.path === "/api/cart/lines")) {
+      throw new Error("Malformed command descriptors must not execute add-to-cart.");
+    }
+
+    await page.click('[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]');
     await page.waitForFunction(() => document.querySelector("[data-storefront-cart-badge]")?.textContent === "1");
 
     const previewRequest = requests.filter((request) => request.path === "/api/product-selection-preview").at(-1);
@@ -233,7 +250,12 @@ async function main() {
       throw new Error(`Product selection preview request did not carry the visual selection payload: ${JSON.stringify(previewRequest?.body)}`);
     }
 
-    const addLineRequest = requests.find((request) => request.path === "/api/cart/lines");
+    const addLineRequests = requests.filter((request) => request.path === "/api/cart/lines");
+    if (addLineRequests.length !== 1) {
+      throw new Error(`Expected exactly one add-to-cart request after repeated initialize calls, got ${addLineRequests.length}.`);
+    }
+
+    const addLineRequest = addLineRequests[0];
     if (!addLineRequest || addLineRequest.body?.Quantity !== 3 || addLineRequest.body?.CurrencyCode !== "USD") {
       throw new Error("Add-to-cart request did not carry the expected command payload.");
     }

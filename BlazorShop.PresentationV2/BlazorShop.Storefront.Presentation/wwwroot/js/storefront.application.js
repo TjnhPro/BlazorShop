@@ -8,15 +8,17 @@
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
   const antiforgeryHeaderSelector = 'meta[name="blazorshop-antiforgery-header"]';
   const legacyCartChangedEventName = "blazorshop:cart-changed";
-  // F1.54 compatibility aliases remain until generated markup migrates in F1.55.
+  // Compatibility aliases remain only for non-command descriptors until F1.63 removes them.
   const productPurchaseRootSelector = "[data-storefront-product-purchase], [data-storefront-selection-preview]";
-  const productPurchaseSubmitSelector = "[data-storefront-product-purchase-submit], [data-storefront-add-to-cart]";
+  const productPurchaseSubmitMarkerSelector = "[data-storefront-product-purchase-submit]";
+  const productPurchaseSubmitSelector = '[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]';
   const productPurchaseQuantitySelector = "[data-storefront-purchase-quantity], [data-storefront-selection-quantity], [data-storefront-generated-quantity]";
   const productPurchaseAttributeSelector = "[data-storefront-purchase-attribute], [data-storefront-attribute-control]";
   const productPurchaseVariantSelector = "[data-storefront-purchase-variant], [data-storefront-variant-select]";
   const cartBadgeSelector = "[data-storefront-cart-badge]";
   const purchasePreviewTimers = new WeakMap();
   const purchaseState = new WeakMap();
+  let bindingsInitialized = false;
   const events = {
     cartChanged: "storefront:cart:changed",
     cartError: "storefront:cart:error",
@@ -622,7 +624,7 @@
         return;
       }
 
-      const submitter = target.closest(productPurchaseSubmitSelector);
+      const submitter = target.closest(productPurchaseSubmitMarkerSelector);
       if (!(submitter instanceof HTMLElement)) {
         return;
       }
@@ -633,6 +635,15 @@
       }
 
       event.preventDefault();
+      const command = (submitter.dataset.storefrontCommand || "").trim();
+      if (command !== "cart.add-line") {
+        publishPurchaseSelectionError(
+          rootElement,
+          submitter,
+          new Error(command ? `Unsupported storefront command '${command}'.` : "Missing storefront command descriptor."));
+        return;
+      }
+
       if (submitter instanceof HTMLButtonElement) {
         submitter.disabled = true;
       }
@@ -655,26 +666,18 @@
   }
 
   function initializeBindings() {
+    if (bindingsInitialized) {
+      return;
+    }
+
+    bindingsInitialized = true;
     bindConsent();
     bindCartBadge();
     bindProductPurchase();
   }
 
-  root.application = {
-    events,
-    requestJson,
-    cart,
-    consent,
-    productSelection
-  };
-
-  root.bindings = {
-    consent: { bindAll: bindConsent },
-    cartBadge: { bindAll: bindCartBadge },
-    productPurchase: { bindAll: bindProductPurchase },
-    productSelection: { previewPurchase },
-    addToCart: { addPurchaseLine }
-  };
+  root.events = Object.freeze({ ...events });
+  root.initialize = initializeBindings;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeBindings, { once: true });

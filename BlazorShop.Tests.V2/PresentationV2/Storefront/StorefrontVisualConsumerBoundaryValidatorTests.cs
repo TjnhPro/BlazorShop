@@ -93,7 +93,10 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
                 """
                 document.addEventListener("storefront:product-purchase:add-line-succeeded", () => {});
                 const app = window.blazorShopStorefront.application;
+                window.blazorShopStorefront.bindings.addToCart.addPurchaseLine();
+                window.blazorShopStorefront.bindings.productSelection.previewPurchase();
                 window.blazorShopStorefront.application.cart.clear();
+                addPurchaseLine(root, button); previewPurchase(root, button);
                 app.cart.addLine({ ProductId: "1", ProductVariantId: "2", SelectedAttributes: [], CurrencyCode: "USD" });
                 app.productSelection.preview("/api/product-selection-preview", { productId: "1", productVariantId: "2", selectedAttributes: [], currencyCode: "USD" });
                 const selection = { skuText: "SKU SAFE", gtinText: "GTIN SAFE", stockText: "In stock", priceText: "$10.00" };
@@ -125,6 +128,11 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             Assert.Contains(violations, violation => violation.Forbidden == "XMLHttpRequest");
             Assert.Contains(violations, violation => violation.Forbidden == ": IStorefront");
             Assert.Contains(violations, violation => violation.Forbidden == "application.cart");
+            Assert.Contains(violations, violation => violation.Forbidden == "blazorShopStorefront.application");
+            Assert.Contains(violations, violation => violation.Forbidden == "blazorShopStorefront.bindings.addToCart");
+            Assert.Contains(violations, violation => violation.Forbidden == "blazorShopStorefront.bindings.productSelection");
+            Assert.Contains(violations, violation => violation.Forbidden == "addPurchaseLine(");
+            Assert.Contains(violations, violation => violation.Forbidden == "previewPurchase(");
             Assert.Contains(violations, violation => violation.Forbidden == "cart.addLine");
             Assert.Contains(violations, violation => violation.Forbidden == "productSelection.preview");
             Assert.Contains(violations, violation => violation.Forbidden == "ProductId:");

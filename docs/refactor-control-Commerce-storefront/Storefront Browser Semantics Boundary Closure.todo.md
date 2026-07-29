@@ -25,9 +25,9 @@ These findings were verified against the current codebase before writing this pl
 - [x] Presentation `storefront.application.js` builds semantic `skuText` and `gtinText` from product-selection preview. 2026-07-29 F1.59 verified by regression test.
 - [x] V2 product page renders `data-storefront-selection-sku` and `data-storefront-selection-gtin`. 2026-07-29 F1.59 verified by markup regression.
 - [x] V2 selection listener updates price, compare price, stock, image, and button state, but not SKU/GTIN targets. 2026-07-29 F1.59 now updates SKU/GTIN targets from semantic event values.
-- [ ] Presentation product purchase binder selects `[data-storefront-product-purchase-submit]` and legacy aliases without enforcing `data-storefront-command="cart.add-line"`.
-- [ ] Presentation script publicly exposes command-capable methods under `window.blazorShopStorefront.application` and `window.blazorShopStorefront.bindings`.
-- [ ] `root.bindings.addToCart.addPurchaseLine` and `root.bindings.productSelection.previewPurchase` have no verified visual consumer and can re-enable command calls from visual hosts.
+- [x] Presentation product purchase binder selects `[data-storefront-product-purchase-submit]` and legacy aliases without enforcing `data-storefront-command="cart.add-line"`. 2026-07-29 F1.60 submit handling now requires `data-storefront-command="cart.add-line"`.
+- [x] Presentation script publicly exposes command-capable methods under `window.blazorShopStorefront.application` and `window.blazorShopStorefront.bindings`. 2026-07-29 F1.60 removed command-capable public exports.
+- [x] `root.bindings.addToCart.addPurchaseLine` and `root.bindings.productSelection.previewPurchase` have no verified visual consumer and can re-enable command calls from visual hosts. 2026-07-29 F1.60 removed `root.bindings`.
 - [ ] Starter product page passes only `ProductName` into `ProductDetailShell`.
 - [ ] Starter `PurchasePanelPlaceholder` renders a permanently disabled button and does not emit product purchase descriptors.
 - [ ] StorefrontBuilder still patches Starter by string replacement to add `PurchasePanel`, `PurchaseActions`, and product purchase descriptors.
@@ -77,7 +77,7 @@ Visual hosts must not:
 - [x] infer selected variant or purchasability from DOM option order. 2026-07-29 F1.57 initial attributes now come from Presentation-selected value state.
 - [ ] decide which checkout form fields participate in form submission.
 - [x] read raw preview fields such as `preview.sku`, `preview.gtin`, `preview.stockQuantity`, or `preview.canAddToCart`. 2026-07-29 F1.59 V2 regression tests forbid raw preview reads.
-- [ ] call command-capable `application.*` or `bindings.*` methods from visual scripts.
+- [x] call command-capable `application.*` or `bindings.*` methods from visual scripts. 2026-07-29 F1.60 visual validator forbids direct application/bindings command use.
 - [ ] rely on legacy selectors after canonical descriptors are available.
 - [ ] patch behavior contracts into Starter through fragile string replacement.
 
@@ -199,40 +199,46 @@ Goal: make Presentation command dispatch explicit and stop exposing command-capa
 
 ### Implementation
 
-- [ ] Change product purchase submit selector to require the canonical command descriptor:
-  - [ ] `[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]`
-- [ ] Alternatively implement a small dispatcher that switches on `element.dataset.storefrontCommand`.
-- [ ] Unknown command values must be ignored and publish a contract error event rather than executing add-to-cart.
-- [ ] Remove legacy submit alias support from command execution.
-- [ ] Make `previewPurchase`, `addPurchaseLine`, payload builders, and request helpers private inside the IIFE.
-- [ ] Replace public `root.bindings` command surface with:
-  - [ ] `root.events`
-  - [ ] optional `root.initialize()`
-- [ ] Add idempotency guard:
-  - [ ] repeated initialize calls do not register document listeners multiple times.
-- [ ] Decide whether `root.application` remains public:
-  - [ ] If no required external consumer exists, remove it.
-  - [ ] If it must remain for compatibility, expose read-only event names only and mark command methods unavailable to visual consumers.
-- [ ] Update all tests that currently assert `root.bindings` exists.
+- [x] Change product purchase submit selector to require the canonical command descriptor:
+  - [x] `[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]`
+- [x] Alternatively implement a small dispatcher that switches on `element.dataset.storefrontCommand`.
+- [x] Unknown command values must be ignored and publish a contract error event rather than executing add-to-cart.
+- [x] Remove legacy submit alias support from command execution.
+- [x] Make `previewPurchase`, `addPurchaseLine`, payload builders, and request helpers private inside the IIFE.
+- [x] Replace public `root.bindings` command surface with:
+  - [x] `root.events`
+  - [x] optional `root.initialize()`
+- [x] Add idempotency guard:
+  - [x] repeated initialize calls do not register document listeners multiple times.
+- [x] Decide whether `root.application` remains public:
+  - [x] If no required external consumer exists, remove it.
+  - [x] If it must remain for compatibility, expose read-only event names only and mark command methods unavailable to visual consumers.
+- [x] Update all tests that currently assert `root.bindings` exists.
 
 ### Tests
 
-- [ ] Add a test proving a button with `data-storefront-product-purchase-submit` but no `data-storefront-command="cart.add-line"` does not call `/api/cart/lines`.
-- [ ] Add a test proving wrong command values are ignored or produce a contract error event.
-- [ ] Add a test proving double initialization does not double-submit commands.
-- [ ] Update visual boundary validator to forbid:
-  - [ ] `blazorShopStorefront.bindings.addToCart`
-  - [ ] `blazorShopStorefront.bindings.productSelection`
-  - [ ] `addPurchaseLine(`
-  - [ ] `previewPurchase(`
-  - [ ] direct command-capable `root.application` use by visual consumers.
+- [x] Add a test proving a button with `data-storefront-product-purchase-submit` but no `data-storefront-command="cart.add-line"` does not call `/api/cart/lines`.
+- [x] Add a test proving wrong command values are ignored or produce a contract error event.
+- [x] Add a test proving double initialization does not double-submit commands.
+- [x] Update visual boundary validator to forbid:
+  - [x] `blazorShopStorefront.bindings.addToCart`
+  - [x] `blazorShopStorefront.bindings.productSelection`
+  - [x] `addPurchaseLine(`
+  - [x] `previewPurchase(`
+  - [x] direct command-capable `root.application` use by visual consumers.
 
 ### Acceptance Criteria
 
-- [ ] A descriptor typo cannot silently execute add-to-cart.
-- [ ] Visual scripts cannot call Presentation command internals.
-- [ ] Presentation initialization is idempotent.
-- [ ] Existing V2 add-to-cart behavior still works through canonical descriptors.
+- [x] A descriptor typo cannot silently execute add-to-cart.
+- [x] Visual scripts cannot call Presentation command internals.
+- [x] Presentation initialization is idempotent.
+- [x] Existing V2 add-to-cart behavior still works through canonical descriptors.
+
+2026-07-29 F1.60 evidence:
+- `node --check BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js` passed.
+- `node --check scripts/qa/storefront-application-js-split-proof.js` passed.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests|FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~SecurityPrivacyPhase1CsrfTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests" --no-restore` passed 29/29; existing MessagePack and Browserslist warnings remain.
+- `node scripts/qa/storefront-application-js-split-proof.js` passed and covered missing command, wrong command, canonical command, and repeated initialize calls.
 
 ## Phase F1.61 - Starter Functional Reference Cutover
 
