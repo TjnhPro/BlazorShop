@@ -1,8 +1,7 @@
 @using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser
+@using BlazorShop.Storefront.Browser.Cart
 @using BlazorShop.Storefront.Components.Headless.Cart
-@inject IServiceProvider Services
-@inject IStorefrontBrowserCartEventPublisher CartEvents
+@inject IStorefrontBrowserCartController CartController
 
 <section class="@Classes.PageSection">
     <div class="@Classes.Layout">
@@ -168,7 +167,7 @@
                         <p class="@Classes.BodyText">Checkout continues through an authenticated handoff so payment and order history stay attached to your profile.</p>
 
                         <button type="button"
-                                disabled="@(_apiClient is null || _clearing || _busyLineId.HasValue)"
+                                disabled="@CartController.IsClearDisabled()"
                                 data-storefront-cart-clear
                                 @onclick="ClearCartAsync"
                                 class="@Classes.ClearButton">
@@ -184,12 +183,6 @@
 </section>
 
 @code {
-    private StorefrontBrowserCart? _cart;
-    private List<StorefrontBrowserCartAlert> _alerts = [];
-    private StorefrontLocalApiClient? _apiClient;
-    private Guid? _busyLineId;
-    private bool _clearing;
-
     [Parameter]
     public StorefrontBrowserCart? InitialCart { get; set; }
 
@@ -214,21 +207,17 @@
     [Parameter]
     public string TodaysDealsUrl { get; set; } = "/todays-deals";
 
-    private IReadOnlyList<StorefrontBrowserCartAlert> Alerts => _alerts;
+    private IReadOnlyList<StorefrontBrowserCartAlert> Alerts => CartController.State.Alerts;
 
-    private IReadOnlyList<StorefrontBrowserCartLine> Lines => _cart?.Lines ?? [];
+    private IReadOnlyList<StorefrontBrowserCartLine> Lines => CartController.State.Lines;
 
-    private string GrandTotalDisplay => _cart?.GrandTotalDisplay ?? "$0.00";
+    private string GrandTotalDisplay => CartController.State.GrandTotalDisplay;
 
-    private StorefrontCartViewState ViewState => StorefrontCartViewState.FromCart(_cart, _alerts);
+    private StorefrontCartViewState ViewState => StorefrontCartViewState.FromCart(CartController.State.Cart, CartController.State.Alerts);
 
     protected override void OnParametersSet()
     {
-        _cart ??= InitialCart;
-        if (_alerts.Count == 0 && InitialAlerts.Count > 0)
-        {
-            _alerts = [.. InitialAlerts];
-        }
+        CartController.Initialize(InitialCart, InitialAlerts, DataMode, Actions);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -238,138 +227,37 @@
             return;
         }
 
-        _apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
-        if (_apiClient is not null)
+        if (await CartController.HydrateAsync())
         {
-            if (ShouldFetchAfterHydration())
-            {
-                await LoadCartAsync();
-            }
-            else if (_cart is not null)
-            {
-                await PublishCartChangedAsync(_cart.Count);
-            }
-
             StateHasChanged();
         }
     }
 
-    private bool ShouldFetchAfterHydration()
-    {
-        return DataMode switch
-        {
-            StorefrontFeatureDataMode.InitialSnapshot => false,
-            StorefrontFeatureDataMode.BrowserFetch => _cart is null,
-            StorefrontFeatureDataMode.RefreshAfterHydration => true,
-            _ => _cart is null
-        };
-    }
-
-    private async Task LoadCartAsync()
-    {
-        if (_apiClient is null || string.IsNullOrWhiteSpace(Actions.CurrentCartRoute))
-        {
-            return;
-        }
-
-        var result = await _apiClient.GetAsync<StorefrontBrowserCart>(Actions.CurrentCartRoute);
-        await ApplyCartResultAsync(result);
-    }
-
     private async Task UpdateQuantityAsync(StorefrontBrowserCartLine line, object? value)
     {
-        if (_apiClient is null
-            || IsMutationBusy(line.LineId)
-            || !Lines.Any(candidate => candidate.LineId == line.LineId)
-            || !int.TryParse(Convert.ToString(value), out var quantity))
+        if (await CartController.UpdateQuantityAsync(line.LineId, value))
         {
-            return;
-        }
-
-        if (quantity < line.QuantityMinimum)
-        {
-            AddError($"Minimum quantity for {line.DisplayName} is {line.QuantityMinimum}.");
-            return;
-        }
-
-        _busyLineId = line.LineId;
-        try
-        {
-            var result = await _apiClient.PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>(
-                Actions.UpdateLineRoute(line.LineId),
-                new StorefrontBrowserCartQuantityRequest(quantity));
-            await ApplyCartResultAsync(result);
-        }
-        finally
-        {
-            _busyLineId = null;
+            StateHasChanged();
         }
     }
 
     private async Task RemoveLineAsync(StorefrontBrowserCartLine line)
     {
-        if (_apiClient is null
-            || IsMutationBusy(line.LineId)
-            || !Lines.Any(candidate => candidate.LineId == line.LineId))
+        if (await CartController.RemoveLineAsync(line.LineId))
         {
-            return;
-        }
-
-        _busyLineId = line.LineId;
-        try
-        {
-            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>(Actions.RemoveLineRoute(line.LineId));
-            await ApplyCartResultAsync(result);
-        }
-        finally
-        {
-            _busyLineId = null;
+            StateHasChanged();
         }
     }
 
     private async Task ClearCartAsync()
     {
-        if (_apiClient is null || _clearing || _busyLineId.HasValue || string.IsNullOrWhiteSpace(Actions.ClearCartRoute))
+        if (await CartController.ClearAsync())
         {
-            return;
-        }
-
-        _clearing = true;
-        try
-        {
-            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>(Actions.ClearCartRoute);
-            await ApplyCartResultAsync(result);
-        }
-        finally
-        {
-            _clearing = false;
+            StateHasChanged();
         }
     }
 
-    private bool IsBusy(Guid lineId) => _busyLineId == lineId || _clearing;
-
-    private bool IsDisabled(Guid lineId) => _apiClient is null || IsBusy(lineId);
-
-    private bool IsMutationBusy(Guid lineId) => _busyLineId.HasValue || _clearing || IsBusy(lineId);
-
-    private async Task ApplyCartResultAsync(StorefrontLocalApiResult<StorefrontBrowserCart> result)
-    {
-        if (result.Success && result.Data is not null)
-        {
-            _cart = result.Data;
-            _alerts = [.. result.Data.Warnings.Select(warning => new StorefrontBrowserCartAlert("warning", warning.Message))];
-            await PublishCartChangedAsync(result.Data.Count);
-            return;
-        }
-
-        AddError(string.IsNullOrWhiteSpace(result.Message) ? "Cart could not be updated." : result.Message);
-    }
-
-    private void AddError(string message)
-    {
-        _alerts.RemoveAll(alert => alert.Level == "error");
-        _alerts.Insert(0, new StorefrontBrowserCartAlert("error", message));
-    }
+    private bool IsDisabled(Guid lineId) => CartController.IsDisabled(lineId);
 
     private string AlertClass(StorefrontBrowserCartAlert alert)
     {
@@ -377,10 +265,5 @@
             " ",
             Classes.Alert,
             string.Equals(alert.Level, "error", StringComparison.OrdinalIgnoreCase) ? Classes.ErrorAlert : Classes.WarningAlert);
-    }
-
-    private async Task PublishCartChangedAsync(int count)
-    {
-        await CartEvents.PublishCartChangedAsync(count);
     }
 }

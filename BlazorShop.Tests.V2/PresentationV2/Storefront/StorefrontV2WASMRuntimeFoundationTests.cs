@@ -115,26 +115,34 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void CartWasmComponent_UsesSameOriginLocalCartEndpoints()
+        public void CartWasmComponent_DelegatesSameOriginLocalCartEndpointsToBrowserController()
         {
             var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Cart/StorefrontBrowserCartController.cs");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs");
             var behavior = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
 
-            Assert.Contains("GetAsync<StorefrontBrowserCart>(Actions.CurrentCartRoute)", component, StringComparison.Ordinal);
-            Assert.Contains("ShouldFetchAfterHydration()", component, StringComparison.Ordinal);
-            Assert.Contains("StorefrontFeatureDataMode.InitialSnapshot => false", component, StringComparison.Ordinal);
-            Assert.Contains("await LoadCartAsync();", component, StringComparison.Ordinal);
-            Assert.Contains("await PublishCartChangedAsync(_cart.Count);", component, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserCart>(_actions.CurrentCartRoute", controller, StringComparison.Ordinal);
+            Assert.Contains("ShouldFetchAfterHydration()", controller, StringComparison.Ordinal);
+            Assert.Contains("StorefrontFeatureDataMode.InitialSnapshot => false", controller, StringComparison.Ordinal);
+            Assert.Contains("PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>", controller, StringComparison.Ordinal);
+            Assert.Contains("_actions.UpdateLineRoute(lineId)", controller, StringComparison.Ordinal);
+            Assert.Contains("DeleteAsync<StorefrontBrowserCart>", controller, StringComparison.Ordinal);
+            Assert.Contains("_actions.RemoveLineRoute(lineId)", controller, StringComparison.Ordinal);
+            Assert.Contains("_actions.ClearCartRoute", controller, StringComparison.Ordinal);
+            Assert.Contains("PublishCartChangedAsync(result.Data.Count", controller, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCartController", component, StringComparison.Ordinal);
+            Assert.Contains("CartController.HydrateAsync()", component, StringComparison.Ordinal);
+            Assert.Contains("CartController.UpdateQuantityAsync(line.LineId, value)", component, StringComparison.Ordinal);
+            Assert.Contains("CartController.RemoveLineAsync(line.LineId)", component, StringComparison.Ordinal);
+            Assert.Contains("CartController.ClearAsync()", component, StringComparison.Ordinal);
             Assert.Contains("StateHasChanged();", component, StringComparison.Ordinal);
-            Assert.Contains("PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>", component, StringComparison.Ordinal);
-            Assert.Contains("Actions.UpdateLineRoute(line.LineId)", component, StringComparison.Ordinal);
-            Assert.Contains("DeleteAsync<StorefrontBrowserCart>(Actions.RemoveLineRoute(line.LineId))", component, StringComparison.Ordinal);
-            Assert.Contains("DeleteAsync<StorefrontBrowserCart>(Actions.ClearCartRoute)", component, StringComparison.Ordinal);
-            Assert.Contains("IsMutationBusy(line.LineId)", component, StringComparison.Ordinal);
-            Assert.Contains("IsDisabled(line.LineId)", component, StringComparison.Ordinal);
-            Assert.Contains("_apiClient is null || _clearing || _busyLineId.HasValue", component, StringComparison.Ordinal);
-            Assert.Contains("!Lines.Any(candidate => candidate.LineId == line.LineId)", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontLocalApiClient", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontBrowserCartQuantityRequest", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetAsync<", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("PutJsonAsync<", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("DeleteAsync<", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("IServiceProvider", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-quantity", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-remove", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-clear", component, StringComparison.Ordinal);
@@ -148,8 +156,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var tokenReader = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontAntiforgeryTokenReader.cs");
             var cartEventPublisher = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontBrowserCartEventPublisher.cs");
             var interop = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
-            Assert.Contains("IStorefrontBrowserCartEventPublisher", component, StringComparison.Ordinal);
-            Assert.Contains("CartEvents.PublishCartChangedAsync(count)", component, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCartEventPublisher", cartEventPublisher, StringComparison.Ordinal);
+            Assert.Contains("PublishCartChangedAsync(int count", cartEventPublisher, StringComparison.Ordinal);
             Assert.DoesNotContain("IJSRuntime JS", component, StringComparison.Ordinal);
             Assert.DoesNotContain("IJSObjectReference", component, StringComparison.Ordinal);
             Assert.Contains("publishCartChanged", cartEventPublisher, StringComparison.Ordinal);

@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+using BlazorShop.Storefront.Browser.Cart;
 
 namespace BlazorShop.Storefront.Browser;
 
@@ -29,6 +32,7 @@ public static class StorefrontBrowserServiceCollectionExtensions
     public static IServiceCollection AddStorefrontBrowserCart(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddScoped<IStorefrontBrowserCartController, StorefrontBrowserCartController>();
         return services;
     }
 

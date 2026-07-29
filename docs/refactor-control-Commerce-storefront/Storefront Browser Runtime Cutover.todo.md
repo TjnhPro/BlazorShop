@@ -152,57 +152,57 @@ Goal: move cart application controller logic from `StorefrontCartView.razor` int
 
 ### Implementation
 
-- [ ] Create cart controller/state services in `BlazorShop.Storefront.Browser`, for example:
-  - [ ] `IStorefrontBrowserCartController`
-  - [ ] `StorefrontBrowserCartController`
-  - [ ] `StorefrontBrowserCartState`
-  - [ ] `StorefrontBrowserCartMutationState`
-  - [ ] `StorefrontBrowserCartError`
-- [ ] Move cart orchestration from V2.WASM into Browser:
-  - [ ] `CurrentCartRoute` load.
-  - [ ] initial snapshot vs browser fetch vs refresh-after-hydration behavior.
-  - [ ] quantity parsing and min quantity validation.
-  - [ ] update quantity command request creation.
-  - [ ] remove line command.
-  - [ ] clear cart command.
-  - [ ] busy state and mutation concurrency guard.
-  - [ ] warning/error mapping.
-  - [ ] cart count event publishing.
-- [ ] Keep `StorefrontCartActionDescriptor` in Components if it is a contract shared by browser and views.
-- [ ] Convert `V2.WASM/Components/Cart/StorefrontCartView.razor` to a visual view:
-  - [ ] accepts controller state as parameter or consumes a controller cascading context.
-  - [ ] calls high-level controller actions such as `UpdateQuantityAsync(lineId, value)`.
-  - [ ] does not create request DTOs.
-  - [ ] does not call `StorefrontLocalApiClient`.
-  - [ ] does not know route strings except visual navigation URLs.
-- [ ] Choose the component integration style:
-  - [ ] Preferred: C# controller service injected directly into V2 visual component if no Razor controller wrapper is needed.
-  - [ ] Acceptable: Browser-owned `<StorefrontCartController>` wrapper with render fragments if it keeps V2 visual file pure.
-- [ ] Keep visual classes/copy in V2.WASM.
+- [x] Create cart controller/state services in `BlazorShop.Storefront.Browser`, for example:
+  - [x] `IStorefrontBrowserCartController`
+  - [x] `StorefrontBrowserCartController`
+  - [x] `StorefrontBrowserCartState`
+  - [x] `StorefrontBrowserCartMutationState`
+  - [x] `StorefrontBrowserCartError`
+- [x] Move cart orchestration from V2.WASM into Browser:
+  - [x] `CurrentCartRoute` load.
+  - [x] initial snapshot vs browser fetch vs refresh-after-hydration behavior.
+  - [x] quantity parsing and min quantity validation.
+  - [x] update quantity command request creation.
+  - [x] remove line command.
+  - [x] clear cart command.
+  - [x] busy state and mutation concurrency guard.
+  - [x] warning/error mapping.
+  - [x] cart count event publishing.
+- [x] Keep `StorefrontCartActionDescriptor` in Components if it is a contract shared by browser and views.
+- [x] Convert `V2.WASM/Components/Cart/StorefrontCartView.razor` to a visual view:
+  - [x] accepts controller state as parameter or consumes a controller cascading context.
+  - [x] calls high-level controller actions such as `UpdateQuantityAsync(lineId, value)`.
+  - [x] does not create request DTOs.
+  - [x] does not call `StorefrontLocalApiClient`.
+  - [x] does not know route strings except visual navigation URLs.
+- [x] Choose the component integration style:
+  - [x] Preferred: C# controller service injected directly into V2 visual component if no Razor controller wrapper is needed.
+  - [x] Acceptable: Browser-owned `<StorefrontCartController>` wrapper with render fragments if it keeps V2 visual file pure.
+- [x] Keep visual classes/copy in V2.WASM.
 
 ### Tests
 
-- [ ] Add Browser unit tests for cart controller:
-  - [ ] load current cart.
-  - [ ] update quantity creates `StorefrontBrowserCartQuantityRequest`.
-  - [ ] min quantity failure does not call API.
-  - [ ] remove line respects busy state.
-  - [ ] clear cart respects busy state.
-  - [ ] failed API result maps to cart error state.
-  - [ ] successful mutation publishes cart count.
-- [ ] Invert V2.WASM tests:
-  - [ ] `StorefrontCartView.razor` must not contain `StorefrontLocalApiClient`.
-  - [ ] must not contain `GetAsync<`, `PutJsonAsync<`, `DeleteAsync<`.
-  - [ ] must not contain `StorefrontBrowserCartQuantityRequest`.
-  - [ ] must not inject `IServiceProvider`.
-- [ ] Keep V2 visual tests for DOM descriptors and button states.
+- [x] Add Browser unit tests for cart controller:
+  - [x] load current cart.
+  - [x] update quantity creates `StorefrontBrowserCartQuantityRequest`.
+  - [x] min quantity failure does not call API.
+  - [x] remove line respects busy state.
+  - [x] clear cart respects busy state.
+  - [x] failed API result maps to cart error state.
+  - [x] successful mutation publishes cart count.
+- [x] Invert V2.WASM tests:
+  - [x] `StorefrontCartView.razor` must not contain `StorefrontLocalApiClient`.
+  - [x] must not contain `GetAsync<`, `PutJsonAsync<`, `DeleteAsync<`.
+  - [x] must not contain `StorefrontBrowserCartQuantityRequest`.
+  - [x] must not inject `IServiceProvider`.
+- [x] Keep V2 visual tests for DOM descriptors and button states.
 
 ### Acceptance Criteria
 
-- [ ] Cart API orchestration is in Browser runtime.
-- [ ] V2 cart component is visual and delegates to Browser controller.
-- [ ] Cart behavior remains identical for current V2 user flows.
-- [ ] Existing cart badge updates still work.
+- [x] Cart API orchestration is in Browser runtime.
+- [x] V2 cart component is visual and delegates to Browser controller.
+- [x] Cart behavior remains identical for current V2 user flows.
+- [x] Existing cart badge updates still work.
 
 ## Phase F1.67 - Checkout Browser Controller Cutover
 

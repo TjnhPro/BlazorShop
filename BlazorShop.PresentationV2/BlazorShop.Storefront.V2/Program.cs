@@ -1,3 +1,4 @@
+using BlazorShop.Storefront.Browser;
 using BlazorShop.Storefront.Presentation.Hosting;
 using BlazorShop.Storefront.V2;
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.Services.AddStorefrontApplication(builder.Configuration);
+builder.Services.AddStorefrontBrowserCart();
 builder.Services.AddV2FoundationViews();
 
 var app = builder.Build();

@@ -104,7 +104,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2CartClient_UsesRuntimeFacadeForActiveCartCrud()
         {
-            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
             var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
             var runtimeFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCartFacade.cs");
@@ -115,6 +115,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             var commonContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Contracts/CommonContracts.cs");
             var cartComponents = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Cart/StorefrontBrowserCartController.cs")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/StorefrontLocalApiClient.cs");
             var cartOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs");
 
@@ -148,7 +149,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("int? StatusCode", commonContracts, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status409Conflict", cartEndpointSupport, StringComparison.Ordinal);
             Assert.Contains("ValidateLocalCartAntiforgeryAsync", cartEndpoints, StringComparison.Ordinal);
-            Assert.Contains("Actions.CurrentCartRoute", cartComponents, StringComparison.Ordinal);
+            Assert.Contains("_actions.CurrentCartRoute", cartComponents, StringComparison.Ordinal);
             Assert.Contains("\"/api/cart\"", cartOptions, StringComparison.Ordinal);
             Assert.DoesNotContain("localhost:5180", cartComponents, StringComparison.Ordinal);
         }
@@ -156,7 +157,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2CheckoutAndPaymentClients_UseRuntimeFacadesForActiveGuestCheckout()
         {
-            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
             var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
             var checkoutFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeCheckoutFacade.cs");
@@ -219,7 +220,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2AddressAndConsentClients_UseRuntimeFacadesForPublicAccountSupport()
         {
-            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var serviceCollection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
             var addressFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeAddressFacade.cs");
             var consentFacade = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeConsentFacade.cs");

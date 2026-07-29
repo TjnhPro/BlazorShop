@@ -73,7 +73,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(File.Exists(sharedInterop));
             Assert.False(File.Exists(v2Interop));
             Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", browserRuntimeSource, StringComparison.Ordinal);
-            Assert.Contains("IStorefrontBrowserCartEventPublisher", cartView, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCartController", cartView, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -398,6 +398,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var cartView = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
+            var cartController = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Cart/StorefrontBrowserCartController.cs");
             var cartBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs");
             var cartOptions = ReadRepositoryFile(
@@ -422,10 +424,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(expected, cartBehavior, StringComparison.Ordinal);
             }
 
-            Assert.Contains("Actions.CurrentCartRoute", cartView, StringComparison.Ordinal);
-            Assert.Contains("Actions.UpdateLineRoute(line.LineId)", cartView, StringComparison.Ordinal);
-            Assert.Contains("Actions.RemoveLineRoute(line.LineId)", cartView, StringComparison.Ordinal);
-            Assert.Contains("Actions.ClearCartRoute", cartView, StringComparison.Ordinal);
+            Assert.Contains("_actions.CurrentCartRoute", cartController, StringComparison.Ordinal);
+            Assert.Contains("_actions.UpdateLineRoute(lineId)", cartController, StringComparison.Ordinal);
+            Assert.Contains("_actions.RemoveLineRoute(lineId)", cartController, StringComparison.Ordinal);
+            Assert.Contains("_actions.ClearCartRoute", cartController, StringComparison.Ordinal);
+            Assert.Contains("CartController.UpdateQuantityAsync(line.LineId, value)", cartView, StringComparison.Ordinal);
+            Assert.Contains("CartController.RemoveLineAsync(line.LineId)", cartView, StringComparison.Ordinal);
+            Assert.Contains("CartController.ClearAsync()", cartView, StringComparison.Ordinal);
             Assert.Contains("class=\"@Classes.", cartView, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-quantity", cartView, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-remove", cartView, StringComparison.Ordinal);
