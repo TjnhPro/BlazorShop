@@ -107,29 +107,39 @@ function Test-ScopeMatch {
 
 function New-RegenerationPlan {
     param(
-        [string]$ProjectRoot,
-        [string]$StagedRoot,
-        [System.Collections.Generic.List[hashtable]]$OriginalEntries,
-        [System.Collections.Generic.List[hashtable]]$StagedEntries,
+        [string]$TargetProjectRoot,
+        [string]$CandidateProjectRoot,
+        [System.Collections.Generic.List[hashtable]]$TargetEntries,
+        [System.Collections.Generic.List[hashtable]]$CandidateEntries,
         [string]$Scope,
         [string]$Target
     )
 
-    $originalMap = @{}
-    foreach ($entry in $OriginalEntries) {
-        $originalMap[$entry["filePath"]] = $entry
+    $targetMap = @{}
+    foreach ($entry in $TargetEntries) {
+        $targetMap[$entry["filePath"]] = $entry
     }
 
+    $candidateMap = @{}
+    foreach ($entry in $CandidateEntries) {
+        $candidateMap[$entry["filePath"]] = $entry
+    }
+
+    $paths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($key in $targetMap.Keys) { [void]$paths.Add($key) }
+    foreach ($key in $candidateMap.Keys) { [void]$paths.Add($key) }
+
     $actions = [System.Collections.Generic.List[hashtable]]::new()
-    foreach ($entry in $StagedEntries) {
-        $filePath = $entry["filePath"]
-        $ownership = $entry["ownership"]
-        $conflictStatus = $entry["conflictStatus"]
-        $targetPath = Join-Path $ProjectRoot $filePath
-        $stagedPath = Join-Path $StagedRoot $filePath
-        $originalHash = Get-NormalizedFileHash -Path $targetPath
-        $stagedHash = Get-NormalizedFileHash -Path $stagedPath
-        $previousGeneratedHash = if ($originalMap.ContainsKey($filePath)) { $originalMap[$filePath]["generatedHash"] } else { "none" }
+    foreach ($filePath in $paths | Sort-Object) {
+        $targetEntry = if ($targetMap.ContainsKey($filePath)) { $targetMap[$filePath] } else { $null }
+        $candidateEntry = if ($candidateMap.ContainsKey($filePath)) { $candidateMap[$filePath] } else { $null }
+        $entry = if ($candidateEntry) { $candidateEntry } elseif ($targetEntry) { $targetEntry } else { @{} }
+        $ownership = if ($candidateEntry) { $candidateEntry["ownership"] } elseif ($targetEntry) { $targetEntry["ownership"] } else { "unknown" }
+        $targetPath = Join-Path $TargetProjectRoot $filePath
+        $candidatePath = Join-Path $CandidateProjectRoot $filePath
+        $targetHash = Get-NormalizedFileHash -Path $targetPath
+        $candidateHash = Get-NormalizedFileHash -Path $candidatePath
+        $previousGeneratedHash = if ($targetEntry) { $targetEntry["generatedHash"] } else { "none" }
         $scopeMatches = Test-ScopeMatch -Entry $entry -Scope $Scope -Target $Target
 
         $action = "skip unchanged"
@@ -147,30 +157,43 @@ function New-RegenerationPlan {
             $action = "skip user-owned"
             $reason = "User-owned and artifact-only files are preserved."
         }
-        elseif ($conflictStatus -eq "manual-edit" -or $conflictStatus -eq "protected-modified" -or $conflictStatus -eq "user-owned-modified") {
-            $action = "conflict manual edit"
-            $reason = $entry["conflictReason"]
+        elseif ($candidateHash -eq "none") {
+            if (($ownership -eq "generated" -or $ownership -eq "managed") -and $targetHash -ne "none") {
+                $action = "obsolete candidate"
+                $reason = "Target-only generated files are reported as obsolete candidates; delete only if explicitly allowed."
+            }
+            else {
+                $reason = "Candidate does not produce this file."
+            }
         }
-        elseif ($conflictStatus -eq "obsolete" -or $entry["obsolete"] -eq "true") {
-            $action = "obsolete candidate"
-            $reason = "Obsolete files are reported, not deleted silently; delete only if explicitly allowed."
-        }
-        elseif ($originalHash -eq "none") {
+        elseif ($targetHash -eq "none") {
             $action = "create"
             $reason = "File does not exist in target project."
         }
-        elseif ($originalHash -eq $stagedHash) {
-            $action = "skip unchanged"
-            $reason = "Target already matches staged output."
-        }
-        elseif ($ownership -eq "generated" -or $ownership -eq "managed") {
-            if ($previousGeneratedHash -eq "none" -or $originalHash -eq $previousGeneratedHash) {
-                $action = "update"
-                $reason = "Target hash matches last generated hash."
+        elseif ($targetHash -eq $candidateHash) {
+            if (($ownership -eq "generated" -or $ownership -eq "managed") -and $previousGeneratedHash -ne "none" -and $targetHash -ne $previousGeneratedHash) {
+                $reason = "Target already matches candidate content; manual edit preserved."
             }
             else {
-                $action = "conflict manual edit"
-                $reason = "Target hash differs from last generated hash."
+                $reason = "Target already matches candidate content."
+            }
+        }
+        elseif (($ownership -eq "generated" -or $ownership -eq "managed") -and ($previousGeneratedHash -eq "none" -or $targetHash -eq $previousGeneratedHash)) {
+            $action = "update"
+            $reason = if ($previousGeneratedHash -eq "none") {
+                "File does not exist in target project."
+            }
+            else {
+                "Target hash matches last generated hash."
+            }
+        }
+        elseif (($ownership -eq "generated" -or $ownership -eq "managed") -and $targetHash -ne $previousGeneratedHash) {
+            $action = "conflict manual edit"
+            $reason = if ($targetEntry -and $targetEntry["conflictReason"]) {
+                $targetEntry["conflictReason"]
+            }
+            else {
+                "$filePath differs from the last generated hash."
             }
         }
 
@@ -181,6 +204,9 @@ function New-RegenerationPlan {
             ownership = $ownership
             scope = $entry["scope"]
             changed = ($action -eq "create" -or $action -eq "update")
+            targetHash = $targetHash
+            candidateHash = $candidateHash
+            previousGeneratedHash = $previousGeneratedHash
         })
     }
 
@@ -275,17 +301,89 @@ function Copy-ChangedFile {
     Copy-Item -LiteralPath $source -Destination $target -Force
 }
 
+function Read-SimpleYamlValue {
+    param(
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Key,
+        [string]$Default = ""
+    )
+
+    foreach ($line in $Text -split "\r?\n") {
+        $match = [regex]::Match($line, "^\s*$([regex]::Escape($Key)):\s*(.*?)\s*$")
+        if ($match.Success) {
+            return Unquote-ManifestValue $match.Groups[1].Value
+        }
+    }
+
+    return $Default
+}
+
+function Read-GeneratedStorefrontMetadata {
+    param([Parameter(Mandatory = $true)][string]$MetadataPath)
+
+    if (-not (Test-Path -LiteralPath $MetadataPath)) {
+        return @{
+            projectName = Split-Path -Leaf (Split-Path -Parent (Split-Path -Parent $MetadataPath))
+            storeKey = "default"
+            outputRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MetadataPath))
+            sourceStarterPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"
+        }
+    }
+
+    $text = Get-Content -LiteralPath $MetadataPath -Raw
+    return @{
+        projectName = Read-SimpleYamlValue -Text $text -Key "projectName" -Default (Split-Path -Leaf (Split-Path -Parent (Split-Path -Parent $MetadataPath)))
+        storeKey = Read-SimpleYamlValue -Text $text -Key "storeKey" -Default "default"
+        outputRoot = Read-SimpleYamlValue -Text $text -Key "outputRoot" -Default (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MetadataPath)))
+        sourceStarterPath = Read-SimpleYamlValue -Text $text -Key "sourceStarterPath" -Default "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"
+    }
+}
+
+function Invoke-RegenerationCandidateGeneration {
+    param(
+        [Parameter(Mandatory = $true)][string]$CandidateOutputRoot,
+        [Parameter(Mandatory = $true)][string]$ProjectName,
+        [Parameter(Mandatory = $true)][string]$StoreKey
+    )
+
+    & "$PSScriptRoot/build-storefront.ps1" `
+        -Name $ProjectName `
+        -StoreKey $StoreKey `
+        -OutputRoot $CandidateOutputRoot `
+        -Mode generate `
+        -Force
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "[SFB-REGEN-001] Failed to generate regeneration candidate from current Starter source."
+    }
+}
+
 $resolvedProjectRoot = Resolve-InputPath $ProjectRoot
 if (-not (Test-Path -LiteralPath $resolvedProjectRoot)) {
     throw "[SFB-REGEN-000] Project root does not exist: $resolvedProjectRoot"
 }
 
-$projectName = Split-Path -Leaf $resolvedProjectRoot
-$outputRoot = Split-Path -Parent $resolvedProjectRoot
-$approvedOutputRoot = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot $outputRoot
-Assert-StorefrontBuilderPathUnderRoot -Path $resolvedProjectRoot -Root $approvedOutputRoot
+$metadataPath = Join-Path $resolvedProjectRoot "docs\storefront-analysis\metadata.yaml"
+$metadata = Read-GeneratedStorefrontMetadata -MetadataPath $metadataPath
+$projectName = if ([string]::IsNullOrWhiteSpace($metadata["projectName"])) { Split-Path -Leaf $resolvedProjectRoot } else { $metadata["projectName"] }
+$storeKey = if ([string]::IsNullOrWhiteSpace($metadata["storeKey"])) { "default" } else { $metadata["storeKey"] }
+$outputRootValue = if ([string]::IsNullOrWhiteSpace($metadata["outputRoot"])) { Split-Path -Parent $resolvedProjectRoot } else { $metadata["outputRoot"] }
+$resolvedOutputRoot = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot (Resolve-StorefrontBuilderRepoPath -RepoRoot $repoRoot -Path $outputRootValue)
+Assert-StorefrontBuilderPathUnderRoot -Path $resolvedProjectRoot -Root $resolvedOutputRoot
+
 $manifestPath = Join-Path $resolvedProjectRoot "docs\storefront-analysis\generated-files.yaml"
 $reportPath = Join-Path $resolvedProjectRoot "docs\storefront-analysis\regeneration-report.md"
+$operationId = [System.Guid]::NewGuid().ToString("N")
+$candidateOutputRoot = Join-Path $resolvedOutputRoot ".regeneration-candidate\$operationId"
+$candidateProjectRoot = Join-Path $candidateOutputRoot $projectName
+$candidateReportPath = Join-Path $candidateProjectRoot "docs\storefront-analysis\regeneration-report.md"
+$backupRoot = Join-Path $resolvedOutputRoot ".regeneration-backup\$projectName-$operationId"
+$validationResult = "not-requested"
+$buildResult = "not-requested"
+$plan = [System.Collections.Generic.List[hashtable]]::new()
+
+Assert-StorefrontBuilderPathUnderRoot -Path $candidateOutputRoot -Root $resolvedOutputRoot
+Assert-StorefrontBuilderPathUnderRoot -Path $backupRoot -Root $resolvedOutputRoot
 
 if ($Scope -eq "validate") {
     & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $resolvedProjectRoot
@@ -299,84 +397,75 @@ if ($Scope -eq "conflicts") {
     exit 0
 }
 
-if ($WhatIf) {
-    $entries = Read-GeneratedFileManifestEntries -ManifestPath $manifestPath
-    foreach ($entry in $entries) {
-        if (Test-ScopeMatch -Entry $entry -Scope $Scope -Target $Target) {
-            Write-Host "plan skip unchanged $($entry["ownership"]) $($entry["filePath"])"
-        }
-    }
-
-    Write-Host "WhatIf completed without writing generated project files."
-    exit 0
-}
-
-$operationId = [System.Guid]::NewGuid().ToString("N")
-$stagingRoot = Join-Path (Join-Path $outputRoot ".regeneration-staging") "$projectName-$operationId"
-$backupRoot = Join-Path (Join-Path $outputRoot ".regeneration-backup") "$projectName-$operationId"
-$validationResult = "not-requested"
-$buildResult = "not-requested"
-
 try {
-    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $stagingRoot) | Out-Null
-    Copy-Item -LiteralPath $resolvedProjectRoot -Destination $stagingRoot -Recurse -Force
-
-    if ($Scope -in @("all", "css")) {
-        node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $stagingRoot
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    }
-
-    if ($Scope -in @("all", "page", "component")) {
-        node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $stagingRoot --target $Target
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    }
-
-    node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $stagingRoot
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    Invoke-RegenerationCandidateGeneration -CandidateOutputRoot $candidateOutputRoot -ProjectName $projectName -StoreKey $storeKey
 
     $originalEntries = Read-GeneratedFileManifestEntries -ManifestPath $manifestPath
-    $stagedEntries = Read-GeneratedFileManifestEntries -ManifestPath (Join-Path $stagingRoot "docs\storefront-analysis\generated-files.yaml")
-    $plan = New-RegenerationPlan -ProjectRoot $resolvedProjectRoot -StagedRoot $stagingRoot -OriginalEntries $originalEntries -StagedEntries $stagedEntries -Scope $Scope -Target $Target
-    $conflicts = @($plan | Where-Object { $_["action"].StartsWith("conflict", [System.StringComparison]::Ordinal) })
+    $candidateEntries = Read-GeneratedFileManifestEntries -ManifestPath (Join-Path $candidateProjectRoot "docs\storefront-analysis\generated-files.yaml")
+    $plan = New-RegenerationPlan -TargetProjectRoot $resolvedProjectRoot -CandidateProjectRoot $candidateProjectRoot -TargetEntries $originalEntries -CandidateEntries $candidateEntries -Scope $Scope -Target $Target
+
+    $commandLabel = if ($WhatIf) { "regenerate-storefront.ps1 -WhatIf" } else { "regenerate-storefront.ps1" }
+    Write-RegenerationReport -ReportPath $candidateReportPath -Command $commandLabel -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
+
+    if ($WhatIf) {
+        Write-Host "WhatIf completed without writing generated project files."
+        exit 0
+    }
 
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $backupRoot) | Out-Null
     Copy-Item -LiteralPath $resolvedProjectRoot -Destination $backupRoot -Recurse -Force
 
     foreach ($item in $plan | Where-Object { $_["changed"] -eq $true }) {
-        Copy-ChangedFile -SourceRoot $stagingRoot -TargetRoot $resolvedProjectRoot -FilePath $item["filePath"]
+        Copy-ChangedFile -SourceRoot $candidateProjectRoot -TargetRoot $resolvedProjectRoot -FilePath $item["filePath"]
     }
-
-    node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $resolvedProjectRoot
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-    Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
 
     if ($ValidateAfterApply) {
         & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $resolvedProjectRoot
+        if ($LASTEXITCODE -ne 0) {
+            $validationResult = "failed"
+            throw "[SFB-REGEN-011] Post-regeneration validation failed."
+        }
+
         $validationResult = "passed"
     }
 
     if ($BuildAfterApply) {
         $projectFile = Join-Path $resolvedProjectRoot "$projectName.csproj"
         dotnet build $projectFile --no-restore
-        if ($LASTEXITCODE -ne 0) { throw "[SFB-REGEN-010] Post-regeneration build failed." }
+        if ($LASTEXITCODE -ne 0) {
+            $buildResult = "failed"
+            throw "[SFB-REGEN-010] Post-regeneration build failed."
+        }
+
         $buildResult = "passed"
     }
 
-    Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
+    node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $resolvedProjectRoot
+    if ($LASTEXITCODE -ne 0) { throw "[SFB-REGEN-012] Failed to update the target generated-file manifest." }
+
     & "$PSScriptRoot/scripts/validate/Test-StorefrontBuilderIdempotency.ps1" -ProjectRoot $resolvedProjectRoot
+    $hasMeaningfulPlanEntries = @($plan | Where-Object { -not $_["action"].StartsWith("skip", [System.StringComparison]::Ordinal) }).Count -gt 0
+    if ($hasMeaningfulPlanEntries) {
+        Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
+    }
 }
 catch {
     if (Test-Path -LiteralPath $backupRoot) {
         Remove-Item -LiteralPath $resolvedProjectRoot -Recurse -Force
         Copy-Item -LiteralPath $backupRoot -Destination $resolvedProjectRoot -Recurse -Force
+
+        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $resolvedProjectRoot
+    }
+
+    if ((@($plan | Where-Object { -not $_["action"].StartsWith("skip", [System.StringComparison]::Ordinal) }).Count -gt 0) -and (Test-Path -LiteralPath $resolvedProjectRoot)) {
+        Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
     }
 
     throw
 }
 finally {
-    if (Test-Path -LiteralPath $stagingRoot) {
-        Remove-Item -LiteralPath $stagingRoot -Recurse -Force
+    if (Test-Path -LiteralPath $candidateOutputRoot) {
+        Remove-Item -LiteralPath $candidateOutputRoot -Recurse -Force
     }
 
     if (Test-Path -LiteralPath $backupRoot) {

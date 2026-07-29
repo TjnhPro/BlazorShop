@@ -128,58 +128,52 @@ Goal: make regeneration compare the current target project against a fresh candi
 
 Tasks:
 
-- [ ] Replace target-copy staging as the primary candidate source.
-- [ ] Introduce a fresh candidate generation step:
-  - [ ] read current generated project metadata;
-  - [ ] resolve project name;
-  - [ ] resolve store key;
-  - [ ] resolve output root;
-  - [ ] create candidate under an approved `.regeneration-candidate` root;
-  - [ ] generate from current Starter using the same project name and store key;
-  - [ ] copy or reuse existing analysis artifacts that are legitimate generation inputs;
-  - [ ] run visual foundation generation against candidate;
-  - [ ] run composition generation against candidate;
-  - [ ] build candidate manifest from candidate files.
-- [ ] Define which existing generated artifact files are inputs vs outputs:
-  - [ ] `review-summary.md`;
-  - [ ] `asset-manifest.yaml`;
-  - [ ] `generation-plan.yaml`;
-  - [ ] `composition-manifest.yaml`;
-  - [ ] `metadata.yaml`;
-  - [ ] `generated-files.yaml`;
-  - [ ] `regeneration-report.md`.
-- [ ] Stop claiming `apply-composition.mjs` reads `generation-plan.yaml` unless it actually does.
-- [ ] Either make `apply-composition.mjs` read the generation plan or rename/log it as deterministic Starter transform.
-- [ ] Add a single planning function used by both `-WhatIf` and apply mode.
-- [ ] Plan actions by comparing:
-  - [ ] original manifest generated hash;
-  - [ ] current target file hash;
-  - [ ] fresh candidate file hash;
-  - [ ] candidate manifest ownership;
-  - [ ] target-only generated files;
-  - [ ] candidate-only generated files.
-- [ ] Produce these action types:
-  - [ ] `create`;
-  - [ ] `update`;
-  - [ ] `skip unchanged`;
-  - [ ] `skip out-of-scope`;
-  - [ ] `skip user-owned`;
-  - [ ] `skip protected`;
-  - [ ] `conflict manual edit`;
-  - [ ] `obsolete candidate`;
-  - [ ] `platform metadata update`;
-  - [ ] `validation failed`.
-- [ ] Treat target-only generated/managed files missing from fresh candidate as obsolete candidates.
-- [ ] Treat candidate-only generated/managed files as create candidates.
-- [ ] Treat manually edited generated files as conflicts when candidate content differs.
-- [ ] Preserve manually edited files when candidate content is unchanged but report the manual edit state.
-- [ ] Ensure all path decisions stay under the generated project root.
-- [ ] Keep rollback backup under an approved generated output root.
-- [ ] Write a regeneration report before apply and after apply.
-- [ ] `-WhatIf` must run the full candidate/planning pipeline and exit before copying any changed file into target.
-- [ ] Apply mode must copy only planned safe changes from candidate to target.
-- [ ] Apply mode must update target `generated-files.yaml` only after successful apply and optional validation/build.
-- [ ] If validation/build fails, restore target from backup and leave a failure report if possible.
+- [x] Replace target-copy staging as the primary candidate source.
+- [x] Introduce a fresh candidate generation step:
+  - [x] read current generated project metadata;
+  - [x] resolve project name;
+  - [x] resolve store key;
+  - [x] resolve output root;
+  - [x] create candidate under an approved `.regeneration-candidate` root;
+  - [x] generate from current Starter using the same project name and store key;
+  - [x] copy or reuse existing analysis artifacts that are legitimate generation inputs;
+  - [x] run visual foundation generation against candidate;
+  - [x] run composition generation against candidate;
+  - [x] build candidate manifest from candidate files.
+- [x] Define which existing generated artifact files are inputs vs outputs.
+  - Generated analysis artifacts are now produced in the candidate tree first and written back to the target tree only after planning/apply.
+- [x] Stop claiming `apply-composition.mjs` reads `generation-plan.yaml` unless it actually does.
+- [x] Either make `apply-composition.mjs` read the generation plan or rename/log it as deterministic Starter transform.
+- [x] Add a single planning function used by both `-WhatIf` and apply mode.
+- [x] Plan actions by comparing:
+  - [x] original manifest generated hash;
+  - [x] current target file hash;
+  - [x] fresh candidate file hash;
+  - [x] candidate manifest ownership;
+  - [x] target-only generated files;
+  - [x] candidate-only generated files.
+- [x] Produce these action types:
+  - [x] `create`;
+  - [x] `update`;
+  - [x] `skip unchanged`;
+  - [x] `skip out-of-scope`;
+  - [x] `skip user-owned`;
+  - [x] `skip protected`;
+  - [x] `conflict manual edit`;
+  - [x] `obsolete candidate`;
+  - [x] `platform metadata update`;
+  - [x] `validation failed`.
+- [x] Treat target-only generated/managed files missing from fresh candidate as obsolete candidates.
+- [x] Treat candidate-only generated/managed files as create candidates.
+- [x] Treat manually edited generated files as conflicts when candidate content differs.
+- [x] Preserve manually edited files when candidate content is unchanged but report the manual edit state.
+- [x] Ensure all path decisions stay under the generated project root.
+- [x] Keep rollback backup under an approved generated output root.
+- [x] Write a regeneration report before apply and after apply.
+- [x] `-WhatIf` must run the full candidate/planning pipeline and exit before copying any changed file into target.
+- [x] Apply mode must copy only planned safe changes from candidate to target.
+- [x] Apply mode must update target `generated-files.yaml` only after successful apply and optional validation/build.
+- [x] If validation/build fails, restore target from backup and leave a failure report if possible.
 
 Implementation notes:
 
@@ -198,11 +192,11 @@ QA:
 
 Exit gate:
 
-- [ ] Regeneration candidate comes from current Starter/template source, not from copying the target project.
-- [ ] `-WhatIf` reports real create/update/conflict/obsolete actions and writes no target files.
-- [ ] Apply mode uses the same plan as `-WhatIf`.
-- [ ] Missing generated Razor/component files can be recreated from candidate.
-- [ ] Removed template files become obsolete candidates.
+- [x] Regeneration candidate comes from current Starter/template source, not from copying the target project.
+- [x] `-WhatIf` reports real create/update/conflict/obsolete actions and writes no target files.
+- [x] Apply mode uses the same plan as `-WhatIf`.
+- [x] Missing generated Razor/component files can be recreated from candidate.
+- [x] Removed template files become obsolete candidates.
 
 ## Phase 2.8C - Platform Metadata Upgrade Path
 

@@ -32,7 +32,7 @@ for (const [relativePath, transform] of transforms) {
   }
 }
 
-console.log("StorefrontBuilder composition applied shell, home, catalog, product, and fallback page files from generation-plan.yaml.");
+console.log("StorefrontBuilder composition applied deterministic shell, home, catalog, product, and fallback page transforms from Starter.");
 console.log("Commerce commands remain bound through Presentation product purchase descriptors such as cart.add-line.");
 
 function transformLayout(content) {

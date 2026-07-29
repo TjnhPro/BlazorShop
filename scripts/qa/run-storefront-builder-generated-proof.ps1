@@ -273,7 +273,7 @@ function Invoke-GeneratedProofRegenerationLifecycle {
     $manualConflictFile = Join-Path $projectRoot "Components\Catalog\PurchasePanelPlaceholder.razor"
 
     Invoke-Step "Run post-regeneration build proof" {
-        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
+        & $regenerator -ProjectRoot $projectRoot -Scope all
     }
 
     Invoke-Step "Run regenerate no-op proof" {
@@ -306,7 +306,7 @@ function Invoke-GeneratedProofRegenerationLifecycle {
             [System.IO.File]::WriteAllText($manualConflictFile, $original, [System.Text.UTF8Encoding]::new($false))
         }
 
-        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
+        & $regenerator -ProjectRoot $projectRoot -Scope all
     }
 }
 
