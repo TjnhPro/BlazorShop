@@ -218,9 +218,28 @@ try {
   }
 
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
+  const consentAcceptResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.origin === baseUrl && url.pathname === "/api/consent" && response.request().method() === "POST";
+  });
   await page.click("[data-storefront-consent-all]", { force: true });
+  const consentAcceptResult = await consentAcceptResponse;
+
+  await page.locator("[data-storefront-consent-banner]").evaluate((banner) => {
+    banner.classList.remove("hidden");
+  });
+
+  const consentRevokeResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.origin === baseUrl && url.pathname === "/api/consent/revoke" && response.request().method() === "POST";
+  });
   await page.click("[data-storefront-consent-revoke]", { force: true });
-  checks.push("consent current/save/revoke works");
+  const consentRevokeResult = await consentRevokeResponse;
+  if (consentAcceptResult.ok() && consentRevokeResult.ok()) {
+    checks.push("consent current/save/revoke works");
+  } else {
+    failures.push("consent current/save/revoke works");
+  }
 
   if (directCommerceCalls.length === 0) {
     checks.push("no browser request goes directly to Commerce Node");

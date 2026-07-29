@@ -52,13 +52,27 @@ This gate uses ignored output under `obj/storefront-builder/generated`, proves n
 
 ## Full Foundation Functional Proof
 
+Inspect the self-contained full proof wrapper:
+
+```powershell
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1 -Describe
+```
+
 Run the fixture-backed generated browser proof before release closure:
+
+```powershell
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
+```
+
+The wrapper stops any existing V2 runtime, starts Docker dependencies plus Control Plane API/Web, Commerce Node API, and Storefront V2 through `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser`, waits for Commerce Node health, verifies the fixture store/category/product/page/COD payment endpoints, runs `FoundationFunctionalFull`, writes `full-proof-with-fixture-report.md`, and tears down services in `finally`.
+
+Use the direct proof command only when fixture runtime is already running and verified:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
 ```
 
-This proof checks fixture store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection.
+The full proof checks fixture store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection.
 
 ## Manual Browser QA
 

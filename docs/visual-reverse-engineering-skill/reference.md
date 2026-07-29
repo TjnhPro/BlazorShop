@@ -12,6 +12,7 @@
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/` | Static validation scripts and guardrails. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/` | Browser visual QA and commerce regression runners. |
 | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
+| `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
 | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Generated storefront build/package/reference isolation gate. |
 
@@ -99,16 +100,27 @@ Scopes:
 
 | Scope | Behavior |
 | --- | --- |
-| `all` | Applies visual foundation, applies composition, updates generated manifest, and checks idempotency. |
-| `page` | Applies page/composition output for the optional `Target`. |
-| `component` | Applies component/composition output for the optional `Target`. |
-| `css` | Applies generated visual foundation CSS. |
+| `all` | Generates a fresh candidate from current Starter/template inputs, plans all generated/managed visual file actions, applies safe changes, updates generated manifest, and checks idempotency. |
+| `page` | Plans and applies page/composition output for the optional `Target`. |
+| `component` | Plans and applies component/composition output for the optional `Target`. |
+| `css` | Plans and applies generated visual foundation CSS. |
+| `foundation` | Explicitly refreshes generated platform metadata, package compatibility metadata, and the copied Starter contract. |
 | `validate` | Runs the static storefront validation gate. |
 | `conflicts` | Runs idempotency/conflict validation. |
 
-Use `-WhatIf` to print the intended scope and target without writing.
+Use `-WhatIf` to run the same fresh-candidate planning pipeline as apply mode without copying changed files into the generated target. The plan reports create, update, skip unchanged, skip user-owned, skip protected, manual-edit conflict, platform metadata update, and obsolete candidate actions.
 
 Use `-ValidateAfterApply` and `-BuildAfterApply` when a regeneration must prove the generated project still validates and builds before the change is accepted.
+
+Refresh platform metadata intentionally:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
+  -Scope foundation `
+  -ValidateAfterApply `
+  -BuildAfterApply
+```
 
 ## Validation Commands
 
@@ -145,13 +157,20 @@ Canonical full foundation functional proof:
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
 ```
 
+Self-contained full fixture proof:
+
+```powershell
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1 -Describe
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
+```
+
 CI-friendly regeneration ownership gate:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-regeneration-gate.ps1
 ```
 
-`Structure` generates/restores/builds the proof project, runs static validation, runs isolation, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `run-storefront-builder-regeneration-gate.ps1` separately proves no-op determinism, scoped CSS/page/component updates, manual generated-file conflicts, user-owned preservation, protected-file rejection, and obsolete-file reporting without live Commerce Node data. `FoundationFunctionalFast` uses mocked same-origin Presentation BFF routes in Playwright and writes `fast-foundation-functional-report.md` under the generated artifact. `FoundationFunctionalFull` verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. `FoundationFunctional` and `-RunBrowserQa` remain compatibility aliases for the full proof.
+`Structure` generates/restores/builds the proof project, runs static validation, runs isolation, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `run-storefront-builder-regeneration-gate.ps1` separately proves no-op determinism, scoped CSS/page/component updates, real `-WhatIf` planning, platform metadata update, manual generated-file conflicts, user-owned preservation, protected-file rejection, obsolete-file reporting, and rollback without live Commerce Node data. `FoundationFunctionalFast` uses mocked same-origin Presentation BFF routes in Playwright and writes `fast-foundation-functional-report.md` under the generated artifact. `FoundationFunctionalFull` verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. Use `run-storefront-builder-full-proof-with-fixture.ps1` for scheduled/manual/release validation because it starts Docker dependencies and the local V2 fixture runtime, checks health and fixture endpoints, runs the full proof, writes `full-proof-with-fixture-report.md`, and tears down services. `FoundationFunctional` and `-RunBrowserQa` remain compatibility aliases for the full proof.
 
 Generated storefront validation must fail when generated source declares `@page`, imports `BlazorShop.Storefront.Components.Features`, or recreates protected Presentation-owned application logic; normal generation consumes Presentation plus `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
 

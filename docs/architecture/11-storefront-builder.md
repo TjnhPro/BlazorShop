@@ -15,6 +15,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
 | Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, isolation-checks, and runs structure, fast functional, or full fixture-backed browser proof for the canonical generated proof artifact. |
+| Full fixture proof wrapper | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | CI-safe manual/scheduled/release wrapper that stops any existing V2 runtime, starts Docker dependencies plus the local Control Plane/Commerce Node/Storefront fixture runtime, verifies fixture data, runs `FoundationFunctionalFull`, collects reports, and tears down in `finally`. |
 | Regeneration ownership gate | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly generated update proof for no-op determinism, scoped updates, manual-edit conflicts, user-owned preservation, protected-file rejection, and obsolete-file reporting without live Commerce Node data. |
 | Isolation gate | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Verifies generated storefronts consume Presentation/Components as direct packages, keep Client/Runtime package metadata for transitive package proof, and avoid forbidden Runtime/Client, project, V2, Web.SharedV2, backend, core, or API references. |
 
@@ -125,6 +126,7 @@ Current review and QA artifacts:
 - `fast-foundation-functional-report.md`
 - `visual-qa-report.md`
 - `functional-commerce-report.md`
+- `full-proof-with-fixture-report.md`
 - `mvp-poc-report.md`
 
 These files are source evidence for reviewing that generated artifact. They are disposable with the artifact unless a phase explicitly promotes a specific artifact into tracked evidence.
@@ -154,7 +156,19 @@ Regeneration command:
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all
 ```
 
-Supported scopes are `all`, `page`, `component`, `css`, `validate`, and `conflicts`.
+Supported scopes are `all`, `page`, `component`, `css`, `foundation`, `validate`, and `conflicts`. Regeneration creates a fresh candidate from the current Starter/template source, writes a shared action plan, and applies only safe generated/managed changes from that candidate into the target. It does not use the existing target as the primary candidate source.
+
+Use `-WhatIf` with any update scope to run the same candidate generation and planning pipeline without copying changed files into the generated target:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -WhatIf
+```
+
+Use `-Scope foundation` only for explicit platform metadata updates such as `StorefrontPackageVersions.props`, `starter-generation.contract.yaml`, and generated metadata/package contract fields:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope foundation -ValidateAfterApply -BuildAfterApply
+```
 
 CI-friendly regeneration ownership gate:
 
@@ -192,6 +206,14 @@ Canonical full foundation functional proof workflow:
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
 ```
 
+Self-contained full fixture proof for scheduled/manual/release validation:
+
+```powershell
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
+```
+
+Use `.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1 -Describe` to inspect the CI runtime bootstrap without starting services. The wrapper uses the local V2 fixture ports from `scripts/env/v2-local.env` (`5280`, `5281`, `5180`, `18598`) and starts the generated proof host on `18620`, so the generated host does not conflict with Storefront V2.
+
 ## Validation Gates
 
 The static gate checks:
@@ -208,7 +230,7 @@ The static gate checks:
 
 The isolation gate additionally restores and builds the generated storefront, packs `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components`, and scans the generated project for forbidden references. Generated projects reference Presentation and Components directly; Runtime is consumed through Presentation, and Client is packed/pinned as Runtime's generated transport dependency.
 
-`Structure` proof generates/restores/builds the proof project, runs the static StorefrontBuilder gate, runs the isolation gate, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `FoundationFunctionalFast` is the PR gate: it starts from deterministic generated proof markup, uses mocked same-origin Presentation BFF routes in Playwright, and proves product descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and no direct Commerce Node browser calls. `FoundationFunctionalFull` is the manual/scheduled/release gate: it requires fixture-backed store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection. `FoundationFunctional` remains a compatibility alias for the full gate.
+`Structure` proof generates/restores/builds the proof project, runs the static StorefrontBuilder gate, runs the isolation gate, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `FoundationFunctionalFast` is the PR gate: it starts from deterministic generated proof markup, uses mocked same-origin Presentation BFF routes in Playwright, and proves product descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and no direct Commerce Node browser calls. `FoundationFunctionalFull` requires fixture-backed store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection. Run the self-contained wrapper for scheduled/manual/release validation because it owns fixture runtime bootstrap, endpoint checks, report collection, and teardown. `FoundationFunctional` remains a compatibility alias for the full gate.
 
 Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run the fast proof on PR and closure guardrail changes; run the regeneration ownership gate whenever generated ownership, manifests, or regeneration behavior changes; run the full proof for manual, scheduled, and release validation. Commit the resulting QA report only when a phase explicitly asks for tracked evidence.
 

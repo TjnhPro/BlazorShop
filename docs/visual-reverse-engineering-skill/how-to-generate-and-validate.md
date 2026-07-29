@@ -70,12 +70,24 @@ Preview before applying:
   -WhatIf
 ```
 
+`-WhatIf` runs the same fresh-candidate planning pipeline as apply mode and exits before copying target changes. Review `docs/storefront-analysis/regeneration-report.md` for create/update/conflict/obsolete/platform metadata actions.
+
 Require validation and build after applying:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
   -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope all `
+  -ValidateAfterApply `
+  -BuildAfterApply
+```
+
+Refresh platform metadata, package compatibility versions, and the copied Starter contract only with the explicit foundation scope:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
+  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -Scope foundation `
   -ValidateAfterApply `
   -BuildAfterApply
 ```
@@ -115,6 +127,19 @@ Run the canonical generated proof:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
+```
+
+Run the PR-safe browser proof:
+
+```powershell
+.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
+```
+
+Run the self-contained full fixture proof before release closure:
+
+```powershell
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1 -Describe
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
 ```
 
 ## Compatibility Rules
@@ -164,6 +189,8 @@ Check these points before promoting generated storefront output or committing to
 - Static gate, focused tests, and isolation gate pass.
 - Regeneration ownership gate passes when generated ownership, manifest, or regeneration behavior changed.
 - Generated proof `Structure` passes before release closure because it recreates the proof, builds it, validates package/reference boundaries, proves safe regeneration, proves no-op determinism, and proves manual-edit conflict reporting.
+- Generated proof `FoundationFunctionalFast` passes for PR-safe browser action behavior.
+- Self-contained full fixture proof passes before release closure; it starts V2 fixture runtime, verifies store/category/product/page/payment data, runs `FoundationFunctionalFull`, collects reports, and tears down.
 - Storefront client regeneration gate passes before package proof if the canonical Storefront contract or generated client changed.
 - Browser QA reports are current when page behavior changed.
 - Generated storefront artifacts remain out of `BlazorShop.sln` unless a separate architecture decision promotes them.

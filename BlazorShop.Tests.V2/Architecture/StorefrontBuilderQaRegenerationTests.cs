@@ -525,7 +525,13 @@ namespace BlazorShop.Tests.Architecture
                 "Isolation gate describe mode",
                 "Generated proof structure gate",
                 "Generated proof fast foundation functional browser gate",
-                "Generated proof full foundation functional browser gate",
+                "Full proof fixture wrapper describe mode",
+                "full-fixture-proof",
+                "Verify Docker prerequisites",
+                "Run self-contained full fixture proof",
+                "Print fixture runtime logs on failure",
+                "Stop fixture runtime",
+                "Upload full proof reports",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/**",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/**",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/**",
@@ -546,7 +552,11 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("run-storefront-builder-regeneration-gate.ps1", workflow, StringComparison.Ordinal);
             Assert.Contains("-ProofLevel Structure", workflow, StringComparison.Ordinal);
             Assert.Contains("-ProofLevel FoundationFunctionalFast", workflow, StringComparison.Ordinal);
-            Assert.Contains("-ProofLevel FoundationFunctionalFull", workflow, StringComparison.Ordinal);
+            Assert.Contains("run-storefront-builder-full-proof-with-fixture.ps1 -Describe", workflow, StringComparison.Ordinal);
+            Assert.Contains("run-storefront-builder-full-proof-with-fixture.ps1", workflow, StringComparison.Ordinal);
+            Assert.Contains("actions/upload-artifact@v4", workflow, StringComparison.Ordinal);
+            Assert.Contains(".gstack/run-v2-local/**", workflow, StringComparison.Ordinal);
+            Assert.Contains("full-proof-with-fixture-report.md", workflow, StringComparison.Ordinal);
         }
 
         [Fact]

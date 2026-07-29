@@ -1,8 +1,10 @@
 # StorefrontBuilder Phase 2 Closure.todo
 
-Status: Proposed
+Status: Complete
 Owner: Storefront Platform
 Created: 2026-07-29
+Completed: 2026-07-29
+Evidence commits: 750b649b, 3430956a, 004feb1d; the Phase 2.8F docs closure commit contains this final status update.
 Scope: StorefrontBuilder, Storefront Starter, generated Storefront projects, Storefront Client/Runtime/Presentation/Browseable boundaries
 
 ## Purpose
@@ -33,13 +35,13 @@ Verified anchors from the current repository:
 - `scripts/qa/run-storefront-builder-generated-proof.ps1` exists for `Structure`, `FoundationFunctionalFast`, and `FoundationFunctionalFull`.
 - `scripts/qa/run-storefront-builder-isolation-gate.ps1` exists and proves generated package/reference isolation.
 
-Known gaps from the current repository:
+Phase 2 closure state after Phase 2.8:
 
-- `new-storefront-project.ps1` creates a project directly in the output path; creation needs staging, atomic replacement, and stronger failure cleanup.
-- `regenerate-storefront.ps1` supports scopes, but update/regenerate is still mostly script orchestration and not a full ownership-aware update engine.
-- `update-generated-files-manifest.mjs` writes a mostly fixed manifest and always sets `manualEditDetected: false`; it does not compute real file hashes, detect edits, classify conflicts, or handle obsolete/new generated files.
-- Existing idempotency validation checks manifest shape and simple conflict markers, not end-to-end safe regeneration on edited generated projects.
-- Generated proof validates one-shot generation and browser behavior, but it does not yet prove the full generate -> edit -> regenerate -> conflict/no-loss path.
+- `new-storefront-project.ps1` generates into staging, validates staged output, publishes atomically, and restores the previous target on forced replacement failure.
+- `regenerate-storefront.ps1` uses a fresh candidate from current Starter/template source, computes a shared ownership-aware plan for `-WhatIf` and apply mode, preserves manual/user-owned/protected files, reports obsolete candidates, and rolls back failed validate/build proof.
+- `update-generated-files-manifest.mjs` computes real normalized SHA-256 hashes, preserves ownership metadata, detects manual edits, marks conflicts, and validates missing/obsolete/protected/user-owned state.
+- Regeneration safety tests cover positive page/component updates, real `-WhatIf` planning, missing/obsolete files, platform metadata update, user-owned preservation, protected-file rejection, and rollback after a failed build.
+- Generated proof plus the self-contained full fixture wrapper prove generate -> validate -> isolate -> browser fast proof -> fixture-backed full proof -> regenerate/no-loss behavior.
 
 ## Original Phase 2 Coverage Matrix
 
@@ -547,7 +549,7 @@ QA:
 .\scripts\qa\run-storefront-client-regeneration-gate.ps1
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
-.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull
+.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"
 ```
 
@@ -565,7 +567,7 @@ Exit gate:
 - `.\scripts\qa\run-storefront-client-regeneration-gate.ps1` passed without drift.
 - `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` passed after final changes.
 - `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` passed after final changes.
-- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull` passed after starting local Commerce Node fixture with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`; `.\scripts\stop-v2-local.ps1` stopped the runtime after the proof.
+- `.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1` passed after starting local Docker dependencies, Control Plane API/Web, Commerce Node API, and Storefront V2 through `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`; the wrapper verified fixture endpoints, ran `FoundationFunctionalFull`, collected reports, and stopped the runtime in `finally`.
 - `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~StorefrontBuilder" --logger "trx;LogFileName=storefront-builder-phase27.trx" --blame-hang --blame-hang-timeout 5m` passed `37/37`.
 
 ## Final Definition Of Done
@@ -589,7 +591,7 @@ Phase 2 is complete only when all checks below pass:
 - [x] Static validation catches protected-file, forbidden-reference, direct-transport, missing-artifact, and invalid-manifest failures.
 - [x] Structure proof passes.
 - [x] FoundationFunctionalFast proof passes.
-- [x] FoundationFunctionalFull proof passes before release closure.
+- [x] FoundationFunctionalFull proof passes before release closure through the self-contained fixture wrapper.
 - [x] CI includes deterministic client generation, StorefrontBuilder structure proof, fast generated browser proof, isolation gate, and regeneration ownership gate.
 - [x] Documentation and agent guidance describe the final workflow.
 

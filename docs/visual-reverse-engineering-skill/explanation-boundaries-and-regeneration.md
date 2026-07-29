@@ -10,7 +10,7 @@ It must stay neutral because every generated storefront needs a stable base. If 
 
 ## Why Generated Storefronts Use Packages
 
-Generated projects consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` as packages so they can prove independence from the monorepo implementation details while reusing the shared storefront application engine. `BlazorShop.Storefront.Client` remains the generated transport package, but Runtime owns that direct dependency.
+Generated projects consume `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components` as direct packages so they can prove independence from the monorepo implementation details while reusing the shared storefront application engine. Presentation composes Runtime internally, and Runtime owns direct `BlazorShop.Storefront.Client` transport usage. Generated projects keep Runtime/Client package metadata current for package proof compatibility, but generated visual source does not compile directly against Runtime or Client types.
 
 This keeps generated storefronts from depending on:
 
@@ -19,7 +19,7 @@ This keeps generated storefronts from depending on:
 - Commerce Node API implementation classes.
 - Control Plane runtime behavior.
 
-The isolation gate enforces this by packing Client/Runtime/Presentation/Components, requiring direct package references to Runtime/Presentation/Components, keeping Client package metadata current, and scanning the generated storefront for forbidden project references and backend/core/API names. Generated storefronts do not recreate shared App/Routes/page services/BFF/SEO/media logic from scratch.
+The isolation gate enforces this by packing Client/Runtime/Presentation/Components, requiring direct package references to Presentation/Components, keeping Client/Runtime package metadata current, and scanning the generated storefront for forbidden project references and backend/core/API names. Generated storefronts do not recreate shared App/Routes/page services/BFF/SEO/media logic from scratch.
 
 ## Why Browser Commands Stay Same-Origin
 
@@ -27,7 +27,7 @@ Protected browser and WASM flows must call same-origin generated storefront endp
 
 That preserves the V2 rule that public storefront browser code does not hold node credentials and does not call Commerce Admin or Control Plane routes.
 
-## Why Artifacts Are Committed
+## Why Artifacts Exist
 
 Generated storefronts keep review artifacts under `docs/storefront-analysis/` because visual reverse engineering is evidence-driven. The artifacts let reviewers see:
 
@@ -37,7 +37,7 @@ Generated storefronts keep review artifacts under `docs/storefront-analysis/` be
 - Which QA checks ran.
 - Where inference was used because evidence was incomplete.
 
-Without these files, regeneration becomes hard to review and manual changes are harder to distinguish from generated output.
+Without these files, regeneration becomes hard to review and manual changes are harder to distinguish from generated output. Canonical generated proof output under `artifacts/` and `obj/` is ignored and disposable; commit generated artifacts only when a phase explicitly promotes a specific generated storefront or report into tracked evidence.
 
 ## How Regeneration Should Be Scoped
 
@@ -50,3 +50,7 @@ Use the smallest regeneration scope that matches the change:
 - Use `validate` or `conflicts` when checking state without applying output.
 
 Manual edits to generated files should either be reflected in generation inputs or documented in generated-file ownership metadata so later regeneration does not silently erase intentional work.
+
+Regeneration uses a fresh candidate generated from current Starter/template inputs. `-WhatIf` runs that same candidate generation and planning pipeline, writes the action report, and exits before target writes. Apply mode then copies only planned safe generated/managed changes into the target, preserves user-owned/protected/manual-edited files, reports obsolete candidates, and rolls back if requested validation/build fails.
+
+Use `-Scope foundation` for explicit platform metadata updates such as package compatibility metadata and the copied Starter contract. Normal visual scopes do not silently update protected foundation files.
