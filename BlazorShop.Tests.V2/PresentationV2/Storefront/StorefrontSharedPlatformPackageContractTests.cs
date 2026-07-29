@@ -57,15 +57,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontRuntime_SeparatesCoreRuntimeFromServerGeneratedClientRegistration()
         {
             var runtimeRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/StorefrontRuntimeServiceCollectionExtensions.cs");
-            var v2Registration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var applicationRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationServiceCollectionExtensions.cs");
 
             Assert.Contains("AddStorefrontRuntime(", runtimeRegistration, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontPlatformRuntime(", runtimeRegistration, StringComparison.Ordinal);
             Assert.DoesNotContain("AddStorefrontServerGeneratedClients", runtimeRegistration, StringComparison.Ordinal);
             Assert.DoesNotContain("AddStorefrontGeneratedClients", runtimeRegistration, StringComparison.Ordinal);
-            Assert.Contains("AddStorefrontPlatformRuntime", v2Registration, StringComparison.Ordinal);
-            Assert.DoesNotContain("AddStorefrontServerGeneratedClients", v2Registration, StringComparison.Ordinal);
-            Assert.DoesNotContain(".AddStorefrontGeneratedClients", v2Registration, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontPlatformRuntime", applicationRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddStorefrontServerGeneratedClients", applicationRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain(".AddStorefrontGeneratedClients", applicationRegistration, StringComparison.Ordinal);
         }
 
         [Fact]

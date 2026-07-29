@@ -29,7 +29,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void StorefrontMediaProxy_CopiesNoSniffHeader()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Media/StorefrontMediaProxyService.cs");
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Media/StorefrontMediaProxyService.cs");
 
             Assert.Contains("CopyHeaderIfPresent(response, httpContext.Response, \"X-Content-Type-Options\")", source);
         }
@@ -37,7 +37,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void StorefrontMediaProxy_ForwardsPublicHostForMediaScope()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Media/StorefrontMediaProxyService.cs");
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Media/StorefrontMediaProxyService.cs");
 
             Assert.Contains("request.Headers.Host = publicHost", source);
             Assert.DoesNotContain("X-Store-Key", source);

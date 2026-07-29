@@ -166,7 +166,7 @@ namespace BlazorShop.Tests.Architecture
         [Fact]
         public void StorefrontEndpointMappings_DoNotInjectConcreteApiClient()
         {
-            var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints")
+            var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints")
                 .Where(path =>
                 {
                     var source = File.ReadAllText(path);
@@ -319,15 +319,13 @@ namespace BlazorShop.Tests.Architecture
         public void StorefrontLocalEndpointSupport_IsSplitByEndpointConcernAfterPhase7F()
         {
             var supportFiles = Directory
-                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints"), "StorefrontLocalEndpointSupport*.cs")
-                .Concat(Directory.EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints"), "StorefrontLocalEndpointSupport*.cs"))
+                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints"), "StorefrontLocalEndpointSupport*.cs")
                 .Select(ToRepositoryRelativePath)
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Account.cs", supportFiles);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs", supportFiles);
-            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", supportFiles);
             Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Cart/StorefrontCartPresentationMapper.cs")));
             Assert.All(
                 supportFiles,

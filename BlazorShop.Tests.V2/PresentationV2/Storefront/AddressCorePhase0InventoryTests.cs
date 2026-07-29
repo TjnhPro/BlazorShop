@@ -68,7 +68,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("ShippingAddressId = shippingAddressId", support, StringComparison.Ordinal);
             Assert.Contains("ShippingAddress = shippingAddressId.HasValue", support, StringComparison.Ordinal);
-            Assert.Contains("new StorefrontCheckoutPreviewShippingAddress", support, StringComparison.Ordinal);
+            Assert.Contains("new StorefrontCheckoutShippingAddress", support, StringComparison.Ordinal);
             Assert.Contains("form.CustomerEmail?.Trim()", support, StringComparison.Ordinal);
             Assert.Contains("form.CustomerName?.Trim()", support, StringComparison.Ordinal);
 
@@ -120,7 +120,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadStorefrontLocalEndpointSupportSource()
         {
             var root = FindStorefrontSupportRepositoryRoot();
-            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Endpoints");
+            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.Presentation", "Endpoints");
             return string.Join(
                 Environment.NewLine,
                 Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs")

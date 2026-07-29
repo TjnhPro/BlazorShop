@@ -420,7 +420,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("StorefrontBuilder generated proof fast foundation functional gate", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontVisualConsumerBoundaryValidatorTests", workflow, StringComparison.Ordinal);
             Assert.Contains("StorefrontStarterHostSmokeTests", workflow, StringComparison.Ordinal);
-            Assert.Contains("StorefrontHostCompositionTests", workflow, StringComparison.Ordinal);
+            Assert.Contains("StorefrontApplicationBootstrapTests", workflow, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontHostCompositionTests", workflow, StringComparison.Ordinal);
             Assert.DoesNotContain("$runFullFunctionalProof", proof, StringComparison.Ordinal);
         }
 

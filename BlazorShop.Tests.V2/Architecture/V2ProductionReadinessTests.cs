@@ -152,8 +152,8 @@ namespace BlazorShop.Tests.Architecture
         {
             var commerceNodeProgram = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Program.cs");
             var commerceNodeIdentity = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Configuration/StorefrontRateLimitIdentity.cs");
-            var storefrontPolicy = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitPolicies.cs");
-            var storefrontIdentity = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitIdentity.cs");
+            var storefrontPolicy = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Configuration/StorefrontRateLimitPolicies.cs");
+            var storefrontIdentity = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Configuration/StorefrontRateLimitIdentity.cs");
 
             Assert.Contains("StorefrontRateLimitIdentity.ResolveActor(httpContext)", commerceNodeProgram, StringComparison.Ordinal);
             Assert.Contains("ClaimTypes.NameIdentifier", commerceNodeIdentity, StringComparison.Ordinal);

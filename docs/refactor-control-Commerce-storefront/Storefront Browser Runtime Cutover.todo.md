@@ -470,36 +470,36 @@ Goal: remove stale tests, invert old expectations, and prove full unfiltered tes
 
 ### Implementation
 
-- [ ] Delete `StorefrontHostCompositionTests.cs` or move useful assertions into `StorefrontApplicationBootstrapTests`.
-- [ ] Remove tests that assert V2.WASM owns local API orchestration.
-- [ ] Add tests that assert Browser runtime owns local API orchestration.
-- [ ] Update architecture docs:
-  - [ ] `docs/architecture/03-runtime-boundaries.md`
-  - [ ] `docs/architecture/05-project-and-folder-guide.md`
-  - [ ] `docs/architecture/10-v2-contract-ownership.md`
-  - [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] Update QA todo files:
-  - [ ] `QA-StorefrontV2.todo.md`
-  - [ ] `QA-StorefrontStarter.todo.md`
-  - [ ] `Storefront Playwright E2E Release.todo.md`
-- [ ] Add `BlazorShop.Storefront.Browser` to AGENTS active project list after implementation.
-- [ ] Ensure no plan doc is marked complete until full verification passes.
+- [x] Delete `StorefrontHostCompositionTests.cs` or move useful assertions into `StorefrontApplicationBootstrapTests`.
+- [x] Remove tests that assert V2.WASM owns local API orchestration.
+- [x] Add tests that assert Browser runtime owns local API orchestration.
+- [x] Update architecture docs:
+  - [x] `docs/architecture/03-runtime-boundaries.md`
+  - [x] `docs/architecture/05-project-and-folder-guide.md`
+  - [x] `docs/architecture/10-v2-contract-ownership.md`
+  - [x] `docs/architecture/11-storefront-builder.md`
+- [x] Update QA todo files:
+  - [x] `QA-StorefrontV2.todo.md`
+  - [x] `QA-StorefrontStarter.todo.md`
+  - [x] `Storefront Playwright E2E Release.todo.md`
+- [x] Add `BlazorShop.Storefront.Browser` to AGENTS active project list after implementation.
+- [x] Ensure no plan doc is marked complete until full verification passes.
 
 ### Verification Commands
 
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontBrowser`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontVisualConsumerBoundaryValidatorTests`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontApplicationBootstrapTests`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release`
-- [ ] Focused Playwright browser run for V2 cart/account/checkout after Browser runtime cutover.
-- [ ] StorefrontBuilder generated proof after Starter cart badge and browser contract cleanup.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontBrowser`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontVisualConsumerBoundaryValidatorTests`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter StorefrontApplicationBootstrapTests`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release`
+- [x] Focused Playwright browser run for V2 cart/account/checkout after Browser runtime cutover.
+- [x] StorefrontBuilder generated proof after Starter cart badge and browser contract cleanup.
 
 ### Acceptance Criteria
 
-- [ ] Full unfiltered test suite passes.
-- [ ] No stale architecture test expects removed V2 host composition.
-- [ ] Browser runtime ownership is locked by tests.
-- [ ] V2.WASM visual-only status is locked by shared validator.
+- [x] Full unfiltered test suite passes.
+- [x] No stale architecture test expects removed V2 host composition.
+- [x] Browser runtime ownership is locked by tests.
+- [x] V2.WASM visual-only status is locked by shared validator.
 
 ## Execution Order
 
@@ -510,7 +510,7 @@ Goal: remove stale tests, invert old expectations, and prove full unfiltered tes
 5. [x] F1.69 V2.WASM visual consumer guardrail.
 6. [x] F1.70 Semantic event encapsulation.
 7. [x] F1.71 Enhanced navigation and alias cleanup.
-8. [ ] F1.72 Test cleanup and full suite closure.
+8. [x] F1.72 Test cleanup and full suite closure.
 
 Reasoning: create the browser-safe owner first, move the largest active flows one capability at a time, then lock the boundary with validator/tests and close browser event/enhanced navigation issues.
 

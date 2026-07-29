@@ -1,6 +1,7 @@
 namespace BlazorShop.Tests.Architecture
 {
     using System.Xml.Linq;
+    using System.Text;
 
     using BlazorShop.Storefront.Client;
     using BlazorShop.Storefront.Runtime;
@@ -827,6 +828,8 @@ namespace BlazorShop.Tests.Architecture
 
         private static ProcessResult RunProcess(string fileName, IReadOnlyList<string> arguments, string workingDirectory)
         {
+            var standardOutput = new StringBuilder();
+            var standardError = new StringBuilder();
             var startInfo = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = fileName,
@@ -843,11 +846,41 @@ namespace BlazorShop.Tests.Architecture
 
             using var process = System.Diagnostics.Process.Start(startInfo)
                 ?? throw new InvalidOperationException($"Failed to start process '{fileName}'.");
-            var standardOutput = process.StandardOutput.ReadToEnd();
-            var standardError = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+            process.OutputDataReceived += (_, eventArgs) =>
+            {
+                if (eventArgs.Data is not null)
+                {
+                    standardOutput.AppendLine(eventArgs.Data);
+                }
+            };
+            process.ErrorDataReceived += (_, eventArgs) =>
+            {
+                if (eventArgs.Data is not null)
+                {
+                    standardError.AppendLine(eventArgs.Data);
+                }
+            };
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
-            return new ProcessResult(process.ExitCode, standardOutput, standardError);
+            if (!process.WaitForExit(TimeSpan.FromMinutes(3)))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+
+                return new ProcessResult(
+                    -1,
+                    standardOutput.ToString(),
+                    standardError.AppendLine($"Process '{fileName}' exceeded the 3 minute test step timeout.").ToString());
+            }
+
+            process.WaitForExit();
+            return new ProcessResult(process.ExitCode, standardOutput.ToString(), standardError.ToString());
         }
 
         private sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);

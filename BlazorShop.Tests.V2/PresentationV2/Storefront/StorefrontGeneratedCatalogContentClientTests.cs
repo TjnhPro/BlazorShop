@@ -194,12 +194,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontDi_UsesGeneratedCatalogContentAdapterForCatalogContentNavigationAndSeo()
         {
-            var v2Services = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
+            var applicationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationServiceCollectionExtensions.cs");
             var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
             var adapter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontCatalogContentClient.cs");
 
             Assert.Contains("GeneratedStorefrontCatalogContentClient", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("GeneratedStorefrontCatalogContentClient", v2Services, StringComparison.Ordinal);
+            Assert.DoesNotContain("GeneratedStorefrontCatalogContentClient", applicationServices, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeCatalogFacade", adapter, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeContentFacade", adapter, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeNavigationFacade", adapter, StringComparison.Ordinal);
@@ -208,7 +208,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("TryAddScoped<IStorefrontCatalogClient>", source, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<IStorefrontContentClient>", source, StringComparison.Ordinal);
             Assert.Contains("GetRequiredService<GeneratedStorefrontCatalogContentClient>", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontApiClient", v2Services, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontApiClient", applicationServices, StringComparison.Ordinal);
         }
 
         [Fact]

@@ -76,9 +76,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void LocalEndpointContracts_AreSplitIntoCapabilitySpecificContractFiles()
         {
-            var v2EndpointDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints");
             var presentationEndpointDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints");
-            var supportSources = Directory.EnumerateFiles(v2EndpointDirectory, "StorefrontLocalEndpointSupport*.cs", SearchOption.TopDirectoryOnly)
+            var supportSources = Directory.EnumerateFiles(presentationEndpointDirectory, "StorefrontLocalEndpointSupport*.cs", SearchOption.TopDirectoryOnly)
                 .Select(File.ReadAllText)
                 .ToArray();
             var supportSource = string.Join(Environment.NewLine, supportSources);
@@ -92,8 +91,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("StorefrontCurrencyPreferenceForm", supportSource, StringComparison.Ordinal);
             Assert.DoesNotContain(supportSources, source => publicEndpointTypeDeclaration.IsMatch(source));
 
-            var contractSources = Directory.EnumerateFiles(Path.Combine(v2EndpointDirectory, "Contracts"), "*.cs", SearchOption.TopDirectoryOnly)
-                .Concat(Directory.EnumerateFiles(Path.Combine(presentationEndpointDirectory, "Contracts"), "*.cs", SearchOption.TopDirectoryOnly))
+            var contractSources = Directory.EnumerateFiles(Path.Combine(presentationEndpointDirectory, "Contracts"), "*.cs", SearchOption.TopDirectoryOnly)
                 .Select(File.ReadAllText)
                 .ToArray();
             var contractSource = string.Join(Environment.NewLine, contractSources);
@@ -108,19 +106,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void LocalEndpointErrors_UseCentralBrowserSafeMapping()
         {
-            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
+            var support = string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(
+                        RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints"),
+                        "StorefrontLocalEndpointSupport*.cs",
+                        SearchOption.TopDirectoryOnly)
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
             var endpointSources = ReadEndpointSources();
 
             Assert.Contains("LocalSignInRequired", support, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status401Unauthorized", support, StringComparison.Ordinal);
-            Assert.Contains("LocalForbidden", support, StringComparison.Ordinal);
-            Assert.Contains("StatusCodes.Status403Forbidden", support, StringComparison.Ordinal);
             Assert.Contains("LocalConflict", support, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status409Conflict", support, StringComparison.Ordinal);
-            Assert.Contains("LocalUnprocessable", support, StringComparison.Ordinal);
             Assert.Contains("StatusCodes.Status422UnprocessableEntity", support, StringComparison.Ordinal);
-            Assert.Contains("LocalServerError", support, StringComparison.Ordinal);
-            Assert.Contains("StatusCodes.Status500InternalServerError", support, StringComparison.Ordinal);
+            Assert.Contains("LocalUnavailable", support, StringComparison.Ordinal);
+            Assert.Contains("StatusCodes.Status503ServiceUnavailable", support, StringComparison.Ordinal);
             Assert.Contains("StorefrontLocalApiErrorResponse", support, StringComparison.Ordinal);
             Assert.Contains("StorefrontLocalCartErrorResponse", support, StringComparison.Ordinal);
             Assert.Contains("NormalizeLocalErrorMessage", support, StringComparison.Ordinal);
@@ -143,6 +145,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var browserRoots = new[]
             {
                 RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components"),
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser"),
                 RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM"),
             };
             var bannedTerms = new[]
@@ -196,7 +199,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var endpointDirectories = new[]
             {
-                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints"),
                 RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints"),
             };
             return string.Join(

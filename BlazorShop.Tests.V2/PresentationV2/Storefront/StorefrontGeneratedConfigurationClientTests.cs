@@ -268,16 +268,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontDi_UsesGeneratedConfigurationAdapterForStoreBootstrap()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
-
+            var applicationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationServiceCollectionExtensions.cs");
             var presentationServices = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/DependencyInjection/StorefrontPresentationServiceCollectionExtensions.cs");
 
             Assert.Contains("GeneratedStorefrontConfigurationClient", presentationServices, StringComparison.Ordinal);
             Assert.Contains("IStorefrontRuntimeConfigurationFacade", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/GeneratedStorefrontConfigurationClient.cs"), StringComparison.Ordinal);
-            Assert.Contains("ResolveCommerceNodeBaseAddress", source, StringComparison.Ordinal);
+            Assert.Contains("ResolveCommerceNodeBaseAddress", applicationServices, StringComparison.Ordinal);
             Assert.Contains("TryAddScoped<IStorefrontStoreConfigurationClient>", presentationServices, StringComparison.Ordinal);
             Assert.Contains("GetRequiredService<GeneratedStorefrontConfigurationClient>", presentationServices, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontApiClient", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontApiClient", applicationServices, StringComparison.Ordinal);
         }
 
         private static GeneratedStorefrontConfigurationClient CreateClient(RecordingHandler handler)

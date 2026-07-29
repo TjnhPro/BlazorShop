@@ -94,7 +94,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
 
             Assert.Equal(
-                ["../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj"],
+                [
+                    "../BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj",
+                    "../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj",
+                ],
                 references);
 
             AssertNoSourceFragments(

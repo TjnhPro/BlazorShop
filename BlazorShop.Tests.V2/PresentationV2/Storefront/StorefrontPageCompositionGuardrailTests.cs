@@ -117,7 +117,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AuthPage = typeof(V2AuthPageView)", registration, StringComparison.Ordinal);
             Assert.Contains("MaintenanceState = typeof(MaintenancePage)", registration, StringComparison.Ordinal);
             Assert.Contains("NotFoundState = typeof(NotFoundPage)", registration, StringComparison.Ordinal);
-            Assert.Contains("app.MapStorefrontPresentation();", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapStorefrontApplication(", program, StringComparison.Ordinal);
             Assert.Contains("MapPost(StorefrontRoutes.SignIn", presentationAuthEndpoints, StringComparison.Ordinal);
             Assert.Contains("MapPost(StorefrontRoutes.Register", presentationAuthEndpoints, StringComparison.Ordinal);
             Assert.Contains("MapPost(StorefrontRoutes.ForgotPassword", presentationAuthEndpoints, StringComparison.Ordinal);
@@ -248,6 +248,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "Browser",
                 "Contracts",
                 "Headless",
+                "wwwroot",
                 "bin",
                 "obj",
             };

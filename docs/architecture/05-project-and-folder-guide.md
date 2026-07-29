@@ -212,7 +212,6 @@ Use for:
 
 - Headless Storefront presentation contracts under `Contracts/{Capability}`.
 - Browser-safe behavior/state primitives under `Headless/{Capability}`.
-- Same-origin browser/BFF support primitives under `Browser`.
 - Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
 
 Do not:
@@ -224,18 +223,39 @@ Do not:
 - Add Razor components, static web assets, V2 layout/theme implementations, visual class bags, final copy, or generated visual output.
 - Reintroduce `Features/*` compatibility wrappers without a new architecture decision; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
 
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.Browser`
+
+Important folders:
+
+- `Cart/` - browser cart controller, state, and mutation orchestration.
+- `Checkout/` - browser checkout controller, state, and command orchestration.
+- `Account/` - browser profile, address, order, password, and form orchestration.
+
+Use for:
+
+- Same-origin local API client primitives used by interactive storefront browser flows.
+- Browser-owned request DTO construction, antiforgery-aware local API calls, mutation state, and error/success mapping.
+- High-level controllers consumed by V2.WASM visual components.
+
+Do not:
+
+- Reference Storefront Presentation server APIs, Runtime, Client, backend/core/API projects, or host visual projects.
+- Add visual markup, CSS, route shells, or store-specific copy.
+- Move ecommerce business truth such as pricing, sellability, checkout validity, or order creation into browser code.
+
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM`
 
 Use for:
 
 - Storefront V2 interactive WebAssembly components and bootstrapping required by `AddInteractiveWebAssemblyRenderMode`.
 - Interactive cart, checkout, and account root components used by Storefront V2 after SSR route/security/bootstrap has selected the page surface.
-- Browser-side Storefront UI behavior that is intentionally part of the public Storefront runtime.
+- Visual composition for interactive browser roots. Components render `BlazorShop.Storefront.Browser` controller state and invoke high-level controller methods.
 
 Do not:
 
 - Call Control Plane.
 - Hold node credentials.
+- Call `StorefrontLocalApiClient`, construct Browser request DTOs, or resolve application services manually.
 - Duplicate server-owned Storefront API contract behavior when `Storefront.V2` already owns the server/client integration.
 
 ### `BlazorShop.Storefront.Client`

@@ -174,6 +174,8 @@ It must not call Control Plane APIs and must not use Control Plane credentials.
 
 Browser and WASM code calls same-origin storefront endpoints under `/api/*`. It must not call Commerce Node protected APIs directly, must not know the Commerce Node base URL, must not hold node credentials, and must not store Commerce access tokens in browser local storage.
 
+`BlazorShop.Storefront.Browser` owns browser-side local API transport primitives and high-level cart, checkout, and account controllers for interactive WASM flows. V2.WASM visual components render controller state and call controller methods; they must not construct Browser request DTOs, resolve services manually, or call `StorefrontLocalApiClient` directly. Public browser events expose visual projections only, while command payload state remains inside Presentation/Browser closures.
+
 Storefront Presentation BFF/local endpoints are responsible for:
 
 - resolving the current store;

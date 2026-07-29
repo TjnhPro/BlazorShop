@@ -11,14 +11,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2_BrowserMutationRoutesMatchSecurityPrivacyInventory()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
-            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
+            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs");
             var presentationPipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs");
             var authEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationAuthEndpoints.cs");
             var preferenceEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationPreferenceEndpoints.cs");
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
 
-            Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program, StringComparison.Ordinal);
+            Assert.Contains("app.UseStorefrontApplication();", program, StringComparison.Ordinal);
             Assert.DoesNotContain("app.UseAntiforgery();", pipeline, StringComparison.Ordinal);
             Assert.Contains("app.UseAntiforgery();", presentationPipeline, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(StorefrontRoutes.SignIn", authEndpoints, StringComparison.Ordinal);

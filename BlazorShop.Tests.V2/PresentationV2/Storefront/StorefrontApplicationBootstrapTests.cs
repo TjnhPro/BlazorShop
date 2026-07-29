@@ -47,7 +47,13 @@ public sealed class StorefrontApplicationBootstrapTests
     public void StorefrontV2Program_UsesSharedApplicationBootstrap()
     {
         var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+        var logicalLines = source
+            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Trim())
+            .Where(line => line.Length > 0)
+            .ToArray();
 
+        Assert.True(logicalLines.Length <= 45, $"Program.cs has {logicalLines.Length} logical lines.");
         Assert.Contains("AddStorefrontApplication(builder.Configuration)", source, StringComparison.Ordinal);
         Assert.Contains("UseStorefrontApplication()", source, StringComparison.Ordinal);
         Assert.Contains("MapStorefrontApplication(", source, StringComparison.Ordinal);
@@ -57,6 +63,12 @@ public sealed class StorefrontApplicationBootstrapTests
         Assert.DoesNotContain("StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter", source, StringComparison.Ordinal);
         Assert.DoesNotContain("StorefrontApiEndpointResolver.ConfigureStorefrontHttpClient", source, StringComparison.Ordinal);
         Assert.DoesNotContain("MapStorefrontPresentation", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("new HttpClient", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHttpClient", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("app.MapPost(", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("app.MapPut(", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("app.MapDelete(", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("async ", source, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -96,6 +108,28 @@ public sealed class StorefrontApplicationBootstrapTests
         Assert.True(
             offenders.Length == 0,
             $"Storefront V2 must keep configuration values only; Presentation.Hosting interprets runtime/store configuration.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [Fact]
+    public void StorefrontV2Source_DoesNotContainManualStorefrontApiClientTransport()
+    {
+        var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
+            .Where(file => file.EndsWith(".cs", StringComparison.Ordinal) || file.EndsWith(".razor", StringComparison.Ordinal))
+            .Select(file => (File: file, Source: ReadRepositoryFile(file)))
+            .SelectMany(file => new[]
+                {
+                    "StorefrontApiClient",
+                    "LegacyCatalogBaseRoute",
+                    "LegacySeoSettingsRoute",
+                }
+                .Where(token => file.Source.Contains(token, StringComparison.Ordinal))
+                .Select(token => $"{file.File}: {token}"))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"Storefront V2 must not own manual Storefront API client transport.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
     [Fact]

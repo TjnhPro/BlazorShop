@@ -8,9 +8,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontLocalEndpointMappings_DoNotInjectConcreteStorefrontApiClient()
         {
             var endpointFiles = Directory.GetFiles(
-                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints"),
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints"),
                 "*.cs",
-                SearchOption.TopDirectoryOnly);
+                SearchOption.AllDirectories);
 
             var offenders = endpointFiles
                 .Where(path => File.ReadAllText(path).Contains("StorefrontApiClient apiClient", StringComparison.Ordinal))
