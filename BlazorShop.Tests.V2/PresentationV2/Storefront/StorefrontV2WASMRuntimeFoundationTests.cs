@@ -164,7 +164,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", cartEventPublisher, StringComparison.Ordinal);
             Assert.Contains("./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js", tokenReader, StringComparison.Ordinal);
             Assert.Contains("[data-storefront-cart-badge]", interop, StringComparison.Ordinal);
-            Assert.Contains("blazorshop:cart-changed", interop, StringComparison.Ordinal);
+            Assert.Contains("storefront:cart:changed", interop, StringComparison.Ordinal);
+            Assert.DoesNotContain("blazorshop:cart-changed", interop, StringComparison.Ordinal);
         }
 
         [Fact]

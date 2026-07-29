@@ -96,7 +96,7 @@ function pageHtml() {
   </template>
   <script>
     window.__storefrontProofEvents = [];
-    ["storefront:cart:changed", "storefront:cart:error", "storefront:consent:changed", "storefront:consent:manage-requested", "storefront:product-selection:changed", "storefront:product-selection:error"]
+    ["storefront:cart:changed", "storefront:cart:error", "storefront:consent:changed", "storefront:consent:manage-requested", "storefront:product-selection:changed", "storefront:product-selection:error", "storefront:product-purchase:selection-changed", "storefront:product-purchase:add-line-succeeded", "storefront:product-purchase:add-line-failed", "blazorshop:cart-changed"]
       .forEach((name) => document.addEventListener(name, (event) => window.__storefrontProofEvents.push({ name, detail: event.detail })));
   </script>
 </body>
@@ -233,6 +233,47 @@ async function main() {
     await page.fill("[data-storefront-purchase-quantity]", "3");
     await previewAfterQuantityChange;
     await page.waitForFunction(() => document.querySelector("[data-storefront-selection-price]")?.textContent === "$19.00");
+    await page.evaluate(() => {
+      const selectionEvent = window.__storefrontProofEvents.find((event) => event.name === "storefront:product-purchase:selection-changed");
+      if (!selectionEvent) {
+        throw new Error("Missing product purchase selection event.");
+      }
+
+      assertPublicSelectionEvent(selectionEvent.detail);
+      const genericSelectionEvent = window.__storefrontProofEvents.find((event) => event.name === "storefront:product-selection:changed");
+      if (!genericSelectionEvent) {
+        throw new Error("Missing generic product selection event.");
+      }
+
+      assertPublicSelectionEvent(genericSelectionEvent.detail);
+
+      function assertPublicSelectionEvent(detail) {
+        if (!detail || typeof detail !== "object") {
+          throw new Error("Selection event detail missing.");
+        }
+
+        if ("preview" in detail) {
+          throw new Error("Selection event leaked raw preview.");
+        }
+
+        const selection = detail.selection;
+        if (!selection || typeof selection !== "object") {
+          throw new Error("Selection event missing public projection.");
+        }
+
+        for (const forbidden of ["productId", "productVariantId", "selectedAttributes", "quantity", "currencyCode", "unitPrice", "available"]) {
+          if (forbidden in selection) {
+            throw new Error(`Selection projection leaked ${forbidden}.`);
+          }
+        }
+
+        for (const required of ["ready", "valid", "priceText", "comparePriceText", "stockText", "skuText", "gtinText", "mainImageUrl", "message"]) {
+          if (!(required in selection)) {
+            throw new Error(`Selection projection missing ${required}.`);
+          }
+        }
+      }
+    });
 
     await page.click("[data-proof-missing-command]");
     await page.waitForFunction(() => document.querySelector("#product-cart-feedback")?.textContent?.includes("Missing storefront command descriptor."));
@@ -244,6 +285,29 @@ async function main() {
 
     await page.click('[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]');
     await page.waitForFunction(() => document.querySelector("[data-storefront-cart-badge]")?.textContent === "1");
+    await page.evaluate(() => {
+      const cartChanged = window.__storefrontProofEvents.find((event) => event.name === "storefront:cart:changed" && event.detail?.count === 1);
+      if (!cartChanged) {
+        throw new Error("Cart changed event did not publish canonical count.");
+      }
+
+      if ("summary" in cartChanged.detail) {
+        throw new Error("Cart changed event leaked raw cart summary.");
+      }
+
+      const addSucceeded = window.__storefrontProofEvents.find((event) => event.name === "storefront:product-purchase:add-line-succeeded");
+      if (!addSucceeded || addSucceeded.detail?.count !== 1) {
+        throw new Error("Add-line success event did not publish count.");
+      }
+
+      if ("summary" in addSucceeded.detail || "selection" in addSucceeded.detail) {
+        throw new Error("Add-line success event leaked raw summary or selection state.");
+      }
+
+      if (window.__storefrontProofEvents.some((event) => event.name === "blazorshop:cart-changed")) {
+        throw new Error("Legacy cart changed event should not be published.");
+      }
+    });
 
     const previewRequest = requests.filter((request) => request.path === "/api/product-selection-preview").at(-1);
     if (!previewRequest || previewRequest.body?.Quantity !== 3) {

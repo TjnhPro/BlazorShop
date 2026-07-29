@@ -51,6 +51,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("setText(gtin, selection.gtinText || \"\")", visualScript, StringComparison.Ordinal);
             Assert.Contains("toggleHidden(sku, !selection.skuText)", visualScript, StringComparison.Ordinal);
             Assert.Contains("toggleHidden(gtin, !selection.gtinText)", visualScript, StringComparison.Ordinal);
+            Assert.Contains("selection.ready", visualScript, StringComparison.Ordinal);
+            Assert.Contains("selection.valid", visualScript, StringComparison.Ordinal);
+            Assert.Contains("selection.mainImageUrl", visualScript, StringComparison.Ordinal);
+            Assert.Contains("selection.message", visualScript, StringComparison.Ordinal);
+
+            foreach (var forbiddenSelectionRead in new[]
+            {
+                "selection.productId",
+                "selection.productVariantId",
+                "selection.selectedAttributes",
+                "selection.quantity",
+                "selection.currencyCode",
+                "selection.unitPrice",
+            })
+            {
+                Assert.DoesNotContain(forbiddenSelectionRead, visualScript, StringComparison.Ordinal);
+            }
         }
 
         [Fact]
@@ -103,10 +120,49 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 LegacyAlias("add-to-cart") + "]",
                 "addToCart: { addPurchaseLine }",
                 "productSelection: { previewPurchase }",
+                "preview: preview || null",
+                "summary: summary || null",
+                "selection: selection || null",
+                "blazorshop:cart-changed",
             })
             {
                 Assert.DoesNotContain(forbidden, applicationScript, StringComparison.Ordinal);
             }
+
+            var publicProjection = ExtractFunction(applicationScript, "projectVisualSelection");
+            foreach (var marker in new[]
+            {
+                "ready:",
+                "valid:",
+                "priceText:",
+                "comparePriceText:",
+                "stockText:",
+                "skuText:",
+                "gtinText:",
+                "mainImageUrl:",
+                "message:",
+            })
+            {
+                Assert.Contains(marker, publicProjection, StringComparison.Ordinal);
+            }
+
+            foreach (var forbiddenProjectionField in new[]
+            {
+                "productId",
+                "productVariantId",
+                "selectedAttributes",
+                "quantity",
+                "currencyCode",
+                "unitPrice",
+                "available",
+            })
+            {
+                Assert.DoesNotContain(forbiddenProjectionField, publicProjection, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("selection: projectVisualSelection(selection)", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("dispatch(events.cartChanged, { count })", applicationScript, StringComparison.Ordinal);
+            Assert.Contains("count: cartCount(summary)", applicationScript, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -167,6 +223,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string LegacyAlias(string suffix)
         {
             return "data-storefront-" + suffix;
+        }
+
+        private static string ExtractFunction(string source, string functionName)
+        {
+            var start = source.IndexOf($"function {functionName}", StringComparison.Ordinal);
+            if (start < 0)
+            {
+                throw new InvalidOperationException($"Function '{functionName}' was not found.");
+            }
+
+            var nextFunction = source.IndexOf("\n  function ", start + 1, StringComparison.Ordinal);
+            return nextFunction < 0 ? source[start..] : source[start..nextFunction];
         }
 
         private static void AssertAliasesAbsent(string root, IReadOnlyCollection<string> forbiddenAliases, List<string> failures)

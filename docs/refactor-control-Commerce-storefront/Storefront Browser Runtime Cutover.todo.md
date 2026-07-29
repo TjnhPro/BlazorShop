@@ -377,51 +377,51 @@ Goal: ensure public browser events expose only visual projections and not raw ap
 
 ### Implementation
 
-- [ ] Update Presentation `storefront.application.js` product purchase events:
-  - [ ] remove `preview` from `storefront:product-purchase:selection-changed`.
-  - [ ] do not publish raw generic `{ preview }` unless a real non-visual consumer still exists.
-  - [ ] split internal selection state from public visual selection projection.
-- [ ] Internal selection state remains only in closure:
-  - [ ] product ID.
-  - [ ] product variant ID.
-  - [ ] selected attributes.
-  - [ ] quantity.
-  - [ ] currency code.
-  - [ ] unit price.
-  - [ ] command readiness.
-- [ ] Public visual selection exposes only:
-  - [ ] `ready`
-  - [ ] `valid`
-  - [ ] `priceText`
-  - [ ] `comparePriceText`
-  - [ ] `stockText`
-  - [ ] `skuText`
-  - [ ] `gtinText`
-  - [ ] `mainImageUrl`
-  - [ ] `message`
-- [ ] Update add-line success/failure events:
-  - [ ] do not publish raw cart summary.
-  - [ ] do not publish internal selection state.
-  - [ ] publish visual message and count if needed.
-- [ ] Update cart changed event:
-  - [ ] canonical event should prefer `{ count }`.
-  - [ ] remove or explicitly deprecate `summary`.
-  - [ ] remove legacy `blazorshop:cart-changed` if no consumer remains.
-- [ ] Update V2 visual JS to consume only the public visual projection.
+- [x] Update Presentation `storefront.application.js` product purchase events:
+  - [x] remove `preview` from `storefront:product-purchase:selection-changed`.
+  - [x] do not publish raw generic `{ preview }` unless a real non-visual consumer still exists.
+  - [x] split internal selection state from public visual selection projection.
+- [x] Internal selection state remains only in closure:
+  - [x] product ID.
+  - [x] product variant ID.
+  - [x] selected attributes.
+  - [x] quantity.
+  - [x] currency code.
+  - [x] unit price.
+  - [x] command readiness.
+- [x] Public visual selection exposes only:
+  - [x] `ready`
+  - [x] `valid`
+  - [x] `priceText`
+  - [x] `comparePriceText`
+  - [x] `stockText`
+  - [x] `skuText`
+  - [x] `gtinText`
+  - [x] `mainImageUrl`
+  - [x] `message`
+- [x] Update add-line success/failure events:
+  - [x] do not publish raw cart summary.
+  - [x] do not publish internal selection state.
+  - [x] publish visual message and count if needed.
+- [x] Update cart changed event:
+  - [x] canonical event should prefer `{ count }`.
+  - [x] remove or explicitly deprecate `summary`.
+  - [x] remove legacy `blazorshop:cart-changed` if no consumer remains.
+- [x] Update V2 visual JS to consume only the public visual projection.
 
 ### Tests
 
-- [ ] Add JS/source regression proving `productPurchaseSelectionChanged` does not include `preview`.
-- [ ] Add JS/source regression proving public event selection does not include `productId`, `productVariantId`, `selectedAttributes`, `quantity`, `currencyCode`, or `unitPrice`.
-- [ ] Add V2 visual script test proving it reads only `selection.*Text`, `selection.ready`, `selection.valid`, `selection.mainImageUrl`, and `selection.message`.
-- [ ] Add Playwright/browser test proving variant change still updates price, stock, image, SKU, and GTIN.
-- [ ] Add cart badge test proving canonical `{ count }` event still updates badges.
+- [x] Add JS/source regression proving `productPurchaseSelectionChanged` does not include `preview`.
+- [x] Add JS/source regression proving public event selection does not include `productId`, `productVariantId`, `selectedAttributes`, `quantity`, `currencyCode`, or `unitPrice`.
+- [x] Add V2 visual script test proving it reads only `selection.*Text`, `selection.ready`, `selection.valid`, `selection.mainImageUrl`, and `selection.message`.
+- [x] Add Playwright/browser test proving variant change still updates price, stock, image, SKU, and GTIN.
+- [x] Add cart badge test proving canonical `{ count }` event still updates badges.
 
 ### Acceptance Criteria
 
-- [ ] Raw preview data is never exposed to visual hosts.
-- [ ] Public visual events cannot be used as command payload sources.
-- [ ] Cart events expose only visual-safe data.
+- [x] Raw preview data is never exposed to visual hosts.
+- [x] Public visual events cannot be used as command payload sources.
+- [x] Cart events expose only visual-safe data.
 
 ## Phase F1.71 - Enhanced Navigation And Alias Cleanup
 
@@ -508,7 +508,7 @@ Goal: remove stale tests, invert old expectations, and prove full unfiltered tes
 3. [x] F1.67 Checkout browser controller cutover.
 4. [x] F1.68 Account browser controller cutover.
 5. [x] F1.69 V2.WASM visual consumer guardrail.
-6. [ ] F1.70 Semantic event encapsulation.
+6. [x] F1.70 Semantic event encapsulation.
 7. [ ] F1.71 Enhanced navigation and alias cleanup.
 8. [ ] F1.72 Test cleanup and full suite closure.
 

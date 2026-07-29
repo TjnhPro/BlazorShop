@@ -7,7 +7,6 @@
   const consentManageSelector = "[data-storefront-consent-manage]";
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
   const antiforgeryHeaderSelector = 'meta[name="blazorshop-antiforgery-header"]';
-  const legacyCartChangedEventName = "blazorshop:cart-changed";
   const productPurchaseRootSelector = "[data-storefront-product-purchase]";
   const productPurchaseSubmitMarkerSelector = "[data-storefront-product-purchase-submit]";
   const productPurchaseSubmitSelector = '[data-storefront-command="cart.add-line"][data-storefront-product-purchase-submit]';
@@ -69,9 +68,7 @@
 
   function publishCartSummary(summary) {
     const count = cartCount(summary);
-    const detail = { count, summary: summary || null };
-    dispatch(events.cartChanged, detail);
-    dispatch(legacyCartChangedEventName, detail);
+    dispatch(events.cartChanged, { count });
     return summary;
   }
 
@@ -91,7 +88,7 @@
   }
 
   function publishProductSelectionChanged(preview) {
-    dispatch(events.productSelectionChanged, { preview: preview || null });
+    dispatch(events.productSelectionChanged, { selection: projectPreviewSelection(preview) });
     return preview;
   }
 
@@ -101,12 +98,11 @@
     });
   }
 
-  function publishPurchaseSelectionChanged(rootElement, submitter, preview, selection) {
+  function publishPurchaseSelectionChanged(rootElement, submitter, selection) {
     dispatch(events.productPurchaseSelectionChanged, {
       root: rootElement,
       submitter,
-      preview: preview || null,
-      selection
+      selection: projectVisualSelection(selection)
     });
   }
 
@@ -122,8 +118,7 @@
     dispatch(events.productPurchaseAddLineSucceeded, {
       root: rootElement,
       submitter,
-      summary: summary || null,
-      selection,
+      count: cartCount(summary),
       message: buildAddedMessage(rootElement, selection)
     });
   }
@@ -132,7 +127,6 @@
     dispatch(events.productPurchaseAddLineFailed, {
       root: rootElement,
       submitter,
-      selection: selection || null,
       message: error instanceof Error ? error.message : "Cart could not be updated."
     });
   }
@@ -466,6 +460,41 @@
     return preview?.[camelName] ?? preview?.[pascalName];
   }
 
+  function projectPreviewSelection(preview) {
+    const validationMessages = Array.isArray(readPreviewValue(preview, "validationMessages", "ValidationMessages"))
+      ? readPreviewValue(preview, "validationMessages", "ValidationMessages").filter(Boolean)
+      : [];
+    const isValid = Boolean(readPreviewValue(preview, "isValid", "IsValid"));
+    const isAvailable = Boolean(readPreviewValue(preview, "isAvailable", "IsAvailable"));
+    const isReady = Boolean(readPreviewValue(preview, "canAddToCart", "CanAddToCart"));
+    const stockAmount = readPreviewValue(preview, "stockQuantity", "StockQuantity");
+    return {
+      ready: isReady,
+      valid: isValid,
+      priceText: readPreviewValue(preview, "formattedUnitPrice", "FormattedUnitPrice") || "",
+      comparePriceText: readPreviewValue(preview, "formattedComparePrice", "FormattedComparePrice") || "",
+      stockText: isValid ? (isAvailable ? `${stockAmount ?? 0} in stock` : "Out of stock") : "",
+      skuText: readPreviewValue(preview, "sku", "Sku") ? `SKU ${readPreviewValue(preview, "sku", "Sku")}` : "",
+      gtinText: readPreviewValue(preview, "gtin", "Gtin") ? `GTIN ${readPreviewValue(preview, "gtin", "Gtin")}` : "",
+      mainImageUrl: readPreviewValue(preview, "primaryImageUrl", "PrimaryImageUrl") || "",
+      message: validationMessages[0] || (isReady ? "Selection ready." : "This selection is not available.")
+    };
+  }
+
+  function projectVisualSelection(selection) {
+    return {
+      ready: Boolean(selection?.ready),
+      valid: Boolean(selection?.valid),
+      priceText: selection?.priceText || "",
+      comparePriceText: selection?.comparePriceText || "",
+      stockText: selection?.stockText || "",
+      skuText: selection?.skuText || "",
+      gtinText: selection?.gtinText || "",
+      mainImageUrl: selection?.mainImageUrl || "",
+      message: selection?.message || ""
+    };
+  }
+
   function normalizePreview(rootElement, submitter, descriptor, preview) {
     const validationMessages = Array.isArray(readPreviewValue(preview, "validationMessages", "ValidationMessages"))
       ? readPreviewValue(preview, "validationMessages", "ValidationMessages").filter(Boolean)
@@ -536,7 +565,7 @@
 
     const preview = await productSelection.preview(descriptor.previewRoute, payload);
     const selection = normalizePreview(rootElement, submitter, descriptor, preview);
-    publishPurchaseSelectionChanged(rootElement, submitter, preview, selection);
+    publishPurchaseSelectionChanged(rootElement, submitter, selection);
     return selection;
   }
 

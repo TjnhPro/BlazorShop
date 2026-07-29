@@ -1,7 +1,7 @@
 const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
 const antiforgeryHeaderSelector = 'meta[name="blazorshop-antiforgery-header"]';
 const badgeSelector = "[data-storefront-cart-badge]";
-const cartChangedEventName = "blazorshop:cart-changed";
+const cartChangedEventName = "storefront:cart:changed";
 
 export function readAntiforgery() {
   const token = document.querySelector(antiforgeryTokenSelector)?.getAttribute("content");
