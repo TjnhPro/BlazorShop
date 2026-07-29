@@ -19,6 +19,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "ProductVariantId:",
                 "SelectedAttributes:",
                 "CurrencyCode:",
+                "preview.sku",
+                "preview.gtin",
+                "preview.stockQuantity",
+                "preview.canAddToCart",
                 "canAddToCart",
                 "stockQuantity",
             };
@@ -34,6 +38,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("showToast(\"success\", \"Cart\", message)", visualScript, StringComparison.Ordinal);
             Assert.Contains("syncGalleryMainImage(rootElement, selection.mainImageUrl)", visualScript, StringComparison.Ordinal);
             Assert.Contains("selectGalleryThumbnail", visualScript, StringComparison.Ordinal);
+            Assert.Contains("const sku = scope.querySelector(\"[data-storefront-selection-sku]\")", visualScript, StringComparison.Ordinal);
+            Assert.Contains("const gtin = scope.querySelector(\"[data-storefront-selection-gtin]\")", visualScript, StringComparison.Ordinal);
+            Assert.Contains("setText(sku, selection.skuText || \"\")", visualScript, StringComparison.Ordinal);
+            Assert.Contains("setText(gtin, selection.gtinText || \"\")", visualScript, StringComparison.Ordinal);
+            Assert.Contains("toggleHidden(sku, !selection.skuText)", visualScript, StringComparison.Ordinal);
+            Assert.Contains("toggleHidden(gtin, !selection.gtinText)", visualScript, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -63,6 +73,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "storefront:product-purchase:add-line-succeeded",
                 "storefront:product-purchase:add-line-failed",
                 "dispatch(events.productPurchaseSelectionChanged",
+                "priceText:",
+                "comparePriceText:",
+                "stockText:",
+                "skuText:",
+                "gtinText:",
+                "mainImageUrl:",
+                "message",
+                "ready: isReady",
+                "valid: isValid",
             })
             {
                 Assert.Contains(marker, applicationScript, StringComparison.Ordinal);

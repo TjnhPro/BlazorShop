@@ -96,8 +96,12 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
                 window.blazorShopStorefront.application.cart.clear();
                 app.cart.addLine({ ProductId: "1", ProductVariantId: "2", SelectedAttributes: [], CurrencyCode: "USD" });
                 app.productSelection.preview("/api/product-selection-preview", { productId: "1", productVariantId: "2", selectedAttributes: [], currencyCode: "USD" });
+                const selection = { skuText: "SKU SAFE", gtinText: "GTIN SAFE", stockText: "In stock", priceText: "$10.00" };
                 if (preview.canAddToCart && preview.stockQuantity > 0 && preview.isAvailable && preview.validationMessages.length === 0) {
                     console.log(preview.unitPrice, preview.formattedUnitPrice, preview.formattedComparePrice, preview.sku, preview.gtin);
+                }
+                if (preview["canAddToCart"] && preview['stockQuantity'] > 0) {
+                    console.log(preview["sku"], preview['gtin']);
                 }
                 fetch('/api/consent'); new XMLHttpRequest();
                 """);
@@ -125,9 +129,19 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             Assert.Contains(violations, violation => violation.Forbidden == "productSelection.preview");
             Assert.Contains(violations, violation => violation.Forbidden == "ProductId:");
             Assert.Contains(violations, violation => violation.Forbidden == "productId:");
-            Assert.Contains(violations, violation => violation.Forbidden == "canAddToCart");
-            Assert.Contains(violations, violation => violation.Forbidden == "stockQuantity");
-            Assert.Contains(violations, violation => violation.Forbidden == "formattedUnitPrice");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.canAddToCart");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.stockQuantity");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.formattedUnitPrice");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.sku");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview.gtin");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview[\"canAddToCart\"]");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview['stockQuantity']");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview[\"sku\"]");
+            Assert.Contains(violations, violation => violation.Forbidden == "preview['gtin']");
+            Assert.DoesNotContain(violations, violation => violation.Forbidden == "skuText");
+            Assert.DoesNotContain(violations, violation => violation.Forbidden == "gtinText");
+            Assert.DoesNotContain(violations, violation => violation.Forbidden == "stockText");
+            Assert.DoesNotContain(violations, violation => violation.Forbidden == "priceText");
             Assert.DoesNotContain(violations, violation => violation.Forbidden == "storefront:product-purchase:add-line-succeeded");
             Assert.All(violations, violation =>
             {

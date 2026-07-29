@@ -221,6 +221,8 @@
     const price = scope.querySelector("[data-storefront-selection-price]");
     const compare = scope.querySelector("[data-storefront-selection-compare]");
     const stock = scope.querySelector("[data-storefront-selection-stock]");
+    const sku = scope.querySelector("[data-storefront-selection-sku]");
+    const gtin = scope.querySelector("[data-storefront-selection-gtin]");
     const submitter = detail?.submitter instanceof HTMLButtonElement
       ? detail.submitter
       : rootElement?.querySelector(productPurchaseSubmitSelector);
@@ -230,6 +232,10 @@
       setText(compare, selection.comparePriceText || "");
       toggleHidden(compare, !selection.comparePriceText);
       setText(stock, selection.stockText || "");
+      setText(sku, selection.skuText || "");
+      toggleHidden(sku, !selection.skuText);
+      setText(gtin, selection.gtinText || "");
+      toggleHidden(gtin, !selection.gtinText);
       syncGalleryMainImage(rootElement, selection.mainImageUrl);
       if (rootElement instanceof HTMLElement) {
         rootElement.dataset.mainImageUrl = selection.mainImageUrl || rootElement.dataset.mainImageUrl || "";

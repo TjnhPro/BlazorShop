@@ -22,9 +22,9 @@ These findings were verified against the current codebase before writing this pl
 - [x] `StorefrontProductPageMapper` builds option values without default/selected state. 2026-07-29 F1.57 maps selected values from valid default-variant attributes.
 - [ ] `BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js` still owns saved-address/manual-address show-hide and disabled field behavior.
 - [ ] No active Presentation checkout markup currently emits `data-storefront-address-select`, so the V2 checkout address selector code appears stale or dead.
-- [ ] Presentation `storefront.application.js` builds semantic `skuText` and `gtinText` from product-selection preview.
-- [ ] V2 product page renders `data-storefront-selection-sku` and `data-storefront-selection-gtin`.
-- [ ] V2 selection listener updates price, compare price, stock, image, and button state, but not SKU/GTIN targets.
+- [x] Presentation `storefront.application.js` builds semantic `skuText` and `gtinText` from product-selection preview. 2026-07-29 F1.59 verified by regression test.
+- [x] V2 product page renders `data-storefront-selection-sku` and `data-storefront-selection-gtin`. 2026-07-29 F1.59 verified by markup regression.
+- [x] V2 selection listener updates price, compare price, stock, image, and button state, but not SKU/GTIN targets. 2026-07-29 F1.59 now updates SKU/GTIN targets from semantic event values.
 - [ ] Presentation product purchase binder selects `[data-storefront-product-purchase-submit]` and legacy aliases without enforcing `data-storefront-command="cart.add-line"`.
 - [ ] Presentation script publicly exposes command-capable methods under `window.blazorShopStorefront.application` and `window.blazorShopStorefront.bindings`.
 - [ ] `root.bindings.addToCart.addPurchaseLine` and `root.bindings.productSelection.previewPurchase` have no verified visual consumer and can re-enable command calls from visual hosts.
@@ -32,7 +32,7 @@ These findings were verified against the current codebase before writing this pl
 - [ ] Starter `PurchasePanelPlaceholder` renders a permanently disabled button and does not emit product purchase descriptors.
 - [ ] StorefrontBuilder still patches Starter by string replacement to add `PurchasePanel`, `PurchaseActions`, and product purchase descriptors.
 - [ ] Fast foundation functional proof uses mocked `pageHtml()` and injects Presentation script manually instead of launching an actual generated host.
-- [ ] Visual boundary validator still relies on broad substring tokens such as `sku` and `gtin`, causing false positives for presentation-ready `selection.skuText` and `selection.gtinText`.
+- [x] Visual boundary validator still relies on broad substring tokens such as `sku` and `gtin`, causing false positives for presentation-ready `selection.skuText` and `selection.gtinText`. 2026-07-29 F1.59 narrowed browser business tokens to raw `preview.*` and bracket forms.
 - [ ] Presentation still supports legacy selector aliases such as `data-storefront-selection-preview`, `data-storefront-add-to-cart`, and `data-storefront-generated-quantity`.
 
 ## Architecture Decision
@@ -66,7 +66,7 @@ V2 / Starter / generated visual layer
 Visual hosts may:
 
 - [x] render `checked` or `selected` from explicit contract state. 2026-07-29 F1.57 V2 purchase panel renders from `ProductPurchaseOptionValueItem.IsSelected`.
-- [ ] display presentation-ready event values such as `selection.priceText`, `selection.stockText`, `selection.skuText`, and `selection.gtinText`.
+- [x] display presentation-ready event values such as `selection.priceText`, `selection.stockText`, `selection.skuText`, and `selection.gtinText`. 2026-07-29 F1.59 V2 consumes these semantic values in `applySelectionVisual(...)`.
 - [ ] toggle CSS classes and visual visibility from semantic event values.
 - [ ] manage gallery keyboard navigation and visual thumbnail state.
 - [ ] focus fields, animate sections, and show toast copy supplied by the host or event descriptor.
@@ -76,14 +76,14 @@ Visual hosts must not:
 - [x] choose the first required product option as a business default. 2026-07-29 F1.57 removed V2 first-value selection fallback.
 - [x] infer selected variant or purchasability from DOM option order. 2026-07-29 F1.57 initial attributes now come from Presentation-selected value state.
 - [ ] decide which checkout form fields participate in form submission.
-- [ ] read raw preview fields such as `preview.sku`, `preview.gtin`, `preview.stockQuantity`, or `preview.canAddToCart`.
+- [x] read raw preview fields such as `preview.sku`, `preview.gtin`, `preview.stockQuantity`, or `preview.canAddToCart`. 2026-07-29 F1.59 V2 regression tests forbid raw preview reads.
 - [ ] call command-capable `application.*` or `bindings.*` methods from visual scripts.
 - [ ] rely on legacy selectors after canonical descriptors are available.
 - [ ] patch behavior contracts into Starter through fragile string replacement.
 
 ## Non-goals
 
-- [ ] Do not change Commerce Node product-selection preview response shape in this phase unless a contract bug blocks selected-state mapping.
+- [x] Do not change Commerce Node product-selection preview response shape in this phase unless a contract bug blocks selected-state mapping. 2026-07-29 F1.59 kept response shape unchanged; Presentation still normalizes raw preview fields.
 - [ ] Do not redesign the V2 product page layout.
 - [ ] Do not add full saved-address checkout UX unless an active endpoint and markup already exist.
 - [ ] Do not move gallery visual behavior into Presentation; gallery interaction can stay visual as long as it consumes semantic image URLs.
@@ -157,41 +157,41 @@ Goal: make V2 update all visible product selection targets from presentation-rea
 
 ### Implementation
 
-- [ ] Keep raw preview interpretation in Presentation `normalizePreview(...)`.
-- [ ] Ensure semantic selection result includes:
-  - [ ] `priceText`
-  - [ ] `comparePriceText`
-  - [ ] `stockText`
-  - [ ] `skuText`
-  - [ ] `gtinText`
-  - [ ] `mainImageUrl`
-  - [ ] `message`
-  - [ ] `ready`
-  - [ ] `valid`
-- [ ] Update V2 `applySelectionVisual(...)` to find:
-  - [ ] `data-storefront-selection-sku`
-  - [ ] `data-storefront-selection-gtin`
-- [ ] Set SKU/GTIN text from `selection.skuText` and `selection.gtinText`.
-- [ ] Hide SKU/GTIN visual targets when the presentation-ready value is empty.
-- [ ] Do not read `preview.sku`, `preview.gtin`, raw `sku`, raw `gtin`, or SKU/GTIN values from response payload in V2.
-- [ ] Keep gallery image switching from `selection.mainImageUrl`.
+- [x] Keep raw preview interpretation in Presentation `normalizePreview(...)`.
+- [x] Ensure semantic selection result includes:
+  - [x] `priceText`
+  - [x] `comparePriceText`
+  - [x] `stockText`
+  - [x] `skuText`
+  - [x] `gtinText`
+  - [x] `mainImageUrl`
+  - [x] `message`
+  - [x] `ready`
+  - [x] `valid`
+- [x] Update V2 `applySelectionVisual(...)` to find:
+  - [x] `data-storefront-selection-sku`
+  - [x] `data-storefront-selection-gtin`
+- [x] Set SKU/GTIN text from `selection.skuText` and `selection.gtinText`.
+- [x] Hide SKU/GTIN visual targets when the presentation-ready value is empty.
+- [x] Do not read `preview.sku`, `preview.gtin`, raw `sku`, raw `gtin`, or SKU/GTIN values from response payload in V2.
+- [x] Keep gallery image switching from `selection.mainImageUrl`.
 
 ### Tests
 
-- [ ] Update `StorefrontCommerceScriptRegressionTests` to require V2 updates SKU and GTIN from `selection.skuText` / `selection.gtinText`.
-- [ ] Update visual boundary validator so `selection.skuText` and `selection.gtinText` are allowed.
-- [ ] Keep raw business tokens forbidden with more precise tokens:
-  - [ ] `preview.sku`
-  - [ ] `preview.gtin`
-  - [ ] `preview.stockQuantity`
-  - [ ] `preview.canAddToCart`
-- [ ] Add a Playwright/browser regression where changing variant updates price, stock, image, SKU, and GTIN together.
+- [x] Update `StorefrontCommerceScriptRegressionTests` to require V2 updates SKU and GTIN from `selection.skuText` / `selection.gtinText`.
+- [x] Update visual boundary validator so `selection.skuText` and `selection.gtinText` are allowed.
+- [x] Keep raw business tokens forbidden with more precise tokens:
+  - [x] `preview.sku`
+  - [x] `preview.gtin`
+  - [x] `preview.stockQuantity`
+  - [x] `preview.canAddToCart`
+- [x] Add a Playwright/browser regression where changing variant updates price, stock, image, SKU, and GTIN together. 2026-07-29 `node scripts/qa/storefront-browser-semantics-visual-proof.js` passed.
 
 ### Acceptance Criteria
 
-- [ ] SKU/GTIN no longer stay stale after variant selection changes.
-- [ ] V2 consumes presentation-ready selection values only.
-- [ ] Guardrail does not block `skuText` / `gtinText` false positives.
+- [x] SKU/GTIN no longer stay stale after variant selection changes.
+- [x] V2 consumes presentation-ready selection values only.
+- [x] Guardrail does not block `skuText` / `gtinText` false positives.
 
 ## Phase F1.60 - Command Descriptor Enforcement And Private Binder Surface
 
