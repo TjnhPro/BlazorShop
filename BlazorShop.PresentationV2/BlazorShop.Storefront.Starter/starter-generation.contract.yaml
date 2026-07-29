@@ -49,12 +49,90 @@ requiredBffActions:
   - cart.add-line
   - cart.update-line
   - cart.remove-line
+  - checkout.start
+  - checkout.review
+  - checkout.place-order
+  - account.profile
+  - account.password
+  - account.address
+  - account.order
+  - auth.login
+  - auth.logout
+  - auth.register
+  - auth.recovery
+  - consent.save
+  - consent.revoke
+actionDescriptors:
+  - id: product.selection-preview
+    owner: BlazorShop.Storefront.Presentation
+    descriptor: data-selection-preview-route
+    routeSource: ProductPurchaseActionDescriptor.SelectionPreviewRoute
+  - id: cart.add-line
+    owner: BlazorShop.Storefront.Presentation
+    descriptor: data-storefront-command="cart.add-line"
+    routeSource: StorefrontCartActionDescriptor.CurrentCartRoute
+  - id: cart.update-line
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontCartActionDescriptor.UpdateLineRouteTemplate
+  - id: cart.remove-line
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontCartActionDescriptor.RemoveLineRouteTemplate
+  - id: checkout.start
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontCheckoutActionDescriptor.CurrentCheckoutRoute
+  - id: checkout.review
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontCheckoutActionDescriptor.ReviewRoute
+  - id: checkout.place-order
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontCheckoutActionDescriptor.PlaceOrderRoute
+  - id: account.profile
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontAccountProfileActionDescriptor.SaveProfileRoute
+  - id: account.password
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontAccountPasswordActionDescriptor.ChangePasswordRoute
+  - id: account.address
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontAccountAddressActionDescriptor.CurrentAddressesRoute
+  - id: account.order
+    owner: BlazorShop.Storefront.Presentation
+    routeSource: StorefrontAccountOrderActionDescriptor.OrderListRouteTemplate
+  - id: auth.login
+    owner: BlazorShop.Storefront.Presentation
+    route: /signin
+  - id: auth.logout
+    owner: BlazorShop.Storefront.Presentation
+    route: /logout
+  - id: auth.register
+    owner: BlazorShop.Storefront.Presentation
+    route: /register
+  - id: auth.recovery
+    owner: BlazorShop.Storefront.Presentation
+    route: /forgot-password
+  - id: consent.save
+    owner: BlazorShop.Storefront.Presentation
+    descriptor: data-storefront-consent-accept-url
+    routeSource: StorefrontConsentActionContext.AcceptUrl
+  - id: consent.revoke
+    owner: BlazorShop.Storefront.Presentation
+    descriptor: data-storefront-consent-revoke-url
+    routeSource: StorefrontConsentActionContext.RevokeUrl
 buildCommands:
   - dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj
   - dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj --no-restore
 gateCommands:
   - ./scripts/qa/run-storefront-starter-isolation-gate.ps1
   - ./scripts/qa/run-storefront-sample-release-gate.ps1
+generatedConstraints:
+  routeDeclarations: forbidden
+  additionalRouteAssemblies: forbidden
+metadata:
+  starterContractVersion: contractVersion
+  packageVersionSource: StorefrontPackageVersions.props
+  packageReferences:
+    - BlazorShop.Storefront.Presentation
+    - BlazorShop.Storefront.Components
 slots:
   - id: layout.header
     owner: generated
@@ -116,7 +194,7 @@ routes:
     path: Pages/Ssr/Home/HomePage.razor
     renderOwner: SSR
     hydrationMode: InitialSnapshot
-  - route: /content/{Slug}
+  - route: /pages/{Slug}
     path: Pages/Ssr/Content/ContentPage.razor
     renderOwner: SSR
     hydrationMode: InitialSnapshot
@@ -124,11 +202,23 @@ routes:
     path: Pages/Ssr/Auth/AuthShellPage.razor
     renderOwner: SSR
     hydrationMode: InitialSnapshot
+  - route: /register
+    path: Pages/Ssr/Auth/AuthShellPage.razor
+    renderOwner: SSR
+    hydrationMode: InitialSnapshot
+  - route: /forgot-password
+    path: Pages/Ssr/Auth/AuthShellPage.razor
+    renderOwner: SSR
+    hydrationMode: InitialSnapshot
+  - route: /reset-password
+    path: Pages/Ssr/Auth/AuthShellPage.razor
+    renderOwner: SSR
+    hydrationMode: InitialSnapshot
   - route: /maintenance
     path: Pages/Ssr/System/MaintenancePage.razor
     renderOwner: SSR
     hydrationMode: InitialSnapshot
-  - route: /not-found
+  - route: /{*Path:nonfile}
     path: Pages/Ssr/System/NotFoundPage.razor
     renderOwner: SSR
     hydrationMode: InitialSnapshot
@@ -148,6 +238,10 @@ routes:
     path: Pages/Hybrid/Commerce/CartPage.razor
     renderOwner: Hybrid
     hydrationMode: BrowserFetch
+  - route: /my-cart
+    path: Pages/Hybrid/Commerce/CartPage.razor
+    renderOwner: Hybrid
+    hydrationMode: BrowserFetch
   - route: /checkout
     path: Pages/Hybrid/Commerce/CheckoutPage.razor
     renderOwner: Hybrid
@@ -156,8 +250,20 @@ routes:
     path: Pages/Hybrid/Commerce/PaymentResultPage.razor
     renderOwner: Hybrid
     hydrationMode: RefreshAfterHydration
-  - route: /deals
+  - route: /payment-success
+    path: Pages/Hybrid/Commerce/PaymentResultPage.razor
+    renderOwner: Hybrid
+    hydrationMode: RefreshAfterHydration
+  - route: /payment-cancel
+    path: Pages/Hybrid/Commerce/PaymentResultPage.razor
+    renderOwner: Hybrid
+    hydrationMode: RefreshAfterHydration
+  - route: /todays-deals
     path: Pages/Hybrid/Commerce/DealsPage.razor
+    renderOwner: Hybrid
+    hydrationMode: BrowserFetch
+  - route: /new-releases
+    path: Pages/Hybrid/Catalog/NewReleasesPage.razor
     renderOwner: Hybrid
     hydrationMode: BrowserFetch
   - route: /account

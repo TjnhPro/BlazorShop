@@ -183,35 +183,41 @@ Goal: make `BlazorShop.Storefront.Starter` a complete, neutral, generator-ready 
 
 Tasks:
 
-- [ ] Treat `starter-generation.contract.yaml` as the authoritative generator contract.
-- [ ] Verify Starter exposes slots/routes for:
-  - [ ] home;
-  - [ ] category;
-  - [ ] product detail;
-  - [ ] search;
-  - [ ] content/page;
-  - [ ] cart;
-  - [ ] checkout;
-  - [ ] account;
-  - [ ] auth/recovery;
-  - [ ] consent;
-  - [ ] payment completion/failure;
-  - [ ] maintenance/store closed;
-  - [ ] not found;
-  - [ ] error.
-- [ ] Verify Starter action descriptors cover:
-  - [ ] product selection preview;
-  - [ ] add to cart;
-  - [ ] cart line update/remove;
-  - [ ] checkout start/review/place order;
-  - [ ] account profile/password/address/order operations;
-  - [ ] auth login/logout/register/recovery;
-  - [ ] consent save/revoke.
-- [ ] Verify Starter route metadata distinguishes SSR, hybrid, and WASM host usage clearly enough for future generated stores.
-- [ ] Verify Starter local visual components are store-neutral and do not copy Storefront V2 visual styling.
-- [ ] Verify generated visual files are not allowed to declare `@page` routes or add their own route assemblies.
-- [ ] Verify package references and generation contract versions are captured in metadata.
-- [ ] Update docs if the Starter contract currently promises a route/slot/action that is not implemented.
+- [x] Treat `starter-generation.contract.yaml` as the authoritative generator contract.
+- [x] Verify Starter exposes slots/routes for:
+  - [x] home;
+  - [x] category;
+  - [x] product detail;
+  - [x] search;
+  - [x] content/page;
+  - [x] cart;
+  - [x] checkout;
+  - [x] account;
+  - [x] auth/recovery;
+  - [x] consent;
+  - [x] payment completion/failure;
+  - [x] maintenance/store closed;
+  - [x] not found;
+  - [x] error.
+- [x] Verify Starter action descriptors cover:
+  - [x] product selection preview;
+  - [x] add to cart;
+  - [x] cart line update/remove;
+  - [x] checkout start/review/place order;
+  - [x] account profile/password/address/order operations;
+  - [x] auth login/logout/register/recovery;
+  - [x] consent save/revoke.
+- [x] Verify Starter route metadata distinguishes SSR, hybrid, and WASM host usage clearly enough for future generated stores.
+- [x] Verify Starter local visual components are store-neutral and do not copy Storefront V2 visual styling.
+- [x] Verify generated visual files are not allowed to declare `@page` routes or add their own route assemblies.
+- [x] Verify package references and generation contract versions are captured in metadata.
+- [x] Update docs if the Starter contract currently promises a route/slot/action that is not implemented.
+
+2026-07-29 Phase 2.3 implementation notes:
+- `starter-generation.contract.yaml` now records the authoritative slot, route, action descriptor, generated constraint, and metadata contract for Starter generation.
+- Contract routes were aligned with Presentation-owned routes, including `/pages/{Slug}`, `/my-cart` plus `/cart`, auth/recovery routes, payment success/cancel/result routes, and the not-found catch-all `/{*Path:nonfile}`.
+- Action descriptors are recorded as Presentation-owned symbolic `routeSource` entries so Starter does not contain forbidden `/api/*` endpoint literals.
+- Generated StorefrontBuilder metadata now records `starterContractVersion` and package versions sourced from `StorefrontPackageVersions.props`; validation/schema fixtures require those fields.
 
 Implementation notes:
 
@@ -228,10 +234,14 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Exit gate:
 
-- [ ] Starter contract has no promised-but-missing slot/action/route.
-- [ ] Starter stays neutral and package-consumable.
-- [ ] Generated proof can be created from Starter without V2 references.
-- [ ] Any missing optional route is explicitly documented as deferred, not silently absent.
+- [x] Starter contract has no promised-but-missing slot/action/route.
+- [x] Starter stays neutral and package-consumable.
+- [x] Generated proof can be created from Starter without V2 references.
+- [x] Any missing optional route is explicitly documented as deferred, not silently absent.
+
+2026-07-29 Phase 2.3 verification:
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj -c Release --no-restore --filter "FullyQualifiedName~Starter" --logger "trx;LogFileName=storefront-builder-phase23-starter-rerun.trx" --blame-hang --blame-hang-timeout 5m` passed `59/59`.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` passed; generated proof restored, built, validated, passed isolation, and passed the shared visual consumer boundary validator.
 
 ## Phase 2.4 - Create Generator Hardening
 

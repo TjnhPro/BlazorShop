@@ -466,6 +466,132 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterGenerationContract_FreezesRoutesSlotsActionsAndMetadata()
+        {
+            var contract = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml");
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1");
+            var presentationRoutes = string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(
+                    RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages"),
+                    "*.razor",
+                    SearchOption.AllDirectories)
+                    .Select(File.ReadAllText));
+
+            foreach (var expected in new[]
+            {
+                "contractVersion: 1",
+                "starter-generation.contract.yaml",
+                "generatedConstraints:",
+                "routeDeclarations: forbidden",
+                "additionalRouteAssemblies: forbidden",
+                "metadata:",
+                "starterContractVersion: contractVersion",
+                "packageVersionSource: StorefrontPackageVersions.props",
+            })
+            {
+                Assert.Contains(expected, contract, StringComparison.Ordinal);
+            }
+
+            foreach (var route in new[]
+            {
+                "/",
+                "/category/{Slug}",
+                "/product/{Slug}",
+                "/search",
+                "/pages/{Slug}",
+                "/cart",
+                "/my-cart",
+                "/checkout",
+                "/account",
+                "/signin",
+                "/register",
+                "/forgot-password",
+                "/reset-password",
+                "/payment/result",
+                "/payment-success",
+                "/payment-cancel",
+                "/maintenance",
+                "/{*Path:nonfile}",
+            })
+            {
+                Assert.Contains($"route: {route}", contract, StringComparison.Ordinal);
+                Assert.Contains($"@page \"{route}\"", presentationRoutes, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("path: Components/States/ErrorState.razor", contract, StringComparison.Ordinal);
+
+            foreach (var slot in new[]
+            {
+                "layout.header",
+                "layout.footer",
+                "layout.main-navigation",
+                "layout.mobile-navigation",
+                "layout.cart-badge",
+                "layout.account-menu",
+                "home.sections",
+                "catalog.product-card",
+                "catalog.filters",
+                "catalog.sorting",
+                "catalog.pagination",
+                "product.gallery",
+                "product.information",
+                "product.purchase",
+                "cart.page",
+                "checkout.page",
+                "account.shell",
+                "system.error",
+            })
+            {
+                Assert.Contains($"id: {slot}", contract, StringComparison.Ordinal);
+            }
+
+            foreach (var action in new[]
+            {
+                "product.selection-preview",
+                "cart.add-line",
+                "cart.update-line",
+                "cart.remove-line",
+                "checkout.start",
+                "checkout.review",
+                "checkout.place-order",
+                "account.profile",
+                "account.password",
+                "account.address",
+                "account.order",
+                "auth.login",
+                "auth.logout",
+                "auth.register",
+                "auth.recovery",
+                "consent.save",
+                "consent.revoke",
+            })
+            {
+                Assert.Contains($"id: {action}", contract, StringComparison.Ordinal);
+            }
+
+            foreach (var mode in new[] { "renderOwner: SSR", "renderOwner: Hybrid", "renderOwner: WASM-host", "InitialSnapshot", "BrowserFetch", "RefreshAfterHydration" })
+            {
+                Assert.Contains(mode, contract, StringComparison.Ordinal);
+            }
+
+            foreach (var metadataMarker in new[]
+            {
+                "starterContractVersion:",
+                "packageVersions:",
+                "BlazorShop.Storefront.Client:",
+                "BlazorShop.Storefront.Runtime:",
+                "BlazorShop.Storefront.Presentation:",
+                "BlazorShop.Storefront.Components:",
+            })
+            {
+                Assert.Contains(metadataMarker, generator, StringComparison.Ordinal);
+                Assert.Contains(metadataMarker, validator, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void StarterPages_DoNotImportStorefrontV2ComponentsOrCss()
         {
             var roots = new[]
