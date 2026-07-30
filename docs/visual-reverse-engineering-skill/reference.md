@@ -11,6 +11,7 @@
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/` | Generation, planning, token extraction, topology, capability, and manifest scripts. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/` | Static validation scripts and guardrails. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/` | Browser visual QA and commerce regression runners. |
+| `tools/BlazorShop.AI.StorefrontReverseEngineering/Skills/reverse-engineering-skills.json` | Phase 3A reverse-engineering skill catalog manifest. It documents deterministic, hybrid, and review-required steps; it is not an executable skill runtime. |
 | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |

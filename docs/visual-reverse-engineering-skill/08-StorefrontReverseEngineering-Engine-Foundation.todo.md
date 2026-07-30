@@ -668,44 +668,44 @@ Files/directories:
 
 Tasks:
 
-- [ ] Create `SkillDefinition`.
-- [ ] Create `SkillExecutionType`:
-  - [ ] `Deterministic`
-  - [ ] `AI-assisted`
-  - [ ] `Hybrid`
-  - [ ] `DocumentationOnly`
-- [ ] Create skill manifest schema.
-- [ ] Define selected skills:
-  - [ ] `storefront-reference-reconnaissance`
-  - [ ] `stabilize-reference-page`
-  - [ ] `capture-stable-full-page`
-  - [ ] `capture-responsive-evidence`
-  - [ ] `discover-visual-interactions`
-  - [ ] `extract-visual-evidence`
-  - [ ] `analyze-page-topology`
-  - [ ] `create-visual-specification-draft`
-  - [ ] `audit-reference-originality`
-  - [ ] `validate-visual-evidence`
-- [ ] For each skill, define:
-  - [ ] name
-  - [ ] version
-  - [ ] category
-  - [ ] purpose
-  - [ ] inputs
-  - [ ] outputs
-  - [ ] dependencies
-  - [ ] execution type
-  - [ ] human review requirement
-  - [ ] completion criteria
-  - [ ] forbidden actions
-- [ ] Add validation test for catalog completeness.
-- [ ] Add test that skills are documentation/manifest, not runtime magic.
+- [x] Create `SkillDefinition`.
+- [x] Create `SkillExecutionType`:
+  - [x] `Deterministic`
+  - [x] `AI-assisted`
+  - [x] `Hybrid`
+  - [x] `DocumentationOnly`
+- [x] Create skill manifest schema.
+- [x] Define selected skills:
+  - [x] `storefront-reference-reconnaissance`
+  - [x] `stabilize-reference-page`
+  - [x] `capture-stable-full-page`
+  - [x] `capture-responsive-evidence`
+  - [x] `discover-visual-interactions`
+  - [x] `extract-visual-evidence`
+  - [x] `analyze-page-topology`
+  - [x] `create-visual-specification-draft`
+  - [x] `audit-reference-originality`
+  - [x] `validate-visual-evidence`
+- [x] For each skill, define:
+  - [x] name
+  - [x] version
+  - [x] category
+  - [x] purpose
+  - [x] inputs
+  - [x] outputs
+  - [x] dependencies
+  - [x] execution type
+  - [x] human review requirement
+  - [x] completion criteria
+  - [x] forbidden actions
+- [x] Add validation test for catalog completeness.
+- [x] Add test that skills are documentation/manifest, not runtime magic.
 
 Guardrails:
 
-- [ ] Do not copy external `SKILL.md` files into the runtime as executable behavior.
-- [ ] Do not make skills a substitute for typed workflow services.
-- [ ] Do not introduce React/Next/Tailwind output concepts into BlazorShop contracts.
+- [x] Do not copy external `SKILL.md` files into the runtime as executable behavior.
+- [x] Do not make skills a substitute for typed workflow services.
+- [x] Do not introduce React/Next/Tailwind output concepts into BlazorShop contracts.
 
 Verification:
 
@@ -715,9 +715,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Selected skill catalog is explicit and validated.
-- [ ] Each skill has input/output/completion criteria.
-- [ ] Forbidden actions are documented and machine-readable.
+- [x] Selected skill catalog is explicit and validated.
+- [x] Each skill has input/output/completion criteria.
+- [x] Forbidden actions are documented and machine-readable.
 
 ## Phase 11 - Rule-Based Draft Analysis And AI Provider Abstraction
 

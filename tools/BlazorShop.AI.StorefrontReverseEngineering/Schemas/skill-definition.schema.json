@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/storefront-reverse-engineering/skill-definition.schema.json",
+  "type": "object",
+  "required": [ "schemaVersion", "skills" ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "category",
+          "purpose",
+          "inputs",
+          "outputs",
+          "dependencies",
+          "executionType",
+          "humanReviewRequired",
+          "completionCriteria",
+          "forbiddenActions"
+        ]
+      }
+    }
+  }
+}
