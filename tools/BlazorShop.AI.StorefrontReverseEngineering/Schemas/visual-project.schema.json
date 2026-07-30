@@ -1,0 +1,1 @@
+{"artifactKind":"visual-project","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","name","referenceUrl","artifactRoot","status"],"enumRules":[{"path":"status","values":["Created","Discovering","Discovered","Capturing","Captured","Analyzing","DraftReady","ValidationFailed","Failed"]}]}

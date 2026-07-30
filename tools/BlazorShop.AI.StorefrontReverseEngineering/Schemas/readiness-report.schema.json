@@ -1,0 +1,1 @@
+{"artifactKind":"readiness-report","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","passed","findings","requiredArtifacts"],"arrayPaths":["findings","requiredArtifacts"]}

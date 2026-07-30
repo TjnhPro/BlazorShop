@@ -97,25 +97,113 @@ public sealed class VisualProjectWorkflowService
         var root = resolver.ResolveRoot(projectRoot);
         var store = CreateStore(root);
         var project = await store.ReadJsonAsync<VisualProject>(ArtifactPath.Create("project.json"), "visual-project", cancellationToken);
-        var required = new[]
+        var required = new List<string>
         {
             "project.json",
             "configuration.json",
             "discovery/site-profile.json",
             "discovery/reconnaissance.json",
             "discovery/capture-plan.json",
-            "captures/home/desktop-1440/manifest.json",
-            "captures/home/tablet-768/manifest.json",
-            "captures/home/mobile-390/manifest.json",
             "analysis/page-topology.draft.json",
             "analysis/visual-blueprint.draft.json",
             "analysis/originality-audit.json"
         };
+        CapturePlan? plan = null;
+        var capturePlanPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create("discovery/capture-plan.json"));
+        if (File.Exists(capturePlanPath))
+        {
+            plan = await store.ReadJsonAsync<CapturePlan>(ArtifactPath.Create("discovery/capture-plan.json"), "capture-plan", cancellationToken);
+            foreach (var page in plan.Pages)
+            {
+                required.Add($"captures/{page.PageId}/capture-manifest.json");
+                foreach (var viewport in plan.Viewports)
+                {
+                    var captureRoot = $"captures/{page.PageId}/{viewport.Id}";
+                    required.Add($"{captureRoot}/manifest.json");
+                    required.Add($"{captureRoot}/full-page.png");
+                    required.Add($"{captureRoot}/dom.html");
+                    required.Add($"{captureRoot}/styles.json");
+                    required.Add($"{captureRoot}/boxes.json");
+                    required.Add($"{captureRoot}/assets.json");
+                    required.Add($"{captureRoot}/element-evidence-index.json");
+                    required.Add($"{captureRoot}/asset-inventory.normalized.json");
+                    required.Add($"{captureRoot}/capture-quality-report.json");
+                }
+            }
+        }
 
         var findings = required
             .Where(path => !File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(path))))
             .Select(path => new ReadinessFinding("missing-artifact", "blocking", $"Required artifact is missing: {path}"))
             .ToList();
+
+        foreach (var path in required.Where(path => path.EndsWith(".json", StringComparison.Ordinal) && File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(path)))))
+        {
+            try
+            {
+                ValidateArtifactByPath(store, path, cancellationToken).GetAwaiter().GetResult();
+            }
+            catch (InvalidOperationException exception)
+            {
+                findings.Add(new ReadinessFinding("invalid-schema", "blocking", $"Invalid schema for {path}: {exception.Message}"));
+            }
+        }
+
+        if (plan is not null)
+        {
+            foreach (var page in plan.Pages)
+            {
+                var pageManifestPath = $"captures/{page.PageId}/capture-manifest.json";
+                if (File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(pageManifestPath))))
+                {
+                    try
+                    {
+                        var pageManifest = await store.ReadJsonAsync<PageCaptureManifest>(ArtifactPath.Create(pageManifestPath), "page-capture-manifest", cancellationToken);
+                        new VisualEvidenceExtractor(repoRoot).ValidateReferencedFiles(root, pageManifest);
+                    }
+                    catch (InvalidOperationException exception)
+                    {
+                        findings.Add(new ReadinessFinding("missing-manifest-reference", "blocking", exception.Message));
+                    }
+                }
+
+                foreach (var viewport in plan.Viewports)
+                {
+                    var qualityPath = $"captures/{page.PageId}/{viewport.Id}/capture-quality-report.json";
+                    if (!File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(qualityPath))))
+                    {
+                        continue;
+                    }
+
+                    var quality = await store.ReadJsonAsync<CaptureQualityReport>(ArtifactPath.Create(qualityPath), "capture-quality-report", cancellationToken);
+                    if (!quality.Passed)
+                    {
+                        findings.Add(new ReadinessFinding("quality-failed", "blocking", $"Capture quality failed for {page.PageId}/{viewport.Id}."));
+                    }
+                }
+            }
+        }
+
+        var latestRunId = project.LatestRunId ?? FindLatestRunId(root);
+        if (!string.IsNullOrWhiteSpace(latestRunId))
+        {
+            var runPath = $"runs/{latestRunId}.json";
+            if (!File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(runPath))))
+            {
+                findings.Add(new ReadinessFinding("failed-latest-run", "blocking", $"Latest workflow run is missing: {runPath}"));
+            }
+            else
+            {
+                var run = await store.ReadJsonAsync<WorkflowRun>(ArtifactPath.Create(runPath), "workflow-run", cancellationToken);
+                if (run.Status is WorkflowRunStatus.Failed or WorkflowRunStatus.Canceled)
+                {
+                    findings.Add(new ReadinessFinding("failed-latest-run", "blocking", $"Latest workflow run '{run.RunId}' ended with status {run.Status}."));
+                }
+            }
+        }
+
+        ValidateBlueprintEvidenceReferences(root, store, findings, cancellationToken);
+        ValidateSensitiveRedaction(root, required, findings);
 
         var report = new ReadinessReport(
             "1.0",
@@ -136,8 +224,105 @@ public sealed class VisualProjectWorkflowService
             var failed = VisualProjectStatusTransitions.MoveTo(project, VisualProjectStatus.ValidationFailed, recoveryMode: true);
             await store.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", failed, cancellationToken);
         }
+        else if (project.Status == VisualProjectStatus.ValidationFailed)
+        {
+            var recovered = VisualProjectStatusTransitions.MoveTo(project, VisualProjectStatus.DraftReady, recoveryMode: true);
+            await store.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", recovered, cancellationToken);
+        }
 
         return report;
+    }
+
+    private async Task ValidateArtifactByPath(FileSystemVisualArtifactStore store, string path, CancellationToken cancellationToken)
+    {
+        var kind = path switch
+        {
+            "project.json" => "visual-project",
+            "configuration.json" => "configuration",
+            "discovery/site-profile.json" => "reference-site-profile",
+            "discovery/reconnaissance.json" => "reconnaissance",
+            "discovery/capture-plan.json" => "capture-plan",
+            "analysis/page-topology.draft.json" => "page-topology-draft",
+            "analysis/visual-blueprint.draft.json" => "visual-blueprint-draft",
+            "analysis/originality-audit.json" => "originality-audit",
+            "reports/readiness-report.json" => "readiness-report",
+            _ when path.EndsWith("/manifest.json", StringComparison.Ordinal) => "capture-viewport-manifest",
+            _ when path.EndsWith("/capture-manifest.json", StringComparison.Ordinal) => "page-capture-manifest",
+            _ when path.EndsWith("/element-evidence-index.json", StringComparison.Ordinal) => "computed-style-evidence",
+            _ when path.EndsWith("/asset-inventory.normalized.json", StringComparison.Ordinal) => "asset-inventory",
+            _ when path.EndsWith("/capture-quality-report.json", StringComparison.Ordinal) => "capture-quality-report",
+            _ => ""
+        };
+
+        if (!string.IsNullOrWhiteSpace(kind))
+        {
+            _ = await store.ReadJsonAsync<object>(ArtifactPath.Create(path), kind, cancellationToken);
+        }
+    }
+
+    private void ValidateBlueprintEvidenceReferences(
+        string root,
+        FileSystemVisualArtifactStore store,
+        List<ReadinessFinding> findings,
+        CancellationToken cancellationToken)
+    {
+        var blueprintPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create("analysis/visual-blueprint.draft.json"));
+        if (!File.Exists(blueprintPath))
+        {
+            return;
+        }
+
+        var blueprint = store.ReadJsonAsync<VisualBlueprintDraft>(ArtifactPath.Create("analysis/visual-blueprint.draft.json"), "visual-blueprint-draft", cancellationToken).GetAwaiter().GetResult();
+        if (blueprint.EvidenceIds.Count == 0)
+        {
+            findings.Add(new ReadinessFinding("missing-evidence-reference", "blocking", "Visual blueprint has no evidence references."));
+            return;
+        }
+
+        var capturesRoot = Path.Combine(root, "captures");
+        if (!Directory.Exists(capturesRoot))
+        {
+            findings.Add(new ReadinessFinding("missing-evidence-reference", "blocking", "Capture evidence root is missing."));
+            return;
+        }
+
+        var availableEvidenceIds = Directory.EnumerateFiles(capturesRoot, "element-evidence-index.json", SearchOption.AllDirectories)
+            .Select(path => System.Text.Json.JsonSerializer.Deserialize<ElementEvidenceIndex>(File.ReadAllText(path), VisualJson.Options))
+            .Where(index => index is not null)
+            .SelectMany(index => index!.Elements.Select(element => element.EvidenceId))
+            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (var evidenceId in blueprint.EvidenceIds.Where(evidenceId => !availableEvidenceIds.Contains(evidenceId)))
+        {
+            findings.Add(new ReadinessFinding("missing-evidence-reference", "blocking", $"Visual blueprint references missing evidence id: {evidenceId}"));
+        }
+    }
+
+    private void ValidateSensitiveRedaction(string root, IReadOnlyList<string> required, List<ReadinessFinding> findings)
+    {
+        foreach (var path in required.Where(path => path.EndsWith(".json", StringComparison.Ordinal)))
+        {
+            var fullPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create(path));
+            if (!File.Exists(fullPath))
+            {
+                continue;
+            }
+
+            var content = File.ReadAllText(fullPath);
+            if (content.Contains("Authorization:", StringComparison.OrdinalIgnoreCase) ||
+                content.Contains("Set-Cookie:", StringComparison.OrdinalIgnoreCase))
+            {
+                findings.Add(new ReadinessFinding("missing-provenance", "blocking", $"Sensitive header-like content was found in {path}."));
+            }
+        }
+    }
+
+    private static string? FindLatestRunId(string projectRoot)
+    {
+        var runsRoot = Path.Combine(projectRoot, "runs");
+        return Directory.Exists(runsRoot)
+            ? Directory.EnumerateFiles(runsRoot, "*.json").OrderByDescending(File.GetLastWriteTimeUtc).Select(Path.GetFileNameWithoutExtension).FirstOrDefault()
+            : null;
     }
 
     public async Task<RunSummary> RunAsync(

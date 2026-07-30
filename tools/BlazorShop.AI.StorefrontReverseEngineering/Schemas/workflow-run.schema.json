@@ -1,0 +1,1 @@
+{"artifactKind":"workflow-run","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","runId","status","steps","updatedUtc"],"arrayPaths":["steps"],"enumRules":[{"path":"status","values":["Running","Succeeded","Failed","Canceled"]}]}

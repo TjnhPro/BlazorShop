@@ -1,0 +1,1 @@
+{"artifactKind":"component-specification-draft","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","candidateId","neutralName","confidence","evidenceIds","warnings"],"arrayPaths":["evidenceIds","warnings"],"numericRules":[{"path":"confidence","minimum":0,"maximum":1}]}

@@ -1,0 +1,1 @@
+{"artifactKind":"originality-audit","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","policy","referenceOnlyAssets","warnings","generationRestrictions"],"arrayPaths":["referenceOnlyAssets","warnings","generationRestrictions"]}

@@ -1,0 +1,1 @@
+{"artifactKind":"computed-style-evidence","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","viewportId","elements"],"arrayPaths":["elements"]}

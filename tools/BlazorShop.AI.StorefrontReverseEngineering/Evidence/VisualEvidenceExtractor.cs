@@ -91,7 +91,7 @@ public sealed partial class VisualEvidenceExtractor
             [$"{relativeRoot}/element-evidence-index.json", $"{relativeRoot}/asset-inventory.normalized.json"],
             correlationId);
 
-        await store.WriteJsonAsync(ArtifactPath.Create($"captures/{session.PageId}/capture-manifest.json"), "capture-manifest", pageManifest, cancellationToken);
+        await store.WriteJsonAsync(ArtifactPath.Create($"captures/{session.PageId}/capture-manifest.json"), "page-capture-manifest", pageManifest, cancellationToken);
         return index;
     }
 
@@ -135,7 +135,7 @@ public sealed partial class VisualEvidenceExtractor
 
         return new PageCaptureManifest(
             "1.0",
-            "capture-manifest",
+            "page-capture-manifest",
             $"capture-page-{session.ProjectId}-{session.PageId}",
             DateTimeOffset.UtcNow,
             session.ProjectId,

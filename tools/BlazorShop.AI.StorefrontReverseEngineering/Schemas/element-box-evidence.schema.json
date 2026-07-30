@@ -1,0 +1,1 @@
+{"artifactKind":"element-box-evidence","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","viewportId","boxes"],"arrayPaths":["boxes"]}

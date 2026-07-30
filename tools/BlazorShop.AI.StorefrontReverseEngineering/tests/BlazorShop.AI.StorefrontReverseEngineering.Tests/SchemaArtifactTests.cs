@@ -19,10 +19,14 @@ public sealed class SchemaArtifactTests
         Assert.Contains("reference-site-profile", kinds);
         Assert.Contains("reconnaissance", kinds);
         Assert.Contains("capture-plan", kinds);
+        Assert.Contains("capture-viewport-manifest", kinds);
+        Assert.Contains("page-capture-manifest", kinds);
         Assert.Contains("capture-manifest", kinds);
         Assert.Contains("screenshot-evidence", kinds);
         Assert.Contains("dom-evidence", kinds);
         Assert.Contains("computed-style-evidence", kinds);
+        Assert.Contains("element-box-evidence", kinds);
+        Assert.Contains("element-evidence-index", kinds);
         Assert.Contains("asset-inventory", kinds);
         Assert.Contains("interaction-evidence", kinds);
         Assert.Contains("page-topology-draft", kinds);
@@ -32,6 +36,20 @@ public sealed class SchemaArtifactTests
         Assert.Contains("originality-audit", kinds);
         Assert.Contains("readiness-report", kinds);
         Assert.Contains("workflow-run", kinds);
+        Assert.Contains("skill-definition", kinds);
+    }
+
+    [Fact]
+    public void SchemaRegistry_LoadsSchemaFilesForFirstClassArtifacts()
+    {
+        var repoRoot = GetRepoRoot();
+        var schemaRoot = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Schemas");
+        var registry = new VisualSchemaRegistry();
+
+        foreach (var schema in registry.Schemas.Where(schema => schema.ArtifactKind != "capture-manifest"))
+        {
+            Assert.True(File.Exists(Path.Combine(schemaRoot, schema.ArtifactKind + ".schema.json")), schema.ArtifactKind);
+        }
     }
 
     [Fact]
@@ -42,6 +60,39 @@ public sealed class SchemaArtifactTests
 
         var exception = Assert.Throws<InvalidOperationException>(() => validator.Validate("visual-project", artifact));
         Assert.Contains("SRE-SCHEMA-006", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SchemaValidator_RejectsMissingDomainField()
+    {
+        var validator = new VisualSchemaValidator(new VisualSchemaRegistry());
+        var artifact = JsonNode.Parse("""{"schemaVersion":"1.0","artifactKind":"visual-project","artifactId":"project-demo","createdUtc":"2026-01-01T00:00:00Z","projectId":"demo"}""")!;
+
+        var exception = Assert.Throws<InvalidOperationException>(() => validator.Validate("visual-project", artifact));
+        Assert.Contains("SRE-SCHEMA-011", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SchemaValidator_RejectsInvalidNestedArrayShape()
+    {
+        var validator = new VisualSchemaValidator(new VisualSchemaRegistry());
+        var artifact = JsonNode.Parse("""{"schemaVersion":"1.0","artifactKind":"capture-plan","artifactId":"capture-plan-demo","createdUtc":"2026-01-01T00:00:00Z","projectId":"demo","pages":{},"viewports":[]}""")!;
+
+        var exception = Assert.Throws<InvalidOperationException>(() => validator.Validate("capture-plan", artifact));
+        Assert.Contains("SRE-SCHEMA-012", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SchemaValidator_RejectsInvalidEnumAndStaleVersion()
+    {
+        var validator = new VisualSchemaValidator(new VisualSchemaRegistry());
+        var invalidEnum = JsonNode.Parse("""{"schemaVersion":"1.0","artifactKind":"workflow-run","artifactId":"run-demo","createdUtc":"2026-01-01T00:00:00Z","projectId":"demo","runId":"run-1","status":"Done","steps":[],"updatedUtc":"2026-01-01T00:00:01Z"}""")!;
+        var stale = JsonNode.Parse("""{"schemaVersion":"0.9","artifactKind":"workflow-run","artifactId":"run-demo","createdUtc":"2026-01-01T00:00:00Z","projectId":"demo","runId":"run-1","status":"Succeeded","steps":[],"updatedUtc":"2026-01-01T00:00:01Z"}""")!;
+
+        var enumException = Assert.Throws<InvalidOperationException>(() => validator.Validate("workflow-run", invalidEnum));
+        var staleException = Assert.Throws<InvalidOperationException>(() => validator.Validate("workflow-run", stale));
+        Assert.Contains("SRE-SCHEMA-013", enumException.Message, StringComparison.Ordinal);
+        Assert.Contains("SRE-SCHEMA-008", staleException.Message, StringComparison.Ordinal);
     }
 
     [Fact]

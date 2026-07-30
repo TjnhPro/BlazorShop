@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Cli;
@@ -72,6 +73,35 @@ public sealed class EndToEndCliTests
 
         Assert.False(report.Passed);
         Assert.Contains(report.Findings, finding => finding.Code == "missing-artifact");
+    }
+
+    [Fact]
+    public async Task Readiness_QualityFailureBlocksAndRecoveryReturnsDraftReady()
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "readiness-recovery-" + Guid.NewGuid().ToString("N"));
+        var fixtureUrl = new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
+        var service = new VisualProjectWorkflowService(repoRoot);
+        var summary = await service.RunAsync(fixtureUrl, "Readiness Recovery", outputRoot, force: true, resume: false, noAi: true, CancellationToken.None, runId: "readiness-run");
+        var projectRoot = summary.ArtifactRoot;
+        var qualityPath = Path.Combine(projectRoot, "captures", "home", "desktop-1440", "capture-quality-report.json");
+        var quality = JsonNode.Parse(await File.ReadAllTextAsync(qualityPath))!.AsObject();
+
+        quality["passed"] = false;
+        await File.WriteAllTextAsync(qualityPath, quality.ToJsonString(VisualJson.Options));
+        var failed = await service.ValidateAsync(projectRoot, CancellationToken.None);
+        var failedProject = await new VisualProjectService(repoRoot).InspectAsync(projectRoot, CancellationToken.None);
+
+        quality["passed"] = true;
+        await File.WriteAllTextAsync(qualityPath, quality.ToJsonString(VisualJson.Options));
+        var recovered = await service.ValidateAsync(projectRoot, CancellationToken.None);
+        var recoveredProject = await new VisualProjectService(repoRoot).InspectAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(failed.Passed);
+        Assert.Contains(failed.Findings, finding => finding.Code == "quality-failed");
+        Assert.Equal(VisualProjectStatus.ValidationFailed, failedProject.Project.Status);
+        Assert.True(recovered.Passed);
+        Assert.Equal(VisualProjectStatus.DraftReady, recoveredProject.Project.Status);
     }
 
     [Fact]

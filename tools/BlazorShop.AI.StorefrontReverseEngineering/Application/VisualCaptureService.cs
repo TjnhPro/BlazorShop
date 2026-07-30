@@ -46,7 +46,7 @@ public sealed class VisualCaptureService
 
         var manifest = new CaptureViewportManifest(
             "1.0",
-            "capture-manifest",
+            "capture-viewport-manifest",
             $"capture-{session.ProjectId}-{session.PageId}-{viewport.Id}",
             DateTimeOffset.UtcNow,
             session.ProjectId,
@@ -70,7 +70,7 @@ public sealed class VisualCaptureService
             stableResult.BrowserSessionId);
 
         var store = new FileSystemVisualArtifactStore(root, resolver, validator);
-        await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/manifest.json"), "capture-manifest", manifest, cancellationToken);
+        await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/manifest.json"), "capture-viewport-manifest", manifest, cancellationToken);
         await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/capture-quality-report.json"), "capture-quality-report", qualityReport, cancellationToken);
         return new CapturedViewportResult(
             manifest,

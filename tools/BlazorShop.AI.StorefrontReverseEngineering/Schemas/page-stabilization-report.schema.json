@@ -1,0 +1,1 @@
+{"artifactKind":"page-stabilization-report","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","viewportId","steps","hiddenNoiseSelectors"],"arrayPaths":["steps","hiddenNoiseSelectors"]}

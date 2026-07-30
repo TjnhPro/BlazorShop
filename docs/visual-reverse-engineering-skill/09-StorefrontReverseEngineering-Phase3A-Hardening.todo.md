@@ -555,85 +555,85 @@ Current files:
 
 Tasks:
 
-- [ ] Create machine-readable schema files for first-class artifacts:
-  - [ ] `visual-project`
-  - [ ] `configuration`
-  - [ ] `reference-site-profile`
-  - [ ] `reconnaissance`
-  - [ ] `capture-plan`
-  - [ ] `capture-viewport-manifest`
-  - [ ] `page-capture-manifest`
-  - [ ] `capture-quality-report`
-  - [ ] `page-stabilization-report`
-  - [ ] `computed-style-evidence`
-  - [ ] `element-box-evidence`
-  - [ ] `element-evidence-index`
-  - [ ] `asset-inventory`
-  - [ ] `interaction-evidence`
-  - [ ] `page-topology-draft`
-  - [ ] `page-specification-draft`
-  - [ ] `component-specification-draft`
-  - [ ] `visual-blueprint-draft`
-  - [ ] `ai-inference-log`
-  - [ ] `originality-audit`
-  - [ ] `workflow-run`
-  - [ ] `readiness-report`
-  - [ ] `skill-definition`
-- [ ] Schema must validate:
-  - [ ] required fields
-  - [ ] nested objects
-  - [ ] enum values
-  - [ ] arrays and array item shape
-  - [ ] URI/path strings where appropriate
-  - [ ] numeric minimum/maximum
-  - [ ] schema version
-  - [ ] artifact kind
-- [ ] Change `VisualSchemaRegistry` to load schema files instead of metadata-only definitions.
-- [ ] Add schema fixture tests:
-  - [ ] valid fixture for each artifact kind
-  - [ ] missing required domain field
-  - [ ] invalid nested shape
-  - [ ] invalid enum
-  - [ ] stale schema version
-- [ ] Make readiness derive requirements from `capture-plan.json`.
-- [ ] For every configured page/viewport, readiness validates:
-  - [ ] viewport manifest exists
-  - [ ] screenshot exists
-  - [ ] DOM exists
-  - [ ] styles exist
-  - [ ] boxes exist
-  - [ ] assets exist
-  - [ ] normalized evidence exists
-  - [ ] quality report exists and passed
-  - [ ] capture correlation IDs match
-- [ ] Validate page-level manifest references.
-- [ ] Validate latest workflow run state.
-- [ ] Validate visual blueprint evidence references.
-- [ ] Validate originality audit restrictions.
-- [ ] Validate sensitive data redaction where possible.
-- [ ] Normalize severity:
-  - [ ] `blocking`
-  - [ ] `warning`
-  - [ ] `info`
-- [ ] Blocking findings include:
-  - [ ] capture failed
-  - [ ] quality failed
-  - [ ] missing screenshot
-  - [ ] missing DOM
-  - [ ] empty computed-style evidence
-  - [ ] no useful bounding boxes
-  - [ ] missing manifest reference
-  - [ ] invalid schema
-  - [ ] missing evidence reference from blueprint
-  - [ ] failed latest run
-  - [ ] missing provenance
-- [ ] Re-validation pass after recovery moves project back to `DraftReady`.
+- [x] Create machine-readable schema files for first-class artifacts:
+  - [x] `visual-project`
+  - [x] `configuration`
+  - [x] `reference-site-profile`
+  - [x] `reconnaissance`
+  - [x] `capture-plan`
+  - [x] `capture-viewport-manifest`
+  - [x] `page-capture-manifest`
+  - [x] `capture-quality-report`
+  - [x] `page-stabilization-report`
+  - [x] `computed-style-evidence`
+  - [x] `element-box-evidence`
+  - [x] `element-evidence-index`
+  - [x] `asset-inventory`
+  - [x] `interaction-evidence`
+  - [x] `page-topology-draft`
+  - [x] `page-specification-draft`
+  - [x] `component-specification-draft`
+  - [x] `visual-blueprint-draft`
+  - [x] `ai-inference-log`
+  - [x] `originality-audit`
+  - [x] `workflow-run`
+  - [x] `readiness-report`
+  - [x] `skill-definition`
+- [x] Schema must validate:
+  - [x] required fields
+  - [x] nested objects
+  - [x] enum values
+  - [x] arrays and array item shape
+  - [x] URI/path strings where appropriate
+  - [x] numeric minimum/maximum
+  - [x] schema version
+  - [x] artifact kind
+- [x] Change `VisualSchemaRegistry` to load schema files instead of metadata-only definitions.
+- [x] Add schema fixture tests:
+  - [x] valid fixture for each artifact kind
+  - [x] missing required domain field
+  - [x] invalid nested shape
+  - [x] invalid enum
+  - [x] stale schema version
+- [x] Make readiness derive requirements from `capture-plan.json`.
+- [x] For every configured page/viewport, readiness validates:
+  - [x] viewport manifest exists
+  - [x] screenshot exists
+  - [x] DOM exists
+  - [x] styles exist
+  - [x] boxes exist
+  - [x] assets exist
+  - [x] normalized evidence exists
+  - [x] quality report exists and passed
+  - [x] capture correlation IDs match
+- [x] Validate page-level manifest references.
+- [x] Validate latest workflow run state.
+- [x] Validate visual blueprint evidence references.
+- [x] Validate originality audit restrictions.
+- [x] Validate sensitive data redaction where possible.
+- [x] Normalize severity:
+  - [x] `blocking`
+  - [x] `warning`
+  - [x] `info`
+- [x] Blocking findings include:
+  - [x] capture failed
+  - [x] quality failed
+  - [x] missing screenshot
+  - [x] missing DOM
+  - [x] empty computed-style evidence
+  - [x] no useful bounding boxes
+  - [x] missing manifest reference
+  - [x] invalid schema
+  - [x] missing evidence reference from blueprint
+  - [x] failed latest run
+  - [x] missing provenance
+- [x] Re-validation pass after recovery moves project back to `DraftReady`.
 
 Guardrails:
 
-- [ ] Do not treat Markdown reports as source of truth.
-- [ ] Do not hard-code `home/desktop-1440` as readiness input.
-- [ ] Do not pass readiness on file existence alone.
+- [x] Do not treat Markdown reports as source of truth.
+- [x] Do not hard-code `home/desktop-1440` as readiness input.
+- [x] Do not pass readiness on file existence alone.
 
 Verification:
 
@@ -643,12 +643,19 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Each first-class JSON artifact validates against a real schema file.
-- [ ] Artifact missing a domain field is rejected.
-- [ ] Capture plan drives readiness requirements.
-- [ ] Quality failure blocks readiness.
-- [ ] Missing evidence reference blocks readiness.
-- [ ] Recovery validation can move `ValidationFailed` back to `DraftReady`.
+- [x] Each first-class JSON artifact validates against a real schema file.
+- [x] Artifact missing a domain field is rejected.
+- [x] Capture plan drives readiness requirements.
+- [x] Quality failure blocks readiness.
+- [x] Missing evidence reference blocks readiness.
+- [x] Recovery validation can move `ValidationFailed` back to `DraftReady`.
+
+Implementation evidence:
+
+- Added machine-readable schema descriptor files under `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas` and changed `VisualSchemaRegistry` to load them.
+- `VisualSchemaValidator` now checks required domain paths, array shape, enum values, numeric bounds, schema version, and artifact kind.
+- Readiness now derives capture requirements from `capture-plan.json`, checks quality reports, validates page-manifest references/correlation, checks latest workflow run, checks blueprint evidence IDs, and supports recovery from `ValidationFailed` to `DraftReady`.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Schema|Readiness|Validation"` passed: 10 tests.
 
 ## Phase H6 - Real Interaction Capture And Safe Action Guard
 
