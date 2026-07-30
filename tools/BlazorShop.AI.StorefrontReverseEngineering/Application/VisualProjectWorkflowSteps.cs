@@ -4,6 +4,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -418,6 +419,25 @@ internal sealed class MapPresentationComponentsStep : IVisualProjectWorkflowStep
 
         return mappings.Mappings.Count == 0
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-PRESENTATION-MAPPINGS-EMPTY", "Presentation mapping produced no supported mappings.")
+            : WorkflowStepResult.Success();
+    }
+}
+
+internal sealed class ScoreConfidenceReviewStep : IVisualProjectWorkflowStep
+{
+    public string Name => "score-confidence-review";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/mapping/presentation-mappings.draft.json", "analysis/mapping/unsupported-patterns.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/confidence/confidence-report.json", "review/review-queue.json", "review/review-decisions.json", "review/review-pack.md"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var report = await new ConfidenceScorer(context.RepoRoot)
+            .ScoreAsync(context.ArtifactRoot, cancellationToken);
+
+        return report.Items.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-CONFIDENCE-EMPTY", "Confidence scoring produced no reviewable items.")
             : WorkflowStepResult.Success();
     }
 }

@@ -1,0 +1,1 @@
+{"artifactKind":"confidence-report","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","projectConfidence","items","thresholds"],"arrayPaths":["items"],"nonEmptyStringPaths":["projectId"]}

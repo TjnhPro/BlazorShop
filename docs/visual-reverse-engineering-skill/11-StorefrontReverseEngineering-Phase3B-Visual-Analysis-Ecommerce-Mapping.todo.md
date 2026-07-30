@@ -949,61 +949,69 @@ Schemas/review-decisions.schema.json
 
 Confidence dimensions:
 
-- [ ] evidence completeness
-- [ ] cross-viewport consistency
-- [ ] repetition count
-- [ ] rule strength
-- [ ] structural similarity
-- [ ] token consistency
-- [ ] interaction evidence
-- [ ] catalog compatibility
-- [ ] ambiguity
-- [ ] human override
+- [x] evidence completeness
+- [x] cross-viewport consistency
+- [x] repetition count
+- [x] rule strength
+- [x] structural similarity
+- [x] token consistency
+- [x] interaction evidence
+- [x] catalog compatibility
+- [x] ambiguity
+- [x] human override
 
 Reviewable item types:
 
-- [ ] semantic tokens
-- [ ] page archetype
-- [ ] sections
-- [ ] component families
-- [ ] component variants
-- [ ] ecommerce roles
-- [ ] Presentation mappings
-- [ ] unsupported patterns
-- [ ] originality restrictions
-- [ ] generation readiness
+- [x] semantic tokens
+- [x] page archetype
+- [x] sections
+- [x] component families
+- [x] component variants
+- [x] ecommerce roles
+- [x] Presentation mappings
+- [x] unsupported patterns
+- [x] originality restrictions
+- [x] generation readiness
 
 Implementation checklist:
 
-- [ ] Add `ConfidenceScorer`.
-- [ ] Add per-token confidence.
-- [ ] Add per-page confidence.
-- [ ] Add per-section confidence.
-- [ ] Add per-component confidence.
-- [ ] Add per-region confidence.
-- [ ] Add per-mapping confidence.
-- [ ] Add project-level confidence summary.
-- [ ] Add threshold configuration.
-- [ ] Add low-confidence critical item queueing.
-- [ ] Add `ReviewQueueBuilder`.
-- [ ] Add Markdown review pack.
-- [ ] Add `ReviewDecisionApplier`.
-- [ ] Support `Approved`, `Modified`, `Rejected`, and `Deferred`.
-- [ ] Preserve original proposal, original confidence, reviewer note, and timestamp.
-- [ ] Do not require a web UI for MVP.
+- [x] Add `ConfidenceScorer`.
+- [x] Add per-token confidence.
+- [x] Add per-page confidence.
+- [x] Add per-section confidence.
+- [x] Add per-component confidence.
+- [x] Add per-region confidence.
+- [x] Add per-mapping confidence.
+- [x] Add project-level confidence summary.
+- [x] Add threshold configuration.
+- [x] Add low-confidence critical item queueing.
+- [x] Add `ReviewQueueBuilder`.
+- [x] Add Markdown review pack.
+- [x] Add `ReviewDecisionApplier`.
+- [x] Support `Approved`, `Modified`, `Rejected`, and `Deferred`.
+- [x] Preserve original proposal, original confidence, reviewer note, and timestamp.
+- [x] Do not require a web UI for MVP.
 
 Tests:
 
-- [ ] Score is deterministic.
-- [ ] Human override does not erase original score.
-- [ ] Low-confidence critical mapping enters review queue.
-- [ ] Approve decision carries item into reviewed output.
-- [ ] Modify decision preserves original proposal and records new value.
-- [ ] Reject/defer prevents reviewed readiness when item is blocking.
+- [x] Score is deterministic.
+- [x] Human override does not erase original score.
+- [x] Low-confidence critical mapping enters review queue.
+- [x] Approve decision carries item into reviewed output.
+- [x] Modify decision preserves original proposal and records new value.
+- [x] Reject/defer prevents reviewed readiness when item is blocking.
 
 Done when:
 
-- [ ] Review workflow can close MVP without UI.
+- [x] Review workflow can close MVP without UI.
+
+Implementation evidence:
+
+- Added `ConfidenceScorer`, `ReviewQueueBuilder`, `ReviewDecisionApplier`, review contracts, and schemas for confidence report, review queue, review decisions, and reviewed items.
+- Added workflow step `score-confidence-review`.
+- Scorer emits token/page/section/component/region/mapping/unsupported confidence items with factor codes, evidence IDs, critical flags, thresholds, and project confidence; queue/review pack are file-based and require no UI.
+- Decision applier supports `Approved`, `Modified`, `Rejected`, and `Deferred` while preserving original proposal, confidence, reviewer note, and timestamp.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Confidence|ReviewDecision"` passed `6/6`.
 
 ## Phase 3B.12 - Visual Blueprint v1 And Generation Readiness
 
@@ -1271,7 +1279,7 @@ Recommended implementation order:
 10. [x] Phase 3B.8 ecommerce region classification.
 11. [x] Phase 3B.9 Presentation component catalog.
 12. [x] Phase 3B.10 Presentation mapping and unsupported patterns.
-13. [ ] Phase 3B.11 confidence and human review.
+13. [x] Phase 3B.11 confidence and human review.
 14. [ ] Phase 3B.12 Visual Blueprint v1 and generation readiness.
 15. [ ] Phase 3B.14 CLI/docs/DX.
 16. [ ] Phase 3B.15 release gate.

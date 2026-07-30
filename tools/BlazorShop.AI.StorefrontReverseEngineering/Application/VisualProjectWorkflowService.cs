@@ -5,6 +5,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -324,6 +325,12 @@ public sealed class VisualProjectWorkflowService
     {
         var root = resolver.ResolveRoot(projectRoot);
         return await new PresentationMapper(repoRoot).MapAsync(root, cancellationToken);
+    }
+
+    public async Task<ConfidenceReport> ScoreConfidenceAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new ConfidenceScorer(repoRoot).ScoreAsync(root, cancellationToken);
     }
 
     private async Task ValidateViewportEvidenceReadinessAsync(
@@ -712,11 +719,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new ClassifyEcommerceRegionsStep());
         steps.Add(new BuildPresentationCatalogStep());
         steps.Add(new MapPresentationComponentsStep());
+        steps.Add(new ScoreConfidenceReviewStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions" or "build-presentation-catalog" or "map-presentation-components";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions" or "build-presentation-catalog" or "map-presentation-components" or "score-confidence-review";
 
     private static string WriteMarkdown(ReadinessReport report)
     {
