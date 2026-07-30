@@ -55,6 +55,12 @@ public static class CliHost
         {
             output.WriteLine($"  {command}");
         }
+        output.WriteLine();
+        output.WriteLine("Examples:");
+        output.WriteLine("  init --url <url> --name <name> --output-root obj/storefront-reverse-engineering/projects [--force]");
+        output.WriteLine("  run --url <url> --name <name> --output-root obj/storefront-reverse-engineering/projects --no-ai [--run-id <id>] [--force-step <step>]");
+        output.WriteLine("  resume --project obj/storefront-reverse-engineering/projects/<project-id> [--run-id <id>] [--force-step <step>]");
+        output.WriteLine("  inspect --project obj/storefront-reverse-engineering/projects/<project-id>");
     }
 
     private static async Task<int> RunCommandAsync(
@@ -92,6 +98,8 @@ public static class CliHost
                     output.WriteLine($"Artifact root: {inspection.Project.ArtifactRoot}");
                     output.WriteLine($"Latest run: {inspection.LatestRunId ?? "(none)"}");
                     output.WriteLine($"Validation: {inspection.ValidationSummary}");
+                    output.WriteLine($"Blueprint path: {Path.Combine(inspection.Project.ArtifactRoot, "analysis", "visual-blueprint.draft.json")}");
+                    output.WriteLine($"Readiness report: {Path.Combine(inspection.Project.ArtifactRoot, "reports", "readiness-report.json")}");
                     if (inspection.LatestRunId is not null)
                     {
                         WriteRunInspection(output, inspection.Project.ArtifactRoot, inspection.LatestRunId);
@@ -128,6 +136,31 @@ public static class CliHost
                     return report.Passed ? 0 : 3;
                 case "run":
                 case "resume":
+                    if (command == "resume" && options.GetOptional("project") is { } resumeProjectPath)
+                    {
+                        var resumeInspection = await service.InspectAsync(resumeProjectPath, cancellationToken);
+                        var parent = Directory.GetParent(resumeInspection.Project.ArtifactRoot)?.FullName
+                            ?? throw new InvalidOperationException("[SRE-RESUME-001] Cannot resolve project parent. Problem: project artifact root has no parent. Cause: resume needs the output root that owns the project. Fix: pass --url/--name/--output-root explicitly.");
+                        var resumeSummary = await new VisualProjectWorkflowService(FindRepositoryRoot()).RunAsync(
+                            resumeInspection.Project.ReferenceUrl,
+                            resumeInspection.Project.Name,
+                            parent,
+                            force: false,
+                            resume: true,
+                            options.HasFlag("no-ai"),
+                            cancellationToken,
+                            options.GetOptional("run-id"),
+                            options.GetOptional("force-step"));
+                        output.WriteLine($"Run completed: {resumeSummary.ProjectId}");
+                        output.WriteLine($"Artifact root: {resumeSummary.ArtifactRoot}");
+                        output.WriteLine($"Run ID: {resumeSummary.RunId}");
+                        output.WriteLine($"Run status: {resumeSummary.RunStatus}");
+                        output.WriteLine($"Captured viewports: {resumeSummary.CapturedViewports}");
+                        output.WriteLine($"Blueprint: {resumeSummary.BlueprintArtifactId}");
+                        output.WriteLine($"Readiness passed: {resumeSummary.ReadinessPassed}");
+                        return resumeSummary.ReadinessPassed ? 0 : 3;
+                    }
+
                     var summary = await new VisualProjectWorkflowService(FindRepositoryRoot()).RunAsync(
                         options.GetRequired("url", "SRE-RUN-001"),
                         options.GetRequired("name", "SRE-RUN-002"),

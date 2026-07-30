@@ -63,6 +63,34 @@ public sealed class EndToEndCliTests
     }
 
     [Fact]
+    public async Task Resume_CommandCanUseProjectPathAndRunId()
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "resume-cli-" + Guid.NewGuid().ToString("N"));
+        var fixtureUrl = new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
+        using var runOut = new StringWriter();
+        using var runErr = new StringWriter();
+        var runExit = await CliHost.RunAsync(
+            ["run", "--url", fixtureUrl, "--name", "Resume Cli", "--output-root", outputRoot, "--no-ai", "--force", "--run-id", "resume-cli-run"],
+            runOut,
+            runErr,
+            CancellationToken.None);
+
+        using var resumeOut = new StringWriter();
+        using var resumeErr = new StringWriter();
+        var resumeExit = await CliHost.RunAsync(
+            ["resume", "--project", Path.Combine(outputRoot, "resume-cli"), "--run-id", "resume-cli-run", "--no-ai"],
+            resumeOut,
+            resumeErr,
+            CancellationToken.None);
+
+        Assert.Equal(0, runExit);
+        Assert.Equal(0, resumeExit);
+        Assert.Contains("Run ID: resume-cli-run", resumeOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Run status: Succeeded", resumeOut.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Validate_MissingArtifacts_ReturnsBlockingReport()
     {
         var repoRoot = GetRepoRoot();

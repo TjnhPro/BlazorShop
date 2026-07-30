@@ -35,6 +35,34 @@ public sealed class VisualProjectLifecycleTests
     }
 
     [Fact]
+    public async Task Lifecycle_ForceCleanupDeletesOnlyProjectRoot()
+    {
+        var service = new VisualProjectService(GetRepoRoot());
+        var outputRoot = CreateOutputRoot();
+        var project = await service.InitializeAsync("https://example.test", "Force Demo", outputRoot, force: false, CancellationToken.None);
+        var staleArtifact = Path.Combine(project.ArtifactRoot, "captures", "stale.txt");
+        Directory.CreateDirectory(Path.GetDirectoryName(staleArtifact)!);
+        await File.WriteAllTextAsync(staleArtifact, "stale");
+
+        var forced = await service.InitializeAsync("https://example.test", "Force Demo", outputRoot, force: true, CancellationToken.None);
+
+        Assert.Equal(project.ArtifactRoot, forced.ArtifactRoot);
+        Assert.False(File.Exists(staleArtifact));
+        Assert.True(File.Exists(Path.Combine(forced.ArtifactRoot, "project.json")));
+    }
+
+    [Fact]
+    public async Task Security_UnsafeForceRootIsRejected()
+    {
+        var service = new VisualProjectService(GetRepoRoot());
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.InitializeAsync("https://example.test", "Unsafe", "artifacts/storefront-builder/generated", force: true, CancellationToken.None));
+
+        Assert.Contains("SRE-PATH-002", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Init_RejectsInvalidUrl()
     {
         var service = new VisualProjectService(GetRepoRoot());
@@ -83,6 +111,22 @@ public sealed class VisualProjectLifecycleTests
 
         Assert.Equal(0, inspectCode);
         Assert.Contains("Status: Created", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Blueprint path:", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Readiness report:", inspectOut.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Cli_HelpIncludesRunResumeAndForceStepExamples()
+    {
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = await CliHost.RunAsync(["--help"], stdout, stderr, CancellationToken.None);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("run --url <url>", stdout.ToString(), StringComparison.Ordinal);
+        Assert.Contains("resume --project", stdout.ToString(), StringComparison.Ordinal);
+        Assert.Contains("--force-step <step>", stdout.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]

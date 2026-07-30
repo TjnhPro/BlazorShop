@@ -35,6 +35,11 @@ public sealed class VisualProjectService
             throw new InvalidOperationException($"[SRE-INIT-001] Visual project already exists. Problem: '{projectRoot}' already contains project state. Cause: init is non-destructive by default. Fix: choose a new name or pass --force to overwrite deterministic project metadata.");
         }
 
+        if (Directory.Exists(projectRoot) && force)
+        {
+            DeleteProjectRootForForce(root, projectRoot);
+        }
+
         Directory.CreateDirectory(projectRoot);
         var store = CreateStore(projectRoot);
         var now = DateTimeOffset.UtcNow;
@@ -90,6 +95,20 @@ public sealed class VisualProjectService
 
     private FileSystemVisualArtifactStore CreateStore(string projectRoot) =>
         new(projectRoot, rootResolver, schemaValidator);
+
+    private static void DeleteProjectRootForForce(string approvedOutputRoot, string projectRoot)
+    {
+        var fullOutputRoot = Path.GetFullPath(approvedOutputRoot);
+        var fullProjectRoot = Path.GetFullPath(projectRoot);
+        if (fullProjectRoot.Equals(fullOutputRoot, StringComparison.OrdinalIgnoreCase) ||
+            !ApprovedArtifactRootResolver.IsUnderRoot(fullProjectRoot, fullOutputRoot) ||
+            fullProjectRoot.Contains(Path.Combine("storefront-builder", "generated"), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"[SRE-FORCE-001] Unsafe force cleanup refused. Problem: '{projectRoot}' is not a single reverse-engineering project root. Cause: --force may only delete one project under the approved reverse-engineering output root. Fix: pass a project name under artifacts/storefront-reverse-engineering/projects or obj/storefront-reverse-engineering/projects.");
+        }
+
+        Directory.Delete(fullProjectRoot, recursive: true);
+    }
 
     private static string? FindLatestRun(string projectRoot)
     {

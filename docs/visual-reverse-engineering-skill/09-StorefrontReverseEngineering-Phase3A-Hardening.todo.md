@@ -833,46 +833,46 @@ Current files:
 
 Tasks:
 
-- [ ] Define final command surface:
-  - [ ] `init`
-  - [ ] `discover`
-  - [ ] `capture`
-  - [ ] `analyze`
-  - [ ] `validate`
-  - [ ] `inspect`
-  - [ ] `run`
-  - [ ] `resume` or `run --resume`
-- [ ] Add `--run-id`.
-- [ ] Add `--force-step`.
-- [ ] Clarify `--force`:
-  - [ ] deletes old project root safely before init
-  - [ ] only under approved roots
-  - [ ] removes old capture/analysis/run artifacts
-  - [ ] does not touch generated storefront roots
-- [ ] Add tests for safe force cleanup.
-- [ ] Add tests for unsafe force root rejection.
-- [ ] Align report names:
-  - [ ] `readiness-report.json`
-  - [ ] `readiness-report.md`
-  - [ ] `originality-audit.json`
-  - [ ] `originality-audit.md`
-- [ ] Update inspect output:
-  - [ ] project status
-  - [ ] latest run ID
-  - [ ] run status
-  - [ ] step table
-  - [ ] retry count
-  - [ ] latest failure
-  - [ ] readiness result
-  - [ ] blueprint path
-  - [ ] artifact root
-- [ ] Ensure error messages follow problem/cause/fix style.
+- [x] Define final command surface:
+  - [x] `init`
+  - [x] `discover`
+  - [x] `capture`
+  - [x] `analyze`
+  - [x] `validate`
+  - [x] `inspect`
+  - [x] `run`
+  - [x] `resume` or `run --resume`
+- [x] Add `--run-id`.
+- [x] Add `--force-step`.
+- [x] Clarify `--force`:
+  - [x] deletes old project root safely before init
+  - [x] only under approved roots
+  - [x] removes old capture/analysis/run artifacts
+  - [x] does not touch generated storefront roots
+- [x] Add tests for safe force cleanup.
+- [x] Add tests for unsafe force root rejection.
+- [x] Align report names:
+  - [x] `readiness-report.json`
+  - [x] `readiness-report.md`
+  - [x] `originality-audit.json`
+  - [x] `originality-audit.md`
+- [x] Update inspect output:
+  - [x] project status
+  - [x] latest run ID
+  - [x] run status
+  - [x] step table
+  - [x] retry count
+  - [x] latest failure
+  - [x] readiness result
+  - [x] blueprint path
+  - [x] artifact root
+- [x] Ensure error messages follow problem/cause/fix style.
 
 Guardrails:
 
-- [ ] Do not make `--force` ambiguous.
-- [ ] Do not inspect non-existent report filenames.
-- [ ] Do not require reading temporary artifacts to understand run status.
+- [x] Do not make `--force` ambiguous.
+- [x] Do not inspect non-existent report filenames.
+- [x] Do not require reading temporary artifacts to understand run status.
 
 Verification:
 
@@ -883,9 +883,16 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] CLI help is copy-paste usable.
-- [ ] `inspect` shows real run/readiness state.
-- [ ] `--force`, `--resume`, and `--force-step` have clear tested semantics.
+- [x] CLI help is copy-paste usable.
+- [x] `inspect` shows real run/readiness state.
+- [x] `--force`, `--resume`, and `--force-step` have clear tested semantics.
+
+Implementation evidence:
+
+- CLI help now documents `init`, `discover`, `capture`, `analyze`, `validate`, `inspect`, `run`, `resume`, `--run-id`, and `--force-step` examples.
+- `--force` now deletes only the resolved single reverse-engineering project root under approved roots and refuses generated-storefront-like roots.
+- `resume --project <path>` can resume an existing project/run; `inspect` prints blueprint/readiness paths and persisted run step details.
+- Verification: `dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help` succeeded, and `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Cli|Lifecycle|Security"` passed: 22 tests.
 
 ## Phase H9 - Full Phase 3A Hardening Gate
 
