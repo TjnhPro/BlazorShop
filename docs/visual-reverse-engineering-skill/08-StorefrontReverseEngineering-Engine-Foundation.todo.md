@@ -613,36 +613,36 @@ Goal: support configured interaction evidence without trying to auto-discover ev
 
 Tasks:
 
-- [ ] Create `InteractionCapturePlan`.
-- [ ] Create `InteractionActionDefinition`.
-- [ ] Support configured actions:
-  - [ ] click selector
-  - [ ] hover selector
-  - [ ] focus selector
-  - [ ] scroll to selector
-  - [ ] wait
-- [ ] Capture before state.
-- [ ] Execute action.
-- [ ] Capture after state.
-- [ ] Extract before/after screenshot and DOM/style diff metadata.
-- [ ] Classify interaction model:
-  - [ ] `Static`
-  - [ ] `ClickDriven`
-  - [ ] `HoverDriven`
-  - [ ] `ScrollDriven`
-  - [ ] `TimeDriven`
-  - [ ] `Mixed`
-  - [ ] `Unknown`
-- [ ] Record failed selector as warning or blocking error based on policy.
-- [ ] Add tests for mobile menu fixture.
-- [ ] Add tests for accordion fixture.
-- [ ] Add tests for hover fixture.
+- [x] Create `InteractionCapturePlan`.
+- [x] Create `InteractionActionDefinition`.
+- [x] Support configured actions:
+  - [x] click selector
+  - [x] hover selector
+  - [x] focus selector
+  - [x] scroll to selector
+  - [x] wait
+- [x] Capture before state.
+- [x] Execute action.
+- [x] Capture after state.
+- [x] Extract before/after screenshot and DOM/style diff metadata.
+- [x] Classify interaction model:
+  - [x] `Static`
+  - [x] `ClickDriven`
+  - [x] `HoverDriven`
+  - [x] `ScrollDriven`
+  - [x] `TimeDriven`
+  - [x] `Mixed`
+  - [x] `Unknown`
+- [x] Record failed selector as warning or blocking error based on policy.
+- [x] Add tests for mobile menu fixture.
+- [x] Add tests for accordion fixture.
+- [x] Add tests for hover fixture.
 
 Guardrails:
 
-- [ ] Phase 3A does not need automatic exhaustive interaction discovery.
-- [ ] Do not execute destructive actions, forms, checkout, login, payment, or account mutations on reference sites.
-- [ ] Only run configured safe selectors.
+- [x] Phase 3A does not need automatic exhaustive interaction discovery.
+- [x] Do not execute destructive actions, forms, checkout, login, payment, or account mutations on reference sites.
+- [x] Only run configured safe selectors.
 
 Verification:
 
@@ -652,9 +652,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Configured interactions produce before/after evidence.
-- [ ] Unsafe or unsupported actions are refused.
-- [ ] Interaction evidence validates against schema.
+- [x] Configured interactions produce before/after evidence.
+- [x] Unsafe or unsupported actions are refused.
+- [x] Interaction evidence validates against schema.
 
 ## Phase 10 - Skill Catalog Manifest
 
