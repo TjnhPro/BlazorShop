@@ -12,16 +12,57 @@
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/` | Static validation scripts and guardrails. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/` | Browser visual QA and commerce regression runners. |
 | `tools/BlazorShop.AI.StorefrontReverseEngineering/Skills/reverse-engineering-skills.json` | Phase 3A reverse-engineering skill catalog manifest. It documents deterministic, hybrid, and review-required steps; it is not an executable skill runtime. |
+| `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1` | Phase 3A hardening gate for the ReverseEngineering executable, local fixture browser tests, readiness validation, boundary scan, and StorefrontBuilder compatibility smoke. |
+| `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
+| `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
+| `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
+| `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Generated storefront build/package/reference isolation gate. |
 
 ## ReverseEngineering Handoff
 
 `BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. The important handoff artifact for later StorefrontBuilder phases is `analysis/visual-blueprint.draft.json`; Phase 3A defines `pageSpecificationIds`, `componentSpecificationIds`, `evidenceIds`, `generationRestrictions`, and `confidence` as the fields StorefrontBuilder may consume later.
 
 StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
-| `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
-| `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
-| `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
-| `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Generated storefront build/package/reference isolation gate. |
+
+Phase 3A is not a visual generator. It does not perform full design-token extraction, ecommerce region mapping, component generation, or blueprint-driven StorefrontBuilder output. Reference assets, logos, copy, and brand-specific visual material are reference-only by default unless later human review and approved workflow clear reuse.
+
+Phase 3B starts from Phase 3A runtime evidence and should add design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.
+
+## ReverseEngineering Commands
+
+```powershell
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- init --url https://reference.example --name Demo --output-root artifacts/storefront-reverse-engineering/projects
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- run --url https://reference.example --name Demo --output-root artifacts/storefront-reverse-engineering/projects --no-ai
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project artifacts/storefront-reverse-engineering/projects/demo --force-step capture
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project artifacts/storefront-reverse-engineering/projects/demo
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- validate --project artifacts/storefront-reverse-engineering/projects/demo
+```
+
+Manual artifacts should use `artifacts/storefront-reverse-engineering/projects/{ProjectId}`. Automated tests and gates should use `obj/storefront-reverse-engineering/projects/{ProjectId}`.
+
+Readiness is reported in `reports/readiness-report.md`. A passing readiness report means the current artifacts are schema-valid, quality-aware, linked by capture correlation IDs, tied to workflow run state, and constrained by originality/provenance. It does not mean AI analysis is complete or that a generated storefront can be produced.
+
+## ReverseEngineering Browser Setup
+
+Install .NET Playwright Chromium once before running browser tests or the hardening gate:
+
+```powershell
+dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
+.\tools\BlazorShop.AI.StorefrontReverseEngineering\bin\Debug\net10.0\playwright.ps1 install chromium
+```
+
+The browser integration tests use a local HTTP fixture server, not an external website:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Playwright|EndToEnd"
+```
+
+Run the full Phase 3A hardening gate with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
+```
 
 ## Generated Project Shape
 

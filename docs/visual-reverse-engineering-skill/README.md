@@ -2,6 +2,8 @@
 
 This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects. Phase 3A also introduces `BlazorShop.AI.StorefrontReverseEngineering`, a separate development-time executable that records reference-site evidence and neutral visual-blueprint drafts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. StorefrontBuilder remains the generation/regeneration tool and does not consume those new artifacts until a later approved phase.
 
+StorefrontReverseEngineering is the evidence/runtime foundation. It captures rendered browser evidence, workflow state, readiness reports, and conservative originality/provenance findings. StorefrontBuilder is the generator. Phase 3A does not create Razor, CSS, generated projects, full design tokens, ecommerce mappings, components, or active blueprint consumption.
+
 ## Read First
 
 1. [StorefrontBuilder Architecture](../architecture/11-storefront-builder.md) - ownership, boundaries, artifact rules, and validation gates.
@@ -29,6 +31,14 @@ Generated storefront server/BFF projects consume `BlazorShop.Storefront.Presenta
 
 Use `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` for generated package/boundary proof and lifecycle proof: post-regeneration build, deterministic no-op regeneration, and manual-edit conflict reporting. Use `.\scripts\qa\run-storefront-builder-regeneration-gate.ps1` for CI-friendly ownership/regeneration checks that do not require live Commerce Node data. Use `-ProofLevel FoundationFunctionalFast` for PR-safe generated browser action proof. Use `.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1` before release closure when fixture-backed generated browser behavior must be proven from a clean local/CI runtime.
 
+Use the Phase 3A hardening gate for StorefrontReverseEngineering runtime, schema, workflow, browser evidence, interaction, readiness, boundary, and StorefrontBuilder compatibility changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
+```
+
+The gate is fixture-based and runs without an external reference website after Playwright Chromium has been installed locally. It writes reports under `obj/storefront-reverse-engineering/reports/`.
+
 `BlazorShop.Storefront.Components.Features` is retired. StorefrontBuilder output should generate project-local visual templates from evidence while consuming shared `Contracts`, `Headless`, and `Browser` primitives.
 
-Phase 3A ReverseEngineering artifacts are future handoff evidence only. StorefrontBuilder generation remains unchanged until a later approved phase wires `visual-blueprint.draft.json` into generation.
+Phase 3A ReverseEngineering artifacts are future handoff evidence only. StorefrontBuilder generation remains unchanged until a later approved phase wires `visual-blueprint.draft.json` into generation. Phase 3B should add design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.

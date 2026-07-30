@@ -17,6 +17,8 @@ StorefrontBuilder is development-time tooling. Do not add it as a production ASP
 
 `BlazorShop.AI.StorefrontReverseEngineering` is a separate Phase 3A development-time executable under `tools/`. It creates reference evidence, workflow state, neutral visual-blueprint drafts, originality audit, and readiness reports under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. It must not reference production runtime projects, generated storefront roots, or Storefront V2. StorefrontBuilder generation does not consume its artifacts until a later approved phase.
 
+Phase 3A ReverseEngineering work is evidence hardening only. Do not present it as a visual generator, do not claim AI analysis is complete, and do not treat captured assets, logos, copy, or brand-specific visuals as reusable by default. Phase 3B is where design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder blueprint consumption may be planned.
+
 Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
@@ -84,7 +86,17 @@ Use focused validation for StorefrontReverseEngineering changes:
 dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
 ```
+
+Install .NET Playwright Chromium once before browser tests or the hardening gate:
+
+```powershell
+dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
+.\tools\BlazorShop.AI.StorefrontReverseEngineering\bin\Debug\net10.0\playwright.ps1 install chromium
+```
+
+The hardening gate uses a local HTTP fixture, validates readiness output, scans production boundaries, scans for prototype fallback markers, and runs StorefrontBuilder compatibility smoke. It should be the closure proof when ReverseEngineering runtime evidence, workflow state, schemas, interactions, or handoff docs change.
 
 Use `Structure` proof for package/boundary checks plus generated lifecycle proof: post-regeneration build, deterministic no-op regeneration, and manual-edit conflict reporting. Use `run-storefront-builder-regeneration-gate.ps1` for CI-friendly ownership/regeneration checks that do not require live Commerce Node data. Use `FoundationFunctionalFast` for PR-safe generated browser behavior checks. Use `run-storefront-builder-full-proof-with-fixture.ps1` before release closure or when fixture-backed live generated behavior changes; it starts and tears down the V2 fixture runtime itself. Call `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull` directly only when Commerce Node fixture data is already running and verified. When GitHub Actions are disabled during development, local gate output is the closure evidence; run the StorefrontBuilder workflow manually with `run_browser_gates=true` after Actions are re-enabled.
 

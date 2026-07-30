@@ -2,7 +2,7 @@
 
 Scope: final hardening for `tools/BlazorShop.AI.StorefrontReverseEngineering` before Phase 3A closure.
 
-Status: In progress
+Status: Complete
 
 Target area:
 
@@ -958,51 +958,57 @@ Goal: document the hardened runtime honestly and prevent Phase 3B from patching 
 
 Docs to update:
 
-- [ ] `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md`
-- [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] `docs/visual-reverse-engineering-skill/README.md`
-- [ ] `docs/visual-reverse-engineering-skill/reference.md`
-- [ ] `docs/agents/storefront-builder.md`
-- [ ] `08-StorefrontReverseEngineering-Engine-Foundation.todo.md`
-- [ ] this hardening plan with implementation evidence
+- [x] `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md`
+- [x] `docs/architecture/11-storefront-builder.md`
+- [x] `docs/visual-reverse-engineering-skill/README.md`
+- [x] `docs/visual-reverse-engineering-skill/reference.md`
+- [x] `docs/agents/storefront-builder.md`
+- [x] `08-StorefrontReverseEngineering-Engine-Foundation.todo.md`
+- [x] this hardening plan with implementation evidence
 
 Documentation content:
 
-- [ ] Explain difference between StorefrontBuilder and StorefrontReverseEngineering.
-- [ ] Explain artifact roots.
-- [ ] Explain CLI commands and examples.
-- [ ] Explain browser installation.
-- [ ] Explain fixture-based testing.
-- [ ] Explain workflow runs and resume.
-- [ ] Explain readiness report meaning.
-- [ ] Explain originality/provenance limitations.
-- [ ] Explain that Phase 3A does not perform:
-  - [ ] full design token extraction
-  - [ ] ecommerce mapping
-  - [ ] component generation
-  - [ ] StorefrontBuilder blueprint consumption
-- [ ] Add Phase 3B handoff:
-  - [ ] design-token extraction
-  - [ ] semantic token normalization
-  - [ ] section segmentation
-  - [ ] responsive comparison
-  - [ ] component detection
-  - [ ] ecommerce region mapping
-  - [ ] confidence scoring
-  - [ ] human review
-  - [ ] StorefrontBuilder consumption of blueprint
+- [x] Explain difference between StorefrontBuilder and StorefrontReverseEngineering.
+- [x] Explain artifact roots.
+- [x] Explain CLI commands and examples.
+- [x] Explain browser installation.
+- [x] Explain fixture-based testing.
+- [x] Explain workflow runs and resume.
+- [x] Explain readiness report meaning.
+- [x] Explain originality/provenance limitations.
+- [x] Explain that Phase 3A does not perform:
+  - [x] full design token extraction
+  - [x] ecommerce mapping
+  - [x] component generation
+  - [x] StorefrontBuilder blueprint consumption
+- [x] Add Phase 3B handoff:
+  - [x] design-token extraction
+  - [x] semantic token normalization
+  - [x] section segmentation
+  - [x] responsive comparison
+  - [x] component detection
+  - [x] ecommerce region mapping
+  - [x] confidence scoring
+  - [x] human review
+  - [x] StorefrontBuilder consumption of blueprint
 
 Guardrails:
 
-- [ ] Do not claim Phase 3A is a visual generator.
-- [ ] Do not claim AI analysis is complete.
-- [ ] Do not claim assets are reusable by default.
+- [x] Do not claim Phase 3A is a visual generator.
+- [x] Do not claim AI analysis is complete.
+- [x] Do not claim assets are reusable by default.
 
 Exit criteria:
 
-- [ ] Human and AI agent can run the hardening gate from docs.
-- [ ] Known limitations are explicit.
-- [ ] Phase 3B starts from stable runtime evidence, not from patched prototype behavior.
+- [x] Human and AI agent can run the hardening gate from docs.
+- [x] Known limitations are explicit.
+- [x] Phase 3B starts from stable runtime evidence, not from patched prototype behavior.
+
+Implementation evidence:
+
+- Updated the tool README, architecture page, visual reverse-engineering README/reference, StorefrontBuilder agent guide, Phase 08 closure note, and this Phase 09 closure plan.
+- Documented artifact roots, CLI commands, browser setup, local fixture tests, workflow run/resume, readiness semantics, originality/provenance limits, Phase 3A non-goals, and Phase 3B handoff.
+- Closure relies on the H9 hardening gate pass: `obj/storefront-reverse-engineering/reports/phase3a-hardening-gate-20260730144626.md`.
 
 ## Required Test Matrix
 
@@ -1023,71 +1029,73 @@ Exit criteria:
 | Compatibility | Existing StorefrontBuilder plan-only/create-hardening smoke. |
 | DX | Help, inspect, reports, and failure messages are actionable. |
 
+Proof: covered by phase evidence H0-H9 and the local hardening gate report `obj/storefront-reverse-engineering/reports/phase3a-hardening-gate-20260730144626.md`.
+
 ## Full Definition Of Done
 
 Architecture:
 
-- [ ] ReverseEngineering remains development-time tooling only.
-- [ ] No production runtime or backend project references it.
-- [ ] Artifact writes stay under approved reverse-engineering roots.
-- [ ] StorefrontBuilder generation behavior is unchanged.
-- [ ] StorefrontBuilder does not consume blueprint until a later approved phase.
+- [x] ReverseEngineering remains development-time tooling only.
+- [x] No production runtime or backend project references it.
+- [x] Artifact writes stay under approved reverse-engineering roots.
+- [x] StorefrontBuilder generation behavior is unchanged.
+- [x] StorefrontBuilder does not consume blueprint until a later approved phase.
 
 Browser runtime:
 
-- [ ] Real Chromium is used in integration tests.
-- [ ] Browser session is stateful for a viewport workflow.
-- [ ] Stabilization runs against the actual page.
-- [ ] Styles, boxes, and assets come from the rendered page.
-- [ ] Evidence collection is bounded by policy.
+- [x] Real Chromium is used in integration tests.
+- [x] Browser session is stateful for a viewport workflow.
+- [x] Stabilization runs against the actual page.
+- [x] Styles, boxes, and assets come from the rendered page.
+- [x] Evidence collection is bounded by policy.
 
 Capture:
 
-- [ ] Native screenshot has a quality gate.
-- [ ] Failed native capture triggers real stitched fallback.
-- [ ] Stitched fallback creates segment images and final stitched image.
-- [ ] Capture method metadata reflects actual output.
+- [x] Native screenshot has a quality gate.
+- [x] Failed native capture triggers real stitched fallback.
+- [x] Stitched fallback creates segment images and final stitched image.
+- [x] Capture method metadata reflects actual output.
 
 Evidence:
 
-- [ ] One capture snapshot per viewport.
-- [ ] Raw and normalized artifacts share correlation metadata.
-- [ ] Page capture manifest aggregates all configured viewports.
-- [ ] Manifest references are validated.
+- [x] One capture snapshot per viewport.
+- [x] Raw and normalized artifacts share correlation metadata.
+- [x] Page capture manifest aggregates all configured viewports.
+- [x] Manifest references are validated.
 
 Workflow:
 
-- [ ] CLI `run` uses `SequentialWorkflowRunner`.
-- [ ] Each run writes `runs/{runId}.json`.
-- [ ] Retry, resume, cancellation, and force-step are tested in actual workflow.
-- [ ] Inspect shows latest run and step statuses.
+- [x] CLI `run` uses `SequentialWorkflowRunner`.
+- [x] Each run writes `runs/{runId}.json`.
+- [x] Retry, resume, cancellation, and force-step are tested in actual workflow.
+- [x] Inspect shows latest run and step statuses.
 
 Validation:
 
-- [ ] Every first-class artifact has a schema file.
-- [ ] Schema validation checks domain fields, not metadata only.
-- [ ] Readiness is generated from capture plan.
-- [ ] Readiness validates quality, references, workflow run, blueprint, and originality.
-- [ ] Blocking findings return non-zero exit code.
+- [x] Every first-class artifact has a schema file.
+- [x] Schema validation checks domain fields, not metadata only.
+- [x] Readiness is generated from capture plan.
+- [x] Readiness validates quality, references, workflow run, blueprint, and originality.
+- [x] Blocking findings return non-zero exit code.
 
 Interaction:
 
-- [ ] Safe browser actions execute for real.
-- [ ] Unsafe actions are refused.
-- [ ] Before/after evidence is real.
-- [ ] DOM/style/screenshot differences are computed, not faked.
+- [x] Safe browser actions execute for real.
+- [x] Unsafe actions are refused.
+- [x] Before/after evidence is real.
+- [x] DOM/style/screenshot differences are computed, not faked.
 
 Testing:
 
-- [ ] Unit tests pass.
-- [ ] Schema tests pass.
-- [ ] Real Playwright fixture tests pass.
-- [ ] Stable capture and stitch tests pass.
-- [ ] Interaction tests pass.
-- [ ] Readiness tests pass.
-- [ ] Boundary tests pass.
-- [ ] StorefrontBuilder compatibility smoke passes.
-- [ ] Full hardening gate passes locally without internet.
+- [x] Unit tests pass.
+- [x] Schema tests pass.
+- [x] Real Playwright fixture tests pass.
+- [x] Stable capture and stitch tests pass.
+- [x] Interaction tests pass.
+- [x] Readiness tests pass.
+- [x] Boundary tests pass.
+- [x] StorefrontBuilder compatibility smoke passes.
+- [x] Full hardening gate passes locally without internet.
 
 ## Implementation Order
 

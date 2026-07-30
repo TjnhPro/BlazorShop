@@ -38,7 +38,17 @@ obj/storefront-reverse-engineering/projects/{ProjectId}
 
 `BlazorShop.AI.StorefrontReverseEngineering` is validated by direct `dotnet build`, `dotnet test`, and `dotnet run --project` commands. It is not added to `BlazorShop.sln` by default, no production runtime project may reference it, and StorefrontBuilder generation does not consume its `visual-blueprint.draft.json` output until a later approved phase. The tool produces evidence and neutral draft artifacts only; it does not generate Razor, CSS, generated storefront projects, or runtime API changes.
 
+Phase 3A hardening makes the ReverseEngineering runtime evidence layer deterministic enough for later analysis work: real Chromium fixture tests, stateful per-viewport browser sessions, stabilized full-page capture, native quality gates with stitched fallback, single capture correlation IDs, schema-backed artifacts, workflow run/resume state, safe interaction diffs, and readiness reports. The release gate is:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
+```
+
+The gate uses local fixtures and StorefrontBuilder compatibility smoke; it must not require an external website or mutate generated storefront source.
+
 ReverseEngineering handoff artifacts are prepared for later StorefrontBuilder consumption, but that consumption is not active in Phase 3A. Future Phase 3B/3C work may read `analysis/visual-blueprint.draft.json` fields such as `pageSpecificationIds`, `componentSpecificationIds`, `evidenceIds`, `generationRestrictions`, and `confidence`. Current StorefrontBuilder generation still uses its existing StorefrontBuilder artifacts and scripts.
+
+Phase 3A does not perform full design-token extraction, semantic token normalization, ecommerce region mapping, component detection, component generation, or visual generation. Captured reference assets, logos, copy, and brand-specific visual material are reference-only by default until later human review and an approved workflow clear reuse. Phase 3B starts from the stable runtime evidence and adds visual interpretation: design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.
 
 Compatibility map for future handoff:
 
