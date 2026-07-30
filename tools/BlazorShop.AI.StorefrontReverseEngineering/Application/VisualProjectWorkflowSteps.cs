@@ -1,4 +1,5 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -271,5 +272,24 @@ internal sealed class NormalizeSemanticTokensStep : IVisualProjectWorkflowStep
         return tokens.Tokens.Count == 0
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-SEMANTIC-TOKENS-EMPTY", "Semantic token normalization produced no tokens.")
             : WorkflowStepResult.Success(warnings);
+    }
+}
+
+internal sealed class ClassifyPageArchetypesStep : IVisualProjectWorkflowStep
+{
+    public string Name => "classify-page-archetypes";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/evidence-snapshot.json", "analysis/tokens/semantic-tokens.draft.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/pages/{pageId}/page-archetype.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var pages = await new PageArchetypeClassifier(context.RepoRoot)
+            .ClassifyAsync(context.ArtifactRoot, cancellationToken);
+
+        return pages.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-PAGE-ARCHETYPE-EMPTY", "Page archetype classification produced no page artifacts.")
+            : WorkflowStepResult.Success();
     }
 }

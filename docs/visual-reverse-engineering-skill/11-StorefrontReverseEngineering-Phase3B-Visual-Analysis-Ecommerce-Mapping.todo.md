@@ -416,41 +416,49 @@ Schemas/page-archetype.schema.json
 
 Archetype MVP:
 
-- [ ] `home`
-- [ ] `product-listing`
-- [ ] `search-results`
-- [ ] `product-detail`
-- [ ] `cart-shell`
-- [ ] `checkout-shell`
-- [ ] `account-auth-shell`
-- [ ] `content`
-- [ ] `unknown`
+- [x] `home`
+- [x] `product-listing`
+- [x] `search-results`
+- [x] `product-detail`
+- [x] `cart-shell`
+- [x] `checkout-shell`
+- [x] `account-auth-shell`
+- [x] `content`
+- [x] `unknown`
 
 Implementation checklist:
 
-- [ ] Add `PageArchetypeClassifier`.
-- [ ] Use route signals.
-- [ ] Use DOM landmark signals.
-- [ ] Use heading/text signals.
-- [ ] Use repeated product-card signals.
-- [ ] Use product gallery/title/price/add-to-cart visual control signals.
-- [ ] Use form density signals.
-- [ ] Use cart/order-summary signals.
-- [ ] Include alternative candidates.
-- [ ] Include confidence and reason codes.
-- [ ] Keep `unknown` as successful output when confidence is below threshold.
+- [x] Add `PageArchetypeClassifier`.
+- [x] Use route signals.
+- [x] Use DOM landmark signals.
+- [x] Use heading/text signals.
+- [x] Use repeated product-card signals.
+- [x] Use product gallery/title/price/add-to-cart visual control signals.
+- [x] Use form density signals.
+- [x] Use cart/order-summary signals.
+- [x] Include alternative candidates.
+- [x] Include confidence and reason codes.
+- [x] Keep `unknown` as successful output when confidence is below threshold.
 
 Tests:
 
-- [ ] Home fixture classifies as `home`.
-- [ ] PLP fixture classifies as `product-listing`.
-- [ ] PDP fixture classifies as `product-detail`.
-- [ ] Unsupported/custom fixture classifies as `unknown`.
-- [ ] Low confidence does not force a wrong archetype.
+- [x] Home fixture classifies as `home`.
+- [x] PLP fixture classifies as `product-listing`.
+- [x] PDP fixture classifies as `product-detail`.
+- [x] Unsupported/custom fixture classifies as `unknown`.
+- [x] Low confidence does not force a wrong archetype.
 
 Done when:
 
-- [ ] Every page has one primary archetype or `unknown`, with evidence trace.
+- [x] Every page has one primary archetype or `unknown`, with evidence trace.
+
+Implementation evidence:
+
+- Added `Analysis/Pages/PageArchetypeClassifier` and page archetype contracts.
+- Registered `Schemas/page-archetype.schema.json`.
+- Added workflow step `classify-page-archetypes` after semantic token normalization.
+- Classifier uses route, landmark/section, text/heading, repeated product-card, product gallery/price/add-to-cart, form density, and cart/order-summary signals, with alternative candidates, confidence, reason codes, and evidence IDs.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "PageArchetype|SemanticTokens"` passed `9/9`.
 
 ## Phase 3B.5 - Section Segmentation
 
@@ -1209,7 +1217,7 @@ Recommended implementation order:
 3. [ ] Phase 3B.13 fixture expansion started early with Home/PLP/PDP/Unsupported routes.
 4. [x] Phase 3B.2 raw design tokens.
 5. [x] Phase 3B.3 semantic tokens.
-6. [ ] Phase 3B.4 page archetype.
+6. [x] Phase 3B.4 page archetype.
 7. [ ] Phase 3B.5 section segmentation.
 8. [ ] Phase 3B.6 responsive and interaction model.
 9. [ ] Phase 3B.7 visual component candidates.

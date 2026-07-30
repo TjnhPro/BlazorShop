@@ -1,5 +1,6 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -273,6 +274,12 @@ public sealed class VisualProjectWorkflowService
     {
         var root = resolver.ResolveRoot(projectRoot);
         return await new SemanticTokenNormalizer(repoRoot).NormalizeAsync(root, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PageArchetypeDocument>> ClassifyPageArchetypesAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new PageArchetypeClassifier(repoRoot).ClassifyAsync(root, cancellationToken);
     }
 
     private async Task ValidateViewportEvidenceReadinessAsync(
@@ -654,11 +661,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new AggregateEvidenceStep());
         steps.Add(new ExtractRawDesignTokensStep());
         steps.Add(new NormalizeSemanticTokensStep());
+        steps.Add(new ClassifyPageArchetypesStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes";
 
     private static string WriteMarkdown(ReadinessReport report)
     {
