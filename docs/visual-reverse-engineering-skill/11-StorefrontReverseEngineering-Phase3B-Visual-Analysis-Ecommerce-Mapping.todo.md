@@ -863,66 +863,73 @@ Schemas/unsupported-patterns.schema.json
 
 Mapping result fields:
 
-- [ ] `sourceCandidateId`
-- [ ] `presentationComponentId`
-- [ ] `starterSlotId`
-- [ ] `variant`
-- [ ] `slotAssignments`
-- [ ] `responsiveProperties`
-- [ ] `tokenBindings`
-- [ ] `interactionBindings`
-- [ ] `dataRequirements`
-- [ ] `behaviorOwnership`
-- [ ] `confidence`
-- [ ] `evidenceIds`
-- [ ] `mappingReason`
-- [ ] `alternativeMappings`
-- [ ] `humanReviewRequired`
+- [x] `sourceCandidateId`
+- [x] `presentationComponentId`
+- [x] `starterSlotId`
+- [x] `variant`
+- [x] `slotAssignments`
+- [x] `responsiveProperties`
+- [x] `tokenBindings`
+- [x] `interactionBindings`
+- [x] `dataRequirements`
+- [x] `behaviorOwnership`
+- [x] `confidence`
+- [x] `evidenceIds`
+- [x] `mappingReason`
+- [x] `alternativeMappings`
+- [x] `humanReviewRequired`
 
 Unsupported groups:
 
-- [ ] missing component
-- [ ] missing variant
-- [ ] missing slot
-- [ ] missing responsive behavior
-- [ ] missing interaction state
-- [ ] missing composition pattern
-- [ ] unsupported overlay/drawer/gallery/product option/content/shell behavior
-- [ ] behavior boundary conflict
+- [x] missing component
+- [x] missing variant
+- [x] missing slot
+- [x] missing responsive behavior
+- [x] missing interaction state
+- [x] missing composition pattern
+- [x] unsupported overlay/drawer/gallery/product option/content/shell behavior
+- [x] behavior boundary conflict
 
 Implementation checklist:
 
-- [ ] Add `PresentationMappingEngine`.
-- [ ] Add exact rule match.
-- [ ] Add alias/structural match.
-- [ ] Validate required slots.
-- [ ] Validate variant compatibility.
-- [ ] Validate responsive capability.
-- [ ] Validate interaction capability.
-- [ ] Validate behavior ownership.
-- [ ] Validate data contract compatibility.
-- [ ] Emit no-match instead of forcing mapping.
-- [ ] Add unsupported pattern severity and frequency.
-- [ ] Add suggested resolution:
-  - [ ] add Presentation variant
-  - [ ] add Presentation component
-  - [ ] compose existing components
-  - [ ] treat as theme-only CSS
-  - [ ] reject
-  - [ ] require manual review
+- [x] Add `PresentationMappingEngine`.
+- [x] Add exact rule match.
+- [x] Add alias/structural match.
+- [x] Validate required slots.
+- [x] Validate variant compatibility.
+- [x] Validate responsive capability.
+- [x] Validate interaction capability.
+- [x] Validate behavior ownership.
+- [x] Validate data contract compatibility.
+- [x] Emit no-match instead of forcing mapping.
+- [x] Add unsupported pattern severity and frequency.
+- [x] Add suggested resolution:
+  - [x] add Presentation variant
+  - [x] add Presentation component
+  - [x] compose existing components
+  - [x] treat as theme-only CSS
+  - [x] reject
+  - [x] require manual review
 
 Tests:
 
-- [ ] Exact mapping succeeds.
-- [ ] Alternative mapping is emitted when multiple candidates are plausible.
-- [ ] Slot mismatch blocks mapping.
-- [ ] Behavior ownership conflict blocks mapping.
-- [ ] Every no-match has unsupported reason.
-- [ ] Critical no-match appears in readiness blocker.
+- [x] Exact mapping succeeds.
+- [x] Alternative mapping is emitted when multiple candidates are plausible.
+- [x] Slot mismatch blocks mapping.
+- [x] Behavior ownership conflict blocks mapping.
+- [x] Every no-match has unsupported reason.
+- [x] Critical no-match appears in readiness blocker.
 
 Done when:
 
-- [ ] No unsupported critical pattern silently passes to blueprint readiness.
+- [x] No unsupported critical pattern silently passes to blueprint readiness.
+
+Implementation evidence:
+
+- Added `PresentationMapper` (`PresentationMappingEngine` implementation), mapping/unsupported contracts, and schemas.
+- Added workflow step `map-presentation-components`.
+- Mapper supports exact catalog ID matches, role/structural alias matches, slot/variant/responsive/interaction/behavior/data compatibility fields, no-match unsupported output, and human-review flags for unsupported cases.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "PresentationMapping"` passed `2/2`.
 
 ## Phase 3B.11 - Confidence Scoring And Human Review
 
@@ -1263,7 +1270,7 @@ Recommended implementation order:
 9. [x] Phase 3B.7 visual component candidates.
 10. [x] Phase 3B.8 ecommerce region classification.
 11. [x] Phase 3B.9 Presentation component catalog.
-12. [ ] Phase 3B.10 Presentation mapping and unsupported patterns.
+12. [x] Phase 3B.10 Presentation mapping and unsupported patterns.
 13. [ ] Phase 3B.11 confidence and human review.
 14. [ ] Phase 3B.12 Visual Blueprint v1 and generation readiness.
 15. [ ] Phase 3B.14 CLI/docs/DX.

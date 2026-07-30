@@ -1,0 +1,1 @@
+{"artifactKind":"unsupported-patterns","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","patterns"],"arrayPaths":["patterns"],"nonEmptyStringPaths":["projectId"]}

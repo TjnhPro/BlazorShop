@@ -1,6 +1,7 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
@@ -398,6 +399,25 @@ internal sealed class BuildPresentationCatalogStep : IVisualProjectWorkflowStep
 
         return catalog.Components.Count == 0
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-PRESENTATION-CATALOG-EMPTY", "Presentation component catalog produced no entries.")
+            : WorkflowStepResult.Success();
+    }
+}
+
+internal sealed class MapPresentationComponentsStep : IVisualProjectWorkflowStep
+{
+    public string Name => "map-presentation-components";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/components/component-candidates.json", "analysis/pages/{pageId}/ecommerce-regions.json", "presentation-catalog/presentation-component-catalog.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/mapping/presentation-mappings.draft.json", "analysis/mapping/unsupported-patterns.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var mappings = await new PresentationMapper(context.RepoRoot)
+            .MapAsync(context.ArtifactRoot, cancellationToken);
+
+        return mappings.Mappings.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-PRESENTATION-MAPPINGS-EMPTY", "Presentation mapping produced no supported mappings.")
             : WorkflowStepResult.Success();
     }
 }
