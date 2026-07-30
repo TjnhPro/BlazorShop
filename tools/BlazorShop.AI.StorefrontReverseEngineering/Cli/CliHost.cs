@@ -10,8 +10,10 @@ public static class CliHost
         "init",
         "discover",
         "capture",
+        "analyze",
         "inspect",
-        "validate"
+        "validate",
+        "run"
     ];
 
     public static Task<int> RunAsync(
@@ -100,6 +102,37 @@ public static class CliHost
                     output.WriteLine($"Blockers: {result.Reconnaissance.Blockers.Count}");
                     output.WriteLine($"Capture pages: {result.CapturePlan.Pages.Count}");
                     return 0;
+                case "capture":
+                    var captured = await new VisualProjectWorkflowService(FindRepositoryRoot())
+                        .CaptureAsync(options.GetRequired("project", "SRE-CAPTURE-001"), cancellationToken);
+                    output.WriteLine($"Capture completed: {captured} viewport(s)");
+                    return 0;
+                case "analyze":
+                    var blueprint = await new VisualProjectWorkflowService(FindRepositoryRoot())
+                        .AnalyzeAsync(options.GetRequired("project", "SRE-ANALYZE-001"), options.HasFlag("no-ai"), cancellationToken);
+                    output.WriteLine($"Analysis completed: {blueprint.ArtifactId}");
+                    return 0;
+                case "validate":
+                    var report = await new VisualProjectWorkflowService(FindRepositoryRoot())
+                        .ValidateAsync(options.GetRequired("project", "SRE-VALIDATE-001"), cancellationToken);
+                    output.WriteLine($"Validation passed: {report.Passed}");
+                    output.WriteLine($"Findings: {report.Findings.Count}");
+                    return report.Passed ? 0 : 3;
+                case "run":
+                    var summary = await new VisualProjectWorkflowService(FindRepositoryRoot()).RunAsync(
+                        options.GetRequired("url", "SRE-RUN-001"),
+                        options.GetRequired("name", "SRE-RUN-002"),
+                        options.GetRequired("output-root", "SRE-RUN-003"),
+                        options.HasFlag("force"),
+                        options.HasFlag("resume"),
+                        options.HasFlag("no-ai"),
+                        cancellationToken);
+                    output.WriteLine($"Run completed: {summary.ProjectId}");
+                    output.WriteLine($"Artifact root: {summary.ArtifactRoot}");
+                    output.WriteLine($"Captured viewports: {summary.CapturedViewports}");
+                    output.WriteLine($"Blueprint: {summary.BlueprintArtifactId}");
+                    output.WriteLine($"Readiness passed: {summary.ReadinessPassed}");
+                    return summary.ReadinessPassed ? 0 : 3;
                 default:
                     output.WriteLine($"StorefrontReverseEngineering command '{command}' is available. Implementation is added by later Phase 3A workflow phases.");
                     return 0;

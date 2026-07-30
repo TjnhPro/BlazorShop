@@ -824,24 +824,24 @@ URL
 
 Tasks:
 
-- [ ] Implement `capture --project`.
-- [ ] Implement `validate --project`.
-- [ ] Implement `analyze --project`.
-- [ ] Implement `run --url --name --output-root` as convenience command.
-- [ ] Add `--force`, `--resume`, and `--no-ai` options where appropriate.
-- [ ] Write run summary to console.
-- [ ] Write `reports/readiness-report.md`.
-- [ ] Return non-zero exit code for blocking validation failures.
-- [ ] Keep warnings non-blocking unless configured as strict.
-- [ ] Add E2E local fixture test.
-- [ ] Add timeout failure test.
-- [ ] Add resume test after injected failure.
+- [x] Implement `capture --project`.
+- [x] Implement `validate --project`.
+- [x] Implement `analyze --project`.
+- [x] Implement `run --url --name --output-root` as convenience command.
+- [x] Add `--force`, `--resume`, and `--no-ai` options where appropriate.
+- [x] Write run summary to console.
+- [x] Write `reports/readiness-report.md`.
+- [x] Return non-zero exit code for blocking validation failures.
+- [x] Keep warnings non-blocking unless configured as strict.
+- [x] Add E2E local fixture test.
+- [x] Add timeout failure test.
+- [x] Add resume test after injected failure.
 
 Guardrails:
 
-- [ ] `run` must not generate storefront source.
-- [ ] `run` must not write to `artifacts/storefront-builder/generated`.
-- [ ] `run` must not mutate Starter or generated storefronts.
+- [x] `run` must not generate storefront source.
+- [x] `run` must not write to `artifacts/storefront-builder/generated`.
+- [x] `run` must not mutate Starter or generated storefronts.
 
 Verification:
 
@@ -852,10 +852,10 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Local fixture full workflow passes.
-- [ ] Output contains schema-valid artifacts.
-- [ ] Readiness report is readable and points to artifact paths.
-- [ ] Command can be repeated safely.
+- [x] Local fixture full workflow passes.
+- [x] Output contains schema-valid artifacts.
+- [x] Readiness report is readable and points to artifact paths.
+- [x] Command can be repeated safely.
 
 ## Phase 14 - StorefrontBuilder Integration Contract Prep
 
