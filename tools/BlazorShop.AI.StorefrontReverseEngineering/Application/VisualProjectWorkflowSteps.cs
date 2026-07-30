@@ -1,4 +1,5 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
@@ -224,6 +225,29 @@ internal sealed class AggregateEvidenceStep : IVisualProjectWorkflowStep
 
         return snapshot.Issues.Any(issue => issue.Severity == "blocking")
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-EVIDENCE-SNAPSHOT-BLOCKED", "Evidence snapshot aggregation returned blocking findings.")
+            : WorkflowStepResult.Success(warnings);
+    }
+}
+
+internal sealed class ExtractRawDesignTokensStep : IVisualProjectWorkflowStep
+{
+    public string Name => "extract-raw-tokens";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/evidence-snapshot.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/tokens/raw-design-tokens.json", "analysis/tokens/token-frequency-report.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var tokens = await new RawDesignTokenExtractor(context.RepoRoot)
+            .ExtractAsync(context.ArtifactRoot, cancellationToken);
+        var warnings = tokens.Issues
+            .Where(issue => issue.Severity == "warning")
+            .Select(issue => new WorkflowMessage(issue.Code, issue.Message))
+            .ToArray();
+
+        return tokens.Tokens.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-RAW-TOKENS-EMPTY", "Raw design token extraction produced no tokens.")
             : WorkflowStepResult.Success(warnings);
     }
 }

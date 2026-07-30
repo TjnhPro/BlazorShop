@@ -1,5 +1,6 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
@@ -260,6 +261,12 @@ public sealed class VisualProjectWorkflowService
     {
         var root = resolver.ResolveRoot(projectRoot);
         return await new EvidenceSnapshotAggregator(repoRoot).BuildAsync(root, cancellationToken);
+    }
+
+    public async Task<RawDesignTokenDocument> ExtractRawDesignTokensAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new RawDesignTokenExtractor(repoRoot).ExtractAsync(root, cancellationToken);
     }
 
     private async Task ValidateViewportEvidenceReadinessAsync(
@@ -639,11 +646,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new OriginalityAuditStep());
         steps.Add(new ValidateReadinessStep());
         steps.Add(new AggregateEvidenceStep());
+        steps.Add(new ExtractRawDesignTokensStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        string.Equals(stepName, "aggregate-evidence", StringComparison.Ordinal);
+        stepName is "aggregate-evidence" or "extract-raw-tokens";
 
     private static string WriteMarkdown(ReadinessReport report)
     {

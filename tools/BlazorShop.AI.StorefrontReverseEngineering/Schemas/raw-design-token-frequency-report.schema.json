@@ -1,0 +1,1 @@
+{"artifactKind":"raw-design-token-frequency-report","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","totalTokenCount","groups","issues"],"arrayPaths":["groups","issues"],"nonEmptyStringPaths":["projectId"]}

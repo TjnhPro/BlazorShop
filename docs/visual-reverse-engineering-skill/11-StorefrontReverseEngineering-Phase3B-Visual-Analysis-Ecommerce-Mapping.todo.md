@@ -242,69 +242,78 @@ Schemas/raw-design-tokens.schema.json
 
 Token groups:
 
-- [ ] Color:
-  - [ ] background colors
-  - [ ] text colors
-  - [ ] border colors
-  - [ ] accent-like high-frequency colors
-  - [ ] overlay colors
-  - [ ] hover/focus colors when interaction evidence proves them
-- [ ] Typography:
-  - [ ] font family
-  - [ ] font size
-  - [ ] font weight
-  - [ ] line height
-  - [ ] letter spacing
-  - [ ] text transform
-  - [ ] heading/body/label/caption candidates
-- [ ] Spacing:
-  - [ ] margin
-  - [ ] padding
-  - [ ] gap
-  - [ ] section spacing
-  - [ ] container gutters
-- [ ] Shape:
-  - [ ] border radius
-  - [ ] border width/style
-  - [ ] shadow
-  - [ ] outline/focus ring
-- [ ] Layout:
-  - [ ] container widths
-  - [ ] max widths
-  - [ ] columns
-  - [ ] grid/flex signals
-  - [ ] aspect ratio
-  - [ ] image fit behavior
-- [ ] Motion:
-  - [ ] transition duration
-  - [ ] transition property
-  - [ ] timing function
-  - [ ] transform states, only when captured
+- [x] Color:
+  - [x] background colors
+  - [x] text colors
+  - [x] border colors
+  - [x] accent-like high-frequency colors
+  - [x] overlay colors
+  - [x] hover/focus colors when interaction evidence proves them
+- [x] Typography:
+  - [x] font family
+  - [x] font size
+  - [x] font weight
+  - [x] line height
+  - [x] letter spacing
+  - [x] text transform
+  - [x] heading/body/label/caption candidates
+- [x] Spacing:
+  - [x] margin
+  - [x] padding
+  - [x] gap
+  - [x] section spacing
+  - [x] container gutters
+- [x] Shape:
+  - [x] border radius
+  - [x] border width/style
+  - [x] shadow
+  - [x] outline/focus ring
+- [x] Layout:
+  - [x] container widths
+  - [x] max widths
+  - [x] columns
+  - [x] grid/flex signals
+  - [x] aspect ratio
+  - [x] image fit behavior
+- [x] Motion:
+  - [x] transition duration
+  - [x] transition property
+  - [x] timing function
+  - [x] transform states, only when captured
 
 Implementation checklist:
 
-- [ ] Add `RawDesignTokenExtractor`.
-- [ ] Add style value normalization that preserves original literal values.
-- [ ] Add frequency counting by project/page/viewport.
-- [ ] Add token source evidence IDs.
-- [ ] Add outlier detection.
-- [ ] Add hidden/noise element exclusion using Phase 3A capture policy signals.
-- [ ] Add near-duplicate clustering only when thresholds are explicit and tested.
-- [ ] Keep raw token names machine-generated, not semantic.
-- [ ] Do not invent missing hover/focus/motion tokens without interaction evidence.
+- [x] Add `RawDesignTokenExtractor`.
+- [x] Add style value normalization that preserves original literal values.
+- [x] Add frequency counting by project/page/viewport.
+- [x] Add token source evidence IDs.
+- [x] Add outlier detection.
+- [x] Add hidden/noise element exclusion using Phase 3A capture policy signals.
+- [x] Add near-duplicate clustering only when thresholds are explicit and tested.
+- [x] Keep raw token names machine-generated, not semantic.
+- [x] Do not invent missing hover/focus/motion tokens without interaction evidence.
 
 Tests:
 
-- [ ] Colors are extracted from fixture styles.
-- [ ] Typography scale is extracted.
-- [ ] Spacing values are counted.
-- [ ] Outliers are reported without being merged.
-- [ ] Hidden/noise elements are ignored.
-- [ ] Raw artifact preserves literal values.
+- [x] Colors are extracted from fixture styles.
+- [x] Typography scale is extracted.
+- [x] Spacing values are counted.
+- [x] Outliers are reported without being merged.
+- [x] Hidden/noise elements are ignored.
+- [x] Raw artifact preserves literal values.
 
 Done when:
 
-- [ ] Raw tokens are evidence-backed and deterministic.
+- [x] Raw tokens are evidence-backed and deterministic.
+
+Implementation evidence:
+
+- Added `Analysis/Tokens/RawDesignTokenExtractor` and raw token/frequency report contracts.
+- Registered `Schemas/raw-design-tokens.schema.json` and `Schemas/raw-design-token-frequency-report.schema.json`.
+- Added workflow step `extract-raw-tokens` after `aggregate-evidence`; existing `--force-step` support can rerun it.
+- Extractor reads `analysis/evidence-snapshot.json`, preserves literal values, normalizes comparable values, counts project/page/viewport frequency, records source evidence IDs and artifact paths, flags outliers, and assigns explicit 1px near-duplicate clusters without merging raw tokens.
+- Extractor excludes hidden/configured noise elements using Phase 3A capture policy selectors and only extracts interaction state tokens from changed `interaction-evidence` style evidence.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "RawTokens"` passed `6/6`.
 
 ## Phase 3B.3 - Semantic Token Normalization
 
@@ -1190,7 +1199,7 @@ Recommended implementation order:
 1. [x] Phase 3B.0 prerequisite closure check.
 2. [x] Phase 3B.1 evidence snapshot.
 3. [ ] Phase 3B.13 fixture expansion started early with Home/PLP/PDP/Unsupported routes.
-4. [ ] Phase 3B.2 raw design tokens.
+4. [x] Phase 3B.2 raw design tokens.
 5. [ ] Phase 3B.3 semantic tokens.
 6. [ ] Phase 3B.4 page archetype.
 7. [ ] Phase 3B.5 section segmentation.

@@ -1,0 +1,1 @@
+{"artifactKind":"raw-design-tokens","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","sourceSnapshotPath","tokens","issues"],"arrayPaths":["tokens","issues"],"arrayLengthRules":[{"path":"tokens","minimumLength":1}],"nonEmptyStringPaths":["projectId","sourceSnapshotPath"]}
