@@ -264,60 +264,60 @@ Goal: build a complete Presentation/Starter catalog that represents all required
 
 Implementation checklist:
 
-- [ ] Replace regex-only `required Type` discovery for foundation slots.
-- [ ] Extract required slots from the authoritative Presentation foundation model, including slots returned by `StorefrontFoundationViewSet.GetRequiredSlots()`.
-- [ ] Include every required foundation slot in the catalog:
-  - [ ] `ApplicationHead`
-  - [ ] `VisualScripts`
-  - [ ] `MainLayout`
-  - [ ] `ConsentBanner`
-  - [ ] `HomePage`
-  - [ ] `CategoryPage`
-  - [ ] `ProductPage`
-  - [ ] `SearchPage`
-  - [ ] `DealsPage`
-  - [ ] `NewReleasesPage`
-  - [ ] `ContentPage`
-  - [ ] `CartPage`
-  - [ ] `CheckoutPage`
-  - [ ] `PaymentResultPage`
-  - [ ] `AuthPage`
-  - [ ] `AccountPage`
-  - [ ] `MaintenanceState`
-  - [ ] `NotFoundState`
-  - [ ] `ServiceUnavailableState`
-  - [ ] `ErrorState`
-- [ ] Split catalog entry intent into explicit categories:
-  - [ ] visual generation target.
-  - [ ] foundation view slot.
-  - [ ] starter visual slot.
-  - [ ] presentation action binding.
-  - [ ] component data contract.
-  - [ ] headless behavior contract.
-  - [ ] runtime-owned behavior.
-- [ ] Include capability ownership metadata:
-  - [ ] visual-only.
-  - [ ] browser-safe action.
-  - [ ] BFF-owned behavior.
-  - [ ] Presentation-owned routing/SEO/media behavior.
-  - [ ] Runtime-owned Commerce Node transport behavior.
-- [ ] Include allowed file patterns for generated visual implementation.
-- [ ] Include protected file patterns for contracts, BFF, Runtime, generated client, package metadata, and shared application logic.
-- [ ] Include required evidence types for each slot.
-- [ ] Include acceptable fallback behavior when a reference page does not contain a region.
-- [ ] Write updated `presentation-component-catalog` schema with semantic categories.
+- [x] Replace regex-only `required Type` discovery for foundation slots.
+- [x] Extract required slots from the authoritative Presentation foundation model, including slots returned by `StorefrontFoundationViewSet.GetRequiredSlots()`.
+- [x] Include every required foundation slot in the catalog:
+  - [x] `ApplicationHead`
+  - [x] `VisualScripts`
+  - [x] `MainLayout`
+  - [x] `ConsentBanner`
+  - [x] `HomePage`
+  - [x] `CategoryPage`
+  - [x] `ProductPage`
+  - [x] `SearchPage`
+  - [x] `DealsPage`
+  - [x] `NewReleasesPage`
+  - [x] `ContentPage`
+  - [x] `CartPage`
+  - [x] `CheckoutPage`
+  - [x] `PaymentResultPage`
+  - [x] `AuthPage`
+  - [x] `AccountPage`
+  - [x] `MaintenanceState`
+  - [x] `NotFoundState`
+  - [x] `ServiceUnavailableState`
+  - [x] `ErrorState`
+- [x] Split catalog entry intent into explicit categories:
+  - [x] visual generation target.
+  - [x] foundation view slot.
+  - [x] starter visual slot.
+  - [x] presentation action binding.
+  - [x] component data contract.
+  - [x] headless behavior contract.
+  - [x] runtime-owned behavior.
+- [x] Include capability ownership metadata:
+  - [x] visual-only.
+  - [x] browser-safe action.
+  - [x] BFF-owned behavior.
+  - [x] Presentation-owned routing/SEO/media behavior.
+  - [x] Runtime-owned Commerce Node transport behavior.
+- [x] Include allowed file patterns for generated visual implementation.
+- [x] Include protected file patterns for contracts, BFF, Runtime, generated client, package metadata, and shared application logic.
+- [x] Include required evidence types for each slot.
+- [x] Include acceptable fallback behavior when a reference page does not contain a region.
+- [x] Write updated `presentation-component-catalog` schema with semantic categories.
 
 Tests:
 
-- [ ] Catalog includes all required foundation slots.
-- [ ] Catalog fails if `StorefrontFoundationViewSet.GetRequiredSlots()` gains a new slot not represented in the generated catalog.
-- [ ] Catalog fails if Starter contract declares a slot that is not mapped to a known category or explicit extension.
-- [ ] Visual-only slots do not claim BFF/runtime ownership.
-- [ ] Runtime-owned behavior cannot be targeted for visual generation.
+- [x] Catalog includes all required foundation slots.
+- [x] Catalog fails if `StorefrontFoundationViewSet.GetRequiredSlots()` gains a new slot not represented in the generated catalog.
+- [x] Catalog fails if Starter contract declares a slot that is not mapped to a known category or explicit extension.
+- [x] Visual-only slots do not claim BFF/runtime ownership.
+- [x] Runtime-owned behavior cannot be targeted for visual generation.
 
 Done when:
 
-- [ ] A future Phase 4 generator can inspect the catalog and know exactly which visual slots exist, which behavior belongs elsewhere, and which files are protected.
+- [x] A future Phase 4 generator can inspect the catalog and know exactly which visual slots exist, which behavior belongs elsewhere, and which files are protected.
 
 ## Phase 3C.3 - Site-Level Multi-Page Blueprint
 

@@ -15,10 +15,59 @@ public sealed class PresentationCatalogBuilderTests
         var catalog = await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
 
         Assert.Contains(catalog.Components, entry => entry.ComponentId == "foundation.home-page");
+        Assert.Contains(catalog.Components, entry => entry.ComponentId == "foundation.visual-scripts");
         Assert.Contains(catalog.Components, entry => entry.ComponentId == "catalog.product-card");
         Assert.Contains(catalog.Components, entry => entry.ComponentId == "contract.product-summary-item");
         Assert.Contains(catalog.Components, entry => entry.ComponentId == "contract.storefront-cart-behavior" && entry.BehaviorOwnedByRuntime);
         Assert.Contains(catalog.SourcePaths, path => path.EndsWith("starter-generation.contract.yaml", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task PresentationCatalog_IncludesEveryRequiredFoundationSlot()
+    {
+        var projectRoot = CreateProjectRoot();
+
+        var catalog = await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
+
+        var required = new[]
+        {
+            "foundation.application-head",
+            "foundation.visual-scripts",
+            "foundation.main-layout",
+            "foundation.consent-banner",
+            "foundation.home-page",
+            "foundation.category-page",
+            "foundation.product-page",
+            "foundation.search-page",
+            "foundation.deals-page",
+            "foundation.new-releases-page",
+            "foundation.content-page",
+            "foundation.cart-page",
+            "foundation.checkout-page",
+            "foundation.payment-result-page",
+            "foundation.auth-page",
+            "foundation.account-page",
+            "foundation.maintenance-state",
+            "foundation.not-found-state",
+            "foundation.service-unavailable-state",
+            "foundation.error-state"
+        };
+
+        Assert.All(required, id => Assert.Contains(catalog.Components, entry => entry.ComponentId == id));
+        Assert.Equal(required.Length, catalog.Components.Count(entry => entry.Category == "foundation view slot"));
+    }
+
+    [Fact]
+    public async Task PresentationCatalog_UsesSemanticCategoriesAndOwnership()
+    {
+        var projectRoot = CreateProjectRoot();
+
+        var catalog = await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
+
+        Assert.Contains(catalog.Components, entry => entry.ComponentId == "product.purchase" && entry.Category == "visual generation target");
+        Assert.Contains(catalog.Components, entry => entry.Category == "presentation action binding" && entry.CapabilityOwnership.Contains("BFF-owned behavior"));
+        Assert.DoesNotContain(catalog.Components, entry => entry.CapabilityOwnership.Contains("visual-only") && entry.BehaviorOwnedByRuntime);
+        Assert.DoesNotContain(catalog.Components, entry => entry.BehaviorOwnedByRuntime && entry.VisualOverrideAllowed && entry.Category != "presentation action binding");
     }
 
     [Fact]

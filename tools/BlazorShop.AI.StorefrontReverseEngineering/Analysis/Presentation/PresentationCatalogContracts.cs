@@ -27,7 +27,13 @@ public sealed record PresentationCatalogEntry(
     IReadOnlyList<string> OptionalChildren,
     IReadOnlyList<string> UnsupportedPatterns,
     IReadOnlyList<string> SourceFiles,
-    string ContractVersion);
+    string ContractVersion,
+    string IntentCategory,
+    IReadOnlyList<string> CapabilityOwnership,
+    IReadOnlyList<string> AllowedFilePatterns,
+    IReadOnlyList<string> ProtectedFilePatterns,
+    IReadOnlyList<string> RequiredEvidenceTypes,
+    string FallbackBehavior);
 
 public sealed record PresentationCatalogValidationReport(
     string SchemaVersion,

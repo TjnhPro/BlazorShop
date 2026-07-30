@@ -51,7 +51,7 @@ public sealed class PresentationMapper
             mappings.Add(new PresentationMapping(
                 candidate.FamilyId,
                 match.ComponentId,
-                match.Category == "starter-slot" ? match.ComponentId : null,
+                match.Category is "starter visual slot" or "visual generation target" ? match.ComponentId : null,
                 match.Variants.FirstOrDefault() ?? "default",
                 candidate.Slots.Select(slot => $"{slot.SlotName}:{slot.SlotKind}").ToArray(),
                 candidate.ResponsiveBehaviorRefs,

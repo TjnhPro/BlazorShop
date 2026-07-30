@@ -271,7 +271,7 @@ public sealed class StorefrontPatternContractBuilder
         if (id.StartsWith("layout.", StringComparison.Ordinal)) return "starter visual slot";
         if (id.StartsWith("catalog.", StringComparison.Ordinal) || id.StartsWith("product.", StringComparison.Ordinal)) return "visual generation target";
         if (id.StartsWith("cart.", StringComparison.Ordinal) || id.StartsWith("checkout.", StringComparison.Ordinal) || id.StartsWith("account.", StringComparison.Ordinal)) return "runtime-owned behavior";
-        if (id.StartsWith("system.", StringComparison.Ordinal)) return "foundation view slot";
+        if (id.StartsWith("system.", StringComparison.Ordinal)) return "starter visual slot";
         return string.Equals(owner, "generated", StringComparison.Ordinal) ? "starter visual slot" : "explicit extension";
     }
 
