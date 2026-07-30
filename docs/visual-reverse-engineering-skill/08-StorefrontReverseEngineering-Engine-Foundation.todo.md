@@ -559,41 +559,41 @@ Goal: normalize visual evidence into bounded, linked, schema-valid artifacts.
 
 Tasks:
 
-- [ ] Create `ElementEvidenceIndex`.
-- [ ] Create computed-style property allowlist.
-- [ ] Add element selection policy:
-  - [ ] semantic landmarks
-  - [ ] headings
-  - [ ] links
-  - [ ] buttons
-  - [ ] inputs/selects
-  - [ ] product-card-like candidates
-  - [ ] images/assets
-  - [ ] sections/articles
-- [ ] Add element count limit.
-- [ ] Add DOM depth limit.
-- [ ] Extract typography evidence.
-- [ ] Extract color/background/border/shadow evidence.
-- [ ] Extract layout/display/grid/flex evidence.
-- [ ] Extract positioning/sticky/fixed evidence.
-- [ ] Extract transition/transform evidence.
-- [ ] Extract asset metadata:
-  - [ ] URL
-  - [ ] media type if available
-  - [ ] dimensions if image is loaded
-  - [ ] source element
-  - [ ] reference-only flag placeholder
-- [ ] Write viewport-level `manifest.json`.
-- [ ] Write page-level `capture-manifest.json`.
-- [ ] Link all viewport evidence to project/page/run IDs.
-- [ ] Add tests for bounded output size.
-- [ ] Add tests for evidence links.
+- [x] Create `ElementEvidenceIndex`.
+- [x] Create computed-style property allowlist.
+- [x] Add element selection policy:
+  - [x] semantic landmarks
+  - [x] headings
+  - [x] links
+  - [x] buttons
+  - [x] inputs/selects
+  - [x] product-card-like candidates
+  - [x] images/assets
+  - [x] sections/articles
+- [x] Add element count limit.
+- [x] Add DOM depth limit.
+- [x] Extract typography evidence.
+- [x] Extract color/background/border/shadow evidence.
+- [x] Extract layout/display/grid/flex evidence.
+- [x] Extract positioning/sticky/fixed evidence.
+- [x] Extract transition/transform evidence.
+- [x] Extract asset metadata:
+  - [x] URL
+  - [x] media type if available
+  - [x] dimensions if image is loaded
+  - [x] source element
+  - [x] reference-only flag placeholder
+- [x] Write viewport-level `manifest.json`.
+- [x] Write page-level `capture-manifest.json`.
+- [x] Link all viewport evidence to project/page/run IDs.
+- [x] Add tests for bounded output size.
+- [x] Add tests for evidence links.
 
 Guardrails:
 
-- [ ] Do not store computed styles for every DOM node by default.
-- [ ] Do not download full external asset mirrors.
-- [ ] Do not treat source assets as reusable generated assets.
+- [x] Do not store computed styles for every DOM node by default.
+- [x] Do not download full external asset mirrors.
+- [x] Do not treat source assets as reusable generated assets.
 
 Verification:
 
@@ -603,9 +603,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Evidence output is bounded.
-- [ ] Every derived artifact can trace to evidence IDs.
-- [ ] Missing referenced files fail validation.
+- [x] Evidence output is bounded.
+- [x] Every derived artifact can trace to evidence IDs.
+- [x] Missing referenced files fail validation.
 
 ## Phase 9 - Interaction State Capture
 
