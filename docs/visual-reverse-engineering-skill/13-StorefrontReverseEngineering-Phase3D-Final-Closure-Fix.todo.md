@@ -712,74 +712,74 @@ Goal: prove final closure with realistic positive and adversarial negative cases
 
 Positive multi-page fixture must include:
 
-- [ ] home page.
-- [ ] PLP/category page.
-- [ ] PDP with 1:1 product gallery.
-- [ ] cart shell.
-- [ ] checkout shell.
-- [ ] account/auth shell.
-- [ ] system state.
-- [ ] desktop/tablet/mobile evidence.
-- [ ] shared header/footer.
-- [ ] reused product cards.
-- [ ] valid review decisions.
-- [ ] at least one Modified decision.
-- [ ] complete screenshots and section crops in handoff.
+- [x] home page.
+- [x] PLP/category page.
+- [x] PDP with 1:1 product gallery.
+- [x] cart shell.
+- [x] checkout shell.
+- [x] account/auth shell.
+- [x] system state.
+- [x] desktop/tablet/mobile evidence.
+- [x] shared header/footer.
+- [x] reused product cards.
+- [x] valid review decisions.
+- [x] at least one Modified decision.
+- [x] complete screenshots and section crops in handoff.
 
 Positive expected result:
 
-- [ ] review blocking unresolved count is zero.
-- [ ] reviewed blueprint exists.
-- [ ] reviewed blueprint references resolved artifacts only.
-- [ ] generation readiness passed.
-- [ ] handoff readiness passed.
-- [ ] modified review value appears in reviewed artifact.
-- [ ] PDP contains exact required slots.
-- [ ] handoff contains screenshots and section crops.
-- [ ] manifest hashes validate.
+- [x] review blocking unresolved count is zero.
+- [x] reviewed blueprint exists.
+- [x] reviewed blueprint references resolved artifacts only.
+- [x] generation readiness passed.
+- [x] handoff readiness passed.
+- [x] modified review value appears in reviewed artifact.
+- [x] PDP contains exact required slots.
+- [x] handoff contains screenshots and section crops.
+- [x] manifest hashes validate.
 
 Negative review fixtures:
 
-- [ ] stale decision.
-- [ ] unknown status.
-- [ ] modified without value.
-- [ ] duplicate without supersede.
-- [ ] deferred critical.
-- [ ] rejected critical.
+- [x] stale decision.
+- [x] unknown status.
+- [x] modified without value.
+- [x] duplicate without supersede.
+- [x] deferred critical.
+- [x] rejected critical.
 
 Negative page contract fixtures:
 
-- [ ] missing `product.purchase`.
-- [ ] missing `product.gallery`.
-- [ ] duplicate `product.gallery`.
-- [ ] extra unapproved PDP section.
-- [ ] runtime/headless target as visual slot.
-- [ ] protected path target.
+- [x] missing `product.purchase`.
+- [x] missing `product.gallery`.
+- [x] duplicate `product.gallery`.
+- [x] extra unapproved PDP section.
+- [x] runtime/headless target as visual slot.
+- [x] protected path target.
 
 Negative handoff fixtures:
 
-- [ ] missing `task.md`.
-- [ ] missing `design-tokens.json`.
-- [ ] missing `evidence-manifest.json`.
-- [ ] missing section screenshot.
-- [ ] invalid screenshot hash.
-- [ ] allowed/protected overlap.
-- [ ] reviewed blueprint references draft.
-- [ ] manifest path escape.
-- [ ] missing handoff artifact entry.
+- [x] missing `task.md`.
+- [x] missing `design-tokens.json`.
+- [x] missing `evidence-manifest.json`.
+- [x] missing section screenshot.
+- [x] invalid screenshot hash.
+- [x] allowed/protected overlap.
+- [x] reviewed blueprint references draft.
+- [x] manifest path escape.
+- [x] missing handoff artifact entry.
 
 Negative browser/behavior fixtures:
 
-- [ ] direct Commerce Node API mutation.
-- [ ] functional checkout/payment JavaScript.
-- [ ] generated `@page`.
-- [ ] route reimplementation marker.
-- [ ] BFF reimplementation marker.
-- [ ] SEO/media reimplementation marker.
+- [x] direct Commerce Node API mutation.
+- [x] functional checkout/payment JavaScript.
+- [x] generated `@page`.
+- [x] route reimplementation marker.
+- [x] BFF reimplementation marker.
+- [x] SEO/media reimplementation marker.
 
 Done when:
 
-- [ ] Every negative fixture fails with the exact expected blocker code.
+- [x] Every negative fixture fails with the exact expected blocker code.
 
 ## Phase 3D.11 - Final No-Skip Closure Gate
 
@@ -925,7 +925,7 @@ Done when:
 7. [x] `Phase 3D.7 harden handoff task contract`
 8. [x] `Phase 3D.8 enforce strict workflow failure`
 9. [x] `Phase 3D.9 add semantic schemas`
-10. [ ] `Phase 3D.10 add positive and negative fixtures`
+10. [x] `Phase 3D.10 add positive and negative fixtures`
 11. [ ] `Phase 3D.11 add final no-skip closure gate`
 12. [ ] `Phase 3D.12 update closure docs and statuses`
 13. [ ] `Phase 3D final clean-head gate proof`
@@ -978,8 +978,8 @@ Workflow:
 
 - [x] Final blockers cause non-zero CLI exit.
 - [x] Inspect reports exact blocker/cause/fix.
-- [ ] Positive fixture passes.
-- [ ] All negative fixtures fail with expected blocker code.
+- [x] Positive fixture passes.
+- [x] All negative fixtures fail with expected blocker code.
 
 Boundary:
 
@@ -1067,6 +1067,6 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D7 handoff task contract.
 - [x] Implement D8 strict workflow failure semantics.
 - [x] Implement D9 schema and semantic validation.
-- [ ] Implement D10 positive and negative proof fixtures.
+- [x] Implement D10 positive and negative proof fixtures.
 - [ ] Implement D11 no-skip final closure gate.
 - [ ] Implement D12 docs/status closure.

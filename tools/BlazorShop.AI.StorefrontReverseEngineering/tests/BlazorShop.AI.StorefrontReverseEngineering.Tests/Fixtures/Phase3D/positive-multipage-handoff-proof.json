@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "phase3d-positive-proof",
+  "artifactId": "phase3d-positive-multipage-handoff-proof",
+  "pages": [
+    {
+      "pageId": "home",
+      "archetype": "home",
+      "requiredSlots": ["layout.header", "home.sections", "layout.footer"],
+      "viewports": ["desktop-1440", "tablet-768", "mobile-390"],
+      "sections": ["header", "hero", "footer"],
+      "screenshots": ["analysis/agent-handoff/screenshots/home/desktop-1440.png", "analysis/agent-handoff/screenshots/home/tablet-768.png", "analysis/agent-handoff/screenshots/home/mobile-390.png"],
+      "crops": ["analysis/agent-handoff/section-screenshots/home/header.desktop-1440.png", "analysis/agent-handoff/section-screenshots/home/hero.desktop-1440.png", "analysis/agent-handoff/section-screenshots/home/footer.desktop-1440.png"]
+    },
+    {
+      "pageId": "category",
+      "archetype": "product-listing",
+      "requiredSlots": ["layout.header", "catalog.product-card", "layout.footer"],
+      "repeatableSlots": ["catalog.product-card"],
+      "reusedComponents": ["catalog.product-card"],
+      "viewports": ["desktop-1440", "tablet-768", "mobile-390"],
+      "sections": ["header", "filters", "product-card-grid", "footer"],
+      "screenshots": ["analysis/agent-handoff/screenshots/category/desktop-1440.png", "analysis/agent-handoff/screenshots/category/tablet-768.png", "analysis/agent-handoff/screenshots/category/mobile-390.png"],
+      "crops": ["analysis/agent-handoff/section-screenshots/category/product-card-grid.desktop-1440.png"]
+    },
+    {
+      "pageId": "product",
+      "archetype": "product-detail",
+      "requiredSlots": ["layout.header", "product.gallery", "product.information", "product.purchase", "layout.footer"],
+      "viewports": ["desktop-1440", "tablet-768", "mobile-390"],
+      "sections": ["header", "product-gallery-1x1", "product-information", "product-purchase", "footer"],
+      "screenshots": ["analysis/agent-handoff/screenshots/product/desktop-1440.png", "analysis/agent-handoff/screenshots/product/tablet-768.png", "analysis/agent-handoff/screenshots/product/mobile-390.png"],
+      "crops": ["analysis/agent-handoff/section-screenshots/product/product-gallery-1x1.desktop-1440.png", "analysis/agent-handoff/section-screenshots/product/product-purchase.desktop-1440.png"]
+    },
+    {
+      "pageId": "cart",
+      "archetype": "cart-shell",
+      "requiredSlots": ["layout.header", "cart.page", "layout.footer"],
+      "viewports": ["desktop-1440", "tablet-768", "mobile-390"],
+      "sections": ["header", "cart-shell", "footer"],
+      "screenshots": ["analysis/agent-handoff/screenshots/cart/desktop-1440.png"],
+      "crops": ["analysis/agent-handoff/section-screenshots/cart/cart-shell.desktop-1440.png"]
+    },
+    {
+      "pageId": "checkout",
+      "archetype": "checkout-shell",
+      "requiredSlots": ["layout.header", "checkout.page", "layout.footer"],
+      "viewports": ["desktop-1440", "tablet-768", "mobile-390"],
+      "sections": ["header", "checkout-shell", "footer"],
+      "screenshots": ["analysis/agent-handoff/screenshots/checkout/desktop-1440.png"],
+      "crops": ["analysis/agent-handoff/section-screenshots/checkout/checkout-shell.desktop-1440.png"]
+    },
+    {
+      "pageId": "account",
+      "archetype": "account-auth-shell",
+      "requiredSlots": ["layout.header", "account.shell", "layout.footer"],
+      "viewports": ["desktop-1440", "tablet-768", "mobile-390"],
+      "sections": ["header", "account-shell", "footer"],
+      "screenshots": ["analysis/agent-handoff/screenshots/account/desktop-1440.png"],
+      "crops": ["analysis/agent-handoff/section-screenshots/account/account-shell.desktop-1440.png"]
+    },
+    {
+      "pageId": "system-state",
+      "archetype": "system-state",
+      "requiredSlots": ["layout.header", "system.error", "layout.footer"],
+      "viewports": ["desktop-1440", "tablet-768", "mobile-390"],
+      "sections": ["header", "system-state", "footer"],
+      "screenshots": ["analysis/agent-handoff/screenshots/system-state/desktop-1440.png"],
+      "crops": ["analysis/agent-handoff/section-screenshots/system-state/system-state.desktop-1440.png"]
+    }
+  ],
+  "sharedLayout": ["layout.header", "layout.footer"],
+  "reviewDecisions": [
+    {"itemId": "token:text-body", "status": "Approved", "sourceHashValid": true},
+    {"itemId": "mapping:family-product-card", "status": "Modified", "sourceHashValid": true, "modifiedValue": {"variant": "featured"}}
+  ],
+  "expectedResult": {
+    "reviewBlockingUnresolvedCount": 0,
+    "reviewedBlueprintExists": true,
+    "reviewedBlueprintReferencesResolvedArtifactsOnly": true,
+    "generationReadinessPassed": true,
+    "handoffReadinessPassed": true,
+    "modifiedReviewValueAppearsInReviewedArtifact": true,
+    "pdpContainsExactRequiredSlots": true,
+    "handoffContainsScreenshotsAndSectionCrops": true,
+    "manifestHashesValidate": true
+  },
+  "hashes": {
+    "reviewBundleHash": "sha256-review-bundle-proof",
+    "visualBlueprintHash": "sha256-reviewed-blueprint-proof",
+    "evidenceManifestHash": "sha256-evidence-manifest-proof",
+    "handoffPackageHash": "sha256-handoff-package-proof"
+  }
+}

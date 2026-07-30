@@ -114,3 +114,13 @@ Status: in progress
 - Result: passed `40/40`.
 - Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview|BlueprintV1|AgentHandoff" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `65/65`.
+
+## Phase 3D.10 Evidence
+
+- Added `Fixtures/Phase3D/positive-multipage-handoff-proof.json` covering home, category/PLP, PDP with 1:1 gallery, cart, checkout, account/auth, system state, desktop/tablet/mobile evidence, shared header/footer, reused product cards, valid approved/modified decisions, screenshots, section crops, and handoff hashes.
+- Added `Fixtures/Phase3D/negative-fixtures.json` covering negative review, page contract, handoff, and browser/behavior mutations with exact expected blocker codes.
+- `Phase3DProofFixtureTests` validates the positive proof shape and maps each negative fixture marker to its expected blocker code.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3DProof" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `2/2`.
+- Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff|SchemaArtifact|Phase3DProof" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `42/42`.

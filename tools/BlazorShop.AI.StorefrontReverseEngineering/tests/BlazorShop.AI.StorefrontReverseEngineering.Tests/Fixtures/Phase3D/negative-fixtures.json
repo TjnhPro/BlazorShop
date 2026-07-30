@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "phase3d-negative-fixtures",
+  "artifactId": "phase3d-negative-fixture-matrix",
+  "fixtures": [
+    {"id": "stale-decision", "category": "review", "marker": "stale-source-hash", "expectedBlocker": "decision-source-hash-mismatch"},
+    {"id": "unknown-status", "category": "review", "marker": "unknown-review-status", "expectedBlocker": "SRE-WORKFLOW-REVIEW-DECISIONS-INVALID"},
+    {"id": "modified-without-value", "category": "review", "marker": "modified-value-missing", "expectedBlocker": "SRE-WORKFLOW-REVIEW-DECISIONS-INVALID"},
+    {"id": "duplicate-without-supersede", "category": "review", "marker": "duplicate-decision", "expectedBlocker": "SRE-WORKFLOW-REVIEW-DECISIONS-INVALID"},
+    {"id": "deferred-critical", "category": "review", "marker": "deferred-critical", "expectedBlocker": "reviewed-blueprint-not-resolved"},
+    {"id": "rejected-critical", "category": "review", "marker": "rejected-critical", "expectedBlocker": "reviewed-blueprint-not-resolved"},
+
+    {"id": "missing-product-purchase", "category": "page-contract", "marker": "missing-product-purchase", "expectedBlocker": "missing-required-slot"},
+    {"id": "missing-product-gallery", "category": "page-contract", "marker": "missing-product-gallery", "expectedBlocker": "missing-required-slot"},
+    {"id": "duplicate-product-gallery", "category": "page-contract", "marker": "duplicate-product-gallery", "expectedBlocker": "duplicate-non-repeatable-slot"},
+    {"id": "extra-unapproved-pdp-section", "category": "page-contract", "marker": "extra-unapproved-section", "expectedBlocker": "unapproved-extra-section"},
+    {"id": "runtime-headless-target", "category": "page-contract", "marker": "runtime-headless-target", "expectedBlocker": "slot-behavior-ownership-conflict"},
+    {"id": "protected-path-target", "category": "page-contract", "marker": "protected-path-target", "expectedBlocker": "protected-path-target"},
+
+    {"id": "missing-task", "category": "handoff", "marker": "missing-task", "expectedBlocker": "missing-agent-handoff-artifact"},
+    {"id": "missing-design-tokens", "category": "handoff", "marker": "missing-design-tokens", "expectedBlocker": "missing-agent-handoff-artifact"},
+    {"id": "missing-evidence-manifest", "category": "handoff", "marker": "missing-evidence-manifest", "expectedBlocker": "missing-agent-handoff-artifact"},
+    {"id": "missing-section-screenshot", "category": "handoff", "marker": "missing-section-screenshot", "expectedBlocker": "missing-section-screenshot"},
+    {"id": "invalid-screenshot-hash", "category": "handoff", "marker": "invalid-screenshot-hash", "expectedBlocker": "evidence-hash-mismatch"},
+    {"id": "allowed-protected-overlap", "category": "handoff", "marker": "allowed-protected-overlap", "expectedBlocker": "allowed-protected-overlap"},
+    {"id": "reviewed-blueprint-draft-reference", "category": "handoff", "marker": "reviewed-blueprint-draft-reference", "expectedBlocker": "reviewed-blueprint-references-draft"},
+    {"id": "manifest-path-escape", "category": "handoff", "marker": "manifest-path-escape", "expectedBlocker": "handoff-path-escape"},
+    {"id": "missing-handoff-artifact-entry", "category": "handoff", "marker": "missing-handoff-artifact-entry", "expectedBlocker": "missing-agent-handoff-artifact"},
+
+    {"id": "direct-commerce-node-api-mutation", "category": "browser-behavior", "marker": "direct-commerce-node-api-mutation", "expectedBlocker": "unsafe-browser-action"},
+    {"id": "functional-checkout-payment-javascript", "category": "browser-behavior", "marker": "functional-checkout-payment-javascript", "expectedBlocker": "unsafe-browser-action"},
+    {"id": "generated-page-route", "category": "browser-behavior", "marker": "generated-page-route", "expectedBlocker": "generated-route-ownership"},
+    {"id": "route-reimplementation", "category": "browser-behavior", "marker": "route-reimplementation", "expectedBlocker": "generated-route-ownership"},
+    {"id": "bff-reimplementation", "category": "browser-behavior", "marker": "bff-reimplementation", "expectedBlocker": "slot-behavior-ownership-conflict"},
+    {"id": "seo-media-reimplementation", "category": "browser-behavior", "marker": "seo-media-reimplementation", "expectedBlocker": "slot-behavior-ownership-conflict"}
+  ]
+}
