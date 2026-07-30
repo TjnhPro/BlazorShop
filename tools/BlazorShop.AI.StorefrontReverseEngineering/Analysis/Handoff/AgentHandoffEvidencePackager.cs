@@ -122,6 +122,7 @@ public sealed class AgentHandoffEvidencePackager
 
         image.Crop(new MagickGeometry(x, y, (uint)width, (uint)height));
         image.Page = new MagickGeometry(0, 0, (uint)width, (uint)height);
+        image.Strip();
 
         var fileName = $"{SafePathSegment(node.NodeId)}.{SafePathSegment(viewport.ViewportId)}.png";
         var handoffRelative = $"{HandoffRoot}/section-screenshots/{SafePathSegment(pageId)}/{fileName}";

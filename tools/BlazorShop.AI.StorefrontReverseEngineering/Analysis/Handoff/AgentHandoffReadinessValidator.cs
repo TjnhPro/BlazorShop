@@ -27,14 +27,31 @@ public sealed class AgentHandoffReadinessValidator
         var project = await store.ReadJsonAsync<VisualProject>(ArtifactPath.Create("project.json"), "visual-project", cancellationToken);
         var findings = new List<AgentHandoffReadinessFinding>();
 
-        foreach (var path in RequiredArtifacts())
+        foreach (var artifact in AgentHandoffContract.RequiredArtifacts)
         {
-            if (!File.Exists(Path.Combine(root, path.Replace('/', Path.DirectorySeparatorChar))))
+            if (artifact.RelativePath == "analysis/agent-handoff/handoff-readiness.json")
             {
-                findings.Add(Block("missing-agent-handoff-artifact", $"Required handoff artifact is missing: {path}", path));
+                continue;
+            }
+
+            var path = Path.Combine(root, artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (artifact.IsDirectory)
+            {
+                if (!Directory.Exists(path) || !Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Any())
+                {
+                    findings.Add(Block("missing-agent-handoff-artifact", $"Required handoff directory is missing or empty: {artifact.RelativePath}", artifact.RelativePath));
+                }
+
+                continue;
+            }
+
+            if (!File.Exists(path))
+            {
+                findings.Add(Block("missing-agent-handoff-artifact", $"Required handoff artifact is missing: {artifact.RelativePath}", artifact.RelativePath));
             }
         }
 
+        AddContractArtifactFindings(root, findings);
         AddGenerationReadinessFindings(root, findings);
         AddAllowedProtectedFindings(root, findings);
         AddEvidenceManifestFindings(root, findings);
@@ -73,6 +90,115 @@ public sealed class AgentHandoffReadinessValidator
         {
             findings.Add(Block(NormalizeBlockingCode(finding.Code), finding.Message, finding.ArtifactPath));
         }
+
+        if (!readiness.Passed)
+        {
+            findings.Add(Block("blocking-unresolved-region", "Generation readiness has not passed.", "reports/generation-readiness.json"));
+        }
+    }
+
+    private static void AddContractArtifactFindings(string root, List<AgentHandoffReadinessFinding> findings)
+    {
+        var manifestPath = Path.Combine(root, "analysis", "agent-handoff", "manifest.json");
+        AgentHandoffManifest? manifest = null;
+        if (File.Exists(manifestPath))
+        {
+            manifest = JsonSerializer.Deserialize<AgentHandoffManifest>(File.ReadAllText(manifestPath), VisualJson.Options);
+        }
+
+        foreach (var artifact in AgentHandoffContract.RequiredArtifacts.Where(artifact => !artifact.IsDirectory))
+        {
+            if (artifact.RelativePath == "analysis/agent-handoff/handoff-readiness.json")
+            {
+                continue;
+            }
+
+            if (Path.IsPathRooted(artifact.RelativePath) || artifact.RelativePath.Split('/', '\\').Contains("..", StringComparer.Ordinal))
+            {
+                findings.Add(Block("absolute-source-dependency", $"Required artifact path is not portable: {artifact.RelativePath}", artifact.RelativePath));
+                continue;
+            }
+
+            if (!artifact.RelativePath.StartsWith(AgentHandoffContract.HandoffRoot + "/", StringComparison.Ordinal))
+            {
+                findings.Add(Block("handoff-path-escape", $"Required artifact is outside handoff root: {artifact.RelativePath}", artifact.RelativePath));
+                continue;
+            }
+
+            var path = Path.Combine(root, artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+            {
+                continue;
+            }
+
+            if (artifact.ContentType == "application/json")
+            {
+                AddJsonArtifactFindings(root, artifact, path, findings);
+            }
+
+            var entry = manifest?.ArtifactEntries.FirstOrDefault(candidate => string.Equals(candidate.Path, artifact.RelativePath, StringComparison.Ordinal));
+            if (entry is not null && artifact.HashRequired)
+            {
+                var actualHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
+                if (!string.Equals(actualHash, entry.Sha256, StringComparison.Ordinal))
+                {
+                    findings.Add(Block("handoff-hash-mismatch", $"Manifest hash does not match artifact: {artifact.RelativePath}", artifact.RelativePath));
+                }
+            }
+        }
+
+        if (manifest is not null)
+        {
+            if (!string.Equals(manifest.HandoffRoot, AgentHandoffContract.HandoffRoot, StringComparison.Ordinal))
+            {
+                findings.Add(Block("handoff-path-escape", "Manifest handoffRoot does not match canonical handoff root.", "analysis/agent-handoff/manifest.json"));
+            }
+
+            if (manifest.ArtifactEntries.Any(entry => !entry.Path.StartsWith(AgentHandoffContract.HandoffRoot + "/", StringComparison.Ordinal)))
+            {
+                findings.Add(Block("handoff-path-escape", "Manifest contains artifact entry outside handoff root.", "analysis/agent-handoff/manifest.json"));
+            }
+        }
+    }
+
+    private static void AddJsonArtifactFindings(
+        string root,
+        RequiredHandoffArtifact artifact,
+        string path,
+        List<AgentHandoffReadinessFinding> findings)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            if (!document.RootElement.TryGetProperty("artifactKind", out var kind) ||
+                !string.Equals(kind.GetString(), artifact.ArtifactKind, StringComparison.Ordinal))
+            {
+                findings.Add(Block("artifact-kind-mismatch", $"Artifact kind mismatch for {artifact.RelativePath}.", artifact.RelativePath));
+            }
+
+            if (document.RootElement.TryGetProperty("projectId", out var projectId) &&
+                TryReadProjectId(root) is { } expected &&
+                !string.Equals(projectId.GetString(), expected, StringComparison.Ordinal))
+            {
+                findings.Add(Block("project-id-mismatch", $"Artifact projectId mismatch for {artifact.RelativePath}.", artifact.RelativePath));
+            }
+        }
+        catch (JsonException)
+        {
+            findings.Add(Block("invalid-agent-handoff-schema", $"JSON handoff artifact could not be parsed: {artifact.RelativePath}", artifact.RelativePath));
+        }
+    }
+
+    private static string? TryReadProjectId(string root)
+    {
+        var path = Path.Combine(root, "project.json");
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        return document.RootElement.TryGetProperty("projectId", out var projectId) ? projectId.GetString() : null;
     }
 
     private static void AddAllowedProtectedFindings(string root, List<AgentHandoffReadinessFinding> findings)
@@ -207,26 +333,6 @@ public sealed class AgentHandoffReadinessValidator
         path.Contains("starter-generation.contract.yaml", StringComparison.OrdinalIgnoreCase);
 
     private static AgentHandoffReadinessFinding Block(string code, string message, string? path) => new(code, "blocking", message, path);
-
-    private static IReadOnlyList<string> RequiredArtifacts() =>
-    [
-        "analysis/evidence-snapshot.json",
-        "reports/readiness-report.json",
-        "analysis/tokens/semantic-tokens.draft.json",
-        "presentation-catalog/presentation-component-catalog.json",
-        "analysis/mapping/presentation-mappings.draft.json",
-        "review/review-queue.json",
-        "analysis/visual-blueprint.v1.draft.json",
-        "analysis/storefront-pattern/storefront-pattern.json",
-        "analysis/storefront-pattern/page-contracts.json",
-        "analysis/resolved/page-compositions.reviewed.json",
-        "analysis/resolved/presentation-mappings.reviewed.json",
-        "analysis/agent-handoff/manifest.json",
-        "analysis/agent-handoff/evidence-manifest.json",
-        "analysis/agent-handoff/allowed-files.json",
-        "analysis/agent-handoff/protected-files.json",
-        "analysis/agent-handoff/unresolved-regions.json"
-    ];
 
     private static async Task WriteAsync(string root, AgentHandoffReadinessReport report, CancellationToken cancellationToken)
     {

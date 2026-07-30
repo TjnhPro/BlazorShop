@@ -445,7 +445,7 @@ Goal: assembler, manifest, validator, schemas, and tests use one required-artifa
 
 Implementation checklist:
 
-- [ ] Add `AgentHandoffContract`:
+- [x] Add `AgentHandoffContract`:
 
 ```csharp
 public static class AgentHandoffContract
@@ -454,90 +454,90 @@ public static class AgentHandoffContract
 }
 ```
 
-- [ ] Add `RequiredHandoffArtifact` fields:
-  - [ ] relative path.
-  - [ ] artifact kind.
-  - [ ] schema name.
-  - [ ] content type.
-  - [ ] required condition.
-  - [ ] hash required flag.
-- [ ] Replace `AgentHandoffAssembler.RequiredArtifacts()`.
-- [ ] Replace `AgentHandoffReadinessValidator.RequiredArtifacts()`.
-- [ ] Ensure manifest artifact list comes from `AgentHandoffContract`.
-- [ ] Ensure readiness validation comes from `AgentHandoffContract`.
-- [ ] Add directories as required entries when directory content matters:
-  - [ ] `analysis/agent-handoff/screenshots/`
-  - [ ] `analysis/agent-handoff/section-screenshots/`
-- [ ] Add `handoff-readiness.json` to canonical required list.
-- [ ] Add `evidence-manifest.json` to canonical required list.
+- [x] Add `RequiredHandoffArtifact` fields:
+  - [x] relative path.
+  - [x] artifact kind.
+  - [x] schema name.
+  - [x] content type.
+  - [x] required condition.
+  - [x] hash required flag.
+- [x] Replace `AgentHandoffAssembler.RequiredArtifacts()`.
+- [x] Replace `AgentHandoffReadinessValidator.RequiredArtifacts()`.
+- [x] Ensure manifest artifact list comes from `AgentHandoffContract`.
+- [x] Ensure readiness validation comes from `AgentHandoffContract`.
+- [x] Add directories as required entries when directory content matters:
+  - [x] `analysis/agent-handoff/screenshots/`
+  - [x] `analysis/agent-handoff/section-screenshots/`
+- [x] Add `handoff-readiness.json` to canonical required list.
+- [x] Add `evidence-manifest.json` to canonical required list.
 
 Required artifacts:
 
-- [ ] `analysis/agent-handoff/manifest.json`
-- [ ] `analysis/agent-handoff/task.md`
-- [ ] `analysis/agent-handoff/allowed-files.json`
-- [ ] `analysis/agent-handoff/protected-files.json`
-- [ ] `analysis/agent-handoff/page-compositions.json`
-- [ ] `analysis/agent-handoff/visual-style.json`
-- [ ] `analysis/agent-handoff/design-tokens.json`
-- [ ] `analysis/agent-handoff/storefront-pattern.json`
-- [ ] `analysis/agent-handoff/visual-blueprint.json`
-- [ ] `analysis/agent-handoff/unresolved-regions.json`
-- [ ] `analysis/agent-handoff/generation-readiness.json`
-- [ ] `analysis/agent-handoff/handoff-readiness.json`
-- [ ] `analysis/agent-handoff/evidence-manifest.json`
-- [ ] `analysis/agent-handoff/screenshots/`
-- [ ] `analysis/agent-handoff/section-screenshots/`
+- [x] `analysis/agent-handoff/manifest.json`
+- [x] `analysis/agent-handoff/task.md`
+- [x] `analysis/agent-handoff/allowed-files.json`
+- [x] `analysis/agent-handoff/protected-files.json`
+- [x] `analysis/agent-handoff/page-compositions.json`
+- [x] `analysis/agent-handoff/visual-style.json`
+- [x] `analysis/agent-handoff/design-tokens.json`
+- [x] `analysis/agent-handoff/storefront-pattern.json`
+- [x] `analysis/agent-handoff/visual-blueprint.json`
+- [x] `analysis/agent-handoff/unresolved-regions.json`
+- [x] `analysis/agent-handoff/generation-readiness.json`
+- [x] `analysis/agent-handoff/handoff-readiness.json`
+- [x] `analysis/agent-handoff/evidence-manifest.json`
+- [x] `analysis/agent-handoff/screenshots/`
+- [x] `analysis/agent-handoff/section-screenshots/`
 
 Manifest improvements:
 
-- [ ] remove absolute source project path from portable contract, or mark it diagnostics-only.
-- [ ] add `handoffRoot`.
-- [ ] add `reviewBundleHash`.
-- [ ] add `storefrontPatternHash`.
-- [ ] add `presentationCatalogHash`.
-- [ ] add `visualBlueprintHash`.
-- [ ] add `pageCompositionsHash`.
-- [ ] add `evidenceManifestHash`.
-- [ ] add `artifactEntries[]`.
-- [ ] every artifact entry includes path, artifact kind, SHA-256, size, and required flag.
+- [x] remove absolute source project path from portable contract, or mark it diagnostics-only.
+- [x] add `handoffRoot`.
+- [x] add `reviewBundleHash`.
+- [x] add `storefrontPatternHash`.
+- [x] add `presentationCatalogHash`.
+- [x] add `visualBlueprintHash`.
+- [x] add `pageCompositionsHash`.
+- [x] add `evidenceManifestHash`.
+- [x] add `artifactEntries[]`.
+- [x] every artifact entry includes path, artifact kind, SHA-256, size, and required flag.
 
 Validation:
 
-- [ ] check every required artifact exists.
-- [ ] check JSON schema.
-- [ ] check artifact kind.
-- [ ] check project ID consistency.
-- [ ] check manifest hashes.
-- [ ] check referenced paths remain under handoff root.
-- [ ] reject `..` traversal.
-- [ ] reject absolute required evidence dependencies.
-- [ ] check reviewed blueprint uses resolved artifacts only.
-- [ ] check evidence files exist and hashes match.
-- [ ] check allowed/protected lists do not overlap.
-- [ ] check target paths are under allowed generated zones.
-- [ ] check unresolved blocking count is zero.
-- [ ] check generation readiness passed.
+- [x] check every required artifact exists.
+- [x] check JSON schema.
+- [x] check artifact kind.
+- [x] check project ID consistency.
+- [x] check manifest hashes.
+- [x] check referenced paths remain under handoff root.
+- [x] reject `..` traversal.
+- [x] reject absolute required evidence dependencies.
+- [x] check reviewed blueprint uses resolved artifacts only.
+- [x] check evidence files exist and hashes match.
+- [x] check allowed/protected lists do not overlap.
+- [x] check target paths are under allowed generated zones.
+- [x] check unresolved blocking count is zero.
+- [x] check generation readiness passed.
 
 Blocking codes:
 
-- [ ] `missing-agent-handoff-artifact`
-- [ ] `invalid-agent-handoff-schema`
-- [ ] `artifact-kind-mismatch`
-- [ ] `project-id-mismatch`
-- [ ] `handoff-hash-mismatch`
-- [ ] `handoff-path-escape`
-- [ ] `absolute-source-dependency`
-- [ ] `reviewed-blueprint-references-draft`
-- [ ] `missing-handoff-evidence`
-- [ ] `evidence-hash-mismatch`
-- [ ] `allowed-protected-overlap`
-- [ ] `invalid-generated-target`
-- [ ] `blocking-unresolved-region`
+- [x] `missing-agent-handoff-artifact`
+- [x] `invalid-agent-handoff-schema`
+- [x] `artifact-kind-mismatch`
+- [x] `project-id-mismatch`
+- [x] `handoff-hash-mismatch`
+- [x] `handoff-path-escape`
+- [x] `absolute-source-dependency`
+- [x] `reviewed-blueprint-references-draft`
+- [x] `missing-handoff-evidence`
+- [x] `evidence-hash-mismatch`
+- [x] `allowed-protected-overlap`
+- [x] `invalid-generated-target`
+- [x] `blocking-unresolved-region`
 
 Done when:
 
-- [ ] Adding or removing a required handoff artifact requires changing exactly one canonical contract list.
+- [x] Adding or removing a required handoff artifact requires changing exactly one canonical contract list.
 
 ## Phase 3D.7 - Handoff Task Contract
 
@@ -921,7 +921,7 @@ Done when:
 3. [x] `Phase 3D.3 add exact page slot contracts`
 4. [x] `Phase 3D.4 enforce page composition slots`
 5. [x] `Phase 3D.5 package screenshots and section crops`
-6. [ ] `Phase 3D.6 centralize handoff contract`
+6. [x] `Phase 3D.6 centralize handoff contract`
 7. [ ] `Phase 3D.7 harden handoff task contract`
 8. [ ] `Phase 3D.8 enforce strict workflow failure`
 9. [ ] `Phase 3D.9 add semantic schemas`
@@ -1063,7 +1063,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D3 exact page slot contracts.
 - [x] Implement D4 page composition slot enforcement.
 - [x] Implement D5 self-contained visual evidence packaging.
-- [ ] Implement D6 canonical handoff contract.
+- [x] Implement D6 canonical handoff contract.
 - [ ] Implement D7 handoff task contract.
 - [ ] Implement D8 strict workflow failure semantics.
 - [ ] Implement D9 schema and semantic validation.

@@ -75,3 +75,11 @@ Status: in progress
 - Handoff readiness validates evidence file existence, hashes, handoff-root containment, missing section crops, and production-safe label misuse.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `18/18`.
+
+## Phase 3D.6 Evidence
+
+- `AgentHandoffContract.RequiredArtifacts` is the single required handoff artifact list used by both assembler manifest output and readiness validation.
+- Handoff manifest now records `handoffRoot`, diagnostics-only source path role, review/input hashes, evidence hash, and artifact entries with path/kind/hash/size/required metadata.
+- Readiness validation now checks canonical required artifacts, directories, JSON parse/kind/project consistency, manifest hashes, path escape, and generation readiness state.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `19/19`.

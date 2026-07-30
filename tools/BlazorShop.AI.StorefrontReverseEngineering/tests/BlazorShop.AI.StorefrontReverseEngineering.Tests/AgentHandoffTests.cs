@@ -1,7 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Security.Cryptography;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Handoff;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Cli;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -18,10 +20,17 @@ public sealed class AgentHandoffTests
         var projectRoot = await CreateReadyProjectAsync("Agent Handoff Manifest");
         var manifest = await ReadAsync<AgentHandoffManifest>(projectRoot, "analysis/agent-handoff/manifest.json");
 
+        Assert.Equal(AgentHandoffContract.RequiredArtifacts.Select(artifact => artifact.RelativePath), manifest.ArtifactList);
         Assert.Contains("analysis/agent-handoff/page-compositions.json", manifest.ArtifactList);
         Assert.Contains("analysis/agent-handoff/visual-blueprint.json", manifest.ArtifactList);
         Assert.Contains("analysis/agent-handoff/generation-readiness.json", manifest.ArtifactList);
         Assert.Contains("analysis/agent-handoff/evidence-manifest.json", manifest.ArtifactList);
+        Assert.Contains("analysis/agent-handoff/handoff-readiness.json", manifest.ArtifactList);
+        Assert.Contains("analysis/agent-handoff/screenshots/", manifest.ArtifactList);
+        Assert.Contains("analysis/agent-handoff/section-screenshots/", manifest.ArtifactList);
+        Assert.Contains(manifest.ArtifactEntries, entry => entry.Path == "analysis/agent-handoff/evidence-manifest.json" && entry.SizeBytes > 0 && !string.IsNullOrWhiteSpace(entry.Sha256));
+        Assert.Equal("analysis/agent-handoff", manifest.HandoffRoot);
+        Assert.Equal("diagnostics-only", manifest.SourceProjectPathRole);
         Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "agent-handoff", "task.md")));
     }
 
@@ -82,6 +91,20 @@ public sealed class AgentHandoffTests
 
         Assert.False(report.Passed);
         Assert.Contains(report.Findings, finding => finding.Code == "evidence-hash-mismatch");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_ManifestHashMismatchFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Manifest Hash");
+        await RewriteGenerationReadinessAsync(projectRoot, passed: true);
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        await File.AppendAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "allowed-files.json"), " ");
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "handoff-hash-mismatch");
     }
 
     [Fact]
@@ -190,8 +213,7 @@ public sealed class AgentHandoffTests
     public async Task AgentHandoffReadiness_PassesForReviewedFixtureWithoutBlockers()
     {
         var projectRoot = await CreateReadyProjectAsync("Agent Handoff Reviewed Pass");
-        await RewriteGenerationReadinessAsync(projectRoot, passed: true);
-        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        await PrepareReviewedHandoffAsync(projectRoot);
 
         var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
 
@@ -274,6 +296,31 @@ public sealed class AgentHandoffTests
         node["passed"] = passed;
         node["findings"] = new JsonArray();
         await File.WriteAllTextAsync(path, node.ToJsonString(VisualJson.Options));
+    }
+
+    private static async Task PrepareReviewedHandoffAsync(string projectRoot)
+    {
+        await ApproveAllReviewDecisionsAsync(projectRoot);
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        Assert.True(result.Readiness.Passed);
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+    }
+
+    private static async Task ApproveAllReviewDecisionsAsync(string projectRoot)
+    {
+        var queue = await ReadAsync<ReviewQueue>(projectRoot, "review/review-queue.json");
+        var decisions = queue.Items.Select(item => new ReviewDecision(
+            item.ItemId,
+            "Approved",
+            null,
+            "Approved by deterministic handoff test fixture.",
+            DateTimeOffset.UtcNow,
+            "reviewer@example.test",
+            item.SourceArtifactId,
+            item.SourceArtifactHash,
+            "decision-" + item.ItemId)).ToArray();
+        var document = new ReviewDecisions("1.0", "review-decisions", "review-decisions-" + queue.ProjectId, DateTimeOffset.UtcNow, queue.ProjectId, decisions);
+        await File.WriteAllTextAsync(Path.Combine(projectRoot, "review", "review-decisions.json"), JsonSerializer.Serialize(document, VisualJson.Options) + Environment.NewLine);
     }
 
     private static async Task MutateFirstCompositionNodeAsync(string projectRoot, Action<JsonObject> mutate)

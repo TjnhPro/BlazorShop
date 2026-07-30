@@ -7,13 +7,29 @@ public sealed record AgentHandoffManifest(
     DateTimeOffset CreatedUtc,
     string ProjectId,
     string SourceProjectPath,
+    string SourceProjectPathRole,
+    string HandoffRoot,
     string? SourceRunId,
     string? SourceCommitSha,
     string HandoffSchemaVersion,
     bool ReadinessPassed,
+    string? ReviewBundleHash,
+    string? StorefrontPatternHash,
+    string? PresentationCatalogHash,
+    string? VisualBlueprintHash,
+    string? PageCompositionsHash,
+    string? EvidenceManifestHash,
     IReadOnlyList<string> ArtifactList,
+    IReadOnlyList<AgentHandoffArtifactEntry> ArtifactEntries,
     string RequiredConsumerContract,
     IReadOnlyList<string> UnsupportedPatternSummary);
+
+public sealed record AgentHandoffArtifactEntry(
+    string Path,
+    string ArtifactKind,
+    string Sha256,
+    long SizeBytes,
+    bool Required);
 
 public sealed record AgentHandoffFileManifest(
     string SchemaVersion,

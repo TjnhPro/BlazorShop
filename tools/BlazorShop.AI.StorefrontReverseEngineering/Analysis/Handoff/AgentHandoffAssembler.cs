@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text.Json;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -9,7 +10,6 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Analysis.Handoff;
 
 public sealed class AgentHandoffAssembler
 {
-    private const string HandoffRoot = "analysis/agent-handoff";
     private readonly string repoRoot;
     private readonly ApprovedArtifactRootResolver resolver;
     private readonly IVisualSchemaValidator validator;
@@ -34,23 +34,7 @@ public sealed class AgentHandoffAssembler
         var unresolved = BuildUnresolved(project.ProjectId, createdUtc, readiness);
         await new AgentHandoffEvidencePackager()
             .PackageAsync(root, project.ProjectId, createdUtc, compositions, cancellationToken);
-        var artifactList = RequiredArtifacts().ToArray();
-        var manifest = new AgentHandoffManifest(
-            "1.0",
-            "agent-handoff-manifest",
-            $"agent-handoff-{project.ProjectId}",
-            createdUtc,
-            project.ProjectId,
-            root,
-            project.LatestRunId,
-            TryGetGitSha(),
-            "phase3c-agent-handoff-v1",
-            readiness.Passed,
-            artifactList,
-            "Phase 4 consumers may read analysis/agent-handoff/* and schemas only; they must not reinterpret raw capture evidence or modify StorefrontBuilder generation without a separate approved plan.",
-            readiness.Findings.Where(finding => finding.Severity == "blocking").Select(finding => $"{finding.Code}:{finding.Message}").ToArray());
 
-        await WriteAsync(root, "manifest.json", manifest, cancellationToken);
         await WriteAsync(root, "allowed-files.json", allowed, cancellationToken);
         await WriteAsync(root, "protected-files.json", protectedFiles, cancellationToken);
         await WriteAsync(root, "unresolved-regions.json", unresolved, cancellationToken);
@@ -60,7 +44,32 @@ public sealed class AgentHandoffAssembler
         await CopyAsync(root, "analysis/storefront-pattern/storefront-pattern.json", "storefront-pattern.json", cancellationToken);
         await CopyAsync(root, "analysis/visual-blueprint.v1.reviewed.json", "visual-blueprint.json", cancellationToken);
         await CopyAsync(root, "reports/generation-readiness.json", "generation-readiness.json", cancellationToken);
-        await File.WriteAllTextAsync(Path.Combine(root, HandoffRoot.Replace('/', Path.DirectorySeparatorChar), "task.md"), WriteTask(project, readiness, allowed, protectedFiles), cancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(root, AgentHandoffContract.HandoffRoot.Replace('/', Path.DirectorySeparatorChar), "task.md"), WriteTask(project, readiness, allowed, protectedFiles), cancellationToken);
+
+        var manifest = new AgentHandoffManifest(
+            "1.0",
+            "agent-handoff-manifest",
+            $"agent-handoff-{project.ProjectId}",
+            createdUtc,
+            project.ProjectId,
+            root,
+            "diagnostics-only",
+            AgentHandoffContract.HandoffRoot,
+            project.LatestRunId,
+            TryGetGitSha(),
+            "phase3d-agent-handoff-v2",
+            readiness.Passed,
+            ReadReviewBundleHash(root),
+            FileHash(root, "analysis/agent-handoff/storefront-pattern.json"),
+            FileHash(root, "presentation-catalog/presentation-component-catalog.json"),
+            FileHash(root, "analysis/agent-handoff/visual-blueprint.json"),
+            FileHash(root, "analysis/agent-handoff/page-compositions.json"),
+            FileHash(root, "analysis/agent-handoff/evidence-manifest.json"),
+            AgentHandoffContract.RequiredArtifacts.Select(artifact => artifact.RelativePath).ToArray(),
+            BuildArtifactEntries(root),
+            "Phase 4 consumers may read analysis/agent-handoff/* and schemas only; they must not reinterpret raw capture evidence or modify StorefrontBuilder generation without a separate approved plan.",
+            readiness.Findings.Where(finding => finding.Severity == "blocking").Select(finding => $"{finding.Code}:{finding.Message}").ToArray());
+        await WriteAsync(root, "manifest.json", manifest, cancellationToken);
         return manifest;
     }
 
@@ -143,7 +152,7 @@ public sealed class AgentHandoffAssembler
 
     private static async Task WriteAsync<T>(string root, string fileName, T value, CancellationToken cancellationToken)
     {
-        var path = Path.Combine(root, HandoffRoot.Replace('/', Path.DirectorySeparatorChar), fileName);
+        var path = Path.Combine(root, AgentHandoffContract.HandoffRoot.Replace('/', Path.DirectorySeparatorChar), fileName);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(value, VisualJson.Options) + Environment.NewLine, cancellationToken);
     }
@@ -156,26 +165,56 @@ public sealed class AgentHandoffAssembler
             return;
         }
 
-        var destinationPath = Path.Combine(root, HandoffRoot.Replace('/', Path.DirectorySeparatorChar), fileName);
+        var destinationPath = Path.Combine(root, AgentHandoffContract.HandoffRoot.Replace('/', Path.DirectorySeparatorChar), fileName);
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
         await File.WriteAllTextAsync(destinationPath, await File.ReadAllTextAsync(sourcePath, cancellationToken), cancellationToken);
     }
 
-    private static IReadOnlyList<string> RequiredArtifacts() =>
-    [
-        "analysis/agent-handoff/manifest.json",
-        "analysis/agent-handoff/task.md",
-        "analysis/agent-handoff/allowed-files.json",
-        "analysis/agent-handoff/protected-files.json",
-        "analysis/agent-handoff/page-compositions.json",
-        "analysis/agent-handoff/visual-style.json",
-        "analysis/agent-handoff/design-tokens.json",
-        "analysis/agent-handoff/storefront-pattern.json",
-        "analysis/agent-handoff/visual-blueprint.json",
-        "analysis/agent-handoff/unresolved-regions.json",
-        "analysis/agent-handoff/generation-readiness.json",
-        "analysis/agent-handoff/evidence-manifest.json"
-    ];
+    private static IReadOnlyList<AgentHandoffArtifactEntry> BuildArtifactEntries(string root) =>
+        AgentHandoffContract.RequiredArtifacts
+            .Select(artifact => BuildArtifactEntry(root, artifact))
+            .ToArray();
+
+    private static AgentHandoffArtifactEntry BuildArtifactEntry(string root, RequiredHandoffArtifact artifact)
+    {
+        if (artifact.RelativePath is "analysis/agent-handoff/manifest.json" or "analysis/agent-handoff/handoff-readiness.json")
+        {
+            return new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, "", 0, Required: true);
+        }
+
+        var path = Path.Combine(root, artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (artifact.IsDirectory)
+        {
+            return new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, "", Directory.Exists(path) ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Count() : 0, Required: true);
+        }
+
+        return File.Exists(path)
+            ? new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, artifact.HashRequired ? FileHash(path) ?? "" : "", new FileInfo(path).Length, Required: true)
+            : new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, "", 0, Required: true);
+    }
+
+    private static string? ReadReviewBundleHash(string root)
+    {
+        var path = Path.Combine(root, "analysis", "resolved", "review-resolution-manifest.json");
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        using var json = JsonDocument.Parse(File.ReadAllText(path));
+        return json.RootElement.TryGetProperty("decisionBundleHash", out var hash) ? hash.GetString() : null;
+    }
+
+    private static string? FileHash(string root, string relativePath)
+    {
+        var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        return FileHash(path);
+    }
+
+    private static string? FileHash(string path) =>
+        File.Exists(path)
+            ? Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()
+            : null;
 
     private static string WriteTask(
         VisualProject project,
