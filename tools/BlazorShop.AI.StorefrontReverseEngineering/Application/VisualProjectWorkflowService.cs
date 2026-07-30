@@ -1,5 +1,6 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
@@ -294,6 +295,14 @@ public sealed class VisualProjectWorkflowService
     {
         var root = resolver.ResolveRoot(projectRoot);
         return await new ResponsiveInteractionAnalyzer(repoRoot).AnalyzeAsync(root, cancellationToken);
+    }
+
+    public async Task<(ComponentCandidatesDocument Candidates, ComponentInstancesDocument Instances)> DetectComponentCandidatesAsync(
+        string projectRoot,
+        CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new VisualComponentCandidateDetector(repoRoot).DetectAsync(root, cancellationToken);
     }
 
     private async Task ValidateViewportEvidenceReadinessAsync(
@@ -678,11 +687,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new ClassifyPageArchetypesStep());
         steps.Add(new SegmentSectionsStep());
         steps.Add(new AnalyzeResponsiveInteractionsStep());
+        steps.Add(new DetectComponentCandidatesStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates";
 
     private static string WriteMarkdown(ReadinessReport report)
     {

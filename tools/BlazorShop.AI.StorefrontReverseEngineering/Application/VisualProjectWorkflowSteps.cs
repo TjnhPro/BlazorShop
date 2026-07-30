@@ -1,4 +1,5 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
@@ -339,5 +340,24 @@ internal sealed class AnalyzeResponsiveInteractionsStep : IVisualProjectWorkflow
         return results.Any(result => result.Responsive.Issues.Concat(result.Interaction.Issues).Any(issue => issue.Severity == "blocking"))
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-RESPONSIVE-INTERACTION-BLOCKED", "Responsive or interaction analysis returned blocking findings.")
             : WorkflowStepResult.Success(warnings);
+    }
+}
+
+internal sealed class DetectComponentCandidatesStep : IVisualProjectWorkflowStep
+{
+    public string Name => "detect-component-candidates";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/evidence-snapshot.json", "analysis/pages/{pageId}/responsive-behavior.json", "analysis/pages/{pageId}/interaction-model.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/components/component-candidates.json", "analysis/components/component-instances.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var result = await new VisualComponentCandidateDetector(context.RepoRoot)
+            .DetectAsync(context.ArtifactRoot, cancellationToken);
+
+        return result.Candidates.Candidates.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-COMPONENT-CANDIDATES-EMPTY", "Component candidate detection produced no candidates.")
+            : WorkflowStepResult.Success();
     }
 }

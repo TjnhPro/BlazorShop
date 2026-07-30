@@ -616,67 +616,74 @@ Schemas/component-candidates.schema.json
 
 Candidate families MVP:
 
-- [ ] Global shell:
-  - [ ] announcement bar
-  - [ ] header
-  - [ ] navigation
-  - [ ] search trigger
-  - [ ] account trigger
-  - [ ] cart trigger
-  - [ ] footer
-- [ ] Commerce:
-  - [ ] product card
-  - [ ] product grid
-  - [ ] product carousel
-  - [ ] price display
-  - [ ] product badge
-  - [ ] product image
-  - [ ] product gallery
-  - [ ] variant selector visual
-  - [ ] quantity selector visual
-  - [ ] purchase action visual
-  - [ ] rating/review card
-  - [ ] breadcrumb/category card
-  - [ ] filter trigger/panel
-  - [ ] sort selector
-  - [ ] pagination
-  - [ ] cart line visual
-  - [ ] order summary visual
-- [ ] Content:
-  - [ ] hero
-  - [ ] promo banner
-  - [ ] feature list
-  - [ ] media/text split
-  - [ ] newsletter visual
-  - [ ] FAQ item
-  - [ ] testimonial card
+- [x] Global shell:
+  - [x] announcement bar
+  - [x] header
+  - [x] navigation
+  - [x] search trigger
+  - [x] account trigger
+  - [x] cart trigger
+  - [x] footer
+- [x] Commerce:
+  - [x] product card
+  - [x] product grid
+  - [x] product carousel
+  - [x] price display
+  - [x] product badge
+  - [x] product image
+  - [x] product gallery
+  - [x] variant selector visual
+  - [x] quantity selector visual
+  - [x] purchase action visual
+  - [x] rating/review card
+  - [x] breadcrumb/category card
+  - [x] filter trigger/panel
+  - [x] sort selector
+  - [x] pagination
+  - [x] cart line visual
+  - [x] order summary visual
+- [x] Content:
+  - [x] hero
+  - [x] promo banner
+  - [x] feature list
+  - [x] media/text split
+  - [x] newsletter visual
+  - [x] FAQ item
+  - [x] testimonial card
 
 Implementation checklist:
 
-- [ ] Add `VisualComponentCandidateDetector`.
-- [ ] Use DOM subtree similarity.
-- [ ] Use style similarity.
-- [ ] Use box-shape similarity.
-- [ ] Use repetition count.
-- [ ] Use stable slot patterns.
-- [ ] Use shared responsive behavior.
-- [ ] Use shared interaction behavior.
-- [ ] Assign family, variant, and instance IDs.
-- [ ] Detect slots inside component candidates.
-- [ ] Include token references.
-- [ ] Include local overrides.
-- [ ] Include confidence, alternatives, and human review flags.
+- [x] Add `VisualComponentCandidateDetector`.
+- [x] Use DOM subtree similarity.
+- [x] Use style similarity.
+- [x] Use box-shape similarity.
+- [x] Use repetition count.
+- [x] Use stable slot patterns.
+- [x] Use shared responsive behavior.
+- [x] Use shared interaction behavior.
+- [x] Assign family, variant, and instance IDs.
+- [x] Detect slots inside component candidates.
+- [x] Include token references.
+- [x] Include local overrides.
+- [x] Include confidence, alternatives, and human review flags.
 
 Tests:
 
-- [ ] Product cards cluster into one family.
-- [ ] Variants remain in same family when structure is similar.
-- [ ] Distinct unrelated sections are not merged.
-- [ ] Slot detection captures image/title/price/action where evidence exists.
+- [x] Product cards cluster into one family.
+- [x] Variants remain in same family when structure is similar.
+- [x] Distinct unrelated sections are not merged.
+- [x] Slot detection captures image/title/price/action where evidence exists.
 
 Done when:
 
-- [ ] Component candidates are neutral and do not reference Blazor component types yet.
+- [x] Component candidates are neutral and do not reference Blazor component types yet.
+
+Implementation evidence:
+
+- Added `VisualComponentCandidateDetector`, candidate/instance contracts, and schemas for `component-candidates` and `component-instances`.
+- Added workflow step `detect-component-candidates` after responsive/interaction analysis.
+- Detector assigns neutral family/variant/instance IDs, uses selector/category/style/box/repetition heuristics, slot patterns, semantic token refs, local overrides, responsive refs, interaction refs, confidence, alternatives, and human review flags.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Components"` passed `4/4`.
 
 ## Phase 3B.8 - Ecommerce Region Classification
 
@@ -1237,7 +1244,7 @@ Recommended implementation order:
 6. [x] Phase 3B.4 page archetype.
 7. [x] Phase 3B.5 section segmentation.
 8. [x] Phase 3B.6 responsive and interaction model.
-9. [ ] Phase 3B.7 visual component candidates.
+9. [x] Phase 3B.7 visual component candidates.
 10. [ ] Phase 3B.8 ecommerce region classification.
 11. [ ] Phase 3B.9 Presentation component catalog.
 12. [ ] Phase 3B.10 Presentation mapping and unsupported patterns.

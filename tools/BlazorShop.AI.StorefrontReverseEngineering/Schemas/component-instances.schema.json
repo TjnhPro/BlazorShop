@@ -1,0 +1,1 @@
+{"artifactKind":"component-instances","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","instances"],"arrayPaths":["instances"],"nonEmptyStringPaths":["projectId"]}
