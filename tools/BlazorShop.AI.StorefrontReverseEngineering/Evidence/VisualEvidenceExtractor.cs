@@ -74,7 +74,9 @@ public sealed partial class VisualEvidenceExtractor
         var store = new FileSystemVisualArtifactStore(root, resolver, validator);
         var relativeRoot = $"captures/{session.PageId}/{viewportId}";
 
-        var correlationId = captureCorrelationId ?? capture.CaptureCorrelationId;
+        var correlationId = captureCorrelationId
+            ?? capture.CaptureCorrelationId
+            ?? $"capture-{session.ProjectId}-{session.PageId}-{viewportId}-{Guid.NewGuid():N}";
         var index = BuildElementIndex(session, viewportId, capture, runId, options, correlationId);
         var assets = BuildAssetInventory(session, viewportId, capture, runId, correlationId);
 

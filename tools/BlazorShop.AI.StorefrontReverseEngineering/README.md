@@ -66,7 +66,9 @@ Run the Phase 3A hardening gate after changing the tool, schemas, workflow, brow
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
 ```
 
-The gate builds the tool, checks local Playwright Chromium installation, runs fast tests, runs real Playwright fixture tests, executes a no-AI CLI workflow against the local HTML fixture, validates readiness/inspect output, scans production boundaries, scans for prototype fallback markers, and runs StorefrontBuilder compatibility smoke. It uses local fixtures and does not require an external website.
+The gate builds the tool, checks local Playwright Chromium installation, runs final-fix fast tests, runs real Playwright fixture tests, executes a no-AI CLI workflow against the local HTML fixture, validates readiness/inspect output, scans production boundaries, scans active source for prototype fallback markers, and runs StorefrontBuilder compatibility smoke. It writes a commit-linked Markdown report under `obj/storefront-reverse-engineering/reports` and uses local fixtures without requiring an external website.
+
+When GitHub Actions are disabled during development, the local gate report plus `docs/qa/phase3a-final-fix-closure.md` are the tracked Phase 3A closure evidence.
 
 ## Limitations
 

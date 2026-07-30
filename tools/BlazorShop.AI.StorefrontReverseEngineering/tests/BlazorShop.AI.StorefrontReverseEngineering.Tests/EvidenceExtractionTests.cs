@@ -15,6 +15,7 @@ public sealed class EvidenceExtractionTests
         var index = await ExtractAsync(new EvidenceExtractionOptions(MaximumElements: 3));
 
         Assert.True(index.Elements.Count <= 3);
+        Assert.False(string.IsNullOrWhiteSpace(index.CaptureCorrelationId));
     }
 
     [Fact]

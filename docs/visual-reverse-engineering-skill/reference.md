@@ -68,6 +68,8 @@ Run the full Phase 3A hardening gate with:
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
 ```
 
+The gate writes a commit-linked local report under `obj/storefront-reverse-engineering/reports` with status, commit SHA, branch, UTC timestamp, .NET version, Playwright state, OS, executed commands, passed steps, artifact root, workflow run ID, readiness report path, and test summaries. While GitHub Actions are disabled during development, the gate report plus `docs/qa/phase3a-final-fix-closure.md` are the Phase 3A closure evidence.
+
 ## Generated Project Shape
 
 Generated storefront projects use this naming pattern:

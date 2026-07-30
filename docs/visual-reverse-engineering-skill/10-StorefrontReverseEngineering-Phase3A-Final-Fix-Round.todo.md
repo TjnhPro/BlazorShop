@@ -757,46 +757,46 @@ Current files:
 
 Tasks:
 
-- [ ] Update Phase 3A gate to include final fix tests:
-  - [ ] automatic fallback from native screenshot exception
-  - [ ] automatic fallback from blank valid PNG
-  - [ ] no fallback for valid native full-page image
-  - [ ] stitched fallback failure blocks readiness
-  - [ ] readiness rejects empty evidence
-  - [ ] readiness rejects empty style groups
-  - [ ] readiness rejects missing useful boxes
-  - [ ] readiness rejects missing/mismatched correlation
-  - [ ] readiness rejects empty originality restrictions
-  - [ ] inspect reports passed readiness
-  - [ ] inspect reports failed readiness
-  - [ ] custom capture policy is honored
-  - [ ] Node bridge is not selected by factory
-- [ ] Update gate report metadata:
-  - [ ] status
-  - [ ] commit SHA
-  - [ ] branch
-  - [ ] UTC timestamp
-  - [ ] .NET version
-  - [ ] Playwright/Chromium installed state
-  - [ ] OS
-  - [ ] executed commands
-  - [ ] passed steps
-  - [ ] failed step, if any
-  - [ ] artifact project root
-  - [ ] workflow run ID
-  - [ ] readiness report path
-  - [ ] test counts when available
-- [ ] Keep full report under `obj/storefront-reverse-engineering/reports`.
-- [ ] Add committed closure summary when the gate passes:
-  - [ ] recommended file: `docs/qa/phase3a-final-fix-closure.md`
-  - [ ] include commit SHA
-  - [ ] include gate command
-  - [ ] include gate result
-  - [ ] include test count
-  - [ ] include known limitations
-  - [ ] include closure decision
-- [ ] Ensure closure summary does not commit screenshots, generated artifacts, or large `obj` output.
-- [ ] Update docs to make local gate the active closure proof while GitHub Actions are disabled.
+- [x] Update Phase 3A gate to include final fix tests:
+  - [x] automatic fallback from native screenshot exception
+  - [x] automatic fallback from blank valid PNG
+  - [x] no fallback for valid native full-page image
+  - [x] stitched fallback failure blocks readiness
+  - [x] readiness rejects empty evidence
+  - [x] readiness rejects empty style groups
+  - [x] readiness rejects missing useful boxes
+  - [x] readiness rejects missing/mismatched correlation
+  - [x] readiness rejects empty originality restrictions
+  - [x] inspect reports passed readiness
+  - [x] inspect reports failed readiness
+  - [x] custom capture policy is honored
+  - [x] Node bridge is not selected by factory
+- [x] Update gate report metadata:
+  - [x] status
+  - [x] commit SHA
+  - [x] branch
+  - [x] UTC timestamp
+  - [x] .NET version
+  - [x] Playwright/Chromium installed state
+  - [x] OS
+  - [x] executed commands
+  - [x] passed steps
+  - [x] failed step, if any
+  - [x] artifact project root
+  - [x] workflow run ID
+  - [x] readiness report path
+  - [x] test counts when available
+- [x] Keep full report under `obj/storefront-reverse-engineering/reports`.
+- [x] Add committed closure summary when the gate passes:
+  - [x] recommended file: `docs/qa/phase3a-final-fix-closure.md`
+  - [x] include commit SHA
+  - [x] include gate command
+  - [x] include gate result
+  - [x] include test count
+  - [x] include known limitations
+  - [x] include closure decision
+- [x] Ensure closure summary does not commit screenshots, generated artifacts, or large `obj` output.
+- [x] Update docs to make local gate the active closure proof while GitHub Actions are disabled.
 
 Full closure command:
 
@@ -822,18 +822,29 @@ Build
 
 Guardrails:
 
-- [ ] Do not depend on external websites.
-- [ ] Do not require GitHub Actions.
-- [ ] Do not leave fixture servers running.
-- [ ] Do not mutate generated storefront source.
-- [ ] Do not commit `obj` artifacts.
+- [x] Do not depend on external websites.
+- [x] Do not require GitHub Actions.
+- [x] Do not leave fixture servers running.
+- [x] Do not mutate generated storefront source.
+- [x] Do not commit `obj` artifacts.
 
 Exit criteria:
 
-- [ ] Gate passes locally.
-- [ ] Gate report includes commit SHA and run ID.
-- [ ] Closure summary is committed as documentation evidence.
-- [ ] Phase 3A can be marked complete without requiring Phase 3B fixes.
+- [x] Gate passes locally.
+- [x] Gate report includes commit SHA and run ID.
+- [x] Closure summary is committed as documentation evidence.
+- [x] Phase 3A can be marked complete without requiring Phase 3B fixes.
+
+Implementation evidence:
+
+- Rebuilt `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1` around logged gate steps, command capture, dotnet test summary parsing, pass/fail report writing, and metadata capture for status, commit SHA, branch, UTC timestamp, .NET version, Playwright install state, OS, artifact root, run ID, and readiness report path.
+- Expanded final-fix fast test coverage in the gate to include fallback, quality, readiness, inspect/CLI, policy, schema, evidence, boundary, browser factory, and interaction tests; retained a separate real Playwright/EndToEnd step.
+- Gate expansion exposed a direct evidence extraction correlation gap. `VisualEvidenceExtractor` now generates a capture correlation ID when direct `BrowserCaptureResult` extraction does not provide one, keeping artifacts schema-valid outside the full `VisualCaptureService` path.
+- Added `docs/qa/phase3a-final-fix-closure.md` as tracked closure evidence with gate command, result, test count, known limitations, and closure decision.
+- README/reference docs now state that the local gate writes commit-linked reports under `obj/storefront-reverse-engineering/reports` and that the tracked closure summary is the development-phase closure proof while GitHub Actions are disabled.
+- Initial full gate run failed on `Evidence_OutputIsBounded`, proving the expanded gate catches foundation regressions. After the correlation fix, the full closure command passed.
+- Verification: `powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1` passed. Report: `obj/storefront-reverse-engineering/reports/phase3a-final-fix-gate-20260730162223.md`.
+- Gate test counts: final-fix fast tests passed `86/86`; real local Playwright/EndToEnd tests passed `27/27`; CLI workflow/readiness/inspect/boundary/prototype scans and StorefrontBuilder smokes passed.
 
 ## Phase F8 - Documentation Reconciliation And Phase 3B Handoff
 
