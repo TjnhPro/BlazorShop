@@ -463,60 +463,60 @@ Current files:
 
 Tasks:
 
-- [ ] Create `VisualProjectWorkflowContext`.
-- [ ] Context includes:
-  - [ ] project
-  - [ ] configuration
-  - [ ] artifact root
-  - [ ] capture plan
-  - [ ] artifact store
-  - [ ] browser session factory
-  - [ ] analysis provider
-  - [ ] run ID
-  - [ ] current command options
-- [ ] Implement actual workflow steps:
-  - [ ] `InitializeProjectStep`
-  - [ ] `DiscoverReferenceStep`
-  - [ ] `CaptureViewportStep`
-  - [ ] `AnalyzeDraftStep`
-  - [ ] `OriginalityAuditStep`
-  - [ ] `ValidateReadinessStep`
-- [ ] Give every step:
-  - [ ] stable name
-  - [ ] input artifact list
-  - [ ] output artifact list
-  - [ ] completion check
-  - [ ] retryable error mapping
-  - [ ] non-retryable error mapping
-  - [ ] warning collection
-  - [ ] status transition
-- [ ] Change CLI `run` to create a run ID and invoke `SequentialWorkflowRunner`.
-- [ ] Persist real `runs/{runId}.json`.
-- [ ] Add `--resume --run-id <id>`.
-- [ ] Resume should:
-  - [ ] load existing run
-  - [ ] skip succeeded/skipped steps
-  - [ ] retry failed/canceled/pending steps
-  - [ ] keep project status consistent
-- [ ] Add `--force-step <step-name>`.
-- [ ] Force-step should:
-  - [ ] rerun selected step
-  - [ ] invalidate dependent downstream steps or rerun them according to policy
-  - [ ] avoid unrelated artifact overwrite
-- [ ] Update `inspect` to show:
-  - [ ] latest run ID
-  - [ ] run status
-  - [ ] step status
-  - [ ] retry count
-  - [ ] latest failure
-  - [ ] readiness summary
-  - [ ] blueprint path
-- [ ] Add cancellation tests for actual CLI workflow.
+- [x] Create `VisualProjectWorkflowContext`.
+- [x] Context includes:
+  - [x] project
+  - [x] configuration
+  - [x] artifact root
+  - [x] capture plan
+  - [x] artifact store
+  - [x] browser session factory
+  - [x] analysis provider
+  - [x] run ID
+  - [x] current command options
+- [x] Implement actual workflow steps:
+  - [x] `InitializeProjectStep`
+  - [x] `DiscoverReferenceStep`
+  - [x] `CaptureViewportStep`
+  - [x] `AnalyzeDraftStep`
+  - [x] `OriginalityAuditStep`
+  - [x] `ValidateReadinessStep`
+- [x] Give every step:
+  - [x] stable name
+  - [x] input artifact list
+  - [x] output artifact list
+  - [x] completion check
+  - [x] retryable error mapping
+  - [x] non-retryable error mapping
+  - [x] warning collection
+  - [x] status transition
+- [x] Change CLI `run` to create a run ID and invoke `SequentialWorkflowRunner`.
+- [x] Persist real `runs/{runId}.json`.
+- [x] Add `--resume --run-id <id>`.
+- [x] Resume should:
+  - [x] load existing run
+  - [x] skip succeeded/skipped steps
+  - [x] retry failed/canceled/pending steps
+  - [x] keep project status consistent
+- [x] Add `--force-step <step-name>`.
+- [x] Force-step should:
+  - [x] rerun selected step
+  - [x] invalidate dependent downstream steps or rerun them according to policy
+  - [x] avoid unrelated artifact overwrite
+- [x] Update `inspect` to show:
+  - [x] latest run ID
+  - [x] run status
+  - [x] step status
+  - [x] retry count
+  - [x] latest failure
+  - [x] readiness summary
+  - [x] blueprint path
+- [x] Add cancellation tests for actual CLI workflow.
 
 Guardrails:
 
-- [ ] Do not keep project-status-only orchestration as the canonical `run` path.
-- [ ] Do not hide failed step details behind only a final exit code.
+- [x] Do not keep project-status-only orchestration as the canonical `run` path.
+- [x] Do not hide failed step details behind only a final exit code.
 
 Verification:
 
@@ -526,12 +526,19 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Normal CLI `run` creates `runs/{runId}.json`.
-- [ ] Run log includes duration, status, retry count, warnings, and errors.
-- [ ] Resume skips successful steps.
-- [ ] Retry works on actual browser/capture workflow step.
-- [ ] `--force-step` works and has tests.
-- [ ] `inspect` reflects real latest run state.
+- [x] Normal CLI `run` creates `runs/{runId}.json`.
+- [x] Run log includes duration, status, retry count, warnings, and errors.
+- [x] Resume skips successful steps.
+- [x] Retry works on actual browser/capture workflow step.
+- [x] `--force-step` works and has tests.
+- [x] `inspect` reflects real latest run state.
+
+Implementation evidence:
+
+- Added `VisualProjectWorkflowContext` and typed workflow steps for initialize, discovery, per-viewport capture, analysis, originality audit check, and readiness validation.
+- CLI `run`/`resume` now creates or resumes a `runs/{runId}.json` through `SequentialWorkflowRunner`; `--force-step` reruns the selected step and downstream steps.
+- `inspect` now prints latest run status, step statuses, retry counts, and latest failure details from persisted workflow state.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Workflow|Cli|Resume"` passed: 16 tests.
 
 ## Phase H5 - Per-Artifact Schemas And Readiness Gate
 

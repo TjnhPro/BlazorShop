@@ -89,6 +89,33 @@ public sealed class WorkflowRunnerTests
     }
 
     [Fact]
+    public async Task Workflow_ForceStep_RerunsSelectedStepAndDownstreamSteps()
+    {
+        var runId = Guid.NewGuid().ToString("N");
+        var store = CreateStore();
+        var firstCalls = new List<string>();
+        await new SequentialWorkflowRunner<List<string>>(store).RunAsync(
+            "demo",
+            runId,
+            firstCalls,
+            [new RecordingStep("one"), new RecordingStep("two"), new RecordingStep("three")],
+            cancellationToken: CancellationToken.None);
+
+        var secondCalls = new List<string>();
+        var secondRun = await new SequentialWorkflowRunner<List<string>>(store).RunAsync(
+            "demo",
+            runId,
+            secondCalls,
+            [new RecordingStep("one"), new RecordingStep("two"), new RecordingStep("three")],
+            forceStep: "two",
+            cancellationToken: CancellationToken.None);
+
+        Assert.Equal(WorkflowRunStatus.Succeeded, secondRun.Status);
+        Assert.Equal(["two", "three"], secondCalls);
+    }
+
+
+    [Fact]
     public async Task Workflow_Cancellation_IsNotLoggedAsTimeout()
     {
         var source = new CancellationTokenSource();

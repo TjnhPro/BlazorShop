@@ -25,11 +25,17 @@ public sealed class SequentialWorkflowRunner<TContext>
 
         try
         {
+            var forceActive = false;
             foreach (var step in steps)
             {
                 var existing = run.Steps.First(record => record.Name == step.Name);
+                if (!forceActive && string.Equals(forceStep, step.Name, StringComparison.Ordinal))
+                {
+                    forceActive = true;
+                }
+
                 if (existing.Status is WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped &&
-                    !string.Equals(forceStep, step.Name, StringComparison.Ordinal))
+                    !forceActive)
                 {
                     continue;
                 }

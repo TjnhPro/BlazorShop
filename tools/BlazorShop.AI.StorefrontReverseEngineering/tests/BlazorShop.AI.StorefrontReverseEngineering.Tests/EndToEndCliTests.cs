@@ -31,6 +31,37 @@ public sealed class EndToEndCliTests
     }
 
     [Fact]
+    public async Task Inspect_AfterRun_ShowsWorkflowRunState()
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "inspect-run-" + Guid.NewGuid().ToString("N"));
+        var fixtureUrl = new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
+        using var runOut = new StringWriter();
+        using var runErr = new StringWriter();
+
+        var runExit = await CliHost.RunAsync(
+            ["run", "--url", fixtureUrl, "--name", "Inspect Demo", "--output-root", outputRoot, "--no-ai", "--force", "--run-id", "inspect-run"],
+            runOut,
+            runErr,
+            CancellationToken.None);
+
+        using var inspectOut = new StringWriter();
+        using var inspectErr = new StringWriter();
+        var projectRoot = Path.Combine(outputRoot, "inspect-demo");
+        var inspectExit = await CliHost.RunAsync(
+            ["inspect", "--project", projectRoot],
+            inspectOut,
+            inspectErr,
+            CancellationToken.None);
+
+        Assert.Equal(0, runExit);
+        Assert.Equal(0, inspectExit);
+        Assert.True(File.Exists(Path.Combine(repoRoot, projectRoot, "runs", "inspect-run.json")));
+        Assert.Contains("Run status: Succeeded", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("capture-viewport-desktop-1440", inspectOut.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Validate_MissingArtifacts_ReturnsBlockingReport()
     {
         var repoRoot = GetRepoRoot();

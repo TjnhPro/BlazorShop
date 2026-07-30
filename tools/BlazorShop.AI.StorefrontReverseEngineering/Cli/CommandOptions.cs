@@ -36,6 +36,9 @@ public sealed class CommandOptions
 
     public bool HasFlag(string key) => values.ContainsKey(key);
 
+    public string? GetOptional(string key) =>
+        values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;
+
     public string GetRequired(string key, string errorCode)
     {
         if (values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value))

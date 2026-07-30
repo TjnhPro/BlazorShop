@@ -6,6 +6,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Evidence;
 using BlazorShop.AI.StorefrontReverseEngineering.Provenance;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
 using BlazorShop.AI.StorefrontReverseEngineering.Validation;
+using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Application;
 
@@ -146,14 +147,18 @@ public sealed class VisualProjectWorkflowService
         bool force,
         bool resume,
         bool noAi,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? runId = null,
+        string? forceStep = null)
     {
         var projectService = new VisualProjectService(repoRoot);
+        VisualProjectInspection? inspection = null;
         VisualProject project;
         if (resume)
         {
             var projectId = VisualProjectId.Create(name);
-            project = (await projectService.InspectAsync(Path.Combine(outputRoot, projectId.Value), cancellationToken)).Project;
+            inspection = await projectService.InspectAsync(Path.Combine(outputRoot, projectId.Value), cancellationToken);
+            project = inspection.Project;
         }
         else
         {
@@ -161,41 +166,57 @@ public sealed class VisualProjectWorkflowService
         }
 
         var projectRoot = project.ArtifactRoot;
-        var captured = 0;
-        var blueprintArtifactId = "(existing)";
+        var store = CreateStore(projectRoot);
+        var configuration = await store.ReadJsonAsync<VisualProjectConfiguration>(ArtifactPath.Create("configuration.json"), "configuration", cancellationToken);
+        var effectiveRunId = string.IsNullOrWhiteSpace(runId)
+            ? resume && !string.IsNullOrWhiteSpace(inspection?.LatestRunId)
+                ? inspection!.LatestRunId!
+                : DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmssfff", System.Globalization.CultureInfo.InvariantCulture)
+            : runId!;
+        var context = new VisualProjectWorkflowContext(
+            repoRoot,
+            project,
+            projectRoot,
+            effectiveRunId,
+            noAi,
+            store,
+            sourceUrl => ReferenceBrowserFactory.Create(repoRoot, sourceUrl));
+        var steps = CreateWorkflowSteps(configuration.Viewports);
+        var run = await new SequentialWorkflowRunner<VisualProjectWorkflowContext>(store)
+            .RunAsync(project.ProjectId, effectiveRunId, context, steps, forceStep, cancellationToken);
 
-        if (project.Status is VisualProjectStatus.Created or VisualProjectStatus.ValidationFailed or VisualProjectStatus.Failed)
+        var blueprintPath = resolver.ResolveArtifactPath(projectRoot, ArtifactPath.Create("analysis/visual-blueprint.draft.json"));
+        var blueprintArtifactId = File.Exists(blueprintPath)
+            ? $"visual-blueprint-{project.ProjectId}-home"
+            : "(none)";
+        var readinessPath = resolver.ResolveArtifactPath(projectRoot, ArtifactPath.Create("reports/readiness-report.json"));
+        var readinessPassed = false;
+        if (File.Exists(readinessPath))
         {
-            await new VisualDiscoveryService(repoRoot, ReferenceBrowserFactory.Create(repoRoot, project.ReferenceUrl)).DiscoverAsync(projectRoot, cancellationToken);
-            project = (await projectService.InspectAsync(projectRoot, cancellationToken)).Project;
+            var readinessJson = await File.ReadAllTextAsync(readinessPath, cancellationToken);
+            readinessPassed = System.Text.Json.JsonSerializer.Deserialize<ReadinessReport>(readinessJson, VisualJson.Options)?.Passed == true;
         }
 
-        if (project.Status == VisualProjectStatus.Discovered)
-        {
-            captured = await CaptureAsync(projectRoot, cancellationToken);
-            project = (await projectService.InspectAsync(projectRoot, cancellationToken)).Project;
-        }
-
-        if (project.Status == VisualProjectStatus.Captured)
-        {
-            var blueprint = await AnalyzeAsync(projectRoot, noAi, cancellationToken);
-            blueprintArtifactId = blueprint.ArtifactId;
-        }
-        else if (project.Status == VisualProjectStatus.DraftReady)
-        {
-            var blueprintPath = resolver.ResolveArtifactPath(projectRoot, ArtifactPath.Create("analysis/visual-blueprint.draft.json"));
-            if (File.Exists(blueprintPath))
-            {
-                blueprintArtifactId = $"visual-blueprint-{project.ProjectId}-home";
-            }
-        }
-
-        var readiness = await ValidateAsync(projectRoot, cancellationToken);
-        return new RunSummary(project.ProjectId, projectRoot, captured, blueprintArtifactId, readiness.Passed);
+        var captured = run.Steps.Count(step => step.Name.StartsWith("capture-viewport-", StringComparison.Ordinal) && step.Status == WorkflowStepStatus.Succeeded);
+        return new RunSummary(project.ProjectId, projectRoot, captured, blueprintArtifactId, readinessPassed, effectiveRunId, run.Status);
     }
 
     private FileSystemVisualArtifactStore CreateStore(string root) =>
         new(root, resolver, validator);
+
+    private static IReadOnlyList<IWorkflowStep<VisualProjectWorkflowContext>> CreateWorkflowSteps(IReadOnlyList<ViewportDefinition> viewports)
+    {
+        var steps = new List<IWorkflowStep<VisualProjectWorkflowContext>>
+        {
+            new InitializeProjectStep(),
+            new DiscoverReferenceStep()
+        };
+        steps.AddRange(viewports.Select(viewport => new CaptureViewportStep(viewport.Id)));
+        steps.Add(new AnalyzeDraftStep());
+        steps.Add(new OriginalityAuditStep());
+        steps.Add(new ValidateReadinessStep());
+        return steps;
+    }
 
     private static string WriteMarkdown(ReadinessReport report)
     {
@@ -223,4 +244,6 @@ public sealed record RunSummary(
     string ArtifactRoot,
     int CapturedViewports,
     string BlueprintArtifactId,
-    bool ReadinessPassed);
+    bool ReadinessPassed,
+    string? RunId = null,
+    WorkflowRunStatus? RunStatus = null);

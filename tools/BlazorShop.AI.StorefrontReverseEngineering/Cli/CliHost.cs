@@ -1,5 +1,7 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
+using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
+using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Cli;
 
@@ -13,7 +15,8 @@ public static class CliHost
         "analyze",
         "inspect",
         "validate",
-        "run"
+        "run",
+        "resume"
     ];
 
     public static Task<int> RunAsync(
@@ -89,6 +92,11 @@ public static class CliHost
                     output.WriteLine($"Artifact root: {inspection.Project.ArtifactRoot}");
                     output.WriteLine($"Latest run: {inspection.LatestRunId ?? "(none)"}");
                     output.WriteLine($"Validation: {inspection.ValidationSummary}");
+                    if (inspection.LatestRunId is not null)
+                    {
+                        WriteRunInspection(output, inspection.Project.ArtifactRoot, inspection.LatestRunId);
+                    }
+
                     return 0;
                 case "discover":
                     var projectPath = options.GetRequired("project", "SRE-DISCOVER-001");
@@ -119,16 +127,21 @@ public static class CliHost
                     output.WriteLine($"Findings: {report.Findings.Count}");
                     return report.Passed ? 0 : 3;
                 case "run":
+                case "resume":
                     var summary = await new VisualProjectWorkflowService(FindRepositoryRoot()).RunAsync(
                         options.GetRequired("url", "SRE-RUN-001"),
                         options.GetRequired("name", "SRE-RUN-002"),
                         options.GetRequired("output-root", "SRE-RUN-003"),
                         options.HasFlag("force"),
-                        options.HasFlag("resume"),
+                        options.HasFlag("resume") || command == "resume",
                         options.HasFlag("no-ai"),
-                        cancellationToken);
+                        cancellationToken,
+                        options.GetOptional("run-id"),
+                        options.GetOptional("force-step"));
                     output.WriteLine($"Run completed: {summary.ProjectId}");
                     output.WriteLine($"Artifact root: {summary.ArtifactRoot}");
+                    output.WriteLine($"Run ID: {summary.RunId}");
+                    output.WriteLine($"Run status: {summary.RunStatus}");
                     output.WriteLine($"Captured viewports: {summary.CapturedViewports}");
                     output.WriteLine($"Blueprint: {summary.BlueprintArtifactId}");
                     output.WriteLine($"Readiness passed: {summary.ReadinessPassed}");
@@ -154,5 +167,30 @@ public static class CliHost
         }
 
         return directory?.FullName ?? Environment.CurrentDirectory;
+    }
+
+    private static void WriteRunInspection(TextWriter output, string artifactRoot, string runId)
+    {
+        var runPath = Path.Combine(artifactRoot, "runs", runId + ".json");
+        if (!File.Exists(runPath))
+        {
+            output.WriteLine("Run status: (missing run file)");
+            return;
+        }
+
+        var run = System.Text.Json.JsonSerializer.Deserialize<WorkflowRun>(File.ReadAllText(runPath), VisualJson.Options);
+        if (run is null)
+        {
+            output.WriteLine("Run status: (invalid run file)");
+            return;
+        }
+
+        output.WriteLine($"Run status: {run.Status}");
+        output.WriteLine("Steps:");
+        foreach (var step in run.Steps)
+        {
+            var latestFailure = step.Errors.LastOrDefault()?.Message ?? "";
+            output.WriteLine($"  {step.Name}: {step.Status}; retries={step.RetryCount}; failure={latestFailure}");
+        }
     }
 }

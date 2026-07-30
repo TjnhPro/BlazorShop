@@ -52,11 +52,11 @@ public sealed class BrowserCaptureTests
     public void WorkflowCapture_DoesNotNormalizeFromSecondBrowserCapture()
     {
         var repoRoot = GetRepoRoot();
-        var sourcePath = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Application", "VisualProjectWorkflowService.cs");
+        var sourcePath = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Application", "VisualProjectWorkflowSteps.cs");
         var source = File.ReadAllText(sourcePath);
 
         Assert.DoesNotContain("rawCapture = await browser.CaptureAsync", source, StringComparison.Ordinal);
-        Assert.Contains("WriteViewportEvidenceAsync(root, session, viewport.Id, captured", source, StringComparison.Ordinal);
+        Assert.Contains("WriteViewportEvidenceAsync(context.ArtifactRoot, session, viewport.Id, captured", source, StringComparison.Ordinal);
     }
 
     private static async Task<CaptureViewportManifest> CaptureAsync(ViewportDefinition viewport)
