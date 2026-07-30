@@ -1182,38 +1182,38 @@ Goal: keep the tool usable and prevent generated artifacts from becoming hard to
 
 Implementation checklist:
 
-- [ ] Update CLI help.
-- [ ] Add `inspect` output for Phase 3B artifacts:
-  - [ ] evidence snapshot path/status
-  - [ ] token status
-  - [ ] archetype/section status
-  - [ ] mapping status
-  - [ ] review queue count
-  - [ ] readiness status
-  - [ ] latest blocking Phase 3B finding
-- [ ] Add problem/cause/fix messages for common failures:
-  - [ ] missing Phase 3A readiness
-  - [ ] missing evidence snapshot
-  - [ ] invalid token schema
-  - [ ] catalog drift
-  - [ ] unresolved blocking review item
-  - [ ] unsupported critical pattern
-- [ ] Update `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`.
-- [ ] Update `docs/architecture/11-storefront-builder.md` only if artifact contract or boundary changes.
-- [ ] Document that StorefrontBuilder still does not consume blueprint unless a later phase enables it.
+- [x] Update CLI help.
+- [x] Add `inspect` output for Phase 3B artifacts:
+  - [x] evidence snapshot path/status
+  - [x] token status
+  - [x] archetype/section status
+  - [x] mapping status
+  - [x] review queue count
+  - [x] readiness status
+  - [x] latest blocking Phase 3B finding
+- [x] Add problem/cause/fix messages for common failures:
+  - [x] missing Phase 3A readiness
+  - [x] missing evidence snapshot
+  - [x] invalid token schema
+  - [x] catalog drift
+  - [x] unresolved blocking review item
+  - [x] unsupported critical pattern
+- [x] Update `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`.
+- [x] Update `docs/architecture/11-storefront-builder.md` only if artifact contract or boundary changes.
+- [x] Document that StorefrontBuilder still does not consume blueprint unless a later phase enables it.
 
 Tests:
 
-- [ ] `--help` includes new commands/options.
-- [ ] `inspect` works without Playwright.
-- [ ] Invalid Phase 3B project state reports problem/cause/fix.
-- [ ] Docs commands are copy-paste valid.
+- [x] `--help` includes new commands/options.
+- [x] `inspect` works without Playwright.
+- [x] Invalid Phase 3B project state reports problem/cause/fix.
+- [x] Docs commands are copy-paste valid.
 
 Done when:
 
-- [ ] A developer can run, inspect, review, and validate Phase 3B artifacts without guessing file locations.
+- [x] A developer can run, inspect, review, and validate Phase 3B artifacts without guessing file locations.
 
 ## Phase 3B.15 - Release Gate
 
@@ -1296,7 +1296,7 @@ Recommended implementation order:
 12. [x] Phase 3B.10 Presentation mapping and unsupported patterns.
 13. [x] Phase 3B.11 confidence and human review.
 14. [x] Phase 3B.12 Visual Blueprint v1 and generation readiness.
-15. [ ] Phase 3B.14 CLI/docs/DX.
+15. [x] Phase 3B.14 CLI/docs/DX.
 16. [ ] Phase 3B.15 release gate.
 
 ## Suggested Commit Slices

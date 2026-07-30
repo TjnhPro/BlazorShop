@@ -20,11 +20,11 @@
 
 ## ReverseEngineering Handoff
 
-`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. The important handoff artifact for later StorefrontBuilder phases is `analysis/visual-blueprint.draft.json`; Phase 3A defines `pageSpecificationIds`, `componentSpecificationIds`, `evidenceIds`, `generationRestrictions`, and `confidence` as the fields StorefrontBuilder may consume later.
+`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review.
 
-StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
+StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. StorefrontBuilder does not consume `analysis/visual-blueprint.v1.*.json` until a later approved phase changes the handoff boundary. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
 
-Phase 3A is not a visual generator. It does not perform full design-token extraction, ecommerce region mapping, component generation, or blueprint-driven StorefrontBuilder output. Reference assets, logos, copy, and brand-specific visual material are reference-only by default unless later human review and approved workflow clear reuse.
+Phase 3B is not a visual generator. It performs design-token extraction, ecommerce region mapping, confidence review, and blueprint assembly, but it does not produce component source, Razor, CSS, generated projects, or blueprint-driven StorefrontBuilder output. Reference assets, logos, copy, and brand-specific visual material are reference-only by default unless later human review and approved workflow clear reuse.
 
 Phase 3B starts from Phase 3A runtime evidence and should add design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.
 
@@ -55,7 +55,26 @@ Manual artifacts should use `artifacts/storefront-reverse-engineering/projects/{
 
 Readiness is reported in `reports/readiness-report.json`; that JSON file is the source of truth used by `inspect` and gate checks. `reports/readiness-report.md` is only the human-readable companion. A passing readiness report means the current artifacts are schema-valid, quality-aware, linked by capture correlation IDs, tied to workflow run state, and constrained by originality/provenance. It does not mean AI analysis is complete or that a generated storefront can be produced.
 
-`inspect` reads `project.json`, `runs/{runId}.json`, and `reports/readiness-report.json` without launching a browser. Its output includes latest run status, readiness pass/fail/unknown, blocking and warning counts, the latest blocking finding, blueprint path, readiness report path, and step status rows when a valid run file exists.
+Phase 3B step reruns:
+
+```powershell
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project obj/storefront-reverse-engineering/projects/fixturedemo
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step aggregate-evidence
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step assemble-blueprint-v1
+```
+
+`inspect` reads `project.json`, `runs/{runId}.json`, `reports/readiness-report.json`, Phase 3B analysis JSON, review queue JSON, and `reports/generation-readiness.json` without launching a browser. Its output includes latest run status, readiness pass/fail/unknown, blocking and warning counts, the latest blocking finding, blueprint path, readiness report path, Phase 3B artifact status, review queue count, generation readiness, latest Phase 3B blocker, and step status rows when a valid run file exists.
+
+Common Phase 3B failures are reported as problem/cause/fix lines:
+
+| Problem | Typical fix |
+| --- | --- |
+| Missing Phase 3A readiness | Run `validate` or a successful no-AI workflow before Phase 3B steps. |
+| Missing evidence snapshot | Rerun `--force-step aggregate-evidence`. |
+| Invalid token schema | Rerun `--force-step extract-raw-tokens` or `--force-step normalize-semantic-tokens`. |
+| Presentation catalog drift | Update catalog extraction against current Presentation/Starter contracts and rerun `--force-step build-presentation-catalog`. |
+| Unresolved blocking review item | Write `review/review-decisions.json`, then rerun confidence review and blueprint assembly. |
+| Unsupported critical pattern | Resolve the unsupported mapping before generation consumes the blueprint. |
 
 ## ReverseEngineering Browser Setup
 

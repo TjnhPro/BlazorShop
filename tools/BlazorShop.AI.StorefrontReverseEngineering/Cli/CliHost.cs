@@ -1,3 +1,4 @@
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -37,7 +38,7 @@ public static class CliHost
         var command = args[0].Trim().ToLowerInvariant();
         if (!KnownCommands.Contains(command, StringComparer.Ordinal))
         {
-            error.WriteLine($"[SRE-CLI-001] Unknown command '{args[0]}'. Problem: command is not supported. Cause: Phase 3A only exposes known workflow commands. Fix: run with --help and choose a listed command.");
+            error.WriteLine($"[SRE-CLI-001] Unknown command '{args[0]}'. Problem: command is not supported. Cause: Storefront reverse engineering only exposes known workflow commands. Fix: run with --help and choose a listed command.");
             return Task.FromResult(2);
         }
 
@@ -62,6 +63,12 @@ public static class CliHost
         output.WriteLine("  run --url <url> --name <name> --output-root obj/storefront-reverse-engineering/projects --no-ai [--run-id <id>] [--force-step <step>]");
         output.WriteLine("  resume --project obj/storefront-reverse-engineering/projects/<project-id> [--run-id <id>] [--force-step <step>]");
         output.WriteLine("  inspect --project obj/storefront-reverse-engineering/projects/<project-id>");
+        output.WriteLine();
+        output.WriteLine("Phase 3B force-step values:");
+        output.WriteLine("  aggregate-evidence, extract-raw-tokens, normalize-semantic-tokens, classify-page-archetypes");
+        output.WriteLine("  segment-sections, analyze-responsive-interactions, detect-component-candidates");
+        output.WriteLine("  classify-ecommerce-regions, build-presentation-catalog, map-presentation-components");
+        output.WriteLine("  score-confidence-review, assemble-blueprint-v1");
     }
 
     private static async Task<int> RunCommandAsync(
@@ -112,6 +119,7 @@ public static class CliHost
                     }
 
                     WriteRunInspection(output, inspection);
+                    WritePhase3BInspection(output, inspection.Phase3B);
 
                     return 0;
                 case "discover":
@@ -238,4 +246,47 @@ public static class CliHost
             output.WriteLine($"  {step.Name}: {step.Status}; retries={step.RetryCount}; failure={latestFailure}");
         }
     }
+
+    private static void WritePhase3BInspection(TextWriter output, Phase3BInspection phase3B)
+    {
+        output.WriteLine("Phase 3B artifacts:");
+        output.WriteLine($"  Evidence snapshot: {FormatArtifact(phase3B.EvidenceSnapshot)}");
+        output.WriteLine($"  Tokens: raw={phase3B.RawTokens.Status} ({phase3B.RawTokens.RelativePath}); semantic={phase3B.SemanticTokens.Status} ({phase3B.SemanticTokens.RelativePath})");
+        output.WriteLine($"  Archetypes: {FormatGroup(phase3B.Archetypes)}");
+        output.WriteLine($"  Sections: {FormatGroup(phase3B.Sections)}");
+        output.WriteLine($"  Mapping: mappings={phase3B.Mappings.Status} ({phase3B.Mappings.RelativePath}); unsupported={phase3B.UnsupportedPatterns.Status} ({phase3B.UnsupportedPatterns.RelativePath})");
+        output.WriteLine($"  Review queue count: {phase3B.ReviewQueueCount?.ToString() ?? "unknown"} ({phase3B.ReviewQueue.Status}; {phase3B.ReviewQueue.RelativePath})");
+        output.WriteLine($"  Generation readiness: {FormatGenerationReadiness(phase3B)}");
+        output.WriteLine($"  Latest Phase 3B blocking finding: {FormatLatestPhase3BFinding(phase3B.LatestBlockingFinding)}");
+
+        foreach (var problem in phase3B.Problems)
+        {
+            output.WriteLine($"Phase 3B problem: {problem.Problem}");
+            output.WriteLine($"Cause: {problem.Cause}");
+            output.WriteLine($"Fix: {problem.Fix}");
+        }
+    }
+
+    private static string FormatArtifact(Phase3BArtifactInspection artifact) =>
+        $"{artifact.Status} - {artifact.RelativePath}";
+
+    private static string FormatGroup(Phase3BGroupInspection group) =>
+        group.Expected == 0
+            ? "missing - no page artifacts found"
+            : $"present={group.Present}/{group.Expected}; missing={group.Missing}; invalid={group.Invalid}";
+
+    private static string FormatGenerationReadiness(Phase3BInspection phase3B)
+    {
+        if (phase3B.GenerationReadiness.Status != "present")
+        {
+            return $"{phase3B.GenerationReadiness.Status} - {phase3B.GenerationReadiness.RelativePath}";
+        }
+
+        return $"{FormatNullableBool(phase3B.GenerationReadinessPassed)} - {phase3B.GenerationReadiness.RelativePath}";
+    }
+
+    private static string FormatLatestPhase3BFinding(GenerationReadinessFinding? finding) =>
+        finding is null
+            ? "(none)"
+            : $"{finding.Code} - {finding.Message}" + (finding.ArtifactPath is null ? "" : $" ({finding.ArtifactPath})");
 }

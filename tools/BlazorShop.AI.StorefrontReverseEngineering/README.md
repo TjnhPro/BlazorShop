@@ -1,8 +1,8 @@
 # BlazorShop.AI.StorefrontReverseEngineering
 
-Development-time executable for Phase 3A visual evidence capture and neutral blueprint drafting.
+Development-time executable for Phase 3A visual evidence capture, Phase 3B visual analysis mapping, and neutral blueprint drafting.
 
-This tool is independent from StorefrontBuilder generation. StorefrontReverseEngineering records rendered reference evidence, workflow state, validation reports, originality notes, and neutral `visual-blueprint.draft.json` files. StorefrontBuilder remains the generator/regenerator for Blazor storefront projects and does not consume ReverseEngineering artifacts in Phase 3A.
+This tool is independent from StorefrontBuilder generation. StorefrontReverseEngineering records rendered reference evidence, workflow state, validation reports, originality notes, Phase 3B analysis artifacts, and neutral blueprint files. StorefrontBuilder remains the generator/regenerator for Blazor storefront projects and does not consume ReverseEngineering artifacts or `analysis/visual-blueprint.v1.*.json` unless a later approved phase enables that handoff.
 
 Reverse-engineering project state is written under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` for manual work or `obj/storefront-reverse-engineering/projects/{ProjectId}` for automated tests. Generated storefronts continue to live under `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}`.
 
@@ -19,7 +19,7 @@ Primary commands:
 - `capture --project <path>` captures configured page and viewport evidence.
 - `analyze --project <path> [--no-ai]` writes rule-based draft topology, specifications, blueprint, and originality artifacts.
 - `validate --project <path>` validates schemas, capture quality, references, workflow state, blueprint links, and originality restrictions.
-- `inspect --project <path>` prints project status, latest run status, readiness pass/fail state, blocking/warning counts, latest blocker, blueprint path, readiness report path, and workflow steps.
+- `inspect --project <path>` prints project status, latest run status, Phase 3A readiness, Phase 3B artifact status, review queue count, generation readiness, latest blockers, blueprint paths, report paths, and workflow steps.
 - `run --url <url> --name <name> [--output-root <path>] [--no-ai] [--force] [--run-id <id>]` executes the full sequential workflow.
 - `resume --project <path> [--run-id <id>] [--force-step <step>]` resumes or reruns a workflow step plus downstream steps.
 
@@ -58,6 +58,25 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 `inspect` does not require Playwright. It reads `project.json`, `runs/{runId}.json`, and `reports/readiness-report.json`; missing or invalid run/readiness files are shown explicitly as `missing`, `invalid`, or `unknown` instead of being hidden behind generic validation text.
 
+## Phase 3B Analysis
+
+Phase 3B starts after Phase 3A readiness passes. It aggregates capture evidence, extracts raw tokens, normalizes semantic tokens, classifies page archetypes, segments sections, compares responsive behavior, detects component candidates, classifies ecommerce regions, builds the Presentation component catalog, maps detected components to Presentation support, scores confidence, writes review artifacts, and assembles `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json`.
+
+Use `inspect` before opening folders:
+
+```powershell
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project obj/storefront-reverse-engineering/projects/fixturedemo
+```
+
+Rerun a Phase 3B step and downstream steps with:
+
+```powershell
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step aggregate-evidence
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step assemble-blueprint-v1
+```
+
+`inspect` reports problem/cause/fix lines for missing Phase 3A readiness, missing evidence snapshots, invalid token schemas, Presentation catalog drift, unresolved blocking review items, and unsupported critical patterns. StorefrontBuilder does not consume Phase 3B blueprint output yet; generation remains on the existing StorefrontBuilder artifact path until a later phase changes that boundary.
+
 ## Final Capture Flow
 
 For each configured viewport, Phase 3A opens one browser session, navigates, stabilizes the page, extracts rendered DOM/style/box/asset evidence, and only then attempts a native full-page screenshot. If native screenshot capture throws or produces unusable output, the same session can fall back to stitched viewport segments. The final capture snapshot records one capture correlation ID shared by raw capture, quality report, viewport manifest, element evidence, asset evidence, and page capture manifest.
@@ -68,7 +87,7 @@ For each configured viewport, Phase 3A opens one browser session, navigates, sta
 
 Readiness validates required file existence, schemas, screenshot/image quality, evidence depth, useful boxes/styles, capture correlation, originality restrictions, and latest workflow run state. `reports/readiness-report.json` is the source of truth; `validate` returns a non-zero exit code when blocking findings exist.
 
-`inspect` is the quickest developer handoff command. Use it to see project status, latest run ID/status, readiness pass/fail/unknown, blocking/warning counts, latest blocker, blueprint path, readiness report path, and workflow step rows before opening artifact folders.
+`inspect` is the quickest developer handoff command. Use it to see project status, latest run ID/status, readiness pass/fail/unknown, blocking/warning counts, latest blocker, blueprint path, readiness report path, Phase 3B artifact status, review queue count, generation readiness, and workflow step rows before opening artifact folders.
 
 ## Capture Policy
 
@@ -88,13 +107,13 @@ When GitHub Actions are disabled during development, the local gate report plus 
 
 ## Limitations
 
-Phase 3A does not generate Razor, CSS, or StorefrontBuilder output. It does not perform full design token extraction, ecommerce mapping, component generation, or StorefrontBuilder blueprint consumption. It does not crawl a full site, bypass authentication, execute checkout/account/payment flows, or declare reference assets safe to reuse. External AI providers are optional and no provider is required for the rule-based blueprint draft.
+Phase 3B does not generate Razor, CSS, or StorefrontBuilder output. It does not crawl a full site, bypass authentication, execute checkout/account/payment flows, or declare reference assets safe to reuse. External AI providers are optional and no provider is required for the rule-based blueprint draft.
 
 Originality and provenance checks are conservative. Captured media, logos, copy, and brand-specific visual material are reference-only by default until a human or later approved workflow clears reuse.
 
 ## Phase 3B Handoff
 
-Phase 3B should start from stable Phase 3A runtime evidence, not from patched prototype behavior. Deferred work includes design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review workflow, and approved StorefrontBuilder consumption of `analysis/visual-blueprint.draft.json`.
+Phase 3B starts from stable Phase 3A runtime evidence, not from patched prototype behavior. It writes analysis artifacts and Visual Blueprint v1, but approved StorefrontBuilder consumption of those artifacts remains deferred.
 
 ## Browser Setup
 
