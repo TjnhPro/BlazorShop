@@ -85,6 +85,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
 
             var steps = new List<string> { "wait-dom-ready" };
             var warnings = new List<string>();
+            var hiddenNoiseSelectors = new List<string>();
 
             try
             {
@@ -108,7 +109,35 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
                 "() => Promise.all(Array.from(document.images).slice(0, 80).map(img => img.complete ? true : new Promise(resolve => { img.addEventListener('load', resolve, { once: true }); img.addEventListener('error', resolve, { once: true }); setTimeout(resolve, 2500); })))");
             steps.Add("wait-important-images");
 
-            return new PageStabilizationReport(steps, [], warnings);
+            await page.AddStyleTagAsync(new PageAddStyleTagOptions
+            {
+                Content = "*,*::before,*::after{animation-duration:0.001s!important;animation-delay:0s!important;transition-duration:0.001s!important;scroll-behavior:auto!important}"
+            });
+            steps.Add("inject-reduced-motion-capture-style");
+
+            if (!policy.StrictWarnings)
+            {
+                hiddenNoiseSelectors.Add(".cookie-banner");
+                hiddenNoiseSelectors.Add("[data-capture-noise]");
+                await page.EvaluateAsync(
+                    "selectors => selectors.forEach(selector => document.querySelectorAll(selector).forEach(element => { element.setAttribute('data-sre-hidden-noise', 'true'); element.style.setProperty('display', 'none', 'important'); }))",
+                    hiddenNoiseSelectors);
+                steps.Add("hide-configured-noise-selectors");
+            }
+
+            var metrics = await GetMetricsAsync(cancellationToken);
+            var stepHeight = Math.Max(1, viewport.Height);
+            for (var y = 0; y < metrics.DocumentHeight; y += stepHeight)
+            {
+                await page.EvaluateAsync("y => window.scrollTo(0, y)", y);
+                await page.WaitForTimeoutAsync(100);
+            }
+
+            await page.EvaluateAsync("() => window.scrollTo(0, 0)");
+            await page.WaitForTimeoutAsync(150);
+            steps.Add("warm-scroll-down-up");
+
+            return new PageStabilizationReport(steps, hiddenNoiseSelectors, warnings);
         }
 
         public async Task<BrowserCaptureResult> CaptureCurrentStateAsync(CancellationToken cancellationToken)
@@ -158,7 +187,35 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
                 return new BrowserActionResult(true, []);
             }
 
+            if (string.Equals(action.Type, "scroll-to-y", StringComparison.OrdinalIgnoreCase))
+            {
+                await page.EvaluateAsync("y => window.scrollTo(0, y)", action.ScrollY ?? 0);
+                await page.WaitForTimeoutAsync(action.DelayMilliseconds ?? 100);
+                return new BrowserActionResult(true, []);
+            }
+
             return new BrowserActionResult(false, [$"Unsupported browser action '{action.Type}' for this phase."]);
+        }
+
+        public Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureNavigated();
+            return page.ScreenshotAsync(new PageScreenshotOptions
+            {
+                FullPage = false,
+                Type = ScreenshotType.Png
+            });
+        }
+
+        public async Task<BrowserDocumentMetrics> GetMetricsAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureNavigated();
+            var metrics = await page.EvaluateAsync<RenderedDocumentMetrics>(
+                "() => ({ DocumentWidth: Math.ceil(Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0, window.innerWidth)), DocumentHeight: Math.ceil(Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0, window.innerHeight)), ViewportWidth: window.innerWidth, ViewportHeight: window.innerHeight })");
+
+            return new BrowserDocumentMetrics(metrics.DocumentWidth, metrics.DocumentHeight, metrics.ViewportWidth, metrics.ViewportHeight);
         }
 
         public async ValueTask DisposeAsync()
@@ -192,6 +249,17 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
         public List<RenderedAssetSample> Assets { get; set; } = [];
 
         public List<string> Warnings { get; set; } = [];
+    }
+
+    private sealed class RenderedDocumentMetrics
+    {
+        public int DocumentWidth { get; set; }
+
+        public int DocumentHeight { get; set; }
+
+        public int ViewportWidth { get; set; }
+
+        public int ViewportHeight { get; set; }
     }
 
     private sealed class RenderedStyleSample

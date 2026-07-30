@@ -27,13 +27,13 @@ public sealed class VisualCaptureService
         CancellationToken cancellationToken)
     {
         var root = resolver.ResolveRoot(projectRoot);
-        var stableResult = await new StableFullPageCaptureService(browser)
-            .CaptureAsync(session, viewport, policy, forceStitchedFallback: false, cancellationToken);
-        var result = stableResult.Capture;
         var viewportRoot = Path.Combine(root, "captures", session.PageId, viewport.Id);
         Directory.CreateDirectory(viewportRoot);
-
         var relativeRoot = $"captures/{session.PageId}/{viewport.Id}";
+        var stableResult = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(session, viewport, policy, forceStitchedFallback: false, cancellationToken, viewportRoot, relativeRoot);
+        var result = stableResult.Capture;
+
         await File.WriteAllBytesAsync(Path.Combine(viewportRoot, "full-page.png"), result.ScreenshotPng, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(viewportRoot, "dom.html"), result.DomHtml, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(viewportRoot, "styles.json"), Serialize(result.Styles), cancellationToken);

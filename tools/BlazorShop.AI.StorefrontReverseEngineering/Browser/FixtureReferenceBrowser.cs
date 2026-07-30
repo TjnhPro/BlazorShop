@@ -1,21 +1,12 @@
 using System.Text.RegularExpressions;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
+using ImageMagick;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 
 public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
 {
-    private static readonly byte[] OnePixelPng =
-    [
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-        0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-        0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xDE, 0x00, 0x00, 0x00,
-        0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00,
-        0x00, 0x03, 0x01, 0x01, 0x00, 0x18, 0xDD, 0x8D, 0xB0, 0x00, 0x00, 0x00,
-        0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
-    ];
-
     public async Task<BrowserCaptureResult> CaptureAsync(
         BrowserPageSession session,
         ViewportDefinition viewport,
@@ -44,11 +35,20 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
             viewport.Width,
             documentHeight,
             html,
-            OnePixelPng,
+            CreateFixturePng(viewport.Width, documentHeight),
             BuildStyleSamples(),
             BuildBoxes(viewport),
             ExtractAssets(html),
             warnings);
+    }
+
+    public Task<IReferenceBrowserSession> OpenSessionAsync(
+        BrowserPageSession session,
+        ViewportDefinition viewport,
+        CapturePolicy policy,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IReferenceBrowserSession>(new FixtureReferenceBrowserSession(this, session, viewport, policy));
     }
 
     private static IReadOnlyList<ComputedStyleSample> BuildStyleSamples() =>
@@ -72,6 +72,64 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         return ImageRegex().Matches(html)
             .Select(match => new AssetInventoryItem(match.Groups["src"].Value, "image", null, null, "img", true))
             .ToArray();
+    }
+
+    private static byte[] CreateFixturePng(int width, int height)
+    {
+        using var image = new MagickImage(new MagickColor("#f5f7f9"), (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+        image.Format = MagickFormat.Png;
+        return image.ToByteArray();
+    }
+
+    private sealed class FixtureReferenceBrowserSession : IReferenceBrowserSession
+    {
+        private readonly FixtureReferenceBrowser browser;
+        private readonly BrowserPageSession session;
+        private readonly ViewportDefinition viewport;
+        private readonly CapturePolicy policy;
+        private BrowserCaptureResult? capture;
+
+        public FixtureReferenceBrowserSession(
+            FixtureReferenceBrowser browser,
+            BrowserPageSession session,
+            ViewportDefinition viewport,
+            CapturePolicy policy)
+        {
+            this.browser = browser;
+            this.session = session;
+            this.viewport = viewport;
+            this.policy = policy;
+            SessionId = $"fixture-{Guid.NewGuid():N}";
+        }
+
+        public string SessionId { get; }
+
+        public Task NavigateAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task<PageStabilizationReport> StabilizeAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(new PageStabilizationReport(
+                ["wait-dom-ready", "wait-network-idle-with-fallback", "wait-fonts-when-available", "wait-important-images", "hide-configured-noise-selectors", "warm-scroll-down-up"],
+                policy.StrictWarnings ? [] : [".cookie-banner", "[data-capture-noise]"]));
+
+        public async Task<BrowserCaptureResult> CaptureCurrentStateAsync(CancellationToken cancellationToken)
+        {
+            capture ??= await browser.CaptureAsync(session, viewport, policy, cancellationToken);
+            return capture;
+        }
+
+        public Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(CreateFixturePng(viewport.Width, viewport.Height));
+
+        public async Task<BrowserDocumentMetrics> GetMetricsAsync(CancellationToken cancellationToken)
+        {
+            var current = await CaptureCurrentStateAsync(cancellationToken);
+            return new BrowserDocumentMetrics(current.DocumentWidth, current.DocumentHeight, current.ViewportWidth, current.ViewportHeight);
+        }
+
+        public Task<BrowserActionResult> ExecuteAsync(BrowserSessionAction action, CancellationToken cancellationToken) =>
+            Task.FromResult(new BrowserActionResult(true, []));
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
     [GeneratedRegex("<img[^>]+src=[\"'](?<src>[^\"']+)[\"']", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

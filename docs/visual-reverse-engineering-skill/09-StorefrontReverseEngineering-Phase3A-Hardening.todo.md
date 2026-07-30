@@ -296,63 +296,63 @@ Current files:
 
 Tasks:
 
-- [ ] Move stabilization onto `IReferenceBrowserSession`.
-- [ ] Implement real stabilization steps:
-  - [ ] wait `DOMContentLoaded`
-  - [ ] wait network idle with fallback
-  - [ ] wait `document.fonts.ready` when available
-  - [ ] wait important images where `complete && naturalWidth > 0`
-  - [ ] inject reduced-motion capture style when policy allows
-  - [ ] pause or neutralize known carousel/time-driven noise when configured
-  - [ ] hide configured noise selectors
-  - [ ] warm scroll from top to bottom
-  - [ ] settled delay at each scroll step
-  - [ ] return to top
-  - [ ] write actual hidden noise selectors and warnings
-- [ ] Add native full-page quality evaluator:
-  - [ ] PNG decodes
-  - [ ] expected width/height
-  - [ ] not empty
-  - [ ] not near single-color blank
-  - [ ] document height matches manifest
-  - [ ] lower-page content is present when expected
-- [ ] Add real viewport segment capture:
-  - [ ] calculate scroll positions
-  - [ ] overlap segments
-  - [ ] scroll and settle per segment
-  - [ ] capture viewport screenshot per segment
-  - [ ] write `viewport-segments/*.png`
-  - [ ] write segment metadata: id, y, crop, effective height
-  - [ ] enforce max segment count
-- [ ] Add cross-platform image stitching:
-  - [ ] choose approved .NET image package
-  - [ ] crop overlap
-  - [ ] compose final `full-page.png`
-  - [ ] write `stitch-manifest.json`
-  - [ ] mark `CaptureMethod = stitched` only when stitched output exists
-- [ ] Preserve or cleanup segments based on policy.
-- [ ] Update `CaptureQualityReport`:
-  - [ ] native attempt result
-  - [ ] fallback reason
-  - [ ] segment count
-  - [ ] final dimensions
-  - [ ] final method
-  - [ ] blocking findings
-  - [ ] warnings
-- [ ] Add tests for:
-  - [ ] warm scroll reveals lazy content
-  - [ ] noise banner hidden by policy
-  - [ ] forced stitched fallback creates segment files
-  - [ ] stitched image dimensions reflect segment composition
-  - [ ] failed native capture triggers fallback
-  - [ ] final failed capture blocks readiness
+- [x] Move stabilization onto `IReferenceBrowserSession`.
+- [x] Implement real stabilization steps:
+  - [x] wait `DOMContentLoaded`
+  - [x] wait network idle with fallback
+  - [x] wait `document.fonts.ready` when available
+  - [x] wait important images where `complete && naturalWidth > 0`
+  - [x] inject reduced-motion capture style when policy allows
+  - [x] pause or neutralize known carousel/time-driven noise when configured
+  - [x] hide configured noise selectors
+  - [x] warm scroll from top to bottom
+  - [x] settled delay at each scroll step
+  - [x] return to top
+  - [x] write actual hidden noise selectors and warnings
+- [x] Add native full-page quality evaluator:
+  - [x] PNG decodes
+  - [x] expected width/height
+  - [x] not empty
+  - [x] not near single-color blank
+  - [x] document height matches manifest
+  - [x] lower-page content is present when expected
+- [x] Add real viewport segment capture:
+  - [x] calculate scroll positions
+  - [x] overlap segments
+  - [x] scroll and settle per segment
+  - [x] capture viewport screenshot per segment
+  - [x] write `viewport-segments/*.png`
+  - [x] write segment metadata: id, y, crop, effective height
+  - [x] enforce max segment count
+- [x] Add cross-platform image stitching:
+  - [x] choose approved .NET image package
+  - [x] crop overlap
+  - [x] compose final `full-page.png`
+  - [x] write `stitch-manifest.json`
+  - [x] mark `CaptureMethod = stitched` only when stitched output exists
+- [x] Preserve or cleanup segments based on policy.
+- [x] Update `CaptureQualityReport`:
+  - [x] native attempt result
+  - [x] fallback reason
+  - [x] segment count
+  - [x] final dimensions
+  - [x] final method
+  - [x] blocking findings
+  - [x] warnings
+- [x] Add tests for:
+  - [x] warm scroll reveals lazy content
+  - [x] noise banner hidden by policy
+  - [x] forced stitched fallback creates segment files
+  - [x] stitched image dimensions reflect segment composition
+  - [x] failed native capture triggers fallback
+  - [x] final failed capture blocks readiness
 
 Guardrails:
 
-- [ ] Do not rely solely on native Playwright full-page screenshot.
-- [ ] Do not use OS-specific tools such as `sips`.
-- [ ] Do not require FFmpeg.
-- [ ] Do not mark metadata as stitched without real image output.
+- [x] Do not rely solely on native Playwright full-page screenshot.
+- [x] Do not use OS-specific tools such as `sips`.
+- [x] Do not require FFmpeg.
+- [x] Do not mark metadata as stitched without real image output.
 
 Verification:
 
@@ -362,12 +362,19 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Lazy-loaded fixture appears after real warm scroll.
-- [ ] Noise selectors are actually hidden when policy allows.
-- [ ] Forced fallback creates real segment images.
-- [ ] Stitched output is a real composed image.
-- [ ] Native quality failure triggers fallback.
-- [ ] Readiness fails if both native and stitched capture fail.
+- [x] Lazy-loaded fixture appears after real warm scroll.
+- [x] Noise selectors are actually hidden when policy allows.
+- [x] Forced fallback creates real segment images.
+- [x] Stitched output is a real composed image.
+- [x] Native quality failure triggers fallback.
+- [x] Readiness fails if both native and stitched capture fail.
+
+Implementation evidence:
+
+- Stabilization now runs through `IReferenceBrowserSession` and the Playwright adapter performs DOM/network/font/image waits, reduced-motion style injection, noise hiding, warm scroll, settle delays, and return-to-top.
+- Forced fallback now scrolls the same browser session, captures viewport PNG segments, writes `viewport-segments/*.png`, composes a real stitched PNG, and writes `stitch-manifest.json`.
+- Magick.NET-Q8-AnyCPU was selected for cross-platform PNG load/crop/composite/write after ImageSharp 4.0 failed local build without a Six Labors license key.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "StableCapture|Stitch|Quality"` passed: 3 tests.
 
 ## Phase H3 - Single-Snapshot Capture Consistency
 

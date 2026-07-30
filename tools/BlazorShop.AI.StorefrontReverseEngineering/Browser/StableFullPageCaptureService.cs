@@ -1,10 +1,15 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
+using ImageMagick;
+using Microsoft.Playwright;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 
 public sealed class StableFullPageCaptureService
 {
+    private const int SegmentOverlapPixels = 80;
+    private const int MaximumSegmentCount = 50;
+
     private readonly IReferenceBrowser browser;
 
     public StableFullPageCaptureService(IReferenceBrowser browser)
@@ -17,24 +22,73 @@ public sealed class StableFullPageCaptureService
         ViewportDefinition viewport,
         CapturePolicy policy,
         bool forceStitchedFallback,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? viewportArtifactRoot = null,
+        string? relativeViewportRoot = null)
     {
-        var stabilization = Stabilize(policy);
-        BrowserCaptureResult capture;
+        await using var browserSession = await browser.OpenSessionAsync(session, viewport, policy, cancellationToken);
+        BrowserCaptureResult? nativeCapture = null;
+        PageStabilizationReport stabilization;
+        CaptureQualityReport nativeQuality;
         IReadOnlyList<ScreenshotSegment> segments = [];
 
         try
         {
-            capture = await browser.CaptureAsync(session, viewport, policy, cancellationToken);
-            if (forceStitchedFallback)
+            await browserSession.NavigateAsync(cancellationToken);
+            stabilization = await browserSession.StabilizeAsync(cancellationToken);
+            nativeCapture = await browserSession.CaptureCurrentStateAsync(cancellationToken);
+            nativeQuality = EvaluateQuality(session, viewport, nativeCapture, stabilization, nativeAttemptPassed: null, null, 0, []);
+
+            if (forceStitchedFallback || !nativeQuality.Passed)
             {
-                segments = BuildSegments(capture, policy);
-                capture = capture with { CaptureMethod = "stitched" };
+                var fallbackReason = forceStitchedFallback
+                    ? "forced-stitch-proof"
+                    : string.Join("; ", nativeQuality.Findings.Where(finding => finding.Severity == "blocking").Select(finding => finding.Code));
+
+                var stitch = await CaptureStitchedAsync(browserSession, session, viewport, policy, viewportArtifactRoot, relativeViewportRoot, cancellationToken);
+                segments = stitch.Segments;
+                var stitchedCapture = nativeCapture with
+                {
+                    CaptureMethod = "stitched",
+                    ScreenshotPng = stitch.Png,
+                    DocumentWidth = stitch.Width,
+                    DocumentHeight = stitch.Height,
+                    Warnings = nativeCapture.Warnings.Concat(stitch.Warnings).ToArray()
+                };
+                var finalQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, nativeQuality.Passed, fallbackReason, segments.Count, stitch.Warnings);
+                return new StableCaptureResult(stitchedCapture, stabilization, finalQuality, segments);
             }
+
+            return new StableCaptureResult(nativeCapture, stabilization, nativeQuality, segments);
         }
-        catch (Exception exception) when (exception is InvalidOperationException or TimeoutException)
+        catch (Exception exception) when (exception is InvalidOperationException or TimeoutException or PlaywrightException)
         {
-            capture = new BrowserCaptureResult(
+            stabilization = new PageStabilizationReport(["capture-failed"], [], [exception.Message]);
+
+            if (nativeCapture is not null)
+            {
+                try
+                {
+                    var stitch = await CaptureStitchedAsync(browserSession, session, viewport, policy, viewportArtifactRoot, relativeViewportRoot, cancellationToken);
+                    segments = stitch.Segments;
+                    var stitchedCapture = nativeCapture with
+                    {
+                        CaptureMethod = "stitched",
+                        ScreenshotPng = stitch.Png,
+                        DocumentWidth = stitch.Width,
+                        DocumentHeight = stitch.Height,
+                        Warnings = nativeCapture.Warnings.Concat([exception.Message]).Concat(stitch.Warnings).ToArray()
+                    };
+                    var recoveredQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, false, exception.Message, segments.Count, stitch.Warnings);
+                    return new StableCaptureResult(stitchedCapture, stabilization, recoveredQuality, segments);
+                }
+                catch (Exception stitchException) when (stitchException is InvalidOperationException or TimeoutException or PlaywrightException)
+                {
+                    exception = stitchException;
+                }
+            }
+
+            var failedCapture = new BrowserCaptureResult(
                 "failed",
                 "failed",
                 viewport.Width,
@@ -47,64 +101,165 @@ public sealed class StableFullPageCaptureService
                 [],
                 [],
                 [exception.Message]);
-        }
 
-        var quality = EvaluateQuality(session, viewport, capture, stabilization);
-        return new StableCaptureResult(capture, stabilization, quality, segments);
+            var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, false, exception.Message, 0, [exception.Message]);
+            return new StableCaptureResult(failedCapture, stabilization, failedQuality, segments);
+        }
     }
 
-    private static PageStabilizationReport Stabilize(CapturePolicy policy)
+    private static async Task<StitchCaptureOutput> CaptureStitchedAsync(
+        IReferenceBrowserSession browserSession,
+        BrowserPageSession session,
+        ViewportDefinition viewport,
+        CapturePolicy policy,
+        string? viewportArtifactRoot,
+        string? relativeViewportRoot,
+        CancellationToken cancellationToken)
     {
-        var steps = new List<string>
+        var metrics = await browserSession.GetMetricsAsync(cancellationToken);
+        if (metrics.DocumentHeight <= 0)
         {
-            "wait-dom-ready",
-            "wait-network-idle-with-fallback",
-            "wait-fonts-when-available",
-            "warm-scroll-down-up"
-        };
-
-        var hiddenNoiseSelectors = new List<string>();
-        if (!policy.StrictWarnings)
-        {
-            steps.Add("hide-configured-noise-selectors");
-            hiddenNoiseSelectors.Add(".cookie-banner");
-            hiddenNoiseSelectors.Add("[data-capture-noise]");
+            throw new InvalidOperationException("[SRE-STITCH-001] Cannot stitch page with empty document height. Problem: browser returned zero document height. Cause: page capture did not render usable content. Fix: inspect browser navigation errors and fixture markup.");
         }
 
-        return new PageStabilizationReport(steps, hiddenNoiseSelectors);
-    }
-
-    private static IReadOnlyList<ScreenshotSegment> BuildSegments(BrowserCaptureResult capture, CapturePolicy policy)
-    {
-        var segments = new List<ScreenshotSegment>();
-        var viewportHeight = Math.Max(1, capture.ViewportHeight);
-        for (var y = 0; y < Math.Max(capture.DocumentHeight, viewportHeight); y += viewportHeight)
+        if (metrics.DocumentHeight > policy.MaximumPageHeight)
         {
-            segments.Add(new ScreenshotSegment($"segment-{segments.Count + 1:000}", y, Math.Min(viewportHeight, Math.Max(1, capture.DocumentHeight - y)), null));
-            if (!policy.PreserveViewportSegments && segments.Count >= 3)
+            throw new InvalidOperationException($"[SRE-STITCH-002] Cannot stitch page beyond capture policy height. Problem: document height is {metrics.DocumentHeight}px. Cause: policy maximum is {policy.MaximumPageHeight}px. Fix: increase maximum height after review or reduce capture scope.");
+        }
+
+        var step = Math.Max(1, viewport.Height - SegmentOverlapPixels);
+        var positions = new List<int>();
+        for (var y = 0; y < metrics.DocumentHeight; y += step)
+        {
+            positions.Add(Math.Min(y, Math.Max(0, metrics.DocumentHeight - viewport.Height)));
+            if (positions.Count > MaximumSegmentCount)
+            {
+                throw new InvalidOperationException($"[SRE-STITCH-003] Stitched capture exceeded segment limit. Problem: more than {MaximumSegmentCount} viewport segments are required. Cause: page is too tall for deterministic local capture. Fix: reduce page scope or increase the reviewed policy limit.");
+            }
+
+            if (positions[^1] + viewport.Height >= metrics.DocumentHeight)
             {
                 break;
             }
         }
 
-        return segments;
+        positions = positions.Distinct().Order().ToList();
+        var segmentRoot = viewportArtifactRoot is null ? null : Path.Combine(viewportArtifactRoot, "viewport-segments");
+        if (segmentRoot is not null)
+        {
+            Directory.CreateDirectory(segmentRoot);
+        }
+
+        var loadedSegments = new List<(ScreenshotSegment Metadata, byte[] Png)>();
+        for (var index = 0; index < positions.Count; index++)
+        {
+            var y = positions[index];
+            await browserSession.ExecuteAsync(new BrowserSessionAction("scroll-to-y", ScrollY: y, DelayMilliseconds: 150), cancellationToken);
+            var png = await browserSession.CaptureViewportScreenshotAsync(cancellationToken);
+            EnsurePngHasExpectedDimensions(png, viewport.Width, viewport.Height);
+
+            var fileName = $"segment-{index + 1:000}.png";
+            var relativePath = relativeViewportRoot is null ? null : $"{relativeViewportRoot}/viewport-segments/{fileName}";
+            if (segmentRoot is not null)
+            {
+                await File.WriteAllBytesAsync(Path.Combine(segmentRoot, fileName), png, cancellationToken);
+            }
+
+            loadedSegments.Add((new ScreenshotSegment($"segment-{index + 1:000}", y, Math.Min(viewport.Height, metrics.DocumentHeight - y), relativePath), png));
+        }
+
+        var stitched = ComposeSegments(loadedSegments, viewport.Width, metrics.DocumentHeight);
+        if (viewportArtifactRoot is not null)
+        {
+            await File.WriteAllBytesAsync(Path.Combine(viewportArtifactRoot, "full-page.png"), stitched, cancellationToken);
+            var manifest = new StitchManifest(
+                "1.0",
+                "stitch-manifest",
+                $"stitch-{session.ProjectId}-{session.PageId}-{viewport.Id}",
+                DateTimeOffset.UtcNow,
+                session.ProjectId,
+                session.PageId,
+                viewport.Id,
+                relativeViewportRoot is null ? "full-page.png" : $"{relativeViewportRoot}/full-page.png",
+                viewport.Width,
+                metrics.DocumentHeight,
+                loadedSegments.Select(segment => segment.Metadata).ToArray());
+            await File.WriteAllTextAsync(Path.Combine(viewportArtifactRoot, "stitch-manifest.json"), Serialize(manifest), cancellationToken);
+        }
+
+        return new StitchCaptureOutput(
+            stitched,
+            viewport.Width,
+            metrics.DocumentHeight,
+            loadedSegments.Select(segment => segment.Metadata).ToArray(),
+            []);
+    }
+
+    private static byte[] ComposeSegments(
+        IReadOnlyList<(ScreenshotSegment Metadata, byte[] Png)> segments,
+        int width,
+        int height)
+    {
+        if (segments.Count == 0)
+        {
+            throw new InvalidOperationException("[SRE-STITCH-004] Cannot compose stitched image without segments. Problem: no segment screenshots were captured. Cause: capture plan produced no scroll positions. Fix: inspect viewport and document dimensions.");
+        }
+
+        using var canvas = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
+        foreach (var segment in segments)
+        {
+            using var image = new MagickImage(segment.Png);
+            var drawHeight = Math.Min((int)image.Height, Math.Max(1, height - segment.Metadata.Y));
+            image.Crop(new MagickGeometry(0, 0, Math.Min((uint)width, image.Width), (uint)drawHeight));
+            canvas.Composite(image, 0, segment.Metadata.Y, CompositeOperator.Over);
+        }
+
+        canvas.Format = MagickFormat.Png;
+        return canvas.ToByteArray();
     }
 
     private static CaptureQualityReport EvaluateQuality(
         BrowserPageSession session,
         ViewportDefinition viewport,
         BrowserCaptureResult capture,
-        PageStabilizationReport stabilization)
+        PageStabilizationReport stabilization,
+        bool? nativeAttemptPassed,
+        string? fallbackReason,
+        int segmentCount,
+        IReadOnlyList<string> warnings)
     {
         var findings = new List<CaptureQualityFinding>();
+        (int Width, int Height)? imageSize = null;
+
         if (capture.ScreenshotPng.Length == 0)
         {
             findings.Add(new("missing-screenshot-file", "blocking", "Screenshot bytes are missing."));
             findings.Add(new("blank-image", "blocking", "Screenshot appears blank because no bytes were captured."));
         }
-        else if (capture.ScreenshotPng.All(value => value is 0x00 or 0xFF))
+        else
         {
-            findings.Add(new("suspicious-white-empty-regions", "warning", "Screenshot bytes have a suspicious repeated empty pattern."));
+            try
+            {
+                imageSize = ReadPngDimensions(capture.ScreenshotPng);
+                if (imageSize.Value.Width != viewport.Width)
+                {
+                    findings.Add(new("unexpected-image-width", "blocking", $"Screenshot width is {imageSize.Value.Width}px but expected {viewport.Width}px."));
+                }
+
+                if (imageSize.Value.Height < viewport.Height && capture.CaptureMethod != "failed")
+                {
+                    findings.Add(new("unexpected-image-height", "blocking", $"Screenshot height is {imageSize.Value.Height}px but expected at least {viewport.Height}px."));
+                }
+
+                if (IsNearSingleColorBlank(capture.ScreenshotPng))
+                {
+                    findings.Add(new("suspicious-single-color-image", "warning", "Screenshot has very low byte diversity and may be blank."));
+                }
+            }
+            catch (Exception exception) when (exception is MagickException or ArgumentException)
+            {
+                findings.Add(new("png-decode-failed", "blocking", "Screenshot is not a decodable PNG."));
+            }
         }
 
         if (capture.DocumentHeight < viewport.Height && capture.CaptureMethod != "failed")
@@ -115,6 +270,11 @@ public sealed class StableFullPageCaptureService
         if (capture.ViewportWidth != viewport.Width || capture.ViewportHeight != viewport.Height)
         {
             findings.Add(new("inconsistent-manifest-dimensions", "blocking", "Capture dimensions do not match the requested viewport."));
+        }
+
+        if (capture.CaptureMethod == "stitched" && segmentCount == 0)
+        {
+            findings.Add(new("stitched-output-missing-segments", "blocking", "Capture method is stitched but no real segment screenshots were recorded."));
         }
 
         if (capture.CaptureMethod == "failed")
@@ -133,6 +293,53 @@ public sealed class StableFullPageCaptureService
             capture.CaptureMethod,
             findings.All(finding => finding.Severity != "blocking"),
             findings,
-            stabilization.Steps);
+            stabilization.Steps,
+            nativeAttemptPassed,
+            fallbackReason,
+            segmentCount,
+            imageSize?.Width,
+            imageSize?.Height,
+            capture.CaptureMethod,
+            warnings.Concat(stabilization.Warnings ?? []).ToArray());
     }
+
+    private static void EnsurePngHasExpectedDimensions(byte[] png, int expectedWidth, int expectedHeight)
+    {
+        (int Width, int Height) info;
+        try
+        {
+            info = ReadPngDimensions(png);
+        }
+        catch (Exception exception) when (exception is MagickException or ArgumentException)
+        {
+            throw new InvalidOperationException("[SRE-STITCH-005] Segment screenshot is not a PNG. Problem: browser returned undecodable bytes. Cause: viewport capture failed. Fix: inspect browser runtime setup.", exception);
+        }
+
+        if (info.Width != expectedWidth || info.Height != expectedHeight)
+        {
+            throw new InvalidOperationException($"[SRE-STITCH-006] Segment screenshot dimensions are invalid. Problem: segment is {info.Width}x{info.Height}; expected {expectedWidth}x{expectedHeight}. Cause: viewport capture did not use the configured dimensions. Fix: inspect browser context viewport setup.");
+        }
+    }
+
+    private static (int Width, int Height) ReadPngDimensions(byte[] png)
+    {
+        using var image = new MagickImage(png);
+        return ((int)image.Width, (int)image.Height);
+    }
+
+    private static bool IsNearSingleColorBlank(byte[] png)
+    {
+        var sampleLength = Math.Min(png.Length, 4096);
+        return png.Take(sampleLength).Distinct().Count() <= 8;
+    }
+
+    private static string Serialize<TValue>(TValue value) =>
+        System.Text.Json.JsonSerializer.Serialize(value, VisualJson.Options) + Environment.NewLine;
+
+    private sealed record StitchCaptureOutput(
+        byte[] Png,
+        int Width,
+        int Height,
+        IReadOnlyList<ScreenshotSegment> Segments,
+        IReadOnlyList<string> Warnings);
 }

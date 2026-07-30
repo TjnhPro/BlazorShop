@@ -1,6 +1,7 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
+using ImageMagick;
 using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
@@ -21,11 +22,19 @@ public sealed class StableCaptureQualityTests
     [Fact]
     public async Task StableCapture_ForcedFallback_RecordsStitchedMethodAndSegments()
     {
-        var result = await CaptureFixtureAsync(forceStitchedFallback: true);
+        var (result, viewportRoot) = await CaptureFixtureWithArtifactRootAsync(forceStitchedFallback: true);
 
         Assert.Equal("stitched", result.Capture.CaptureMethod);
         Assert.NotEmpty(result.Segments);
         Assert.All(result.Segments, segment => Assert.StartsWith("segment-", segment.SegmentId, StringComparison.Ordinal));
+        Assert.True(File.Exists(Path.Combine(viewportRoot, "stitch-manifest.json")));
+        Assert.All(result.Segments, segment => Assert.True(File.Exists(Path.Combine(GetRepoRoot(), segment.Path!.Replace('/', Path.DirectorySeparatorChar)))));
+
+        using var stitchedInfo = new MagickImage(result.Capture.ScreenshotPng);
+        Assert.Equal((uint)result.Capture.ViewportWidth, stitchedInfo.Width);
+        Assert.Equal((uint)result.Capture.DocumentHeight, stitchedInfo.Height);
+        Assert.Equal(result.Segments.Count, result.QualityReport.SegmentCount);
+        Assert.Equal("forced-stitch-proof", result.QualityReport.FallbackReason);
     }
 
     [Fact]
@@ -42,15 +51,27 @@ public sealed class StableCaptureQualityTests
 
     private static async Task<StableCaptureResult> CaptureFixtureAsync(bool forceStitchedFallback)
     {
+        var (result, _) = await CaptureFixtureWithArtifactRootAsync(forceStitchedFallback);
+        return result;
+    }
+
+    private static async Task<(StableCaptureResult Result, string ViewportRoot)> CaptureFixtureWithArtifactRootAsync(bool forceStitchedFallback)
+    {
         var repoRoot = GetRepoRoot();
         var fixturePath = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html");
-        return await new StableFullPageCaptureService(new FixtureReferenceBrowser())
+        var projectRoot = Path.Combine(repoRoot, "obj", "storefront-reverse-engineering", "projects", "stable-test-" + Guid.NewGuid().ToString("N"));
+        var viewportRoot = Path.Combine(projectRoot, "captures", "home", "desktop-1440");
+        Directory.CreateDirectory(viewportRoot);
+        var result = await new StableFullPageCaptureService(new FixtureReferenceBrowser())
             .CaptureAsync(
                 new BrowserPageSession("stable", "home", new Uri(fixturePath).AbsoluteUri),
                 ViewportDefinition.Defaults[0],
                 new CapturePolicy(),
                 forceStitchedFallback,
-                CancellationToken.None);
+                CancellationToken.None,
+                viewportRoot,
+                $"obj/storefront-reverse-engineering/projects/{Path.GetFileName(projectRoot)}/captures/home/desktop-1440");
+        return (result, viewportRoot);
     }
 
     private static string GetRepoRoot()

@@ -17,6 +17,19 @@ public sealed record ScreenshotSegment(
     int Height,
     string? Path);
 
+public sealed record StitchManifest(
+    string SchemaVersion,
+    string ArtifactKind,
+    string ArtifactId,
+    DateTimeOffset CreatedUtc,
+    string ProjectId,
+    string PageId,
+    string ViewportId,
+    string OutputPath,
+    int OutputWidth,
+    int OutputHeight,
+    IReadOnlyList<ScreenshotSegment> Segments);
+
 public sealed record CaptureQualityReport(
     string SchemaVersion,
     string ArtifactKind,
@@ -28,7 +41,14 @@ public sealed record CaptureQualityReport(
     string CaptureMethod,
     bool Passed,
     IReadOnlyList<CaptureQualityFinding> Findings,
-    IReadOnlyList<string> StabilizationSteps);
+    IReadOnlyList<string> StabilizationSteps,
+    bool? NativeAttemptPassed = null,
+    string? FallbackReason = null,
+    int? SegmentCount = null,
+    int? FinalWidth = null,
+    int? FinalHeight = null,
+    string? FinalMethod = null,
+    IReadOnlyList<string>? Warnings = null);
 
 public sealed record CaptureQualityFinding(
     string Code,

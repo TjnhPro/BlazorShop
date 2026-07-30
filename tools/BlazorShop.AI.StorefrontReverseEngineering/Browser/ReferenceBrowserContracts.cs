@@ -37,6 +37,18 @@ public interface IReferenceBrowserSession : IAsyncDisposable
 
     Task<BrowserCaptureResult> CaptureCurrentStateAsync(CancellationToken cancellationToken);
 
+    async Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken)
+    {
+        var capture = await CaptureCurrentStateAsync(cancellationToken);
+        return capture.ScreenshotPng;
+    }
+
+    async Task<BrowserDocumentMetrics> GetMetricsAsync(CancellationToken cancellationToken)
+    {
+        var capture = await CaptureCurrentStateAsync(cancellationToken);
+        return new BrowserDocumentMetrics(capture.DocumentWidth, capture.DocumentHeight, capture.ViewportWidth, capture.ViewportHeight);
+    }
+
     Task<BrowserActionResult> ExecuteAsync(
         BrowserSessionAction action,
         CancellationToken cancellationToken);
@@ -46,11 +58,19 @@ public sealed record BrowserSessionAction(
     string Type,
     string? Selector = null,
     int? DelayMilliseconds = null,
-    string? Key = null);
+    string? Key = null,
+    int? ScrollX = null,
+    int? ScrollY = null);
 
 public sealed record BrowserActionResult(
     bool Executed,
     IReadOnlyList<string> Warnings);
+
+public sealed record BrowserDocumentMetrics(
+    int DocumentWidth,
+    int DocumentHeight,
+    int ViewportWidth,
+    int ViewportHeight);
 
 public abstract class ReferenceBrowserBase : IReferenceBrowser
 {
