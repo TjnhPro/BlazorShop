@@ -5,6 +5,7 @@ param(
     [string]$Scope = "all",
     [string]$Target = "",
     [switch]$WhatIf,
+    [string]$WhatIfReportPath = "",
     [switch]$ValidateAfterApply,
     [switch]$BuildAfterApply
 )
@@ -259,13 +260,13 @@ function Write-RegenerationReport {
     $lines = [System.Collections.Generic.List[string]]::new()
     $lines.Add("# StorefrontBuilder Regeneration Report")
     $lines.Add("")
-    $lines.Add("- Regenerate all generated files: supported by `regenerate-storefront.ps1 -Scope all`.")
-    $lines.Add("- Regenerate one page: supported by `-Scope page -Target <path>`.")
-    $lines.Add("- Regenerate one component: supported by `-Scope component -Target <path>`.")
-    $lines.Add("- Regenerate only CSS tokens: supported by `-Scope css`.")
-    $lines.Add("- Update platform metadata/package contract files: supported by `-Scope foundation`.")
-    $lines.Add("- Validate without writing: supported by `-WhatIf` or `-Scope validate`.")
-    $lines.Add("- Show conflict report: supported by `-Scope conflicts`.")
+    $lines.Add('- Regenerate all generated files: supported by `regenerate-storefront.ps1 -Scope all`.')
+    $lines.Add('- Regenerate one page: supported by `-Scope page -Target <path>`.')
+    $lines.Add('- Regenerate one component: supported by `-Scope component -Target <path>`.')
+    $lines.Add('- Regenerate only CSS tokens: supported by `-Scope css`.')
+    $lines.Add('- Update platform metadata/package contract files: supported by `-Scope foundation`.')
+    $lines.Add('- Validate without writing: supported by `-WhatIf` or `-Scope validate`.')
+    $lines.Add('- Show conflict report: supported by `-Scope conflicts`.')
     $lines.Add("- No-op result: no unexpected file changes.")
     $lines.Add("- Protected files modified: false.")
     $lines.Add("")
@@ -298,10 +299,128 @@ function Write-RegenerationReport {
     $lines.Add("")
     $lines.Add("## Next Recommended Action")
     $lines.Add("")
-    $nextAction = if ($conflicts.Count -gt 0) { "Resolve conflicts manually, then rerun `-Scope conflicts`." } else { "No conflicts; rerun validation or build proof as needed." }
+    $nextAction = if ($conflicts.Count -gt 0) { 'Resolve conflicts manually, then rerun `-Scope conflicts`.' } else { "No conflicts; rerun validation or build proof as needed." }
     $lines.Add($nextAction)
 
     Set-Content -LiteralPath $ReportPath -Value ($lines -join [Environment]::NewLine) -Encoding UTF8
+}
+
+function Test-MeaningfulWhatIfAction {
+    param([hashtable]$Item)
+
+    $action = [string]$Item["action"]
+    return $action -eq "create" `
+        -or $action -eq "update" `
+        -or $action -eq "platform metadata update" `
+        -or $action -eq "obsolete candidate" `
+        -or $action.StartsWith("conflict", [System.StringComparison]::Ordinal) `
+        -or $action -eq "skip protected" `
+        -or $action -eq "skip user-owned"
+}
+
+function Write-RegenerationPlanSummary {
+    param(
+        [System.Collections.Generic.List[hashtable]]$Plan,
+        [string]$StableReportPath
+    )
+
+    $creates = @($Plan | Where-Object { $_["action"] -eq "create" })
+    $updates = @($Plan | Where-Object { $_["action"] -eq "update" })
+    $platformUpdates = @($Plan | Where-Object { $_["action"] -eq "platform metadata update" })
+    $conflicts = @($Plan | Where-Object { ([string]$_["action"]).StartsWith("conflict", [System.StringComparison]::Ordinal) })
+    $obsolete = @($Plan | Where-Object { $_["action"] -eq "obsolete candidate" })
+    $preservedSkips = @($Plan | Where-Object { $_["action"] -eq "skip protected" -or $_["action"] -eq "skip user-owned" })
+    $meaningful = @($Plan | Where-Object { Test-MeaningfulWhatIfAction -Item $_ })
+
+    Write-Host "WhatIf completed without writing generated project files."
+    Write-Host "WhatIf report: $StableReportPath"
+    Write-Host "WhatIf summary: create=$($creates.Count); update=$($updates.Count); platformMetadataUpdate=$($platformUpdates.Count); conflict=$($conflicts.Count); obsolete=$($obsolete.Count); protectedOrUserOwnedSkip=$($preservedSkips.Count)"
+
+    if ($meaningful.Count -eq 0) {
+        Write-Host "WhatIf plan: no-op; every file is unchanged, out-of-scope, or already aligned."
+    }
+    else {
+        Write-Host "WhatIf actions:"
+        foreach ($item in $meaningful) {
+            Write-Host "- $($item["filePath"]): $($item["action"]) - $($item["reason"])"
+        }
+    }
+
+    if ($conflicts.Count -gt 0) {
+        Write-Host "WhatIf next action: resolve conflicts manually, rerun -Scope conflicts, then rerun the desired update scope."
+    }
+}
+
+function Test-StorefrontBuilderPathUnderRoot {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Root
+    )
+
+    $resolvedPath = [System.IO.Path]::GetFullPath($Path)
+    $resolvedRoot = [System.IO.Path]::GetFullPath($Root).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+    $rootWithSeparator = "$resolvedRoot$([System.IO.Path]::DirectorySeparatorChar)"
+
+    return $resolvedPath.Equals($resolvedRoot, [System.StringComparison]::OrdinalIgnoreCase) `
+        -or $resolvedPath.StartsWith($rootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Resolve-WhatIfReportPath {
+    param(
+        [string]$RequestedPath,
+        [string]$OutputRoot,
+        [string]$ProjectRoot,
+        [string]$ProjectName,
+        [string]$OperationId
+    )
+
+    $reportPath = if ([string]::IsNullOrWhiteSpace($RequestedPath)) {
+        Join-Path $OutputRoot ".regeneration-reports\$ProjectName-$OperationId.md"
+    }
+    elseif ([System.IO.Path]::IsPathRooted($RequestedPath)) {
+        [System.IO.Path]::GetFullPath($RequestedPath)
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path (Get-Location) $RequestedPath))
+    }
+
+    $reportPath = [System.IO.Path]::GetFullPath($reportPath)
+    $targetRoot = [System.IO.Path]::GetFullPath($ProjectRoot)
+    if (Test-StorefrontBuilderPathUnderRoot -Path $reportPath -Root $targetRoot) {
+        throw "[SFB-REGEN-020] WhatIfReportPath must not be under the generated target project. Problem: report path '$reportPath' would mutate target-owned files during -WhatIf. Cause: -WhatIfReportPath points inside '$targetRoot'. Fix: use the default report path or choose a path under obj, artifacts/storefront-builder, or the output root report folder."
+    }
+
+    $allowedRoots = @(
+        (Join-Path $OutputRoot ".regeneration-reports"),
+        (Join-Path $repoRoot "obj"),
+        (Join-Path $repoRoot "artifacts\storefront-builder")
+    ) | ForEach-Object { [System.IO.Path]::GetFullPath($_) }
+
+    $isAllowed = $false
+    foreach ($allowedRoot in $allowedRoots) {
+        if (Test-StorefrontBuilderPathUnderRoot -Path $reportPath -Root $allowedRoot) {
+            $isAllowed = $true
+            break
+        }
+    }
+
+    if (-not $isAllowed) {
+        throw "[SFB-REGEN-021] WhatIfReportPath must stay under an approved StorefrontBuilder report root. Problem: '$reportPath' is outside the output report folder, repo obj, and artifacts/storefront-builder. Cause: custom report paths may otherwise write arbitrary files. Fix: omit -WhatIfReportPath or choose a path under '$OutputRoot\.regeneration-reports', 'obj', or 'artifacts\storefront-builder'."
+    }
+
+    $parent = Split-Path -Parent $reportPath
+    if ([string]::IsNullOrWhiteSpace($parent)) {
+        throw "[SFB-REGEN-022] WhatIfReportPath must include a file name. Problem: '$reportPath' has no parent directory. Cause: report path resolved to an invalid file location. Fix: pass a full markdown file path."
+    }
+
+    foreach ($allowedRoot in $allowedRoots) {
+        if ($parent.StartsWith($allowedRoot, [System.StringComparison]::OrdinalIgnoreCase) -or $parent.Equals($allowedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+            New-Item -ItemType Directory -Force -Path $parent | Out-Null
+            return $reportPath
+        }
+    }
+
+    throw "[SFB-REGEN-023] WhatIfReportPath parent is not approved. Problem: '$parent' cannot be created safely. Cause: path validation did not match an approved report root. Fix: choose a report path under the output report folder, obj, or artifacts/storefront-builder."
 }
 
 function Add-PlanLines {
@@ -554,6 +673,7 @@ $operationId = [System.Guid]::NewGuid().ToString("N")
 $candidateOutputRoot = Join-Path $resolvedOutputRoot ".regeneration-candidate\$operationId"
 $candidateProjectRoot = Join-Path $candidateOutputRoot $projectName
 $candidateReportPath = Join-Path $candidateProjectRoot "docs\storefront-analysis\regeneration-report.md"
+$stableWhatIfReportPath = Resolve-WhatIfReportPath -RequestedPath $WhatIfReportPath -OutputRoot $resolvedOutputRoot -ProjectRoot $resolvedProjectRoot -ProjectName $projectName -OperationId $operationId
 $backupRoot = Join-Path $resolvedOutputRoot ".regeneration-backup\$projectName-$operationId"
 $preserveCandidateArtifacts = $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS -eq "1"
 $candidateDropPaths = @()
@@ -615,7 +735,8 @@ try {
     Write-RegenerationReport -ReportPath $candidateReportPath -Command $commandLabel -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
 
     if ($WhatIf) {
-        Write-Host "WhatIf completed without writing generated project files."
+        Copy-Item -LiteralPath $candidateReportPath -Destination $stableWhatIfReportPath -Force
+        Write-RegenerationPlanSummary -Plan $plan -StableReportPath $stableWhatIfReportPath
         exit 0
     }
 
