@@ -19,7 +19,7 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         var uri = new Uri(session.SourceUrl);
         if (uri.Scheme != "file")
         {
-            throw new InvalidOperationException($"[SRE-BROWSER-001] Fixture browser only supports local files. Problem: '{session.SourceUrl}' is not a file URL. Cause: automated tests must not depend on internet capture. Fix: use NodePlaywrightReferenceBrowser for non-fixture URLs.");
+            throw new InvalidOperationException($"[SRE-BROWSER-001] Fixture browser only supports local files. Problem: '{session.SourceUrl}' is not a file URL. Cause: automated tests must not depend on internet capture. Fix: use ReferenceBrowserFactory so non-fixture URLs route to SyntheticReferenceBrowser for .test hosts or PlaywrightReferenceBrowser for real browser capture.");
         }
 
         var html = await File.ReadAllTextAsync(uri.LocalPath, cancellationToken);

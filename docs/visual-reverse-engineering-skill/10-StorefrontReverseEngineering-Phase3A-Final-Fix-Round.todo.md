@@ -686,49 +686,61 @@ Decision:
 
 Tasks:
 
-- [ ] Find all consumers of `NodePlaywrightReferenceBrowser`.
-- [ ] If there are no active consumers:
-  - [ ] either remove `NodePlaywrightReferenceBrowser.cs`
-  - [ ] or keep it internal with an explicit deferred marker and tests proving it is not factory-selected
-- [ ] If there are active consumers:
-  - [ ] migrate them to `PlaywrightReferenceBrowser` or a clear interface
-  - [ ] remove `NotSupportedException` from any recommended runtime path
-- [ ] Ensure `ReferenceBrowserFactory` never returns the Node bridge for active capture.
-- [ ] Update `FixtureReferenceBrowser` error message so it does not suggest Node bridge as the fix for non-fixture URLs.
-- [ ] Update docs:
-  - [ ] StorefrontBuilder Node script remains baseline for StorefrontBuilder only
-  - [ ] ReverseEngineering runtime uses .NET Playwright path
-  - [ ] Node bridge wrapper is deferred or removed
-  - [ ] README no longer recommends manual Node bridge runs for Phase 3A
-- [ ] Update prototype marker scan so it does not falsely fail on documented historical plan text, but still fails active source blockers.
+- [x] Find all consumers of `NodePlaywrightReferenceBrowser`.
+- [x] If there are no active consumers:
+  - [x] remove `NodePlaywrightReferenceBrowser.cs`
+  - [x] do not keep an internal deferred wrapper because the removal path was selected
+- [x] If there are active consumers:
+  - [x] not applicable; consumer scan found no active runtime consumers to migrate
+  - [x] remove `NotSupportedException` from any recommended runtime path
+- [x] Ensure `ReferenceBrowserFactory` never returns the Node bridge for active capture.
+- [x] Update `FixtureReferenceBrowser` error message so it does not suggest Node bridge as the fix for non-fixture URLs.
+- [x] Update docs:
+  - [x] StorefrontBuilder Node script remains baseline for StorefrontBuilder only
+  - [x] ReverseEngineering runtime uses .NET Playwright path
+  - [x] Node bridge wrapper is deferred or removed
+  - [x] README no longer recommends manual Node bridge runs for Phase 3A
+- [x] Update prototype marker scan so it does not falsely fail on documented historical plan text, but still fails active source blockers.
 
 Guardrails:
 
-- [ ] Do not delete StorefrontBuilder Node capture scripts.
-- [ ] Do not change StorefrontBuilder generation or QA behavior.
-- [ ] Do not leave docs claiming the unsupported wrapper is an active supported path.
+- [x] Do not delete StorefrontBuilder Node capture scripts.
+- [x] Do not change StorefrontBuilder generation or QA behavior.
+- [x] Do not leave docs claiming the unsupported wrapper is an active supported path.
 
 Tests:
 
-- [ ] Factory does not select Node bridge for HTTP URLs.
-- [ ] Factory does not select Node bridge for `.test` URLs.
-- [ ] Factory does not select Node bridge for `file://` URLs.
-- [ ] Active source scan does not find `NotSupportedException` in a recommended browser adapter path.
-- [ ] README/reference docs no longer recommend `NodePlaywrightReferenceBrowser` for normal use.
+- [x] Factory does not select Node bridge for HTTP URLs.
+- [x] Factory does not select Node bridge for `.test` URLs.
+- [x] Factory does not select Node bridge for `file://` URLs.
+- [x] Active source scan does not find `NotSupportedException` in a recommended browser adapter path.
+- [x] README/reference docs no longer recommend `NodePlaywrightReferenceBrowser` for normal use.
 
 Verification:
 
 ```powershell
-rg -n "NodePlaywrightReferenceBrowser|NotSupportedException|Manual capture can also wrap" tools/BlazorShop.AI.StorefrontReverseEngineering docs/architecture/11-storefront-builder.md docs/agents/storefront-builder.md docs/visual-reverse-engineering-skill --glob "!bin/**" --glob "!obj/**"
+rg -n "NodePlaywrightReferenceBrowser|NotSupportedException|Manual capture can also wrap" tools/BlazorShop.AI.StorefrontReverseEngineering docs/architecture/11-storefront-builder.md docs/agents/storefront-builder.md docs/visual-reverse-engineering-skill --glob "!bin/**" --glob "!obj/**" --glob "!*.todo.md"
 
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Browser|Boundary|Cli"
 ```
 
 Exit criteria:
 
-- [ ] Active runtime cannot accidentally select the Node bridge.
-- [ ] Docs distinguish StorefrontBuilder Node baseline from ReverseEngineering runtime.
-- [ ] No misleading unsupported browser path remains.
+- [x] Active runtime cannot accidentally select the Node bridge.
+- [x] Docs distinguish StorefrontBuilder Node baseline from ReverseEngineering runtime.
+- [x] No misleading unsupported browser path remains.
+
+Implementation evidence:
+
+- Consumer scan found no active `NodePlaywrightReferenceBrowser` users; removed `Browser/NodePlaywrightReferenceBrowser.cs` from ReverseEngineering while preserving StorefrontBuilder Node scripts.
+- `ReferenceBrowserFactory` remains fixed to `FixtureReferenceBrowser` for `file://`, `SyntheticReferenceBrowser` for `.test`, and `.NET PlaywrightReferenceBrowser` for normal HTTP/HTTPS capture.
+- Updated `FixtureReferenceBrowser` non-file URL error text to recommend `ReferenceBrowserFactory` and the .NET/Synthetic active adapters instead of the removed Node bridge.
+- Updated README, architecture, agent guide, and reference docs to state StorefrontBuilder Node scripts remain StorefrontBuilder-only baselines and are not a ReverseEngineering runtime path.
+- Updated the Phase 3A gate prototype marker scan to inspect active ReverseEngineering source directories instead of Markdown/historical plan text.
+- Added tests proving factory selection for HTTP, `.test`, and `file://`, plus an active-source scan test for unsupported adapter markers.
+- Verification: `rg -n "NodePlaywrightReferenceBrowser|NotSupportedException|Manual capture can also wrap" tools\BlazorShop.AI.StorefrontReverseEngineering docs\architecture\11-storefront-builder.md docs\agents\storefront-builder.md docs\visual-reverse-engineering-skill --glob "!bin/**" --glob "!obj/**" --glob "!*.todo.md"` returned no matches.
+- Verification: active source prototype marker scan returned no matches.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Browser|Boundary|Cli"` passed `34/34`.
 
 ## Phase F7 - Closure Gate And Commit-Linked Local Evidence
 

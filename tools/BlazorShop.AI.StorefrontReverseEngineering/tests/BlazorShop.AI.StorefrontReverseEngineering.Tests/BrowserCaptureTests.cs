@@ -59,6 +59,32 @@ public sealed class BrowserCaptureTests
         Assert.Contains("WriteViewportEvidenceAsync(context.ArtifactRoot, session, viewport.Id, captured", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ReferenceBrowserFactory_HttpUrlUsesDotNetPlaywright()
+    {
+        var browser = ReferenceBrowserFactory.Create(GetRepoRoot(), "https://example.com/");
+
+        Assert.IsType<PlaywrightReferenceBrowser>(browser);
+    }
+
+    [Fact]
+    public void ReferenceBrowserFactory_TestHostUsesSyntheticBrowser()
+    {
+        var browser = ReferenceBrowserFactory.Create(GetRepoRoot(), "https://store.test/");
+
+        Assert.IsType<SyntheticReferenceBrowser>(browser);
+    }
+
+    [Fact]
+    public void ReferenceBrowserFactory_FileUrlUsesFixtureBrowser()
+    {
+        var fixturePath = Path.Combine(GetRepoRoot(), "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html");
+
+        var browser = ReferenceBrowserFactory.Create(GetRepoRoot(), new Uri(fixturePath).AbsoluteUri);
+
+        Assert.IsType<FixtureReferenceBrowser>(browser);
+    }
+
     private static async Task<CaptureViewportManifest> CaptureAsync(ViewportDefinition viewport)
     {
         var repoRoot = GetRepoRoot();

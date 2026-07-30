@@ -80,7 +80,7 @@ Phase 3B should start from stable Phase 3A runtime evidence, not from patched pr
 
 ## Browser Setup
 
-Fast unit/schema tests use deterministic fixture capture and do not require internet access. Real browser integration tests use .NET Playwright against a local HTTP fixture and require Chromium to be installed once on the machine:
+Fast unit/schema tests use deterministic fixture capture and do not require internet access. Real browser integration tests and non-fixture HTTP capture use the .NET `PlaywrightReferenceBrowser` path and require Chromium to be installed once on the machine:
 
 ```powershell
 dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
@@ -88,11 +88,4 @@ dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.Stor
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Playwright|EndToEnd"
 ```
 
-Manual capture can also wrap the existing StorefrontBuilder Node Playwright capture script through `NodePlaywrightReferenceBrowser`; install its dependencies before manual Node bridge runs:
-
-```powershell
-Push-Location tools\BlazorShop.AI.StorefrontBuilder
-npm install
-npx playwright install chromium
-Pop-Location
-```
+The StorefrontBuilder Node Playwright scripts remain the StorefrontBuilder capture and QA baseline only. ReverseEngineering Phase 3A does not wrap or recommend those Node scripts for normal runtime capture.

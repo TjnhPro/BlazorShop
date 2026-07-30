@@ -54,11 +54,13 @@ dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.Stor
 .\tools\BlazorShop.AI.StorefrontReverseEngineering\bin\Debug\net10.0\playwright.ps1 install chromium
 ```
 
-The browser integration tests use a local HTTP fixture server, not an external website:
+The browser integration tests use .NET Playwright against a local HTTP fixture server, not an external website:
 
 ```powershell
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Playwright|EndToEnd"
 ```
+
+ReverseEngineering runtime adapter selection is fixed: `file://` URLs use fixture capture, `.test` hosts use synthetic deterministic capture, and other HTTP/HTTPS URLs use the .NET Playwright adapter. StorefrontBuilder Node Playwright scripts remain StorefrontBuilder capture and QA baselines only; they are not recommended as ReverseEngineering Phase 3A runtime capture.
 
 Run the full Phase 3A hardening gate with:
 

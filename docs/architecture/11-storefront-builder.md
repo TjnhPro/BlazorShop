@@ -60,7 +60,7 @@ Compatibility map for future handoff:
 | `design-tokens.yaml` | Bounded computed-style evidence; token extraction remains deferred. |
 | `ai-inference-log.json` | Optional `analysis/ai-inference-log.json`; rule-based fallback requires none. |
 
-The existing Node Playwright capture script remains the StorefrontBuilder capture baseline and is also wrapped by `NodePlaywrightReferenceBrowser` for initial parity. Do not retire or replace that script until a later parity phase proves the .NET browser path can cover the same evidence.
+The existing Node Playwright capture and QA scripts remain the StorefrontBuilder baseline only. ReverseEngineering Phase 3A uses the .NET `PlaywrightReferenceBrowser` runtime path for non-fixture capture plus fixture/synthetic adapters for tests; it no longer wraps the StorefrontBuilder Node capture script as a supported runtime adapter. Do not retire or replace the StorefrontBuilder Node scripts until a later StorefrontBuilder parity phase approves that change.
 
 ## Boundary Model
 

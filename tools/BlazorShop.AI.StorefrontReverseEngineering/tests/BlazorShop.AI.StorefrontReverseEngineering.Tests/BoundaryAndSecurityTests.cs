@@ -57,6 +57,35 @@ public sealed class BoundaryAndSecurityTests
     }
 
     [Fact]
+    public void Boundary_ActiveSourceHasNoUnsupportedBrowserAdapterMarkers()
+    {
+        var repoRoot = GetRepoRoot();
+        var sourceRoots = new[]
+        {
+            "Application",
+            "Browser",
+            "Cli",
+            "Contracts",
+            "Evidence",
+            "Interactions",
+            "Storage",
+            "Validation",
+            "Workflows"
+        };
+        var toolRoot = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering");
+
+        foreach (var sourceRoot in sourceRoots)
+        {
+            var fullRoot = Path.Combine(toolRoot, sourceRoot);
+            foreach (var file in Directory.EnumerateFiles(fullRoot, "*.cs", SearchOption.AllDirectories))
+            {
+                var text = File.ReadAllText(file);
+                Assert.DoesNotContain("Not" + "Supported" + "Exception", text, StringComparison.Ordinal);
+            }
+        }
+    }
+
+    [Fact]
     public void Security_RedactsCookiesTokensAndAuthorizationHeaders()
     {
         var text = "Authorization: Bearer secret Cookie: session=abc access_token=token123&password=hunter2 api_key=key";

@@ -88,7 +88,17 @@ try {
     Invoke-GateStep "prototype marker scan" {
         Assert-RgNoMatches `
             -Pattern 'OnePixelPng|BuildStyleSamples|BuildBoxes|afterDom = before\.DomHtml|DomChanged: true|NotSupportedException|CaptureMethod = "stitched"' `
-            -Paths @("tools\BlazorShop.AI.StorefrontReverseEngineering") `
+            -Paths @(
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Application",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Browser",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Cli",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Contracts",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Evidence",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Interactions",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Storage",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Validation",
+                "tools\BlazorShop.AI.StorefrontReverseEngineering\Workflows"
+            ) `
             -ExtraArgs @("--glob", "!bin/**", "--glob", "!obj/**")
     }
 
