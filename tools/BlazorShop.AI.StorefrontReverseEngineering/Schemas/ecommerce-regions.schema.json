@@ -1,0 +1,1 @@
+{"artifactKind":"ecommerce-regions","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","regions"],"arrayPaths":["regions"],"arrayLengthRules":[{"path":"regions","minimumLength":1}],"nonEmptyStringPaths":["projectId","pageId"]}

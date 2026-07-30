@@ -1,6 +1,7 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
@@ -303,6 +304,12 @@ public sealed class VisualProjectWorkflowService
     {
         var root = resolver.ResolveRoot(projectRoot);
         return await new VisualComponentCandidateDetector(repoRoot).DetectAsync(root, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<EcommerceRegionsDocument>> ClassifyEcommerceRegionsAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new EcommerceRegionClassifier(repoRoot).ClassifyAsync(root, cancellationToken);
     }
 
     private async Task ValidateViewportEvidenceReadinessAsync(
@@ -688,11 +695,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new SegmentSectionsStep());
         steps.Add(new AnalyzeResponsiveInteractionsStep());
         steps.Add(new DetectComponentCandidatesStep());
+        steps.Add(new ClassifyEcommerceRegionsStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions";
 
     private static string WriteMarkdown(ReadinessReport report)
     {

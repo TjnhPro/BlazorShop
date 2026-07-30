@@ -698,72 +698,79 @@ Schemas/ecommerce-regions.schema.json
 
 Region role MVP:
 
-- [ ] Store navigation:
-  - [ ] store header
-  - [ ] primary/category navigation
-  - [ ] search access
-  - [ ] account access
-  - [ ] cart access
-- [ ] Catalog:
-  - [ ] product listing
-  - [ ] product card collection
-  - [ ] filter
-  - [ ] sort
-  - [ ] pagination/load-more
-  - [ ] empty/search result region
-- [ ] Product detail:
-  - [ ] product media
-  - [ ] product title
-  - [ ] price
-  - [ ] variant options
-  - [ ] quantity
-  - [ ] add-to-cart/buy-now visual
-  - [ ] description/metadata/trust/reviews
-  - [ ] related/cross-sell/upsell
-- [ ] Cart/checkout shell:
-  - [ ] cart line items visual
-  - [ ] cart summary
-  - [ ] promo-code visual
-  - [ ] checkout CTA visual
-  - [ ] checkout form region
-  - [ ] order summary visual
-  - [ ] payment visual placeholder
-- [ ] Shared states:
-  - [ ] loading
-  - [ ] empty
-  - [ ] error
-  - [ ] not found
-  - [ ] service unavailable
-- [ ] Unknown role.
+- [x] Store navigation:
+  - [x] store header
+  - [x] primary/category navigation
+  - [x] search access
+  - [x] account access
+  - [x] cart access
+- [x] Catalog:
+  - [x] product listing
+  - [x] product card collection
+  - [x] filter
+  - [x] sort
+  - [x] pagination/load-more
+  - [x] empty/search result region
+- [x] Product detail:
+  - [x] product media
+  - [x] product title
+  - [x] price
+  - [x] variant options
+  - [x] quantity
+  - [x] add-to-cart/buy-now visual
+  - [x] description/metadata/trust/reviews
+  - [x] related/cross-sell/upsell
+- [x] Cart/checkout shell:
+  - [x] cart line items visual
+  - [x] cart summary
+  - [x] promo-code visual
+  - [x] checkout CTA visual
+  - [x] checkout form region
+  - [x] order summary visual
+  - [x] payment visual placeholder
+- [x] Shared states:
+  - [x] loading
+  - [x] empty
+  - [x] error
+  - [x] not found
+  - [x] service unavailable
+- [x] Unknown role.
 
 Implementation checklist:
 
-- [ ] Add `EcommerceRegionClassifier`.
-- [ ] Consume page archetype, sections, component candidates, tokens, and interactions.
-- [ ] Mark behavior contract requirement.
-- [ ] Mark data dependency:
-  - [ ] shell
-  - [ ] catalog
-  - [ ] product
-  - [ ] cart
-  - [ ] checkout
-  - [ ] account
-  - [ ] system state
-- [ ] Mark SEO relevance.
-- [ ] Mark presentation-only regions.
-- [ ] Mark unsupported roles.
-- [ ] Preserve alternatives.
+- [x] Add `EcommerceRegionClassifier`.
+- [x] Consume page archetype, sections, component candidates, tokens, and interactions.
+- [x] Mark behavior contract requirement.
+- [x] Mark data dependency:
+  - [x] shell
+  - [x] catalog
+  - [x] product
+  - [x] cart
+  - [x] checkout
+  - [x] account
+  - [x] system state
+- [x] Mark SEO relevance.
+- [x] Mark presentation-only regions.
+- [x] Mark unsupported roles.
+- [x] Preserve alternatives.
 
 Tests:
 
-- [ ] Product grid region detected.
-- [ ] PDP gallery/title/price/purchase regions detected.
-- [ ] Cart shell visual does not require cart business execution.
-- [ ] Unknown ecommerce role is valid.
+- [x] Product grid region detected.
+- [x] PDP gallery/title/price/purchase regions detected.
+- [x] Cart shell visual does not require cart business execution.
+- [x] Unknown ecommerce role is valid.
 
 Done when:
 
-- [ ] Critical ecommerce visual roles are classified without crossing into runtime logic.
+- [x] Critical ecommerce visual roles are classified without crossing into runtime logic.
+
+Implementation evidence:
+
+- Added `EcommerceRegionClassifier`, ecommerce region contracts, and `Schemas/ecommerce-regions.schema.json`.
+- Added workflow step `classify-ecommerce-regions` after component candidate detection.
+- Classifier consumes page archetype, sections, component candidates, semantic tokens, and interaction model artifacts; it marks role, data dependency, behavior contract requirement, SEO relevance, presentation-only status, unsupported status, and alternatives without invoking runtime logic.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Ecommerce"` passed `4/4`.
 
 ## Phase 3B.9 - Presentation Component Catalog
 
@@ -1245,7 +1252,7 @@ Recommended implementation order:
 7. [x] Phase 3B.5 section segmentation.
 8. [x] Phase 3B.6 responsive and interaction model.
 9. [x] Phase 3B.7 visual component candidates.
-10. [ ] Phase 3B.8 ecommerce region classification.
+10. [x] Phase 3B.8 ecommerce region classification.
 11. [ ] Phase 3B.9 Presentation component catalog.
 12. [ ] Phase 3B.10 Presentation mapping and unsupported patterns.
 13. [ ] Phase 3B.11 confidence and human review.

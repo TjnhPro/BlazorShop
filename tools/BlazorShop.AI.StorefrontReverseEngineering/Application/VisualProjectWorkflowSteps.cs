@@ -1,5 +1,6 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
@@ -358,6 +359,25 @@ internal sealed class DetectComponentCandidatesStep : IVisualProjectWorkflowStep
 
         return result.Candidates.Candidates.Count == 0
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-COMPONENT-CANDIDATES-EMPTY", "Component candidate detection produced no candidates.")
+            : WorkflowStepResult.Success();
+    }
+}
+
+internal sealed class ClassifyEcommerceRegionsStep : IVisualProjectWorkflowStep
+{
+    public string Name => "classify-ecommerce-regions";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/pages/{pageId}/page-archetype.json", "analysis/pages/{pageId}/sections.draft.json", "analysis/components/component-candidates.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/pages/{pageId}/ecommerce-regions.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var regions = await new EcommerceRegionClassifier(context.RepoRoot)
+            .ClassifyAsync(context.ArtifactRoot, cancellationToken);
+
+        return regions.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-ECOMMERCE-REGIONS-EMPTY", "Ecommerce region classification produced no page artifacts.")
             : WorkflowStepResult.Success();
     }
 }
