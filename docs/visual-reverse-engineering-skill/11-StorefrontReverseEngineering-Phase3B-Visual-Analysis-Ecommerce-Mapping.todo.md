@@ -173,52 +173,60 @@ Schemas/evidence-snapshot.schema.json
 
 Implementation checklist:
 
-- [ ] Add `Analysis/Aggregation` contracts:
-  - [ ] `EvidenceSnapshot`
-  - [ ] `EvidenceSnapshotPage`
-  - [ ] `EvidenceSnapshotViewport`
-  - [ ] `EvidenceSnapshotElement`
-  - [ ] `EvidenceSnapshotAsset`
-  - [ ] `EvidenceSnapshotIssue`
-- [ ] Load `project.json`.
-- [ ] Load `configuration.json`.
-- [ ] Load `discovery/capture-plan.json`.
-- [ ] Load each `captures/{pageId}/capture-manifest.json`.
-- [ ] Load each viewport `manifest.json`.
-- [ ] Load each viewport `element-evidence-index.json`.
-- [ ] Load each viewport `asset-inventory.normalized.json`.
-- [ ] Load each viewport `capture-quality-report.json`.
-- [ ] Load `analysis/originality-audit.json`.
-- [ ] Load interaction evidence when present.
-- [ ] Validate configured page/viewport coverage.
-- [ ] Validate capture correlation IDs across manifest, quality, element evidence, and asset inventory.
-- [ ] Detect orphan evidence.
-- [ ] Detect artifact kind/schema mismatch.
-- [ ] Preserve raw selector, text snippet, style groups, box, asset metadata, and viewport IDs.
-- [ ] Normalize artifact paths to repo-relative or project-relative paths.
-- [ ] Include `sourceArtifactPaths`.
-- [ ] Include `sourceEvidenceIds`.
-- [ ] Include blocking/warning/info issues.
+- [x] Add `Analysis/Aggregation` contracts:
+  - [x] `EvidenceSnapshot`
+  - [x] `EvidenceSnapshotPage`
+  - [x] `EvidenceSnapshotViewport`
+  - [x] `EvidenceSnapshotElement`
+  - [x] `EvidenceSnapshotAsset`
+  - [x] `EvidenceSnapshotIssue`
+- [x] Load `project.json`.
+- [x] Load `configuration.json`.
+- [x] Load `discovery/capture-plan.json`.
+- [x] Load each `captures/{pageId}/capture-manifest.json`.
+- [x] Load each viewport `manifest.json`.
+- [x] Load each viewport `element-evidence-index.json`.
+- [x] Load each viewport `asset-inventory.normalized.json`.
+- [x] Load each viewport `capture-quality-report.json`.
+- [x] Load `analysis/originality-audit.json`.
+- [x] Load interaction evidence when present.
+- [x] Validate configured page/viewport coverage.
+- [x] Validate capture correlation IDs across manifest, quality, element evidence, and asset inventory.
+- [x] Detect orphan evidence.
+- [x] Detect artifact kind/schema mismatch.
+- [x] Preserve raw selector, text snippet, style groups, box, asset metadata, and viewport IDs.
+- [x] Normalize artifact paths to repo-relative or project-relative paths.
+- [x] Include `sourceArtifactPaths`.
+- [x] Include `sourceEvidenceIds`.
+- [x] Include blocking/warning/info issues.
 
 Workflow:
 
-- [ ] Add `aggregate-evidence` step after `validate-readiness` or as first Phase 3B step after Phase 3A readiness.
-- [ ] Ensure downstream Phase 3B steps read `analysis/evidence-snapshot.json`, not raw capture files directly.
-- [ ] Add `--force-step aggregate-evidence` support through existing workflow runner.
+- [x] Add `aggregate-evidence` step after `validate-readiness` or as first Phase 3B step after Phase 3A readiness.
+- [x] Ensure downstream Phase 3B steps read `analysis/evidence-snapshot.json`, not raw capture files directly.
+- [x] Add `--force-step aggregate-evidence` support through existing workflow runner.
 
 Tests:
 
-- [ ] Multi-viewport evidence is merged.
-- [ ] Missing viewport produces blocking issue.
-- [ ] Orphan evidence is reported.
-- [ ] Capture correlation mismatch is blocking.
-- [ ] Schema mismatch is blocking.
-- [ ] Snapshot validates against schema.
+- [x] Multi-viewport evidence is merged.
+- [x] Missing viewport produces blocking issue.
+- [x] Orphan evidence is reported.
+- [x] Capture correlation mismatch is blocking.
+- [x] Schema mismatch is blocking.
+- [x] Snapshot validates against schema.
 
 Done when:
 
-- [ ] Snapshot contains every configured page and viewport.
-- [ ] Later steps can use snapshot as their only raw evidence input.
+- [x] Snapshot contains every configured page and viewport.
+- [x] Later steps can use snapshot as their only raw evidence input.
+
+Implementation evidence:
+
+- Added `Analysis/Aggregation/EvidenceSnapshotContracts.cs` and `EvidenceSnapshotAggregator` with project/config/capture-plan/readiness/originality/capture/viewport/element/asset/quality/interaction loading.
+- Registered `Schemas/evidence-snapshot.schema.json` and added workflow step `aggregate-evidence` after `validate-readiness`; existing `--force-step` runner path can rerun it directly.
+- Adjusted Phase 3B preflight/readiness handling so the Phase 3A baseline remains complete while the first Phase 3B workflow step is running.
+- Added `EvidenceSnapshotAggregationTests` for multi-viewport merge, missing viewport artifact, orphan evidence, correlation mismatch, schema mismatch, optional interaction evidence, and schema validation.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "EvidenceSnapshot|Phase3BPreflight|Readiness_FailedAndPartialLatestRunFail"` passed `13/13`.
 
 ## Phase 3B.2 - Raw Design Token Extraction
 
@@ -1180,7 +1188,7 @@ Done when:
 Recommended implementation order:
 
 1. [x] Phase 3B.0 prerequisite closure check.
-2. [ ] Phase 3B.1 evidence snapshot.
+2. [x] Phase 3B.1 evidence snapshot.
 3. [ ] Phase 3B.13 fixture expansion started early with Home/PLP/PDP/Unsupported routes.
 4. [ ] Phase 3B.2 raw design tokens.
 5. [ ] Phase 3B.3 semantic tokens.

@@ -1,4 +1,5 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
@@ -206,9 +207,10 @@ public sealed class VisualProjectWorkflowService
                     .Where(step => step.Status is not (WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped))
                     .ToArray();
                 var isCurrentReadinessStep = run.Status == WorkflowRunStatus.Running &&
-                    incompleteSteps.Length == 1 &&
-                    incompleteSteps[0].Name == "validate-readiness" &&
-                    incompleteSteps[0].Status == WorkflowStepStatus.Running;
+                    incompleteSteps.Any(step => step.Name == "validate-readiness" && step.Status == WorkflowStepStatus.Running) &&
+                    incompleteSteps.All(step =>
+                        step.Name == "validate-readiness" && step.Status == WorkflowStepStatus.Running ||
+                        IsPhase3BDownstreamStep(step.Name) && step.Status == WorkflowStepStatus.Pending);
 
                 if (run.Status != WorkflowRunStatus.Succeeded && !isCurrentReadinessStep)
                 {
@@ -252,6 +254,12 @@ public sealed class VisualProjectWorkflowService
         }
 
         return report;
+    }
+
+    public async Task<EvidenceSnapshot> AggregateEvidenceAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new EvidenceSnapshotAggregator(repoRoot).BuildAsync(root, cancellationToken);
     }
 
     private async Task ValidateViewportEvidenceReadinessAsync(
@@ -630,8 +638,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new AnalyzeDraftStep());
         steps.Add(new OriginalityAuditStep());
         steps.Add(new ValidateReadinessStep());
+        steps.Add(new AggregateEvidenceStep());
         return steps;
     }
+
+    private static bool IsPhase3BDownstreamStep(string stepName) =>
+        string.Equals(stepName, "aggregate-evidence", StringComparison.Ordinal);
 
     private static string WriteMarkdown(ReadinessReport report)
     {

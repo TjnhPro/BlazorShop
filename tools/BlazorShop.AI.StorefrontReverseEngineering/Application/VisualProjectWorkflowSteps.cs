@@ -1,3 +1,4 @@
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
@@ -201,5 +202,28 @@ internal sealed class ValidateReadinessStep : IVisualProjectWorkflowStep
         return report.Passed
             ? WorkflowStepResult.Success(report.Findings.Where(finding => finding.Severity == "warning").Select(finding => new WorkflowMessage(finding.Code, finding.Message)).ToArray())
             : WorkflowStepResult.Failure("SRE-WORKFLOW-READINESS-FAILED", "Readiness validation returned blocking findings.");
+    }
+}
+
+internal sealed class AggregateEvidenceStep : IVisualProjectWorkflowStep
+{
+    public string Name => "aggregate-evidence";
+
+    public IReadOnlyList<string> InputArtifacts => ["reports/readiness-report.json", "analysis/visual-blueprint.draft.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/evidence-snapshot.json", "reports/evidence-snapshot.md"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var snapshot = await new EvidenceSnapshotAggregator(context.RepoRoot)
+            .BuildAsync(context.ArtifactRoot, cancellationToken);
+        var warnings = snapshot.Issues
+            .Where(issue => issue.Severity == "warning")
+            .Select(issue => new WorkflowMessage(issue.Code, issue.Message))
+            .ToArray();
+
+        return snapshot.Issues.Any(issue => issue.Severity == "blocking")
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-EVIDENCE-SNAPSHOT-BLOCKED", "Evidence snapshot aggregation returned blocking findings.")
+            : WorkflowStepResult.Success(warnings);
     }
 }

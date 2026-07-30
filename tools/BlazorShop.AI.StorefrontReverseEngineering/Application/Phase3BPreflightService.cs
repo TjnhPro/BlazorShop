@@ -47,7 +47,7 @@ public sealed class Phase3BPreflightService
                 "blocking",
                 $"Latest Phase 3A workflow run '{inspection.LatestRunId}' is {inspection.LatestRunState}."));
         }
-        else if (inspection.LatestRunStatus != WorkflowRunStatus.Succeeded)
+        else if (!HasCompletedPhase3ABaseline(inspection.LatestRun))
         {
             issues.Add(new Phase3BPreflightIssue(
                 "failed-latest-run",
@@ -80,6 +80,43 @@ public sealed class Phase3BPreflightService
             inspection.ReadinessReportPath,
             inspection.BlueprintPath,
             issues);
+    }
+
+    private static bool HasCompletedPhase3ABaseline(WorkflowRun run)
+    {
+        if (run.Status == WorkflowRunStatus.Succeeded)
+        {
+            return true;
+        }
+
+        if (run.Status != WorkflowRunStatus.Running)
+        {
+            return false;
+        }
+
+        var aggregateIndex = -1;
+        for (var index = 0; index < run.Steps.Count; index++)
+        {
+            if (string.Equals(run.Steps[index].Name, "aggregate-evidence", StringComparison.Ordinal))
+            {
+                aggregateIndex = index;
+                break;
+            }
+        }
+
+        if (aggregateIndex < 0)
+        {
+            return false;
+        }
+
+        var phase3AStepsSucceeded = run.Steps
+            .Take(aggregateIndex)
+            .All(step => step.Status is WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped);
+        var phase3BStepsAreNotFailed = run.Steps
+            .Skip(aggregateIndex)
+            .All(step => step.Status is WorkflowStepStatus.Pending or WorkflowStepStatus.Running or WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped);
+
+        return phase3AStepsSucceeded && phase3BStepsAreNotFailed;
     }
 }
 
