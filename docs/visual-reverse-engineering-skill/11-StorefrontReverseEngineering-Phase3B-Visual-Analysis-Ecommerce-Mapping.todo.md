@@ -1030,75 +1030,83 @@ Schemas/generation-readiness.schema.json
 
 Blueprint sections:
 
-- [ ] `projectMetadata`
-- [ ] `sourceProvenance`
-- [ ] `pages`
-- [ ] `pageArchetypes`
-- [ ] `tokens`
-- [ ] `sections`
-- [ ] `responsiveBehavior`
-- [ ] `interactionModels`
-- [ ] `componentDefinitions`
-- [ ] `componentInstances`
-- [ ] `ecommerceRegions`
-- [ ] `presentationMappings`
-- [ ] `unsupportedPatterns`
-- [ ] `originalityRestrictions`
-- [ ] `confidence`
-- [ ] `reviewState`
-- [ ] `generationRestrictions`
+- [x] `projectMetadata`
+- [x] `sourceProvenance`
+- [x] `pages`
+- [x] `pageArchetypes`
+- [x] `tokens`
+- [x] `sections`
+- [x] `responsiveBehavior`
+- [x] `interactionModels`
+- [x] `componentDefinitions`
+- [x] `componentInstances`
+- [x] `ecommerceRegions`
+- [x] `presentationMappings`
+- [x] `unsupportedPatterns`
+- [x] `originalityRestrictions`
+- [x] `confidence`
+- [x] `reviewState`
+- [x] `generationRestrictions`
 
 Generation readiness blocking conditions:
 
-- [ ] Missing required page archetype.
-- [ ] Invalid section segmentation.
-- [ ] No semantic token baseline.
-- [ ] Missing mapping for critical region.
-- [ ] Required Presentation component unsupported.
-- [ ] Slot mismatch.
-- [ ] Behavior ownership conflict.
-- [ ] Low-confidence critical mapping without review decision.
-- [ ] Originality restriction unresolved.
-- [ ] Missing review decisions.
-- [ ] Invalid blueprint schema.
-- [ ] Broken evidence references.
-- [ ] Catalog version mismatch.
+- [x] Missing required page archetype.
+- [x] Invalid section segmentation.
+- [x] No semantic token baseline.
+- [x] Missing mapping for critical region.
+- [x] Required Presentation component unsupported.
+- [x] Slot mismatch.
+- [x] Behavior ownership conflict.
+- [x] Low-confidence critical mapping without review decision.
+- [x] Originality restriction unresolved.
+- [x] Missing review decisions.
+- [x] Invalid blueprint schema.
+- [x] Broken evidence references.
+- [x] Catalog version mismatch.
 
 Generation readiness warning conditions:
 
-- [ ] Cosmetic token ambiguity.
-- [ ] Minor unsupported content section.
-- [ ] Optional interaction not mapped.
-- [ ] Low-confidence non-critical component.
-- [ ] Inferred breakpoint.
+- [x] Cosmetic token ambiguity.
+- [x] Minor unsupported content section.
+- [x] Optional interaction not mapped.
+- [x] Low-confidence non-critical component.
+- [x] Inferred breakpoint.
 
 Implementation checklist:
 
-- [ ] Add `VisualBlueprintV1Builder`.
-- [ ] Add draft blueprint builder.
-- [ ] Add reviewed blueprint builder.
-- [ ] Add schema validation.
-- [ ] Add evidence reference validation.
-- [ ] Add catalog version validation.
-- [ ] Add originality restriction preservation.
-- [ ] Add generation restriction preservation.
-- [ ] Add `GenerationReadinessValidator`.
-- [ ] Add Markdown readiness report.
-- [ ] Return non-zero CLI exit code when blocking findings exist.
-- [ ] Keep StorefrontBuilder consumption disabled.
+- [x] Add `VisualBlueprintV1Builder`.
+- [x] Add draft blueprint builder.
+- [x] Add reviewed blueprint builder.
+- [x] Add schema validation.
+- [x] Add evidence reference validation.
+- [x] Add catalog version validation.
+- [x] Add originality restriction preservation.
+- [x] Add generation restriction preservation.
+- [x] Add `GenerationReadinessValidator`.
+- [x] Add Markdown readiness report.
+- [x] Return non-zero CLI exit code when blocking findings exist.
+- [x] Keep StorefrontBuilder consumption disabled.
 
 Tests:
 
-- [ ] Draft blueprint validates.
-- [ ] Reviewed blueprint is created only after valid decisions.
-- [ ] Broken evidence reference fails readiness.
-- [ ] Blocking unsupported pattern fails readiness.
-- [ ] Warning-only readiness passes.
-- [ ] Catalog mismatch fails readiness.
+- [x] Draft blueprint validates.
+- [x] Reviewed blueprint is created only after valid decisions.
+- [x] Broken evidence reference fails readiness.
+- [x] Blocking unsupported pattern fails readiness.
+- [x] Warning-only readiness passes.
+- [x] Catalog mismatch fails readiness.
 
 Done when:
 
-- [ ] Phase 4 can consume reviewed blueprint later without reinterpreting raw evidence.
+- [x] Phase 4 can consume reviewed blueprint later without reinterpreting raw evidence.
+
+Implementation evidence:
+
+- Added `BlueprintV1Assembler` (`VisualBlueprintV1Builder` implementation), blueprint/readiness contracts, and schemas.
+- Added workflow step `assemble-blueprint-v1`.
+- Builder writes draft and reviewed blueprint artifacts, preserves source provenance/originality/generation restrictions/confidence/review state, and writes JSON plus Markdown generation readiness.
+- Readiness validator checks required artifact presence, section blockers, unsupported critical patterns, and unresolved rejected/deferred review decisions while keeping StorefrontBuilder consumption disabled.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "BlueprintV1|GenerationReadiness"` passed `2/2`.
 
 ## Phase 3B.13 - Multi-Page Fixtures
 
@@ -1280,7 +1288,7 @@ Recommended implementation order:
 11. [x] Phase 3B.9 Presentation component catalog.
 12. [x] Phase 3B.10 Presentation mapping and unsupported patterns.
 13. [x] Phase 3B.11 confidence and human review.
-14. [ ] Phase 3B.12 Visual Blueprint v1 and generation readiness.
+14. [x] Phase 3B.12 Visual Blueprint v1 and generation readiness.
 15. [ ] Phase 3B.14 CLI/docs/DX.
 16. [ ] Phase 3B.15 release gate.
 

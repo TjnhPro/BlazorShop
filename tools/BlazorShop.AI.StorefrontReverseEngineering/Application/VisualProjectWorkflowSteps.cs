@@ -1,4 +1,5 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
@@ -439,5 +440,22 @@ internal sealed class ScoreConfidenceReviewStep : IVisualProjectWorkflowStep
         return report.Items.Count == 0
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-CONFIDENCE-EMPTY", "Confidence scoring produced no reviewable items.")
             : WorkflowStepResult.Success();
+    }
+}
+
+internal sealed class AssembleBlueprintV1Step : IVisualProjectWorkflowStep
+{
+    public string Name => "assemble-blueprint-v1";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/confidence/confidence-report.json", "review/review-decisions.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/visual-blueprint.v1.draft.json", "analysis/visual-blueprint.v1.reviewed.json", "reports/generation-readiness.json", "reports/generation-readiness.md"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var result = await new BlueprintV1Assembler(context.RepoRoot)
+            .AssembleAsync(context.ArtifactRoot, cancellationToken);
+
+        return WorkflowStepResult.Success(result.Readiness.Findings.Where(finding => finding.Severity == "warning").Select(finding => new WorkflowMessage(finding.Code, finding.Message)).ToArray());
     }
 }
