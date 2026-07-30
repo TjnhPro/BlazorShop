@@ -544,75 +544,75 @@ Goal: create the final file bundle that Phase 4 or a human/AI implementation age
 
 Implementation checklist:
 
-- [ ] Add an `agent-handoff` assembler.
-- [ ] Write `analysis/agent-handoff/manifest.json` with:
-  - [ ] project ID.
-  - [ ] source project path.
-  - [ ] source run ID.
-  - [ ] source commit SHA when available.
-  - [ ] generated UTC.
-  - [ ] handoff schema version.
-  - [ ] readiness status.
-  - [ ] artifact list.
-  - [ ] required consumer contract.
-  - [ ] unsupported pattern summary.
-- [ ] Write `analysis/agent-handoff/task.md` with:
-  - [ ] concrete implementation objective.
-  - [ ] allowed file areas.
-  - [ ] protected file areas.
-  - [ ] required page list.
-  - [ ] required visual slots.
-  - [ ] required responsive states.
-  - [ ] BFF/action constraints.
-  - [ ] no-copy and asset originality constraints.
-  - [ ] no-StorefrontBuilder-consumption warning until Phase 4.
-  - [ ] QA commands expected after generation.
-- [ ] Write `analysis/agent-handoff/allowed-files.json`.
-- [ ] Write `analysis/agent-handoff/protected-files.json`.
-- [ ] Write `analysis/agent-handoff/page-compositions.json`.
-- [ ] Write `analysis/agent-handoff/visual-style.json`.
-- [ ] Write `analysis/agent-handoff/design-tokens.json`.
-- [ ] Write `analysis/agent-handoff/storefront-pattern.json`.
-- [ ] Write `analysis/agent-handoff/visual-blueprint.json`.
-- [ ] Write `analysis/agent-handoff/unresolved-regions.json`.
-- [ ] Write `analysis/agent-handoff/generation-readiness.json`.
-- [ ] Do not include raw reference images or original brand assets unless they are explicitly classified as allowed reference-only evidence.
-- [ ] Include screenshots and crops only as evidence references, not as assets to copy.
-- [ ] Make the handoff stable under deterministic reruns.
+- [x] Add an `agent-handoff` assembler.
+- [x] Write `analysis/agent-handoff/manifest.json` with:
+  - [x] project ID.
+  - [x] source project path.
+  - [x] source run ID.
+  - [x] source commit SHA when available.
+  - [x] generated UTC.
+  - [x] handoff schema version.
+  - [x] readiness status.
+  - [x] artifact list.
+  - [x] required consumer contract.
+  - [x] unsupported pattern summary.
+- [x] Write `analysis/agent-handoff/task.md` with:
+  - [x] concrete implementation objective.
+  - [x] allowed file areas.
+  - [x] protected file areas.
+  - [x] required page list.
+  - [x] required visual slots.
+  - [x] required responsive states.
+  - [x] BFF/action constraints.
+  - [x] no-copy and asset originality constraints.
+  - [x] no-StorefrontBuilder-consumption warning until Phase 4.
+  - [x] QA commands expected after generation.
+- [x] Write `analysis/agent-handoff/allowed-files.json`.
+- [x] Write `analysis/agent-handoff/protected-files.json`.
+- [x] Write `analysis/agent-handoff/page-compositions.json`.
+- [x] Write `analysis/agent-handoff/visual-style.json`.
+- [x] Write `analysis/agent-handoff/design-tokens.json`.
+- [x] Write `analysis/agent-handoff/storefront-pattern.json`.
+- [x] Write `analysis/agent-handoff/visual-blueprint.json`.
+- [x] Write `analysis/agent-handoff/unresolved-regions.json`.
+- [x] Write `analysis/agent-handoff/generation-readiness.json`.
+- [x] Do not include raw reference images or original brand assets unless they are explicitly classified as allowed reference-only evidence.
+- [x] Include screenshots and crops only as evidence references, not as assets to copy.
+- [x] Make the handoff stable under deterministic reruns.
 
 Protected file examples:
 
-- [ ] generated client files.
-- [ ] Runtime transport files.
-- [ ] Presentation BFF endpoints.
-- [ ] Presentation route assemblies.
-- [ ] package version props.
-- [ ] Starter generation contract.
-- [ ] Storefront V2 files.
-- [ ] Commerce Node and Control Plane files.
-- [ ] shared ecommerce business DTOs outside allowed contracts.
+- [x] generated client files.
+- [x] Runtime transport files.
+- [x] Presentation BFF endpoints.
+- [x] Presentation route assemblies.
+- [x] package version props.
+- [x] Starter generation contract.
+- [x] Storefront V2 files.
+- [x] Commerce Node and Control Plane files.
+- [x] shared ecommerce business DTOs outside allowed contracts.
 
 Allowed file examples for future generated storefronts:
 
-- [ ] project-local visual Razor files.
-- [ ] project-local CSS.
-- [ ] project-local static assets.
-- [ ] project-local view registrations.
-- [ ] project-local copy/localization resources.
-- [ ] project-local visual configuration.
+- [x] project-local visual Razor files.
+- [x] project-local CSS.
+- [x] project-local static assets.
+- [x] project-local view registrations.
+- [x] project-local copy/localization resources.
+- [x] project-local visual configuration.
 
 Tests:
 
-- [ ] Handoff manifest lists every required artifact.
-- [ ] Handoff package is deterministic across two runs.
-- [ ] Protected file manifest blocks V2/backend/Runtime/Presentation transport targets.
-- [ ] Allowed file manifest permits only generated storefront visual areas.
-- [ ] `task.md` includes enough context to implement without reading raw Phase 3B internals.
-- [ ] Unresolved critical regions block readiness.
+- [x] Handoff manifest lists every required artifact.
+- [x] Handoff package is deterministic across two runs.
+- [x] Protected file manifest blocks V2/backend/Runtime/Presentation transport targets.
+- [x] Allowed file manifest permits only generated storefront visual areas.
+- [x] `task.md` includes enough context to implement without reading raw Phase 3B internals.
+- [x] Unresolved critical regions block readiness.
 
 Done when:
 
-- [ ] Phase 4 can be designed to read only `analysis/agent-handoff/*` plus schemas, not raw evidence folders.
+- [x] Phase 4 can be designed to read only `analysis/agent-handoff/*` plus schemas, not raw evidence folders.
 
 ## Phase 3C.8 - Strict Readiness And Workflow Failure
 

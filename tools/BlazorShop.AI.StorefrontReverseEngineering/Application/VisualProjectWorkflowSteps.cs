@@ -2,6 +2,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Handoff;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
@@ -485,5 +486,36 @@ internal sealed class AssembleBlueprintV1Step : IVisualProjectWorkflowStep
             .AssembleAsync(context.ArtifactRoot, cancellationToken);
 
         return WorkflowStepResult.Success(result.Readiness.Findings.Where(finding => finding.Severity == "warning").Select(finding => new WorkflowMessage(finding.Code, finding.Message)).ToArray());
+    }
+}
+
+internal sealed class AssembleAgentHandoffStep : IVisualProjectWorkflowStep
+{
+    public string Name => "assemble-agent-handoff";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/resolved/page-compositions.reviewed.json", "analysis/visual-blueprint.v1.reviewed.json", "reports/generation-readiness.json"];
+
+    public IReadOnlyList<string> OutputArtifacts =>
+    [
+        "analysis/agent-handoff/manifest.json",
+        "analysis/agent-handoff/task.md",
+        "analysis/agent-handoff/allowed-files.json",
+        "analysis/agent-handoff/protected-files.json",
+        "analysis/agent-handoff/page-compositions.json",
+        "analysis/agent-handoff/visual-style.json",
+        "analysis/agent-handoff/design-tokens.json",
+        "analysis/agent-handoff/storefront-pattern.json",
+        "analysis/agent-handoff/visual-blueprint.json",
+        "analysis/agent-handoff/unresolved-regions.json",
+        "analysis/agent-handoff/generation-readiness.json"
+    ];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var manifest = await new AgentHandoffAssembler(context.RepoRoot)
+            .AssembleAsync(context.ArtifactRoot, cancellationToken);
+        return WorkflowStepResult.Success(manifest.ReadinessPassed
+            ? []
+            : [new WorkflowMessage("agent-handoff-readiness-blocked", "Agent handoff was written with readiness blockers.")]);
     }
 }

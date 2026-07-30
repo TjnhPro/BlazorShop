@@ -757,11 +757,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new MapPresentationComponentsStep());
         steps.Add(new ScoreConfidenceReviewStep());
         steps.Add(new AssembleBlueprintV1Step());
+        steps.Add(new AssembleAgentHandoffStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions" or "build-storefront-pattern" or "build-presentation-catalog" or "map-presentation-components" or "score-confidence-review" or "assemble-blueprint-v1";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions" or "build-storefront-pattern" or "build-presentation-catalog" or "map-presentation-components" or "score-confidence-review" or "assemble-blueprint-v1" or "assemble-agent-handoff";
 
     private static string WriteMarkdown(ReadinessReport report)
     {
