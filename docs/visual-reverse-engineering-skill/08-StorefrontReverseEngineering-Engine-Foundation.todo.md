@@ -902,27 +902,27 @@ Goal: make Phase 3A maintainable for agents and humans.
 
 Docs to update:
 
-- [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] `docs/visual-reverse-engineering-skill/README.md`
-- [ ] `docs/visual-reverse-engineering-skill/reference.md`
-- [ ] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` if commands or boundaries affect operator flow
-- [ ] `docs/agents/storefront-builder.md`
-- [ ] `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md`
+- [x] `docs/architecture/11-storefront-builder.md`
+- [x] `docs/visual-reverse-engineering-skill/README.md`
+- [x] `docs/visual-reverse-engineering-skill/reference.md`
+- [x] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` if commands or boundaries affect operator flow
+- [x] `docs/agents/storefront-builder.md`
+- [x] `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md`
 
 QA tasks:
 
-- [ ] Add focused architecture/source scan:
-  - [ ] no production project references ReverseEngineering
-  - [ ] no ReverseEngineering output writes into generated storefront roots
-  - [ ] no Storefront V2 reference
-  - [ ] no backend/core/API reference
-- [ ] Add local fixture E2E capture test.
-- [ ] Add schema validation test suite.
-- [ ] Add workflow retry/resume tests.
-- [ ] Add secret/cookie log redaction test.
-- [ ] Add evidence provenance tests.
-- [ ] Add artifact path safety tests.
-- [ ] Add StorefrontBuilder compatibility smoke to prove existing builder still works.
+- [x] Add focused architecture/source scan:
+  - [x] no production project references ReverseEngineering
+  - [x] no ReverseEngineering output writes into generated storefront roots
+  - [x] no Storefront V2 reference
+  - [x] no backend/core/API reference
+- [x] Add local fixture E2E capture test.
+- [x] Add schema validation test suite.
+- [x] Add workflow retry/resume tests.
+- [x] Add secret/cookie log redaction test.
+- [x] Add evidence provenance tests.
+- [x] Add artifact path safety tests.
+- [x] Add StorefrontBuilder compatibility smoke to prove existing builder still works.
 
 Suggested release gate:
 
@@ -946,54 +946,54 @@ Pop-Location
 
 Exit criteria:
 
-- [ ] Phase 3A command documentation is copy-paste usable.
-- [ ] Architecture docs explain the difference between StorefrontBuilder and StorefrontReverseEngineering.
-- [ ] Local release gate passes.
-- [ ] Known limitations are documented.
-- [ ] Phase 3B handoff is explicit.
+- [x] Phase 3A command documentation is copy-paste usable.
+- [x] Architecture docs explain the difference between StorefrontBuilder and StorefrontReverseEngineering.
+- [x] Local release gate passes.
+- [x] Known limitations are documented.
+- [x] Phase 3B handoff is explicit.
 
 ## Phase 3A Definition Of Done
 
 Architecture:
 
-- [ ] `BlazorShop.AI.StorefrontReverseEngineering` exists as independent development-time tooling.
-- [ ] No production runtime project references it.
-- [ ] No Commerce Node, Control Plane, Storefront V2, Starter, Runtime, Presentation, Client, Browser, Components, Domain, Application, or Infrastructure dependency is introduced.
-- [ ] Artifact roots stay under approved `artifacts/storefront-reverse-engineering` and `obj/storefront-reverse-engineering` folders.
+- [x] `BlazorShop.AI.StorefrontReverseEngineering` exists as independent development-time tooling.
+- [x] No production runtime project references it.
+- [x] No Commerce Node, Control Plane, Storefront V2, Starter, Runtime, Presentation, Client, Browser, Components, Domain, Application, or Infrastructure dependency is introduced.
+- [x] Artifact roots stay under approved `artifacts/storefront-reverse-engineering` and `obj/storefront-reverse-engineering` folders.
 
 Runtime:
 
-- [ ] CLI can initialize, inspect, discover, capture, analyze, validate, and run a local fixture workflow.
-- [ ] Workflow runner supports retry, resume, skip completed steps, and step state persistence.
-- [ ] Browser capture uses `IReferenceBrowser`.
-- [ ] Artifact writes use `IVisualArtifactStore`.
-- [ ] Schema validation uses `IVisualSchemaRegistry`.
-- [ ] AI provider access is behind `IVisualAnalysisProvider`.
-- [ ] Rule-based fallback works without AI secrets.
+- [x] CLI can initialize, inspect, discover, capture, analyze, validate, and run a local fixture workflow.
+- [x] Workflow runner supports retry, resume, skip completed steps, and step state persistence.
+- [x] Browser capture uses `IReferenceBrowser`.
+- [x] Artifact writes use `IVisualArtifactStore`.
+- [x] Schema validation uses `IVisualSchemaRegistry`.
+- [x] AI provider access is behind `IVisualAnalysisProvider`.
+- [x] Rule-based fallback works without AI secrets.
 
 Evidence:
 
-- [ ] Desktop, tablet, and mobile evidence exists.
-- [ ] Screenshot, DOM, styles, boxes, assets, manifests, run logs, topology draft, blueprint draft, originality audit, and readiness report are written.
-- [ ] Evidence artifacts are bounded and schema-valid.
-- [ ] Evidence and analysis artifacts include provenance.
-- [ ] Sensitive cookies, tokens, and credentials are not logged.
+- [x] Desktop, tablet, and mobile evidence exists.
+- [x] Screenshot, DOM, styles, boxes, assets, manifests, run logs, topology draft, blueprint draft, originality audit, and readiness report are written.
+- [x] Evidence artifacts are bounded and schema-valid.
+- [x] Evidence and analysis artifacts include provenance.
+- [x] Sensitive cookies, tokens, and credentials are not logged.
 
 StorefrontBuilder compatibility:
 
-- [ ] Existing StorefrontBuilder commands still run.
-- [ ] Existing generated storefront roots and validation gates remain unchanged.
-- [ ] New ReverseEngineering artifacts are not silently consumed by generation until a later approved phase.
+- [x] Existing StorefrontBuilder commands still run.
+- [x] Existing generated storefront roots and validation gates remain unchanged.
+- [x] New ReverseEngineering artifacts are not silently consumed by generation until a later approved phase.
 
 Testing:
 
-- [ ] Unit tests pass.
-- [ ] Schema tests pass.
-- [ ] Browser fixture tests pass.
-- [ ] Workflow retry/resume tests pass.
-- [ ] Artifact path safety tests pass.
-- [ ] Secret redaction tests pass.
-- [ ] StorefrontBuilder compatibility smoke passes.
+- [x] Unit tests pass.
+- [x] Schema tests pass.
+- [x] Browser fixture tests pass.
+- [x] Workflow retry/resume tests pass.
+- [x] Artifact path safety tests pass.
+- [x] Secret redaction tests pass.
+- [x] StorefrontBuilder compatibility smoke passes.
 
 ## Deferred To Phase 3B
 
@@ -1012,22 +1012,22 @@ Testing:
 
 CEO lens:
 
-- [ ] Keep Phase 3A narrow: executable evidence foundation, not full visual generation.
-- [ ] Avoid creating a second generator competing with StorefrontBuilder.
-- [ ] Make artifacts inspectable so AI agents can work from evidence rather than guessing.
+- [x] Keep Phase 3A narrow: executable evidence foundation, not full visual generation.
+- [x] Avoid creating a second generator competing with StorefrontBuilder.
+- [x] Make artifacts inspectable so AI agents can work from evidence rather than guessing.
 
 Engineering lens:
 
-- [ ] Prefer typed contracts and schema validation over procedural scripts as hidden source of truth.
-- [ ] Reuse current Playwright capture behavior as baseline evidence, but put it behind replaceable interfaces.
-- [ ] Keep the new tool independent of production V2 runtime projects.
+- [x] Prefer typed contracts and schema validation over procedural scripts as hidden source of truth.
+- [x] Reuse current Playwright capture behavior as baseline evidence, but put it behind replaceable interfaces.
+- [x] Keep the new tool independent of production V2 runtime projects.
 
 DX lens:
 
-- [ ] CLI commands must be predictable and copy-paste runnable.
-- [ ] Errors must include problem, cause, and fix.
-- [ ] Local fixture workflow must be the hello-world path.
-- [ ] Internet URL capture must be manual/optional, not CI-required.
+- [x] CLI commands must be predictable and copy-paste runnable.
+- [x] Errors must include problem, cause, and fix.
+- [x] Local fixture workflow must be the hello-world path.
+- [x] Internet URL capture must be manual/optional, not CI-required.
 
 Risk register:
 

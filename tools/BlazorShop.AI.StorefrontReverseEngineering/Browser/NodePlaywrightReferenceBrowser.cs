@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
+using BlazorShop.AI.StorefrontReverseEngineering.Validation;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 
@@ -52,7 +53,7 @@ public sealed class NodePlaywrightReferenceBrowser : IReferenceBrowser
 
         if (process.ExitCode != 0)
         {
-            var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+            var stderr = SensitiveValueRedactor.Redact(await process.StandardError.ReadToEndAsync(cancellationToken));
             throw new InvalidOperationException($"[SRE-BROWSER-005] Browser capture failed. Problem: Node bridge exited with {process.ExitCode}. Cause: Playwright dependencies or the reference URL may be unavailable. Fix: run npm install and npx playwright install chromium under StorefrontBuilder. Details: {stderr}");
         }
 

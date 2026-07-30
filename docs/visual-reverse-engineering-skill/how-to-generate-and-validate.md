@@ -98,6 +98,14 @@ Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder
 
 ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`, but generated storefront commands do not consume that blueprint yet. Treat it as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
 
+To run the Phase 3A fixture evidence workflow:
+
+```powershell
+$fixture = (Resolve-Path 'tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures\static-storefront.html').Path
+$fixtureUrl = [Uri]::new($fixture).AbsoluteUri
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- run --url $fixtureUrl --name FixtureDemo --output-root obj/storefront-reverse-engineering/projects --no-ai --force
+```
+
 ## Validate
 
 Run the static gate:

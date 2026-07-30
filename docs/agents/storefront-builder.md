@@ -15,6 +15,8 @@ Use this guide when changing StorefrontBuilder tooling, Starter, generated store
 
 StorefrontBuilder is development-time tooling. Do not add it as a production ASP.NET service, Commerce Node module, or Control Plane feature unless a new architecture decision explicitly changes that.
 
+`BlazorShop.AI.StorefrontReverseEngineering` is a separate Phase 3A development-time executable under `tools/`. It creates reference evidence, workflow state, neutral visual-blueprint drafts, originality audit, and readiness reports under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. It must not reference production runtime projects, generated storefront roots, or Storefront V2. StorefrontBuilder generation does not consume its artifacts until a later approved phase.
+
 Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
@@ -74,6 +76,14 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 .\scripts\qa\run-storefront-client-regeneration-gate.ps1
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+```
+
+Use focused validation for StorefrontReverseEngineering changes:
+
+```powershell
+dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help
 ```
 
 Use `Structure` proof for package/boundary checks plus generated lifecycle proof: post-regeneration build, deterministic no-op regeneration, and manual-edit conflict reporting. Use `run-storefront-builder-regeneration-gate.ps1` for CI-friendly ownership/regeneration checks that do not require live Commerce Node data. Use `FoundationFunctionalFast` for PR-safe generated browser behavior checks. Use `run-storefront-builder-full-proof-with-fixture.ps1` before release closure or when fixture-backed live generated behavior changes; it starts and tears down the V2 fixture runtime itself. Call `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull` directly only when Commerce Node fixture data is already running and verified. When GitHub Actions are disabled during development, local gate output is the closure evidence; run the StorefrontBuilder workflow manually with `run_browser_gates=true` after Actions are re-enabled.
