@@ -41,7 +41,9 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 Manual artifacts should use `artifacts/storefront-reverse-engineering/projects/{ProjectId}`. Automated tests and gates should use `obj/storefront-reverse-engineering/projects/{ProjectId}`.
 
-Readiness is reported in `reports/readiness-report.md`. A passing readiness report means the current artifacts are schema-valid, quality-aware, linked by capture correlation IDs, tied to workflow run state, and constrained by originality/provenance. It does not mean AI analysis is complete or that a generated storefront can be produced.
+Readiness is reported in `reports/readiness-report.json`; that JSON file is the source of truth used by `inspect` and gate checks. `reports/readiness-report.md` is only the human-readable companion. A passing readiness report means the current artifacts are schema-valid, quality-aware, linked by capture correlation IDs, tied to workflow run state, and constrained by originality/provenance. It does not mean AI analysis is complete or that a generated storefront can be produced.
+
+`inspect` reads `project.json`, `runs/{runId}.json`, and `reports/readiness-report.json` without launching a browser. Its output includes latest run status, readiness pass/fail/unknown, blocking and warning counts, the latest blocking finding, blueprint path, readiness report path, and step status rows when a valid run file exists.
 
 ## ReverseEngineering Browser Setup
 

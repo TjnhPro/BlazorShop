@@ -111,8 +111,13 @@ public sealed class VisualProjectLifecycleTests
 
         Assert.Equal(0, inspectCode);
         Assert.Contains("Status: Created", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Latest run: (none)", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Latest run status: (none)", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Readiness passed: unknown", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Blocking findings: 0", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Blueprint path:", inspectOut.ToString(), StringComparison.Ordinal);
-        Assert.Contains("Readiness report:", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Readiness report path:", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Steps: (none)", inspectOut.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]

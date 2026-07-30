@@ -60,7 +60,73 @@ public sealed class EndToEndCliTests
         Assert.Equal(0, inspectExit);
         Assert.True(File.Exists(Path.Combine(repoRoot, projectRoot, "runs", "inspect-run.json")));
         Assert.Contains("Run status: Succeeded", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Latest run: inspect-run", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Latest run status: Succeeded", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Readiness passed: true", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Blocking findings: 0", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Warnings: 0", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Latest blocking finding: (none)", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("capture-viewport-desktop-1440", inspectOut.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Inspect_AfterFailedReadinessShowsBlockingSummary()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Inspect Failed Readiness");
+        await MutateJsonAsync(projectRoot, "captures/home/desktop-1440/capture-quality-report.json", json =>
+        {
+            json["passed"] = false;
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+        var inspectOutput = await RunInspectAsync(projectRoot);
+
+        Assert.False(report.Passed);
+        Assert.Contains("Readiness passed: false", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Blocking findings:", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Latest blocking finding: quality-failed -", inspectOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Inspect_HandlesMissingLatestRunFile()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Inspect Missing Run");
+        File.Delete(Path.Combine(projectRoot, "runs", "readiness-fixture.json"));
+
+        var inspectOutput = await RunInspectAsync(projectRoot);
+
+        Assert.Contains("Latest run: readiness-fixture", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Latest run status: missing", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Readiness passed: true", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Steps: (unavailable)", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Inspection warning: Latest workflow run file is missing:", inspectOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Inspect_HandlesInvalidLatestRunFile()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Inspect Invalid Run");
+        await File.WriteAllTextAsync(Path.Combine(projectRoot, "runs", "readiness-fixture.json"), "{");
+
+        var inspectOutput = await RunInspectAsync(projectRoot);
+
+        Assert.Contains("Latest run: readiness-fixture", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Latest run status: invalid", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Steps: (unavailable)", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Inspection warning: Latest workflow run file is invalid:", inspectOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Inspect_HandlesInvalidReadinessJson()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Inspect Invalid Readiness");
+        await File.WriteAllTextAsync(Path.Combine(projectRoot, "reports", "readiness-report.json"), "{");
+
+        var inspectOutput = await RunInspectAsync(projectRoot);
+
+        Assert.Contains("Readiness passed: unknown", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Readiness summary: Readiness report invalid.", inspectOutput, StringComparison.Ordinal);
+        Assert.Contains("Inspection warning: Readiness report is invalid:", inspectOutput, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -328,6 +394,21 @@ public sealed class EndToEndCliTests
         var json = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         mutate(json);
         await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static async Task<string> RunInspectAsync(string projectRoot)
+    {
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+        var exitCode = await CliHost.RunAsync(
+            ["inspect", "--project", projectRoot],
+            stdout,
+            stderr,
+            CancellationToken.None);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal("", stderr.ToString());
+        return stdout.ToString();
     }
 
     private sealed class TimeoutReferenceBrowser : IReferenceBrowser

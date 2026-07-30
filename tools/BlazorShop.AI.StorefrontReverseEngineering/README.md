@@ -19,7 +19,7 @@ Primary commands:
 - `capture --project <path>` captures configured page and viewport evidence.
 - `analyze --project <path> [--no-ai]` writes rule-based draft topology, specifications, blueprint, and originality artifacts.
 - `validate --project <path>` validates schemas, capture quality, references, workflow state, blueprint links, and originality restrictions.
-- `inspect --project <path>` prints current project status, latest run, blueprint path, and readiness report path.
+- `inspect --project <path>` prints project status, latest run status, readiness pass/fail state, blocking/warning counts, latest blocker, blueprint path, readiness report path, and workflow steps.
 - `run --url <url> --name <name> [--output-root <path>] [--no-ai] [--force] [--run-id <id>]` executes the full sequential workflow.
 - `resume --project <path> [--run-id <id>] [--force-step <step>]` resumes or reruns a workflow step plus downstream steps.
 
@@ -52,9 +52,11 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 - `captures/{pageId}/{viewportId}` screenshot, DOM, styles, boxes, assets, manifest, quality report, and normalized evidence
 - `analysis/page-topology.draft.json`, page/component specifications, `visual-blueprint.draft.json`, and `originality-audit.json`
 - `runs/{runId}.json`
-- `reports/originality-audit.md` and `reports/readiness-report.md`
+- `reports/originality-audit.md`, `reports/readiness-report.json`, and `reports/readiness-report.md`
 
-The readiness report is the release handoff check. A ready report means produced artifacts are present, schema-valid, linked by capture correlation IDs, quality-checked, tied to the latest workflow run, and constrained by originality/provenance findings. It does not mean the reference design has been fully interpreted or that assets can be reused.
+`reports/readiness-report.json` is the machine-readable source of truth for readiness and the data source used by `inspect`. `reports/readiness-report.md` is only a human-readable companion. A ready report means produced artifacts are present, schema-valid, linked by capture correlation IDs, quality-checked, tied to the latest workflow run, and constrained by originality/provenance findings. It does not mean the reference design has been fully interpreted or that assets can be reused.
+
+`inspect` does not require Playwright. It reads `project.json`, `runs/{runId}.json`, and `reports/readiness-report.json`; missing or invalid run/readiness files are shown explicitly as `missing`, `invalid`, or `unknown` instead of being hidden behind generic validation text.
 
 ## Hardening Gate
 

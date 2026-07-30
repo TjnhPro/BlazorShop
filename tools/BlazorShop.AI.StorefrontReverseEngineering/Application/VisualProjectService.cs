@@ -2,6 +2,8 @@ using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
 using BlazorShop.AI.StorefrontReverseEngineering.Validation;
+using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
+using System.Text.Json;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Application;
 
@@ -85,12 +87,60 @@ public sealed class VisualProjectService
 
         var store = CreateStore(projectRoot);
         var project = await store.ReadJsonAsync<VisualProject>(ArtifactPath.Create("project.json"), "visual-project", cancellationToken);
-        var latestRun = FindLatestRun(projectRoot);
-        var validationSummary = File.Exists(Path.Combine(projectRoot, "reports", "evidence-validation.md"))
-            ? "Evidence validation report exists."
-            : "No validation report yet.";
+        var latestRunId = project.LatestRunId ?? FindLatestRun(projectRoot);
+        var latestRunPath = latestRunId is null
+            ? null
+            : Path.Combine(projectRoot, "runs", latestRunId + ".json");
+        var latestRun = latestRunPath is null
+            ? null
+            : TryReadLatestRun(latestRunPath, out _);
+        var latestRunState = ResolveLatestRunState(latestRunId, latestRunPath, latestRun);
 
-        return new VisualProjectInspection(project, latestRun, validationSummary);
+        var blueprintPath = Path.Combine(projectRoot, "analysis", "visual-blueprint.draft.json");
+        var readinessReportPath = Path.Combine(projectRoot, "reports", "readiness-report.json");
+        var readiness = TryReadReadiness(readinessReportPath, out var readinessError);
+        var blockingFindings = readiness?.Findings
+            .Where(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase))
+            .ToArray() ?? [];
+        var warningCount = readiness?.Findings.Count(finding =>
+            string.Equals(finding.Severity, "warning", StringComparison.OrdinalIgnoreCase)) ?? 0;
+
+        var inspectionWarnings = new List<string>();
+        if (latestRunPath is not null && !File.Exists(latestRunPath))
+        {
+            inspectionWarnings.Add($"Latest workflow run file is missing: {latestRunPath}");
+        }
+        else if (latestRunPath is not null && latestRun is null)
+        {
+            inspectionWarnings.Add($"Latest workflow run file is invalid: {latestRunPath}");
+        }
+
+        if (readinessError is not null)
+        {
+            inspectionWarnings.Add(readinessError);
+        }
+
+        var readinessSummary = readiness is null
+            ? readinessError is null
+                ? "No readiness report found."
+                : "Readiness report invalid."
+            : $"Readiness passed: {readiness.Passed}; blocking: {blockingFindings.Length}; warnings: {warningCount}.";
+
+        return new VisualProjectInspection(
+            project,
+            latestRunId,
+            latestRun,
+            latestRun?.Status,
+            latestRunState,
+            readiness?.Passed,
+            blockingFindings.Length,
+            warningCount,
+            blockingFindings.LastOrDefault(),
+            blueprintPath,
+            readinessReportPath,
+            project.ArtifactRoot,
+            readinessSummary,
+            inspectionWarnings.Count == 0 ? null : string.Join(" | ", inspectionWarnings));
     }
 
     private FileSystemVisualArtifactStore CreateStore(string projectRoot) =>
@@ -123,9 +173,76 @@ public sealed class VisualProjectService
             .Select(Path.GetFileNameWithoutExtension)
             .FirstOrDefault();
     }
+
+    private static WorkflowRun? TryReadLatestRun(string runPath, out string? error)
+    {
+        error = null;
+        if (!File.Exists(runPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(runPath);
+            return JsonSerializer.Deserialize<WorkflowRun>(json, VisualJson.Options);
+        }
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
+        {
+            error = exception.Message;
+            return null;
+        }
+    }
+
+    private static ReadinessReport? TryReadReadiness(string readinessReportPath, out string? error)
+    {
+        error = null;
+        if (!File.Exists(readinessReportPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(readinessReportPath);
+            return JsonSerializer.Deserialize<ReadinessReport>(json, VisualJson.Options)
+                ?? throw new JsonException("Readiness report deserialized to null.");
+        }
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
+        {
+            error = $"Readiness report is invalid: {readinessReportPath}: {exception.Message}";
+            return null;
+        }
+    }
+
+    private static string ResolveLatestRunState(string? latestRunId, string? latestRunPath, WorkflowRun? latestRun)
+    {
+        if (latestRunId is null)
+        {
+            return "(none)";
+        }
+
+        if (latestRunPath is not null && !File.Exists(latestRunPath))
+        {
+            return "missing";
+        }
+
+        return latestRun is null ? "invalid" : latestRun.Status.ToString();
+    }
 }
 
 public sealed record VisualProjectInspection(
     VisualProject Project,
     string? LatestRunId,
-    string ValidationSummary);
+    WorkflowRun? LatestRun,
+    WorkflowRunStatus? LatestRunStatus,
+    string LatestRunState,
+    bool? ReadinessPassed,
+    int BlockingFindingCount,
+    int WarningCount,
+    ReadinessFinding? LatestBlockingFinding,
+    string BlueprintPath,
+    string ReadinessReportPath,
+    string ArtifactRoot,
+    string ReadinessSummary,
+    string? InspectionWarning);

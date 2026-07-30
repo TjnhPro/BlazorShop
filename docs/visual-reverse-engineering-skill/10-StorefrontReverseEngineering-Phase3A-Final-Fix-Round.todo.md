@@ -587,57 +587,57 @@ Current files:
 
 Tasks:
 
-- [ ] Replace `reports/evidence-validation.md` inspection logic with `reports/readiness-report.json`.
-- [ ] Expand `VisualProjectInspection` to include:
-  - [ ] latest run ID
-  - [ ] latest run status
-  - [ ] readiness passed
-  - [ ] blocking finding count
-  - [ ] warning count
-  - [ ] latest blocking finding
-  - [ ] blueprint path
-  - [ ] readiness report path
-  - [ ] artifact root
-- [ ] Make `inspect` handle each state clearly:
-  - [ ] initialized but never run
-  - [ ] run exists but readiness missing
-  - [ ] readiness passed
-  - [ ] readiness failed
-  - [ ] latest run file missing
-  - [ ] latest run file invalid
-- [ ] CLI output should include:
-  - [ ] project
-  - [ ] name
-  - [ ] status
-  - [ ] source URL
-  - [ ] artifact root
-  - [ ] latest run
-  - [ ] latest run status
-  - [ ] readiness passed
-  - [ ] blocking findings
-  - [ ] warnings
-  - [ ] latest blocking finding
-  - [ ] blueprint path
-  - [ ] readiness report path
-  - [ ] step table when run exists
-- [ ] Keep output script-friendly enough for gate assertions.
-- [ ] Update README and reference docs to tell developers to use `readiness-report.json` as source of truth.
+- [x] Replace `reports/evidence-validation.md` inspection logic with `reports/readiness-report.json`.
+- [x] Expand `VisualProjectInspection` to include:
+  - [x] latest run ID
+  - [x] latest run status
+  - [x] readiness passed
+  - [x] blocking finding count
+  - [x] warning count
+  - [x] latest blocking finding
+  - [x] blueprint path
+  - [x] readiness report path
+  - [x] artifact root
+- [x] Make `inspect` handle each state clearly:
+  - [x] initialized but never run
+  - [x] run exists but readiness missing
+  - [x] readiness passed
+  - [x] readiness failed
+  - [x] latest run file missing
+  - [x] latest run file invalid
+- [x] CLI output should include:
+  - [x] project
+  - [x] name
+  - [x] status
+  - [x] source URL
+  - [x] artifact root
+  - [x] latest run
+  - [x] latest run status
+  - [x] readiness passed
+  - [x] blocking findings
+  - [x] warnings
+  - [x] latest blocking finding
+  - [x] blueprint path
+  - [x] readiness report path
+  - [x] step table when run exists
+- [x] Keep output script-friendly enough for gate assertions.
+- [x] Update README and reference docs to tell developers to use `readiness-report.json` as source of truth.
 
 Guardrails:
 
-- [ ] Do not rely on Markdown reports as source of truth.
-- [ ] Do not hide failed readiness behind generic validation text.
-- [ ] Do not make `inspect` require Playwright or browser dependencies.
+- [x] Do not rely on Markdown reports as source of truth.
+- [x] Do not hide failed readiness behind generic validation text.
+- [x] Do not make `inspect` require Playwright or browser dependencies.
 
 Tests:
 
-- [ ] Inspect before any run shows no latest run and no readiness.
-- [ ] Inspect after successful run shows readiness passed and zero blocking findings.
-- [ ] Inspect after failed readiness shows readiness failed and blocking count.
-- [ ] Inspect shows latest blocking finding.
-- [ ] Inspect handles missing run file.
-- [ ] Inspect handles invalid readiness JSON with clear error or degraded summary.
-- [ ] Existing lifecycle inspect tests are updated away from `evidence-validation.md`.
+- [x] Inspect before any run shows no latest run and no readiness.
+- [x] Inspect after successful run shows readiness passed and zero blocking findings.
+- [x] Inspect after failed readiness shows readiness failed and blocking count.
+- [x] Inspect shows latest blocking finding.
+- [x] Inspect handles missing run file.
+- [x] Inspect handles invalid readiness JSON with clear error or degraded summary.
+- [x] Existing lifecycle inspect tests are updated away from `evidence-validation.md`.
 
 Verification:
 
@@ -649,9 +649,19 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 Exit criteria:
 
-- [ ] `inspect` reflects the same readiness state as `reports/readiness-report.json`.
-- [ ] Developers can identify the next action without manually opening artifact folders.
-- [ ] No code path references `reports/evidence-validation.md` as active inspection source.
+- [x] `inspect` reflects the same readiness state as `reports/readiness-report.json`.
+- [x] Developers can identify the next action without manually opening artifact folders.
+- [x] No code path references `reports/evidence-validation.md` as active inspection source.
+
+Implementation evidence:
+
+- `VisualProjectService.InspectAsync` now reads `reports/readiness-report.json`, parses the latest workflow run when available, and degrades missing/invalid run or readiness files into explicit inspection state.
+- `VisualProjectInspection` now exposes artifact root, blueprint path, readiness report path, latest run ID/status/state, readiness pass/fail/unknown, blocking/warning counts, latest blocking finding, and inspection warnings.
+- CLI `inspect` now prints script-friendly lines for project, name, status, source URL, artifact root, latest run, latest run status, readiness passed, blocking findings, warnings, latest blocker, blueprint path, readiness report path, readiness summary, warnings, and step rows.
+- README and reference docs identify `reports/readiness-report.json` as the machine-readable source of truth; Markdown readiness output is documented as a companion only.
+- Added inspect regression coverage for no-run/no-readiness, successful readiness, failed readiness with latest blocker, missing latest run file, invalid latest run file, and invalid readiness JSON.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Cli|Lifecycle|Inspect|Readiness"` passed `31/31`.
+- Verification: `dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project obj\storefront-reverse-engineering\projects\validation-failure-152ebf57cb99428695f4fd6488b3d770\validation-failure` printed readiness failed, six blocking findings, latest blocker, readiness report path, and no latest run state from machine-readable artifacts.
 
 ## Phase F6 - Node Bridge Cleanup Without Breaking StorefrontBuilder Baseline
 

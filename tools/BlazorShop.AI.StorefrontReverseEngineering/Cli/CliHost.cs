@@ -1,6 +1,7 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
+using BlazorShop.AI.StorefrontReverseEngineering.Validation;
 using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Cli;
@@ -95,15 +96,22 @@ public static class CliHost
                     output.WriteLine($"Name: {inspection.Project.Name}");
                     output.WriteLine($"Status: {inspection.Project.Status}");
                     output.WriteLine($"Source URL: {inspection.Project.ReferenceUrl}");
-                    output.WriteLine($"Artifact root: {inspection.Project.ArtifactRoot}");
+                    output.WriteLine($"Artifact root: {inspection.ArtifactRoot}");
                     output.WriteLine($"Latest run: {inspection.LatestRunId ?? "(none)"}");
-                    output.WriteLine($"Validation: {inspection.ValidationSummary}");
-                    output.WriteLine($"Blueprint path: {Path.Combine(inspection.Project.ArtifactRoot, "analysis", "visual-blueprint.draft.json")}");
-                    output.WriteLine($"Readiness report: {Path.Combine(inspection.Project.ArtifactRoot, "reports", "readiness-report.json")}");
-                    if (inspection.LatestRunId is not null)
+                    output.WriteLine($"Latest run status: {inspection.LatestRunState}");
+                    output.WriteLine($"Readiness passed: {FormatNullableBool(inspection.ReadinessPassed)}");
+                    output.WriteLine($"Blocking findings: {inspection.BlockingFindingCount}");
+                    output.WriteLine($"Warnings: {inspection.WarningCount}");
+                    output.WriteLine($"Latest blocking finding: {FormatLatestBlockingFinding(inspection.LatestBlockingFinding)}");
+                    output.WriteLine($"Blueprint path: {inspection.BlueprintPath}");
+                    output.WriteLine($"Readiness report path: {inspection.ReadinessReportPath}");
+                    output.WriteLine($"Readiness summary: {inspection.ReadinessSummary}");
+                    if (inspection.InspectionWarning is not null)
                     {
-                        WriteRunInspection(output, inspection.Project.ArtifactRoot, inspection.LatestRunId);
+                        output.WriteLine($"Inspection warning: {inspection.InspectionWarning}");
                     }
+
+                    WriteRunInspection(output, inspection);
 
                     return 0;
                 case "discover":
@@ -202,25 +210,29 @@ public static class CliHost
         return directory?.FullName ?? Environment.CurrentDirectory;
     }
 
-    private static void WriteRunInspection(TextWriter output, string artifactRoot, string runId)
+    private static string FormatNullableBool(bool? value) =>
+        value.HasValue ? value.Value.ToString().ToLowerInvariant() : "unknown";
+
+    private static string FormatLatestBlockingFinding(ReadinessFinding? finding) =>
+        finding is null ? "(none)" : $"{finding.Code} - {finding.Message}";
+
+    private static void WriteRunInspection(TextWriter output, VisualProjectInspection inspection)
     {
-        var runPath = Path.Combine(artifactRoot, "runs", runId + ".json");
-        if (!File.Exists(runPath))
+        if (inspection.LatestRunId is null)
         {
-            output.WriteLine("Run status: (missing run file)");
+            output.WriteLine("Steps: (none)");
             return;
         }
 
-        var run = System.Text.Json.JsonSerializer.Deserialize<WorkflowRun>(File.ReadAllText(runPath), VisualJson.Options);
-        if (run is null)
+        if (inspection.LatestRun is null)
         {
-            output.WriteLine("Run status: (invalid run file)");
+            output.WriteLine("Steps: (unavailable)");
             return;
         }
 
-        output.WriteLine($"Run status: {run.Status}");
+        output.WriteLine($"Run status: {inspection.LatestRun.Status}");
         output.WriteLine("Steps:");
-        foreach (var step in run.Steps)
+        foreach (var step in inspection.LatestRun.Steps)
         {
             var latestFailure = step.Errors.LastOrDefault()?.Message ?? "";
             output.WriteLine($"  {step.Name}: {step.Status}; retries={step.RetryCount}; failure={latestFailure}");
