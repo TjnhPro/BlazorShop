@@ -770,24 +770,24 @@ Goal: prevent reference evidence from being treated as reusable source material 
 
 Tasks:
 
-- [ ] Create `OriginalityAuditReport`.
-- [ ] Create `ReferenceOnlyAsset`.
-- [ ] Create `ProvenanceWarning`.
-- [ ] Create `GenerationRestriction`.
-- [ ] Flag likely brand/logo assets.
-- [ ] Flag source copy/text blocks for review.
-- [ ] Flag external images/videos as reference-only.
-- [ ] Distinguish common visual grammar from distinctive source-specific elements.
-- [ ] Record originality policy in `configuration.json`.
-- [ ] Add markdown report writer.
-- [ ] Add tests for fake brand asset fixture.
-- [ ] Add tests that asset inventory defaults to reference-only unless explicitly allowed.
+- [x] Create `OriginalityAuditReport`.
+- [x] Create `ReferenceOnlyAsset`.
+- [x] Create `ProvenanceWarning`.
+- [x] Create `GenerationRestriction`.
+- [x] Flag likely brand/logo assets.
+- [x] Flag source copy/text blocks for review.
+- [x] Flag external images/videos as reference-only.
+- [x] Distinguish common visual grammar from distinctive source-specific elements.
+- [x] Record originality policy in `configuration.json`.
+- [x] Add markdown report writer.
+- [x] Add tests for fake brand asset fixture.
+- [x] Add tests that asset inventory defaults to reference-only unless explicitly allowed.
 
 Guardrails:
 
-- [ ] Do not make legal claims.
-- [ ] Do not declare assets safe to reuse by default.
-- [ ] Do not download and copy source brand assets into generated storefront output.
+- [x] Do not make legal claims.
+- [x] Do not declare assets safe to reuse by default.
+- [x] Do not download and copy source brand assets into generated storefront output.
 
 Verification:
 
@@ -797,9 +797,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Originality audit exists and is linked to evidence.
-- [ ] Reference-only assets are machine-readable.
-- [ ] Generated phases have clear restrictions to consume later.
+- [x] Originality audit exists and is linked to evidence.
+- [x] Reference-only assets are machine-readable.
+- [x] Generated phases have clear restrictions to consume later.
 
 ## Phase 13 - End-To-End Vertical Slice CLI
 
