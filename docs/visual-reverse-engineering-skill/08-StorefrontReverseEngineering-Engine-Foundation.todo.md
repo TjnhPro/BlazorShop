@@ -197,39 +197,39 @@ Files/directories:
 
 Tasks:
 
-- [ ] Create `VisualProjectId` value object.
-- [ ] Create `VisualProject`.
-- [ ] Create `VisualProjectStatus`:
-  - [ ] `Created`
-  - [ ] `Discovering`
-  - [ ] `Discovered`
-  - [ ] `Capturing`
-  - [ ] `Captured`
-  - [ ] `Analyzing`
-  - [ ] `DraftReady`
-  - [ ] `ValidationFailed`
-  - [ ] `Failed`
-- [ ] Create `ViewportDefinition`.
-- [ ] Create `ReferenceUrl`.
-- [ ] Create base `VisualArtifactMetadata`.
-- [ ] Create `VisualProjectConfiguration`.
-- [ ] Create `CapturePolicy`.
-- [ ] Create `ReferenceSiteProfile`.
-- [ ] Create `CapturePlan`.
-- [ ] Create CLI host entrypoint with help output.
-- [ ] Add command parser for placeholder commands:
-  - [ ] `init`
-  - [ ] `discover`
-  - [ ] `capture`
-  - [ ] `inspect`
-  - [ ] `validate`
-- [ ] Add serialization tests for core contracts.
+- [x] Create `VisualProjectId` value object.
+- [x] Create `VisualProject`.
+- [x] Create `VisualProjectStatus`:
+  - [x] `Created`
+  - [x] `Discovering`
+  - [x] `Discovered`
+  - [x] `Capturing`
+  - [x] `Captured`
+  - [x] `Analyzing`
+  - [x] `DraftReady`
+  - [x] `ValidationFailed`
+  - [x] `Failed`
+- [x] Create `ViewportDefinition`.
+- [x] Create `ReferenceUrl`.
+- [x] Create base `VisualArtifactMetadata`.
+- [x] Create `VisualProjectConfiguration`.
+- [x] Create `CapturePolicy`.
+- [x] Create `ReferenceSiteProfile`.
+- [x] Create `CapturePlan`.
+- [x] Create CLI host entrypoint with help output.
+- [x] Add command parser for placeholder commands:
+  - [x] `init`
+  - [x] `discover`
+  - [x] `capture`
+  - [x] `inspect`
+  - [x] `validate`
+- [x] Add serialization tests for core contracts.
 
 Guardrails:
 
-- [ ] Project does not reference Storefront V2.
-- [ ] Project does not reference Commerce Node, Control Plane, Domain, Application, Infrastructure.
-- [ ] DTO/contracts do not depend on generated storefront models.
+- [x] Project does not reference Storefront V2.
+- [x] Project does not reference Commerce Node, Control Plane, Domain, Application, Infrastructure.
+- [x] DTO/contracts do not depend on generated storefront models.
 
 Verification:
 
@@ -241,10 +241,10 @@ rg -n "ProjectReference" tools/BlazorShop.AI.StorefrontReverseEngineering
 
 Exit criteria:
 
-- [ ] Tool builds.
-- [ ] Core contracts round-trip JSON.
-- [ ] CLI help can be executed.
-- [ ] No forbidden production references exist.
+- [x] Tool builds.
+- [x] Core contracts round-trip JSON.
+- [x] CLI help can be executed.
+- [x] No forbidden production references exist.
 
 ## Phase 2 - Artifact Store, Path Safety, And Schema Registry
 
