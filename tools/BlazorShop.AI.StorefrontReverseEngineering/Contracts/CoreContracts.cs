@@ -19,7 +19,9 @@ public sealed record CapturePolicy(
     int MaximumPageHeight = 12000,
     int MaximumPages = 1,
     bool PreserveViewportSegments = false,
-    bool StrictWarnings = false);
+    bool StrictWarnings = false,
+    bool EnableAutomaticStitchedFallback = true,
+    double MaximumSingleColorRatio = 0.98);
 
 public sealed record OriginalityPolicy(
     bool TreatExternalAssetsAsReferenceOnly = true,

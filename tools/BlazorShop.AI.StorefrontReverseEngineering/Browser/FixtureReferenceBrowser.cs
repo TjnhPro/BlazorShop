@@ -77,6 +77,10 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
     private static byte[] CreateFixturePng(int width, int height, string color)
     {
         using var image = new MagickImage(new MagickColor(color), (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+        using var stripe = new MagickImage(new MagickColor("#dbeafe"), (uint)Math.Max(1, width / 4), (uint)Math.Max(1, height));
+        using var lowerBand = new MagickImage(new MagickColor("#e0f2fe"), (uint)Math.Max(1, width), (uint)Math.Max(1, height / 5));
+        image.Composite(stripe, Math.Max(0, width / 3), 0, CompositeOperator.Over);
+        image.Composite(lowerBand, 0, Math.Max(0, height - (height / 5)), CompositeOperator.Over);
         image.Format = MagickFormat.Png;
         return image.ToByteArray();
     }

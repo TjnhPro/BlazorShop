@@ -51,9 +51,15 @@ public sealed record CaptureQualityReport(
     int? FinalHeight = null,
     string? FinalMethod = null,
     IReadOnlyList<string>? Warnings = null,
-    string? CaptureCorrelationId = null);
+    string? CaptureCorrelationId = null,
+    CaptureFallbackDecision? FallbackDecision = null);
 
 public sealed record CaptureQualityFinding(
     string Code,
     string Severity,
     string Message);
+
+public sealed record CaptureFallbackDecision(
+    bool ShouldFallback,
+    string? Reason,
+    IReadOnlyList<string> TriggeringFindingCodes);

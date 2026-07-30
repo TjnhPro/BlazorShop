@@ -10,6 +10,18 @@ public sealed class StableFullPageCaptureService
     private const string StitchedCaptureMethod = "stitched";
     private const int SegmentOverlapPixels = 80;
     private const int MaximumSegmentCount = 50;
+    private static readonly HashSet<string> AutomaticFallbackFindingCodes = new(StringComparer.Ordinal)
+    {
+        "missing-screenshot-file",
+        "png-decode-failed",
+        "unexpected-image-width",
+        "unexpected-image-height",
+        "native-capture-exception",
+        "blank-image",
+        "document-height-mismatch",
+        "missing-lower-page-content",
+        "suspicious-single-color-image"
+    };
 
     private readonly IReferenceBrowser browser;
 
@@ -47,6 +59,19 @@ public sealed class StableFullPageCaptureService
             }
             catch (Exception exception) when (IsRecoverableCaptureException(exception))
             {
+                var decision = new CaptureFallbackDecision(
+                    policy.EnableAutomaticStitchedFallback,
+                    policy.EnableAutomaticStitchedFallback
+                        ? "native-capture-exception"
+                        : "automatic stitched fallback disabled",
+                    ["native-capture-exception"]);
+                if (!decision.ShouldFallback)
+                {
+                    var failedNativeCapture = CreateFailedCapture(session, viewport, evidence, exception.Message);
+                    var failedNativeQuality = EvaluateQuality(session, viewport, failedNativeCapture, stabilization, policy, false, "native-capture-exception", 0, [exception.Message], decision);
+                    return new StableCaptureResult(failedNativeCapture, stabilization, failedNativeQuality, segments, browserSession.SessionId);
+                }
+
                 return await RecoverWithStitchedFallbackAsync(
                     browserSession,
                     session,
@@ -58,18 +83,17 @@ public sealed class StableFullPageCaptureService
                     evidence,
                     nativeAttemptPassed: false,
                     fallbackReason: $"native-capture-exception: {exception.Message}",
+                    decision,
                     warnings: [exception.Message],
                     cancellationToken);
             }
 
-            nativeQuality = EvaluateQuality(session, viewport, nativeCapture, stabilization, nativeAttemptPassed: null, null, 0, []);
+            nativeQuality = EvaluateQuality(session, viewport, nativeCapture, stabilization, policy, nativeAttemptPassed: null, null, 0, [], null);
+            var fallbackDecision = DecideFallback(nativeQuality, forceStitchedFallback, policy);
+            nativeQuality = nativeQuality with { FallbackDecision = fallbackDecision };
 
-            if (forceStitchedFallback || !nativeQuality.Passed)
+            if (fallbackDecision.ShouldFallback)
             {
-                var fallbackReason = forceStitchedFallback
-                    ? "forced-stitch-proof"
-                    : string.Join("; ", nativeQuality.Findings.Where(finding => finding.Severity == "blocking").Select(finding => finding.Code));
-
                 return await RecoverWithStitchedFallbackAsync(
                     browserSession,
                     session,
@@ -80,7 +104,8 @@ public sealed class StableFullPageCaptureService
                     stabilization,
                     evidence,
                     nativeQuality.Passed,
-                    fallbackReason,
+                    fallbackDecision.Reason ?? "capture-quality-fallback",
+                    fallbackDecision,
                     nativeCapture.Warnings,
                     cancellationToken);
             }
@@ -92,7 +117,7 @@ public sealed class StableFullPageCaptureService
             stabilization = new PageStabilizationReport(["capture-failed"], [], [exception.Message]);
 
             var failedCapture = CreateFailedCapture(session, viewport, evidence, exception.Message);
-            var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, false, exception.Message, 0, [exception.Message]);
+            var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, policy, false, exception.Message, 0, [exception.Message], null);
             return new StableCaptureResult(failedCapture, stabilization, failedQuality, segments, browserSession.SessionId);
         }
     }
@@ -108,6 +133,7 @@ public sealed class StableFullPageCaptureService
         RenderedPageEvidence evidence,
         bool? nativeAttemptPassed,
         string fallbackReason,
+        CaptureFallbackDecision decision,
         IReadOnlyList<string> warnings,
         CancellationToken cancellationToken)
     {
@@ -127,13 +153,13 @@ public sealed class StableFullPageCaptureService
             {
                 Warnings = evidence.Warnings.Concat(warnings).Concat(stitch.Warnings).ToArray()
             };
-            var recoveredQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, nativeAttemptPassed, fallbackReason, segments.Count, stitch.Warnings);
+            var recoveredQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, policy, nativeAttemptPassed, fallbackReason, segments.Count, stitch.Warnings, decision);
             return new StableCaptureResult(stitchedCapture, stabilization, recoveredQuality, segments, browserSession.SessionId);
         }
         catch (Exception exception) when (IsRecoverableCaptureException(exception))
         {
             var failedCapture = CreateFailedCapture(session, viewport, evidence, exception.Message);
-            var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, false, fallbackReason, segments.Count, warnings.Concat([exception.Message]).ToArray());
+            var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, policy, false, fallbackReason, segments.Count, warnings.Concat([exception.Message]).ToArray(), decision);
             return new StableCaptureResult(failedCapture, stabilization, failedQuality, segments, browserSession.SessionId);
         }
     }
@@ -302,10 +328,12 @@ public sealed class StableFullPageCaptureService
         ViewportDefinition viewport,
         BrowserCaptureResult capture,
         PageStabilizationReport stabilization,
+        CapturePolicy policy,
         bool? nativeAttemptPassed,
         string? fallbackReason,
         int segmentCount,
-        IReadOnlyList<string> warnings)
+        IReadOnlyList<string> warnings,
+        CaptureFallbackDecision? fallbackDecision)
     {
         var findings = new List<CaptureQualityFinding>();
         (int Width, int Height)? imageSize = null;
@@ -319,7 +347,8 @@ public sealed class StableFullPageCaptureService
         {
             try
             {
-                imageSize = ReadPngDimensions(capture.ScreenshotPng);
+                var analysis = AnalyzePng(capture.ScreenshotPng);
+                imageSize = (analysis.Width, analysis.Height);
                 if (imageSize.Value.Width != viewport.Width)
                 {
                     findings.Add(new("unexpected-image-width", "blocking", $"Screenshot width is {imageSize.Value.Width}px but expected {viewport.Width}px."));
@@ -330,9 +359,28 @@ public sealed class StableFullPageCaptureService
                     findings.Add(new("unexpected-image-height", "blocking", $"Screenshot height is {imageSize.Value.Height}px but expected at least {viewport.Height}px."));
                 }
 
-                if (IsNearSingleColorBlank(capture.ScreenshotPng))
+                if (capture.CaptureMethod == "native-full-page" &&
+                    Math.Abs(imageSize.Value.Height - capture.DocumentHeight) > 2)
                 {
-                    findings.Add(new("suspicious-single-color-image", "warning", "Screenshot has very low byte diversity and may be blank."));
+                    findings.Add(new("document-height-mismatch", "blocking", $"Native screenshot height is {imageSize.Value.Height}px but rendered document height is {capture.DocumentHeight}px."));
+                }
+
+                if (capture.DocumentHeight > viewport.Height &&
+                    imageSize.Value.Height + 2 < capture.DocumentHeight)
+                {
+                    findings.Add(new("missing-lower-page-content", "blocking", "Screenshot does not include lower-page content required by the rendered document height."));
+                }
+
+                if (analysis.DominantColorRatio >= policy.MaximumSingleColorRatio)
+                {
+                    findings.Add(new("blank-image", "blocking", $"Screenshot appears blank because one color covers {analysis.DominantColorRatio:P1} of sampled pixels."));
+                    findings.Add(new("suspicious-single-color-image", "blocking", "Screenshot has very low visual entropy and may be blank."));
+                }
+                else if (analysis.LowerBandDominantColorRatio >= policy.MaximumSingleColorRatio &&
+                         analysis.DominantColorRatio > 0.90 &&
+                         capture.DocumentHeight > viewport.Height)
+                {
+                    findings.Add(new("missing-lower-page-content", "blocking", "Lower-page screenshot band appears blank after full-page capture."));
                 }
             }
             catch (Exception exception) when (exception is MagickException or ArgumentException)
@@ -379,7 +427,9 @@ public sealed class StableFullPageCaptureService
             imageSize?.Width,
             imageSize?.Height,
             capture.CaptureMethod,
-            warnings.Concat(stabilization.Warnings ?? []).ToArray());
+            warnings.Concat(stabilization.Warnings ?? []).ToArray(),
+            CaptureCorrelationId: null,
+            fallbackDecision);
     }
 
     private static void EnsurePngHasExpectedDimensions(byte[] png, int expectedWidth, int expectedHeight)
@@ -406,11 +456,76 @@ public sealed class StableFullPageCaptureService
         return ((int)image.Width, (int)image.Height);
     }
 
-    private static bool IsNearSingleColorBlank(byte[] png)
+    private static PngQualityAnalysis AnalyzePng(byte[] png)
     {
-        var sampleLength = Math.Min(png.Length, 4096);
-        return png.Take(sampleLength).Distinct().Count() <= 8;
+        using var image = new MagickImage(png);
+        return new PngQualityAnalysis(
+            (int)image.Width,
+            (int)image.Height,
+            CalculateDominantColorRatio(image),
+            CalculateLowerBandDominantColorRatio(image));
     }
+
+    private static double CalculateDominantColorRatio(IMagickImage<byte> image)
+    {
+        var histogram = image.Histogram();
+        if (histogram.Count == 0 || image.Width == 0 || image.Height == 0)
+        {
+            return 1;
+        }
+
+        var dominant = histogram.Values.Max();
+        return dominant / (double)(image.Width * image.Height);
+    }
+
+    private static double CalculateLowerBandDominantColorRatio(IMagickImage<byte> image)
+    {
+        if (image.Height < 4)
+        {
+            return CalculateDominantColorRatio(image);
+        }
+
+        using var lowerBand = image.Clone();
+        var y = (int)Math.Floor(image.Height * 0.8);
+        var height = Math.Max(1, (int)image.Height - y);
+        lowerBand.Crop(new MagickGeometry(0, y, image.Width, (uint)height));
+        return CalculateDominantColorRatio(lowerBand);
+    }
+
+    private static CaptureFallbackDecision DecideFallback(
+        CaptureQualityReport nativeQuality,
+        bool forceStitchedFallback,
+        CapturePolicy policy)
+    {
+        if (forceStitchedFallback)
+        {
+            return new CaptureFallbackDecision(true, "forced-stitch-proof", ["forced-stitch-proof"]);
+        }
+
+        var triggeringCodes = nativeQuality.Findings
+            .Where(finding => finding.Severity == "blocking" && AutomaticFallbackFindingCodes.Contains(finding.Code))
+            .Select(finding => finding.Code)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (triggeringCodes.Length == 0)
+        {
+            return new CaptureFallbackDecision(false, null, []);
+        }
+
+        return new CaptureFallbackDecision(
+            policy.EnableAutomaticStitchedFallback,
+            policy.EnableAutomaticStitchedFallback
+                ? string.Join("; ", triggeringCodes)
+                : "automatic stitched fallback disabled",
+            triggeringCodes);
+    }
+
+    private sealed record PngQualityAnalysis(
+        int Width,
+        int Height,
+        double DominantColorRatio,
+        double LowerBandDominantColorRatio);
 
     private static string Serialize<TValue>(TValue value) =>
         System.Text.Json.JsonSerializer.Serialize(value, VisualJson.Options) + Environment.NewLine;

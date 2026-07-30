@@ -271,56 +271,56 @@ Current files:
 
 Tasks:
 
-- [ ] Add `CaptureFallbackDecision`.
-- [ ] Make fallback decision derive from `CaptureQualityFinding` codes and policy.
-- [ ] Persist fallback decision data in `CaptureQualityReport`:
-  - [ ] `NativeAttemptPassed`
-  - [ ] `FallbackReason`
-  - [ ] triggering finding codes
-  - [ ] final method
-  - [ ] final dimensions
-  - [ ] segment count
-- [ ] Treat these findings as automatic fallback triggers:
-  - [ ] `missing-screenshot-file`
-  - [ ] `png-decode-failed`
-  - [ ] `unexpected-image-width`
-  - [ ] `unexpected-image-height`
-  - [ ] `native-capture-exception`
-  - [ ] `blank-image`
-  - [ ] `document-height-mismatch`
-  - [ ] `missing-lower-page-content`
-- [ ] Convert `suspicious-single-color-image` from warning to fallback trigger when policy threshold is exceeded.
-- [ ] Improve blank and low-content detection:
-  - [ ] decode PNG through ImageMagick
-  - [ ] compute dominant color ratio
-  - [ ] compute simple histogram or entropy score
-  - [ ] detect large blank bands
-  - [ ] compare native image dimensions to expected document dimensions
-  - [ ] check lower-page evidence anchors when document height exceeds viewport height
-- [ ] Add `EnableAutomaticStitchedFallback` policy switch.
-- [ ] If automatic fallback is disabled, native blocking findings must make final quality fail instead of silently stitching.
-- [ ] Remove reliance on `forceStitchedFallback` for production path behavior.
-- [ ] Keep `forceStitchedFallback` only if tests still need an explicit manual proof hook; otherwise replace tests with automatic scenarios.
+- [x] Add `CaptureFallbackDecision`.
+- [x] Make fallback decision derive from `CaptureQualityFinding` codes and policy.
+- [x] Persist fallback decision data in `CaptureQualityReport`:
+  - [x] `NativeAttemptPassed`
+  - [x] `FallbackReason`
+  - [x] triggering finding codes
+  - [x] final method
+  - [x] final dimensions
+  - [x] segment count
+- [x] Treat these findings as automatic fallback triggers:
+  - [x] `missing-screenshot-file`
+  - [x] `png-decode-failed`
+  - [x] `unexpected-image-width`
+  - [x] `unexpected-image-height`
+  - [x] `native-capture-exception`
+  - [x] `blank-image`
+  - [x] `document-height-mismatch`
+  - [x] `missing-lower-page-content`
+- [x] Convert `suspicious-single-color-image` from warning to fallback trigger when policy threshold is exceeded.
+- [x] Improve blank and low-content detection:
+  - [x] decode PNG through ImageMagick
+  - [x] compute dominant color ratio
+  - [x] compute simple histogram or entropy score
+  - [x] detect large blank bands
+  - [x] compare native image dimensions to expected document dimensions
+  - [x] check lower-page evidence anchors when document height exceeds viewport height
+- [x] Add `EnableAutomaticStitchedFallback` policy switch.
+- [x] If automatic fallback is disabled, native blocking findings must make final quality fail instead of silently stitching.
+- [x] Remove reliance on `forceStitchedFallback` for production path behavior.
+- [x] Keep `forceStitchedFallback` only if tests still need an explicit manual proof hook; otherwise replace tests with automatic scenarios.
 
 Guardrails:
 
-- [ ] Do not introduce heavy computer vision.
-- [ ] Do not attempt pixel-perfect visual validation.
-- [ ] Do not mark a result `stitched` unless stitched PNG and segment manifest exist.
-- [ ] Do not pass readiness when native and stitched both fail.
+- [x] Do not introduce heavy computer vision.
+- [x] Do not attempt pixel-perfect visual validation.
+- [x] Do not mark a result `stitched` unless stitched PNG and segment manifest exist.
+- [x] Do not pass readiness when native and stitched both fail.
 
 Tests:
 
-- [ ] Empty screenshot bytes trigger fallback if possible.
-- [ ] Undecodable PNG triggers fallback if possible.
-- [ ] Valid blank PNG triggers fallback.
-- [ ] Unexpected native image width triggers fallback.
-- [ ] Unexpected native image height triggers fallback.
-- [ ] Native screenshot exception triggers fallback.
-- [ ] Native valid full-page image does not fallback.
-- [ ] Stitched fallback failure results in `capture-failed` quality.
-- [ ] Fallback disabled returns native quality failure.
-- [ ] Fallback reason and triggering finding codes are persisted.
+- [x] Empty screenshot bytes trigger fallback if possible.
+- [x] Undecodable PNG triggers fallback if possible.
+- [x] Valid blank PNG triggers fallback.
+- [x] Unexpected native image width triggers fallback.
+- [x] Unexpected native image height triggers fallback.
+- [x] Native screenshot exception triggers fallback.
+- [x] Native valid full-page image does not fallback.
+- [x] Stitched fallback failure results in `capture-failed` quality.
+- [x] Fallback disabled returns native quality failure.
+- [x] Fallback reason and triggering finding codes are persisted.
 
 Verification:
 
@@ -330,9 +330,18 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Fallback decision is visible and deterministic.
-- [ ] Native screenshot failure modes are covered by tests.
-- [ ] Final quality report reflects the actual final screenshot artifact.
+- [x] Fallback decision is visible and deterministic.
+- [x] Native screenshot failure modes are covered by tests.
+- [x] Final quality report reflects the actual final screenshot artifact.
+
+Implementation evidence:
+
+- Added `CaptureFallbackDecision` and persisted it on `CaptureQualityReport`; reports retain native attempt status, fallback reason, triggering finding codes, final method, final dimensions, and segment count.
+- Added automatic fallback decision logic keyed by `CaptureQualityFinding` codes plus `CapturePolicy.EnableAutomaticStitchedFallback`.
+- Replaced byte-diversity blank detection with ImageMagick PNG decode, dimensions, dominant-color ratio, lower-band ratio, document-height mismatch, and lower-page content checks.
+- Retained `forceStitchedFallback` only as an explicit proof hook; production quality failures now use automatic fallback when policy allows.
+- Added tests for blank PNG, undecodable PNG, unexpected width, native screenshot exception, valid native no-fallback, stitch failure, fallback disabled, and persisted reason/codes.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "StableCapture|Stitch|Quality"` passed `13/13`.
 
 ## Phase F3 - Move Capture And Evidence Limits Into CapturePolicy
 

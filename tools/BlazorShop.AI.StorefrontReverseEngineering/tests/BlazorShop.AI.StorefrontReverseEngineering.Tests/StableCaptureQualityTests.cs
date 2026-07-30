@@ -47,6 +47,7 @@ public sealed class StableCaptureQualityTests
         Assert.False(result.QualityReport.Passed);
         Assert.Contains(result.QualityReport.Findings, finding => finding.Code == "blank-image");
         Assert.Contains(result.QualityReport.Findings, finding => finding.Code == "missing-screenshot-file");
+        Assert.True(result.QualityReport.FallbackDecision?.ShouldFallback);
     }
 
     [Fact]
@@ -117,6 +118,94 @@ public sealed class StableCaptureQualityTests
                 cancellation.Token));
     }
 
+    [Fact]
+    public async Task Quality_BlankNativePng_TriggersAutomaticFallback()
+    {
+        var viewport = ViewportDefinition.Defaults[0];
+        var browser = new SplitOperationBrowser(
+            throwNativeScreenshot: false,
+            nativeScreenshotFactory: capturedViewport => CreateSolidPng(capturedViewport.Width, capturedViewport.Height + 420, "#ffffff"));
+
+        var result = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(new BrowserPageSession("blank-native", "home", "https://example.test"), viewport, new CapturePolicy(), false, CancellationToken.None);
+
+        Assert.Equal("stitched", result.Capture.CaptureMethod);
+        Assert.True(result.QualityReport.Passed);
+        Assert.True(result.QualityReport.FallbackDecision?.ShouldFallback);
+        Assert.Contains("blank-image", result.QualityReport.FallbackDecision!.TriggeringFindingCodes);
+        Assert.Contains("blank-image", result.QualityReport.FallbackReason, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Quality_UndecodableNativePng_TriggersAutomaticFallback()
+    {
+        var viewport = ViewportDefinition.Defaults[0];
+        var browser = new SplitOperationBrowser(false, nativeScreenshotFactory: _ => [1, 2, 3, 4, 5]);
+
+        var result = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(new BrowserPageSession("invalid-native", "home", "https://example.test"), viewport, new CapturePolicy(), false, CancellationToken.None);
+
+        Assert.Equal("stitched", result.Capture.CaptureMethod);
+        Assert.True(result.QualityReport.FallbackDecision?.ShouldFallback);
+        Assert.Contains("png-decode-failed", result.QualityReport.FallbackDecision!.TriggeringFindingCodes);
+    }
+
+    [Fact]
+    public async Task Quality_UnexpectedNativeWidth_TriggersAutomaticFallback()
+    {
+        var viewport = ViewportDefinition.Defaults[0];
+        var browser = new SplitOperationBrowser(
+            false,
+            nativeScreenshotFactory: capturedViewport => CreatePatternPng(capturedViewport.Width - 24, capturedViewport.Height + 420, "#f7fbff"));
+
+        var result = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(new BrowserPageSession("wrong-width", "home", "https://example.test"), viewport, new CapturePolicy(), false, CancellationToken.None);
+
+        Assert.Equal("stitched", result.Capture.CaptureMethod);
+        Assert.Contains("unexpected-image-width", result.QualityReport.FallbackDecision!.TriggeringFindingCodes);
+    }
+
+    [Fact]
+    public async Task Quality_FallbackDisabled_ReturnsNativeQualityFailure()
+    {
+        var viewport = ViewportDefinition.Defaults[0];
+        var browser = new SplitOperationBrowser(
+            false,
+            nativeScreenshotFactory: capturedViewport => CreateSolidPng(capturedViewport.Width, capturedViewport.Height + 420, "#ffffff"));
+
+        var result = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(
+                new BrowserPageSession("fallback-disabled", "home", "https://example.test"),
+                viewport,
+                new CapturePolicy(EnableAutomaticStitchedFallback: false),
+                forceStitchedFallback: false,
+                CancellationToken.None);
+
+        Assert.Equal("native-full-page", result.Capture.CaptureMethod);
+        Assert.False(result.QualityReport.Passed);
+        Assert.Empty(result.Segments);
+        Assert.False(result.QualityReport.FallbackDecision?.ShouldFallback);
+        Assert.Contains("blank-image", result.QualityReport.FallbackDecision!.TriggeringFindingCodes);
+    }
+
+    [Fact]
+    public async Task Quality_StitchedFallbackFailure_BlocksFinalQuality()
+    {
+        var viewport = ViewportDefinition.Defaults[0];
+        var browser = new SplitOperationBrowser(
+            false,
+            nativeScreenshotFactory: _ => [9, 8, 7],
+            viewportScreenshotFactory: _ => [6, 5, 4]);
+
+        var result = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(new BrowserPageSession("stitch-fails", "home", "https://example.test"), viewport, new CapturePolicy(), false, CancellationToken.None);
+
+        Assert.Equal("failed", result.Capture.CaptureMethod);
+        Assert.False(result.QualityReport.Passed);
+        Assert.True(result.QualityReport.FallbackDecision?.ShouldFallback);
+        Assert.Contains(result.QualityReport.Findings, finding => finding.Code == "capture-failed");
+    }
+
     private static async Task<StableCaptureResult> CaptureFixtureAsync(bool forceStitchedFallback)
     {
         var (result, _) = await CaptureFixtureWithArtifactRootAsync(forceStitchedFallback);
@@ -176,10 +265,17 @@ public sealed class StableCaptureQualityTests
     private sealed class SplitOperationBrowser : IReferenceBrowser
     {
         private readonly bool throwNativeScreenshot;
+        private readonly Func<ViewportDefinition, byte[]>? nativeScreenshotFactory;
+        private readonly Func<ViewportDefinition, byte[]>? viewportScreenshotFactory;
 
-        public SplitOperationBrowser(bool throwNativeScreenshot)
+        public SplitOperationBrowser(
+            bool throwNativeScreenshot,
+            Func<ViewportDefinition, byte[]>? nativeScreenshotFactory = null,
+            Func<ViewportDefinition, byte[]>? viewportScreenshotFactory = null)
         {
             this.throwNativeScreenshot = throwNativeScreenshot;
+            this.nativeScreenshotFactory = nativeScreenshotFactory;
+            this.viewportScreenshotFactory = viewportScreenshotFactory;
         }
 
         public int OpenSessionCount { get; private set; }
@@ -194,7 +290,7 @@ public sealed class StableCaptureQualityTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             OpenSessionCount++;
-            LastSession = new SplitOperationSession(viewport, throwNativeScreenshot);
+            LastSession = new SplitOperationSession(viewport, throwNativeScreenshot, nativeScreenshotFactory, viewportScreenshotFactory);
             return Task.FromResult<IReferenceBrowserSession>(LastSession);
         }
     }
@@ -203,11 +299,19 @@ public sealed class StableCaptureQualityTests
     {
         private readonly ViewportDefinition viewport;
         private readonly bool throwNativeScreenshot;
+        private readonly Func<ViewportDefinition, byte[]>? nativeScreenshotFactory;
+        private readonly Func<ViewportDefinition, byte[]>? viewportScreenshotFactory;
 
-        public SplitOperationSession(ViewportDefinition viewport, bool throwNativeScreenshot)
+        public SplitOperationSession(
+            ViewportDefinition viewport,
+            bool throwNativeScreenshot,
+            Func<ViewportDefinition, byte[]>? nativeScreenshotFactory,
+            Func<ViewportDefinition, byte[]>? viewportScreenshotFactory)
         {
             this.viewport = viewport;
             this.throwNativeScreenshot = throwNativeScreenshot;
+            this.nativeScreenshotFactory = nativeScreenshotFactory;
+            this.viewportScreenshotFactory = viewportScreenshotFactory;
         }
 
         public string SessionId { get; } = "split-session";
@@ -272,14 +376,14 @@ public sealed class StableCaptureQualityTests
                 throw new InvalidOperationException("native screenshot failed after evidence extraction");
             }
 
-            return Task.FromResult(CreatePng(viewport.Width, viewport.Height + 420, "#f7fbff"));
+            return Task.FromResult(nativeScreenshotFactory?.Invoke(viewport) ?? CreatePatternPng(viewport.Width, viewport.Height + 420, "#f7fbff"));
         }
 
         public Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             CaptureViewportScreenshotCount++;
-            return Task.FromResult(CreatePng(viewport.Width, viewport.Height, "#eef6ff"));
+            return Task.FromResult(viewportScreenshotFactory?.Invoke(viewport) ?? CreatePatternPng(viewport.Width, viewport.Height, "#eef6ff"));
         }
 
         public Task<BrowserDocumentMetrics> GetMetricsAsync(CancellationToken cancellationToken)
@@ -296,11 +400,23 @@ public sealed class StableCaptureQualityTests
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-        private static byte[] CreatePng(int width, int height, string color)
-        {
-            using var image = new MagickImage(new MagickColor(color), (uint)Math.Max(1, width), (uint)Math.Max(1, height));
-            image.Format = MagickFormat.Png;
-            return image.ToByteArray();
-        }
+    }
+
+    private static byte[] CreatePatternPng(int width, int height, string color)
+    {
+        using var image = new MagickImage(new MagickColor(color), (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+        using var stripe = new MagickImage(new MagickColor("#dbeafe"), (uint)Math.Max(1, width / 4), (uint)Math.Max(1, height));
+        using var lowerBand = new MagickImage(new MagickColor("#bfdbfe"), (uint)Math.Max(1, width), (uint)Math.Max(1, height / 5));
+        image.Composite(stripe, Math.Max(0, width / 3), 0, CompositeOperator.Over);
+        image.Composite(lowerBand, 0, Math.Max(0, height - (height / 5)), CompositeOperator.Over);
+        image.Format = MagickFormat.Png;
+        return image.ToByteArray();
+    }
+
+    private static byte[] CreateSolidPng(int width, int height, string color)
+    {
+        using var image = new MagickImage(new MagickColor(color), (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+        image.Format = MagickFormat.Png;
+        return image.ToByteArray();
     }
 }
