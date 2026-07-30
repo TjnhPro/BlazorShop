@@ -1114,60 +1114,67 @@ Goal: add realistic local fixtures so tests prove real ecommerce page recognitio
 
 Fixture requirements:
 
-- [ ] Local only.
-- [ ] Deterministic.
-- [ ] No Commerce API calls.
-- [ ] No external images/scripts/fonts.
-- [ ] No copyrighted/brand assets.
-- [ ] Desktop/tablet/mobile states.
-- [ ] Interaction evidence where needed.
+- [x] Local only.
+- [x] Deterministic.
+- [x] No Commerce API calls.
+- [x] No external images/scripts/fonts.
+- [x] No copyrighted/brand assets.
+- [x] Desktop/tablet/mobile states.
+- [x] Interaction evidence where needed.
 
 Fixtures:
 
-- [ ] Home fixture:
-  - [ ] header
-  - [ ] hero
-  - [ ] category cards
-  - [ ] product grid
-  - [ ] promo strip
-  - [ ] newsletter
-  - [ ] footer
-  - [ ] mobile menu
-- [ ] Product listing fixture:
-  - [ ] breadcrumb
-  - [ ] title
-  - [ ] filter trigger/panel
-  - [ ] sort
-  - [ ] product grid
-  - [ ] pagination
-  - [ ] mobile filter drawer
-- [ ] Product detail fixture:
-  - [ ] product image gallery
-  - [ ] title
-  - [ ] price
-  - [ ] option selector
-  - [ ] quantity visual
-  - [ ] add-to-cart visual
-  - [ ] description accordion
-  - [ ] reviews
-  - [ ] related products
-- [ ] Unsupported fixture:
-  - [ ] irregular overlapping layout
-  - [ ] unusual gallery
-  - [ ] complex animated section
-  - [ ] unsupported slot pattern
-  - [ ] visual behavior conflicting with Presentation ownership
+- [x] Home fixture:
+  - [x] header
+  - [x] hero
+  - [x] category cards
+  - [x] product grid
+  - [x] promo strip
+  - [x] newsletter
+  - [x] footer
+  - [x] mobile menu
+- [x] Product listing fixture:
+  - [x] breadcrumb
+  - [x] title
+  - [x] filter trigger/panel
+  - [x] sort
+  - [x] product grid
+  - [x] pagination
+  - [x] mobile filter drawer
+- [x] Product detail fixture:
+  - [x] product image gallery
+  - [x] title
+  - [x] price
+  - [x] option selector
+  - [x] quantity visual
+  - [x] add-to-cart visual
+  - [x] description accordion
+  - [x] reviews
+  - [x] related products
+- [x] Unsupported fixture:
+  - [x] irregular overlapping layout
+  - [x] unusual gallery
+  - [x] complex animated section
+  - [x] unsupported slot pattern
+  - [x] visual behavior conflicting with Presentation ownership
 
 Implementation checklist:
 
-- [ ] Extend `TestHttpFixtureServer` to serve multiple routes if needed.
-- [ ] Keep single-page fixture tests intact for Phase 3A regression.
-- [ ] Add route-specific fixture tests for Phase 3B.
-- [ ] Add fixture expected-output snapshots where stable.
+- [x] Extend `TestHttpFixtureServer` to serve multiple routes if needed.
+- [x] Keep single-page fixture tests intact for Phase 3A regression.
+- [x] Add route-specific fixture tests for Phase 3B.
+- [x] Add fixture expected-output snapshots where stable.
 
 Done when:
 
-- [ ] Phase 3B tests cover Home, PLP, PDP, and Unsupported cases.
+- [x] Phase 3B tests cover Home, PLP, PDP, and Unsupported cases.
+
+Implementation evidence:
+
+- Added local deterministic fixtures `phase3b-home.html`, `phase3b-plp.html`, `phase3b-pdp.html`, and `phase3b-unsupported.html`.
+- Fixtures use inline CSS only, no external images/scripts/fonts, no Commerce API calls, no brand assets, responsive media states, and explicit interaction-state markers.
+- Added `Phase3BFixtureTests` to verify required route markers and local-only constraints while leaving the existing Phase 3A `static-storefront.html` fixture intact.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Phase3BFixtures"` passed `4/4`.
 
 ## Phase 3B.14 - CLI, Inspect, Documentation, And Developer Experience
 
@@ -1277,7 +1284,7 @@ Recommended implementation order:
 
 1. [x] Phase 3B.0 prerequisite closure check.
 2. [x] Phase 3B.1 evidence snapshot.
-3. [ ] Phase 3B.13 fixture expansion started early with Home/PLP/PDP/Unsupported routes.
+3. [x] Phase 3B.13 fixture expansion started early with Home/PLP/PDP/Unsupported routes.
 4. [x] Phase 3B.2 raw design tokens.
 5. [x] Phase 3B.3 semantic tokens.
 6. [x] Phase 3B.4 page archetype.

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phase 3B Home Fixture</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; color: #17211b; }
+    .site-header, .site-footer { padding: 24px; background: #ffffff; }
+    .main-nav { display: flex; gap: 24px; }
+    .mobile-menu { display: none; }
+    .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 420px; padding: 48px; background: #e7f2ed; }
+    .category-cards, .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 32px; }
+    .product-card, .category-card { border: 1px solid #d6ded8; border-radius: 8px; padding: 16px; }
+    .promo-strip { padding: 24px; background: #12352a; color: #fff; }
+    .newsletter { padding: 40px; background: #f6f7f4; }
+    @media (max-width: 700px) {
+      .main-nav { display: none; }
+      .mobile-menu { display: block; }
+      .hero, .category-cards, .product-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header"><nav class="main-nav">Shop Categories Deals Account Cart</nav><button class="mobile-menu" data-interaction-state="mobile-menu">Menu</button></header>
+  <section class="hero"><h1>Evergreen Market</h1><p>Seasonal essentials for modern homes.</p></section>
+  <section class="category-cards"><article class="category-card">Kitchen</article><article class="category-card">Outdoor</article><article class="category-card">Care</article></section>
+  <section class="product-grid"><article class="product-card"><div class="product-image"></div><h2 class="product-title">Olive Kit</h2><p class="price">$48</p><button class="add-to-cart">Add to cart</button></article><article class="product-card"><div class="product-image"></div><h2 class="product-title">Linen Set</h2><p class="price">$86</p><button class="add-to-cart">Add to cart</button></article><article class="product-card"><div class="product-image"></div><h2 class="product-title">Ceramic Bowl</h2><p class="price">$32</p><button class="add-to-cart">Add to cart</button></article></section>
+  <section class="promo-strip">Free shipping over $75</section>
+  <section class="newsletter"><h2>Newsletter</h2><p>Product drops and seasonal edits.</p></section>
+  <footer class="site-footer">Footer navigation</footer>
+</body>
+</html>
