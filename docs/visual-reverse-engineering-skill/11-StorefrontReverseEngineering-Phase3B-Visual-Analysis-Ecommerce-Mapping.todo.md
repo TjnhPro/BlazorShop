@@ -547,51 +547,60 @@ Schemas/interaction-model.schema.json
 
 Responsive checklist:
 
-- [ ] Match same section across desktop/tablet/mobile.
-- [ ] Match same component candidate across viewport when possible.
-- [ ] Compare display, visibility, position, size, grid, flex, gap, typography, gutters, order, sticky behavior, and assets.
-- [ ] Detect hidden-on-mobile.
-- [ ] Detect desktop navigation to mobile menu replacement.
-- [ ] Detect multi-column to stacked.
-- [ ] Detect horizontal overflow or carousel.
-- [ ] Detect image crop change.
-- [ ] Detect compact spacing.
-- [ ] Detect typography downscale.
-- [ ] Preserve observed viewport values.
-- [ ] Mark unobserved breakpoint ranges as inferred.
+- [x] Match same section across desktop/tablet/mobile.
+- [x] Match same component candidate across viewport when possible.
+- [x] Compare display, visibility, position, size, grid, flex, gap, typography, gutters, order, sticky behavior, and assets.
+- [x] Detect hidden-on-mobile.
+- [x] Detect desktop navigation to mobile menu replacement.
+- [x] Detect multi-column to stacked.
+- [x] Detect horizontal overflow or carousel.
+- [x] Detect image crop change.
+- [x] Detect compact spacing.
+- [x] Detect typography downscale.
+- [x] Preserve observed viewport values.
+- [x] Mark unobserved breakpoint ranges as inferred.
 
 Interaction checklist:
 
-- [ ] Interpret hover.
-- [ ] Interpret click/open.
-- [ ] Interpret expand/collapse.
-- [ ] Interpret mobile menu.
-- [ ] Interpret accordion.
-- [ ] Interpret tabs.
-- [ ] Interpret carousel navigation.
-- [ ] Interpret modal/drawer.
-- [ ] Interpret sticky transition.
-- [ ] Interpret focus state.
-- [ ] Interpret quantity/select visual pattern.
-- [ ] Interpret product option selector visual pattern.
-- [ ] Classify each interaction as:
-  - [ ] visual-only
-  - [ ] presentation interaction
-  - [ ] business behavior required
-  - [ ] unsupported/unsafe
-- [ ] Do not execute commerce mutation flows.
+- [x] Interpret hover.
+- [x] Interpret click/open.
+- [x] Interpret expand/collapse.
+- [x] Interpret mobile menu.
+- [x] Interpret accordion.
+- [x] Interpret tabs.
+- [x] Interpret carousel navigation.
+- [x] Interpret modal/drawer.
+- [x] Interpret sticky transition.
+- [x] Interpret focus state.
+- [x] Interpret quantity/select visual pattern.
+- [x] Interpret product option selector visual pattern.
+- [x] Classify each interaction as:
+  - [x] visual-only
+  - [x] presentation interaction
+  - [x] business behavior required
+  - [x] unsupported/unsafe
+- [x] Do not execute commerce mutation flows.
 
 Tests:
 
-- [ ] Grid-to-stack is detected.
-- [ ] Hide/show is detected.
-- [ ] Replacement and restyle are separate outputs.
-- [ ] Before/after interaction evidence is used.
-- [ ] Button visual does not become cart logic.
+- [x] Grid-to-stack is detected.
+- [x] Hide/show is detected.
+- [x] Replacement and restyle are separate outputs.
+- [x] Before/after interaction evidence is used.
+- [x] Button visual does not become cart logic.
 
 Done when:
 
-- [ ] Responsive and interaction artifacts are evidence-backed and conservative.
+- [x] Responsive and interaction artifacts are evidence-backed and conservative.
+
+Implementation evidence:
+
+- Added `ResponsiveInteractionAnalyzer` and contracts for `responsive-behavior` and `interaction-model`.
+- Registered `Schemas/responsive-behavior.schema.json` and `Schemas/interaction-model.schema.json`.
+- Added workflow step `analyze-responsive-interactions` after section segmentation.
+- Analyzer matches section/component placeholders across viewports, preserves observed display/visibility/position/size/gap/font/assets, flags grid-to-stack, hide/show, mobile menu replacement, overflow/carousel, asset change, compact spacing, and typography downscale.
+- Interaction model reads before/after interaction evidence only; it classifies visual-only, presentation interaction, business behavior required, and unsupported/unsafe without executing commerce mutation flows.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Responsive|Interaction_Button"` passed `4/4`.
 
 ## Phase 3B.7 - Visual Component Candidate Detection
 
@@ -1227,7 +1236,7 @@ Recommended implementation order:
 5. [x] Phase 3B.3 semantic tokens.
 6. [x] Phase 3B.4 page archetype.
 7. [x] Phase 3B.5 section segmentation.
-8. [ ] Phase 3B.6 responsive and interaction model.
+8. [x] Phase 3B.6 responsive and interaction model.
 9. [ ] Phase 3B.7 visual component candidates.
 10. [ ] Phase 3B.8 ecommerce region classification.
 11. [ ] Phase 3B.9 Presentation component catalog.

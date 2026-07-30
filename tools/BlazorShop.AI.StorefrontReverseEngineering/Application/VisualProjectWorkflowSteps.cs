@@ -317,3 +317,27 @@ internal sealed class SegmentSectionsStep : IVisualProjectWorkflowStep
             : WorkflowStepResult.Success(warnings);
     }
 }
+
+internal sealed class AnalyzeResponsiveInteractionsStep : IVisualProjectWorkflowStep
+{
+    public string Name => "analyze-responsive-interactions";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/evidence-snapshot.json", "analysis/pages/{pageId}/sections.draft.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/pages/{pageId}/responsive-behavior.json", "analysis/pages/{pageId}/interaction-model.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var results = await new ResponsiveInteractionAnalyzer(context.RepoRoot)
+            .AnalyzeAsync(context.ArtifactRoot, cancellationToken);
+        var warnings = results
+            .SelectMany(result => result.Responsive.Issues.Concat(result.Interaction.Issues))
+            .Where(issue => issue.Severity == "warning")
+            .Select(issue => new WorkflowMessage(issue.Code, issue.Message))
+            .ToArray();
+
+        return results.Any(result => result.Responsive.Issues.Concat(result.Interaction.Issues).Any(issue => issue.Severity == "blocking"))
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-RESPONSIVE-INTERACTION-BLOCKED", "Responsive or interaction analysis returned blocking findings.")
+            : WorkflowStepResult.Success(warnings);
+    }
+}

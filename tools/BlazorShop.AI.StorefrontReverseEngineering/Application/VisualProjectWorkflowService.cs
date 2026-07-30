@@ -288,6 +288,14 @@ public sealed class VisualProjectWorkflowService
         return await new SectionSegmenter(repoRoot).SegmentAsync(root, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<(ResponsiveBehaviorDocument Responsive, InteractionModelDocument Interaction)>> AnalyzeResponsiveInteractionsAsync(
+        string projectRoot,
+        CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new ResponsiveInteractionAnalyzer(repoRoot).AnalyzeAsync(root, cancellationToken);
+    }
+
     private async Task ValidateViewportEvidenceReadinessAsync(
         string root,
         FileSystemVisualArtifactStore store,
@@ -669,11 +677,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new NormalizeSemanticTokensStep());
         steps.Add(new ClassifyPageArchetypesStep());
         steps.Add(new SegmentSectionsStep());
+        steps.Add(new AnalyzeResponsiveInteractionsStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions";
 
     private static string WriteMarkdown(ReadinessReport report)
     {

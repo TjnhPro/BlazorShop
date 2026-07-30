@@ -1,0 +1,1 @@
+{"artifactKind":"interaction-model","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","interactions","issues"],"arrayPaths":["interactions","issues"],"nonEmptyStringPaths":["projectId","pageId"]}

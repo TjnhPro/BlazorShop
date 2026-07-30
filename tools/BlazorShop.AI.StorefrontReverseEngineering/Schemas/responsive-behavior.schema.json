@@ -1,0 +1,1 @@
+{"artifactKind":"responsive-behavior","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","sections","inferredBreakpointRanges","issues"],"arrayPaths":["sections","inferredBreakpointRanges","issues"],"nonEmptyStringPaths":["projectId","pageId"]}
