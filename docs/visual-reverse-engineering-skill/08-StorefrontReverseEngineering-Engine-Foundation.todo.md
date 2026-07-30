@@ -361,30 +361,30 @@ Files/directories:
 
 Tasks:
 
-- [ ] Create `IWorkflowStep<TContext>`.
-- [ ] Create `WorkflowStepResult`.
-- [ ] Create `WorkflowRun`.
-- [ ] Create `WorkflowRunStatus`.
-- [ ] Create `WorkflowStepStatus`.
-- [ ] Create sequential workflow runner.
-- [ ] Persist run records under `runs/{run-id}.json`.
-- [ ] Add retry count to step state.
-- [ ] Add cancellation handling.
-- [ ] Add `--force-step` or equivalent re-run control.
-- [ ] Add skip completed behavior.
-- [ ] Add structured warning/error model.
-- [ ] Add tests for:
-  - [ ] successful sequential run
-  - [ ] failed step stops downstream steps
-  - [ ] retryable failure
-  - [ ] resume after partial success
-  - [ ] cancellation is not logged as timeout
+- [x] Create `IWorkflowStep<TContext>`.
+- [x] Create `WorkflowStepResult`.
+- [x] Create `WorkflowRun`.
+- [x] Create `WorkflowRunStatus`.
+- [x] Create `WorkflowStepStatus`.
+- [x] Create sequential workflow runner.
+- [x] Persist run records under `runs/{run-id}.json`.
+- [x] Add retry count to step state.
+- [x] Add cancellation handling.
+- [x] Add `--force-step` or equivalent re-run control.
+- [x] Add skip completed behavior.
+- [x] Add structured warning/error model.
+- [x] Add tests for:
+  - [x] successful sequential run
+  - [x] failed step stops downstream steps
+  - [x] retryable failure
+  - [x] resume after partial success
+  - [x] cancellation is not logged as timeout
 
 Guardrails:
 
-- [ ] No distributed workflow engine.
-- [ ] No background queue.
-- [ ] No hidden global mutable state.
+- [x] No distributed workflow engine.
+- [x] No background queue.
+- [x] No hidden global mutable state.
 
 Verification:
 
@@ -394,8 +394,8 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Workflow run artifacts explain what ran, what was skipped, and why failures happened.
-- [ ] A failed run can be resumed without deleting the project.
+- [x] Workflow run artifacts explain what ran, what was skipped, and why failures happened.
+- [x] A failed run can be resumed without deleting the project.
 
 ## Phase 5 - Browser Abstraction And Basic Capture
 
