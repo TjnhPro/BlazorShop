@@ -163,9 +163,9 @@ Goal: make StorefrontBuilder artifact provenance unambiguous before AI artifacts
 
 Tasks:
 
-- [ ] Add a single version source file.
-- [ ] Preferred file:
-  - [ ] `tools/BlazorShop.AI.StorefrontBuilder/version.json`.
+- [x] Add a single version source file.
+- [x] Preferred file:
+  - [x] `tools/BlazorShop.AI.StorefrontBuilder/version.json`.
 - [ ] Suggested shape:
 
 ```json
@@ -174,22 +174,22 @@ Tasks:
 }
 ```
 
-- [ ] Update PowerShell scripts to read the shared version source:
-  - [ ] `scripts/generate/StorefrontBuilderProjectSafety.ps1`;
-  - [ ] `scripts/generate/new-storefront-project.ps1` if direct reading is clearer;
-  - [ ] `regenerate-storefront.ps1` if it emits generator version directly.
-- [ ] Update Node scripts to read the same version source:
-  - [ ] `scripts/generate/generated-file-manifest.mjs`;
-  - [ ] any script writing metadata/composition artifacts with `generatorVersion`.
-- [ ] Decide the current version value.
-- [ ] Preferred current value:
-  - [ ] `2.5.0`, because manifest and Phase 2.8 regeneration behavior already uses it.
-- [ ] Update schema fixtures to match the chosen version if needed.
-- [ ] Add a test that scans StorefrontBuilder scripts and fixtures for hard-coded stale generator versions.
-- [ ] Add a test that generated `metadata.yaml` and `generated-files.yaml` use the same `generatorVersion`.
-- [ ] Add a validation rule that metadata and generated-file manifest versions must match.
-- [ ] Keep version naming singular: `generatorVersion`.
-- [ ] Do not add separate `manifestGeneratorVersion` unless there is a real product reason.
+- [x] Update PowerShell scripts to read the shared version source:
+  - [x] `scripts/generate/StorefrontBuilderProjectSafety.ps1`;
+  - [x] `scripts/generate/new-storefront-project.ps1` if direct reading is clearer;
+  - [x] `regenerate-storefront.ps1` if it emits generator version directly.
+- [x] Update Node scripts to read the same version source:
+  - [x] `scripts/generate/generated-file-manifest.mjs`;
+  - [x] any script writing metadata/composition artifacts with `generatorVersion`.
+- [x] Decide the current version value.
+- [x] Preferred current value:
+  - [x] `2.5.0`, because manifest and Phase 2.8 regeneration behavior already uses it.
+- [x] Update schema fixtures to match the chosen version if needed.
+- [x] Add a test that scans StorefrontBuilder scripts and fixtures for hard-coded stale generator versions.
+- [x] Add a test that generated `metadata.yaml` and `generated-files.yaml` use the same `generatorVersion`.
+- [x] Add a validation rule that metadata and generated-file manifest versions must match.
+- [x] Keep version naming singular: `generatorVersion`.
+- [x] Do not add separate `manifestGeneratorVersion` unless there is a real product reason.
 
 Implementation notes:
 
@@ -208,9 +208,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Exit gate:
 
-- [ ] No active StorefrontBuilder script contains a conflicting hard-coded generator version.
-- [ ] Generated metadata and manifest agree on `generatorVersion`.
-- [ ] Missing/malformed `version.json` fails clearly.
+- [x] No active StorefrontBuilder script contains a conflicting hard-coded generator version.
+- [x] Generated metadata and manifest agree on `generatorVersion`.
+- [x] Missing/malformed `version.json` fails clearly.
 
 ## Phase 2.9D - Documentation And Local Closure Evidence
 

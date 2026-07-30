@@ -1,4 +1,31 @@
-$script:StorefrontBuilderGeneratorVersion = "2.4.0"
+function Read-StorefrontBuilderGeneratorVersion {
+    param([string]$VersionPath = "")
+
+    if ([string]::IsNullOrWhiteSpace($VersionPath)) {
+        $VersionPath = Join-Path $PSScriptRoot "..\..\version.json"
+    }
+
+    $resolvedVersionPath = [System.IO.Path]::GetFullPath($VersionPath)
+    if (-not (Test-Path -LiteralPath $resolvedVersionPath)) {
+        throw "[SFB-PROJECT-012] StorefrontBuilder version.json is missing. Problem: generatorVersion cannot be resolved from '$resolvedVersionPath'. Cause: the shared version source was deleted or the tool layout is invalid. Fix: restore tools/BlazorShop.AI.StorefrontBuilder/version.json with a generatorVersion value."
+    }
+
+    try {
+        $versionDocument = Get-Content -LiteralPath $resolvedVersionPath -Raw | ConvertFrom-Json
+    }
+    catch {
+        throw "[SFB-PROJECT-013] StorefrontBuilder version.json is malformed. Problem: generatorVersion cannot be parsed from '$resolvedVersionPath'. Cause: the file is not valid JSON. Fix: keep version.json as { `"generatorVersion`": `"x.y.z`" }."
+    }
+
+    $generatorVersion = $versionDocument.generatorVersion
+    if ([string]::IsNullOrWhiteSpace($generatorVersion)) {
+        throw "[SFB-PROJECT-013] StorefrontBuilder version.json is malformed. Problem: generatorVersion is missing or empty in '$resolvedVersionPath'. Cause: the shared version source does not define generatorVersion. Fix: set generatorVersion to a non-empty version string."
+    }
+
+    return [string]$generatorVersion
+}
+
+$script:StorefrontBuilderGeneratorVersion = Read-StorefrontBuilderGeneratorVersion
 
 function Normalize-StorefrontProjectName {
     param([Parameter(Mandatory = $true)][string]$Name)

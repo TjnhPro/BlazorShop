@@ -193,6 +193,28 @@ function Test-CandidateArtifactsCleaned {
     return (-not (Test-Path -LiteralPath $candidateRoot)) -or @((Get-ChildItem -LiteralPath $candidateRoot -Force)).Count -eq 0
 }
 
+function Get-YamlScalarValue {
+    param(
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Key
+    )
+
+    $match = [regex]::Match($Text, "(?m)^$([regex]::Escape($Key)):\s*(\S+)\s*$")
+    if (-not $match.Success) {
+        throw "YAML scalar '$Key' was not found."
+    }
+
+    return $match.Groups[1].Value.Trim('"')
+}
+
+function Get-ManifestGeneratorVersions {
+    param([Parameter(Mandatory = $true)][string]$Manifest)
+
+    return @([regex]::Matches($Manifest, "(?m)^\s+generatorVersion:\s*(\S+)\s*$") |
+        ForEach-Object { $_.Groups[1].Value.Trim('"') } |
+        Sort-Object -Unique)
+}
+
 function New-TestProject {
     if (Test-Path -LiteralPath $outputRoot) {
         Remove-Item -LiteralPath $outputRoot -Recurse -Force
@@ -208,6 +230,25 @@ function New-TestProject {
 }
 
 New-TestProject
+
+$metadataText = Get-Content -LiteralPath (Join-Path $projectRoot "docs\storefront-analysis\metadata.yaml") -Raw
+$manifestPath = Join-Path $projectRoot "docs\storefront-analysis\generated-files.yaml"
+$manifestText = Get-Content -LiteralPath $manifestPath -Raw
+$metadataGeneratorVersion = Get-YamlScalarValue -Text $metadataText -Key "generatorVersion"
+$generatedFileManifestVersions = @(Get-ManifestGeneratorVersions -Manifest $manifestText)
+Assert-Condition -Condition ($metadataGeneratorVersion -eq "2.5.0") -Message "Generated metadata did not use the shared StorefrontBuilder generatorVersion."
+Assert-Condition -Condition ($generatedFileManifestVersions.Count -gt 0) -Message "Generated file manifest did not include generatorVersion entries."
+Assert-Condition -Condition ($generatedFileManifestVersions.Count -eq 1 -and $generatedFileManifestVersions[0] -eq $metadataGeneratorVersion) -Message "Generated metadata and manifest generatorVersion values did not match."
+
+try {
+    Set-TextFileContent -Path $manifestPath -Content ($manifestText -replace "generatorVersion:\s*$([regex]::Escape($metadataGeneratorVersion))", "generatorVersion: 9.9.9-test")
+    Assert-Throws -ExpectedCode "SFB-IDEMPOTENCY-012" -Action {
+        & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderIdempotency.ps1") -ProjectRoot $projectRoot
+    }
+}
+finally {
+    Set-TextFileContent -Path $manifestPath -Content $manifestText
+}
 
 $starterHomePath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\Pages\Ssr\Home\HomePage.razor"
 $starterProductPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\Components\Catalog\ProductSummaryCard.razor"

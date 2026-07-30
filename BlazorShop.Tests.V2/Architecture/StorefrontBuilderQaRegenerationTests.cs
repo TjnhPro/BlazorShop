@@ -128,6 +128,8 @@ namespace BlazorShop.Tests.Architecture
 
             foreach (var marker in new[]
             {
+                "Read-StorefrontBuilderGeneratorVersion",
+                "version.json",
                 "Normalize-StorefrontProjectName",
                 "Normalize-StorefrontStoreKey",
                 "Resolve-ApprovedStorefrontBuilderOutputRoot",
@@ -138,6 +140,8 @@ namespace BlazorShop.Tests.Architecture
                 "SFB-PROJECT-001",
                 "SFB-PROJECT-002",
                 "SFB-PROJECT-010",
+                "SFB-PROJECT-012",
+                "SFB-PROJECT-013",
             })
             {
                 Assert.Contains(marker, helper, StringComparison.Ordinal);
@@ -176,6 +180,8 @@ namespace BlazorShop.Tests.Architecture
                 "SFB-PROJECT-002",
                 "SFB-PROJECT-010",
                 "SFB-PROJECT-011",
+                "SFB-PROJECT-012",
+                "SFB-PROJECT-013",
             })
             {
                 Assert.Contains(marker, negativeTests, StringComparison.Ordinal);
@@ -412,6 +418,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-IDEMPOTENCY-009", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-010", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-011", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-012", validator, StringComparison.Ordinal);
 
             foreach (var marker in new[]
             {
@@ -436,6 +443,7 @@ namespace BlazorShop.Tests.Architecture
                 "Custom WhatIf report path was not created.",
                 "Rejected target-scoped WhatIf report path was written.",
                 "Rejected unsafe WhatIf report path was written.",
+                "Generated metadata and manifest generatorVersion values did not match.",
                 "Rollback did not restore the target tree after build failure.",
                 "Rollback restore path is missing",
             })
@@ -459,6 +467,49 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains("filePath:", manifestCase, StringComparison.Ordinal);
                 Assert.Contains("currentHash:", manifestCase, StringComparison.Ordinal);
                 Assert.Contains("conflictReason:", manifestCase, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
+        public void StorefrontBuilderGeneratorVersion_UsesSingleSource()
+        {
+            var version = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/version.json");
+            var helper = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/StorefrontBuilderProjectSafety.ps1");
+            var nodeVersionReader = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/storefront-builder-version.mjs");
+            var manifestGenerator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs");
+            var metadataFixture = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/schemas/fixtures/valid/metadata.json");
+
+            Assert.Contains("\"generatorVersion\": \"2.5.0\"", version, StringComparison.Ordinal);
+            Assert.Contains("Read-StorefrontBuilderGeneratorVersion", helper, StringComparison.Ordinal);
+            Assert.Contains("version.json", helper, StringComparison.Ordinal);
+            Assert.DoesNotContain("$script:StorefrontBuilderGeneratorVersion = \"", helper, StringComparison.Ordinal);
+            Assert.Contains("readStorefrontBuilderGeneratorVersion", nodeVersionReader, StringComparison.Ordinal);
+            Assert.Contains("version.json", nodeVersionReader, StringComparison.Ordinal);
+            Assert.Contains("import { generatorVersion } from \"./storefront-builder-version.mjs\"", manifestGenerator, StringComparison.Ordinal);
+            Assert.DoesNotContain("export const generatorVersion = \"", manifestGenerator, StringComparison.Ordinal);
+            Assert.Contains("\"generatorVersion\": \"2.5.0\"", metadataFixture, StringComparison.Ordinal);
+
+            var textExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".cs",
+                ".json",
+                ".md",
+                ".mjs",
+                ".ps1",
+                ".yaml",
+                ".yml",
+            };
+
+            foreach (var path in Directory.EnumerateFiles(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder"), "*", SearchOption.AllDirectories))
+            {
+                if (!textExtensions.Contains(Path.GetExtension(path)))
+                {
+                    continue;
+                }
+
+                var text = File.ReadAllText(path);
+                Assert.DoesNotContain("2.4.0", text, StringComparison.Ordinal);
+                Assert.DoesNotContain("manifestGeneratorVersion", text, StringComparison.Ordinal);
             }
         }
 

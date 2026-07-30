@@ -54,15 +54,36 @@ function Get-NormalizedFileHash {
     return "sha256:$hex"
 }
 
+function Read-YamlScalarValue {
+    param(
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Key
+    )
+
+    $match = [regex]::Match($Text, "(?m)^$([regex]::Escape($Key)):\s*(\S+)\s*$")
+    if (-not $match.Success) {
+        return $null
+    }
+
+    return $match.Groups[1].Value.Trim('"')
+}
+
 $manifestPath = Join-Path $ProjectRoot "docs\storefront-analysis\generated-files.yaml"
 $reportPath = Join-Path $ProjectRoot "docs\storefront-analysis\regeneration-report.md"
-foreach ($path in @($manifestPath, $reportPath)) {
+$metadataPath = Join-Path $ProjectRoot "docs\storefront-analysis\metadata.yaml"
+foreach ($path in @($manifestPath, $reportPath, $metadataPath)) {
     if (-not (Test-Path $path)) {
         throw "[SFB-IDEMPOTENCY-000] Required regeneration artifact is missing: $path"
     }
 }
 
 $manifest = Get-Content -LiteralPath $manifestPath -Raw
+$metadata = Get-Content -LiteralPath $metadataPath -Raw
+$metadataGeneratorVersion = Read-YamlScalarValue -Text $metadata -Key "generatorVersion"
+if ([string]::IsNullOrWhiteSpace($metadataGeneratorVersion)) {
+    throw "[SFB-IDEMPOTENCY-012] metadata.yaml must contain generatorVersion."
+}
+
 $requiredFields = @(
     "filePath",
     "ownership",
@@ -131,6 +152,10 @@ foreach ($entry in $entries) {
 
     if ($validOwnership -notcontains $entry["ownership"]) {
         throw "[SFB-IDEMPOTENCY-006] Invalid ownership '$($entry["ownership"])' for '$filePath'."
+    }
+
+    if ($entry["generatorVersion"] -ne $metadataGeneratorVersion) {
+        throw "[SFB-IDEMPOTENCY-012] Manifest generatorVersion '$($entry["generatorVersion"])' must match metadata.yaml generatorVersion '$metadataGeneratorVersion' for '$filePath'."
     }
 
     if ($entry["protected"] -eq "true" -and $entry["ownership"] -eq "generated") {

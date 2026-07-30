@@ -2,9 +2,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { relative, resolve } from "node:path";
+import { generatorVersion } from "./storefront-builder-version.mjs";
 
 export const ownershipValues = ["generated", "managed", "user-owned", "protected", "artifact-only"];
-export const generatorVersion = "2.5.0";
 export const templateVersion = "starter-contract-1";
 
 const textExtensions = new Set([".cs", ".csproj", ".razor", ".css", ".js", ".json", ".yaml", ".yml", ".md", ".props", ".config"]);

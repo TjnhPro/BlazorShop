@@ -43,6 +43,20 @@ if (Test-Path -LiteralPath $testOutputRoot) {
 New-Item -ItemType Directory -Force -Path $testOutputRoot | Out-Null
 
 Assert-Condition `
+    -Condition ((Read-StorefrontBuilderGeneratorVersion) -eq "2.5.0") `
+    -Message "Shared StorefrontBuilder generatorVersion source did not return the expected version."
+
+Assert-Throws -ExpectedCode "SFB-PROJECT-012" -Action {
+    Read-StorefrontBuilderGeneratorVersion -VersionPath (Join-Path $testOutputRoot "missing-version.json") | Out-Null
+}
+
+$malformedVersionPath = Join-Path $testOutputRoot "malformed-version.json"
+Set-Content -LiteralPath $malformedVersionPath -Value "{ not-json" -Encoding UTF8
+Assert-Throws -ExpectedCode "SFB-PROJECT-013" -Action {
+    Read-StorefrontBuilderGeneratorVersion -VersionPath $malformedVersionPath | Out-Null
+}
+
+Assert-Condition `
     -Condition ((Normalize-StorefrontProjectName -Name "Demo") -eq "BlazorShop.Storefront.Demo") `
     -Message "Friendly suffix should normalize to full storefront project name."
 
