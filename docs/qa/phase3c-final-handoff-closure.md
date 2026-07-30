@@ -32,7 +32,7 @@ Phase 3C closes only when:
 
 - `scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1` passes locally.
 - Final handoff artifacts are under `analysis/agent-handoff/`.
-- `reports/agent-handoff-readiness.json` is the final machine-readable readiness gate.
+- `analysis/agent-handoff/handoff-readiness.json` is the final machine-readable readiness gate.
 - Docs explain that StorefrontBuilder still does not consume Phase 3C output until a later approved phase.
 
 ## Phase 3C.9 Fixture And Gate Evidence

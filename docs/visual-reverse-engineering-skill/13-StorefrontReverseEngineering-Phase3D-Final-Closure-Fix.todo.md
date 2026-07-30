@@ -16,7 +16,7 @@ The Phase 3D review is grounded in the current codebase:
 - `AgentHandoffAssembler` and `AgentHandoffReadinessValidator` each define their own required artifact list, and those lists do not match. See `Analysis/Handoff/AgentHandoffAssembler.cs` and `Analysis/Handoff/AgentHandoffReadinessValidator.cs`.
 - The handoff package writes JSON/text artifacts but does not package self-contained screenshots, section screenshots, or an evidence manifest under `analysis/agent-handoff/`.
 - Page contracts currently expose `RequiredVisualRegions` and `OptionalVisualRegions`; exact per-page slot contracts such as `RequiredSlotIds`, `OptionalSlotIds`, and `RepeatableSlotIds` are not yet first-class contract fields.
-- Phase 3C closure evidence says `reports/agent-handoff-readiness.json`, while code writes `analysis/agent-handoff/handoff-readiness.json`.
+- Phase 3C closure evidence previously pointed at a retired reports readiness path, while code writes `analysis/agent-handoff/handoff-readiness.json`.
 - Phase 3C final gate still accepts skip flags. That is acceptable for local development, but not for final Phase 3 closure proof.
 - `docs/visual-reverse-engineering-skill/12-StorefrontReverseEngineering-Phase3C-Final-Handoff-Hardening.todo.md` has completed checkboxes but still says `Status: Proposed`, while `docs/qa/phase3c-final-handoff-closure.md` says complete.
 
@@ -872,47 +872,47 @@ Goal: docs must match actual code paths and closure state.
 
 Implementation checklist:
 
-- [ ] Update `docs/visual-reverse-engineering-skill/12-StorefrontReverseEngineering-Phase3C-Final-Handoff-Hardening.todo.md`.
-- [ ] Update `docs/qa/phase3c-final-handoff-closure.md`.
-- [ ] Update `docs/qa/phase3d-final-closure.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md` if boundary wording changes.
-- [ ] Update `docs/architecture/11-storefront-builder.md`.
-- [ ] Update `docs/agents/storefront-builder.md`.
-- [ ] Correct handoff readiness path everywhere:
-  - [ ] use `analysis/agent-handoff/handoff-readiness.json`.
-  - [ ] do not use `reports/agent-handoff-readiness.json`.
-- [ ] Before full gate passes, statuses must say:
-  - [ ] Phase 3D: In progress.
-  - [ ] Phase 3 overall: In progress.
+- [x] Update `docs/visual-reverse-engineering-skill/12-StorefrontReverseEngineering-Phase3C-Final-Handoff-Hardening.todo.md`.
+- [x] Update `docs/qa/phase3c-final-handoff-closure.md`.
+- [x] Update `docs/qa/phase3d-final-closure.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md` if boundary wording changes.
+- [x] Update `docs/architecture/11-storefront-builder.md`.
+- [x] Update `docs/agents/storefront-builder.md`.
+- [x] Correct handoff readiness path everywhere:
+  - [x] use `analysis/agent-handoff/handoff-readiness.json`.
+  - [x] do not use the retired reports readiness path.
+- [x] Before full gate passes, statuses must say:
+  - [x] Phase 3D: In progress.
+  - [x] Phase 3 overall: In progress.
 - [ ] After full gate passes, statuses may say:
   - [ ] Phase 3A: Complete.
   - [ ] Phase 3B: Complete.
   - [ ] Phase 3C: Complete.
   - [ ] Phase 3D: Complete.
   - [ ] Phase 3 overall: Complete.
-- [ ] Do not mark Phase 3D complete before final no-skip clean-head gate passes.
+- [x] Do not mark Phase 3D complete before final no-skip clean-head gate passes.
 
 Closure doc must include:
 
-- [ ] tested SHA.
-- [ ] clean tree proof.
-- [ ] full gate command.
-- [ ] test counts.
-- [ ] positive fixture details.
-- [ ] negative fixture details.
-- [ ] handoff schema versions.
-- [ ] handoff hashes.
-- [ ] known limitations.
-- [ ] statement that GitHub Actions are disabled in dev if still true.
-- [ ] explicit statement that Phase 4 may begin implementation planning after closure.
-- [ ] explicit statement that StorefrontBuilder consumption is still disabled until Phase 4 approved cutover.
+- [x] tested SHA.
+- [x] clean tree proof.
+- [x] full gate command.
+- [x] test counts.
+- [x] positive fixture details.
+- [x] negative fixture details.
+- [x] handoff schema versions.
+- [x] handoff hashes.
+- [x] known limitations.
+- [x] statement that GitHub Actions are disabled in dev if still true.
+- [x] explicit statement that Phase 4 may begin implementation planning after closure.
+- [x] explicit statement that StorefrontBuilder consumption is still disabled until Phase 4 approved cutover.
 
 Done when:
 
-- [ ] Documentation, closure evidence, and code artifact paths agree.
+- [x] Documentation, closure evidence, and code artifact paths agree.
 
 ## Recommended Commit Order
 
@@ -927,7 +927,7 @@ Done when:
 9. [x] `Phase 3D.9 add semantic schemas`
 10. [x] `Phase 3D.10 add positive and negative fixtures`
 11. [x] `Phase 3D.11 add final no-skip closure gate`
-12. [ ] `Phase 3D.12 update closure docs and statuses`
+12. [x] `Phase 3D.12 update closure docs and statuses`
 13. [ ] `Phase 3D final clean-head gate proof`
 
 ## Definition Of Done
@@ -983,12 +983,12 @@ Workflow:
 
 Boundary:
 
-- [ ] ReverseEngineering remains development-time only.
-- [ ] No Razor/CSS/JS storefront generation happens in ReverseEngineering.
-- [ ] StorefrontBuilder does not consume Phase 3D output yet.
-- [ ] No production project references ReverseEngineering.
-- [ ] No Starter writes.
-- [ ] No direct Commerce Node browser calls are generated or recommended.
+- [x] ReverseEngineering remains development-time only.
+- [x] No Razor/CSS/JS storefront generation happens in ReverseEngineering.
+- [x] StorefrontBuilder does not consume Phase 3D output yet.
+- [x] No production project references ReverseEngineering.
+- [x] No Starter writes.
+- [x] No direct Commerce Node browser calls are generated or recommended.
 
 Closure:
 

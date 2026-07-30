@@ -1,6 +1,6 @@
 # Visual Reverse Engineering Skill Docs
 
-This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects. Phase 3A introduced `BlazorShop.AI.StorefrontReverseEngineering`, a separate development-time executable that records reference-site evidence and neutral visual-blueprint drafts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3B extends that executable with visual analysis, ecommerce mapping, confidence review, and Visual Blueprint v1 artifacts. Phase 3C turns the reviewed analysis into a strict site-level `analysis/agent-handoff/*` package with allowed/protected files, page compositions, Storefront pattern contracts, and final handoff readiness. StorefrontBuilder remains the generation/regeneration tool and does not consume those new artifacts until a later approved phase.
+This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects. Phase 3A introduced `BlazorShop.AI.StorefrontReverseEngineering`, a separate development-time executable that records reference-site evidence and neutral visual-blueprint drafts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3B extends that executable with visual analysis, ecommerce mapping, confidence review, and Visual Blueprint v1 artifacts. Phase 3C turns the reviewed analysis into a strict site-level `analysis/agent-handoff/*` package with allowed/protected files, page compositions, Storefront pattern contracts, and final handoff readiness. Phase 3D is the in-progress final correctness and closure-proof phase for that handoff. StorefrontBuilder remains the generation/regeneration tool and does not consume those new artifacts until a later approved phase.
 
 StorefrontReverseEngineering is the evidence/runtime foundation. It captures rendered browser evidence, workflow state, readiness reports, Phase 3B analysis artifacts, Phase 3C handoff artifacts, and conservative originality/provenance findings. Its final capture flow extracts rendered evidence before native screenshots, records explicit quality/fallback decisions, uses stitched fallback only with real segment artifacts, and keeps raw/normalized artifacts tied by capture correlation IDs. StorefrontBuilder is the generator. Phase 3C does not create Razor, CSS, generated projects, or active blueprint consumption.
 
@@ -71,6 +71,14 @@ powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engin
 ```
 
 Phase 3C handoff readiness is machine-readable in `analysis/agent-handoff/handoff-readiness.json`. The handoff package under `analysis/agent-handoff/` is the only approved input shape for a later Phase 4 consumer. Phase 4 may read those files and the registered schemas, must fail unless final handoff readiness passed, must not reinterpret raw evidence unless it runs a new ReverseEngineering pass, must not write into Starter, and must not modify StorefrontBuilder generation until a separate implementation plan is approved.
+
+Use the Phase 3D gate only for final local closure proof after all Phase 3D commits are in place and the working tree is clean:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1
+```
+
+The Phase 3D gate has no skip flags. Phase 3 overall remains in progress until this gate passes with a clean tree and the tested SHA equals final `HEAD`.
 
 `BlazorShop.Storefront.Components.Features` is retired. StorefrontBuilder output should generate project-local visual templates from evidence while consuming shared `Contracts`, `Headless`, and `Browser` primitives.
 

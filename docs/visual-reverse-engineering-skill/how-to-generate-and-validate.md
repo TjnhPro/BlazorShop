@@ -96,7 +96,7 @@ Manual edits to generated/managed files are not overwritten automatically. They 
 
 Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder `generatorVersion` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Validation fails if those artifact versions drift.
 
-ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Generated storefront commands do not consume those artifacts yet. Treat Phase 3C output as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
+ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Phase 3D is the final correctness and no-skip closure proof for that package. Generated storefront commands do not consume those artifacts yet. Treat Phase 3C/3D output as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
 
 To run the Phase 3A fixture evidence workflow:
 
@@ -124,6 +124,14 @@ Run the Phase 3C local gate:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1
 ```
+
+Run the Phase 3D final closure gate only from a clean working tree:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1
+```
+
+The Phase 3D gate has no skip flags. It records clean-tree proof, tested SHA, final `HEAD`, focused fixture results, boundary scans, and the final handoff readiness path `analysis/agent-handoff/handoff-readiness.json`.
 
 Phase 4 may read only `analysis/agent-handoff/*` and schemas as future input. It must fail unless `analysis/agent-handoff/handoff-readiness.json` passed, must not reinterpret raw captures unless running a new ReverseEngineering pass, must not write into Starter, and must not change StorefrontBuilder generation without its own approved plan.
 
