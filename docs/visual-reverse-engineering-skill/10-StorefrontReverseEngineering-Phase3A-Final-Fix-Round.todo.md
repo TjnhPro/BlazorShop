@@ -456,52 +456,52 @@ Current files:
 
 Tasks:
 
-- [ ] Add evidence readiness validator functions or a focused internal service. Keep it internal unless multiple consumers appear.
-- [ ] Validate computed-style evidence for every page/viewport in the capture plan:
-  - [ ] `elements` has minimum length
-  - [ ] at least one semantic landmark or section candidate
-  - [ ] at least one element has non-empty style groups
-  - [ ] typography evidence exists
-  - [ ] layout evidence exists
-  - [ ] style values are not all blank
-- [ ] Validate bounding boxes:
-  - [ ] at least one useful box
-  - [ ] width and height greater than zero
-  - [ ] box fits reasonable document bounds
-  - [ ] at least one major element has a useful box
-- [ ] Validate capture correlation:
-  - [ ] viewport manifest has `captureCorrelationId`
-  - [ ] element evidence has same correlation ID
-  - [ ] asset inventory has same correlation ID
-  - [ ] page manifest records the same viewport/correlation pair
-  - [ ] run ID is present for workflow-generated captures
-- [ ] Validate screenshot quality artifacts:
-  - [ ] `quality.Passed == true`
-  - [ ] final image dimensions are present
-  - [ ] screenshot file decodes
-  - [ ] method and artifact shape match
-  - [ ] stitched method requires segment count greater than zero
-  - [ ] stitched method requires `stitch-manifest.json`
-  - [ ] fallback reason is present when fallback was used
-- [ ] Validate originality/provenance:
-  - [ ] `generationRestrictions` minimum length is greater than zero
-  - [ ] external/source assets remain reference-only by default
-  - [ ] likely brand assets produce review warning when policy is enabled
-  - [ ] audit has project and page provenance
-- [ ] Validate workflow:
-  - [ ] latest run exists
-  - [ ] latest run status is `Succeeded`
-  - [ ] required steps are `Succeeded` or valid `Skipped`
-  - [ ] no required step is `Pending`, `Running`, `Failed`, or `Canceled`
-  - [ ] readiness report belongs to latest run or records enough context to prove it was generated after latest run
-- [ ] Add schema descriptor support:
-  - [ ] minimum array length rules
-  - [ ] required non-empty string paths
-  - [ ] nested array item required fields for key artifacts
-  - [ ] correlation field requirements
-  - [ ] `generationRestrictions` minimum length
-  - [ ] `elements` minimum length
-- [ ] Keep schema validation deterministic and local. Do not switch to a full JSON Schema implementation unless the custom descriptor becomes harder to maintain than using a library.
+- [x] Add evidence readiness validator functions or a focused internal service. Keep it internal unless multiple consumers appear.
+- [x] Validate computed-style evidence for every page/viewport in the capture plan:
+  - [x] `elements` has minimum length
+  - [x] at least one semantic landmark or section candidate
+  - [x] at least one element has non-empty style groups
+  - [x] typography evidence exists
+  - [x] layout evidence exists
+  - [x] style values are not all blank
+- [x] Validate bounding boxes:
+  - [x] at least one useful box
+  - [x] width and height greater than zero
+  - [x] box fits reasonable document bounds
+  - [x] at least one major element has a useful box
+- [x] Validate capture correlation:
+  - [x] viewport manifest has `captureCorrelationId`
+  - [x] element evidence has same correlation ID
+  - [x] asset inventory has same correlation ID
+  - [x] page manifest records the same viewport/correlation pair
+  - [x] run ID is present for workflow-generated captures
+- [x] Validate screenshot quality artifacts:
+  - [x] `quality.Passed == true`
+  - [x] final image dimensions are present
+  - [x] screenshot file decodes
+  - [x] method and artifact shape match
+  - [x] stitched method requires segment count greater than zero
+  - [x] stitched method requires `stitch-manifest.json`
+  - [x] fallback reason is present when fallback was used
+- [x] Validate originality/provenance:
+  - [x] `generationRestrictions` minimum length is greater than zero
+  - [x] external/source assets remain reference-only by default
+  - [x] likely brand assets produce review warning when policy is enabled
+  - [x] audit has project and page provenance
+- [x] Validate workflow:
+  - [x] latest run exists
+  - [x] latest run status is `Succeeded`
+  - [x] required steps are `Succeeded` or valid `Skipped`
+  - [x] no required step is `Pending`, `Running`, `Failed`, or `Canceled`
+  - [x] readiness report belongs to latest run or records enough context to prove it was generated after latest run
+- [x] Add schema descriptor support:
+  - [x] minimum array length rules
+  - [x] required non-empty string paths
+  - [x] nested array item required fields for key artifacts
+  - [x] correlation field requirements
+  - [x] `generationRestrictions` minimum length
+  - [x] `elements` minimum length
+- [x] Keep schema validation deterministic and local. Do not switch to a full JSON Schema implementation unless the custom descriptor becomes harder to maintain than using a library.
 
 Suggested blocking finding codes:
 
@@ -526,27 +526,27 @@ stale-readiness-run
 
 Guardrails:
 
-- [ ] Do not require full design-token extraction to pass readiness.
-- [ ] Do not require specific ecommerce semantics to pass readiness.
-- [ ] Do not require external website access.
-- [ ] Do not make fixture-only evidence rules that fail realistic storefronts without cause.
+- [x] Do not require full design-token extraction to pass readiness.
+- [x] Do not require specific ecommerce semantics to pass readiness.
+- [x] Do not require external website access.
+- [x] Do not make fixture-only evidence rules that fail realistic storefronts without cause.
 
 Tests:
 
-- [ ] Empty element evidence array fails readiness.
-- [ ] Elements with empty style groups fail readiness.
-- [ ] Missing typography evidence fails readiness.
-- [ ] Missing layout evidence fails readiness.
-- [ ] Missing useful boxes fail readiness.
-- [ ] Invalid box dimensions fail readiness.
-- [ ] Missing correlation ID fails readiness.
-- [ ] Correlation mismatch fails readiness.
-- [ ] Empty generation restrictions fail readiness.
-- [ ] Stitched method without stitch manifest fails readiness.
-- [ ] Latest run failed fails readiness.
-- [ ] Latest run partial/pending fails readiness.
-- [ ] Fixing artifacts and re-running validate returns project to `DraftReady`.
-- [ ] Local HTTP fixture full workflow still passes readiness.
+- [x] Empty element evidence array fails readiness.
+- [x] Elements with empty style groups fail readiness.
+- [x] Missing typography evidence fails readiness.
+- [x] Missing layout evidence fails readiness.
+- [x] Missing useful boxes fail readiness.
+- [x] Invalid box dimensions fail readiness.
+- [x] Missing correlation ID fails readiness.
+- [x] Correlation mismatch fails readiness.
+- [x] Empty generation restrictions fail readiness.
+- [x] Stitched method without stitch manifest fails readiness.
+- [x] Latest run failed fails readiness.
+- [x] Latest run partial/pending fails readiness.
+- [x] Fixing artifacts and re-running validate returns project to `DraftReady`.
+- [x] Local HTTP fixture full workflow still passes readiness.
 
 Verification:
 
@@ -556,11 +556,19 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Bad or empty evidence cannot pass readiness.
-- [ ] Missing correlation cannot pass readiness.
-- [ ] Empty originality restrictions cannot pass readiness.
-- [ ] Failed or partial workflow cannot pass readiness.
-- [ ] Full fixture workflow still passes.
+- [x] Bad or empty evidence cannot pass readiness.
+- [x] Missing correlation cannot pass readiness.
+- [x] Empty originality restrictions cannot pass readiness.
+- [x] Failed or partial workflow cannot pass readiness.
+- [x] Full fixture workflow still passes.
+
+Implementation evidence:
+
+- Added internal readiness validation for viewport evidence depth, style-group usefulness, typography/layout presence, useful/valid boxes, correlation, screenshot quality shape, stitch manifest requirements, originality restrictions/provenance, and latest workflow status/steps.
+- Added schema descriptor support for minimum array length and non-empty string paths, then applied it to computed-style evidence, capture manifests, asset inventory, and originality audit.
+- Allowed the active `validate-readiness` step to validate the currently running workflow without self-blocking, while still blocking failed/partial runs outside that current-step state.
+- Added mutation tests for empty elements, empty style groups, missing typography/layout, invalid boxes, missing/mismatched correlation, empty originality restrictions, stitched-without-manifest, failed run, partial run, recovery to `DraftReady`, and full local fixture readiness.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Readiness|Validation|Schema|Workflow|EndToEnd"` passed `32/32`.
 
 ## Phase F5 - Fix Inspect And CLI Developer Feedback
 

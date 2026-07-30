@@ -7,6 +7,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Provenance;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
 using BlazorShop.AI.StorefrontReverseEngineering.Validation;
 using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
+using ImageMagick;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Application;
 
@@ -180,6 +181,8 @@ public sealed class VisualProjectWorkflowService
                     {
                         findings.Add(new ReadinessFinding("quality-failed", "blocking", $"Capture quality failed for {page.PageId}/{viewport.Id}."));
                     }
+
+                    await ValidateViewportEvidenceReadinessAsync(root, store, page, viewport, quality, findings, cancellationToken);
                 }
             }
         }
@@ -199,9 +202,27 @@ public sealed class VisualProjectWorkflowService
                 {
                     findings.Add(new ReadinessFinding("failed-latest-run", "blocking", $"Latest workflow run '{run.RunId}' ended with status {run.Status}."));
                 }
+                var incompleteSteps = run.Steps
+                    .Where(step => step.Status is not (WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped))
+                    .ToArray();
+                var isCurrentReadinessStep = run.Status == WorkflowRunStatus.Running &&
+                    incompleteSteps.Length == 1 &&
+                    incompleteSteps[0].Name == "validate-readiness" &&
+                    incompleteSteps[0].Status == WorkflowStepStatus.Running;
+
+                if (run.Status != WorkflowRunStatus.Succeeded && !isCurrentReadinessStep)
+                {
+                    findings.Add(new ReadinessFinding("partial-latest-run", "blocking", $"Latest workflow run '{run.RunId}' is not complete. Status: {run.Status}."));
+                }
+
+                foreach (var step in incompleteSteps.Where(_ => !isCurrentReadinessStep))
+                {
+                    findings.Add(new ReadinessFinding("partial-latest-run", "blocking", $"Latest workflow run '{run.RunId}' has incomplete step '{step.Name}' with status {step.Status}."));
+                }
             }
         }
 
+        await ValidateOriginalityReadinessAsync(root, store, findings, cancellationToken);
         ValidateBlueprintEvidenceReferences(root, store, findings, cancellationToken);
         ValidateSensitiveRedaction(root, required, findings);
 
@@ -231,6 +252,215 @@ public sealed class VisualProjectWorkflowService
         }
 
         return report;
+    }
+
+    private async Task ValidateViewportEvidenceReadinessAsync(
+        string root,
+        FileSystemVisualArtifactStore store,
+        CapturePlanPage page,
+        ViewportDefinition viewport,
+        CaptureQualityReport quality,
+        List<ReadinessFinding> findings,
+        CancellationToken cancellationToken)
+    {
+        var captureRoot = $"captures/{page.PageId}/{viewport.Id}";
+        var manifestPath = $"{captureRoot}/manifest.json";
+        var elementPath = $"{captureRoot}/element-evidence-index.json";
+        var assetPath = $"{captureRoot}/asset-inventory.normalized.json";
+        if (!File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(manifestPath))) ||
+            !File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(elementPath))) ||
+            !File.Exists(resolver.ResolveArtifactPath(root, ArtifactPath.Create(assetPath))))
+        {
+            return;
+        }
+
+        CaptureViewportManifest manifest;
+        ElementEvidenceIndex elements;
+        AssetInventoryEvidence assets;
+        manifest = await ReadJsonUncheckedAsync<CaptureViewportManifest>(root, manifestPath, cancellationToken);
+        elements = await ReadJsonUncheckedAsync<ElementEvidenceIndex>(root, elementPath, cancellationToken);
+        assets = await ReadJsonUncheckedAsync<AssetInventoryEvidence>(root, assetPath, cancellationToken);
+
+        if (elements.Elements.Count == 0)
+        {
+            findings.Add(new ReadinessFinding("empty-computed-style-evidence", "blocking", $"No element evidence was captured for {page.PageId}/{viewport.Id}."));
+            return;
+        }
+
+        if (!elements.Elements.Any(element => element.Category is "semantic-landmark" or "section" or "heading" or "product-card-candidate"))
+        {
+            findings.Add(new ReadinessFinding("empty-computed-style-evidence", "blocking", $"No semantic landmark, section, heading, or product-card candidate evidence was captured for {page.PageId}/{viewport.Id}."));
+        }
+
+        if (!elements.Elements.Any(HasAnyStyleValue))
+        {
+            findings.Add(new ReadinessFinding("empty-style-groups", "blocking", $"Style evidence has no non-empty style values for {page.PageId}/{viewport.Id}."));
+        }
+
+        if (!elements.Elements.Any(element => HasStyleGroupValue(element, "typography")))
+        {
+            findings.Add(new ReadinessFinding("missing-typography-evidence", "blocking", $"Typography style evidence is missing for {page.PageId}/{viewport.Id}."));
+        }
+
+        if (!elements.Elements.Any(element => HasStyleGroupValue(element, "layout")))
+        {
+            findings.Add(new ReadinessFinding("missing-layout-evidence", "blocking", $"Layout style evidence is missing for {page.PageId}/{viewport.Id}."));
+        }
+
+        var usefulBoxes = elements.Elements.Where(element => element.Box is { Width: > 0, Height: > 0 }).ToArray();
+        if (usefulBoxes.Length == 0)
+        {
+            findings.Add(new ReadinessFinding("missing-useful-bounding-box", "blocking", $"No useful bounding boxes were captured for {page.PageId}/{viewport.Id}."));
+        }
+
+        foreach (var element in elements.Elements.Where(element => element.Box is not null))
+        {
+            var box = element.Box!;
+            if (box.Width <= 0 ||
+                box.Height <= 0 ||
+                box.X < -10 ||
+                box.Y < -10 ||
+                (quality.FinalWidth.HasValue && box.X > quality.FinalWidth.Value * 2) ||
+                (quality.FinalHeight.HasValue && box.Y > quality.FinalHeight.Value * 2))
+            {
+                findings.Add(new ReadinessFinding("invalid-element-box", "blocking", $"Invalid element box for evidence '{element.EvidenceId}' in {page.PageId}/{viewport.Id}."));
+            }
+        }
+
+        if (!elements.Elements.Any(element => element.Category is "semantic-landmark" or "section" or "heading" or "product-card-candidate" && element.Box is { Width: > 0, Height: > 0 }))
+        {
+            findings.Add(new ReadinessFinding("missing-useful-bounding-box", "blocking", $"No major element has a useful bounding box for {page.PageId}/{viewport.Id}."));
+        }
+
+        ValidateCorrelation(page.PageId, viewport.Id, manifest.CaptureCorrelationId, elements.CaptureCorrelationId, assets.CaptureCorrelationId, findings);
+        ValidateQualityArtifactShape(root, captureRoot, quality, findings);
+    }
+
+    private async Task ValidateOriginalityReadinessAsync(
+        string root,
+        FileSystemVisualArtifactStore store,
+        List<ReadinessFinding> findings,
+        CancellationToken cancellationToken)
+    {
+        var auditPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create("analysis/originality-audit.json"));
+        if (!File.Exists(auditPath))
+        {
+            return;
+        }
+
+        var audit = await ReadJsonUncheckedAsync<OriginalityAuditReport>(root, "analysis/originality-audit.json", cancellationToken);
+        if (string.IsNullOrWhiteSpace(audit.ProjectId) || string.IsNullOrWhiteSpace(audit.PageId))
+        {
+            findings.Add(new ReadinessFinding("missing-originality-provenance", "blocking", "Originality audit is missing project or page provenance."));
+        }
+
+        if (audit.GenerationRestrictions.Count == 0)
+        {
+            findings.Add(new ReadinessFinding("empty-generation-restrictions", "blocking", "Originality audit has no generation restrictions."));
+        }
+
+        if (audit.Policy.TreatExternalAssetsAsReferenceOnly &&
+            audit.ReferenceOnlyAssets.Any(asset => !asset.Reason.Contains("reference", StringComparison.OrdinalIgnoreCase)))
+        {
+            findings.Add(new ReadinessFinding("missing-reference-only-policy", "blocking", "Reference-only assets do not record a reference-only reason."));
+        }
+
+        if (audit.Policy.FlagLikelyBrandAssets &&
+            audit.ReferenceOnlyAssets.Any(asset => asset.LikelyBrandAsset) &&
+            !audit.Warnings.Any(warning => warning.Code.Contains("brand", StringComparison.OrdinalIgnoreCase)))
+        {
+            findings.Add(new ReadinessFinding("missing-reference-only-policy", "blocking", "Likely brand assets are missing a review warning."));
+        }
+    }
+
+    private static bool HasAnyStyleValue(ElementEvidenceItem element) =>
+        element.StyleGroups.Values.Any(group => group.Values.Any(value => !string.IsNullOrWhiteSpace(value)));
+
+    private static bool HasStyleGroupValue(ElementEvidenceItem element, string groupName) =>
+        element.StyleGroups.TryGetValue(groupName, out var group) &&
+        group.Values.Any(value => !string.IsNullOrWhiteSpace(value));
+
+    private async Task<TArtifact> ReadJsonUncheckedAsync<TArtifact>(
+        string root,
+        string relativePath,
+        CancellationToken cancellationToken)
+    {
+        var fullPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create(relativePath));
+        var json = await File.ReadAllTextAsync(fullPath, cancellationToken);
+        return System.Text.Json.JsonSerializer.Deserialize<TArtifact>(json, VisualJson.Options)
+            ?? throw new InvalidOperationException($"Artifact did not deserialize: {relativePath}");
+    }
+
+    private static void ValidateCorrelation(
+        string pageId,
+        string viewportId,
+        string? manifestCorrelationId,
+        string? elementCorrelationId,
+        string? assetCorrelationId,
+        List<ReadinessFinding> findings)
+    {
+        if (string.IsNullOrWhiteSpace(manifestCorrelationId) ||
+            string.IsNullOrWhiteSpace(elementCorrelationId) ||
+            string.IsNullOrWhiteSpace(assetCorrelationId))
+        {
+            findings.Add(new ReadinessFinding("missing-capture-correlation", "blocking", $"Capture correlation is missing for {pageId}/{viewportId}."));
+            return;
+        }
+
+        if (!string.Equals(manifestCorrelationId, elementCorrelationId, StringComparison.Ordinal) ||
+            !string.Equals(manifestCorrelationId, assetCorrelationId, StringComparison.Ordinal))
+        {
+            findings.Add(new ReadinessFinding("capture-correlation-mismatch", "blocking", $"Capture correlation mismatch for {pageId}/{viewportId}."));
+        }
+    }
+
+    private void ValidateQualityArtifactShape(
+        string root,
+        string captureRoot,
+        CaptureQualityReport quality,
+        List<ReadinessFinding> findings)
+    {
+        if (!quality.FinalWidth.HasValue || !quality.FinalHeight.HasValue)
+        {
+            findings.Add(new ReadinessFinding("quality-failed", "blocking", $"Capture quality report has no final dimensions for {captureRoot}."));
+        }
+
+        var screenshotPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create($"{captureRoot}/full-page.png"));
+        if (File.Exists(screenshotPath))
+        {
+            try
+            {
+                using var image = new MagickImage(screenshotPath);
+                if (quality.FinalWidth.HasValue && image.Width != (uint)quality.FinalWidth.Value ||
+                    quality.FinalHeight.HasValue && image.Height != (uint)quality.FinalHeight.Value)
+                {
+                    findings.Add(new ReadinessFinding("quality-failed", "blocking", $"Screenshot dimensions do not match quality report for {captureRoot}."));
+                }
+            }
+            catch (MagickException exception)
+            {
+                findings.Add(new ReadinessFinding("quality-failed", "blocking", $"Screenshot does not decode for {captureRoot}: {exception.Message}"));
+            }
+        }
+
+        if (quality.FinalMethod == "stitched" || quality.CaptureMethod == "stitched")
+        {
+            if (quality.SegmentCount is null or <= 0)
+            {
+                findings.Add(new ReadinessFinding("invalid-stitch-artifact", "blocking", $"Stitched capture has no segment count for {captureRoot}."));
+            }
+
+            if (string.IsNullOrWhiteSpace(quality.FallbackReason))
+            {
+                findings.Add(new ReadinessFinding("invalid-stitch-artifact", "blocking", $"Stitched capture has no fallback reason for {captureRoot}."));
+            }
+
+            var stitchManifest = resolver.ResolveArtifactPath(root, ArtifactPath.Create($"{captureRoot}/stitch-manifest.json"));
+            if (!File.Exists(stitchManifest))
+            {
+                findings.Add(new ReadinessFinding("missing-stitch-manifest", "blocking", $"Stitched capture is missing stitch-manifest.json for {captureRoot}."));
+            }
+        }
     }
 
     private async Task ValidateArtifactByPath(FileSystemVisualArtifactStore store, string path, CancellationToken cancellationToken)

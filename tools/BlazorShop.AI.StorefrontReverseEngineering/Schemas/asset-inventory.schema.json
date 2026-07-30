@@ -1,1 +1,1 @@
-{"artifactKind":"asset-inventory","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","viewportId","assets"],"arrayPaths":["assets"]}
+{"artifactKind":"asset-inventory","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","viewportId","assets","captureCorrelationId"],"arrayPaths":["assets"],"nonEmptyStringPaths":["projectId","pageId","viewportId","captureCorrelationId"]}

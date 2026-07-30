@@ -74,6 +74,25 @@ public sealed class VisualSchemaValidator : IVisualSchemaValidator
                 throw new InvalidOperationException($"[SRE-SCHEMA-014] Artifact numeric value is outside bounds. Problem: '{artifactKind}.{rule.Path}' violates the schema bounds. Cause: artifact has invalid numeric evidence. Fix: regenerate the artifact with a valid value.");
             }
         }
+
+        foreach (var rule in schema.ArrayLengthRules ?? [])
+        {
+            if (ResolvePath(jsonObject, rule.Path) is not JsonArray array ||
+                array.Count < rule.MinimumLength)
+            {
+                throw new InvalidOperationException($"[SRE-SCHEMA-015] Artifact array length is below minimum. Problem: '{artifactKind}.{rule.Path}' requires at least {rule.MinimumLength} item(s). Cause: artifact evidence is empty or incomplete. Fix: regenerate the artifact with usable evidence.");
+            }
+        }
+
+        foreach (var path in schema.NonEmptyStringPaths ?? [])
+        {
+            if (ResolvePath(jsonObject, path) is not JsonValue value ||
+                !value.TryGetValue<string>(out var text) ||
+                string.IsNullOrWhiteSpace(text))
+            {
+                throw new InvalidOperationException($"[SRE-SCHEMA-016] Artifact string value is empty. Problem: '{artifactKind}.{path}' must be non-empty. Cause: artifact provenance or correlation is missing. Fix: regenerate the artifact with a non-empty '{path}'.");
+            }
+        }
     }
 
     private static JsonNode? ResolvePath(JsonObject root, string path)

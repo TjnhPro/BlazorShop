@@ -4,6 +4,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Cli;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
+using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
 using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
@@ -133,6 +134,133 @@ public sealed class EndToEndCliTests
     }
 
     [Fact]
+    public async Task Readiness_EmptyElementEvidenceArrayFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Empty Evidence");
+        await MutateJsonAsync(projectRoot, "captures/home/desktop-1440/element-evidence-index.json", json =>
+        {
+            json["elements"] = new JsonArray();
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "empty-computed-style-evidence");
+    }
+
+    [Fact]
+    public async Task Readiness_EmptyStyleGroupsFail()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Empty Styles");
+        await MutateJsonAsync(projectRoot, "captures/home/desktop-1440/element-evidence-index.json", json =>
+        {
+            foreach (var element in json["elements"]!.AsArray())
+            {
+                element!.AsObject()["styleGroups"] = new JsonObject();
+            }
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "empty-style-groups");
+        Assert.Contains(report.Findings, finding => finding.Code == "missing-typography-evidence");
+        Assert.Contains(report.Findings, finding => finding.Code == "missing-layout-evidence");
+    }
+
+    [Fact]
+    public async Task Readiness_MissingUsefulBoxesAndInvalidBoxFail()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Bad Boxes");
+        await MutateFirstElementAsync(projectRoot, element =>
+        {
+            element["box"] = JsonNode.Parse("""{"x":0,"y":0,"width":0,"height":20}""");
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "invalid-element-box");
+    }
+
+    [Fact]
+    public async Task Readiness_MissingAndMismatchedCorrelationFail()
+    {
+        var missingProjectRoot = await CreateReadyProjectAsync("Missing Correlation");
+        await MutateJsonAsync(missingProjectRoot, "captures/home/desktop-1440/element-evidence-index.json", json =>
+        {
+            json["captureCorrelationId"] = null;
+        });
+        var missing = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(missingProjectRoot, CancellationToken.None);
+
+        var mismatchProjectRoot = await CreateReadyProjectAsync("Mismatch Correlation");
+        await MutateJsonAsync(mismatchProjectRoot, "captures/home/desktop-1440/asset-inventory.normalized.json", json =>
+        {
+            json["captureCorrelationId"] = "wrong-correlation";
+        });
+        var mismatch = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(mismatchProjectRoot, CancellationToken.None);
+
+        Assert.Contains(missing.Findings, finding => finding.Code == "missing-capture-correlation");
+        Assert.Contains(mismatch.Findings, finding => finding.Code == "capture-correlation-mismatch");
+    }
+
+    [Fact]
+    public async Task Readiness_EmptyOriginalityRestrictionsFail()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Empty Restrictions");
+        await MutateJsonAsync(projectRoot, "analysis/originality-audit.json", json =>
+        {
+            json["generationRestrictions"] = new JsonArray();
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "empty-generation-restrictions");
+    }
+
+    [Fact]
+    public async Task Readiness_StitchedMethodWithoutManifestFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Missing Stitch Manifest");
+        await MutateJsonAsync(projectRoot, "captures/home/desktop-1440/capture-quality-report.json", json =>
+        {
+            json["captureMethod"] = "stitched";
+            json["finalMethod"] = "stitched";
+            json["segmentCount"] = 1;
+            json["fallbackReason"] = "test-stitch";
+            json["passed"] = true;
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "missing-stitch-manifest");
+    }
+
+    [Fact]
+    public async Task Readiness_FailedAndPartialLatestRunFail()
+    {
+        var failedProjectRoot = await CreateReadyProjectAsync("Failed Run");
+        await MutateJsonAsync(failedProjectRoot, "runs/readiness-fixture.json", json =>
+        {
+            json["status"] = WorkflowRunStatus.Failed.ToString();
+        });
+        var failed = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(failedProjectRoot, CancellationToken.None);
+
+        var partialProjectRoot = await CreateReadyProjectAsync("Partial Run");
+        await MutateJsonAsync(partialProjectRoot, "runs/readiness-fixture.json", json =>
+        {
+            json["status"] = WorkflowRunStatus.Running.ToString();
+            json["steps"]!.AsArray()[0]!["status"] = WorkflowStepStatus.Pending.ToString();
+        });
+        var partial = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(partialProjectRoot, CancellationToken.None);
+
+        Assert.Contains(failed.Findings, finding => finding.Code == "failed-latest-run");
+        Assert.Contains(partial.Findings, finding => finding.Code == "partial-latest-run");
+    }
+
+    [Fact]
     public async Task Run_Resume_ReusesExistingProject()
     {
         var repoRoot = GetRepoRoot();
@@ -172,6 +300,34 @@ public sealed class EndToEndCliTests
         }
 
         return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");
+    }
+
+    private static async Task<string> CreateReadyProjectAsync(string name)
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "readiness-mutation-" + Guid.NewGuid().ToString("N"));
+        var fixtureUrl = new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
+        var summary = await new VisualProjectWorkflowService(repoRoot)
+            .RunAsync(fixtureUrl, name, outputRoot, force: true, resume: false, noAi: true, CancellationToken.None, runId: "readiness-fixture");
+
+        Assert.True(summary.ReadinessPassed);
+        return summary.ArtifactRoot;
+    }
+
+    private static async Task MutateFirstElementAsync(string projectRoot, Action<JsonObject> mutate)
+    {
+        await MutateJsonAsync(projectRoot, "captures/home/desktop-1440/element-evidence-index.json", json =>
+        {
+            mutate(json["elements"]!.AsArray()[0]!.AsObject());
+        });
+    }
+
+    private static async Task MutateJsonAsync(string projectRoot, string relativePath, Action<JsonObject> mutate)
+    {
+        var path = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var json = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        mutate(json);
+        await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
     }
 
     private sealed class TimeoutReferenceBrowser : IReferenceBrowser
