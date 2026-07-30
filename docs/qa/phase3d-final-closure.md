@@ -124,3 +124,16 @@ Status: in progress
 - Result: passed `2/2`.
 - Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff|SchemaArtifact|Phase3DProof" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `42/42`.
+
+## Phase 3D.11 Evidence
+
+- Added `scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`.
+- The Phase 3D gate exposes only `-CommandTimeoutSeconds`; it does not expose Phase 3B or StorefrontBuilder skip flags.
+- The gate records tested HEAD, final HEAD, branch, UTC timestamp, .NET version, clean tree state, test summaries, phase gate results, proof summaries, boundary assertions, known limitations, and local-proof/GitHub Actions status.
+- The gate order includes clean tree check, build, Phase 3A/3B/3C gates, full ReverseEngineering tests, focused review/slot/evidence/handoff tests, positive and negative Phase 3D fixtures, boundary scans, StorefrontBuilder plan-only smoke, final inspect proof, and final HEAD check.
+- Fixed Phase 3C gate switch forwarding so no-skip execution no longer passes `-SkipStorefrontBuilderSmoke:False` as a string.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3DProof" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `3/3`.
+- Parse/fail-dirty check command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1 -CommandTimeoutSeconds 1`
+- Result: failed at `clean tree check` as designed because the working tree was dirty. At the time of the check, dirty entries included the pre-existing `.gitignore` change plus uncommitted Phase 3D.11 files.
+- Full clean-head gate pass remains pending until the working tree is clean.

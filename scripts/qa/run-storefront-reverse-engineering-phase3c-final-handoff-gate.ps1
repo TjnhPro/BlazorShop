@@ -238,9 +238,14 @@ try {
 
     if (-not $SkipPhase3BGate) {
         Invoke-Step "run Phase 3B baseline gate" {
+            $phase3BArgs = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $repoRoot "scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1"))
+            if ($SkipStorefrontBuilderSmoke) {
+                $phase3BArgs += "-SkipStorefrontBuilderSmoke"
+            }
+
             Invoke-LoggedProcess `
                 -FileName "powershell" `
-                -Arguments @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $repoRoot "scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1"), "-SkipStorefrontBuilderSmoke:$SkipStorefrontBuilderSmoke")
+                -Arguments $phase3BArgs
         }
     }
 

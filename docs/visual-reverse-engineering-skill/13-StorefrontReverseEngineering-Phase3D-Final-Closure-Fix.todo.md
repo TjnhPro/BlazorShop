@@ -793,14 +793,14 @@ scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1
 
 Rules:
 
-- [ ] Do not expose `-SkipPhase3BGate`.
-- [ ] Do not expose `-SkipStorefrontBuilderSmoke`.
-- [ ] If GitHub Actions are disabled during development, report local gate as the primary proof and do not claim CI pass.
-- [ ] Fail when the working tree is dirty.
-- [ ] Record HEAD SHA before running.
-- [ ] Record HEAD SHA after running.
-- [ ] Fail if HEAD changes during gate.
-- [ ] Fail if tested SHA is not final HEAD.
+- [x] Do not expose `-SkipPhase3BGate`.
+- [x] Do not expose `-SkipStorefrontBuilderSmoke`.
+- [x] If GitHub Actions are disabled during development, report local gate as the primary proof and do not claim CI pass.
+- [x] Fail when the working tree is dirty.
+- [x] Record HEAD SHA before running.
+- [x] Record HEAD SHA after running.
+- [x] Fail if HEAD changes during gate.
+- [x] Fail if tested SHA is not final HEAD.
 
 Gate order:
 
@@ -827,40 +827,40 @@ clean tree check
 
 Boundary scans:
 
-- [ ] ReverseEngineering has no production project references.
-- [ ] StorefrontBuilder does not consume `analysis/agent-handoff/*` yet.
-- [ ] ReverseEngineering does not write Razor/CSS/JS storefront output.
-- [ ] ReverseEngineering does not write to Starter.
-- [ ] ReverseEngineering does not write generated storefront source.
-- [ ] No direct Commerce Node browser calls are generated or recommended.
-- [ ] No generated `@page` output exists.
-- [ ] No `captures/home` hardcode in workflow code.
-- [ ] No `plan.Pages.First()` hardcode in workflow code.
-- [ ] No reviewed blueprint reference to `.draft.json`.
-- [ ] No handoff reference outside `analysis/agent-handoff`.
+- [x] ReverseEngineering has no production project references.
+- [x] StorefrontBuilder does not consume `analysis/agent-handoff/*` yet.
+- [x] ReverseEngineering does not write Razor/CSS/JS storefront output.
+- [x] ReverseEngineering does not write to Starter.
+- [x] ReverseEngineering does not write generated storefront source.
+- [x] No direct Commerce Node browser calls are generated or recommended.
+- [x] No generated `@page` output exists.
+- [x] No `captures/home` hardcode in workflow code.
+- [x] No `plan.Pages.First()` hardcode in workflow code.
+- [x] No reviewed blueprint reference to `.draft.json`.
+- [x] No handoff reference outside `analysis/agent-handoff`.
 
 Report fields:
 
-- [ ] status.
-- [ ] tested commit SHA.
-- [ ] final HEAD SHA.
-- [ ] working tree clean.
-- [ ] branch.
-- [ ] UTC.
-- [ ] .NET version.
-- [ ] test summaries.
-- [ ] Phase 3A gate result.
-- [ ] Phase 3B gate result.
-- [ ] Phase 3C gate result.
-- [ ] review resolution proof.
-- [ ] required slot proof.
-- [ ] handoff evidence proof.
-- [ ] positive fixture readiness.
-- [ ] negative fixture summaries.
-- [ ] StorefrontBuilder smoke result.
-- [ ] GitHub Actions status: disabled/local proof primary, when applicable.
-- [ ] known limitations.
-- [ ] Phase 3 closure decision.
+- [x] status.
+- [x] tested commit SHA.
+- [x] final HEAD SHA.
+- [x] working tree clean.
+- [x] branch.
+- [x] UTC.
+- [x] .NET version.
+- [x] test summaries.
+- [x] Phase 3A gate result.
+- [x] Phase 3B gate result.
+- [x] Phase 3C gate result.
+- [x] review resolution proof.
+- [x] required slot proof.
+- [x] handoff evidence proof.
+- [x] positive fixture readiness.
+- [x] negative fixture summaries.
+- [x] StorefrontBuilder smoke result.
+- [x] GitHub Actions status: disabled/local proof primary, when applicable.
+- [x] known limitations.
+- [x] Phase 3 closure decision.
 
 Done when:
 
@@ -926,7 +926,7 @@ Done when:
 8. [x] `Phase 3D.8 enforce strict workflow failure`
 9. [x] `Phase 3D.9 add semantic schemas`
 10. [x] `Phase 3D.10 add positive and negative fixtures`
-11. [ ] `Phase 3D.11 add final no-skip closure gate`
+11. [x] `Phase 3D.11 add final no-skip closure gate`
 12. [ ] `Phase 3D.12 update closure docs and statuses`
 13. [ ] `Phase 3D final clean-head gate proof`
 
@@ -1068,5 +1068,5 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D8 strict workflow failure semantics.
 - [x] Implement D9 schema and semantic validation.
 - [x] Implement D10 positive and negative proof fixtures.
-- [ ] Implement D11 no-skip final closure gate.
+- [x] Implement D11 no-skip final closure gate.
 - [ ] Implement D12 docs/status closure.

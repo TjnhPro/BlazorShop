@@ -91,6 +91,31 @@ public sealed class Phase3DProofFixtureTests
         }
     }
 
+    [Fact]
+    public void Phase3DFinalClosureGate_IsNoSkipCleanHeadGate()
+    {
+        var script = File.ReadAllText(Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1"));
+
+        Assert.DoesNotContain("SkipPhase3BGate", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("SkipStorefrontBuilderSmoke", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-CleanWorkingTree", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-HeadUnchanged", script, StringComparison.Ordinal);
+        Assert.Contains("Tested commit SHA", script, StringComparison.Ordinal);
+        Assert.Contains("Final HEAD SHA", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3A regression gate", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3B gate", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3C gate", script, StringComparison.Ordinal);
+        Assert.Contains("full ReverseEngineering tests", script, StringComparison.Ordinal);
+        Assert.Contains("ConfidenceReview", script, StringComparison.Ordinal);
+        Assert.Contains("StorefrontPattern|BlueprintV1", script, StringComparison.Ordinal);
+        Assert.Contains("AgentHandoff", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DProof", script, StringComparison.Ordinal);
+        Assert.Contains("boundary scans", script, StringComparison.Ordinal);
+        Assert.Contains("StorefrontBuilder plan-only smoke", script, StringComparison.Ordinal);
+        Assert.Contains("final inspect proof", script, StringComparison.Ordinal);
+        Assert.Contains("GitHub Actions status: disabled/local proof primary", script, StringComparison.Ordinal);
+    }
+
     private static JsonObject ReadFixture(string fileName)
     {
         var path = Path.Combine(GetRepoRoot(), "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "Phase3D", fileName);
