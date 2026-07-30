@@ -31,7 +31,8 @@ public sealed record ReviewedPageCompositionsDocument(
     DateTimeOffset CreatedUtc,
     string ProjectId,
     SiteBlueprint Site,
-    IReadOnlyList<PageBlueprint> Pages);
+    IReadOnlyList<PageBlueprint> Pages,
+    IReadOnlyList<PageComposition> Compositions);
 
 public sealed record SiteBlueprint(
     string SiteId,
@@ -62,7 +63,41 @@ public sealed record PageCompositionNode(
     string Role,
     string? PresentationMappingId,
     IReadOnlyList<string> EvidenceIds,
-    IReadOnlyList<PageCompositionNode> Children);
+    IReadOnlyList<PageCompositionNode> Children,
+    string StableFingerprint,
+    string? EcommerceRole,
+    string? ParentNodeId,
+    IReadOnlyList<string> ChildNodeIds,
+    IReadOnlyDictionary<string, string> ViewportBoundingBoxes,
+    IReadOnlyList<string> VisualStyleTokenRefs,
+    string? ComponentMappingRef,
+    string? TargetFilePath,
+    string? TargetGeneratedZone,
+    IReadOnlyList<string> AllowedOperations,
+    IReadOnlyList<string> ProtectedBehaviorMarkers,
+    IReadOnlyList<string> ScreenshotReferences,
+    IReadOnlyList<string> CropReferences,
+    string? RepeatedGroupId,
+    IReadOnlyList<string> StateExpectations,
+    IReadOnlyList<string> ResponsiveTransformationRules,
+    IReadOnlyList<string> UnresolvedIssues);
+
+public sealed record PageComposition(
+    string PageId,
+    string PageArchetype,
+    string? TargetViewSlot,
+    IReadOnlyList<PageCompositionNode> SectionTree,
+    IReadOnlyList<string> LayoutZones,
+    IReadOnlyList<PageRepeatedGroup> RepeatedGroups,
+    IReadOnlyList<string> ResponsiveTransformationRules,
+    IReadOnlyList<string> SourceEvidenceLinks,
+    IReadOnlyList<string> UnresolvedIssues);
+
+public sealed record PageRepeatedGroup(
+    string GroupId,
+    string SemanticRole,
+    IReadOnlyList<string> SectionIds,
+    string? TargetFilePath);
 
 public sealed record GenerationReadinessReport(
     string SchemaVersion,

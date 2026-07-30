@@ -148,6 +148,30 @@ public sealed class BlueprintV1Assembler
             }
         }
 
+        foreach (var composition in pageCompositions.Compositions)
+        {
+            foreach (var node in Flatten(composition.SectionTree))
+            {
+                if (node.UnresolvedIssues.Contains("missing-section-evidence", StringComparer.Ordinal))
+                {
+                    findings.Add(new GenerationReadinessFinding(
+                        "missing-section-evidence",
+                        "blocking",
+                        $"Page '{composition.PageId}' section '{node.NodeId}' does not have source evidence.",
+                        PageCompositionsArtifactPath));
+                }
+
+                if (node.UnresolvedIssues.Contains("protected-path-target", StringComparer.Ordinal))
+                {
+                    findings.Add(new GenerationReadinessFinding(
+                        "protected-path-target",
+                        "blocking",
+                        $"Page '{composition.PageId}' section '{node.NodeId}' targets a protected path.",
+                        PageCompositionsArtifactPath));
+                }
+            }
+        }
+
         foreach (var issue in pageCompositions.Site.UnresolvedSiteLevelIssues)
         {
             findings.Add(new GenerationReadinessFinding("site-composition-review", "warning", issue, PageCompositionsArtifactPath));
@@ -189,6 +213,7 @@ public sealed class BlueprintV1Assembler
         var responsiveRules = ReadResponsiveRules(root);
         var siteIssues = new List<string>();
         var pageBlueprints = new List<PageBlueprint>();
+        var compositions = new List<PageComposition>();
         var layoutSignatures = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var page in capturedPages.OrderBy(candidate => candidate.PageId, StringComparer.Ordinal))
@@ -210,6 +235,16 @@ public sealed class BlueprintV1Assembler
                 .Where(pattern => pattern.EvidenceIds.Count == 0 || pattern.EvidenceIds.Intersect(page.EvidenceIds, StringComparer.Ordinal).Any())
                 .Select(pattern => $"unsupported:{pattern.Id}"));
 
+            var sectionNodes = BuildSectionTree(
+                sections,
+                presentationMappings,
+                ReadEcommerceRegionsBySection(root, page.PageId),
+                sharedTokens,
+                page.ArtifactPaths,
+                targetContract?.GeneratedPath);
+            var repeatedGroups = BuildRepeatedGroups(sectionNodes);
+            var pageResponsiveRules = ReadPageResponsiveRules(root, page.PageId);
+            var unresolvedIssues = sectionNodes.SelectMany(node => node.UnresolvedIssues).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
             pageBlueprints.Add(new PageBlueprint(
                 page.PageId,
                 archetype,
@@ -223,11 +258,22 @@ public sealed class BlueprintV1Assembler
                     .Distinct(StringComparer.Ordinal)
                     .Order(StringComparer.Ordinal)
                     .ToArray(),
-                sections.Select(section => new PageCompositionNode(section.Id, section.Role, null, section.EvidenceIds, [])).ToArray(),
+                sectionNodes,
                 ReadPageTokenOverrides(root, page.PageId, sharedTokens),
                 targetContract?.SlotId,
                 targetContract?.GeneratedPath,
                 pageIssues.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()));
+
+            compositions.Add(new PageComposition(
+                page.PageId,
+                archetype,
+                targetContract?.SlotId,
+                sectionNodes,
+                sectionNodes.Select(node => node.Role).Where(IsSharedLayoutRole).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+                repeatedGroups,
+                pageResponsiveRules,
+                page.ArtifactPaths.Concat(sectionNodes.SelectMany(node => node.ScreenshotReferences)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+                unresolvedIssues));
         }
 
         var nonEmptySignatures = layoutSignatures.Where(pair => !string.IsNullOrWhiteSpace(pair.Value)).Select(pair => pair.Value).Distinct(StringComparer.Ordinal).ToArray();
@@ -260,7 +306,8 @@ public sealed class BlueprintV1Assembler
             DateTimeOffset.UtcNow,
             project.ProjectId,
             site,
-            pageBlueprints);
+            pageBlueprints,
+            compositions);
     }
 
     private static IReadOnlyList<CapturedPageInfo> ReadCapturedPages(string root)
@@ -332,7 +379,12 @@ public sealed class BlueprintV1Assembler
             .Select((section, index) => new PageSectionInfo(
                 StringValue(section, "sectionId") ?? StringValue(section, "id") ?? $"section-{index + 1}",
                 StringValue(section, "sectionType") ?? StringValue(section, "role") ?? "unknown section",
-                StringArray(section, "evidenceIds")))
+                StringArray(section, "evidenceIds"),
+                StringValue(section, "parentSectionId"),
+                StringArray(section, "childSectionIds"),
+                StringValue(section, "crossViewportIdentityKey") ?? $"section-{index + 1}",
+                ReadBounds(section),
+                StringArray(section, "reasonCodes")))
             .ToArray();
     }
 
@@ -404,6 +456,17 @@ public sealed class BlueprintV1Assembler
             : [];
     }
 
+    private static IReadOnlyList<string> ReadPageResponsiveRules(string root, string pageId)
+    {
+        var node = TryReadNode(Path.Combine(root, "analysis", "pages", pageId, "responsive-behavior.json"));
+        var flags = node?["sections"]?.AsArray().OfType<JsonObject>()
+            .SelectMany(section => StringArray(section, "behaviorFlags"))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        return flags is { Length: > 0 } ? flags : [];
+    }
+
     private static IReadOnlyList<PageContractInfo> ReadPageContracts(string root)
     {
         var node = TryReadNode(Path.Combine(root, "analysis", "storefront-pattern", "page-contracts.json"));
@@ -436,7 +499,9 @@ public sealed class BlueprintV1Assembler
         return node?["mappings"]?.AsArray().OfType<JsonObject>()
             .Select((mapping, index) => new MappingInfo(
                 StringValue(mapping, "mappingId") ?? StringValue(mapping, "sourceCandidateId") ?? $"mapping-{index + 1}",
-                StringArray(mapping, "evidenceIds")))
+                StringArray(mapping, "evidenceIds"),
+                StringValue(mapping, "targetGeneratedPath"),
+                StringValue(mapping, "generatedZone")))
             .ToArray()
             ?? [];
     }
@@ -447,9 +512,131 @@ public sealed class BlueprintV1Assembler
         return node?["patterns"]?.AsArray().OfType<JsonObject>()
             .Select((pattern, index) => new MappingInfo(
                 StringValue(pattern, "patternId") ?? StringValue(pattern, "sourceCandidateId") ?? $"unsupported-{index + 1}",
-                StringArray(pattern, "evidenceIds")))
+                StringArray(pattern, "evidenceIds"),
+                null,
+                null))
             .ToArray()
             ?? [];
+    }
+
+    private static IReadOnlyDictionary<string, string> ReadEcommerceRegionsBySection(string root, string pageId)
+    {
+        var node = TryReadNode(Path.Combine(root, "analysis", "pages", pageId, "ecommerce-regions.json"));
+        var regions = node?["regions"]?.AsArray();
+        if (regions is null)
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var region in regions.OfType<JsonObject>())
+        {
+            var role = StringValue(region, "role") ?? string.Empty;
+            foreach (var sectionId in StringArray(region, "sourceSectionIds"))
+            {
+                result[sectionId] = role;
+            }
+        }
+
+        return result;
+    }
+
+    private static IReadOnlyList<PageCompositionNode> BuildSectionTree(
+        IReadOnlyList<PageSectionInfo> sections,
+        IReadOnlyList<MappingInfo> mappings,
+        IReadOnlyDictionary<string, string> ecommerceRoles,
+        IReadOnlyDictionary<string, string> sharedTokens,
+        IReadOnlyList<string> captureArtifacts,
+        string? pageTargetPath)
+    {
+        var groupIds = sections
+            .GroupBy(section => section.Role, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1 || IsRepeatedRole(group.Key))
+            .ToDictionary(group => group.Key, group => "group-" + StableId(group.Key), StringComparer.OrdinalIgnoreCase);
+        var nodes = sections.Select(section =>
+        {
+            var mapping = mappings.FirstOrDefault(candidate => candidate.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any());
+            var targetFile = mapping?.TargetGeneratedPath ?? pageTargetPath;
+            var unresolved = new List<string>();
+            if (section.EvidenceIds.Count == 0)
+            {
+                unresolved.Add("missing-section-evidence");
+            }
+
+            if (targetFile?.Contains("starter-generation.contract.yaml", StringComparison.OrdinalIgnoreCase) == true ||
+                targetFile?.Contains("StorefrontPackageVersions.props", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                unresolved.Add("protected-path-target");
+            }
+
+            return new PageCompositionNode(
+                section.Id,
+                section.Role,
+                mapping?.Id,
+                section.EvidenceIds,
+                [],
+                StableId($"{section.Role}:{section.IdentityKey}:{string.Join(",", section.EvidenceIds)}"),
+                ecommerceRoles.GetValueOrDefault(section.Id),
+                section.ParentId,
+                section.ChildIds,
+                new Dictionary<string, string>(StringComparer.Ordinal) { ["base"] = section.Bounds },
+                sharedTokens.Keys.Order(StringComparer.Ordinal).Take(8).ToArray(),
+                mapping?.Id,
+                targetFile,
+                mapping?.GeneratedZone ?? GeneratedZoneForPath(targetFile ?? string.Empty),
+                AllowedOperationsFor(section.Role),
+                ProtectedMarkersFor(section.Role, mapping?.Id),
+                captureArtifacts.Where(path => path.Contains("screenshot", StringComparison.OrdinalIgnoreCase) || path.Contains("manifest.json", StringComparison.OrdinalIgnoreCase)).Take(6).ToArray(),
+                [],
+                groupIds.GetValueOrDefault(section.Role),
+                StateExpectationsFor(section.Role),
+                section.ReasonCodes.Where(code => code.Contains("responsive", StringComparison.OrdinalIgnoreCase)).ToArray(),
+                unresolved);
+        }).ToArray();
+
+        var byParent = nodes.GroupBy(node => node.ParentNodeId ?? string.Empty, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+        PageCompositionNode Attach(PageCompositionNode node) =>
+            node with { Children = byParent.GetValueOrDefault(node.NodeId, []).Select(Attach).ToArray() };
+        return nodes.Where(node => string.IsNullOrWhiteSpace(node.ParentNodeId)).Select(Attach).ToArray();
+    }
+
+    private static IReadOnlyList<PageRepeatedGroup> BuildRepeatedGroups(IReadOnlyList<PageCompositionNode> nodes)
+    {
+        var flattened = Flatten(nodes).ToArray();
+        return flattened
+            .Where(node => !string.IsNullOrWhiteSpace(node.RepeatedGroupId))
+            .GroupBy(node => node.RepeatedGroupId!, StringComparer.Ordinal)
+            .Select(group => new PageRepeatedGroup(
+                group.Key,
+                group.First().Role,
+                group.Select(node => node.NodeId).Order(StringComparer.Ordinal).ToArray(),
+                group.First().TargetFilePath))
+            .OrderBy(group => group.GroupId, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static IEnumerable<PageCompositionNode> Flatten(IEnumerable<PageCompositionNode> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            yield return node;
+            foreach (var child in Flatten(node.Children))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    private static string ReadBounds(JsonObject section)
+    {
+        var bounds = section["bounds"] as JsonObject;
+        if (bounds is null)
+        {
+            return "x=0;y=0;width=0;height=0";
+        }
+
+        return $"x={StringValue(bounds, "x") ?? "0"};y={StringValue(bounds, "y") ?? "0"};width={StringValue(bounds, "width") ?? "0"};height={StringValue(bounds, "height") ?? "0"}";
     }
 
     private static string? DetectArchetypeDrift(string sourceUrl, string archetype)
@@ -486,6 +673,66 @@ public sealed class BlueprintV1Assembler
         role.Contains("navigation", StringComparison.OrdinalIgnoreCase) ||
         role.Contains("nav", StringComparison.OrdinalIgnoreCase) ||
         role.Contains("footer", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsRepeatedRole(string role) =>
+        role.Contains("product card", StringComparison.OrdinalIgnoreCase) ||
+        role.Contains("grid", StringComparison.OrdinalIgnoreCase) ||
+        role.Contains("thumbnail", StringComparison.OrdinalIgnoreCase) ||
+        role.Contains("menu", StringComparison.OrdinalIgnoreCase) ||
+        role.Contains("footer column", StringComparison.OrdinalIgnoreCase) ||
+        role.Contains("promotion", StringComparison.OrdinalIgnoreCase);
+
+    private static string StableId(string value)
+    {
+        var normalized = new string(value.ToLowerInvariant().Select(character => char.IsLetterOrDigit(character) ? character : '-').ToArray());
+        return string.Join("-", normalized.Split('-', StringSplitOptions.RemoveEmptyEntries)).Trim('-');
+    }
+
+    private static string GeneratedZoneForPath(string path) =>
+        path.StartsWith("Pages/", StringComparison.OrdinalIgnoreCase) ? "pages" :
+        path.StartsWith("Components/Layout/", StringComparison.OrdinalIgnoreCase) ? "layout-components" :
+        path.StartsWith("Components/Catalog/", StringComparison.OrdinalIgnoreCase) ? "catalog-components" :
+        path.StartsWith("Components/", StringComparison.OrdinalIgnoreCase) ? "components" :
+        string.IsNullOrWhiteSpace(path) ? "none" :
+        "unknown";
+
+    private static IReadOnlyList<string> AllowedOperationsFor(string role) =>
+        role.Contains("state", StringComparison.OrdinalIgnoreCase)
+            ? ["visual-markup", "css", "empty-loading-error-state-copy"]
+            : ["visual-markup", "css", "responsive-layout"];
+
+    private static IReadOnlyList<string> ProtectedMarkersFor(string role, string? mappingId)
+    {
+        var markers = new List<string>();
+        if (role.Contains("cart", StringComparison.OrdinalIgnoreCase) ||
+            role.Contains("checkout", StringComparison.OrdinalIgnoreCase) ||
+            role.Contains("purchase", StringComparison.OrdinalIgnoreCase))
+        {
+            markers.Add("preserve-action-descriptor");
+            markers.Add("no-direct-storefront-api");
+        }
+
+        if (!string.IsNullOrWhiteSpace(mappingId))
+        {
+            markers.Add("preserve-presentation-mapping");
+        }
+
+        return markers;
+    }
+
+    private static IReadOnlyList<string> StateExpectationsFor(string role)
+    {
+        var states = new List<string>();
+        foreach (var state in new[] { "empty", "loading", "error", "disabled", "unavailable" })
+        {
+            if (role.Contains(state, StringComparison.OrdinalIgnoreCase))
+            {
+                states.Add(state);
+            }
+        }
+
+        return states;
+    }
 
     private static JsonObject? TryReadNode(string path)
     {
@@ -538,7 +785,12 @@ public sealed class BlueprintV1Assembler
     private sealed record PageSectionInfo(
         string Id,
         string Role,
-        IReadOnlyList<string> EvidenceIds);
+        IReadOnlyList<string> EvidenceIds,
+        string? ParentId,
+        IReadOnlyList<string> ChildIds,
+        string IdentityKey,
+        string Bounds,
+        IReadOnlyList<string> ReasonCodes);
 
     private sealed record PageContractInfo(
         string PageId,
@@ -549,5 +801,7 @@ public sealed class BlueprintV1Assembler
 
     private sealed record MappingInfo(
         string Id,
-        IReadOnlyList<string> EvidenceIds);
+        IReadOnlyList<string> EvidenceIds,
+        string? TargetGeneratedPath,
+        string? GeneratedZone);
 }

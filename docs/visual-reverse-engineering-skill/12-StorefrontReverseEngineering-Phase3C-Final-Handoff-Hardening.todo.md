@@ -494,49 +494,49 @@ Goal: give a future generator enough reviewed composition detail to create files
 
 Implementation checklist:
 
-- [ ] Add `PageComposition` model:
-  - [ ] page ID.
-  - [ ] page archetype.
-  - [ ] target view slot.
-  - [ ] section tree.
-  - [ ] layout zones.
-  - [ ] repeated group definitions.
-  - [ ] responsive transformation rules.
-  - [ ] source evidence links.
-  - [ ] unresolved issues.
-- [ ] Add `PageSection` model:
-  - [ ] section ID.
-  - [ ] stable fingerprint.
-  - [ ] semantic role.
-  - [ ] ecommerce role.
-  - [ ] parent section ID.
-  - [ ] child section IDs.
-  - [ ] viewport bounding boxes.
-  - [ ] visual style token references.
-  - [ ] component mapping reference.
-  - [ ] target file path.
-  - [ ] target generated zone.
-  - [ ] allowed operations.
-  - [ ] protected behavior markers.
-- [ ] Add section screenshot or crop references when available.
-- [ ] Link every section to source DOM/style/screenshot evidence IDs.
-- [ ] Record repeated component patterns such as product card grids, menu branches, thumbnail rails, badges, footer columns, and promotion bands.
-- [ ] Record empty, loading, error, disabled, and unavailable state expectations when evidence exists.
-- [ ] Preserve mobile/tablet/desktop differences without encoding viewport-width CSS.
-- [ ] Flag sections that require visual generation but lack sufficient evidence.
-- [ ] Flag sections that require ecommerce behavior but have no Presentation/Starter binding.
+- [x] Add `PageComposition` model:
+  - [x] page ID.
+  - [x] page archetype.
+  - [x] target view slot.
+  - [x] section tree.
+  - [x] layout zones.
+  - [x] repeated group definitions.
+  - [x] responsive transformation rules.
+  - [x] source evidence links.
+  - [x] unresolved issues.
+- [x] Add `PageSection` model:
+  - [x] section ID.
+  - [x] stable fingerprint.
+  - [x] semantic role.
+  - [x] ecommerce role.
+  - [x] parent section ID.
+  - [x] child section IDs.
+  - [x] viewport bounding boxes.
+  - [x] visual style token references.
+  - [x] component mapping reference.
+  - [x] target file path.
+  - [x] target generated zone.
+  - [x] allowed operations.
+  - [x] protected behavior markers.
+- [x] Add section screenshot or crop references when available.
+- [x] Link every section to source DOM/style/screenshot evidence IDs.
+- [x] Record repeated component patterns such as product card grids, menu branches, thumbnail rails, badges, footer columns, and promotion bands.
+- [x] Record empty, loading, error, disabled, and unavailable state expectations when evidence exists.
+- [x] Preserve mobile/tablet/desktop differences without encoding viewport-width CSS.
+- [x] Flag sections that require visual generation but lack sufficient evidence.
+- [x] Flag sections that require ecommerce behavior but have no Presentation/Starter binding.
 
 Tests:
 
-- [ ] Page composition tree is stable across deterministic fixture runs.
-- [ ] Repeated product-card section is grouped instead of emitted as unrelated one-off sections.
-- [ ] Missing section evidence blocks readiness for required regions.
-- [ ] Optional section missing from reference does not block readiness.
-- [ ] A section cannot target a protected path.
+- [x] Page composition tree is stable across deterministic fixture runs.
+- [x] Repeated product-card section is grouped instead of emitted as unrelated one-off sections.
+- [x] Missing section evidence blocks readiness for required regions.
+- [x] Optional section missing from reference does not block readiness.
+- [x] A section cannot target a protected path.
 
 Done when:
 
-- [ ] Page compositions are specific enough for an implementation agent to generate visual files without rereading raw capture artifacts.
+- [x] Page compositions are specific enough for an implementation agent to generate visual files without rereading raw capture artifacts.
 
 ## Phase 3C.7 - Constrained Agent Handoff Package
 

@@ -95,6 +95,82 @@ public sealed class BlueprintV1ReadinessTests
         Assert.DoesNotContain("captures/home", assembler, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task PageCompositions_SectionTreeIsStableAcrossDeterministicRuns()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Stable Composition");
+        var first = await ReadPageCompositionsAsync(projectRoot);
+
+        await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        var second = await ReadPageCompositionsAsync(projectRoot);
+
+        Assert.Equal(
+            first.Compositions.SelectMany(composition => composition.SectionTree.Select(section => (composition.PageId, section.NodeId, section.StableFingerprint))),
+            second.Compositions.SelectMany(composition => composition.SectionTree.Select(section => (composition.PageId, section.NodeId, section.StableFingerprint))));
+    }
+
+    [Fact]
+    public async Task PageCompositions_RepeatedProductCardSectionsAreGrouped()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Repeated Product Cards");
+        await MutateSectionsAsync(projectRoot, "home", sections =>
+        {
+            var clone = sections[0]!.DeepClone();
+            clone["sectionId"] = "section-product-card-duplicate";
+            clone["sectionType"] = "product card";
+            sections.Add(clone);
+        });
+
+        await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        var compositions = await ReadPageCompositionsAsync(projectRoot);
+
+        Assert.Contains(compositions.Compositions, composition =>
+            composition.PageId == "home" &&
+            composition.RepeatedGroups.Any(group => group.SemanticRole == "product card" && group.SectionIds.Contains("section-product-card-duplicate")));
+    }
+
+    [Fact]
+    public async Task PageCompositions_MissingSectionEvidenceBlocksReadiness()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Missing Section Evidence");
+        await MutateSectionsAsync(projectRoot, "home", sections => sections[0]!["evidenceIds"] = new JsonArray());
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.Contains(result.Readiness.Findings, finding => finding.Code == "missing-section-evidence");
+    }
+
+    [Fact]
+    public async Task PageCompositions_OptionalMissingSectionDoesNotBlockReadiness()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Optional Missing Section");
+        await MutateSectionsAsync(projectRoot, "home", sections =>
+        {
+            var footer = sections.OfType<JsonObject>().FirstOrDefault(section => section["sectionType"]?.GetValue<string>() == "footer");
+            if (footer is not null)
+            {
+                sections.Remove(footer);
+            }
+        });
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.DoesNotContain(result.Readiness.Findings, finding => finding.Code == "missing-section-evidence");
+    }
+
+    [Fact]
+    public async Task PageCompositions_SectionCannotTargetProtectedPath()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Protected Section Target");
+        var evidenceId = "ev-protected-target";
+        await MutateSectionsAsync(projectRoot, "home", sections => sections[0]!["evidenceIds"] = new JsonArray(evidenceId));
+        await AddDraftMappingAsync(projectRoot, evidenceId, "starter-generation.contract.yaml", "unknown");
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.Contains(result.Readiness.Findings, finding => finding.Code == "protected-path-target");
+    }
+
     private static async Task<string> CreateReadyProjectAsync(string name)
     {
         var repoRoot = GetRepoRoot();
@@ -178,6 +254,51 @@ public sealed class BlueprintV1ReadinessTests
 
         pages.Add(clone);
         await File.WriteAllTextAsync(evidencePath, evidence.ToJsonString(VisualJson.Options));
+    }
+
+    private static async Task MutateSectionsAsync(string projectRoot, string pageId, Action<JsonArray> mutate)
+    {
+        var path = Path.Combine(projectRoot, "analysis", "pages", pageId, "sections.draft.json");
+        var node = JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+        var sections = node["sections"]?.AsArray() ?? throw new InvalidOperationException("Sections artifact has no sections array.");
+        mutate(sections);
+        await File.WriteAllTextAsync(path, node.ToJsonString(VisualJson.Options));
+    }
+
+    private static async Task<string> FirstSectionEvidenceIdAsync(string projectRoot, string pageId)
+    {
+        var path = Path.Combine(projectRoot, "analysis", "pages", pageId, "sections.draft.json");
+        var node = JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+        return node["sections"]?[0]?["evidenceIds"]?[0]?.GetValue<string>()
+            ?? throw new InvalidOperationException("First section has no evidence ID.");
+    }
+
+    private static async Task AddDraftMappingAsync(string projectRoot, string evidenceId, string targetGeneratedPath, string generatedZone)
+    {
+        var path = Path.Combine(projectRoot, "analysis", "mapping", "presentation-mappings.draft.json");
+        var node = JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+        var mappings = node["mappings"]?.AsArray() ?? throw new InvalidOperationException("Mappings artifact has no mappings array.");
+        mappings.Add(new JsonObject
+        {
+            ["sourceCandidateId"] = "section-protected-target",
+            ["presentationComponentId"] = "catalog.product-card",
+            ["starterSlotId"] = "catalog.product-card",
+            ["variant"] = "default",
+            ["slotAssignments"] = new JsonArray(),
+            ["responsiveProperties"] = new JsonArray(),
+            ["tokenBindings"] = new JsonArray(),
+            ["interactionBindings"] = new JsonArray(),
+            ["dataRequirements"] = new JsonArray(),
+            ["behaviorOwnership"] = "presentation",
+            ["confidence"] = 0.8,
+            ["evidenceIds"] = new JsonArray(evidenceId),
+            ["mappingReason"] = "test",
+            ["alternativeMappings"] = new JsonArray(),
+            ["humanReviewRequired"] = false,
+            ["targetGeneratedPath"] = targetGeneratedPath,
+            ["generatedZone"] = generatedZone
+        });
+        await File.WriteAllTextAsync(path, node.ToJsonString(VisualJson.Options));
     }
 
     private static void CopyDirectory(string source, string destination)
