@@ -197,69 +197,69 @@ Current files:
 
 Tasks:
 
-- [ ] Introduce `IReferenceBrowserSession : IAsyncDisposable`.
-- [ ] Add browser lifecycle methods:
-  - [ ] `NavigateAsync`
-  - [ ] `StabilizeAsync`
-  - [ ] `CaptureCurrentStateAsync`
-  - [ ] `ExecuteAsync`
-  - [ ] `DisposeAsync`
-- [ ] Keep one `IPlaywright`, `IBrowser`, `IBrowserContext`, and `IPage` alive for the viewport session.
-- [ ] Keep `IReferenceBrowser` only as compatibility/facade if useful.
-- [ ] Replace `BuildStyleSamples()` in the Playwright path with `page.EvaluateAsync` using `getComputedStyle()`.
-- [ ] Replace `BuildBoxes(...)` in the Playwright path with `getBoundingClientRect()`.
-- [ ] Extract element evidence candidates from the live DOM:
-  - [ ] tag name
-  - [ ] stable selector
-  - [ ] generated evidence selector
-  - [ ] semantic role
-  - [ ] bounded text snippet
-  - [ ] visibility
-  - [ ] display
-  - [ ] position
-  - [ ] z-index
-  - [ ] typography
-  - [ ] color/background
-  - [ ] border/radius/shadow
-  - [ ] grid/flex
-  - [ ] overflow
-  - [ ] transform/transition
-- [ ] Add stable evidence identity:
-  - [ ] prefer `id`
-  - [ ] then stable `data-*`
-  - [ ] then semantic tag + class
-  - [ ] then generated DOM path
-  - [ ] reject dynamic class hash as the only identity when possible
-- [ ] Extract rendered asset metadata from the live page:
-  - [ ] `img.src`
-  - [ ] `img.currentSrc`
-  - [ ] `srcset`
-  - [ ] `picture/source`
-  - [ ] CSS `background-image`
-  - [ ] inline SVG metadata
-  - [ ] video source/poster
-  - [ ] used font families
-  - [ ] natural width/height
-  - [ ] rendered width/height
-  - [ ] source element evidence ID
-  - [ ] `ReferenceOnly = true` by default
-- [ ] Enforce capture limits from `CapturePolicy`:
-  - [ ] max elements
-  - [ ] max depth
-  - [ ] max text length
-  - [ ] max properties
-  - [ ] max assets
-  - [ ] max page height
-- [ ] Ignore hidden/script/style/template/noise nodes unless policy includes them.
-- [ ] Update contracts so style, box, asset, and normalized evidence share `EvidenceId`.
-- [ ] Add tests that assert Playwright path no longer returns only `body/img/viewport/document` placeholders.
-- [ ] Keep synthetic fixture tests only for fast contract tests; do not let them be release evidence for browser rendering.
+- [x] Introduce `IReferenceBrowserSession : IAsyncDisposable`.
+- [x] Add browser lifecycle methods:
+  - [x] `NavigateAsync`
+  - [x] `StabilizeAsync`
+  - [x] `CaptureCurrentStateAsync`
+  - [x] `ExecuteAsync`
+  - [x] `DisposeAsync`
+- [x] Keep one `IPlaywright`, `IBrowser`, `IBrowserContext`, and `IPage` alive for the viewport session.
+- [x] Keep `IReferenceBrowser` only as compatibility/facade if useful.
+- [x] Replace `BuildStyleSamples()` in the Playwright path with `page.EvaluateAsync` using `getComputedStyle()`.
+- [x] Replace `BuildBoxes(...)` in the Playwright path with `getBoundingClientRect()`.
+- [x] Extract element evidence candidates from the live DOM:
+  - [x] tag name
+  - [x] stable selector
+  - [x] generated evidence selector
+  - [x] semantic role
+  - [x] bounded text snippet
+  - [x] visibility
+  - [x] display
+  - [x] position
+  - [x] z-index
+  - [x] typography
+  - [x] color/background
+  - [x] border/radius/shadow
+  - [x] grid/flex
+  - [x] overflow
+  - [x] transform/transition
+- [x] Add stable evidence identity:
+  - [x] prefer `id`
+  - [x] then stable `data-*`
+  - [x] then semantic tag + class
+  - [x] then generated DOM path
+  - [x] reject dynamic class hash as the only identity when possible
+- [x] Extract rendered asset metadata from the live page:
+  - [x] `img.src`
+  - [x] `img.currentSrc`
+  - [x] `srcset`
+  - [x] `picture/source`
+  - [x] CSS `background-image`
+  - [x] inline SVG metadata
+  - [x] video source/poster
+  - [x] used font families
+  - [x] natural width/height
+  - [x] rendered width/height
+  - [x] source element evidence ID
+  - [x] `ReferenceOnly = true` by default
+- [x] Enforce capture limits from `CapturePolicy`:
+  - [x] max elements
+  - [x] max depth
+  - [x] max text length
+  - [x] max properties
+  - [x] max assets
+  - [x] max page height
+- [x] Ignore hidden/script/style/template/noise nodes unless policy includes them.
+- [x] Update contracts so style, box, asset, and normalized evidence share `EvidenceId`.
+- [x] Add tests that assert Playwright path no longer returns only `body/img/viewport/document` placeholders.
+- [x] Keep synthetic fixture tests only for fast contract tests; do not let them be release evidence for browser rendering.
 
 Guardrails:
 
-- [ ] Do not start a new Chromium process for each sub-step in one viewport.
-- [ ] Do not download external asset mirrors.
-- [ ] Do not log cookies, tokens, or headers.
+- [x] Do not start a new Chromium process for each sub-step in one viewport.
+- [x] Do not download external asset mirrors.
+- [x] Do not log cookies, tokens, or headers.
 
 Verification:
 
@@ -269,12 +269,19 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Sticky header fixture returns real `position: sticky`.
-- [ ] Product card fixture returns non-null real bounding box.
-- [ ] Hero fixture returns real typography and grid/flex evidence.
-- [ ] Asset inventory includes natural/rendered dimensions where available.
-- [ ] Production Playwright path has no hard-coded style/box placeholders.
-- [ ] Evidence extraction is bounded by policy.
+- [x] Sticky header fixture returns real `position: sticky`.
+- [x] Product card fixture returns non-null real bounding box.
+- [x] Hero fixture returns real typography and grid/flex evidence.
+- [x] Asset inventory includes natural/rendered dimensions where available.
+- [x] Production Playwright path has no hard-coded style/box placeholders.
+- [x] Evidence extraction is bounded by policy.
+
+Implementation evidence:
+
+- Added stateful `IReferenceBrowserSession` lifecycle while preserving `IReferenceBrowser.CaptureAsync` as compatibility facade.
+- Replaced Playwright placeholder style/box/asset extraction with a rendered-page `page.EvaluateAsync` evidence collector using `getComputedStyle()`, `getBoundingClientRect()`, current image sources, CSS backgrounds, inline SVG, video/poster metadata, and font-family evidence.
+- Added shared `EvidenceId` across style, box, asset, and normalized element evidence.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Browser|Evidence"` passed: 10 tests.
 
 ## Phase H2 - Real Page Stabilization And Stitched Full-Page Fallback
 

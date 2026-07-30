@@ -93,22 +93,33 @@ public sealed partial class VisualEvidenceExtractor
         string? runId,
         EvidenceExtractionOptions options)
     {
-        var selectors = SelectEvidenceSelectors(capture.DomHtml)
+        var styles = capture.Styles
+            .Where(style => !string.IsNullOrWhiteSpace(style.Selector))
             .Take(options.MaximumElements)
             .ToArray();
-        var boxes = capture.Boxes.ToDictionary(box => box.Selector, StringComparer.Ordinal);
-        var styles = capture.Styles.ToDictionary(style => style.Selector, StringComparer.Ordinal);
+        var boxesByEvidenceId = capture.Boxes
+            .Where(box => !string.IsNullOrWhiteSpace(box.EvidenceId))
+            .ToDictionary(box => box.EvidenceId!, StringComparer.Ordinal);
+        var boxesBySelector = capture.Boxes
+            .GroupBy(box => box.Selector, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
 
-        var elements = selectors.Select((selector, index) =>
+        var elements = styles.Select((style, index) =>
         {
-            boxes.TryGetValue(selector.Selector, out var box);
-            styles.TryGetValue(selector.Selector, out var style);
+            var evidenceId = string.IsNullOrWhiteSpace(style.EvidenceId)
+                ? $"ev-{viewportId}-{index + 1:000}"
+                : style.EvidenceId!;
+            if (!boxesByEvidenceId.TryGetValue(evidenceId, out var box))
+            {
+                boxesBySelector.TryGetValue(style.Selector, out box);
+            }
+
             return new ElementEvidenceItem(
-                $"ev-{viewportId}-{index + 1:000}",
-                selector.Selector,
-                selector.Category,
-                selector.TextSnippet,
-                GroupStyles(style?.Properties ?? new Dictionary<string, string>()),
+                evidenceId,
+                style.Selector,
+                ClassifySelector(style.Selector),
+                style.Properties.TryGetValue("text-snippet", out var text) ? text : null,
+                GroupStyles(style.Properties),
                 box is null ? null : new ElementBox(box.X, box.Y, box.Width, box.Height));
         }).ToArray();
 
@@ -139,8 +150,8 @@ public sealed partial class VisualEvidenceExtractor
             session.PageId,
             viewportId,
             runId,
-            capture.Assets.Select((asset, index) => new AssetEvidenceItem(
-                $"asset-{viewportId}-{index + 1:000}",
+            capture.Assets.Take(80).Select((asset, index) => new AssetEvidenceItem(
+                string.IsNullOrWhiteSpace(asset.EvidenceId) ? $"asset-{viewportId}-{index + 1:000}" : asset.EvidenceId!,
                 asset.Url,
                 asset.MediaType,
                 asset.Width,
@@ -168,6 +179,55 @@ public sealed partial class VisualEvidenceExtractor
 
     private static IReadOnlyDictionary<string, string> Pick(IReadOnlyDictionary<string, string> properties, params string[] names) =>
         names.Where(properties.ContainsKey).ToDictionary(name => name, name => properties[name], StringComparer.Ordinal);
+
+    private static string ClassifySelector(string selector)
+    {
+        if (selector.Contains("product", StringComparison.OrdinalIgnoreCase) ||
+            selector.Contains("card", StringComparison.OrdinalIgnoreCase))
+        {
+            return "product-card-candidate";
+        }
+
+        if (selector.StartsWith("h1", StringComparison.Ordinal) ||
+            selector.StartsWith("h2", StringComparison.Ordinal) ||
+            selector.StartsWith("h3", StringComparison.Ordinal) ||
+            selector.StartsWith("h4", StringComparison.Ordinal) ||
+            selector.StartsWith("h5", StringComparison.Ordinal) ||
+            selector.StartsWith("h6", StringComparison.Ordinal))
+        {
+            return "heading";
+        }
+
+        if (selector.StartsWith("header", StringComparison.Ordinal) ||
+            selector.StartsWith("main", StringComparison.Ordinal) ||
+            selector.StartsWith("footer", StringComparison.Ordinal) ||
+            selector.StartsWith("nav", StringComparison.Ordinal))
+        {
+            return "semantic-landmark";
+        }
+
+        if (selector.StartsWith("button", StringComparison.Ordinal))
+        {
+            return "button";
+        }
+
+        if (selector.StartsWith("a", StringComparison.Ordinal))
+        {
+            return "link";
+        }
+
+        if (selector.StartsWith("img", StringComparison.Ordinal))
+        {
+            return "image";
+        }
+
+        if (selector.StartsWith("section", StringComparison.Ordinal))
+        {
+            return "section";
+        }
+
+        return "element";
+    }
 
     private static IEnumerable<(string Selector, string Category, string? TextSnippet)> SelectEvidenceSelectors(string html)
     {

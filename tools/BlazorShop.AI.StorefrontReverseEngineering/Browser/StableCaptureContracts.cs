@@ -2,7 +2,8 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 
 public sealed record PageStabilizationReport(
     IReadOnlyList<string> Steps,
-    IReadOnlyList<string> HiddenNoiseSelectors);
+    IReadOnlyList<string> HiddenNoiseSelectors,
+    IReadOnlyList<string>? Warnings = null);
 
 public sealed record StableCaptureResult(
     BrowserCaptureResult Capture,
