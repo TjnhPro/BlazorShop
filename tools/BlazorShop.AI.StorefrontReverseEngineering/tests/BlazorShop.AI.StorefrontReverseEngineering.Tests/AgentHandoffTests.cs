@@ -163,10 +163,54 @@ public sealed class AgentHandoffTests
         var projectRoot = await CreateReadyProjectAsync("Agent Handoff Task");
         var task = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "task.md"));
 
-        Assert.Contains("Allowed file areas", task, StringComparison.Ordinal);
-        Assert.Contains("Protected file areas", task, StringComparison.Ordinal);
+        foreach (var heading in new[]
+        {
+            "Objective",
+            "Inputs",
+            "Source of Truth Priority",
+            "Allowed File Operations",
+            "Protected Files",
+            "Required Page Slots",
+            "Optional Page Slots",
+            "Section Order",
+            "Responsive Evidence",
+            "Interaction Evidence",
+            "Originality Restrictions",
+            "Forbidden Behavior",
+            "Unsupported Handling",
+            "Validation Commands",
+            "Stop Conditions"
+        })
+        {
+            Assert.Contains("## " + heading, task, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("`home`: `layout.header`, `home.sections`, `layout.footer`", task, StringComparison.Ordinal);
+        Assert.Contains("`category-listing`: `layout.header`, `catalog.product-card`, `layout.footer`", task, StringComparison.Ordinal);
+        Assert.Contains("`product-detail`: `layout.header`, `product.gallery`, `product.information`, `product.purchase`, `layout.footer`", task, StringComparison.Ordinal);
+        Assert.Contains("`cart-shell`: `layout.header`, `cart.page`, `layout.footer`", task, StringComparison.Ordinal);
+        Assert.Contains("`checkout-shell`: `layout.header`, `checkout.page`, `layout.footer`", task, StringComparison.Ordinal);
+        Assert.Contains("`account-auth-shell`: `layout.header`, `account.shell`, `layout.footer`", task, StringComparison.Ordinal);
+        Assert.Contains("`error-state`: `layout.header`, `system.error`, `layout.footer`", task, StringComparison.Ordinal);
+        Assert.Contains("Stop if handoff readiness is false", task, StringComparison.Ordinal);
+        Assert.Contains("Validation Commands", task, StringComparison.Ordinal);
         Assert.Contains("StorefrontBuilder must not consume this package", task, StringComparison.Ordinal);
-        Assert.Contains("Expected QA", task, StringComparison.Ordinal);
+        Assert.Contains("reference-only", task, StringComparison.Ordinal);
+        Assert.Contains("No `@page` route declarations", task, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_MissingTaskSectionFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Missing Task Section");
+        var taskPath = Path.Combine(projectRoot, "analysis", "agent-handoff", "task.md");
+        var task = await File.ReadAllTextAsync(taskPath);
+        await File.WriteAllTextAsync(taskPath, task.Replace("## Stop Conditions", "## Removed Stop Conditions", StringComparison.Ordinal));
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "missing-task-section");
     }
 
     [Fact]

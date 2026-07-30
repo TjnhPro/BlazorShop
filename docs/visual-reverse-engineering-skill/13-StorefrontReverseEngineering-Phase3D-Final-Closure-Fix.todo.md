@@ -545,28 +545,28 @@ Goal: `analysis/agent-handoff/task.md` must be clear enough that an implementati
 
 Implementation checklist:
 
-- [ ] Add task markdown generator sections:
-  - [ ] Objective.
-  - [ ] Inputs.
-  - [ ] Source of truth priority.
-  - [ ] Allowed file operations.
-  - [ ] Protected files.
-  - [ ] Required page slots.
-  - [ ] Optional page slots.
-  - [ ] Section order.
-  - [ ] Responsive evidence.
-  - [ ] Interaction evidence.
-  - [ ] Originality restrictions.
-  - [ ] Forbidden behavior.
-  - [ ] Unsupported handling.
-  - [ ] Validation commands.
-  - [ ] Stop conditions.
-- [ ] Include exact required slots per representative page.
-- [ ] Include exact protected file patterns.
-- [ ] Include exact allowed target paths.
-- [ ] Include no-copy and reference-only asset instructions.
-- [ ] Include StorefrontBuilder non-consumption warning until Phase 4 cutover.
-- [ ] Include Phase 4 fail condition when handoff readiness is false.
+- [x] Add task markdown generator sections:
+  - [x] Objective.
+  - [x] Inputs.
+  - [x] Source of truth priority.
+  - [x] Allowed file operations.
+  - [x] Protected files.
+  - [x] Required page slots.
+  - [x] Optional page slots.
+  - [x] Section order.
+  - [x] Responsive evidence.
+  - [x] Interaction evidence.
+  - [x] Originality restrictions.
+  - [x] Forbidden behavior.
+  - [x] Unsupported handling.
+  - [x] Validation commands.
+  - [x] Stop conditions.
+- [x] Include exact required slots per representative page.
+- [x] Include exact protected file patterns.
+- [x] Include exact allowed target paths.
+- [x] Include no-copy and reference-only asset instructions.
+- [x] Include StorefrontBuilder non-consumption warning until Phase 4 cutover.
+- [x] Include Phase 4 fail condition when handoff readiness is false.
 
 Source of truth priority:
 
@@ -582,24 +582,24 @@ Source of truth priority:
 
 Explicit stop conditions:
 
-- [ ] Stop if handoff readiness is false.
-- [ ] Stop if required page slot is missing.
-- [ ] Stop if visual evidence is missing for a required major section.
-- [ ] Stop if target path is missing, outside allowed zones, or protected.
-- [ ] Stop if unsupported critical pattern remains.
-- [ ] Stop if implementation would require routes, BFF, SEO/media, cart/checkout/account/auth logic, payment logic, or functional JavaScript.
+- [x] Stop if handoff readiness is false.
+- [x] Stop if required page slot is missing.
+- [x] Stop if visual evidence is missing for a required major section.
+- [x] Stop if target path is missing, outside allowed zones, or protected.
+- [x] Stop if unsupported critical pattern remains.
+- [x] Stop if implementation would require routes, BFF, SEO/media, cart/checkout/account/auth logic, payment logic, or functional JavaScript.
 
 Tests:
 
-- [ ] `task.md` contains all mandatory headings.
-- [ ] `task.md` lists exact required slots for Home, PLP, PDP, cart, checkout, account/auth, and system state.
-- [ ] `task.md` contains stop conditions.
-- [ ] `task.md` contains validation command placeholders or approved commands.
-- [ ] Missing mandatory section blocks handoff readiness.
+- [x] `task.md` contains all mandatory headings.
+- [x] `task.md` lists exact required slots for Home, PLP, PDP, cart, checkout, account/auth, and system state.
+- [x] `task.md` contains stop conditions.
+- [x] `task.md` contains validation command placeholders or approved commands.
+- [x] Missing mandatory section blocks handoff readiness.
 
 Done when:
 
-- [ ] An implementation agent can follow `task.md` without opening raw capture folders or Phase 3 internals.
+- [x] An implementation agent can follow `task.md` without opening raw capture folders or Phase 3 internals.
 
 ## Phase 3D.8 - Strict Workflow Failure Semantics
 
@@ -922,7 +922,7 @@ Done when:
 4. [x] `Phase 3D.4 enforce page composition slots`
 5. [x] `Phase 3D.5 package screenshots and section crops`
 6. [x] `Phase 3D.6 centralize handoff contract`
-7. [ ] `Phase 3D.7 harden handoff task contract`
+7. [x] `Phase 3D.7 harden handoff task contract`
 8. [ ] `Phase 3D.8 enforce strict workflow failure`
 9. [ ] `Phase 3D.9 add semantic schemas`
 10. [ ] `Phase 3D.10 add positive and negative fixtures`
@@ -1064,7 +1064,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D4 page composition slot enforcement.
 - [x] Implement D5 self-contained visual evidence packaging.
 - [x] Implement D6 canonical handoff contract.
-- [ ] Implement D7 handoff task contract.
+- [x] Implement D7 handoff task contract.
 - [ ] Implement D8 strict workflow failure semantics.
 - [ ] Implement D9 schema and semantic validation.
 - [ ] Implement D10 positive and negative proof fixtures.

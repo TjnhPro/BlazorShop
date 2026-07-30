@@ -55,6 +55,7 @@ public sealed class AgentHandoffReadinessValidator
         AddGenerationReadinessFindings(root, findings);
         AddAllowedProtectedFindings(root, findings);
         AddEvidenceManifestFindings(root, findings);
+        AddTaskContractFindings(root, findings);
         AddStaticBoundaryFindings(findings);
 
         var report = new AgentHandoffReadinessReport(
@@ -258,6 +259,43 @@ public sealed class AgentHandoffReadinessValidator
             }
         }
     }
+
+    private static void AddTaskContractFindings(string root, List<AgentHandoffReadinessFinding> findings)
+    {
+        var path = Path.Combine(root, "analysis", "agent-handoff", "task.md");
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        var text = File.ReadAllText(path);
+        foreach (var heading in RequiredTaskHeadings())
+        {
+            if (!text.Contains("## " + heading, StringComparison.Ordinal))
+            {
+                findings.Add(Block("missing-task-section", $"Handoff task is missing mandatory section '{heading}'.", "analysis/agent-handoff/task.md"));
+            }
+        }
+    }
+
+    private static IReadOnlyList<string> RequiredTaskHeadings() =>
+    [
+        "Objective",
+        "Inputs",
+        "Source of Truth Priority",
+        "Allowed File Operations",
+        "Protected Files",
+        "Required Page Slots",
+        "Optional Page Slots",
+        "Section Order",
+        "Responsive Evidence",
+        "Interaction Evidence",
+        "Originality Restrictions",
+        "Forbidden Behavior",
+        "Unsupported Handling",
+        "Validation Commands",
+        "Stop Conditions"
+    ];
 
     private static void ValidateEvidenceFile(
         string root,

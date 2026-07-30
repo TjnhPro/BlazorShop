@@ -83,3 +83,11 @@ Status: in progress
 - Readiness validation now checks canonical required artifacts, directories, JSON parse/kind/project consistency, manifest hashes, path escape, and generation readiness state.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `19/19`.
+
+## Phase 3D.7 Evidence
+
+- `task.md` now includes mandatory Objective, Inputs, source priority, allowed/protected files, exact slots, section order, evidence, originality, forbidden behavior, validation command, and stop-condition sections.
+- Required page slots for Home, PLP, PDP, cart, checkout, account/auth, and system state are emitted from exact page contracts.
+- Handoff readiness fails with `missing-task-section` when a mandatory task section is removed.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `20/20`.
