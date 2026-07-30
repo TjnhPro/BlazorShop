@@ -105,6 +105,14 @@ The gate builds the tool, checks local Playwright Chromium installation, runs fi
 
 When GitHub Actions are disabled during development, the local gate report plus `docs/qa/phase3a-final-fix-closure.md` are the tracked Phase 3A closure evidence.
 
+Run the Phase 3B gate after changing visual analysis, ecommerce mapping, confidence review, Visual Blueprint v1, CLI inspect output, or Phase 3B docs:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1
+```
+
+The Phase 3B gate builds the tool, runs the Phase 3A regression subset, runs the full ReverseEngineering test suite with hang timeouts, executes local Home/PLP/PDP/Unsupported fixture workflows, scans boundaries, proves StorefrontBuilder still does not consume Visual Blueprint v1, runs StorefrontBuilder plan-only smoke, and writes a commit-linked report under `obj/storefront-reverse-engineering/reports`.
+
 ## Limitations
 
 Phase 3B does not generate Razor, CSS, or StorefrontBuilder output. It does not crawl a full site, bypass authentication, execute checkout/account/payment flows, or declare reference assets safe to reuse. External AI providers are optional and no provider is required for the rule-based blueprint draft.

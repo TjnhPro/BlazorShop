@@ -1227,56 +1227,56 @@ scripts/qa/run-storefront-reverse-engineering-phase3b-gate.ps1
 
 Gate steps:
 
-- [ ] Build ReverseEngineering tool.
-- [ ] Run Phase 3A regression gate or a documented fast subset when full gate is too slow.
-- [ ] Run all ReverseEngineering tests.
-- [ ] Run schema tests.
-- [ ] Run evidence snapshot tests.
-- [ ] Run token extraction tests.
-- [ ] Run semantic token tests.
-- [ ] Run page archetype tests.
-- [ ] Run section segmentation tests.
-- [ ] Run responsive tests.
-- [ ] Run interaction model tests.
-- [ ] Run component candidate tests.
-- [ ] Run ecommerce region tests.
-- [ ] Run Presentation catalog validation tests.
-- [ ] Run mapping tests.
-- [ ] Run unsupported pattern tests.
-- [ ] Run confidence tests.
-- [ ] Run review workflow tests.
-- [ ] Run blueprint schema/reference tests.
-- [ ] Run generation readiness tests.
-- [ ] Run local multi-page fixture workflow.
-- [ ] Run boundary scan:
-  - [ ] production projects do not reference ReverseEngineering.
-  - [ ] ReverseEngineering does not reference Storefront V2/backend/core/API projects.
-  - [ ] ReverseEngineering does not write generated storefront project source.
-  - [ ] StorefrontBuilder does not consume `visual-blueprint.v1.*.json` yet.
-  - [ ] no Razor/CSS generation code is introduced in Phase 3B.
-- [ ] Run StorefrontBuilder plan-only smoke.
-- [ ] Write commit-linked report under `obj/storefront-reverse-engineering/reports`.
+- [x] Build ReverseEngineering tool.
+- [x] Run Phase 3A regression gate or a documented fast subset when full gate is too slow.
+- [x] Run all ReverseEngineering tests.
+- [x] Run schema tests.
+- [x] Run evidence snapshot tests.
+- [x] Run token extraction tests.
+- [x] Run semantic token tests.
+- [x] Run page archetype tests.
+- [x] Run section segmentation tests.
+- [x] Run responsive tests.
+- [x] Run interaction model tests.
+- [x] Run component candidate tests.
+- [x] Run ecommerce region tests.
+- [x] Run Presentation catalog validation tests.
+- [x] Run mapping tests.
+- [x] Run unsupported pattern tests.
+- [x] Run confidence tests.
+- [x] Run review workflow tests.
+- [x] Run blueprint schema/reference tests.
+- [x] Run generation readiness tests.
+- [x] Run local multi-page fixture workflow.
+- [x] Run boundary scan:
+  - [x] production projects do not reference ReverseEngineering.
+  - [x] ReverseEngineering does not reference Storefront V2/backend/core/API projects.
+  - [x] ReverseEngineering does not write generated storefront project source.
+  - [x] StorefrontBuilder does not consume `visual-blueprint.v1.*.json` yet.
+  - [x] no Razor/CSS generation code is introduced in Phase 3B.
+- [x] Run StorefrontBuilder plan-only smoke.
+- [x] Write commit-linked report under `obj/storefront-reverse-engineering/reports`.
 
 Report fields:
 
-- [ ] Commit SHA.
-- [ ] Branch.
-- [ ] UTC timestamp.
-- [ ] .NET version.
-- [ ] Artifact project root.
-- [ ] Fixture routes.
-- [ ] Test summaries.
-- [ ] Blueprint paths.
-- [ ] Presentation catalog version.
-- [ ] Readiness result.
-- [ ] Unsupported pattern count.
-- [ ] Review queue count.
-- [ ] Known limitations.
+- [x] Commit SHA.
+- [x] Branch.
+- [x] UTC timestamp.
+- [x] .NET version.
+- [x] Artifact project root.
+- [x] Fixture routes.
+- [x] Test summaries.
+- [x] Blueprint paths.
+- [x] Presentation catalog version.
+- [x] Readiness result.
+- [x] Unsupported pattern count.
+- [x] Review queue count.
+- [x] Known limitations.
 
 Done when:
 
-- [ ] Phase 3B gate passes locally.
-- [ ] Gate failure report points to exact blocking artifact and fix.
+- [x] Phase 3B gate passes locally.
+- [x] Gate failure report points to exact blocking artifact and fix.
 
 ## Rollout Plan
 
@@ -1297,20 +1297,20 @@ Recommended implementation order:
 13. [x] Phase 3B.11 confidence and human review.
 14. [x] Phase 3B.12 Visual Blueprint v1 and generation readiness.
 15. [x] Phase 3B.14 CLI/docs/DX.
-16. [ ] Phase 3B.15 release gate.
+16. [x] Phase 3B.15 release gate.
 
 ## Suggested Commit Slices
 
-- [ ] Commit 1: evidence snapshot, schema, tests.
-- [ ] Commit 2: multi-page fixtures and fixture server support.
-- [ ] Commit 3: raw/semantic tokens and tests.
-- [ ] Commit 4: archetype and section segmentation.
-- [ ] Commit 5: responsive and interaction interpretation.
-- [ ] Commit 6: component candidate and ecommerce region classifiers.
-- [ ] Commit 7: Presentation catalog and drift tests.
-- [ ] Commit 8: mapping, unsupported patterns, and confidence.
-- [ ] Commit 9: review workflow and Visual Blueprint v1.
-- [ ] Commit 10: readiness gate, docs, and closure report.
+- [x] Commit 1: evidence snapshot, schema, tests.
+- [x] Commit 2: multi-page fixtures and fixture server support.
+- [x] Commit 3: raw/semantic tokens and tests.
+- [x] Commit 4: archetype and section segmentation.
+- [x] Commit 5: responsive and interaction interpretation.
+- [x] Commit 6: component candidate and ecommerce region classifiers.
+- [x] Commit 7: Presentation catalog and drift tests.
+- [x] Commit 8: mapping, unsupported patterns, and confidence.
+- [x] Commit 9: review workflow and Visual Blueprint v1.
+- [x] Commit 10: readiness gate, docs, and closure report.
 
 ## Risk Register
 

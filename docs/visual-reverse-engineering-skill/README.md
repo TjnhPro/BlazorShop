@@ -56,6 +56,14 @@ dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop
 
 `inspect` reports problem/cause/fix guidance for missing Phase 3A readiness, missing evidence snapshots, invalid token schemas, Presentation catalog drift, unresolved blocking review items, and unsupported critical patterns. StorefrontBuilder does not consume `analysis/visual-blueprint.v1.*.json` yet; generation remains unchanged until a later approved cutover.
 
+Use the Phase 3B gate for StorefrontReverseEngineering visual analysis, mapping, review, blueprint, inspect, docs, and StorefrontBuilder boundary changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1
+```
+
+The gate uses local fixtures and a bounded `dotnet test --blame-hang-timeout 5m` configuration so long test runs fail with actionable evidence instead of hanging indefinitely.
+
 `BlazorShop.Storefront.Components.Features` is retired. StorefrontBuilder output should generate project-local visual templates from evidence while consuming shared `Contracts`, `Headless`, and `Browser` primitives.
 
 Phase 3B ReverseEngineering artifacts are future handoff evidence only. StorefrontBuilder generation remains unchanged until a later approved phase wires Visual Blueprint v1 into generation. Phase 3B consumes the trustworthy evidence foundation and should not repair capture fallback, readiness depth, or StorefrontBuilder generation behavior.

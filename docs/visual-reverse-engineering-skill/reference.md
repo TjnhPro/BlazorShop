@@ -13,6 +13,7 @@
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/` | Browser visual QA and commerce regression runners. |
 | `tools/BlazorShop.AI.StorefrontReverseEngineering/Skills/reverse-engineering-skills.json` | Phase 3A reverse-engineering skill catalog manifest. It documents deterministic, hybrid, and review-required steps; it is not an executable skill runtime. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1` | Phase 3A hardening gate for the ReverseEngineering executable, local fixture browser tests, readiness validation, boundary scan, and StorefrontBuilder compatibility smoke. |
+| `scripts/qa/run-storefront-reverse-engineering-phase3b-gate.ps1` | Phase 3B gate for visual analysis, ecommerce mapping, confidence review, Visual Blueprint v1, local multi-page fixture workflows, boundary scans, and StorefrontBuilder plan-only smoke. |
 | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
@@ -100,6 +101,14 @@ powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engin
 ```
 
 The gate writes a commit-linked local report under `obj/storefront-reverse-engineering/reports` with status, commit SHA, branch, UTC timestamp, .NET version, Playwright state, OS, executed commands, passed steps, artifact root, workflow run ID, readiness report path, and test summaries. While GitHub Actions are disabled during development, the gate report plus `docs/qa/phase3a-final-fix-closure.md` are the Phase 3A closure evidence.
+
+Run the Phase 3B gate with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1
+```
+
+The Phase 3B gate writes a commit-linked report under `obj/storefront-reverse-engineering/reports` with commit SHA, branch, UTC timestamp, .NET version, fixture routes, test summaries, blueprint paths, Presentation catalog version, generation readiness result, unsupported pattern count, review queue count, known limitations, and blocking artifact/fix details when readiness remains intentionally review-blocked.
 
 ## Generated Project Shape
 
