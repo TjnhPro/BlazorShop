@@ -259,44 +259,44 @@ Files/directories:
 
 Tasks:
 
-- [ ] Create `ArtifactPath`.
-- [ ] Create approved artifact root resolver.
-- [ ] Create path traversal guard.
-- [ ] Create `IVisualArtifactStore`.
-- [ ] Implement `FileSystemVisualArtifactStore`.
-- [ ] Create `IVisualSchemaRegistry`.
-- [ ] Add schema registration for:
-  - [ ] `visual-project`
-  - [ ] `configuration`
-  - [ ] `reference-site-profile`
-  - [ ] `reconnaissance`
-  - [ ] `capture-plan`
-  - [ ] `capture-manifest`
-  - [ ] `screenshot-evidence`
-  - [ ] `dom-evidence`
-  - [ ] `computed-style-evidence`
-  - [ ] `asset-inventory`
-  - [ ] `interaction-evidence`
-  - [ ] `page-topology-draft`
-  - [ ] `page-specification-draft`
-  - [ ] `component-specification-draft`
-  - [ ] `visual-blueprint-draft`
-  - [ ] `originality-audit`
-  - [ ] `readiness-report`
-  - [ ] `workflow-run`
-- [ ] Add JSON schema validation service.
-- [ ] Add artifact write validation.
-- [ ] Add artifact read deserialization validation.
-- [ ] Add provenance fields to all first-class artifacts.
-- [ ] Add tests for invalid schema.
-- [ ] Add tests for path traversal rejection.
-- [ ] Add tests for approved manual and automation roots.
+- [x] Create `ArtifactPath`.
+- [x] Create approved artifact root resolver.
+- [x] Create path traversal guard.
+- [x] Create `IVisualArtifactStore`.
+- [x] Implement `FileSystemVisualArtifactStore`.
+- [x] Create `IVisualSchemaRegistry`.
+- [x] Add schema registration for:
+  - [x] `visual-project`
+  - [x] `configuration`
+  - [x] `reference-site-profile`
+  - [x] `reconnaissance`
+  - [x] `capture-plan`
+  - [x] `capture-manifest`
+  - [x] `screenshot-evidence`
+  - [x] `dom-evidence`
+  - [x] `computed-style-evidence`
+  - [x] `asset-inventory`
+  - [x] `interaction-evidence`
+  - [x] `page-topology-draft`
+  - [x] `page-specification-draft`
+  - [x] `component-specification-draft`
+  - [x] `visual-blueprint-draft`
+  - [x] `originality-audit`
+  - [x] `readiness-report`
+  - [x] `workflow-run`
+- [x] Add JSON schema validation service.
+- [x] Add artifact write validation.
+- [x] Add artifact read deserialization validation.
+- [x] Add provenance fields to all first-class artifacts.
+- [x] Add tests for invalid schema.
+- [x] Add tests for path traversal rejection.
+- [x] Add tests for approved manual and automation roots.
 
 Guardrails:
 
-- [ ] No artifact writes outside `artifacts/storefront-reverse-engineering` or `obj/storefront-reverse-engineering`.
-- [ ] No generated storefront artifact roots are reused for reverse-engineering project state.
-- [ ] Existing StorefrontBuilder schemas remain compatible.
+- [x] No artifact writes outside `artifacts/storefront-reverse-engineering` or `obj/storefront-reverse-engineering`.
+- [x] No generated storefront artifact roots are reused for reverse-engineering project state.
+- [x] Existing StorefrontBuilder schemas remain compatible.
 
 Verification:
 
@@ -307,10 +307,10 @@ rg -n "VisualProjects/" tools docs
 
 Exit criteria:
 
-- [ ] Artifact store can write/read typed JSON.
-- [ ] Invalid schemas fail clearly.
-- [ ] Unsafe paths fail before write.
-- [ ] Artifact schema versioning is explicit.
+- [x] Artifact store can write/read typed JSON.
+- [x] Invalid schemas fail clearly.
+- [x] Unsafe paths fail before write.
+- [x] Artifact schema versioning is explicit.
 
 ## Phase 3 - Visual Project Lifecycle Commands
 

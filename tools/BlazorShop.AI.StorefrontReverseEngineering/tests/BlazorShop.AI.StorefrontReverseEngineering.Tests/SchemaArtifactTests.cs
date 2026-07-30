@@ -1,0 +1,103 @@
+using System.Text.Json.Nodes;
+using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
+using BlazorShop.AI.StorefrontReverseEngineering.Storage;
+using BlazorShop.AI.StorefrontReverseEngineering.Validation;
+using Xunit;
+
+namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
+
+public sealed class SchemaArtifactTests
+{
+    [Fact]
+    public void SchemaRegistry_RegistersRequiredArtifactKinds()
+    {
+        var registry = new VisualSchemaRegistry();
+        var kinds = registry.Schemas.Select(schema => schema.ArtifactKind).ToHashSet(StringComparer.Ordinal);
+
+        Assert.Contains("visual-project", kinds);
+        Assert.Contains("configuration", kinds);
+        Assert.Contains("reference-site-profile", kinds);
+        Assert.Contains("reconnaissance", kinds);
+        Assert.Contains("capture-plan", kinds);
+        Assert.Contains("capture-manifest", kinds);
+        Assert.Contains("screenshot-evidence", kinds);
+        Assert.Contains("dom-evidence", kinds);
+        Assert.Contains("computed-style-evidence", kinds);
+        Assert.Contains("asset-inventory", kinds);
+        Assert.Contains("interaction-evidence", kinds);
+        Assert.Contains("page-topology-draft", kinds);
+        Assert.Contains("page-specification-draft", kinds);
+        Assert.Contains("component-specification-draft", kinds);
+        Assert.Contains("visual-blueprint-draft", kinds);
+        Assert.Contains("originality-audit", kinds);
+        Assert.Contains("readiness-report", kinds);
+        Assert.Contains("workflow-run", kinds);
+    }
+
+    [Fact]
+    public void SchemaValidator_RejectsInvalidSchema()
+    {
+        var validator = new VisualSchemaValidator(new VisualSchemaRegistry());
+        var artifact = JsonNode.Parse("""{"schemaVersion":"1.0","artifactKind":"visual-project","createdUtc":"2026-01-01T00:00:00Z"}""")!;
+
+        var exception = Assert.Throws<InvalidOperationException>(() => validator.Validate("visual-project", artifact));
+        Assert.Contains("SRE-SCHEMA-006", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ArtifactPath_RejectsTraversal()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => ArtifactPath.Create("../project.json"));
+        Assert.Contains("SRE-PATH-001", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RootResolver_ApprovesManualAndAutomationRoots()
+    {
+        var repoRoot = GetRepoRoot();
+        var resolver = new ApprovedArtifactRootResolver(repoRoot);
+
+        Assert.EndsWith(Path.Combine("artifacts", "storefront-reverse-engineering", "projects"), resolver.ResolveRoot("artifacts/storefront-reverse-engineering/projects"), StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith(Path.Combine("obj", "storefront-reverse-engineering", "projects"), resolver.ResolveRoot("obj/storefront-reverse-engineering/projects"), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ArtifactStore_WritesReadsAndValidatesTypedJson()
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "artifact-test-" + Guid.NewGuid().ToString("N"));
+        var store = new FileSystemVisualArtifactStore(
+            outputRoot,
+            new ApprovedArtifactRootResolver(repoRoot),
+            new VisualSchemaValidator(new VisualSchemaRegistry()));
+
+        var project = new VisualProject(
+            "1.0",
+            "visual-project",
+            "project-demo",
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            "demo",
+            "Demo",
+            "https://example.test/",
+            outputRoot,
+            Domain.VisualProjectStatus.Created);
+
+        await store.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", project, CancellationToken.None);
+        var roundTrip = await store.ReadJsonAsync<VisualProject>(ArtifactPath.Create("project.json"), "visual-project", CancellationToken.None);
+
+        Assert.Equal(project.ProjectId, roundTrip.ProjectId);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.ReadJsonAsync<VisualProject>(ArtifactPath.Create("project.json"), "configuration", CancellationToken.None));
+    }
+
+    private static string GetRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AGENTS.md")))
+        {
+            directory = directory.Parent;
+        }
+
+        return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");
+    }
+}
