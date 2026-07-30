@@ -1,6 +1,6 @@
 # Visual Reverse Engineering Skill Docs
 
-This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects.
+This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects. Phase 3A also introduces `BlazorShop.AI.StorefrontReverseEngineering`, a separate development-time executable that records reference-site evidence and neutral visual-blueprint drafts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. StorefrontBuilder remains the generation/regeneration tool and does not consume those new artifacts until a later approved phase.
 
 ## Read First
 
@@ -17,6 +17,7 @@ The phase plans are retained as implementation history and checklist evidence:
 - [01-StorefrontBuilder-Foundation.todo.md](01-StorefrontBuilder-Foundation.todo.md)
 - [02-StorefrontBuilder-Visual-Generation.todo.md](02-StorefrontBuilder-Visual-Generation.todo.md)
 - [03-StorefrontBuilder-QA-Regeneration.todo.md](03-StorefrontBuilder-QA-Regeneration.todo.md)
+- [08-StorefrontReverseEngineering-Engine-Foundation.todo.md](08-StorefrontReverseEngineering-Engine-Foundation.todo.md)
 - [StorefrontBuilder Architecture Note](StorefrontBuilder-architecture-note.md)
 
 The architecture docs are the current source of truth when a historical plan conflicts with current code.

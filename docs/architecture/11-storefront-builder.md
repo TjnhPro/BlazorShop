@@ -14,6 +14,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
+| Reverse-engineering evidence tooling | `tools/BlazorShop.AI.StorefrontReverseEngineering` | Development-time executable that creates reference-site evidence, workflow state, validation reports, originality notes, and neutral visual-blueprint drafts for later StorefrontBuilder phases. |
 | Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, isolation-checks, and runs structure, fast functional, or full fixture-backed browser proof for the canonical generated proof artifact. |
 | Full fixture proof wrapper | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | CI-safe manual/scheduled/release wrapper that stops any existing V2 runtime, starts Docker dependencies plus the local Control Plane/Commerce Node/Storefront fixture runtime, verifies fixture data, runs `FoundationFunctionalFull`, collects reports, and tears down in `finally`. |
 | Regeneration ownership gate | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly generated update proof for no-op determinism, scoped updates, manual-edit conflicts, user-owned preservation, protected-file rejection, and obsolete-file reporting without live Commerce Node data. |
@@ -27,6 +28,15 @@ obj/storefront-builder/generated/{ProjectName}
 ```
 
 The storefront name must be normalized before it is used as a folder, project name, namespace segment, or file prefix. Unsafe names must fail before files are created. Generated proof output must not be added to `BlazorShop.sln` by default.
+
+Reverse-engineering project artifacts are separate from generated storefront source and live under:
+
+```text
+artifacts/storefront-reverse-engineering/projects/{ProjectId}
+obj/storefront-reverse-engineering/projects/{ProjectId}
+```
+
+`BlazorShop.AI.StorefrontReverseEngineering` is validated by direct `dotnet build`, `dotnet test`, and `dotnet run --project` commands. It is not added to `BlazorShop.sln` by default, no production runtime project may reference it, and StorefrontBuilder generation does not consume its `visual-blueprint.draft.json` output until a later approved phase. The tool produces evidence and neutral draft artifacts only; it does not generate Razor, CSS, generated storefront projects, or runtime API changes.
 
 ## Boundary Model
 
