@@ -40,7 +40,15 @@ Phase 3A does not generate Razor, CSS, or StorefrontBuilder output. It does not 
 
 ## Browser Setup
 
-Automated tests use the deterministic local fixture browser and do not require internet access. Manual capture can wrap the existing StorefrontBuilder Node Playwright capture script through `NodePlaywrightReferenceBrowser`; install its dependencies before manual browser runs:
+Fast unit/schema tests use deterministic fixture capture and do not require internet access. Real browser integration tests use .NET Playwright against a local HTTP fixture and require Chromium to be installed once on the machine:
+
+```powershell
+dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
+.\tools\BlazorShop.AI.StorefrontReverseEngineering\bin\Debug\net10.0\playwright.ps1 install chromium
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Playwright|EndToEnd"
+```
+
+Manual capture can also wrap the existing StorefrontBuilder Node Playwright capture script through `NodePlaywrightReferenceBrowser`; install its dependencies before manual Node bridge runs:
 
 ```powershell
 Push-Location tools\BlazorShop.AI.StorefrontBuilder

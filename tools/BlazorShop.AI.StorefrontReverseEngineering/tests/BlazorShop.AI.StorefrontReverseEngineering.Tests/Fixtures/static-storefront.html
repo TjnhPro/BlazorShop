@@ -7,12 +7,16 @@
   <style>
     body { margin: 0; font-family: Inter, Arial, sans-serif; color: #13201a; }
     .site-header { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; height: 72px; background: #fff; }
-    .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 420px; background: #e7f2ed; }
+    .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 420px; background: #e7f2ed url('/assets/hero-bg.png') center/cover no-repeat; }
     .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .product-card { border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
-    .product-card:hover { transform: translateY(-2px); }
-    .lazy-section { min-height: 360px; }
+    .product-card { border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12); transition: transform .2s ease, box-shadow .2s ease; }
+    .product-card:hover { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(0,0,0,.2); }
+    .lazy-section { min-height: 360px; opacity: .25; }
+    .lazy-section[data-lazy-loaded="true"] { opacity: 1; }
     .mobile-menu { display: none; }
+    .mobile-nav { display: none; }
+    body.menu-open .mobile-nav { display: block; }
+    .accordion-panel { display: none; }
     .accordion [aria-expanded="true"] + .accordion-panel { display: block; }
     .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; }
     @media (max-width: 640px) {
@@ -26,19 +30,44 @@
     <strong>Fixture Brand</strong>
     <button class="mobile-menu" aria-label="Open menu">Menu</button>
     <nav><a href="/collections">Collections</a><a href="/support">Support</a></nav>
+    <nav class="mobile-nav" data-testid="mobile-nav"><a href="/new">New</a><a href="/sale">Sale</a></nav>
   </header>
   <main>
-    <section class="hero"><h1>New fixture arrivals</h1><img src="/assets/fake-brand-hero.svg" alt="Fake brand asset"></section>
+    <section class="hero">
+      <h1>New fixture arrivals</h1>
+      <picture>
+        <source srcset="/assets/fake-brand-hero-wide.svg" media="(min-width: 800px)">
+        <img src="/assets/fake-brand-hero.svg" alt="Fake brand asset">
+      </picture>
+      <svg class="inline-mark" role="img" aria-label="Inline mark" width="96" height="48"><rect width="96" height="48" rx="8" fill="#315c48"></rect></svg>
+    </section>
     <section class="product-grid" aria-label="Products">
       <article class="product-card"><img src="/assets/product-1.jpg" alt="Product 1"><h2>Fixture Jacket</h2><button>Add</button></article>
       <article class="product-card"><img src="/assets/product-2.jpg" alt="Product 2"><h2>Fixture Bag</h2><button>Add</button></article>
       <article class="product-card"><img src="/assets/product-3.jpg" alt="Product 3"><h2>Fixture Sneaker</h2><button>Add</button></article>
     </section>
     <section class="product-detail"><h2>Product detail</h2><p>Fixture product copy for source-copy review.</p></section>
-    <section class="lazy-section" data-lazy-loaded="true"><h2>Lazy loaded editorial</h2></section>
-    <section class="accordion"><button aria-expanded="true">Details</button><div class="accordion-panel">Accordion content</div></section>
+    <section class="lazy-section" data-lazy-loaded="false"><h2>Lazy placeholder</h2></section>
+    <section class="accordion"><button aria-expanded="false">Details</button><div class="accordion-panel">Accordion content</div></section>
+    <video class="fixture-video" width="320" height="180" poster="/assets/video-poster.jpg" muted>
+      <source src="/assets/fixture-video.mp4" type="video/mp4">
+    </video>
   </main>
   <footer><p>Footer links and newsletter form</p><input type="email" placeholder="Email"></footer>
   <aside class="cookie-banner">Cookie banner fixture <button>Accept</button></aside>
+  <script>
+    document.querySelector('.mobile-menu').addEventListener('click', () => document.body.classList.toggle('menu-open'));
+    document.querySelector('.accordion button').addEventListener('click', event => {
+      const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
+      event.currentTarget.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+    });
+    const lazy = document.querySelector('.lazy-section');
+    new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        lazy.dataset.lazyLoaded = 'true';
+        lazy.querySelector('h2').textContent = 'Lazy loaded editorial';
+      }
+    }).observe(lazy);
+  </script>
 </body>
 </html>

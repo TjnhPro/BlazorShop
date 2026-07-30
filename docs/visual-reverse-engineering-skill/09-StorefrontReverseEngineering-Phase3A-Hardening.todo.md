@@ -757,48 +757,48 @@ Current files:
 
 Tasks:
 
-- [ ] Add local HTTP fixture runner instead of relying on `file://` for browser integration.
-- [ ] Fixture must be deterministic and offline.
-- [ ] Fixture should include:
-  - [ ] sticky header
-  - [ ] hero
-  - [ ] product grid
-  - [ ] product card hover state
-  - [ ] mobile menu
-  - [ ] accordion
-  - [ ] lazy-loaded section
-  - [ ] cookie banner/noise selector
-  - [ ] responsive column changes
-  - [ ] CSS background image
-  - [ ] inline SVG
-  - [ ] fake video/poster metadata
-  - [ ] fake brand asset for originality audit
-- [ ] Add real Playwright local integration tests:
-  - [ ] Chromium launches
-  - [ ] desktop screenshot has real dimensions
-  - [ ] mobile screenshot has real dimensions
-  - [ ] sticky header style is captured
-  - [ ] product card bounding box exists
-  - [ ] mobile grid differs from desktop grid
-  - [ ] lazy section appears after stabilization
-  - [ ] cookie banner is hidden when policy allows
-  - [ ] hover before/after differs
-  - [ ] accordion click before/after differs
-  - [ ] stitched fallback creates real image
-  - [ ] full workflow produces readiness pass
-- [ ] Keep fast unit tests separate from browser integration tests.
-- [ ] Add category/filter names:
-  - [ ] `Unit`
-  - [ ] `Schema`
-  - [ ] `Playwright`
-  - [ ] `EndToEnd`
-- [ ] Add browser installation docs for .NET Playwright.
+- [x] Add local HTTP fixture runner instead of relying on `file://` for browser integration.
+- [x] Fixture must be deterministic and offline.
+- [x] Fixture should include:
+  - [x] sticky header
+  - [x] hero
+  - [x] product grid
+  - [x] product card hover state
+  - [x] mobile menu
+  - [x] accordion
+  - [x] lazy-loaded section
+  - [x] cookie banner/noise selector
+  - [x] responsive column changes
+  - [x] CSS background image
+  - [x] inline SVG
+  - [x] fake video/poster metadata
+  - [x] fake brand asset for originality audit
+- [x] Add real Playwright local integration tests:
+  - [x] Chromium launches
+  - [x] desktop screenshot has real dimensions
+  - [x] mobile screenshot has real dimensions
+  - [x] sticky header style is captured
+  - [x] product card bounding box exists
+  - [x] mobile grid differs from desktop grid
+  - [x] lazy section appears after stabilization
+  - [x] cookie banner is hidden when policy allows
+  - [x] hover before/after differs
+  - [x] accordion click before/after differs
+  - [x] stitched fallback creates real image
+  - [x] full workflow produces readiness pass
+- [x] Keep fast unit tests separate from browser integration tests.
+- [x] Add category/filter names:
+  - [x] `Unit`
+  - [x] `Schema`
+  - [x] `Playwright`
+  - [x] `EndToEnd`
+- [x] Add browser installation docs for .NET Playwright.
 
 Guardrails:
 
-- [ ] Browser E2E must not depend on internet.
-- [ ] Browser E2E must stop local fixture server in `finally`.
-- [ ] Do not use source/reference external sites in CI.
+- [x] Browser E2E must not depend on internet.
+- [x] Browser E2E must stop local fixture server in `finally`.
+- [x] Do not use source/reference external sites in CI.
 
 Verification:
 
@@ -808,9 +808,16 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Browser integration tests use real Chromium.
-- [ ] Test fixture proves responsive, lazy, noise, hover, click, asset, and stitched behavior.
-- [ ] Full vertical slice works without internet.
+- [x] Browser integration tests use real Chromium.
+- [x] Test fixture proves responsive, lazy, noise, hover, click, asset, and stitched behavior.
+- [x] Full vertical slice works without internet.
+
+Implementation evidence:
+
+- Added `TestHttpFixtureServer` for deterministic `127.0.0.1` HTTP fixture serving HTML and fake local assets.
+- Expanded `static-storefront.html` with responsive layout, JS-driven mobile menu/accordion/lazy section, cookie noise selector, CSS background, inline SVG, video/poster, and fake brand assets.
+- Added real Playwright integration tests for rendered evidence, responsive viewport differences, stitched fallback, interaction diffs, and full workflow readiness.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Playwright|EndToEnd"` passed: 12 tests.
 
 ## Phase H8 - CLI Semantics, Force Behavior, And Inspect Reports
 

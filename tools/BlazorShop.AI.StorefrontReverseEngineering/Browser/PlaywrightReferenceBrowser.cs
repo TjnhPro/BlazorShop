@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Domain;
 using Microsoft.Playwright;
@@ -145,9 +146,11 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             cancellationToken.ThrowIfCancellationRequested();
             EnsureNavigated();
 
-            var evidence = await page.EvaluateAsync<RenderedPageEvidence>(
+            var evidenceJson = await page.EvaluateAsync<JsonElement>(
                 EvidenceScript,
                 new EvidenceCaptureOptions(MaximumEvidenceElements, MaximumEvidenceAssets, MaximumTextLength));
+            var evidence = JsonSerializer.Deserialize<RenderedPageEvidence>(evidenceJson.GetRawText(), VisualJson.Options)
+                ?? throw new InvalidOperationException("[SRE-BROWSER-009] Rendered evidence extraction returned no data. Problem: Playwright evaluate produced an empty evidence payload. Cause: the page script failed or returned invalid JSON. Fix: inspect the reference page fixture and browser console.");
 
             if (evidence.DocumentHeight > policy.MaximumPageHeight)
             {
@@ -158,7 +161,8 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             var screenshot = await page.ScreenshotAsync(new PageScreenshotOptions
             {
                 FullPage = true,
-                Type = ScreenshotType.Png
+                Type = ScreenshotType.Png,
+                Scale = ScreenshotScale.Css
             });
 
             return new BrowserCaptureResult(
@@ -172,7 +176,14 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
                 screenshot,
                 evidence.Styles.Select(style => new ComputedStyleSample(style.Selector, style.Properties, style.EvidenceId)).ToArray(),
                 evidence.Boxes.Select(box => new ElementBoxSample(box.Selector, box.X, box.Y, box.Width, box.Height, box.EvidenceId)).ToArray(),
-                evidence.Assets.Select(asset => new AssetInventoryItem(asset.Url, asset.MediaType, asset.Width, asset.Height, asset.SourceElement, true, asset.EvidenceId)).ToArray(),
+                evidence.Assets.Select(asset => new AssetInventoryItem(
+                    asset.Url,
+                    asset.MediaType,
+                    asset.Width <= 0 ? null : asset.Width,
+                    asset.Height <= 0 ? null : asset.Height,
+                    asset.SourceElement,
+                    true,
+                    asset.EvidenceId)).ToArray(),
                 evidence.Warnings);
         }
 
@@ -237,7 +248,8 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             return page.ScreenshotAsync(new PageScreenshotOptions
             {
                 FullPage = false,
-                Type = ScreenshotType.Png
+                Type = ScreenshotType.Png,
+                Scale = ScreenshotScale.Css
             });
         }
 
@@ -327,9 +339,9 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
 
         public string MediaType { get; set; } = "";
 
-        public int? Width { get; set; }
+        public int Width { get; set; }
 
-        public int? Height { get; set; }
+        public int Height { get; set; }
 
         public string SourceElement { get; set; } = "";
     }
@@ -414,7 +426,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
               return;
             }
             seenAssets.add(`${mediaType}|${url}`);
-            assets.push({ EvidenceId: evidenceId, Url: url, MediaType: mediaType, Width: width || null, Height: height || null, SourceElement: sourceSelector });
+            assets.push({ EvidenceId: evidenceId, Url: url, MediaType: mediaType, Width: width || 0, Height: height || 0, SourceElement: sourceSelector });
           };
           elements.forEach((element, index) => {
             const evidenceId = `ev-${String(index + 1).padStart(3, '0')}`;
