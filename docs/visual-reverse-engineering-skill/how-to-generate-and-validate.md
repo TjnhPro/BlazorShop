@@ -70,7 +70,7 @@ Preview before applying:
   -WhatIf
 ```
 
-`-WhatIf` runs the same fresh-candidate planning pipeline as apply mode and exits before copying target changes. Review `docs/storefront-analysis/regeneration-report.md` for create/update/conflict/obsolete/platform metadata actions.
+`-WhatIf` runs the same fresh-candidate planning pipeline as apply mode and exits before copying target changes. Read the `WhatIf report:` path printed by the command; by default it is written under the output root `.regeneration-reports/` folder and contains create/update/conflict/obsolete/platform metadata actions.
 
 Require validation and build after applying:
 

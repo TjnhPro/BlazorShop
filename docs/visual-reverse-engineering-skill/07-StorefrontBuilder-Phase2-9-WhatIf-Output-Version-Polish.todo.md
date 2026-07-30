@@ -115,28 +115,28 @@ Goal: prove `-WhatIf` developer behavior, not only internal planner correctness.
 
 Tasks:
 
-- [ ] Add a test that runs `-WhatIf` without `SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS`.
-- [ ] Assert target tree hash is unchanged after `-WhatIf`.
-- [ ] Assert temporary candidate directory is cleaned after `-WhatIf`.
-- [ ] Assert stable report exists after `-WhatIf`.
-- [ ] Assert stable report contains:
-  - [ ] create;
-  - [ ] update;
-  - [ ] conflict manual edit;
-  - [ ] obsolete candidate;
-  - [ ] skip user-owned or skip protected.
-- [ ] Assert console output contains:
-  - [ ] stable report path;
-  - [ ] summary counts;
-  - [ ] at least one meaningful action line;
-  - [ ] conflict next-action guidance when conflicts exist.
-- [ ] Add a custom `-WhatIfReportPath` test.
-- [ ] Assert custom report path is respected.
-- [ ] Assert unsafe `-WhatIfReportPath` fails before writing.
-- [ ] Assert report path under target project is rejected.
-- [ ] Keep existing internal candidate-preservation tests if they still help inspect candidate internals.
-- [ ] Rename existing tests or comments so it is clear which tests cover internal planner state vs normal CLI behavior.
-- [ ] Add or update architecture tests that prevent docs from saying target `docs/storefront-analysis/regeneration-report.md` is the `-WhatIf` report location.
+- [x] Add a test that runs `-WhatIf` without `SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS`.
+- [x] Assert target tree hash is unchanged after `-WhatIf`.
+- [x] Assert temporary candidate directory is cleaned after `-WhatIf`.
+- [x] Assert stable report exists after `-WhatIf`.
+- [x] Assert stable report contains:
+  - [x] create;
+  - [x] update;
+  - [x] conflict manual edit;
+  - [x] obsolete candidate;
+  - [x] skip user-owned or skip protected.
+- [x] Assert console output contains:
+  - [x] stable report path;
+  - [x] summary counts;
+  - [x] at least one meaningful action line;
+  - [x] conflict next-action guidance when conflicts exist.
+- [x] Add a custom `-WhatIfReportPath` test.
+- [x] Assert custom report path is respected.
+- [x] Assert unsafe `-WhatIfReportPath` fails before writing.
+- [x] Assert report path under target project is rejected.
+- [x] Keep existing internal candidate-preservation tests if they still help inspect candidate internals.
+- [x] Rename existing tests or comments so it is clear which tests cover internal planner state vs normal CLI behavior.
+- [x] Add or update architecture tests that prevent docs from saying target `docs/storefront-analysis/regeneration-report.md` is the `-WhatIf` report location.
 
 Implementation notes:
 
@@ -153,9 +153,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Exit gate:
 
-- [ ] Regression tests fail against the old candidate-only report behavior.
-- [ ] Regression tests pass only when normal `-WhatIf` output/report is usable.
-- [ ] No test depends on hidden env vars to prove user-facing `-WhatIf` report access.
+- [x] Regression tests fail against the old candidate-only report behavior.
+- [x] Regression tests pass only when normal `-WhatIf` output/report is usable.
+- [x] No test depends on hidden env vars to prove user-facing `-WhatIf` report access.
 
 ## Phase 2.9C - Unified Generator Version Source
 

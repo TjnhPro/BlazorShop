@@ -373,6 +373,9 @@ namespace BlazorShop.Tests.Architecture
                 "New-RegenerationPlan",
                 "Copy-ChangedFile",
                 "Write-RegenerationReport",
+                "WhatIfReportPath",
+                ".regeneration-reports",
+                "Write-RegenerationPlanSummary",
                 "foundation",
                 "skip unchanged",
                 "skip user-owned",
@@ -392,6 +395,8 @@ namespace BlazorShop.Tests.Architecture
                 "Update-CandidateFoundationMetadata",
                 "Remove-CandidateManifestEntries",
                 "WhatIf completed without writing generated project files.",
+                "WhatIf report:",
+                "WhatIf summary:",
             })
             {
                 Assert.Contains(marker, command, StringComparison.Ordinal);
@@ -417,14 +422,20 @@ namespace BlazorShop.Tests.Architecture
                 "No-op regeneration produced file diffs.",
                 "CSS scope touched unrelated files.",
                 "WhatIf modified the target tree.",
-                "WhatIf report did not preserve user-owned README.",
                 "Missing HomePage was not recreated.",
                 "Missing ProductSummaryCard was not recreated.",
                 "CSS scope did not keep StorefrontPackageVersions.props out of scope.",
                 "Foundation update did not apply StorefrontPackageVersions.props.",
                 "Invoke-WithTemporaryTextEdit",
                 "Invoke-StorefrontRegeneration",
-                "WhatIf report did not include created candidate.",
+                "Stable WhatIf report did not include created candidate.",
+                "Stable WhatIf report did not preserve user-owned or protected README.",
+                "Normal WhatIf did not leave a stable report.",
+                "Normal WhatIf left temporary candidate artifacts behind.",
+                "WhatIf console did not print conflict next-action guidance.",
+                "Custom WhatIf report path was not created.",
+                "Rejected target-scoped WhatIf report path was written.",
+                "Rejected unsafe WhatIf report path was written.",
                 "Rollback did not restore the target tree after build failure.",
                 "Rollback restore path is missing",
             })
@@ -448,6 +459,30 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains("filePath:", manifestCase, StringComparison.Ordinal);
                 Assert.Contains("currentHash:", manifestCase, StringComparison.Ordinal);
                 Assert.Contains("conflictReason:", manifestCase, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
+        public void StorefrontBuilderDocs_DoNotPointWhatIfReportsAtTargetRegenerationReport()
+        {
+            foreach (var relativePath in new[]
+            {
+                "docs/architecture/11-storefront-builder.md",
+                "docs/agents/storefront-builder.md",
+                "docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md",
+                "docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md",
+                "docs/visual-reverse-engineering-skill/reference.md",
+            })
+            {
+                var doc = ReadRepositoryFile(relativePath);
+                var lines = doc.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                foreach (var line in lines)
+                {
+                    Assert.False(
+                        line.Contains("WhatIf", StringComparison.OrdinalIgnoreCase)
+                        && line.Contains("docs/storefront-analysis/regeneration-report.md", StringComparison.Ordinal),
+                        $"{relativePath} tells users to read the target regeneration report as the WhatIf report: {line}");
+                }
             }
         }
 

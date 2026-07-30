@@ -37,6 +37,16 @@ function Assert-Throws {
     throw "Expected '$ExpectedCode' failure."
 }
 
+function Assert-ContainsText {
+    param(
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Expected,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+
+    Assert-Condition -Condition $Text.Contains($Expected, [System.StringComparison]::Ordinal) -Message $Message
+}
+
 function Get-TreeHashes {
     param([Parameter(Mandatory = $true)][string]$Root)
 
@@ -108,18 +118,28 @@ function Invoke-WithTemporaryTextEdit {
 function Invoke-StorefrontRegeneration {
     param(
         [Parameter(Mandatory = $true)][string]$ProjectRoot,
-        [Parameter(Mandatory = $true)][string[]]$Arguments,
-        [switch]$PreserveCandidateArtifacts
+        [Parameter(Mandatory = $true)][string[]]$RegeneratorArguments,
+        [switch]$PreserveCandidateArtifacts,
+        [string]$DropCandidateFilePaths = ""
     )
 
     $previousKeep = $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS
+    $previousDrop = $env:SFB_DROP_CANDIDATE_FILE_PATHS
     if ($PreserveCandidateArtifacts) {
         $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS = "1"
     }
+    elseif ($null -ne $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS) {
+        Remove-Item Env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS -ErrorAction SilentlyContinue
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($DropCandidateFilePaths)) {
+        $env:SFB_DROP_CANDIDATE_FILE_PATHS = $DropCandidateFilePaths
+    }
 
     try {
-        $commandArguments = @("-ProjectRoot", $ProjectRoot) + $Arguments
-        $output = @(& (Join-Path $toolRoot "regenerate-storefront.ps1") @commandArguments 2>&1)
+        $commandArguments = @("-ProjectRoot", $ProjectRoot) + $RegeneratorArguments
+        $powerShellPath = (Get-Process -Id $PID).Path
+        $output = @(& $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $toolRoot "regenerate-storefront.ps1") @commandArguments 2>&1)
         if ($LASTEXITCODE -ne 0) {
             throw ($output -join [System.Environment]::NewLine)
         }
@@ -144,7 +164,33 @@ function Invoke-StorefrontRegeneration {
         else {
             Remove-Item Env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS -ErrorAction SilentlyContinue
         }
+
+        if ($null -ne $previousDrop) {
+            $env:SFB_DROP_CANDIDATE_FILE_PATHS = $previousDrop
+        }
+        else {
+            Remove-Item Env:SFB_DROP_CANDIDATE_FILE_PATHS -ErrorAction SilentlyContinue
+        }
     }
+}
+
+function Get-WhatIfReportPathFromOutput {
+    param([Parameter(Mandatory = $true)][array]$Output)
+
+    foreach ($line in $Output) {
+        if ($line -match "^WhatIf report: (.+)$") {
+            return $Matches[1]
+        }
+    }
+
+    throw "WhatIf output did not include a stable report path."
+}
+
+function Test-CandidateArtifactsCleaned {
+    param([Parameter(Mandatory = $true)][string]$OutputRoot)
+
+    $candidateRoot = Join-Path $OutputRoot ".regeneration-candidate"
+    return (-not (Test-Path -LiteralPath $candidateRoot)) -or @((Get-ChildItem -LiteralPath $candidateRoot -Force)).Count -eq 0
 }
 
 function New-TestProject {
@@ -224,6 +270,7 @@ $starterCreatedContent = @"
 <p>Generated for regeneration planning tests.</p>
 "@
 $baselineHashes = Get-TreeHashes -Root $projectRoot
+$whatIfCandidateRoot = $null
 try {
     Set-TextFileContent -Path $starterHomePath -Content ($starterHomeOriginal.Replace("Featured products", "Featured products whatif"))
     Set-TextFileContent -Path $starterLayoutPath -Content ($starterLayoutOriginal.Replace("Deals", "Specials"))
@@ -233,21 +280,33 @@ try {
     & (Join-Path $toolRoot "scripts\generate\update-generated-files-manifest.mjs") --project-root $projectRoot
 
     $baselineHashes = Get-TreeHashes -Root $projectRoot
-    $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS = "1"
-    $env:SFB_DROP_CANDIDATE_FILE_PATHS = "Pages/Hybrid/Catalog/SearchPage.razor"
-    & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope all -WhatIf
-    $whatIfCandidateRoot = (Get-ChildItem -LiteralPath (Join-Path $outputRoot ".regeneration-candidate") -Directory |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1).FullName
-    $whatIfCandidateRoot = Join-Path $whatIfCandidateRoot $projectName
-    $reportPath = Join-Path $whatIfCandidateRoot "docs\storefront-analysis\regeneration-report.md"
-    $report = Get-Content -LiteralPath $reportPath -Raw
-    Assert-Condition -Condition $report.Contains("Pages/Ssr/Home/WhatIfCreated.razor: create", [System.StringComparison]::Ordinal) -Message "WhatIf report did not include created candidate."
-    Assert-Condition -Condition $report.Contains("Pages/Ssr/Home/HomePage.razor: update", [System.StringComparison]::Ordinal) -Message "WhatIf report did not include updated HomePage."
-    Assert-Condition -Condition $report.Contains("Components/Layout/MainLayout.razor: conflict manual edit", [System.StringComparison]::Ordinal) -Message "WhatIf report did not include manual-edit conflict."
-    Assert-Condition -Condition $report.Contains("Pages/Hybrid/Catalog/SearchPage.razor", [System.StringComparison]::Ordinal) -Message "WhatIf report did not include obsolete candidate path."
-    Assert-Condition -Condition $report.Contains("obsolete candidate", [System.StringComparison]::Ordinal) -Message "WhatIf report did not include obsolete candidate action."
-    Assert-Condition -Condition $report.Contains("README.md: skip user-owned", [System.StringComparison]::Ordinal) -Message "WhatIf report did not preserve user-owned README."
+    $whatIfResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "all", "-WhatIf") -DropCandidateFilePaths "Pages/Hybrid/Catalog/SearchPage.razor"
+    $whatIfConsole = $whatIfResult.Output -join [System.Environment]::NewLine
+    $stableReportPath = Get-WhatIfReportPathFromOutput -Output $whatIfResult.Output
+    Assert-Condition -Condition (Test-Path -LiteralPath $stableReportPath) -Message "Normal WhatIf did not leave a stable report."
+    Assert-Condition -Condition (Test-CandidateArtifactsCleaned -OutputRoot $outputRoot) -Message "Normal WhatIf left temporary candidate artifacts behind."
+    Assert-Condition -Condition ((Compare-Hashes -Before $baselineHashes -After (Get-TreeHashes -Root $projectRoot)).Count -eq 0) -Message "Normal WhatIf modified the target tree."
+
+    $report = Get-Content -LiteralPath $stableReportPath -Raw
+    Assert-ContainsText -Text $report -Expected "Pages/Ssr/Home/WhatIfCreated.razor: create" -Message "Stable WhatIf report did not include created candidate."
+    Assert-ContainsText -Text $report -Expected "Pages/Ssr/Home/HomePage.razor: update" -Message "Stable WhatIf report did not include updated HomePage."
+    Assert-ContainsText -Text $report -Expected "Components/Layout/MainLayout.razor: conflict manual edit" -Message "Stable WhatIf report did not include manual-edit conflict."
+    Assert-ContainsText -Text $report -Expected "Pages/Hybrid/Catalog/SearchPage.razor" -Message "Stable WhatIf report did not include obsolete candidate path."
+    Assert-ContainsText -Text $report -Expected "obsolete candidate" -Message "Stable WhatIf report did not include obsolete candidate action."
+    Assert-Condition -Condition ($report.Contains("README.md: skip user-owned", [System.StringComparison]::Ordinal) -or $report.Contains("README.md: skip protected", [System.StringComparison]::Ordinal)) -Message "Stable WhatIf report did not preserve user-owned or protected README."
+
+    Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf report: $stableReportPath" -Message "WhatIf console did not print the stable report path."
+    Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf summary: create=" -Message "WhatIf console did not print summary counts."
+    Assert-ContainsText -Text $whatIfConsole -Expected "Pages/Ssr/Home/HomePage.razor: update - " -Message "WhatIf console did not print a meaningful action line."
+    Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf next action: resolve conflicts manually, rerun -Scope conflicts, then rerun the desired update scope." -Message "WhatIf console did not print conflict next-action guidance."
+
+    $internalPlannerResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "all", "-WhatIf") -PreserveCandidateArtifacts -DropCandidateFilePaths "Pages/Hybrid/Catalog/SearchPage.razor"
+    $whatIfCandidateRoot = $internalPlannerResult.CandidateRoot
+    $candidateReportPath = Join-Path $whatIfCandidateRoot "docs\storefront-analysis\regeneration-report.md"
+    Assert-Condition -Condition (Test-Path -LiteralPath $candidateReportPath) -Message "Internal preserved WhatIf candidate report was not available for planner inspection."
+    $candidateReport = Get-Content -LiteralPath $candidateReportPath -Raw
+    Assert-ContainsText -Text $candidateReport -Expected "Pages/Ssr/Home/WhatIfCreated.razor: create" -Message "Internal WhatIf planner report did not include created candidate."
+    Assert-ContainsText -Text $candidateReport -Expected "Pages/Ssr/Home/HomePage.razor: update" -Message "Internal WhatIf planner report did not include updated HomePage."
     Assert-Condition -Condition ((Compare-Hashes -Before $baselineHashes -After (Get-TreeHashes -Root $projectRoot)).Count -eq 0) -Message "WhatIf modified the target tree."
 }
 finally {
@@ -266,6 +325,37 @@ finally {
     Remove-Item Env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS -ErrorAction SilentlyContinue
     Remove-Item Env:SFB_DROP_CANDIDATE_FILE_PATHS -ErrorAction SilentlyContinue
 }
+
+New-TestProject
+$customWhatIfReportPath = Join-Path $repoRoot "obj\storefront-builder\whatif\regeneration-safety-custom.md"
+if (Test-Path -LiteralPath $customWhatIfReportPath) {
+    Remove-Item -LiteralPath $customWhatIfReportPath -Force
+}
+
+$customWhatIfResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "css", "-WhatIf", "-WhatIfReportPath", $customWhatIfReportPath)
+$customWhatIfConsole = $customWhatIfResult.Output -join [System.Environment]::NewLine
+Assert-Condition -Condition (Test-Path -LiteralPath $customWhatIfReportPath) -Message "Custom WhatIf report path was not created."
+Assert-ContainsText -Text $customWhatIfConsole -Expected "WhatIf report: $customWhatIfReportPath" -Message "WhatIf console did not print the custom report path."
+Assert-Condition -Condition (Test-CandidateArtifactsCleaned -OutputRoot $outputRoot) -Message "Custom WhatIf left temporary candidate artifacts behind."
+
+New-TestProject
+$targetReportPath = Join-Path $projectRoot "docs\storefront-analysis\whatif-report.md"
+Assert-Throws -ExpectedCode "SFB-REGEN-020" -Action {
+    & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope css -WhatIf -WhatIfReportPath $targetReportPath
+}
+Assert-Condition -Condition (-not (Test-Path -LiteralPath $targetReportPath)) -Message "Rejected target-scoped WhatIf report path was written."
+Assert-Condition -Condition (Test-CandidateArtifactsCleaned -OutputRoot $outputRoot) -Message "Rejected target-scoped WhatIf report path generated a candidate before failing."
+
+$unsafeWhatIfReportPath = Join-Path ([System.IO.Path]::GetTempPath()) "storefront-builder-unsafe-whatif-report.md"
+if (Test-Path -LiteralPath $unsafeWhatIfReportPath) {
+    Remove-Item -LiteralPath $unsafeWhatIfReportPath -Force
+}
+
+Assert-Throws -ExpectedCode "SFB-REGEN-021" -Action {
+    & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope css -WhatIf -WhatIfReportPath $unsafeWhatIfReportPath
+}
+Assert-Condition -Condition (-not (Test-Path -LiteralPath $unsafeWhatIfReportPath)) -Message "Rejected unsafe WhatIf report path was written."
+Assert-Condition -Condition (Test-CandidateArtifactsCleaned -OutputRoot $outputRoot) -Message "Rejected unsafe WhatIf report path generated a candidate before failing."
 
 New-TestProject
 $missingHomePath = Join-Path $projectRoot "Pages\Ssr\Home\HomePage.razor"
