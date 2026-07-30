@@ -2,6 +2,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -378,6 +379,25 @@ internal sealed class ClassifyEcommerceRegionsStep : IVisualProjectWorkflowStep
 
         return regions.Count == 0
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-ECOMMERCE-REGIONS-EMPTY", "Ecommerce region classification produced no page artifacts.")
+            : WorkflowStepResult.Success();
+    }
+}
+
+internal sealed class BuildPresentationCatalogStep : IVisualProjectWorkflowStep
+{
+    public string Name => "build-presentation-catalog";
+
+    public IReadOnlyList<string> InputArtifacts => ["BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "BlazorShop.Storefront.Components"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["presentation-catalog/presentation-component-catalog.json", "presentation-catalog/catalog-validation-report.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var catalog = await new PresentationComponentCatalogBuilder(context.RepoRoot)
+            .BuildAsync(context.ArtifactRoot, cancellationToken);
+
+        return catalog.Components.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-PRESENTATION-CATALOG-EMPTY", "Presentation component catalog produced no entries.")
             : WorkflowStepResult.Success();
     }
 }

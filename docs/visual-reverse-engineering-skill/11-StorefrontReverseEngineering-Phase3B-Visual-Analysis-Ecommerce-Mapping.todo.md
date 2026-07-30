@@ -786,58 +786,67 @@ Schemas/presentation-component-catalog.schema.json
 
 Catalog source of truth:
 
-- [ ] `BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs`
-- [ ] `BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs`
-- [ ] `BlazorShop.Storefront.Starter/starter-generation.contract.yaml`
-- [ ] `BlazorShop.Storefront.Components/Contracts`
-- [ ] `BlazorShop.Storefront.Components/Headless`
-- [ ] `BlazorShop.Storefront.Browser` only for browser-side same-origin behavior descriptors when relevant.
+- [x] `BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs`
+- [x] `BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs`
+- [x] `BlazorShop.Storefront.Starter/starter-generation.contract.yaml`
+- [x] `BlazorShop.Storefront.Components/Contracts`
+- [x] `BlazorShop.Storefront.Components/Headless`
+- [x] `BlazorShop.Storefront.Browser` only for browser-side same-origin behavior descriptors when relevant.
 
 Catalog entry fields:
 
-- [ ] `componentId`
-- [ ] `category`
-- [ ] `supportedPageArchetypes`
-- [ ] `supportedRegionRoles`
-- [ ] `slots`
-- [ ] `variants`
-- [ ] `visualProperties`
-- [ ] `responsiveCapabilities`
-- [ ] `interactionCapabilities`
-- [ ] `dataContract`
-- [ ] `behaviorOwnedByPresentation`
-- [ ] `behaviorOwnedByRuntime`
-- [ ] `visualOverrideAllowed`
-- [ ] `behaviorOverrideAllowed`
-- [ ] `requiredChildren`
-- [ ] `optionalChildren`
-- [ ] `unsupportedPatterns`
-- [ ] `sourceFiles`
-- [ ] `contractVersion`
+- [x] `componentId`
+- [x] `category`
+- [x] `supportedPageArchetypes`
+- [x] `supportedRegionRoles`
+- [x] `slots`
+- [x] `variants`
+- [x] `visualProperties`
+- [x] `responsiveCapabilities`
+- [x] `interactionCapabilities`
+- [x] `dataContract`
+- [x] `behaviorOwnedByPresentation`
+- [x] `behaviorOwnedByRuntime`
+- [x] `visualOverrideAllowed`
+- [x] `behaviorOverrideAllowed`
+- [x] `requiredChildren`
+- [x] `optionalChildren`
+- [x] `unsupportedPatterns`
+- [x] `sourceFiles`
+- [x] `contractVersion`
 
 Implementation checklist:
 
-- [ ] Add catalog contracts.
-- [ ] Add catalog loader.
-- [ ] Add schema validation.
-- [ ] Add alias support for visual terms.
-- [ ] Add required slot validation.
-- [ ] Add behavior ownership validation.
-- [ ] Add drift test between catalog and `StorefrontFoundationViewSet`.
-- [ ] Add drift test between catalog and `starter-generation.contract.yaml` slots/actions/routes.
-- [ ] Do not claim unsupported or non-existing components as supported.
+- [x] Add catalog contracts.
+- [x] Add catalog loader.
+- [x] Add schema validation.
+- [x] Add alias support for visual terms.
+- [x] Add required slot validation.
+- [x] Add behavior ownership validation.
+- [x] Add drift test between catalog and `StorefrontFoundationViewSet`.
+- [x] Add drift test between catalog and `starter-generation.contract.yaml` slots/actions/routes.
+- [x] Do not claim unsupported or non-existing components as supported.
 
 Tests:
 
-- [ ] Catalog loads and validates.
-- [ ] Missing required foundation view slot fails.
-- [ ] Missing Starter slot mapping fails.
-- [ ] Unknown component remains unsupported.
-- [ ] Drift test catches removed/renamed slot.
+- [x] Catalog loads and validates.
+- [x] Missing required foundation view slot fails.
+- [x] Missing Starter slot mapping fails.
+- [x] Unknown component remains unsupported.
+- [x] Drift test catches removed/renamed slot.
 
 Done when:
 
-- [ ] Presentation mapping has a truthful catalog to match against.
+- [x] Presentation mapping has a truthful catalog to match against.
+
+Implementation evidence:
+
+- Added `PresentationComponentCatalogBuilder`, catalog contracts, and schemas for catalog plus validation report.
+- Added workflow step `build-presentation-catalog`.
+- Builder reads foundation view slots, foundation validator source, Starter generation contract slots/actions/routes, component contracts, and headless behavior source files; Browser descriptors are represented through Starter action descriptors where relevant.
+- Catalog entries include component IDs, categories, supported page archetypes/region roles, slots, variants, visual/responsive/interaction capabilities, data contract, behavior ownership, override flags, child placeholders, unsupported patterns, source files, and contract version.
+- Validation flags missing foundation/starter slots and invalid behavior ownership; unknown/non-existing components are not emitted as supported.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "PresentationCatalog"` passed `2/2`.
 
 ## Phase 3B.10 - Presentation Mapping And Unsupported Pattern Detection
 
@@ -1253,7 +1262,7 @@ Recommended implementation order:
 8. [x] Phase 3B.6 responsive and interaction model.
 9. [x] Phase 3B.7 visual component candidates.
 10. [x] Phase 3B.8 ecommerce region classification.
-11. [ ] Phase 3B.9 Presentation component catalog.
+11. [x] Phase 3B.9 Presentation component catalog.
 12. [ ] Phase 3B.10 Presentation mapping and unsupported patterns.
 13. [ ] Phase 3B.11 confidence and human review.
 14. [ ] Phase 3B.12 Visual Blueprint v1 and generation readiness.

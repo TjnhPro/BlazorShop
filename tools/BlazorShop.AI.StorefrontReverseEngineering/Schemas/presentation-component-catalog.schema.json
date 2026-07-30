@@ -1,0 +1,1 @@
+{"artifactKind":"presentation-component-catalog","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["components","sourcePaths"],"arrayPaths":["components","sourcePaths"],"arrayLengthRules":[{"path":"components","minimumLength":1}]}

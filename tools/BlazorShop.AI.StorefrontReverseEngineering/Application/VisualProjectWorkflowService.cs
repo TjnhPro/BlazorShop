@@ -3,6 +3,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -310,6 +311,12 @@ public sealed class VisualProjectWorkflowService
     {
         var root = resolver.ResolveRoot(projectRoot);
         return await new EcommerceRegionClassifier(repoRoot).ClassifyAsync(root, cancellationToken);
+    }
+
+    public async Task<PresentationComponentCatalog> BuildPresentationCatalogAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new PresentationComponentCatalogBuilder(repoRoot).BuildAsync(root, cancellationToken);
     }
 
     private async Task ValidateViewportEvidenceReadinessAsync(
@@ -696,11 +703,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new AnalyzeResponsiveInteractionsStep());
         steps.Add(new DetectComponentCandidatesStep());
         steps.Add(new ClassifyEcommerceRegionsStep());
+        steps.Add(new BuildPresentationCatalogStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions" or "build-presentation-catalog";
 
     private static string WriteMarkdown(ReadinessReport report)
     {
