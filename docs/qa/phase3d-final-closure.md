@@ -104,3 +104,13 @@ Status: in progress
 - Result: passed `42/42`.
 - Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1|ConfidenceReview|WorkflowRunner" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `41/41`.
+
+## Phase 3D.9 Evidence
+
+- Reviewed output artifact kinds now match reviewed schemas for semantic tokens, component candidates, presentation mappings, and ecommerce regions.
+- Added `reviewed-visual-blueprint.schema.json` as the reviewed blueprint schema descriptor while preserving the existing `visual-blueprint-v1` artifact kind for current generated reviewed blueprints.
+- Handoff readiness now performs schema validation, manifest hash validation, review queue/decision hash checks, decision source hash checks, Storefront slot contract checks, Presentation catalog target checks, reviewed blueprint draft-reference checks, allowed/protected overlap checks, and handoff path containment checks.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff|SchemaArtifact" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `40/40`.
+- Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview|BlueprintV1|AgentHandoff" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `65/65`.

@@ -668,43 +668,43 @@ Goal: schemas and semantic validators must match the new reviewed/handoff contra
 
 Required schema additions or updates:
 
-- [ ] `review-resolution-manifest.schema.json`
-- [ ] `reviewed-page-archetypes.schema.json`
-- [ ] `reviewed-page-sections.schema.json`
-- [ ] `reviewed-component-candidates.schema.json`
-- [ ] `reviewed-originality-restrictions.schema.json`
-- [ ] `agent-handoff-evidence-manifest.schema.json`
-- [ ] `agent-handoff-manifest.schema.json`
-- [ ] `page-contracts.schema.json`
-- [ ] `reviewed-visual-blueprint.schema.json`
+- [x] `review-resolution-manifest.schema.json`
+- [x] `reviewed-page-archetypes.schema.json`
+- [x] `reviewed-page-sections.schema.json`
+- [x] `reviewed-component-candidates.schema.json`
+- [x] `reviewed-originality-restrictions.schema.json`
+- [x] `agent-handoff-evidence-manifest.schema.json`
+- [x] `agent-handoff-manifest.schema.json`
+- [x] `page-contracts.schema.json`
+- [x] `reviewed-visual-blueprint.schema.json`
 
 Semantic validations:
 
-- [ ] exact slot ID exists in Storefront pattern.
-- [ ] page contract slot is allowed for page archetype.
-- [ ] mapping target exists in Presentation catalog.
-- [ ] target path matches slot target path or approved variant.
-- [ ] reviewed artifact source hash matches current draft.
-- [ ] decision source hash matches queue item.
-- [ ] handoff artifacts share project ID.
-- [ ] reviewed blueprint does not reference `.draft.json`.
-- [ ] handoff references stay under handoff root.
-- [ ] required evidence file hash matches bytes.
-- [ ] allowed paths do not intersect protected paths.
-- [ ] schema artifact kind matches expected artifact kind.
-- [ ] manifest declared hashes match file hashes.
+- [x] exact slot ID exists in Storefront pattern.
+- [x] page contract slot is allowed for page archetype.
+- [x] mapping target exists in Presentation catalog.
+- [x] target path matches slot target path or approved variant.
+- [x] reviewed artifact source hash matches current draft.
+- [x] decision source hash matches queue item.
+- [x] handoff artifacts share project ID.
+- [x] reviewed blueprint does not reference `.draft.json`.
+- [x] handoff references stay under handoff root.
+- [x] required evidence file hash matches bytes.
+- [x] allowed paths do not intersect protected paths.
+- [x] schema artifact kind matches expected artifact kind.
+- [x] manifest declared hashes match file hashes.
 
 Tests:
 
-- [ ] Every Phase 3D JSON artifact validates against schema.
-- [ ] Schema tests fail on artifact kind mismatch.
-- [ ] Semantic validation fails on path escape.
-- [ ] Semantic validation fails on stale source hash.
-- [ ] Semantic validation fails on reviewed blueprint draft reference.
+- [x] Every Phase 3D JSON artifact validates against schema.
+- [x] Schema tests fail on artifact kind mismatch.
+- [x] Semantic validation fails on path escape.
+- [x] Semantic validation fails on stale source hash.
+- [x] Semantic validation fails on reviewed blueprint draft reference.
 
 Done when:
 
-- [ ] Structural and semantic validation both guard the handoff package.
+- [x] Structural and semantic validation both guard the handoff package.
 
 ## Phase 3D.10 - Positive And Negative Proof Fixtures
 
@@ -924,7 +924,7 @@ Done when:
 6. [x] `Phase 3D.6 centralize handoff contract`
 7. [x] `Phase 3D.7 harden handoff task contract`
 8. [x] `Phase 3D.8 enforce strict workflow failure`
-9. [ ] `Phase 3D.9 add semantic schemas`
+9. [x] `Phase 3D.9 add semantic schemas`
 10. [ ] `Phase 3D.10 add positive and negative fixtures`
 11. [ ] `Phase 3D.11 add final no-skip closure gate`
 12. [ ] `Phase 3D.12 update closure docs and statuses`
@@ -1066,7 +1066,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D6 canonical handoff contract.
 - [x] Implement D7 handoff task contract.
 - [x] Implement D8 strict workflow failure semantics.
-- [ ] Implement D9 schema and semantic validation.
+- [x] Implement D9 schema and semantic validation.
 - [ ] Implement D10 positive and negative proof fixtures.
 - [ ] Implement D11 no-skip final closure gate.
 - [ ] Implement D12 docs/status closure.

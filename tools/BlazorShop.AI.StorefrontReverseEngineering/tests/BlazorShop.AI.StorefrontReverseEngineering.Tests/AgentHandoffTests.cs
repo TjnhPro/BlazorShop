@@ -7,6 +7,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Cli;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
+using BlazorShop.AI.StorefrontReverseEngineering.Validation;
 using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
 using Xunit;
 
@@ -268,6 +269,112 @@ public sealed class AgentHandoffTests
     }
 
     [Fact]
+    public async Task AgentHandoffReadiness_Phase3DArtifactsValidateAgainstSchemas()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Schema Validation");
+        var validator = new VisualSchemaValidator(new VisualSchemaRegistry());
+        var artifacts = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["analysis/resolved/review-resolution-manifest.json"] = "review-resolution-manifest",
+            ["analysis/resolved/semantic-tokens.reviewed.json"] = "reviewed-semantic-tokens",
+            ["analysis/resolved/page-archetypes.reviewed.json"] = "reviewed-page-archetypes",
+            ["analysis/resolved/page-sections.reviewed.json"] = "reviewed-page-sections",
+            ["analysis/resolved/component-candidates.reviewed.json"] = "reviewed-component-candidates",
+            ["analysis/resolved/presentation-mappings.reviewed.json"] = "reviewed-presentation-mappings",
+            ["analysis/resolved/ecommerce-regions.reviewed.json"] = "reviewed-ecommerce-regions",
+            ["analysis/resolved/originality-restrictions.reviewed.json"] = "reviewed-originality-restrictions",
+            ["analysis/agent-handoff/evidence-manifest.json"] = "agent-handoff-evidence-manifest",
+            ["analysis/agent-handoff/manifest.json"] = "agent-handoff-manifest",
+            ["analysis/storefront-pattern/page-contracts.json"] = "page-contracts",
+            ["analysis/agent-handoff/visual-blueprint.json"] = "visual-blueprint-v1"
+        };
+
+        foreach (var pair in artifacts)
+        {
+            var node = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(projectRoot, pair.Key.Replace('/', Path.DirectorySeparatorChar))))!;
+            validator.Validate(pair.Value, node);
+        }
+
+        Assert.Contains(new VisualSchemaRegistry().Schemas, schema => schema.ArtifactKind == "reviewed-visual-blueprint");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_SchemaArtifactKindMismatchFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Schema Kind");
+        await MutateJsonAsync(projectRoot, "analysis/agent-handoff/evidence-manifest.json", json =>
+        {
+            json["artifactKind"] = "wrong-kind";
+        });
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "schema-validation-failed");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_SemanticValidationFailsOnPathEscape()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Path Escape Semantic");
+        await MutateJsonAsync(projectRoot, "analysis/agent-handoff/manifest.json", json =>
+        {
+            json["artifactList"]!.AsArray().Add("../outside.json");
+        });
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "handoff-path-escape");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_SemanticValidationFailsOnStaleSourceHash()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Stale Source Semantic");
+        await MutateJsonAsync(projectRoot, "review/review-decisions.json", json =>
+        {
+            json["decisions"]!.AsArray()[0]!.AsObject()["sourceArtifactHash"] = "stale";
+        });
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "decision-source-hash-mismatch");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_SemanticValidationFailsOnReviewedBlueprintDraftReference()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Draft Ref Semantic");
+        await MutateJsonAsync(projectRoot, "analysis/agent-handoff/visual-blueprint.json", json =>
+        {
+            json["tokens"] = "analysis/tokens/semantic-tokens.draft.json";
+        });
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "reviewed-blueprint-references-draft");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_SemanticValidationFailsOnAllowedProtectedOverlap()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Allowed Protected Overlap");
+        var allowed = await ReadAsync<AgentHandoffFileManifest>(projectRoot, "analysis/agent-handoff/allowed-files.json");
+        await MutateJsonAsync(projectRoot, "analysis/agent-handoff/protected-files.json", json =>
+        {
+            json["paths"]!.AsArray().Add(allowed.Paths[0]);
+        });
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "allowed-protected-overlap");
+    }
+
+    [Fact]
     public async Task AgentHandoffReadiness_WorkflowFailsWhenFinalReadinessFails()
     {
         var summary = await RunProjectAsync("Agent Handoff Workflow Failure");
@@ -511,6 +618,15 @@ public sealed class AgentHandoffTests
         var node = composition["sectionTree"]?.AsArray().OfType<JsonObject>().FirstOrDefault()
             ?? throw new InvalidOperationException("Page composition did not contain a node.");
         mutate(node);
+        await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static async Task MutateJsonAsync(string projectRoot, string relativePath, Action<JsonObject> mutate)
+    {
+        var path = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var json = JsonNode.Parse(await File.ReadAllTextAsync(path))?.AsObject()
+            ?? throw new InvalidOperationException($"Artifact '{relativePath}' did not parse.");
+        mutate(json);
         await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
     }
 

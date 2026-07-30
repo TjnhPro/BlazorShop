@@ -228,6 +228,7 @@ internal sealed class ResolvedReviewArtifactWriter
     {
         var path = Path.Combine(root, "analysis", "tokens", "semantic-tokens.draft.json");
         var document = ReadObjectOrDefault(path, "semantic-tokens");
+        MarkReviewed(document, "reviewed-semantic-tokens");
         ApplyArrayReviews(document, "tokens", context.ResolvedItems.Where(item => item.Family == "token"), item => item.ItemId["token:".Length..], "role");
         await WriteResolvedAsync(context, "analysis/resolved/semantic-tokens.reviewed.json", document, cancellationToken);
     }
@@ -263,6 +264,7 @@ internal sealed class ResolvedReviewArtifactWriter
     {
         var path = Path.Combine(root, "analysis", "components", "component-candidates.json");
         var document = ReadObjectOrDefault(path, "component-candidates");
+        MarkReviewed(document, "reviewed-component-candidates");
         ApplyArrayReviews(document, "candidates", context.ResolvedItems.Where(item => item.Family == "component"), item => item.ItemId["component:".Length..], "familyId");
         await WriteResolvedAsync(context, "analysis/resolved/component-candidates.reviewed.json", document, cancellationToken);
     }
@@ -271,6 +273,7 @@ internal sealed class ResolvedReviewArtifactWriter
     {
         var path = Path.Combine(root, "analysis", "mapping", "presentation-mappings.draft.json");
         var document = ReadObjectOrDefault(path, "presentation-mappings");
+        MarkReviewed(document, "reviewed-presentation-mappings");
         ApplyArrayReviews(document, "mappings", context.ResolvedItems.Where(item => item.Family == "mapping"), item => item.ItemId["mapping:".Length..], "sourceCandidateId");
         await WriteResolvedAsync(context, "analysis/resolved/presentation-mappings.reviewed.json", document, cancellationToken);
     }
@@ -476,6 +479,12 @@ internal sealed class ResolvedReviewArtifactWriter
         }
 
         return document;
+    }
+
+    private static void MarkReviewed(JsonObject document, string artifactKind)
+    {
+        document["artifactKind"] = artifactKind;
+        document["artifactId"] = artifactKind;
     }
 
     private static string StableHash(object value)
