@@ -200,6 +200,15 @@ public sealed class StorefrontPatternContractBuilder
         AddDuplicateFindings(slots.Select(slot => slot.SlotId), "duplicate slot ID", findings);
         AddDuplicateFindings(pages.Select(page => page.PageId), "duplicate page ID", findings);
 
+        var slotIds = slots.Select(slot => slot.SlotId).ToHashSet(StringComparer.Ordinal);
+        foreach (var requiredSlotId in RequiredSlotIds())
+        {
+            if (!slotIds.Contains(requiredSlotId))
+            {
+                findings.Add($"missing required slot ID: {requiredSlotId}");
+            }
+        }
+
         foreach (var slot in slots.Where(slot => slot.VisualGenerationTarget))
         {
             if (string.IsNullOrWhiteSpace(slot.GeneratedZone) || !zones.GeneratedZones.Contains(slot.GeneratedZone, StringComparer.Ordinal))
@@ -255,6 +264,28 @@ public sealed class StorefrontPatternContractBuilder
             findings.Add($"{label}: {duplicate.Key}");
         }
     }
+
+    private static IReadOnlyList<string> RequiredSlotIds() =>
+    [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "home.sections",
+        "catalog.product-card",
+        "catalog.filters",
+        "catalog.sorting",
+        "catalog.pagination",
+        "product.gallery",
+        "product.information",
+        "product.purchase",
+        "cart.page",
+        "checkout.page",
+        "account.shell",
+        "system.error"
+    ];
 
     private static string ResolveZone(string path, StorefrontGenerationZones zones) =>
         zones.GeneratedZones.Concat(zones.ManagedZones).Concat(zones.AssetZones)

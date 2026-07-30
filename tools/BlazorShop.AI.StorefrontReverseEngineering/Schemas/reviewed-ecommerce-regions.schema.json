@@ -1,0 +1,1 @@
+{"artifactKind":"reviewed-ecommerce-regions","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["sourceArtifacts"],"arrayPaths":["sourceArtifacts"]}

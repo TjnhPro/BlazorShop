@@ -146,6 +146,15 @@ public sealed class BlueprintV1Assembler
                     $"Page '{page.PageId}' URL and detected visual role need review.",
                     PageCompositionsArtifactPath));
             }
+
+            if (page.UnsupportedOrBlockedRegions.Any(region => region.StartsWith("unknown-page-archetype:", StringComparison.Ordinal)))
+            {
+                findings.Add(new GenerationReadinessFinding(
+                    "unknown-page-archetype",
+                    "blocking",
+                    $"Page '{page.PageId}' declares an archetype that is not represented in the Storefront pattern contract.",
+                    PageCompositionsArtifactPath));
+            }
         }
 
         foreach (var composition in pageCompositions.Compositions)
@@ -226,6 +235,11 @@ public sealed class BlueprintV1Assembler
             var targetContract = MatchPageContract(pageContracts, page.PageId, archetype);
             var pageIssues = new List<string>();
             var drift = DetectArchetypeDrift(page.SourceUrl, archetype);
+            if (targetContract is null)
+            {
+                pageIssues.Add($"unknown-page-archetype:{archetype}");
+            }
+
             if (drift is not null)
             {
                 pageIssues.Add(drift);

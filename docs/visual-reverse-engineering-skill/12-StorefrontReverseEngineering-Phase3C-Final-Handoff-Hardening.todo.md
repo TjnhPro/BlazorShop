@@ -691,52 +691,52 @@ Goal: prove Phase 3C behavior with realistic ecommerce browser fixtures and adve
 
 Implementation checklist:
 
-- [ ] Add a site-level fixture with at least:
-  - [ ] home page.
-  - [ ] category/listing page.
-  - [ ] product detail page with 1:1 gallery.
-  - [ ] cart shell visual region.
-  - [ ] checkout shell visual region.
-  - [ ] account/auth shell visual region.
-  - [ ] content/system state sample.
-- [ ] Keep unsupported pattern fixtures:
-  - [ ] direct API mutation from browser.
-  - [ ] checkout/payment behavior embedded in visual script.
-  - [ ] protected file target.
-  - [ ] ambiguous ecommerce region.
-  - [ ] missing required page.
-  - [ ] stale review decision.
-- [ ] Add mutation tests for:
-  - [ ] removing one required slot.
-  - [ ] adding unknown page archetype.
-  - [ ] changing source artifact hash after review.
-  - [ ] adding `captures/home` hardcode back.
-  - [ ] making generator target Storefront V2.
-  - [ ] assigning Runtime-owned behavior to visual component.
-  - [ ] creating duplicate mapping decisions.
-- [ ] Add `scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1`.
-- [ ] Gate should run:
-  - [ ] `dotnet build tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj`
-  - [ ] `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --blame-hang-timeout 5m`
-  - [ ] fixture run for complete multi-page handoff.
-  - [ ] fixture run for unsupported pattern blockers.
-  - [ ] schema validation for all Phase 3C artifacts.
-  - [ ] boundary scan for StorefrontBuilder non-consumption.
-  - [ ] boundary scan for no production references to ReverseEngineering.
-  - [ ] scan for hardcoded `captures/home` in workflow code.
-  - [ ] scan for `plan.Pages.First()` in workflow code.
-- [ ] Gate writes reports under `obj/storefront-reverse-engineering/reports/`.
-- [ ] Track closure summary under `docs/qa/phase3c-final-handoff-closure.md`.
+- [x] Add a site-level fixture with at least:
+  - [x] home page.
+  - [x] category/listing page.
+  - [x] product detail page with 1:1 gallery.
+  - [x] cart shell visual region.
+  - [x] checkout shell visual region.
+  - [x] account/auth shell visual region.
+  - [x] content/system state sample.
+- [x] Keep unsupported pattern fixtures:
+  - [x] direct API mutation from browser.
+  - [x] checkout/payment behavior embedded in visual script.
+  - [x] protected file target.
+  - [x] ambiguous ecommerce region.
+  - [x] missing required page.
+  - [x] stale review decision.
+- [x] Add mutation tests for:
+  - [x] removing one required slot.
+  - [x] adding unknown page archetype.
+  - [x] changing source artifact hash after review.
+  - [x] adding `captures/home` hardcode back.
+  - [x] making generator target Storefront V2.
+  - [x] assigning Runtime-owned behavior to visual component.
+  - [x] creating duplicate mapping decisions.
+- [x] Add `scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1`.
+- [x] Gate should run:
+  - [x] `dotnet build tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj`
+  - [x] `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --blame-hang-timeout 5m`
+  - [x] fixture run for complete multi-page handoff.
+  - [x] fixture run for unsupported pattern blockers.
+  - [x] schema validation for all Phase 3C artifacts.
+  - [x] boundary scan for StorefrontBuilder non-consumption.
+  - [x] boundary scan for no production references to ReverseEngineering.
+  - [x] scan for hardcoded `captures/home` in workflow code.
+  - [x] scan for `plan.Pages.First()` in workflow code.
+- [x] Gate writes reports under `obj/storefront-reverse-engineering/reports/`.
+- [x] Track closure summary under `docs/qa/phase3c-final-handoff-closure.md`.
 
 Tests:
 
-- [ ] Positive fixture passes full Phase 3C gate.
-- [ ] Each negative fixture fails with the expected blocking code.
-- [ ] Gate report includes command, commit SHA, passed/failed status, artifact paths, and next action.
+- [x] Positive fixture passes full Phase 3C gate.
+- [x] Each negative fixture fails with the expected blocking code.
+- [x] Gate report includes command, commit SHA, passed/failed status, artifact paths, and next action.
 
 Done when:
 
-- [ ] Phase 3C has a repeatable local gate that proves final handoff quality without requiring external websites.
+- [x] Phase 3C has a repeatable local gate that proves final handoff quality without requiring external websites.
 
 ## Phase 3C.10 - Documentation And Phase 4 Consumption Contract
 

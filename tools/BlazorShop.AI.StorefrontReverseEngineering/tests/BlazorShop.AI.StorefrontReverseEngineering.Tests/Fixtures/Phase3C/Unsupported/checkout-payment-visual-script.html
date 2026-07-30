@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="en">
+<body data-unsupported-pattern="checkout-payment-visual-script" data-expected-blocker="unsafe-browser-action">
+  <script>window.placeOrder = () => fetch('/api/storefront/stores/demo/checkout/payment/capture', { method: 'POST' });</script>
+</body>
+</html>

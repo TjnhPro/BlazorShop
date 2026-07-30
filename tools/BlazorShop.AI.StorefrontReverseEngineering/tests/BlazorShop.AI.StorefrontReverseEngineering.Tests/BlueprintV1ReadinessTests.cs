@@ -70,6 +70,18 @@ public sealed class BlueprintV1ReadinessTests
     }
 
     [Fact]
+    public async Task PageCompositions_UnknownPageArchetypeBlocksReadiness()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Unknown Archetype");
+        await CloneHomePageAsync(projectRoot, "lookbook", "https://example.test/lookbook", "experimental-showroom", null);
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(result.Readiness.Passed);
+        Assert.Contains(result.Readiness.Findings, finding => finding.Code == "unknown-page-archetype");
+    }
+
+    [Fact]
     public async Task PageCompositions_SharedTokensAreDedupedAtSiteLevel()
     {
         var projectRoot = await CreateReadyProjectAsync("Blueprint Shared Tokens");

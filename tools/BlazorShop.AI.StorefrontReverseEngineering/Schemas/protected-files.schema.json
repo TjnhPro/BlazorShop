@@ -1,0 +1,1 @@
+{"artifactKind":"protected-files","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","paths","rules"],"arrayPaths":["paths","rules"],"arrayLengthRules":[{"path":"paths","minimumLength":1}],"nonEmptyStringPaths":["projectId"]}

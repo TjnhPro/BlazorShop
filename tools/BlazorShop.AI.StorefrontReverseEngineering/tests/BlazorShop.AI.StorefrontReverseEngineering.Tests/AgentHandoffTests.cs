@@ -96,6 +96,23 @@ public sealed class AgentHandoffTests
     }
 
     [Fact]
+    public async Task AgentHandoffReadiness_StorefrontV2AllowedTargetFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Storefront V2 Target");
+        await RewriteGenerationReadinessAsync(projectRoot, passed: true);
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        var allowedPath = Path.Combine(projectRoot, "analysis", "agent-handoff", "allowed-files.json");
+        var allowed = JsonNode.Parse(await File.ReadAllTextAsync(allowedPath))!;
+        allowed["paths"]!.AsArray().Add("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Home.razor");
+        await File.WriteAllTextAsync(allowedPath, allowed.ToJsonString(VisualJson.Options));
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "protected-path-target");
+    }
+
+    [Fact]
     public async Task AgentHandoffReadiness_PassesForReviewedFixtureWithoutBlockers()
     {
         var projectRoot = await CreateReadyProjectAsync("Agent Handoff Reviewed Pass");

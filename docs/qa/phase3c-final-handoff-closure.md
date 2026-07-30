@@ -34,3 +34,15 @@ Phase 3C closes only when:
 - Final handoff artifacts are under `analysis/agent-handoff/`.
 - `reports/agent-handoff-readiness.json` is the final machine-readable readiness gate.
 - Docs explain that StorefrontBuilder still does not consume Phase 3C output until a later approved phase.
+
+## Phase 3C.9 Fixture And Gate Evidence
+
+- Working-tree gate command: `powershell -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1 -SkipPhase3BGate -SkipStorefrontBuilderSmoke -CommandTimeoutSeconds 300`
+- Gate report: `obj/storefront-reverse-engineering/reports/phase3c-final-handoff-gate-20260730204547.md`
+- Full ReverseEngineering test project: passed `209/209` with `--blame-hang-timeout 5m`.
+- Complete multi-page fixture run: passed `2/2`.
+- Unsupported pattern blocker fixture run: passed `9/9`.
+- Phase 3C schema validation run: passed `2/2`.
+- Boundary scans passed for StorefrontBuilder non-consumption, production non-reference to ReverseEngineering, no generated Storefront/Starter writes, and no `captures/home` or `plan.Pages.First()` workflow hardcode.
+- Added site-level fixture pages for home, category/listing, product detail with 1:1 gallery, cart shell, checkout shell, account/auth shell, and content/system state.
+- Added unsupported fixtures for direct Storefront API mutation, checkout/payment behavior in visual script, protected file target, ambiguous ecommerce region, missing required page, and stale review decision.

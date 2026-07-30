@@ -55,6 +55,19 @@ public sealed class StorefrontPatternContractTests
     }
 
     [Fact]
+    public async Task StorefrontPattern_MissingRequiredSlotFailsValidation()
+    {
+        var projectRoot = await CreateProjectAsync("Phase3C Pattern Missing Slot");
+        var contract = await CopyStarterContractAsync("missing-required-slot");
+        await ReplaceLineAsync(contract, "  - id: home.sections", "  - id: home.sections.removed");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new StorefrontPatternContractBuilder(GetRepoRoot()).BuildAsync(projectRoot, contract, CancellationToken.None));
+
+        Assert.Contains("missing required slot ID: home.sections", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task StorefrontPattern_ProtectedGeneratedTargetFailsValidation()
     {
         var projectRoot = await CreateProjectAsync("Phase3C Pattern Protected Path");
@@ -130,6 +143,19 @@ public sealed class StorefrontPatternContractTests
         }
 
         lines.InsertRange(index + 1, linesToInsert);
+        await File.WriteAllLinesAsync(path, lines);
+    }
+
+    private static async Task ReplaceLineAsync(string path, string oldLine, string newLine)
+    {
+        var lines = await File.ReadAllLinesAsync(path);
+        var index = Array.FindIndex(lines, line => string.Equals(line, oldLine, StringComparison.Ordinal));
+        if (index < 0)
+        {
+            throw new InvalidOperationException("Line not found: " + oldLine);
+        }
+
+        lines[index] = newLine;
         await File.WriteAllLinesAsync(path, lines);
     }
 

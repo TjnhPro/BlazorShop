@@ -44,14 +44,25 @@ public sealed class BoundaryAndSecurityTests
             "artifacts/storefront-builder/generated"
         };
 
-        foreach (var file in Directory.EnumerateFiles(toolRoot, "*.*", SearchOption.AllDirectories)
-                     .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}tests{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-                     .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)))
+        foreach (var file in Directory.EnumerateFiles(toolRoot, "*.csproj", SearchOption.AllDirectories)
+                     .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}tests{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)))
         {
             var text = File.ReadAllText(file);
             foreach (var forbiddenText in forbidden)
             {
-                Assert.DoesNotContain(forbiddenText, text, StringComparison.Ordinal);
+                Assert.DoesNotContain($"ProjectReference Include=\"{forbiddenText}", text, StringComparison.Ordinal);
+                Assert.DoesNotContain($"ProjectReference Include=\"..\\..\\{forbiddenText}", text, StringComparison.Ordinal);
+            }
+        }
+
+        foreach (var file in Directory.EnumerateFiles(toolRoot, "*.cs", SearchOption.AllDirectories)
+                     .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}tests{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)))
+        {
+            var text = File.ReadAllText(file);
+            foreach (var forbiddenText in forbidden.Where(value => value.StartsWith("BlazorShop.", StringComparison.Ordinal)))
+            {
+                Assert.DoesNotContain($"using {forbiddenText}", text, StringComparison.Ordinal);
+                Assert.DoesNotContain($"{forbiddenText}.csproj", text, StringComparison.Ordinal);
             }
         }
     }

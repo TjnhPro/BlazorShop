@@ -1,0 +1,1 @@
+{"artifactKind":"unsupported-pattern-decisions","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["decisions"],"arrayPaths":["decisions"]}

@@ -179,6 +179,16 @@ function New-ReportLines {
     $lines.Add("- Production projects do not reference ReverseEngineering.")
     $lines.Add("- ReverseEngineering does not reference production Storefront runtime/API projects.")
     $lines.Add("- ReverseEngineering does not write generated storefront source or Starter source.")
+    $lines.Add("- Workflow code does not contain hardcoded captures/home or plan.Pages.First() single-page assumptions.")
+    $lines.Add("")
+    $lines.Add("Artifact paths:")
+    $lines.Add("- analysis/storefront-pattern/storefront-pattern.json")
+    $lines.Add("- analysis/resolved/page-compositions.reviewed.json")
+    $lines.Add("- analysis/agent-handoff/manifest.json")
+    $lines.Add("- analysis/agent-handoff/handoff-readiness.json")
+    $lines.Add("- obj/storefront-reverse-engineering/reports/")
+    $lines.Add("")
+    $lines.Add("Next action: keep StorefrontBuilder consumption disabled until a separate approved Phase 4 plan consumes analysis/agent-handoff/*.")
     if (-not [string]::IsNullOrWhiteSpace($ErrorMessage)) {
         $lines.Add("")
         $lines.Add("Error:")
@@ -205,6 +215,27 @@ try {
             -SummaryName "ReverseEngineering tests"
     }
 
+    Invoke-Step "fixture run for complete multi-page handoff" {
+        Invoke-LoggedProcess `
+            -FileName "dotnet" `
+            -Arguments @("test", $testProject, "--no-restore", "--filter", "PageCompositions_MultiPageFixtureProducesOneSiteBlueprint|AgentHandoffReadiness_PassesForReviewedFixtureWithoutBlockers", "--blame-hang", "--blame-hang-timeout", "5m") `
+            -SummaryName "Phase 3C complete fixture"
+    }
+
+    Invoke-Step "fixture run for unsupported pattern blockers" {
+        Invoke-LoggedProcess `
+            -FileName "dotnet" `
+            -Arguments @("test", $testProject, "--no-restore", "--filter", "PresentationMapping_DirectStorefrontApiInteractionFails|PresentationMapping_ProtectedPathMappingFails|PresentationMapping_AmbiguousRoleMappingRequiresReview|PresentationMapping_RuntimeOwnedBehaviorFailsForVisualMapping|PageCompositions_MissingEvidenceForRequiredPageCreatesPageScopedBlocker|PageCompositions_UnknownPageArchetypeBlocksReadiness|ReviewDecision_StaleSourceHashIsRejected|AgentHandoffReadiness_StorefrontV2AllowedTargetFails|ReviewDecision_DuplicateDecisionWithoutSupersedeIsRejected", "--blame-hang", "--blame-hang-timeout", "5m") `
+            -SummaryName "Phase 3C unsupported fixtures"
+    }
+
+    Invoke-Step "schema validation for Phase 3C artifacts" {
+        Invoke-LoggedProcess `
+            -FileName "dotnet" `
+            -Arguments @("test", $testProject, "--no-restore", "--filter", "Phase3CSchemaRegistry_RegistersFinalHandoffArtifacts|SchemaRegistry_LoadsSchemaFilesForFirstClassArtifacts", "--blame-hang", "--blame-hang-timeout", "5m") `
+            -SummaryName "Phase 3C schema validation"
+    }
+
     if (-not $SkipPhase3BGate) {
         Invoke-Step "run Phase 3B baseline gate" {
             Invoke-LoggedProcess `
@@ -229,6 +260,11 @@ try {
             "tools\BlazorShop.AI.StorefrontReverseEngineering\Workflows",
             "tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj"
         )
+        $workflowCodePaths = @(
+            "tools\BlazorShop.AI.StorefrontReverseEngineering\Analysis\Blueprint",
+            "tools\BlazorShop.AI.StorefrontReverseEngineering\Application",
+            "tools\BlazorShop.AI.StorefrontReverseEngineering\Workflows"
+        )
 
         Assert-RgNoMatches `
             -Pattern "BlazorShop.AI.StorefrontReverseEngineering|StorefrontReverseEngineering" `
@@ -251,8 +287,18 @@ try {
             -ExtraArgs @("--glob", "*.cs", "--glob", "*.csproj", "--glob", "!bin/**", "--glob", "!obj/**")
 
         Assert-RgNoMatches `
-            -Pattern "WriteAllText(Async)?\([^\r\n]*\.(razor|css|js)([^a-zA-Z0-9]|$)|@page" `
+            -Pattern "WriteAllText(Async)?\([^\r\n]*\.(razor|css|js)([^a-zA-Z0-9]|$)" `
             -Paths $reverseEngineeringProductionPaths `
+            -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
+
+        Assert-RgNoMatches `
+            -Pattern "captures/home" `
+            -Paths $workflowCodePaths `
+            -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
+
+        Assert-RgNoMatches `
+            -Pattern "plan\.Pages\.First\(" `
+            -Paths $workflowCodePaths `
             -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
     }
 
