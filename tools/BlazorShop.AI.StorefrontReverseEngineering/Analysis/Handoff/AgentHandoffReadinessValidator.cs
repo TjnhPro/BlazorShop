@@ -37,6 +37,7 @@ public sealed class AgentHandoffReadinessValidator
 
         AddGenerationReadinessFindings(root, findings);
         AddAllowedProtectedFindings(root, findings);
+        AddEvidenceManifestFindings(root, findings);
         AddStaticBoundaryFindings(findings);
 
         var report = new AgentHandoffReadinessReport(
@@ -95,6 +96,67 @@ public sealed class AgentHandoffReadinessValidator
             {
                 findings.Add(Block("protected-path-target", $"Allowed file manifest contains protected target '{path}'.", "analysis/agent-handoff/allowed-files.json"));
             }
+        }
+    }
+
+    private static void AddEvidenceManifestFindings(string root, List<AgentHandoffReadinessFinding> findings)
+    {
+        var manifestPath = Path.Combine(root, "analysis", "agent-handoff", "evidence-manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            return;
+        }
+
+        var manifest = JsonSerializer.Deserialize<AgentHandoffEvidenceManifest>(File.ReadAllText(manifestPath), VisualJson.Options);
+        if (manifest is null)
+        {
+            findings.Add(Block("schema-validation-failed", "Evidence manifest could not be parsed.", "analysis/agent-handoff/evidence-manifest.json"));
+            return;
+        }
+
+        foreach (var screenshot in manifest.Pages.SelectMany(page => page.Screenshots))
+        {
+            ValidateEvidenceFile(root, screenshot.HandoffPath, screenshot.Sha256, "missing-handoff-screenshot", findings);
+            if (screenshot.OriginalityRestrictions.Any(rule => string.Equals(rule, "production-safe", StringComparison.OrdinalIgnoreCase)))
+            {
+                findings.Add(Block("evidence-labeled-production-safe", $"Screenshot evidence must not be labeled production-safe: {screenshot.HandoffPath}", screenshot.HandoffPath));
+            }
+        }
+
+        foreach (var section in manifest.Pages.SelectMany(page => page.Sections))
+        {
+            ValidateEvidenceFile(root, section.HandoffPath, section.Sha256, "missing-section-screenshot", findings);
+            if (section.OriginalityRestrictions.Any(rule => string.Equals(rule, "production-safe", StringComparison.OrdinalIgnoreCase)))
+            {
+                findings.Add(Block("evidence-labeled-production-safe", $"Section evidence must not be labeled production-safe: {section.HandoffPath}", section.HandoffPath));
+            }
+        }
+    }
+
+    private static void ValidateEvidenceFile(
+        string root,
+        string handoffPath,
+        string expectedHash,
+        string missingCode,
+        List<AgentHandoffReadinessFinding> findings)
+    {
+        if (!handoffPath.StartsWith("analysis/agent-handoff/", StringComparison.Ordinal))
+        {
+            findings.Add(Block("handoff-path-escape", $"Evidence path escapes handoff root: {handoffPath}", handoffPath));
+            return;
+        }
+
+        var path = Path.Combine(root, handoffPath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(path))
+        {
+            findings.Add(Block(missingCode, $"Evidence file is missing: {handoffPath}", handoffPath));
+            return;
+        }
+
+        var actual = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
+        if (!string.Equals(actual, expectedHash, StringComparison.Ordinal))
+        {
+            findings.Add(Block("evidence-hash-mismatch", $"Evidence hash mismatch for {handoffPath}.", handoffPath));
         }
     }
 
@@ -160,6 +222,7 @@ public sealed class AgentHandoffReadinessValidator
         "analysis/resolved/page-compositions.reviewed.json",
         "analysis/resolved/presentation-mappings.reviewed.json",
         "analysis/agent-handoff/manifest.json",
+        "analysis/agent-handoff/evidence-manifest.json",
         "analysis/agent-handoff/allowed-files.json",
         "analysis/agent-handoff/protected-files.json",
         "analysis/agent-handoff/unresolved-regions.json"

@@ -67,3 +67,11 @@ Status: in progress
 - Required page evidence, required slots, protected targets, repeatable slots, and protected behavior ownership use distinct blocker codes.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `22/22`.
+
+## Phase 3D.5 Evidence
+
+- `AgentHandoffEvidencePackager` copies full-page screenshots and writes section crops under `analysis/agent-handoff/`.
+- `analysis/agent-handoff/evidence-manifest.json` records screenshot/crop paths, source paths, hashes, viewport dimensions, bounds, interaction state, and evidence-only originality restrictions.
+- Handoff readiness validates evidence file existence, hashes, handoff-root containment, missing section crops, and production-safe label misuse.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `18/18`.

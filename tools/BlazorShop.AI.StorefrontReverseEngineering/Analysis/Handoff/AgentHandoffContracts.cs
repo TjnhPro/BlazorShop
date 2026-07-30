@@ -48,3 +48,40 @@ public sealed record AgentHandoffReadinessFinding(
     string Severity,
     string Message,
     string? ArtifactPath = null);
+
+public sealed record AgentHandoffEvidenceManifest(
+    string SchemaVersion,
+    string ArtifactKind,
+    string ArtifactId,
+    DateTimeOffset CreatedUtc,
+    string ProjectId,
+    IReadOnlyList<AgentHandoffEvidencePage> Pages);
+
+public sealed record AgentHandoffEvidencePage(
+    string PageId,
+    string SourceUrl,
+    IReadOnlyList<AgentHandoffScreenshotEvidence> Screenshots,
+    IReadOnlyList<AgentHandoffSectionEvidence> Sections);
+
+public sealed record AgentHandoffScreenshotEvidence(
+    string ViewportId,
+    string HandoffPath,
+    string SourcePath,
+    string Sha256,
+    int ViewportWidth,
+    int ViewportHeight,
+    int DocumentWidth,
+    int DocumentHeight,
+    string Scale,
+    IReadOnlyList<string> OriginalityRestrictions);
+
+public sealed record AgentHandoffSectionEvidence(
+    string SectionId,
+    string? SlotId,
+    string ViewportId,
+    string HandoffPath,
+    string SourcePath,
+    string Sha256,
+    string Bounds,
+    string InteractionState,
+    IReadOnlyList<string> OriginalityRestrictions);

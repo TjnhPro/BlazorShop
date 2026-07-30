@@ -367,77 +367,77 @@ Goal: Phase 4 can inspect visual evidence inside `analysis/agent-handoff/` witho
 
 Implementation checklist:
 
-- [ ] Add handoff evidence packaging service.
-- [ ] Copy full-page screenshots into:
+- [x] Add handoff evidence packaging service.
+- [x] Copy full-page screenshots into:
 
 ```text
 analysis/agent-handoff/screenshots/{pageId}/{viewportId}.png
 ```
 
-- [ ] Copy or generate section crops into:
+- [x] Copy or generate section crops into:
 
 ```text
 analysis/agent-handoff/section-screenshots/{pageId}/{sectionId}.{viewportId}.png
 ```
 
-- [ ] Generate crops for major sections when bounds and screenshot are available:
-  - [ ] header.
-  - [ ] navigation.
-  - [ ] hero.
-  - [ ] product grid.
-  - [ ] product card group.
-  - [ ] product gallery.
-  - [ ] product information.
-  - [ ] product purchase.
-  - [ ] cart shell.
-  - [ ] checkout shell.
-  - [ ] account shell.
-  - [ ] footer.
-  - [ ] system state.
-- [ ] Clamp section crop bounds to image dimensions.
-- [ ] Fail if crop width or height is less than or equal to zero.
-- [ ] Preserve viewport scale metadata.
-- [ ] Use deterministic output names.
-- [ ] Do not copy reference assets into production-safe asset folders.
-- [ ] Mark screenshots/crops as evidence only.
-- [ ] Write `analysis/agent-handoff/evidence-manifest.json`.
+- [x] Generate crops for major sections when bounds and screenshot are available:
+  - [x] header.
+  - [x] navigation.
+  - [x] hero.
+  - [x] product grid.
+  - [x] product card group.
+  - [x] product gallery.
+  - [x] product information.
+  - [x] product purchase.
+  - [x] cart shell.
+  - [x] checkout shell.
+  - [x] account shell.
+  - [x] footer.
+  - [x] system state.
+- [x] Clamp section crop bounds to image dimensions.
+- [x] Fail if crop width or height is less than or equal to zero.
+- [x] Preserve viewport scale metadata.
+- [x] Use deterministic output names.
+- [x] Do not copy reference assets into production-safe asset folders.
+- [x] Mark screenshots/crops as evidence only.
+- [x] Write `analysis/agent-handoff/evidence-manifest.json`.
 
 Evidence manifest fields:
 
-- [ ] `schemaVersion`
-- [ ] `artifactKind`
-- [ ] `artifactId`
-- [ ] `projectId`
-- [ ] `createdUtc`
-- [ ] `pages[]`
-- [ ] `pageId`
-- [ ] `sourceUrl`
-- [ ] `screenshots[]`
-- [ ] `viewportId`
-- [ ] `handoffPath`
-- [ ] `sourcePath`
-- [ ] `sha256`
-- [ ] `sections[]`
-- [ ] `sectionId`
-- [ ] `slotId`
-- [ ] `viewportId`
-- [ ] `bounds`
-- [ ] `interactionState`
-- [ ] `originalityRestrictions`
+- [x] `schemaVersion`
+- [x] `artifactKind`
+- [x] `artifactId`
+- [x] `projectId`
+- [x] `createdUtc`
+- [x] `pages[]`
+- [x] `pageId`
+- [x] `sourceUrl`
+- [x] `screenshots[]`
+- [x] `viewportId`
+- [x] `handoffPath`
+- [x] `sourcePath`
+- [x] `sha256`
+- [x] `sections[]`
+- [x] `sectionId`
+- [x] `slotId`
+- [x] `viewportId`
+- [x] `bounds`
+- [x] `interactionState`
+- [x] `originalityRestrictions`
 
 Tests:
 
-- [ ] Handoff contains desktop/mobile screenshots for Home, PLP, and PDP.
-- [ ] Major PDP sections have crops.
-- [ ] Missing required section crop blocks readiness.
-- [ ] Invalid bounds block crop generation.
-- [ ] Copied screenshot hash matches bytes.
-- [ ] All Phase 4 evidence paths are under `analysis/agent-handoff`.
-- [ ] No evidence file is labeled production-safe by default.
+- [x] Handoff contains desktop/mobile screenshots for Home, PLP, and PDP.
+- [x] Major PDP sections have crops.
+- [x] Missing required section crop blocks readiness.
+- [x] Invalid bounds block crop generation.
+- [x] Copied screenshot hash matches bytes.
+- [x] All Phase 4 evidence paths are under `analysis/agent-handoff`.
+- [x] No evidence file is labeled production-safe by default.
 
 Done when:
 
-- [ ] Agent handoff is self-contained for visual evidence.
+- [x] Agent handoff is self-contained for visual evidence.
 
 ## Phase 3D.6 - Canonical Agent Handoff Contract
 
@@ -920,7 +920,7 @@ Done when:
 2. [x] `Phase 3D.2 enforce reviewed blueprint lifecycle`
 3. [x] `Phase 3D.3 add exact page slot contracts`
 4. [x] `Phase 3D.4 enforce page composition slots`
-5. [ ] `Phase 3D.5 package screenshots and section crops`
+5. [x] `Phase 3D.5 package screenshots and section crops`
 6. [ ] `Phase 3D.6 centralize handoff contract`
 7. [ ] `Phase 3D.7 harden handoff task contract`
 8. [ ] `Phase 3D.8 enforce strict workflow failure`
@@ -1062,7 +1062,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D2 reviewed blueprint lifecycle.
 - [x] Implement D3 exact page slot contracts.
 - [x] Implement D4 page composition slot enforcement.
-- [ ] Implement D5 self-contained visual evidence packaging.
+- [x] Implement D5 self-contained visual evidence packaging.
 - [ ] Implement D6 canonical handoff contract.
 - [ ] Implement D7 handoff task contract.
 - [ ] Implement D8 strict workflow failure semantics.

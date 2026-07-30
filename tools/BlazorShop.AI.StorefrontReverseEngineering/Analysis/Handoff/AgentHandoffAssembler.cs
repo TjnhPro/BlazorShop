@@ -32,6 +32,8 @@ public sealed class AgentHandoffAssembler
         var allowed = BuildAllowedFiles(project.ProjectId, createdUtc, compositions);
         var protectedFiles = BuildProtectedFiles(project.ProjectId, createdUtc);
         var unresolved = BuildUnresolved(project.ProjectId, createdUtc, readiness);
+        await new AgentHandoffEvidencePackager()
+            .PackageAsync(root, project.ProjectId, createdUtc, compositions, cancellationToken);
         var artifactList = RequiredArtifacts().ToArray();
         var manifest = new AgentHandoffManifest(
             "1.0",
@@ -171,7 +173,8 @@ public sealed class AgentHandoffAssembler
         "analysis/agent-handoff/storefront-pattern.json",
         "analysis/agent-handoff/visual-blueprint.json",
         "analysis/agent-handoff/unresolved-regions.json",
-        "analysis/agent-handoff/generation-readiness.json"
+        "analysis/agent-handoff/generation-readiness.json",
+        "analysis/agent-handoff/evidence-manifest.json"
     ];
 
     private static string WriteTask(
