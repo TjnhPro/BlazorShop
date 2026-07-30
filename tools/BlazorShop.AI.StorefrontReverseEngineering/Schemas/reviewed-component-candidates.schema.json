@@ -1,0 +1,1 @@
+{"artifactKind":"reviewed-component-candidates","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["candidates"],"arrayPaths":["candidates"]}

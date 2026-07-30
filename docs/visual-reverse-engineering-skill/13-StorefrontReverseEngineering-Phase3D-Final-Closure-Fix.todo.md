@@ -109,7 +109,7 @@ Goal: reviewed artifacts must be the actual result of applying valid review deci
 
 Implementation checklist:
 
-- [ ] Add an internal resolver abstraction:
+- [x] Add an internal resolver abstraction:
 
 ```csharp
 public interface IReviewArtifactResolver
@@ -124,79 +124,79 @@ public interface IReviewArtifactResolver
 }
 ```
 
-- [ ] Add `ReviewResolutionContext` with:
-  - [ ] project root.
-  - [ ] artifact store.
-  - [ ] source artifact ID/hash.
-  - [ ] decision bundle hash.
-  - [ ] output artifact collector.
-  - [ ] blocker collector.
-- [ ] Implement resolvers for existing review item families:
-  - [ ] `SemanticTokenReviewResolver`
-  - [ ] `PresentationMappingReviewResolver`
-  - [ ] `EcommerceRegionReviewResolver`
-  - [ ] `PageArchetypeReviewResolver`
-  - [ ] `PageSectionReviewResolver`
-  - [ ] `ComponentCandidateReviewResolver`
-  - [ ] `UnsupportedPatternReviewResolver`
-  - [ ] `OriginalityRestrictionReviewResolver`
-- [ ] Replace `ResolvedReviewArtifactWriter.CopyIfExistsAsync(...)` with typed artifact resolution.
-- [ ] Keep draft artifacts immutable.
-- [ ] Write approved and modified values into typed reviewed artifacts.
-- [ ] Preserve original proposal beside reviewed value.
-- [ ] Exclude rejected critical items from approved outputs.
-- [ ] Emit deferred critical items into unresolved/blocking state.
-- [ ] Emit rejected/deferred non-critical items into manual disposition artifacts.
-- [ ] Validate `ModifiedValue` shape per artifact type before writing.
-- [ ] Fail on unknown review item family instead of silently preserving draft data.
+- [x] Add `ReviewResolutionContext` with:
+  - [x] project root.
+  - [x] artifact store.
+  - [x] source artifact ID/hash.
+  - [x] decision bundle hash.
+  - [x] output artifact collector.
+  - [x] blocker collector.
+- [x] Implement resolvers for existing review item families:
+  - [x] `SemanticTokenReviewResolver`
+  - [x] `PresentationMappingReviewResolver`
+  - [x] `EcommerceRegionReviewResolver`
+  - [x] `PageArchetypeReviewResolver`
+  - [x] `PageSectionReviewResolver`
+  - [x] `ComponentCandidateReviewResolver`
+  - [x] `UnsupportedPatternReviewResolver`
+  - [x] `OriginalityRestrictionReviewResolver`
+- [x] Replace `ResolvedReviewArtifactWriter.CopyIfExistsAsync(...)` with typed artifact resolution.
+- [x] Keep draft artifacts immutable.
+- [x] Write approved and modified values into typed reviewed artifacts.
+- [x] Preserve original proposal beside reviewed value.
+- [x] Exclude rejected critical items from approved outputs.
+- [x] Emit deferred critical items into unresolved/blocking state.
+- [x] Emit rejected/deferred non-critical items into manual disposition artifacts.
+- [x] Validate `ModifiedValue` shape per artifact type before writing.
+- [x] Fail on unknown review item family instead of silently preserving draft data.
 
 Required resolved artifacts:
 
-- [ ] `analysis/resolved/semantic-tokens.reviewed.json`
-- [ ] `analysis/resolved/page-archetypes.reviewed.json`
-- [ ] `analysis/resolved/page-sections.reviewed.json`
-- [ ] `analysis/resolved/component-candidates.reviewed.json`
-- [ ] `analysis/resolved/presentation-mappings.reviewed.json`
-- [ ] `analysis/resolved/ecommerce-regions.reviewed.json`
-- [ ] `analysis/resolved/unsupported-pattern-decisions.json`
-- [ ] `analysis/resolved/originality-restrictions.reviewed.json`
-- [ ] `analysis/resolved/review-resolution-manifest.json`
+- [x] `analysis/resolved/semantic-tokens.reviewed.json`
+- [x] `analysis/resolved/page-archetypes.reviewed.json`
+- [x] `analysis/resolved/page-sections.reviewed.json`
+- [x] `analysis/resolved/component-candidates.reviewed.json`
+- [x] `analysis/resolved/presentation-mappings.reviewed.json`
+- [x] `analysis/resolved/ecommerce-regions.reviewed.json`
+- [x] `analysis/resolved/unsupported-pattern-decisions.json`
+- [x] `analysis/resolved/originality-restrictions.reviewed.json`
+- [x] `analysis/resolved/review-resolution-manifest.json`
 
 Resolution manifest fields:
 
-- [ ] `schemaVersion`
-- [ ] `artifactKind`
-- [ ] `artifactId`
-- [ ] `projectId`
-- [ ] `createdUtc`
-- [ ] `sourceReviewQueueId`
-- [ ] `sourceReviewQueueHash`
-- [ ] `decisionBundleHash`
-- [ ] `resolvedItemCount`
-- [ ] `blockingUnresolvedCount`
-- [ ] `resolvedArtifacts[]`
-- [ ] `blockedItems[]`
+- [x] `schemaVersion`
+- [x] `artifactKind`
+- [x] `artifactId`
+- [x] `projectId`
+- [x] `createdUtc`
+- [x] `sourceReviewQueueId`
+- [x] `sourceReviewQueueHash`
+- [x] `decisionBundleHash`
+- [x] `resolvedItemCount`
+- [x] `blockingUnresolvedCount`
+- [x] `resolvedArtifacts[]`
+- [x] `blockedItems[]`
 
 Tests:
 
-- [ ] Approved semantic token preserves proposal.
-- [ ] Modified semantic token changes reviewed value.
-- [ ] Modified mapping changes target/variant in `presentation-mappings.reviewed.json`.
-- [ ] Modified ecommerce role changes reviewed region.
-- [ ] Modified page archetype changes reviewed page archetype.
-- [ ] Modified page section changes reviewed section metadata.
-- [ ] Rejected critical mapping is excluded and blocks readiness.
-- [ ] Deferred critical item blocks readiness.
-- [ ] Invalid `ModifiedValue` shape fails.
-- [ ] Unknown decision status fails.
-- [ ] Unknown review item family fails.
-- [ ] Stale decision fails.
-- [ ] Duplicate unsuperseded decision fails.
-- [ ] Resolution manifest hash changes when decision bundle changes.
+- [x] Approved semantic token preserves proposal.
+- [x] Modified semantic token changes reviewed value.
+- [x] Modified mapping changes target/variant in `presentation-mappings.reviewed.json`.
+- [x] Modified ecommerce role changes reviewed region.
+- [x] Modified page archetype changes reviewed page archetype.
+- [x] Modified page section changes reviewed section metadata.
+- [x] Rejected critical mapping is excluded and blocks readiness.
+- [x] Deferred critical item blocks readiness.
+- [x] Invalid `ModifiedValue` shape fails.
+- [x] Unknown decision status fails.
+- [x] Unknown review item family fails.
+- [x] Stale decision fails.
+- [x] Duplicate unsuperseded decision fails.
+- [x] Resolution manifest hash changes when decision bundle changes.
 
 Done when:
 
-- [ ] No code path copies draft artifacts directly into reviewed artifacts as the final source of truth.
+- [x] No code path copies draft artifacts directly into reviewed artifacts as the final source of truth.
 
 ## Phase 3D.2 - Reviewed Blueprint Lifecycle
 
@@ -916,7 +916,7 @@ Done when:
 
 ## Recommended Commit Order
 
-1. [ ] `Phase 3D.1 apply typed review decisions`
+1. [x] `Phase 3D.1 apply typed review decisions`
 2. [ ] `Phase 3D.2 enforce reviewed blueprint lifecycle`
 3. [ ] `Phase 3D.3 add exact page slot contracts`
 4. [ ] `Phase 3D.4 enforce page composition slots`
@@ -1058,7 +1058,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 
 ### Implementation Tasks
 
-- [ ] Implement D1 typed review artifact resolution.
+- [x] Implement D1 typed review artifact resolution.
 - [ ] Implement D2 reviewed blueprint lifecycle.
 - [ ] Implement D3 exact page slot contracts.
 - [ ] Implement D4 page composition slot enforcement.

@@ -34,3 +34,11 @@ Status: in progress
 - Phase 3D remains in progress until the final no-skip closure gate passes on a clean working tree.
 - GitHub Actions are not claimed as passing unless explicitly verified later.
 - StorefrontBuilder consumption of `analysis/agent-handoff/*` remains disabled until a separate approved Phase 4 cutover.
+
+## Phase 3D.1 Evidence
+
+- Typed review artifact resolution replaces copy-based reviewed artifact output.
+- Resolved artifacts now include typed reviewed token, page, section, component, mapping, ecommerce region, unsupported-pattern, originality, and manifest outputs under `analysis/resolved/`.
+- Rejected and deferred blocking items are recorded in the resolution manifest blocker state; rejected mapping outputs are excluded from approved mappings.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `13/13`.

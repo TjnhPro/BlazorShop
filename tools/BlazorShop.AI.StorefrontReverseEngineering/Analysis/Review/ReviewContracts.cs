@@ -76,3 +76,17 @@ public sealed record ReviewedItem(
     object? ModifiedValue,
     string? ReviewerNote,
     DateTimeOffset DecidedUtc);
+
+public sealed record ReviewResolutionManifest(
+    string SchemaVersion,
+    string ArtifactKind,
+    string ArtifactId,
+    DateTimeOffset CreatedUtc,
+    string ProjectId,
+    string SourceReviewQueueId,
+    string SourceReviewQueueHash,
+    string DecisionBundleHash,
+    int ResolvedItemCount,
+    int BlockingUnresolvedCount,
+    IReadOnlyList<string> ResolvedArtifacts,
+    IReadOnlyList<string> BlockedItems);
