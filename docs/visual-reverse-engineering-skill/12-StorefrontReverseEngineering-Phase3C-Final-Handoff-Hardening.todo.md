@@ -444,49 +444,49 @@ Goal: make human review decisions deterministic, auditable, and impossible to ap
 
 Implementation checklist:
 
-- [ ] Define review decision states:
-  - [ ] `Approved`
-  - [ ] `Modified`
-  - [ ] `Rejected`
-  - [ ] `Deferred`
-- [ ] Require `modifiedValue` for `Modified`.
-- [ ] Require `reason` for `Rejected` and `Deferred`.
-- [ ] Require reviewer metadata:
-  - [ ] reviewer.
-  - [ ] reviewed UTC.
-  - [ ] source artifact ID.
-  - [ ] source artifact hash.
-  - [ ] decision ID.
-- [ ] Reject unknown decision targets.
-- [ ] Reject duplicate decisions for the same target unless superseded explicitly.
-- [ ] Reject stale decisions when source artifact hash changed.
-- [ ] Preserve original proposed value beside reviewed value.
-- [ ] Write resolved artifacts only from draft plus valid review decisions.
-- [ ] Keep draft artifacts immutable.
-- [ ] Mark unresolved blocking review items in generation readiness.
-- [ ] Do not write `visual-blueprint.v1.reviewed.json` as ready when blocking review items remain.
+- [x] Define review decision states:
+  - [x] `Approved`
+  - [x] `Modified`
+  - [x] `Rejected`
+  - [x] `Deferred`
+- [x] Require `modifiedValue` for `Modified`.
+- [x] Require `reason` for `Rejected` and `Deferred`.
+- [x] Require reviewer metadata:
+  - [x] reviewer.
+  - [x] reviewed UTC.
+  - [x] source artifact ID.
+  - [x] source artifact hash.
+  - [x] decision ID.
+- [x] Reject unknown decision targets.
+- [x] Reject duplicate decisions for the same target unless superseded explicitly.
+- [x] Reject stale decisions when source artifact hash changed.
+- [x] Preserve original proposed value beside reviewed value.
+- [x] Write resolved artifacts only from draft plus valid review decisions.
+- [x] Keep draft artifacts immutable.
+- [x] Mark unresolved blocking review items in generation readiness.
+- [x] Do not write `visual-blueprint.v1.reviewed.json` as ready when blocking review items remain.
 
 Resolved artifacts:
 
-- [ ] `analysis/resolved/semantic-tokens.reviewed.json`
-- [ ] `analysis/resolved/page-compositions.reviewed.json`
-- [ ] `analysis/resolved/presentation-mappings.reviewed.json`
-- [ ] `analysis/resolved/ecommerce-regions.reviewed.json`
-- [ ] `analysis/resolved/unsupported-pattern-decisions.json`
+- [x] `analysis/resolved/semantic-tokens.reviewed.json`
+- [x] `analysis/resolved/page-compositions.reviewed.json`
+- [x] `analysis/resolved/presentation-mappings.reviewed.json`
+- [x] `analysis/resolved/ecommerce-regions.reviewed.json`
+- [x] `analysis/resolved/unsupported-pattern-decisions.json`
 
 Tests:
 
-- [ ] Approved decision copies draft value.
-- [ ] Modified decision writes reviewed value and preserves original.
-- [ ] Rejected decision removes the target from ready handoff and records blocker or explicit exclusion.
-- [ ] Deferred critical decision blocks readiness.
-- [ ] Stale decision is rejected.
-- [ ] Duplicate decision is rejected.
-- [ ] Unknown target decision is rejected.
+- [x] Approved decision copies draft value.
+- [x] Modified decision writes reviewed value and preserves original.
+- [x] Rejected decision removes the target from ready handoff and records blocker or explicit exclusion.
+- [x] Deferred critical decision blocks readiness.
+- [x] Stale decision is rejected.
+- [x] Duplicate decision is rejected.
+- [x] Unknown target decision is rejected.
 
 Done when:
 
-- [ ] Reviewed artifacts are a deterministic product of draft artifacts plus valid review decisions.
+- [x] Reviewed artifacts are a deterministic product of draft artifacts plus valid review decisions.
 
 ## Phase 3C.6 - Agent-Ready Page Composition And Section Evidence
 

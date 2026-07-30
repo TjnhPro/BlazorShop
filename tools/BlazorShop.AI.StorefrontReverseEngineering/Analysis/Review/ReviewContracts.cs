@@ -35,7 +35,9 @@ public sealed record ReviewQueueItem(
     decimal OriginalConfidence,
     object OriginalProposal,
     IReadOnlyList<string> EvidenceIds,
-    bool Blocking);
+    bool Blocking,
+    string SourceArtifactId = "",
+    string SourceArtifactHash = "");
 
 public sealed record ReviewDecisions(
     string SchemaVersion,
@@ -50,7 +52,12 @@ public sealed record ReviewDecision(
     string Status,
     object? ModifiedValue,
     string? ReviewerNote,
-    DateTimeOffset DecidedUtc);
+    DateTimeOffset DecidedUtc,
+    string Reviewer = "",
+    string SourceArtifactId = "",
+    string SourceArtifactHash = "",
+    string DecisionId = "",
+    string? SupersedesDecisionId = null);
 
 public sealed record ReviewedItems(
     string SchemaVersion,

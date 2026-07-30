@@ -34,24 +34,27 @@ public sealed class ConfidenceReviewTests
     public async Task ReviewDecision_ApproveAndModifyPreserveOriginalProposal()
     {
         var projectRoot = await CreateReviewProjectAsync();
+        var queue = await ReadQueueAsync(projectRoot);
         await WriteDecisionsAsync(projectRoot, [
-            new ReviewDecision("item-approve", "Approved", null, "looks good", DateTimeOffset.UtcNow),
-            new ReviewDecision("item-modify", "Modified", new { role = "changed" }, "adjust role", DateTimeOffset.UtcNow)
+            Decision(queue, "item-approve", "Approved", null, "looks good"),
+            Decision(queue, "item-modify", "Modified", new { role = "changed" }, "adjust role")
         ]);
 
         var reviewed = await new ReviewDecisionApplier(GetRepoRoot()).ApplyAsync(projectRoot, CancellationToken.None);
 
         Assert.Contains(reviewed.Items, item => item.ItemId == "item-approve" && item.Status == "Approved" && item.OriginalProposal is not null);
         Assert.Contains(reviewed.Items, item => item.ItemId == "item-modify" && item.Status == "Modified" && item.ModifiedValue is not null);
+        Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "resolved", "unsupported-pattern-decisions.json")));
     }
 
     [Fact]
     public async Task ReviewDecision_RejectAndDeferBlockReadiness()
     {
         var projectRoot = await CreateReviewProjectAsync();
+        var queue = await ReadQueueAsync(projectRoot);
         await WriteDecisionsAsync(projectRoot, [
-            new ReviewDecision("item-approve", "Rejected", null, "bad match", DateTimeOffset.UtcNow),
-            new ReviewDecision("item-modify", "Deferred", null, "needs design", DateTimeOffset.UtcNow)
+            Decision(queue, "item-approve", "Rejected", null, "bad match"),
+            Decision(queue, "item-modify", "Deferred", null, "needs design")
         ]);
 
         var reviewed = await new ReviewDecisionApplier(GetRepoRoot()).ApplyAsync(projectRoot, CancellationToken.None);
@@ -59,6 +62,39 @@ public sealed class ConfidenceReviewTests
         Assert.True(reviewed.BlocksReadiness);
         Assert.Contains(reviewed.Items, item => item.Status == "Rejected");
         Assert.Contains(reviewed.Items, item => item.Status == "Deferred");
+    }
+
+    [Fact]
+    public async Task ReviewDecision_UnknownTargetIsRejected()
+    {
+        var projectRoot = await CreateReviewProjectAsync();
+        var queue = await ReadQueueAsync(projectRoot);
+        await WriteDecisionsAsync(projectRoot, [Decision(queue, "item-approve", "Approved", null, "ok") with { ItemId = "missing-item" }]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new ReviewDecisionApplier(GetRepoRoot()).ApplyAsync(projectRoot, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ReviewDecision_DuplicateDecisionWithoutSupersedeIsRejected()
+    {
+        var projectRoot = await CreateReviewProjectAsync();
+        var queue = await ReadQueueAsync(projectRoot);
+        await WriteDecisionsAsync(projectRoot, [
+            Decision(queue, "item-approve", "Approved", null, "ok"),
+            Decision(queue, "item-approve", "Approved", null, "still ok") with { DecisionId = "decision-duplicate" }
+        ]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new ReviewDecisionApplier(GetRepoRoot()).ApplyAsync(projectRoot, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ReviewDecision_StaleSourceHashIsRejected()
+    {
+        var projectRoot = await CreateReviewProjectAsync();
+        var queue = await ReadQueueAsync(projectRoot);
+        await WriteDecisionsAsync(projectRoot, [Decision(queue, "item-approve", "Approved", null, "ok") with { SourceArtifactHash = "stale" }]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new ReviewDecisionApplier(GetRepoRoot()).ApplyAsync(projectRoot, CancellationToken.None));
     }
 
     private static async Task<string> CreateReadyProjectAsync(string name)
@@ -84,12 +120,27 @@ public sealed class ConfidenceReviewTests
             DateTimeOffset.UtcNow,
             "review",
             [
-                new ReviewQueueItem("item-approve", "Presentation mappings", 0.42m, new { role = "original" }, ["ev-1"], Blocking: true),
-                new ReviewQueueItem("item-modify", "semantic tokens", 0.50m, new { token = "original" }, ["ev-2"], Blocking: true)
+                new ReviewQueueItem("item-approve", "Presentation mappings", 0.42m, new { role = "original" }, ["ev-1"], Blocking: true, "analysis/mapping/presentation-mappings.draft.json", "hash-approve"),
+                new ReviewQueueItem("item-modify", "semantic tokens", 0.50m, new { token = "original" }, ["ev-2"], Blocking: true, "analysis/tokens/semantic-tokens.draft.json", "hash-modify")
             ]);
         await File.WriteAllTextAsync(Path.Combine(root, "review", "review-queue.json"), JsonSerializer.Serialize(queue, VisualJson.Options) + Environment.NewLine);
         await WriteDecisionsAsync(root, []);
         return root;
+    }
+
+    private static ReviewDecision Decision(ReviewQueue queue, string itemId, string status, object? modifiedValue, string note)
+    {
+        var item = queue.Items.First(candidate => candidate.ItemId == itemId);
+        return new ReviewDecision(
+            itemId,
+            status,
+            modifiedValue,
+            note,
+            DateTimeOffset.UtcNow,
+            "reviewer@example.test",
+            item.SourceArtifactId,
+            item.SourceArtifactHash,
+            "decision-" + itemId);
     }
 
     private static async Task WriteDecisionsAsync(string projectRoot, IReadOnlyList<ReviewDecision> decisions)

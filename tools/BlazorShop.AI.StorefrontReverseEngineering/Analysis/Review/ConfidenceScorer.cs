@@ -1,8 +1,12 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
+using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Provenance;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
 using BlazorShop.AI.StorefrontReverseEngineering.Validation;
@@ -89,7 +93,15 @@ public sealed class ReviewQueueBuilder
             report.ProjectId,
             report.Items
                 .Where(item => item.Critical || item.Confidence < report.Thresholds.CriticalReviewThreshold)
-                .Select(item => new ReviewQueueItem(item.ItemId, item.ItemType, item.Confidence, item.Proposal, item.EvidenceIds, item.Critical))
+                .Select(item => new ReviewQueueItem(
+                    item.ItemId,
+                    item.ItemType,
+                    item.Confidence,
+                    item.Proposal,
+                    item.EvidenceIds,
+                    item.Critical,
+                    SourceArtifactId(item.ItemId),
+                    StableHash(item.Proposal)))
                 .ToArray());
         var decisionsPath = Path.Combine(root, "review", "review-decisions.json");
         if (!File.Exists(decisionsPath))
@@ -104,8 +116,27 @@ public sealed class ReviewQueueBuilder
 
     private static string WritePack(ReviewQueue queue) =>
         "# Review Pack" + Environment.NewLine + Environment.NewLine +
-        string.Join(Environment.NewLine, queue.Items.Select(item => $"- `{item.ItemId}` ({item.ItemType}) confidence `{item.OriginalConfidence}`")) +
+        string.Join(Environment.NewLine, queue.Items.Select(item => $"- `{item.ItemId}` ({item.ItemType}) confidence `{item.OriginalConfidence}` source `{item.SourceArtifactId}` hash `{item.SourceArtifactHash}`")) +
         Environment.NewLine;
+
+    private static string SourceArtifactId(string itemId) =>
+        itemId.Split(':')[0] switch
+        {
+            "token" => "analysis/tokens/semantic-tokens.draft.json",
+            "component" => "analysis/components/component-candidates.json",
+            "mapping" => "analysis/mapping/presentation-mappings.draft.json",
+            "unsupported" => "analysis/mapping/unsupported-patterns.json",
+            "page" => "analysis/pages/*/page-archetype.json",
+            "section" => "analysis/pages/*/sections.draft.json",
+            "region" => "analysis/pages/*/ecommerce-regions.json",
+            _ => "review/review-queue.json"
+        };
+
+    private static string StableHash(object value)
+    {
+        var json = JsonSerializer.Serialize(value, VisualJson.Options);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+    }
 }
 
 public sealed class ReviewDecisionApplier
@@ -125,14 +156,156 @@ public sealed class ReviewDecisionApplier
         var store = new FileSystemVisualArtifactStore(root, resolver, validator);
         var queue = await store.ReadJsonAsync<ReviewQueue>(ArtifactPath.Create("review/review-queue.json"), "review-queue", cancellationToken);
         var decisions = await store.ReadJsonAsync<ReviewDecisions>(ArtifactPath.Create("review/review-decisions.json"), "review-decisions", cancellationToken);
+        ValidateDecisions(queue, decisions);
         var reviewed = queue.Items.Select(item =>
         {
             var decision = decisions.Decisions.FirstOrDefault(candidate => candidate.ItemId == item.ItemId)
-                ?? new ReviewDecision(item.ItemId, "Deferred", null, "No decision recorded.", DateTimeOffset.UtcNow);
+                ?? new ReviewDecision(item.ItemId, "Deferred", null, "No decision recorded.", DateTimeOffset.UtcNow, "system", item.SourceArtifactId, item.SourceArtifactHash, $"missing-{item.ItemId}");
             return new ReviewedItem(item.ItemId, decision.Status, item.OriginalProposal, item.OriginalConfidence, decision.ModifiedValue, decision.ReviewerNote, decision.DecidedUtc);
         }).ToArray();
         var output = new ReviewedItems("1.0", "reviewed-items", $"reviewed-items-{queue.ProjectId}", DateTimeOffset.UtcNow, queue.ProjectId, reviewed, reviewed.Any(item => item.Status is "Rejected" or "Deferred"));
         await store.WriteJsonAsync(ArtifactPath.Create("review/reviewed-items.json"), "reviewed-items", output, cancellationToken);
+        await new ResolvedReviewArtifactWriter(root)
+            .WriteAsync(store, output, cancellationToken);
         return output;
+    }
+
+    private static void ValidateDecisions(ReviewQueue queue, ReviewDecisions decisions)
+    {
+        var queueById = queue.Items.ToDictionary(item => item.ItemId, StringComparer.Ordinal);
+        var grouped = decisions.Decisions.GroupBy(decision => decision.ItemId, StringComparer.Ordinal);
+        foreach (var group in grouped)
+        {
+            if (!queueById.ContainsKey(group.Key))
+            {
+                throw new InvalidOperationException($"Review decision targets unknown item '{group.Key}'.");
+            }
+
+            var decisionsForItem = group.ToArray();
+            if (decisionsForItem.Length > 1 && decisionsForItem.Any(decision => string.IsNullOrWhiteSpace(decision.SupersedesDecisionId)))
+            {
+                throw new InvalidOperationException($"Duplicate review decisions for '{group.Key}' must explicitly supersede earlier decisions.");
+            }
+        }
+
+        foreach (var decision in decisions.Decisions)
+        {
+            var item = queueById[decision.ItemId];
+            if (decision.Status is not ("Approved" or "Modified" or "Rejected" or "Deferred"))
+            {
+                throw new InvalidOperationException($"Unknown review decision status '{decision.Status}' for '{decision.ItemId}'.");
+            }
+
+            if (decision.Status == "Modified" && decision.ModifiedValue is null)
+            {
+                throw new InvalidOperationException($"Modified review decision '{decision.ItemId}' must include modifiedValue.");
+            }
+
+            if (decision.Status is "Rejected" or "Deferred" && string.IsNullOrWhiteSpace(decision.ReviewerNote))
+            {
+                throw new InvalidOperationException($"Review decision '{decision.ItemId}' must include a reason.");
+            }
+
+            if (string.IsNullOrWhiteSpace(decision.Reviewer) ||
+                string.IsNullOrWhiteSpace(decision.SourceArtifactId) ||
+                string.IsNullOrWhiteSpace(decision.SourceArtifactHash) ||
+                string.IsNullOrWhiteSpace(decision.DecisionId))
+            {
+                throw new InvalidOperationException($"Review decision '{decision.ItemId}' is missing reviewer metadata.");
+            }
+
+            if (!string.Equals(decision.SourceArtifactId, item.SourceArtifactId, StringComparison.Ordinal) ||
+                !string.Equals(decision.SourceArtifactHash, item.SourceArtifactHash, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"Review decision '{decision.ItemId}' is stale for source artifact '{item.SourceArtifactId}'.");
+            }
+        }
+    }
+}
+
+internal sealed class ResolvedReviewArtifactWriter
+{
+    private readonly string root;
+
+    public ResolvedReviewArtifactWriter(string root)
+    {
+        this.root = root;
+    }
+
+    public async Task WriteAsync(FileSystemVisualArtifactStore store, ReviewedItems reviewed, CancellationToken cancellationToken)
+    {
+        await CopyIfExistsAsync("analysis/tokens/semantic-tokens.draft.json", "analysis/resolved/semantic-tokens.reviewed.json", cancellationToken);
+        await CopyIfExistsAsync("analysis/resolved/page-compositions.reviewed.json", "analysis/resolved/page-compositions.reviewed.json", cancellationToken);
+        await CopyIfExistsAsync("analysis/mapping/presentation-mappings.draft.json", "analysis/resolved/presentation-mappings.reviewed.json", cancellationToken);
+        await WriteReviewedEcommerceRegionsAsync(cancellationToken);
+        await WriteUnsupportedPatternDecisionsAsync(reviewed, cancellationToken);
+    }
+
+    private async Task CopyIfExistsAsync(string source, string destination, CancellationToken cancellationToken)
+    {
+        var sourcePath = Path.Combine(root, source.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(sourcePath))
+        {
+            return;
+        }
+
+        var destinationPath = Path.Combine(root, destination.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        if (string.Equals(sourcePath, destinationPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        await File.WriteAllTextAsync(destinationPath, await File.ReadAllTextAsync(sourcePath, cancellationToken), cancellationToken);
+    }
+
+    private async Task WriteReviewedEcommerceRegionsAsync(CancellationToken cancellationToken)
+    {
+        var pagesRoot = Path.Combine(root, "analysis", "pages");
+        if (!Directory.Exists(pagesRoot))
+        {
+            return;
+        }
+
+        var files = Directory.EnumerateFiles(pagesRoot, "ecommerce-regions.json", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var destination = Path.Combine(root, "analysis", "resolved", "ecommerce-regions.reviewed.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        var payload = new
+        {
+            schemaVersion = "1.0",
+            artifactKind = "reviewed-ecommerce-regions",
+            artifactId = "reviewed-ecommerce-regions",
+            createdUtc = DateTimeOffset.UtcNow,
+            sourceArtifacts = files
+        };
+        await File.WriteAllTextAsync(destination, JsonSerializer.Serialize(payload, VisualJson.Options) + Environment.NewLine, cancellationToken);
+    }
+
+    private async Task WriteUnsupportedPatternDecisionsAsync(ReviewedItems reviewed, CancellationToken cancellationToken)
+    {
+        var destination = Path.Combine(root, "analysis", "resolved", "unsupported-pattern-decisions.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        var payload = new
+        {
+            schemaVersion = "1.0",
+            artifactKind = "unsupported-pattern-decisions",
+            artifactId = "unsupported-pattern-decisions",
+            createdUtc = DateTimeOffset.UtcNow,
+            reviewed.ProjectId,
+            decisions = reviewed.Items
+                .Where(item => item.ItemId.StartsWith("unsupported:", StringComparison.Ordinal))
+                .Select(item => new
+                {
+                    item.ItemId,
+                    item.Status,
+                    item.ReviewerNote,
+                    item.DecidedUtc
+                })
+                .ToArray()
+        };
+        await File.WriteAllTextAsync(destination, JsonSerializer.Serialize(payload, VisualJson.Options) + Environment.NewLine, cancellationToken);
     }
 }
