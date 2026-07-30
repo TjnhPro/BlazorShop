@@ -174,7 +174,7 @@ public static class CliHost
                         output.WriteLine($"Captured viewports: {resumeSummary.CapturedViewports}");
                         output.WriteLine($"Blueprint: {resumeSummary.BlueprintArtifactId}");
                         output.WriteLine($"Readiness passed: {resumeSummary.ReadinessPassed}");
-                        return resumeSummary.ReadinessPassed ? 0 : 3;
+                    return resumeSummary.ReadinessPassed && resumeSummary.RunStatus == WorkflowRunStatus.Succeeded ? 0 : 3;
                     }
 
                     var summary = await new VisualProjectWorkflowService(FindRepositoryRoot()).RunAsync(
@@ -194,7 +194,7 @@ public static class CliHost
                     output.WriteLine($"Captured viewports: {summary.CapturedViewports}");
                     output.WriteLine($"Blueprint: {summary.BlueprintArtifactId}");
                     output.WriteLine($"Readiness passed: {summary.ReadinessPassed}");
-                    return summary.ReadinessPassed ? 0 : 3;
+                    return summary.ReadinessPassed && summary.RunStatus == WorkflowRunStatus.Succeeded ? 0 : 3;
                 default:
                     output.WriteLine($"StorefrontReverseEngineering command '{command}' is available. Implementation is added by later Phase 3A workflow phases.");
                     return 0;
@@ -258,6 +258,11 @@ public static class CliHost
         output.WriteLine($"  Review queue count: {phase3B.ReviewQueueCount?.ToString() ?? "unknown"} ({phase3B.ReviewQueue.Status}; {phase3B.ReviewQueue.RelativePath})");
         output.WriteLine($"  Generation readiness: {FormatGenerationReadiness(phase3B)}");
         output.WriteLine($"  Latest Phase 3B blocking finding: {FormatLatestPhase3BFinding(phase3B.LatestBlockingFinding)}");
+        output.WriteLine($"  Final handoff readiness: {FormatAgentHandoffReadiness(phase3B)}");
+        output.WriteLine($"  Final handoff blockers: {phase3B.AgentHandoffBlockerCount}; warnings: {phase3B.AgentHandoffWarningCount}");
+        output.WriteLine($"  Latest final handoff blocker: {FormatLatestPhase3BFinding(phase3B.LatestAgentHandoffBlockingFinding)}");
+        output.WriteLine($"  Agent handoff path: analysis/agent-handoff");
+        output.WriteLine($"  Next recommended command: dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter AgentHandoff");
 
         foreach (var problem in phase3B.Problems)
         {
@@ -283,6 +288,16 @@ public static class CliHost
         }
 
         return $"{FormatNullableBool(phase3B.GenerationReadinessPassed)} - {phase3B.GenerationReadiness.RelativePath}";
+    }
+
+    private static string FormatAgentHandoffReadiness(Phase3BInspection phase3B)
+    {
+        if (phase3B.AgentHandoffReadiness.Status != "present")
+        {
+            return $"{phase3B.AgentHandoffReadiness.Status} - {phase3B.AgentHandoffReadiness.RelativePath}";
+        }
+
+        return $"{FormatNullableBool(phase3B.AgentHandoffReadinessPassed)} - {phase3B.AgentHandoffReadiness.RelativePath}";
     }
 
     private static string FormatLatestPhase3BFinding(GenerationReadinessFinding? finding) =>

@@ -519,3 +519,24 @@ internal sealed class AssembleAgentHandoffStep : IVisualProjectWorkflowStep
             : [new WorkflowMessage("agent-handoff-readiness-blocked", "Agent handoff was written with readiness blockers.")]);
     }
 }
+
+internal sealed class ValidateAgentHandoffReadinessStep : IVisualProjectWorkflowStep
+{
+    public string Name => "validate-agent-handoff-readiness";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/agent-handoff/manifest.json", "analysis/agent-handoff/unresolved-regions.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/agent-handoff/handoff-readiness.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var report = await new AgentHandoffReadinessValidator(context.RepoRoot)
+            .ValidateAsync(context.ArtifactRoot, cancellationToken);
+        var messages = report.Findings.Select(finding => new WorkflowMessage(finding.Code, finding.Message)).ToArray();
+        return report.Passed
+            ? WorkflowStepResult.Success(messages)
+            : new WorkflowStepResult(
+                false,
+                Errors: [new WorkflowMessage("SRE-WORKFLOW-HANDOFF-READINESS-FAILED", "Final handoff readiness validation returned blocking findings."), .. messages]);
+    }
+}

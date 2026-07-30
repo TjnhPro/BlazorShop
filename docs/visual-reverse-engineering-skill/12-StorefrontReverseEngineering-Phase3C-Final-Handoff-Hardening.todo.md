@@ -620,70 +620,70 @@ Goal: make readiness enforceable instead of informational.
 
 Implementation checklist:
 
-- [ ] Add final handoff readiness validator.
-- [ ] Validate evidence prerequisites:
-  - [ ] Phase 3A readiness passed.
-  - [ ] evidence snapshot exists.
-  - [ ] required screenshots and element evidence exist.
-  - [ ] correlation IDs still match.
-- [ ] Validate Phase 3B prerequisites:
-  - [ ] semantic tokens exist.
-  - [ ] ecommerce regions exist.
-  - [ ] Presentation catalog exists.
-  - [ ] presentation mappings exist.
-  - [ ] review queue was evaluated.
-  - [ ] Visual Blueprint v1 draft exists.
-- [ ] Validate Phase 3C prerequisites:
-  - [ ] Storefront pattern contract exists.
-  - [ ] complete page contracts exist.
-  - [ ] reviewed page compositions exist.
-  - [ ] reviewed mappings exist.
-  - [ ] agent handoff manifest exists.
-  - [ ] allowed/protected file manifests exist.
-  - [ ] unresolved regions are classified.
-- [ ] Fail readiness for blocking codes:
-  - [ ] `missing-required-page`
-  - [ ] `missing-required-foundation-slot`
-  - [ ] `missing-visualscripts-slot`
-  - [ ] `unresolved-critical-region`
-  - [ ] `ambiguous-presentation-mapping`
-  - [ ] `protected-path-target`
-  - [ ] `unsafe-browser-action`
-  - [ ] `runtime-behavior-assigned-to-visual-code`
-  - [ ] `stale-review-decision`
-  - [ ] `schema-validation-failed`
-  - [ ] `single-page-hardcode-detected`
-  - [ ] `missing-agent-handoff-artifact`
-- [ ] Keep warnings for non-blocking issues:
-  - [ ] optional section missing.
-  - [ ] low-confidence visual token.
-  - [ ] unavailable reference asset.
-  - [ ] page-specific style conflict.
-- [ ] Change workflow behavior so final handoff steps return failure when readiness has blockers.
-- [ ] Change CLI behavior so final handoff validation exits non-zero when blockers exist.
-- [ ] Update `inspect` to show:
-  - [ ] final handoff readiness.
-  - [ ] blocker count.
-  - [ ] warning count.
-  - [ ] latest blocker.
-  - [ ] agent handoff path.
-  - [ ] reviewed artifact paths.
-  - [ ] next recommended command.
+- [x] Add final handoff readiness validator.
+- [x] Validate evidence prerequisites:
+  - [x] Phase 3A readiness passed.
+  - [x] evidence snapshot exists.
+  - [x] required screenshots and element evidence exist.
+  - [x] correlation IDs still match.
+- [x] Validate Phase 3B prerequisites:
+  - [x] semantic tokens exist.
+  - [x] ecommerce regions exist.
+  - [x] Presentation catalog exists.
+  - [x] presentation mappings exist.
+  - [x] review queue was evaluated.
+  - [x] Visual Blueprint v1 draft exists.
+- [x] Validate Phase 3C prerequisites:
+  - [x] Storefront pattern contract exists.
+  - [x] complete page contracts exist.
+  - [x] reviewed page compositions exist.
+  - [x] reviewed mappings exist.
+  - [x] agent handoff manifest exists.
+  - [x] allowed/protected file manifests exist.
+  - [x] unresolved regions are classified.
+- [x] Fail readiness for blocking codes:
+  - [x] `missing-required-page`
+  - [x] `missing-required-foundation-slot`
+  - [x] `missing-visualscripts-slot`
+  - [x] `unresolved-critical-region`
+  - [x] `ambiguous-presentation-mapping`
+  - [x] `protected-path-target`
+  - [x] `unsafe-browser-action`
+  - [x] `runtime-behavior-assigned-to-visual-code`
+  - [x] `stale-review-decision`
+  - [x] `schema-validation-failed`
+  - [x] `single-page-hardcode-detected`
+  - [x] `missing-agent-handoff-artifact`
+- [x] Keep warnings for non-blocking issues:
+  - [x] optional section missing.
+  - [x] low-confidence visual token.
+  - [x] unavailable reference asset.
+  - [x] page-specific style conflict.
+- [x] Change workflow behavior so final handoff steps return failure when readiness has blockers.
+- [x] Change CLI behavior so final handoff validation exits non-zero when blockers exist.
+- [x] Update `inspect` to show:
+  - [x] final handoff readiness.
+  - [x] blocker count.
+  - [x] warning count.
+  - [x] latest blocker.
+  - [x] agent handoff path.
+  - [x] reviewed artifact paths.
+  - [x] next recommended command.
 
 Tests:
 
-- [ ] Readiness passes for a complete reviewed multi-page fixture.
-- [ ] Readiness fails for missing agent handoff manifest.
-- [ ] Readiness fails for protected path target.
-- [ ] Readiness fails for unsafe browser action.
-- [ ] Readiness fails for stale review decision.
-- [ ] Workflow step fails when readiness fails.
-- [ ] CLI exits non-zero when final handoff validation fails.
-- [ ] `inspect` reports final handoff readiness accurately.
+- [x] Readiness passes for a complete reviewed multi-page fixture.
+- [x] Readiness fails for missing agent handoff manifest.
+- [x] Readiness fails for protected path target.
+- [x] Readiness fails for unsafe browser action.
+- [x] Readiness fails for stale review decision.
+- [x] Workflow step fails when readiness fails.
+- [x] CLI exits non-zero when final handoff validation fails.
+- [x] `inspect` reports final handoff readiness accurately.
 
 Done when:
 
-- [ ] A failed final handoff cannot be mistaken for a safe generation input.
+- [x] A failed final handoff cannot be mistaken for a safe generation input.
 
 ## Phase 3C.9 - Fixtures, Mutation Tests, And Closure Gate
 

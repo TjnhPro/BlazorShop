@@ -245,6 +245,7 @@ public sealed class VisualProjectService
         var catalogValidation = InspectArtifact(projectRoot, "presentation-catalog/catalog-validation-report.json", "presentation-catalog-validation-report");
         var reviewQueue = InspectArtifact(projectRoot, "review/review-queue.json", "review-queue");
         var generationReadiness = InspectArtifact(projectRoot, "reports/generation-readiness.json", "generation-readiness");
+        var handoffReadiness = InspectArtifact(projectRoot, "analysis/agent-handoff/handoff-readiness.json", "agent-handoff-readiness");
 
         var pageIds = evidence.Node?["pages"]?.AsArray()
             .Select(page => page?["pageId"]?.GetValue<string>())
@@ -280,6 +281,11 @@ public sealed class VisualProjectService
         var latestBlockingFinding = generationFindings
             .Where(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase))
             .LastOrDefault();
+        var handoffPassed = handoffReadiness.Node?["passed"]?.GetValue<bool>();
+        var handoffFindings = ReadGenerationFindings(handoffReadiness.Node);
+        var latestHandoffBlockingFinding = handoffFindings
+            .Where(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase))
+            .LastOrDefault();
 
         var problems = BuildPhase3BProblems(
             phase3AReadinessPassed,
@@ -305,6 +311,11 @@ public sealed class VisualProjectService
             generationReadiness,
             generationPassed,
             latestBlockingFinding,
+            handoffReadiness,
+            handoffPassed,
+            handoffFindings.Count(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase)),
+            handoffFindings.Count(finding => string.Equals(finding.Severity, "warning", StringComparison.OrdinalIgnoreCase)),
+            latestHandoffBlockingFinding,
             problems);
     }
 
@@ -456,6 +467,11 @@ public sealed record Phase3BInspection(
     Phase3BArtifactInspection GenerationReadiness,
     bool? GenerationReadinessPassed,
     GenerationReadinessFinding? LatestBlockingFinding,
+    Phase3BArtifactInspection AgentHandoffReadiness,
+    bool? AgentHandoffReadinessPassed,
+    int AgentHandoffBlockerCount,
+    int AgentHandoffWarningCount,
+    GenerationReadinessFinding? LatestAgentHandoffBlockingFinding,
     IReadOnlyList<Phase3BProblem> Problems);
 
 public sealed record Phase3BArtifactInspection(

@@ -233,7 +233,8 @@ public sealed class VisualProjectWorkflowService
             else
             {
                 var run = await store.ReadJsonAsync<WorkflowRun>(ArtifactPath.Create(runPath), "workflow-run", cancellationToken);
-                if (run.Status is WorkflowRunStatus.Failed or WorkflowRunStatus.Canceled)
+                var phase3ABaselineComplete = HasCompletedPhase3ABaseline(run);
+                if ((run.Status is WorkflowRunStatus.Failed or WorkflowRunStatus.Canceled) && !phase3ABaselineComplete)
                 {
                     findings.Add(new ReadinessFinding("failed-latest-run", "blocking", $"Latest workflow run '{run.RunId}' ended with status {run.Status}."));
                 }
@@ -246,12 +247,12 @@ public sealed class VisualProjectWorkflowService
                         step.Name == "validate-readiness" && step.Status == WorkflowStepStatus.Running ||
                         IsPhase3BDownstreamStep(step.Name) && step.Status == WorkflowStepStatus.Pending);
 
-                if (run.Status != WorkflowRunStatus.Succeeded && !isCurrentReadinessStep)
+                if (run.Status != WorkflowRunStatus.Succeeded && !isCurrentReadinessStep && !phase3ABaselineComplete)
                 {
                     findings.Add(new ReadinessFinding("partial-latest-run", "blocking", $"Latest workflow run '{run.RunId}' is not complete. Status: {run.Status}."));
                 }
 
-                foreach (var step in incompleteSteps.Where(_ => !isCurrentReadinessStep))
+                foreach (var step in incompleteSteps.Where(step => !isCurrentReadinessStep && !IsPhase3BDownstreamStep(step.Name)))
                 {
                     findings.Add(new ReadinessFinding("partial-latest-run", "blocking", $"Latest workflow run '{run.RunId}' has incomplete step '{step.Name}' with status {step.Status}."));
                 }
@@ -758,11 +759,28 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new ScoreConfidenceReviewStep());
         steps.Add(new AssembleBlueprintV1Step());
         steps.Add(new AssembleAgentHandoffStep());
+        steps.Add(new ValidateAgentHandoffReadinessStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions" or "build-storefront-pattern" or "build-presentation-catalog" or "map-presentation-components" or "score-confidence-review" or "assemble-blueprint-v1" or "assemble-agent-handoff";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections" or "analyze-responsive-interactions" or "detect-component-candidates" or "classify-ecommerce-regions" or "build-storefront-pattern" or "build-presentation-catalog" or "map-presentation-components" or "score-confidence-review" or "assemble-blueprint-v1" or "assemble-agent-handoff" or "validate-agent-handoff-readiness";
+
+    private static bool HasCompletedPhase3ABaseline(WorkflowRun run)
+    {
+        var aggregateIndex = -1;
+        for (var index = 0; index < run.Steps.Count; index++)
+        {
+            if (string.Equals(run.Steps[index].Name, "aggregate-evidence", StringComparison.Ordinal))
+            {
+                aggregateIndex = index;
+                break;
+            }
+        }
+
+        return aggregateIndex >= 0 &&
+            run.Steps.Take(aggregateIndex).All(step => step.Status is WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped);
+    }
 
     private static string WriteMarkdown(ReadinessReport report)
     {

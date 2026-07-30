@@ -84,16 +84,6 @@ public sealed class Phase3BPreflightService
 
     private static bool HasCompletedPhase3ABaseline(WorkflowRun run)
     {
-        if (run.Status == WorkflowRunStatus.Succeeded)
-        {
-            return true;
-        }
-
-        if (run.Status != WorkflowRunStatus.Running)
-        {
-            return false;
-        }
-
         var aggregateIndex = -1;
         for (var index = 0; index < run.Steps.Count; index++)
         {
@@ -112,11 +102,7 @@ public sealed class Phase3BPreflightService
         var phase3AStepsSucceeded = run.Steps
             .Take(aggregateIndex)
             .All(step => step.Status is WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped);
-        var phase3BStepsAreNotFailed = run.Steps
-            .Skip(aggregateIndex)
-            .All(step => step.Status is WorkflowStepStatus.Pending or WorkflowStepStatus.Running or WorkflowStepStatus.Succeeded or WorkflowStepStatus.Skipped);
-
-        return phase3AStepsSucceeded && phase3BStepsAreNotFailed;
+        return phase3AStepsSucceeded;
     }
 }
 

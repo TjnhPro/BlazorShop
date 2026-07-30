@@ -26,8 +26,9 @@ public sealed class EndToEndCliTests
             stderr,
             CancellationToken.None);
 
-        Assert.Equal(0, exitCode);
+        Assert.Equal(3, exitCode);
         Assert.Contains("Run completed: fixture-demo", stdout.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Run status: Failed", stdout.ToString(), StringComparison.Ordinal);
         Assert.True(File.Exists(Path.Combine(repoRoot, outputRoot, "fixture-demo", "reports", "readiness-report.md")));
         Assert.True(File.Exists(Path.Combine(repoRoot, outputRoot, "fixture-demo", "analysis", "visual-blueprint.draft.json")));
     }
@@ -56,16 +57,17 @@ public sealed class EndToEndCliTests
             inspectErr,
             CancellationToken.None);
 
-        Assert.Equal(0, runExit);
+        Assert.Equal(3, runExit);
         Assert.Equal(0, inspectExit);
         Assert.True(File.Exists(Path.Combine(repoRoot, projectRoot, "runs", "inspect-run.json")));
-        Assert.Contains("Run status: Succeeded", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Run status: Failed", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Latest run: inspect-run", inspectOut.ToString(), StringComparison.Ordinal);
-        Assert.Contains("Latest run status: Succeeded", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Latest run status: Failed", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Readiness passed: true", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Blocking findings: 0", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Warnings: 0", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Latest blocking finding: (none)", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Final handoff readiness: false", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("capture-viewport-desktop-1440", inspectOut.ToString(), StringComparison.Ordinal);
     }
 
@@ -151,10 +153,10 @@ public sealed class EndToEndCliTests
             resumeErr,
             CancellationToken.None);
 
-        Assert.Equal(0, runExit);
-        Assert.Equal(0, resumeExit);
+        Assert.Equal(3, runExit);
+        Assert.Equal(3, resumeExit);
         Assert.Contains("Run ID: resume-cli-run", resumeOut.ToString(), StringComparison.Ordinal);
-        Assert.Contains("Run status: Succeeded", resumeOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Run status: Failed", resumeOut.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -311,6 +313,7 @@ public sealed class EndToEndCliTests
         await MutateJsonAsync(failedProjectRoot, "runs/readiness-fixture.json", json =>
         {
             json["status"] = WorkflowRunStatus.Failed.ToString();
+            json["steps"]!.AsArray()[0]!["status"] = WorkflowStepStatus.Failed.ToString();
         });
         var failed = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(failedProjectRoot, CancellationToken.None);
 

@@ -44,6 +44,7 @@ public sealed class Phase3BPreflightTests
         await MutateJsonAsync(projectRoot, "runs/phase3b-preflight.json", json =>
         {
             json["status"] = WorkflowRunStatus.Failed.ToString();
+            json["steps"]!.AsArray()[0]!["status"] = WorkflowStepStatus.Failed.ToString();
         });
 
         var result = await new Phase3BPreflightService(GetRepoRoot())

@@ -32,3 +32,19 @@ public sealed record AgentHandoffUnresolvedRegions(
     string ProjectId,
     IReadOnlyList<string> BlockingRegions,
     IReadOnlyList<string> WarningRegions);
+
+public sealed record AgentHandoffReadinessReport(
+    string SchemaVersion,
+    string ArtifactKind,
+    string ArtifactId,
+    DateTimeOffset CreatedUtc,
+    string ProjectId,
+    bool Passed,
+    IReadOnlyList<AgentHandoffReadinessFinding> Findings,
+    string? AgentHandoffPath);
+
+public sealed record AgentHandoffReadinessFinding(
+    string Code,
+    string Severity,
+    string Message,
+    string? ArtifactPath = null);
