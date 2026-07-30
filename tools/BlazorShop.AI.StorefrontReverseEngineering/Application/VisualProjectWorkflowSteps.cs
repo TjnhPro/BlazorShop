@@ -251,3 +251,25 @@ internal sealed class ExtractRawDesignTokensStep : IVisualProjectWorkflowStep
             : WorkflowStepResult.Success(warnings);
     }
 }
+
+internal sealed class NormalizeSemanticTokensStep : IVisualProjectWorkflowStep
+{
+    public string Name => "normalize-semantic-tokens";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/tokens/raw-design-tokens.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/tokens/semantic-tokens.draft.json", "analysis/tokens/token-conflicts.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var tokens = await new SemanticTokenNormalizer(context.RepoRoot)
+            .NormalizeAsync(context.ArtifactRoot, cancellationToken);
+        var warnings = tokens.HumanReviewRequired
+            ? tokens.ReviewReasons.Select(reason => new WorkflowMessage("semantic-token-review-required", reason)).ToArray()
+            : [];
+
+        return tokens.Tokens.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-SEMANTIC-TOKENS-EMPTY", "Semantic token normalization produced no tokens.")
+            : WorkflowStepResult.Success(warnings);
+    }
+}

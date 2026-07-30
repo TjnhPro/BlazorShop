@@ -269,6 +269,12 @@ public sealed class VisualProjectWorkflowService
         return await new RawDesignTokenExtractor(repoRoot).ExtractAsync(root, cancellationToken);
     }
 
+    public async Task<SemanticTokenDocument> NormalizeSemanticTokensAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new SemanticTokenNormalizer(repoRoot).NormalizeAsync(root, cancellationToken);
+    }
+
     private async Task ValidateViewportEvidenceReadinessAsync(
         string root,
         FileSystemVisualArtifactStore store,
@@ -647,11 +653,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new ValidateReadinessStep());
         steps.Add(new AggregateEvidenceStep());
         steps.Add(new ExtractRawDesignTokensStep());
+        steps.Add(new NormalizeSemanticTokensStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens";
 
     private static string WriteMarkdown(ReadinessReport report)
     {

@@ -329,71 +329,79 @@ Schemas/semantic-tokens.schema.json
 
 Semantic roles MVP:
 
-- [ ] Colors:
-  - [ ] `surface-page`
-  - [ ] `surface-section`
-  - [ ] `surface-card`
-  - [ ] `surface-elevated`
-  - [ ] `text-primary`
-  - [ ] `text-secondary`
-  - [ ] `text-muted`
-  - [ ] `text-inverse`
-  - [ ] `border-default`
-  - [ ] `border-strong`
-  - [ ] `accent-primary`
-  - [ ] `accent-secondary`
-  - [ ] `state-success`
-  - [ ] `state-warning`
-  - [ ] `state-error`
-  - [ ] `focus-ring`
-  - [ ] `overlay`
-- [ ] Typography:
-  - [ ] `font-body`
-  - [ ] `font-heading`
-  - [ ] `text-display`
-  - [ ] `text-h1`
-  - [ ] `text-h2`
-  - [ ] `text-h3`
-  - [ ] `text-body`
-  - [ ] `text-small`
-  - [ ] `text-label`
-  - [ ] `text-caption`
-- [ ] Spacing and shape:
-  - [ ] `space-1`
-  - [ ] `space-2`
-  - [ ] `space-3`
-  - [ ] `space-4`
-  - [ ] `space-5`
-  - [ ] `space-section`
-  - [ ] `space-container`
-  - [ ] `radius-small`
-  - [ ] `radius-medium`
-  - [ ] `radius-large`
-  - [ ] `radius-pill`
-  - [ ] `shadow-card`
-  - [ ] `shadow-elevated`
+- [x] Colors:
+  - [x] `surface-page`
+  - [x] `surface-section`
+  - [x] `surface-card`
+  - [x] `surface-elevated`
+  - [x] `text-primary`
+  - [x] `text-secondary`
+  - [x] `text-muted`
+  - [x] `text-inverse`
+  - [x] `border-default`
+  - [x] `border-strong`
+  - [x] `accent-primary`
+  - [x] `accent-secondary`
+  - [x] `state-success`
+  - [x] `state-warning`
+  - [x] `state-error`
+  - [x] `focus-ring`
+  - [x] `overlay`
+- [x] Typography:
+  - [x] `font-body`
+  - [x] `font-heading`
+  - [x] `text-display`
+  - [x] `text-h1`
+  - [x] `text-h2`
+  - [x] `text-h3`
+  - [x] `text-body`
+  - [x] `text-small`
+  - [x] `text-label`
+  - [x] `text-caption`
+- [x] Spacing and shape:
+  - [x] `space-1`
+  - [x] `space-2`
+  - [x] `space-3`
+  - [x] `space-4`
+  - [x] `space-5`
+  - [x] `space-section`
+  - [x] `space-container`
+  - [x] `radius-small`
+  - [x] `radius-medium`
+  - [x] `radius-large`
+  - [x] `radius-pill`
+  - [x] `shadow-card`
+  - [x] `shadow-elevated`
 
 Implementation checklist:
 
-- [ ] Add `SemanticTokenNormalizer`.
-- [ ] Add deterministic role assignment rules.
-- [ ] Add conflict detection when multiple raw values compete for the same semantic role.
-- [ ] Allow multiple raw values per role when context requires it.
-- [ ] Add page-local override detection.
-- [ ] Add component-local override detection after component candidates exist.
-- [ ] Add `humanReviewRequired` for ambiguous high-impact tokens.
-- [ ] Keep original raw value IDs and evidence IDs.
+- [x] Add `SemanticTokenNormalizer`.
+- [x] Add deterministic role assignment rules.
+- [x] Add conflict detection when multiple raw values compete for the same semantic role.
+- [x] Allow multiple raw values per role when context requires it.
+- [x] Add page-local override detection.
+- [x] Add component-local override detection after component candidates exist.
+- [x] Add `humanReviewRequired` for ambiguous high-impact tokens.
+- [x] Keep original raw value IDs and evidence IDs.
 
 Tests:
 
-- [ ] Stable semantic roles are assigned from fixture tokens.
-- [ ] Ambiguous accent roles create conflict report.
-- [ ] Human review flag appears for low-confidence critical token.
-- [ ] Raw values remain traceable.
+- [x] Stable semantic roles are assigned from fixture tokens.
+- [x] Ambiguous accent roles create conflict report.
+- [x] Human review flag appears for low-confidence critical token.
+- [x] Raw values remain traceable.
 
 Done when:
 
-- [ ] Token artifact is suitable for later CSS generation but does not generate CSS.
+- [x] Token artifact is suitable for later CSS generation but does not generate CSS.
+
+Implementation evidence:
+
+- Added `SemanticTokenNormalizer`, semantic token contracts, and conflict report contracts.
+- Registered `Schemas/semantic-tokens.schema.json` and `Schemas/semantic-token-conflicts.schema.json`.
+- Added workflow step `normalize-semantic-tokens` after `extract-raw-tokens`; existing `--force-step` support can rerun it.
+- Normalizer assigns deterministic color, typography, spacing, radius, and shadow roles from raw token frequency/hints, records raw token IDs/evidence IDs, writes page-local overrides, reserves component-local overrides until component candidates exist, and flags ambiguous accent conflicts for human review.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "SemanticTokens|RawTokens"` passed `10/10`.
 
 ## Phase 3B.4 - Page Archetype Classification
 
@@ -1200,7 +1208,7 @@ Recommended implementation order:
 2. [x] Phase 3B.1 evidence snapshot.
 3. [ ] Phase 3B.13 fixture expansion started early with Home/PLP/PDP/Unsupported routes.
 4. [x] Phase 3B.2 raw design tokens.
-5. [ ] Phase 3B.3 semantic tokens.
+5. [x] Phase 3B.3 semantic tokens.
 6. [ ] Phase 3B.4 page archetype.
 7. [ ] Phase 3B.5 section segmentation.
 8. [ ] Phase 3B.6 responsive and interaction model.
