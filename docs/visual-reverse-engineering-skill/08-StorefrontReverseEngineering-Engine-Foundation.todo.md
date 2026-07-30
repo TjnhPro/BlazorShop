@@ -318,24 +318,24 @@ Goal: make `init`, `inspect`, and lifecycle status transitions executable.
 
 Tasks:
 
-- [ ] Implement `init --url --name --output-root`.
-- [ ] Normalize project ID/name separately from generated storefront project names.
-- [ ] Validate `http`, `https`, and local fixture URL policy.
-- [ ] Write `project.json`.
-- [ ] Write `configuration.json`.
-- [ ] Set initial status `Created`.
-- [ ] Implement `inspect --project`.
-- [ ] Print project status, source URL, artifact root, latest run, and validation summary.
-- [ ] Add status transition helper.
-- [ ] Reject invalid transitions unless command uses an explicit recovery mode.
-- [ ] Add test for duplicate project without `--force`.
-- [ ] Add test for invalid URL.
-- [ ] Add test for inspect on missing project.
+- [x] Implement `init --url --name --output-root`.
+- [x] Normalize project ID/name separately from generated storefront project names.
+- [x] Validate `http`, `https`, and local fixture URL policy.
+- [x] Write `project.json`.
+- [x] Write `configuration.json`.
+- [x] Set initial status `Created`.
+- [x] Implement `inspect --project`.
+- [x] Print project status, source URL, artifact root, latest run, and validation summary.
+- [x] Add status transition helper.
+- [x] Reject invalid transitions unless command uses an explicit recovery mode.
+- [x] Add test for duplicate project without `--force`.
+- [x] Add test for invalid URL.
+- [x] Add test for inspect on missing project.
 
 Guardrails:
 
-- [ ] Do not accept arbitrary output paths outside approved roots.
-- [ ] Do not infer generated storefront `StoreKey`; reverse-engineering project identity is independent.
+- [x] Do not accept arbitrary output paths outside approved roots.
+- [x] Do not infer generated storefront `StoreKey`; reverse-engineering project identity is independent.
 
 Verification:
 
@@ -346,9 +346,9 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 Exit criteria:
 
-- [ ] A project can be initialized repeatably.
-- [ ] Project state can be inspected by humans and agents.
-- [ ] Invalid URL/output-root errors include problem, cause, and fix.
+- [x] A project can be initialized repeatably.
+- [x] Project state can be inspected by humans and agents.
+- [x] Invalid URL/output-root errors include problem, cause, and fix.
 
 ## Phase 4 - Workflow Runner And Run State
 

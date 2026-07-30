@@ -1,3 +1,5 @@
+using BlazorShop.AI.StorefrontReverseEngineering.Application;
+
 namespace BlazorShop.AI.StorefrontReverseEngineering.Cli;
 
 public static class CliHost
@@ -32,8 +34,7 @@ public static class CliHost
             return Task.FromResult(2);
         }
 
-        output.WriteLine($"StorefrontReverseEngineering command '{command}' is available. Implementation is added by later Phase 3A lifecycle phases.");
-        return Task.FromResult(0);
+        return RunCommandAsync(command, args[1..], output, error, cancellationToken);
     }
 
     public static void WriteHelp(TextWriter output)
@@ -48,5 +49,64 @@ public static class CliHost
         {
             output.WriteLine($"  {command}");
         }
+    }
+
+    private static async Task<int> RunCommandAsync(
+        string command,
+        string[] args,
+        TextWriter output,
+        TextWriter error,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var options = CommandOptions.Parse(args);
+            var service = new VisualProjectService(FindRepositoryRoot());
+            switch (command)
+            {
+                case "init":
+                    var project = await service.InitializeAsync(
+                        options.GetRequired("url", "SRE-INIT-002"),
+                        options.GetRequired("name", "SRE-INIT-003"),
+                        options.GetRequired("output-root", "SRE-INIT-004"),
+                        options.HasFlag("force"),
+                        cancellationToken);
+                    output.WriteLine($"Visual project initialized: {project.ProjectId}");
+                    output.WriteLine($"Status: {project.Status}");
+                    output.WriteLine($"Artifact root: {project.ArtifactRoot}");
+                    return 0;
+                case "inspect":
+                    var inspection = await service.InspectAsync(
+                        options.GetRequired("project", "SRE-INSPECT-002"),
+                        cancellationToken);
+                    output.WriteLine($"Project: {inspection.Project.ProjectId}");
+                    output.WriteLine($"Name: {inspection.Project.Name}");
+                    output.WriteLine($"Status: {inspection.Project.Status}");
+                    output.WriteLine($"Source URL: {inspection.Project.ReferenceUrl}");
+                    output.WriteLine($"Artifact root: {inspection.Project.ArtifactRoot}");
+                    output.WriteLine($"Latest run: {inspection.LatestRunId ?? "(none)"}");
+                    output.WriteLine($"Validation: {inspection.ValidationSummary}");
+                    return 0;
+                default:
+                    output.WriteLine($"StorefrontReverseEngineering command '{command}' is available. Implementation is added by later Phase 3A workflow phases.");
+                    return 0;
+            }
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
+        {
+            error.WriteLine(exception.Message);
+            return 2;
+        }
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(Environment.CurrentDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AGENTS.md")))
+        {
+            directory = directory.Parent;
+        }
+
+        return directory?.FullName ?? Environment.CurrentDirectory;
     }
 }
