@@ -23,7 +23,16 @@ public sealed record PresentationMapping(
     IReadOnlyList<string> EvidenceIds,
     string MappingReason,
     IReadOnlyList<string> AlternativeMappings,
-    bool HumanReviewRequired);
+    bool HumanReviewRequired,
+    string SourcePageId,
+    string SourceSectionId,
+    string EcommerceRegionId,
+    string PageArchetype,
+    string TargetGeneratedPath,
+    string GeneratedZone,
+    string RouteOwnership,
+    IReadOnlyList<string> ReasonCodes,
+    string ReviewState);
 
 public sealed record UnsupportedPatternsDocument(
     string SchemaVersion,
@@ -39,3 +48,14 @@ public sealed record UnsupportedPattern(
     string Reason,
     IReadOnlyList<string> EvidenceIds,
     bool HumanReviewRequired);
+
+public static class PresentationMappingReviewFilter
+{
+    public static IReadOnlyList<PresentationMapping> ForAgentHandoff(IEnumerable<PresentationMapping> mappings) =>
+        mappings
+            .Where(mapping => !string.Equals(mapping.ReviewState, "Rejected", StringComparison.Ordinal))
+            .OrderBy(mapping => mapping.SourcePageId, StringComparer.Ordinal)
+            .ThenBy(mapping => mapping.SourceSectionId, StringComparer.Ordinal)
+            .ThenBy(mapping => mapping.SourceCandidateId, StringComparer.Ordinal)
+            .ToArray();
+}

@@ -1,5 +1,6 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Provenance;
@@ -27,27 +28,49 @@ public sealed class PresentationMapper
         var catalog = await store.ReadJsonAsync<PresentationComponentCatalog>(ArtifactPath.Create("presentation-catalog/presentation-component-catalog.json"), "presentation-component-catalog", cancellationToken);
         var semantic = await store.ReadJsonAsync<SemanticTokenDocument>(ArtifactPath.Create("analysis/tokens/semantic-tokens.draft.json"), "semantic-tokens", cancellationToken);
         var ecommerce = await ReadRegionsAsync(root, store, cancellationToken);
+        var pageArchetypes = await ReadPageArchetypesAsync(root, store, cancellationToken);
         var mappings = new List<PresentationMapping>();
         var unsupported = new List<UnsupportedPattern>();
         foreach (var candidate in components.Candidates)
         {
-            var roles = ecommerce.Where(region => region.SourceComponentFamilyIds.Contains(candidate.FamilyId)).Select(region => region.Role).Distinct(StringComparer.Ordinal).ToArray();
-            var match = catalog.Components.FirstOrDefault(entry =>
-                entry.ComponentId == PreferredCatalogId(candidate.Family) ||
-                entry.SupportedRegionRoles.Any(roles.Contains));
+            var regionContexts = ecommerce
+                .Where(region => region.Region.SourceComponentFamilyIds.Contains(candidate.FamilyId))
+                .OrderBy(region => region.PageId, StringComparer.Ordinal)
+                .ThenBy(region => region.Region.RegionId, StringComparer.Ordinal)
+                .ToArray();
+            var roles = regionContexts.Select(region => region.Region.Role).Distinct(StringComparer.Ordinal).ToArray();
+            var sourcePageId = regionContexts.FirstOrDefault()?.PageId ?? "unknown";
+            var pageArchetype = pageArchetypes.GetValueOrDefault(sourcePageId, "unknown");
+            var sourceRegion = regionContexts.FirstOrDefault()?.Region;
+            var sourceSectionId = sourceRegion?.SourceSectionIds.FirstOrDefault() ?? "unknown";
+            var ecommerceRegionId = sourceRegion?.RegionId ?? "unknown";
+            var preferredCatalogId = PreferredCatalogId(candidate.Family);
+            var candidateMatches = catalog.Components
+                .Where(entry => entry.ComponentId == preferredCatalogId || entry.SupportedRegionRoles.Any(role => roles.Contains(role, StringComparer.Ordinal)))
+                .Where(entry => entry.ComponentId == preferredCatalogId || IsVisualMappingTarget(entry) || entry.IntentCategory == "presentation action binding")
+                .Where(entry => IsPageArchetypeCompatible(entry, pageArchetype))
+                .Where(entry => IsRoleCompatible(entry, roles, preferredCatalogId))
+                .OrderByDescending(entry => entry.ComponentId == preferredCatalogId)
+                .ThenByDescending(IsVisualMappingTarget)
+                .ThenBy(entry => entry.ComponentId, StringComparer.Ordinal)
+                .ToArray();
+            var match = candidateMatches.FirstOrDefault();
             if (match is null)
             {
-                unsupported.Add(new UnsupportedPattern(candidate.FamilyId, "missing component", $"No catalog component supports candidate family '{candidate.Family}'.", candidate.EvidenceIds, true));
+                unsupported.Add(new UnsupportedPattern(candidate.FamilyId, "missing component", $"No compatible catalog component supports candidate family '{candidate.Family}' on page archetype '{pageArchetype}'.", candidate.EvidenceIds, true));
                 continue;
             }
 
-            if (roles.Any(role => role.Contains("drawer", StringComparison.OrdinalIgnoreCase) || role.Contains("overlay", StringComparison.OrdinalIgnoreCase)) &&
-                !match.InteractionCapabilities.Any())
+            var validation = ValidateMapping(candidate, match, roles, candidateMatches.Length > 1);
+            if (validation.BlockingReason is not null)
             {
-                unsupported.Add(new UnsupportedPattern(candidate.FamilyId, "unsupported overlay/drawer/gallery/product option/content/shell behavior", "Candidate requires interaction capability not present in catalog.", candidate.EvidenceIds, true));
+                unsupported.Add(new UnsupportedPattern(candidate.FamilyId, validation.Group, validation.BlockingReason, candidate.EvidenceIds, true));
                 continue;
             }
 
+            var targetGeneratedPath = match.AllowedFilePatterns.FirstOrDefault() ?? string.Empty;
+            var confidence = Math.Min(candidate.Confidence, 0.82m);
+            var humanReviewRequired = candidate.HumanReviewRequired || validation.HumanReviewRequired || confidence < 0.60m;
             mappings.Add(new PresentationMapping(
                 candidate.FamilyId,
                 match.ComponentId,
@@ -59,11 +82,20 @@ public sealed class PresentationMapper
                 candidate.InteractionBehaviorRefs,
                 roles.Select(EcommerceDataRequirement).Distinct(StringComparer.Ordinal).ToArray(),
                 match.BehaviorOwnedByRuntime ? "runtime" : "presentation",
-                Math.Min(candidate.Confidence, 0.82m),
+                confidence,
                 candidate.EvidenceIds,
-                "catalog-role-or-id-match",
+                match.ComponentId == preferredCatalogId ? "preferred-id-match" : "catalog-role-match",
                 candidate.Alternatives,
-                candidate.HumanReviewRequired || unsupported.Any(pattern => pattern.SourceCandidateId == candidate.FamilyId)));
+                humanReviewRequired,
+                sourcePageId,
+                sourceSectionId,
+                ecommerceRegionId,
+                pageArchetype,
+                targetGeneratedPath,
+                GeneratedZoneForPath(targetGeneratedPath),
+                "Storefront Presentation owns route declarations; generated visuals register view slots only",
+                validation.ReasonCodes,
+                humanReviewRequired ? "NeedsReview" : "Approved"));
         }
 
         var document = new PresentationMappingsDocument("1.0", "presentation-mappings", "presentation-mappings", DateTimeOffset.UtcNow, components.ProjectId, mappings);
@@ -73,19 +105,34 @@ public sealed class PresentationMapper
         return document;
     }
 
-    private static async Task<IReadOnlyList<EcommerceRegion>> ReadRegionsAsync(string root, FileSystemVisualArtifactStore store, CancellationToken cancellationToken)
+    private static async Task<IReadOnlyList<EcommerceRegionContext>> ReadRegionsAsync(string root, FileSystemVisualArtifactStore store, CancellationToken cancellationToken)
     {
         var pagesRoot = Path.Combine(root, "analysis", "pages");
         if (!Directory.Exists(pagesRoot)) return [];
-        var regions = new List<EcommerceRegion>();
+        var regions = new List<EcommerceRegionContext>();
         foreach (var path in Directory.EnumerateFiles(pagesRoot, "ecommerce-regions.json", SearchOption.AllDirectories))
         {
             var relative = Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
             var document = await store.ReadJsonAsync<EcommerceRegionsDocument>(ArtifactPath.Create(relative), "ecommerce-regions", cancellationToken);
-            regions.AddRange(document.Regions);
+            regions.AddRange(document.Regions.Select(region => new EcommerceRegionContext(document.PageId, region)));
         }
 
         return regions;
+    }
+
+    private static async Task<IReadOnlyDictionary<string, string>> ReadPageArchetypesAsync(string root, FileSystemVisualArtifactStore store, CancellationToken cancellationToken)
+    {
+        var pagesRoot = Path.Combine(root, "analysis", "pages");
+        if (!Directory.Exists(pagesRoot)) return new Dictionary<string, string>(StringComparer.Ordinal);
+        var archetypes = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var path in Directory.EnumerateFiles(pagesRoot, "page-archetype.json", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+            var document = await store.ReadJsonAsync<PageArchetypeDocument>(ArtifactPath.Create(relative), "page-archetype", cancellationToken);
+            archetypes[document.PageId] = document.PrimaryArchetype;
+        }
+
+        return archetypes;
     }
 
     private static string PreferredCatalogId(string family) =>
@@ -97,6 +144,7 @@ public sealed class PresentationMapper
             "header" => "layout.header",
             "navigation" => "layout.main-navigation",
             "footer" => "layout.footer",
+            "account shell" => "account.shell",
             _ => "missing." + family.Replace(' ', '-')
         };
 
@@ -106,4 +154,110 @@ public sealed class PresentationMapper
         role.Contains("product", StringComparison.OrdinalIgnoreCase) || role.Contains("price", StringComparison.OrdinalIgnoreCase) ? "product" :
         role.Contains("navigation", StringComparison.OrdinalIgnoreCase) || role.Contains("header", StringComparison.OrdinalIgnoreCase) ? "shell" :
         "catalog";
+
+    private static bool IsPageArchetypeCompatible(PresentationCatalogEntry entry, string pageArchetype) =>
+        entry.SupportedPageArchetypes.Count == 0 ||
+        entry.SupportedPageArchetypes.Contains(pageArchetype, StringComparer.Ordinal);
+
+    private static bool IsRoleCompatible(PresentationCatalogEntry entry, IReadOnlyList<string> roles, string preferredCatalogId) =>
+        entry.ComponentId == preferredCatalogId ||
+        entry.SupportedRegionRoles.Count == 0 ||
+        entry.SupportedRegionRoles.Any(role => roles.Contains(role, StringComparer.Ordinal));
+
+    private static bool IsVisualMappingTarget(PresentationCatalogEntry entry) =>
+        entry.Category is "starter visual slot" or "visual generation target";
+
+    private static MappingValidationResult ValidateMapping(
+        VisualComponentCandidate candidate,
+        PresentationCatalogEntry match,
+        IReadOnlyList<string> roles,
+        bool ambiguous)
+    {
+        var reasonCodes = new List<string> { "page-archetype-compatible", "ecommerce-role-compatible" };
+        var targetGeneratedPath = match.AllowedFilePatterns.FirstOrDefault() ?? string.Empty;
+        if (match.IntentCategory is "runtime-owned behavior" && match.VisualOverrideAllowed is false)
+        {
+            return MappingValidationResult.Block("runtime-behavior-assigned-to-visual-code", "Runtime-owned behavior cannot be assigned to generated visual code.");
+        }
+
+        if ((match.Category is "starter visual slot" or "visual generation target") && string.IsNullOrWhiteSpace(targetGeneratedPath))
+        {
+            return MappingValidationResult.Block("missing-target-generated-path", "Visual mapping target does not declare an allowed generated path.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(targetGeneratedPath) && match.ProtectedFilePatterns.Any(pattern => targetGeneratedPath.Contains(pattern, StringComparison.OrdinalIgnoreCase)))
+        {
+            return MappingValidationResult.Block("protected-path-target", $"Mapping targets protected path '{targetGeneratedPath}'.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(targetGeneratedPath) && GeneratedZoneForPath(targetGeneratedPath) == "unknown")
+        {
+            return MappingValidationResult.Block("unknown-generated-zone", $"Mapping target '{targetGeneratedPath}' is outside known generated zones.");
+        }
+
+        var slotNames = candidate.Slots.Select(slot => slot.SlotName).ToHashSet(StringComparer.Ordinal);
+        if (match.RequiredChildren.Any(required => !slotNames.Contains(required)))
+        {
+            return MappingValidationResult.Block("missing-required-child-slot", "Candidate does not contain every required child slot for the Presentation target.");
+        }
+
+        if (roles.Any(role => role.Contains("drawer", StringComparison.OrdinalIgnoreCase) || role.Contains("overlay", StringComparison.OrdinalIgnoreCase)) &&
+            !match.InteractionCapabilities.Any())
+        {
+            return MappingValidationResult.Block("unsupported-critical-interaction", "Candidate requires interaction capability not present in catalog.");
+        }
+
+        if (candidate.InteractionBehaviorRefs.Any(IsUnsafeBrowserAction))
+        {
+            return MappingValidationResult.Block("unsafe-browser-action", "Candidate interaction attempts to call Commerce Node Storefront APIs directly.");
+        }
+
+        var actionRefs = candidate.InteractionBehaviorRefs.Where(reference => !string.IsNullOrWhiteSpace(reference)).ToArray();
+        if (actionRefs.Length > 0 && match.InteractionCapabilities.Count > 0 &&
+            actionRefs.Any(reference => !match.InteractionCapabilities.Contains(reference, StringComparer.Ordinal)))
+        {
+            reasonCodes.Add("action-descriptor-needs-review");
+            return new MappingValidationResult(null, "action-descriptor-review", true, reasonCodes);
+        }
+
+        if (ambiguous)
+        {
+            reasonCodes.Add("ambiguous-catalog-role-match");
+            return new MappingValidationResult(null, "ambiguous-role-match", true, reasonCodes);
+        }
+
+        if (candidate.Confidence < 0.60m)
+        {
+            reasonCodes.Add("low-confidence");
+            return new MappingValidationResult(null, "low-confidence", true, reasonCodes);
+        }
+
+        reasonCodes.Add(match.AllowedFilePatterns.Count > 0 ? "target-generated-path-allowed" : "behavior-binding-no-generated-path");
+        return new MappingValidationResult(null, "valid", false, reasonCodes);
+    }
+
+    private static bool IsUnsafeBrowserAction(string reference) =>
+        reference.Contains("/api/storefront/", StringComparison.OrdinalIgnoreCase) ||
+        reference.Contains("api/storefront/stores/", StringComparison.OrdinalIgnoreCase) ||
+        reference.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+        reference.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+
+    private static string GeneratedZoneForPath(string path) =>
+        path.StartsWith("Pages/", StringComparison.OrdinalIgnoreCase) ? "pages" :
+        path.StartsWith("Components/Layout/", StringComparison.OrdinalIgnoreCase) ? "layout-components" :
+        path.StartsWith("Components/Catalog/", StringComparison.OrdinalIgnoreCase) ? "catalog-components" :
+        path.StartsWith("Components/", StringComparison.OrdinalIgnoreCase) ? "components" :
+        string.IsNullOrWhiteSpace(path) ? "none" :
+        "unknown";
+
+    private sealed record EcommerceRegionContext(string PageId, EcommerceRegion Region);
+
+    private sealed record MappingValidationResult(
+        string? BlockingReason,
+        string Group,
+        bool HumanReviewRequired,
+        IReadOnlyList<string> ReasonCodes)
+    {
+        public static MappingValidationResult Block(string group, string reason) => new(reason, group, true, [group]);
+    }
 }

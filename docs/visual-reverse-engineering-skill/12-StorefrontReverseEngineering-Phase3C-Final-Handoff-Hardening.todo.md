@@ -389,54 +389,54 @@ Matching strategy:
 
 Implementation checklist:
 
-- [ ] Extend mapping contracts with:
-  - [ ] source candidate ID.
-  - [ ] source page ID.
-  - [ ] source section ID.
-  - [ ] ecommerce region ID.
-  - [ ] page archetype.
-  - [ ] Presentation target ID.
-  - [ ] Starter slot ID.
-  - [ ] target generated path.
-  - [ ] generated zone.
-  - [ ] route ownership.
-  - [ ] variant.
-  - [ ] slot assignments.
-  - [ ] token bindings.
-  - [ ] responsive bindings.
-  - [ ] interaction bindings.
-  - [ ] data requirements.
-  - [ ] behavior ownership.
-  - [ ] evidence IDs.
-  - [ ] reason codes.
-  - [ ] confidence.
-  - [ ] review state.
-- [ ] Validate page archetype compatibility.
-- [ ] Validate ecommerce role compatibility.
-- [ ] Validate target path is inside an allowed generated zone.
-- [ ] Validate target path does not overlap a protected file or protected folder.
-- [ ] Validate required child slots are present.
-- [ ] Validate unsupported critical interactions are not silently dropped.
-- [ ] Validate action descriptors are preserved and not rewritten.
-- [ ] Validate no mapping asks generated visual code to call Commerce Node directly.
-- [ ] Validate runtime-owned behavior is not assigned to generated visual code.
-- [ ] Validate low-confidence mappings require review.
-- [ ] Validate ambiguous mappings require review.
-- [ ] Validate a rejected mapping is excluded from the reviewed handoff.
+- [x] Extend mapping contracts with:
+  - [x] source candidate ID.
+  - [x] source page ID.
+  - [x] source section ID.
+  - [x] ecommerce region ID.
+  - [x] page archetype.
+  - [x] Presentation target ID.
+  - [x] Starter slot ID.
+  - [x] target generated path.
+  - [x] generated zone.
+  - [x] route ownership.
+  - [x] variant.
+  - [x] slot assignments.
+  - [x] token bindings.
+  - [x] responsive bindings.
+  - [x] interaction bindings.
+  - [x] data requirements.
+  - [x] behavior ownership.
+  - [x] evidence IDs.
+  - [x] reason codes.
+  - [x] confidence.
+  - [x] review state.
+- [x] Validate page archetype compatibility.
+- [x] Validate ecommerce role compatibility.
+- [x] Validate target path is inside an allowed generated zone.
+- [x] Validate target path does not overlap a protected file or protected folder.
+- [x] Validate required child slots are present.
+- [x] Validate unsupported critical interactions are not silently dropped.
+- [x] Validate action descriptors are preserved and not rewritten.
+- [x] Validate no mapping asks generated visual code to call Commerce Node directly.
+- [x] Validate runtime-owned behavior is not assigned to generated visual code.
+- [x] Validate low-confidence mappings require review.
+- [x] Validate ambiguous mappings require review.
+- [x] Validate a rejected mapping is excluded from the reviewed handoff.
 
 Tests:
 
-- [ ] Preferred ID mapping succeeds.
-- [ ] Role-only mapping succeeds only when page archetype and target zone match.
-- [ ] Ambiguous role mapping becomes human-review-required.
-- [ ] Protected path mapping fails.
-- [ ] Browser direct Storefront API mapping fails.
-- [ ] Runtime-owned behavior mapping fails.
-- [ ] Rejected mapping is not emitted into agent handoff.
+- [x] Preferred ID mapping succeeds.
+- [x] Role-only mapping succeeds only when page archetype and target zone match.
+- [x] Ambiguous role mapping becomes human-review-required.
+- [x] Protected path mapping fails.
+- [x] Browser direct Storefront API mapping fails.
+- [x] Runtime-owned behavior mapping fails.
+- [x] Rejected mapping is not emitted into agent handoff.
 
 Done when:
 
-- [ ] Every mapping in the reviewed handoff is either approved, safely derived, or explicitly blocked.
+- [x] Every mapping in the reviewed handoff is either approved, safely derived, or explicitly blocked.
 
 ## Phase 3C.5 - Strict Review Resolution
 
