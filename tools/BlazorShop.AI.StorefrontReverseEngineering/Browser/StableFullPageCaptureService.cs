@@ -56,10 +56,10 @@ public sealed class StableFullPageCaptureService
                     Warnings = nativeCapture.Warnings.Concat(stitch.Warnings).ToArray()
                 };
                 var finalQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, nativeQuality.Passed, fallbackReason, segments.Count, stitch.Warnings);
-                return new StableCaptureResult(stitchedCapture, stabilization, finalQuality, segments);
+                return new StableCaptureResult(stitchedCapture, stabilization, finalQuality, segments, browserSession.SessionId);
             }
 
-            return new StableCaptureResult(nativeCapture, stabilization, nativeQuality, segments);
+            return new StableCaptureResult(nativeCapture, stabilization, nativeQuality, segments, browserSession.SessionId);
         }
         catch (Exception exception) when (exception is InvalidOperationException or TimeoutException or PlaywrightException)
         {
@@ -80,7 +80,7 @@ public sealed class StableFullPageCaptureService
                         Warnings = nativeCapture.Warnings.Concat([exception.Message]).Concat(stitch.Warnings).ToArray()
                     };
                     var recoveredQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, false, exception.Message, segments.Count, stitch.Warnings);
-                    return new StableCaptureResult(stitchedCapture, stabilization, recoveredQuality, segments);
+                    return new StableCaptureResult(stitchedCapture, stabilization, recoveredQuality, segments, browserSession.SessionId);
                 }
                 catch (Exception stitchException) when (stitchException is InvalidOperationException or TimeoutException or PlaywrightException)
                 {
@@ -103,7 +103,7 @@ public sealed class StableFullPageCaptureService
                 [exception.Message]);
 
             var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, false, exception.Message, 0, [exception.Message]);
-            return new StableCaptureResult(failedCapture, stabilization, failedQuality, segments);
+            return new StableCaptureResult(failedCapture, stabilization, failedQuality, segments, browserSession.SessionId);
         }
     }
 

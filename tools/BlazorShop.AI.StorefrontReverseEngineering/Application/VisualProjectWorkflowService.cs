@@ -42,9 +42,8 @@ public sealed class VisualProjectWorkflowService
         foreach (var viewport in plan.Viewports)
         {
             var session = new BrowserPageSession(project.ProjectId, page.PageId, page.Url);
-            await captureService.CaptureViewportAsync(root, session, viewport, configuration.CapturePolicy, cancellationToken);
-            var rawCapture = await browser.CaptureAsync(session, viewport, configuration.CapturePolicy, cancellationToken);
-            await extractor.WriteViewportEvidenceAsync(root, session, viewport.Id, rawCapture, null, new EvidenceExtractionOptions(), cancellationToken);
+            var viewportResult = await captureService.CaptureViewportAsync(root, session, viewport, configuration.CapturePolicy, cancellationToken);
+            await extractor.WriteViewportEvidenceAsync(root, session, viewport.Id, viewportResult, new EvidenceExtractionOptions(), cancellationToken);
             capturedCount++;
         }
 

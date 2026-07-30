@@ -391,40 +391,40 @@ Current files:
 
 Tasks:
 
-- [ ] Introduce `CapturedViewportResult`.
-- [ ] Include:
-  - [ ] `CaptureViewportManifest`
-  - [ ] `BrowserCaptureResult`
-  - [ ] `CaptureQualityReport`
-  - [ ] `PageStabilizationReport`
-  - [ ] capture correlation ID
-  - [ ] run ID
-  - [ ] browser session ID
-- [ ] Change `VisualCaptureService.CaptureViewportAsync(...)` to return `CapturedViewportResult`.
-- [ ] Make `VisualEvidenceExtractor` consume `CapturedViewportResult`.
-- [ ] Remove the second browser capture call from `VisualProjectWorkflowService.CaptureAsync(...)`.
-- [ ] Add capture correlation ID to:
-  - [ ] viewport manifest
-  - [ ] styles evidence
-  - [ ] boxes evidence
-  - [ ] asset inventory
-  - [ ] element evidence index
-  - [ ] quality report
-- [ ] Create aggregated page capture manifest:
-  - [ ] contains every configured viewport
-  - [ ] contains manifest paths
-  - [ ] contains quality paths
-  - [ ] contains normalized evidence paths
-  - [ ] records complete/partial/failed state
-- [ ] Stop overwriting `captures/{pageId}/capture-manifest.json` per viewport.
-- [ ] Validate raw and normalized evidence share the same capture correlation ID.
-- [ ] Add a test that fails if capture is called twice for one viewport.
-- [ ] Add a test that fails when manifest references mismatch correlation IDs.
+- [x] Introduce `CapturedViewportResult`.
+- [x] Include:
+  - [x] `CaptureViewportManifest`
+  - [x] `BrowserCaptureResult`
+  - [x] `CaptureQualityReport`
+  - [x] `PageStabilizationReport`
+  - [x] capture correlation ID
+  - [x] run ID
+  - [x] browser session ID
+- [x] Change `VisualCaptureService.CaptureViewportAsync(...)` to return `CapturedViewportResult`.
+- [x] Make `VisualEvidenceExtractor` consume `CapturedViewportResult`.
+- [x] Remove the second browser capture call from `VisualProjectWorkflowService.CaptureAsync(...)`.
+- [x] Add capture correlation ID to:
+  - [x] viewport manifest
+  - [x] styles evidence
+  - [x] boxes evidence
+  - [x] asset inventory
+  - [x] element evidence index
+  - [x] quality report
+- [x] Create aggregated page capture manifest:
+  - [x] contains every configured viewport
+  - [x] contains manifest paths
+  - [x] contains quality paths
+  - [x] contains normalized evidence paths
+  - [x] records complete/partial/failed state
+- [x] Stop overwriting `captures/{pageId}/capture-manifest.json` per viewport.
+- [x] Validate raw and normalized evidence share the same capture correlation ID.
+- [x] Add a test that fails if capture is called twice for one viewport.
+- [x] Add a test that fails when manifest references mismatch correlation IDs.
 
 Guardrails:
 
-- [ ] Do not normalize from a fresh browser state.
-- [ ] Do not analyze a viewport before normalized evidence and raw manifest agree.
+- [x] Do not normalize from a fresh browser state.
+- [x] Do not analyze a viewport before normalized evidence and raw manifest agree.
 
 Verification:
 
@@ -434,11 +434,18 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] One browser capture call per viewport step.
-- [ ] Raw and normalized artifacts share one correlation ID.
-- [ ] Page manifest contains desktop, tablet, and mobile.
-- [ ] No page manifest overwrite issue remains.
-- [ ] Mismatched evidence cannot pass readiness.
+- [x] One browser capture call per viewport step.
+- [x] Raw and normalized artifacts share one correlation ID.
+- [x] Page manifest contains desktop, tablet, and mobile.
+- [x] No page manifest overwrite issue remains.
+- [x] Mismatched evidence cannot pass readiness.
+
+Implementation evidence:
+
+- Added `CapturedViewportResult` and changed capture service to return the raw capture, viewport manifest, stabilization report, quality report, correlation ID, run ID, and browser session ID together.
+- `VisualProjectWorkflowService.CaptureAsync(...)` now passes the same captured result into `VisualEvidenceExtractor`; the second browser capture call was removed.
+- Page capture manifest now merges viewport manifest paths, quality paths, normalized evidence paths, and correlation IDs instead of overwriting per viewport.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Consistency|Manifest|Evidence"` passed: 14 tests.
 
 ## Phase H4 - CLI Workflow Runner Integration
 

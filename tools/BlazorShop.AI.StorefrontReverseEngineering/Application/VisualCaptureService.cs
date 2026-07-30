@@ -19,20 +19,24 @@ public sealed class VisualCaptureService
         validator = new VisualSchemaValidator(new VisualSchemaRegistry());
     }
 
-    public async Task<CaptureViewportManifest> CaptureViewportAsync(
+    public async Task<CapturedViewportResult> CaptureViewportAsync(
         string projectRoot,
         BrowserPageSession session,
         ViewportDefinition viewport,
         CapturePolicy policy,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? runId = null)
     {
+        var captureCorrelationId = $"cap-{Guid.NewGuid():N}";
         var root = resolver.ResolveRoot(projectRoot);
         var viewportRoot = Path.Combine(root, "captures", session.PageId, viewport.Id);
         Directory.CreateDirectory(viewportRoot);
         var relativeRoot = $"captures/{session.PageId}/{viewport.Id}";
         var stableResult = await new StableFullPageCaptureService(browser)
             .CaptureAsync(session, viewport, policy, forceStitchedFallback: false, cancellationToken, viewportRoot, relativeRoot);
-        var result = stableResult.Capture;
+        var result = stableResult.Capture with { CaptureCorrelationId = captureCorrelationId };
+        var qualityReport = stableResult.QualityReport with { CaptureCorrelationId = captureCorrelationId };
+        var stabilizationReport = stableResult.Stabilization with { CaptureCorrelationId = captureCorrelationId };
 
         await File.WriteAllBytesAsync(Path.Combine(viewportRoot, "full-page.png"), result.ScreenshotPng, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(viewportRoot, "dom.html"), result.DomHtml, cancellationToken);
@@ -60,12 +64,22 @@ public sealed class VisualCaptureService
             $"{relativeRoot}/styles.json",
             $"{relativeRoot}/boxes.json",
             $"{relativeRoot}/assets.json",
-            result.Warnings);
+            result.Warnings,
+            captureCorrelationId,
+            runId,
+            stableResult.BrowserSessionId);
 
         var store = new FileSystemVisualArtifactStore(root, resolver, validator);
         await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/manifest.json"), "capture-manifest", manifest, cancellationToken);
-        await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/capture-quality-report.json"), "capture-quality-report", stableResult.QualityReport, cancellationToken);
-        return manifest;
+        await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/capture-quality-report.json"), "capture-quality-report", qualityReport, cancellationToken);
+        return new CapturedViewportResult(
+            manifest,
+            result,
+            qualityReport,
+            stabilizationReport,
+            captureCorrelationId,
+            runId,
+            stableResult.BrowserSessionId);
     }
 
     private static string Serialize<TValue>(TValue value) =>
@@ -92,4 +106,16 @@ public sealed record CaptureViewportManifest(
     string StylesPath,
     string BoxesPath,
     string AssetsPath,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    string? CaptureCorrelationId = null,
+    string? RunId = null,
+    string? BrowserSessionId = null);
+
+public sealed record CapturedViewportResult(
+    CaptureViewportManifest Manifest,
+    BrowserCaptureResult Capture,
+    CaptureQualityReport QualityReport,
+    PageStabilizationReport StabilizationReport,
+    string CaptureCorrelationId,
+    string? RunId,
+    string? BrowserSessionId);

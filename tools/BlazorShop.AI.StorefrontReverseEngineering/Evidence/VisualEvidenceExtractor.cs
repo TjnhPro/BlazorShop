@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
+using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
+using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
 using BlazorShop.AI.StorefrontReverseEngineering.Validation;
 
@@ -43,22 +45,95 @@ public sealed partial class VisualEvidenceExtractor
         string projectRoot,
         BrowserPageSession session,
         string viewportId,
+        CapturedViewportResult captured,
+        EvidenceExtractionOptions options,
+        CancellationToken cancellationToken)
+    {
+        return await WriteViewportEvidenceAsync(
+            projectRoot,
+            session,
+            viewportId,
+            captured.Capture,
+            captured.RunId,
+            options,
+            cancellationToken,
+            captured.CaptureCorrelationId);
+    }
+
+    public async Task<ElementEvidenceIndex> WriteViewportEvidenceAsync(
+        string projectRoot,
+        BrowserPageSession session,
+        string viewportId,
         BrowserCaptureResult capture,
         string? runId,
         EvidenceExtractionOptions options,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? captureCorrelationId = null)
     {
         var root = resolver.ResolveRoot(projectRoot);
         var store = new FileSystemVisualArtifactStore(root, resolver, validator);
         var relativeRoot = $"captures/{session.PageId}/{viewportId}";
 
-        var index = BuildElementIndex(session, viewportId, capture, runId, options);
-        var assets = BuildAssetInventory(session, viewportId, capture, runId);
+        var correlationId = captureCorrelationId ?? capture.CaptureCorrelationId;
+        var index = BuildElementIndex(session, viewportId, capture, runId, options, correlationId);
+        var assets = BuildAssetInventory(session, viewportId, capture, runId, correlationId);
 
         await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/element-evidence-index.json"), "computed-style-evidence", index, cancellationToken);
         await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/asset-inventory.normalized.json"), "asset-inventory", assets, cancellationToken);
 
-        var pageManifest = new PageCaptureManifest(
+        var pageManifest = MergePageManifest(
+            root,
+            session,
+            runId,
+            viewportId,
+            $"{relativeRoot}/manifest.json",
+            $"{relativeRoot}/capture-quality-report.json",
+            [$"{relativeRoot}/element-evidence-index.json", $"{relativeRoot}/asset-inventory.normalized.json"],
+            correlationId);
+
+        await store.WriteJsonAsync(ArtifactPath.Create($"captures/{session.PageId}/capture-manifest.json"), "capture-manifest", pageManifest, cancellationToken);
+        return index;
+    }
+
+    private PageCaptureManifest MergePageManifest(
+        string root,
+        BrowserPageSession session,
+        string? runId,
+        string viewportId,
+        string viewportManifestPath,
+        string qualityReportPath,
+        IReadOnlyList<string> evidencePaths,
+        string? captureCorrelationId)
+    {
+        var manifestPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create($"captures/{session.PageId}/capture-manifest.json"));
+        PageCaptureManifest? existing = null;
+        if (File.Exists(manifestPath))
+        {
+            var json = File.ReadAllText(manifestPath);
+            existing = System.Text.Json.JsonSerializer.Deserialize<PageCaptureManifest>(json, VisualJson.Options);
+        }
+
+        var viewportPaths = (existing?.ViewportManifestPaths ?? [])
+            .Where(path => !path.Equals(viewportManifestPath, StringComparison.Ordinal))
+            .Append(viewportManifestPath)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var evidenceArtifactPaths = (existing?.EvidenceArtifactPaths ?? [])
+            .Concat(evidencePaths)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var qualityPaths = new Dictionary<string, string>(existing?.QualityReportPaths ?? new Dictionary<string, string>(), StringComparer.Ordinal)
+        {
+            [viewportId] = qualityReportPath
+        };
+        var correlationIds = new Dictionary<string, string>(existing?.CaptureCorrelationIds ?? new Dictionary<string, string>(), StringComparer.Ordinal);
+        if (!string.IsNullOrWhiteSpace(captureCorrelationId))
+        {
+            correlationIds[viewportId] = captureCorrelationId!;
+        }
+
+        return new PageCaptureManifest(
             "1.0",
             "capture-manifest",
             $"capture-page-{session.ProjectId}-{session.PageId}",
@@ -66,17 +141,18 @@ public sealed partial class VisualEvidenceExtractor
             session.ProjectId,
             session.PageId,
             runId,
-            [$"{relativeRoot}/manifest.json"],
-            [$"{relativeRoot}/element-evidence-index.json", $"{relativeRoot}/asset-inventory.normalized.json"]);
-
-        await store.WriteJsonAsync(ArtifactPath.Create($"captures/{session.PageId}/capture-manifest.json"), "capture-manifest", pageManifest, cancellationToken);
-        return index;
+            viewportPaths,
+            evidenceArtifactPaths,
+            qualityPaths,
+            correlationIds);
     }
 
     public void ValidateReferencedFiles(string projectRoot, PageCaptureManifest manifest)
     {
         var root = resolver.ResolveRoot(projectRoot);
-        foreach (var path in manifest.ViewportManifestPaths.Concat(manifest.EvidenceArtifactPaths))
+        foreach (var path in manifest.ViewportManifestPaths
+                     .Concat(manifest.EvidenceArtifactPaths)
+                     .Concat(manifest.QualityReportPaths?.Values ?? []))
         {
             var fullPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create(path));
             if (!File.Exists(fullPath))
@@ -84,6 +160,51 @@ public sealed partial class VisualEvidenceExtractor
                 throw new InvalidOperationException($"[SRE-EVIDENCE-001] Referenced evidence file is missing. Problem: '{path}' does not exist under the project root. Cause: capture/evidence manifests must only reference persisted files. Fix: rerun capture or evidence extraction.");
             }
         }
+
+        foreach (var pair in manifest.CaptureCorrelationIds ?? new Dictionary<string, string>())
+        {
+            var viewportManifestPath = manifest.ViewportManifestPaths.FirstOrDefault(path => path.Contains($"/{pair.Key}/", StringComparison.Ordinal));
+            if (viewportManifestPath is not null)
+            {
+                var viewportManifest = ReadJson<CaptureViewportManifest>(root, viewportManifestPath);
+                if (!string.Equals(viewportManifest.CaptureCorrelationId, pair.Value, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"[SRE-EVIDENCE-002] Viewport manifest correlation mismatch. Problem: '{viewportManifestPath}' does not match page manifest correlation for viewport '{pair.Key}'. Cause: raw and normalized artifacts came from different capture snapshots. Fix: rerun capture and evidence extraction for the viewport.");
+                }
+            }
+
+            foreach (var evidencePath in manifest.EvidenceArtifactPaths.Where(path => path.Contains($"/{pair.Key}/", StringComparison.Ordinal)))
+            {
+                var correlationId = ReadCorrelationId(root, evidencePath);
+                if (!string.Equals(correlationId, pair.Value, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"[SRE-EVIDENCE-003] Normalized evidence correlation mismatch. Problem: '{evidencePath}' does not match page manifest correlation for viewport '{pair.Key}'. Cause: raw and normalized artifacts came from different capture snapshots. Fix: rerun capture and evidence extraction for the viewport.");
+                }
+            }
+        }
+    }
+
+    private TArtifact ReadJson<TArtifact>(string root, string path)
+    {
+        var fullPath = resolver.ResolveArtifactPath(root, ArtifactPath.Create(path));
+        var json = File.ReadAllText(fullPath);
+        return System.Text.Json.JsonSerializer.Deserialize<TArtifact>(json, VisualJson.Options)
+            ?? throw new InvalidOperationException($"[SRE-EVIDENCE-004] Artifact could not be parsed. Problem: '{path}' was empty or invalid JSON. Cause: capture artifact is corrupted. Fix: rerun capture.");
+    }
+
+    private string? ReadCorrelationId(string root, string path)
+    {
+        if (path.EndsWith("element-evidence-index.json", StringComparison.Ordinal))
+        {
+            return ReadJson<ElementEvidenceIndex>(root, path).CaptureCorrelationId;
+        }
+
+        if (path.EndsWith("asset-inventory.normalized.json", StringComparison.Ordinal))
+        {
+            return ReadJson<AssetInventoryEvidence>(root, path).CaptureCorrelationId;
+        }
+
+        return null;
     }
 
     private static ElementEvidenceIndex BuildElementIndex(
@@ -91,7 +212,8 @@ public sealed partial class VisualEvidenceExtractor
         string viewportId,
         BrowserCaptureResult capture,
         string? runId,
-        EvidenceExtractionOptions options)
+        EvidenceExtractionOptions options,
+        string? captureCorrelationId)
     {
         var styles = capture.Styles
             .Where(style => !string.IsNullOrWhiteSpace(style.Selector))
@@ -132,14 +254,16 @@ public sealed partial class VisualEvidenceExtractor
             session.PageId,
             viewportId,
             runId,
-            elements);
+            elements,
+            captureCorrelationId);
     }
 
     private static AssetInventoryEvidence BuildAssetInventory(
         BrowserPageSession session,
         string viewportId,
         BrowserCaptureResult capture,
-        string? runId)
+        string? runId,
+        string? captureCorrelationId)
     {
         return new AssetInventoryEvidence(
             "1.0",
@@ -157,7 +281,8 @@ public sealed partial class VisualEvidenceExtractor
                 asset.Width,
                 asset.Height,
                 asset.SourceElement,
-                ReferenceOnly: true)).ToArray());
+                ReferenceOnly: true)).ToArray(),
+            captureCorrelationId);
     }
 
     private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> GroupStyles(IReadOnlyDictionary<string, string> properties)

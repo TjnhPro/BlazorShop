@@ -146,7 +146,8 @@ public sealed record BrowserCaptureResult(
     IReadOnlyList<ComputedStyleSample> Styles,
     IReadOnlyList<ElementBoxSample> Boxes,
     IReadOnlyList<AssetInventoryItem> Assets,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    string? CaptureCorrelationId = null);
 
 public sealed record ComputedStyleSample(
     string Selector,

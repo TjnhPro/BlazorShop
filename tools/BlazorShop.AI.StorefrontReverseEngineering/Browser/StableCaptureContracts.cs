@@ -3,13 +3,15 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 public sealed record PageStabilizationReport(
     IReadOnlyList<string> Steps,
     IReadOnlyList<string> HiddenNoiseSelectors,
-    IReadOnlyList<string>? Warnings = null);
+    IReadOnlyList<string>? Warnings = null,
+    string? CaptureCorrelationId = null);
 
 public sealed record StableCaptureResult(
     BrowserCaptureResult Capture,
     PageStabilizationReport Stabilization,
     CaptureQualityReport QualityReport,
-    IReadOnlyList<ScreenshotSegment> Segments);
+    IReadOnlyList<ScreenshotSegment> Segments,
+    string? BrowserSessionId = null);
 
 public sealed record ScreenshotSegment(
     string SegmentId,
@@ -48,7 +50,8 @@ public sealed record CaptureQualityReport(
     int? FinalWidth = null,
     int? FinalHeight = null,
     string? FinalMethod = null,
-    IReadOnlyList<string>? Warnings = null);
+    IReadOnlyList<string>? Warnings = null,
+    string? CaptureCorrelationId = null);
 
 public sealed record CaptureQualityFinding(
     string Code,

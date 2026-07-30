@@ -48,18 +48,30 @@ public sealed class BrowserCaptureTests
         Assert.Contains("currentSrc", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void WorkflowCapture_DoesNotNormalizeFromSecondBrowserCapture()
+    {
+        var repoRoot = GetRepoRoot();
+        var sourcePath = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Application", "VisualProjectWorkflowService.cs");
+        var source = File.ReadAllText(sourcePath);
+
+        Assert.DoesNotContain("rawCapture = await browser.CaptureAsync", source, StringComparison.Ordinal);
+        Assert.Contains("WriteViewportEvidenceAsync(root, session, viewport.Id, captured", source, StringComparison.Ordinal);
+    }
+
     private static async Task<CaptureViewportManifest> CaptureAsync(ViewportDefinition viewport)
     {
         var repoRoot = GetRepoRoot();
         var projectRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "browser-test-" + Guid.NewGuid().ToString("N"));
         var fixturePath = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html");
         var service = new VisualCaptureService(repoRoot, new FixtureReferenceBrowser());
-        return await service.CaptureViewportAsync(
+        var captured = await service.CaptureViewportAsync(
             projectRoot,
             new BrowserPageSession("browser-test", "home", new Uri(fixturePath).AbsoluteUri),
             viewport,
             new CapturePolicy(),
             CancellationToken.None);
+        return captured.Manifest;
     }
 
     private static string ToRepoPath(string relativeCapturePath)

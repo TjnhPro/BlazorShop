@@ -9,7 +9,8 @@ public sealed record ElementEvidenceIndex(
     string PageId,
     string ViewportId,
     string? RunId,
-    IReadOnlyList<ElementEvidenceItem> Elements);
+    IReadOnlyList<ElementEvidenceItem> Elements,
+    string? CaptureCorrelationId = null);
 
 public sealed record ElementEvidenceItem(
     string EvidenceId,
@@ -30,7 +31,8 @@ public sealed record AssetInventoryEvidence(
     string PageId,
     string ViewportId,
     string? RunId,
-    IReadOnlyList<AssetEvidenceItem> Assets);
+    IReadOnlyList<AssetEvidenceItem> Assets,
+    string? CaptureCorrelationId = null);
 
 public sealed record AssetEvidenceItem(
     string EvidenceId,
@@ -50,7 +52,9 @@ public sealed record PageCaptureManifest(
     string PageId,
     string? RunId,
     IReadOnlyList<string> ViewportManifestPaths,
-    IReadOnlyList<string> EvidenceArtifactPaths);
+    IReadOnlyList<string> EvidenceArtifactPaths,
+    IReadOnlyDictionary<string, string>? QualityReportPaths = null,
+    IReadOnlyDictionary<string, string>? CaptureCorrelationIds = null);
 
 public sealed record EvidenceExtractionOptions(
     int MaximumElements = 80,
