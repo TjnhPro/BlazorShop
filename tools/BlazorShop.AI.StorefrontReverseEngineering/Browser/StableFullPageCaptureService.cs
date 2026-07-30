@@ -7,6 +7,7 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 
 public sealed class StableFullPageCaptureService
 {
+    private const string StitchedCaptureMethod = "stitched";
     private const int SegmentOverlapPixels = 80;
     private const int MaximumSegmentCount = 50;
 
@@ -49,7 +50,7 @@ public sealed class StableFullPageCaptureService
                 segments = stitch.Segments;
                 var stitchedCapture = nativeCapture with
                 {
-                    CaptureMethod = "stitched",
+                    CaptureMethod = StitchedCaptureMethod,
                     ScreenshotPng = stitch.Png,
                     DocumentWidth = stitch.Width,
                     DocumentHeight = stitch.Height,
@@ -73,7 +74,7 @@ public sealed class StableFullPageCaptureService
                     segments = stitch.Segments;
                     var stitchedCapture = nativeCapture with
                     {
-                        CaptureMethod = "stitched",
+                        CaptureMethod = StitchedCaptureMethod,
                         ScreenshotPng = stitch.Png,
                         DocumentWidth = stitch.Width,
                         DocumentHeight = stitch.Height,
@@ -272,7 +273,7 @@ public sealed class StableFullPageCaptureService
             findings.Add(new("inconsistent-manifest-dimensions", "blocking", "Capture dimensions do not match the requested viewport."));
         }
 
-        if (capture.CaptureMethod == "stitched" && segmentCount == 0)
+        if (capture.CaptureMethod == StitchedCaptureMethod && segmentCount == 0)
         {
             findings.Add(new("stitched-output-missing-segments", "blocking", "Capture method is stitched but no real segment screenshots were recorded."));
         }

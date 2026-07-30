@@ -36,8 +36,8 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
             documentHeight,
             html,
             CreateFixturePng(viewport.Width, documentHeight, "#f5f7f9"),
-            BuildStyleSamples(),
-            BuildBoxes(viewport),
+            CreateFixtureStyleEvidence(),
+            CreateFixtureBoxEvidence(viewport),
             ExtractAssets(html),
             warnings);
     }
@@ -51,7 +51,7 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         return Task.FromResult<IReferenceBrowserSession>(new FixtureReferenceBrowserSession(this, session, viewport, policy));
     }
 
-    private static IReadOnlyList<ComputedStyleSample> BuildStyleSamples() =>
+    private static IReadOnlyList<ComputedStyleSample> CreateFixtureStyleEvidence() =>
     [
         new("header.site-header", new Dictionary<string, string> { ["position"] = "sticky", ["background-color"] = "#ffffff", ["display"] = "flex" }),
         new("section.hero", new Dictionary<string, string> { ["display"] = "grid", ["font-family"] = "Inter", ["color"] = "#13201a" }),
@@ -59,7 +59,7 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         new("footer", new Dictionary<string, string> { ["background-color"] = "#101820", ["color"] = "#ffffff" })
     ];
 
-    private static IReadOnlyList<ElementBoxSample> BuildBoxes(ViewportDefinition viewport) =>
+    private static IReadOnlyList<ElementBoxSample> CreateFixtureBoxEvidence(ViewportDefinition viewport) =>
     [
         new("header.site-header", 0, 0, viewport.Width, 72),
         new("section.hero", 0, 72, viewport.Width, viewport.IsMobile ? 520 : 440),

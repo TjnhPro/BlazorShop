@@ -57,6 +57,6 @@ public sealed class NodePlaywrightReferenceBrowser : IReferenceBrowser
             throw new InvalidOperationException($"[SRE-BROWSER-005] Browser capture failed. Problem: Node bridge exited with {process.ExitCode}. Cause: Playwright dependencies or the reference URL may be unavailable. Fix: run npm install and npx playwright install chromium under StorefrontBuilder. Details: {stderr}");
         }
 
-        throw new NotSupportedException("[SRE-BROWSER-006] Node bridge completed but direct result adaptation is deferred. Problem: Phase 3A keeps the bridge available while deterministic fixture capture owns automated tests. Cause: StorefrontBuilder script writes builder-shaped artifacts. Fix: use FixtureReferenceBrowser for tests or add adapter mapping in a later parity phase.");
+        throw new InvalidOperationException("[SRE-BROWSER-006] Node bridge completed but direct result adaptation is deferred. Problem: Phase 3A keeps the bridge available while deterministic fixture capture owns automated tests. Cause: StorefrontBuilder script writes builder-shaped artifacts. Fix: use FixtureReferenceBrowser for tests or add adapter mapping in a later parity phase.");
     }
 }

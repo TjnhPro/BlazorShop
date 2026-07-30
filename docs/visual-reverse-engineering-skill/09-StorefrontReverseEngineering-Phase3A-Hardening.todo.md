@@ -906,24 +906,24 @@ scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1
 
 Script tasks:
 
-- [ ] Set `$ErrorActionPreference = "Stop"`.
-- [ ] Build tool project.
-- [ ] Run fast tests.
-- [ ] Ensure Playwright browser installed or print actionable setup message.
-- [ ] Start local HTTP fixture server.
-- [ ] Run full reverse-engineering workflow with `--no-ai`.
-- [ ] Force stitched fallback proof.
-- [ ] Run interaction proof.
-- [ ] Validate artifacts.
-- [ ] Validate run log.
-- [ ] Validate readiness pass.
-- [ ] Run boundary scan.
-- [ ] Run prototype-marker scan.
-- [ ] Run StorefrontBuilder compatibility smoke:
-  - [ ] `build-storefront.ps1 -Mode plan-only`
-  - [ ] existing StorefrontBuilder create hardening test
-- [ ] Stop fixture server in `finally`.
-- [ ] Write a short gate report under `obj/storefront-reverse-engineering/reports`.
+- [x] Set `$ErrorActionPreference = "Stop"`.
+- [x] Build tool project.
+- [x] Run fast tests.
+- [x] Ensure Playwright browser installed or print actionable setup message.
+- [x] Start local HTTP fixture server.
+- [x] Run full reverse-engineering workflow with `--no-ai`.
+- [x] Force stitched fallback proof.
+- [x] Run interaction proof.
+- [x] Validate artifacts.
+- [x] Validate run log.
+- [x] Validate readiness pass.
+- [x] Run boundary scan.
+- [x] Run prototype-marker scan.
+- [x] Run StorefrontBuilder compatibility smoke:
+  - [x] `build-storefront.ps1 -Mode plan-only`
+  - [x] existing StorefrontBuilder create hardening test
+- [x] Stop fixture server in `finally`.
+- [x] Write a short gate report under `obj/storefront-reverse-engineering/reports`.
 
 Suggested commands inside gate:
 
@@ -936,15 +936,21 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 Guardrails:
 
-- [ ] Gate must not require external website.
-- [ ] Gate must not leave long-running fixture server processes.
-- [ ] Gate must not mutate generated storefronts.
-- [ ] Gate must not depend on GitHub Actions.
+- [x] Gate must not require external website.
+- [x] Gate must not leave long-running fixture server processes.
+- [x] Gate must not mutate generated storefronts.
+- [x] Gate must not depend on GitHub Actions.
 
 Exit criteria:
 
-- [ ] One script proves build, tests, browser E2E, artifacts, readiness, boundary, and compatibility.
-- [ ] Failure output points to report path and exact failing step.
+- [x] One script proves build, tests, browser E2E, artifacts, readiness, boundary, and compatibility.
+- [x] Failure output points to report path and exact failing step.
+
+Implementation evidence:
+
+- Added `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1`.
+- Gate builds the tool, checks Playwright Chromium installation, runs fast/schema/workflow tests, runs local Playwright HTTP fixture tests, runs CLI no-AI workflow, validates artifacts/readiness/run log, runs production boundary scan, runs prototype-marker scan, and runs StorefrontBuilder compatibility smoke under `obj`.
+- Verification: `powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1` passed. Latest report: `obj/storefront-reverse-engineering/reports/phase3a-hardening-gate-20260730144626.md`.
 
 ## Phase H10 - Documentation And Phase 3B Handoff
 

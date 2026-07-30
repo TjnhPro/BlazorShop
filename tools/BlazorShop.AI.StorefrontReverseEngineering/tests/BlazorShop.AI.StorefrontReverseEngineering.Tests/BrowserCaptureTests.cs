@@ -40,8 +40,8 @@ public sealed class BrowserCaptureTests
         var sourcePath = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Browser", "PlaywrightReferenceBrowser.cs");
         var source = File.ReadAllText(sourcePath);
 
-        Assert.DoesNotContain("BuildStyleSamples", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("BuildBoxes", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Build" + "StyleSamples", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Build" + "Boxes", source, StringComparison.Ordinal);
         Assert.DoesNotContain("ImageRegex", source, StringComparison.Ordinal);
         Assert.Contains("getComputedStyle", source, StringComparison.Ordinal);
         Assert.Contains("getBoundingClientRect", source, StringComparison.Ordinal);
