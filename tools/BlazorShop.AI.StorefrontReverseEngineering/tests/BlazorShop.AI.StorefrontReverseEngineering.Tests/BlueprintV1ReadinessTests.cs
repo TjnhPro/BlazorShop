@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using Xunit;
@@ -15,11 +16,20 @@ public sealed class BlueprintV1ReadinessTests
         var projectRoot = await CreateReadyProjectAsync("Blueprint V1 Artifacts");
 
         var blueprint = await ReadBlueprintAsync(projectRoot, "analysis/visual-blueprint.v1.draft.json");
+        var reviewed = await ReadBlueprintAsync(projectRoot, "analysis/visual-blueprint.v1.reviewed.json");
 
         Assert.Contains("analysis/evidence-snapshot.json", blueprint.SourceProvenance);
         Assert.Contains("analysis/resolved/page-compositions.reviewed.json", blueprint.SourceProvenance);
         Assert.NotEmpty(blueprint.Pages);
         Assert.Equal("analysis/tokens/semantic-tokens.draft.json", blueprint.Tokens);
+        Assert.Equal("analysis/resolved/semantic-tokens.reviewed.json", reviewed.Tokens);
+        Assert.Equal("analysis/resolved/presentation-mappings.reviewed.json", reviewed.PresentationMappings);
+        Assert.Contains("analysis/resolved/review-resolution-manifest.json", reviewed.SourceProvenance);
+        Assert.DoesNotContain(BlueprintReferences(reviewed), reference => reference.Contains(".draft.json", StringComparison.OrdinalIgnoreCase));
+        Assert.False(string.IsNullOrWhiteSpace(reviewed.ProjectMetadata["reviewBundleHash"]));
+        Assert.False(string.IsNullOrWhiteSpace(reviewed.ProjectMetadata["storefrontPatternHash"]));
+        Assert.False(string.IsNullOrWhiteSpace(reviewed.ProjectMetadata["presentationCatalogHash"]));
+        Assert.False(string.IsNullOrWhiteSpace(reviewed.ProjectMetadata["pageContractHash"]));
         Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "resolved", "page-compositions.reviewed.json")));
         Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "visual-blueprint.v1.reviewed.json")));
         Assert.True(File.Exists(Path.Combine(projectRoot, "reports", "generation-readiness.md")));
@@ -35,6 +45,62 @@ public sealed class BlueprintV1ReadinessTests
 
         Assert.False(result.Readiness.Passed);
         Assert.Contains(result.Readiness.Findings, finding => finding.Code == "missing-required-artifact" && finding.ArtifactPath == "analysis/tokens/semantic-tokens.draft.json");
+        Assert.False(File.Exists(Path.Combine(projectRoot, "analysis", "visual-blueprint.v1.reviewed.json")));
+    }
+
+    [Fact]
+    public async Task ReviewedBlueprint_IsDeletedWhenCriticalReviewIsDeferred()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Deferred Review");
+        Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "visual-blueprint.v1.reviewed.json")));
+        await RewriteFirstReviewDecisionStatusAsync(projectRoot, "Deferred");
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.Null(result.Reviewed);
+        Assert.False(File.Exists(Path.Combine(projectRoot, "analysis", "visual-blueprint.v1.reviewed.json")));
+        Assert.Contains(result.Readiness.Findings, finding => finding.Code == "reviewed-blueprint-not-resolved");
+    }
+
+    [Fact]
+    public async Task ReviewedBlueprint_IsDeletedWhenCriticalReviewIsRejected()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Rejected Review");
+        await RewriteFirstReviewDecisionStatusAsync(projectRoot, "Rejected");
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.Null(result.Reviewed);
+        Assert.False(File.Exists(Path.Combine(projectRoot, "analysis", "visual-blueprint.v1.reviewed.json")));
+        Assert.Contains(result.Readiness.Findings, finding => finding.Code == "reviewed-blueprint-not-resolved");
+    }
+
+    [Fact]
+    public async Task GenerationReadiness_ReviewedBlueprintDraftReferenceBlocks()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Draft Reference");
+        await MutateJsonAsync(projectRoot, "analysis/visual-blueprint.v1.reviewed.json", json =>
+        {
+            json["tokens"] = "analysis/tokens/semantic-tokens.draft.json";
+        });
+
+        var readiness = InvokeReviewedBlueprintValidation(projectRoot);
+
+        Assert.Contains(readiness.Findings, finding => finding.Code == "reviewed-blueprint-references-draft");
+    }
+
+    [Fact]
+    public async Task GenerationReadiness_StaleReviewBundleHashBlocks()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Stale Hash");
+        await MutateJsonAsync(projectRoot, "analysis/visual-blueprint.v1.reviewed.json", json =>
+        {
+            json["projectMetadata"]!.AsObject()["reviewBundleHash"] = "stale";
+        });
+
+        var readiness = InvokeReviewedBlueprintValidation(projectRoot);
+
+        Assert.Contains(readiness.Findings, finding => finding.Code == "reviewed-blueprint-hash-stale");
     }
 
     [Fact]
@@ -192,6 +258,9 @@ public sealed class BlueprintV1ReadinessTests
             .RunAsync(fixtureUrl, name, outputRoot, force: true, resume: false, noAi: true, CancellationToken.None, runId: "blueprint-v1-fixture");
 
         Assert.True(summary.ReadinessPassed);
+        await ApproveAllReviewDecisionsAsync(summary.ArtifactRoot);
+        var assembled = await new BlueprintV1Assembler(repoRoot).AssembleAsync(summary.ArtifactRoot, CancellationToken.None);
+        Assert.True(assembled.Readiness.Passed);
         return summary.ArtifactRoot;
     }
 
@@ -207,6 +276,83 @@ public sealed class BlueprintV1ReadinessTests
         var json = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "resolved", "page-compositions.reviewed.json"));
         return JsonSerializer.Deserialize<ReviewedPageCompositionsDocument>(json, VisualJson.Options)
             ?? throw new InvalidOperationException("Page compositions artifact did not deserialize.");
+    }
+
+    private static async Task RewriteFirstReviewDecisionStatusAsync(string projectRoot, string status)
+    {
+        await MutateJsonAsync(projectRoot, "review/review-decisions.json", json =>
+        {
+            var decisions = json["decisions"]?.AsArray() ?? throw new InvalidOperationException("Review decisions has no decisions array.");
+            if (decisions.Count == 0)
+            {
+                throw new InvalidOperationException("Review decisions is empty.");
+            }
+
+            decisions[0]!["status"] = status;
+            decisions[0]!["reviewerNote"] = status + " for lifecycle test.";
+        });
+    }
+
+    private static async Task ApproveAllReviewDecisionsAsync(string projectRoot)
+    {
+        var queuePath = Path.Combine(projectRoot, "review", "review-queue.json");
+        var queue = JsonSerializer.Deserialize<ReviewQueue>(await File.ReadAllTextAsync(queuePath), VisualJson.Options)
+            ?? throw new InvalidOperationException("Review queue did not deserialize.");
+        var decisions = queue.Items.Select(item => new ReviewDecision(
+            item.ItemId,
+            "Approved",
+            null,
+            "Approved by deterministic test fixture.",
+            DateTimeOffset.UtcNow,
+            "reviewer@example.test",
+            item.SourceArtifactId,
+            item.SourceArtifactHash,
+            "decision-" + item.ItemId)).ToArray();
+        var document = new ReviewDecisions(
+            "1.0",
+            "review-decisions",
+            "review-decisions-" + queue.ProjectId,
+            DateTimeOffset.UtcNow,
+            queue.ProjectId,
+            decisions);
+        await File.WriteAllTextAsync(Path.Combine(projectRoot, "review", "review-decisions.json"), JsonSerializer.Serialize(document, VisualJson.Options) + Environment.NewLine);
+    }
+
+    private static async Task MutateJsonAsync(string projectRoot, string relativePath, Action<JsonObject> mutate)
+    {
+        var path = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var json = JsonNode.Parse(await File.ReadAllTextAsync(path))?.AsObject()
+            ?? throw new InvalidOperationException("Artifact is not a JSON object: " + relativePath);
+        mutate(json);
+        await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static GenerationReadinessReport InvokeReviewedBlueprintValidation(string projectRoot)
+    {
+        var method = typeof(BlueprintV1Assembler).GetMethod("ValidateReviewedBlueprint", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+            ?? throw new InvalidOperationException("ValidateReviewedBlueprint method was not found.");
+        var manifest = JsonSerializer.Deserialize<ReviewResolutionManifest>(File.ReadAllText(Path.Combine(projectRoot, "analysis", "resolved", "review-resolution-manifest.json")), VisualJson.Options);
+        var findings = new List<GenerationReadinessFinding>();
+        method.Invoke(null, [projectRoot, manifest, findings]);
+        return new GenerationReadinessReport("1.0", "generation-readiness", "generation-readiness-test", DateTimeOffset.UtcNow, "test", findings.All(finding => finding.Severity != "blocking"), findings);
+    }
+
+    private static IEnumerable<string> BlueprintReferences(VisualBlueprintV1 blueprint)
+    {
+        foreach (var reference in blueprint.SourceProvenance) yield return reference;
+        foreach (var reference in blueprint.PageArchetypes) yield return reference;
+        yield return blueprint.Tokens;
+        foreach (var reference in blueprint.Sections) yield return reference;
+        foreach (var reference in blueprint.ResponsiveBehavior) yield return reference;
+        foreach (var reference in blueprint.InteractionModels) yield return reference;
+        yield return blueprint.ComponentDefinitions;
+        yield return blueprint.ComponentInstances;
+        foreach (var reference in blueprint.EcommerceRegions) yield return reference;
+        yield return blueprint.PresentationMappings;
+        yield return blueprint.UnsupportedPatterns;
+        yield return blueprint.OriginalityRestrictions;
+        yield return blueprint.Confidence;
+        yield return blueprint.ReviewState;
     }
 
     private static async Task CloneHomePageAsync(string projectRoot, string pageId, string sourceUrl, string archetype, string? extraSectionRole)

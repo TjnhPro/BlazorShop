@@ -361,7 +361,7 @@ public sealed class VisualProjectWorkflowService
         return await new ConfidenceScorer(repoRoot).ScoreAsync(root, cancellationToken);
     }
 
-    public async Task<(VisualBlueprintV1 Draft, VisualBlueprintV1 Reviewed, GenerationReadinessReport Readiness)> AssembleBlueprintV1Async(
+    public async Task<(VisualBlueprintV1 Draft, VisualBlueprintV1? Reviewed, GenerationReadinessReport Readiness)> AssembleBlueprintV1Async(
         string projectRoot,
         CancellationToken cancellationToken)
     {

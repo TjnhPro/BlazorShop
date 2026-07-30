@@ -42,3 +42,12 @@ Status: in progress
 - Rejected and deferred blocking items are recorded in the resolution manifest blocker state; rejected mapping outputs are excluded from approved mappings.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `13/13`.
+
+## Phase 3D.2 Evidence
+
+- Draft blueprint generation remains unconditional at `analysis/visual-blueprint.v1.draft.json`.
+- Reviewed blueprint generation is conditional on zero blocking readiness findings and zero blocking unresolved review items.
+- Existing reviewed blueprint output is deleted when current reviewed inputs are blocked, so stale reviewed files cannot be consumed.
+- Reviewed blueprint references resolved artifacts and includes review bundle, Storefront pattern, Presentation catalog, and page contract hashes.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `16/16`.

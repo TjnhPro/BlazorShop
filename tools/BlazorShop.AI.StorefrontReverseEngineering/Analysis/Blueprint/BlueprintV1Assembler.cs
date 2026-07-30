@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -10,6 +12,9 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 public sealed class BlueprintV1Assembler
 {
     private const string PageCompositionsArtifactPath = "analysis/resolved/page-compositions.reviewed.json";
+    private const string DraftBlueprintPath = "analysis/visual-blueprint.v1.draft.json";
+    private const string ReviewedBlueprintPath = "analysis/visual-blueprint.v1.reviewed.json";
+    private const string ReviewResolutionManifestPath = "analysis/resolved/review-resolution-manifest.json";
     private readonly string repoRoot;
     private readonly ApprovedArtifactRootResolver resolver;
     private readonly IVisualSchemaValidator validator;
@@ -21,7 +26,7 @@ public sealed class BlueprintV1Assembler
         validator = new VisualSchemaValidator(new VisualSchemaRegistry());
     }
 
-    public async Task<(VisualBlueprintV1 Draft, VisualBlueprintV1 Reviewed, GenerationReadinessReport Readiness)> AssembleAsync(
+    public async Task<(VisualBlueprintV1 Draft, VisualBlueprintV1? Reviewed, GenerationReadinessReport Readiness)> AssembleAsync(
         string projectRoot,
         CancellationToken cancellationToken)
     {
@@ -32,11 +37,23 @@ public sealed class BlueprintV1Assembler
             .ApplyAsync(root, cancellationToken);
         var pageCompositions = BuildReviewedPageCompositions(project, root);
         var draft = Build(project, root, pageCompositions, reviewedPath: "review/review-queue.json", reviewed: false);
-        var reviewedBlueprint = Build(project, root, pageCompositions, reviewedPath: "review/reviewed-items.json", reviewed: true);
-        var readiness = Validate(project.ProjectId, root, reviewed, pageCompositions);
         await store.WriteJsonAsync(ArtifactPath.Create(PageCompositionsArtifactPath), "reviewed-page-compositions", pageCompositions, cancellationToken);
-        await store.WriteJsonAsync(ArtifactPath.Create("analysis/visual-blueprint.v1.draft.json"), "visual-blueprint-v1", draft, cancellationToken);
-        await store.WriteJsonAsync(ArtifactPath.Create("analysis/visual-blueprint.v1.reviewed.json"), "visual-blueprint-v1", reviewedBlueprint, cancellationToken);
+        await store.WriteJsonAsync(ArtifactPath.Create(DraftBlueprintPath), "visual-blueprint-v1", draft, cancellationToken);
+
+        var reviewResolution = ReadReviewResolutionManifest(root);
+        var preReviewedReadiness = Validate(project.ProjectId, root, reviewed, pageCompositions, reviewResolution, validateReviewedBlueprint: false);
+        VisualBlueprintV1? reviewedBlueprint = null;
+        if (preReviewedReadiness.Passed)
+        {
+            reviewedBlueprint = Build(project, root, pageCompositions, reviewedPath: ReviewResolutionManifestPath, reviewed: true, reviewResolution);
+            await store.WriteJsonAsync(ArtifactPath.Create(ReviewedBlueprintPath), "visual-blueprint-v1", reviewedBlueprint, cancellationToken);
+        }
+        else
+        {
+            DeleteIfExists(Path.Combine(root, ReviewedBlueprintPath.Replace('/', Path.DirectorySeparatorChar)));
+        }
+
+        var readiness = Validate(project.ProjectId, root, reviewed, pageCompositions, reviewResolution, validateReviewedBlueprint: true);
         await store.WriteJsonAsync(ArtifactPath.Create("reports/generation-readiness.json"), "generation-readiness", readiness, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(root, "reports", "generation-readiness.md"), WriteMarkdown(readiness), cancellationToken);
         return (draft, reviewedBlueprint, readiness);
@@ -47,21 +64,34 @@ public sealed class BlueprintV1Assembler
         string root,
         ReviewedPageCompositionsDocument pageCompositions,
         string reviewedPath,
-        bool reviewed)
+        bool reviewed,
+        ReviewResolutionManifest? reviewResolution = null)
     {
         var pageRoot = Path.Combine(root, "analysis", "pages");
         IReadOnlyList<string> Files(string pattern) =>
             Directory.Exists(pageRoot)
                 ? Directory.EnumerateFiles(pageRoot, pattern, SearchOption.AllDirectories).Select(path => Rel(root, path)).Order(StringComparer.Ordinal).ToArray()
                 : [];
-        var metadata = new Dictionary<string, string>
-        {
-            ["name"] = project.Name,
-            ["referenceUrl"] = project.ReferenceUrl,
-            ["siteId"] = pageCompositions.Site.SiteId,
-            ["sitePageCount"] = pageCompositions.Pages.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            ["storeArchetypeSummary"] = pageCompositions.Site.StoreArchetypeSummary
-        };
+        var metadata = BuildMetadata(project, root, pageCompositions, reviewResolution);
+        var sourceProvenance = reviewed
+            ? new[]
+            {
+                "analysis/evidence-snapshot.json",
+                PageCompositionsArtifactPath,
+                "analysis/storefront-pattern/storefront-pattern.json",
+                "analysis/storefront-pattern/page-contracts.json",
+                "presentation-catalog/presentation-component-catalog.json",
+                ReviewResolutionManifestPath,
+                "analysis/resolved/semantic-tokens.reviewed.json",
+                "analysis/resolved/page-archetypes.reviewed.json",
+                "analysis/resolved/page-sections.reviewed.json",
+                "analysis/resolved/component-candidates.reviewed.json",
+                "analysis/resolved/presentation-mappings.reviewed.json",
+                "analysis/resolved/ecommerce-regions.reviewed.json",
+                "analysis/resolved/unsupported-pattern-decisions.json",
+                "analysis/resolved/originality-restrictions.reviewed.json"
+            }
+            : ["analysis/evidence-snapshot.json", PageCompositionsArtifactPath, "presentation-catalog/presentation-component-catalog.json"];
 
         return new VisualBlueprintV1(
             "1.0",
@@ -70,19 +100,19 @@ public sealed class BlueprintV1Assembler
             DateTimeOffset.UtcNow,
             project.ProjectId,
             metadata,
-            ["analysis/evidence-snapshot.json", PageCompositionsArtifactPath, "presentation-catalog/presentation-component-catalog.json"],
+            sourceProvenance,
             pageCompositions.Pages.Select(page => page.PageId).ToArray(),
-            Files("page-archetype.json"),
-            "analysis/tokens/semantic-tokens.draft.json",
-            Files("sections.draft.json"),
+            reviewed ? ["analysis/resolved/page-archetypes.reviewed.json"] : Files("page-archetype.json"),
+            reviewed ? "analysis/resolved/semantic-tokens.reviewed.json" : "analysis/tokens/semantic-tokens.draft.json",
+            reviewed ? ["analysis/resolved/page-sections.reviewed.json"] : Files("sections.draft.json"),
             Files("responsive-behavior.json"),
             Files("interaction-model.json"),
-            "analysis/components/component-candidates.json",
+            reviewed ? "analysis/resolved/component-candidates.reviewed.json" : "analysis/components/component-candidates.json",
             "analysis/components/component-instances.json",
-            Files("ecommerce-regions.json"),
-            "analysis/mapping/presentation-mappings.draft.json",
-            "analysis/mapping/unsupported-patterns.json",
-            "analysis/originality-audit.json",
+            reviewed ? ["analysis/resolved/ecommerce-regions.reviewed.json"] : Files("ecommerce-regions.json"),
+            reviewed ? "analysis/resolved/presentation-mappings.reviewed.json" : "analysis/mapping/presentation-mappings.draft.json",
+            reviewed ? "analysis/resolved/unsupported-pattern-decisions.json" : "analysis/mapping/unsupported-patterns.json",
+            reviewed ? "analysis/resolved/originality-restrictions.reviewed.json" : "analysis/originality-audit.json",
             "analysis/confidence/confidence-report.json",
             reviewedPath,
             [
@@ -96,7 +126,9 @@ public sealed class BlueprintV1Assembler
         string projectId,
         string root,
         ReviewedItems reviewed,
-        ReviewedPageCompositionsDocument pageCompositions)
+        ReviewedPageCompositionsDocument pageCompositions,
+        ReviewResolutionManifest? reviewResolution,
+        bool validateReviewedBlueprint)
     {
         var findings = new List<GenerationReadinessFinding>();
         foreach (var path in RequiredArtifacts())
@@ -112,10 +144,21 @@ public sealed class BlueprintV1Assembler
             findings.Add(new GenerationReadinessFinding("missing-review-decisions", "blocking", "Review queue contains rejected or deferred blocking items.", "review/reviewed-items.json"));
         }
 
-        var unsupportedPath = Path.Combine(root, "analysis", "mapping", "unsupported-patterns.json");
-        if (File.Exists(unsupportedPath) && File.ReadAllText(unsupportedPath).Contains("\"humanReviewRequired\": true", StringComparison.OrdinalIgnoreCase))
+        if (reviewResolution is null)
         {
-            findings.Add(new GenerationReadinessFinding("missing-mapping-for-critical-region", "blocking", "Unsupported critical pattern requires review before generation.", "analysis/mapping/unsupported-patterns.json"));
+            findings.Add(new GenerationReadinessFinding("reviewed-blueprint-not-resolved", "blocking", "Review resolution manifest is missing; reviewed blueprint cannot be assembled.", ReviewResolutionManifestPath));
+        }
+        else if (reviewResolution.BlockingUnresolvedCount > 0)
+        {
+            findings.Add(new GenerationReadinessFinding("reviewed-blueprint-not-resolved", "blocking", "Review resolution still contains blocking unresolved items.", ReviewResolutionManifestPath));
+        }
+
+        var unsupportedPath = Path.Combine(root, "analysis", "resolved", "unsupported-pattern-decisions.json");
+        if (File.Exists(unsupportedPath) &&
+            (File.ReadAllText(unsupportedPath).Contains("\"status\": \"Deferred\"", StringComparison.OrdinalIgnoreCase) ||
+             File.ReadAllText(unsupportedPath).Contains("\"status\": \"Rejected\"", StringComparison.OrdinalIgnoreCase)))
+        {
+            findings.Add(new GenerationReadinessFinding("missing-mapping-for-critical-region", "blocking", "Unsupported critical pattern requires review before generation.", unsupportedPath));
         }
 
         var pagesRoot = Path.Combine(root, "analysis", "pages");
@@ -186,6 +229,11 @@ public sealed class BlueprintV1Assembler
             findings.Add(new GenerationReadinessFinding("site-composition-review", "warning", issue, PageCompositionsArtifactPath));
         }
 
+        if (validateReviewedBlueprint)
+        {
+            ValidateReviewedBlueprint(root, reviewResolution, findings);
+        }
+
         return new GenerationReadinessReport("1.0", "generation-readiness", $"generation-readiness-{projectId}", DateTimeOffset.UtcNow, projectId, findings.All(finding => finding.Severity != "blocking"), findings);
     }
 
@@ -193,11 +241,128 @@ public sealed class BlueprintV1Assembler
     [
         PageCompositionsArtifactPath,
         "analysis/tokens/semantic-tokens.draft.json",
+        "analysis/resolved/semantic-tokens.reviewed.json",
+        "analysis/resolved/page-archetypes.reviewed.json",
+        "analysis/resolved/page-sections.reviewed.json",
+        "analysis/resolved/component-candidates.reviewed.json",
+        "analysis/resolved/presentation-mappings.reviewed.json",
+        "analysis/resolved/ecommerce-regions.reviewed.json",
+        "analysis/resolved/unsupported-pattern-decisions.json",
+        "analysis/resolved/originality-restrictions.reviewed.json",
+        ReviewResolutionManifestPath,
         "analysis/components/component-candidates.json",
         "analysis/mapping/presentation-mappings.draft.json",
         "analysis/confidence/confidence-report.json",
         "presentation-catalog/presentation-component-catalog.json"
     ];
+
+    private static Dictionary<string, string> BuildMetadata(
+        VisualProject project,
+        string root,
+        ReviewedPageCompositionsDocument pageCompositions,
+        ReviewResolutionManifest? reviewResolution)
+    {
+        var metadata = new Dictionary<string, string>
+        {
+            ["name"] = project.Name,
+            ["referenceUrl"] = project.ReferenceUrl,
+            ["siteId"] = pageCompositions.Site.SiteId,
+            ["sitePageCount"] = pageCompositions.Pages.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["storeArchetypeSummary"] = pageCompositions.Site.StoreArchetypeSummary,
+            ["reviewBundleHash"] = reviewResolution?.DecisionBundleHash ?? string.Empty,
+            ["storefrontPatternHash"] = FileHash(root, "analysis/storefront-pattern/storefront-pattern.json") ?? string.Empty,
+            ["presentationCatalogHash"] = FileHash(root, "presentation-catalog/presentation-component-catalog.json") ?? string.Empty,
+            ["pageContractHash"] = FileHash(root, "analysis/storefront-pattern/page-contracts.json") ?? string.Empty
+        };
+        return metadata;
+    }
+
+    private static void ValidateReviewedBlueprint(string root, ReviewResolutionManifest? reviewResolution, List<GenerationReadinessFinding> findings)
+    {
+        var reviewedPath = Path.Combine(root, ReviewedBlueprintPath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(reviewedPath))
+        {
+            findings.Add(new GenerationReadinessFinding("reviewed-blueprint-not-resolved", "blocking", "Reviewed blueprint was not assembled because prerequisite blockers remain.", ReviewedBlueprintPath));
+            return;
+        }
+
+        VisualBlueprintV1 blueprint;
+        try
+        {
+            blueprint = JsonSerializer.Deserialize<VisualBlueprintV1>(File.ReadAllText(reviewedPath), VisualJson.Options)
+                ?? throw new JsonException("empty blueprint");
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException)
+        {
+            findings.Add(new GenerationReadinessFinding("reviewed-blueprint-not-resolved", "blocking", $"Reviewed blueprint is invalid: {exception.Message}", ReviewedBlueprintPath));
+            return;
+        }
+
+        if (AllBlueprintReferences(blueprint).Any(reference => reference.Contains(".draft.json", StringComparison.OrdinalIgnoreCase)))
+        {
+            findings.Add(new GenerationReadinessFinding("reviewed-blueprint-references-draft", "blocking", "Reviewed blueprint references draft artifacts.", ReviewedBlueprintPath));
+        }
+
+        if (reviewResolution is null ||
+            !blueprint.ProjectMetadata.TryGetValue("reviewBundleHash", out var reviewHash) ||
+            !string.Equals(reviewHash, reviewResolution.DecisionBundleHash, StringComparison.Ordinal) ||
+            !MatchesMetadataHash(root, blueprint, "storefrontPatternHash", "analysis/storefront-pattern/storefront-pattern.json") ||
+            !MatchesMetadataHash(root, blueprint, "presentationCatalogHash", "presentation-catalog/presentation-component-catalog.json") ||
+            !MatchesMetadataHash(root, blueprint, "pageContractHash", "analysis/storefront-pattern/page-contracts.json"))
+        {
+            findings.Add(new GenerationReadinessFinding("reviewed-blueprint-hash-stale", "blocking", "Reviewed blueprint hash metadata does not match current reviewed inputs.", ReviewedBlueprintPath));
+        }
+    }
+
+    private static IEnumerable<string> AllBlueprintReferences(VisualBlueprintV1 blueprint)
+    {
+        foreach (var reference in blueprint.SourceProvenance) yield return reference;
+        foreach (var reference in blueprint.PageArchetypes) yield return reference;
+        yield return blueprint.Tokens;
+        foreach (var reference in blueprint.Sections) yield return reference;
+        foreach (var reference in blueprint.ResponsiveBehavior) yield return reference;
+        foreach (var reference in blueprint.InteractionModels) yield return reference;
+        yield return blueprint.ComponentDefinitions;
+        yield return blueprint.ComponentInstances;
+        foreach (var reference in blueprint.EcommerceRegions) yield return reference;
+        yield return blueprint.PresentationMappings;
+        yield return blueprint.UnsupportedPatterns;
+        yield return blueprint.OriginalityRestrictions;
+        yield return blueprint.Confidence;
+        yield return blueprint.ReviewState;
+    }
+
+    private static bool MatchesMetadataHash(string root, VisualBlueprintV1 blueprint, string metadataKey, string relativePath) =>
+        blueprint.ProjectMetadata.TryGetValue(metadataKey, out var value) &&
+        !string.IsNullOrWhiteSpace(value) &&
+        string.Equals(value, FileHash(root, relativePath), StringComparison.Ordinal);
+
+    private static string? FileHash(string root, string relativePath)
+    {
+        var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(path)
+            ? Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()
+            : null;
+    }
+
+    private static ReviewResolutionManifest? ReadReviewResolutionManifest(string root)
+    {
+        var path = Path.Combine(root, ReviewResolutionManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<ReviewResolutionManifest>(File.ReadAllText(path), VisualJson.Options);
+    }
+
+    private static void DeleteIfExists(string path)
+    {
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+    }
 
     private static string WriteMarkdown(GenerationReadinessReport report) =>
         "# Generation Readiness" + Environment.NewLine + Environment.NewLine +

@@ -204,53 +204,53 @@ Goal: `analysis/visual-blueprint.v1.reviewed.json` must exist only when it is sa
 
 Implementation checklist:
 
-- [ ] Keep draft blueprint generation unchanged:
-  - [ ] Always write `analysis/visual-blueprint.v1.draft.json`.
-  - [ ] Draft may reference draft analysis artifacts.
-- [ ] Change reviewed blueprint generation:
-  - [ ] Generate reviewed blueprint only after review resolution completes with zero blocking unresolved items.
-  - [ ] Reviewed blueprint must reference resolved artifacts, not draft artifacts.
-  - [ ] Reviewed blueprint must include review bundle hash.
-  - [ ] Reviewed blueprint must include Storefront pattern hash.
-  - [ ] Reviewed blueprint must include Presentation catalog hash.
-  - [ ] Reviewed blueprint must include page contract version/hash.
-- [ ] If a reviewed blueprint already exists and current resolution has blockers:
-  - [ ] delete it, or
-  - [ ] atomically replace it with an invalidated marker artifact that cannot be consumed.
-- [ ] Add blocking readiness code:
-  - [ ] `reviewed-blueprint-not-resolved`
-  - [ ] `reviewed-blueprint-references-draft`
-  - [ ] `reviewed-blueprint-hash-stale`
-- [ ] Update `BlueprintV1Assembler` so reviewed path selection is based on draft/reviewed mode.
-- [ ] Update schema for reviewed blueprint if separate semantics are needed.
-- [ ] Update tests so reviewed blueprint cannot pass while referencing `.draft.json`.
+- [x] Keep draft blueprint generation unchanged:
+  - [x] Always write `analysis/visual-blueprint.v1.draft.json`.
+  - [x] Draft may reference draft analysis artifacts.
+- [x] Change reviewed blueprint generation:
+  - [x] Generate reviewed blueprint only after review resolution completes with zero blocking unresolved items.
+  - [x] Reviewed blueprint must reference resolved artifacts, not draft artifacts.
+  - [x] Reviewed blueprint must include review bundle hash.
+  - [x] Reviewed blueprint must include Storefront pattern hash.
+  - [x] Reviewed blueprint must include Presentation catalog hash.
+  - [x] Reviewed blueprint must include page contract version/hash.
+- [x] If a reviewed blueprint already exists and current resolution has blockers:
+  - [x] delete it, or
+  - [x] atomically replace it with an invalidated marker artifact that cannot be consumed.
+- [x] Add blocking readiness code:
+  - [x] `reviewed-blueprint-not-resolved`
+  - [x] `reviewed-blueprint-references-draft`
+  - [x] `reviewed-blueprint-hash-stale`
+- [x] Update `BlueprintV1Assembler` so reviewed path selection is based on draft/reviewed mode.
+- [x] Update schema for reviewed blueprint if separate semantics are needed.
+- [x] Update tests so reviewed blueprint cannot pass while referencing `.draft.json`.
 
 Reviewed blueprint allowed authoritative references:
 
-- [ ] `analysis/resolved/semantic-tokens.reviewed.json`
-- [ ] `analysis/resolved/page-archetypes.reviewed.json`
-- [ ] `analysis/resolved/page-sections.reviewed.json`
-- [ ] `analysis/resolved/page-compositions.reviewed.json`
-- [ ] `analysis/resolved/component-candidates.reviewed.json`
-- [ ] `analysis/resolved/presentation-mappings.reviewed.json`
-- [ ] `analysis/resolved/ecommerce-regions.reviewed.json`
-- [ ] `analysis/resolved/unsupported-pattern-decisions.json`
-- [ ] `analysis/resolved/originality-restrictions.reviewed.json`
-- [ ] `analysis/resolved/review-resolution-manifest.json`
+- [x] `analysis/resolved/semantic-tokens.reviewed.json`
+- [x] `analysis/resolved/page-archetypes.reviewed.json`
+- [x] `analysis/resolved/page-sections.reviewed.json`
+- [x] `analysis/resolved/page-compositions.reviewed.json`
+- [x] `analysis/resolved/component-candidates.reviewed.json`
+- [x] `analysis/resolved/presentation-mappings.reviewed.json`
+- [x] `analysis/resolved/ecommerce-regions.reviewed.json`
+- [x] `analysis/resolved/unsupported-pattern-decisions.json`
+- [x] `analysis/resolved/originality-restrictions.reviewed.json`
+- [x] `analysis/resolved/review-resolution-manifest.json`
 
 Tests:
 
-- [ ] Draft blueprint always exists.
-- [ ] Reviewed blueprint does not exist when a deferred critical item remains.
-- [ ] Reviewed blueprint does not exist when a rejected critical item remains.
-- [ ] Reviewed blueprint references only resolved artifacts.
-- [ ] Reviewed blueprint has no authoritative `.draft.json` paths.
-- [ ] Stale review bundle hash fails readiness.
-- [ ] Existing stale reviewed blueprint is invalidated or deleted.
+- [x] Draft blueprint always exists.
+- [x] Reviewed blueprint does not exist when a deferred critical item remains.
+- [x] Reviewed blueprint does not exist when a rejected critical item remains.
+- [x] Reviewed blueprint references only resolved artifacts.
+- [x] Reviewed blueprint has no authoritative `.draft.json` paths.
+- [x] Stale review bundle hash fails readiness.
+- [x] Existing stale reviewed blueprint is invalidated or deleted.
 
 Done when:
 
-- [ ] A Phase 4 consumer can treat reviewed blueprint as a real reviewed source of truth.
+- [x] A Phase 4 consumer can treat reviewed blueprint as a real reviewed source of truth.
 
 ## Phase 3D.3 - Exact Storefront Page Contracts
 
@@ -917,7 +917,7 @@ Done when:
 ## Recommended Commit Order
 
 1. [x] `Phase 3D.1 apply typed review decisions`
-2. [ ] `Phase 3D.2 enforce reviewed blueprint lifecycle`
+2. [x] `Phase 3D.2 enforce reviewed blueprint lifecycle`
 3. [ ] `Phase 3D.3 add exact page slot contracts`
 4. [ ] `Phase 3D.4 enforce page composition slots`
 5. [ ] `Phase 3D.5 package screenshots and section crops`
@@ -1059,7 +1059,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 ### Implementation Tasks
 
 - [x] Implement D1 typed review artifact resolution.
-- [ ] Implement D2 reviewed blueprint lifecycle.
+- [x] Implement D2 reviewed blueprint lifecycle.
 - [ ] Implement D3 exact page slot contracts.
 - [ ] Implement D4 page composition slot enforcement.
 - [ ] Implement D5 self-contained visual evidence packaging.
