@@ -4,6 +4,12 @@ Scope: Phase 3A - `BlazorShop.AI.StorefrontReverseEngineering` executable founda
 
 Status: Proposed
 
+Hardening follow-up: Phase 3A foundation closure is followed by
+`09-StorefrontReverseEngineering-Phase3A-Hardening.todo.md` before Phase 3A is
+treated as runtime-complete. That follow-up closes prototype evidence capture,
+stabilization, workflow, schema, readiness, interaction, fixture, gate, and
+documentation gaps without moving into Phase 3B visual analysis/generation work.
+
 Owner area: development-time tooling under `tools/`, StorefrontBuilder documentation, local fixture tests.
 
 ## Goal

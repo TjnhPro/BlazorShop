@@ -1,0 +1,1073 @@
+# Storefront Reverse Engineering Phase 3A Hardening.todo
+
+Scope: final hardening for `tools/BlazorShop.AI.StorefrontReverseEngineering` before Phase 3A closure.
+
+Status: In progress
+
+Target area:
+
+```text
+tools/BlazorShop.AI.StorefrontReverseEngineering
+tools/BlazorShop.AI.StorefrontReverseEngineering/tests
+docs/visual-reverse-engineering-skill
+docs/architecture/11-storefront-builder.md
+docs/agents/storefront-builder.md
+scripts/qa
+```
+
+## Goal
+
+Turn the current Phase 3A foundation from a scaffold/prototype-capable tool into an executable, deterministic, inspectable, and testable reverse-engineering runtime foundation.
+
+The hardening target is not Visual Analysis & Ecommerce Mapping. It is the runtime layer below that work:
+
+```text
+Reference URL
+-> real Chromium render
+-> stable browser state
+-> real screenshot, DOM, style, box, asset evidence
+-> real quality gate and stitched fallback
+-> one consistent capture snapshot per viewport
+-> workflow runner run-state
+-> per-artifact schema validation
+-> quality-aware readiness
+-> real safe interaction evidence
+-> local browser fixture proof
+```
+
+## Current Verified Gaps
+
+These gaps were verified from current source scans and focused test output.
+
+Evidence capture:
+
+- `PlaywrightReferenceBrowser` launches Chromium and captures screenshot/DOM, but computed styles are still produced by `BuildStyleSamples()`.
+- `PlaywrightReferenceBrowser` bounding boxes are still produced by `BuildBoxes(...)`, not by `getBoundingClientRect()`.
+- `PlaywrightReferenceBrowser` asset inventory still uses regex over HTML, not rendered-page asset metadata.
+- `FixtureReferenceBrowser` uses `OnePixelPng` plus hard-coded style and box samples, so current tests do not prove real browser rendering.
+- `NodePlaywrightReferenceBrowser` still throws `NotSupportedException` after script execution, so it should not be considered an active recommended adapter.
+
+Stable capture:
+
+- `StableFullPageCaptureService.Stabilize(...)` records stabilization step names, but does not execute DOM/font/image waits, noise hiding, or warm scroll in a browser session.
+- Forced stitched fallback changes `CaptureMethod` to `stitched` and builds segment metadata, but does not create real segment screenshots or a stitched image.
+- Capture quality checks are shallow and do not validate real image dimensions, blank regions, stitched output, or lower-page content.
+
+Evidence consistency:
+
+- `VisualProjectWorkflowService.CaptureAsync(...)` calls capture once to write raw artifacts and then calls browser capture again to normalize evidence.
+- That can produce inconsistent raw and normalized evidence for dynamic pages.
+- `VisualEvidenceExtractor.WriteViewportEvidenceAsync(...)` writes page-level `capture-manifest.json` per viewport, which can overwrite previous viewport entries.
+
+Workflow:
+
+- `SequentialWorkflowRunner<TContext>` exists and has tests, but CLI `run` currently orchestrates with project-status `if` branches instead of actual workflow steps.
+- Normal runs do not create a real `runs/{runId}.json` that represents the CLI vertical slice.
+- `inspect` can show latest run, but current CLI `run` does not consistently create one.
+
+Schemas and readiness:
+
+- `VisualSchemaRegistry` currently registers artifact kinds but enforces shared metadata only.
+- There are no per-artifact domain schemas for nested fields, enum values, required evidence arrays, or manifest references.
+- `ValidateAsync(...)` uses a hard-coded list with `captures/home/desktop-1440`, `tablet-768`, and `mobile-390` instead of reading the capture plan.
+- Readiness checks file existence, but not quality reports, schema depth, evidence references, workflow run state, or originality restrictions.
+
+Interactions:
+
+- `InteractionCaptureService` does not execute browser actions.
+- It writes identical before/after screenshots.
+- It creates after DOM by appending a comment.
+- It sets `DomChanged: true` without a real diff.
+
+Boundary:
+
+- Source scan did not find production projects referencing `BlazorShop.AI.StorefrontReverseEngineering`, so project isolation is currently acceptable.
+- This hardening must preserve that boundary.
+
+## Non-Goals
+
+- Do not implement full website crawler.
+- Do not implement design-token extraction completeness.
+- Do not implement automatic semantic ecommerce mapping.
+- Do not implement Presentation component catalog mapping.
+- Do not implement human review UI.
+- Do not make StorefrontBuilder consume `visual-blueprint.draft.json`.
+- Do not generate Razor.
+- Do not generate CSS/theme output.
+- Do not copy source brand assets.
+- Do not run authenticated checkout/account/payment automation.
+- Do not introduce distributed queue or cloud browser farm.
+- Do not change Commerce Node, Control Plane, Storefront V2, Starter, Client, Runtime, Presentation, Browser, Components, Domain, Application, or Infrastructure.
+
+## Target Architecture
+
+```text
+CLI
+  -> VisualProjectWorkflowContext
+  -> SequentialWorkflowRunner
+      -> InitializeProjectStep
+      -> DiscoverReferenceStep
+      -> CaptureViewportStep(desktop)
+      -> CaptureViewportStep(tablet)
+      -> CaptureViewportStep(mobile)
+      -> AnalyzeDraftStep
+      -> OriginalityAuditStep
+      -> ValidateReadinessStep
+  -> runs/{runId}.json
+
+CaptureViewportStep
+  -> IReferenceBrowser.OpenSessionAsync(...)
+  -> IReferenceBrowserSession.NavigateAsync(...)
+  -> IReferenceBrowserSession.StabilizeAsync(...)
+  -> IReferenceBrowserSession.CaptureCurrentStateAsync(...)
+  -> CapturedViewportResult
+      -> raw artifacts
+      -> normalized evidence
+      -> quality report
+      -> manifest references
+```
+
+## Phase H0 - Hardening Preparation And Guardrails
+
+Goal: lock hardening scope and prevent accidental Phase 3B work.
+
+Tasks:
+
+- [x] Add this hardening plan to the Phase 3A documentation index.
+- [x] Update `08-StorefrontReverseEngineering-Engine-Foundation.todo.md` with a note that Phase 3A has a hardening follow-up before closure.
+- [x] Confirm all hardening work stays under:
+  - [x] `tools/BlazorShop.AI.StorefrontReverseEngineering`
+  - [x] `scripts/qa` for the hardening gate
+  - [x] StorefrontBuilder/reverse-engineering docs
+- [x] Add a source scan checklist that fails if production projects reference `BlazorShop.AI.StorefrontReverseEngineering`.
+- [x] Add a source scan checklist that identifies prototype-only markers before closure:
+  - [x] `OnePixelPng`
+  - [x] `BuildStyleSamples`
+  - [x] `BuildBoxes`
+  - [x] `afterDom = before.DomHtml`
+  - [x] `DomChanged: true`
+  - [x] `CaptureMethod = "stitched"` without real stitch output
+  - [x] `NotSupportedException` in recommended browser adapter path
+- [x] Decide final test categories:
+  - [x] unit
+  - [x] schema
+  - [x] synthetic fixture
+  - [x] real Playwright local integration
+  - [x] full hardening gate
+
+Guardrails:
+
+- [x] No StorefrontBuilder generation behavior changes in this hardening.
+- [x] No generated storefront root writes.
+- [x] No internet dependency in automated tests.
+- [x] No production runtime references to reverse-engineering tooling.
+
+Verification:
+
+```powershell
+rg -n "BlazorShop.AI.StorefrontReverseEngineering|StorefrontReverseEngineering" BlazorShop.PresentationV2 BlazorShop.Domain BlazorShop.Application BlazorShop.Infrastructure BlazorShop.ServiceDefaults BlazorShop.Tests.V2 BlazorShop.sln --glob "!bin/**" --glob "!obj/**"
+rg -n "OnePixelPng|BuildStyleSamples|BuildBoxes|afterDom = before.DomHtml|DomChanged: true|NotSupportedException" tools/BlazorShop.AI.StorefrontReverseEngineering --glob "!bin/**" --glob "!obj/**"
+```
+
+Exit criteria:
+
+- [x] Hardening scope is documented.
+- [x] Prototype markers are tracked as intentional closure blockers.
+- [x] Boundary scan remains clean.
+
+Implementation evidence:
+
+- Boundary scan was run against active production projects and `BlazorShop.sln`; `rg` returned no matches.
+- Prototype-marker scan found the expected hardening blockers in the reverse-engineering tool only: `OnePixelPng`, `BuildStyleSamples`, `BuildBoxes`, `afterDom = before.DomHtml`, `DomChanged: true`, `CaptureMethod = "stitched"` metadata, and the deferred Node adapter `NotSupportedException`.
+- Final test categories for this hardening are unit, schema, synthetic fixture, real Playwright local integration, and full hardening gate.
+
+## Phase H1 - Real Playwright Browser Session And Evidence Extraction
+
+Goal: collect screenshot, DOM, computed styles, bounding boxes, and asset metadata from the same rendered Chromium page state.
+
+Current files:
+
+- `Browser/ReferenceBrowserContracts.cs`
+- `Browser/PlaywrightReferenceBrowser.cs`
+- `Browser/FixtureReferenceBrowser.cs`
+- `Browser/ReferenceBrowserFactory.cs`
+- `Evidence/VisualEvidenceExtractor.cs`
+- `tests/.../BrowserCaptureTests.cs`
+- `tests/.../EvidenceExtractionTests.cs`
+
+Tasks:
+
+- [ ] Introduce `IReferenceBrowserSession : IAsyncDisposable`.
+- [ ] Add browser lifecycle methods:
+  - [ ] `NavigateAsync`
+  - [ ] `StabilizeAsync`
+  - [ ] `CaptureCurrentStateAsync`
+  - [ ] `ExecuteAsync`
+  - [ ] `DisposeAsync`
+- [ ] Keep one `IPlaywright`, `IBrowser`, `IBrowserContext`, and `IPage` alive for the viewport session.
+- [ ] Keep `IReferenceBrowser` only as compatibility/facade if useful.
+- [ ] Replace `BuildStyleSamples()` in the Playwright path with `page.EvaluateAsync` using `getComputedStyle()`.
+- [ ] Replace `BuildBoxes(...)` in the Playwright path with `getBoundingClientRect()`.
+- [ ] Extract element evidence candidates from the live DOM:
+  - [ ] tag name
+  - [ ] stable selector
+  - [ ] generated evidence selector
+  - [ ] semantic role
+  - [ ] bounded text snippet
+  - [ ] visibility
+  - [ ] display
+  - [ ] position
+  - [ ] z-index
+  - [ ] typography
+  - [ ] color/background
+  - [ ] border/radius/shadow
+  - [ ] grid/flex
+  - [ ] overflow
+  - [ ] transform/transition
+- [ ] Add stable evidence identity:
+  - [ ] prefer `id`
+  - [ ] then stable `data-*`
+  - [ ] then semantic tag + class
+  - [ ] then generated DOM path
+  - [ ] reject dynamic class hash as the only identity when possible
+- [ ] Extract rendered asset metadata from the live page:
+  - [ ] `img.src`
+  - [ ] `img.currentSrc`
+  - [ ] `srcset`
+  - [ ] `picture/source`
+  - [ ] CSS `background-image`
+  - [ ] inline SVG metadata
+  - [ ] video source/poster
+  - [ ] used font families
+  - [ ] natural width/height
+  - [ ] rendered width/height
+  - [ ] source element evidence ID
+  - [ ] `ReferenceOnly = true` by default
+- [ ] Enforce capture limits from `CapturePolicy`:
+  - [ ] max elements
+  - [ ] max depth
+  - [ ] max text length
+  - [ ] max properties
+  - [ ] max assets
+  - [ ] max page height
+- [ ] Ignore hidden/script/style/template/noise nodes unless policy includes them.
+- [ ] Update contracts so style, box, asset, and normalized evidence share `EvidenceId`.
+- [ ] Add tests that assert Playwright path no longer returns only `body/img/viewport/document` placeholders.
+- [ ] Keep synthetic fixture tests only for fast contract tests; do not let them be release evidence for browser rendering.
+
+Guardrails:
+
+- [ ] Do not start a new Chromium process for each sub-step in one viewport.
+- [ ] Do not download external asset mirrors.
+- [ ] Do not log cookies, tokens, or headers.
+
+Verification:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Browser|Evidence"
+```
+
+Exit criteria:
+
+- [ ] Sticky header fixture returns real `position: sticky`.
+- [ ] Product card fixture returns non-null real bounding box.
+- [ ] Hero fixture returns real typography and grid/flex evidence.
+- [ ] Asset inventory includes natural/rendered dimensions where available.
+- [ ] Production Playwright path has no hard-coded style/box placeholders.
+- [ ] Evidence extraction is bounded by policy.
+
+## Phase H2 - Real Page Stabilization And Stitched Full-Page Fallback
+
+Goal: make `StableFullPageCaptureService` execute stabilization and stitched capture, not just record metadata.
+
+Current files:
+
+- `Browser/StableFullPageCaptureService.cs`
+- `Browser/StableCaptureContracts.cs`
+- `Browser/PlaywrightReferenceBrowser.cs`
+- `tests/.../StableCaptureQualityTests.cs`
+
+Tasks:
+
+- [ ] Move stabilization onto `IReferenceBrowserSession`.
+- [ ] Implement real stabilization steps:
+  - [ ] wait `DOMContentLoaded`
+  - [ ] wait network idle with fallback
+  - [ ] wait `document.fonts.ready` when available
+  - [ ] wait important images where `complete && naturalWidth > 0`
+  - [ ] inject reduced-motion capture style when policy allows
+  - [ ] pause or neutralize known carousel/time-driven noise when configured
+  - [ ] hide configured noise selectors
+  - [ ] warm scroll from top to bottom
+  - [ ] settled delay at each scroll step
+  - [ ] return to top
+  - [ ] write actual hidden noise selectors and warnings
+- [ ] Add native full-page quality evaluator:
+  - [ ] PNG decodes
+  - [ ] expected width/height
+  - [ ] not empty
+  - [ ] not near single-color blank
+  - [ ] document height matches manifest
+  - [ ] lower-page content is present when expected
+- [ ] Add real viewport segment capture:
+  - [ ] calculate scroll positions
+  - [ ] overlap segments
+  - [ ] scroll and settle per segment
+  - [ ] capture viewport screenshot per segment
+  - [ ] write `viewport-segments/*.png`
+  - [ ] write segment metadata: id, y, crop, effective height
+  - [ ] enforce max segment count
+- [ ] Add cross-platform image stitching:
+  - [ ] choose approved .NET image package
+  - [ ] crop overlap
+  - [ ] compose final `full-page.png`
+  - [ ] write `stitch-manifest.json`
+  - [ ] mark `CaptureMethod = stitched` only when stitched output exists
+- [ ] Preserve or cleanup segments based on policy.
+- [ ] Update `CaptureQualityReport`:
+  - [ ] native attempt result
+  - [ ] fallback reason
+  - [ ] segment count
+  - [ ] final dimensions
+  - [ ] final method
+  - [ ] blocking findings
+  - [ ] warnings
+- [ ] Add tests for:
+  - [ ] warm scroll reveals lazy content
+  - [ ] noise banner hidden by policy
+  - [ ] forced stitched fallback creates segment files
+  - [ ] stitched image dimensions reflect segment composition
+  - [ ] failed native capture triggers fallback
+  - [ ] final failed capture blocks readiness
+
+Guardrails:
+
+- [ ] Do not rely solely on native Playwright full-page screenshot.
+- [ ] Do not use OS-specific tools such as `sips`.
+- [ ] Do not require FFmpeg.
+- [ ] Do not mark metadata as stitched without real image output.
+
+Verification:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "StableCapture|Stitch|Quality"
+```
+
+Exit criteria:
+
+- [ ] Lazy-loaded fixture appears after real warm scroll.
+- [ ] Noise selectors are actually hidden when policy allows.
+- [ ] Forced fallback creates real segment images.
+- [ ] Stitched output is a real composed image.
+- [ ] Native quality failure triggers fallback.
+- [ ] Readiness fails if both native and stitched capture fail.
+
+## Phase H3 - Single-Snapshot Capture Consistency
+
+Goal: ensure raw artifacts and normalized evidence come from one capture result per viewport.
+
+Current files:
+
+- `Application/VisualCaptureService.cs`
+- `Application/VisualProjectWorkflowService.cs`
+- `Evidence/VisualEvidenceExtractor.cs`
+- `Contracts/CoreContracts.cs`
+- `tests/.../BrowserCaptureTests.cs`
+- `tests/.../EvidenceExtractionTests.cs`
+
+Tasks:
+
+- [ ] Introduce `CapturedViewportResult`.
+- [ ] Include:
+  - [ ] `CaptureViewportManifest`
+  - [ ] `BrowserCaptureResult`
+  - [ ] `CaptureQualityReport`
+  - [ ] `PageStabilizationReport`
+  - [ ] capture correlation ID
+  - [ ] run ID
+  - [ ] browser session ID
+- [ ] Change `VisualCaptureService.CaptureViewportAsync(...)` to return `CapturedViewportResult`.
+- [ ] Make `VisualEvidenceExtractor` consume `CapturedViewportResult`.
+- [ ] Remove the second browser capture call from `VisualProjectWorkflowService.CaptureAsync(...)`.
+- [ ] Add capture correlation ID to:
+  - [ ] viewport manifest
+  - [ ] styles evidence
+  - [ ] boxes evidence
+  - [ ] asset inventory
+  - [ ] element evidence index
+  - [ ] quality report
+- [ ] Create aggregated page capture manifest:
+  - [ ] contains every configured viewport
+  - [ ] contains manifest paths
+  - [ ] contains quality paths
+  - [ ] contains normalized evidence paths
+  - [ ] records complete/partial/failed state
+- [ ] Stop overwriting `captures/{pageId}/capture-manifest.json` per viewport.
+- [ ] Validate raw and normalized evidence share the same capture correlation ID.
+- [ ] Add a test that fails if capture is called twice for one viewport.
+- [ ] Add a test that fails when manifest references mismatch correlation IDs.
+
+Guardrails:
+
+- [ ] Do not normalize from a fresh browser state.
+- [ ] Do not analyze a viewport before normalized evidence and raw manifest agree.
+
+Verification:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Consistency|Manifest|Evidence"
+```
+
+Exit criteria:
+
+- [ ] One browser capture call per viewport step.
+- [ ] Raw and normalized artifacts share one correlation ID.
+- [ ] Page manifest contains desktop, tablet, and mobile.
+- [ ] No page manifest overwrite issue remains.
+- [ ] Mismatched evidence cannot pass readiness.
+
+## Phase H4 - CLI Workflow Runner Integration
+
+Goal: make `run`, `resume`, `force-step`, and `inspect` use persisted workflow state.
+
+Current files:
+
+- `Cli/CliHost.cs`
+- `Application/VisualProjectWorkflowService.cs`
+- `Workflows/SequentialWorkflowRunner.cs`
+- `Workflows/WorkflowContracts.cs`
+- `Application/VisualProjectService.cs`
+- `tests/.../WorkflowRunnerTests.cs`
+- `tests/.../EndToEndCliTests.cs`
+
+Tasks:
+
+- [ ] Create `VisualProjectWorkflowContext`.
+- [ ] Context includes:
+  - [ ] project
+  - [ ] configuration
+  - [ ] artifact root
+  - [ ] capture plan
+  - [ ] artifact store
+  - [ ] browser session factory
+  - [ ] analysis provider
+  - [ ] run ID
+  - [ ] current command options
+- [ ] Implement actual workflow steps:
+  - [ ] `InitializeProjectStep`
+  - [ ] `DiscoverReferenceStep`
+  - [ ] `CaptureViewportStep`
+  - [ ] `AnalyzeDraftStep`
+  - [ ] `OriginalityAuditStep`
+  - [ ] `ValidateReadinessStep`
+- [ ] Give every step:
+  - [ ] stable name
+  - [ ] input artifact list
+  - [ ] output artifact list
+  - [ ] completion check
+  - [ ] retryable error mapping
+  - [ ] non-retryable error mapping
+  - [ ] warning collection
+  - [ ] status transition
+- [ ] Change CLI `run` to create a run ID and invoke `SequentialWorkflowRunner`.
+- [ ] Persist real `runs/{runId}.json`.
+- [ ] Add `--resume --run-id <id>`.
+- [ ] Resume should:
+  - [ ] load existing run
+  - [ ] skip succeeded/skipped steps
+  - [ ] retry failed/canceled/pending steps
+  - [ ] keep project status consistent
+- [ ] Add `--force-step <step-name>`.
+- [ ] Force-step should:
+  - [ ] rerun selected step
+  - [ ] invalidate dependent downstream steps or rerun them according to policy
+  - [ ] avoid unrelated artifact overwrite
+- [ ] Update `inspect` to show:
+  - [ ] latest run ID
+  - [ ] run status
+  - [ ] step status
+  - [ ] retry count
+  - [ ] latest failure
+  - [ ] readiness summary
+  - [ ] blueprint path
+- [ ] Add cancellation tests for actual CLI workflow.
+
+Guardrails:
+
+- [ ] Do not keep project-status-only orchestration as the canonical `run` path.
+- [ ] Do not hide failed step details behind only a final exit code.
+
+Verification:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Workflow|Cli|Resume"
+```
+
+Exit criteria:
+
+- [ ] Normal CLI `run` creates `runs/{runId}.json`.
+- [ ] Run log includes duration, status, retry count, warnings, and errors.
+- [ ] Resume skips successful steps.
+- [ ] Retry works on actual browser/capture workflow step.
+- [ ] `--force-step` works and has tests.
+- [ ] `inspect` reflects real latest run state.
+
+## Phase H5 - Per-Artifact Schemas And Readiness Gate
+
+Goal: replace metadata-only validation with artifact-kind-specific schema and quality-aware readiness.
+
+Current files:
+
+- `Validation/VisualSchemaRegistry.cs`
+- `Validation/VisualSchemaValidator.cs`
+- `Validation/ReadinessReport.cs`
+- `Schemas/`
+- `Application/VisualProjectWorkflowService.cs`
+- `tests/.../SchemaArtifactTests.cs`
+
+Tasks:
+
+- [ ] Create machine-readable schema files for first-class artifacts:
+  - [ ] `visual-project`
+  - [ ] `configuration`
+  - [ ] `reference-site-profile`
+  - [ ] `reconnaissance`
+  - [ ] `capture-plan`
+  - [ ] `capture-viewport-manifest`
+  - [ ] `page-capture-manifest`
+  - [ ] `capture-quality-report`
+  - [ ] `page-stabilization-report`
+  - [ ] `computed-style-evidence`
+  - [ ] `element-box-evidence`
+  - [ ] `element-evidence-index`
+  - [ ] `asset-inventory`
+  - [ ] `interaction-evidence`
+  - [ ] `page-topology-draft`
+  - [ ] `page-specification-draft`
+  - [ ] `component-specification-draft`
+  - [ ] `visual-blueprint-draft`
+  - [ ] `ai-inference-log`
+  - [ ] `originality-audit`
+  - [ ] `workflow-run`
+  - [ ] `readiness-report`
+  - [ ] `skill-definition`
+- [ ] Schema must validate:
+  - [ ] required fields
+  - [ ] nested objects
+  - [ ] enum values
+  - [ ] arrays and array item shape
+  - [ ] URI/path strings where appropriate
+  - [ ] numeric minimum/maximum
+  - [ ] schema version
+  - [ ] artifact kind
+- [ ] Change `VisualSchemaRegistry` to load schema files instead of metadata-only definitions.
+- [ ] Add schema fixture tests:
+  - [ ] valid fixture for each artifact kind
+  - [ ] missing required domain field
+  - [ ] invalid nested shape
+  - [ ] invalid enum
+  - [ ] stale schema version
+- [ ] Make readiness derive requirements from `capture-plan.json`.
+- [ ] For every configured page/viewport, readiness validates:
+  - [ ] viewport manifest exists
+  - [ ] screenshot exists
+  - [ ] DOM exists
+  - [ ] styles exist
+  - [ ] boxes exist
+  - [ ] assets exist
+  - [ ] normalized evidence exists
+  - [ ] quality report exists and passed
+  - [ ] capture correlation IDs match
+- [ ] Validate page-level manifest references.
+- [ ] Validate latest workflow run state.
+- [ ] Validate visual blueprint evidence references.
+- [ ] Validate originality audit restrictions.
+- [ ] Validate sensitive data redaction where possible.
+- [ ] Normalize severity:
+  - [ ] `blocking`
+  - [ ] `warning`
+  - [ ] `info`
+- [ ] Blocking findings include:
+  - [ ] capture failed
+  - [ ] quality failed
+  - [ ] missing screenshot
+  - [ ] missing DOM
+  - [ ] empty computed-style evidence
+  - [ ] no useful bounding boxes
+  - [ ] missing manifest reference
+  - [ ] invalid schema
+  - [ ] missing evidence reference from blueprint
+  - [ ] failed latest run
+  - [ ] missing provenance
+- [ ] Re-validation pass after recovery moves project back to `DraftReady`.
+
+Guardrails:
+
+- [ ] Do not treat Markdown reports as source of truth.
+- [ ] Do not hard-code `home/desktop-1440` as readiness input.
+- [ ] Do not pass readiness on file existence alone.
+
+Verification:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Schema|Readiness|Validation"
+```
+
+Exit criteria:
+
+- [ ] Each first-class JSON artifact validates against a real schema file.
+- [ ] Artifact missing a domain field is rejected.
+- [ ] Capture plan drives readiness requirements.
+- [ ] Quality failure blocks readiness.
+- [ ] Missing evidence reference blocks readiness.
+- [ ] Recovery validation can move `ValidationFailed` back to `DraftReady`.
+
+## Phase H6 - Real Interaction Capture And Safe Action Guard
+
+Goal: capture before/after interaction evidence by executing safe browser actions in the same rendered page session.
+
+Current files:
+
+- `Interactions/InteractionCaptureService.cs`
+- `Interactions/InteractionContracts.cs`
+- `Browser/ReferenceBrowserContracts.cs`
+- `tests/.../InteractionCaptureTests.cs`
+
+Tasks:
+
+- [ ] Add interaction methods to `IReferenceBrowserSession`.
+- [ ] Support safe actions:
+  - [ ] click selector
+  - [ ] hover selector
+  - [ ] focus selector
+  - [ ] scroll to selector
+  - [ ] wait
+  - [ ] optional safe key press
+- [ ] Capture before state:
+  - [ ] screenshot
+  - [ ] DOM
+  - [ ] computed styles
+  - [ ] boxes
+  - [ ] assets if relevant
+- [ ] Execute action.
+- [ ] Wait settled according to policy.
+- [ ] Capture after state.
+- [ ] Compute actual differences:
+  - [ ] screenshot hash difference
+  - [ ] DOM diff summary
+  - [ ] style diff summary
+  - [ ] changed element evidence IDs
+- [ ] Set `DomChanged` only when DOM really changed.
+- [ ] Set `StyleChanged` only when style evidence really changed.
+- [ ] Write:
+  - [ ] `before.png`
+  - [ ] `after.png`
+  - [ ] `before.dom.html`
+  - [ ] `after.dom.html`
+  - [ ] `before.styles.json`
+  - [ ] `after.styles.json`
+  - [ ] `interaction-evidence.json`
+- [ ] Enforce safe-action guard:
+  - [ ] reject form submit
+  - [ ] reject checkout
+  - [ ] reject payment
+  - [ ] reject login
+  - [ ] reject account mutation
+  - [ ] reject delete/purchase actions
+  - [ ] reject navigation outside allowed domain during interaction
+  - [ ] redact action logs
+- [ ] Add tests:
+  - [ ] mobile menu click changes DOM/style/screenshot
+  - [ ] accordion click changes DOM/style/screenshot
+  - [ ] product card hover changes style/screenshot
+  - [ ] missing selector warning/blocking behavior
+  - [ ] unsafe selector refusal
+  - [ ] external navigation refusal
+
+Guardrails:
+
+- [ ] Do not fake after state by appending comments.
+- [ ] Do not reuse before screenshot as after screenshot.
+- [ ] Do not execute forms, checkout, login, account, purchase, or payment actions.
+
+Verification:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Interaction"
+```
+
+Exit criteria:
+
+- [ ] Before/after screenshots are distinct for fixture hover/click actions.
+- [ ] DOM/style diff is computed from real browser state.
+- [ ] Unsafe action is refused before execution.
+- [ ] Interaction evidence includes provenance and validates schema.
+
+## Phase H7 - Local HTTP Fixture And Real Playwright E2E
+
+Goal: prove the hardened runtime with Chromium against a deterministic local HTTP site.
+
+Current files:
+
+- `tests/.../Fixtures/static-storefront.html`
+- `tests/.../*.cs`
+- potential new script `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1`
+
+Tasks:
+
+- [ ] Add local HTTP fixture runner instead of relying on `file://` for browser integration.
+- [ ] Fixture must be deterministic and offline.
+- [ ] Fixture should include:
+  - [ ] sticky header
+  - [ ] hero
+  - [ ] product grid
+  - [ ] product card hover state
+  - [ ] mobile menu
+  - [ ] accordion
+  - [ ] lazy-loaded section
+  - [ ] cookie banner/noise selector
+  - [ ] responsive column changes
+  - [ ] CSS background image
+  - [ ] inline SVG
+  - [ ] fake video/poster metadata
+  - [ ] fake brand asset for originality audit
+- [ ] Add real Playwright local integration tests:
+  - [ ] Chromium launches
+  - [ ] desktop screenshot has real dimensions
+  - [ ] mobile screenshot has real dimensions
+  - [ ] sticky header style is captured
+  - [ ] product card bounding box exists
+  - [ ] mobile grid differs from desktop grid
+  - [ ] lazy section appears after stabilization
+  - [ ] cookie banner is hidden when policy allows
+  - [ ] hover before/after differs
+  - [ ] accordion click before/after differs
+  - [ ] stitched fallback creates real image
+  - [ ] full workflow produces readiness pass
+- [ ] Keep fast unit tests separate from browser integration tests.
+- [ ] Add category/filter names:
+  - [ ] `Unit`
+  - [ ] `Schema`
+  - [ ] `Playwright`
+  - [ ] `EndToEnd`
+- [ ] Add browser installation docs for .NET Playwright.
+
+Guardrails:
+
+- [ ] Browser E2E must not depend on internet.
+- [ ] Browser E2E must stop local fixture server in `finally`.
+- [ ] Do not use source/reference external sites in CI.
+
+Verification:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Playwright|EndToEnd"
+```
+
+Exit criteria:
+
+- [ ] Browser integration tests use real Chromium.
+- [ ] Test fixture proves responsive, lazy, noise, hover, click, asset, and stitched behavior.
+- [ ] Full vertical slice works without internet.
+
+## Phase H8 - CLI Semantics, Force Behavior, And Inspect Reports
+
+Goal: make CLI behavior predictable for developers and AI agents.
+
+Current files:
+
+- `Cli/CliHost.cs`
+- `Cli/CommandOptions.cs`
+- `Application/VisualProjectService.cs`
+- `Application/VisualProjectWorkflowService.cs`
+- `README.md`
+
+Tasks:
+
+- [ ] Define final command surface:
+  - [ ] `init`
+  - [ ] `discover`
+  - [ ] `capture`
+  - [ ] `analyze`
+  - [ ] `validate`
+  - [ ] `inspect`
+  - [ ] `run`
+  - [ ] `resume` or `run --resume`
+- [ ] Add `--run-id`.
+- [ ] Add `--force-step`.
+- [ ] Clarify `--force`:
+  - [ ] deletes old project root safely before init
+  - [ ] only under approved roots
+  - [ ] removes old capture/analysis/run artifacts
+  - [ ] does not touch generated storefront roots
+- [ ] Add tests for safe force cleanup.
+- [ ] Add tests for unsafe force root rejection.
+- [ ] Align report names:
+  - [ ] `readiness-report.json`
+  - [ ] `readiness-report.md`
+  - [ ] `originality-audit.json`
+  - [ ] `originality-audit.md`
+- [ ] Update inspect output:
+  - [ ] project status
+  - [ ] latest run ID
+  - [ ] run status
+  - [ ] step table
+  - [ ] retry count
+  - [ ] latest failure
+  - [ ] readiness result
+  - [ ] blueprint path
+  - [ ] artifact root
+- [ ] Ensure error messages follow problem/cause/fix style.
+
+Guardrails:
+
+- [ ] Do not make `--force` ambiguous.
+- [ ] Do not inspect non-existent report filenames.
+- [ ] Do not require reading temporary artifacts to understand run status.
+
+Verification:
+
+```powershell
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Cli|Lifecycle|Security"
+```
+
+Exit criteria:
+
+- [ ] CLI help is copy-paste usable.
+- [ ] `inspect` shows real run/readiness state.
+- [ ] `--force`, `--resume`, and `--force-step` have clear tested semantics.
+
+## Phase H9 - Full Phase 3A Hardening Gate
+
+Goal: provide one local release gate proving Phase 3A hardening without GitHub Actions or internet.
+
+New file:
+
+```text
+scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1
+```
+
+Script tasks:
+
+- [ ] Set `$ErrorActionPreference = "Stop"`.
+- [ ] Build tool project.
+- [ ] Run fast tests.
+- [ ] Ensure Playwright browser installed or print actionable setup message.
+- [ ] Start local HTTP fixture server.
+- [ ] Run full reverse-engineering workflow with `--no-ai`.
+- [ ] Force stitched fallback proof.
+- [ ] Run interaction proof.
+- [ ] Validate artifacts.
+- [ ] Validate run log.
+- [ ] Validate readiness pass.
+- [ ] Run boundary scan.
+- [ ] Run prototype-marker scan.
+- [ ] Run StorefrontBuilder compatibility smoke:
+  - [ ] `build-storefront.ps1 -Mode plan-only`
+  - [ ] existing StorefrontBuilder create hardening test
+- [ ] Stop fixture server in `finally`.
+- [ ] Write a short gate report under `obj/storefront-reverse-engineering/reports`.
+
+Suggested commands inside gate:
+
+```powershell
+dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Url https://example.test -Name Demo -StoreKey sample -Mode plan-only
+```
+
+Guardrails:
+
+- [ ] Gate must not require external website.
+- [ ] Gate must not leave long-running fixture server processes.
+- [ ] Gate must not mutate generated storefronts.
+- [ ] Gate must not depend on GitHub Actions.
+
+Exit criteria:
+
+- [ ] One script proves build, tests, browser E2E, artifacts, readiness, boundary, and compatibility.
+- [ ] Failure output points to report path and exact failing step.
+
+## Phase H10 - Documentation And Phase 3B Handoff
+
+Goal: document the hardened runtime honestly and prevent Phase 3B from patching Phase 3A runtime gaps.
+
+Docs to update:
+
+- [ ] `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md`
+- [ ] `docs/architecture/11-storefront-builder.md`
+- [ ] `docs/visual-reverse-engineering-skill/README.md`
+- [ ] `docs/visual-reverse-engineering-skill/reference.md`
+- [ ] `docs/agents/storefront-builder.md`
+- [ ] `08-StorefrontReverseEngineering-Engine-Foundation.todo.md`
+- [ ] this hardening plan with implementation evidence
+
+Documentation content:
+
+- [ ] Explain difference between StorefrontBuilder and StorefrontReverseEngineering.
+- [ ] Explain artifact roots.
+- [ ] Explain CLI commands and examples.
+- [ ] Explain browser installation.
+- [ ] Explain fixture-based testing.
+- [ ] Explain workflow runs and resume.
+- [ ] Explain readiness report meaning.
+- [ ] Explain originality/provenance limitations.
+- [ ] Explain that Phase 3A does not perform:
+  - [ ] full design token extraction
+  - [ ] ecommerce mapping
+  - [ ] component generation
+  - [ ] StorefrontBuilder blueprint consumption
+- [ ] Add Phase 3B handoff:
+  - [ ] design-token extraction
+  - [ ] semantic token normalization
+  - [ ] section segmentation
+  - [ ] responsive comparison
+  - [ ] component detection
+  - [ ] ecommerce region mapping
+  - [ ] confidence scoring
+  - [ ] human review
+  - [ ] StorefrontBuilder consumption of blueprint
+
+Guardrails:
+
+- [ ] Do not claim Phase 3A is a visual generator.
+- [ ] Do not claim AI analysis is complete.
+- [ ] Do not claim assets are reusable by default.
+
+Exit criteria:
+
+- [ ] Human and AI agent can run the hardening gate from docs.
+- [ ] Known limitations are explicit.
+- [ ] Phase 3B starts from stable runtime evidence, not from patched prototype behavior.
+
+## Required Test Matrix
+
+| Area | Required proof |
+| --- | --- |
+| Boundary | No production references to ReverseEngineering tooling. |
+| Browser | Real Chromium launch, navigation, viewport, screenshot dimensions. |
+| Stabilization | DOM/font/image waits, warm scroll, noise hide. |
+| Capture | Desktop/tablet/mobile raw artifacts from same session state. |
+| Stitch | Segment screenshots and real stitched image output. |
+| Evidence | Real `getComputedStyle`, real `getBoundingClientRect`, rendered asset metadata. |
+| Consistency | Capture correlation ID links raw and normalized artifacts. |
+| Workflow | Actual CLI run uses `SequentialWorkflowRunner`, retry, resume, force-step. |
+| Schema | Per-artifact schemas reject invalid nested fields. |
+| Readiness | Quality-aware, capture-plan-driven readiness blocks bad evidence. |
+| Interaction | Real before/after browser actions and diffs. |
+| Security | Secret/cookie/header redaction and unsafe action refusal. |
+| Compatibility | Existing StorefrontBuilder plan-only/create-hardening smoke. |
+| DX | Help, inspect, reports, and failure messages are actionable. |
+
+## Full Definition Of Done
+
+Architecture:
+
+- [ ] ReverseEngineering remains development-time tooling only.
+- [ ] No production runtime or backend project references it.
+- [ ] Artifact writes stay under approved reverse-engineering roots.
+- [ ] StorefrontBuilder generation behavior is unchanged.
+- [ ] StorefrontBuilder does not consume blueprint until a later approved phase.
+
+Browser runtime:
+
+- [ ] Real Chromium is used in integration tests.
+- [ ] Browser session is stateful for a viewport workflow.
+- [ ] Stabilization runs against the actual page.
+- [ ] Styles, boxes, and assets come from the rendered page.
+- [ ] Evidence collection is bounded by policy.
+
+Capture:
+
+- [ ] Native screenshot has a quality gate.
+- [ ] Failed native capture triggers real stitched fallback.
+- [ ] Stitched fallback creates segment images and final stitched image.
+- [ ] Capture method metadata reflects actual output.
+
+Evidence:
+
+- [ ] One capture snapshot per viewport.
+- [ ] Raw and normalized artifacts share correlation metadata.
+- [ ] Page capture manifest aggregates all configured viewports.
+- [ ] Manifest references are validated.
+
+Workflow:
+
+- [ ] CLI `run` uses `SequentialWorkflowRunner`.
+- [ ] Each run writes `runs/{runId}.json`.
+- [ ] Retry, resume, cancellation, and force-step are tested in actual workflow.
+- [ ] Inspect shows latest run and step statuses.
+
+Validation:
+
+- [ ] Every first-class artifact has a schema file.
+- [ ] Schema validation checks domain fields, not metadata only.
+- [ ] Readiness is generated from capture plan.
+- [ ] Readiness validates quality, references, workflow run, blueprint, and originality.
+- [ ] Blocking findings return non-zero exit code.
+
+Interaction:
+
+- [ ] Safe browser actions execute for real.
+- [ ] Unsafe actions are refused.
+- [ ] Before/after evidence is real.
+- [ ] DOM/style/screenshot differences are computed, not faked.
+
+Testing:
+
+- [ ] Unit tests pass.
+- [ ] Schema tests pass.
+- [ ] Real Playwright fixture tests pass.
+- [ ] Stable capture and stitch tests pass.
+- [ ] Interaction tests pass.
+- [ ] Readiness tests pass.
+- [ ] Boundary tests pass.
+- [ ] StorefrontBuilder compatibility smoke passes.
+- [ ] Full hardening gate passes locally without internet.
+
+## Implementation Order
+
+1. H0 - hardening preparation and guardrails.
+2. H1 - real Playwright browser session and evidence extraction.
+3. H2 - real stabilization and stitched fallback.
+4. H3 - single-snapshot consistency.
+5. H4 - CLI workflow runner integration.
+6. H5 - per-artifact schemas and readiness gate.
+7. H6 - real interaction capture and safe action guard.
+8. H7 - local HTTP fixture and real Playwright E2E.
+9. H8 - CLI semantics, force behavior, and inspect reports.
+10. H9 - full Phase 3A hardening gate.
+11. H10 - documentation and Phase 3B handoff.
+
+## Autoplan Decision Notes
+
+CEO lens:
+
+- The hardening is required before claiming Phase 3A is complete because current tests pass on prototype behavior.
+- Do not broaden into Phase 3B. The goal is trustworthy evidence, not smarter interpretation.
+- Preserve current StorefrontBuilder generation workflow until blueprint consumption is explicitly planned.
+
+Engineering lens:
+
+- The first architectural correction is stateful browser session ownership. It unlocks real stabilization, real interactions, and single-snapshot consistency.
+- The second correction is schema/readiness depth. Metadata-only validation can hide broken artifacts.
+- The third correction is actual workflow runner usage in CLI. A runner tested in isolation is not release evidence.
+
+DX lens:
+
+- The hardening gate must be one command and must not require internet.
+- Errors must include problem, cause, and fix.
+- `inspect` must be useful enough for a developer or AI agent to resume work without opening every artifact by hand.
+
+Risk register:
+
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| Playwright hardening becomes flaky | Blocks closure | Use deterministic local HTTP fixture and split fast/browser tests. |
+| Stitching adds OS-specific dependency | Fails on CI/dev machines | Use cross-platform .NET image package only. |
+| Workflow rewrite breaks CLI | Tool becomes unusable | Introduce workflow steps behind existing command names with tests. |
+| Schema work becomes too broad | Delays Phase 3A | Limit to first-class artifacts already produced by Phase 3A. |
+| Readiness overclaims quality | Bad evidence reaches Phase 3B | Blocking findings for failed quality, missing evidence, and invalid references. |
+| Interaction accidentally mutates reference site | Security/product risk | Safe-action allow/deny guard and local fixture-only automation tests. |

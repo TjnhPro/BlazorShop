@@ -18,6 +18,7 @@ The phase plans are retained as implementation history and checklist evidence:
 - [02-StorefrontBuilder-Visual-Generation.todo.md](02-StorefrontBuilder-Visual-Generation.todo.md)
 - [03-StorefrontBuilder-QA-Regeneration.todo.md](03-StorefrontBuilder-QA-Regeneration.todo.md)
 - [08-StorefrontReverseEngineering-Engine-Foundation.todo.md](08-StorefrontReverseEngineering-Engine-Foundation.todo.md)
+- [09-StorefrontReverseEngineering-Phase3A-Hardening.todo.md](09-StorefrontReverseEngineering-Phase3A-Hardening.todo.md)
 - [StorefrontBuilder Architecture Note](StorefrontBuilder-architecture-note.md)
 
 The architecture docs are the current source of truth when a historical plan conflicts with current code.
