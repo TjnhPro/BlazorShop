@@ -473,56 +473,64 @@ Schemas/sections.schema.json
 
 Section candidates MVP:
 
-- [ ] announcement bar
-- [ ] header
-- [ ] navigation
-- [ ] hero
-- [ ] promotional banner
-- [ ] category navigation
-- [ ] product grid
-- [ ] product carousel
-- [ ] featured product
-- [ ] product gallery
-- [ ] product information
-- [ ] purchase actions
-- [ ] trust/benefit strip
-- [ ] editorial/content block
-- [ ] newsletter
-- [ ] reviews/testimonials
-- [ ] FAQ/accordion
-- [ ] cross-sell/upsell region
-- [ ] footer
-- [ ] cookie/banner overlay
-- [ ] unknown section
+- [x] announcement bar
+- [x] header
+- [x] navigation
+- [x] hero
+- [x] promotional banner
+- [x] category navigation
+- [x] product grid
+- [x] product carousel
+- [x] featured product
+- [x] product gallery
+- [x] product information
+- [x] purchase actions
+- [x] trust/benefit strip
+- [x] editorial/content block
+- [x] newsletter
+- [x] reviews/testimonials
+- [x] FAQ/accordion
+- [x] cross-sell/upsell region
+- [x] footer
+- [x] cookie/banner overlay
+- [x] unknown section
 
 Implementation checklist:
 
-- [ ] Add `SectionSegmenter`.
-- [ ] Use DOM landmarks.
-- [ ] Use bounding-box gaps.
-- [ ] Use background changes.
-- [ ] Use container width changes.
-- [ ] Use heading boundaries.
-- [ ] Use repeated card groups.
-- [ ] Use grid/flex transitions.
-- [ ] Use sticky/fixed region signals.
-- [ ] Preserve top-to-bottom order.
-- [ ] Include bounding boxes and parent/child relationships.
-- [ ] Detect invalid overlapping peer sections.
-- [ ] Support merge/split ambiguity.
-- [ ] Support cross-viewport section identity placeholders for Phase 3B.6.
+- [x] Add `SectionSegmenter`.
+- [x] Use DOM landmarks.
+- [x] Use bounding-box gaps.
+- [x] Use background changes.
+- [x] Use container width changes.
+- [x] Use heading boundaries.
+- [x] Use repeated card groups.
+- [x] Use grid/flex transitions.
+- [x] Use sticky/fixed region signals.
+- [x] Preserve top-to-bottom order.
+- [x] Include bounding boxes and parent/child relationships.
+- [x] Detect invalid overlapping peer sections.
+- [x] Support merge/split ambiguity.
+- [x] Support cross-viewport section identity placeholders for Phase 3B.6.
 
 Tests:
 
-- [ ] Sections are ordered by page flow.
-- [ ] Peer sections do not overlap illegally.
-- [ ] Repeated product card group becomes product grid section.
-- [ ] Unknown section is emitted for unsupported content.
-- [ ] Human review item is created for merge/split ambiguity.
+- [x] Sections are ordered by page flow.
+- [x] Peer sections do not overlap illegally.
+- [x] Repeated product card group becomes product grid section.
+- [x] Unknown section is emitted for unsupported content.
+- [x] Human review item is created for merge/split ambiguity.
 
 Done when:
 
-- [ ] Major visual regions are covered by named or unknown sections.
+- [x] Major visual regions are covered by named or unknown sections.
+
+Implementation evidence:
+
+- Added `SectionSegmenter`, section draft contracts, and `Schemas/sections.schema.json`.
+- Added workflow step `segment-sections` after page archetype classification.
+- Segmenter emits ordered sections with bounding boxes, evidence IDs, reason codes, parent/child fields, and `crossViewportIdentityKey` placeholders for Phase 3B.6.
+- Segmenter classifies all MVP section labels, merges repeated product-card candidates into a product grid, detects invalid peer overlap, and reports merge/split ambiguity as warnings.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Sections|PageArchetype"` passed `10/10`.
 
 ## Phase 3B.6 - Responsive Behavior And Interaction Interpretation
 
@@ -1218,7 +1226,7 @@ Recommended implementation order:
 4. [x] Phase 3B.2 raw design tokens.
 5. [x] Phase 3B.3 semantic tokens.
 6. [x] Phase 3B.4 page archetype.
-7. [ ] Phase 3B.5 section segmentation.
+7. [x] Phase 3B.5 section segmentation.
 8. [ ] Phase 3B.6 responsive and interaction model.
 9. [ ] Phase 3B.7 visual component candidates.
 10. [ ] Phase 3B.8 ecommerce region classification.

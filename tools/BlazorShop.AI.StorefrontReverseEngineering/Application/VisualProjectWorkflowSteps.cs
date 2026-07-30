@@ -293,3 +293,27 @@ internal sealed class ClassifyPageArchetypesStep : IVisualProjectWorkflowStep
             : WorkflowStepResult.Success();
     }
 }
+
+internal sealed class SegmentSectionsStep : IVisualProjectWorkflowStep
+{
+    public string Name => "segment-sections";
+
+    public IReadOnlyList<string> InputArtifacts => ["analysis/evidence-snapshot.json", "analysis/pages/{pageId}/page-archetype.json"];
+
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/pages/{pageId}/sections.draft.json"];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var documents = await new SectionSegmenter(context.RepoRoot)
+            .SegmentAsync(context.ArtifactRoot, cancellationToken);
+        var warnings = documents
+            .SelectMany(document => document.Issues)
+            .Where(issue => issue.Severity == "warning")
+            .Select(issue => new WorkflowMessage(issue.Code, issue.Message))
+            .ToArray();
+
+        return documents.Any(document => document.Issues.Any(issue => issue.Severity == "blocking"))
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-SECTIONS-BLOCKED", "Section segmentation returned blocking findings.")
+            : WorkflowStepResult.Success(warnings);
+    }
+}

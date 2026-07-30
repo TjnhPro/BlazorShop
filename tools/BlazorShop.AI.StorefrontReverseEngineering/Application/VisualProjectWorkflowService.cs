@@ -282,6 +282,12 @@ public sealed class VisualProjectWorkflowService
         return await new PageArchetypeClassifier(repoRoot).ClassifyAsync(root, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<SectionsDraftDocument>> SegmentSectionsAsync(string projectRoot, CancellationToken cancellationToken)
+    {
+        var root = resolver.ResolveRoot(projectRoot);
+        return await new SectionSegmenter(repoRoot).SegmentAsync(root, cancellationToken);
+    }
+
     private async Task ValidateViewportEvidenceReadinessAsync(
         string root,
         FileSystemVisualArtifactStore store,
@@ -662,11 +668,12 @@ public sealed class VisualProjectWorkflowService
         steps.Add(new ExtractRawDesignTokensStep());
         steps.Add(new NormalizeSemanticTokensStep());
         steps.Add(new ClassifyPageArchetypesStep());
+        steps.Add(new SegmentSectionsStep());
         return steps;
     }
 
     private static bool IsPhase3BDownstreamStep(string stepName) =>
-        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes";
+        stepName is "aggregate-evidence" or "extract-raw-tokens" or "normalize-semantic-tokens" or "classify-page-archetypes" or "segment-sections";
 
     private static string WriteMarkdown(ReadinessReport report)
     {

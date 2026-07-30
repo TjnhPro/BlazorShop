@@ -1,0 +1,1 @@
+{"artifactKind":"sections","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","pageId","sections","issues"],"arrayPaths":["sections","issues"],"arrayLengthRules":[{"path":"sections","minimumLength":1}],"nonEmptyStringPaths":["projectId","pageId"]}
