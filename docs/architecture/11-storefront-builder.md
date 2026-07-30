@@ -38,6 +38,20 @@ obj/storefront-reverse-engineering/projects/{ProjectId}
 
 `BlazorShop.AI.StorefrontReverseEngineering` is validated by direct `dotnet build`, `dotnet test`, and `dotnet run --project` commands. It is not added to `BlazorShop.sln` by default, no production runtime project may reference it, and StorefrontBuilder generation does not consume its `visual-blueprint.draft.json` output until a later approved phase. The tool produces evidence and neutral draft artifacts only; it does not generate Razor, CSS, generated storefront projects, or runtime API changes.
 
+ReverseEngineering handoff artifacts are prepared for later StorefrontBuilder consumption, but that consumption is not active in Phase 3A. Future Phase 3B/3C work may read `analysis/visual-blueprint.draft.json` fields such as `pageSpecificationIds`, `componentSpecificationIds`, `evidenceIds`, `generationRestrictions`, and `confidence`. Current StorefrontBuilder generation still uses its existing StorefrontBuilder artifacts and scripts.
+
+Compatibility map for future handoff:
+
+| Current StorefrontBuilder artifact | ReverseEngineering artifact prepared in Phase 3A |
+| --- | --- |
+| `capture-manifest.json` | `captures/{pageId}/capture-manifest.json` and viewport manifests. |
+| `asset-manifest.yaml` | `asset-inventory.normalized.json` plus `analysis/originality-audit.json`. |
+| `page-topology.yaml` | `analysis/page-topology.draft.json`. |
+| `design-tokens.yaml` | Bounded computed-style evidence; token extraction remains deferred. |
+| `ai-inference-log.json` | Optional `analysis/ai-inference-log.json`; rule-based fallback requires none. |
+
+The existing Node Playwright capture script remains the StorefrontBuilder capture baseline and is also wrapped by `NodePlaywrightReferenceBrowser` for initial parity. Do not retire or replace that script until a later parity phase proves the .NET browser path can cover the same evidence.
+
 ## Boundary Model
 
 StorefrontBuilder follows the existing Storefront API and BFF model:

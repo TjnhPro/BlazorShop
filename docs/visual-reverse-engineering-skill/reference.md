@@ -12,6 +12,12 @@
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/` | Static validation scripts and guardrails. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/` | Browser visual QA and commerce regression runners. |
 | `tools/BlazorShop.AI.StorefrontReverseEngineering/Skills/reverse-engineering-skills.json` | Phase 3A reverse-engineering skill catalog manifest. It documents deterministic, hybrid, and review-required steps; it is not an executable skill runtime. |
+
+## ReverseEngineering Handoff
+
+`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. The important handoff artifact for later StorefrontBuilder phases is `analysis/visual-blueprint.draft.json`; Phase 3A defines `pageSpecificationIds`, `componentSpecificationIds`, `evidenceIds`, `generationRestrictions`, and `confidence` as the fields StorefrontBuilder may consume later.
+
+StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
 | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |

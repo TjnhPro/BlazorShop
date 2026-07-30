@@ -863,25 +863,25 @@ Goal: prepare the handoff from ReverseEngineering evidence to StorefrontBuilder 
 
 Tasks:
 
-- [ ] Define `visual-blueprint.draft.json` fields StorefrontBuilder may consume later.
-- [ ] Add a compatibility note mapping current StorefrontBuilder artifacts to ReverseEngineering artifacts:
-  - [ ] current `capture-manifest.json`
-  - [ ] current `asset-manifest.yaml`
-  - [ ] current `page-topology.yaml`
-  - [ ] current `design-tokens.yaml`
-  - [ ] current `ai-inference-log.json`
-- [ ] Add explicit non-consumption warning: StorefrontBuilder generation does not yet use new ReverseEngineering artifacts until Phase 3B/3C.
-- [ ] Add migration path for current Node capture script:
-  - [ ] keep script as fallback/reference
-  - [ ] optionally wrap through browser adapter
-  - [ ] later retire only after parity tests
-- [ ] Add docs for how generated storefront phases will consume blueprint later.
+- [x] Define `visual-blueprint.draft.json` fields StorefrontBuilder may consume later.
+- [x] Add a compatibility note mapping current StorefrontBuilder artifacts to ReverseEngineering artifacts:
+  - [x] current `capture-manifest.json`
+  - [x] current `asset-manifest.yaml`
+  - [x] current `page-topology.yaml`
+  - [x] current `design-tokens.yaml`
+  - [x] current `ai-inference-log.json`
+- [x] Add explicit non-consumption warning: StorefrontBuilder generation does not yet use new ReverseEngineering artifacts until Phase 3B/3C.
+- [x] Add migration path for current Node capture script:
+  - [x] keep script as fallback/reference
+  - [x] optionally wrap through browser adapter
+  - [x] later retire only after parity tests
+- [x] Add docs for how generated storefront phases will consume blueprint later.
 
 Guardrails:
 
-- [ ] Do not break existing `build-storefront.ps1`.
-- [ ] Do not break existing `regenerate-storefront.ps1`.
-- [ ] Do not change generated storefront static validation gate unless needed for documentation only.
+- [x] Do not break existing `build-storefront.ps1`.
+- [x] Do not break existing `regenerate-storefront.ps1`.
+- [x] Do not change generated storefront static validation gate unless needed for documentation only.
 
 Verification:
 
@@ -892,9 +892,9 @@ Verification:
 
 Exit criteria:
 
-- [ ] Existing StorefrontBuilder command behavior remains intact.
-- [ ] Future blueprint consumption is documented but not activated.
-- [ ] No generation behavior changes are hidden inside Phase 3A.
+- [x] Existing StorefrontBuilder command behavior remains intact.
+- [x] Future blueprint consumption is documented but not activated.
+- [x] No generation behavior changes are hidden inside Phase 3A.
 
 ## Phase 15 - Documentation And QA Closure
 

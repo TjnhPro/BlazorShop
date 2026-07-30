@@ -96,6 +96,8 @@ Manual edits to generated/managed files are not overwritten automatically. They 
 
 Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder `generatorVersion` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Validation fails if those artifact versions drift.
 
+ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`, but generated storefront commands do not consume that blueprint yet. Treat it as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
+
 ## Validate
 
 Run the static gate:
