@@ -59,3 +59,11 @@ Status: in progress
 - PDP optional review and related-product slots were added to `starter-generation.contract.yaml` so optional page contracts do not reference missing slots.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "StorefrontPattern" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `15/15`.
+
+## Phase 3D.4 Evidence
+
+- `PageCompositionSlotValidator` validates reviewed page compositions against exact page contracts, reviewed presentation mappings, and the Presentation component catalog.
+- Slot contract blockers now enter `reports/generation-readiness.json`, which is packaged into handoff readiness inputs.
+- Required page evidence, required slots, protected targets, repeatable slots, and protected behavior ownership use distinct blocker codes.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `22/22`.

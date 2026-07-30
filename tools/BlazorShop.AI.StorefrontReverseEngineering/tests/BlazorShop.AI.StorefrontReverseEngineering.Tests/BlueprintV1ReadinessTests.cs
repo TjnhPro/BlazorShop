@@ -249,6 +249,96 @@ public sealed class BlueprintV1ReadinessTests
         Assert.Contains(result.Readiness.Findings, finding => finding.Code == "protected-path-target");
     }
 
+    [Fact]
+    public async Task PageCompositions_PdpMissingPurchaseSlotBlocksReadiness()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Missing PDP Purchase");
+        await CloneHomePageAsync(projectRoot, "product", "https://example.test/product/missing-purchase", "product-detail", "product detail media gallery");
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.Contains(result.Readiness.Findings, finding => finding.Code == "missing-required-slot" && finding.Message.Contains("product.purchase", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task PageCompositions_PdpPurchaseWithoutEvidenceBlocksAsMissingSectionEvidence()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint PDP Purchase Evidence");
+        await CloneHomePageAsync(projectRoot, "product", "https://example.test/product/no-purchase-evidence", "product-detail", "product detail media gallery");
+        await MutateSectionsAsync(projectRoot, "product", sections =>
+        {
+            var purchase = sections[0]!.DeepClone();
+            purchase["sectionId"] = "product-purchase-no-evidence";
+            purchase["sectionType"] = "product purchase";
+            purchase["evidenceIds"] = new JsonArray();
+            sections.Add(purchase);
+        });
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.Contains(result.Readiness.Findings, finding => finding.Code == "missing-section-evidence" && finding.Message.Contains("product-purchase-no-evidence", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task PageCompositions_ProductListingAllowsRepeatedProductCards()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Listing Repeatable Slots");
+        await CloneHomePageAsync(projectRoot, "category", "https://example.test/category/repeatable", "product-listing", null);
+        await MutateSectionsAsync(projectRoot, "category", sections =>
+        {
+            var first = sections[0]!.DeepClone();
+            first["sectionId"] = "category-card-1";
+            first["sectionType"] = "product card";
+            var second = first.DeepClone();
+            second["sectionId"] = "category-card-2";
+            sections.Add(first);
+            sections.Add(second);
+        });
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        Assert.DoesNotContain(result.Readiness.Findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("catalog.product-card", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task PageCompositions_CartShellCannotOwnCheckoutBehavior()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Cart Behavior Ownership");
+        await CloneHomePageAsync(projectRoot, "cart", "https://example.test/cart", "cart-shell", "cart line items");
+        await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        await MutateFirstCompositionNodeAsync(projectRoot, "cart", node => node["allowedOperations"] = new JsonArray("checkout.place-order"));
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "slot-behavior-ownership-conflict");
+    }
+
+    [Fact]
+    public async Task PageCompositions_CheckoutShellCannotOwnPaymentProviderBehavior()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Checkout Behavior Ownership");
+        await CloneHomePageAsync(projectRoot, "checkout", "https://example.test/checkout", "checkout-shell", "checkout form");
+        await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        await MutateFirstCompositionNodeAsync(projectRoot, "checkout", node => node["allowedOperations"] = new JsonArray("payment.capture"));
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "slot-behavior-ownership-conflict");
+    }
+
+    [Fact]
+    public async Task PageCompositions_AccountShellCannotOwnAuthenticationBehavior()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Account Behavior Ownership");
+        await CloneHomePageAsync(projectRoot, "account", "https://example.test/account", "account-auth-shell", "account shell");
+        await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        await MutateFirstCompositionNodeAsync(projectRoot, "account", node => node["allowedOperations"] = new JsonArray("auth.token"));
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "slot-behavior-ownership-conflict");
+    }
+
     private static async Task<string> CreateReadyProjectAsync(string name)
     {
         var repoRoot = GetRepoRoot();
@@ -325,6 +415,18 @@ public sealed class BlueprintV1ReadinessTests
             ?? throw new InvalidOperationException("Artifact is not a JSON object: " + relativePath);
         mutate(json);
         await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static async Task MutateFirstCompositionNodeAsync(string projectRoot, string pageId, Action<JsonObject> mutate)
+    {
+        await MutateJsonAsync(projectRoot, "analysis/resolved/page-compositions.reviewed.json", json =>
+        {
+            var compositions = json["compositions"]?.AsArray() ?? throw new InvalidOperationException("Compositions artifact has no compositions array.");
+            var composition = compositions.OfType<JsonObject>().First(item => item["pageId"]?.GetValue<string>() == pageId);
+            var first = composition["sectionTree"]?.AsArray().OfType<JsonObject>().FirstOrDefault()
+                ?? throw new InvalidOperationException("Composition has no section nodes.");
+            mutate(first);
+        });
     }
 
     private static GenerationReadinessReport InvokeReviewedBlueprintValidation(string projectRoot)

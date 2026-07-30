@@ -229,6 +229,8 @@ public sealed class BlueprintV1Assembler
             findings.Add(new GenerationReadinessFinding("site-composition-review", "warning", issue, PageCompositionsArtifactPath));
         }
 
+        findings.AddRange(new PageCompositionSlotValidator(repoRoot).Validate(root));
+
         if (validateReviewedBlueprint)
         {
             ValidateReviewedBlueprint(root, reviewResolution, findings);

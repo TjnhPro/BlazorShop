@@ -329,37 +329,37 @@ Goal: reviewed page composition must satisfy exact page contracts.
 
 Implementation checklist:
 
-- [ ] Add a page composition validator that reads:
-  - [ ] `analysis/storefront-pattern/page-contracts.json`
-  - [ ] `analysis/resolved/page-compositions.reviewed.json`
-  - [ ] `analysis/resolved/presentation-mappings.reviewed.json`
-  - [ ] `presentation-catalog/presentation-component-catalog.json`
-- [ ] For each page:
-  - [ ] assert every required slot exists.
-  - [ ] assert optional missing slots are allowed.
-  - [ ] assert repeatable slot count rules.
-  - [ ] assert unknown slot is blocking.
-  - [ ] assert extra visual-only section has explicit reviewed approval.
-  - [ ] assert target generated file path is allowed.
-  - [ ] assert target generated file path matches slot target path/rule.
-  - [ ] assert protected path target is blocking.
-  - [ ] assert behavior owner remains Presentation/Runtime when required.
-  - [ ] assert no generated visual section owns BFF/SEO/media/cart/checkout/account logic.
-- [ ] Add validator findings to generation readiness and handoff readiness.
-- [ ] Ensure missing required page evidence and missing required slot are separate blocker codes.
+- [x] Add a page composition validator that reads:
+  - [x] `analysis/storefront-pattern/page-contracts.json`
+  - [x] `analysis/resolved/page-compositions.reviewed.json`
+  - [x] `analysis/resolved/presentation-mappings.reviewed.json`
+  - [x] `presentation-catalog/presentation-component-catalog.json`
+- [x] For each page:
+  - [x] assert every required slot exists.
+  - [x] assert optional missing slots are allowed.
+  - [x] assert repeatable slot count rules.
+  - [x] assert unknown slot is blocking.
+  - [x] assert extra visual-only section has explicit reviewed approval.
+  - [x] assert target generated file path is allowed.
+  - [x] assert target generated file path matches slot target path/rule.
+  - [x] assert protected path target is blocking.
+  - [x] assert behavior owner remains Presentation/Runtime when required.
+  - [x] assert no generated visual section owns BFF/SEO/media/cart/checkout/account logic.
+- [x] Add validator findings to generation readiness and handoff readiness.
+- [x] Ensure missing required page evidence and missing required slot are separate blocker codes.
 
 Tests:
 
-- [ ] PDP composition missing `product.purchase` fails with `missing-required-slot`.
-- [ ] PDP composition missing evidence for `product.purchase` fails with `missing-section-evidence`.
-- [ ] Product listing with several product-card nodes passes repeatable validation.
-- [ ] Cart shell cannot own checkout placement behavior.
-- [ ] Checkout shell cannot own payment provider behavior.
-- [ ] Account shell cannot own authentication/token behavior.
+- [x] PDP composition missing `product.purchase` fails with `missing-required-slot`.
+- [x] PDP composition missing evidence for `product.purchase` fails with `missing-section-evidence`.
+- [x] Product listing with several product-card nodes passes repeatable validation.
+- [x] Cart shell cannot own checkout placement behavior.
+- [x] Checkout shell cannot own payment provider behavior.
+- [x] Account shell cannot own authentication/token behavior.
 
 Done when:
 
-- [ ] Reviewed page composition is contract-validated before handoff packaging.
+- [x] Reviewed page composition is contract-validated before handoff packaging.
 
 ## Phase 3D.5 - Self-Contained Visual Evidence Handoff
 
@@ -919,7 +919,7 @@ Done when:
 1. [x] `Phase 3D.1 apply typed review decisions`
 2. [x] `Phase 3D.2 enforce reviewed blueprint lifecycle`
 3. [x] `Phase 3D.3 add exact page slot contracts`
-4. [ ] `Phase 3D.4 enforce page composition slots`
+4. [x] `Phase 3D.4 enforce page composition slots`
 5. [ ] `Phase 3D.5 package screenshots and section crops`
 6. [ ] `Phase 3D.6 centralize handoff contract`
 7. [ ] `Phase 3D.7 harden handoff task contract`
@@ -1061,7 +1061,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D1 typed review artifact resolution.
 - [x] Implement D2 reviewed blueprint lifecycle.
 - [x] Implement D3 exact page slot contracts.
-- [ ] Implement D4 page composition slot enforcement.
+- [x] Implement D4 page composition slot enforcement.
 - [ ] Implement D5 self-contained visual evidence packaging.
 - [ ] Implement D6 canonical handoff contract.
 - [ ] Implement D7 handoff task contract.
