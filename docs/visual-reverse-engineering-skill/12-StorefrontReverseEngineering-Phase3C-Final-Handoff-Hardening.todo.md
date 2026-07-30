@@ -325,54 +325,54 @@ Goal: remove remaining single-page assumptions and model the reference as one st
 
 Implementation checklist:
 
-- [ ] Replace `plan.Pages.First()` assumptions with iteration over all capture-plan pages.
-- [ ] Replace hardcoded `captures/home/*` analysis input with page-aware paths.
-- [ ] Add `SiteBlueprint` or equivalent model:
-  - [ ] site ID.
-  - [ ] source URL set.
-  - [ ] store archetype summary.
-  - [ ] shared visual language.
-  - [ ] shared layout system.
-  - [ ] shared responsive rules.
-  - [ ] page collection.
-  - [ ] unresolved site-level issues.
-- [ ] Add `PageBlueprint` model:
-  - [ ] page ID.
-  - [ ] page archetype.
-  - [ ] source URL.
-  - [ ] capture artifact paths.
-  - [ ] viewport coverage.
-  - [ ] page-level ecommerce regions.
-  - [ ] page-level presentation mappings.
-  - [ ] page-level composition tree.
-  - [ ] target view slot.
-  - [ ] target generated file path.
-  - [ ] unsupported or blocked regions.
-- [ ] Aggregate shared tokens across all pages.
-- [ ] Preserve page-specific token overrides.
-- [ ] Detect inconsistent navigation/header/footer patterns across pages.
-- [ ] Detect page archetype drift when a URL's visual structure does not match its declared role.
-- [ ] Support a single fixture project containing home, category/listing, and product detail pages.
-- [ ] Keep unsupported fixture pages as explicit negative cases, not as separate happy-path projects.
+- [x] Replace `plan.Pages.First()` assumptions with iteration over all capture-plan pages.
+- [x] Replace hardcoded `captures/home/*` analysis input with page-aware paths.
+- [x] Add `SiteBlueprint` or equivalent model:
+  - [x] site ID.
+  - [x] source URL set.
+  - [x] store archetype summary.
+  - [x] shared visual language.
+  - [x] shared layout system.
+  - [x] shared responsive rules.
+  - [x] page collection.
+  - [x] unresolved site-level issues.
+- [x] Add `PageBlueprint` model:
+  - [x] page ID.
+  - [x] page archetype.
+  - [x] source URL.
+  - [x] capture artifact paths.
+  - [x] viewport coverage.
+  - [x] page-level ecommerce regions.
+  - [x] page-level presentation mappings.
+  - [x] page-level composition tree.
+  - [x] target view slot.
+  - [x] target generated file path.
+  - [x] unsupported or blocked regions.
+- [x] Aggregate shared tokens across all pages.
+- [x] Preserve page-specific token overrides.
+- [x] Detect inconsistent navigation/header/footer patterns across pages.
+- [x] Detect page archetype drift when a URL's visual structure does not match its declared role.
+- [x] Support a single fixture project containing home, category/listing, and product detail pages.
+- [x] Keep unsupported fixture pages as explicit negative cases, not as separate happy-path projects.
 
 Output artifacts:
 
-- [ ] `analysis/resolved/page-compositions.reviewed.json`
-- [ ] updated `analysis/visual-blueprint.v1.draft.json`
-- [ ] updated `analysis/visual-blueprint.v1.reviewed.json`
-- [ ] page-aware `reports/generation-readiness.json`
+- [x] `analysis/resolved/page-compositions.reviewed.json`
+- [x] updated `analysis/visual-blueprint.v1.draft.json`
+- [x] updated `analysis/visual-blueprint.v1.reviewed.json`
+- [x] page-aware `reports/generation-readiness.json`
 
 Tests:
 
-- [ ] One project with home, listing, and product pages produces one site-level blueprint.
-- [ ] Missing evidence for one required page creates a page-scoped blocker.
-- [ ] Shared header/footer tokens are deduplicated at site level.
-- [ ] Page-specific product detail composition remains page-scoped.
-- [ ] No artifact path is hardcoded to `captures/home`.
+- [x] One project with home, listing, and product pages produces one site-level blueprint.
+- [x] Missing evidence for one required page creates a page-scoped blocker.
+- [x] Shared header/footer tokens are deduplicated at site level.
+- [x] Page-specific product detail composition remains page-scoped.
+- [x] No artifact path is hardcoded to `captures/home`.
 
 Done when:
 
-- [ ] Phase 3C output describes a full storefront site, not only the first captured page.
+- [x] Phase 3C output describes a full storefront site, not only the first captured page.
 
 ## Phase 3C.4 - Strict Presentation Mapping Validation
 

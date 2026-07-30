@@ -119,11 +119,11 @@ internal sealed class CaptureViewportStep : IVisualProjectWorkflowStep
 
     public IReadOnlyList<string> OutputArtifacts =>
     [
-        $"captures/home/{viewportId}/manifest.json",
-        $"captures/home/{viewportId}/capture-quality-report.json",
-        $"captures/home/{viewportId}/element-evidence-index.json",
-        $"captures/home/{viewportId}/asset-inventory.normalized.json",
-        "captures/home/capture-manifest.json"
+        $"captures/{{pageId}}/{viewportId}/manifest.json",
+        $"captures/{{pageId}}/{viewportId}/capture-quality-report.json",
+        $"captures/{{pageId}}/{viewportId}/element-evidence-index.json",
+        $"captures/{{pageId}}/{viewportId}/asset-inventory.normalized.json",
+        "captures/{pageId}/capture-manifest.json"
     ];
 
     public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
@@ -136,7 +136,6 @@ internal sealed class CaptureViewportStep : IVisualProjectWorkflowStep
             return WorkflowStepResult.Skip("SRE-WORKFLOW-VIEWPORT-SKIP", $"Capture plan does not include viewport '{viewportId}'.");
         }
 
-        var page = plan.Pages.First();
         var currentProject = await context.ArtifactStore.ReadJsonAsync<VisualProject>(ArtifactPath.Create("project.json"), "visual-project", cancellationToken);
         if (currentProject.Status == VisualProjectStatus.Discovered)
         {
@@ -144,14 +143,18 @@ internal sealed class CaptureViewportStep : IVisualProjectWorkflowStep
             await context.ArtifactStore.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", currentProject, cancellationToken);
         }
 
-        var session = new BrowserPageSession(currentProject.ProjectId, page.PageId, page.Url);
-        var browser = context.BrowserFactory(page.Url);
-        var captured = await new VisualCaptureService(context.RepoRoot, browser)
-            .CaptureViewportAsync(context.ArtifactRoot, session, viewport, configuration.CapturePolicy, cancellationToken, context.RunId);
-        await new VisualEvidenceExtractor(context.RepoRoot)
-            .WriteViewportEvidenceAsync(context.ArtifactRoot, session, viewport.Id, captured, new EvidenceExtractionOptions(), cancellationToken);
+        var pages = plan.Pages.Take(configuration.CapturePolicy.MaximumPages).ToArray();
+        foreach (var page in pages)
+        {
+            var session = new BrowserPageSession(currentProject.ProjectId, page.PageId, page.Url);
+            var browser = context.BrowserFactory(page.Url);
+            var captured = await new VisualCaptureService(context.RepoRoot, browser)
+                .CaptureViewportAsync(context.ArtifactRoot, session, viewport, configuration.CapturePolicy, cancellationToken, context.RunId);
+            await new VisualEvidenceExtractor(context.RepoRoot)
+                .WriteViewportEvidenceAsync(context.ArtifactRoot, session, viewport.Id, captured, new EvidenceExtractionOptions(), cancellationToken);
+        }
 
-        if (plan.Viewports.All(candidate => File.Exists(Path.Combine(context.ArtifactRoot, "captures", page.PageId, candidate.Id, "manifest.json"))))
+        if (pages.All(page => plan.Viewports.All(candidate => File.Exists(Path.Combine(context.ArtifactRoot, "captures", page.PageId, candidate.Id, "manifest.json")))))
         {
             var capturedProject = VisualProjectStatusTransitions.MoveTo(currentProject, VisualProjectStatus.Captured);
             await context.ArtifactStore.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", capturedProject, cancellationToken);
@@ -166,7 +169,7 @@ internal sealed class AnalyzeDraftStep : IVisualProjectWorkflowStep
 {
     public string Name => "analyze-draft";
 
-    public IReadOnlyList<string> InputArtifacts => ["captures/home/capture-manifest.json"];
+    public IReadOnlyList<string> InputArtifacts => ["discovery/capture-plan.json", "captures/{pageId}/capture-manifest.json"];
 
     public IReadOnlyList<string> OutputArtifacts => ["analysis/page-topology.draft.json", "analysis/visual-blueprint.draft.json"];
 
@@ -474,7 +477,7 @@ internal sealed class AssembleBlueprintV1Step : IVisualProjectWorkflowStep
 
     public IReadOnlyList<string> InputArtifacts => ["analysis/confidence/confidence-report.json", "review/review-decisions.json"];
 
-    public IReadOnlyList<string> OutputArtifacts => ["analysis/visual-blueprint.v1.draft.json", "analysis/visual-blueprint.v1.reviewed.json", "reports/generation-readiness.json", "reports/generation-readiness.md"];
+    public IReadOnlyList<string> OutputArtifacts => ["analysis/resolved/page-compositions.reviewed.json", "analysis/visual-blueprint.v1.draft.json", "analysis/visual-blueprint.v1.reviewed.json", "reports/generation-readiness.json", "reports/generation-readiness.md"];
 
     public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
     {

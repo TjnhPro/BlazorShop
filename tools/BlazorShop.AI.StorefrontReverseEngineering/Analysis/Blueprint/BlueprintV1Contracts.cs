@@ -24,6 +24,46 @@ public sealed record VisualBlueprintV1(
     string ReviewState,
     IReadOnlyList<string> GenerationRestrictions);
 
+public sealed record ReviewedPageCompositionsDocument(
+    string SchemaVersion,
+    string ArtifactKind,
+    string ArtifactId,
+    DateTimeOffset CreatedUtc,
+    string ProjectId,
+    SiteBlueprint Site,
+    IReadOnlyList<PageBlueprint> Pages);
+
+public sealed record SiteBlueprint(
+    string SiteId,
+    IReadOnlyList<string> SourceUrls,
+    string StoreArchetypeSummary,
+    IReadOnlyDictionary<string, string> SharedVisualLanguage,
+    IReadOnlyList<string> SharedLayoutSystem,
+    IReadOnlyList<string> SharedResponsiveRules,
+    IReadOnlyList<string> PageIds,
+    IReadOnlyList<string> UnresolvedSiteLevelIssues);
+
+public sealed record PageBlueprint(
+    string PageId,
+    string Archetype,
+    string SourceUrl,
+    IReadOnlyList<string> CaptureArtifactPaths,
+    IReadOnlyList<string> ViewportCoverage,
+    IReadOnlyList<string> EcommerceRegions,
+    IReadOnlyList<string> PresentationMappings,
+    IReadOnlyList<PageCompositionNode> CompositionTree,
+    IReadOnlyDictionary<string, string> PageTokenOverrides,
+    string? TargetViewSlot,
+    string? TargetGeneratedFilePath,
+    IReadOnlyList<string> UnsupportedOrBlockedRegions);
+
+public sealed record PageCompositionNode(
+    string NodeId,
+    string Role,
+    string? PresentationMappingId,
+    IReadOnlyList<string> EvidenceIds,
+    IReadOnlyList<PageCompositionNode> Children);
+
 public sealed record GenerationReadinessReport(
     string SchemaVersion,
     string ArtifactKind,

@@ -44,18 +44,20 @@ public sealed class VisualProjectWorkflowService
         var capturing = VisualProjectStatusTransitions.MoveTo(project, VisualProjectStatus.Capturing);
         await store.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", capturing, cancellationToken);
 
-        var page = plan.Pages.First();
-        var browser = ReferenceBrowserFactory.Create(repoRoot, page.Url);
-        var captureService = new VisualCaptureService(repoRoot, browser);
         var extractor = new VisualEvidenceExtractor(repoRoot);
         var capturedCount = 0;
 
-        foreach (var viewport in plan.Viewports)
+        foreach (var page in plan.Pages.Take(configuration.CapturePolicy.MaximumPages))
         {
-            var session = new BrowserPageSession(project.ProjectId, page.PageId, page.Url);
-            var viewportResult = await captureService.CaptureViewportAsync(root, session, viewport, configuration.CapturePolicy, cancellationToken);
-            await extractor.WriteViewportEvidenceAsync(root, session, viewport.Id, viewportResult, new EvidenceExtractionOptions(), cancellationToken);
-            capturedCount++;
+            var browser = ReferenceBrowserFactory.Create(repoRoot, page.Url);
+            var captureService = new VisualCaptureService(repoRoot, browser);
+            foreach (var viewport in plan.Viewports)
+            {
+                var session = new BrowserPageSession(project.ProjectId, page.PageId, page.Url);
+                var viewportResult = await captureService.CaptureViewportAsync(root, session, viewport, configuration.CapturePolicy, cancellationToken);
+                await extractor.WriteViewportEvidenceAsync(root, session, viewport.Id, viewportResult, new EvidenceExtractionOptions(), cancellationToken);
+                capturedCount++;
+            }
         }
 
         var captured = VisualProjectStatusTransitions.MoveTo(capturing, VisualProjectStatus.Captured);
@@ -74,32 +76,56 @@ public sealed class VisualProjectWorkflowService
         var analyzing = VisualProjectStatusTransitions.MoveTo(project, VisualProjectStatus.Analyzing);
         await store.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", analyzing, cancellationToken);
 
-        var page = plan.Pages.First();
-        var viewport = plan.Viewports.First();
-        var elements = await store.ReadJsonAsync<ElementEvidenceIndex>(ArtifactPath.Create($"captures/{page.PageId}/{viewport.Id}/element-evidence-index.json"), "computed-style-evidence", cancellationToken);
-        var assets = await store.ReadJsonAsync<AssetInventoryEvidence>(ArtifactPath.Create($"captures/{page.PageId}/{viewport.Id}/asset-inventory.normalized.json"), "asset-inventory", cancellationToken);
-        var result = await new RuleBasedVisualAnalysisProvider()
-            .AnalyzeAsync(new AnalysisContext(project.ProjectId, page.PageId, elements, assets, AiEnabled: !noAi), cancellationToken);
-
-        await store.WriteJsonAsync(ArtifactPath.Create("analysis/page-topology.draft.json"), "page-topology-draft", result.PageTopology, cancellationToken);
-        await store.WriteJsonAsync(ArtifactPath.Create($"analysis/page-specifications/{page.PageId}.json"), "page-specification-draft", result.PageSpecification, cancellationToken);
-        foreach (var component in result.ComponentSpecifications)
+        var viewport = plan.Viewports.FirstOrDefault()
+            ?? throw new InvalidOperationException("Capture plan does not contain any viewports.");
+        var pageResults = new List<VisualAnalysisResult>();
+        foreach (var page in plan.Pages.Take(configuration.CapturePolicy.MaximumPages))
         {
-            await store.WriteJsonAsync(ArtifactPath.Create($"analysis/component-specifications/{component.CandidateId}.json"), "component-specification-draft", component, cancellationToken);
+            var elements = await store.ReadJsonAsync<ElementEvidenceIndex>(ArtifactPath.Create($"captures/{page.PageId}/{viewport.Id}/element-evidence-index.json"), "computed-style-evidence", cancellationToken);
+            var assets = await store.ReadJsonAsync<AssetInventoryEvidence>(ArtifactPath.Create($"captures/{page.PageId}/{viewport.Id}/asset-inventory.normalized.json"), "asset-inventory", cancellationToken);
+            var result = await new RuleBasedVisualAnalysisProvider()
+                .AnalyzeAsync(new AnalysisContext(project.ProjectId, page.PageId, elements, assets, AiEnabled: !noAi), cancellationToken);
+            pageResults.Add(result);
+
+            await store.WriteJsonAsync(ArtifactPath.Create($"analysis/page-specifications/{page.PageId}.json"), "page-specification-draft", result.PageSpecification, cancellationToken);
+            foreach (var component in result.ComponentSpecifications)
+            {
+                await store.WriteJsonAsync(ArtifactPath.Create($"analysis/component-specifications/{component.CandidateId}.json"), "component-specification-draft", component, cancellationToken);
+            }
+
+            if (result.AiInferenceLog is not null)
+            {
+                await store.WriteJsonAsync(ArtifactPath.Create($"analysis/ai-inference/{page.PageId}.json"), "ai-inference-log", result.AiInferenceLog, cancellationToken);
+            }
+
+            await new OriginalityAuditService(repoRoot)
+                .WriteAuditAsync(root, project.ProjectId, page.PageId, assets, elements, configuration.OriginalityPolicy, cancellationToken);
         }
 
-        await store.WriteJsonAsync(ArtifactPath.Create("analysis/visual-blueprint.draft.json"), "visual-blueprint-draft", result.VisualBlueprint, cancellationToken);
-        if (result.AiInferenceLog is not null)
+        if (pageResults.Count == 0)
         {
-            await store.WriteJsonAsync(ArtifactPath.Create("analysis/ai-inference-log.json"), "ai-inference-log", result.AiInferenceLog, cancellationToken);
+            throw new InvalidOperationException("Capture plan does not contain any pages to analyze.");
         }
 
-        await new OriginalityAuditService(repoRoot)
-            .WriteAuditAsync(root, project.ProjectId, page.PageId, assets, elements, configuration.OriginalityPolicy, cancellationToken);
+        var primary = pageResults[0];
+        var aggregateBlueprint = primary.VisualBlueprint with
+        {
+            PageId = "site",
+            PageSpecificationIds = pageResults.Select(result => result.PageSpecification.ArtifactId).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+            ComponentSpecificationIds = pageResults.SelectMany(result => result.ComponentSpecifications.Select(component => component.ArtifactId)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+            EvidenceIds = pageResults.SelectMany(result => result.VisualBlueprint.EvidenceIds).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+            Confidence = Math.Round(pageResults.Average(result => result.VisualBlueprint.Confidence), 3)
+        };
+        await store.WriteJsonAsync(ArtifactPath.Create("analysis/page-topology.draft.json"), "page-topology-draft", primary.PageTopology, cancellationToken);
+        await store.WriteJsonAsync(ArtifactPath.Create("analysis/visual-blueprint.draft.json"), "visual-blueprint-draft", aggregateBlueprint, cancellationToken);
+        if (primary.AiInferenceLog is not null)
+        {
+            await store.WriteJsonAsync(ArtifactPath.Create("analysis/ai-inference-log.json"), "ai-inference-log", primary.AiInferenceLog, cancellationToken);
+        }
 
         var draftReady = VisualProjectStatusTransitions.MoveTo(analyzing, VisualProjectStatus.DraftReady);
         await store.WriteJsonAsync(ArtifactPath.Create("project.json"), "visual-project", draftReady, cancellationToken);
-        return result.VisualBlueprint;
+        return aggregateBlueprint;
     }
 
     public async Task<ReadinessReport> ValidateAsync(string projectRoot, CancellationToken cancellationToken)
