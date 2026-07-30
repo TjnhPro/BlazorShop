@@ -67,7 +67,10 @@ public sealed class EndToEndCliTests
         Assert.Contains("Blocking findings: 0", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Warnings: 0", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("Latest blocking finding: (none)", inspectOut.ToString(), StringComparison.Ordinal);
-        Assert.Contains("Final handoff readiness: false", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Reviewed blueprint: missing", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Final handoff readiness: missing", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Latest final blocker: reviewed-blueprint-not-resolved", inspectOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Suggested fix: Complete review/review-decisions.json", inspectOut.ToString(), StringComparison.Ordinal);
         Assert.Contains("capture-viewport-desktop-1440", inspectOut.ToString(), StringComparison.Ordinal);
     }
 

@@ -4,6 +4,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Domain;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
 using BlazorShop.AI.StorefrontReverseEngineering.Validation;
 using BlazorShop.AI.StorefrontReverseEngineering.Workflows;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -244,7 +245,13 @@ public sealed class VisualProjectService
         var unsupported = InspectArtifact(projectRoot, "analysis/mapping/unsupported-patterns.json", "unsupported-patterns");
         var catalogValidation = InspectArtifact(projectRoot, "presentation-catalog/catalog-validation-report.json", "presentation-catalog-validation-report");
         var reviewQueue = InspectArtifact(projectRoot, "review/review-queue.json", "review-queue");
+        var reviewDecisions = InspectArtifact(projectRoot, "review/review-decisions.json", "review-decisions");
+        var reviewResolution = InspectArtifact(projectRoot, "analysis/resolved/review-resolution-manifest.json", "review-resolution-manifest");
+        var reviewedBlueprint = InspectArtifact(projectRoot, "analysis/visual-blueprint.v1.reviewed.json", "visual-blueprint-v1");
+        var pageSlotContracts = InspectArtifact(projectRoot, "analysis/storefront-pattern/page-contracts.json", "page-contracts");
         var generationReadiness = InspectArtifact(projectRoot, "reports/generation-readiness.json", "generation-readiness");
+        var handoffManifest = InspectArtifact(projectRoot, "analysis/agent-handoff/manifest.json", "agent-handoff-manifest");
+        var evidenceManifest = InspectArtifact(projectRoot, "analysis/agent-handoff/evidence-manifest.json", "agent-handoff-evidence-manifest");
         var handoffReadiness = InspectArtifact(projectRoot, "analysis/agent-handoff/handoff-readiness.json", "agent-handoff-readiness");
 
         var pageIds = evidence.Node?["pages"]?.AsArray()
@@ -275,6 +282,7 @@ public sealed class VisualProjectService
         var reviewQueueCount = reviewQueue.Node?["items"]?.AsArray().Count;
         var blockingReviewCount = reviewQueue.Node?["items"]?.AsArray()
             .Count(item => item?["blocking"]?.GetValue<bool>() == true);
+        var decisionTotals = BuildReviewDecisionTotals(reviewQueue.Node, reviewDecisions.Node);
 
         var generationPassed = generationReadiness.Node?["passed"]?.GetValue<bool>();
         var generationFindings = ReadGenerationFindings(generationReadiness.Node);
@@ -286,6 +294,17 @@ public sealed class VisualProjectService
         var latestHandoffBlockingFinding = handoffFindings
             .Where(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase))
             .LastOrDefault();
+        var latestFinalBlockingFinding = latestHandoffBlockingFinding ?? latestBlockingFinding;
+        var screenshotCount = evidenceManifest.Node?["pages"]?.AsArray()
+            .Sum(page => page?["screenshots"]?.AsArray().Count ?? 0) ?? 0;
+        var sectionCropCount = evidenceManifest.Node?["pages"]?.AsArray()
+            .Sum(page => page?["sections"]?.AsArray().Count ?? 0) ?? 0;
+        var missingEvidenceCount = generationFindings
+            .Concat(handoffFindings)
+            .Count(finding => finding.Code is "missing-page-evidence" or "missing-section-evidence" or "missing-section-screenshot" or "missing-screenshot" or "missing-agent-handoff-evidence");
+        var blockerFix = latestFinalBlockingFinding is null
+            ? "(none)"
+            : SuggestedPhase3DFix(latestFinalBlockingFinding);
 
         var problems = BuildPhase3BProblems(
             phase3AReadinessPassed,
@@ -308,14 +327,30 @@ public sealed class VisualProjectService
             unsupported,
             reviewQueue,
             reviewQueueCount,
+            decisionTotals,
+            reviewResolution,
+            reviewResolution.Node?["decisionBundleHash"]?.GetValue<string>(),
+            reviewedBlueprint,
+            pageSlotContracts,
             generationReadiness,
             generationPassed,
             latestBlockingFinding,
+            CountFindings(generationFindings, "missing-required-slot"),
+            CountFindings(generationFindings, "duplicate-required-slot", "duplicate-non-repeatable-slot"),
+            CountFindings(generationFindings, "unapproved-extra-section"),
+            handoffManifest,
+            evidenceManifest,
+            screenshotCount,
+            sectionCropCount,
+            missingEvidenceCount,
+            FileHash(projectRoot, "analysis/agent-handoff/manifest.json"),
             handoffReadiness,
             handoffPassed,
             handoffFindings.Count(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase)),
             handoffFindings.Count(finding => string.Equals(finding.Severity, "warning", StringComparison.OrdinalIgnoreCase)),
             latestHandoffBlockingFinding,
+            latestFinalBlockingFinding,
+            blockerFix,
             problems);
     }
 
@@ -364,6 +399,82 @@ public sealed class VisualProjectService
                 finding?["message"]?.GetValue<string>() ?? "",
                 finding?["artifactPath"]?.GetValue<string>()))
             .ToArray();
+    }
+
+    private static ReviewDecisionTotals BuildReviewDecisionTotals(JsonNode? queueNode, JsonNode? decisionsNode)
+    {
+        var decisions = decisionsNode?["decisions"]?.AsArray();
+        if (decisions is null)
+        {
+            return new ReviewDecisionTotals(0, 0, 0, 0, 0);
+        }
+
+        var queueById = queueNode?["items"]?.AsArray()
+            .Select(item => new
+            {
+                ItemId = item?["itemId"]?.GetValue<string>(),
+                SourceArtifactId = item?["sourceArtifactId"]?.GetValue<string>(),
+                SourceArtifactHash = item?["sourceArtifactHash"]?.GetValue<string>()
+            })
+            .Where(item => !string.IsNullOrWhiteSpace(item.ItemId))
+            .ToDictionary(item => item.ItemId!, StringComparer.Ordinal) ?? [];
+
+        var approved = 0;
+        var modified = 0;
+        var rejected = 0;
+        var deferred = 0;
+        var stale = 0;
+        foreach (var decision in decisions)
+        {
+            var status = decision?["status"]?.GetValue<string>() ?? "";
+            if (string.Equals(status, "Approved", StringComparison.Ordinal)) approved++;
+            if (string.Equals(status, "Modified", StringComparison.Ordinal)) modified++;
+            if (string.Equals(status, "Rejected", StringComparison.Ordinal)) rejected++;
+            if (string.Equals(status, "Deferred", StringComparison.Ordinal)) deferred++;
+
+            var itemId = decision?["itemId"]?.GetValue<string>();
+            if (itemId is null || !queueById.TryGetValue(itemId, out var queueItem))
+            {
+                continue;
+            }
+
+            var sourceArtifactId = decision?["sourceArtifactId"]?.GetValue<string>();
+            var sourceArtifactHash = decision?["sourceArtifactHash"]?.GetValue<string>();
+            if (!string.Equals(sourceArtifactId, queueItem.SourceArtifactId, StringComparison.Ordinal) ||
+                !string.Equals(sourceArtifactHash, queueItem.SourceArtifactHash, StringComparison.Ordinal))
+            {
+                stale++;
+            }
+        }
+
+        return new ReviewDecisionTotals(approved, modified, rejected, deferred, stale);
+    }
+
+    private static int CountFindings(IReadOnlyList<GenerationReadinessFinding> findings, params string[] codes) =>
+        findings.Count(finding => codes.Contains(finding.Code, StringComparer.Ordinal));
+
+    private static string SuggestedPhase3DFix(GenerationReadinessFinding finding) =>
+        finding.Code switch
+        {
+            "reviewed-blueprint-not-resolved" or "missing-review-decisions" =>
+                "Complete review/review-decisions.json, then run resume --project <project> --force-step assemble-blueprint-v1.",
+            "reviewed-blueprint-references-draft" or "reviewed-blueprint-hash-stale" =>
+                "Rerun resume --project <project> --force-step assemble-blueprint-v1 after regenerating reviewed inputs.",
+            "missing-required-slot" or "duplicate-required-slot" or "duplicate-non-repeatable-slot" or "unapproved-extra-section" =>
+                "Fix reviewed page compositions, then rerun resume --project <project> --force-step assemble-blueprint-v1.",
+            "missing-section-evidence" or "missing-page-evidence" or "missing-section-screenshot" or "missing-screenshot" =>
+                "Regenerate capture/evidence artifacts, then rerun resume --project <project> --force-step assemble-agent-handoff.",
+            "handoff-hash-mismatch" or "missing-agent-handoff-artifact" =>
+                "Rerun resume --project <project> --force-step assemble-agent-handoff, then validate-agent-handoff-readiness.",
+            _ => "Inspect the listed artifact path, fix the blocker, and rerun the failed force-step."
+        };
+
+    private static string? FileHash(string projectRoot, string relativePath)
+    {
+        var path = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(path)
+            ? Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()
+            : null;
     }
 
     private static IReadOnlyList<Phase3BProblem> BuildPhase3BProblems(
@@ -464,15 +575,38 @@ public sealed record Phase3BInspection(
     Phase3BArtifactInspection UnsupportedPatterns,
     Phase3BArtifactInspection ReviewQueue,
     int? ReviewQueueCount,
+    ReviewDecisionTotals ReviewDecisionTotals,
+    Phase3BArtifactInspection ReviewResolution,
+    string? ReviewBundleHash,
+    Phase3BArtifactInspection ReviewedBlueprint,
+    Phase3BArtifactInspection PageSlotContracts,
     Phase3BArtifactInspection GenerationReadiness,
     bool? GenerationReadinessPassed,
     GenerationReadinessFinding? LatestBlockingFinding,
+    int MissingRequiredSlotCount,
+    int DuplicateSlotCount,
+    int UnapprovedExtraSectionCount,
+    Phase3BArtifactInspection AgentHandoffManifest,
+    Phase3BArtifactInspection AgentHandoffEvidenceManifest,
+    int HandoffScreenshotCount,
+    int HandoffSectionCropCount,
+    int MissingEvidenceCount,
+    string? HandoffPackageHash,
     Phase3BArtifactInspection AgentHandoffReadiness,
     bool? AgentHandoffReadinessPassed,
     int AgentHandoffBlockerCount,
     int AgentHandoffWarningCount,
     GenerationReadinessFinding? LatestAgentHandoffBlockingFinding,
+    GenerationReadinessFinding? LatestFinalBlockingFinding,
+    string LatestFinalBlockerFix,
     IReadOnlyList<Phase3BProblem> Problems);
+
+public sealed record ReviewDecisionTotals(
+    int Approved,
+    int Modified,
+    int Rejected,
+    int Deferred,
+    int Stale);
 
 public sealed record Phase3BArtifactInspection(
     string RelativePath,

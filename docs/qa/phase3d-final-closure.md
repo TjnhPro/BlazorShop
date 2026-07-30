@@ -91,3 +91,16 @@ Status: in progress
 - Handoff readiness fails with `missing-task-section` when a mandatory task section is removed.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `20/20`.
+
+## Phase 3D.8 Evidence
+
+- `assemble-blueprint-v1` now fails the workflow when generation readiness has blocking findings, including unresolved blocking review decisions and reviewed blueprint blockers.
+- Invalid or stale review decisions are caught by the workflow step and recorded as workflow failures instead of escaping without a failed run record.
+- `assemble-agent-handoff` now fails when evidence packaging throws or when the handoff manifest says readiness is blocked.
+- `validate-agent-handoff-readiness` remains the final success gate after a successful handoff package.
+- CLI `run` and forced `resume` return non-zero on final blockers; a CLI fixture exits zero only after review decisions are completed and final readiness passes.
+- `inspect` now reports review decision totals, resolved artifact status/hash, reviewed blueprint status, page slot contract status, slot blocker counts, handoff screenshot/crop/missing-evidence counts, handoff package hash, latest blocker, and suggested fix.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff|EndToEndCli" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `42/42`.
+- Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1|ConfidenceReview|WorkflowRunner" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `41/41`.

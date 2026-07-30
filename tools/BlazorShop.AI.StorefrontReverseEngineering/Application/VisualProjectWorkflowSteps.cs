@@ -482,8 +482,26 @@ internal sealed class AssembleBlueprintV1Step : IVisualProjectWorkflowStep
 
     public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
     {
-        var result = await new BlueprintV1Assembler(context.RepoRoot)
-            .AssembleAsync(context.ArtifactRoot, cancellationToken);
+        (VisualBlueprintV1 Draft, VisualBlueprintV1? Reviewed, GenerationReadinessReport Readiness) result;
+        try
+        {
+            result = await new BlueprintV1Assembler(context.RepoRoot)
+                .AssembleAsync(context.ArtifactRoot, cancellationToken);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return WorkflowStepResult.Failure("SRE-WORKFLOW-REVIEW-DECISIONS-INVALID", exception.Message);
+        }
+
+        if (!result.Readiness.Passed)
+        {
+            var errors = result.Readiness.Findings
+                .Where(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase))
+                .Select(finding => new WorkflowMessage(finding.Code, finding.Message + (finding.ArtifactPath is null ? "" : $" Artifact: {finding.ArtifactPath}")))
+                .DefaultIfEmpty(new WorkflowMessage("SRE-WORKFLOW-GENERATION-READINESS-FAILED", "Generation readiness returned blocking findings."))
+                .ToArray();
+            return new WorkflowStepResult(false, Errors: errors);
+        }
 
         return WorkflowStepResult.Success(result.Readiness.Findings.Where(finding => finding.Severity == "warning").Select(finding => new WorkflowMessage(finding.Code, finding.Message)).ToArray());
     }
@@ -512,11 +530,27 @@ internal sealed class AssembleAgentHandoffStep : IVisualProjectWorkflowStep
 
     public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
     {
-        var manifest = await new AgentHandoffAssembler(context.RepoRoot)
-            .AssembleAsync(context.ArtifactRoot, cancellationToken);
-        return WorkflowStepResult.Success(manifest.ReadinessPassed
-            ? []
-            : [new WorkflowMessage("agent-handoff-readiness-blocked", "Agent handoff was written with readiness blockers.")]);
+        AgentHandoffManifest manifest;
+        try
+        {
+            manifest = await new AgentHandoffAssembler(context.RepoRoot)
+                .AssembleAsync(context.ArtifactRoot, cancellationToken);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return WorkflowStepResult.Failure("SRE-WORKFLOW-HANDOFF-EVIDENCE-FAILED", exception.Message);
+        }
+
+        if (!manifest.ReadinessPassed)
+        {
+            var errors = manifest.UnsupportedPatternSummary
+                .Select(summary => new WorkflowMessage("SRE-WORKFLOW-AGENT-HANDOFF-BLOCKED", summary))
+                .DefaultIfEmpty(new WorkflowMessage("SRE-WORKFLOW-AGENT-HANDOFF-BLOCKED", "Agent handoff was written with readiness blockers."))
+                .ToArray();
+            return new WorkflowStepResult(false, Errors: errors);
+        }
+
+        return WorkflowStepResult.Success();
     }
 }
 

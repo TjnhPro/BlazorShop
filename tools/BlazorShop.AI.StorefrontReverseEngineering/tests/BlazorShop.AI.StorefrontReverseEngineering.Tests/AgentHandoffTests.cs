@@ -217,6 +217,8 @@ public sealed class AgentHandoffTests
     public async Task AgentHandoff_UnresolvedCriticalRegionsReflectReadinessBlockers()
     {
         var projectRoot = await CreateReadyProjectAsync("Agent Handoff Unresolved");
+        await RewriteGenerationReadinessAsync(projectRoot, passed: false);
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
         var unresolved = await ReadAsync<AgentHandoffUnresolvedRegions>(projectRoot, "analysis/agent-handoff/unresolved-regions.json");
         var manifest = await ReadAsync<AgentHandoffManifest>(projectRoot, "analysis/agent-handoff/manifest.json");
 
@@ -269,9 +271,14 @@ public sealed class AgentHandoffTests
     public async Task AgentHandoffReadiness_WorkflowFailsWhenFinalReadinessFails()
     {
         var summary = await RunProjectAsync("Agent Handoff Workflow Failure");
+        var run = await ReadAsync<WorkflowRun>(summary.ArtifactRoot, "runs/agent-handoff-fixture.json");
 
         Assert.Equal(WorkflowRunStatus.Failed, summary.RunStatus);
-        Assert.True(File.Exists(Path.Combine(summary.ArtifactRoot, "analysis", "agent-handoff", "handoff-readiness.json")));
+        Assert.Contains(run.Steps, step =>
+            step.Name == "assemble-blueprint-v1" &&
+            step.Status == WorkflowStepStatus.Failed &&
+            step.Errors.Any(error => error.Code is "missing-review-decisions" or "reviewed-blueprint-not-resolved"));
+        Assert.False(File.Exists(Path.Combine(summary.ArtifactRoot, "analysis", "agent-handoff", "handoff-readiness.json")));
     }
 
     [Fact]
@@ -294,6 +301,105 @@ public sealed class AgentHandoffTests
     }
 
     [Fact]
+    public async Task AgentHandoffReadiness_WorkflowFailsWhenHandoffEvidenceCannotBePackaged()
+    {
+        var fixture = await CreateWorkflowProjectWithReviewedInputsAsync("Agent Handoff Missing Evidence Workflow");
+        File.Delete(Path.Combine(fixture.ProjectRoot, "captures", "home", "desktop-1440", "full-page.png"));
+
+        var summary = await new VisualProjectWorkflowService(GetRepoRoot()).RunAsync(
+            fixture.FixtureUrl,
+            fixture.Name,
+            fixture.OutputRoot,
+            force: false,
+            resume: true,
+            noAi: true,
+            CancellationToken.None,
+            fixture.RunId,
+            forceStep: "assemble-agent-handoff");
+        var run = await ReadAsync<WorkflowRun>(fixture.ProjectRoot, $"runs/{fixture.RunId}.json");
+
+        Assert.Equal(WorkflowRunStatus.Failed, summary.RunStatus);
+        Assert.Contains(run.Steps, step =>
+            step.Name == "assemble-agent-handoff" &&
+            step.Status == WorkflowStepStatus.Failed &&
+            step.Errors.Any(error => error.Code == "SRE-WORKFLOW-HANDOFF-EVIDENCE-FAILED"));
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_WorkflowFailsWhenHandoffReadinessHasBlockers()
+    {
+        var fixture = await CreateWorkflowProjectWithReviewedInputsAsync("Agent Handoff Readiness Blocked Workflow");
+        await RewriteGenerationReadinessAsync(fixture.ProjectRoot, passed: false);
+
+        var summary = await new VisualProjectWorkflowService(GetRepoRoot()).RunAsync(
+            fixture.FixtureUrl,
+            fixture.Name,
+            fixture.OutputRoot,
+            force: false,
+            resume: true,
+            noAi: true,
+            CancellationToken.None,
+            fixture.RunId,
+            forceStep: "assemble-agent-handoff");
+        var run = await ReadAsync<WorkflowRun>(fixture.ProjectRoot, $"runs/{fixture.RunId}.json");
+
+        Assert.Equal(WorkflowRunStatus.Failed, summary.RunStatus);
+        Assert.Contains(run.Steps, step =>
+            step.Name == "assemble-agent-handoff" &&
+            step.Status == WorkflowStepStatus.Failed &&
+            step.Errors.Any(error => error.Code == "SRE-WORKFLOW-AGENT-HANDOFF-BLOCKED"));
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_CliResumeReturnsNonZeroForForcedFinalBlockers()
+    {
+        var fixture = await CreateWorkflowProjectWithReviewedInputsAsync("Agent Handoff CLI Forced Blocked");
+        await RewriteGenerationReadinessAsync(fixture.ProjectRoot, passed: false);
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = await CliHost.RunAsync(
+            ["resume", "--project", fixture.ProjectRoot, "--run-id", fixture.RunId, "--no-ai", "--force-step", "assemble-agent-handoff"],
+            stdout,
+            stderr,
+            CancellationToken.None);
+
+        Assert.Equal(3, exitCode);
+        Assert.Contains("Run status: Failed", stdout.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_CliSucceedsOnlyAfterFinalReadinessPasses()
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "agent-handoff-cli-pass-" + Guid.NewGuid().ToString("N"));
+        var fixtureUrl = FixtureUrl(repoRoot);
+        var runId = "agent-handoff-cli-pass";
+        using var runOut = new StringWriter();
+        using var runErr = new StringWriter();
+        var runExit = await CliHost.RunAsync(
+            ["run", "--url", fixtureUrl, "--name", "Agent Handoff CLI Pass", "--output-root", outputRoot, "--no-ai", "--force", "--run-id", runId],
+            runOut,
+            runErr,
+            CancellationToken.None);
+        var projectRoot = Path.Combine(repoRoot, outputRoot, "agent-handoff-cli-pass");
+        await ApproveAllReviewDecisionsAsync(projectRoot);
+        using var resumeOut = new StringWriter();
+        using var resumeErr = new StringWriter();
+
+        var resumeExit = await CliHost.RunAsync(
+            ["resume", "--project", projectRoot, "--run-id", runId, "--no-ai", "--force-step", "assemble-blueprint-v1"],
+            resumeOut,
+            resumeErr,
+            CancellationToken.None);
+
+        Assert.Equal(3, runExit);
+        Assert.Equal(0, resumeExit);
+        Assert.Contains("Run status: Succeeded", resumeOut.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Readiness passed: True", resumeOut.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AgentHandoffReadiness_InspectReportsFinalHandoffStatus()
     {
         var summary = await RunProjectAsync("Agent Handoff Inspect");
@@ -312,6 +418,7 @@ public sealed class AgentHandoffTests
     {
         var summary = await RunProjectAsync(name);
         Assert.True(summary.ReadinessPassed);
+        await PrepareReviewedHandoffAsync(summary.ArtifactRoot);
         return summary.ArtifactRoot;
     }
 
@@ -319,12 +426,31 @@ public sealed class AgentHandoffTests
     {
         var repoRoot = GetRepoRoot();
         var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "agent-handoff-" + Guid.NewGuid().ToString("N"));
-        var fixtureUrl = new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
+        var fixtureUrl = FixtureUrl(repoRoot);
         var summary = await new VisualProjectWorkflowService(repoRoot)
             .RunAsync(fixtureUrl, name, outputRoot, force: true, resume: false, noAi: true, CancellationToken.None, runId: "agent-handoff-fixture");
 
         return summary;
     }
+
+    private static async Task<WorkflowProjectFixture> CreateWorkflowProjectWithReviewedInputsAsync(string name)
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "agent-handoff-workflow-" + Guid.NewGuid().ToString("N"));
+        var fixtureUrl = FixtureUrl(repoRoot);
+        var runId = "agent-handoff-workflow-fixture";
+        var service = new VisualProjectWorkflowService(repoRoot);
+        var first = await service.RunAsync(fixtureUrl, name, outputRoot, force: true, resume: false, noAi: true, CancellationToken.None, runId);
+        Assert.Equal(WorkflowRunStatus.Failed, first.RunStatus);
+        Assert.True(first.ReadinessPassed);
+        await ApproveAllReviewDecisionsAsync(first.ArtifactRoot);
+        var second = await service.RunAsync(fixtureUrl, name, outputRoot, force: false, resume: true, noAi: true, CancellationToken.None, runId, forceStep: "assemble-blueprint-v1");
+        Assert.Equal(WorkflowRunStatus.Succeeded, second.RunStatus);
+        return new WorkflowProjectFixture(name, outputRoot, first.ArtifactRoot, fixtureUrl, runId);
+    }
+
+    private static string FixtureUrl(string repoRoot) =>
+        new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
 
     private static async Task<T> ReadAsync<T>(string projectRoot, string relativePath)
     {
@@ -338,7 +464,15 @@ public sealed class AgentHandoffTests
         var path = Path.Combine(projectRoot, "reports", "generation-readiness.json");
         var node = JsonNode.Parse(await File.ReadAllTextAsync(path))!;
         node["passed"] = passed;
-        node["findings"] = new JsonArray();
+        node["findings"] = passed
+            ? new JsonArray()
+            : new JsonArray(new JsonObject
+            {
+                ["code"] = "test-readiness-blocker",
+                ["severity"] = "blocking",
+                ["message"] = "Synthetic readiness blocker for handoff workflow tests.",
+                ["artifactPath"] = "reports/generation-readiness.json"
+            });
         await File.WriteAllTextAsync(path, node.ToJsonString(VisualJson.Options));
     }
 
@@ -396,4 +530,11 @@ public sealed class AgentHandoffTests
 
         return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");
     }
+
+    private sealed record WorkflowProjectFixture(
+        string Name,
+        string OutputRoot,
+        string ProjectRoot,
+        string FixtureUrl,
+        string RunId);
 }

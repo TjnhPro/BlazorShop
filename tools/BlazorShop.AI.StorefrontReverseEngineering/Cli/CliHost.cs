@@ -256,11 +256,22 @@ public static class CliHost
         output.WriteLine($"  Sections: {FormatGroup(phase3B.Sections)}");
         output.WriteLine($"  Mapping: mappings={phase3B.Mappings.Status} ({phase3B.Mappings.RelativePath}); unsupported={phase3B.UnsupportedPatterns.Status} ({phase3B.UnsupportedPatterns.RelativePath})");
         output.WriteLine($"  Review queue count: {phase3B.ReviewQueueCount?.ToString() ?? "unknown"} ({phase3B.ReviewQueue.Status}; {phase3B.ReviewQueue.RelativePath})");
+        output.WriteLine($"  Review decision totals: approved={phase3B.ReviewDecisionTotals.Approved}; modified={phase3B.ReviewDecisionTotals.Modified}; rejected={phase3B.ReviewDecisionTotals.Rejected}; deferred={phase3B.ReviewDecisionTotals.Deferred}; stale={phase3B.ReviewDecisionTotals.Stale}");
+        output.WriteLine($"  Resolved artifacts: {phase3B.ReviewResolution.Status} ({phase3B.ReviewResolution.RelativePath}); bundle hash={phase3B.ReviewBundleHash ?? "(none)"}");
+        output.WriteLine($"  Reviewed blueprint: {phase3B.ReviewedBlueprint.Status} ({phase3B.ReviewedBlueprint.RelativePath})");
+        output.WriteLine($"  Page slot contracts: {phase3B.PageSlotContracts.Status} ({phase3B.PageSlotContracts.RelativePath})");
         output.WriteLine($"  Generation readiness: {FormatGenerationReadiness(phase3B)}");
+        output.WriteLine($"  Slot blockers: missing required={phase3B.MissingRequiredSlotCount}; duplicate={phase3B.DuplicateSlotCount}; unapproved extras={phase3B.UnapprovedExtraSectionCount}");
         output.WriteLine($"  Latest Phase 3B blocking finding: {FormatLatestPhase3BFinding(phase3B.LatestBlockingFinding)}");
+        output.WriteLine($"  Handoff manifest: {phase3B.AgentHandoffManifest.Status} ({phase3B.AgentHandoffManifest.RelativePath})");
+        output.WriteLine($"  Handoff evidence manifest: {phase3B.AgentHandoffEvidenceManifest.Status} ({phase3B.AgentHandoffEvidenceManifest.RelativePath})");
+        output.WriteLine($"  Handoff screenshots: {phase3B.HandoffScreenshotCount}; section crops: {phase3B.HandoffSectionCropCount}; missing evidence: {phase3B.MissingEvidenceCount}");
+        output.WriteLine($"  Handoff package hash: {phase3B.HandoffPackageHash ?? "(none)"}");
         output.WriteLine($"  Final handoff readiness: {FormatAgentHandoffReadiness(phase3B)}");
         output.WriteLine($"  Final handoff blockers: {phase3B.AgentHandoffBlockerCount}; warnings: {phase3B.AgentHandoffWarningCount}");
         output.WriteLine($"  Latest final handoff blocker: {FormatLatestPhase3BFinding(phase3B.LatestAgentHandoffBlockingFinding)}");
+        output.WriteLine($"  Latest final blocker: {FormatLatestPhase3BFinding(phase3B.LatestFinalBlockingFinding)}");
+        output.WriteLine($"  Suggested fix: {phase3B.LatestFinalBlockerFix}");
         output.WriteLine($"  Agent handoff path: analysis/agent-handoff");
         output.WriteLine($"  Next recommended command: dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter AgentHandoff");
 

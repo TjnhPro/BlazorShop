@@ -624,43 +624,43 @@ validate-agent-handoff-readiness
 
 Implementation checklist:
 
-- [ ] Split `assemble-blueprint-v1` if needed so review resolution and reviewed blueprint assembly are separately testable.
-- [ ] `apply-review-decisions` fails on invalid or stale decisions.
-- [ ] `assemble-reviewed-blueprint` fails when blocking review is unresolved.
-- [ ] `package-handoff-evidence` fails when required evidence is missing.
-- [ ] `validate-generation-readiness` fails on page slot composition blockers.
-- [ ] `assemble-agent-handoff` must not report success when readiness blockers exist.
-- [ ] `validate-agent-handoff-readiness` remains the final success gate.
-- [ ] `run` returns non-zero on final blockers.
-- [ ] `resume` returns non-zero on final blockers for forced final steps.
-- [ ] `inspect` shows exact blocker, cause, and next fix command.
+- [x] Split `assemble-blueprint-v1` if needed so review resolution and reviewed blueprint assembly are separately testable.
+- [x] `apply-review-decisions` fails on invalid or stale decisions.
+- [x] `assemble-reviewed-blueprint` fails when blocking review is unresolved.
+- [x] `package-handoff-evidence` fails when required evidence is missing.
+- [x] `validate-generation-readiness` fails on page slot composition blockers.
+- [x] `assemble-agent-handoff` must not report success when readiness blockers exist.
+- [x] `validate-agent-handoff-readiness` remains the final success gate.
+- [x] `run` returns non-zero on final blockers.
+- [x] `resume` returns non-zero on final blockers for forced final steps.
+- [x] `inspect` shows exact blocker, cause, and next fix command.
 
 Inspect output must include:
 
-- [ ] review decision totals: approved, modified, rejected, deferred, stale.
-- [ ] resolved artifact status and bundle hash.
-- [ ] reviewed blueprint present/missing/invalid.
-- [ ] page slot contract status.
-- [ ] missing required slots.
-- [ ] duplicate slots.
-- [ ] unapproved extra sections.
-- [ ] handoff screenshot count.
-- [ ] handoff section crop count.
-- [ ] missing evidence count.
-- [ ] handoff package hash.
-- [ ] latest blocker and suggested fix.
+- [x] review decision totals: approved, modified, rejected, deferred, stale.
+- [x] resolved artifact status and bundle hash.
+- [x] reviewed blueprint present/missing/invalid.
+- [x] page slot contract status.
+- [x] missing required slots.
+- [x] duplicate slots.
+- [x] unapproved extra sections.
+- [x] handoff screenshot count.
+- [x] handoff section crop count.
+- [x] missing evidence count.
+- [x] handoff package hash.
+- [x] latest blocker and suggested fix.
 
 Tests:
 
-- [ ] Workflow fails when reviewed blueprint cannot be assembled.
-- [ ] Workflow fails when handoff evidence cannot be packaged.
-- [ ] Workflow fails when handoff readiness has blockers.
-- [ ] `inspect` reports exact blocker code and artifact path.
-- [ ] Successful fixture exits zero only after final readiness passes.
+- [x] Workflow fails when reviewed blueprint cannot be assembled.
+- [x] Workflow fails when handoff evidence cannot be packaged.
+- [x] Workflow fails when handoff readiness has blockers.
+- [x] `inspect` reports exact blocker code and artifact path.
+- [x] Successful fixture exits zero only after final readiness passes.
 
 Done when:
 
-- [ ] A successful CLI run means Phase 4-safe handoff exists.
+- [x] A successful CLI run means Phase 4-safe handoff exists.
 
 ## Phase 3D.9 - Schema And Semantic Validation
 
@@ -923,7 +923,7 @@ Done when:
 5. [x] `Phase 3D.5 package screenshots and section crops`
 6. [x] `Phase 3D.6 centralize handoff contract`
 7. [x] `Phase 3D.7 harden handoff task contract`
-8. [ ] `Phase 3D.8 enforce strict workflow failure`
+8. [x] `Phase 3D.8 enforce strict workflow failure`
 9. [ ] `Phase 3D.9 add semantic schemas`
 10. [ ] `Phase 3D.10 add positive and negative fixtures`
 11. [ ] `Phase 3D.11 add final no-skip closure gate`
@@ -976,8 +976,8 @@ Handoff contract:
 
 Workflow:
 
-- [ ] Final blockers cause non-zero CLI exit.
-- [ ] Inspect reports exact blocker/cause/fix.
+- [x] Final blockers cause non-zero CLI exit.
+- [x] Inspect reports exact blocker/cause/fix.
 - [ ] Positive fixture passes.
 - [ ] All negative fixtures fail with expected blocker code.
 
@@ -1065,7 +1065,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D5 self-contained visual evidence packaging.
 - [x] Implement D6 canonical handoff contract.
 - [x] Implement D7 handoff task contract.
-- [ ] Implement D8 strict workflow failure semantics.
+- [x] Implement D8 strict workflow failure semantics.
 - [ ] Implement D9 schema and semantic validation.
 - [ ] Implement D10 positive and negative proof fixtures.
 - [ ] Implement D11 no-skip final closure gate.
