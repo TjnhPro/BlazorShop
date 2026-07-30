@@ -22,6 +22,7 @@ public sealed class VisualSchemaRegistry : IVisualSchemaRegistry
             ["reconnaissance"] = Create("reconnaissance"),
             ["capture-plan"] = Create("capture-plan"),
             ["capture-manifest"] = Create("capture-manifest"),
+            ["capture-quality-report"] = Create("capture-quality-report"),
             ["screenshot-evidence"] = Create("screenshot-evidence"),
             ["dom-evidence"] = Create("dom-evidence"),
             ["computed-style-evidence"] = Create("computed-style-evidence"),

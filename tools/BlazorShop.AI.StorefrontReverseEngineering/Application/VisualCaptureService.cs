@@ -27,7 +27,9 @@ public sealed class VisualCaptureService
         CancellationToken cancellationToken)
     {
         var root = resolver.ResolveRoot(projectRoot);
-        var result = await browser.CaptureAsync(session, viewport, policy, cancellationToken);
+        var stableResult = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(session, viewport, policy, forceStitchedFallback: false, cancellationToken);
+        var result = stableResult.Capture;
         var viewportRoot = Path.Combine(root, "captures", session.PageId, viewport.Id);
         Directory.CreateDirectory(viewportRoot);
 
@@ -62,6 +64,7 @@ public sealed class VisualCaptureService
 
         var store = new FileSystemVisualArtifactStore(root, resolver, validator);
         await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/manifest.json"), "capture-manifest", manifest, cancellationToken);
+        await store.WriteJsonAsync(ArtifactPath.Create($"{relativeRoot}/capture-quality-report.json"), "capture-quality-report", stableResult.QualityReport, cancellationToken);
         return manifest;
     }
 

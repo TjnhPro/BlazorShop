@@ -510,36 +510,36 @@ Goal: make full-page capture robust enough for lazy/reveal-heavy ecommerce pages
 
 Tasks:
 
-- [ ] Implement page stabilization service:
-  - [ ] wait for DOM ready
-  - [ ] wait for network idle with fallback
-  - [ ] wait for fonts when available
-  - [ ] warm scroll down/up
-  - [ ] optionally hide configured noise selectors
-  - [ ] record removed/hidden noise elements
-- [ ] Implement native full-page screenshot path.
-- [ ] Implement stitched capture fallback:
-  - [ ] segment viewport captures
-  - [ ] overlap handling
-  - [ ] stitch metadata
-  - [ ] final image dimension validation
-- [ ] Implement capture quality checks:
-  - [ ] blank image detection
-  - [ ] suspicious white/empty regions
-  - [ ] incomplete height detection
-  - [ ] missing screenshot file
-  - [ ] inconsistent manifest dimensions
-- [ ] Write `CaptureQualityReport`.
-- [ ] Record capture method: `native-full-page`, `stitched`, or `failed`.
-- [ ] Add lazy-load fixture test.
-- [ ] Add forced fallback test.
-- [ ] Add quality failure test.
+- [x] Implement page stabilization service:
+  - [x] wait for DOM ready
+  - [x] wait for network idle with fallback
+  - [x] wait for fonts when available
+  - [x] warm scroll down/up
+  - [x] optionally hide configured noise selectors
+  - [x] record removed/hidden noise elements
+- [x] Implement native full-page screenshot path.
+- [x] Implement stitched capture fallback:
+  - [x] segment viewport captures
+  - [x] overlap handling
+  - [x] stitch metadata
+  - [x] final image dimension validation
+- [x] Implement capture quality checks:
+  - [x] blank image detection
+  - [x] suspicious white/empty regions
+  - [x] incomplete height detection
+  - [x] missing screenshot file
+  - [x] inconsistent manifest dimensions
+- [x] Write `CaptureQualityReport`.
+- [x] Record capture method: `native-full-page`, `stitched`, or `failed`.
+- [x] Add lazy-load fixture test.
+- [x] Add forced fallback test.
+- [x] Add quality failure test.
 
 Guardrails:
 
-- [ ] Do not rely only on native Playwright full-page screenshot.
-- [ ] Do not mutate the live page beyond configured noise handling and capture stabilization.
-- [ ] Do not keep unlimited screenshot segments after successful stitch unless configured.
+- [x] Do not rely only on native Playwright full-page screenshot.
+- [x] Do not mutate the live page beyond configured noise handling and capture stabilization.
+- [x] Do not keep unlimited screenshot segments after successful stitch unless configured.
 
 Verification:
 
@@ -549,9 +549,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Lazy-loaded fixture sections appear in captured output.
-- [ ] Capture manifest records whether native or stitched capture was used.
-- [ ] Quality report blocks obviously broken evidence.
+- [x] Lazy-loaded fixture sections appear in captured output.
+- [x] Capture manifest records whether native or stitched capture was used.
+- [x] Quality report blocks obviously broken evidence.
 
 ## Phase 8 - Evidence Extraction And Manifest Normalization
 

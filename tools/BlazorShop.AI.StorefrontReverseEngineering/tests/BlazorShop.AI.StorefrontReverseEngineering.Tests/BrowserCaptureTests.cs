@@ -20,6 +20,7 @@ public sealed class BrowserCaptureTests
         Assert.True(File.Exists(ToRepoPath(manifest.StylesPath)));
         Assert.True(File.Exists(ToRepoPath(manifest.BoxesPath)));
         Assert.True(File.Exists(ToRepoPath(manifest.AssetsPath)));
+        Assert.True(File.Exists(ToRepoPath("captures/home/desktop-1440/capture-quality-report.json")));
     }
 
     [Fact]
