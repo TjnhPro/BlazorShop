@@ -218,25 +218,25 @@ Goal: update docs to match the final DX behavior and close Phase 2 locally witho
 
 Tasks:
 
-- [ ] Update `docs/architecture/11-storefront-builder.md`:
-  - [ ] document stable `-WhatIf` report location;
-  - [ ] document console summary behavior;
-  - [ ] document `-WhatIfReportPath` if added;
-  - [ ] document unified generator version source.
-- [ ] Update `docs/agents/storefront-builder.md`:
-  - [ ] instruct agents to read the stable `-WhatIf` report path from console;
-  - [ ] mention hidden candidate-preservation env only as debug-only;
-  - [ ] keep Actions evidence optional while workflows are disabled during dev.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`.
-- [ ] Update `05-StorefrontBuilder-Phase2-Closure.todo.md` if it claims `-WhatIf` report is in target `docs/storefront-analysis`.
-- [ ] Update `06-StorefrontBuilder-Phase2-8-Closure-Fix.todo.md` with a short note that Phase 2.9 polished `-WhatIf` output and version provenance.
-- [ ] Do not require a GitHub Actions green run for Phase 2.9 while Actions are disabled.
-- [ ] Add a deferred note:
-  - [ ] when Actions are re-enabled, run StorefrontBuilder workflow manually with `run_browser_gates=true`;
-  - [ ] record `fast-checks`, `full-fixture-proof`, and artifact upload evidence.
-- [ ] Record local closure evidence with exact command summaries.
+- [x] Update `docs/architecture/11-storefront-builder.md`:
+  - [x] document stable `-WhatIf` report location;
+  - [x] document console summary behavior;
+  - [x] document `-WhatIfReportPath` if added;
+  - [x] document unified generator version source.
+- [x] Update `docs/agents/storefront-builder.md`:
+  - [x] instruct agents to read the stable `-WhatIf` report path from console;
+  - [x] mention hidden candidate-preservation env only as debug-only;
+  - [x] keep Actions evidence optional while workflows are disabled during dev.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`.
+- [x] Update `05-StorefrontBuilder-Phase2-Closure.todo.md` if it claims `-WhatIf` report is in target `docs/storefront-analysis`.
+- [x] Update `06-StorefrontBuilder-Phase2-8-Closure-Fix.todo.md` with a short note that Phase 2.9 polished `-WhatIf` output and version provenance.
+- [x] Do not require a GitHub Actions green run for Phase 2.9 while Actions are disabled.
+- [x] Add a deferred note:
+  - [x] when Actions are re-enabled, run StorefrontBuilder workflow manually with `run_browser_gates=true`;
+  - [x] record `fast-checks`, `full-fixture-proof`, and artifact upload evidence.
+- [x] Record local closure evidence with exact command summaries.
 
 Required local release gate:
 
@@ -254,37 +254,46 @@ Optional local full fixture proof:
 .\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1
 ```
 
+Local closure evidence, 2026-07-30:
+
+- `.\scripts\qa\run-storefront-client-regeneration-gate.ps1`: passed; NSwag restored `nswag.consolecore` 14.7.1 and completed without client drift.
+- `.\scripts\qa\run-storefront-builder-regeneration-gate.ps1`: passed; final output `PASS StorefrontBuilder regeneration ownership gate completed without live Commerce Node data.` The rollback subtest intentionally printed Razor build errors before proving restore.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure`: passed; generated proof restored, built, passed static validation, isolation, shared visual consumer boundary validation, post-regeneration build, deterministic no-op regeneration, and manual-edit conflict proof.
+- `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast`: passed; generated proof restored/built/validated, isolation passed, lifecycle proofs passed, and `fast-foundation-functional-report.md` was written.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"`: passed `39/39`. Known package vulnerability warnings for `MessagePack` and Browserslist freshness warnings were informational and pre-existing.
+- GitHub Actions evidence deferred by project decision while workflows are disabled. When Actions are re-enabled, run the StorefrontBuilder workflow manually with `run_browser_gates=true` and record `fast-checks`, `full-fixture-proof`, and uploaded artifact evidence.
+
 Exit gate:
 
-- [ ] Docs no longer tell users to look for a `-WhatIf` report that is deleted.
-- [ ] Local release gate passes.
-- [ ] GitHub Actions evidence is explicitly deferred because workflows are disabled by project decision.
-- [ ] Phase 2.9 checklist records final command evidence before completion.
+- [x] Docs no longer tell users to look for a `-WhatIf` report that is deleted.
+- [x] Local release gate passes.
+- [x] GitHub Actions evidence is explicitly deferred because workflows are disabled by project decision.
+- [x] Phase 2.9 checklist records final command evidence before completion.
 
 ## Final Definition Of Done
 
 Phase 2.9 is complete when:
 
-- [ ] normal `-WhatIf` prints actionable action plan output;
-- [ ] normal `-WhatIf` leaves a stable report outside the generated target and outside the deleted candidate;
-- [ ] normal `-WhatIf` does not mutate the generated target;
-- [ ] unsafe report paths are rejected;
-- [ ] docs point to the correct report behavior;
-- [ ] StorefrontBuilder generator version has one source of truth;
-- [ ] generated metadata and generated-file manifest versions match;
-- [ ] regression tests cover the normal user behavior without hidden env vars;
-- [ ] local release gates pass;
-- [ ] GitHub Actions evidence is marked deferred while Actions are disabled.
+- [x] normal `-WhatIf` prints actionable action plan output;
+- [x] normal `-WhatIf` leaves a stable report outside the generated target and outside the deleted candidate;
+- [x] normal `-WhatIf` does not mutate the generated target;
+- [x] unsafe report paths are rejected;
+- [x] docs point to the correct report behavior;
+- [x] StorefrontBuilder generator version has one source of truth;
+- [x] generated metadata and generated-file manifest versions match;
+- [x] regression tests cover the normal user behavior without hidden env vars;
+- [x] local release gates pass;
+- [x] GitHub Actions evidence is marked deferred while Actions are disabled.
 
 ## Not In Scope
 
-- [ ] Reopening Phase 2.8 architecture.
-- [ ] Changing fresh-candidate regeneration semantics beyond report output.
-- [ ] Requiring GitHub Actions to run while disabled during dev.
-- [ ] AI visual generator implementation.
-- [ ] Semantic Razor/CSS merge.
-- [ ] React/Next/Vue starter work.
-- [ ] Production deployment.
+- [x] Reopening Phase 2.8 architecture.
+- [x] Changing fresh-candidate regeneration semantics beyond report output.
+- [x] Requiring GitHub Actions to run while disabled during dev.
+- [x] AI visual generator implementation.
+- [x] Semantic Razor/CSS merge.
+- [x] React/Next/Vue starter work.
+- [x] Production deployment.
 
 ## Autoplan Review Report
 

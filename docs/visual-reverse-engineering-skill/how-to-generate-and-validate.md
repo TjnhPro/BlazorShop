@@ -70,7 +70,7 @@ Preview before applying:
   -WhatIf
 ```
 
-`-WhatIf` runs the same fresh-candidate planning pipeline as apply mode and exits before copying target changes. Read the `WhatIf report:` path printed by the command; by default it is written under the output root `.regeneration-reports/` folder and contains create/update/conflict/obsolete/platform metadata actions.
+`-WhatIf` runs the same fresh-candidate planning pipeline as apply mode and exits before copying target changes. Read the `WhatIf report:` path printed by the command; by default it is written under the output root `.regeneration-reports/` folder and contains create/update/conflict/obsolete/platform metadata actions. Use `-WhatIfReportPath <path>` only when you need a custom approved report path under the output report folder, repo `obj`, or `artifacts/storefront-builder`.
 
 Require validation and build after applying:
 
@@ -93,6 +93,8 @@ Refresh platform metadata, package compatibility versions, and the copied Starte
 ```
 
 Manual edits to generated/managed files are not overwritten automatically. They are recorded in `docs/storefront-analysis/generated-files.yaml` and summarized by `docs/storefront-analysis/regeneration-report.md`; resolve the file intentionally, then rerun `-Scope conflicts`.
+
+Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder `generatorVersion` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Validation fails if those artifact versions drift.
 
 ## Validate
 

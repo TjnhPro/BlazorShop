@@ -51,6 +51,8 @@ Use the smallest regeneration scope that matches the change:
 
 Manual edits to generated files should either be reflected in generation inputs or documented in generated-file ownership metadata so later regeneration does not silently erase intentional work.
 
-Regeneration uses a fresh candidate generated from current Starter/template inputs. `-WhatIf` runs that same candidate generation and planning pipeline, writes the action report, and exits before target writes. Apply mode then copies only planned safe generated/managed changes into the target, preserves user-owned/protected/manual-edited files, reports obsolete candidates, and rolls back if requested validation/build fails.
+Regeneration uses a fresh candidate generated from current Starter/template inputs. `-WhatIf` runs that same candidate generation and planning pipeline, writes a stable report outside the generated target, prints summary/action output to the console, and exits before target writes. Apply mode then copies only planned safe generated/managed changes into the target, preserves user-owned/protected/manual-edited files, reports obsolete candidates, and rolls back if requested validation/build fails.
 
 Use `-Scope foundation` for explicit platform metadata updates such as package compatibility metadata and the copied Starter contract. Normal visual scopes do not silently update protected foundation files.
+
+StorefrontBuilder generator version is a tooling provenance value, not a package version. Both PowerShell generation metadata and Node generated-file manifests read it from `tools/BlazorShop.AI.StorefrontBuilder/version.json`.

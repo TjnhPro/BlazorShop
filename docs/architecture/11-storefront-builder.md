@@ -131,6 +131,8 @@ Current review and QA artifacts:
 
 These files are source evidence for reviewing that generated artifact. They are disposable with the artifact unless a phase explicitly promotes a specific artifact into tracked evidence.
 
+StorefrontBuilder tool provenance uses one generator version source: `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Generated `metadata.yaml` and generated-file manifest entries must use that same `generatorVersion`; validation fails when they drift.
+
 ## Entrypoints
 
 Primary builder command:
@@ -163,6 +165,8 @@ Use `-WhatIf` with any update scope to run the same candidate generation and pla
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -WhatIf
 ```
+
+`-WhatIf` keeps candidate cleanup enabled and writes a stable report outside the generated target. By default the report is `{OutputRoot}/.regeneration-reports/{ProjectName}-{operationId}.md`. The console prints `WhatIf report: <path>`, summary counts for create/update/platform metadata/conflict/obsolete/protected-or-user-owned skips, meaningful `filePath: action - reason` lines, and conflict next-action guidance when conflicts exist. Use `-WhatIfReportPath <path>` only for approved report locations under the output report folder, repo `obj`, or `artifacts/storefront-builder`; target-project paths are rejected.
 
 Use `-Scope foundation` only for explicit platform metadata updates such as `StorefrontPackageVersions.props`, `starter-generation.contract.yaml`, and generated metadata/package contract fields:
 

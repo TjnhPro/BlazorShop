@@ -34,6 +34,8 @@ These findings record the final codebase state after Phase 2.8A-2.8F.
 - Regeneration tests now prove positive page/component updates, missing file recreation, obsolete candidate reporting, real `-WhatIf` planning, protected foundation metadata behavior, and rollback after a failed build.
 - `storefront-builder.yml` now keeps full proof out of normal PR gates and uses `run-storefront-builder-full-proof-with-fixture.ps1` for scheduled/manual fixture runtime bootstrap.
 
+Phase 2.9 follow-up polished developer-facing `-WhatIf` output by leaving a stable report outside the generated target/candidate and unified StorefrontBuilder `generatorVersion` provenance through `tools/BlazorShop.AI.StorefrontBuilder/version.json`.
+
 ## Corrected Blocker List
 
 | Blocker | Current verdict | Closure approach |

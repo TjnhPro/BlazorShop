@@ -108,7 +108,9 @@ Scopes:
 | `validate` | Runs the static storefront validation gate. |
 | `conflicts` | Runs idempotency/conflict validation. |
 
-Use `-WhatIf` to run the same fresh-candidate planning pipeline as apply mode without copying changed files into the generated target. The plan reports create, update, skip unchanged, skip user-owned, skip protected, manual-edit conflict, platform metadata update, and obsolete candidate actions.
+Use `-WhatIf` to run the same fresh-candidate planning pipeline as apply mode without copying changed files into the generated target. The console prints a stable `WhatIf report:` path, summary counts, meaningful `filePath: action - reason` lines, and conflict next-action guidance when needed. By default the report is written outside the target under `{OutputRoot}/.regeneration-reports/{ProjectName}-{operationId}.md`; `-WhatIfReportPath <path>` can redirect it to an approved report path under the output report folder, repo `obj`, or `artifacts/storefront-builder`. The report records create, update, skip unchanged, skip user-owned, skip protected, manual-edit conflict, platform metadata update, and obsolete candidate actions.
+
+StorefrontBuilder generator provenance comes from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Generated `metadata.yaml` and `generated-files.yaml` entries must agree on the same `generatorVersion`.
 
 Use `-ValidateAfterApply` and `-BuildAfterApply` when a regeneration must prove the generated project still validates and builds before the change is accepted.
 
