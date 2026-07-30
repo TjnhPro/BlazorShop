@@ -1,0 +1,1 @@
+{"artifactKind":"behavior-boundaries","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["boundaries","actions"],"arrayPaths":["boundaries","actions"],"arrayLengthRules":[{"path":"boundaries","minimumLength":1},{"path":"actions","minimumLength":1}]}

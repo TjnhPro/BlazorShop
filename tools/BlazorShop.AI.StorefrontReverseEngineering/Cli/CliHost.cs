@@ -67,7 +67,7 @@ public static class CliHost
         output.WriteLine("Phase 3B force-step values:");
         output.WriteLine("  aggregate-evidence, extract-raw-tokens, normalize-semantic-tokens, classify-page-archetypes");
         output.WriteLine("  segment-sections, analyze-responsive-interactions, detect-component-candidates");
-        output.WriteLine("  classify-ecommerce-regions, build-presentation-catalog, map-presentation-components");
+        output.WriteLine("  classify-ecommerce-regions, build-storefront-pattern, build-presentation-catalog, map-presentation-components");
         output.WriteLine("  score-confidence-review, assemble-blueprint-v1");
     }
 

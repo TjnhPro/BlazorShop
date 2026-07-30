@@ -6,6 +6,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.StorefrontPattern;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -401,6 +402,30 @@ internal sealed class BuildPresentationCatalogStep : IVisualProjectWorkflowStep
 
         return catalog.Components.Count == 0
             ? WorkflowStepResult.Failure("SRE-WORKFLOW-PRESENTATION-CATALOG-EMPTY", "Presentation component catalog produced no entries.")
+            : WorkflowStepResult.Success();
+    }
+}
+
+internal sealed class BuildStorefrontPatternStep : IVisualProjectWorkflowStep
+{
+    public string Name => "build-storefront-pattern";
+
+    public IReadOnlyList<string> InputArtifacts => ["BlazorShop.Storefront.Starter/starter-generation.contract.yaml"];
+
+    public IReadOnlyList<string> OutputArtifacts => [
+        "analysis/storefront-pattern/storefront-pattern.json",
+        "analysis/storefront-pattern/page-contracts.json",
+        "analysis/storefront-pattern/behavior-boundaries.json",
+        "analysis/storefront-pattern/generation-zones.json"
+    ];
+
+    public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)
+    {
+        var pattern = await new StorefrontPatternContractBuilder(context.RepoRoot)
+            .BuildAsync(context.ArtifactRoot, cancellationToken);
+
+        return pattern.PageContracts.Count == 0 || pattern.Slots.Count == 0
+            ? WorkflowStepResult.Failure("SRE-WORKFLOW-STOREFRONT-PATTERN-EMPTY", "Storefront pattern contract produced no page contracts or slots.")
             : WorkflowStepResult.Success();
     }
 }

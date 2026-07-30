@@ -175,88 +175,88 @@ Goal: replace fragile Starter/Presentation contract discovery with a typed, vali
 
 Implementation checklist:
 
-- [ ] Add contract models under `Analysis/StorefrontPattern`:
-  - [ ] `StorefrontPatternContract`
-  - [ ] `StorefrontPatternMetadata`
-  - [ ] `StorefrontGenerationZones`
-  - [ ] `StorefrontBehaviorBoundary`
-  - [ ] `StorefrontPageContract`
-  - [ ] `StorefrontRouteContract`
-  - [ ] `StorefrontSlotContract`
-  - [ ] `StorefrontActionContract`
-  - [ ] `StorefrontProtectedFileContract`
-  - [ ] `StorefrontGeneratedFileContract`
-- [ ] Parse `starter-generation.contract.yaml` with a structured parser or a minimal scoped parser that understands indentation and sections.
-- [ ] Stop treating every `- id:` line as a slot.
-- [ ] Load and validate:
-  - [ ] contract version.
-  - [ ] starter template version.
-  - [ ] package version metadata.
-  - [ ] generated project ownership.
-  - [ ] managed zones.
-  - [ ] generated zones.
-  - [ ] protected zones.
-  - [ ] asset zones.
-  - [ ] analysis artifact zones.
-  - [ ] browser action policy.
-  - [ ] same-origin BFF action rules.
-  - [ ] action descriptors.
-  - [ ] route ownership rules.
-  - [ ] slot ownership rules.
-  - [ ] file overwrite policy.
-- [ ] Add page contracts for:
-  - [ ] home page.
-  - [ ] category/listing page.
-  - [ ] search results page.
-  - [ ] product detail page.
-  - [ ] cart visual shell.
-  - [ ] checkout visual shell.
-  - [ ] account/auth visual shell.
-  - [ ] content page.
-  - [ ] maintenance page.
-  - [ ] not-found page.
-  - [ ] service-unavailable page.
-  - [ ] error state.
-- [ ] Each page contract must declare:
-  - [ ] stable page archetype.
-  - [ ] route ownership.
-  - [ ] allowed visual slots.
-  - [ ] required visual regions.
-  - [ ] optional visual regions.
-  - [ ] prohibited behavior.
-  - [ ] protected action descriptors.
-  - [ ] target generated path rules.
-  - [ ] supported responsive zones.
-- [ ] Write `analysis/storefront-pattern/storefront-pattern.json`.
-- [ ] Write `analysis/storefront-pattern/page-contracts.json`.
-- [ ] Write `analysis/storefront-pattern/behavior-boundaries.json`.
-- [ ] Write `analysis/storefront-pattern/generation-zones.json`.
-- [ ] Add JSON schemas for all four artifacts.
+- [x] Add contract models under `Analysis/StorefrontPattern`:
+  - [x] `StorefrontPatternContract`
+  - [x] `StorefrontPatternMetadata`
+  - [x] `StorefrontGenerationZones`
+  - [x] `StorefrontBehaviorBoundary`
+  - [x] `StorefrontPageContract`
+  - [x] `StorefrontRouteContract`
+  - [x] `StorefrontSlotContract`
+  - [x] `StorefrontActionContract`
+  - [x] `StorefrontProtectedFileContract`
+  - [x] `StorefrontGeneratedFileContract`
+- [x] Parse `starter-generation.contract.yaml` with a structured parser or a minimal scoped parser that understands indentation and sections.
+- [x] Stop treating every `- id:` line as a slot.
+- [x] Load and validate:
+  - [x] contract version.
+  - [x] starter template version.
+  - [x] package version metadata.
+  - [x] generated project ownership.
+  - [x] managed zones.
+  - [x] generated zones.
+  - [x] protected zones.
+  - [x] asset zones.
+  - [x] analysis artifact zones.
+  - [x] browser action policy.
+  - [x] same-origin BFF action rules.
+  - [x] action descriptors.
+  - [x] route ownership rules.
+  - [x] slot ownership rules.
+  - [x] file overwrite policy.
+- [x] Add page contracts for:
+  - [x] home page.
+  - [x] category/listing page.
+  - [x] search results page.
+  - [x] product detail page.
+  - [x] cart visual shell.
+  - [x] checkout visual shell.
+  - [x] account/auth visual shell.
+  - [x] content page.
+  - [x] maintenance page.
+  - [x] not-found page.
+  - [x] service-unavailable page.
+  - [x] error state.
+- [x] Each page contract must declare:
+  - [x] stable page archetype.
+  - [x] route ownership.
+  - [x] allowed visual slots.
+  - [x] required visual regions.
+  - [x] optional visual regions.
+  - [x] prohibited behavior.
+  - [x] protected action descriptors.
+  - [x] target generated path rules.
+  - [x] supported responsive zones.
+- [x] Write `analysis/storefront-pattern/storefront-pattern.json`.
+- [x] Write `analysis/storefront-pattern/page-contracts.json`.
+- [x] Write `analysis/storefront-pattern/behavior-boundaries.json`.
+- [x] Write `analysis/storefront-pattern/generation-zones.json`.
+- [x] Add JSON schemas for all four artifacts.
 
 Validation checklist:
 
-- [ ] Duplicate slot IDs are blocking.
-- [ ] Duplicate page IDs are blocking.
-- [ ] Unknown generated zones are blocking.
-- [ ] Generated paths outside allowed zones are blocking.
-- [ ] Protected paths in generated zones are blocking.
-- [ ] Browser action endpoints that are not same-origin BFF routes are blocking.
-- [ ] Storefront API direct browser URLs are blocking.
-- [ ] Missing required page contract fields are blocking.
-- [ ] Unknown optional metadata remains allowed only when explicitly captured in `extensions`.
+- [x] Duplicate slot IDs are blocking.
+- [x] Duplicate page IDs are blocking.
+- [x] Unknown generated zones are blocking.
+- [x] Generated paths outside allowed zones are blocking.
+- [x] Protected paths in generated zones are blocking.
+- [x] Browser action endpoints that are not same-origin BFF routes are blocking.
+- [x] Storefront API direct browser URLs are blocking.
+- [x] Missing required page contract fields are blocking.
+- [x] Unknown optional metadata remains allowed only when explicitly captured in `extensions`.
 
 Tests:
 
-- [ ] Valid Starter contract loads into a typed pattern contract.
-- [ ] `- id:` under a non-slot section is not interpreted as a slot.
-- [ ] Duplicate slot IDs fail validation.
-- [ ] Protected path collision fails validation.
-- [ ] Same-origin BFF action policy is preserved.
-- [ ] Schema validation passes for generated artifacts.
+- [x] Valid Starter contract loads into a typed pattern contract.
+- [x] `- id:` under a non-slot section is not interpreted as a slot.
+- [x] Duplicate slot IDs fail validation.
+- [x] Protected path collision fails validation.
+- [x] Same-origin BFF action policy is preserved.
+- [x] Schema validation passes for generated artifacts.
 
 Done when:
 
-- [ ] Phase 3C has a typed Storefront pattern artifact that can be consumed without reading Starter YAML ad hoc.
+- [x] Phase 3C has a typed Storefront pattern artifact that can be consumed without reading Starter YAML ad hoc.
 
 ## Phase 3C.2 - Complete Presentation Catalog Coverage
 
