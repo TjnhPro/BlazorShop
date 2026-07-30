@@ -65,7 +65,9 @@ public sealed class Phase3CFixtureAndGateTests
         Assert.Contains("page-contracts", kinds);
         Assert.Contains("behavior-boundaries", kinds);
         Assert.Contains("generation-zones", kinds);
+        Assert.Contains("reviewed-semantic-tokens", kinds);
         Assert.Contains("reviewed-page-compositions", kinds);
+        Assert.Contains("reviewed-presentation-mappings", kinds);
         Assert.Contains("reviewed-ecommerce-regions", kinds);
         Assert.Contains("agent-handoff-manifest", kinds);
         Assert.Contains("allowed-files", kinds);

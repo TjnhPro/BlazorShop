@@ -96,7 +96,7 @@ Manual edits to generated/managed files are not overwritten automatically. They 
 
 Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder `generatorVersion` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Validation fails if those artifact versions drift.
 
-ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`, but generated storefront commands do not consume that blueprint yet. Treat it as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
+ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Generated storefront commands do not consume those artifacts yet. Treat Phase 3C output as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
 
 To run the Phase 3A fixture evidence workflow:
 
@@ -105,6 +105,27 @@ $fixture = (Resolve-Path 'tools\BlazorShop.AI.StorefrontReverseEngineering\tests
 $fixtureUrl = [Uri]::new($fixture).AbsoluteUri
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- run --url $fixtureUrl --name FixtureDemo --output-root obj/storefront-reverse-engineering/projects --no-ai --force
 ```
+
+Inspect final handoff readiness:
+
+```powershell
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project obj/storefront-reverse-engineering/projects/fixturedemo
+```
+
+Apply review decisions and rerun final handoff validation:
+
+```powershell
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step apply-review-decisions
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step validate-agent-handoff-readiness
+```
+
+Run the Phase 3C local gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1
+```
+
+Phase 4 may read only `analysis/agent-handoff/*` and schemas as future input. It must fail unless `analysis/agent-handoff/handoff-readiness.json` passed, must not reinterpret raw captures unless running a new ReverseEngineering pass, must not write into Starter, and must not change StorefrontBuilder generation without its own approved plan.
 
 ## Validate
 

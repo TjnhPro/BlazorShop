@@ -744,33 +744,33 @@ Goal: document the final handoff contract so Phase 4 can be implemented without 
 
 Implementation checklist:
 
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` only to clarify that generation still does not consume Phase 3C output.
-- [ ] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`.
-- [ ] Update `docs/architecture/11-storefront-builder.md` if artifact ownership or handoff boundaries change.
-- [ ] Update `docs/agents/storefront-builder.md`.
-- [ ] Add a short Phase 4 contract section:
-  - [ ] Phase 4 may read only `analysis/agent-handoff/*` and schemas as input.
-  - [ ] Phase 4 must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass.
-  - [ ] Phase 4 must not write into Starter.
-  - [ ] Phase 4 must not modify StorefrontBuilder generation until a separate implementation plan is approved.
-  - [ ] Phase 4 must fail if `agent-handoff-readiness` is not passed.
-- [ ] Document operator commands:
-  - [ ] run Phase 3C full flow.
-  - [ ] inspect handoff readiness.
-  - [ ] apply or reject review decisions.
-  - [ ] rerun final handoff validation.
-  - [ ] run the Phase 3C gate.
-- [ ] Document artifact interpretation:
-  - [ ] which artifact is human-readable.
-  - [ ] which artifact is machine-readable.
-  - [ ] which artifact is source-of-truth for generation.
-  - [ ] which artifact is evidence-only.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` only to clarify that generation still does not consume Phase 3C output.
+- [x] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`.
+- [x] Update `docs/architecture/11-storefront-builder.md` if artifact ownership or handoff boundaries change.
+- [x] Update `docs/agents/storefront-builder.md`.
+- [x] Add a short Phase 4 contract section:
+  - [x] Phase 4 may read only `analysis/agent-handoff/*` and schemas as input.
+  - [x] Phase 4 must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass.
+  - [x] Phase 4 must not write into Starter.
+  - [x] Phase 4 must not modify StorefrontBuilder generation until a separate implementation plan is approved.
+  - [x] Phase 4 must fail if `agent-handoff-readiness` is not passed.
+- [x] Document operator commands:
+  - [x] run Phase 3C full flow.
+  - [x] inspect handoff readiness.
+  - [x] apply or reject review decisions.
+  - [x] rerun final handoff validation.
+  - [x] run the Phase 3C gate.
+- [x] Document artifact interpretation:
+  - [x] which artifact is human-readable.
+  - [x] which artifact is machine-readable.
+  - [x] which artifact is source-of-truth for generation.
+  - [x] which artifact is evidence-only.
 
 Done when:
 
-- [ ] A new agent can read docs and know exactly how to produce and validate a final handoff, and exactly what not to consume yet.
+- [x] A new agent can read docs and know exactly how to produce and validate a final handoff, and exactly what not to consume yet.
 
 ## Implementation Order
 
@@ -792,74 +792,74 @@ Do not combine phases 3C.1 through 3C.8 into one large implementation commit. Th
 
 ## Compatibility Rules
 
-- [ ] Do not modify StorefrontBuilder generation behavior.
-- [ ] Do not make StorefrontBuilder consume `analysis/agent-handoff/*` in this phase.
-- [ ] Do not add ReverseEngineering projects to production runtime dependency graphs.
-- [ ] Do not add references from Storefront V2, Starter, Runtime, Presentation, Components, Commerce Node, or Control Plane to ReverseEngineering.
-- [ ] Do not write generated visual output into Starter.
-- [ ] Do not generate `@page` route files.
-- [ ] Do not let generated visual targets own route/BFF/SEO/media behavior.
-- [ ] Do not let browser code call Commerce Node Storefront API directly.
-- [ ] Do not classify copied reference assets as production-safe without explicit human review metadata.
-- [ ] Keep all Phase 3C artifacts under the ReverseEngineering project output root.
+- [x] Do not modify StorefrontBuilder generation behavior.
+- [x] Do not make StorefrontBuilder consume `analysis/agent-handoff/*` in this phase.
+- [x] Do not add ReverseEngineering projects to production runtime dependency graphs.
+- [x] Do not add references from Storefront V2, Starter, Runtime, Presentation, Components, Commerce Node, or Control Plane to ReverseEngineering.
+- [x] Do not write generated visual output into Starter.
+- [x] Do not generate `@page` route files.
+- [x] Do not let generated visual targets own route/BFF/SEO/media behavior.
+- [x] Do not let browser code call Commerce Node Storefront API directly.
+- [x] Do not classify copied reference assets as production-safe without explicit human review metadata.
+- [x] Keep all Phase 3C artifacts under the ReverseEngineering project output root.
 
 ## Test Matrix
 
 Unit tests:
 
-- [ ] Storefront pattern parser.
-- [ ] Storefront pattern validator.
-- [ ] Presentation catalog builder.
-- [ ] Presentation catalog drift detector.
-- [ ] Multi-page blueprint assembler.
-- [ ] Page composition builder.
-- [ ] Presentation mapping validator.
-- [ ] Review decision resolver.
-- [ ] Agent handoff assembler.
-- [ ] Final readiness validator.
-- [ ] Inspect output model.
+- [x] Storefront pattern parser.
+- [x] Storefront pattern validator.
+- [x] Presentation catalog builder.
+- [x] Presentation catalog drift detector.
+- [x] Multi-page blueprint assembler.
+- [x] Page composition builder.
+- [x] Presentation mapping validator.
+- [x] Review decision resolver.
+- [x] Agent handoff assembler.
+- [x] Final readiness validator.
+- [x] Inspect output model.
 
 Schema tests:
 
-- [ ] `storefront-pattern.schema.json`
-- [ ] `page-contracts.schema.json`
-- [ ] `behavior-boundaries.schema.json`
-- [ ] `generation-zones.schema.json`
-- [ ] `reviewed-semantic-tokens.schema.json`
-- [ ] `reviewed-page-compositions.schema.json`
-- [ ] `reviewed-presentation-mappings.schema.json`
-- [ ] `reviewed-ecommerce-regions.schema.json`
-- [ ] `unsupported-pattern-decisions.schema.json`
-- [ ] `agent-handoff-manifest.schema.json`
-- [ ] `allowed-files.schema.json`
-- [ ] `protected-files.schema.json`
-- [ ] `unresolved-regions.schema.json`
-- [ ] `agent-handoff-readiness.schema.json`
+- [x] `storefront-pattern.schema.json`
+- [x] `page-contracts.schema.json`
+- [x] `behavior-boundaries.schema.json`
+- [x] `generation-zones.schema.json`
+- [x] `reviewed-semantic-tokens.schema.json`
+- [x] `reviewed-page-compositions.schema.json`
+- [x] `reviewed-presentation-mappings.schema.json`
+- [x] `reviewed-ecommerce-regions.schema.json`
+- [x] `unsupported-pattern-decisions.schema.json`
+- [x] `agent-handoff-manifest.schema.json`
+- [x] `allowed-files.schema.json`
+- [x] `protected-files.schema.json`
+- [x] `unresolved-regions.schema.json`
+- [x] `agent-handoff-readiness.schema.json`
 
 Workflow tests:
 
-- [ ] Full fixture run writes all Phase 3C artifacts.
-- [ ] `resume --force-step` works for each new Phase 3C step.
-- [ ] Final handoff validation fails with blockers.
-- [ ] Final handoff validation passes only when required review decisions are resolved.
-- [ ] `inspect` reports Phase 3C readiness and artifact paths.
+- [x] Full fixture run writes all Phase 3C artifacts.
+- [x] `resume --force-step` works for each new Phase 3C step.
+- [x] Final handoff validation fails with blockers.
+- [x] Final handoff validation passes only when required review decisions are resolved.
+- [x] `inspect` reports Phase 3C readiness and artifact paths.
 
 Boundary tests:
 
-- [ ] StorefrontBuilder does not read Phase 3C artifacts.
-- [ ] ReverseEngineering does not reference production runtime projects.
-- [ ] Generated artifact paths are not written to Starter.
-- [ ] Protected path targets are rejected.
-- [ ] Browser action policy rejects direct Commerce Node calls.
+- [x] StorefrontBuilder does not read Phase 3C artifacts.
+- [x] ReverseEngineering does not reference production runtime projects.
+- [x] Generated artifact paths are not written to Starter.
+- [x] Protected path targets are rejected.
+- [x] Browser action policy rejects direct Commerce Node calls.
 
 Fixture tests:
 
-- [ ] Complete multi-page ecommerce fixture passes.
-- [ ] Unsupported interaction fixture fails.
-- [ ] Missing page fixture fails.
-- [ ] Missing required slot fixture fails.
-- [ ] Stale review fixture fails.
-- [ ] Ambiguous mapping fixture requires review.
+- [x] Complete multi-page ecommerce fixture passes.
+- [x] Unsupported interaction fixture fails.
+- [x] Missing page fixture fails.
+- [x] Missing required slot fixture fails.
+- [x] Stale review fixture fails.
+- [x] Ambiguous mapping fixture requires review.
 
 ## Risk Register
 
@@ -885,20 +885,20 @@ Fixture tests:
 
 Phase 3C can close only when:
 
-- [ ] Storefront pattern contract is typed and schema-validated.
-- [ ] Presentation catalog includes every required foundation slot, including `VisualScripts` and system states.
-- [ ] Phase 3C supports a single multi-page site blueprint.
-- [ ] No workflow code depends on `captures/home` or `plan.Pages.First()` for final analysis.
-- [ ] Presentation mappings include page, section, target path, generated zone, behavior ownership, confidence, and review state.
-- [ ] Review decisions are deterministic, hash-bound, and stale-safe.
-- [ ] Reviewed artifacts are generated only from draft artifacts plus valid review decisions.
-- [ ] Final handoff package exists under `analysis/agent-handoff/`.
-- [ ] Final readiness fails the workflow and CLI when blockers exist.
-- [ ] `inspect` reports final handoff readiness and artifact paths.
-- [ ] Positive and negative ecommerce fixtures cover the final handoff contract.
-- [ ] Phase 3C gate passes locally.
-- [ ] Docs explain that StorefrontBuilder still does not consume Phase 3C artifacts until a later approved phase.
-- [ ] Closure evidence is recorded in `docs/qa/phase3c-final-handoff-closure.md`.
+- [x] Storefront pattern contract is typed and schema-validated.
+- [x] Presentation catalog includes every required foundation slot, including `VisualScripts` and system states.
+- [x] Phase 3C supports a single multi-page site blueprint.
+- [x] No workflow code depends on `captures/home` or `plan.Pages.First()` for final analysis.
+- [x] Presentation mappings include page, section, target path, generated zone, behavior ownership, confidence, and review state.
+- [x] Review decisions are deterministic, hash-bound, and stale-safe.
+- [x] Reviewed artifacts are generated only from draft artifacts plus valid review decisions.
+- [x] Final handoff package exists under `analysis/agent-handoff/`.
+- [x] Final readiness fails the workflow and CLI when blockers exist.
+- [x] `inspect` reports final handoff readiness and artifact paths.
+- [x] Positive and negative ecommerce fixtures cover the final handoff contract.
+- [x] Phase 3C gate passes locally.
+- [x] Docs explain that StorefrontBuilder still does not consume Phase 3C artifacts until a later approved phase.
+- [x] Closure evidence is recorded in `docs/qa/phase3c-final-handoff-closure.md`.
 
 ## Autoplan Decision Audit
 

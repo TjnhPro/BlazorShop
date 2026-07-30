@@ -14,6 +14,7 @@
 | `tools/BlazorShop.AI.StorefrontReverseEngineering/Skills/reverse-engineering-skills.json` | Phase 3A reverse-engineering skill catalog manifest. It documents deterministic, hybrid, and review-required steps; it is not an executable skill runtime. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1` | Phase 3A hardening gate for the ReverseEngineering executable, local fixture browser tests, readiness validation, boundary scan, and StorefrontBuilder compatibility smoke. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3b-gate.ps1` | Phase 3B gate for visual analysis, ecommerce mapping, confidence review, Visual Blueprint v1, local multi-page fixture workflows, boundary scans, and StorefrontBuilder plan-only smoke. |
+| `scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1` | Phase 3C final handoff gate for site-level fixtures, mutation blockers, schema validation, final handoff readiness, and StorefrontBuilder non-consumption boundary scans. |
 | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
@@ -21,9 +22,9 @@
 
 ## ReverseEngineering Handoff
 
-`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review.
+`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review. Phase 3C adds strict Storefront pattern contracts, reviewed page compositions, constrained agent handoff files under `analysis/agent-handoff/`, and final handoff readiness under `analysis/agent-handoff/handoff-readiness.json`.
 
-StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. StorefrontBuilder does not consume `analysis/visual-blueprint.v1.*.json` until a later approved phase changes the handoff boundary. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
+StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. StorefrontBuilder does not consume `analysis/visual-blueprint.v1.*.json` or `analysis/agent-handoff/*` until a later approved phase changes the handoff boundary. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
 
 Phase 3B is not a visual generator. It performs design-token extraction, ecommerce region mapping, confidence review, and blueprint assembly, but it does not produce component source, Razor, CSS, generated projects, or blueprint-driven StorefrontBuilder output. Reference assets, logos, copy, and brand-specific visual material are reference-only by default unless later human review and approved workflow clear reuse.
 
@@ -64,7 +65,18 @@ dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop
 dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step assemble-blueprint-v1
 ```
 
-`inspect` reads `project.json`, `runs/{runId}.json`, `reports/readiness-report.json`, Phase 3B analysis JSON, review queue JSON, and `reports/generation-readiness.json` without launching a browser. Its output includes latest run status, readiness pass/fail/unknown, blocking and warning counts, the latest blocking finding, blueprint path, readiness report path, Phase 3B artifact status, review queue count, generation readiness, latest Phase 3B blocker, and step status rows when a valid run file exists.
+Phase 3C final handoff commands:
+
+```powershell
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project obj/storefront-reverse-engineering/projects/fixturedemo
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step apply-review-decisions
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step validate-agent-handoff-readiness
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1
+```
+
+Review decisions are edited in `review/review-decisions.json`. Apply approved, modified, rejected, or deferred decisions by rerunning `apply-review-decisions` or any downstream step. Decisions must include reviewer metadata, source artifact ID, source artifact hash, and a stable decision ID; stale or duplicate decisions fail before reviewed artifacts are emitted.
+
+`inspect` reads `project.json`, `runs/{runId}.json`, `reports/readiness-report.json`, Phase 3B analysis JSON, review queue JSON, `reports/generation-readiness.json`, and Phase 3C handoff readiness without launching a browser. Its output includes latest run status, readiness pass/fail/unknown, blocking and warning counts, the latest blocking finding, blueprint path, readiness report path, Phase 3B artifact status, review queue count, generation readiness, latest Phase 3B blocker, final handoff readiness, final handoff blocker/warning counts, agent handoff path, and step status rows when a valid run file exists.
 
 Common Phase 3B failures are reported as problem/cause/fix lines:
 
@@ -76,6 +88,27 @@ Common Phase 3B failures are reported as problem/cause/fix lines:
 | Presentation catalog drift | Update catalog extraction against current Presentation/Starter contracts and rerun `--force-step build-presentation-catalog`. |
 | Unresolved blocking review item | Write `review/review-decisions.json`, then rerun confidence review and blueprint assembly. |
 | Unsupported critical pattern | Resolve the unsupported mapping before generation consumes the blueprint. |
+| Failed final handoff readiness | Inspect `analysis/agent-handoff/handoff-readiness.json`, resolve blocking codes, and rerun `validate-agent-handoff-readiness`. |
+
+## Phase 3C Artifact Interpretation
+
+| Artifact | Role |
+| --- | --- |
+| `analysis/agent-handoff/task.md` | Human-readable implementation brief for a later Phase 4 agent. |
+| `analysis/agent-handoff/manifest.json` | Machine-readable package index and consumer contract. |
+| `analysis/agent-handoff/allowed-files.json` | Machine-readable allowlist for future generated visual files. |
+| `analysis/agent-handoff/protected-files.json` | Machine-readable protected path and behavior boundary manifest. |
+| `analysis/agent-handoff/page-compositions.json` | Source-of-truth page/section composition input for future generation. |
+| `analysis/agent-handoff/storefront-pattern.json` | Source-of-truth Storefront Presentation/Starter pattern contract. |
+| `analysis/agent-handoff/visual-blueprint.json` | Reviewed evidence index for handoff traceability. |
+| `analysis/agent-handoff/design-tokens.json` and `visual-style.json` | Reviewed visual token/style evidence for future implementation. |
+| `analysis/agent-handoff/unresolved-regions.json` | Machine-readable blocker/warning summary. |
+| `analysis/agent-handoff/handoff-readiness.json` | Final machine-readable readiness gate; Phase 4 must fail when this is not passed. |
+| Raw `captures/*`, `analysis/pages/*`, and screenshots/crops | Evidence-only inputs; Phase 4 must not reinterpret them unless explicitly running a new ReverseEngineering pass. |
+
+## Phase 4 Consumption Contract
+
+Phase 4 may read only `analysis/agent-handoff/*` and schemas as input. It must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass. It must not write into `BlazorShop.Storefront.Starter`. It must not modify StorefrontBuilder generation until a separate implementation plan is approved. It must fail if `analysis/agent-handoff/handoff-readiness.json` is missing or not passed.
 
 ## ReverseEngineering Browser Setup
 

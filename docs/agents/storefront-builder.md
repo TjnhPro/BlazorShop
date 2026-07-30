@@ -15,9 +15,11 @@ Use this guide when changing StorefrontBuilder tooling, Starter, generated store
 
 StorefrontBuilder is development-time tooling. Do not add it as a production ASP.NET service, Commerce Node module, or Control Plane feature unless a new architecture decision explicitly changes that.
 
-`BlazorShop.AI.StorefrontReverseEngineering` is a separate Phase 3A development-time executable under `tools/`. It creates reference evidence, workflow state, neutral visual-blueprint drafts, originality audit, and readiness reports under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. It must not reference production runtime projects, generated storefront roots, or Storefront V2. StorefrontBuilder generation does not consume its artifacts until a later approved phase.
+`BlazorShop.AI.StorefrontReverseEngineering` is a separate development-time executable under `tools/`. It creates reference evidence, workflow state, neutral visual-blueprint drafts, reviewed visual/ecommerce mappings, Phase 3C final handoff packages, originality audit, and readiness reports under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. It must not reference production runtime projects, generated storefront roots, or Storefront V2. StorefrontBuilder generation does not consume its artifacts until a later approved phase.
 
-Phase 3A ReverseEngineering work is evidence hardening only. Do not present it as a visual generator, do not claim AI analysis is complete, and do not treat captured assets, logos, copy, or brand-specific visuals as reusable by default. Phase 3B is where design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder blueprint consumption may be planned.
+Phase 3A ReverseEngineering work is evidence hardening only. Phase 3B adds visual analysis, ecommerce mapping, confidence review, and Visual Blueprint v1. Phase 3C adds the strict `analysis/agent-handoff/*` package and final handoff readiness. Do not present any of those phases as visual generation, do not claim captured assets, logos, copy, or brand-specific visuals are reusable by default, and do not wire StorefrontBuilder consumption without a later approved plan.
+
+Phase 4 may read only `analysis/agent-handoff/*` and schemas as input. It must fail unless `analysis/agent-handoff/handoff-readiness.json` passed, must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass, must not write into Starter, and must not modify StorefrontBuilder generation until a separate implementation plan is approved.
 
 Generated storefronts must:
 
@@ -87,6 +89,8 @@ dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.Stor
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1
+powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1
 ```
 
 Install .NET Playwright Chromium once before browser tests or the hardening gate:

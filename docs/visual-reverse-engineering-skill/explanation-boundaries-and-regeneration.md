@@ -39,6 +39,12 @@ Generated storefronts keep review artifacts under `docs/storefront-analysis/` be
 
 Without these files, regeneration becomes hard to review and manual changes are harder to distinguish from generated output. Canonical generated proof output under `artifacts/` and `obj/` is ignored and disposable; commit generated artifacts only when a phase explicitly promotes a specific generated storefront or report into tracked evidence.
 
+## Why Phase 3C Handoff Is Separate
+
+`BlazorShop.AI.StorefrontReverseEngineering` writes Phase 3C artifacts under `analysis/agent-handoff/` so future generation can start from reviewed, constrained evidence instead of rereading raw screenshots or DOM snapshots. The handoff package names allowed files, protected files, page compositions, Storefront pattern contracts, unresolved regions, and final readiness.
+
+That handoff is still evidence, not active generation input. StorefrontBuilder does not consume `analysis/agent-handoff/*` until a separate approved Phase 4 plan changes the generation boundary. Phase 4 may read only `analysis/agent-handoff/*` and schemas, must fail unless final handoff readiness passed, must not reinterpret raw evidence unless it runs a new ReverseEngineering pass, must not write into Starter, and must not modify StorefrontBuilder generation without that approved plan.
+
 ## How Regeneration Should Be Scoped
 
 Use the smallest regeneration scope that matches the change:
