@@ -32,6 +32,7 @@ public sealed class VisualSchemaRegistry : IVisualSchemaRegistry
             ["page-specification-draft"] = Create("page-specification-draft"),
             ["component-specification-draft"] = Create("component-specification-draft"),
             ["visual-blueprint-draft"] = Create("visual-blueprint-draft"),
+            ["ai-inference-log"] = Create("ai-inference-log"),
             ["originality-audit"] = Create("originality-audit"),
             ["readiness-report"] = Create("readiness-report"),
             ["workflow-run"] = Create("workflow-run")

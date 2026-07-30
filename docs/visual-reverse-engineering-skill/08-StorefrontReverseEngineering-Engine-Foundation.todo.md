@@ -729,28 +729,28 @@ Files/directories:
 
 Tasks:
 
-- [ ] Create `IVisualAnalysisProvider`.
-- [ ] Create `VisualAnalysisResult`.
-- [ ] Create `AnalysisContext`.
-- [ ] Implement `RuleBasedVisualAnalysisProvider`.
-- [ ] Create `PageTopologyDraft`.
-- [ ] Create `SectionCandidate`.
-- [ ] Create `GlobalShellCandidate`.
-- [ ] Create `PageSpecificationDraft`.
-- [ ] Create `ComponentSpecificationDraft`.
-- [ ] Create `VisualBlueprintDraft`.
-- [ ] Include evidence references in every draft output.
-- [ ] Add confidence fields.
-- [ ] Add unsupported pattern warnings.
-- [ ] Add optional AI inference log contract.
-- [ ] Add tests proving rule-based analysis works without AI secrets.
-- [ ] Add tests that AI provider settings are optional.
+- [x] Create `IVisualAnalysisProvider`.
+- [x] Create `VisualAnalysisResult`.
+- [x] Create `AnalysisContext`.
+- [x] Implement `RuleBasedVisualAnalysisProvider`.
+- [x] Create `PageTopologyDraft`.
+- [x] Create `SectionCandidate`.
+- [x] Create `GlobalShellCandidate`.
+- [x] Create `PageSpecificationDraft`.
+- [x] Create `ComponentSpecificationDraft`.
+- [x] Create `VisualBlueprintDraft`.
+- [x] Include evidence references in every draft output.
+- [x] Add confidence fields.
+- [x] Add unsupported pattern warnings.
+- [x] Add optional AI inference log contract.
+- [x] Add tests proving rule-based analysis works without AI secrets.
+- [x] Add tests that AI provider settings are optional.
 
 Guardrails:
 
-- [ ] Do not call external AI in automated tests.
-- [ ] Do not embed provider-specific DTOs in core contracts.
-- [ ] Do not create Blazor component names as required output yet; use neutral component candidates.
+- [x] Do not call external AI in automated tests.
+- [x] Do not embed provider-specific DTOs in core contracts.
+- [x] Do not create Blazor component names as required output yet; use neutral component candidates.
 
 Verification:
 
@@ -760,9 +760,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Blueprint draft can be produced from fixture evidence.
-- [ ] Blueprint references evidence IDs.
-- [ ] AI provider abstraction exists but no provider is required.
+- [x] Blueprint draft can be produced from fixture evidence.
+- [x] Blueprint references evidence IDs.
+- [x] AI provider abstraction exists but no provider is required.
 
 ## Phase 12 - Originality And Provenance Foundation
 
