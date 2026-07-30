@@ -96,6 +96,21 @@ public sealed class SchemaArtifactTests
     }
 
     [Fact]
+    public void SchemaValidator_RejectsInvalidCapturePolicyLimits()
+    {
+        var validator = new VisualSchemaValidator(new VisualSchemaRegistry());
+        var zeroLimit = JsonNode.Parse(ConfigurationJson(
+            "\"maximumEvidenceElements\":0,\"maximumSingleColorRatio\":0.98"))!;
+        var invalidRatio = JsonNode.Parse(ConfigurationJson(
+            "\"maximumEvidenceElements\":80,\"maximumSingleColorRatio\":1.5"))!;
+
+        var limitException = Assert.Throws<InvalidOperationException>(() => validator.Validate("configuration", zeroLimit));
+        var ratioException = Assert.Throws<InvalidOperationException>(() => validator.Validate("configuration", invalidRatio));
+        Assert.Contains("SRE-SCHEMA-014", limitException.Message, StringComparison.Ordinal);
+        Assert.Contains("SRE-SCHEMA-014", ratioException.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ArtifactPath_RejectsTraversal()
     {
         var exception = Assert.Throws<InvalidOperationException>(() => ArtifactPath.Create("../project.json"));
@@ -151,4 +166,32 @@ public sealed class SchemaArtifactTests
 
         return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");
     }
+
+    private static string ConfigurationJson(string policyTail) =>
+        $$"""
+        {
+          "schemaVersion":"1.0",
+          "artifactKind":"configuration",
+          "artifactId":"configuration-demo",
+          "createdUtc":"2026-01-01T00:00:00Z",
+          "projectId":"demo",
+          "name":"Demo",
+          "referenceUrl":"https://example.test/",
+          "outputRoot":"obj/storefront-reverse-engineering/projects",
+          "capturePolicy":{
+            "timeoutMilliseconds":30000,
+            "maximumPageHeight":12000,
+            "maximumPages":1,
+            "maximumEvidenceAssets":80,
+            "maximumTextLength":160,
+            "maximumSegmentCount":50,
+            "segmentOverlapPixels":80,
+            "scrollSettleMilliseconds":100,
+            "finalSettleMilliseconds":150,
+            {{policyTail}}
+          },
+          "originalityPolicy":{},
+          "viewports":[{"id":"desktop-1440","width":1440,"height":900,"deviceScaleFactor":1,"isMobile":false}]
+        }
+        """;
 }

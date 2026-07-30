@@ -34,10 +34,6 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
 
     private sealed class PlaywrightReferenceBrowserSession : IReferenceBrowserSession
     {
-        private const int MaximumEvidenceElements = 80;
-        private const int MaximumEvidenceAssets = 80;
-        private const int MaximumTextLength = 160;
-
         private readonly IPlaywright playwright;
         private readonly IBrowser browser;
         private readonly IBrowserContext context;
@@ -71,6 +67,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
         public async Task NavigateAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            CapturePolicyDefaults.Validate(policy);
             await page.GotoAsync(session.SourceUrl, new PageGotoOptions
             {
                 Timeout = policy.TimeoutMilliseconds,
@@ -107,7 +104,8 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             steps.Add("wait-fonts-when-available");
 
             await page.EvaluateAsync(
-                "() => Promise.all(Array.from(document.images).slice(0, 80).map(img => img.complete ? true : new Promise(resolve => { img.addEventListener('load', resolve, { once: true }); img.addEventListener('error', resolve, { once: true }); setTimeout(resolve, 2500); })))");
+                "maximumImages => Promise.all(Array.from(document.images).slice(0, Math.max(1, maximumImages || 80)).map(img => img.complete ? true : new Promise(resolve => { img.addEventListener('load', resolve, { once: true }); img.addEventListener('error', resolve, { once: true }); setTimeout(resolve, 2500); })))",
+                policy.MaximumEvidenceAssets);
             steps.Add("wait-important-images");
 
             await page.AddStyleTagAsync(new PageAddStyleTagOptions
@@ -118,8 +116,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
 
             if (!policy.StrictWarnings)
             {
-                hiddenNoiseSelectors.Add(".cookie-banner");
-                hiddenNoiseSelectors.Add("[data-capture-noise]");
+                hiddenNoiseSelectors.AddRange(CapturePolicyDefaults.ResolveNoiseSelectors(policy));
                 await page.EvaluateAsync(
                     "selectors => selectors.forEach(selector => document.querySelectorAll(selector).forEach(element => { element.setAttribute('data-sre-hidden-noise', 'true'); element.style.setProperty('display', 'none', 'important'); }))",
                     hiddenNoiseSelectors);
@@ -131,11 +128,11 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             for (var y = 0; y < metrics.DocumentHeight; y += stepHeight)
             {
                 await page.EvaluateAsync("y => window.scrollTo(0, y)", y);
-                await page.WaitForTimeoutAsync(100);
+                await page.WaitForTimeoutAsync(policy.ScrollSettleMilliseconds);
             }
 
             await page.EvaluateAsync("() => window.scrollTo(0, 0)");
-            await page.WaitForTimeoutAsync(150);
+            await page.WaitForTimeoutAsync(policy.FinalSettleMilliseconds);
             steps.Add("warm-scroll-down-up");
 
             return new PageStabilizationReport(steps, hiddenNoiseSelectors, warnings);
@@ -159,7 +156,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
 
             var evidenceJson = await page.EvaluateAsync<JsonElement>(
                 EvidenceScript,
-                new EvidenceCaptureOptions(MaximumEvidenceElements, MaximumEvidenceAssets, MaximumTextLength));
+                new EvidenceCaptureOptions(policy.MaximumEvidenceElements, policy.MaximumEvidenceAssets, policy.MaximumTextLength));
             var evidence = JsonSerializer.Deserialize<RenderedPageEvidencePayload>(evidenceJson.GetRawText(), VisualJson.Options)
                 ?? throw new InvalidOperationException("[SRE-BROWSER-009] Rendered evidence extraction returned no data. Problem: Playwright evaluate produced an empty evidence payload. Cause: the page script failed or returned invalid JSON. Fix: inspect the reference page fixture and browser console.");
 
@@ -266,7 +263,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
                 return new BrowserActionResult(false, [$"Unsupported browser action '{action.Type}'."]);
             }
 
-            await page.WaitForTimeoutAsync(action.DelayMilliseconds ?? 150);
+            await page.WaitForTimeoutAsync(action.DelayMilliseconds ?? policy.FinalSettleMilliseconds);
             var afterUri = new Uri(page.Url);
             if (!string.Equals(beforeUri.Host, afterUri.Host, StringComparison.OrdinalIgnoreCase))
             {

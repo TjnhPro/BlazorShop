@@ -361,60 +361,60 @@ Current files:
 
 Tasks:
 
-- [ ] Extend `CapturePolicy` with:
-  - [ ] `MaximumEvidenceElements`
-  - [ ] `MaximumEvidenceAssets`
-  - [ ] `MaximumTextLength`
-  - [ ] `MaximumSegmentCount`
-  - [ ] `SegmentOverlapPixels`
-  - [ ] `ScrollSettleMilliseconds`
-  - [ ] `FinalSettleMilliseconds`
-  - [ ] `EnableAutomaticStitchedFallback`
-  - [ ] `MaximumSingleColorRatio`
-  - [ ] `NoiseSelectors`
-- [ ] Keep default values compatible with current behavior:
-  - [ ] evidence elements default `80`
-  - [ ] evidence assets default `80`
-  - [ ] text length default `160`
-  - [ ] segment count default `50`
-  - [ ] overlap default `80`
-  - [ ] scroll settle default `100`
-  - [ ] final settle default `150`
-  - [ ] automatic fallback default `true`
-  - [ ] single-color ratio default around `0.98`
-- [ ] Replace Playwright hard-coded evidence limits with policy values.
-- [ ] Replace stitch hard-coded segment count and overlap with policy values.
-- [ ] Replace stabilization hard-coded settle delays with policy values.
-- [ ] Replace hard-coded noise selector list with policy defaults.
-- [ ] Decide where default noise selectors live:
-  - [ ] recommended: helper on `CapturePolicy` or internal default resolver
-  - [ ] avoid duplicating defaults in Playwright and tests
-- [ ] Update configuration schema numeric validation:
-  - [ ] positive timeout
-  - [ ] positive maximum page height
-  - [ ] positive evidence limits
-  - [ ] positive segment count
-  - [ ] overlap less than viewport height at runtime
-  - [ ] single-color ratio between `0` and `1`
-- [ ] Add validation error messages with problem/cause/fix style.
+- [x] Extend `CapturePolicy` with:
+  - [x] `MaximumEvidenceElements`
+  - [x] `MaximumEvidenceAssets`
+  - [x] `MaximumTextLength`
+  - [x] `MaximumSegmentCount`
+  - [x] `SegmentOverlapPixels`
+  - [x] `ScrollSettleMilliseconds`
+  - [x] `FinalSettleMilliseconds`
+  - [x] `EnableAutomaticStitchedFallback`
+  - [x] `MaximumSingleColorRatio`
+  - [x] `NoiseSelectors`
+- [x] Keep default values compatible with current behavior:
+  - [x] evidence elements default `80`
+  - [x] evidence assets default `80`
+  - [x] text length default `160`
+  - [x] segment count default `50`
+  - [x] overlap default `80`
+  - [x] scroll settle default `100`
+  - [x] final settle default `150`
+  - [x] automatic fallback default `true`
+  - [x] single-color ratio default around `0.98`
+- [x] Replace Playwright hard-coded evidence limits with policy values.
+- [x] Replace stitch hard-coded segment count and overlap with policy values.
+- [x] Replace stabilization hard-coded settle delays with policy values.
+- [x] Replace hard-coded noise selector list with policy defaults.
+- [x] Decide where default noise selectors live:
+  - [x] recommended: helper on `CapturePolicy` or internal default resolver
+  - [x] avoid duplicating defaults in Playwright and tests
+- [x] Update configuration schema numeric validation:
+  - [x] positive timeout
+  - [x] positive maximum page height
+  - [x] positive evidence limits
+  - [x] positive segment count
+  - [x] overlap less than viewport height at runtime
+  - [x] single-color ratio between `0` and `1`
+- [x] Add validation error messages with problem/cause/fix style.
 
 Guardrails:
 
-- [ ] Do not make existing generated `configuration.json` invalid unless a migration/default path exists.
-- [ ] Do not require users to set every option manually.
-- [ ] Do not expose policy options unrelated to Phase 3A.
+- [x] Do not make existing generated `configuration.json` invalid unless a migration/default path exists.
+- [x] Do not require users to set every option manually.
+- [x] Do not expose policy options unrelated to Phase 3A.
 
 Tests:
 
-- [ ] Custom `MaximumEvidenceElements` limits rendered evidence.
-- [ ] Custom `MaximumEvidenceAssets` limits assets.
-- [ ] Custom `MaximumTextLength` truncates text snippets.
-- [ ] Custom noise selector is hidden during stabilization.
-- [ ] Custom settle timings are honored in deterministic fake/session tests.
-- [ ] Custom `MaximumSegmentCount` blocks overly tall stitching.
-- [ ] Invalid negative or zero limits fail schema/domain validation.
-- [ ] Invalid single-color ratio fails validation.
-- [ ] Automatic fallback can be disabled by policy.
+- [x] Custom `MaximumEvidenceElements` limits rendered evidence.
+- [x] Custom `MaximumEvidenceAssets` limits assets.
+- [x] Custom `MaximumTextLength` truncates text snippets.
+- [x] Custom noise selector is hidden during stabilization.
+- [x] Custom settle timings are honored in deterministic fake/session tests.
+- [x] Custom `MaximumSegmentCount` blocks overly tall stitching.
+- [x] Invalid negative or zero limits fail schema/domain validation.
+- [x] Invalid single-color ratio fails validation.
+- [x] Automatic fallback can be disabled by policy.
 
 Verification:
 
@@ -424,9 +424,18 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Important runtime limits are not hard-coded in browser/stitch implementation.
-- [ ] Defaults preserve current behavior.
-- [ ] Invalid policy is caught before confusing runtime failures.
+- [x] Important runtime limits are not hard-coded in browser/stitch implementation.
+- [x] Defaults preserve current behavior.
+- [x] Invalid policy is caught before confusing runtime failures.
+
+Implementation evidence:
+
+- Extended `CapturePolicy` with evidence limits, stitch limits, settle timings, automatic fallback, blank threshold, and optional noise selectors.
+- Added `CapturePolicyDefaults` for default noise selector resolution and problem/cause/fix validation.
+- Replaced Playwright evidence/image/noise/settle hard-codes and stitch segment/overlap hard-codes with policy values.
+- Updated `configuration.schema.json` numeric rules for the policy surface, including single-color ratio `0..1`; overlap is checked at runtime against viewport height.
+- Added tests for custom evidence/assets/text limits, custom noise selectors, custom settle timing, custom segment limits, invalid schema policy values, and fallback-disable behavior.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Schema|Policy|Browser|Evidence|StableCapture"` passed `39/39`.
 
 ## Phase F4 - Harden Readiness By Evidence Quality
 

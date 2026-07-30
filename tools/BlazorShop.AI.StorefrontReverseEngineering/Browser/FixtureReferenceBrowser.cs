@@ -14,6 +14,7 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        CapturePolicyDefaults.Validate(policy);
 
         var uri = new Uri(session.SourceUrl);
         if (uri.Scheme != "file")
@@ -114,7 +115,7 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         public Task<PageStabilizationReport> StabilizeAsync(CancellationToken cancellationToken) =>
             Task.FromResult(new PageStabilizationReport(
                 ["wait-dom-ready", "wait-network-idle-with-fallback", "wait-fonts-when-available", "wait-important-images", "hide-configured-noise-selectors", "warm-scroll-down-up"],
-                policy.StrictWarnings ? [] : [".cookie-banner", "[data-capture-noise]"]));
+                policy.StrictWarnings ? [] : CapturePolicyDefaults.ResolveNoiseSelectors(policy)));
 
         public async Task<BrowserCaptureResult> CaptureCurrentStateAsync(CancellationToken cancellationToken)
         {

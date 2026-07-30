@@ -50,6 +50,47 @@ public sealed class PlaywrightIntegrationTests
 
     [Fact]
     [Trait("Category", "Playwright")]
+    public async Task Playwright_HttpFixture_CustomCapturePolicyLimitsEvidence()
+    {
+        await using var server = await StartServerAsync();
+        var browser = new PlaywrightReferenceBrowser();
+        var capture = await browser.CaptureAsync(
+            new BrowserPageSession("playwright-policy", "home", server.BaseUrl),
+            ViewportDefinition.Defaults[0],
+            new CapturePolicy(MaximumEvidenceElements: 2, MaximumEvidenceAssets: 1, MaximumTextLength: 24),
+            CancellationToken.None);
+
+        Assert.True(capture.Styles.Count <= 2);
+        Assert.True(capture.Boxes.Count <= 2);
+        Assert.True(capture.Assets.Count <= 1);
+        Assert.All(
+            capture.Styles.Where(style => style.Properties.TryGetValue("text-snippet", out _)),
+            style => Assert.True(style.Properties["text-snippet"].Length <= 24));
+    }
+
+    [Fact]
+    [Trait("Category", "Playwright")]
+    public async Task Playwright_HttpFixture_CustomNoiseSelectorIsHidden()
+    {
+        await using var server = await StartServerAsync();
+        var browser = new PlaywrightReferenceBrowser();
+        var viewport = ViewportDefinition.Defaults[0];
+
+        await using var session = await browser.OpenSessionAsync(
+            new BrowserPageSession("playwright-noise", "home", server.BaseUrl),
+            viewport,
+            new CapturePolicy(NoiseSelectors: [".product-card"]),
+            CancellationToken.None);
+        await session.NavigateAsync(CancellationToken.None);
+        var stabilization = await session.StabilizeAsync(CancellationToken.None);
+        var evidence = await session.ExtractRenderedEvidenceAsync(CancellationToken.None);
+
+        Assert.Contains(".product-card", stabilization.HiddenNoiseSelectors);
+        Assert.DoesNotContain(evidence.Boxes, box => box.Selector.Contains("product-card", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    [Trait("Category", "Playwright")]
     public async Task Playwright_HttpFixture_StitchedFallbackCreatesRealImage()
     {
         await using var server = await StartServerAsync();

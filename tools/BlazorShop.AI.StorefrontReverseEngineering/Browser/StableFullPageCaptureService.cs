@@ -8,8 +8,6 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 public sealed class StableFullPageCaptureService
 {
     private const string StitchedCaptureMethod = "stitched";
-    private const int SegmentOverlapPixels = 80;
-    private const int MaximumSegmentCount = 50;
     private static readonly HashSet<string> AutomaticFallbackFindingCodes = new(StringComparer.Ordinal)
     {
         "missing-screenshot-file",
@@ -39,6 +37,7 @@ public sealed class StableFullPageCaptureService
         string? viewportArtifactRoot = null,
         string? relativeViewportRoot = null)
     {
+        CapturePolicyDefaults.Validate(policy);
         await using var browserSession = await browser.OpenSessionAsync(session, viewport, policy, cancellationToken);
         RenderedPageEvidence? evidence = null;
         PageStabilizationReport stabilization;
@@ -232,14 +231,19 @@ public sealed class StableFullPageCaptureService
             throw new InvalidOperationException($"[SRE-STITCH-002] Cannot stitch page beyond capture policy height. Problem: document height is {metrics.DocumentHeight}px. Cause: policy maximum is {policy.MaximumPageHeight}px. Fix: increase maximum height after review or reduce capture scope.");
         }
 
-        var step = Math.Max(1, viewport.Height - SegmentOverlapPixels);
+        if (policy.SegmentOverlapPixels >= viewport.Height)
+        {
+            throw new InvalidOperationException($"[SRE-STITCH-007] Segment overlap must be smaller than viewport height. Problem: overlap is {policy.SegmentOverlapPixels}px and viewport height is {viewport.Height}px. Cause: stitching cannot advance scroll positions. Fix: reduce capturePolicy.segmentOverlapPixels below the smallest viewport height.");
+        }
+
+        var step = Math.Max(1, viewport.Height - policy.SegmentOverlapPixels);
         var positions = new List<int>();
         for (var y = 0; y < metrics.DocumentHeight; y += step)
         {
             positions.Add(Math.Min(y, Math.Max(0, metrics.DocumentHeight - viewport.Height)));
-            if (positions.Count > MaximumSegmentCount)
+            if (positions.Count > policy.MaximumSegmentCount)
             {
-                throw new InvalidOperationException($"[SRE-STITCH-003] Stitched capture exceeded segment limit. Problem: more than {MaximumSegmentCount} viewport segments are required. Cause: page is too tall for deterministic local capture. Fix: reduce page scope or increase the reviewed policy limit.");
+                throw new InvalidOperationException($"[SRE-STITCH-003] Stitched capture exceeded segment limit. Problem: more than {policy.MaximumSegmentCount} viewport segments are required. Cause: page is too tall for deterministic local capture. Fix: reduce page scope or increase the reviewed policy limit.");
             }
 
             if (positions[^1] + viewport.Height >= metrics.DocumentHeight)
@@ -259,7 +263,7 @@ public sealed class StableFullPageCaptureService
         for (var index = 0; index < positions.Count; index++)
         {
             var y = positions[index];
-            await browserSession.ExecuteAsync(new BrowserSessionAction("scroll-to-y", ScrollY: y, DelayMilliseconds: 150), cancellationToken);
+            await browserSession.ExecuteAsync(new BrowserSessionAction("scroll-to-y", ScrollY: y, DelayMilliseconds: policy.ScrollSettleMilliseconds), cancellationToken);
             var png = await browserSession.CaptureViewportScreenshotAsync(cancellationToken);
             EnsurePngHasExpectedDimensions(png, viewport.Width, viewport.Height);
 

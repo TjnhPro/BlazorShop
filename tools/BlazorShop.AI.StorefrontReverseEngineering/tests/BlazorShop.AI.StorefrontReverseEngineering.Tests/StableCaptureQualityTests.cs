@@ -206,6 +206,46 @@ public sealed class StableCaptureQualityTests
         Assert.Contains(result.QualityReport.Findings, finding => finding.Code == "capture-failed");
     }
 
+    [Fact]
+    public async Task Policy_CustomSegmentCountBlocksOverlyTallStitching()
+    {
+        var viewport = ViewportDefinition.Defaults[0];
+        var browser = new SplitOperationBrowser(
+            false,
+            nativeScreenshotFactory: _ => [1, 2, 3],
+            documentHeight: viewport.Height * 3);
+
+        var result = await new StableFullPageCaptureService(browser)
+            .CaptureAsync(
+                new BrowserPageSession("segment-limit", "home", "https://example.test"),
+                viewport,
+                new CapturePolicy(MaximumSegmentCount: 1),
+                forceStitchedFallback: false,
+                CancellationToken.None);
+
+        Assert.Equal("failed", result.Capture.CaptureMethod);
+        Assert.False(result.QualityReport.Passed);
+        Assert.Contains(result.Capture.Warnings, warning => warning.Contains("segment limit", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task Policy_CustomScrollSettleIsUsedForStitchSegments()
+    {
+        var viewport = ViewportDefinition.Defaults[0];
+        var browser = new SplitOperationBrowser(false, nativeScreenshotFactory: _ => [1, 2, 3]);
+
+        await new StableFullPageCaptureService(browser)
+            .CaptureAsync(
+                new BrowserPageSession("settle", "home", "https://example.test"),
+                viewport,
+                new CapturePolicy(ScrollSettleMilliseconds: 7),
+                forceStitchedFallback: false,
+                CancellationToken.None);
+
+        Assert.NotEmpty(browser.LastSession!.ScrollDelays);
+        Assert.All(browser.LastSession.ScrollDelays, delay => Assert.Equal(7, delay));
+    }
+
     private static async Task<StableCaptureResult> CaptureFixtureAsync(bool forceStitchedFallback)
     {
         var (result, _) = await CaptureFixtureWithArtifactRootAsync(forceStitchedFallback);
@@ -267,15 +307,18 @@ public sealed class StableCaptureQualityTests
         private readonly bool throwNativeScreenshot;
         private readonly Func<ViewportDefinition, byte[]>? nativeScreenshotFactory;
         private readonly Func<ViewportDefinition, byte[]>? viewportScreenshotFactory;
+        private readonly int? documentHeight;
 
         public SplitOperationBrowser(
             bool throwNativeScreenshot,
             Func<ViewportDefinition, byte[]>? nativeScreenshotFactory = null,
-            Func<ViewportDefinition, byte[]>? viewportScreenshotFactory = null)
+            Func<ViewportDefinition, byte[]>? viewportScreenshotFactory = null,
+            int? documentHeight = null)
         {
             this.throwNativeScreenshot = throwNativeScreenshot;
             this.nativeScreenshotFactory = nativeScreenshotFactory;
             this.viewportScreenshotFactory = viewportScreenshotFactory;
+            this.documentHeight = documentHeight;
         }
 
         public int OpenSessionCount { get; private set; }
@@ -290,7 +333,7 @@ public sealed class StableCaptureQualityTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             OpenSessionCount++;
-            LastSession = new SplitOperationSession(viewport, throwNativeScreenshot, nativeScreenshotFactory, viewportScreenshotFactory);
+            LastSession = new SplitOperationSession(viewport, throwNativeScreenshot, nativeScreenshotFactory, viewportScreenshotFactory, documentHeight);
             return Task.FromResult<IReferenceBrowserSession>(LastSession);
         }
     }
@@ -301,17 +344,20 @@ public sealed class StableCaptureQualityTests
         private readonly bool throwNativeScreenshot;
         private readonly Func<ViewportDefinition, byte[]>? nativeScreenshotFactory;
         private readonly Func<ViewportDefinition, byte[]>? viewportScreenshotFactory;
+        private readonly int documentHeight;
 
         public SplitOperationSession(
             ViewportDefinition viewport,
             bool throwNativeScreenshot,
             Func<ViewportDefinition, byte[]>? nativeScreenshotFactory,
-            Func<ViewportDefinition, byte[]>? viewportScreenshotFactory)
+            Func<ViewportDefinition, byte[]>? viewportScreenshotFactory,
+            int? documentHeight)
         {
             this.viewport = viewport;
             this.throwNativeScreenshot = throwNativeScreenshot;
             this.nativeScreenshotFactory = nativeScreenshotFactory;
             this.viewportScreenshotFactory = viewportScreenshotFactory;
+            this.documentHeight = documentHeight ?? viewport.Height + 420;
         }
 
         public string SessionId { get; } = "split-session";
@@ -321,6 +367,8 @@ public sealed class StableCaptureQualityTests
         public int CaptureNativeFullPageScreenshotCount { get; private set; }
 
         public int CaptureViewportScreenshotCount { get; private set; }
+
+        public List<int> ScrollDelays { get; } = [];
 
         public Task NavigateAsync(CancellationToken cancellationToken)
         {
@@ -359,7 +407,7 @@ public sealed class StableCaptureQualityTests
             ExtractRenderedEvidenceCount++;
             return Task.FromResult(new RenderedPageEvidence(
                 viewport.Width,
-                viewport.Height + 420,
+                documentHeight,
                 "<html><body><main class=\"rendered-before-native-failure\">Rendered evidence survived.</main></body></html>",
                 [new ComputedStyleSample("main.rendered-before-native-failure", new Dictionary<string, string> { ["display"] = "grid", ["font-family"] = "Inter" }, "ev-001")],
                 [new ElementBoxSample("main.rendered-before-native-failure", 0, 0, viewport.Width, 300, "ev-001")],
@@ -376,7 +424,7 @@ public sealed class StableCaptureQualityTests
                 throw new InvalidOperationException("native screenshot failed after evidence extraction");
             }
 
-            return Task.FromResult(nativeScreenshotFactory?.Invoke(viewport) ?? CreatePatternPng(viewport.Width, viewport.Height + 420, "#f7fbff"));
+            return Task.FromResult(nativeScreenshotFactory?.Invoke(viewport) ?? CreatePatternPng(viewport.Width, documentHeight, "#f7fbff"));
         }
 
         public Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken)
@@ -389,12 +437,17 @@ public sealed class StableCaptureQualityTests
         public Task<BrowserDocumentMetrics> GetMetricsAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(new BrowserDocumentMetrics(viewport.Width, viewport.Height + 420, viewport.Width, viewport.Height));
+            return Task.FromResult(new BrowserDocumentMetrics(viewport.Width, documentHeight, viewport.Width, viewport.Height));
         }
 
         public Task<BrowserActionResult> ExecuteAsync(BrowserSessionAction action, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (string.Equals(action.Type, "scroll-to-y", StringComparison.OrdinalIgnoreCase))
+            {
+                ScrollDelays.Add(action.DelayMilliseconds ?? -1);
+            }
+
             return Task.FromResult(new BrowserActionResult(true, []));
         }
 

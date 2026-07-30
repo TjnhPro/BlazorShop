@@ -21,7 +21,41 @@ public sealed record CapturePolicy(
     bool PreserveViewportSegments = false,
     bool StrictWarnings = false,
     bool EnableAutomaticStitchedFallback = true,
-    double MaximumSingleColorRatio = 0.98);
+    double MaximumSingleColorRatio = 0.98,
+    int MaximumEvidenceElements = 80,
+    int MaximumEvidenceAssets = 80,
+    int MaximumTextLength = 160,
+    int MaximumSegmentCount = 50,
+    int SegmentOverlapPixels = 80,
+    int ScrollSettleMilliseconds = 100,
+    int FinalSettleMilliseconds = 150,
+    IReadOnlyList<string>? NoiseSelectors = null);
+
+public static class CapturePolicyDefaults
+{
+    private static readonly string[] DefaultNoiseSelectors = [".cookie-banner", "[data-capture-noise]"];
+
+    public static IReadOnlyList<string> ResolveNoiseSelectors(CapturePolicy policy) =>
+        policy.NoiseSelectors is { Count: > 0 } ? policy.NoiseSelectors : DefaultNoiseSelectors;
+
+    public static void Validate(CapturePolicy policy)
+    {
+        if (policy.TimeoutMilliseconds <= 0 ||
+            policy.MaximumPageHeight <= 0 ||
+            policy.MaximumPages <= 0 ||
+            policy.MaximumEvidenceElements <= 0 ||
+            policy.MaximumEvidenceAssets <= 0 ||
+            policy.MaximumTextLength <= 0 ||
+            policy.MaximumSegmentCount <= 0 ||
+            policy.SegmentOverlapPixels < 0 ||
+            policy.ScrollSettleMilliseconds < 0 ||
+            policy.FinalSettleMilliseconds < 0 ||
+            policy.MaximumSingleColorRatio is < 0 or > 1)
+        {
+            throw new InvalidOperationException("[SRE-POLICY-001] Capture policy contains invalid limits. Problem: one or more numeric capture policy values are outside supported bounds. Cause: Phase 3A capture must run with positive limits and a single-color ratio between 0 and 1. Fix: update configuration.json with reviewed capturePolicy values.");
+        }
+    }
+}
 
 public sealed record OriginalityPolicy(
     bool TreatExternalAssetsAsReferenceOnly = true,
