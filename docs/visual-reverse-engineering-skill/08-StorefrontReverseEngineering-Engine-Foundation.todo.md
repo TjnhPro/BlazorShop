@@ -408,42 +408,42 @@ Files/directories:
 
 Tasks:
 
-- [ ] Create `IReferenceBrowser`.
-- [ ] Create `BrowserPageSession`.
-- [ ] Create `BrowserCaptureResult`.
-- [ ] Choose implementation path:
-  - [ ] Preferred: .NET `Microsoft.Playwright` behind `PlaywrightReferenceBrowser`.
-  - [ ] Acceptable bridge: wrap existing Node Playwright script behind the same interface for initial parity.
-- [ ] Add browser install/setup documentation.
-- [ ] Implement viewport setup.
-- [ ] Implement page open with timeout.
-- [ ] Implement DOM snapshot capture.
-- [ ] Implement basic screenshot capture.
-- [ ] Implement computed-style sample extraction.
-- [ ] Implement bounding box extraction.
-- [ ] Implement asset inventory extraction.
-- [ ] Add local fixture storefront page:
-  - [ ] header
-  - [ ] hero
-  - [ ] product grid
-  - [ ] product card
-  - [ ] product detail section
-  - [ ] footer
-  - [ ] sticky header
-  - [ ] lazy-loaded section
-  - [ ] mobile menu
-  - [ ] hover state
-  - [ ] accordion
-  - [ ] cookie banner fixture
-  - [ ] fake brand asset for originality tests
-- [ ] Add integration test for desktop capture.
-- [ ] Add integration test for mobile capture.
+- [x] Create `IReferenceBrowser`.
+- [x] Create `BrowserPageSession`.
+- [x] Create `BrowserCaptureResult`.
+- [x] Choose implementation path:
+  - [x] Preferred: .NET `Microsoft.Playwright` behind `PlaywrightReferenceBrowser`.
+  - [x] Acceptable bridge: wrap existing Node Playwright script behind the same interface for initial parity.
+- [x] Add browser install/setup documentation.
+- [x] Implement viewport setup.
+- [x] Implement page open with timeout.
+- [x] Implement DOM snapshot capture.
+- [x] Implement basic screenshot capture.
+- [x] Implement computed-style sample extraction.
+- [x] Implement bounding box extraction.
+- [x] Implement asset inventory extraction.
+- [x] Add local fixture storefront page:
+  - [x] header
+  - [x] hero
+  - [x] product grid
+  - [x] product card
+  - [x] product detail section
+  - [x] footer
+  - [x] sticky header
+  - [x] lazy-loaded section
+  - [x] mobile menu
+  - [x] hover state
+  - [x] accordion
+  - [x] cookie banner fixture
+  - [x] fake brand asset for originality tests
+- [x] Add integration test for desktop capture.
+- [x] Add integration test for mobile capture.
 
 Guardrails:
 
-- [ ] Automated tests use local fixture only.
-- [ ] Browser logs must not write sensitive cookies or headers.
-- [ ] Capture policy must enforce max height and timeout.
+- [x] Automated tests use local fixture only.
+- [x] Browser logs must not write sensitive cookies or headers.
+- [x] Capture policy must enforce max height and timeout.
 
 Verification:
 
@@ -453,9 +453,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Fixture can be captured in desktop and mobile.
-- [ ] Screenshot, DOM, styles, boxes, assets, and manifest files exist.
-- [ ] Browser failures produce actionable error messages.
+- [x] Fixture can be captured in desktop and mobile.
+- [x] Screenshot, DOM, styles, boxes, assets, and manifest files exist.
+- [x] Browser failures produce actionable error messages.
 
 ## Phase 6 - Reconnaissance And Capture Plan
 

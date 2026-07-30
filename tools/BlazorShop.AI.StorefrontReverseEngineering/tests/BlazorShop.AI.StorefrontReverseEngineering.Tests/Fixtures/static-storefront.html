@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fixture Storefront</title>
+  <style>
+    body { margin: 0; font-family: Inter, Arial, sans-serif; color: #13201a; }
+    .site-header { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; height: 72px; background: #fff; }
+    .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 420px; background: #e7f2ed; }
+    .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .product-card { border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .product-card:hover { transform: translateY(-2px); }
+    .lazy-section { min-height: 360px; }
+    .mobile-menu { display: none; }
+    .accordion [aria-expanded="true"] + .accordion-panel { display: block; }
+    .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; }
+    @media (max-width: 640px) {
+      .hero, .product-grid { grid-template-columns: 1fr; }
+      .mobile-menu { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <strong>Fixture Brand</strong>
+    <button class="mobile-menu" aria-label="Open menu">Menu</button>
+    <nav><a href="/collections">Collections</a><a href="/support">Support</a></nav>
+  </header>
+  <main>
+    <section class="hero"><h1>New fixture arrivals</h1><img src="/assets/fake-brand-hero.svg" alt="Fake brand asset"></section>
+    <section class="product-grid" aria-label="Products">
+      <article class="product-card"><img src="/assets/product-1.jpg" alt="Product 1"><h2>Fixture Jacket</h2><button>Add</button></article>
+      <article class="product-card"><img src="/assets/product-2.jpg" alt="Product 2"><h2>Fixture Bag</h2><button>Add</button></article>
+      <article class="product-card"><img src="/assets/product-3.jpg" alt="Product 3"><h2>Fixture Sneaker</h2><button>Add</button></article>
+    </section>
+    <section class="product-detail"><h2>Product detail</h2><p>Fixture product copy for source-copy review.</p></section>
+    <section class="lazy-section" data-lazy-loaded="true"><h2>Lazy loaded editorial</h2></section>
+    <section class="accordion"><button aria-expanded="true">Details</button><div class="accordion-panel">Accordion content</div></section>
+  </main>
+  <footer><p>Footer links and newsletter form</p><input type="email" placeholder="Email"></footer>
+  <aside class="cookie-banner">Cookie banner fixture <button>Accept</button></aside>
+</body>
+</html>

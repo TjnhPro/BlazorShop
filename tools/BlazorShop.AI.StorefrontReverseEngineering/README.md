@@ -8,3 +8,13 @@ This tool is independent from StorefrontBuilder generation. It writes reverse-en
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- --help
 ```
 
+## Browser Setup
+
+Automated tests use the deterministic local fixture browser and do not require internet access. Manual capture can wrap the existing StorefrontBuilder Node Playwright capture script through `NodePlaywrightReferenceBrowser`; install its dependencies before manual browser runs:
+
+```powershell
+Push-Location tools\BlazorShop.AI.StorefrontBuilder
+npm install
+npx playwright install chromium
+Pop-Location
+```
