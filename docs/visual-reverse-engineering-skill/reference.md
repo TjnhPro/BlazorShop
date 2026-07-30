@@ -28,6 +28,18 @@ Phase 3A is not a visual generator. It does not perform full design-token extrac
 
 Phase 3B starts from Phase 3A runtime evidence and should add design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.
 
+Final Phase 3A capture flow:
+
+1. Open one browser session per viewport.
+2. Navigate and stabilize the page.
+3. Extract rendered DOM, computed styles, bounding boxes, and asset evidence.
+4. Attempt native full-page screenshot.
+5. Evaluate native quality and persist fallback decision details.
+6. Reuse the same session for stitched fallback when native output is missing, invalid, blank, dimension-mismatched, or otherwise blocking.
+7. Persist one correlated snapshot across raw capture, quality report, viewport manifest, element evidence, asset evidence, and page capture manifest.
+
+`CapturePolicy` defaults are timeout `30000ms`, maximum page height `12000`, maximum pages `1`, preserve viewport segments `false`, strict warnings `false`, automatic stitched fallback `true`, maximum single-color ratio `0.98`, evidence element/asset limits `80`, maximum text length `160`, maximum segment count `50`, segment overlap `80px`, scroll settle `100ms`, final settle `150ms`, and noise selectors `.cookie-banner` plus `[data-capture-noise]`.
+
 ## ReverseEngineering Commands
 
 ```powershell

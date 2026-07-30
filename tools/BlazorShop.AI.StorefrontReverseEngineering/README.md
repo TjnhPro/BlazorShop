@@ -58,6 +58,22 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 `inspect` does not require Playwright. It reads `project.json`, `runs/{runId}.json`, and `reports/readiness-report.json`; missing or invalid run/readiness files are shown explicitly as `missing`, `invalid`, or `unknown` instead of being hidden behind generic validation text.
 
+## Final Capture Flow
+
+For each configured viewport, Phase 3A opens one browser session, navigates, stabilizes the page, extracts rendered DOM/style/box/asset evidence, and only then attempts a native full-page screenshot. If native screenshot capture throws or produces unusable output, the same session can fall back to stitched viewport segments. The final capture snapshot records one capture correlation ID shared by raw capture, quality report, viewport manifest, element evidence, asset evidence, and page capture manifest.
+
+`capture-quality-report.json` records the native attempt, final method, fallback decision, triggering finding codes, dimensions, segment count, and blocking/warning findings. Stitched output is valid only when the stitched PNG and stitch manifest exist. Native output is accepted only when quality checks pass.
+
+## Readiness And Inspect
+
+Readiness validates required file existence, schemas, screenshot/image quality, evidence depth, useful boxes/styles, capture correlation, originality restrictions, and latest workflow run state. `reports/readiness-report.json` is the source of truth; `validate` returns a non-zero exit code when blocking findings exist.
+
+`inspect` is the quickest developer handoff command. Use it to see project status, latest run ID/status, readiness pass/fail/unknown, blocking/warning counts, latest blocker, blueprint path, readiness report path, and workflow step rows before opening artifact folders.
+
+## Capture Policy
+
+`configuration.json` owns capture policy limits. Defaults are: timeout `30000ms`, maximum page height `12000`, maximum pages `1`, preserve viewport segments `false`, strict warnings `false`, automatic stitched fallback `true`, maximum single-color ratio `0.98`, maximum evidence elements/assets `80`, maximum text length `160`, maximum stitch segments `50`, segment overlap `80px`, scroll settle `100ms`, final settle `150ms`, and default noise selectors `.cookie-banner` plus `[data-capture-noise]`. Invalid non-positive limits or single-color ratios outside `0..1` fail with `SRE-POLICY-001`.
+
 ## Hardening Gate
 
 Run the Phase 3A hardening gate after changing the tool, schemas, workflow, browser runtime, interaction capture, or StorefrontBuilder handoff docs:

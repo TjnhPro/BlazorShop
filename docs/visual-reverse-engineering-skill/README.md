@@ -2,7 +2,7 @@
 
 This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects. Phase 3A also introduces `BlazorShop.AI.StorefrontReverseEngineering`, a separate development-time executable that records reference-site evidence and neutral visual-blueprint drafts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. StorefrontBuilder remains the generation/regeneration tool and does not consume those new artifacts until a later approved phase.
 
-StorefrontReverseEngineering is the evidence/runtime foundation. It captures rendered browser evidence, workflow state, readiness reports, and conservative originality/provenance findings. StorefrontBuilder is the generator. Phase 3A does not create Razor, CSS, generated projects, full design tokens, ecommerce mappings, components, or active blueprint consumption.
+StorefrontReverseEngineering is the evidence/runtime foundation. It captures rendered browser evidence, workflow state, readiness reports, and conservative originality/provenance findings. Its final Phase 3A capture flow extracts rendered evidence before native screenshots, records explicit quality/fallback decisions, uses stitched fallback only with real segment artifacts, and keeps raw/normalized artifacts tied by capture correlation IDs. StorefrontBuilder is the generator. Phase 3A does not create Razor, CSS, generated projects, full design tokens, ecommerce mappings, components, or active blueprint consumption.
 
 ## Read First
 
@@ -37,8 +37,10 @@ Use the Phase 3A hardening gate for StorefrontReverseEngineering runtime, schema
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
 ```
 
-The gate is fixture-based and runs without an external reference website after Playwright Chromium has been installed locally. It writes reports under `obj/storefront-reverse-engineering/reports/`.
+The gate is fixture-based and runs without an external reference website after Playwright Chromium has been installed locally. It writes commit-linked reports under `obj/storefront-reverse-engineering/reports/`; the tracked closure summary is `docs/qa/phase3a-final-fix-closure.md`.
+
+Readiness is machine-readable in `reports/readiness-report.json`. It validates file existence, schemas, screenshot quality, evidence depth, correlation, originality, and latest workflow run state. Use `inspect --project <path>` before handoff to see latest run status, readiness status, blocking/warning counts, latest blocker, blueprint path, readiness report path, and step rows.
 
 `BlazorShop.Storefront.Components.Features` is retired. StorefrontBuilder output should generate project-local visual templates from evidence while consuming shared `Contracts`, `Headless`, and `Browser` primitives.
 
-Phase 3A ReverseEngineering artifacts are future handoff evidence only. StorefrontBuilder generation remains unchanged until a later approved phase wires `visual-blueprint.draft.json` into generation. Phase 3B should add design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.
+Phase 3A ReverseEngineering artifacts are future handoff evidence only. StorefrontBuilder generation remains unchanged until a later approved phase wires `visual-blueprint.draft.json` into generation. Phase 3B may consume the trustworthy evidence foundation and should not repair capture fallback, readiness depth, inspect state, or Node bridge cleanup. Phase 3B should focus on design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.

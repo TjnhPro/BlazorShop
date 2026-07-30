@@ -4,6 +4,8 @@ Scope: final hardening for `tools/BlazorShop.AI.StorefrontReverseEngineering` be
 
 Status: Complete
 
+Closure note: Phase 09 remains historical hardening evidence. The final Phase 3A closure fixes are recorded in `10-StorefrontReverseEngineering-Phase3A-Final-Fix-Round.todo.md` and `docs/qa/phase3a-final-fix-closure.md`; those final fixes supersede older notes about inspect using Markdown reports or a deferred ReverseEngineering Node bridge.
+
 Target area:
 
 ```text

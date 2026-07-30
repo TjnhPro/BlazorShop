@@ -62,6 +62,8 @@ Compatibility map for future handoff:
 
 The existing Node Playwright capture and QA scripts remain the StorefrontBuilder baseline only. ReverseEngineering Phase 3A uses the .NET `PlaywrightReferenceBrowser` runtime path for non-fixture capture plus fixture/synthetic adapters for tests; it no longer wraps the StorefrontBuilder Node capture script as a supported runtime adapter. Do not retire or replace the StorefrontBuilder Node scripts until a later StorefrontBuilder parity phase approves that change.
 
+Final Phase 3A closure means the runtime extracts rendered evidence before native screenshot capture, records automatic fallback decisions, requires real stitch artifacts for stitched captures, validates readiness across file existence/schema/image quality/evidence depth/correlation/originality/latest-run state, and exposes readiness through `inspect` from `reports/readiness-report.json`. Phase 3B may consume this evidence foundation; it must not reopen capture fallback, readiness depth, inspect state, or ReverseEngineering Node bridge cleanup as prerequisite repair work.
+
 ## Boundary Model
 
 StorefrontBuilder follows the existing Storefront API and BFF model:

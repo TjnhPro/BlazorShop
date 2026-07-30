@@ -862,41 +862,51 @@ Docs to update:
 
 Tasks:
 
-- [ ] Document final capture flow:
-  - [ ] evidence extraction before native screenshot
-  - [ ] automatic fallback decision
-  - [ ] stitched fallback requirements
-  - [ ] quality report meanings
-- [ ] Document final readiness semantics:
-  - [ ] file existence
-  - [ ] schema
-  - [ ] image quality
-  - [ ] evidence depth
-  - [ ] correlation
-  - [ ] originality
-  - [ ] latest workflow run
-- [ ] Document `inspect` output and how developers should use it.
-- [ ] Document configurable `CapturePolicy` fields and defaults.
-- [ ] Document Node bridge status accurately.
-- [ ] Document local closure gate and closure summary.
-- [ ] Add a short Phase 3B handoff note:
-  - [ ] Phase 3B may consume trustworthy evidence
-  - [ ] Phase 3B must not repair capture fallback
-  - [ ] Phase 3B must not repair readiness depth
-  - [ ] Phase 3B must not repair inspect state
-  - [ ] Phase 3B can focus on design-token extraction, semantic normalization, section segmentation, component detection, ecommerce mapping, confidence scoring, and human review
+- [x] Document final capture flow:
+  - [x] evidence extraction before native screenshot
+  - [x] automatic fallback decision
+  - [x] stitched fallback requirements
+  - [x] quality report meanings
+- [x] Document final readiness semantics:
+  - [x] file existence
+  - [x] schema
+  - [x] image quality
+  - [x] evidence depth
+  - [x] correlation
+  - [x] originality
+  - [x] latest workflow run
+- [x] Document `inspect` output and how developers should use it.
+- [x] Document configurable `CapturePolicy` fields and defaults.
+- [x] Document Node bridge status accurately.
+- [x] Document local closure gate and closure summary.
+- [x] Add a short Phase 3B handoff note:
+  - [x] Phase 3B may consume trustworthy evidence
+  - [x] Phase 3B must not repair capture fallback
+  - [x] Phase 3B must not repair readiness depth
+  - [x] Phase 3B must not repair inspect state
+  - [x] Phase 3B can focus on design-token extraction, semantic normalization, section segmentation, component detection, ecommerce mapping, confidence scoring, and human review
 
 Guardrails:
 
-- [ ] Do not claim Phase 3A generates storefronts.
-- [ ] Do not claim AI visual analysis is complete.
-- [ ] Do not claim source assets are reusable by default.
-- [ ] Do not rewrite historical implementation evidence except to add a factual closure note.
+- [x] Do not claim Phase 3A generates storefronts.
+- [x] Do not claim AI visual analysis is complete.
+- [x] Do not claim source assets are reusable by default.
+- [x] Do not rewrite historical implementation evidence except to add a factual closure note.
 
 Exit criteria:
 
-- [ ] Human and AI agents can understand the final Phase 3A boundary from docs.
-- [ ] Future work can start Phase 3B without guessing what Phase 3A already guarantees.
+- [x] Human and AI agents can understand the final Phase 3A boundary from docs.
+- [x] Future work can start Phase 3B without guessing what Phase 3A already guarantees.
+
+Implementation evidence:
+
+- Updated tool README with final capture flow, quality report meanings, readiness semantics, inspect usage, and `CapturePolicy` defaults.
+- Updated visual reverse-engineering README/reference with final Phase 3A boundary, machine-readable readiness source, fixed adapter selection, local closure evidence, and Phase 3B handoff.
+- Updated architecture and StorefrontBuilder agent docs so future work treats StorefrontBuilder Node scripts as StorefrontBuilder-only and does not reopen ReverseEngineering capture/readiness/inspect foundation repairs.
+- Added a factual closure note to Phase 09 history pointing to this final fix round and tracked closure summary.
+- Guardrails remain explicit: Phase 3A does not generate storefronts, does not complete AI visual analysis, and does not clear source assets for reuse.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Documentation|Cli|Boundary"` passed `27/27`.
+- Verification: `rg -n -- "- \[ \]" docs\visual-reverse-engineering-skill\10-StorefrontReverseEngineering-Phase3A-Final-Fix-Round.todo.md` returned no remaining open checklist items.
 
 ## Required Test Matrix
 
@@ -923,49 +933,49 @@ Exit criteria:
 
 Capture:
 
-- [ ] Rendered evidence extraction is separated from native full-page screenshot.
-- [ ] Native screenshot exception can still fallback using same session.
-- [ ] Fallback decision is explicit and persisted.
-- [ ] Blank/low-content PNG is detected beyond byte diversity.
-- [ ] Native valid output does not fallback.
-- [ ] Stitched output is real and required when method is `stitched`.
+- [x] Rendered evidence extraction is separated from native full-page screenshot.
+- [x] Native screenshot exception can still fallback using same session.
+- [x] Fallback decision is explicit and persisted.
+- [x] Blank/low-content PNG is detected beyond byte diversity.
+- [x] Native valid output does not fallback.
+- [x] Stitched output is real and required when method is `stitched`.
 
 Evidence:
 
-- [ ] Raw and normalized evidence remain correlated.
-- [ ] Evidence contains useful styles, boxes, and assets.
-- [ ] Empty evidence cannot pass readiness.
+- [x] Raw and normalized evidence remain correlated.
+- [x] Evidence contains useful styles, boxes, and assets.
+- [x] Empty evidence cannot pass readiness.
 
 Policy:
 
-- [ ] Capture/evidence/stitch limits are configurable.
-- [ ] Defaults preserve existing behavior.
-- [ ] Invalid policy values fail clearly.
+- [x] Capture/evidence/stitch limits are configurable.
+- [x] Defaults preserve existing behavior.
+- [x] Invalid policy values fail clearly.
 
 Readiness:
 
-- [ ] Readiness validates schema, quality, evidence depth, correlation, originality, and latest workflow run.
-- [ ] Readiness report is machine-readable source of truth.
-- [ ] Project can recover from `ValidationFailed` to `DraftReady` after fixing artifacts.
+- [x] Readiness validates schema, quality, evidence depth, correlation, originality, and latest workflow run.
+- [x] Readiness report is machine-readable source of truth.
+- [x] Project can recover from `ValidationFailed` to `DraftReady` after fixing artifacts.
 
 CLI/DX:
 
-- [ ] `inspect` reads `readiness-report.json`.
-- [ ] `inspect` shows run status, readiness status, counts, and latest blocker.
-- [ ] Docs and errors point to exact files and next commands.
+- [x] `inspect` reads `readiness-report.json`.
+- [x] `inspect` shows run status, readiness status, counts, and latest blocker.
+- [x] Docs and errors point to exact files and next commands.
 
 Node bridge:
 
-- [ ] ReverseEngineering runtime does not recommend or select the unsupported Node wrapper.
-- [ ] StorefrontBuilder Node baseline remains preserved for its own later parity work.
+- [x] ReverseEngineering runtime does not recommend or select the unsupported Node wrapper.
+- [x] StorefrontBuilder Node baseline remains preserved for its own later parity work.
 
 Proof:
 
-- [ ] `dotnet test` passes.
-- [ ] Phase 3A gate passes locally.
-- [ ] Gate report includes commit SHA, branch, timestamp, runtime versions, artifact root, run ID, readiness path, and steps.
-- [ ] Closure summary is tracked outside `obj`.
-- [ ] GitHub Actions are not required for this dev-phase closure.
+- [x] `dotnet test` passes.
+- [x] Phase 3A gate passes locally.
+- [x] Gate report includes commit SHA, branch, timestamp, runtime versions, artifact root, run ID, readiness path, and steps.
+- [x] Closure summary is tracked outside `obj`.
+- [x] GitHub Actions are not required for this dev-phase closure.
 
 ## Implementation Order
 
