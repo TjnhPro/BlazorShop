@@ -3,6 +3,118 @@ using BlazorShop.AI.StorefrontReverseEngineering.Validation;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Analysis.StorefrontPattern;
 
+public static class StorefrontPageContractValidator
+{
+    public static void Validate(
+        IReadOnlyList<StorefrontSlotContract> slots,
+        IReadOnlyList<StorefrontPageContract> pages)
+    {
+        var findings = new List<string>();
+        var slotIds = slots.Select(slot => slot.SlotId).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var page in pages)
+        {
+            AddDuplicateFindings(page.RequiredSlotIds, "duplicate-required-slot", page.PageId, findings);
+            var allDeclared = page.RequiredSlotIds
+                .Concat(page.OptionalSlotIds)
+                .Concat(page.RepeatableSlotIds)
+                .Concat(page.AllowedAdditionalSlotIds)
+                .ToArray();
+            foreach (var missing in allDeclared.Where(slotId => !slotIds.Contains(slotId)).Distinct(StringComparer.Ordinal))
+            {
+                findings.Add($"unknown-slot:{page.PageId}:{missing}");
+            }
+
+            foreach (var duplicate in allDeclared
+                .Where(slotId => !page.RepeatableSlotIds.Contains(slotId, StringComparer.Ordinal))
+                .GroupBy(slotId => slotId, StringComparer.Ordinal)
+                .Where(group => group.Count() > 1))
+            {
+                findings.Add($"duplicate-non-repeatable-slot:{page.PageId}:{duplicate.Key}");
+            }
+
+            foreach (var global in RequiredGlobalSlots(page).Concat(ExpectedRequiredSlots(page.PageId)).Distinct(StringComparer.Ordinal))
+            {
+                if (!page.RequiredSlotIds.Contains(global, StringComparer.Ordinal))
+                {
+                    findings.Add($"missing-required-slot:{page.PageId}:{global}");
+                }
+            }
+
+            foreach (var repeatable in page.RepeatableSlotIds)
+            {
+                if (!page.RequiredSlotIds.Contains(repeatable, StringComparer.Ordinal) &&
+                    !page.OptionalSlotIds.Contains(repeatable, StringComparer.Ordinal) &&
+                    !page.AllowedAdditionalSlotIds.Contains(repeatable, StringComparer.Ordinal))
+                {
+                    findings.Add($"invalid-section-slot-mapping:{page.PageId}:{repeatable}");
+                }
+            }
+
+            foreach (var additional in page.AllowedAdditionalSlotIds.Where(slotIds.Contains))
+            {
+                if (!page.AllowedVisualSlots.Contains(additional, StringComparer.Ordinal))
+                {
+                    findings.Add($"unapproved-extra-section:{page.PageId}:{additional}");
+                }
+            }
+
+            var slotsById = slots.ToDictionary(slot => slot.SlotId, StringComparer.Ordinal);
+            foreach (var slotId in page.RequiredSlotIds.Concat(page.OptionalSlotIds).Where(slotsById.ContainsKey))
+            {
+                var slot = slotsById[slotId];
+                if (!page.TargetGeneratedPathRules.Contains(slot.Path, StringComparer.Ordinal))
+                {
+                    findings.Add($"slot-target-path-mismatch:{page.PageId}:{slotId}:{slot.Path}");
+                }
+            }
+
+            foreach (var required in page.RequiredSlotIds)
+            {
+                if (page.ForbiddenBehaviorIds.Contains(required, StringComparer.Ordinal) ||
+                    required.StartsWith("behavior.", StringComparison.OrdinalIgnoreCase) ||
+                    required.StartsWith("runtime.", StringComparison.OrdinalIgnoreCase))
+                {
+                    findings.Add($"slot-behavior-ownership-conflict:{page.PageId}:{required}");
+                }
+            }
+        }
+
+        if (findings.Count > 0)
+        {
+            throw new InvalidOperationException("[SRE-STOREFRONT-PAGE-CONTRACT-001] Storefront page slot contract is invalid. Problem: exact page slots cannot be consumed safely. Cause: page contracts must reference known Storefront slots and preserve runtime behavior ownership. Fix: update page contract specs or starter slot contracts. Findings: " + string.Join(" | ", findings));
+        }
+    }
+
+    private static IReadOnlyList<string> RequiredGlobalSlots(StorefrontPageContract page) =>
+        page.PageId switch
+        {
+            "home" or "category-listing" or "search-results" or "product-detail" or "cart-shell" or "checkout-shell" or "account-auth-shell" or "content-page" or "maintenance" or "not-found" or "service-unavailable" or "error-state" => ["layout.header", "layout.footer"],
+            _ => []
+        };
+
+    private static IReadOnlyList<string> ExpectedRequiredSlots(string pageId) =>
+        pageId switch
+        {
+            "home" => ["layout.header", "home.sections", "layout.footer"],
+            "category-listing" or "search-results" => ["layout.header", "catalog.product-card", "layout.footer"],
+            "product-detail" => ["layout.header", "product.gallery", "product.information", "product.purchase", "layout.footer"],
+            "cart-shell" => ["layout.header", "cart.page", "layout.footer"],
+            "checkout-shell" => ["layout.header", "checkout.page", "layout.footer"],
+            "account-auth-shell" => ["layout.header", "account.shell", "layout.footer"],
+            "maintenance" or "not-found" or "service-unavailable" or "error-state" => ["layout.header", "system.error", "layout.footer"],
+            _ => []
+        };
+
+    private static void AddDuplicateFindings(IEnumerable<string> values, string code, string pageId, List<string> findings)
+    {
+        foreach (var duplicate in values.Where(value => !string.IsNullOrWhiteSpace(value)).GroupBy(value => value, StringComparer.Ordinal).Where(group => group.Count() > 1))
+        {
+            findings.Add($"{code}:{pageId}:{duplicate.Key}");
+        }
+    }
+}
+
 public sealed class StorefrontPatternContractBuilder
 {
     private readonly string repoRoot;
@@ -37,6 +149,7 @@ public sealed class StorefrontPatternContractBuilder
         var pages = BuildPageContracts(slots, routes);
         var boundaries = BuildBoundaries(parsed, actions);
         Validate(parsed, zones, slots, routes, pages, actions);
+        StorefrontPageContractValidator.Validate(slots, pages);
 
         var metadata = new StorefrontPatternMetadata(
             parsed.Scalar("contractVersion"),
@@ -145,20 +258,20 @@ public sealed class StorefrontPatternContractBuilder
         IReadOnlyList<StorefrontSlotContract> slots,
         IReadOnlyList<StorefrontRouteContract> routes)
     {
-        var specs = new (string PageId, string Archetype, string[] SlotPrefixes, string[] Required, string[] Optional)[]
+        var specs = new (string PageId, string Archetype, string[] SlotPrefixes, string[] RequiredRegions, string[] OptionalRegions, string[] RequiredSlots, string[] OptionalSlots, string[] RepeatableSlots, string[] AllowedAdditionalSlots, string[] ForbiddenBehaviorIds)[]
         {
-            ("home", "home", ["layout.", "home."], ["hero or home content", "store header", "store footer"], ["promotion band", "newsletter"]),
-            ("category-listing", "product-listing", ["layout.", "catalog."], ["product grid", "product card"], ["filters", "sorting", "pagination"]),
-            ("search-results", "search-results", ["layout.", "catalog."], ["search results", "product card"], ["filters", "sorting"]),
-            ("product-detail", "product-detail", ["layout.", "product."], ["product gallery", "purchase panel", "product information"], ["reviews", "related products"]),
-            ("cart-shell", "cart-shell", ["layout.", "cart."], ["cart line items", "cart summary"], ["empty cart state"]),
-            ("checkout-shell", "checkout-shell", ["layout.", "checkout."], ["checkout form", "order summary"], ["payment result"]),
-            ("account-auth-shell", "account-auth-shell", ["layout.", "account."], ["authentication/account shell"], ["account menu"]),
-            ("content-page", "content-page", ["layout.", "home."], ["content body"], ["breadcrumbs"]),
-            ("maintenance", "maintenance", ["layout.", "system."], ["maintenance state"], []),
-            ("not-found", "not-found", ["layout.", "system."], ["not found state"], []),
-            ("service-unavailable", "service-unavailable", ["layout.", "system."], ["service unavailable state"], []),
-            ("error-state", "error-state", ["layout.", "system."], ["error state"], [])
+            ("home", "home", ["layout.", "home."], ["hero or home content", "store header", "store footer"], ["promotion band", "newsletter"], ["layout.header", "home.sections", "layout.footer"], ["layout.main-navigation", "layout.mobile-navigation", "layout.cart-badge", "layout.account-menu"], [], [], ["route-bff-seo-media-reimplementation"]),
+            ("category-listing", "product-listing", ["layout.", "catalog."], ["product grid", "product card"], ["filters", "sorting", "pagination"], ["layout.header", "catalog.product-card", "layout.footer"], ["catalog.filters", "catalog.sorting", "catalog.pagination", "layout.main-navigation", "layout.mobile-navigation", "layout.cart-badge", "layout.account-menu"], ["catalog.product-card"], [], ["route-bff-seo-media-reimplementation"]),
+            ("search-results", "search-results", ["layout.", "catalog."], ["search results", "product card"], ["filters", "sorting"], ["layout.header", "catalog.product-card", "layout.footer"], ["catalog.filters", "catalog.sorting", "catalog.pagination"], ["catalog.product-card"], [], ["route-bff-seo-media-reimplementation"]),
+            ("product-detail", "product-detail", ["layout.", "product."], ["product gallery", "purchase panel", "product information"], ["reviews", "related products"], ["layout.header", "product.gallery", "product.information", "product.purchase", "layout.footer"], ["product.reviews", "product.related-products", "layout.main-navigation", "layout.mobile-navigation", "layout.cart-badge", "layout.account-menu"], [], [], ["checkout.place-order", "payment.capture", "route-bff-seo-media-reimplementation"]),
+            ("cart-shell", "cart-shell", ["layout.", "cart."], ["cart line items", "cart summary"], ["empty cart state"], ["layout.header", "cart.page", "layout.footer"], [], [], [], ["checkout.place-order", "payment.capture", "auth.token"]),
+            ("checkout-shell", "checkout-shell", ["layout.", "checkout."], ["checkout form", "order summary"], ["payment result"], ["layout.header", "checkout.page", "layout.footer"], [], [], [], ["payment.capture", "checkout.place-order"]),
+            ("account-auth-shell", "account-auth-shell", ["layout.", "account."], ["authentication/account shell"], ["account menu"], ["layout.header", "account.shell", "layout.footer"], [], [], [], ["auth.token", "auth.login", "auth.logout"]),
+            ("content-page", "content-page", ["layout.", "home."], ["content body"], ["breadcrumbs"], ["layout.header", "home.sections", "layout.footer"], ["layout.main-navigation", "layout.mobile-navigation"], [], [], ["route-bff-seo-media-reimplementation"]),
+            ("maintenance", "maintenance", ["layout.", "system."], ["maintenance state"], [], ["layout.header", "system.error", "layout.footer"], [], [], [], ["route-bff-seo-media-reimplementation"]),
+            ("not-found", "not-found", ["layout.", "system."], ["not found state"], [], ["layout.header", "system.error", "layout.footer"], [], [], [], ["route-bff-seo-media-reimplementation"]),
+            ("service-unavailable", "service-unavailable", ["layout.", "system."], ["service unavailable state"], [], ["layout.header", "system.error", "layout.footer"], [], [], [], ["route-bff-seo-media-reimplementation"]),
+            ("error-state", "error-state", ["layout.", "system."], ["error state"], [], ["layout.header", "system.error", "layout.footer"], [], [], [], ["route-bff-seo-media-reimplementation"])
         };
 
         return specs.Select(spec =>
@@ -175,8 +288,13 @@ public sealed class StorefrontPatternContractBuilder
                 "Storefront Presentation owns route declarations; generated visuals register view slots only",
                 pageRoutes,
                 allowedSlots,
-                spec.Required,
-                spec.Optional,
+                spec.RequiredRegions,
+                spec.OptionalRegions,
+                spec.RequiredSlots,
+                spec.OptionalSlots,
+                spec.RepeatableSlots,
+                spec.AllowedAdditionalSlots,
+                spec.ForbiddenBehaviorIds,
                 ["@page route declarations", "Commerce Node direct browser calls", "BFF/SEO/media route reimplementation"],
                 slots.Where(slot => slot.Action is not null && allowedSlots.Contains(slot.SlotId, StringComparer.Ordinal)).Select(slot => slot.Action!).Distinct(StringComparer.Ordinal).ToArray(),
                 allowedSlots.Select(slotId => slots.First(slot => slot.SlotId == slotId).Path).Distinct(StringComparer.Ordinal).ToArray(),
@@ -281,6 +399,8 @@ public sealed class StorefrontPatternContractBuilder
         "product.gallery",
         "product.information",
         "product.purchase",
+        "product.reviews",
+        "product.related-products",
         "cart.page",
         "checkout.page",
         "account.shell",

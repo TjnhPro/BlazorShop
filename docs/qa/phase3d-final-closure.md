@@ -51,3 +51,11 @@ Status: in progress
 - Reviewed blueprint references resolved artifacts and includes review bundle, Storefront pattern, Presentation catalog, and page contract hashes.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `16/16`.
+
+## Phase 3D.3 Evidence
+
+- `StorefrontPageContract` now carries exact required, optional, repeatable, allowed-additional, and forbidden behavior slot fields.
+- Page contracts are validated against typed Storefront slots from the Starter contract; free-form visual region labels remain descriptive only.
+- PDP optional review and related-product slots were added to `starter-generation.contract.yaml` so optional page contracts do not reference missing slots.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "StorefrontPattern" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `15/15`.

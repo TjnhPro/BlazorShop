@@ -17,6 +17,19 @@ public sealed class StorefrontPatternContractTests
         Assert.Contains(pattern.PageContracts, page => page.PageId == "home");
         Assert.Contains(pattern.PageContracts, page => page.PageId == "product-detail");
         Assert.Contains(pattern.PageContracts, page => page.PageId == "checkout-shell");
+        Assert.Contains(pattern.PageContracts, page =>
+            page.PageId == "home" &&
+            page.RequiredSlotIds.SequenceEqual(["layout.header", "home.sections", "layout.footer"]) &&
+            page.OptionalSlotIds.Contains("layout.main-navigation"));
+        Assert.Contains(pattern.PageContracts, page =>
+            page.PageId == "category-listing" &&
+            page.RequiredSlotIds.Contains("catalog.product-card") &&
+            page.RepeatableSlotIds.Contains("catalog.product-card"));
+        Assert.Contains(pattern.PageContracts, page =>
+            page.PageId == "product-detail" &&
+            page.RequiredSlotIds.Contains("product.gallery") &&
+            page.RequiredSlotIds.Contains("product.purchase") &&
+            page.OptionalSlotIds.Contains("product.reviews"));
         Assert.Contains(pattern.GenerationZones.GeneratedZones, zone => zone == "Components/Catalog");
         Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "storefront-pattern", "storefront-pattern.json")));
         Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "storefront-pattern", "page-contracts.json")));
@@ -114,12 +127,138 @@ public sealed class StorefrontPatternContractTests
         Assert.Contains("unsafe browser action route", exception.Message, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task PageContract_RemovingProductPurchaseFails()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Product Purchase Contract");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ValidateMutatedPage(pattern, "product-detail", page => page with
+            {
+                RequiredSlotIds = page.RequiredSlotIds.Where(slot => slot != "product.purchase").ToArray()
+            }));
+
+        Assert.Contains("missing-required-slot:product-detail:product.purchase", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PageContract_RemovingProductGalleryFails()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Product Gallery Contract");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ValidateMutatedPage(pattern, "product-detail", page => page with
+            {
+                RequiredSlotIds = page.RequiredSlotIds.Where(slot => slot != "product.gallery").ToArray()
+            }));
+
+        Assert.Contains("missing-required-slot:product-detail:product.gallery", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PageContract_DuplicatingProductGalleryFails()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Duplicate Product Gallery");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ValidateMutatedPage(pattern, "product-detail", page => page with
+            {
+                RequiredSlotIds = page.RequiredSlotIds.Concat(["product.gallery"]).ToArray()
+            }));
+
+        Assert.Contains("duplicate-required-slot:product-detail:product.gallery", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PageContract_RemovingOptionalProductReviewsPasses()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Optional Product Reviews");
+
+        ValidateMutatedPage(pattern, "product-detail", page => page with
+        {
+            OptionalSlotIds = page.OptionalSlotIds.Where(slot => slot != "product.reviews").ToArray()
+        });
+    }
+
+    [Fact]
+    public async Task PageContract_MultipleCatalogProductCardsAreAllowedByRepeatableContract()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Repeatable Product Cards");
+        var listing = pattern.PageContracts.First(page => page.PageId == "category-listing");
+
+        StorefrontPageContractValidator.Validate(pattern.Slots, [listing]);
+
+        Assert.Contains("catalog.product-card", listing.RequiredSlotIds);
+        Assert.Contains("catalog.product-card", listing.RepeatableSlotIds);
+    }
+
+    [Fact]
+    public async Task PageContract_UnknownSlotFails()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Unknown Slot");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ValidateMutatedPage(pattern, "product-detail", page => page with
+            {
+                OptionalSlotIds = page.OptionalSlotIds.Concat(["product.unknown-slot"]).ToArray()
+            }));
+
+        Assert.Contains("unknown-slot:product-detail:product.unknown-slot", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PageContract_ExtraUnapprovedPdpSectionFails()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Extra PDP Section");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ValidateMutatedPage(pattern, "product-detail", page => page with
+            {
+                AllowedAdditionalSlotIds = page.AllowedAdditionalSlotIds.Concat(["catalog.filters"]).ToArray()
+            }));
+
+        Assert.Contains("unapproved-extra-section:product-detail:catalog.filters", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PageContract_RuntimeBehaviorAsRequiredVisualSlotFails()
+    {
+        var pattern = await BuildPatternAsync("Phase3D Runtime Behavior Slot");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ValidateMutatedPage(pattern, "product-detail", page => page with
+            {
+                RequiredSlotIds = page.RequiredSlotIds.Concat(["checkout.place-order"]).ToArray(),
+                ForbiddenBehaviorIds = page.ForbiddenBehaviorIds.Concat(["checkout.place-order"]).ToArray()
+            }));
+
+        Assert.Contains("slot-behavior-ownership-conflict:product-detail:checkout.place-order", exception.Message, StringComparison.Ordinal);
+    }
+
     private static async Task<string> CreateProjectAsync(string name)
     {
         var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "phase3c-pattern-" + Guid.NewGuid().ToString("N"));
         var project = await new VisualProjectService(GetRepoRoot())
             .InitializeAsync("https://example.test", name, outputRoot, force: false, CancellationToken.None);
         return project.ArtifactRoot;
+    }
+
+    private static async Task<StorefrontPatternContract> BuildPatternAsync(string name)
+    {
+        var projectRoot = await CreateProjectAsync(name);
+        return await new StorefrontPatternContractBuilder(GetRepoRoot())
+            .BuildAsync(projectRoot, CancellationToken.None);
+    }
+
+    private static void ValidateMutatedPage(
+        StorefrontPatternContract pattern,
+        string pageId,
+        Func<StorefrontPageContract, StorefrontPageContract> mutate)
+    {
+        var pages = pattern.PageContracts
+            .Select(page => page.PageId == pageId ? mutate(page) : page)
+            .ToArray();
+        StorefrontPageContractValidator.Validate(pattern.Slots, pages);
     }
 
     private static async Task<string> CopyStarterContractAsync(string scenario)

@@ -258,70 +258,70 @@ Goal: page contracts must validate exact Storefront slots, not loose natural-lan
 
 Implementation checklist:
 
-- [ ] Extend `StorefrontPageContract` with:
-  - [ ] `RequiredSlotIds`
-  - [ ] `OptionalSlotIds`
-  - [ ] `RepeatableSlotIds`
-  - [ ] `AllowedAdditionalSlotIds`
-  - [ ] `ForbiddenBehaviorIds`
-- [ ] Keep `RequiredVisualRegions` and `OptionalVisualRegions` only as human-readable descriptions.
-- [ ] Ensure validation uses exact slot ID fields only.
-- [ ] Derive page slot contracts from typed Storefront pattern/Starter contract, not from free-form labels.
-- [ ] Fail if a page contract references a slot ID not present in `StorefrontPatternContract.Slots`.
-- [ ] Fail if a page contract omits required global slots when applicable.
-- [ ] Fail if repeatable slot IDs are not present in allowed or required slots.
-- [ ] Fail if a page contract tries to make a Runtime-owned/headless-only behavior a visual required slot.
+- [x] Extend `StorefrontPageContract` with:
+  - [x] `RequiredSlotIds`
+  - [x] `OptionalSlotIds`
+  - [x] `RepeatableSlotIds`
+  - [x] `AllowedAdditionalSlotIds`
+  - [x] `ForbiddenBehaviorIds`
+- [x] Keep `RequiredVisualRegions` and `OptionalVisualRegions` only as human-readable descriptions.
+- [x] Ensure validation uses exact slot ID fields only.
+- [x] Derive page slot contracts from typed Storefront pattern/Starter contract, not from free-form labels.
+- [x] Fail if a page contract references a slot ID not present in `StorefrontPatternContract.Slots`.
+- [x] Fail if a page contract omits required global slots when applicable.
+- [x] Fail if repeatable slot IDs are not present in allowed or required slots.
+- [x] Fail if a page contract tries to make a Runtime-owned/headless-only behavior a visual required slot.
 
 MVP page contract requirements:
 
-- [ ] Home:
-  - [ ] required: `layout.header`, `home.sections`, `layout.footer`
-  - [ ] optional: `layout.main-navigation`, `layout.mobile-navigation`, `layout.cart-badge`, `layout.account-menu`
-- [ ] Product listing:
-  - [ ] required: `layout.header`, `catalog.product-card`, `layout.footer`
-  - [ ] optional: `catalog.filters`, `catalog.sorting`, `catalog.pagination`, `layout.main-navigation`, `layout.mobile-navigation`, `layout.cart-badge`, `layout.account-menu`
-  - [ ] repeatable: `catalog.product-card`
-- [ ] Search results:
-  - [ ] required: `layout.header`, `catalog.product-card`, `layout.footer`
-  - [ ] optional: `catalog.filters`, `catalog.sorting`, `catalog.pagination`
-  - [ ] repeatable: `catalog.product-card`
-- [ ] Product detail:
-  - [ ] required: `layout.header`, `product.gallery`, `product.information`, `product.purchase`, `layout.footer`
-  - [ ] optional: `product.reviews`, `product.related-products`, `layout.main-navigation`, `layout.mobile-navigation`, `layout.cart-badge`, `layout.account-menu`
-- [ ] Cart shell:
-  - [ ] required: `layout.header`, `cart.page`, `layout.footer`
-- [ ] Checkout shell:
-  - [ ] required: `layout.header`, `checkout.page`, `layout.footer`
-- [ ] Account/auth shell:
-  - [ ] required: `layout.header`, `account.shell`, `layout.footer`
-- [ ] System state:
-  - [ ] required: exact state slot when available, otherwise `system.error`
+- [x] Home:
+  - [x] required: `layout.header`, `home.sections`, `layout.footer`
+  - [x] optional: `layout.main-navigation`, `layout.mobile-navigation`, `layout.cart-badge`, `layout.account-menu`
+- [x] Product listing:
+  - [x] required: `layout.header`, `catalog.product-card`, `layout.footer`
+  - [x] optional: `catalog.filters`, `catalog.sorting`, `catalog.pagination`, `layout.main-navigation`, `layout.mobile-navigation`, `layout.cart-badge`, `layout.account-menu`
+  - [x] repeatable: `catalog.product-card`
+- [x] Search results:
+  - [x] required: `layout.header`, `catalog.product-card`, `layout.footer`
+  - [x] optional: `catalog.filters`, `catalog.sorting`, `catalog.pagination`
+  - [x] repeatable: `catalog.product-card`
+- [x] Product detail:
+  - [x] required: `layout.header`, `product.gallery`, `product.information`, `product.purchase`, `layout.footer`
+  - [x] optional: `product.reviews`, `product.related-products`, `layout.main-navigation`, `layout.mobile-navigation`, `layout.cart-badge`, `layout.account-menu`
+- [x] Cart shell:
+  - [x] required: `layout.header`, `cart.page`, `layout.footer`
+- [x] Checkout shell:
+  - [x] required: `layout.header`, `checkout.page`, `layout.footer`
+- [x] Account/auth shell:
+  - [x] required: `layout.header`, `account.shell`, `layout.footer`
+- [x] System state:
+  - [x] required: exact state slot when available, otherwise `system.error`
 
 Blocking codes:
 
-- [ ] `missing-required-slot`
-- [ ] `duplicate-required-slot`
-- [ ] `duplicate-non-repeatable-slot`
-- [ ] `unknown-slot`
-- [ ] `unapproved-extra-section`
-- [ ] `invalid-section-slot-mapping`
-- [ ] `slot-target-path-mismatch`
-- [ ] `slot-behavior-ownership-conflict`
+- [x] `missing-required-slot`
+- [x] `duplicate-required-slot`
+- [x] `duplicate-non-repeatable-slot`
+- [x] `unknown-slot`
+- [x] `unapproved-extra-section`
+- [x] `invalid-section-slot-mapping`
+- [x] `slot-target-path-mismatch`
+- [x] `slot-behavior-ownership-conflict`
 
 Tests:
 
-- [ ] Removing `product.purchase` fails.
-- [ ] Removing `product.gallery` fails.
-- [ ] Duplicating `product.gallery` fails.
-- [ ] Removing optional `product.reviews` passes.
-- [ ] Multiple `catalog.product-card` slots pass.
-- [ ] Unknown slot fails.
-- [ ] Extra unapproved PDP section fails.
-- [ ] Runtime/headless behavior as required visual slot fails.
+- [x] Removing `product.purchase` fails.
+- [x] Removing `product.gallery` fails.
+- [x] Duplicating `product.gallery` fails.
+- [x] Removing optional `product.reviews` passes.
+- [x] Multiple `catalog.product-card` slots pass.
+- [x] Unknown slot fails.
+- [x] Extra unapproved PDP section fails.
+- [x] Runtime/headless behavior as required visual slot fails.
 
 Done when:
 
-- [ ] Phase 4 can render required page sections from exact slot IDs without interpreting free-form labels.
+- [x] Phase 4 can render required page sections from exact slot IDs without interpreting free-form labels.
 
 ## Phase 3D.4 - Page Composition Slot Enforcement
 
@@ -918,7 +918,7 @@ Done when:
 
 1. [x] `Phase 3D.1 apply typed review decisions`
 2. [x] `Phase 3D.2 enforce reviewed blueprint lifecycle`
-3. [ ] `Phase 3D.3 add exact page slot contracts`
+3. [x] `Phase 3D.3 add exact page slot contracts`
 4. [ ] `Phase 3D.4 enforce page composition slots`
 5. [ ] `Phase 3D.5 package screenshots and section crops`
 6. [ ] `Phase 3D.6 centralize handoff contract`
@@ -1060,7 +1060,7 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 
 - [x] Implement D1 typed review artifact resolution.
 - [x] Implement D2 reviewed blueprint lifecycle.
-- [ ] Implement D3 exact page slot contracts.
+- [x] Implement D3 exact page slot contracts.
 - [ ] Implement D4 page composition slot enforcement.
 - [ ] Implement D5 self-contained visual evidence packaging.
 - [ ] Implement D6 canonical handoff contract.

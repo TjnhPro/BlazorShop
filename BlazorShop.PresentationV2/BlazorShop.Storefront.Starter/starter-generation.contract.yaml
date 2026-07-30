@@ -177,6 +177,12 @@ slots:
     owner: generated
     path: Components/Catalog/PurchasePanelPlaceholder.razor
     action: cart.add-line
+  - id: product.reviews
+    owner: generated
+    path: Components/Catalog/ProductReviewsPlaceholder.razor
+  - id: product.related-products
+    owner: generated
+    path: Components/Catalog/RelatedProductsPlaceholder.razor
   - id: cart.page
     owner: managed
     path: Pages/Hybrid/Commerce/CartPage.razor
