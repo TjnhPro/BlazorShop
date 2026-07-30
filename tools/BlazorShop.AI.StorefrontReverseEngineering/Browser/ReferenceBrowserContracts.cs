@@ -37,6 +37,25 @@ public interface IReferenceBrowserSession : IAsyncDisposable
 
     Task<BrowserCaptureResult> CaptureCurrentStateAsync(CancellationToken cancellationToken);
 
+    async Task<RenderedPageEvidence> ExtractRenderedEvidenceAsync(CancellationToken cancellationToken)
+    {
+        var capture = await CaptureCurrentStateAsync(cancellationToken);
+        return new RenderedPageEvidence(
+            capture.DocumentWidth,
+            capture.DocumentHeight,
+            capture.DomHtml,
+            capture.Styles,
+            capture.Boxes,
+            capture.Assets,
+            capture.Warnings);
+    }
+
+    async Task<byte[]> CaptureNativeFullPageScreenshotAsync(CancellationToken cancellationToken)
+    {
+        var capture = await CaptureCurrentStateAsync(cancellationToken);
+        return capture.ScreenshotPng;
+    }
+
     async Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken)
     {
         var capture = await CaptureCurrentStateAsync(cancellationToken);
@@ -71,6 +90,15 @@ public sealed record BrowserDocumentMetrics(
     int DocumentHeight,
     int ViewportWidth,
     int ViewportHeight);
+
+public sealed record RenderedPageEvidence(
+    int DocumentWidth,
+    int DocumentHeight,
+    string DomHtml,
+    IReadOnlyList<ComputedStyleSample> Styles,
+    IReadOnlyList<ElementBoxSample> Boxes,
+    IReadOnlyList<AssetInventoryItem> Assets,
+    IReadOnlyList<string> Warnings);
 
 public abstract class ReferenceBrowserBase : IReferenceBrowser
 {
@@ -122,6 +150,25 @@ internal sealed class CompatReferenceBrowserSession : IReferenceBrowserSession
 
     public Task<BrowserCaptureResult> CaptureCurrentStateAsync(CancellationToken cancellationToken) =>
         browser.CaptureAsync(session, viewport, policy, cancellationToken);
+
+    public async Task<RenderedPageEvidence> ExtractRenderedEvidenceAsync(CancellationToken cancellationToken)
+    {
+        var capture = await CaptureCurrentStateAsync(cancellationToken);
+        return new RenderedPageEvidence(
+            capture.DocumentWidth,
+            capture.DocumentHeight,
+            capture.DomHtml,
+            capture.Styles,
+            capture.Boxes,
+            capture.Assets,
+            capture.Warnings);
+    }
+
+    public async Task<byte[]> CaptureNativeFullPageScreenshotAsync(CancellationToken cancellationToken)
+    {
+        var capture = await CaptureCurrentStateAsync(cancellationToken);
+        return capture.ScreenshotPng;
+    }
 
     public Task<BrowserActionResult> ExecuteAsync(BrowserSessionAction action, CancellationToken cancellationToken) =>
         Task.FromResult(new BrowserActionResult(false, ["Compatibility browser sessions do not execute actions."]));

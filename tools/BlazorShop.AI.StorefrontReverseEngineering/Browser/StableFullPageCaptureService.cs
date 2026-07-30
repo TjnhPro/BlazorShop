@@ -28,16 +28,40 @@ public sealed class StableFullPageCaptureService
         string? relativeViewportRoot = null)
     {
         await using var browserSession = await browser.OpenSessionAsync(session, viewport, policy, cancellationToken);
-        BrowserCaptureResult? nativeCapture = null;
+        RenderedPageEvidence? evidence = null;
         PageStabilizationReport stabilization;
-        CaptureQualityReport nativeQuality;
         IReadOnlyList<ScreenshotSegment> segments = [];
 
         try
         {
             await browserSession.NavigateAsync(cancellationToken);
             stabilization = await browserSession.StabilizeAsync(cancellationToken);
-            nativeCapture = await browserSession.CaptureCurrentStateAsync(cancellationToken);
+            evidence = await browserSession.ExtractRenderedEvidenceAsync(cancellationToken);
+
+            BrowserCaptureResult nativeCapture;
+            CaptureQualityReport nativeQuality;
+            try
+            {
+                var nativeScreenshot = await browserSession.CaptureNativeFullPageScreenshotAsync(cancellationToken);
+                nativeCapture = CreateCaptureResult("native-full-page", session, viewport, evidence, nativeScreenshot, evidence.DocumentWidth, evidence.DocumentHeight);
+            }
+            catch (Exception exception) when (IsRecoverableCaptureException(exception))
+            {
+                return await RecoverWithStitchedFallbackAsync(
+                    browserSession,
+                    session,
+                    viewport,
+                    policy,
+                    viewportArtifactRoot,
+                    relativeViewportRoot,
+                    stabilization,
+                    evidence,
+                    nativeAttemptPassed: false,
+                    fallbackReason: $"native-capture-exception: {exception.Message}",
+                    warnings: [exception.Message],
+                    cancellationToken);
+            }
+
             nativeQuality = EvaluateQuality(session, viewport, nativeCapture, stabilization, nativeAttemptPassed: null, null, 0, []);
 
             if (forceStitchedFallback || !nativeQuality.Passed)
@@ -46,67 +70,121 @@ public sealed class StableFullPageCaptureService
                     ? "forced-stitch-proof"
                     : string.Join("; ", nativeQuality.Findings.Where(finding => finding.Severity == "blocking").Select(finding => finding.Code));
 
-                var stitch = await CaptureStitchedAsync(browserSession, session, viewport, policy, viewportArtifactRoot, relativeViewportRoot, cancellationToken);
-                segments = stitch.Segments;
-                var stitchedCapture = nativeCapture with
-                {
-                    CaptureMethod = StitchedCaptureMethod,
-                    ScreenshotPng = stitch.Png,
-                    DocumentWidth = stitch.Width,
-                    DocumentHeight = stitch.Height,
-                    Warnings = nativeCapture.Warnings.Concat(stitch.Warnings).ToArray()
-                };
-                var finalQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, nativeQuality.Passed, fallbackReason, segments.Count, stitch.Warnings);
-                return new StableCaptureResult(stitchedCapture, stabilization, finalQuality, segments, browserSession.SessionId);
+                return await RecoverWithStitchedFallbackAsync(
+                    browserSession,
+                    session,
+                    viewport,
+                    policy,
+                    viewportArtifactRoot,
+                    relativeViewportRoot,
+                    stabilization,
+                    evidence,
+                    nativeQuality.Passed,
+                    fallbackReason,
+                    nativeCapture.Warnings,
+                    cancellationToken);
             }
 
             return new StableCaptureResult(nativeCapture, stabilization, nativeQuality, segments, browserSession.SessionId);
         }
-        catch (Exception exception) when (exception is InvalidOperationException or TimeoutException or PlaywrightException)
+        catch (Exception exception) when (IsRecoverableCaptureException(exception))
         {
             stabilization = new PageStabilizationReport(["capture-failed"], [], [exception.Message]);
 
-            if (nativeCapture is not null)
-            {
-                try
-                {
-                    var stitch = await CaptureStitchedAsync(browserSession, session, viewport, policy, viewportArtifactRoot, relativeViewportRoot, cancellationToken);
-                    segments = stitch.Segments;
-                    var stitchedCapture = nativeCapture with
-                    {
-                        CaptureMethod = StitchedCaptureMethod,
-                        ScreenshotPng = stitch.Png,
-                        DocumentWidth = stitch.Width,
-                        DocumentHeight = stitch.Height,
-                        Warnings = nativeCapture.Warnings.Concat([exception.Message]).Concat(stitch.Warnings).ToArray()
-                    };
-                    var recoveredQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, false, exception.Message, segments.Count, stitch.Warnings);
-                    return new StableCaptureResult(stitchedCapture, stabilization, recoveredQuality, segments, browserSession.SessionId);
-                }
-                catch (Exception stitchException) when (stitchException is InvalidOperationException or TimeoutException or PlaywrightException)
-                {
-                    exception = stitchException;
-                }
-            }
-
-            var failedCapture = new BrowserCaptureResult(
-                "failed",
-                "failed",
-                viewport.Width,
-                viewport.Height,
-                viewport.Width,
-                0,
-                "",
-                [],
-                [],
-                [],
-                [],
-                [exception.Message]);
-
+            var failedCapture = CreateFailedCapture(session, viewport, evidence, exception.Message);
             var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, false, exception.Message, 0, [exception.Message]);
             return new StableCaptureResult(failedCapture, stabilization, failedQuality, segments, browserSession.SessionId);
         }
     }
+
+    private static async Task<StableCaptureResult> RecoverWithStitchedFallbackAsync(
+        IReferenceBrowserSession browserSession,
+        BrowserPageSession session,
+        ViewportDefinition viewport,
+        CapturePolicy policy,
+        string? viewportArtifactRoot,
+        string? relativeViewportRoot,
+        PageStabilizationReport stabilization,
+        RenderedPageEvidence evidence,
+        bool? nativeAttemptPassed,
+        string fallbackReason,
+        IReadOnlyList<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyList<ScreenshotSegment> segments = [];
+        try
+        {
+            var stitch = await CaptureStitchedAsync(browserSession, session, viewport, policy, viewportArtifactRoot, relativeViewportRoot, cancellationToken);
+            segments = stitch.Segments;
+            var stitchedCapture = CreateCaptureResult(
+                StitchedCaptureMethod,
+                session,
+                viewport,
+                evidence,
+                stitch.Png,
+                stitch.Width,
+                stitch.Height) with
+            {
+                Warnings = evidence.Warnings.Concat(warnings).Concat(stitch.Warnings).ToArray()
+            };
+            var recoveredQuality = EvaluateQuality(session, viewport, stitchedCapture, stabilization, nativeAttemptPassed, fallbackReason, segments.Count, stitch.Warnings);
+            return new StableCaptureResult(stitchedCapture, stabilization, recoveredQuality, segments, browserSession.SessionId);
+        }
+        catch (Exception exception) when (IsRecoverableCaptureException(exception))
+        {
+            var failedCapture = CreateFailedCapture(session, viewport, evidence, exception.Message);
+            var failedQuality = EvaluateQuality(session, viewport, failedCapture, stabilization, false, fallbackReason, segments.Count, warnings.Concat([exception.Message]).ToArray());
+            return new StableCaptureResult(failedCapture, stabilization, failedQuality, segments, browserSession.SessionId);
+        }
+    }
+
+    private static BrowserCaptureResult CreateCaptureResult(
+        string captureMethod,
+        BrowserPageSession session,
+        ViewportDefinition viewport,
+        RenderedPageEvidence evidence,
+        byte[] screenshotPng,
+        int documentWidth,
+        int documentHeight)
+    {
+        return new BrowserCaptureResult(
+            "playwright-compatible",
+            captureMethod,
+            viewport.Width,
+            viewport.Height,
+            documentWidth,
+            documentHeight,
+            evidence.DomHtml,
+            screenshotPng,
+            evidence.Styles,
+            evidence.Boxes,
+            evidence.Assets,
+            evidence.Warnings);
+    }
+
+    private static BrowserCaptureResult CreateFailedCapture(
+        BrowserPageSession session,
+        ViewportDefinition viewport,
+        RenderedPageEvidence? evidence,
+        string warning)
+    {
+        return new BrowserCaptureResult(
+            "failed",
+            "failed",
+            viewport.Width,
+            viewport.Height,
+            evidence?.DocumentWidth ?? viewport.Width,
+            evidence?.DocumentHeight ?? 0,
+            evidence?.DomHtml ?? "",
+            [],
+            evidence?.Styles ?? [],
+            evidence?.Boxes ?? [],
+            evidence?.Assets ?? [],
+            (evidence?.Warnings ?? []).Concat([warning]).ToArray());
+    }
+
+    private static bool IsRecoverableCaptureException(Exception exception) =>
+        exception is InvalidOperationException or TimeoutException or PlaywrightException;
 
     private static async Task<StitchCaptureOutput> CaptureStitchedAsync(
         IReferenceBrowserSession browserSession,

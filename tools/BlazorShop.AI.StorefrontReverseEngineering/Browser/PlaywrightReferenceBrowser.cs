@@ -146,10 +146,21 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             cancellationToken.ThrowIfCancellationRequested();
             EnsureNavigated();
 
+            var evidence = await ExtractRenderedEvidenceAsync(cancellationToken);
+            var screenshot = await CaptureNativeFullPageScreenshotAsync(cancellationToken);
+
+            return CreateCaptureResult("native-full-page", evidence, screenshot, evidence.DocumentWidth, evidence.DocumentHeight);
+        }
+
+        public async Task<RenderedPageEvidence> ExtractRenderedEvidenceAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureNavigated();
+
             var evidenceJson = await page.EvaluateAsync<JsonElement>(
                 EvidenceScript,
                 new EvidenceCaptureOptions(MaximumEvidenceElements, MaximumEvidenceAssets, MaximumTextLength));
-            var evidence = JsonSerializer.Deserialize<RenderedPageEvidence>(evidenceJson.GetRawText(), VisualJson.Options)
+            var evidence = JsonSerializer.Deserialize<RenderedPageEvidencePayload>(evidenceJson.GetRawText(), VisualJson.Options)
                 ?? throw new InvalidOperationException("[SRE-BROWSER-009] Rendered evidence extraction returned no data. Problem: Playwright evaluate produced an empty evidence payload. Cause: the page script failed or returned invalid JSON. Fix: inspect the reference page fixture and browser console.");
 
             if (evidence.DocumentHeight > policy.MaximumPageHeight)
@@ -158,22 +169,11 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             }
 
             var dom = await page.ContentAsync();
-            var screenshot = await page.ScreenshotAsync(new PageScreenshotOptions
-            {
-                FullPage = true,
-                Type = ScreenshotType.Png,
-                Scale = ScreenshotScale.Css
-            });
 
-            return new BrowserCaptureResult(
-                "playwright-chromium",
-                "native-full-page",
-                viewport.Width,
-                viewport.Height,
+            return new RenderedPageEvidence(
                 evidence.DocumentWidth,
                 evidence.DocumentHeight,
                 dom,
-                screenshot,
                 evidence.Styles.Select(style => new ComputedStyleSample(style.Selector, style.Properties, style.EvidenceId)).ToArray(),
                 evidence.Boxes.Select(box => new ElementBoxSample(box.Selector, box.X, box.Y, box.Width, box.Height, box.EvidenceId)).ToArray(),
                 evidence.Assets.Select(asset => new AssetInventoryItem(
@@ -184,6 +184,41 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
                     asset.SourceElement,
                     true,
                     asset.EvidenceId)).ToArray(),
+                evidence.Warnings);
+        }
+
+        public async Task<byte[]> CaptureNativeFullPageScreenshotAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureNavigated();
+            var screenshot = await page.ScreenshotAsync(new PageScreenshotOptions
+            {
+                FullPage = true,
+                Type = ScreenshotType.Png,
+                Scale = ScreenshotScale.Css
+            });
+            return screenshot;
+        }
+
+        private BrowserCaptureResult CreateCaptureResult(
+            string captureMethod,
+            RenderedPageEvidence evidence,
+            byte[] screenshot,
+            int documentWidth,
+            int documentHeight)
+        {
+            return new BrowserCaptureResult(
+                "playwright-chromium",
+                captureMethod,
+                viewport.Width,
+                viewport.Height,
+                documentWidth,
+                documentHeight,
+                evidence.DomHtml,
+                screenshot,
+                evidence.Styles,
+                evidence.Boxes,
+                evidence.Assets,
                 evidence.Warnings);
         }
 
@@ -281,7 +316,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
 
     private sealed record EvidenceCaptureOptions(int MaximumElements, int MaximumAssets, int MaximumTextLength);
 
-    private sealed class RenderedPageEvidence
+    private sealed class RenderedPageEvidencePayload
     {
         public int DocumentWidth { get; set; }
 

@@ -120,11 +120,40 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
                 return capture;
             }
 
-            return capture with
+            return ApplyState(capture);
+        }
+
+        public async Task<RenderedPageEvidence> ExtractRenderedEvidenceAsync(CancellationToken cancellationToken)
+        {
+            var current = await CaptureCurrentStateAsync(cancellationToken);
+            return new RenderedPageEvidence(
+                current.DocumentWidth,
+                current.DocumentHeight,
+                current.DomHtml,
+                current.Styles,
+                current.Boxes,
+                current.Assets,
+                current.Warnings);
+        }
+
+        public async Task<byte[]> CaptureNativeFullPageScreenshotAsync(CancellationToken cancellationToken)
+        {
+            var current = await CaptureCurrentStateAsync(cancellationToken);
+            return current.ScreenshotPng;
+        }
+
+        private BrowserCaptureResult ApplyState(BrowserCaptureResult current)
+        {
+            if (stateName is null)
             {
-                DomHtml = capture.DomHtml.Replace("</body>", $"<div data-fixture-state=\"{stateName}\"></div></body>", StringComparison.OrdinalIgnoreCase),
-                ScreenshotPng = CreateFixturePng(viewport.Width, capture.DocumentHeight, "#e5f1ff"),
-                Styles = capture.Styles.Select(style => style with
+                return current;
+            }
+
+            return current with
+            {
+                DomHtml = current.DomHtml.Replace("</body>", $"<div data-fixture-state=\"{stateName}\"></div></body>", StringComparison.OrdinalIgnoreCase),
+                ScreenshotPng = CreateFixturePng(viewport.Width, current.DocumentHeight, "#e5f1ff"),
+                Styles = current.Styles.Select(style => style with
                 {
                     Properties = style.Properties.Concat(new[] { KeyValuePair.Create("fixture-state", stateName) })
                         .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)

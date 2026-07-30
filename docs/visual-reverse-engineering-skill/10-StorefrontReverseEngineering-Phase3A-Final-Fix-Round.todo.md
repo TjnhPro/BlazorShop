@@ -195,47 +195,47 @@ Current files:
 
 Tasks:
 
-- [ ] Introduce a rendered evidence model that can carry:
-  - [ ] document width
-  - [ ] document height
-  - [ ] DOM HTML
-  - [ ] computed styles
-  - [ ] bounding boxes
-  - [ ] rendered asset inventory
-  - [ ] warnings
-- [ ] Split `IReferenceBrowserSession.CaptureCurrentStateAsync(...)` into narrower operations:
-  - [ ] `ExtractRenderedEvidenceAsync(...)`
-  - [ ] `CaptureNativeFullPageScreenshotAsync(...)`
-  - [ ] existing `CaptureViewportScreenshotAsync(...)`
-- [ ] Keep compatibility method behavior only where useful, but ensure the stable capture path uses the split operations.
-- [ ] Update `PlaywrightReferenceBrowserSession` so evidence extraction runs before native full-page screenshot.
-- [ ] Update fixture/synthetic browser sessions to implement the split operations deterministically for tests.
-- [ ] Update `StableFullPageCaptureService` flow:
-  - [ ] navigate
-  - [ ] stabilize
-  - [ ] extract evidence
-  - [ ] try native full-page screenshot
-  - [ ] evaluate native output
-  - [ ] fallback to stitched capture on failure/low quality
-  - [ ] construct final `BrowserCaptureResult` from the already extracted evidence
-- [ ] Ensure browser session stays open after native screenshot failure so stitched capture can reuse it.
-- [ ] Ensure session is opened once per viewport capture.
-- [ ] Ensure cancellation still propagates and does not become a synthetic failed capture.
+- [x] Introduce a rendered evidence model that can carry:
+  - [x] document width
+  - [x] document height
+  - [x] DOM HTML
+  - [x] computed styles
+  - [x] bounding boxes
+  - [x] rendered asset inventory
+  - [x] warnings
+- [x] Split `IReferenceBrowserSession.CaptureCurrentStateAsync(...)` into narrower operations:
+  - [x] `ExtractRenderedEvidenceAsync(...)`
+  - [x] `CaptureNativeFullPageScreenshotAsync(...)`
+  - [x] existing `CaptureViewportScreenshotAsync(...)`
+- [x] Keep compatibility method behavior only where useful, but ensure the stable capture path uses the split operations.
+- [x] Update `PlaywrightReferenceBrowserSession` so evidence extraction runs before native full-page screenshot.
+- [x] Update fixture/synthetic browser sessions to implement the split operations deterministically for tests.
+- [x] Update `StableFullPageCaptureService` flow:
+  - [x] navigate
+  - [x] stabilize
+  - [x] extract evidence
+  - [x] try native full-page screenshot
+  - [x] evaluate native output
+  - [x] fallback to stitched capture on failure/low quality
+  - [x] construct final `BrowserCaptureResult` from the already extracted evidence
+- [x] Ensure browser session stays open after native screenshot failure so stitched capture can reuse it.
+- [x] Ensure session is opened once per viewport capture.
+- [x] Ensure cancellation still propagates and does not become a synthetic failed capture.
 
 Guardrails:
 
-- [ ] Do not create a second Chromium page for fallback.
-- [ ] Do not re-extract evidence after fallback unless a test proves it is necessary.
-- [ ] Do not swallow caller cancellation.
-- [ ] Do not change StorefrontBuilder generation behavior.
+- [x] Do not create a second Chromium page for fallback.
+- [x] Do not re-extract evidence after fallback unless a test proves it is necessary.
+- [x] Do not swallow caller cancellation.
+- [x] Do not change StorefrontBuilder generation behavior.
 
 Tests:
 
-- [ ] Native full-page screenshot exception triggers stitched fallback.
-- [ ] Rendered evidence from before the exception is present in the final capture.
-- [ ] Browser session open count is exactly one for native plus fallback.
-- [ ] Native success path still returns `native-full-page`.
-- [ ] Cancellation token cancellation is thrown, not converted to quality failure.
+- [x] Native full-page screenshot exception triggers stitched fallback.
+- [x] Rendered evidence from before the exception is present in the final capture.
+- [x] Browser session open count is exactly one for native plus fallback.
+- [x] Native success path still returns `native-full-page`.
+- [x] Cancellation token cancellation is thrown, not converted to quality failure.
 
 Verification:
 
@@ -245,9 +245,17 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Screenshot exception no longer loses DOM/style/box/asset evidence.
-- [ ] Stitched fallback can run from the same session after native failure.
-- [ ] Existing Playwright full workflow still passes.
+- [x] Screenshot exception no longer loses DOM/style/box/asset evidence.
+- [x] Stitched fallback can run from the same session after native failure.
+- [x] Existing Playwright full workflow still passes.
+
+Implementation evidence:
+
+- Added `RenderedPageEvidence` and split browser session operations into `ExtractRenderedEvidenceAsync`, `CaptureNativeFullPageScreenshotAsync`, and `CaptureViewportScreenshotAsync` while retaining `CaptureCurrentStateAsync` as compatibility facade.
+- Updated Playwright and fixture sessions so evidence extraction is independent from native full-page screenshot bytes.
+- Updated `StableFullPageCaptureService` to navigate, stabilize, extract evidence, then attempt native screenshot; native screenshot exceptions now fall back to stitched capture using the same browser session and already extracted evidence.
+- Added regression tests proving native screenshot exception fallback preserves rendered evidence, opens exactly one session, native success does not fallback, and cancellation is propagated.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "StableCapture|Playwright|Browser"` passed `15/15`.
 
 ## Phase F2 - Capture Fallback Decision And Screenshot Quality Depth
 
