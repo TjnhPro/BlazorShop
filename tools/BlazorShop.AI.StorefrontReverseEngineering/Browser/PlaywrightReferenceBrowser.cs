@@ -187,14 +187,47 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
                 return new BrowserActionResult(true, []);
             }
 
-            if (string.Equals(action.Type, "scroll-to-y", StringComparison.OrdinalIgnoreCase))
+            var beforeUri = new Uri(page.Url);
+            if (string.Equals(action.Type, "click-selector", StringComparison.OrdinalIgnoreCase))
+            {
+                await page.Locator(action.Selector!).First.ClickAsync(new LocatorClickOptions
+                {
+                    Timeout = policy.TimeoutMilliseconds
+                });
+            }
+            else if (string.Equals(action.Type, "hover-selector", StringComparison.OrdinalIgnoreCase))
+            {
+                await page.Locator(action.Selector!).First.HoverAsync(new LocatorHoverOptions { Timeout = policy.TimeoutMilliseconds });
+            }
+            else if (string.Equals(action.Type, "focus-selector", StringComparison.OrdinalIgnoreCase))
+            {
+                await page.Locator(action.Selector!).First.FocusAsync(new LocatorFocusOptions { Timeout = policy.TimeoutMilliseconds });
+            }
+            else if (string.Equals(action.Type, "scroll-to-selector", StringComparison.OrdinalIgnoreCase))
+            {
+                await page.Locator(action.Selector!).First.ScrollIntoViewIfNeededAsync(new LocatorScrollIntoViewIfNeededOptions { Timeout = policy.TimeoutMilliseconds });
+            }
+            else if (string.Equals(action.Type, "key-press", StringComparison.OrdinalIgnoreCase))
+            {
+                await page.Keyboard.PressAsync(action.Key!, new KeyboardPressOptions { Delay = 10 });
+            }
+            else if (string.Equals(action.Type, "scroll-to-y", StringComparison.OrdinalIgnoreCase))
             {
                 await page.EvaluateAsync("y => window.scrollTo(0, y)", action.ScrollY ?? 0);
-                await page.WaitForTimeoutAsync(action.DelayMilliseconds ?? 100);
-                return new BrowserActionResult(true, []);
+            }
+            else
+            {
+                return new BrowserActionResult(false, [$"Unsupported browser action '{action.Type}'."]);
             }
 
-            return new BrowserActionResult(false, [$"Unsupported browser action '{action.Type}' for this phase."]);
+            await page.WaitForTimeoutAsync(action.DelayMilliseconds ?? 150);
+            var afterUri = new Uri(page.Url);
+            if (!string.Equals(beforeUri.Host, afterUri.Host, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"[SRE-INTERACTION-004] External navigation refused. Problem: interaction moved from '{beforeUri.Host}' to '{afterUri.Host}'. Cause: Phase 3A interactions must stay within the allowed reference origin. Fix: remove or replace the selector.");
+            }
+
+            return new BrowserActionResult(true, []);
         }
 
         public Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken)

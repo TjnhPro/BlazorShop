@@ -15,6 +15,9 @@ public sealed class InteractionCaptureTests
 
         Assert.Equal(InteractionModel.ClickDriven, evidence.InteractionModel);
         Assert.True(evidence.DomChanged);
+        Assert.True(evidence.ScreenshotChanged);
+        Assert.True(evidence.StyleChanged);
+        Assert.NotEmpty(evidence.ChangedElementEvidenceIds);
         Assert.Empty(evidence.Errors);
     }
 
@@ -33,6 +36,8 @@ public sealed class InteractionCaptureTests
 
         Assert.Equal(InteractionModel.HoverDriven, evidence.InteractionModel);
         Assert.True(evidence.StyleChanged);
+        Assert.True(File.Exists(ToLatestInteractionPath(evidence.BeforeStylesPath)));
+        Assert.True(File.Exists(ToLatestInteractionPath(evidence.AfterStylesPath)));
     }
 
     [Fact]
@@ -51,6 +56,8 @@ public sealed class InteractionCaptureTests
     {
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             CaptureAsync(new InteractionCapturePlan("unsafe", [new InteractionActionDefinition(InteractionActionType.ClickSelector, "form.checkout")])));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CaptureAsync(new InteractionCapturePlan("unsafe-delete", [new InteractionActionDefinition(InteractionActionType.ClickSelector, ".delete-account")])));
     }
 
     private static async Task<InteractionEvidence> CaptureAsync(InteractionCapturePlan plan)
@@ -77,5 +84,14 @@ public sealed class InteractionCaptureTests
         }
 
         return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");
+    }
+
+    private static string ToLatestInteractionPath(string relativePath)
+    {
+        var repoRoot = GetRepoRoot();
+        var project = Directory.GetDirectories(Path.Combine(repoRoot, "obj", "storefront-reverse-engineering", "projects"), "interaction-test-*")
+            .OrderByDescending(Directory.GetLastWriteTimeUtc)
+            .First();
+        return Path.Combine(project, relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
 }

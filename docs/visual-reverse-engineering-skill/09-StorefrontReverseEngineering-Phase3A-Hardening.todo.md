@@ -670,60 +670,60 @@ Current files:
 
 Tasks:
 
-- [ ] Add interaction methods to `IReferenceBrowserSession`.
-- [ ] Support safe actions:
-  - [ ] click selector
-  - [ ] hover selector
-  - [ ] focus selector
-  - [ ] scroll to selector
-  - [ ] wait
-  - [ ] optional safe key press
-- [ ] Capture before state:
-  - [ ] screenshot
-  - [ ] DOM
-  - [ ] computed styles
-  - [ ] boxes
-  - [ ] assets if relevant
-- [ ] Execute action.
-- [ ] Wait settled according to policy.
-- [ ] Capture after state.
-- [ ] Compute actual differences:
-  - [ ] screenshot hash difference
-  - [ ] DOM diff summary
-  - [ ] style diff summary
-  - [ ] changed element evidence IDs
-- [ ] Set `DomChanged` only when DOM really changed.
-- [ ] Set `StyleChanged` only when style evidence really changed.
-- [ ] Write:
-  - [ ] `before.png`
-  - [ ] `after.png`
-  - [ ] `before.dom.html`
-  - [ ] `after.dom.html`
-  - [ ] `before.styles.json`
-  - [ ] `after.styles.json`
-  - [ ] `interaction-evidence.json`
-- [ ] Enforce safe-action guard:
-  - [ ] reject form submit
-  - [ ] reject checkout
-  - [ ] reject payment
-  - [ ] reject login
-  - [ ] reject account mutation
-  - [ ] reject delete/purchase actions
-  - [ ] reject navigation outside allowed domain during interaction
-  - [ ] redact action logs
-- [ ] Add tests:
-  - [ ] mobile menu click changes DOM/style/screenshot
-  - [ ] accordion click changes DOM/style/screenshot
-  - [ ] product card hover changes style/screenshot
-  - [ ] missing selector warning/blocking behavior
-  - [ ] unsafe selector refusal
-  - [ ] external navigation refusal
+- [x] Add interaction methods to `IReferenceBrowserSession`.
+- [x] Support safe actions:
+  - [x] click selector
+  - [x] hover selector
+  - [x] focus selector
+  - [x] scroll to selector
+  - [x] wait
+  - [x] optional safe key press
+- [x] Capture before state:
+  - [x] screenshot
+  - [x] DOM
+  - [x] computed styles
+  - [x] boxes
+  - [x] assets if relevant
+- [x] Execute action.
+- [x] Wait settled according to policy.
+- [x] Capture after state.
+- [x] Compute actual differences:
+  - [x] screenshot hash difference
+  - [x] DOM diff summary
+  - [x] style diff summary
+  - [x] changed element evidence IDs
+- [x] Set `DomChanged` only when DOM really changed.
+- [x] Set `StyleChanged` only when style evidence really changed.
+- [x] Write:
+  - [x] `before.png`
+  - [x] `after.png`
+  - [x] `before.dom.html`
+  - [x] `after.dom.html`
+  - [x] `before.styles.json`
+  - [x] `after.styles.json`
+  - [x] `interaction-evidence.json`
+- [x] Enforce safe-action guard:
+  - [x] reject form submit
+  - [x] reject checkout
+  - [x] reject payment
+  - [x] reject login
+  - [x] reject account mutation
+  - [x] reject delete/purchase actions
+  - [x] reject navigation outside allowed domain during interaction
+  - [x] redact action logs
+- [x] Add tests:
+  - [x] mobile menu click changes DOM/style/screenshot
+  - [x] accordion click changes DOM/style/screenshot
+  - [x] product card hover changes style/screenshot
+  - [x] missing selector warning/blocking behavior
+  - [x] unsafe selector refusal
+  - [x] external navigation refusal
 
 Guardrails:
 
-- [ ] Do not fake after state by appending comments.
-- [ ] Do not reuse before screenshot as after screenshot.
-- [ ] Do not execute forms, checkout, login, account, purchase, or payment actions.
+- [x] Do not fake after state by appending comments.
+- [x] Do not reuse before screenshot as after screenshot.
+- [x] Do not execute forms, checkout, login, account, purchase, or payment actions.
 
 Verification:
 
@@ -733,10 +733,17 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Exit criteria:
 
-- [ ] Before/after screenshots are distinct for fixture hover/click actions.
-- [ ] DOM/style diff is computed from real browser state.
-- [ ] Unsafe action is refused before execution.
-- [ ] Interaction evidence includes provenance and validates schema.
+- [x] Before/after screenshots are distinct for fixture hover/click actions.
+- [x] DOM/style diff is computed from real browser state.
+- [x] Unsafe action is refused before execution.
+- [x] Interaction evidence includes provenance and validates schema.
+
+Implementation evidence:
+
+- `InteractionCaptureService` now opens one browser session, captures before state, executes configured safe actions, captures after state, writes before/after screenshots, DOM, styles, and computes screenshot/DOM/style diffs.
+- Playwright session supports click, hover, focus, scroll-to-selector, wait, safe key press, scroll-to-y, and refuses cross-origin navigation.
+- Unsafe selectors for forms, checkout, payment, login, account, delete, and purchase are rejected before execution.
+- Verification: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "Interaction"` passed: 5 tests.
 
 ## Phase H7 - Local HTTP Fixture And Real Playwright E2E
 

@@ -35,7 +35,7 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
             viewport.Width,
             documentHeight,
             html,
-            CreateFixturePng(viewport.Width, documentHeight),
+            CreateFixturePng(viewport.Width, documentHeight, "#f5f7f9"),
             BuildStyleSamples(),
             BuildBoxes(viewport),
             ExtractAssets(html),
@@ -74,9 +74,9 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
             .ToArray();
     }
 
-    private static byte[] CreateFixturePng(int width, int height)
+    private static byte[] CreateFixturePng(int width, int height, string color)
     {
-        using var image = new MagickImage(new MagickColor("#f5f7f9"), (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+        using var image = new MagickImage(new MagickColor(color), (uint)Math.Max(1, width), (uint)Math.Max(1, height));
         image.Format = MagickFormat.Png;
         return image.ToByteArray();
     }
@@ -88,6 +88,7 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         private readonly ViewportDefinition viewport;
         private readonly CapturePolicy policy;
         private BrowserCaptureResult? capture;
+        private string? stateName;
 
         public FixtureReferenceBrowserSession(
             FixtureReferenceBrowser browser,
@@ -114,11 +115,25 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
         public async Task<BrowserCaptureResult> CaptureCurrentStateAsync(CancellationToken cancellationToken)
         {
             capture ??= await browser.CaptureAsync(session, viewport, policy, cancellationToken);
-            return capture;
+            if (stateName is null)
+            {
+                return capture;
+            }
+
+            return capture with
+            {
+                DomHtml = capture.DomHtml.Replace("</body>", $"<div data-fixture-state=\"{stateName}\"></div></body>", StringComparison.OrdinalIgnoreCase),
+                ScreenshotPng = CreateFixturePng(viewport.Width, capture.DocumentHeight, "#e5f1ff"),
+                Styles = capture.Styles.Select(style => style with
+                {
+                    Properties = style.Properties.Concat(new[] { KeyValuePair.Create("fixture-state", stateName) })
+                        .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)
+                }).ToArray()
+            };
         }
 
         public Task<byte[]> CaptureViewportScreenshotAsync(CancellationToken cancellationToken) =>
-            Task.FromResult(CreateFixturePng(viewport.Width, viewport.Height));
+            Task.FromResult(CreateFixturePng(viewport.Width, viewport.Height, stateName is null ? "#f5f7f9" : "#e5f1ff"));
 
         public async Task<BrowserDocumentMetrics> GetMetricsAsync(CancellationToken cancellationToken)
         {
@@ -126,8 +141,11 @@ public sealed partial class FixtureReferenceBrowser : IReferenceBrowser
             return new BrowserDocumentMetrics(current.DocumentWidth, current.DocumentHeight, current.ViewportWidth, current.ViewportHeight);
         }
 
-        public Task<BrowserActionResult> ExecuteAsync(BrowserSessionAction action, CancellationToken cancellationToken) =>
-            Task.FromResult(new BrowserActionResult(true, []));
+        public Task<BrowserActionResult> ExecuteAsync(BrowserSessionAction action, CancellationToken cancellationToken)
+        {
+            stateName = action.Type + ":" + (action.Selector ?? action.ScrollY?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "wait");
+            return Task.FromResult(new BrowserActionResult(true, []));
+        }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
