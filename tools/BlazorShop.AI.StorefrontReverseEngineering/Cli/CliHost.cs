@@ -1,4 +1,5 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
+using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Cli;
 
@@ -86,6 +87,18 @@ public static class CliHost
                     output.WriteLine($"Artifact root: {inspection.Project.ArtifactRoot}");
                     output.WriteLine($"Latest run: {inspection.LatestRunId ?? "(none)"}");
                     output.WriteLine($"Validation: {inspection.ValidationSummary}");
+                    return 0;
+                case "discover":
+                    var projectPath = options.GetRequired("project", "SRE-DISCOVER-001");
+                    var projectInspection = await service.InspectAsync(projectPath, cancellationToken);
+                    var discoveryService = new VisualDiscoveryService(
+                        FindRepositoryRoot(),
+                        ReferenceBrowserFactory.Create(FindRepositoryRoot(), projectInspection.Project.ReferenceUrl));
+                    var result = await discoveryService.DiscoverAsync(projectPath, cancellationToken);
+                    output.WriteLine($"Discovery completed: {result.SiteProfile.ProjectId}");
+                    output.WriteLine($"Title: {result.SiteProfile.Title ?? "(unknown)"}");
+                    output.WriteLine($"Blockers: {result.Reconnaissance.Blockers.Count}");
+                    output.WriteLine($"Capture pages: {result.CapturePlan.Pages.Count}");
                     return 0;
                 default:
                     output.WriteLine($"StorefrontReverseEngineering command '{command}' is available. Implementation is added by later Phase 3A workflow phases.");

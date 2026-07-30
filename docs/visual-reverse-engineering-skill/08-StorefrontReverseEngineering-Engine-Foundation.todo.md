@@ -463,34 +463,34 @@ Goal: make `discover` produce a project-specific capture plan before capture run
 
 Tasks:
 
-- [ ] Implement `discover --project`.
-- [ ] Open the reference URL through `IReferenceBrowser`.
-- [ ] Capture title, canonical URL, language, meta viewport, document dimensions.
-- [ ] Detect obvious blockers:
-  - [ ] navigation failure
-  - [ ] non-HTML response
-  - [ ] robots/crawler warning marker if available
-  - [ ] cookie banner or modal overlay
-  - [ ] authentication wall
-  - [ ] excessive page height
-  - [ ] unsupported protocol
-- [ ] Create default viewport plan:
-  - [ ] desktop `1440x1000`
-  - [ ] tablet `768x1000`
-  - [ ] mobile `390x900`
-- [ ] Allow viewport override in configuration.
-- [ ] Write `discovery/site-profile.json`.
-- [ ] Write `discovery/reconnaissance.json`.
-- [ ] Write `discovery/capture-plan.json`.
-- [ ] Update project status to `Discovered`.
-- [ ] Add tests for fixture reconnaissance.
-- [ ] Add tests for blocker detection.
+- [x] Implement `discover --project`.
+- [x] Open the reference URL through `IReferenceBrowser`.
+- [x] Capture title, canonical URL, language, meta viewport, document dimensions.
+- [x] Detect obvious blockers:
+  - [x] navigation failure
+  - [x] non-HTML response
+  - [x] robots/crawler warning marker if available
+  - [x] cookie banner or modal overlay
+  - [x] authentication wall
+  - [x] excessive page height
+  - [x] unsupported protocol
+- [x] Create default viewport plan:
+  - [x] desktop `1440x1000`
+  - [x] tablet `768x1000`
+  - [x] mobile `390x900`
+- [x] Allow viewport override in configuration.
+- [x] Write `discovery/site-profile.json`.
+- [x] Write `discovery/reconnaissance.json`.
+- [x] Write `discovery/capture-plan.json`.
+- [x] Update project status to `Discovered`.
+- [x] Add tests for fixture reconnaissance.
+- [x] Add tests for blocker detection.
 
 Guardrails:
 
-- [ ] Do not crawl beyond configured `maximumPages`.
-- [ ] Do not use discovered links for full-site capture in Phase 3A.
-- [ ] Do not bypass authentication, bot protection, or paywalls.
+- [x] Do not crawl beyond configured `maximumPages`.
+- [x] Do not use discovered links for full-site capture in Phase 3A.
+- [x] Do not bypass authentication, bot protection, or paywalls.
 
 Verification:
 
@@ -500,9 +500,9 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 Exit criteria:
 
-- [ ] Capture plan is deterministic.
-- [ ] Blockers are recorded instead of silently ignored.
-- [ ] Discover can be re-run safely.
+- [x] Capture plan is deterministic.
+- [x] Blockers are recorded instead of silently ignored.
+- [x] Discover can be re-run safely.
 
 ## Phase 7 - Stable Full-Page Capture And Quality Report
 
