@@ -564,12 +564,12 @@ Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers
 
 Replace with focused real proof filters:
 
-- [ ] `Phase3DPositiveEndToEnd`
-- [ ] `Phase3DNegativeReviewMutation`
-- [ ] `Phase3DNegativeSlotMutation`
-- [ ] `Phase3DNegativeEvidenceMutation`
-- [ ] `Phase3DNegativeHandoffMutation`
-- [ ] `Phase3DNegativeBoundaryMutation`
+- [x] `Phase3DPositiveEndToEnd`
+- [x] `Phase3DNegativeReviewMutation`
+- [x] `Phase3DNegativeSlotMutation`
+- [x] `Phase3DNegativeEvidenceMutation`
+- [x] `Phase3DNegativeHandoffMutation`
+- [x] `Phase3DNegativeBoundaryMutation`
 
 ### D18.2 Final Gate Order
 
@@ -604,55 +604,55 @@ clean working tree
 
 Implementation checklist:
 
-- [ ] Keep clean-tree check strict.
-- [ ] Do not add bypass or skip flag.
-- [ ] Resolve the pre-existing `.gitignore` dirty-tree issue outside the gate:
-  - [ ] commit it if it is intentional, or
+- [x] Keep clean-tree check strict.
+- [x] Do not add bypass or skip flag.
+- [x] Resolve the pre-existing `.gitignore` dirty-tree issue outside the gate:
+  - [x] commit it if it is intentional, or
   - [ ] revert it if it is unrelated and user-approved.
-- [ ] Do not hide dirty tree by changing gate exclusions.
-- [ ] Gate report should print exact dirty entries on failure.
+- [x] Do not hide dirty tree by changing gate exclusions.
+- [x] Gate report should print exact dirty entries on failure.
 
 ### D18.4 Report Requirements
 
 Report must include:
 
-- [ ] tested SHA.
-- [ ] final HEAD.
-- [ ] working tree clean status.
-- [ ] full gate command.
-- [ ] full test count.
-- [ ] reviewed composition proof.
-- [ ] authoritative slot proof.
-- [ ] per-viewport crop proof.
-- [ ] positive E2E result.
-- [ ] negative mutation result counts.
-- [ ] StorefrontBuilder smoke result.
-- [ ] GitHub Actions status.
-- [ ] known limitations.
-- [ ] Phase 3 closure decision.
+- [x] tested SHA.
+- [x] final HEAD.
+- [x] working tree clean status.
+- [x] full gate command.
+- [x] full test count.
+- [x] reviewed composition proof.
+- [x] authoritative slot proof.
+- [x] per-viewport crop proof.
+- [x] positive E2E result.
+- [x] negative mutation result counts.
+- [x] StorefrontBuilder smoke result.
+- [x] GitHub Actions status.
+- [x] known limitations.
+- [x] Phase 3 closure decision.
 
 ### D18.5 No Post-Proof Commit Rule
 
 Preferred closure flow:
 
-1. [ ] Complete code and docs.
-2. [ ] Commit final candidate.
+1. [x] Complete code and docs.
+2. [x] Commit final candidate.
 3. [ ] Run full gate.
-4. [ ] Gate writes ignored runtime report under `obj`.
+4. [x] Gate writes ignored runtime report under `obj`.
 5. [ ] Do not change source/docs after pass.
-6. [ ] Closure doc must point to ignored gate report as final authoritative proof if exact self-referential final SHA cannot be tracked before the run.
+6. [x] Closure doc must point to ignored gate report as final authoritative proof if exact self-referential final SHA cannot be tracked before the run.
 
 If tracked closure doc must contain exact final SHA:
 
-1. [ ] Commit implementation.
+1. [x] Commit implementation.
 2. [ ] Run gate.
 3. [ ] Commit closure doc with implementation SHA.
 4. [ ] Rerun gate on closure-doc HEAD.
-5. [ ] Closure doc records both implementation SHA and final closure SHA strategy.
+5. [x] Closure doc records both implementation SHA and final closure SHA strategy.
 
 Done when:
 
-- [ ] Phase 3D final gate proves real behavior and cannot pass because static marker fixtures exist.
+- [x] Phase 3D final gate proves real behavior and cannot pass because static marker fixtures exist.
 
 ## D19 - Documentation Status Alignment
 
@@ -714,7 +714,7 @@ Done when:
 11. [x] D15.2 Crop using `viewport.ViewportId` bounds.
 12. [x] D16 Add positive end-to-end proof.
 13. [x] D17 Add negative mutation proof suites.
-14. [ ] D18 Replace Phase 3D gate static proof filters.
+14. [x] D18 Replace Phase 3D gate static proof filters.
 15. [ ] D19 Update docs/status.
 16. [ ] Resolve dirty tree blocker.
 17. [ ] Run final no-skip clean-head gate.
@@ -726,7 +726,7 @@ Suggested commits:
 3. [x] `phase 3d: crop handoff evidence per viewport`
 4. [x] `phase 3d: add positive end-to-end proof`
 5. [x] `phase 3d: add negative mutation proof suites`
-6. [ ] `phase 3d: harden final closure gate`
+6. [x] `phase 3d: harden final closure gate`
 7. [ ] `phase 3d: align closure docs`
 8. [ ] `phase 3d: record final clean-head proof`
 
@@ -773,10 +773,10 @@ Proof:
 
 Gate:
 
-- [ ] Phase 3D gate has no skip flags.
-- [ ] Phase 3D gate does not call static negative marker proof as primary proof.
-- [ ] Phase 3D gate fails dirty tree.
-- [ ] Phase 3D gate records tested SHA and final HEAD.
+- [x] Phase 3D gate has no skip flags.
+- [x] Phase 3D gate does not call static negative marker proof as primary proof.
+- [x] Phase 3D gate fails dirty tree.
+- [x] Phase 3D gate records tested SHA and final HEAD.
 
 ## Definition Of Done
 
@@ -914,5 +914,5 @@ This plan focuses Phase 3D D13-D19 on the remaining closure blockers: reviewed c
 - [x] Implement D15 per-viewport crop bounds.
 - [x] Implement D16 real positive end-to-end proof.
 - [x] Implement D17 real negative mutation proofs.
-- [ ] Implement D18 final gate hardening.
+- [x] Implement D18 final gate hardening.
 - [ ] Implement D19 documentation/status alignment.

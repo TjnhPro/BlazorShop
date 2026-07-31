@@ -109,7 +109,13 @@ public sealed class Phase3DProofFixtureTests
         Assert.Contains("ConfidenceReview", script, StringComparison.Ordinal);
         Assert.Contains("StorefrontPattern|BlueprintV1", script, StringComparison.Ordinal);
         Assert.Contains("AgentHandoff", script, StringComparison.Ordinal);
-        Assert.Contains("Phase3DProof", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DPositiveEndToEnd", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DNegativeReviewMutation", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DNegativeSlotMutation", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DNegativeEvidenceMutation", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DNegativeHandoffMutation", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DNegativeBoundaryMutation", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers", script, StringComparison.Ordinal);
         Assert.Contains("boundary scans", script, StringComparison.Ordinal);
         Assert.Contains("StorefrontBuilder plan-only smoke", script, StringComparison.Ordinal);
         Assert.Contains("final inspect proof", script, StringComparison.Ordinal);

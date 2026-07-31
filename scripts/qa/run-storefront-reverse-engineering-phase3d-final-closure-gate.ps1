@@ -213,8 +213,8 @@ function New-ReportLines {
     $lines.Add("- Review resolution proof: ConfidenceReview tests.")
     $lines.Add("- Required slot proof: StorefrontPattern and BlueprintV1 tests.")
     $lines.Add("- Handoff evidence proof: AgentHandoff tests.")
-    $lines.Add("- Positive fixture readiness: Phase3DProof positive fixture.")
-    $lines.Add("- Negative fixture summaries: Phase3DProof negative fixture matrix.")
+    $lines.Add("- Positive end-to-end proof: Phase3DPositiveEndToEnd tests.")
+    $lines.Add("- Negative mutation proof: Phase3DNegative review, slot, evidence, handoff, and boundary tests.")
     $lines.Add("- StorefrontBuilder smoke result: plan-only smoke step.")
     $lines.Add("- Phase 3 closure decision: close only when this gate status is passed on final HEAD.")
     $lines.Add("")
@@ -301,20 +301,28 @@ try {
         Invoke-TestFilter -Name "Canonical handoff validation" -Filter "SchemaArtifact|AgentHandoff"
     }
 
-    Invoke-Step "positive multi-page fixture" {
-        Invoke-TestFilter -Name "Phase 3D positive fixture" -Filter "Phase3DProofFixtureTests.Phase3DPositiveFixture_CoversCompleteMultiPageHandoff"
+    Invoke-Step "positive end-to-end proof" {
+        Invoke-TestFilter -Name "Phase 3D positive end-to-end proof" -Filter "Phase3DPositiveEndToEnd"
     }
 
-    Invoke-Step "negative review fixtures" {
-        Invoke-TestFilter -Name "Phase 3D negative review fixtures" -Filter "Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers"
+    Invoke-Step "negative review mutations" {
+        Invoke-TestFilter -Name "Phase 3D negative review mutations" -Filter "Phase3DNegativeReviewMutation"
     }
 
-    Invoke-Step "negative slot fixtures" {
-        Invoke-TestFilter -Name "Phase 3D negative slot fixtures" -Filter "Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers"
+    Invoke-Step "negative slot mutations" {
+        Invoke-TestFilter -Name "Phase 3D negative slot mutations" -Filter "Phase3DNegativeSlotMutation"
     }
 
-    Invoke-Step "negative handoff fixtures" {
-        Invoke-TestFilter -Name "Phase 3D negative handoff fixtures" -Filter "Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers"
+    Invoke-Step "negative evidence mutations" {
+        Invoke-TestFilter -Name "Phase 3D negative evidence mutations" -Filter "Phase3DNegativeEvidenceMutation"
+    }
+
+    Invoke-Step "negative handoff mutations" {
+        Invoke-TestFilter -Name "Phase 3D negative handoff mutations" -Filter "Phase3DNegativeHandoffMutation"
+    }
+
+    Invoke-Step "negative boundary mutations" {
+        Invoke-TestFilter -Name "Phase 3D negative boundary mutations" -Filter "Phase3DNegativeBoundaryMutation"
     }
 
     Invoke-Step "boundary scans" {

@@ -247,3 +247,15 @@ Status: in progress
 - Result: passed `39/39`.
 - Review regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `13/13`.
+
+## Phase 3D.D18 Evidence
+
+- Final Phase 3D gate now invokes real proof filters: `Phase3DPositiveEndToEnd`, `Phase3DNegativeReviewMutation`, `Phase3DNegativeSlotMutation`, `Phase3DNegativeEvidenceMutation`, `Phase3DNegativeHandoffMutation`, and `Phase3DNegativeBoundaryMutation`.
+- The repeated static `Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers` gate calls were removed as primary proof.
+- Gate report wording now distinguishes positive end-to-end proof and negative mutation proof from static fixture summaries.
+- Clean-tree and HEAD-unchanged checks remain strict; no skip or bypass switch was added.
+- The pre-existing `.gitignore` dirty-tree blocker is resolved by committing the intentional `Skills/` ignore entry with this gate-hardening phase.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3DFinalClosureGate_IsNoSkipCleanHeadGate" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `1/1`.
+- Dirty-tree check command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1 -CommandTimeoutSeconds 1`
+- Result: failed at `clean tree check` as designed and printed dirty entries, including `.gitignore`, D18 docs, and D18 gate/test files.

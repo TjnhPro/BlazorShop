@@ -376,6 +376,7 @@ FodyWeavers.xsd
 output/
 .gstack/
 Smartstore/
+Skills/
 ai-website-cloner-template/
 /artifacts/storefront-builder/generated/
 /obj/storefront-builder/generated/
