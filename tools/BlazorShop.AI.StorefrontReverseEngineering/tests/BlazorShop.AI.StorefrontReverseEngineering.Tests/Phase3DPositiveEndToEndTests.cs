@@ -83,7 +83,7 @@ public sealed class Phase3DPositiveEndToEndTests
         Assert.Equal(firstCompositionIds, secondCompositionIds);
     }
 
-    private static async Task<string> CreatePositiveProjectAsync(string name)
+    internal static async Task<string> CreatePositiveProjectAsync(string name)
     {
         var repoRoot = GetRepoRoot();
         var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "phase3d-positive-" + Guid.NewGuid().ToString("N"));

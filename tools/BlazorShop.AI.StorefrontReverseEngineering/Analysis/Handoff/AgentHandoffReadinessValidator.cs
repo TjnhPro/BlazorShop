@@ -143,6 +143,13 @@ public sealed class AgentHandoffReadinessValidator
             }
 
             var entry = manifest?.ArtifactEntries.FirstOrDefault(candidate => string.Equals(candidate.Path, artifact.RelativePath, StringComparison.Ordinal));
+            if (manifest is not null &&
+                !artifact.IsDirectory &&
+                (!manifest.ArtifactList.Contains(artifact.RelativePath, StringComparer.Ordinal) || entry is null))
+            {
+                findings.Add(Block("missing-agent-handoff-artifact", $"Manifest is missing required artifact entry: {artifact.RelativePath}", "analysis/agent-handoff/manifest.json"));
+            }
+
             if (entry is not null && artifact.HashRequired)
             {
                 var actualHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();

@@ -232,3 +232,18 @@ Status: in progress
 - Determinism is asserted for stable composition IDs and handoff screenshot/crop paths and hashes, excluding intentionally timestamped JSON fields.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "PositivePipeline" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `3/3`.
+
+## Phase 3D.D17 Evidence
+
+- Added real negative mutation suites for review decisions, slot mappings, evidence packaging, handoff readiness, and browser-boundary intent markers.
+- Review mutation tests mutate `review/review-decisions.json` and run `ReviewDecisionApplier` or reviewed blueprint assembly to prove stale, invalid, duplicate, deferred, and rejected decisions fail with exact codes.
+- Slot mutation tests mutate reviewed mappings and page compositions, then run `PageCompositionSlotValidator`.
+- Evidence mutation tests mutate viewport bounds and actual handoff crop files, then run `AgentHandoffAssembler` or `AgentHandoffReadinessValidator`.
+- Handoff mutation tests delete or corrupt real `analysis/agent-handoff/*` artifacts and run the actual readiness validator.
+- Boundary mutation tests assert generated-intent markers map to the exact browser boundary blocker codes used by the Phase 3D contract.
+- `ConfidenceScorer` decision validation exceptions now include the standardized D17 review blocker codes.
+- Handoff readiness now blocks when a required artifact is removed from the handoff manifest list or artifact entries.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3DNegative" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `39/39`.
+- Review regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `13/13`.

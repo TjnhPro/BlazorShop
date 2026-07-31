@@ -178,13 +178,13 @@ public sealed class ReviewDecisionApplier
         {
             if (!queueById.ContainsKey(group.Key))
             {
-                throw new InvalidOperationException($"Review decision targets unknown item '{group.Key}'.");
+                throw new InvalidOperationException($"[SRE-WORKFLOW-REVIEW-DECISIONS-INVALID] Review decision targets unknown item '{group.Key}'.");
             }
 
             var decisionsForItem = group.ToArray();
             if (decisionsForItem.Length > 1 && decisionsForItem.Any(decision => string.IsNullOrWhiteSpace(decision.SupersedesDecisionId)))
             {
-                throw new InvalidOperationException($"Duplicate review decisions for '{group.Key}' must explicitly supersede earlier decisions.");
+                throw new InvalidOperationException($"[SRE-WORKFLOW-REVIEW-DECISIONS-INVALID] Duplicate review decisions for '{group.Key}' must explicitly supersede earlier decisions.");
             }
         }
 
@@ -193,12 +193,12 @@ public sealed class ReviewDecisionApplier
             var item = queueById[decision.ItemId];
             if (decision.Status is not ("Approved" or "Modified" or "Rejected" or "Deferred"))
             {
-                throw new InvalidOperationException($"Unknown review decision status '{decision.Status}' for '{decision.ItemId}'.");
+                throw new InvalidOperationException($"[SRE-WORKFLOW-REVIEW-DECISIONS-INVALID] Unknown review decision status '{decision.Status}' for '{decision.ItemId}'.");
             }
 
             if (decision.Status == "Modified" && decision.ModifiedValue is null)
             {
-                throw new InvalidOperationException($"Modified review decision '{decision.ItemId}' must include modifiedValue.");
+                throw new InvalidOperationException($"[SRE-WORKFLOW-REVIEW-DECISIONS-INVALID] Modified review decision '{decision.ItemId}' must include modifiedValue.");
             }
 
             if (decision.Status is "Rejected" or "Deferred" && string.IsNullOrWhiteSpace(decision.ReviewerNote))
@@ -217,7 +217,7 @@ public sealed class ReviewDecisionApplier
             if (!string.Equals(decision.SourceArtifactId, item.SourceArtifactId, StringComparison.Ordinal) ||
                 !string.Equals(decision.SourceArtifactHash, item.SourceArtifactHash, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException($"Review decision '{decision.ItemId}' is stale for source artifact '{item.SourceArtifactId}'.");
+                throw new InvalidOperationException($"[decision-source-hash-mismatch] Review decision '{decision.ItemId}' is stale for source artifact '{item.SourceArtifactId}'.");
             }
         }
     }

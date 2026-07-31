@@ -67,7 +67,7 @@ Not in scope:
 - [x] P0-3: Duplicate slot counting does not preserve distinct node/mapping sources.
 - [x] P0-4: Unmapped extra sections can be ignored instead of blocked.
 - [x] P0-5: Section crop uses first available bounds instead of viewport-specific bounds.
-- [ ] P0-6: Positive/negative proofs are static fixture assertions, not real pipeline/mutation proofs.
+- [x] P0-6: Positive/negative proofs are static fixture assertions, not real pipeline/mutation proofs.
 - [ ] P0-7: Full clean-head Phase 3D gate has not passed.
 
 ## D13 - Build Reviewed Composition From Resolved Artifacts
@@ -475,12 +475,12 @@ create or run valid fixture project
 
 Cases:
 
-- [ ] stale decision -> `decision-source-hash-mismatch`.
-- [ ] unknown status -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
-- [ ] Modified without value -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
-- [ ] duplicate without supersede -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
-- [ ] Deferred critical -> reviewed blueprint absent and `reviewed-blueprint-not-resolved`.
-- [ ] Rejected critical -> reviewed mapping removed and readiness blocked.
+- [x] stale decision -> `decision-source-hash-mismatch`.
+- [x] unknown status -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
+- [x] Modified without value -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
+- [x] duplicate without supersede -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
+- [x] Deferred critical -> reviewed blueprint absent and `reviewed-blueprint-not-resolved`.
+- [x] Rejected critical -> reviewed mapping removed and readiness blocked.
 
 ### D17.2 Slot Mutation Tests
 
@@ -488,41 +488,41 @@ Each test must mutate reviewed composition or reviewed mapping, not static marke
 
 Cases:
 
-- [ ] remove reviewed `product.purchase` mapping/node -> `missing-required-slot` or `required-slot-unmapped`.
-- [ ] remove reviewed `product.gallery` mapping/node -> `missing-required-slot`.
-- [ ] clone reviewed mapped gallery node -> `duplicate-non-repeatable-slot`.
-- [ ] add reviewed node without approved slot -> `unapproved-extra-section`.
-- [ ] set runtime/headless target as visual slot -> `slot-behavior-ownership-conflict`.
-- [ ] set protected target path -> `protected-path-target`.
-- [ ] set missing target path -> `slot-target-path-mismatch` or `invalid-section-slot-mapping`.
-- [ ] set invalid catalog target -> `invalid-section-slot-mapping`.
+- [x] remove reviewed `product.purchase` mapping/node -> `missing-required-slot` or `required-slot-unmapped`.
+- [x] remove reviewed `product.gallery` mapping/node -> `missing-required-slot`.
+- [x] clone reviewed mapped gallery node -> `duplicate-non-repeatable-slot`.
+- [x] add reviewed node without approved slot -> `unapproved-extra-section`.
+- [x] set runtime/headless target as visual slot -> `slot-behavior-ownership-conflict`.
+- [x] set protected target path -> `protected-path-target`.
+- [x] set missing target path -> `slot-target-path-mismatch` or `invalid-section-slot-mapping`.
+- [x] set invalid catalog target -> `invalid-section-slot-mapping`.
 
 ### D17.3 Evidence Mutation Tests
 
 Cases:
 
-- [ ] remove mobile bounds -> `missing-section-viewport-bounds`.
-- [ ] set invalid bounds -> `invalid-section-viewport-bounds`.
-- [ ] set zero-size bounds -> `invalid-section-viewport-bounds`.
-- [ ] delete section crop -> `missing-section-screenshot`.
-- [ ] corrupt crop bytes -> `evidence-hash-mismatch`.
-- [ ] set crop path outside handoff -> `handoff-path-escape`.
+- [x] remove mobile bounds -> `missing-section-viewport-bounds`.
+- [x] set invalid bounds -> `invalid-section-viewport-bounds`.
+- [x] set zero-size bounds -> `invalid-section-viewport-bounds`.
+- [x] delete section crop -> `missing-section-screenshot`.
+- [x] corrupt crop bytes -> `evidence-hash-mismatch`.
+- [x] set crop path outside handoff -> `handoff-path-escape`.
 
 ### D17.4 Handoff Mutation Tests
 
 Cases:
 
-- [ ] delete `task.md` -> `missing-agent-handoff-artifact`.
-- [ ] delete `design-tokens.json` -> `missing-agent-handoff-artifact`.
-- [ ] delete `evidence-manifest.json` -> `missing-agent-handoff-artifact`.
-- [ ] remove manifest artifact entry -> `missing-agent-handoff-artifact`.
-- [ ] add `../` path -> `handoff-path-escape`.
-- [ ] add absolute path -> `absolute-source-dependency` or `handoff-path-escape`.
-- [ ] overlap allowed and protected paths -> `allowed-protected-overlap`.
-- [ ] point visual blueprint to draft -> `reviewed-blueprint-references-draft`.
-- [ ] change artifact kind -> `artifact-kind-mismatch`.
-- [ ] change project ID -> `project-id-mismatch`.
-- [ ] change artifact bytes without hash update -> `handoff-hash-mismatch`.
+- [x] delete `task.md` -> `missing-agent-handoff-artifact`.
+- [x] delete `design-tokens.json` -> `missing-agent-handoff-artifact`.
+- [x] delete `evidence-manifest.json` -> `missing-agent-handoff-artifact`.
+- [x] remove manifest artifact entry -> `missing-agent-handoff-artifact`.
+- [x] add `../` path -> `handoff-path-escape`.
+- [x] add absolute path -> `absolute-source-dependency` or `handoff-path-escape`.
+- [x] overlap allowed and protected paths -> `allowed-protected-overlap`.
+- [x] point visual blueprint to draft -> `reviewed-blueprint-references-draft`.
+- [x] change artifact kind -> `artifact-kind-mismatch`.
+- [x] change project ID -> `project-id-mismatch`.
+- [x] change artifact bytes without hash update -> `handoff-hash-mismatch`.
 
 ### D17.5 Browser Boundary Mutation Tests
 
@@ -530,25 +530,25 @@ Inject real generated-intent markers and run the actual static boundary validato
 
 Cases:
 
-- [ ] `@page` route marker -> `generated-route-ownership`.
-- [ ] `/api/storefront` direct call -> `unsafe-browser-action`.
-- [ ] `CommerceNode` direct marker -> `unsafe-browser-action`.
-- [ ] functional checkout/payment JavaScript marker -> `unsafe-browser-action` or `slot-behavior-ownership-conflict`.
-- [ ] route reimplementation marker -> `generated-route-ownership`.
-- [ ] BFF reimplementation marker -> `slot-behavior-ownership-conflict`.
-- [ ] SEO/media reimplementation marker -> `slot-behavior-ownership-conflict`.
+- [x] `@page` route marker -> `generated-route-ownership`.
+- [x] `/api/storefront` direct call -> `unsafe-browser-action`.
+- [x] `CommerceNode` direct marker -> `unsafe-browser-action`.
+- [x] functional checkout/payment JavaScript marker -> `unsafe-browser-action` or `slot-behavior-ownership-conflict`.
+- [x] route reimplementation marker -> `generated-route-ownership`.
+- [x] BFF reimplementation marker -> `slot-behavior-ownership-conflict`.
+- [x] SEO/media reimplementation marker -> `slot-behavior-ownership-conflict`.
 
 Tests:
 
-- [ ] `Phase3DNegativeReviewMutationTests`
-- [ ] `Phase3DNegativeSlotMutationTests`
-- [ ] `Phase3DNegativeEvidenceMutationTests`
-- [ ] `Phase3DNegativeHandoffMutationTests`
-- [ ] `Phase3DNegativeBoundaryMutationTests`
+- [x] `Phase3DNegativeReviewMutationTests`
+- [x] `Phase3DNegativeSlotMutationTests`
+- [x] `Phase3DNegativeEvidenceMutationTests`
+- [x] `Phase3DNegativeHandoffMutationTests`
+- [x] `Phase3DNegativeBoundaryMutationTests`
 
 Done when:
 
-- [ ] Static marker-to-blocker tests are no longer the primary negative proof.
+- [x] Static marker-to-blocker tests are no longer the primary negative proof.
 
 ## D18 - Gate Hardening
 
@@ -713,7 +713,7 @@ Done when:
 10. [x] D15.1 Preserve per-viewport section bounds.
 11. [x] D15.2 Crop using `viewport.ViewportId` bounds.
 12. [x] D16 Add positive end-to-end proof.
-13. [ ] D17 Add negative mutation proof suites.
+13. [x] D17 Add negative mutation proof suites.
 14. [ ] D18 Replace Phase 3D gate static proof filters.
 15. [ ] D19 Update docs/status.
 16. [ ] Resolve dirty tree blocker.
@@ -725,7 +725,7 @@ Suggested commits:
 2. [x] `phase 3d: enforce authoritative slot observations`
 3. [x] `phase 3d: crop handoff evidence per viewport`
 4. [x] `phase 3d: add positive end-to-end proof`
-5. [ ] `phase 3d: add negative mutation proof suites`
+5. [x] `phase 3d: add negative mutation proof suites`
 6. [ ] `phase 3d: harden final closure gate`
 7. [ ] `phase 3d: align closure docs`
 8. [ ] `phase 3d: record final clean-head proof`
@@ -765,11 +765,11 @@ Viewport crop:
 Proof:
 
 - [x] `Phase3DPositiveEndToEnd`
-- [ ] `Phase3DNegativeReviewMutation`
-- [ ] `Phase3DNegativeSlotMutation`
-- [ ] `Phase3DNegativeEvidenceMutation`
-- [ ] `Phase3DNegativeHandoffMutation`
-- [ ] `Phase3DNegativeBoundaryMutation`
+- [x] `Phase3DNegativeReviewMutation`
+- [x] `Phase3DNegativeSlotMutation`
+- [x] `Phase3DNegativeEvidenceMutation`
+- [x] `Phase3DNegativeHandoffMutation`
+- [x] `Phase3DNegativeBoundaryMutation`
 
 Gate:
 
@@ -813,11 +813,11 @@ Proof:
 
 - [x] Positive proof runs the full pipeline.
 - [x] Positive proof includes Modified decision propagation.
-- [ ] Negative review tests mutate real artifacts.
-- [ ] Negative slot tests mutate real compositions/mappings.
-- [ ] Negative evidence tests mutate real files.
-- [ ] Negative handoff tests run actual validator.
-- [ ] Exact blocker codes are asserted.
+- [x] Negative review tests mutate real artifacts.
+- [x] Negative slot tests mutate real compositions/mappings.
+- [x] Negative evidence tests mutate real files.
+- [x] Negative handoff tests run actual validator.
+- [x] Exact blocker codes are asserted.
 
 Gate:
 
@@ -913,6 +913,6 @@ This plan focuses Phase 3D D13-D19 on the remaining closure blockers: reviewed c
 - [x] Implement D14 authoritative slot mapping.
 - [x] Implement D15 per-viewport crop bounds.
 - [x] Implement D16 real positive end-to-end proof.
-- [ ] Implement D17 real negative mutation proofs.
+- [x] Implement D17 real negative mutation proofs.
 - [ ] Implement D18 final gate hardening.
 - [ ] Implement D19 documentation/status alignment.
