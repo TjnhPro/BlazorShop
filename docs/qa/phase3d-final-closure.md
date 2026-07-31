@@ -183,3 +183,15 @@ Status: in progress
 - Documentation path scan: no docs under StorefrontReverseEngineering, QA, architecture StorefrontBuilder, or agent StorefrontBuilder references the retired reports readiness path.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3DProof" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `3/3`.
+
+## Phase 3D.D13 Evidence
+
+- Reviewed page composition now reads page archetypes, page sections, semantic tokens, Presentation mappings, ecommerce regions, originality restrictions, and review resolution metadata from `analysis/resolved/*`.
+- Draft and reviewed composition input readers are split; the reviewed builder does not call the draft reader helpers.
+- `reviewed-page-compositions` now records review resolution manifest path, review bundle hash, resolved artifact hashes, reviewed input paths, and reviewed input artifact kinds.
+- Page-scoped resolved section and ecommerce artifacts use the page directory as the authoritative page ID so cloned fixture pages cannot inherit stale embedded `home` IDs.
+- Modified mapping, section, and token review decisions are proven to propagate into reviewed composition and handoff artifacts.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1|AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `55/55`.
+- Review resolver regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `13/13`.

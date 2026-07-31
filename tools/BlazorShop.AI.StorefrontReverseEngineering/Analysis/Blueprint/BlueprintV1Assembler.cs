@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Provenance;
@@ -226,7 +227,18 @@ public sealed class BlueprintV1Assembler
 
         foreach (var issue in pageCompositions.Site.UnresolvedSiteLevelIssues)
         {
-            findings.Add(new GenerationReadinessFinding("site-composition-review", "warning", issue, PageCompositionsArtifactPath));
+            var code = issue.Split(':', 2)[0];
+            var isReviewedCompositionBlocker =
+                code is "missing-reviewed-composition-input" or
+                    "reviewed-composition-input-kind-mismatch" or
+                    "reviewed-composition-project-id-mismatch" or
+                    "reviewed-composition-hash-stale" or
+                    "reviewed-composition-uses-draft-input";
+            findings.Add(new GenerationReadinessFinding(
+                isReviewedCompositionBlocker ? code : "site-composition-review",
+                isReviewedCompositionBlocker ? "blocking" : "warning",
+                issue,
+                isReviewedCompositionBlocker ? "analysis/resolved/page-compositions.reviewed.json" : PageCompositionsArtifactPath));
         }
 
         findings.AddRange(new PageCompositionSlotValidator(repoRoot).Validate(root));
@@ -373,6 +385,18 @@ public sealed class BlueprintV1Assembler
 
     private static ReviewedPageCompositionsDocument BuildReviewedPageCompositions(VisualProject project, string root)
     {
+        var inputs = ReviewedCompositionInputReader.Read(root, project.ProjectId);
+        return BuildPageCompositions(project, root, inputs);
+    }
+
+    private static ReviewedPageCompositionsDocument BuildDraftPageCompositions(VisualProject project, string root)
+    {
+        var inputs = DraftCompositionInputReader.Read(root);
+        return BuildPageCompositions(project, root, inputs);
+    }
+
+    private static ReviewedPageCompositionsDocument BuildPageCompositions(VisualProject project, string root, CompositionInputs inputs)
+    {
         var capturedPages = ReadCapturedPages(root);
         if (capturedPages.Count == 0)
         {
@@ -383,19 +407,19 @@ public sealed class BlueprintV1Assembler
         }
 
         var pageContracts = ReadPageContracts(root);
-        var presentationMappings = ReadPresentationMappings(root);
-        var unsupportedPatterns = ReadUnsupportedPatterns(root);
-        var sharedTokens = ReadSharedTokens(root);
+        var presentationMappings = inputs.PresentationMappings;
+        var unsupportedPatterns = inputs.UnsupportedPatterns;
+        var sharedTokens = inputs.SharedTokens;
         var responsiveRules = ReadResponsiveRules(root);
-        var siteIssues = new List<string>();
+        var siteIssues = new List<string>(inputs.BlockingIssues);
         var pageBlueprints = new List<PageBlueprint>();
         var compositions = new List<PageComposition>();
         var layoutSignatures = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var page in capturedPages.OrderBy(candidate => candidate.PageId, StringComparer.Ordinal))
         {
-            var archetype = ReadPageArchetype(root, page.PageId);
-            var sections = ReadPageSections(root, page.PageId);
+            var archetype = inputs.PageArchetypes.GetValueOrDefault(page.PageId) ?? "unknown";
+            var sections = inputs.PageSections.GetValueOrDefault(page.PageId) ?? [];
             var roles = sections.Select(section => section.Role).Where(role => !string.IsNullOrWhiteSpace(role)).ToArray();
             var layoutSignature = string.Join("|", roles.Where(IsSharedLayoutRole).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase));
             layoutSignatures[page.PageId] = layoutSignature;
@@ -419,7 +443,7 @@ public sealed class BlueprintV1Assembler
             var sectionNodes = BuildSectionTree(
                 sections,
                 presentationMappings,
-                ReadEcommerceRegionsBySection(root, page.PageId),
+                inputs.EcommerceRegionsBySection.GetValueOrDefault(page.PageId) ?? new Dictionary<string, string>(StringComparer.Ordinal),
                 sharedTokens,
                 page.ArtifactPaths,
                 targetContract?.GeneratedPath);
@@ -432,7 +456,7 @@ public sealed class BlueprintV1Assembler
                 page.SourceUrl,
                 page.ArtifactPaths,
                 page.ViewportIds,
-                ReadEcommerceRegionIds(root, page.PageId),
+                inputs.EcommerceRegionIds.GetValueOrDefault(page.PageId) ?? [],
                 presentationMappings
                     .Where(mapping => mapping.EvidenceIds.Count == 0 || mapping.EvidenceIds.Intersect(page.EvidenceIds, StringComparer.Ordinal).Any())
                     .Select(mapping => mapping.Id)
@@ -440,7 +464,7 @@ public sealed class BlueprintV1Assembler
                     .Order(StringComparer.Ordinal)
                     .ToArray(),
                 sectionNodes,
-                ReadPageTokenOverrides(root, page.PageId, sharedTokens),
+                inputs.PageTokenOverrides.GetValueOrDefault(page.PageId) ?? new Dictionary<string, string>(StringComparer.Ordinal),
                 targetContract?.SlotId,
                 targetContract?.GeneratedPath,
                 pageIssues.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()));
@@ -486,6 +510,7 @@ public sealed class BlueprintV1Assembler
             $"reviewed-page-compositions-{project.ProjectId}",
             DateTimeOffset.UtcNow,
             project.ProjectId,
+            inputs.Provenance,
             site,
             pageBlueprints,
             compositions);
@@ -985,4 +1010,292 @@ public sealed class BlueprintV1Assembler
         IReadOnlyList<string> EvidenceIds,
         string? TargetGeneratedPath,
         string? GeneratedZone);
+
+    private sealed record CompositionInputs(
+        IReadOnlyDictionary<string, string> PageArchetypes,
+        IReadOnlyDictionary<string, IReadOnlyList<PageSectionInfo>> PageSections,
+        IReadOnlyDictionary<string, string> SharedTokens,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PageTokenOverrides,
+        IReadOnlyList<MappingInfo> PresentationMappings,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> EcommerceRegionsBySection,
+        IReadOnlyDictionary<string, IReadOnlyList<string>> EcommerceRegionIds,
+        IReadOnlyList<MappingInfo> UnsupportedPatterns,
+        ReviewedPageCompositionProvenance Provenance,
+        IReadOnlyList<string> BlockingIssues);
+
+    private static class DraftCompositionInputReader
+    {
+        public static CompositionInputs Read(string root)
+        {
+            var pageIds = Directory.Exists(Path.Combine(root, "analysis", "pages"))
+                ? Directory.EnumerateDirectories(Path.Combine(root, "analysis", "pages"))
+                    .Select(Path.GetFileName)
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Select(id => id!)
+                    .Order(StringComparer.Ordinal)
+                    .ToArray()
+                : [];
+            var sharedTokens = ReadSharedTokens(root);
+            var provenance = new ReviewedPageCompositionProvenance(
+                string.Empty,
+                string.Empty,
+                new Dictionary<string, string>(StringComparer.Ordinal),
+                [],
+                new Dictionary<string, string>(StringComparer.Ordinal));
+
+            return new CompositionInputs(
+                pageIds.ToDictionary(pageId => pageId, pageId => ReadPageArchetype(root, pageId), StringComparer.Ordinal),
+                pageIds.ToDictionary(pageId => pageId, pageId => ReadPageSections(root, pageId), StringComparer.Ordinal),
+                sharedTokens,
+                pageIds.ToDictionary(pageId => pageId, pageId => ReadPageTokenOverrides(root, pageId, sharedTokens), StringComparer.Ordinal),
+                ReadPresentationMappings(root),
+                pageIds.ToDictionary(pageId => pageId, pageId => ReadEcommerceRegionsBySection(root, pageId), StringComparer.Ordinal),
+                pageIds.ToDictionary(pageId => pageId, pageId => ReadEcommerceRegionIds(root, pageId), StringComparer.Ordinal),
+                ReadUnsupportedPatterns(root),
+                provenance,
+                []);
+        }
+    }
+
+    private static class ReviewedCompositionInputReader
+    {
+        private const string PageArchetypesPath = "analysis/resolved/page-archetypes.reviewed.json";
+        private const string PageSectionsPath = "analysis/resolved/page-sections.reviewed.json";
+        private const string SemanticTokensPath = "analysis/resolved/semantic-tokens.reviewed.json";
+        private const string PresentationMappingsPath = "analysis/resolved/presentation-mappings.reviewed.json";
+        private const string EcommerceRegionsPath = "analysis/resolved/ecommerce-regions.reviewed.json";
+        private const string OriginalityRestrictionsPath = "analysis/resolved/originality-restrictions.reviewed.json";
+        private const string UnsupportedDecisionsPath = "analysis/resolved/unsupported-pattern-decisions.json";
+
+        private static readonly (string Path, string Kind)[] RequiredInputs =
+        [
+            (PageArchetypesPath, "reviewed-page-archetypes"),
+            (PageSectionsPath, "reviewed-page-sections"),
+            (SemanticTokensPath, "reviewed-semantic-tokens"),
+            (PresentationMappingsPath, "reviewed-presentation-mappings"),
+            (EcommerceRegionsPath, "reviewed-ecommerce-regions"),
+            (OriginalityRestrictionsPath, "reviewed-originality-restrictions"),
+            (ReviewResolutionManifestPath, "review-resolution-manifest")
+        ];
+
+        public static CompositionInputs Read(string root, string projectId)
+        {
+            var issues = new List<string>();
+            var nodes = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
+            foreach (var input in RequiredInputs)
+            {
+                var node = ReadReviewedObject(root, input.Path, input.Kind, projectId, issues);
+                if (node is not null)
+                {
+                    nodes[input.Path] = node;
+                }
+            }
+
+            var manifest = nodes.TryGetValue(ReviewResolutionManifestPath, out var manifestNode)
+                ? JsonSerializer.Deserialize<ReviewResolutionManifest>(manifestNode.ToJsonString(), VisualJson.Options)
+                : null;
+            var manifestArtifacts = manifest?.ResolvedArtifacts.ToHashSet(StringComparer.Ordinal) ?? [];
+            foreach (var input in RequiredInputs.Where(input => input.Path != ReviewResolutionManifestPath))
+            {
+                if (nodes.ContainsKey(input.Path) && !manifestArtifacts.Contains(input.Path))
+                {
+                    issues.Add($"reviewed-composition-hash-stale:{input.Path}:not-listed-in-resolution-manifest");
+                }
+            }
+
+            var hashes = nodes.Keys
+                .Order(StringComparer.Ordinal)
+                .ToDictionary(path => path, path => FileHash(root, path) ?? string.Empty, StringComparer.Ordinal);
+            var kinds = nodes
+                .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                .ToDictionary(pair => pair.Key, pair => StringValue(pair.Value, "artifactKind") ?? string.Empty, StringComparer.Ordinal);
+            var provenance = new ReviewedPageCompositionProvenance(
+                ReviewResolutionManifestPath,
+                manifest?.DecisionBundleHash ?? string.Empty,
+                hashes,
+                nodes.Keys.Order(StringComparer.Ordinal).ToArray(),
+                kinds);
+
+            return new CompositionInputs(
+                ReadReviewedPageArchetypes(nodes.GetValueOrDefault(PageArchetypesPath)),
+                ReadReviewedPageSections(nodes.GetValueOrDefault(PageSectionsPath)),
+                ReadReviewedSemanticTokens(nodes.GetValueOrDefault(SemanticTokensPath)),
+                new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal),
+                ReadReviewedPresentationMappings(nodes.GetValueOrDefault(PresentationMappingsPath)),
+                ReadReviewedEcommerceRegionsBySection(nodes.GetValueOrDefault(EcommerceRegionsPath)),
+                ReadReviewedEcommerceRegionIds(nodes.GetValueOrDefault(EcommerceRegionsPath)),
+                ReadUnsupportedDecisions(root, projectId, issues),
+                provenance,
+                issues);
+        }
+
+        private static JsonObject? ReadReviewedObject(string root, string relativePath, string expectedKind, string projectId, List<string> issues)
+        {
+            if (relativePath.Contains(".draft.", StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add($"reviewed-composition-uses-draft-input:{relativePath}");
+                return null;
+            }
+
+            var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+            {
+                issues.Add($"missing-reviewed-composition-input:{relativePath}");
+                return null;
+            }
+
+            var node = TryReadNode(path);
+            if (node is null)
+            {
+                issues.Add($"missing-reviewed-composition-input:{relativePath}:invalid-json");
+                return null;
+            }
+
+            var kind = StringValue(node, "artifactKind");
+            if (!string.Equals(kind, expectedKind, StringComparison.Ordinal))
+            {
+                issues.Add($"reviewed-composition-input-kind-mismatch:{relativePath}:{kind ?? "missing"}");
+            }
+
+            var artifactProjectId = StringValue(node, "projectId");
+            if (!string.IsNullOrWhiteSpace(artifactProjectId) &&
+                !string.Equals(artifactProjectId, projectId, StringComparison.Ordinal))
+            {
+                issues.Add($"reviewed-composition-project-id-mismatch:{relativePath}:{artifactProjectId}");
+            }
+
+            return node;
+        }
+
+        private static IReadOnlyDictionary<string, string> ReadReviewedPageArchetypes(JsonObject? node) =>
+            node?["pages"]?.AsArray().OfType<JsonObject>()
+                .Select(page => new
+                {
+                    PageId = StringValue(page, "pageId"),
+                    Archetype = StringValue(page, "primaryArchetype") ?? StringValue(page, "archetype")
+                })
+                .Where(page => !string.IsNullOrWhiteSpace(page.PageId) && !string.IsNullOrWhiteSpace(page.Archetype))
+                .ToDictionary(page => page.PageId!, page => page.Archetype!, StringComparer.Ordinal)
+            ?? new Dictionary<string, string>(StringComparer.Ordinal);
+
+        private static IReadOnlyDictionary<string, IReadOnlyList<PageSectionInfo>> ReadReviewedPageSections(JsonObject? node) =>
+            node?["pages"]?.AsArray().OfType<JsonObject>()
+                .Select(page =>
+                {
+                    var pageId = StringValue(page, "pageId") ?? string.Empty;
+                    var sections = page["sections"]?.AsArray().OfType<JsonObject>()
+                        .Select((section, index) => new PageSectionInfo(
+                            StringValue(section, "sectionId") ?? StringValue(section, "id") ?? $"section-{index + 1}",
+                            StringValue(section, "sectionType") ?? StringValue(section, "role") ?? "unknown section",
+                            StringArray(section, "evidenceIds"),
+                            StringValue(section, "parentSectionId"),
+                            StringArray(section, "childSectionIds"),
+                            StringValue(section, "crossViewportIdentityKey") ?? $"section-{index + 1}",
+                            ReadBounds(section),
+                            StringArray(section, "reasonCodes")))
+                        .ToArray() ?? [];
+                    return (pageId, sections);
+                })
+                .Where(page => !string.IsNullOrWhiteSpace(page.pageId))
+                .ToDictionary(page => page.pageId, page => (IReadOnlyList<PageSectionInfo>)page.sections, StringComparer.Ordinal)
+            ?? new Dictionary<string, IReadOnlyList<PageSectionInfo>>(StringComparer.Ordinal);
+
+        private static IReadOnlyDictionary<string, string> ReadReviewedSemanticTokens(JsonObject? node)
+        {
+            var tokens = node?["tokens"]?.AsArray();
+            if (tokens is null)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal);
+            }
+
+            return tokens.OfType<JsonObject>()
+                .Select(token => new
+                {
+                    Role = StringValue(token, "role") ?? StringValue(token, "tokenId"),
+                    Value = FirstNonEmpty(
+                        StringValue(token, "value"),
+                        StringValue(token, "normalizedValue"),
+                        Join(StringArray(token, "normalizedValues")),
+                        Join(StringArray(token, "values")),
+                        StringValue(token, "rawValue"))
+                })
+                .Where(token => !string.IsNullOrWhiteSpace(token.Role) && !string.IsNullOrWhiteSpace(token.Value))
+                .GroupBy(token => token.Role!, StringComparer.Ordinal)
+                .OrderBy(group => group.Key, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => string.Join(", ", group.Select(token => token.Value!).Distinct(StringComparer.Ordinal)), StringComparer.Ordinal);
+        }
+
+        private static string? FirstNonEmpty(params string?[] values) =>
+            values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+
+        private static string? Join(IReadOnlyList<string> values) =>
+            values.Count == 0 ? null : string.Join(", ", values);
+
+        private static IReadOnlyList<MappingInfo> ReadReviewedPresentationMappings(JsonObject? node) =>
+            node?["mappings"]?.AsArray().OfType<JsonObject>()
+                .Select((mapping, index) => new MappingInfo(
+                    StringValue(mapping, "sourceCandidateId") ?? StringValue(mapping, "mappingId") ?? $"mapping-{index + 1}",
+                    StringArray(mapping, "evidenceIds"),
+                    StringValue(mapping, "targetGeneratedPath"),
+                    StringValue(mapping, "generatedZone")))
+                .ToArray()
+            ?? [];
+
+        private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ReadReviewedEcommerceRegionsBySection(JsonObject? node)
+        {
+            var result = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal);
+            foreach (var page in node?["pages"]?.AsArray().OfType<JsonObject>() ?? [])
+            {
+                var pageId = StringValue(page, "pageId");
+                if (string.IsNullOrWhiteSpace(pageId))
+                {
+                    continue;
+                }
+
+                var sections = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (var region in page["regions"]?.AsArray().OfType<JsonObject>() ?? [])
+                {
+                    var role = StringValue(region, "role") ?? string.Empty;
+                    foreach (var sectionId in StringArray(region, "sourceSectionIds"))
+                    {
+                        sections[sectionId] = role;
+                    }
+                }
+
+                result[pageId] = sections;
+            }
+
+            return result;
+        }
+
+        private static IReadOnlyDictionary<string, IReadOnlyList<string>> ReadReviewedEcommerceRegionIds(JsonObject? node) =>
+            node?["pages"]?.AsArray().OfType<JsonObject>()
+                .Select(page =>
+                {
+                    var pageId = StringValue(page, "pageId") ?? string.Empty;
+                    var regions = page["regions"]?.AsArray().OfType<JsonObject>()
+                        .Select((region, index) => StringValue(region, "regionId") ?? StringValue(region, "id") ?? $"region-{index + 1}")
+                        .Distinct(StringComparer.Ordinal)
+                        .Order(StringComparer.Ordinal)
+                        .ToArray() ?? [];
+                    return (pageId, regions);
+                })
+                .Where(page => !string.IsNullOrWhiteSpace(page.pageId))
+                .ToDictionary(page => page.pageId, page => (IReadOnlyList<string>)page.regions, StringComparer.Ordinal)
+            ?? new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+
+        private static IReadOnlyList<MappingInfo> ReadUnsupportedDecisions(string root, string projectId, List<string> issues)
+        {
+            var node = ReadReviewedObject(root, UnsupportedDecisionsPath, "unsupported-pattern-decisions", projectId, issues);
+            return node?["decisions"]?.AsArray().OfType<JsonObject>()
+                .Where(decision => !string.Equals(StringValue(decision, "status"), "Approved", StringComparison.OrdinalIgnoreCase))
+                .Select((decision, index) => new MappingInfo(
+                    StringValue(decision, "itemId") ?? $"unsupported-{index + 1}",
+                    [],
+                    null,
+                    null))
+                .ToArray()
+            ?? [];
+        }
+    }
 }

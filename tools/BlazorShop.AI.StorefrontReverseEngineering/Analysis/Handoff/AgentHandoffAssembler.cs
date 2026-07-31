@@ -252,7 +252,7 @@ public sealed class AgentHandoffAssembler
             "## Optional Page Slots" + Environment.NewLine +
             Lines(pages.Select(page => $"- `{page.PageId}`: {string.Join(", ", page.OptionalSlotIds.Select(slot => $"`{slot}`"))}")) + Environment.NewLine + Environment.NewLine +
             "## Section Order" + Environment.NewLine +
-            Lines(compositions.Compositions.Select(composition => $"- `{composition.PageId}`: {string.Join(" -> ", composition.SectionTree.Select(node => node.NodeId))}")) + Environment.NewLine + Environment.NewLine +
+            Lines(compositions.Compositions.Select(composition => $"- `{composition.PageId}`: {string.Join(" -> ", composition.SectionTree.Select(node => $"{node.NodeId} ({node.Role})"))}")) + Environment.NewLine + Environment.NewLine +
             "## Responsive Evidence" + Environment.NewLine +
             Lines(compositions.Compositions.Select(composition => $"- `{composition.PageId}`: {string.Join(", ", composition.ResponsiveTransformationRules.DefaultIfEmpty("no reviewed responsive override"))}")) + Environment.NewLine + Environment.NewLine +
             "## Interaction Evidence" + Environment.NewLine +

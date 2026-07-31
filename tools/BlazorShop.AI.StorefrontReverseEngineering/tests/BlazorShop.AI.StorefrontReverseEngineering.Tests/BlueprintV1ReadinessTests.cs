@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Handoff;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -171,6 +172,70 @@ public sealed class BlueprintV1ReadinessTests
         var assembler = File.ReadAllText(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Analysis", "Blueprint", "BlueprintV1Assembler.cs"));
 
         Assert.DoesNotContain("captures/home", assembler, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ReviewedComposition_DoesNotReadDraftInputs()
+    {
+        var repoRoot = GetRepoRoot();
+        var assembler = File.ReadAllText(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Analysis", "Blueprint", "BlueprintV1Assembler.cs"));
+        var start = assembler.IndexOf("private static ReviewedPageCompositionsDocument BuildReviewedPageCompositions", StringComparison.Ordinal);
+        var end = assembler.IndexOf("private static ReviewedPageCompositionsDocument BuildDraftPageCompositions", StringComparison.Ordinal);
+        Assert.True(start >= 0 && end > start);
+        var reviewedBuilder = assembler[start..end];
+
+        Assert.DoesNotContain("sections.draft.json", reviewedBuilder, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("semantic-tokens.draft.json", reviewedBuilder, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("presentation-mappings.draft.json", reviewedBuilder, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("ecommerce-regions.json", reviewedBuilder, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ReviewedComposition_RecordsResolvedInputProvenance()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Blueprint Reviewed Provenance");
+        var compositions = await ReadPageCompositionsAsync(projectRoot);
+
+        Assert.Equal("analysis/resolved/review-resolution-manifest.json", compositions.Provenance.ReviewResolutionManifestPath);
+        Assert.False(string.IsNullOrWhiteSpace(compositions.Provenance.ReviewBundleHash));
+        Assert.Contains("analysis/resolved/page-sections.reviewed.json", compositions.Provenance.ReviewedInputArtifactPaths);
+        Assert.Contains("analysis/resolved/presentation-mappings.reviewed.json", compositions.Provenance.ReviewedInputArtifactPaths);
+        Assert.Equal("reviewed-page-sections", compositions.Provenance.ReviewedInputArtifactKinds["analysis/resolved/page-sections.reviewed.json"]);
+        Assert.False(string.IsNullOrWhiteSpace(compositions.Provenance.SourceResolvedArtifactHashes["analysis/resolved/page-sections.reviewed.json"]));
+    }
+
+    [Fact]
+    public async Task ReviewedComposition_ModifiedDecisionsPropagateToHandoff()
+    {
+        var projectRoot = await CreateProjectWithModifiedReviewDecisionsAsync("Blueprint Modified Propagation");
+        var targetPath = "Components/Catalog/ProductSummaryCardModified.razor";
+
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        Assert.True(result.Readiness.Passed, string.Join(Environment.NewLine, result.Readiness.Findings.Select(finding => finding.Code + ":" + finding.Message)));
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+
+        var resolvedMappings = ReadNode(projectRoot, "analysis/resolved/presentation-mappings.reviewed.json").ToJsonString();
+        var resolvedSections = ReadNode(projectRoot, "analysis/resolved/page-sections.reviewed.json").ToJsonString();
+        var resolvedTokens = ReadNode(projectRoot, "analysis/resolved/semantic-tokens.reviewed.json").ToJsonString();
+        var reviewedCompositions = ReadNode(projectRoot, "analysis/resolved/page-compositions.reviewed.json").ToJsonString();
+        var handoffCompositions = ReadNode(projectRoot, "analysis/agent-handoff/page-compositions.json").ToJsonString();
+        var allowedFiles = ReadNode(projectRoot, "analysis/agent-handoff/allowed-files.json").ToJsonString();
+        var task = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "task.md"));
+        var designTokens = ReadNode(projectRoot, "analysis/agent-handoff/design-tokens.json").ToJsonString();
+        var visualStyle = ReadNode(projectRoot, "analysis/agent-handoff/visual-style.json").ToJsonString();
+
+        Assert.Contains(targetPath, resolvedMappings, StringComparison.Ordinal);
+        Assert.Contains(targetPath, reviewedCompositions, StringComparison.Ordinal);
+        Assert.Contains(targetPath, handoffCompositions, StringComparison.Ordinal);
+        Assert.Contains(targetPath, allowedFiles, StringComparison.Ordinal);
+        Assert.Contains("featured product card", resolvedSections, StringComparison.Ordinal);
+        Assert.Contains("featured product card", reviewedCompositions, StringComparison.Ordinal);
+        Assert.Contains("featured product card", handoffCompositions, StringComparison.Ordinal);
+        Assert.Contains("featured product card", task, StringComparison.Ordinal);
+        Assert.Contains("17px", resolvedTokens, StringComparison.Ordinal);
+        Assert.Contains("17px", reviewedCompositions, StringComparison.Ordinal);
+        Assert.Contains("17px", designTokens, StringComparison.Ordinal);
+        Assert.Contains("17px", visualStyle, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -354,6 +419,21 @@ public sealed class BlueprintV1ReadinessTests
         return summary.ArtifactRoot;
     }
 
+    private static async Task<string> CreateProjectWithModifiedReviewDecisionsAsync(string name)
+    {
+        var repoRoot = GetRepoRoot();
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "blueprint-v1-" + Guid.NewGuid().ToString("N"));
+        var fixtureUrl = new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
+        var summary = await new VisualProjectWorkflowService(repoRoot)
+            .RunAsync(fixtureUrl, name, outputRoot, force: true, resume: false, noAi: true, CancellationToken.None, runId: "blueprint-v1-modified-fixture");
+
+        Assert.True(summary.ReadinessPassed);
+        await AddAllowedCatalogTargetAsync(summary.ArtifactRoot, "catalog.product-card", "Components/Catalog/ProductSummaryCardModified.razor");
+        await AddAllowedHomeSlotAsync(summary.ArtifactRoot, "catalog.product-card");
+        await WriteModifiedReviewDecisionsAsync(summary.ArtifactRoot);
+        return summary.ArtifactRoot;
+    }
+
     private static async Task<VisualBlueprintV1> ReadBlueprintAsync(string projectRoot, string relativePath)
     {
         var json = await File.ReadAllTextAsync(Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
@@ -408,6 +488,92 @@ public sealed class BlueprintV1ReadinessTests
         await File.WriteAllTextAsync(Path.Combine(projectRoot, "review", "review-decisions.json"), JsonSerializer.Serialize(document, VisualJson.Options) + Environment.NewLine);
     }
 
+    private static async Task WriteModifiedReviewDecisionsAsync(string projectRoot)
+    {
+        var queuePath = Path.Combine(projectRoot, "review", "review-queue.json");
+        var queue = JsonSerializer.Deserialize<ReviewQueue>(await File.ReadAllTextAsync(queuePath), VisualJson.Options)
+            ?? throw new InvalidOperationException("Review queue did not deserialize.");
+        queue = await EnsurePropagationReviewItemsAsync(projectRoot, queue);
+        await File.WriteAllTextAsync(queuePath, JsonSerializer.Serialize(queue, VisualJson.Options) + Environment.NewLine);
+        var decisions = queue.Items.Select(item =>
+        {
+            object? modified = item.ItemId switch
+            {
+                var id when id.StartsWith("mapping:", StringComparison.Ordinal) => new
+                {
+                    targetGeneratedPath = "Components/Catalog/ProductSummaryCardModified.razor",
+                    generatedZone = "catalog-components",
+                    variant = "modified-proof"
+                },
+                var id when id.StartsWith("section:", StringComparison.Ordinal) => new
+                {
+                    sectionType = "featured product card"
+                },
+                var id when id.StartsWith("token:", StringComparison.Ordinal) => new
+                {
+                    value = "17px"
+                },
+                _ => null
+            };
+            return new ReviewDecision(
+                item.ItemId,
+                modified is null ? "Approved" : "Modified",
+                modified,
+                modified is null ? "Approved by deterministic test fixture." : "Modified by propagation proof.",
+                DateTimeOffset.UtcNow,
+                "reviewer@example.test",
+                item.SourceArtifactId,
+                item.SourceArtifactHash,
+                "decision-" + item.ItemId);
+        }).ToArray();
+        var document = new ReviewDecisions(
+            "1.0",
+            "review-decisions",
+            "review-decisions-" + queue.ProjectId,
+            DateTimeOffset.UtcNow,
+            queue.ProjectId,
+            decisions);
+        await File.WriteAllTextAsync(Path.Combine(projectRoot, "review", "review-decisions.json"), JsonSerializer.Serialize(document, VisualJson.Options) + Environment.NewLine);
+    }
+
+    private static async Task<ReviewQueue> EnsurePropagationReviewItemsAsync(string projectRoot, ReviewQueue queue)
+    {
+        var items = queue.Items.ToList();
+        var mapping = ReadNode(projectRoot, "analysis/mapping/presentation-mappings.draft.json")["mappings"]?.AsArray().OfType<JsonObject>().FirstOrDefault()
+            ?? throw new InvalidOperationException("No draft mapping exists for propagation proof.");
+        var mappingId = mapping["sourceCandidateId"]?.GetValue<string>() ?? throw new InvalidOperationException("Draft mapping has no sourceCandidateId.");
+        AddIfMissing(items, "mapping:" + mappingId, "Presentation mappings", mapping.DeepClone(), ["mapping-proof"], "analysis/mapping/presentation-mappings.draft.json", "phase3d-mapping-hash");
+
+        var section = ReadNode(projectRoot, "analysis/pages/home/sections.draft.json")["sections"]?.AsArray().OfType<JsonObject>().FirstOrDefault()
+            ?? throw new InvalidOperationException("No draft section exists for propagation proof.");
+        var sectionId = section["sectionId"]?.GetValue<string>() ?? throw new InvalidOperationException("Draft section has no sectionId.");
+        AddIfMissing(items, "section:home:" + sectionId, "sections", section.DeepClone(), ["section-proof"], "analysis/pages/*/sections.draft.json", "phase3d-section-hash");
+
+        var token = ReadNode(projectRoot, "analysis/tokens/semantic-tokens.draft.json")["tokens"]?.AsArray().OfType<JsonObject>().FirstOrDefault()
+            ?? throw new InvalidOperationException("No draft token exists for propagation proof.");
+        var tokenRole = token["role"]?.GetValue<string>() ?? token["tokenId"]?.GetValue<string>() ?? throw new InvalidOperationException("Draft token has no role.");
+        AddIfMissing(items, "token:" + tokenRole, "semantic tokens", token.DeepClone(), ["token-proof"], "analysis/tokens/semantic-tokens.draft.json", "phase3d-token-hash");
+
+        return queue with { Items = items.OrderBy(item => item.ItemId, StringComparer.Ordinal).ToArray() };
+
+        static void AddIfMissing(
+            List<ReviewQueueItem> items,
+            string itemId,
+            string itemType,
+            JsonNode proposal,
+            IReadOnlyList<string> evidenceIds,
+            string sourceArtifactId,
+            string sourceArtifactHash)
+        {
+            if (items.Any(item => string.Equals(item.ItemId, itemId, StringComparison.Ordinal)))
+            {
+                return;
+            }
+
+            items.Add(new ReviewQueueItem(itemId, itemType, 0.50m, proposal, evidenceIds, true, sourceArtifactId, sourceArtifactHash));
+        }
+    }
+
     private static async Task MutateJsonAsync(string projectRoot, string relativePath, Action<JsonObject> mutate)
     {
         var path = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -415,6 +581,35 @@ public sealed class BlueprintV1ReadinessTests
             ?? throw new InvalidOperationException("Artifact is not a JSON object: " + relativePath);
         mutate(json);
         await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static JsonObject ReadNode(string projectRoot, string relativePath)
+    {
+        var path = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        return JsonNode.Parse(File.ReadAllText(path))?.AsObject()
+            ?? throw new InvalidOperationException("Artifact is not a JSON object: " + relativePath);
+    }
+
+    private static async Task AddAllowedCatalogTargetAsync(string projectRoot, string componentId, string targetPath)
+    {
+        await MutateJsonAsync(projectRoot, "presentation-catalog/presentation-component-catalog.json", json =>
+        {
+            var components = json["components"]?.AsArray() ?? throw new InvalidOperationException("Catalog has no components array.");
+            var component = components.OfType<JsonObject>().First(candidate => candidate["componentId"]?.GetValue<string>() == componentId);
+            var patterns = component["allowedFilePatterns"]?.AsArray() ?? throw new InvalidOperationException("Catalog component has no allowedFilePatterns array.");
+            patterns.Add(targetPath);
+        });
+    }
+
+    private static async Task AddAllowedHomeSlotAsync(string projectRoot, string slotId)
+    {
+        await MutateJsonAsync(projectRoot, "analysis/storefront-pattern/page-contracts.json", json =>
+        {
+            var pages = json["pages"]?.AsArray() ?? throw new InvalidOperationException("Page contracts has no pages array.");
+            var home = pages.OfType<JsonObject>().First(page => page["pageId"]?.GetValue<string>() == "home");
+            var allowed = home["allowedAdditionalSlotIds"]?.AsArray() ?? throw new InvalidOperationException("Home page has no allowedAdditionalSlotIds array.");
+            allowed.Add(slotId);
+        });
     }
 
     private static async Task MutateFirstCompositionNodeAsync(string projectRoot, string pageId, Action<JsonObject> mutate)

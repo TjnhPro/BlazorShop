@@ -246,7 +246,7 @@ internal sealed class ResolvedReviewArtifactWriter
         var pages = new JsonArray();
         foreach (var (relative, node) in ReadPageArtifacts("sections.draft.json"))
         {
-            var pageId = StringValue(node, "pageId") ?? PageIdFromRelative(relative);
+            var pageId = PageIdFromRelative(relative);
             var sections = new JsonArray((node["sections"]?.AsArray().Select(section => section?.DeepClone()).OfType<JsonNode>().ToArray() ?? []));
             ApplyItemReviews(sections, context.ResolvedItems.Where(item => item.Family == "section"), item => SectionId(item.ItemId), "sectionId");
             pages.Add(new JsonObject
@@ -283,7 +283,7 @@ internal sealed class ResolvedReviewArtifactWriter
         var pages = new JsonArray();
         foreach (var (relative, node) in ReadPageArtifacts("ecommerce-regions.json"))
         {
-            var pageId = StringValue(node, "pageId") ?? PageIdFromRelative(relative);
+            var pageId = PageIdFromRelative(relative);
             var regions = new JsonArray((node["regions"]?.AsArray().Select(region => region?.DeepClone()).OfType<JsonNode>().ToArray() ?? []));
             ApplyItemReviews(regions, context.ResolvedItems.Where(item => item.Family == "region"), item => RegionId(item.ItemId), "regionId");
             pages.Add(new JsonObject

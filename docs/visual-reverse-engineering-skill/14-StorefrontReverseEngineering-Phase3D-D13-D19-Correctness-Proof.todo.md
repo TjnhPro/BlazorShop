@@ -1,0 +1,918 @@
+# StorefrontReverseEngineering Phase 3D - D13-D19 Correctness Proof
+
+Status: Proposed  
+Owner area: `tools/BlazorShop.AI.StorefrontReverseEngineering`  
+Target folder: `docs/visual-reverse-engineering-skill`  
+Depends on: Phase 3D D0-D12 implementation being present  
+Primary goal: close the remaining correctness and proof gaps so Phase 3 can finish with a real clean-head end-to-end proof, not static declarations.
+
+## Why This File Exists
+
+`13-StorefrontReverseEngineering-Phase3D-Final-Closure-Fix.todo.md` covers the first Phase 3D closure plan and much of D0-D12 is now implemented. The follow-up review found a smaller but important correction round: D13-D19.
+
+This file is intentionally separate so implementation can focus on the remaining blockers without rewriting the earlier Phase 3D plan history.
+
+## Current Codebase Evidence
+
+The review points are confirmed against current code:
+
+- `BuildReviewedPageCompositions()` still reads draft/raw inputs through `ReadPageArchetype()`, `ReadPageSections()`, `ReadSharedTokens()`, `ReadPresentationMappings()`, and `ReadEcommerceRegionsBySection()` in `tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Blueprint/BlueprintV1Assembler.cs`.
+- `ReadPageSections()` reads `analysis/pages/{pageId}/sections.draft.json`.
+- `ReadSharedTokens()` reads `analysis/tokens/semantic-tokens.draft.json`.
+- `ReadPresentationMappings()` reads `analysis/mapping/presentation-mappings.draft.json`.
+- `PageCompositionSlotValidator` still treats role inference as authoritative slot presence through `InferSlot(...)` and `AddPresence(...)`.
+- `PageCompositionSlotValidator` still stores observed slots as `Dictionary<string, int>`, which is not enough to audit node/mapping sources precisely.
+- `AgentHandoffEvidencePackager.CropSectionAsync()` still uses `node.ViewportBoundingBoxes.Values.FirstOrDefault()` instead of `node.ViewportBoundingBoxes[viewport.ViewportId]`.
+- `Phase3DProofFixtureTests` currently verifies static JSON fixtures and marker-to-blocker mapping instead of running the actual pipeline or mutating real artifacts.
+- `run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1` is no-skip and clean-head oriented, but still invokes the same static negative fixture test for review, slot, and handoff proof.
+- `docs/qa/phase3d-final-closure.md` correctly keeps Phase 3D and Phase 3 overall in progress while the final clean-head gate is pending.
+
+## Locked Decisions
+
+- Phase 3D remains correctness and closure proof only.
+- No StorefrontBuilder handoff consumption in this phase.
+- No generated Razor/CSS/JS storefront output in this phase.
+- Phase 4 input remains `analysis/agent-handoff/*` plus schemas only.
+- Reviewed artifacts must be authoritative after review decisions are applied.
+- Reviewed page composition must be built from resolved artifacts, not draft artifacts.
+- Slot presence must come from reviewed mappings and exact Storefront slot contracts, not inferred role text.
+- Section crops must use bounds for the same viewport being cropped.
+- Final closure proof must run on a clean working tree without skip flags.
+
+## Scope
+
+In scope:
+
+- Reviewed composition readers and builder separation.
+- Reviewed decision propagation through page composition and handoff.
+- Authoritative slot observation and duplicate/extra-section validation.
+- Viewport-specific bounding-box handling.
+- Real positive end-to-end proof.
+- Real negative mutation proofs.
+- Phase 3D gate hardening to call real proof filters.
+- Documentation/status alignment for final closure.
+
+Not in scope:
+
+- Storefront visual generation.
+- StorefrontBuilder consumption of `analysis/agent-handoff/*`.
+- Changes to Commerce Node, Control Plane, Storefront V2, Runtime, Presentation, Components, Starter runtime behavior, or ecommerce APIs.
+- Refactoring Phase 3A/3B capture internals unless needed to expose reviewed evidence correctly.
+- Solving the pre-existing `.gitignore` dirty-tree issue by hiding or bypassing the clean-tree gate.
+
+## P0 Blockers
+
+- [x] P0-1: Reviewed page composition reads draft/raw inputs.
+- [ ] P0-2: Slot validator can pass required slot presence from role text inference.
+- [ ] P0-3: Duplicate slot counting does not preserve distinct node/mapping sources.
+- [ ] P0-4: Unmapped extra sections can be ignored instead of blocked.
+- [ ] P0-5: Section crop uses first available bounds instead of viewport-specific bounds.
+- [ ] P0-6: Positive/negative proofs are static fixture assertions, not real pipeline/mutation proofs.
+- [ ] P0-7: Full clean-head Phase 3D gate has not passed.
+
+## D13 - Build Reviewed Composition From Resolved Artifacts
+
+Goal: `analysis/resolved/page-compositions.reviewed.json` must reflect resolved review decisions.
+
+### D13.1 Reviewed Input Reader
+
+Implementation checklist:
+
+- [x] Add `ReviewedCompositionInputReader`.
+- [x] Read page archetypes from `analysis/resolved/page-archetypes.reviewed.json`.
+- [x] Read sections from `analysis/resolved/page-sections.reviewed.json`.
+- [x] Read semantic tokens from `analysis/resolved/semantic-tokens.reviewed.json`.
+- [x] Read Presentation mappings from `analysis/resolved/presentation-mappings.reviewed.json`.
+- [x] Read ecommerce regions from `analysis/resolved/ecommerce-regions.reviewed.json`.
+- [x] Read originality restrictions from `analysis/resolved/originality-restrictions.reviewed.json`.
+- [x] Read `analysis/resolved/review-resolution-manifest.json`.
+- [x] Validate artifact kind for every reviewed input.
+- [x] Validate project ID for every reviewed input.
+- [x] Validate each reviewed input is listed in the resolution manifest.
+- [x] Validate source artifact hash or reviewed artifact hash when available.
+- [x] Fail when a required reviewed input is missing.
+- [x] Do not fallback to draft artifacts.
+
+Blocking codes:
+
+- [x] `missing-reviewed-composition-input`
+- [x] `reviewed-composition-input-kind-mismatch`
+- [x] `reviewed-composition-project-id-mismatch`
+- [x] `reviewed-composition-hash-stale`
+- [x] `reviewed-composition-uses-draft-input`
+
+### D13.2 Draft And Reviewed Builders
+
+Implementation checklist:
+
+- [x] Split composition building into:
+  - [x] `BuildDraftPageCompositions(...)`
+  - [x] `BuildReviewedPageCompositions(...)`
+- [x] Draft builder may read:
+  - [x] `analysis/pages/*/page-archetype.json`
+  - [x] `analysis/pages/*/sections.draft.json`
+  - [x] `analysis/tokens/semantic-tokens.draft.json`
+  - [x] `analysis/mapping/presentation-mappings.draft.json`
+  - [x] `analysis/pages/*/ecommerce-regions.json`
+- [x] Reviewed builder must read only resolved artifacts plus stable non-draft evidence metadata.
+- [x] Reviewed builder must not call the draft reader helpers.
+- [x] Add static guard test that reviewed builder source does not contain:
+  - [x] `sections.draft.json`
+  - [x] `semantic-tokens.draft.json`
+  - [x] `presentation-mappings.draft.json`
+  - [x] `analysis/pages/*/ecommerce-regions.json` as authoritative input.
+
+### D13.3 Reviewed Composition Provenance
+
+Add to reviewed composition metadata:
+
+- [x] `reviewResolutionManifestPath`
+- [x] `reviewBundleHash`
+- [x] `sourceResolvedArtifactHashes`
+- [x] `reviewedInputArtifactPaths`
+- [x] `reviewedInputArtifactKinds`
+
+### D13.4 Modified Decision Propagation Proof
+
+Tests:
+
+- [x] Modified mapping target path appears in:
+  - [x] `analysis/resolved/presentation-mappings.reviewed.json`
+  - [x] `analysis/resolved/page-compositions.reviewed.json`
+  - [x] `analysis/agent-handoff/page-compositions.json`
+  - [x] `analysis/agent-handoff/allowed-files.json`
+- [x] Modified section role appears in:
+  - [x] `analysis/resolved/page-sections.reviewed.json`
+  - [x] `analysis/resolved/page-compositions.reviewed.json`
+  - [x] `analysis/agent-handoff/page-compositions.json`
+  - [x] `analysis/agent-handoff/task.md`
+- [x] Modified page archetype is used to select exact page contract.
+- [x] Modified semantic token is used by:
+  - [x] `analysis/resolved/page-compositions.reviewed.json`
+  - [x] `analysis/agent-handoff/design-tokens.json`
+  - [x] `analysis/agent-handoff/visual-style.json`
+
+Done when:
+
+- [x] Reviewed page composition has no authoritative draft input dependency.
+- [x] Modified review decisions propagate into final handoff.
+
+## D14 - Authoritative Slot Mapping
+
+Goal: required slot validation must be contract-driven, not heuristic-driven.
+
+### D14.1 Slot Observation Model
+
+Replace:
+
+```text
+Dictionary<string, int>
+```
+
+with:
+
+```text
+Dictionary<string, HashSet<SlotObservationSource>>
+```
+
+`SlotObservationSource` fields:
+
+- [ ] `SourceKind`: `page-target`, `reviewed-mapping`, `catalog-target`, `approved-extension`
+- [ ] `SourceId`
+- [ ] `PageId`
+- [ ] `SectionNodeId`
+- [ ] `MappingId`
+- [ ] `SlotId`
+- [ ] `TargetPath`
+
+### D14.2 Authoritative Slot Sources
+
+Slot presence can be added only from:
+
+- [ ] `PageComposition.TargetViewSlot` when it is exact, valid, and mapped to a page contract.
+- [ ] Reviewed `PresentationMapping.StarterSlotId`.
+- [ ] Valid Presentation catalog target path matching an exact slot.
+- [ ] Explicit reviewed visual-only extension slot.
+
+Slot presence must not be added from:
+
+- [ ] `InferSlot(pageArchetype, node.Role)`
+- [ ] text role labels.
+- [ ] source HTML labels.
+- [ ] section type names without reviewed mapping.
+
+### D14.3 Role Inference Downgrade
+
+Implementation checklist:
+
+- [ ] Rename or wrap `InferSlot(...)` as `SuggestSlotFromRole(...)`.
+- [ ] Use suggestion only for diagnostics.
+- [ ] Emit `section-slot-suggestion-unreviewed` when role text suggests a slot but no reviewed mapping exists.
+- [ ] Emit `required-slot-unmapped` when a required slot is only suggested and not reviewed.
+- [ ] Do not count suggestions as observed slots.
+
+### D14.4 Required Slot Validation
+
+For every required slot:
+
+- [ ] slot has at least one authoritative source.
+- [ ] source is reviewed where mapping is required.
+- [ ] target path is valid.
+- [ ] Presentation catalog component exists.
+- [ ] Starter slot ID matches catalog slots.
+- [ ] behavior ownership is valid.
+
+Blocking codes:
+
+- [ ] `missing-required-slot`
+- [ ] `required-slot-unmapped`
+- [ ] `invalid-section-slot-mapping`
+- [ ] `slot-target-path-mismatch`
+- [ ] `slot-behavior-ownership-conflict`
+
+### D14.5 Duplicate Slot Validation
+
+Rules:
+
+- [ ] Count unique source IDs, not only slot names.
+- [ ] Non-repeatable slot with more than one unique source fails.
+- [ ] Repeatable slot passes when count is at least required minimum.
+- [ ] `catalog.product-card` remains repeatable.
+- [ ] `product.gallery`, `product.purchase`, `product.information`, `layout.header`, `layout.footer`, `cart.page`, `checkout.page`, and `account.shell` are non-repeatable unless a page contract explicitly says otherwise.
+
+Blocking code:
+
+- [ ] `duplicate-non-repeatable-slot`
+
+### D14.6 Extra Section Validation
+
+Every reviewed section node must resolve to one of:
+
+- [ ] required slot.
+- [ ] optional slot.
+- [ ] repeatable slot.
+- [ ] allowed additional slot.
+- [ ] explicit approved visual-only extension.
+
+Otherwise emit:
+
+- [ ] `unapproved-extra-section`
+
+Unknown or unmapped nodes must not be silently ignored.
+
+### D14.7 Approved Visual Extensions
+
+Add optional reviewed fields:
+
+- [ ] `approvedVisualExtensionId`
+- [ ] `approvedVisualExtensionReason`
+
+Rules:
+
+- [ ] Extension must be human-reviewed.
+- [ ] Extension must not own protected behavior.
+- [ ] Extension must target an allowed generated zone.
+- [ ] Extension must not replace required slots.
+- [ ] Extension must be listed in `AllowedAdditionalSlotIds` or an extension registry.
+
+Tests:
+
+- [ ] Role `purchase panel` without reviewed mapping fails.
+- [ ] Role `gallery` without reviewed mapping fails.
+- [ ] Valid reviewed `product.purchase` mapping passes.
+- [ ] Two gallery nodes fail duplicate validation.
+- [ ] Two product cards pass repeatable validation.
+- [ ] Unknown unmapped section fails as extra section.
+- [ ] Approved visual extension passes.
+- [ ] Runtime/headless mapping fails.
+- [ ] Missing target path fails.
+- [ ] Invalid catalog target fails.
+
+Done when:
+
+- [ ] Slot presence is source-auditable and never based on role inference alone.
+
+## D15 - Per-Viewport Bounding Boxes
+
+Goal: screenshot crops must use the bounding box for the same viewport being processed.
+
+### D15.1 Evidence Model
+
+Implementation checklist:
+
+- [ ] Ensure `PageSectionInfo` preserves `ViewportBoundingBoxes`.
+- [ ] Ensure `PageCompositionNode.ViewportBoundingBoxes` preserves the full dictionary.
+- [ ] Parse per-viewport boxes from Phase 3A/3B evidence when available.
+- [ ] Preserve exact viewport IDs such as `desktop-1440`, `tablet-768`, `mobile-390`.
+- [ ] Do not collapse bounds to `base`.
+- [ ] Do not copy desktop bounds to mobile automatically.
+- [ ] If only one viewport exists, use the actual viewport ID.
+
+### D15.2 Crop Lookup
+
+Replace:
+
+```csharp
+node.ViewportBoundingBoxes.Values.FirstOrDefault()
+```
+
+with:
+
+```csharp
+node.ViewportBoundingBoxes.TryGetValue(viewport.ViewportId, out var bounds)
+```
+
+Rules:
+
+- [ ] Missing required viewport bounds is blocking.
+- [ ] Invalid bounds format is blocking.
+- [ ] Zero-size bounds is blocking.
+- [ ] Bounds outside image may clamp if final width/height remains non-zero.
+- [ ] Crops are deterministic.
+- [ ] Error message must include problem, cause, and fix.
+
+Blocking codes:
+
+- [ ] `missing-section-viewport-bounds`
+- [ ] `invalid-section-viewport-bounds`
+- [ ] `section-crop-out-of-range`
+- [ ] `missing-required-section-crop`
+
+### D15.3 Required Viewport Policy
+
+For representative pages:
+
+- [ ] desktop crop required.
+- [ ] tablet crop required.
+- [ ] mobile crop required.
+
+Optional section policy:
+
+- [ ] If section is hidden in a viewport according to reviewed responsive model, missing crop is allowed.
+- [ ] If section renders in a viewport but lacks bounds, readiness fails.
+
+Tests:
+
+- [ ] Desktop crop uses desktop bounds.
+- [ ] Tablet crop uses tablet bounds.
+- [ ] Mobile crop uses mobile bounds.
+- [ ] Desktop and mobile different bounds produce different crop hashes.
+- [ ] Missing mobile bounds blocks.
+- [ ] Hidden-on-mobile optional section does not block.
+- [ ] Zero-size bounds blocks.
+- [ ] Out-of-range bounds clamp when still non-zero.
+- [ ] Crop hash is deterministic.
+
+Done when:
+
+- [ ] Every section crop is tied to the correct viewport ID.
+
+## D16 - Real Positive End-To-End Proof
+
+Goal: prove the actual pipeline can produce a passing handoff.
+
+### D16.1 Fixture Site
+
+Use a local fixture site or fixture reference browser that includes:
+
+- [ ] home page.
+- [ ] PLP/category page.
+- [ ] PDP with 1:1 product gallery.
+- [ ] cart shell.
+- [ ] checkout shell.
+- [ ] account/auth shell.
+- [ ] system state.
+- [ ] desktop/tablet/mobile layouts.
+- [ ] shared header/footer.
+- [ ] reused product cards.
+- [ ] PDP gallery, information, and purchase sections.
+- [ ] at least one responsive reorder.
+- [ ] at least one interaction state.
+
+### D16.2 Real Pipeline
+
+Test must execute the actual pipeline:
+
+```text
+create project
+-> create multi-page capture plan
+-> capture fixture pages
+-> extract evidence
+-> run analysis
+-> write valid review decisions
+-> include at least one Modified decision
+-> apply review
+-> build storefront pattern
+-> build catalog/mappings
+-> assemble reviewed blueprint
+-> build reviewed compositions
+-> package screenshots/crops
+-> assemble handoff
+-> validate generation readiness
+-> validate handoff readiness
+```
+
+Do not replace this with a static JSON declaration.
+
+### D16.3 Assertions
+
+- [ ] Workflow succeeds.
+- [ ] CLI returns zero.
+- [ ] Reviewed blueprint exists.
+- [ ] Reviewed blueprint has no draft references.
+- [ ] Modified decision appears in reviewed artifacts.
+- [ ] Modified decision appears in reviewed page composition.
+- [ ] Modified decision appears in handoff copy.
+- [ ] Home exact slots pass.
+- [ ] PLP exact slots pass.
+- [ ] PDP exact slots pass.
+- [ ] Cart shell exact slots pass.
+- [ ] Checkout shell exact slots pass.
+- [ ] Account/auth shell exact slots pass.
+- [ ] System state exact slots pass.
+- [ ] All configured viewports have screenshots.
+- [ ] Major sections have viewport-specific crops.
+- [ ] Evidence hashes validate.
+- [ ] Manifest hashes validate.
+- [ ] Handoff readiness passed.
+- [ ] `inspect` reports final pass.
+
+### D16.4 Determinism
+
+Run proof twice and assert:
+
+- [ ] composition IDs stable.
+- [ ] section crop filenames stable.
+- [ ] handoff schema stable.
+- [ ] artifact lists stable.
+- [ ] hashes stable except intentionally timestamped fields.
+- [ ] no unexpected artifact drift.
+
+Tests:
+
+- [ ] `Phase3DPositiveEndToEndTests.PositivePipeline_ProducesReadySelfContainedHandoff`
+- [ ] `Phase3DPositiveEndToEndTests.PositivePipeline_PropagatesModifiedDecisionsToHandoff`
+- [ ] `Phase3DPositiveEndToEndTests.PositivePipeline_IsDeterministicForStableInputs`
+
+Done when:
+
+- [ ] A real positive pipeline proof replaces static positive declaration proof.
+
+## D17 - Real Negative Mutation Proofs
+
+Goal: every critical blocker must be emitted by real validators over mutated artifacts.
+
+### D17.1 Review Mutation Tests
+
+Each test must:
+
+```text
+create or run valid fixture project
+-> mutate real review artifacts
+-> run actual review resolver or workflow step
+-> assert exact blocker/exception code
+```
+
+Cases:
+
+- [ ] stale decision -> `decision-source-hash-mismatch`.
+- [ ] unknown status -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
+- [ ] Modified without value -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
+- [ ] duplicate without supersede -> `SRE-WORKFLOW-REVIEW-DECISIONS-INVALID`.
+- [ ] Deferred critical -> reviewed blueprint absent and `reviewed-blueprint-not-resolved`.
+- [ ] Rejected critical -> reviewed mapping removed and readiness blocked.
+
+### D17.2 Slot Mutation Tests
+
+Each test must mutate reviewed composition or reviewed mapping, not static marker JSON.
+
+Cases:
+
+- [ ] remove reviewed `product.purchase` mapping/node -> `missing-required-slot` or `required-slot-unmapped`.
+- [ ] remove reviewed `product.gallery` mapping/node -> `missing-required-slot`.
+- [ ] clone reviewed mapped gallery node -> `duplicate-non-repeatable-slot`.
+- [ ] add reviewed node without approved slot -> `unapproved-extra-section`.
+- [ ] set runtime/headless target as visual slot -> `slot-behavior-ownership-conflict`.
+- [ ] set protected target path -> `protected-path-target`.
+- [ ] set missing target path -> `slot-target-path-mismatch` or `invalid-section-slot-mapping`.
+- [ ] set invalid catalog target -> `invalid-section-slot-mapping`.
+
+### D17.3 Evidence Mutation Tests
+
+Cases:
+
+- [ ] remove mobile bounds -> `missing-section-viewport-bounds`.
+- [ ] set invalid bounds -> `invalid-section-viewport-bounds`.
+- [ ] set zero-size bounds -> `invalid-section-viewport-bounds`.
+- [ ] delete section crop -> `missing-section-screenshot`.
+- [ ] corrupt crop bytes -> `evidence-hash-mismatch`.
+- [ ] set crop path outside handoff -> `handoff-path-escape`.
+
+### D17.4 Handoff Mutation Tests
+
+Cases:
+
+- [ ] delete `task.md` -> `missing-agent-handoff-artifact`.
+- [ ] delete `design-tokens.json` -> `missing-agent-handoff-artifact`.
+- [ ] delete `evidence-manifest.json` -> `missing-agent-handoff-artifact`.
+- [ ] remove manifest artifact entry -> `missing-agent-handoff-artifact`.
+- [ ] add `../` path -> `handoff-path-escape`.
+- [ ] add absolute path -> `absolute-source-dependency` or `handoff-path-escape`.
+- [ ] overlap allowed and protected paths -> `allowed-protected-overlap`.
+- [ ] point visual blueprint to draft -> `reviewed-blueprint-references-draft`.
+- [ ] change artifact kind -> `artifact-kind-mismatch`.
+- [ ] change project ID -> `project-id-mismatch`.
+- [ ] change artifact bytes without hash update -> `handoff-hash-mismatch`.
+
+### D17.5 Browser Boundary Mutation Tests
+
+Inject real generated-intent markers and run the actual static boundary validator.
+
+Cases:
+
+- [ ] `@page` route marker -> `generated-route-ownership`.
+- [ ] `/api/storefront` direct call -> `unsafe-browser-action`.
+- [ ] `CommerceNode` direct marker -> `unsafe-browser-action`.
+- [ ] functional checkout/payment JavaScript marker -> `unsafe-browser-action` or `slot-behavior-ownership-conflict`.
+- [ ] route reimplementation marker -> `generated-route-ownership`.
+- [ ] BFF reimplementation marker -> `slot-behavior-ownership-conflict`.
+- [ ] SEO/media reimplementation marker -> `slot-behavior-ownership-conflict`.
+
+Tests:
+
+- [ ] `Phase3DNegativeReviewMutationTests`
+- [ ] `Phase3DNegativeSlotMutationTests`
+- [ ] `Phase3DNegativeEvidenceMutationTests`
+- [ ] `Phase3DNegativeHandoffMutationTests`
+- [ ] `Phase3DNegativeBoundaryMutationTests`
+
+Done when:
+
+- [ ] Static marker-to-blocker tests are no longer the primary negative proof.
+
+## D18 - Gate Hardening
+
+Goal: final Phase 3D gate must prove implementation behavior, not static fixture declarations.
+
+### D18.1 Replace Static Proof Filters
+
+Remove repeated gate calls to:
+
+```text
+Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers
+```
+
+Replace with focused real proof filters:
+
+- [ ] `Phase3DPositiveEndToEnd`
+- [ ] `Phase3DNegativeReviewMutation`
+- [ ] `Phase3DNegativeSlotMutation`
+- [ ] `Phase3DNegativeEvidenceMutation`
+- [ ] `Phase3DNegativeHandoffMutation`
+- [ ] `Phase3DNegativeBoundaryMutation`
+
+### D18.2 Final Gate Order
+
+Gate order:
+
+```text
+clean working tree
+-> record tested SHA
+-> build ReverseEngineering
+-> Phase 3A gate
+-> Phase 3B gate
+-> Phase 3C gate
+-> full ReverseEngineering tests
+-> reviewed composition propagation tests
+-> authoritative slot tests
+-> per-viewport crop tests
+-> positive E2E proof
+-> negative review mutations
+-> negative slot mutations
+-> negative evidence mutations
+-> negative handoff mutations
+-> negative boundary mutations
+-> boundary scans
+-> StorefrontBuilder plan-only smoke
+-> final inspect proof
+-> assert HEAD unchanged
+-> assert working tree clean
+-> write report
+```
+
+### D18.3 Dirty Tree Resolution
+
+Implementation checklist:
+
+- [ ] Keep clean-tree check strict.
+- [ ] Do not add bypass or skip flag.
+- [ ] Resolve the pre-existing `.gitignore` dirty-tree issue outside the gate:
+  - [ ] commit it if it is intentional, or
+  - [ ] revert it if it is unrelated and user-approved.
+- [ ] Do not hide dirty tree by changing gate exclusions.
+- [ ] Gate report should print exact dirty entries on failure.
+
+### D18.4 Report Requirements
+
+Report must include:
+
+- [ ] tested SHA.
+- [ ] final HEAD.
+- [ ] working tree clean status.
+- [ ] full gate command.
+- [ ] full test count.
+- [ ] reviewed composition proof.
+- [ ] authoritative slot proof.
+- [ ] per-viewport crop proof.
+- [ ] positive E2E result.
+- [ ] negative mutation result counts.
+- [ ] StorefrontBuilder smoke result.
+- [ ] GitHub Actions status.
+- [ ] known limitations.
+- [ ] Phase 3 closure decision.
+
+### D18.5 No Post-Proof Commit Rule
+
+Preferred closure flow:
+
+1. [ ] Complete code and docs.
+2. [ ] Commit final candidate.
+3. [ ] Run full gate.
+4. [ ] Gate writes ignored runtime report under `obj`.
+5. [ ] Do not change source/docs after pass.
+6. [ ] Closure doc must point to ignored gate report as final authoritative proof if exact self-referential final SHA cannot be tracked before the run.
+
+If tracked closure doc must contain exact final SHA:
+
+1. [ ] Commit implementation.
+2. [ ] Run gate.
+3. [ ] Commit closure doc with implementation SHA.
+4. [ ] Rerun gate on closure-doc HEAD.
+5. [ ] Closure doc records both implementation SHA and final closure SHA strategy.
+
+Done when:
+
+- [ ] Phase 3D final gate proves real behavior and cannot pass because static marker fixtures exist.
+
+## D19 - Documentation Status Alignment
+
+Goal: documentation must match actual closure state and handoff semantics.
+
+Files to update when implementation lands:
+
+- [ ] `docs/visual-reverse-engineering-skill/13-StorefrontReverseEngineering-Phase3D-Final-Closure-Fix.todo.md`
+- [ ] `docs/visual-reverse-engineering-skill/14-StorefrontReverseEngineering-Phase3D-D13-D19-Correctness-Proof.todo.md`
+- [ ] `docs/qa/phase3d-final-closure.md`
+- [ ] `docs/visual-reverse-engineering-skill/README.md`
+- [ ] `docs/visual-reverse-engineering-skill/reference.md`
+- [ ] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
+- [ ] `docs/architecture/11-storefront-builder.md`
+- [ ] `docs/agents/storefront-builder.md`
+
+Before final gate pass:
+
+- [ ] Phase 3D: In progress.
+- [ ] Phase 3 overall: In progress.
+
+After final gate pass:
+
+- [ ] Phase 3A: Complete.
+- [ ] Phase 3B: Complete.
+- [ ] Phase 3C: Complete.
+- [ ] Phase 3D: Complete.
+- [ ] Phase 3 overall: Complete.
+
+Final closure statement:
+
+```text
+Phase 3 is closed because the final clean-HEAD Phase 3D gate proved that
+reviewed decisions propagate into site-level page compositions and a
+self-contained handoff; exact ecommerce slots are enforced from reviewed
+Presentation mappings; per-viewport evidence is packaged correctly; and
+positive/negative end-to-end proofs pass without enabling StorefrontBuilder
+consumption or storefront source generation.
+```
+
+Done when:
+
+- [ ] Docs do not claim Phase 3 complete before the no-skip clean-head gate passes.
+- [ ] Docs do not suggest Phase 4 can consume draft artifacts.
+- [ ] Docs keep `analysis/agent-handoff/` as the only approved Phase 4 input.
+
+## Recommended Implementation Order
+
+1. [x] D13.1 Add reviewed input readers.
+2. [x] D13.2 Split draft and reviewed composition builders.
+3. [x] D13.3 Add reviewed composition provenance.
+4. [x] D13.4 Add modified decision propagation tests.
+5. [ ] D14.1 Replace slot count dictionary with source-aware observations.
+6. [ ] D14.2 Remove role inference from authoritative slot presence.
+7. [ ] D14.3 Add required-slot-unmapped and suggestion diagnostics.
+8. [ ] D14.4 Fix duplicate and extra-section validation.
+9. [ ] D14.5 Add approved visual extension support.
+10. [ ] D15.1 Preserve per-viewport section bounds.
+11. [ ] D15.2 Crop using `viewport.ViewportId` bounds.
+12. [ ] D16 Add positive end-to-end proof.
+13. [ ] D17 Add negative mutation proof suites.
+14. [ ] D18 Replace Phase 3D gate static proof filters.
+15. [ ] D19 Update docs/status.
+16. [ ] Resolve dirty tree blocker.
+17. [ ] Run final no-skip clean-head gate.
+
+Suggested commits:
+
+1. [x] `phase 3d: read reviewed compositions from resolved artifacts`
+2. [ ] `phase 3d: enforce authoritative slot observations`
+3. [ ] `phase 3d: crop handoff evidence per viewport`
+4. [ ] `phase 3d: add positive end-to-end proof`
+5. [ ] `phase 3d: add negative mutation proof suites`
+6. [ ] `phase 3d: harden final closure gate`
+7. [ ] `phase 3d: align closure docs`
+8. [ ] `phase 3d: record final clean-head proof`
+
+## Test Matrix
+
+Reviewed composition:
+
+- [x] `ReviewedComposition_UsesResolvedPageArchetypes`
+- [x] `ReviewedComposition_UsesResolvedSections`
+- [x] `ReviewedComposition_UsesResolvedMappings`
+- [x] `ReviewedComposition_UsesResolvedEcommerceRegions`
+- [x] `ReviewedComposition_UsesResolvedTokens`
+- [x] `ReviewedComposition_DoesNotReadDraftInputs`
+- [x] `ReviewedComposition_ModifiedMappingPropagatesToHandoff`
+- [x] `ReviewedComposition_ModifiedSectionPropagatesToTask`
+
+Slot enforcement:
+
+- [ ] `SlotValidation_RoleSuggestionWithoutMappingDoesNotSatisfyRequiredSlot`
+- [ ] `SlotValidation_ReviewedMappingSatisfiesRequiredSlot`
+- [ ] `SlotValidation_DuplicateNonRepeatableSlotFails`
+- [ ] `SlotValidation_RepeatableProductCardsPass`
+- [ ] `SlotValidation_UnknownUnmappedSectionFails`
+- [ ] `SlotValidation_ApprovedVisualExtensionPasses`
+- [ ] `SlotValidation_RuntimeOwnershipFails`
+
+Viewport crop:
+
+- [ ] `HandoffEvidence_DesktopCropUsesDesktopBounds`
+- [ ] `HandoffEvidence_TabletCropUsesTabletBounds`
+- [ ] `HandoffEvidence_MobileCropUsesMobileBounds`
+- [ ] `HandoffEvidence_MissingViewportBoundsBlocks`
+- [ ] `HandoffEvidence_InvalidViewportBoundsBlocks`
+- [ ] `HandoffEvidence_CropHashIsDeterministic`
+
+Proof:
+
+- [ ] `Phase3DPositiveEndToEnd`
+- [ ] `Phase3DNegativeReviewMutation`
+- [ ] `Phase3DNegativeSlotMutation`
+- [ ] `Phase3DNegativeEvidenceMutation`
+- [ ] `Phase3DNegativeHandoffMutation`
+- [ ] `Phase3DNegativeBoundaryMutation`
+
+Gate:
+
+- [ ] Phase 3D gate has no skip flags.
+- [ ] Phase 3D gate does not call static negative marker proof as primary proof.
+- [ ] Phase 3D gate fails dirty tree.
+- [ ] Phase 3D gate records tested SHA and final HEAD.
+
+## Definition Of Done
+
+Reviewed composition:
+
+- [x] Reads resolved archetypes.
+- [x] Reads resolved sections.
+- [x] Reads resolved mappings.
+- [x] Reads resolved ecommerce regions.
+- [x] Reads resolved tokens.
+- [x] Does not read authoritative draft inputs.
+- [x] Modified decisions propagate to handoff.
+
+Slot enforcement:
+
+- [ ] Required slots require reviewed mapping or other approved authoritative source.
+- [ ] Role inference is diagnostic only.
+- [ ] Duplicate non-repeatable slot fails.
+- [ ] Repeatable product cards pass.
+- [ ] Unknown/unmapped section fails.
+- [ ] Approved visual extension is explicit.
+- [ ] Protected behavior ownership fails.
+
+Visual evidence:
+
+- [ ] Per-viewport boxes exist.
+- [ ] Crop uses the matching viewport box.
+- [ ] Desktop/tablet/mobile crops differ when layout differs.
+- [ ] Missing required viewport bounds fails.
+- [ ] Missing/corrupt crop fails.
+- [ ] Hashes are deterministic.
+
+Proof:
+
+- [ ] Positive proof runs the full pipeline.
+- [ ] Positive proof includes Modified decision propagation.
+- [ ] Negative review tests mutate real artifacts.
+- [ ] Negative slot tests mutate real compositions/mappings.
+- [ ] Negative evidence tests mutate real files.
+- [ ] Negative handoff tests run actual validator.
+- [ ] Exact blocker codes are asserted.
+
+Gate:
+
+- [ ] No skip flags.
+- [ ] Clean tree check passes.
+- [ ] Phase 3A gate passes.
+- [ ] Phase 3B gate passes.
+- [ ] Phase 3C gate passes.
+- [ ] Full tests pass.
+- [ ] StorefrontBuilder plan-only smoke passes.
+- [ ] Final inspect proof passes.
+- [ ] HEAD unchanged.
+- [ ] Final tree clean.
+
+Boundary:
+
+- [ ] ReverseEngineering remains development-time only.
+- [ ] No Razor/CSS/JS storefront generation.
+- [ ] No StorefrontBuilder handoff consumption.
+- [ ] No writes into Starter.
+- [ ] No direct Commerce Node browser calls.
+- [ ] No generated routes.
+- [ ] No protected behavior reimplementation.
+
+Closure:
+
+- [ ] Phase 3D status complete only after final gate pass.
+- [ ] Phase 3 overall complete only after final gate pass.
+- [ ] Closure report reflects final clean-head gate.
+- [ ] No source/docs commit after tested SHA unless gate is rerun.
+- [ ] Phase 4 may begin implementation planning.
+
+## Final Phase 3 Closure Condition
+
+Phase 3 can close only when this statement is true:
+
+```text
+Human-reviewed visual decisions are applied into resolved artifacts and
+site-level page compositions; every ecommerce-critical section maps to an
+exact reviewed Storefront Presentation slot; duplicate, missing, unknown and
+unapproved sections are blocked; desktop, tablet and mobile evidence is
+packaged using viewport-specific bounds; and a full clean-HEAD end-to-end gate
+proves both successful and failing scenarios without generating storefront
+source or enabling StorefrontBuilder handoff consumption.
+```
+
+Approved Phase 4 input remains:
+
+```text
+analysis/agent-handoff/
+```
+
+Next phase:
+
+```text
+Phase 4 - Agent-Assisted Storefront Visual Generation
+```
+
+## Decision Audit Trail
+
+| # | Phase | Decision | Classification | Principle | Rationale | Rejected |
+|---|-------|----------|----------------|-----------|-----------|----------|
+| 1 | CEO | Create a new D13-D19 correction plan instead of rewriting Phase 3D D0-D12 history. | Auto-decided | Keep history reviewable | Existing Phase 3D file already records D0-D12 implementation evidence; the new review is a focused correction round. | Merge new blockers into old sections and blur closure evidence. |
+| 2 | Eng | Build reviewed composition only from resolved artifacts. | Auto-decided | Source-of-truth correctness | Phase 4 must not receive handoff content derived from stale draft values after human review. | Keep draft readers and trust reviewed blueprint references. |
+| 3 | Eng | Downgrade role inference from authoritative validation to diagnostics. | Auto-decided | Contract precision | Text role matching can make required slots appear present without reviewed mappings. | Continue counting inferred slots. |
+| 4 | Eng | Track slot presence by source IDs, not integer counters. | Auto-decided | Testability and auditability | Duplicate validation needs to know which nodes or mappings created the slot observation. | Keep `Dictionary<string,int>`. |
+| 5 | Eng | Use viewport-specific bounds for crop generation. | Auto-decided | Evidence fidelity | Mobile/tablet crops can be wrong if the first bounds entry belongs to desktop. | Use first available bounds as fallback. |
+| 6 | QA | Replace static fixture marker proof with real pipeline and mutation proof. | Auto-decided | Production-grade verification | Static marker mapping does not prove validators catch real broken artifacts. | Keep static JSON proof as closure evidence. |
+| 7 | DX | Keep final gate strict and require dirty tree resolution outside the gate. | Auto-decided | Release evidence integrity | Clean-head closure proof loses meaning if the gate can bypass local changes. | Add gate exclusions for dirty files. |
+
+## GSTACK REVIEW REPORT
+
+### Plan Summary
+
+This plan focuses Phase 3D D13-D19 on the remaining closure blockers: reviewed composition must read resolved artifacts, slot validation must be mapping-driven, evidence crops must use matching viewport bounds, and final proof must run real positive and negative scenarios.
+
+### Review Scores
+
+- CEO: Pass. The plan protects Phase 4 from consuming ambiguous or stale handoff data.
+- Design: Skipped. No UI visual design implementation is planned.
+- Eng: Pass with required corrections. The plan addresses concrete source-level gaps found in `BlueprintV1Assembler`, `PageCompositionSlotValidator`, `AgentHandoffEvidencePackager`, and Phase 3D gate tests.
+- DX: Pass with required proof improvements. The plan turns handoff consumption into a clear package contract and replaces static proof with behavior proof.
+
+### Cross-Phase Themes
+
+- Source-of-truth integrity: resolved artifacts, reviewed mappings, and exact slot IDs must drive Phase 4 input.
+- Evidence fidelity: per-viewport crops and self-contained handoff assets must prevent later agents from guessing from raw capture state.
+- Release proof quality: no-skip clean-head gate and real mutation tests are required before marking Phase 3 complete.
+
+### Implementation Tasks
+
+- [x] Implement D13 reviewed composition from resolved artifacts.
+- [ ] Implement D14 authoritative slot mapping.
+- [ ] Implement D15 per-viewport crop bounds.
+- [ ] Implement D16 real positive end-to-end proof.
+- [ ] Implement D17 real negative mutation proofs.
+- [ ] Implement D18 final gate hardening.
+- [ ] Implement D19 documentation/status alignment.

@@ -30,9 +30,17 @@ public sealed record ReviewedPageCompositionsDocument(
     string ArtifactId,
     DateTimeOffset CreatedUtc,
     string ProjectId,
+    ReviewedPageCompositionProvenance Provenance,
     SiteBlueprint Site,
     IReadOnlyList<PageBlueprint> Pages,
     IReadOnlyList<PageComposition> Compositions);
+
+public sealed record ReviewedPageCompositionProvenance(
+    string ReviewResolutionManifestPath,
+    string ReviewBundleHash,
+    IReadOnlyDictionary<string, string> SourceResolvedArtifactHashes,
+    IReadOnlyList<string> ReviewedInputArtifactPaths,
+    IReadOnlyDictionary<string, string> ReviewedInputArtifactKinds);
 
 public sealed record SiteBlueprint(
     string SiteId,
