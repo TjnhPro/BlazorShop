@@ -221,3 +221,14 @@ Status: in progress
 - Result: passed `12/12`.
 - Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `39/39`.
+
+## Phase 3D.D16 Evidence
+
+- Added `Phase3DPositiveEndToEndTests` as a real positive proof suite.
+- The positive proof runs the local fixture workflow, extends it into a multi-page ecommerce project before review, writes an approved/modified review decision bundle, resumes the workflow through reviewed blueprint assembly, packages handoff evidence, validates handoff readiness, and runs CLI `inspect`.
+- The proof covers home, category/PLP, PDP, cart, checkout, account/auth, and maintenance/system-state pages with desktop/tablet/mobile screenshots and section crops.
+- Exact slots are asserted for home, PLP, PDP gallery/information/purchase, cart, checkout, account, and system-state contracts.
+- Modified section review decisions are asserted in resolved sections, reviewed page compositions, agent handoff compositions, and `task.md`.
+- Determinism is asserted for stable composition IDs and handoff screenshot/crop paths and hashes, excluding intentionally timestamped JSON fields.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "PositivePipeline" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `3/3`.

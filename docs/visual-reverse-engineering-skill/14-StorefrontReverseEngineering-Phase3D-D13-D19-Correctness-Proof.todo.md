@@ -375,19 +375,19 @@ Goal: prove the actual pipeline can produce a passing handoff.
 
 Use a local fixture site or fixture reference browser that includes:
 
-- [ ] home page.
-- [ ] PLP/category page.
-- [ ] PDP with 1:1 product gallery.
-- [ ] cart shell.
-- [ ] checkout shell.
-- [ ] account/auth shell.
-- [ ] system state.
-- [ ] desktop/tablet/mobile layouts.
-- [ ] shared header/footer.
-- [ ] reused product cards.
-- [ ] PDP gallery, information, and purchase sections.
-- [ ] at least one responsive reorder.
-- [ ] at least one interaction state.
+- [x] home page.
+- [x] PLP/category page.
+- [x] PDP with 1:1 product gallery.
+- [x] cart shell.
+- [x] checkout shell.
+- [x] account/auth shell.
+- [x] system state.
+- [x] desktop/tablet/mobile layouts.
+- [x] shared header/footer.
+- [x] reused product cards.
+- [x] PDP gallery, information, and purchase sections.
+- [x] at least one responsive reorder.
+- [x] at least one interaction state.
 
 ### D16.2 Real Pipeline
 
@@ -416,47 +416,47 @@ Do not replace this with a static JSON declaration.
 
 ### D16.3 Assertions
 
-- [ ] Workflow succeeds.
-- [ ] CLI returns zero.
-- [ ] Reviewed blueprint exists.
-- [ ] Reviewed blueprint has no draft references.
-- [ ] Modified decision appears in reviewed artifacts.
-- [ ] Modified decision appears in reviewed page composition.
-- [ ] Modified decision appears in handoff copy.
-- [ ] Home exact slots pass.
-- [ ] PLP exact slots pass.
-- [ ] PDP exact slots pass.
-- [ ] Cart shell exact slots pass.
-- [ ] Checkout shell exact slots pass.
-- [ ] Account/auth shell exact slots pass.
-- [ ] System state exact slots pass.
-- [ ] All configured viewports have screenshots.
-- [ ] Major sections have viewport-specific crops.
-- [ ] Evidence hashes validate.
-- [ ] Manifest hashes validate.
-- [ ] Handoff readiness passed.
-- [ ] `inspect` reports final pass.
+- [x] Workflow succeeds.
+- [x] CLI returns zero.
+- [x] Reviewed blueprint exists.
+- [x] Reviewed blueprint has no draft references.
+- [x] Modified decision appears in reviewed artifacts.
+- [x] Modified decision appears in reviewed page composition.
+- [x] Modified decision appears in handoff copy.
+- [x] Home exact slots pass.
+- [x] PLP exact slots pass.
+- [x] PDP exact slots pass.
+- [x] Cart shell exact slots pass.
+- [x] Checkout shell exact slots pass.
+- [x] Account/auth shell exact slots pass.
+- [x] System state exact slots pass.
+- [x] All configured viewports have screenshots.
+- [x] Major sections have viewport-specific crops.
+- [x] Evidence hashes validate.
+- [x] Manifest hashes validate.
+- [x] Handoff readiness passed.
+- [x] `inspect` reports final pass.
 
 ### D16.4 Determinism
 
 Run proof twice and assert:
 
-- [ ] composition IDs stable.
-- [ ] section crop filenames stable.
-- [ ] handoff schema stable.
-- [ ] artifact lists stable.
-- [ ] hashes stable except intentionally timestamped fields.
-- [ ] no unexpected artifact drift.
+- [x] composition IDs stable.
+- [x] section crop filenames stable.
+- [x] handoff schema stable.
+- [x] artifact lists stable.
+- [x] hashes stable except intentionally timestamped fields.
+- [x] no unexpected artifact drift.
 
 Tests:
 
-- [ ] `Phase3DPositiveEndToEndTests.PositivePipeline_ProducesReadySelfContainedHandoff`
-- [ ] `Phase3DPositiveEndToEndTests.PositivePipeline_PropagatesModifiedDecisionsToHandoff`
-- [ ] `Phase3DPositiveEndToEndTests.PositivePipeline_IsDeterministicForStableInputs`
+- [x] `Phase3DPositiveEndToEndTests.PositivePipeline_ProducesReadySelfContainedHandoff`
+- [x] `Phase3DPositiveEndToEndTests.PositivePipeline_PropagatesModifiedDecisionsToHandoff`
+- [x] `Phase3DPositiveEndToEndTests.PositivePipeline_IsDeterministicForStableInputs`
 
 Done when:
 
-- [ ] A real positive pipeline proof replaces static positive declaration proof.
+- [x] A real positive pipeline proof replaces static positive declaration proof.
 
 ## D17 - Real Negative Mutation Proofs
 
@@ -712,7 +712,7 @@ Done when:
 9. [x] D14.5 Add approved visual extension support.
 10. [x] D15.1 Preserve per-viewport section bounds.
 11. [x] D15.2 Crop using `viewport.ViewportId` bounds.
-12. [ ] D16 Add positive end-to-end proof.
+12. [x] D16 Add positive end-to-end proof.
 13. [ ] D17 Add negative mutation proof suites.
 14. [ ] D18 Replace Phase 3D gate static proof filters.
 15. [ ] D19 Update docs/status.
@@ -724,7 +724,7 @@ Suggested commits:
 1. [x] `phase 3d: read reviewed compositions from resolved artifacts`
 2. [x] `phase 3d: enforce authoritative slot observations`
 3. [x] `phase 3d: crop handoff evidence per viewport`
-4. [ ] `phase 3d: add positive end-to-end proof`
+4. [x] `phase 3d: add positive end-to-end proof`
 5. [ ] `phase 3d: add negative mutation proof suites`
 6. [ ] `phase 3d: harden final closure gate`
 7. [ ] `phase 3d: align closure docs`
@@ -764,7 +764,7 @@ Viewport crop:
 
 Proof:
 
-- [ ] `Phase3DPositiveEndToEnd`
+- [x] `Phase3DPositiveEndToEnd`
 - [ ] `Phase3DNegativeReviewMutation`
 - [ ] `Phase3DNegativeSlotMutation`
 - [ ] `Phase3DNegativeEvidenceMutation`
@@ -811,8 +811,8 @@ Visual evidence:
 
 Proof:
 
-- [ ] Positive proof runs the full pipeline.
-- [ ] Positive proof includes Modified decision propagation.
+- [x] Positive proof runs the full pipeline.
+- [x] Positive proof includes Modified decision propagation.
 - [ ] Negative review tests mutate real artifacts.
 - [ ] Negative slot tests mutate real compositions/mappings.
 - [ ] Negative evidence tests mutate real files.
@@ -912,7 +912,7 @@ This plan focuses Phase 3D D13-D19 on the remaining closure blockers: reviewed c
 - [x] Implement D13 reviewed composition from resolved artifacts.
 - [x] Implement D14 authoritative slot mapping.
 - [x] Implement D15 per-viewport crop bounds.
-- [ ] Implement D16 real positive end-to-end proof.
+- [x] Implement D16 real positive end-to-end proof.
 - [ ] Implement D17 real negative mutation proofs.
 - [ ] Implement D18 final gate hardening.
 - [ ] Implement D19 documentation/status alignment.
