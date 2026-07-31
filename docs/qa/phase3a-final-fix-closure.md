@@ -8,7 +8,8 @@ Gate command:
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1
 ```
 
-Gate report: `obj/storefront-reverse-engineering/reports/phase3a-final-fix-gate-20260730162223.md`
+Original gate report: `obj/storefront-reverse-engineering/reports/phase3a-final-fix-gate-20260730162223.md`
+Strict workflow compatibility report: `obj/storefront-reverse-engineering/reports/phase3a-final-fix-gate-20260731104406.md`
 
 Gate commit SHA: `f8780dcba0ad3d683be71a3725e74f9eb9028302`
 
@@ -17,9 +18,10 @@ Gate result:
 - Build passed.
 - Final fix fast tests passed: `86/86`.
 - Real local Playwright and end-to-end tests passed: `27/27`.
-- CLI full workflow passed with run ID `phase3a-gate`.
+- CLI Phase 3A readiness workflow passed with run ID `phase3a-gate`.
 - Readiness validation passed with zero findings.
-- Inspect reported `Readiness passed: true`, zero blockers, zero warnings, and latest run status `Succeeded`.
+- Inspect reported `Readiness passed: true`, zero readiness blockers, and zero readiness warnings.
+- After Phase 3D strict review semantics, the later reviewed-blueprint/handoff steps may stop on expected review-decision blockers when no human review decisions are supplied. This is acceptable for the Phase 3A gate because Phase 3A closure proves capture/readiness foundation, not reviewed handoff closure.
 - Production boundary scan passed.
 - Active-source prototype marker scan passed.
 - StorefrontBuilder plan-only and create-hardening smokes passed.

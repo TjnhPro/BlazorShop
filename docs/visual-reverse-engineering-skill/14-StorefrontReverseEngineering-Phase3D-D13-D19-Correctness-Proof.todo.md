@@ -726,7 +726,8 @@ Suggested commits:
 5. [x] `phase 3d: add negative mutation proof suites`
 6. [x] `phase 3d: harden final closure gate`
 7. [x] `phase 3d: align closure docs`
-8. [ ] `phase 3d: record final clean-head proof`
+8. [x] `phase 3d: align phase3a gate with strict review semantics`
+9. [ ] `phase 3d: record final clean-head proof`
 
 ## Test Matrix
 

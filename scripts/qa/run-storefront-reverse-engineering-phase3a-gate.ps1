@@ -18,6 +18,7 @@ $stepResults = New-Object System.Collections.Generic.List[object]
 $testSummaries = New-Object System.Collections.Generic.List[string]
 $failedStep = $null
 $playwrightChromiumInstalled = $false
+$lastCommandExitCode = 0
 
 function Format-CommandArgument {
     param([Parameter(Mandatory = $true)][string]$Value)
@@ -32,13 +33,43 @@ function Format-CommandArgument {
 function Invoke-LoggedCommand {
     param(
         [Parameter(Mandatory = $true)][string]$CommandLine,
-        [Parameter(Mandatory = $true)][scriptblock]$Script
+        [Parameter(Mandatory = $true)][scriptblock]$Script,
+        [int[]]$AllowedExitCodes = @(0)
     )
 
     $commands.Add($CommandLine)
     & $Script
-    if ($LASTEXITCODE -ne 0) {
+    $script:lastCommandExitCode = $LASTEXITCODE
+    if ($AllowedExitCodes -notcontains $script:lastCommandExitCode) {
         throw "Command failed with exit code ${LASTEXITCODE}: $CommandLine"
+    }
+}
+
+function Assert-Phase3AReadinessPassed {
+    if (-not (Test-Path $readinessReportPath)) {
+        throw "Readiness report was not found after CLI run: $readinessReportPath"
+    }
+
+    $readiness = Get-Content -Raw $readinessReportPath | ConvertFrom-Json
+    if (-not $readiness.passed) {
+        throw "Phase 3A readiness did not pass after CLI run: $readinessReportPath"
+    }
+}
+
+function Assert-ExpectedStrictReviewBlocker {
+    $runPath = Join-Path $artifactProjectRoot "runs\$workflowRunId.json"
+    if (-not (Test-Path $runPath)) {
+        throw "Workflow run file was not found after strict CLI blocker: $runPath"
+    }
+
+    $run = Get-Content -Raw $runPath | ConvertFrom-Json
+    if ($run.status -ne "Failed") {
+        throw "Expected workflow status Failed when CLI exits 3 after Phase 3A readiness; actual status: $($run.status)"
+    }
+
+    $codes = @($run.steps | ForEach-Object { $_.errors } | ForEach-Object { $_.code })
+    if ($codes -notcontains "missing-review-decisions" -or $codes -notcontains "reviewed-blueprint-not-resolved") {
+        throw "CLI exited 3 without the expected strict review blockers. Codes: $($codes -join ', ')"
     }
 }
 
@@ -217,11 +248,18 @@ try {
             -Filter "Playwright|EndToEnd"
     }
 
-    Invoke-GateStep "run CLI full workflow with no AI" {
+    Invoke-GateStep "run CLI Phase 3A readiness workflow with no AI" {
         $fixtureUrl = [Uri]::new((Resolve-Path $fixturePath).Path).AbsoluteUri
         Invoke-LoggedCommand `
             -CommandLine "dotnet run --project $(Format-CommandArgument $toolProject) -- run --url $fixtureUrl --name Phase3AGate --output-root $(Format-CommandArgument $projectOutputRoot) --no-ai --force --run-id $workflowRunId" `
+            -AllowedExitCodes @(0, 3) `
             -Script { dotnet run --project $toolProject -- run --url $fixtureUrl --name Phase3AGate --output-root $projectOutputRoot --no-ai --force --run-id $workflowRunId }
+
+        Assert-Phase3AReadinessPassed
+        if ($script:lastCommandExitCode -eq 3) {
+            Assert-ExpectedStrictReviewBlocker
+            $testSummaries.Add("CLI Phase 3A readiness workflow: readiness passed; final reviewed handoff stopped on expected strict review-decision blockers.")
+        }
     }
 
     Invoke-GateStep "validate CLI artifacts" {

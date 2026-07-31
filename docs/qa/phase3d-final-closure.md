@@ -269,3 +269,13 @@ Status: in progress
 - Historical Phase 3D definition-of-done checkboxes were aligned with implemented D1-D18 evidence while final closure checkboxes remain pending until the final clean-head gate passes.
 - Full Phase 3D gate command remains: `powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`
 - Current final gate clean-tree proof: pending for the D19 documentation commit.
+
+## Phase 3D.D19 Gate Compatibility Fix Evidence
+
+- First final Phase 3D gate attempt on `882e4b107e0311260ab37c96e4bb97dca333ee74` failed inside the Phase 3A regression gate.
+- Root cause: the Phase 3A gate still treated the no-AI CLI run as a full final handoff workflow, but Phase 3D strict workflow semantics correctly return exit code `3` when review decisions are missing and reviewed handoff cannot be assembled.
+- The Phase 3A gate now proves Phase 3A readiness and accepts exit code `3` only when readiness passed and the run stopped on expected strict review blockers such as `missing-review-decisions` and `reviewed-blueprint-not-resolved`.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3AGate_AcceptsStrictReviewBlockerAfterReadiness|Phase3DFinalClosureGate_IsNoSkipCleanHeadGate" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `2/2`.
+- Phase 3A gate rerun command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1`
+- Result: passed. Report: `obj/storefront-reverse-engineering/reports/phase3a-final-fix-gate-20260731104406.md`.

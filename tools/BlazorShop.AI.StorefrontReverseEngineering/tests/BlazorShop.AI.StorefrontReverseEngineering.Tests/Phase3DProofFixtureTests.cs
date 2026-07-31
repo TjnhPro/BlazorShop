@@ -122,6 +122,19 @@ public sealed class Phase3DProofFixtureTests
         Assert.Contains("GitHub Actions status: disabled/local proof primary", script, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Phase3AGate_AcceptsStrictReviewBlockerAfterReadiness()
+    {
+        var script = File.ReadAllText(Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-reverse-engineering-phase3a-gate.ps1"));
+
+        Assert.Contains("run CLI Phase 3A readiness workflow with no AI", script, StringComparison.Ordinal);
+        Assert.Contains("-AllowedExitCodes @(0, 3)", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-Phase3AReadinessPassed", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-ExpectedStrictReviewBlocker", script, StringComparison.Ordinal);
+        Assert.Contains("missing-review-decisions", script, StringComparison.Ordinal);
+        Assert.Contains("reviewed-blueprint-not-resolved", script, StringComparison.Ordinal);
+    }
+
     private static JsonObject ReadFixture(string fileName)
     {
         var path = Path.Combine(GetRepoRoot(), "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "Phase3D", fileName);
