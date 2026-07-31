@@ -81,7 +81,7 @@ Phase 3D final closure command:
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1
 ```
 
-The Phase 3D gate has no skip flags and must be run from a clean working tree. Phase 3D and Phase 3 overall remain in progress until the gate report records a passed run where the tested SHA equals final `HEAD`.
+The Phase 3D gate has no skip flags and must be run from a clean working tree. Phase 3D and Phase 3 overall are locally closed by the passed gate report where the tested SHA equals final `HEAD`; see `docs/qa/phase3d-final-closure.md` for the current proof.
 
 Review decisions are edited in `review/review-decisions.json`. Apply approved, modified, rejected, or deferred decisions by rerunning `apply-review-decisions` or any downstream step. Decisions must include reviewer metadata, source artifact ID, source artifact hash, and a stable decision ID; stale or duplicate decisions fail before reviewed artifacts are emitted.
 

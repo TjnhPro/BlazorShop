@@ -1,6 +1,6 @@
 # StorefrontReverseEngineering Phase 3D - D13-D19 Correctness Proof
 
-Status: In progress  
+Status: Complete  
 Owner area: `tools/BlazorShop.AI.StorefrontReverseEngineering`  
 Target folder: `docs/visual-reverse-engineering-skill`  
 Depends on: Phase 3D D0-D12 implementation being present  
@@ -25,7 +25,7 @@ The review points are confirmed against current code:
 - `AgentHandoffEvidencePackager.CropSectionAsync()` still uses `node.ViewportBoundingBoxes.Values.FirstOrDefault()` instead of `node.ViewportBoundingBoxes[viewport.ViewportId]`.
 - `Phase3DProofFixtureTests` currently verifies static JSON fixtures and marker-to-blocker mapping instead of running the actual pipeline or mutating real artifacts.
 - `run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1` is no-skip and clean-head oriented, but still invokes the same static negative fixture test for review, slot, and handoff proof.
-- `docs/qa/phase3d-final-closure.md` correctly keeps Phase 3D and Phase 3 overall in progress while the final clean-head gate is pending.
+- `docs/qa/phase3d-final-closure.md` kept Phase 3D and Phase 3 overall in progress until the final clean-head gate passed; final proof is now recorded there.
 
 ## Locked Decisions
 
@@ -68,7 +68,7 @@ Not in scope:
 - [x] P0-4: Unmapped extra sections can be ignored instead of blocked.
 - [x] P0-5: Section crop uses first available bounds instead of viewport-specific bounds.
 - [x] P0-6: Positive/negative proofs are static fixture assertions, not real pipeline/mutation proofs.
-- [ ] P0-7: Full clean-head Phase 3D gate has not passed.
+- [x] P0-7: Full clean-head Phase 3D gate has passed.
 
 ## D13 - Build Reviewed Composition From Resolved Artifacts
 
@@ -635,17 +635,17 @@ Preferred closure flow:
 
 1. [x] Complete code and docs.
 2. [x] Commit final candidate.
-3. [ ] Run full gate.
+3. [x] Run full gate.
 4. [x] Gate writes ignored runtime report under `obj`.
-5. [ ] Do not change source/docs after pass.
+5. [x] Do not change source/docs after pass.
 6. [x] Closure doc must point to ignored gate report as final authoritative proof if exact self-referential final SHA cannot be tracked before the run.
 
 If tracked closure doc must contain exact final SHA:
 
 1. [x] Commit implementation.
-2. [ ] Run gate.
-3. [ ] Commit closure doc with implementation SHA.
-4. [ ] Rerun gate on closure-doc HEAD.
+2. [x] Run gate.
+3. [x] Commit closure doc with implementation SHA.
+4. [x] Rerun gate on closure-doc HEAD.
 5. [x] Closure doc records both implementation SHA and final closure SHA strategy.
 
 Done when:
@@ -674,11 +674,11 @@ Before final gate pass:
 
 After final gate pass:
 
-- [ ] Phase 3A: Complete.
-- [ ] Phase 3B: Complete.
-- [ ] Phase 3C: Complete.
-- [ ] Phase 3D: Complete.
-- [ ] Phase 3 overall: Complete.
+- [x] Phase 3A: Complete.
+- [x] Phase 3B: Complete.
+- [x] Phase 3C: Complete.
+- [x] Phase 3D: Complete.
+- [x] Phase 3 overall: Complete.
 
 Final closure statement:
 
@@ -715,7 +715,7 @@ Done when:
 14. [x] D18 Replace Phase 3D gate static proof filters.
 15. [x] D19 Update docs/status.
 16. [x] Resolve dirty tree blocker.
-17. [ ] Run final no-skip clean-head gate.
+17. [x] Run final no-skip clean-head gate.
 
 Suggested commits:
 
@@ -728,7 +728,7 @@ Suggested commits:
 7. [x] `phase 3d: align closure docs`
 8. [x] `phase 3d: align phase3a gate with strict review semantics`
 9. [x] `phase 3d: align phase3b gate with strict review semantics`
-10. [ ] `phase 3d: record final clean-head proof`
+10. [x] `phase 3d: record final clean-head proof`
 
 ## Test Matrix
 
@@ -821,16 +821,16 @@ Proof:
 
 Gate:
 
-- [ ] No skip flags.
-- [ ] Clean tree check passes.
-- [ ] Phase 3A gate passes.
-- [ ] Phase 3B gate passes.
-- [ ] Phase 3C gate passes.
-- [ ] Full tests pass.
-- [ ] StorefrontBuilder plan-only smoke passes.
-- [ ] Final inspect proof passes.
-- [ ] HEAD unchanged.
-- [ ] Final tree clean.
+- [x] No skip flags.
+- [x] Clean tree check passes.
+- [x] Phase 3A gate passes.
+- [x] Phase 3B gate passes.
+- [x] Phase 3C gate passes.
+- [x] Full tests pass.
+- [x] StorefrontBuilder plan-only smoke passes.
+- [x] Final inspect proof passes.
+- [x] HEAD unchanged.
+- [x] Final tree clean.
 
 Boundary:
 
@@ -844,11 +844,11 @@ Boundary:
 
 Closure:
 
-- [ ] Phase 3D status complete only after final gate pass.
-- [ ] Phase 3 overall complete only after final gate pass.
-- [ ] Closure report reflects final clean-head gate.
-- [ ] No source/docs commit after tested SHA unless gate is rerun.
-- [ ] Phase 4 may begin implementation planning.
+- [x] Phase 3D status complete only after final gate pass.
+- [x] Phase 3 overall complete only after final gate pass.
+- [x] Closure report reflects final clean-head gate.
+- [x] No source/docs commit after tested SHA unless gate is rerun.
+- [x] Phase 4 may begin implementation planning.
 
 ## Final Phase 3 Closure Condition
 

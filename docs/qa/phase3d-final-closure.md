@@ -1,6 +1,6 @@
 # Storefront Reverse Engineering Phase 3D Final Closure
 
-Status: in progress
+Status: passed
 
 ## Baseline
 
@@ -31,8 +31,8 @@ Status: in progress
 
 ## Closure Rules
 
-- Phase 3D remains in progress until the final no-skip closure gate passes on a clean working tree.
-- Phase 3 overall remains in progress until the Phase 3D gate passes and the tested SHA equals final `HEAD`.
+- Phase 3D is complete after the final no-skip closure gate passed on a clean working tree.
+- Phase 3 overall is complete after the Phase 3D gate passed and the tested SHA equaled final `HEAD`.
 - GitHub Actions are not claimed as passing unless explicitly verified later.
 - StorefrontBuilder consumption of `analysis/agent-handoff/*` remains disabled until a separate approved Phase 4 cutover.
 - After final closure passes, Phase 4 may begin implementation planning against `analysis/agent-handoff/*`; before that, planning may reference this closure document only as in-progress evidence.
@@ -138,15 +138,15 @@ Status: in progress
 - Result: passed `3/3`.
 - Parse/fail-dirty check command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1 -CommandTimeoutSeconds 1`
 - Result: failed at `clean tree check` as designed because the working tree was dirty. At the time of the check, dirty entries included the pre-existing `.gitignore` change plus uncommitted Phase 3D.11 files.
-- Full clean-head gate pass remains pending until the working tree is clean.
+- At Phase 3D.11, the full clean-head gate pass remained pending until the working tree was clean; final proof is recorded below.
 
 ## Phase 3D.12 Evidence
 
 - Phase 3C plan status is aligned with its closure evidence as `Status: Complete`.
 - Phase 3C closure evidence now points to `analysis/agent-handoff/handoff-readiness.json`; the retired reports readiness path is not a valid final handoff readiness location.
-- Phase 3D and Phase 3 overall remain `in progress` until the no-skip clean-head gate passes.
+- Phase 3D and Phase 3 overall were kept `in progress` until the no-skip clean-head gate passed.
 - Full Phase 3D gate command: `powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`
-- Current final gate clean-tree proof: pending. The known remaining dirty-tree blocker is the pre-existing unrelated `.gitignore` change that adds `Skills/`.
+- Current final gate clean-tree proof: passed. The pre-existing `.gitignore` dirty-tree blocker was resolved by committing the intentional `Skills/` ignore entry.
 - Tested SHA evidence by phase:
   - `3241e678` Phase 3D.0 baseline.
   - `87167ca7` Phase 3D.1 typed review decisions.
@@ -177,7 +177,7 @@ Status: in progress
 - Negative fixture details: `negative-fixtures.json` maps review, page-contract, handoff, and browser-behavior mutations to exact blocker codes such as stale review decisions, missing required slots, protected target misuse, missing evidence, stale hashes, path escape, and direct Commerce Node browser calls.
 - Handoff schema versions: Phase 3D handoff artifacts are schema `1.0`, including `agent-handoff-manifest`, `agent-handoff-evidence-manifest`, `agent-handoff-readiness`, reviewed artifacts, reviewed page compositions, reviewed visual blueprint, allowed/protected files, unresolved regions, storefront pattern, and task-adjacent contract artifacts.
 - Handoff hashes: `analysis/agent-handoff/manifest.json` carries required artifact entries with SHA-256 hashes; readiness validates manifest artifact hashes, source review queue/decision/resolution hashes, decision source hashes, evidence manifest hashes, reviewed blueprint references, and handoff-root containment.
-- Known limitations: GitHub Actions remain disabled/local proof primary for this development closure; StorefrontBuilder consumption remains disabled; no Razor/CSS/JS generation is produced by ReverseEngineering; final clean-head proof is not complete while unrelated local changes remain.
+- Known limitations: GitHub Actions remain disabled/local proof primary for this development closure; StorefrontBuilder consumption remains disabled; no Razor/CSS/JS generation is produced by ReverseEngineering.
 - Phase 4 may begin implementation planning only after final Phase 3D closure passes on a clean `HEAD`.
 - StorefrontBuilder consumption of `analysis/agent-handoff/*` remains disabled until a separate approved Phase 4 cutover.
 - Documentation path scan: no docs under StorefrontReverseEngineering, QA, architecture StorefrontBuilder, or agent StorefrontBuilder references the retired reports readiness path.
@@ -262,13 +262,13 @@ Status: in progress
 
 ## Phase 3D.D19 Evidence
 
-- Closure docs now keep Phase 3D and Phase 3 overall `in progress` until the final no-skip clean-head gate passes.
+- Closure docs kept Phase 3D and Phase 3 overall `in progress` until the final no-skip clean-head gate passed.
 - Phase 4 input wording is aligned across the Phase 3D plans, QA closure file, Visual Reverse Engineering README/reference/how-to, StorefrontBuilder architecture, and StorefrontBuilder agent guide.
 - The only approved future Phase 4 input root is `analysis/agent-handoff/*` plus registered schemas; draft artifacts, raw captures, unresolved reviewed-source files, and `analysis/pages/*` are not approved generation inputs.
 - StorefrontBuilder generation remains disabled for ReverseEngineering handoff consumption until a later approved implementation phase.
-- Historical Phase 3D definition-of-done checkboxes were aligned with implemented D1-D18 evidence while final closure checkboxes remain pending until the final clean-head gate passes.
+- Historical Phase 3D definition-of-done checkboxes were aligned with implemented D1-D18 evidence; final closure checkboxes are now backed by the clean-head gate proof below.
 - Full Phase 3D gate command remains: `powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`
-- Current final gate clean-tree proof: pending for the D19 documentation commit.
+- Current final gate clean-tree proof: passed on implementation HEAD before the final tracked closure-doc update.
 
 ## Phase 3D.D19 Gate Compatibility Fix Evidence
 
@@ -290,3 +290,25 @@ Status: in progress
 - Result: passed `1/1`.
 - Phase 3B gate rerun command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1`
 - Result: passed. Report: `obj/storefront-reverse-engineering/reports/phase3b-gate-20260731110915.md`.
+
+## Final Phase 3D Clean-HEAD Proof
+
+- Gate command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`
+- Gate report: `obj/storefront-reverse-engineering/reports/phase3d-final-closure-gate-20260731113551.md`
+- Tested commit SHA: `08d6060b37f5a9a2f58357531972e14cf0498a0c`
+- Final HEAD SHA at proof time: `08d6060b37f5a9a2f58357531972e14cf0498a0c`
+- Working tree clean: `True`
+- Phase 3A gate: passed.
+- Phase 3B gate: passed.
+- Phase 3C gate: passed.
+- Full ReverseEngineering tests: passed `316/316`.
+- Typed review resolution tests: passed `13/13`.
+- Exact slot contract tests: passed `49/49`.
+- Self-contained handoff evidence tests: passed `39/39`.
+- Canonical handoff validation tests: passed `49/49`.
+- Positive end-to-end proof: passed `3/3`.
+- Negative mutation proofs: review `6/6`, slot `8/8`, evidence `6/6`, handoff `11/11`, boundary `7/7`.
+- Final inspect proof: passed `2/2`.
+- Boundary scans passed: no production references, no StorefrontBuilder handoff consumption, no Razor/CSS/JS storefront output from ReverseEngineering, no Starter/generated storefront writes, no direct Commerce Node browser calls, no generated routes, no hardcoded `captures/home`, no `plan.Pages.First()`, no reviewed blueprint draft reference, and no handoff path escape.
+- StorefrontBuilder smoke: plan-only passed.
+- Closure decision: Phase 3D and Phase 3 overall are locally closed by this clean-HEAD proof. GitHub Actions remain disabled/local proof primary unless verified separately.
