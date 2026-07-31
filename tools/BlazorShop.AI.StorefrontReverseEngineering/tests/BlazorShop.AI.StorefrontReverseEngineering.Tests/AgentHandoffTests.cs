@@ -76,6 +76,7 @@ public sealed class AgentHandoffTests
 
         Assert.False(report.Passed);
         Assert.Contains(report.Findings, finding => finding.Code == "missing-section-screenshot");
+        Assert.Contains(report.Findings, finding => finding.Code == "missing-required-section-crop");
     }
 
     [Fact]
@@ -114,11 +115,140 @@ public sealed class AgentHandoffTests
         var projectRoot = await CreateReadyProjectAsync("Agent Handoff Invalid Bounds");
         await MutateFirstCompositionNodeAsync(projectRoot, node =>
         {
-            node["viewportBoundingBoxes"] = new JsonObject { ["base"] = "x=0;y=0;width=0;height=0" };
+            node["viewportBoundingBoxes"] = new JsonObject
+            {
+                ["desktop-1440"] = "x=0;y=0;width=0;height=0",
+                ["tablet-768"] = "x=0;y=0;width=768;height=72",
+                ["mobile-390"] = "x=0;y=0;width=390;height=72"
+            };
         });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None));
+        Assert.Contains("invalid-section-viewport-bounds", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_DesktopCropUsesDesktopBounds()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Desktop Bounds");
+        var evidence = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+        var section = evidence.Pages.Single(page => page.PageId == "home").Sections.Single(item => item.SectionId == "section-01" && item.ViewportId == "desktop-1440");
+
+        Assert.Equal("x=0;y=0;width=1440;height=72", section.Bounds);
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_TabletCropUsesTabletBounds()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Tablet Bounds");
+        var evidence = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+        var section = evidence.Pages.Single(page => page.PageId == "home").Sections.Single(item => item.SectionId == "section-01" && item.ViewportId == "tablet-768");
+
+        Assert.Equal("x=0;y=0;width=768;height=72", section.Bounds);
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_MobileCropUsesMobileBounds()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Mobile Bounds");
+        var evidence = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+        var section = evidence.Pages.Single(page => page.PageId == "home").Sections.Single(item => item.SectionId == "section-01" && item.ViewportId == "mobile-390");
+
+        Assert.Equal("x=0;y=0;width=390;height=72", section.Bounds);
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_MissingViewportBoundsBlocks()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Missing Viewport Bounds");
+        await MutateFirstCompositionNodeAsync(projectRoot, node =>
+        {
+            var bounds = node["viewportBoundingBoxes"]!.AsObject();
+            bounds.Remove("mobile-390");
+        });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None));
+
+        Assert.Contains("missing-section-viewport-bounds", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("mobile-390", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_InvalidViewportBoundsBlocks()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Invalid Viewport Bounds");
+        await MutateFirstCompositionNodeAsync(projectRoot, node =>
+        {
+            node["viewportBoundingBoxes"]!.AsObject()["desktop-1440"] = "x=left;y=0;width=1440;height=72";
+        });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None));
+
+        Assert.Contains("invalid-section-viewport-bounds", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_CropHashIsDeterministic()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Deterministic Crop Hash");
+        var first = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        var second = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+
+        Assert.Equal(
+            first.Pages.SelectMany(page => page.Sections).OrderBy(section => section.HandoffPath, StringComparer.Ordinal).Select(section => section.Sha256),
+            second.Pages.SelectMany(page => page.Sections).OrderBy(section => section.HandoffPath, StringComparer.Ordinal).Select(section => section.Sha256));
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_DesktopAndMobileDifferentBoundsProduceDifferentCropHashes()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Different Crop Hashes");
+        var evidence = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+        var home = evidence.Pages.Single(page => page.PageId == "home");
+        var desktop = home.Sections.Single(section => section.SectionId == "section-02" && section.ViewportId == "desktop-1440");
+        var mobile = home.Sections.Single(section => section.SectionId == "section-02" && section.ViewportId == "mobile-390");
+
+        Assert.NotEqual(desktop.Bounds, mobile.Bounds);
+        Assert.NotEqual(desktop.Sha256, mobile.Sha256);
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_HiddenOnMobileOptionalSectionDoesNotBlock()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Hidden Mobile Bounds");
+        await MutateFirstCompositionNodeAsync(projectRoot, node =>
+        {
+            var bounds = node["viewportBoundingBoxes"]!.AsObject();
+            bounds.Remove("mobile-390");
+            node["responsiveTransformationRules"] = new JsonArray("hidden:mobile-390");
+        });
+
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        var evidence = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+        var home = evidence.Pages.Single(page => page.PageId == "home");
+
+        Assert.DoesNotContain(home.Sections, section => section.SectionId == "section-01" && section.ViewportId == "mobile-390");
+    }
+
+    [Fact]
+    public async Task HandoffEvidence_OutOfRangeBoundsClampWhenStillNonZero()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Clamp Bounds");
+        await MutateFirstCompositionNodeAsync(projectRoot, node =>
+        {
+            node["viewportBoundingBoxes"]!.AsObject()["desktop-1440"] = "x=-12;y=-8;width=42;height=38";
+        });
+
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
+        var evidence = await ReadAsync<AgentHandoffEvidenceManifest>(projectRoot, "analysis/agent-handoff/evidence-manifest.json");
+        var section = evidence.Pages.Single(page => page.PageId == "home").Sections.Single(item => item.SectionId == "section-01" && item.ViewportId == "desktop-1440");
+
+        Assert.Equal("x=0;y=0;width=42;height=38", section.Bounds);
     }
 
     [Fact]

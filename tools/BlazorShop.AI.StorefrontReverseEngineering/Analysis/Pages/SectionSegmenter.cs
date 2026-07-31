@@ -34,9 +34,54 @@ public sealed class SectionSegmenter
     private static SectionsDraftDocument SegmentPage(string projectId, EvidenceSnapshotPage page)
     {
         var issues = new List<SectionSegmentationIssue>();
-        var viewport = page.Viewports
-            .OrderByDescending(candidate => candidate.ViewportWidth)
+        var viewportSections = page.Viewports
+            .Select(viewport => new
+            {
+                Viewport = viewport,
+                Sections = SegmentViewport(viewport)
+            })
+            .ToArray();
+        var primary = viewportSections
+            .OrderByDescending(candidate => candidate.Viewport.ViewportWidth)
             .First();
+        var sections = primary.Sections
+            .Select(section =>
+            {
+                var viewportBounds = viewportSections
+                    .Select(candidate => new
+                    {
+                        candidate.Viewport.ViewportId,
+                        Match = candidate.Sections.FirstOrDefault(other =>
+                            string.Equals(other.CrossViewportIdentityKey, section.CrossViewportIdentityKey, StringComparison.Ordinal) ||
+                            other.Order == section.Order && string.Equals(other.SectionType, section.SectionType, StringComparison.Ordinal))
+                    })
+                    .Where(candidate => candidate.Match is not null)
+                    .ToDictionary(candidate => candidate.ViewportId, candidate => candidate.Match!.Bounds, StringComparer.Ordinal);
+                return section with { ViewportBoundingBoxes = viewportBounds };
+            })
+            .OrderBy(section => section.Bounds.Y)
+            .ThenBy(section => section.Bounds.X)
+            .Select((section, index) => section with { Order = index + 1, SectionId = $"section-{index + 1:00}" })
+            .ToList();
+        DetectOverlapAndAmbiguity(sections, issues);
+        if (sections.Count == 0)
+        {
+            issues.Add(new SectionSegmentationIssue("missing-section-evidence", "blocking", "No boxed evidence was available for section segmentation.", []));
+        }
+
+        return new SectionsDraftDocument(
+            "1.0",
+            "sections",
+            $"sections-{projectId}-{page.PageId}",
+            DateTimeOffset.UtcNow,
+            projectId,
+            page.PageId,
+            sections,
+            issues);
+    }
+
+    private static List<SectionDraft> SegmentViewport(EvidenceSnapshotViewport viewport)
+    {
         var elements = viewport.Elements
             .Where(element => element.Box is { Width: > 0, Height: > 0 })
             .OrderBy(element => element.Box!.Y)
@@ -60,21 +105,7 @@ public sealed class SectionSegmenter
             .ThenBy(section => section.Bounds.X)
             .Select((section, index) => section with { Order = index + 1, SectionId = $"section-{index + 1:00}" })
             .ToList();
-        DetectOverlapAndAmbiguity(sections, issues);
-        if (sections.Count == 0)
-        {
-            issues.Add(new SectionSegmentationIssue("missing-section-evidence", "blocking", "No boxed evidence was available for section segmentation.", []));
-        }
-
-        return new SectionsDraftDocument(
-            "1.0",
-            "sections",
-            $"sections-{projectId}-{page.PageId}",
-            DateTimeOffset.UtcNow,
-            projectId,
-            page.PageId,
-            sections,
-            issues);
+        return sections;
     }
 
     private static SectionDraft CreateSection(

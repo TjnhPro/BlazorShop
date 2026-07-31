@@ -20,7 +20,8 @@ public sealed record SectionDraft(
     IReadOnlyList<string> ChildSectionIds,
     string CrossViewportIdentityKey,
     IReadOnlyList<string> EvidenceIds,
-    IReadOnlyList<string> ReasonCodes);
+    IReadOnlyList<string> ReasonCodes,
+    IReadOnlyDictionary<string, SectionBounds>? ViewportBoundingBoxes = null);
 
 public sealed record SectionBounds(
     decimal X,

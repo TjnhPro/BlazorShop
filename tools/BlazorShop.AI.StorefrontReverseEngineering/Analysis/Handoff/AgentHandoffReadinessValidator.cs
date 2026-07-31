@@ -371,6 +371,11 @@ public sealed class AgentHandoffReadinessValidator
         if (!File.Exists(path))
         {
             findings.Add(Block(missingCode, $"Evidence file is missing: {handoffPath}", handoffPath));
+            if (string.Equals(missingCode, "missing-section-screenshot", StringComparison.Ordinal))
+            {
+                findings.Add(Block("missing-required-section-crop", $"Required section crop is missing: {handoffPath}", handoffPath));
+            }
+
             return;
         }
 

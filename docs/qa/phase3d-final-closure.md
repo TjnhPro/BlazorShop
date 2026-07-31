@@ -208,3 +208,16 @@ Status: in progress
 - Result: passed `9/9`.
 - Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `34/34`.
+
+## Phase 3D.D15 Evidence
+
+- `SectionDraft` and `PageCompositionNode` now preserve viewport-specific section bounds keyed by exact viewport IDs such as `desktop-1440`, `tablet-768`, and `mobile-390`.
+- `SectionSegmenter` records per-viewport bounds from captured evidence instead of collapsing all section geometry to `base`.
+- `AgentHandoffEvidencePackager` crops sections with the bounds for the same `CaptureViewportManifest.ViewportId` being processed.
+- Missing viewport bounds, malformed bounds, zero-size bounds, and fully out-of-range bounds fail with problem/cause/fix messages and D15 blocker codes.
+- Hidden viewport sections can omit a crop only when the reviewed responsive transformation rules mark that viewport hidden.
+- Handoff readiness now emits `missing-required-section-crop` when a declared section crop is missing.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "HandoffEvidence|AgentHandoffReadiness_MissingSectionScreenshotFails" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `12/12`.
+- Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "AgentHandoff" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `39/39`.

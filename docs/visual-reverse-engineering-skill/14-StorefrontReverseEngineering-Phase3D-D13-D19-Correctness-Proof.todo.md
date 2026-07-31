@@ -66,7 +66,7 @@ Not in scope:
 - [x] P0-2: Slot validator can pass required slot presence from role text inference.
 - [x] P0-3: Duplicate slot counting does not preserve distinct node/mapping sources.
 - [x] P0-4: Unmapped extra sections can be ignored instead of blocked.
-- [ ] P0-5: Section crop uses first available bounds instead of viewport-specific bounds.
+- [x] P0-5: Section crop uses first available bounds instead of viewport-specific bounds.
 - [ ] P0-6: Positive/negative proofs are static fixture assertions, not real pipeline/mutation proofs.
 - [ ] P0-7: Full clean-head Phase 3D gate has not passed.
 
@@ -300,13 +300,13 @@ Goal: screenshot crops must use the bounding box for the same viewport being pro
 
 Implementation checklist:
 
-- [ ] Ensure `PageSectionInfo` preserves `ViewportBoundingBoxes`.
-- [ ] Ensure `PageCompositionNode.ViewportBoundingBoxes` preserves the full dictionary.
-- [ ] Parse per-viewport boxes from Phase 3A/3B evidence when available.
-- [ ] Preserve exact viewport IDs such as `desktop-1440`, `tablet-768`, `mobile-390`.
-- [ ] Do not collapse bounds to `base`.
-- [ ] Do not copy desktop bounds to mobile automatically.
-- [ ] If only one viewport exists, use the actual viewport ID.
+- [x] Ensure `PageSectionInfo` preserves `ViewportBoundingBoxes`.
+- [x] Ensure `PageCompositionNode.ViewportBoundingBoxes` preserves the full dictionary.
+- [x] Parse per-viewport boxes from Phase 3A/3B evidence when available.
+- [x] Preserve exact viewport IDs such as `desktop-1440`, `tablet-768`, `mobile-390`.
+- [x] Do not collapse bounds to `base`.
+- [x] Do not copy desktop bounds to mobile automatically.
+- [x] If only one viewport exists, use the actual viewport ID.
 
 ### D15.2 Crop Lookup
 
@@ -324,48 +324,48 @@ node.ViewportBoundingBoxes.TryGetValue(viewport.ViewportId, out var bounds)
 
 Rules:
 
-- [ ] Missing required viewport bounds is blocking.
-- [ ] Invalid bounds format is blocking.
-- [ ] Zero-size bounds is blocking.
-- [ ] Bounds outside image may clamp if final width/height remains non-zero.
-- [ ] Crops are deterministic.
-- [ ] Error message must include problem, cause, and fix.
+- [x] Missing required viewport bounds is blocking.
+- [x] Invalid bounds format is blocking.
+- [x] Zero-size bounds is blocking.
+- [x] Bounds outside image may clamp if final width/height remains non-zero.
+- [x] Crops are deterministic.
+- [x] Error message must include problem, cause, and fix.
 
 Blocking codes:
 
-- [ ] `missing-section-viewport-bounds`
-- [ ] `invalid-section-viewport-bounds`
-- [ ] `section-crop-out-of-range`
-- [ ] `missing-required-section-crop`
+- [x] `missing-section-viewport-bounds`
+- [x] `invalid-section-viewport-bounds`
+- [x] `section-crop-out-of-range`
+- [x] `missing-required-section-crop`
 
 ### D15.3 Required Viewport Policy
 
 For representative pages:
 
-- [ ] desktop crop required.
-- [ ] tablet crop required.
-- [ ] mobile crop required.
+- [x] desktop crop required.
+- [x] tablet crop required.
+- [x] mobile crop required.
 
 Optional section policy:
 
-- [ ] If section is hidden in a viewport according to reviewed responsive model, missing crop is allowed.
-- [ ] If section renders in a viewport but lacks bounds, readiness fails.
+- [x] If section is hidden in a viewport according to reviewed responsive model, missing crop is allowed.
+- [x] If section renders in a viewport but lacks bounds, readiness fails.
 
 Tests:
 
-- [ ] Desktop crop uses desktop bounds.
-- [ ] Tablet crop uses tablet bounds.
-- [ ] Mobile crop uses mobile bounds.
-- [ ] Desktop and mobile different bounds produce different crop hashes.
-- [ ] Missing mobile bounds blocks.
-- [ ] Hidden-on-mobile optional section does not block.
-- [ ] Zero-size bounds blocks.
-- [ ] Out-of-range bounds clamp when still non-zero.
-- [ ] Crop hash is deterministic.
+- [x] Desktop crop uses desktop bounds.
+- [x] Tablet crop uses tablet bounds.
+- [x] Mobile crop uses mobile bounds.
+- [x] Desktop and mobile different bounds produce different crop hashes.
+- [x] Missing mobile bounds blocks.
+- [x] Hidden-on-mobile optional section does not block.
+- [x] Zero-size bounds blocks.
+- [x] Out-of-range bounds clamp when still non-zero.
+- [x] Crop hash is deterministic.
 
 Done when:
 
-- [ ] Every section crop is tied to the correct viewport ID.
+- [x] Every section crop is tied to the correct viewport ID.
 
 ## D16 - Real Positive End-To-End Proof
 
@@ -710,8 +710,8 @@ Done when:
 7. [x] D14.3 Add required-slot-unmapped and suggestion diagnostics.
 8. [x] D14.4 Fix duplicate and extra-section validation.
 9. [x] D14.5 Add approved visual extension support.
-10. [ ] D15.1 Preserve per-viewport section bounds.
-11. [ ] D15.2 Crop using `viewport.ViewportId` bounds.
+10. [x] D15.1 Preserve per-viewport section bounds.
+11. [x] D15.2 Crop using `viewport.ViewportId` bounds.
 12. [ ] D16 Add positive end-to-end proof.
 13. [ ] D17 Add negative mutation proof suites.
 14. [ ] D18 Replace Phase 3D gate static proof filters.
@@ -723,7 +723,7 @@ Suggested commits:
 
 1. [x] `phase 3d: read reviewed compositions from resolved artifacts`
 2. [x] `phase 3d: enforce authoritative slot observations`
-3. [ ] `phase 3d: crop handoff evidence per viewport`
+3. [x] `phase 3d: crop handoff evidence per viewport`
 4. [ ] `phase 3d: add positive end-to-end proof`
 5. [ ] `phase 3d: add negative mutation proof suites`
 6. [ ] `phase 3d: harden final closure gate`
@@ -755,12 +755,12 @@ Slot enforcement:
 
 Viewport crop:
 
-- [ ] `HandoffEvidence_DesktopCropUsesDesktopBounds`
-- [ ] `HandoffEvidence_TabletCropUsesTabletBounds`
-- [ ] `HandoffEvidence_MobileCropUsesMobileBounds`
-- [ ] `HandoffEvidence_MissingViewportBoundsBlocks`
-- [ ] `HandoffEvidence_InvalidViewportBoundsBlocks`
-- [ ] `HandoffEvidence_CropHashIsDeterministic`
+- [x] `HandoffEvidence_DesktopCropUsesDesktopBounds`
+- [x] `HandoffEvidence_TabletCropUsesTabletBounds`
+- [x] `HandoffEvidence_MobileCropUsesMobileBounds`
+- [x] `HandoffEvidence_MissingViewportBoundsBlocks`
+- [x] `HandoffEvidence_InvalidViewportBoundsBlocks`
+- [x] `HandoffEvidence_CropHashIsDeterministic`
 
 Proof:
 
@@ -802,12 +802,12 @@ Slot enforcement:
 
 Visual evidence:
 
-- [ ] Per-viewport boxes exist.
-- [ ] Crop uses the matching viewport box.
-- [ ] Desktop/tablet/mobile crops differ when layout differs.
-- [ ] Missing required viewport bounds fails.
-- [ ] Missing/corrupt crop fails.
-- [ ] Hashes are deterministic.
+- [x] Per-viewport boxes exist.
+- [x] Crop uses the matching viewport box.
+- [x] Desktop/tablet/mobile crops differ when layout differs.
+- [x] Missing required viewport bounds fails.
+- [x] Missing/corrupt crop fails.
+- [x] Hashes are deterministic.
 
 Proof:
 
@@ -911,7 +911,7 @@ This plan focuses Phase 3D D13-D19 on the remaining closure blockers: reviewed c
 
 - [x] Implement D13 reviewed composition from resolved artifacts.
 - [x] Implement D14 authoritative slot mapping.
-- [ ] Implement D15 per-viewport crop bounds.
+- [x] Implement D15 per-viewport crop bounds.
 - [ ] Implement D16 real positive end-to-end proof.
 - [ ] Implement D17 real negative mutation proofs.
 - [ ] Implement D18 final gate hardening.

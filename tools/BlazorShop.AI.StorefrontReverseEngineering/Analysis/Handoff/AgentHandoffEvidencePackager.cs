@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Globalization;
 using System.Text.Json;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
@@ -40,7 +41,11 @@ public sealed class AgentHandoffEvidencePackager
                     screenshots.Add(screenshot);
                     foreach (var node in MajorSectionsForPage(compositions, page.PageId))
                     {
-                        sections.Add(await CropSectionAsync(projectRoot, page.PageId, viewport, node, cancellationToken));
+                        var section = await CropSectionAsync(projectRoot, page.PageId, viewport, node, cancellationToken);
+                        if (section is not null)
+                        {
+                            sections.Add(section);
+                        }
                     }
                 }
             }
@@ -95,7 +100,7 @@ public sealed class AgentHandoffEvidencePackager
             ["evidence-only", "reference-only", "not-production-safe"]);
     }
 
-    private static async Task<AgentHandoffSectionEvidence> CropSectionAsync(
+    private static async Task<AgentHandoffSectionEvidence?> CropSectionAsync(
         string projectRoot,
         string pageId,
         CaptureViewportManifest viewport,
@@ -109,15 +114,29 @@ public sealed class AgentHandoffEvidencePackager
             throw new InvalidOperationException($"[SRE-HANDOFF-EVIDENCE-002] Section crop source is missing. Problem: '{sourceRelative}' was not found. Cause: capture evidence is incomplete. Fix: rerun capture before handoff packaging.");
         }
 
+        if (!node.ViewportBoundingBoxes.TryGetValue(viewport.ViewportId, out var viewportBounds))
+        {
+            if (IsHiddenInViewport(node, viewport.ViewportId))
+            {
+                return null;
+            }
+
+            throw new InvalidOperationException($"[SRE-HANDOFF-EVIDENCE-003] missing-section-viewport-bounds. Problem: page '{pageId}' section '{node.NodeId}' has no bounds for viewport '{viewport.ViewportId}'. Cause: section evidence was not correlated for this viewport. Fix: regenerate analysis with viewport-specific section bounds.");
+        }
+
+        if (!TryParseBounds(viewportBounds, out var bounds) || bounds.Width <= 0 || bounds.Height <= 0)
+        {
+            throw new InvalidOperationException($"[SRE-HANDOFF-EVIDENCE-004] invalid-section-viewport-bounds. Problem: page '{pageId}' section '{node.NodeId}' viewport '{viewport.ViewportId}' has bounds '{viewportBounds}'. Cause: bounds are missing, malformed, or zero sized. Fix: regenerate section evidence with numeric x/y/width/height for this viewport.");
+        }
+
         using var image = new MagickImage(sourcePath);
-        var bounds = ParseBounds(node.ViewportBoundingBoxes.Values.FirstOrDefault() ?? "");
         var x = Clamp((int)Math.Floor(bounds.X), 0, Math.Max((int)image.Width - 1, 0));
         var y = Clamp((int)Math.Floor(bounds.Y), 0, Math.Max((int)image.Height - 1, 0));
         var width = Clamp((int)Math.Ceiling(bounds.Width), 0, (int)image.Width - x);
         var height = Clamp((int)Math.Ceiling(bounds.Height), 0, (int)image.Height - y);
         if (width <= 0 || height <= 0)
         {
-            throw new InvalidOperationException($"[SRE-HANDOFF-EVIDENCE-003] Section crop bounds are invalid. Problem: page '{pageId}' section '{node.NodeId}' has bounds '{node.ViewportBoundingBoxes.Values.FirstOrDefault()}'. Cause: bounds clamp to an empty image. Fix: regenerate section evidence with non-empty bounds.");
+            throw new InvalidOperationException($"[SRE-HANDOFF-EVIDENCE-005] section-crop-out-of-range. Problem: page '{pageId}' section '{node.NodeId}' viewport '{viewport.ViewportId}' bounds '{viewportBounds}' are outside screenshot '{sourceRelative}'. Cause: bounds clamp to an empty image. Fix: regenerate section evidence for the same screenshot and viewport.");
         }
 
         image.Crop(new MagickGeometry(x, y, (uint)width, (uint)height));
@@ -219,17 +238,36 @@ public sealed class AgentHandoffEvidencePackager
         return null;
     }
 
-    private static (decimal X, decimal Y, decimal Width, decimal Height) ParseBounds(string text)
+    private static bool IsHiddenInViewport(PageCompositionNode node, string viewportId) =>
+        node.ResponsiveTransformationRules.Any(rule =>
+            rule.Contains("hidden", StringComparison.OrdinalIgnoreCase) &&
+            rule.Contains(viewportId, StringComparison.OrdinalIgnoreCase));
+
+    private static bool TryParseBounds(string text, out (decimal X, decimal Y, decimal Width, decimal Height) bounds)
     {
-        var values = text.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(part => part.Split('=', 2))
-            .Where(parts => parts.Length == 2)
-            .ToDictionary(parts => parts[0], parts => decimal.TryParse(parts[1], out var value) ? value : 0m, StringComparer.OrdinalIgnoreCase);
-        return (
-            values.GetValueOrDefault("x"),
-            values.GetValueOrDefault("y"),
-            values.GetValueOrDefault("width"),
-            values.GetValueOrDefault("height"));
+        bounds = default;
+        var values = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        foreach (var part in text.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var pieces = part.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (pieces.Length != 2 || !decimal.TryParse(pieces[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var value))
+            {
+                return false;
+            }
+
+            values[pieces[0]] = value;
+        }
+
+        if (!values.TryGetValue("x", out var x) ||
+            !values.TryGetValue("y", out var y) ||
+            !values.TryGetValue("width", out var width) ||
+            !values.TryGetValue("height", out var height))
+        {
+            return false;
+        }
+
+        bounds = (x, y, width, height);
+        return true;
     }
 
     private static int Clamp(int value, int min, int max) => Math.Min(Math.Max(value, min), max);

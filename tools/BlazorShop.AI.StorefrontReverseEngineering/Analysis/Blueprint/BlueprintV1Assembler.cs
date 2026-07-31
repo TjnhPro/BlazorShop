@@ -446,6 +446,7 @@ public sealed class BlueprintV1Assembler
                 inputs.EcommerceRegionsBySection.GetValueOrDefault(page.PageId) ?? new Dictionary<string, string>(StringComparer.Ordinal),
                 sharedTokens,
                 page.ArtifactPaths,
+                page.ViewportIds,
                 targetContract?.GeneratedPath);
             var repeatedGroups = BuildRepeatedGroups(sectionNodes);
             var pageResponsiveRules = ReadPageResponsiveRules(root, page.PageId);
@@ -589,7 +590,7 @@ public sealed class BlueprintV1Assembler
                 StringValue(section, "parentSectionId"),
                 StringArray(section, "childSectionIds"),
                 StringValue(section, "crossViewportIdentityKey") ?? $"section-{index + 1}",
-                ReadBounds(section),
+                ReadViewportBounds(section),
                 StringArray(section, "reasonCodes")))
             .ToArray();
     }
@@ -753,6 +754,7 @@ public sealed class BlueprintV1Assembler
         IReadOnlyDictionary<string, string> ecommerceRoles,
         IReadOnlyDictionary<string, string> sharedTokens,
         IReadOnlyList<string> captureArtifacts,
+        IReadOnlyList<string> viewportIds,
         string? pageTargetPath)
     {
         var groupIds = sections
@@ -785,7 +787,7 @@ public sealed class BlueprintV1Assembler
                 ecommerceRoles.GetValueOrDefault(section.Id),
                 section.ParentId,
                 section.ChildIds,
-                new Dictionary<string, string>(StringComparer.Ordinal) { ["base"] = section.Bounds },
+                SectionBoundsForViewports(section, viewportIds),
                 sharedTokens.Keys.Order(StringComparer.Ordinal).Take(8).ToArray(),
                 mapping?.Id,
                 targetFile,
@@ -836,6 +838,47 @@ public sealed class BlueprintV1Assembler
         }
     }
 
+    private static IReadOnlyDictionary<string, string> ReadViewportBounds(JsonObject section)
+    {
+        var viewportBounds = section["viewportBoundingBoxes"] as JsonObject;
+        if (viewportBounds is not null)
+        {
+            var values = viewportBounds
+                .Where(pair => pair.Value is JsonObject)
+                .ToDictionary(pair => pair.Key, pair => FormatBounds(pair.Value!.AsObject()), StringComparer.Ordinal);
+            if (values.Count > 0)
+            {
+                return values;
+            }
+        }
+
+        return new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["base"] = ReadBounds(section)
+        };
+    }
+
+    private static IReadOnlyDictionary<string, string> SectionBoundsForViewports(PageSectionInfo section, IReadOnlyList<string> viewportIds)
+    {
+        var exact = section.ViewportBounds
+            .Where(pair => !string.Equals(pair.Key, "base", StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        if (exact.Count > 0)
+        {
+            return exact;
+        }
+
+        if (viewportIds.Count == 1 && section.ViewportBounds.TryGetValue("base", out var singleViewportBounds))
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [viewportIds[0]] = singleViewportBounds
+            };
+        }
+
+        return new Dictionary<string, string>(section.ViewportBounds, StringComparer.Ordinal);
+    }
+
     private static string ReadBounds(JsonObject section)
     {
         var bounds = section["bounds"] as JsonObject;
@@ -844,6 +887,11 @@ public sealed class BlueprintV1Assembler
             return "x=0;y=0;width=0;height=0";
         }
 
+        return FormatBounds(bounds);
+    }
+
+    private static string FormatBounds(JsonObject bounds)
+    {
         return $"x={StringValue(bounds, "x") ?? "0"};y={StringValue(bounds, "y") ?? "0"};width={StringValue(bounds, "width") ?? "0"};height={StringValue(bounds, "height") ?? "0"}";
     }
 
@@ -997,7 +1045,7 @@ public sealed class BlueprintV1Assembler
         string? ParentId,
         IReadOnlyList<string> ChildIds,
         string IdentityKey,
-        string Bounds,
+        IReadOnlyDictionary<string, string> ViewportBounds,
         IReadOnlyList<string> ReasonCodes);
 
     private sealed record PageContractInfo(
@@ -1193,7 +1241,7 @@ public sealed class BlueprintV1Assembler
                             StringValue(section, "parentSectionId"),
                             StringArray(section, "childSectionIds"),
                             StringValue(section, "crossViewportIdentityKey") ?? $"section-{index + 1}",
-                            ReadBounds(section),
+                            ReadViewportBounds(section),
                             StringArray(section, "reasonCodes")))
                         .ToArray() ?? [];
                     return (pageId, sections);
