@@ -107,41 +107,41 @@ Goal: define one canonical handoff package contract before adding new artifacts 
 
 Implementation checklist:
 
-- [ ] Add contract models under `Analysis/Handoff`:
-  - [ ] `PortableHandoffPackageContract`
-  - [ ] `PortableHandoffArtifactKind`
-  - [ ] `PortableHandoffArtifactEntry`
-  - [ ] `PortableHandoffSchemaRequirement`
-  - [ ] `PortableHandoffReferencePolicy`
-  - [ ] `PortableHandoffPackageHash`
-- [ ] Extend `AgentHandoffContract.RequiredArtifacts` to include every Phase 4 consumer artifact planned in Phase 3E.
-- [ ] Add `RequiredSchemaKinds` beside `RequiredArtifacts`.
-- [ ] Record schema kind, schema version, and schema SHA-256 in the manifest.
-- [ ] Define canonical relative-path style: `/` separators, no drive letters, no UNC paths, no leading slash, no `..`, no symlink escape.
-- [ ] Define canonical `packageHash` over sorted file-level entries:
-  - [ ] relative path.
-  - [ ] artifact kind.
-  - [ ] schema kind and version.
-  - [ ] file SHA-256.
-  - [ ] file size.
-- [ ] Exclude from package hash:
-  - [ ] manifest self-hash fields.
-  - [ ] absolute source project paths.
-  - [ ] timestamps.
-  - [ ] directory entries represented only by file counts.
-  - [ ] diagnostic-only provenance values.
+- [x] Add contract models under `Analysis/Handoff`:
+  - [x] `PortableHandoffPackageContract`
+  - [x] `PortableHandoffArtifactKind`
+  - [x] `PortableHandoffArtifactEntry`
+  - [x] `PortableHandoffSchemaRequirement`
+  - [x] `PortableHandoffReferencePolicy`
+  - [x] `PortableHandoffPackageHash`
+- [x] Extend `AgentHandoffContract.RequiredArtifacts` to include every Phase 4 consumer artifact planned in Phase 3E.
+- [x] Add `RequiredSchemaKinds` beside `RequiredArtifacts`.
+- [x] Record schema kind, schema version, and schema SHA-256 in the manifest.
+- [x] Define canonical relative-path style: `/` separators, no drive letters, no UNC paths, no leading slash, no `..`, no symlink escape.
+- [x] Define canonical `packageHash` over sorted file-level entries:
+  - [x] relative path.
+  - [x] artifact kind.
+  - [x] schema kind and version.
+  - [x] file SHA-256.
+  - [x] file size.
+- [x] Exclude from package hash:
+  - [x] manifest self-hash fields.
+  - [x] absolute source project paths.
+  - [x] timestamps.
+  - [x] directory entries represented only by file counts.
+  - [x] diagnostic-only provenance values.
 
 Tests:
 
-- [ ] Package hash is stable after copying package to a different temp folder.
-- [ ] Package hash changes when a consumer file changes.
-- [ ] Artifact ordering does not change package hash.
-- [ ] Directory file count changes without file-level entries cannot satisfy the hash rule.
-- [ ] Missing required schema record fails manifest validation.
+- [x] Package hash is stable after copying package to a different temp folder.
+- [x] Package hash changes when a consumer file changes.
+- [x] Artifact ordering does not change package hash.
+- [x] Directory file count changes without file-level entries cannot satisfy the hash rule.
+- [x] Missing required schema record fails manifest validation.
 
 Done when:
 
-- [ ] There is one canonical artifact/schema/hash contract used by assembler, manifest writer, validators, tests, docs, and final gate.
+- [x] There is one canonical artifact/schema/hash contract used by assembler, manifest writer, validators, tests, docs, and final gate.
 
 ## Phase 3E.2 - Handoff-Specific Consumer Artifacts
 
@@ -614,7 +614,7 @@ Done when:
 ## Recommended Implementation Order
 
 1. [x] Phase 3E.0 baseline and contract lock.
-2. [ ] Phase 3E.1 canonical package contract, schema list, reference registry, and hash rules.
+2. [x] Phase 3E.1 canonical package contract, schema list, reference registry, and hash rules.
 3. [ ] Phase 3E.2 handoff-specific consumer artifacts.
 4. [ ] Phase 3E.3 typed reference containment validator.
 5. [ ] Phase 3E.4 portable manifest and schema hardening.
