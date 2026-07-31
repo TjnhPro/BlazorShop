@@ -1,6 +1,6 @@
 # StorefrontReverseEngineering Phase 3D - D13-D19 Correctness Proof
 
-Status: Proposed  
+Status: In progress  
 Owner area: `tools/BlazorShop.AI.StorefrontReverseEngineering`  
 Target folder: `docs/visual-reverse-engineering-skill`  
 Depends on: Phase 3D D0-D12 implementation being present  
@@ -606,9 +606,7 @@ Implementation checklist:
 
 - [x] Keep clean-tree check strict.
 - [x] Do not add bypass or skip flag.
-- [x] Resolve the pre-existing `.gitignore` dirty-tree issue outside the gate:
-  - [x] commit it if it is intentional, or
-  - [ ] revert it if it is unrelated and user-approved.
+- [x] Resolve the pre-existing `.gitignore` dirty-tree issue outside the gate by committing the intentional `Skills/` ignore entry.
 - [x] Do not hide dirty tree by changing gate exclusions.
 - [x] Gate report should print exact dirty entries on failure.
 
@@ -660,19 +658,19 @@ Goal: documentation must match actual closure state and handoff semantics.
 
 Files to update when implementation lands:
 
-- [ ] `docs/visual-reverse-engineering-skill/13-StorefrontReverseEngineering-Phase3D-Final-Closure-Fix.todo.md`
-- [ ] `docs/visual-reverse-engineering-skill/14-StorefrontReverseEngineering-Phase3D-D13-D19-Correctness-Proof.todo.md`
-- [ ] `docs/qa/phase3d-final-closure.md`
-- [ ] `docs/visual-reverse-engineering-skill/README.md`
-- [ ] `docs/visual-reverse-engineering-skill/reference.md`
-- [ ] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
-- [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] `docs/agents/storefront-builder.md`
+- [x] `docs/visual-reverse-engineering-skill/13-StorefrontReverseEngineering-Phase3D-Final-Closure-Fix.todo.md`
+- [x] `docs/visual-reverse-engineering-skill/14-StorefrontReverseEngineering-Phase3D-D13-D19-Correctness-Proof.todo.md`
+- [x] `docs/qa/phase3d-final-closure.md`
+- [x] `docs/visual-reverse-engineering-skill/README.md`
+- [x] `docs/visual-reverse-engineering-skill/reference.md`
+- [x] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
+- [x] `docs/architecture/11-storefront-builder.md`
+- [x] `docs/agents/storefront-builder.md`
 
 Before final gate pass:
 
-- [ ] Phase 3D: In progress.
-- [ ] Phase 3 overall: In progress.
+- [x] Phase 3D: In progress.
+- [x] Phase 3 overall: In progress.
 
 After final gate pass:
 
@@ -695,9 +693,9 @@ consumption or storefront source generation.
 
 Done when:
 
-- [ ] Docs do not claim Phase 3 complete before the no-skip clean-head gate passes.
-- [ ] Docs do not suggest Phase 4 can consume draft artifacts.
-- [ ] Docs keep `analysis/agent-handoff/` as the only approved Phase 4 input.
+- [x] Docs do not claim Phase 3 complete before the no-skip clean-head gate passes.
+- [x] Docs do not suggest Phase 4 can consume draft artifacts.
+- [x] Docs keep `analysis/agent-handoff/` as the only approved Phase 4 input.
 
 ## Recommended Implementation Order
 
@@ -715,8 +713,8 @@ Done when:
 12. [x] D16 Add positive end-to-end proof.
 13. [x] D17 Add negative mutation proof suites.
 14. [x] D18 Replace Phase 3D gate static proof filters.
-15. [ ] D19 Update docs/status.
-16. [ ] Resolve dirty tree blocker.
+15. [x] D19 Update docs/status.
+16. [x] Resolve dirty tree blocker.
 17. [ ] Run final no-skip clean-head gate.
 
 Suggested commits:
@@ -727,7 +725,7 @@ Suggested commits:
 4. [x] `phase 3d: add positive end-to-end proof`
 5. [x] `phase 3d: add negative mutation proof suites`
 6. [x] `phase 3d: harden final closure gate`
-7. [ ] `phase 3d: align closure docs`
+7. [x] `phase 3d: align closure docs`
 8. [ ] `phase 3d: record final clean-head proof`
 
 ## Test Matrix
@@ -834,13 +832,13 @@ Gate:
 
 Boundary:
 
-- [ ] ReverseEngineering remains development-time only.
-- [ ] No Razor/CSS/JS storefront generation.
-- [ ] No StorefrontBuilder handoff consumption.
-- [ ] No writes into Starter.
-- [ ] No direct Commerce Node browser calls.
-- [ ] No generated routes.
-- [ ] No protected behavior reimplementation.
+- [x] ReverseEngineering remains development-time only.
+- [x] No Razor/CSS/JS storefront generation.
+- [x] No StorefrontBuilder handoff consumption.
+- [x] No writes into Starter.
+- [x] No direct Commerce Node browser calls.
+- [x] No generated routes.
+- [x] No protected behavior reimplementation.
 
 Closure:
 
@@ -915,4 +913,4 @@ This plan focuses Phase 3D D13-D19 on the remaining closure blockers: reviewed c
 - [x] Implement D16 real positive end-to-end proof.
 - [x] Implement D17 real negative mutation proofs.
 - [x] Implement D18 final gate hardening.
-- [ ] Implement D19 documentation/status alignment.
+- [x] Implement D19 documentation/status alignment.

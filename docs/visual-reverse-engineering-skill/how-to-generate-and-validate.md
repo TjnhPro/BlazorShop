@@ -98,6 +98,8 @@ Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder
 
 ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Phase 3D is the final correctness and no-skip closure proof for that package. Generated storefront commands do not consume those artifacts yet. Treat Phase 3C/3D output as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
 
+For future Phase 4 planning, the approved input root is only `analysis/agent-handoff/*` plus the registered schemas. A Phase 4 consumer must not read draft artifacts such as `analysis/pages/*`, raw `captures/*`, `analysis/visual-blueprint.draft.json`, `analysis/visual-blueprint.v1.draft.json`, or any unresolved reviewed-source file as generation input.
+
 To run the Phase 3A fixture evidence workflow:
 
 ```powershell

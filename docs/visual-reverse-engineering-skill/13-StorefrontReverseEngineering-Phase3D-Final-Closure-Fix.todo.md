@@ -934,45 +934,45 @@ Done when:
 
 Review correctness:
 
-- [ ] Modified decisions are applied to reviewed artifact values.
-- [ ] Approved decisions preserve proposals.
-- [ ] Rejected and Deferred critical items block readiness.
-- [ ] Stale and duplicate decisions fail.
-- [ ] Resolution manifest records source and decision hashes.
+- [x] Modified decisions are applied to reviewed artifact values.
+- [x] Approved decisions preserve proposals.
+- [x] Rejected and Deferred critical items block readiness.
+- [x] Stale and duplicate decisions fail.
+- [x] Resolution manifest records source and decision hashes.
 
 Reviewed blueprint:
 
-- [ ] Draft always exists.
-- [ ] Reviewed exists only after blocking review completion.
-- [ ] Reviewed references only resolved artifacts.
-- [ ] Reviewed has no authoritative `.draft.json` references.
-- [ ] Review bundle hash is current.
+- [x] Draft always exists.
+- [x] Reviewed exists only after blocking review completion.
+- [x] Reviewed references only resolved artifacts.
+- [x] Reviewed has no authoritative `.draft.json` references.
+- [x] Review bundle hash is current.
 
 Page contracts:
 
-- [ ] Exact required slot IDs exist per page.
-- [ ] Missing required slot fails.
-- [ ] Duplicate non-repeatable slot fails.
-- [ ] Extra unapproved section fails.
-- [ ] Optional missing slot passes.
-- [ ] Behavior ownership conflicts fail.
+- [x] Exact required slot IDs exist per page.
+- [x] Missing required slot fails.
+- [x] Duplicate non-repeatable slot fails.
+- [x] Extra unapproved section fails.
+- [x] Optional missing slot passes.
+- [x] Behavior ownership conflicts fail.
 
 Visual evidence:
 
-- [ ] Handoff contains page screenshots.
-- [ ] Handoff contains major section crops.
-- [ ] Evidence manifest validates.
-- [ ] Hashes match copied bytes.
-- [ ] Required evidence missing fails.
+- [x] Handoff contains page screenshots.
+- [x] Handoff contains major section crops.
+- [x] Evidence manifest validates.
+- [x] Hashes match copied bytes.
+- [x] Required evidence missing fails.
 
 Handoff contract:
 
-- [ ] One canonical required-artifact list exists.
-- [ ] Manifest contains all artifact entries and hashes.
-- [ ] All references remain under handoff root.
-- [ ] Allowed/protected paths do not overlap.
-- [ ] Task instructions are complete.
-- [ ] Handoff readiness validates every required artifact.
+- [x] One canonical required-artifact list exists.
+- [x] Manifest contains all artifact entries and hashes.
+- [x] All references remain under handoff root.
+- [x] Allowed/protected paths do not overlap.
+- [x] Task instructions are complete.
+- [x] Handoff readiness validates every required artifact.
 
 Workflow:
 
@@ -1069,4 +1069,4 @@ This plan converts the Phase 3D review into a concrete closure checklist. It fix
 - [x] Implement D9 schema and semantic validation.
 - [x] Implement D10 positive and negative proof fixtures.
 - [x] Implement D11 no-skip final closure gate.
-- [ ] Implement D12 docs/status closure.
+- [x] Implement D12 docs/status closure.

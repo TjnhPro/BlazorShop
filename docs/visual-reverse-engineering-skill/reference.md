@@ -15,7 +15,7 @@
 | `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1` | Phase 3A hardening gate for the ReverseEngineering executable, local fixture browser tests, readiness validation, boundary scan, and StorefrontBuilder compatibility smoke. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3b-gate.ps1` | Phase 3B gate for visual analysis, ecommerce mapping, confidence review, Visual Blueprint v1, local multi-page fixture workflows, boundary scans, and StorefrontBuilder plan-only smoke. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1` | Phase 3C final handoff gate for site-level fixtures, mutation blockers, schema validation, final handoff readiness, and StorefrontBuilder non-consumption boundary scans. |
-| `scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1` | Phase 3D no-skip final closure gate for clean-tree proof, Phase 3A/3B/3C gates, full and focused ReverseEngineering tests, positive/negative fixtures, boundary scans, StorefrontBuilder plan-only smoke, and final HEAD verification. |
+| `scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1` | Phase 3D no-skip final closure gate for clean-tree proof, Phase 3A/3B/3C gates, full and focused ReverseEngineering tests, real positive end-to-end proof, real negative mutation proofs, boundary scans, StorefrontBuilder plan-only smoke, and final HEAD verification. |
 | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
@@ -23,13 +23,13 @@
 
 ## ReverseEngineering Handoff
 
-`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review. Phase 3C adds strict Storefront pattern contracts, reviewed page compositions, constrained agent handoff files under `analysis/agent-handoff/`, and final handoff readiness under `analysis/agent-handoff/handoff-readiness.json`.
+`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review. Phase 3C adds strict Storefront pattern contracts, reviewed page compositions, constrained agent handoff files under `analysis/agent-handoff/`, and final handoff readiness under `analysis/agent-handoff/handoff-readiness.json`. Phase 3D hardens that handoff so reviewed page compositions read resolved artifacts, ecommerce slots come from reviewed mappings or exact contracts, crops use per-viewport bounds, and closure proof uses real positive/negative behavior tests.
 
 StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. StorefrontBuilder does not consume `analysis/visual-blueprint.v1.*.json` or `analysis/agent-handoff/*` until a later approved phase changes the handoff boundary. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
 
 Phase 3B is not a visual generator. It performs design-token extraction, ecommerce region mapping, confidence review, and blueprint assembly, but it does not produce component source, Razor, CSS, generated projects, or blueprint-driven StorefrontBuilder output. Reference assets, logos, copy, and brand-specific visual material are reference-only by default unless later human review and approved workflow clear reuse.
 
-Phase 3B starts from Phase 3A runtime evidence and should add design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and approved StorefrontBuilder consumption of the blueprint.
+Phase 3B starts from Phase 3A runtime evidence and adds design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and reviewed blueprint assembly for later handoff planning. StorefrontBuilder consumption remains disabled until a later approved implementation phase.
 
 Final Phase 3A capture flow:
 
@@ -96,7 +96,7 @@ Common Phase 3B failures are reported as problem/cause/fix lines:
 | Invalid token schema | Rerun `--force-step extract-raw-tokens` or `--force-step normalize-semantic-tokens`. |
 | Presentation catalog drift | Update catalog extraction against current Presentation/Starter contracts and rerun `--force-step build-presentation-catalog`. |
 | Unresolved blocking review item | Write `review/review-decisions.json`, then rerun confidence review and blueprint assembly. |
-| Unsupported critical pattern | Resolve the unsupported mapping before generation consumes the blueprint. |
+| Unsupported critical pattern | Resolve the unsupported mapping before the reviewed handoff can be approved as future generation input. |
 | Failed final handoff readiness | Inspect `analysis/agent-handoff/handoff-readiness.json`, resolve blocking codes, and rerun `validate-agent-handoff-readiness`. |
 
 ## Phase 3C Artifact Interpretation

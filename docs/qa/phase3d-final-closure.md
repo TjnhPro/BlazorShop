@@ -259,3 +259,13 @@ Status: in progress
 - Result: passed `1/1`.
 - Dirty-tree check command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1 -CommandTimeoutSeconds 1`
 - Result: failed at `clean tree check` as designed and printed dirty entries, including `.gitignore`, D18 docs, and D18 gate/test files.
+
+## Phase 3D.D19 Evidence
+
+- Closure docs now keep Phase 3D and Phase 3 overall `in progress` until the final no-skip clean-head gate passes.
+- Phase 4 input wording is aligned across the Phase 3D plans, QA closure file, Visual Reverse Engineering README/reference/how-to, StorefrontBuilder architecture, and StorefrontBuilder agent guide.
+- The only approved future Phase 4 input root is `analysis/agent-handoff/*` plus registered schemas; draft artifacts, raw captures, unresolved reviewed-source files, and `analysis/pages/*` are not approved generation inputs.
+- StorefrontBuilder generation remains disabled for ReverseEngineering handoff consumption until a later approved implementation phase.
+- Historical Phase 3D definition-of-done checkboxes were aligned with implemented D1-D18 evidence while final closure checkboxes remain pending until the final clean-head gate passes.
+- Full Phase 3D gate command remains: `powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`
+- Current final gate clean-tree proof: pending for the D19 documentation commit.
