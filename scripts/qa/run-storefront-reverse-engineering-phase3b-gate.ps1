@@ -22,6 +22,7 @@ $stepResults = New-Object System.Collections.Generic.List[object]
 $testSummaries = New-Object System.Collections.Generic.List[string]
 $artifactProjectRoots = New-Object System.Collections.Generic.List[string]
 $failedStep = $null
+$lastProcessExitCode = 0
 
 function Format-CommandArgument {
     param([Parameter(Mandatory = $true)][string]$Value)
@@ -38,7 +39,8 @@ function Invoke-LoggedProcess {
         [Parameter(Mandatory = $true)][string]$FileName,
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [string]$SummaryName = "",
-        [int]$TimeoutSeconds = $CommandTimeoutSeconds
+        [int]$TimeoutSeconds = $CommandTimeoutSeconds,
+        [int[]]$AllowedExitCodes = @(0)
     )
 
     $commandLine = (Format-CommandArgument $FileName) + " " + (($Arguments | ForEach-Object { Format-CommandArgument $_ }) -join " ")
@@ -87,8 +89,41 @@ function Invoke-LoggedProcess {
         }
     }
 
-    if ($process.ExitCode -ne 0) {
+    $script:lastProcessExitCode = $process.ExitCode
+    if ($AllowedExitCodes -notcontains $script:lastProcessExitCode) {
         throw "Command failed with exit code $($process.ExitCode): $commandLine"
+    }
+}
+
+function Assert-ExpectedStrictReviewBlocker {
+    param(
+        [Parameter(Mandatory = $true)][string]$ProjectRoot,
+        [Parameter(Mandatory = $true)][string]$RunId
+    )
+
+    $readinessPath = Join-Path $ProjectRoot "reports\readiness-report.json"
+    if (-not (Test-Path $readinessPath)) {
+        throw "Readiness report was not found after Phase 3B fixture workflow: $readinessPath"
+    }
+
+    $readiness = Get-Content -Raw $readinessPath | ConvertFrom-Json
+    if (-not $readiness.passed) {
+        throw "Phase 3B fixture readiness did not pass before strict review blocker: $readinessPath"
+    }
+
+    $runPath = Join-Path $ProjectRoot "runs\$RunId.json"
+    if (-not (Test-Path $runPath)) {
+        throw "Workflow run file was not found after strict review blocker: $runPath"
+    }
+
+    $run = Get-Content -Raw $runPath | ConvertFrom-Json
+    if ($run.status -ne "Failed") {
+        throw "Expected workflow status Failed when fixture exits 3 after Phase 3B analysis; actual status: $($run.status)"
+    }
+
+    $codes = @($run.steps | ForEach-Object { $_.errors } | ForEach-Object { $_.code })
+    if ($codes -notcontains "missing-review-decisions" -or $codes -notcontains "reviewed-blueprint-not-resolved") {
+        throw "Fixture exited 3 without the expected strict review blockers. Codes: $($codes -join ', ')"
     }
 }
 
@@ -337,11 +372,12 @@ try {
             -SummaryName "all ReverseEngineering tests"
     }
 
-    Invoke-GateStep "run local multi-page fixture workflow" {
+    Invoke-GateStep "run local multi-page fixture analysis workflow" {
         foreach ($fixture in $fixtureRoutes) {
             $fixturePath = Join-Path $fixtureRoot $fixture["File"]
             $fixtureUrl = [Uri]::new((Resolve-Path $fixturePath).Path).AbsoluteUri
             $artifactRoot = Join-Path $projectOutputRoot $fixture["ProjectId"]
+            $runId = "phase3b-gate-" + $fixture["Label"]
             $artifactProjectRoots.Add($artifactRoot)
 
             Invoke-LoggedProcess `
@@ -361,8 +397,14 @@ try {
                     "--no-ai",
                     "--force",
                     "--run-id",
-                    ("phase3b-gate-" + $fixture["Label"])
-                )
+                    $runId
+                ) `
+                -AllowedExitCodes @(0, 3)
+
+            if ($script:lastProcessExitCode -eq 3) {
+                Assert-ExpectedStrictReviewBlocker -ProjectRoot $artifactRoot -RunId $runId
+                $testSummaries.Add("Phase 3B fixture $($fixture["Label"]): analysis/readiness passed; final reviewed handoff stopped on expected strict review-decision blockers.")
+            }
 
             Invoke-LoggedProcess `
                 -FileName "dotnet" `
@@ -393,9 +435,14 @@ try {
             -ExtraArgs @("--glob", "!bin/**", "--glob", "!obj/**")
 
         Assert-RgNoMatchesHandled `
-            -Pattern "BlazorShop\.Storefront\.V2|BlazorShop\.ControlPlane|BlazorShop\.CommerceNode|BlazorShop\.Domain|BlazorShop\.Infrastructure|BlazorShop\.Web\.SharedV2" `
+            -Pattern '(<(ProjectReference|PackageReference)[^>]+BlazorShop\.(Storefront\.V2|ControlPlane|CommerceNode|Domain|Infrastructure|Web\.SharedV2))' `
             -Paths $reverseEngineeringProductionPaths `
-            -ExtraArgs @("--glob", "*.cs", "--glob", "*.csproj", "--glob", "!bin/**", "--glob", "!obj/**")
+            -ExtraArgs @("--glob", "*.csproj", "--glob", "!bin/**", "--glob", "!obj/**")
+
+        Assert-RgNoMatchesHandled `
+            -Pattern '^\s*using\s+BlazorShop\.(Storefront\.V2|ControlPlane|CommerceNode|Domain|Infrastructure|Web\.SharedV2)\b' `
+            -Paths $reverseEngineeringProductionPaths `
+            -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
 
         Assert-RgNoMatchesHandled `
             -Pattern "storefront-builder/generated|BlazorShop\.Storefront\.Generated" `
@@ -407,9 +454,10 @@ try {
             -Paths @("tools\BlazorShop.AI.StorefrontBuilder") `
             -ExtraArgs @("--glob", "!bin/**", "--glob", "!obj/**")
 
-        # no Razor/CSS generation code is introduced in Phase 3B.
+        # no Razor/CSS generation code is introduced in Phase 3B. Boundary marker
+        # strings such as @page are allowed in handoff instructions and validators.
         Assert-RgNoMatchesHandled `
-            -Pattern 'WriteAllText(Async)?\([^\r\n]*(\.razor|\.css)|@page' `
+            -Pattern 'WriteAllText(Async)?\([^\r\n]*(\.razor|\.css)' `
             -Paths $reverseEngineeringProductionPaths `
             -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
     }

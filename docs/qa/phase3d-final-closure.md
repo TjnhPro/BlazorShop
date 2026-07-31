@@ -279,3 +279,14 @@ Status: in progress
 - Result: passed `2/2`.
 - Phase 3A gate rerun command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3a-gate.ps1`
 - Result: passed. Report: `obj/storefront-reverse-engineering/reports/phase3a-final-fix-gate-20260731104406.md`.
+
+## Phase 3D.D19 Phase 3B Gate Compatibility Fix Evidence
+
+- Second final Phase 3D gate attempt on `3a8020af3f53cd57c5c5a2b0a8b658f7a9830e69` passed Phase 3A and then failed inside the Phase 3B gate for the same strict review semantics.
+- The Phase 3B gate now proves analysis/readiness for each local multi-page fixture and accepts exit code `3` only when fixture readiness passed and the run stopped on expected strict review blockers.
+- Phase 3B boundary scans were narrowed to real compile/reference coupling (`ProjectReference`, `PackageReference`, and `using BlazorShop...`) so protected-path marker strings in handoff validators do not create false positives.
+- The no Razor/CSS generation scan now checks source-writing behavior instead of rejecting `@page` marker text used in forbidden-behavior instructions.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3BGate_AcceptsStrictReviewBlockerAfterAnalysisReadiness" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `1/1`.
+- Phase 3B gate rerun command: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3b-gate.ps1`
+- Result: passed. Report: `obj/storefront-reverse-engineering/reports/phase3b-gate-20260731110915.md`.

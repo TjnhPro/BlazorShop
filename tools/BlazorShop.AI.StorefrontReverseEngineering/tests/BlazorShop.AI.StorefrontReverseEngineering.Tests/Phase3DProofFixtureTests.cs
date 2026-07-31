@@ -135,6 +135,24 @@ public sealed class Phase3DProofFixtureTests
         Assert.Contains("reviewed-blueprint-not-resolved", script, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Phase3BGate_AcceptsStrictReviewBlockerAfterAnalysisReadiness()
+    {
+        var script = File.ReadAllText(Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-reverse-engineering-phase3b-gate.ps1"));
+
+        Assert.Contains("run local multi-page fixture analysis workflow", script, StringComparison.Ordinal);
+        Assert.Contains("-AllowedExitCodes @(0, 3)", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-ExpectedStrictReviewBlocker", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3B fixture readiness did not pass", script, StringComparison.Ordinal);
+        Assert.Contains("missing-review-decisions", script, StringComparison.Ordinal);
+        Assert.Contains("reviewed-blueprint-not-resolved", script, StringComparison.Ordinal);
+        Assert.Contains("<(ProjectReference|PackageReference)", script, StringComparison.Ordinal);
+        Assert.Contains(@"^\s*using\s+BlazorShop\.", script, StringComparison.Ordinal);
+        Assert.Contains(@"WriteAllText(Async)?\([^\r\n]*(\.razor|\.css)", script, StringComparison.Ordinal);
+        Assert.DoesNotContain(@"BlazorShop\.Storefront\.V2|BlazorShop\.ControlPlane|BlazorShop\.CommerceNode|BlazorShop\.Domain|BlazorShop\.Infrastructure|BlazorShop\.Web\.SharedV2", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("|@page", script, StringComparison.Ordinal);
+    }
+
     private static JsonObject ReadFixture(string fileName)
     {
         var path = Path.Combine(GetRepoRoot(), "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "Phase3D", fileName);

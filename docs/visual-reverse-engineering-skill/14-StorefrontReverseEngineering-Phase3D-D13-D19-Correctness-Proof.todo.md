@@ -727,7 +727,8 @@ Suggested commits:
 6. [x] `phase 3d: harden final closure gate`
 7. [x] `phase 3d: align closure docs`
 8. [x] `phase 3d: align phase3a gate with strict review semantics`
-9. [ ] `phase 3d: record final clean-head proof`
+9. [x] `phase 3d: align phase3b gate with strict review semantics`
+10. [ ] `phase 3d: record final clean-head proof`
 
 ## Test Matrix
 
