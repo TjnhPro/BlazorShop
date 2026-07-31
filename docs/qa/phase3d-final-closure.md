@@ -195,3 +195,16 @@ Status: in progress
 - Result: passed `55/55`.
 - Review resolver regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "ConfidenceReview" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `13/13`.
+
+## Phase 3D.D14 Evidence
+
+- `PageCompositionSlotValidator` now tracks slot presence with source-aware observations instead of integer slot counts.
+- Authoritative slot presence comes from exact page targets, reviewed Presentation mappings, exact catalog target paths, or approved visual extension slots.
+- Role text is diagnostic only through `SuggestSlotFromRole`; role-only purchase/gallery sections emit `required-slot-unmapped` and `section-slot-suggestion-unreviewed`.
+- Duplicate non-repeatable slots are counted by distinct node/mapping sources, while repeatable `catalog.product-card` sections remain allowed by contract.
+- Unmapped section nodes now block with `unapproved-extra-section` unless they have explicit reviewed visual extension metadata and an allowed target zone.
+- Reviewed mapping validation now blocks missing mappings, missing target paths, invalid catalog components, invalid starter slot IDs, target-path mismatches, protected paths, and protected behavior ownership.
+- Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "SlotValidation" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `9/9`.
+- Regression command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "BlueprintV1" --logger "console;verbosity=minimal" --blame-hang --blame-hang-timeout 5m`
+- Result: passed `34/34`.

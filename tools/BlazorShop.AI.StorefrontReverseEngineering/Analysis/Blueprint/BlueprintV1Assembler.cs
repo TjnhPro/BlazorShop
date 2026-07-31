@@ -794,6 +794,8 @@ public sealed class BlueprintV1Assembler
                 ProtectedMarkersFor(section.Role, mapping?.Id),
                 captureArtifacts.Where(path => path.Contains("screenshot", StringComparison.OrdinalIgnoreCase) || path.Contains("manifest.json", StringComparison.OrdinalIgnoreCase)).Take(6).ToArray(),
                 [],
+                null,
+                null,
                 groupIds.GetValueOrDefault(section.Role),
                 StateExpectationsFor(section.Role),
                 section.ReasonCodes.Where(code => code.Contains("responsive", StringComparison.OrdinalIgnoreCase)).ToArray(),

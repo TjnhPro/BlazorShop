@@ -85,6 +85,8 @@ public sealed record PageCompositionNode(
     IReadOnlyList<string> ProtectedBehaviorMarkers,
     IReadOnlyList<string> ScreenshotReferences,
     IReadOnlyList<string> CropReferences,
+    string? ApprovedVisualExtensionId,
+    string? ApprovedVisualExtensionReason,
     string? RepeatedGroupId,
     IReadOnlyList<string> StateExpectations,
     IReadOnlyList<string> ResponsiveTransformationRules,

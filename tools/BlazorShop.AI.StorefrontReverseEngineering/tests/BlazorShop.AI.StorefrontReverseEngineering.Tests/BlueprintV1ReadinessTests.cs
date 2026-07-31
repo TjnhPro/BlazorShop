@@ -404,6 +404,136 @@ public sealed class BlueprintV1ReadinessTests
         Assert.Contains(findings, finding => finding.Code == "slot-behavior-ownership-conflict");
     }
 
+    [Fact]
+    public async Task SlotValidation_RoleSuggestionWithoutMappingDoesNotSatisfyRequiredSlot()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Role Suggestion");
+        await AddPageContractSlotAsync(projectRoot, "home", "requiredSlotIds", "product.purchase");
+        await AddPageContractSlotAsync(projectRoot, "home", "requiredSlotIds", "product.gallery");
+        await AddCompositionNodeAsync(projectRoot, "home", "role-only-purchase", "purchase panel", null, null, "pages");
+        await AddCompositionNodeAsync(projectRoot, "home", "role-only-gallery", "gallery", null, null, "pages");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "required-slot-unmapped" && finding.Message.Contains("product.purchase", StringComparison.Ordinal));
+        Assert.Contains(findings, finding => finding.Code == "required-slot-unmapped" && finding.Message.Contains("product.gallery", StringComparison.Ordinal));
+        Assert.Contains(findings, finding => finding.Code == "section-slot-suggestion-unreviewed" && finding.Message.Contains("product.purchase", StringComparison.Ordinal));
+        Assert.Contains(findings, finding => finding.Code == "section-slot-suggestion-unreviewed" && finding.Message.Contains("product.gallery", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SlotValidation_ReviewedMappingSatisfiesRequiredSlot()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Reviewed Mapping");
+        await AddPageContractSlotAsync(projectRoot, "home", "requiredSlotIds", "product.purchase");
+        await AddReviewedMappingAsync(projectRoot, "reviewed-product-purchase", "home", "reviewed-product-purchase-node", "product.purchase", "product.purchase", "Components/Catalog/PurchasePanelPlaceholder.razor");
+        await AddCompositionNodeAsync(projectRoot, "home", "reviewed-product-purchase-node", "purchase panel", "reviewed-product-purchase", "Components/Catalog/PurchasePanelPlaceholder.razor", "catalog-components");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.DoesNotContain(findings, finding => (finding.Code == "missing-required-slot" || finding.Code == "required-slot-unmapped") && finding.Message.Contains("product.purchase", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "invalid-section-slot-mapping" && finding.Message.Contains("reviewed-product-purchase", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "unapproved-extra-section" && finding.Message.Contains("reviewed-product-purchase-node", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SlotValidation_DuplicateNonRepeatableSlotFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Duplicate Gallery");
+        await AddPageContractSlotAsync(projectRoot, "home", "allowedAdditionalSlotIds", "product.gallery");
+        await AddReviewedMappingAsync(projectRoot, "gallery-one", "home", "gallery-one-node", "product.gallery", "product.gallery", "Components/Catalog/ProductGalleryPlaceholder.razor");
+        await AddReviewedMappingAsync(projectRoot, "gallery-two", "home", "gallery-two-node", "product.gallery", "product.gallery", "Components/Catalog/ProductGalleryPlaceholder.razor");
+        await AddCompositionNodeAsync(projectRoot, "home", "gallery-one-node", "gallery", "gallery-one", "Components/Catalog/ProductGalleryPlaceholder.razor", "catalog-components");
+        await AddCompositionNodeAsync(projectRoot, "home", "gallery-two-node", "gallery", "gallery-two", "Components/Catalog/ProductGalleryPlaceholder.razor", "catalog-components");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("product.gallery", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SlotValidation_RepeatableProductCardsPass()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Repeatable Product Cards");
+        await AddPageContractSlotAsync(projectRoot, "home", "allowedAdditionalSlotIds", "catalog.product-card");
+        await AddPageContractSlotAsync(projectRoot, "home", "repeatableSlotIds", "catalog.product-card");
+        await AddReviewedMappingAsync(projectRoot, "card-one", "home", "card-one-node", "catalog.product-card", "catalog.product-card", "Components/Catalog/ProductSummaryCard.razor");
+        await AddReviewedMappingAsync(projectRoot, "card-two", "home", "card-two-node", "catalog.product-card", "catalog.product-card", "Components/Catalog/ProductSummaryCard.razor");
+        await AddCompositionNodeAsync(projectRoot, "home", "card-one-node", "product card", "card-one", "Components/Catalog/ProductSummaryCard.razor", "catalog-components");
+        await AddCompositionNodeAsync(projectRoot, "home", "card-two-node", "product card", "card-two", "Components/Catalog/ProductSummaryCard.razor", "catalog-components");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.DoesNotContain(findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("catalog.product-card", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "unapproved-extra-section" && (finding.Message.Contains("card-one-node", StringComparison.Ordinal) || finding.Message.Contains("card-two-node", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task SlotValidation_UnknownUnmappedSectionFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Unknown Extra Section");
+        await AddCompositionNodeAsync(projectRoot, "home", "unknown-extra-node", "editorial promo", null, "Pages/Ssr/Home/Promo.razor", "pages");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "unapproved-extra-section" && finding.Message.Contains("unknown-extra-node", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SlotValidation_ApprovedVisualExtensionPasses()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Approved Extension");
+        await AddPageContractSlotAsync(projectRoot, "home", "allowedAdditionalSlotIds", "product.related-products");
+        await AddCompositionNodeAsync(
+            projectRoot,
+            "home",
+            "approved-extension-node",
+            "visual recommendations",
+            null,
+            "Components/Catalog/RelatedProductsPlaceholder.razor",
+            "product.related-products",
+            approvedVisualExtensionId: "visual-extension-related-products",
+            approvedVisualExtensionReason: "Approved visual-only merchandising extension.");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.DoesNotContain(findings, finding => finding.Code == "unapproved-extra-section" && finding.Message.Contains("approved-extension-node", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "slot-behavior-ownership-conflict" && finding.Message.Contains("approved-extension-node", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SlotValidation_RuntimeOwnershipFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Runtime Ownership");
+        await MutateFirstReviewedMappingAsync(projectRoot, mapping => mapping["behaviorOwnership"] = "runtime");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "slot-behavior-ownership-conflict");
+    }
+
+    [Fact]
+    public async Task SlotValidation_MissingTargetPathFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Missing Target Path");
+        await MutateFirstCompositionNodeAsync(projectRoot, "home", node => node["targetFilePath"] = null);
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "slot-target-path-mismatch");
+    }
+
+    [Fact]
+    public async Task SlotValidation_InvalidCatalogTargetFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Slot Invalid Catalog Target");
+        await MutateFirstReviewedMappingAsync(projectRoot, mapping => mapping["presentationComponentId"] = "missing.component");
+
+        var findings = new PageCompositionSlotValidator(GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "invalid-section-slot-mapping");
+    }
+
     private static async Task<string> CreateReadyProjectAsync(string name)
     {
         var repoRoot = GetRepoRoot();
@@ -415,7 +545,7 @@ public sealed class BlueprintV1ReadinessTests
         Assert.True(summary.ReadinessPassed);
         await ApproveAllReviewDecisionsAsync(summary.ArtifactRoot);
         var assembled = await new BlueprintV1Assembler(repoRoot).AssembleAsync(summary.ArtifactRoot, CancellationToken.None);
-        Assert.True(assembled.Readiness.Passed);
+        Assert.True(assembled.Readiness.Passed, string.Join(Environment.NewLine, assembled.Readiness.Findings.Select(finding => finding.Code + ":" + finding.Message)));
         return summary.ArtifactRoot;
     }
 
@@ -609,6 +739,122 @@ public sealed class BlueprintV1ReadinessTests
             var home = pages.OfType<JsonObject>().First(page => page["pageId"]?.GetValue<string>() == "home");
             var allowed = home["allowedAdditionalSlotIds"]?.AsArray() ?? throw new InvalidOperationException("Home page has no allowedAdditionalSlotIds array.");
             allowed.Add(slotId);
+        });
+    }
+
+    private static async Task AddPageContractSlotAsync(string projectRoot, string pageId, string arrayName, string slotId)
+    {
+        await MutateJsonAsync(projectRoot, "analysis/storefront-pattern/page-contracts.json", json =>
+        {
+            var pages = json["pages"]?.AsArray() ?? throw new InvalidOperationException("Page contracts has no pages array.");
+            var page = pages.OfType<JsonObject>().First(candidate => candidate["pageId"]?.GetValue<string>() == pageId);
+            var slots = page[arrayName]?.AsArray() ?? throw new InvalidOperationException("Page contract has no " + arrayName + " array.");
+            if (!slots.Any(slot => slot?.GetValue<string>() == slotId))
+            {
+                slots.Add(slotId);
+            }
+        });
+    }
+
+    private static async Task AddReviewedMappingAsync(
+        string projectRoot,
+        string mappingId,
+        string pageId,
+        string sectionId,
+        string componentId,
+        string slotId,
+        string targetPath)
+    {
+        await MutateJsonAsync(projectRoot, "analysis/resolved/presentation-mappings.reviewed.json", json =>
+        {
+            var mappings = json["mappings"]?.AsArray() ?? throw new InvalidOperationException("Mappings artifact has no mappings array.");
+            mappings.Add(new JsonObject
+            {
+                ["sourceCandidateId"] = mappingId,
+                ["presentationComponentId"] = componentId,
+                ["starterSlotId"] = slotId,
+                ["variant"] = "default",
+                ["slotAssignments"] = new JsonArray(),
+                ["responsiveProperties"] = new JsonArray(),
+                ["tokenBindings"] = new JsonArray(),
+                ["interactionBindings"] = new JsonArray(),
+                ["dataRequirements"] = new JsonArray(),
+                ["behaviorOwnership"] = "presentation",
+                ["confidence"] = 0.95,
+                ["evidenceIds"] = new JsonArray("ev-desktop-1440-001"),
+                ["mappingReason"] = "test reviewed mapping",
+                ["alternativeMappings"] = new JsonArray(),
+                ["humanReviewRequired"] = false,
+                ["sourcePageId"] = pageId,
+                ["sourceSectionId"] = sectionId,
+                ["ecommerceRegionId"] = sectionId,
+                ["pageArchetype"] = "home",
+                ["targetGeneratedPath"] = targetPath,
+                ["generatedZone"] = "catalog-components",
+                ["routeOwnership"] = "presentation",
+                ["reasonCodes"] = new JsonArray("test"),
+                ["reviewState"] = "Approved"
+            });
+        });
+    }
+
+    private static async Task AddCompositionNodeAsync(
+        string projectRoot,
+        string pageId,
+        string nodeId,
+        string role,
+        string? mappingId,
+        string? targetPath,
+        string targetZone,
+        string? approvedVisualExtensionId = null,
+        string? approvedVisualExtensionReason = null)
+    {
+        await MutateJsonAsync(projectRoot, "analysis/resolved/page-compositions.reviewed.json", json =>
+        {
+            var compositions = json["compositions"]?.AsArray() ?? throw new InvalidOperationException("Compositions artifact has no compositions array.");
+            var composition = compositions.OfType<JsonObject>().First(item => item["pageId"]?.GetValue<string>() == pageId);
+            var tree = composition["sectionTree"]?.AsArray() ?? throw new InvalidOperationException("Composition has no sectionTree array.");
+            tree.Add(new JsonObject
+            {
+                ["nodeId"] = nodeId,
+                ["role"] = role,
+                ["presentationMappingId"] = mappingId,
+                ["evidenceIds"] = new JsonArray("ev-desktop-1440-001"),
+                ["children"] = new JsonArray(),
+                ["stableFingerprint"] = nodeId + "-fingerprint",
+                ["ecommerceRole"] = role,
+                ["parentNodeId"] = null,
+                ["childNodeIds"] = new JsonArray(),
+                ["viewportBoundingBoxes"] = new JsonObject
+                {
+                    ["base"] = "x=0;y=0;width=100;height=100"
+                },
+                ["visualStyleTokenRefs"] = new JsonArray("surface-page"),
+                ["componentMappingRef"] = mappingId,
+                ["targetFilePath"] = targetPath,
+                ["targetGeneratedZone"] = targetZone,
+                ["allowedOperations"] = new JsonArray("visual-markup", "css", "responsive-layout"),
+                ["protectedBehaviorMarkers"] = new JsonArray(),
+                ["screenshotReferences"] = new JsonArray("captures/home/capture-manifest.json"),
+                ["cropReferences"] = new JsonArray(),
+                ["approvedVisualExtensionId"] = approvedVisualExtensionId,
+                ["approvedVisualExtensionReason"] = approvedVisualExtensionReason,
+                ["repeatedGroupId"] = null,
+                ["stateExpectations"] = new JsonArray(),
+                ["responsiveTransformationRules"] = new JsonArray(),
+                ["unresolvedIssues"] = new JsonArray()
+            });
+        });
+    }
+
+    private static async Task MutateFirstReviewedMappingAsync(string projectRoot, Action<JsonObject> mutate)
+    {
+        await MutateJsonAsync(projectRoot, "analysis/resolved/presentation-mappings.reviewed.json", json =>
+        {
+            var mappings = json["mappings"]?.AsArray() ?? throw new InvalidOperationException("Mappings artifact has no mappings array.");
+            var first = mappings.OfType<JsonObject>().FirstOrDefault()
+                ?? throw new InvalidOperationException("Mappings artifact has no mapping entries.");
+            mutate(first);
         });
     }
 

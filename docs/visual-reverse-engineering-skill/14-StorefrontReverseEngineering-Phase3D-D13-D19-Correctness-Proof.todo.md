@@ -63,9 +63,9 @@ Not in scope:
 ## P0 Blockers
 
 - [x] P0-1: Reviewed page composition reads draft/raw inputs.
-- [ ] P0-2: Slot validator can pass required slot presence from role text inference.
-- [ ] P0-3: Duplicate slot counting does not preserve distinct node/mapping sources.
-- [ ] P0-4: Unmapped extra sections can be ignored instead of blocked.
+- [x] P0-2: Slot validator can pass required slot presence from role text inference.
+- [x] P0-3: Duplicate slot counting does not preserve distinct node/mapping sources.
+- [x] P0-4: Unmapped extra sections can be ignored instead of blocked.
 - [ ] P0-5: Section crop uses first available bounds instead of viewport-specific bounds.
 - [ ] P0-6: Positive/negative proofs are static fixture assertions, not real pipeline/mutation proofs.
 - [ ] P0-7: Full clean-head Phase 3D gate has not passed.
@@ -177,86 +177,86 @@ Dictionary<string, HashSet<SlotObservationSource>>
 
 `SlotObservationSource` fields:
 
-- [ ] `SourceKind`: `page-target`, `reviewed-mapping`, `catalog-target`, `approved-extension`
-- [ ] `SourceId`
-- [ ] `PageId`
-- [ ] `SectionNodeId`
-- [ ] `MappingId`
-- [ ] `SlotId`
-- [ ] `TargetPath`
+- [x] `SourceKind`: `page-target`, `reviewed-mapping`, `catalog-target`, `approved-extension`
+- [x] `SourceId`
+- [x] `PageId`
+- [x] `SectionNodeId`
+- [x] `MappingId`
+- [x] `SlotId`
+- [x] `TargetPath`
 
 ### D14.2 Authoritative Slot Sources
 
 Slot presence can be added only from:
 
-- [ ] `PageComposition.TargetViewSlot` when it is exact, valid, and mapped to a page contract.
-- [ ] Reviewed `PresentationMapping.StarterSlotId`.
-- [ ] Valid Presentation catalog target path matching an exact slot.
-- [ ] Explicit reviewed visual-only extension slot.
+- [x] `PageComposition.TargetViewSlot` when it is exact, valid, and mapped to a page contract.
+- [x] Reviewed `PresentationMapping.StarterSlotId`.
+- [x] Valid Presentation catalog target path matching an exact slot.
+- [x] Explicit reviewed visual-only extension slot.
 
 Slot presence must not be added from:
 
-- [ ] `InferSlot(pageArchetype, node.Role)`
-- [ ] text role labels.
-- [ ] source HTML labels.
-- [ ] section type names without reviewed mapping.
+- [x] `InferSlot(pageArchetype, node.Role)`
+- [x] text role labels.
+- [x] source HTML labels.
+- [x] section type names without reviewed mapping.
 
 ### D14.3 Role Inference Downgrade
 
 Implementation checklist:
 
-- [ ] Rename or wrap `InferSlot(...)` as `SuggestSlotFromRole(...)`.
-- [ ] Use suggestion only for diagnostics.
-- [ ] Emit `section-slot-suggestion-unreviewed` when role text suggests a slot but no reviewed mapping exists.
-- [ ] Emit `required-slot-unmapped` when a required slot is only suggested and not reviewed.
-- [ ] Do not count suggestions as observed slots.
+- [x] Rename or wrap `InferSlot(...)` as `SuggestSlotFromRole(...)`.
+- [x] Use suggestion only for diagnostics.
+- [x] Emit `section-slot-suggestion-unreviewed` when role text suggests a slot but no reviewed mapping exists.
+- [x] Emit `required-slot-unmapped` when a required slot is only suggested and not reviewed.
+- [x] Do not count suggestions as observed slots.
 
 ### D14.4 Required Slot Validation
 
 For every required slot:
 
-- [ ] slot has at least one authoritative source.
-- [ ] source is reviewed where mapping is required.
-- [ ] target path is valid.
-- [ ] Presentation catalog component exists.
-- [ ] Starter slot ID matches catalog slots.
-- [ ] behavior ownership is valid.
+- [x] slot has at least one authoritative source.
+- [x] source is reviewed where mapping is required.
+- [x] target path is valid.
+- [x] Presentation catalog component exists.
+- [x] Starter slot ID matches catalog slots.
+- [x] behavior ownership is valid.
 
 Blocking codes:
 
-- [ ] `missing-required-slot`
-- [ ] `required-slot-unmapped`
-- [ ] `invalid-section-slot-mapping`
-- [ ] `slot-target-path-mismatch`
-- [ ] `slot-behavior-ownership-conflict`
+- [x] `missing-required-slot`
+- [x] `required-slot-unmapped`
+- [x] `invalid-section-slot-mapping`
+- [x] `slot-target-path-mismatch`
+- [x] `slot-behavior-ownership-conflict`
 
 ### D14.5 Duplicate Slot Validation
 
 Rules:
 
-- [ ] Count unique source IDs, not only slot names.
-- [ ] Non-repeatable slot with more than one unique source fails.
-- [ ] Repeatable slot passes when count is at least required minimum.
-- [ ] `catalog.product-card` remains repeatable.
-- [ ] `product.gallery`, `product.purchase`, `product.information`, `layout.header`, `layout.footer`, `cart.page`, `checkout.page`, and `account.shell` are non-repeatable unless a page contract explicitly says otherwise.
+- [x] Count unique source IDs, not only slot names.
+- [x] Non-repeatable slot with more than one unique source fails.
+- [x] Repeatable slot passes when count is at least required minimum.
+- [x] `catalog.product-card` remains repeatable.
+- [x] `product.gallery`, `product.purchase`, `product.information`, `layout.header`, `layout.footer`, `cart.page`, `checkout.page`, and `account.shell` are non-repeatable unless a page contract explicitly says otherwise.
 
 Blocking code:
 
-- [ ] `duplicate-non-repeatable-slot`
+- [x] `duplicate-non-repeatable-slot`
 
 ### D14.6 Extra Section Validation
 
 Every reviewed section node must resolve to one of:
 
-- [ ] required slot.
-- [ ] optional slot.
-- [ ] repeatable slot.
-- [ ] allowed additional slot.
-- [ ] explicit approved visual-only extension.
+- [x] required slot.
+- [x] optional slot.
+- [x] repeatable slot.
+- [x] allowed additional slot.
+- [x] explicit approved visual-only extension.
 
 Otherwise emit:
 
-- [ ] `unapproved-extra-section`
+- [x] `unapproved-extra-section`
 
 Unknown or unmapped nodes must not be silently ignored.
 
@@ -264,33 +264,33 @@ Unknown or unmapped nodes must not be silently ignored.
 
 Add optional reviewed fields:
 
-- [ ] `approvedVisualExtensionId`
-- [ ] `approvedVisualExtensionReason`
+- [x] `approvedVisualExtensionId`
+- [x] `approvedVisualExtensionReason`
 
 Rules:
 
-- [ ] Extension must be human-reviewed.
-- [ ] Extension must not own protected behavior.
-- [ ] Extension must target an allowed generated zone.
-- [ ] Extension must not replace required slots.
-- [ ] Extension must be listed in `AllowedAdditionalSlotIds` or an extension registry.
+- [x] Extension must be human-reviewed.
+- [x] Extension must not own protected behavior.
+- [x] Extension must target an allowed generated zone.
+- [x] Extension must not replace required slots.
+- [x] Extension must be listed in `AllowedAdditionalSlotIds` or an extension registry.
 
 Tests:
 
-- [ ] Role `purchase panel` without reviewed mapping fails.
-- [ ] Role `gallery` without reviewed mapping fails.
-- [ ] Valid reviewed `product.purchase` mapping passes.
-- [ ] Two gallery nodes fail duplicate validation.
-- [ ] Two product cards pass repeatable validation.
-- [ ] Unknown unmapped section fails as extra section.
-- [ ] Approved visual extension passes.
-- [ ] Runtime/headless mapping fails.
-- [ ] Missing target path fails.
-- [ ] Invalid catalog target fails.
+- [x] Role `purchase panel` without reviewed mapping fails.
+- [x] Role `gallery` without reviewed mapping fails.
+- [x] Valid reviewed `product.purchase` mapping passes.
+- [x] Two gallery nodes fail duplicate validation.
+- [x] Two product cards pass repeatable validation.
+- [x] Unknown unmapped section fails as extra section.
+- [x] Approved visual extension passes.
+- [x] Runtime/headless mapping fails.
+- [x] Missing target path fails.
+- [x] Invalid catalog target fails.
 
 Done when:
 
-- [ ] Slot presence is source-auditable and never based on role inference alone.
+- [x] Slot presence is source-auditable and never based on role inference alone.
 
 ## D15 - Per-Viewport Bounding Boxes
 
@@ -705,11 +705,11 @@ Done when:
 2. [x] D13.2 Split draft and reviewed composition builders.
 3. [x] D13.3 Add reviewed composition provenance.
 4. [x] D13.4 Add modified decision propagation tests.
-5. [ ] D14.1 Replace slot count dictionary with source-aware observations.
-6. [ ] D14.2 Remove role inference from authoritative slot presence.
-7. [ ] D14.3 Add required-slot-unmapped and suggestion diagnostics.
-8. [ ] D14.4 Fix duplicate and extra-section validation.
-9. [ ] D14.5 Add approved visual extension support.
+5. [x] D14.1 Replace slot count dictionary with source-aware observations.
+6. [x] D14.2 Remove role inference from authoritative slot presence.
+7. [x] D14.3 Add required-slot-unmapped and suggestion diagnostics.
+8. [x] D14.4 Fix duplicate and extra-section validation.
+9. [x] D14.5 Add approved visual extension support.
 10. [ ] D15.1 Preserve per-viewport section bounds.
 11. [ ] D15.2 Crop using `viewport.ViewportId` bounds.
 12. [ ] D16 Add positive end-to-end proof.
@@ -722,7 +722,7 @@ Done when:
 Suggested commits:
 
 1. [x] `phase 3d: read reviewed compositions from resolved artifacts`
-2. [ ] `phase 3d: enforce authoritative slot observations`
+2. [x] `phase 3d: enforce authoritative slot observations`
 3. [ ] `phase 3d: crop handoff evidence per viewport`
 4. [ ] `phase 3d: add positive end-to-end proof`
 5. [ ] `phase 3d: add negative mutation proof suites`
@@ -745,13 +745,13 @@ Reviewed composition:
 
 Slot enforcement:
 
-- [ ] `SlotValidation_RoleSuggestionWithoutMappingDoesNotSatisfyRequiredSlot`
-- [ ] `SlotValidation_ReviewedMappingSatisfiesRequiredSlot`
-- [ ] `SlotValidation_DuplicateNonRepeatableSlotFails`
-- [ ] `SlotValidation_RepeatableProductCardsPass`
-- [ ] `SlotValidation_UnknownUnmappedSectionFails`
-- [ ] `SlotValidation_ApprovedVisualExtensionPasses`
-- [ ] `SlotValidation_RuntimeOwnershipFails`
+- [x] `SlotValidation_RoleSuggestionWithoutMappingDoesNotSatisfyRequiredSlot`
+- [x] `SlotValidation_ReviewedMappingSatisfiesRequiredSlot`
+- [x] `SlotValidation_DuplicateNonRepeatableSlotFails`
+- [x] `SlotValidation_RepeatableProductCardsPass`
+- [x] `SlotValidation_UnknownUnmappedSectionFails`
+- [x] `SlotValidation_ApprovedVisualExtensionPasses`
+- [x] `SlotValidation_RuntimeOwnershipFails`
 
 Viewport crop:
 
@@ -792,13 +792,13 @@ Reviewed composition:
 
 Slot enforcement:
 
-- [ ] Required slots require reviewed mapping or other approved authoritative source.
-- [ ] Role inference is diagnostic only.
-- [ ] Duplicate non-repeatable slot fails.
-- [ ] Repeatable product cards pass.
-- [ ] Unknown/unmapped section fails.
-- [ ] Approved visual extension is explicit.
-- [ ] Protected behavior ownership fails.
+- [x] Required slots require reviewed mapping or other approved authoritative source.
+- [x] Role inference is diagnostic only.
+- [x] Duplicate non-repeatable slot fails.
+- [x] Repeatable product cards pass.
+- [x] Unknown/unmapped section fails.
+- [x] Approved visual extension is explicit.
+- [x] Protected behavior ownership fails.
 
 Visual evidence:
 
@@ -910,7 +910,7 @@ This plan focuses Phase 3D D13-D19 on the remaining closure blockers: reviewed c
 ### Implementation Tasks
 
 - [x] Implement D13 reviewed composition from resolved artifacts.
-- [ ] Implement D14 authoritative slot mapping.
+- [x] Implement D14 authoritative slot mapping.
 - [ ] Implement D15 per-viewport crop bounds.
 - [ ] Implement D16 real positive end-to-end proof.
 - [ ] Implement D17 real negative mutation proofs.
