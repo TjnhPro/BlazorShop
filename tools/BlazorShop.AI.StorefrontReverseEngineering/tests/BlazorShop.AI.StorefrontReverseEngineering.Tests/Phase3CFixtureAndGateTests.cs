@@ -67,6 +67,8 @@ public sealed class Phase3CFixtureAndGateTests
         Assert.Contains("generation-zones", kinds);
         Assert.Contains("reviewed-semantic-tokens", kinds);
         Assert.Contains("reviewed-page-compositions", kinds);
+        Assert.Contains("agent-handoff-page-compositions", kinds);
+        Assert.Contains("agent-handoff-presentation-catalog", kinds);
         Assert.Contains("reviewed-presentation-mappings", kinds);
         Assert.Contains("reviewed-ecommerce-regions", kinds);
         Assert.Contains("agent-handoff-manifest", kinds);

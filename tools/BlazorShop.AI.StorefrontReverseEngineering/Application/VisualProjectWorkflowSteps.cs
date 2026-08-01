@@ -524,8 +524,18 @@ internal sealed class AssembleAgentHandoffStep : IVisualProjectWorkflowStep
         "analysis/agent-handoff/design-tokens.json",
         "analysis/agent-handoff/storefront-pattern.json",
         "analysis/agent-handoff/visual-blueprint.json",
+        "analysis/agent-handoff/presentation-catalog.json",
+        "analysis/agent-handoff/presentation-mappings.json",
+        "analysis/agent-handoff/component-candidates.json",
+        "analysis/agent-handoff/component-instances.json",
+        "analysis/agent-handoff/responsive-behavior.json",
+        "analysis/agent-handoff/interaction-models.json",
+        "analysis/agent-handoff/originality-restrictions.json",
+        "analysis/agent-handoff/confidence.json",
+        "analysis/agent-handoff/review-resolution.json",
         "analysis/agent-handoff/unresolved-regions.json",
-        "analysis/agent-handoff/generation-readiness.json"
+        "analysis/agent-handoff/generation-readiness.json",
+        "analysis/agent-handoff/evidence-manifest.json"
     ];
 
     public async Task<WorkflowStepResult> ExecuteAsync(VisualProjectWorkflowContext context, CancellationToken cancellationToken)

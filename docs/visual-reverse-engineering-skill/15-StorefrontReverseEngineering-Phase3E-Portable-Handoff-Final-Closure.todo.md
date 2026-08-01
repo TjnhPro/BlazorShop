@@ -149,54 +149,54 @@ Goal: stop copying reviewed project artifacts directly when their internal refer
 
 Implementation checklist:
 
-- [ ] Replace copied `analysis/visual-blueprint.v1.reviewed.json` with `HandoffVisualBlueprint`.
-- [ ] Give the handoff blueprint artifact kind `agent-handoff-visual-blueprint`.
-- [ ] Add explicit `consumerReferences` for handoff-local artifacts only.
-- [ ] Add explicit `diagnosticProvenance` entries for original Phase 3 artifacts with `consumerReadable: false`.
+- [x] Replace copied `analysis/visual-blueprint.v1.reviewed.json` with `HandoffVisualBlueprint`.
+- [x] Give the handoff blueprint artifact kind `agent-handoff-visual-blueprint`.
+- [x] Add explicit `consumerReferences` for handoff-local artifacts only.
+- [x] Add explicit `diagnosticProvenance` entries for original Phase 3 artifacts with `consumerReadable: false`.
 - [ ] Add handoff-specific normalized contracts where needed:
-  - [ ] `HandoffPageCompositions`
-  - [ ] `HandoffDesignTokens`
-  - [ ] `HandoffVisualStyle`
-  - [ ] `HandoffReviewResolution`
-  - [ ] `HandoffPresentationCatalog`
-  - [ ] `HandoffResponsiveBehavior`
-  - [ ] `HandoffInteractionModels`
-- [ ] Preserve external source paths only as diagnostics provenance.
-- [ ] Do not allow `.draft.json` in any consumer reference.
-- [ ] Preserve reviewed source artifacts unchanged.
+  - [x] `HandoffPageCompositions`
+  - [x] `HandoffDesignTokens`
+  - [x] `HandoffVisualStyle`
+  - [x] `HandoffReviewResolution`
+  - [x] `HandoffPresentationCatalog`
+  - [x] `HandoffResponsiveBehavior`
+  - [x] `HandoffInteractionModels`
+- [x] Preserve external source paths only as diagnostics provenance.
+- [x] Do not allow `.draft.json` in any consumer reference.
+- [x] Preserve reviewed source artifacts unchanged.
 
 Required consumer artifacts:
 
-- [ ] `analysis/agent-handoff/presentation-catalog.json`
-- [ ] `analysis/agent-handoff/presentation-mappings.json`
-- [ ] `analysis/agent-handoff/component-candidates.json`
-- [ ] `analysis/agent-handoff/component-instances.json`
-- [ ] `analysis/agent-handoff/responsive-behavior.json`
-- [ ] `analysis/agent-handoff/interaction-models.json`
-- [ ] `analysis/agent-handoff/originality-restrictions.json`
-- [ ] `analysis/agent-handoff/confidence.json`
-- [ ] `analysis/agent-handoff/review-resolution.json`
-- [ ] Existing Phase 3D artifacts already listed in `AgentHandoffContract.RequiredArtifacts`.
+- [x] `analysis/agent-handoff/presentation-catalog.json`
+- [x] `analysis/agent-handoff/presentation-mappings.json`
+- [x] `analysis/agent-handoff/component-candidates.json`
+- [x] `analysis/agent-handoff/component-instances.json`
+- [x] `analysis/agent-handoff/responsive-behavior.json`
+- [x] `analysis/agent-handoff/interaction-models.json`
+- [x] `analysis/agent-handoff/originality-restrictions.json`
+- [x] `analysis/agent-handoff/confidence.json`
+- [x] `analysis/agent-handoff/review-resolution.json`
+- [x] Existing Phase 3D artifacts already listed in `AgentHandoffContract.RequiredArtifacts`.
 
 Aggregation rules:
 
-- [ ] Responsive behavior is a site-level handoff document with page, section, viewport rule, evidence reference, and review status.
-- [ ] Interaction models are a site-level handoff document with page, section, state, trigger, protected behavior boundary, evidence reference, and review status.
-- [ ] Component instances must point to handoff-local component candidates or diagnostic-only provenance, not `analysis/components/*` as a consumer dependency.
-- [ ] Confidence must distinguish artifacts reviewed by `ConfidenceScorer` from evidence-derived responsive/interaction observations.
+- [x] Responsive behavior is a site-level handoff document with page, section, viewport rule, evidence reference, and review status.
+- [x] Interaction models are a site-level handoff document with page, section, state, trigger, protected behavior boundary, evidence reference, and review status.
+- [x] Component instances must point to handoff-local component candidates or diagnostic-only provenance, not `analysis/components/*` as a consumer dependency.
+- [x] Confidence must distinguish artifacts reviewed by `ConfidenceScorer` from evidence-derived responsive/interaction observations.
 
 Tests:
 
-- [ ] Handoff blueprint has no `visual-blueprint-v1` artifact kind.
-- [ ] Every consumer reference starts with `analysis/agent-handoff/`.
-- [ ] Diagnostic provenance outside handoff is marked non-consumer.
-- [ ] Missing local consumer artifact blocks assembly.
-- [ ] Reviewed source blueprint remains unchanged after handoff assembly.
-- [ ] Responsive and interaction handoff docs contain no path list back to `analysis/pages/*`.
+- [x] Handoff blueprint has no `visual-blueprint-v1` artifact kind.
+- [x] Every consumer reference starts with `analysis/agent-handoff/`.
+- [x] Diagnostic provenance outside handoff is marked non-consumer.
+- [x] Missing local consumer artifact blocks assembly.
+- [x] Reviewed source blueprint remains unchanged after handoff assembly.
+- [x] Responsive and interaction handoff docs contain no path list back to `analysis/pages/*`.
 
 Done when:
 
-- [ ] All Phase 4 consumer inputs exist inside `analysis/agent-handoff/*` with handoff-specific contracts where direct copies would leak external dependencies.
+- [x] All Phase 4 consumer inputs exist inside `analysis/agent-handoff/*` with handoff-specific contracts where direct copies would leak external dependencies.
 
 ## Phase 3E.3 - Typed Reference Registry And Containment Validator
 
@@ -615,7 +615,7 @@ Done when:
 
 1. [x] Phase 3E.0 baseline and contract lock.
 2. [x] Phase 3E.1 canonical package contract, schema list, reference registry, and hash rules.
-3. [ ] Phase 3E.2 handoff-specific consumer artifacts.
+3. [x] Phase 3E.2 handoff-specific consumer artifacts.
 4. [ ] Phase 3E.3 typed reference containment validator.
 5. [ ] Phase 3E.4 portable manifest and schema hardening.
 6. [ ] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
@@ -631,7 +631,7 @@ Done when:
 Suggested development commits:
 
 1. [ ] `phase 3e: define portable handoff contract`
-2. [ ] `phase 3e: package handoff-local consumer artifacts`
+2. [x] `phase 3e: package handoff-local consumer artifacts`
 3. [ ] `phase 3e: enforce typed handoff references`
 4. [ ] `phase 3e: harden manifest schemas and package hashes`
 5. [ ] `phase 3e: share reviewed slot provenance`
@@ -652,11 +652,11 @@ Contract and schemas:
 
 Handoff artifact normalization:
 
-- [ ] `HandoffVisualBlueprintTests`
-- [ ] `HandoffPageCompositionsTests`
-- [ ] `HandoffPresentationCatalogTests`
-- [ ] `HandoffResponsiveBehaviorTests`
-- [ ] `HandoffInteractionModelTests`
+- [x] `HandoffVisualBlueprintTests`
+- [x] `HandoffPageCompositionsTests`
+- [x] `HandoffPresentationCatalogTests`
+- [x] `HandoffResponsiveBehaviorTests`
+- [x] `HandoffInteractionModelTests`
 
 Reference validation:
 
@@ -709,14 +709,14 @@ Portable contract:
 
 Artifact completeness:
 
-- [ ] Presentation catalog is packaged or embedded inside handoff.
-- [ ] Reviewed mappings are packaged.
-- [ ] Component candidates and instances are packaged.
-- [ ] Responsive behavior is packaged.
-- [ ] Interaction models are packaged.
-- [ ] Originality restrictions are packaged.
-- [ ] Confidence report is packaged with correct review/evidence-derived labels.
-- [ ] Review resolution is packaged.
+- [x] Presentation catalog is packaged or embedded inside handoff.
+- [x] Reviewed mappings are packaged.
+- [x] Component candidates and instances are packaged.
+- [x] Responsive behavior is packaged.
+- [x] Interaction models are packaged.
+- [x] Originality restrictions are packaged.
+- [x] Confidence report is packaged with correct review/evidence-derived labels.
+- [x] Review resolution is packaged.
 
 Reference validation:
 
@@ -829,7 +829,7 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 
 - [ ] Implement Phase 3E.0 baseline and boundary lock.
 - [ ] Implement Phase 3E.1 portable package contract.
-- [ ] Implement Phase 3E.2 handoff-specific consumer artifacts.
+- [x] Implement Phase 3E.2 handoff-specific consumer artifacts.
 - [ ] Implement Phase 3E.3 typed reference containment.
 - [ ] Implement Phase 3E.4 manifest and schema hardening.
 - [ ] Implement Phase 3E.5 shared slot provenance.

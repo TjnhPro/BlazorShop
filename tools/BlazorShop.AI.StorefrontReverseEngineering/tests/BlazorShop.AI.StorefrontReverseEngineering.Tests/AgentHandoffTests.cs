@@ -36,6 +36,132 @@ public sealed class AgentHandoffTests
     }
 
     [Fact]
+    public async Task AgentHandoff_VisualBlueprintUsesHandoffLocalConsumerReferences()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Blueprint Contract");
+        var blueprint = await ReadAsync<HandoffVisualBlueprint>(projectRoot, "analysis/agent-handoff/visual-blueprint.json");
+
+        Assert.Equal("agent-handoff-visual-blueprint", blueprint.ArtifactKind);
+        Assert.NotEqual("visual-blueprint-v1", blueprint.ArtifactKind);
+        Assert.NotEmpty(blueprint.ConsumerReferences);
+        Assert.All(blueprint.ConsumerReferences.Values, path =>
+        {
+            Assert.StartsWith("analysis/agent-handoff/", path, StringComparison.Ordinal);
+            Assert.DoesNotContain(".draft.json", path, StringComparison.Ordinal);
+        });
+        Assert.NotEmpty(blueprint.DiagnosticProvenance);
+        Assert.All(blueprint.DiagnosticProvenance, reference => Assert.False(reference.ConsumerReadable));
+    }
+
+    [Fact]
+    public async Task AgentHandoff_PageCompositionsAreHandoffContractWithDiagnosticsOnlyProvenance()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Page Composition Contract");
+        var handoff = await ReadAsync<HandoffPageCompositions>(projectRoot, "analysis/agent-handoff/page-compositions.json");
+        var raw = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "page-compositions.json")))!.AsObject();
+
+        Assert.Equal("agent-handoff-page-compositions", handoff.ArtifactKind);
+        Assert.True(raw.ContainsKey("diagnosticProvenance"));
+        Assert.False(raw.ContainsKey("provenance"));
+        Assert.NotEmpty(handoff.Pages);
+        Assert.NotEmpty(handoff.Compositions);
+        Assert.NotEmpty(handoff.DiagnosticProvenance);
+        Assert.All(handoff.DiagnosticProvenance, reference => Assert.False(reference.ConsumerReadable));
+    }
+
+    [Fact]
+    public async Task AgentHandoff_PresentationCatalogIsHandoffContractWithDiagnosticsOnlySourcePaths()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Presentation Catalog Contract");
+        var catalog = await ReadAsync<HandoffPresentationCatalog>(projectRoot, "analysis/agent-handoff/presentation-catalog.json");
+        var raw = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "presentation-catalog.json")))!.AsObject();
+
+        Assert.Equal("agent-handoff-presentation-catalog", catalog.ArtifactKind);
+        Assert.True(raw.ContainsKey("diagnosticProvenance"));
+        Assert.False(raw.ContainsKey("sourcePaths"));
+        Assert.NotEmpty(catalog.Components);
+        Assert.All(catalog.DiagnosticProvenance, reference => Assert.False(reference.ConsumerReadable));
+    }
+
+    [Fact]
+    public async Task AgentHandoff_SemanticArtifactsExposeSourceRawTokensOnlyAsDiagnostics()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Semantic Contract");
+        var designTokens = await ReadAsync<HandoffSemanticTokens>(projectRoot, "analysis/agent-handoff/design-tokens.json");
+        var visualStyle = await ReadAsync<HandoffSemanticTokens>(projectRoot, "analysis/agent-handoff/visual-style.json");
+        var designTokensRaw = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "design-tokens.json"));
+        var visualStyleRaw = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "visual-style.json"));
+
+        Assert.Equal("agent-handoff-design-tokens", designTokens.ArtifactKind);
+        Assert.Equal("agent-handoff-visual-style", visualStyle.ArtifactKind);
+        Assert.DoesNotContain("sourceRawTokensPath", designTokensRaw, StringComparison.Ordinal);
+        Assert.DoesNotContain("sourceRawTokensPath", visualStyleRaw, StringComparison.Ordinal);
+        Assert.All(designTokens.DiagnosticProvenance.Concat(visualStyle.DiagnosticProvenance), reference => Assert.False(reference.ConsumerReadable));
+    }
+
+    [Fact]
+    public async Task AgentHandoff_ResponsiveAndInteractionArtifactsAreSiteLevelWithoutPageArtifactPaths()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Responsive Interaction Contract");
+        var responsive = await ReadAsync<HandoffResponsiveBehaviorDocument>(projectRoot, "analysis/agent-handoff/responsive-behavior.json");
+        var interactions = await ReadAsync<HandoffInteractionModelsDocument>(projectRoot, "analysis/agent-handoff/interaction-models.json");
+        var responsiveRaw = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "responsive-behavior.json"));
+        var interactionsRaw = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "interaction-models.json"));
+
+        Assert.Equal("evidence-derived", responsive.ReviewStatus);
+        Assert.Equal("evidence-derived", interactions.ReviewStatus);
+        Assert.NotEmpty(responsive.Pages);
+        Assert.NotEmpty(interactions.Pages);
+        Assert.DoesNotContain("analysis/pages/", responsiveRaw, StringComparison.Ordinal);
+        Assert.DoesNotContain("analysis/pages/", interactionsRaw, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentHandoff_ReviewResolutionIsHandoffContractWithDiagnosticsOnlyResolvedArtifacts()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Review Resolution Contract");
+        var reviewResolution = await ReadAsync<HandoffReviewResolution>(projectRoot, "analysis/agent-handoff/review-resolution.json");
+        var raw = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "review-resolution.json")))!.AsObject();
+
+        Assert.Equal("agent-handoff-review-resolution", reviewResolution.ArtifactKind);
+        Assert.True(raw.ContainsKey("diagnosticProvenance"));
+        Assert.False(raw.ContainsKey("resolvedArtifacts"));
+        Assert.NotEmpty(reviewResolution.ResolvedArtifactReferences);
+        Assert.All(reviewResolution.DiagnosticProvenance, reference => Assert.False(reference.ConsumerReadable));
+    }
+
+    [Fact]
+    public async Task AgentHandoff_ReviewedSourceBlueprintRemainsUnchangedAfterHandoffAssembly()
+    {
+        var summary = await RunProjectAsync("Agent Handoff Source Blueprint Unchanged");
+        await ApproveAllReviewDecisionsAsync(summary.ArtifactRoot);
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(summary.ArtifactRoot, CancellationToken.None);
+        Assert.True(result.Readiness.Passed);
+        var sourcePath = Path.Combine(summary.ArtifactRoot, "analysis", "visual-blueprint.v1.reviewed.json");
+        var before = Sha256(summary.ArtifactRoot, "analysis/visual-blueprint.v1.reviewed.json");
+
+        await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(summary.ArtifactRoot, CancellationToken.None);
+
+        Assert.True(File.Exists(sourcePath));
+        Assert.Equal(before, Sha256(summary.ArtifactRoot, "analysis/visual-blueprint.v1.reviewed.json"));
+    }
+
+    [Fact]
+    public async Task AgentHandoff_MissingLocalConsumerSourceBlocksAssembly()
+    {
+        var summary = await RunProjectAsync("Agent Handoff Missing Local Source");
+        await ApproveAllReviewDecisionsAsync(summary.ArtifactRoot);
+        var result = await new BlueprintV1Assembler(GetRepoRoot()).AssembleAsync(summary.ArtifactRoot, CancellationToken.None);
+        Assert.True(result.Readiness.Passed);
+        File.Delete(Path.Combine(summary.ArtifactRoot, "presentation-catalog", "presentation-component-catalog.json"));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(summary.ArtifactRoot, CancellationToken.None));
+
+        Assert.Contains("presentation catalog", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task AgentHandoff_EvidenceManifestPackagesScreenshotsAndSectionCrops()
     {
         var projectRoot = await CreateReadyProjectAsync("Agent Handoff Evidence");
@@ -260,7 +386,24 @@ public sealed class AgentHandoffTests
         await new AgentHandoffAssembler(GetRepoRoot()).AssembleAsync(projectRoot, CancellationToken.None);
         var second = await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "manifest.json"));
 
-        Assert.Equal(first, second);
+        var firstManifest = JsonSerializer.Deserialize<AgentHandoffManifest>(first, VisualJson.Options)
+            ?? throw new InvalidOperationException("First handoff manifest did not parse.");
+        var secondManifest = JsonSerializer.Deserialize<AgentHandoffManifest>(second, VisualJson.Options)
+            ?? throw new InvalidOperationException("Second handoff manifest did not parse.");
+
+        Assert.Equal(firstManifest.ArtifactList, secondManifest.ArtifactList);
+        Assert.Equal(firstManifest.ArtifactEntries, secondManifest.ArtifactEntries);
+        Assert.Equal(firstManifest.UnsupportedPatternSummary, secondManifest.UnsupportedPatternSummary);
+        Assert.Equal(firstManifest.SchemaVersion, secondManifest.SchemaVersion);
+        Assert.Equal(firstManifest.ArtifactKind, secondManifest.ArtifactKind);
+        Assert.Equal(firstManifest.ArtifactId, secondManifest.ArtifactId);
+        Assert.Equal(firstManifest.ProjectId, secondManifest.ProjectId);
+        Assert.Equal(firstManifest.HandoffRoot, secondManifest.HandoffRoot);
+        Assert.Equal(firstManifest.ReviewBundleHash, secondManifest.ReviewBundleHash);
+        Assert.Equal(firstManifest.StorefrontPatternHash, secondManifest.StorefrontPatternHash);
+        Assert.Equal(firstManifest.PresentationCatalogHash, secondManifest.PresentationCatalogHash);
+        Assert.Equal(firstManifest.PageCompositionsHash, secondManifest.PageCompositionsHash);
+        Assert.Equal(firstManifest.EvidenceManifestHash, secondManifest.EvidenceManifestHash);
     }
 
     [Fact]
@@ -416,7 +559,19 @@ public sealed class AgentHandoffTests
             ["analysis/agent-handoff/evidence-manifest.json"] = "agent-handoff-evidence-manifest",
             ["analysis/agent-handoff/manifest.json"] = "agent-handoff-manifest",
             ["analysis/storefront-pattern/page-contracts.json"] = "page-contracts",
-            ["analysis/agent-handoff/visual-blueprint.json"] = "visual-blueprint-v1"
+            ["analysis/agent-handoff/page-compositions.json"] = "agent-handoff-page-compositions",
+            ["analysis/agent-handoff/visual-blueprint.json"] = "agent-handoff-visual-blueprint",
+            ["analysis/agent-handoff/design-tokens.json"] = "agent-handoff-design-tokens",
+            ["analysis/agent-handoff/visual-style.json"] = "agent-handoff-visual-style",
+            ["analysis/agent-handoff/responsive-behavior.json"] = "agent-handoff-responsive-behavior",
+            ["analysis/agent-handoff/interaction-models.json"] = "agent-handoff-interaction-models",
+            ["analysis/agent-handoff/presentation-catalog.json"] = "agent-handoff-presentation-catalog",
+            ["analysis/agent-handoff/presentation-mappings.json"] = "reviewed-presentation-mappings",
+            ["analysis/agent-handoff/component-candidates.json"] = "reviewed-component-candidates",
+            ["analysis/agent-handoff/component-instances.json"] = "component-instances",
+            ["analysis/agent-handoff/originality-restrictions.json"] = "reviewed-originality-restrictions",
+            ["analysis/agent-handoff/confidence.json"] = "confidence-report",
+            ["analysis/agent-handoff/review-resolution.json"] = "agent-handoff-review-resolution"
         };
 
         foreach (var pair in artifacts)
@@ -425,7 +580,10 @@ public sealed class AgentHandoffTests
             validator.Validate(pair.Value, node);
         }
 
-        Assert.Contains(new VisualSchemaRegistry().Schemas, schema => schema.ArtifactKind == "reviewed-visual-blueprint");
+        Assert.Contains(new VisualSchemaRegistry().Schemas, schema => schema.ArtifactKind == "agent-handoff-visual-blueprint");
+        Assert.Contains(new VisualSchemaRegistry().Schemas, schema => schema.ArtifactKind == "agent-handoff-page-compositions");
+        Assert.Contains(new VisualSchemaRegistry().Schemas, schema => schema.ArtifactKind == "agent-handoff-presentation-catalog");
+        Assert.Contains(new VisualSchemaRegistry().Schemas, schema => schema.ArtifactKind == "agent-handoff-review-resolution");
     }
 
     [Fact]

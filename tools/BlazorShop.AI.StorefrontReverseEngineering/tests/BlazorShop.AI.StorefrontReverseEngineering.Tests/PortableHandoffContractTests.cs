@@ -30,12 +30,12 @@ public sealed class PortableHandoffContractTests
     {
         var artifacts = new[]
         {
-            Artifact("analysis/agent-handoff/page-compositions.json", "reviewed-page-compositions", "reviewed-page-compositions", "bbb", 20),
+            Artifact("analysis/agent-handoff/page-compositions.json", "agent-handoff-page-compositions", "agent-handoff-page-compositions", "bbb", 20),
             Artifact("analysis/agent-handoff/allowed-files.json", "allowed-files", "allowed-files", "aaa", 10)
         };
         var schemas = new[]
         {
-            Schema("reviewed-page-compositions", "reviewed-page-compositions", "222"),
+            Schema("agent-handoff-page-compositions", "agent-handoff-page-compositions", "222"),
             Schema("allowed-files", "allowed-files", "111")
         };
 

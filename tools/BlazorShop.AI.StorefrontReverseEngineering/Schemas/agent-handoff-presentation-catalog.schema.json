@@ -1,0 +1,1 @@
+{"artifactKind":"agent-handoff-presentation-catalog","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["components","diagnosticProvenance"],"arrayPaths":["components","diagnosticProvenance"],"nonEmptyStringPaths":[]}

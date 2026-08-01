@@ -1,7 +1,11 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.StorefrontPattern;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Provenance;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
@@ -39,12 +43,20 @@ public sealed class AgentHandoffAssembler
         await WriteAsync(root, "allowed-files.json", allowed, cancellationToken);
         await WriteAsync(root, "protected-files.json", protectedFiles, cancellationToken);
         await WriteAsync(root, "unresolved-regions.json", unresolved, cancellationToken);
-        await CopyAsync(root, "analysis/resolved/page-compositions.reviewed.json", "page-compositions.json", cancellationToken);
-        await CopyAsync(root, "analysis/resolved/semantic-tokens.reviewed.json", "design-tokens.json", cancellationToken);
-        await CopyAsync(root, "analysis/resolved/semantic-tokens.reviewed.json", "visual-style.json", cancellationToken);
-        await CopyAsync(root, "analysis/storefront-pattern/storefront-pattern.json", "storefront-pattern.json", cancellationToken);
-        await CopyAsync(root, "analysis/visual-blueprint.v1.reviewed.json", "visual-blueprint.json", cancellationToken);
-        await CopyAsync(root, "reports/generation-readiness.json", "generation-readiness.json", cancellationToken);
+        await WritePageCompositionsAsync(root, project.ProjectId, createdUtc, compositions, cancellationToken);
+        await WriteSemanticHandoffArtifactsAsync(root, project.ProjectId, createdUtc, cancellationToken);
+        await CopyRequiredAsync(root, "analysis/storefront-pattern/storefront-pattern.json", "storefront-pattern.json", cancellationToken);
+        await WritePresentationCatalogAsync(root, project.ProjectId, createdUtc, cancellationToken);
+        await CopyRequiredAsync(root, "analysis/resolved/presentation-mappings.reviewed.json", "presentation-mappings.json", cancellationToken);
+        await CopyRequiredAsync(root, "analysis/resolved/component-candidates.reviewed.json", "component-candidates.json", cancellationToken);
+        await CopyRequiredAsync(root, "analysis/components/component-instances.json", "component-instances.json", cancellationToken);
+        await WriteResponsiveHandoffArtifactAsync(root, project.ProjectId, createdUtc, compositions, cancellationToken);
+        await WriteInteractionHandoffArtifactAsync(root, project.ProjectId, createdUtc, compositions, cancellationToken);
+        await CopyRequiredAsync(root, "analysis/resolved/originality-restrictions.reviewed.json", "originality-restrictions.json", cancellationToken);
+        await CopyRequiredAsync(root, "analysis/confidence/confidence-report.json", "confidence.json", cancellationToken);
+        await WriteReviewResolutionAsync(root, project.ProjectId, createdUtc, cancellationToken);
+        await WriteVisualBlueprintAsync(root, project.ProjectId, createdUtc, cancellationToken);
+        await CopyRequiredAsync(root, "reports/generation-readiness.json", "generation-readiness.json", cancellationToken);
         await File.WriteAllTextAsync(
             Path.Combine(root, AgentHandoffContract.HandoffRoot.Replace('/', Path.DirectorySeparatorChar), "task.md"),
             WriteTask(project, readiness, allowed, protectedFiles, compositions, ReadPageContracts(root)),
@@ -65,7 +77,7 @@ public sealed class AgentHandoffAssembler
             readiness.Passed,
             ReadReviewBundleHash(root),
             FileHash(root, "analysis/agent-handoff/storefront-pattern.json"),
-            FileHash(root, "presentation-catalog/presentation-component-catalog.json"),
+            FileHash(root, "analysis/agent-handoff/presentation-catalog.json"),
             FileHash(root, "analysis/agent-handoff/visual-blueprint.json"),
             FileHash(root, "analysis/agent-handoff/page-compositions.json"),
             FileHash(root, "analysis/agent-handoff/evidence-manifest.json"),
@@ -161,17 +173,269 @@ public sealed class AgentHandoffAssembler
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(value, VisualJson.Options) + Environment.NewLine, cancellationToken);
     }
 
-    private static async Task CopyAsync(string root, string source, string fileName, CancellationToken cancellationToken)
+    private static async Task CopyRequiredAsync(string root, string source, string fileName, CancellationToken cancellationToken)
     {
         var sourcePath = Path.Combine(root, source.Replace('/', Path.DirectorySeparatorChar));
         if (!File.Exists(sourcePath))
         {
-            return;
+            throw new InvalidOperationException($"[SRE-HANDOFF-PORTABLE-001] Required handoff source artifact is missing. Problem: '{source}' was not found. Cause: Phase 4 consumer artifacts must be packaged locally. Fix: rerun the upstream workflow step that creates '{source}'.");
         }
 
         var destinationPath = Path.Combine(root, AgentHandoffContract.HandoffRoot.Replace('/', Path.DirectorySeparatorChar), fileName);
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
         await File.WriteAllTextAsync(destinationPath, await File.ReadAllTextAsync(sourcePath, cancellationToken), cancellationToken);
+    }
+
+    private static Task WritePageCompositionsAsync(
+        string root,
+        string projectId,
+        DateTimeOffset createdUtc,
+        ReviewedPageCompositionsDocument source,
+        CancellationToken cancellationToken)
+    {
+        var provenance = source.Provenance.ReviewedInputArtifactPaths
+            .Append(source.Provenance.ReviewResolutionManifestPath)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .Select(path => new HandoffDiagnosticReference(path, "diagnostics-only", ConsumerReadable: false))
+            .ToArray();
+
+        return WriteAsync(root, "page-compositions.json", new HandoffPageCompositions(
+            "1.0",
+            "agent-handoff-page-compositions",
+            $"agent-handoff-page-compositions-{projectId}",
+            createdUtc,
+            projectId,
+            provenance,
+            source.Site,
+            source.Pages,
+            source.Compositions), cancellationToken);
+    }
+
+    private static Task WritePresentationCatalogAsync(string root, string projectId, DateTimeOffset createdUtc, CancellationToken cancellationToken)
+    {
+        var source = Read<PresentationComponentCatalog>(root, "presentation-catalog/presentation-component-catalog.json")
+            ?? throw new InvalidOperationException("[SRE-HANDOFF-PORTABLE-006] Required presentation catalog is missing. Problem: 'presentation-catalog/presentation-component-catalog.json' was not found or did not parse. Cause: handoff presentation catalog must be packaged locally. Fix: rerun build-presentation-catalog.");
+
+        var provenance = source.SourcePaths
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .Select(path => new HandoffDiagnosticReference(path, "diagnostics-only", ConsumerReadable: false))
+            .ToArray();
+
+        return WriteAsync(root, "presentation-catalog.json", new HandoffPresentationCatalog(
+            "1.0",
+            "agent-handoff-presentation-catalog",
+            $"agent-handoff-presentation-catalog-{projectId}",
+            createdUtc,
+            source.Components,
+            provenance), cancellationToken);
+    }
+
+    private static async Task WriteSemanticHandoffArtifactsAsync(string root, string projectId, DateTimeOffset createdUtc, CancellationToken cancellationToken)
+    {
+        var source = Read<SemanticTokenDocument>(root, "analysis/resolved/semantic-tokens.reviewed.json")
+            ?? throw new InvalidOperationException("[SRE-HANDOFF-PORTABLE-002] Required reviewed semantic tokens are missing. Problem: 'analysis/resolved/semantic-tokens.reviewed.json' was not found or did not parse. Cause: design tokens and visual style must be packaged as handoff-local artifacts. Fix: rerun review resolution.");
+        var provenance = new[]
+        {
+            new HandoffDiagnosticReference(source.SourceRawTokensPath, "diagnostics-only", ConsumerReadable: false)
+        };
+
+        await WriteAsync(
+            root,
+            "design-tokens.json",
+            new HandoffSemanticTokens(
+                "1.0",
+                "agent-handoff-design-tokens",
+                $"agent-handoff-design-tokens-{projectId}",
+                createdUtc,
+                projectId,
+                source.Tokens,
+                source.PageLocalOverrides,
+                source.ComponentLocalOverrides,
+                source.HumanReviewRequired,
+                source.ReviewReasons,
+                provenance),
+            cancellationToken);
+        await WriteAsync(
+            root,
+            "visual-style.json",
+            new HandoffSemanticTokens(
+                "1.0",
+                "agent-handoff-visual-style",
+                $"agent-handoff-visual-style-{projectId}",
+                createdUtc,
+                projectId,
+                source.Tokens,
+                source.PageLocalOverrides,
+                source.ComponentLocalOverrides,
+                source.HumanReviewRequired,
+                source.ReviewReasons,
+                provenance),
+            cancellationToken);
+    }
+
+    private static async Task WriteResponsiveHandoffArtifactAsync(
+        string root,
+        string projectId,
+        DateTimeOffset createdUtc,
+        ReviewedPageCompositionsDocument compositions,
+        CancellationToken cancellationToken)
+    {
+        var pages = compositions.Pages
+            .OrderBy(page => page.PageId, StringComparer.Ordinal)
+            .Select(page =>
+            {
+                var source = Read<ResponsiveBehaviorDocument>(root, $"analysis/pages/{page.PageId}/responsive-behavior.json")
+                    ?? throw new InvalidOperationException($"[SRE-HANDOFF-PORTABLE-003] Required responsive behavior is missing. Problem: page '{page.PageId}' has no responsive behavior artifact. Cause: Phase 4 responsive inputs must be site-level and handoff-local. Fix: rerun analyze-responsive-interactions.");
+                return new HandoffResponsiveBehaviorPage(source.PageId, source.Sections, source.InferredBreakpointRanges, source.Issues);
+            })
+            .ToArray();
+
+        await WriteAsync(root, "responsive-behavior.json", new HandoffResponsiveBehaviorDocument(
+            "1.0",
+            "agent-handoff-responsive-behavior",
+            $"agent-handoff-responsive-behavior-{projectId}",
+            createdUtc,
+            projectId,
+            "evidence-derived",
+            pages), cancellationToken);
+    }
+
+    private static async Task WriteInteractionHandoffArtifactAsync(
+        string root,
+        string projectId,
+        DateTimeOffset createdUtc,
+        ReviewedPageCompositionsDocument compositions,
+        CancellationToken cancellationToken)
+    {
+        var pages = compositions.Pages
+            .OrderBy(page => page.PageId, StringComparer.Ordinal)
+            .Select(page =>
+            {
+                var source = Read<InteractionModelDocument>(root, $"analysis/pages/{page.PageId}/interaction-model.json")
+                    ?? throw new InvalidOperationException($"[SRE-HANDOFF-PORTABLE-004] Required interaction model is missing. Problem: page '{page.PageId}' has no interaction model artifact. Cause: Phase 4 interaction inputs must be site-level and handoff-local. Fix: rerun analyze-responsive-interactions.");
+                return new HandoffInteractionModelPage(source.PageId, NormalizeInteractionPaths(source.Interactions), source.Issues);
+            })
+            .ToArray();
+
+        await WriteAsync(root, "interaction-models.json", new HandoffInteractionModelsDocument(
+            "1.0",
+            "agent-handoff-interaction-models",
+            $"agent-handoff-interaction-models-{projectId}",
+            createdUtc,
+            projectId,
+            "evidence-derived",
+            pages), cancellationToken);
+    }
+
+    private static Task WriteReviewResolutionAsync(string root, string projectId, DateTimeOffset createdUtc, CancellationToken cancellationToken)
+    {
+        var source = Read<ReviewResolutionManifest>(root, "analysis/resolved/review-resolution-manifest.json")
+            ?? throw new InvalidOperationException("[SRE-HANDOFF-PORTABLE-007] Required review resolution is missing. Problem: 'analysis/resolved/review-resolution-manifest.json' was not found or did not parse. Cause: handoff review resolution must be packaged as a handoff-local artifact. Fix: resolve review decisions and rerun assemble-blueprint-v1.");
+
+        var provenance = source.ResolvedArtifacts
+            .Append("analysis/resolved/review-resolution-manifest.json")
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .Select(path => new HandoffDiagnosticReference(path, "diagnostics-only", ConsumerReadable: false))
+            .ToArray();
+
+        return WriteAsync(root, "review-resolution.json", new HandoffReviewResolution(
+            "1.0",
+            "agent-handoff-review-resolution",
+            $"agent-handoff-review-resolution-{projectId}",
+            createdUtc,
+            projectId,
+            source.SourceReviewQueueId,
+            source.SourceReviewQueueHash,
+            source.DecisionBundleHash,
+            source.ResolvedItemCount,
+            source.BlockingUnresolvedCount,
+            source.ResolvedArtifacts,
+            source.BlockedItems,
+            provenance), cancellationToken);
+    }
+
+    private static IReadOnlyList<InteractionPattern> NormalizeInteractionPaths(IReadOnlyList<InteractionPattern> interactions) =>
+        interactions
+            .Select(interaction => interaction with
+            {
+                BeforeStylesPath = ToDiagnosticMarker(interaction.BeforeStylesPath),
+                AfterStylesPath = ToDiagnosticMarker(interaction.AfterStylesPath)
+            })
+            .ToArray();
+
+    private static string? ToDiagnosticMarker(string? path) =>
+        string.IsNullOrWhiteSpace(path) ? null : $"diagnostics-only:{path}";
+
+    private static async Task WriteVisualBlueprintAsync(string root, string projectId, DateTimeOffset createdUtc, CancellationToken cancellationToken)
+    {
+        var source = Read<VisualBlueprintV1>(root, "analysis/visual-blueprint.v1.reviewed.json")
+            ?? throw new InvalidOperationException("[SRE-HANDOFF-PORTABLE-005] Required reviewed visual blueprint is missing. Problem: 'analysis/visual-blueprint.v1.reviewed.json' was not found or did not parse. Cause: handoff blueprint must be derived from the reviewed blueprint. Fix: resolve review blockers and rerun assemble-blueprint-v1.");
+        var consumerReferences = ConsumerReferences();
+        var sourceReferences = AllBlueprintReferences(source)
+            .Where(reference => !string.IsNullOrWhiteSpace(reference))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .Select(reference => new HandoffDiagnosticReference(reference, "diagnostics-only", ConsumerReadable: false))
+            .ToArray();
+        await WriteAsync(root, "visual-blueprint.json", new HandoffVisualBlueprint(
+            "1.0",
+            "agent-handoff-visual-blueprint",
+            $"agent-handoff-blueprint-{projectId}",
+            createdUtc,
+            projectId,
+            consumerReferences,
+            sourceReferences,
+            new Dictionary<string, string>(StringComparer.Ordinal),
+            source.Pages,
+            source.GenerationRestrictions), cancellationToken);
+    }
+
+    private static IReadOnlyDictionary<string, string> ConsumerReferences() =>
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["manifest"] = "analysis/agent-handoff/manifest.json",
+            ["task"] = "analysis/agent-handoff/task.md",
+            ["allowedFiles"] = "analysis/agent-handoff/allowed-files.json",
+            ["protectedFiles"] = "analysis/agent-handoff/protected-files.json",
+            ["pageCompositions"] = "analysis/agent-handoff/page-compositions.json",
+            ["designTokens"] = "analysis/agent-handoff/design-tokens.json",
+            ["visualStyle"] = "analysis/agent-handoff/visual-style.json",
+            ["storefrontPattern"] = "analysis/agent-handoff/storefront-pattern.json",
+            ["presentationCatalog"] = "analysis/agent-handoff/presentation-catalog.json",
+            ["presentationMappings"] = "analysis/agent-handoff/presentation-mappings.json",
+            ["componentDefinitions"] = "analysis/agent-handoff/component-candidates.json",
+            ["componentInstances"] = "analysis/agent-handoff/component-instances.json",
+            ["responsiveBehavior"] = "analysis/agent-handoff/responsive-behavior.json",
+            ["interactionModels"] = "analysis/agent-handoff/interaction-models.json",
+            ["originalityRestrictions"] = "analysis/agent-handoff/originality-restrictions.json",
+            ["confidence"] = "analysis/agent-handoff/confidence.json",
+            ["reviewResolution"] = "analysis/agent-handoff/review-resolution.json",
+            ["evidence"] = "analysis/agent-handoff/evidence-manifest.json",
+            ["unresolvedRegions"] = "analysis/agent-handoff/unresolved-regions.json",
+            ["generationReadiness"] = "analysis/agent-handoff/generation-readiness.json",
+            ["handoffReadiness"] = "analysis/agent-handoff/handoff-readiness.json"
+        };
+
+    private static IEnumerable<string> AllBlueprintReferences(VisualBlueprintV1 blueprint)
+    {
+        foreach (var reference in blueprint.SourceProvenance) yield return reference;
+        foreach (var reference in blueprint.PageArchetypes) yield return reference;
+        yield return blueprint.Tokens;
+        foreach (var reference in blueprint.Sections) yield return reference;
+        foreach (var reference in blueprint.ResponsiveBehavior) yield return reference;
+        foreach (var reference in blueprint.InteractionModels) yield return reference;
+        yield return blueprint.ComponentDefinitions;
+        yield return blueprint.ComponentInstances;
+        foreach (var reference in blueprint.EcommerceRegions) yield return reference;
+        yield return blueprint.PresentationMappings;
+        yield return blueprint.UnsupportedPatterns;
+        yield return blueprint.OriginalityRestrictions;
+        yield return blueprint.Confidence;
+        yield return blueprint.ReviewState;
     }
 
     private static IReadOnlyList<AgentHandoffArtifactEntry> BuildArtifactEntries(string root) =>
@@ -219,6 +483,14 @@ public sealed class AgentHandoffAssembler
         File.Exists(path)
             ? Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()
             : null;
+
+    private static T? Read<T>(string root, string relativePath)
+    {
+        var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(path)
+            ? JsonSerializer.Deserialize<T>(File.ReadAllText(path), VisualJson.Options)
+            : default;
+    }
 
     private static string WriteTask(
         VisualProject project,

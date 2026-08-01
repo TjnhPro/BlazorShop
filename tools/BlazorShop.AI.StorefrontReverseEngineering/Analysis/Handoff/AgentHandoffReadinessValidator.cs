@@ -446,13 +446,14 @@ public sealed class AgentHandoffReadinessValidator
 
     private static void AddBlueprintReferenceFindings(string root, List<AgentHandoffReadinessFinding> findings)
     {
-        var blueprint = Read<VisualBlueprintV1>(root, "analysis/agent-handoff/visual-blueprint.json");
-        if (blueprint is null)
+        var path = Path.Combine(root, "analysis", "agent-handoff", "visual-blueprint.json");
+        if (!File.Exists(path))
         {
             return;
         }
 
-        foreach (var reference in AllBlueprintReferences(blueprint))
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        foreach (var reference in AllStringValues(document.RootElement))
         {
             if (reference.Contains(".draft.json", StringComparison.OrdinalIgnoreCase))
             {
@@ -543,22 +544,35 @@ public sealed class AgentHandoffReadinessValidator
     private static string FileHash(byte[] bytes) =>
         Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant();
 
-    private static IEnumerable<string> AllBlueprintReferences(VisualBlueprintV1 blueprint)
+    private static IEnumerable<string> AllStringValues(JsonElement element)
     {
-        foreach (var reference in blueprint.SourceProvenance) yield return reference;
-        foreach (var reference in blueprint.PageArchetypes) yield return reference;
-        yield return blueprint.Tokens;
-        foreach (var reference in blueprint.Sections) yield return reference;
-        foreach (var reference in blueprint.ResponsiveBehavior) yield return reference;
-        foreach (var reference in blueprint.InteractionModels) yield return reference;
-        yield return blueprint.ComponentDefinitions;
-        yield return blueprint.ComponentInstances;
-        foreach (var reference in blueprint.EcommerceRegions) yield return reference;
-        yield return blueprint.PresentationMappings;
-        yield return blueprint.UnsupportedPatterns;
-        yield return blueprint.OriginalityRestrictions;
-        yield return blueprint.Confidence;
-        yield return blueprint.ReviewState;
+        if (element.ValueKind == JsonValueKind.String)
+        {
+            yield return element.GetString() ?? string.Empty;
+            yield break;
+        }
+
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                foreach (var value in AllStringValues(property.Value))
+                {
+                    yield return value;
+                }
+            }
+        }
+
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in element.EnumerateArray())
+            {
+                foreach (var value in AllStringValues(item))
+                {
+                    yield return value;
+                }
+            }
+        }
     }
 
     private void AddStaticBoundaryFindings(List<AgentHandoffReadinessFinding> findings)

@@ -1,0 +1,1 @@
+{"artifactKind":"agent-handoff-visual-blueprint","schemaVersion":"1.0","requiredProperties":["schemaVersion","artifactKind","artifactId","createdUtc"],"requiredPaths":["projectId","consumerReferences","diagnosticProvenance","pages","generationRestrictions"],"arrayPaths":["diagnosticProvenance","pages","generationRestrictions"],"nonEmptyStringPaths":["projectId"]}
