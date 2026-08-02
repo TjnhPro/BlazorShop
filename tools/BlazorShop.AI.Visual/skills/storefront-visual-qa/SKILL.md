@@ -46,6 +46,8 @@ QA cannot pass from compile-only, restore-only, or smoke-only evidence.
 
 Repair is optional and bounded. Default `maxRepairAttempts` is `2`; use `3` only when the gate explicitly configures it.
 
+`tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/repair-visual-generation.mjs` is a bounded mechanical helper, not the canonical visual QA skill. Use it only after this QA skill has identified a reproducible browser-evidence failure that matches the helper's supported generated visual repair patterns.
+
 Allow a repair attempt only when all conditions are true:
 
 - the issue is reproducible from browser evidence

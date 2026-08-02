@@ -635,20 +635,20 @@ Goal: keep the existing mechanical repair helper useful without letting it becom
 
 Tasks:
 
-- [ ] Document that `repair-visual-generation.mjs` is a bounded helper, not the canonical visual QA skill.
-- [ ] Confirm it still rejects:
-  - [ ] route additions.
-  - [ ] direct API transport.
-  - [ ] business logic changes.
-  - [ ] auth/session changes.
-  - [ ] SEO changes.
-  - [ ] protected descriptor edits.
-- [ ] Align visual QA skill wording with the existing helper's actual capabilities.
-- [ ] If needed, add report fields showing whether a fix came from:
-  - [ ] manual agent edit.
-  - [ ] mechanical repair helper.
-  - [ ] no repair attempted.
-- [ ] Do not expand repair into business or platform behavior.
+- [x] Document that `repair-visual-generation.mjs` is a bounded helper, not the canonical visual QA skill.
+- [x] Confirm it still rejects:
+  - [x] route additions.
+  - [x] direct API transport.
+  - [x] business logic changes.
+  - [x] auth/session changes.
+  - [x] SEO changes.
+  - [x] protected descriptor edits.
+- [x] Align visual QA skill wording with the existing helper's actual capabilities.
+- [x] If needed, add report fields showing whether a fix came from:
+  - [x] manual agent edit.
+  - [x] mechanical repair helper.
+  - [x] no repair attempted.
+- [x] Do not expand repair into business or platform behavior.
 
 Checks:
 
@@ -659,8 +659,18 @@ rg -n "HttpClient|/api/storefront/stores|@page|auth|seo|descriptor" tools\Blazor
 
 DoD:
 
-- [ ] Repair ownership is explicit.
-- [ ] Repair cannot be mistaken for final visual QA.
+- [x] Repair ownership is explicit.
+- [x] Repair cannot be mistaken for final visual QA.
+
+Phase 4.10.10 evidence:
+
+- Added artifact-independent `--help` to `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/repair-visual-generation.mjs`.
+- Documented in `storefront-visual-qa/SKILL.md` that the repair helper is bounded/mechanical and not the canonical visual QA skill.
+- Confirmed helper help text and blocker classifier reject route additions, direct API transport, business logic, auth/session changes, seo changes, and descriptor edits.
+- Existing `visual-qa-report.schema.json` already records repair sources as `manual-agent-edit`, `mechanical-repair-helper`, and `no-repair-attempted`.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --help` printed usage and exited successfully.
+- `rg -n "HttpClient|/api/storefront/stores|@page|auth|seo|descriptor" tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs` returned matches.
 
 ## Phase 4.10.11 - Target-Specific Phase 4 MVP Gate
 

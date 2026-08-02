@@ -5,6 +5,22 @@ import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(`Usage: node repair-visual-generation.mjs [options]
+
+Options:
+  --project-root <path>       Generated storefront project root.
+  --failure-report <path>     Browser/build/boundary failure report to classify.
+  --max-attempts <number>     Maximum bounded repair attempts, default 2.
+  --help, -h                  Show this help text.
+
+Scope:
+  Bounded helper only. It may repair generated-owned visual files from the agent task package.
+  It rejects @page route additions, HttpClient/fetch transport, /api/storefront/stores calls,
+  business logic, auth/session changes, seo changes, and protected descriptor edits.`);
+  process.exit(0);
+}
+
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const failureReportPath = resolve(readArg("--failure-report") ?? join(projectRoot, "docs/storefront-analysis/visual-qa-report.md"));
@@ -136,7 +152,7 @@ function classifyManualBlocker(text) {
     [/StorefrontPackageVersions\.props|protected file|protected generated file/i, "SFB-REPAIR-010", "Protected-file repair requires manual foundation scope review."],
     [/@page|route declaration/i, "SFB-REPAIR-011", "Route declarations are outside generated visual repair scope."],
     [/HttpClient|fetch\(|\/api\/storefront\/stores\/|CommerceNodeBaseUrl/i, "SFB-REPAIR-012", "Transport or Commerce Node calls are outside generated visual repair scope."],
-    [/PlaceOrder|CapturePayment|ValidateCheckout|ValidateCart|ExpectedCartVersion|accessToken|refreshToken/i, "SFB-REPAIR-013", "Business/auth/SEO repair is outside generated visual repair scope."],
+    [/PlaceOrder|CapturePayment|ValidateCheckout|ValidateCart|ExpectedCartVersion|accessToken|refreshToken|seo|descriptor/i, "SFB-REPAIR-013", "Business/auth/seo or descriptor repair is outside generated visual repair scope."],
   ];
 
   for (const [pattern, code, message] of blockers) {
