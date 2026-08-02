@@ -1,4 +1,5 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Handoff;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -16,7 +17,9 @@ public static class CliHost
         "capture",
         "analyze",
         "inspect",
+        "inspect-handoff",
         "validate",
+        "validate-handoff",
         "run",
         "resume"
     ];
@@ -63,6 +66,8 @@ public static class CliHost
         output.WriteLine("  run --url <url> --name <name> --output-root obj/storefront-reverse-engineering/projects --no-ai [--run-id <id>] [--force-step <step>]");
         output.WriteLine("  resume --project obj/storefront-reverse-engineering/projects/<project-id> [--run-id <id>] [--force-step <step>]");
         output.WriteLine("  inspect --project obj/storefront-reverse-engineering/projects/<project-id>");
+        output.WriteLine("  validate-handoff --handoff-root <path> --schema-root <path>");
+        output.WriteLine("  inspect-handoff --handoff-root <path> --schema-root <path>");
         output.WriteLine();
         output.WriteLine("Phase 3B force-step values:");
         output.WriteLine("  aggregate-evidence, extract-raw-tokens, normalize-semantic-tokens, classify-page-archetypes");
@@ -122,6 +127,14 @@ public static class CliHost
                     WritePhase3BInspection(output, inspection.Phase3B);
 
                     return 0;
+                case "validate-handoff":
+                case "inspect-handoff":
+                    var handoffRoot = options.GetRequired("handoff-root", "SRE-HANDOFF-001");
+                    var schemaRoot = options.GetRequired("schema-root", "SRE-HANDOFF-002");
+                    var portableValidator = new PortableHandoffValidator();
+                    var portableReport = await portableValidator.ValidateAsync(handoffRoot, schemaRoot, cancellationToken);
+                    WritePortableHandoffInspection(output, portableReport);
+                    return portableReport.Findings.Any(finding => finding.Severity == "blocking") ? 3 : 0;
                 case "discover":
                     var projectPath = options.GetRequired("project", "SRE-DISCOVER-001");
                     var projectInspection = await service.InspectAsync(projectPath, cancellationToken);
@@ -223,6 +236,31 @@ public static class CliHost
 
     private static string FormatLatestBlockingFinding(ReadinessFinding? finding) =>
         finding is null ? "(none)" : $"{finding.Code} - {finding.Message}";
+
+    private static void WritePortableHandoffInspection(TextWriter output, PortableHandoffValidationReport report)
+    {
+        output.WriteLine($"Project ID: {report.ProjectId ?? "(unknown)"}");
+        output.WriteLine($"Readiness passed: {report.ReadinessPassed}");
+        output.WriteLine($"Package hash: {report.PackageHash ?? "(none)"}");
+        output.WriteLine($"Artifact count: {report.ArtifactCount}");
+        output.WriteLine($"Schema count: {report.SchemaCount}");
+        output.WriteLine($"Consumer reference count: {report.ConsumerReferenceCount}");
+        output.WriteLine($"Diagnostic provenance count: {report.DiagnosticProvenanceCount}");
+        output.WriteLine($"First blocking finding: {FormatPortableFinding(report.Findings.FirstOrDefault(finding => finding.Severity == "blocking"))}");
+    }
+
+    private static string FormatPortableFinding(PortableHandoffValidationFinding? finding) =>
+        finding is null
+            ? "(none)"
+            : string.Join(" | ",
+                new[]
+                {
+                    finding.Code,
+                    finding.Message,
+                    finding.Problem is null ? null : "Problem: " + finding.Problem,
+                    finding.Cause is null ? null : "Cause: " + finding.Cause,
+                    finding.FixSuggestion is null ? null : "Fix: " + finding.FixSuggestion
+                }.Where(value => !string.IsNullOrWhiteSpace(value)));
 
     private static void WriteRunInspection(TextWriter output, VisualProjectInspection inspection)
     {

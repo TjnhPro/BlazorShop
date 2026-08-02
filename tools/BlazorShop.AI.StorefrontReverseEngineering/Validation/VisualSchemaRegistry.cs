@@ -16,8 +16,13 @@ public sealed class VisualSchemaRegistry : IVisualSchemaRegistry
     private readonly Dictionary<string, VisualSchemaDefinition> schemas;
 
     public VisualSchemaRegistry()
+        : this(schemaRoot: null)
     {
-        schemas = LoadSchemas().ToDictionary(schema => schema.ArtifactKind, StringComparer.Ordinal);
+    }
+
+    public VisualSchemaRegistry(string? schemaRoot)
+    {
+        schemas = LoadSchemas(schemaRoot).ToDictionary(schema => schema.ArtifactKind, StringComparer.Ordinal);
         if (schemas.TryGetValue("capture-viewport-manifest", out var viewportManifest) &&
             schemas.TryGetValue("page-capture-manifest", out var pageManifest))
         {
@@ -44,15 +49,17 @@ public sealed class VisualSchemaRegistry : IVisualSchemaRegistry
         throw new InvalidOperationException($"[SRE-SCHEMA-004] Unknown artifact kind. Problem: '{artifactKind}' is not registered. Cause: every first-class artifact must be registered before read/write. Fix: add a schema file under tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas.");
     }
 
-    private static IReadOnlyList<VisualSchemaDefinition> LoadSchemas()
+    private static IReadOnlyList<VisualSchemaDefinition> LoadSchemas(string? schemaRoot)
     {
-        var schemaRoot = FindSchemaRoot();
-        if (schemaRoot is null)
+        var resolvedSchemaRoot = !string.IsNullOrWhiteSpace(schemaRoot)
+            ? Path.GetFullPath(schemaRoot)
+            : FindSchemaRoot();
+        if (resolvedSchemaRoot is null)
         {
             throw new InvalidOperationException("[SRE-SCHEMA-009] Schema directory was not found. Problem: Schemas/*.schema.json could not be located. Cause: the tool was run without source or copied schema files. Fix: run from the repository root or include schema files beside the executable.");
         }
 
-        return Directory.EnumerateFiles(schemaRoot, "*.schema.json")
+        return Directory.EnumerateFiles(resolvedSchemaRoot, "*.schema.json")
             .Select(path => JsonSerializer.Deserialize<VisualSchemaDefinition>(File.ReadAllText(path), VisualJson.Options)
                 ?? throw new InvalidOperationException($"[SRE-SCHEMA-010] Schema file is invalid JSON. Problem: '{path}' did not deserialize. Cause: schema descriptor is malformed. Fix: regenerate the schema file."))
             .ToArray();

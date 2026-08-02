@@ -350,37 +350,37 @@ Goal: add tools that validate a copied handoff package without the original Phas
 
 Implementation checklist:
 
-- [ ] Add `PortableHandoffValidator`.
-- [ ] Constructor accepts schema registry/root only, not repo project root.
-- [ ] Public API:
-  - [ ] `ValidateAsync(string handoffRoot, string schemaRoot, CancellationToken cancellationToken)`
-  - [ ] no `ApprovedArtifactRootResolver`.
-  - [ ] no read of `project.json`, `reports/*`, `review/*`, `analysis/resolved/*`, `presentation-catalog/*`, or `captures/*` outside handoff.
-- [ ] Add CLI command:
-  - [ ] `validate-handoff --handoff-root <path> --schema-root <path>`
-- [ ] Add CLI command:
-  - [ ] `inspect-handoff --handoff-root <path> --schema-root <path>`
-- [ ] CLI output includes:
-  - [ ] project ID.
-  - [ ] readiness.
-  - [ ] package hash.
-  - [ ] artifact count.
-  - [ ] schema count.
-  - [ ] consumer reference count.
-  - [ ] diagnostic provenance count.
-  - [ ] first blocking finding with problem/cause/fix.
-- [ ] Keep these commands in ReverseEngineering only.
+- [x] Add `PortableHandoffValidator`.
+- [x] Constructor accepts schema registry/root only, not repo project root.
+- [x] Public API:
+  - [x] `ValidateAsync(string handoffRoot, string schemaRoot, CancellationToken cancellationToken)`
+  - [x] no `ApprovedArtifactRootResolver`.
+  - [x] no read of `project.json`, `reports/*`, `review/*`, `analysis/resolved/*`, `presentation-catalog/*`, or `captures/*` outside handoff.
+- [x] Add CLI command:
+  - [x] `validate-handoff --handoff-root <path> --schema-root <path>`
+- [x] Add CLI command:
+  - [x] `inspect-handoff --handoff-root <path> --schema-root <path>`
+- [x] CLI output includes:
+  - [x] project ID.
+  - [x] readiness.
+  - [x] package hash.
+  - [x] artifact count.
+  - [x] schema count.
+  - [x] consumer reference count.
+  - [x] diagnostic provenance count.
+  - [x] first blocking finding with problem/cause/fix.
+- [x] Keep these commands in ReverseEngineering only.
 
 Tests:
 
-- [ ] `validate-handoff` succeeds on a copied package.
-- [ ] `inspect-handoff` does not read source project files.
-- [ ] Missing schema root fails with clear problem/cause/fix.
-- [ ] Missing handoff root fails with clear problem/cause/fix.
-- [ ] Readiness false fails.
-- [ ] Reference escape fails.
-- [ ] Corrupt artifact fails.
-- [ ] Command help lists both commands.
+- [x] `validate-handoff` succeeds on a copied package.
+- [x] `inspect-handoff` does not read source project files.
+- [x] Missing schema root fails with clear problem/cause/fix.
+- [x] Missing handoff root fails with clear problem/cause/fix.
+- [x] Readiness false fails.
+- [x] Reference escape fails.
+- [x] Corrupt artifact fails.
+- [x] Command help lists both commands.
 
 Done when:
 
@@ -619,7 +619,7 @@ Done when:
 4. [x] Phase 3E.3 typed reference containment validator.
 5. [x] Phase 3E.4 portable manifest and schema hardening.
 6. [x] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
-7. [ ] Phase 3E.6 portable validator and inspect CLI.
+7. [x] Phase 3E.6 portable validator and inspect CLI.
 8. [ ] Phase 3E.7 Phase 4 read-only dry-run loader.
 9. [ ] Phase 3E.8 isolated copy proof and negative portability mutations.
 10. [ ] Phase 3E.9 final Phase 3E closure gate.
@@ -635,7 +635,7 @@ Suggested development commits:
 3. [x] `phase 3e: enforce typed handoff references`
 4. [x] `phase 3e: harden manifest schemas and package hashes`
 5. [x] `phase 3e: share reviewed slot provenance`
-6. [ ] `phase 3e: add portable validation commands`
+6. [x] `phase 3e: add portable validation commands`
 7. [ ] `phase 3e: prove isolated handoff loading`
 8. [ ] `phase 3e: add portability mutation proofs`
 9. [ ] `phase 3e: add final clean-head gate`
@@ -679,8 +679,8 @@ Slot provenance:
 
 Portable validation and loading:
 
-- [ ] `PortableHandoffValidatorTests`
-- [ ] `PortableHandoffCliTests`
+- [x] `PortableHandoffValidatorTests`
+- [x] `PortableHandoffCliTests`
 - [ ] `HandoffConsumerDryRunLoaderTests`
 - [ ] `PortableHandoffCopyProofTests`
 
@@ -833,7 +833,7 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 - [x] Implement Phase 3E.3 typed reference containment.
 - [x] Implement Phase 3E.4 manifest and schema hardening.
 - [x] Implement Phase 3E.5 shared slot provenance.
-- [ ] Implement Phase 3E.6 portable validation commands.
+- [x] Implement Phase 3E.6 portable validation commands.
 - [ ] Implement Phase 3E.7 consumer dry-run loader.
 - [ ] Implement Phase 3E.8 isolated copy proof and mutations.
 - [ ] Implement Phase 3E.9 final gate.
