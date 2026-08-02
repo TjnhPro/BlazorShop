@@ -207,6 +207,13 @@ try {
 
     Set-Content -LiteralPath (Join-Path $analysisRoot "metadata.yaml") -Value $metadata -Encoding UTF8
 
+    if ($isHandoffGeneration) {
+        & node (Join-Path $PSScriptRoot "update-generated-files-manifest.mjs") --project-root $stagedProjectRoot
+        if ($LASTEXITCODE -ne 0) {
+            throw "[SFB-HANDOFF-GEN-012] Handoff generated file manifest update failed with exit code $LASTEXITCODE."
+        }
+    }
+
     & $projectValidator -ProjectRoot $stagedProjectRoot -Name $projectName -StoreKey $normalizedStoreKey
 
     if (Test-Path -LiteralPath $projectRoot) {

@@ -468,37 +468,48 @@ Implementation targets:
 
 Tasks:
 
-- [ ] Extend static validation for handoff-generated projects.
-- [ ] Validate the handoff package hash recorded in metadata.
-- [ ] Validate generation plan hash recorded in metadata.
-- [ ] Validate generated file manifest includes plan entry ids for handoff-generated files.
-- [ ] Validate no generated file references raw evidence paths.
-- [ ] Validate no generated file references Storefront V2.
-- [ ] Validate no generated file references backend/core/API projects.
-- [ ] Validate no generated file declares `@page`.
-- [ ] Validate no generated browser file calls Commerce Node directly.
-- [ ] Validate no generated project references `BlazorShop.Web.SharedV2`.
-- [ ] Validate no generated project directly references Runtime or Client unless a documented low-level extension is explicitly approved.
-- [ ] Validate generated project consumes Presentation/Components according to current isolation gate.
-- [ ] Validate protected files are unchanged unless scope is explicitly `foundation`.
-- [ ] Validate manual edits are not overwritten during regeneration.
-- [ ] Validate obsolete generated files are reported.
-- [ ] Validate `docs/storefront-analysis` records plan/report/proof lineage.
+- [x] Extend static validation for handoff-generated projects.
+- [x] Validate the handoff package hash recorded in metadata.
+- [x] Validate generation plan hash recorded in metadata.
+- [x] Validate generated file manifest includes plan entry ids for handoff-generated files.
+- [x] Validate no generated file references raw evidence paths.
+- [x] Validate no generated file references Storefront V2.
+- [x] Validate no generated file references backend/core/API projects.
+- [x] Validate no generated file declares `@page`.
+- [x] Validate no generated browser file calls Commerce Node directly.
+- [x] Validate no generated project references `BlazorShop.Web.SharedV2`.
+- [x] Validate no generated project directly references Runtime or Client unless a documented low-level extension is explicitly approved.
+- [x] Validate generated project consumes Presentation/Components according to current isolation gate.
+- [x] Validate protected files are unchanged unless scope is explicitly `foundation`.
+- [x] Validate manual edits are not overwritten during regeneration.
+- [x] Validate obsolete generated files are reported.
+- [x] Validate `docs/storefront-analysis` records plan/report/proof lineage.
 
 Tests:
 
-- [ ] Add focused tests for every new validator rule.
-- [ ] Add fixture generated project with a valid handoff plan.
-- [ ] Add fixture generated project with forbidden route declaration.
-- [ ] Add fixture generated project with forbidden direct transport.
-- [ ] Add fixture generated project with forbidden V2 reference.
-- [ ] Add fixture generated project with forbidden raw evidence reference.
-- [ ] Add fixture generated project with protected file mutation.
+- [x] Add focused tests for every new validator rule.
+- [x] Add fixture generated project with a valid handoff plan.
+- [x] Add fixture generated project with forbidden route declaration.
+- [x] Add fixture generated project with forbidden direct transport.
+- [x] Add fixture generated project with forbidden V2 reference.
+- [x] Add fixture generated project with forbidden raw evidence reference.
+- [x] Add fixture generated project with protected file mutation.
 
 Exit criteria:
 
-- [ ] Static gates can distinguish valid visual generation from boundary leaks.
-- [ ] Existing non-handoff generated proof remains green.
+- [x] Static gates can distinguish valid visual generation from boundary leaks.
+- [x] Existing non-handoff generated proof remains green.
+
+Phase 4.5 evidence:
+
+- Added `scripts/validate/Test-StorefrontBuilderHandoffBoundary.mjs` for handoff-aware static validation of metadata hashes, generation-plan hash, agent task package hash, generated manifest plan ids, lineage artifacts, raw evidence references, Storefront V2/backend/Web.SharedV2 leaks, route declarations, direct browser transport, protected-file mutation, manual edit visibility, and obsolete/missing manifest reporting.
+- Updated `scripts/validate/Test-StorefrontBuilderStaticGate.ps1` to detect handoff-generated projects by `docs/storefront-analysis/generation-plan.json`, run the handoff boundary validator, and keep existing visual proof validators for non-handoff projects.
+- Updated `generated-file-manifest.mjs` so handoff-generated files record `sourcePlanEntryId` and source artifacts that exist under generated `docs/storefront-analysis`.
+- Updated handoff project generation to refresh `generated-files.yaml` and `regeneration-report.md` during staging before publish.
+- Added `StorefrontBuilderHandoffBoundaryValidationTests` covering valid handoff static gate, forbidden `@page`, forbidden direct transport, forbidden Storefront V2 reference, forbidden raw evidence reference, protected file mutation, and missing source plan entry id.
+- Handoff static gate probe passed: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderStaticGate.ps1 -ProjectRoot obj\storefront-builder\generated\phase4-boundary-probe\BlazorShop.Storefront.Phase4BoundaryProbe -Name BlazorShop.Storefront.Phase4BoundaryProbe -StoreKey sample`.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffBoundaryValidationTests" --blame-hang --blame-hang-timeout 5m` (`7` passed).
+- Existing non-handoff StorefrontBuilder architecture verification passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderFoundationTests" --blame-hang --blame-hang-timeout 5m` (`39` passed; existing MessagePack vulnerability and Browserslist warnings only).
 
 ## Phase 4.6 - Visual Proof V1
 

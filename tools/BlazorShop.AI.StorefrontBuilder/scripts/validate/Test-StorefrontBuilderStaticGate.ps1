@@ -14,16 +14,32 @@ $repoRoot = Resolve-Path (Join-Path $toolRoot "..\..")
 
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderSchemas.ps1")
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderGeneratedProject.ps1") -ProjectRoot $ProjectRoot -Name $Name -StoreKey $StoreKey
-& (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderAssets.ps1") -ProjectRoot $ProjectRoot
-& (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCss.ps1") -ProjectRoot $ProjectRoot
-& (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCompositionFiles.ps1") -ProjectRoot $ProjectRoot
+$analysisRoot = Join-Path $ProjectRoot "docs\storefront-analysis"
+$isHandoffProject = Test-Path (Join-Path $analysisRoot "generation-plan.json")
+if ($isHandoffProject) {
+    node (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderHandoffBoundary.mjs") --project-root $ProjectRoot --name $Name
+    if ($LASTEXITCODE -ne 0) {
+        throw "[SFB-STATIC-010] Handoff boundary validation failed with exit code $LASTEXITCODE."
+    }
+}
+else {
+    & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderAssets.ps1") -ProjectRoot $ProjectRoot
+    & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCss.ps1") -ProjectRoot $ProjectRoot
+    & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCompositionFiles.ps1") -ProjectRoot $ProjectRoot
+}
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderGuard.ps1") -ProjectRoot $ProjectRoot
 if (-not $SkipIdempotency) {
     & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderIdempotency.ps1") -ProjectRoot $ProjectRoot
 }
 
-$analysisRoot = Join-Path $ProjectRoot "docs\storefront-analysis"
-foreach ($artifact in @("metadata.yaml", "asset-manifest.yaml", "generated-files.yaml")) {
+$requiredAnalysisArtifacts = if ($isHandoffProject) {
+    @("metadata.yaml", "generation-plan.json", "generation-plan.yaml", "generated-files.yaml", "regeneration-report.md")
+}
+else {
+    @("metadata.yaml", "asset-manifest.yaml", "generated-files.yaml")
+}
+
+foreach ($artifact in $requiredAnalysisArtifacts) {
     if (-not (Test-Path (Join-Path $analysisRoot $artifact))) {
         throw "[SFB-STATIC-001] Generated file manifest or analysis artifact is missing: $artifact"
     }

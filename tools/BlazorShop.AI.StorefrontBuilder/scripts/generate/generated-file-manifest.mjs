@@ -30,12 +30,14 @@ export function readPreviousManifest(manifestPath) {
 export function buildManifestEntries(projectRoot, previousEntries, intentionalUpdatePaths = new Set()) {
   const now = new Date().toISOString();
   const scanned = scanProjectFiles(projectRoot);
+  const handoffPlan = readHandoffGenerationPlan(projectRoot);
   const sourceSpecHash = `sha256:${sha(scanned.map((file) => `${file.filePath}:${file.hash}`).join("|") || sourceSpecSeed)}`;
   const entries = [];
   const seen = new Set();
 
   for (const file of scanned) {
     const descriptor = classifyFile(file.filePath);
+    const sourceArtifactIds = buildSourceArtifactIds(descriptor, file.filePath, handoffPlan);
     const previous = previousEntries.get(file.filePath);
     const previousGeneratedHash = previous?.generatedHash && previous.generatedHash !== "none"
       ? previous.generatedHash
@@ -51,7 +53,8 @@ export function buildManifestEntries(projectRoot, previousEntries, intentionalUp
       capability: descriptor.capability,
       scope: descriptor.scope,
       generatorVersion,
-      sourceArtifactIds: descriptor.sourceArtifactIds.join(" "),
+      sourceArtifactIds,
+      sourcePlanEntryId: handoffPlan.fileIdsByPath.get(file.filePath) ?? previous?.sourcePlanEntryId ?? "none",
       sourceSpecHash,
       generatedHash: manualEditDetected ? previousGeneratedHash : file.hash,
       currentHash: file.hash,
@@ -80,6 +83,7 @@ export function buildManifestEntries(projectRoot, previousEntries, intentionalUp
         scope: previous.scope ?? "unknown",
         generatorVersion: previous.generatorVersion ?? generatorVersion,
         sourceArtifactIds: previous.sourceArtifactIds ?? "none",
+        sourcePlanEntryId: previous.sourcePlanEntryId ?? "none",
         sourceSpecHash: previous.sourceSpecHash ?? `sha256:${sha(sourceSpecSeed)}`,
         generatedHash: previous.generatedHash ?? "none",
         currentHash: "none",
@@ -110,6 +114,7 @@ export function writeManifestYaml(entries) {
       `    scope: ${entry.scope}`,
       `    generatorVersion: ${entry.generatorVersion}`,
       `    sourceArtifactIds: ${entry.sourceArtifactIds}`,
+      `    sourcePlanEntryId: ${entry.sourcePlanEntryId}`,
       `    sourceSpecHash: ${entry.sourceSpecHash}`,
       `    generatedHash: ${entry.generatedHash}`,
       `    currentHash: ${entry.currentHash}`,
@@ -205,6 +210,39 @@ function shouldTrack(filePath) {
 
   const extension = filePath.includes(".") ? filePath.slice(filePath.lastIndexOf(".")).toLowerCase() : "";
   return textExtensions.has(extension);
+}
+
+function readHandoffGenerationPlan(projectRoot) {
+  const planPath = resolve(projectRoot, "docs/storefront-analysis/generation-plan.json");
+  if (!existsSync(planPath)) {
+    return { isHandoff: false, fileIdsByPath: new Map() };
+  }
+
+  const plan = JSON.parse(readFileSync(planPath, "utf8"));
+  const fileIdsByPath = new Map();
+  for (const file of plan.files ?? []) {
+    if (file.targetPath && file.id) {
+      fileIdsByPath.set(String(file.targetPath).replaceAll("\\", "/").replace(/^\/+/, ""), file.id);
+    }
+  }
+
+  return { isHandoff: true, fileIdsByPath };
+}
+
+function buildSourceArtifactIds(descriptor, filePath, handoffPlan) {
+  if (!handoffPlan.isHandoff) {
+    return descriptor.sourceArtifactIds.join(" ");
+  }
+
+  if (filePath.startsWith("docs/storefront-analysis/")) {
+    return "metadata.yaml";
+  }
+
+  if (descriptor.ownership === "user-owned") {
+    return "none";
+  }
+
+  return "metadata.yaml generation-plan.json";
 }
 
 function hashFile(path) {
