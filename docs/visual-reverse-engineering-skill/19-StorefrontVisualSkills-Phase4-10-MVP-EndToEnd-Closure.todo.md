@@ -578,35 +578,35 @@ Goal: independently review generated visual output with browser evidence and opt
 
 Tasks:
 
-- [ ] Define required read order in `storefront-visual-qa/SKILL.md`:
-  - [ ] shared references.
-  - [ ] visual plan.
-  - [ ] implementation checklist.
-  - [ ] implementation report.
-  - [ ] checkpoint.
-  - [ ] browser evidence/report from `run-visual-qa.mjs`.
-- [ ] Require QA to inspect rendered screenshots for:
-  - [ ] blank page.
-  - [ ] overlapping text.
-  - [ ] cropped controls.
-  - [ ] mobile navigation availability.
-  - [ ] visible cart/account/checkout entry points where applicable.
-  - [ ] product gallery 1:1 presentation.
-  - [ ] product price/action readability.
-  - [ ] broken image placeholders.
-  - [ ] visual hierarchy and ecommerce scanability.
-  - [ ] missing required visual slots from the plan.
-- [ ] Require QA findings to be written to `docs/storefront-analysis/visual-qa-report.json`.
-- [ ] Require QA findings to be written to `docs/storefront-analysis/visual-qa-report.md`.
-- [ ] Allow repair only when:
-  - [ ] the failing file is generated-owned.
-  - [ ] the file is in the allowed task package.
-  - [ ] the fix is visual-only.
-  - [ ] the issue is reproducible from browser evidence.
-- [ ] Cap repair attempts at a configured small number, default `2` or `3`.
-- [ ] Require `record-agent-visual-writes.mjs` after every repair pass.
-- [ ] Require rerunning `run-visual-qa.mjs` after repair.
-- [ ] Require unresolved issues to remain in the report with severity and next action.
+- [x] Define required read order in `storefront-visual-qa/SKILL.md`:
+  - [x] shared references.
+  - [x] visual plan.
+  - [x] implementation checklist.
+  - [x] implementation report.
+  - [x] checkpoint.
+  - [x] browser evidence/report from `run-visual-qa.mjs`.
+- [x] Require QA to inspect rendered screenshots for:
+  - [x] blank page.
+  - [x] overlapping text.
+  - [x] cropped controls.
+  - [x] mobile navigation availability.
+  - [x] visible cart/account/checkout entry points where applicable.
+  - [x] product gallery 1:1 presentation.
+  - [x] product price/action readability.
+  - [x] broken image placeholders.
+  - [x] visual hierarchy and ecommerce scanability.
+  - [x] missing required visual slots from the plan.
+- [x] Require QA findings to be written to `docs/storefront-analysis/visual-qa-report.json`.
+- [x] Require QA findings to be written to `docs/storefront-analysis/visual-qa-report.md`.
+- [x] Allow repair only when:
+  - [x] the failing file is generated-owned.
+  - [x] the file is in the allowed task package.
+  - [x] the fix is visual-only.
+  - [x] the issue is reproducible from browser evidence.
+- [x] Cap repair attempts at a configured small number, default `2` or `3`.
+- [x] Require `record-agent-visual-writes.mjs` after every repair pass.
+- [x] Require rerunning `run-visual-qa.mjs` after repair.
+- [x] Require unresolved issues to remain in the report with severity and next action.
 
 Checks:
 
@@ -616,9 +616,18 @@ rg -n "visual-qa-report|repair attempt|browser evidence|record-agent-visual-writ
 
 DoD:
 
-- [ ] QA cannot pass without browser evidence.
-- [ ] QA cannot repair outside generated visual ownership.
-- [ ] Remaining issues are explicit and release-decision friendly.
+- [x] QA cannot pass without browser evidence.
+- [x] QA cannot repair outside generated visual ownership.
+- [x] Remaining issues are explicit and release-decision friendly.
+
+Phase 4.10.9 evidence:
+
+- Expanded `tools/BlazorShop.AI.Visual/skills/storefront-visual-qa/SKILL.md` with required read order across shared references, task package, plan, checklist, implementation report, checkpoint, and browser evidence.
+- Required screenshot inspection for blank pages, overlapping text, cropped controls, mobile navigation, ecommerce entry points, product gallery shape, price/action readability, broken images, hierarchy, scanability, and missing visual slots.
+- Required generated-project-local `visual-qa-report.json` and `visual-qa-report.md` outputs.
+- Restricted repair to reproducible browser-evidence failures in generated-owned task-package files, with visual-only scope and a default cap of `2` attempts.
+- Required `record-agent-visual-writes.mjs` and `run-visual-qa.mjs` after every repair pass.
+- `rg -n "visual-qa-report|repair attempt|browser evidence|record-agent-visual-writes" tools\BlazorShop.AI.Visual\skills\storefront-visual-qa` returned matches.
 
 ## Phase 4.10.10 - Repair Policy Alignment
 
