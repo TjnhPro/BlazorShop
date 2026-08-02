@@ -30,7 +30,7 @@ function New-Phase3EReportLines {
         [string]$ErrorMessage = ""
     )
 
-    $lines = New-SreReportLines -Context $context -Title "Storefront Reverse Engineering Phase 3E Final Closure Gate" -Status $Status -ErrorMessage $ErrorMessage -ProofSummary $proofSummary -BoundaryAssertions $boundaryAssertions
+    $lines = [System.Collections.Generic.List[string]](New-SreReportLines -Context $context -Title "Storefront Reverse Engineering Phase 3E Final Closure Gate" -Status $Status -ErrorMessage $ErrorMessage -ProofSummary $proofSummary -BoundaryAssertions $boundaryAssertions)
     $insertAt = $lines.IndexOf("GitHub Actions status: disabled/local proof primary unless verified separately.")
     if ($insertAt -ge 0) {
         $lines.Insert($insertAt, "Phase 3D proof result: passed")

@@ -68,10 +68,11 @@ public sealed class HandoffConsumerDryRunLoaderTests
     public async Task LoaderRefusesEscapingConsumerReference()
     {
         var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Dry Run Loader Escape");
-        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/manifest.json", json =>
+        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/visual-blueprint.json", json =>
         {
-            json["artifactList"]!.AsArray().Add("../outside.json");
+            json["consumerReferences"]!.AsObject()["pageCompositions"] = "../outside.json";
         });
+        await RehashPortableManifestAsync(fixture.PortableRoot, "analysis/agent-handoff/visual-blueprint.json");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             new HandoffConsumerDryRunLoader().LoadAsync(fixture.PortableRoot, fixture.SchemaRoot, CancellationToken.None));
@@ -86,5 +87,52 @@ public sealed class HandoffConsumerDryRunLoaderTests
             ?? throw new InvalidOperationException("Artifact did not parse: " + relativePath);
         mutate(json);
         await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static async Task RehashPortableManifestAsync(string projectRoot, string changedRelativePath)
+    {
+        var manifestPath = Path.Combine(projectRoot, "analysis", "agent-handoff", "manifest.json");
+        var manifest = JsonNode.Parse(await File.ReadAllTextAsync(manifestPath))!.AsObject();
+        var artifactEntries = manifest["artifactEntries"]!.AsArray();
+        var changedPath = Path.Combine(projectRoot, changedRelativePath.Replace('/', Path.DirectorySeparatorChar));
+
+        foreach (var entry in artifactEntries.Select(node => node!.AsObject()))
+        {
+            if (!string.Equals(entry["path"]!.GetValue<string>(), changedRelativePath, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var fileInfo = new FileInfo(changedPath);
+            entry["sha256"] = PortableHandoffPackageHasher.ComputeFileHash(changedPath);
+            entry["sizeBytes"] = fileInfo.Length;
+            break;
+        }
+
+        var portableEntries = artifactEntries
+            .Select(node => node!.AsObject())
+            .Select(entry => new PortableHandoffArtifactEntry(
+                entry["path"]!.GetValue<string>(),
+                entry["artifactKind"]!.GetValue<string>(),
+                entry["schemaKind"]?.GetValue<string>() ?? "",
+                entry["schemaVersion"]?.GetValue<string>() ?? "1.0",
+                entry["sha256"]!.GetValue<string>(),
+                entry["sizeBytes"]!.GetValue<long>(),
+                entry["required"]!.GetValue<bool>(),
+                entry["includeInPackageHash"]?.GetValue<bool>() ?? true))
+            .ToArray();
+        var schemaRequirements = manifest["schemaRequirements"]!.AsArray()
+            .Select(node => node!.AsObject())
+            .Select(schema => new PortableHandoffSchemaRequirement(
+                schema["schemaKind"]!.GetValue<string>(),
+                schema["artifactKind"]!.GetValue<string>(),
+                schema["schemaVersion"]!.GetValue<string>(),
+                schema["schemaFileName"]!.GetValue<string>(),
+                schema["sha256"]!.GetValue<string>(),
+                schema["required"]!.GetValue<bool>()))
+            .ToArray();
+
+        manifest["packageHash"] = PortableHandoffPackageHasher.ComputePackageHash(portableEntries, schemaRequirements);
+        await File.WriteAllTextAsync(manifestPath, manifest.ToJsonString(VisualJson.Options));
     }
 }
