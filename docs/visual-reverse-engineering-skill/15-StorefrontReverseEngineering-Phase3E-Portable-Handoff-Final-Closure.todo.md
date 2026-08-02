@@ -342,7 +342,7 @@ Tests:
 
 Done when:
 
-- [ ] No authoritative slot in handoff evidence can be produced from role text alone.
+- [x] No authoritative slot in handoff evidence can be produced from role text alone.
 
 ## Phase 3E.6 - Portable Validator And Inspect CLI
 
@@ -384,7 +384,7 @@ Tests:
 
 Done when:
 
-- [ ] Operators and future Phase 4 agents can validate a portable package without knowing the original project layout.
+- [x] Operators and future Phase 4 agents can validate a portable package without knowing the original project layout.
 
 ## Phase 3E.7 - Phase 4 Consumer Dry-Run Loader
 
@@ -392,43 +392,43 @@ Goal: prove the package shape is actually loadable by a future consumer without 
 
 Implementation checklist:
 
-- [ ] Add read-only `HandoffConsumerDryRunLoader`.
-- [ ] Loader input is only:
-  - [ ] `handoffRoot`
-  - [ ] `schemaRoot`
-  - [ ] cancellation token
-- [ ] Loader output includes:
-  - [ ] project metadata.
-  - [ ] pages in deterministic order.
-  - [ ] exact required slots.
-  - [ ] allowed target files.
-  - [ ] protected files.
-  - [ ] design tokens.
-  - [ ] visual style.
-  - [ ] responsive rules.
-  - [ ] interaction states.
-  - [ ] evidence file paths.
-  - [ ] unresolved regions.
-  - [ ] readiness report.
-- [ ] Loader refuses readiness `false`.
-- [ ] Loader refuses missing required slots.
-- [ ] Loader refuses any path outside package.
-- [ ] Loader performs no writes and no generation.
-- [ ] Loader has no StorefrontBuilder dependency.
+- [x] Add read-only `HandoffConsumerDryRunLoader`.
+- [x] Loader input is only:
+  - [x] `handoffRoot`
+  - [x] `schemaRoot`
+  - [x] cancellation token
+- [x] Loader output includes:
+  - [x] project metadata.
+  - [x] pages in deterministic order.
+  - [x] exact required slots.
+  - [x] allowed target files.
+  - [x] protected files.
+  - [x] design tokens.
+  - [x] visual style.
+  - [x] responsive rules.
+  - [x] interaction states.
+  - [x] evidence file paths.
+  - [x] unresolved regions.
+  - [x] readiness report.
+- [x] Loader refuses readiness `false`.
+- [x] Loader refuses missing required slots.
+- [x] Loader refuses any path outside package.
+- [x] Loader performs no writes and no generation.
+- [x] Loader has no StorefrontBuilder dependency.
 
 Tests:
 
-- [ ] Loader reads copied portable package.
-- [ ] Loader never resolves outside `handoffRoot`.
-- [ ] Loader refuses readiness false.
-- [ ] Loader exposes protected paths and stop conditions.
-- [ ] Loader returns deterministic page order.
-- [ ] Loader does not create files.
-- [ ] Loader does not call Commerce Node or StorefrontBuilder.
+- [x] Loader reads copied portable package.
+- [x] Loader never resolves outside `handoffRoot`.
+- [x] Loader refuses readiness false.
+- [x] Loader exposes protected paths and stop conditions.
+- [x] Loader returns deterministic page order.
+- [x] Loader does not create files.
+- [x] Loader does not call Commerce Node or StorefrontBuilder.
 
 Done when:
 
-- [ ] Phase 3E proves the final handoff is not just valid JSON, but a usable read-only Phase 4 input package.
+- [x] Phase 3E proves the final handoff is not just valid JSON, but a usable read-only Phase 4 input package.
 
 ## Phase 3E.8 - Isolated Copy Proof And Negative Portability Mutations
 
@@ -620,7 +620,7 @@ Done when:
 5. [x] Phase 3E.4 portable manifest and schema hardening.
 6. [x] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
 7. [x] Phase 3E.6 portable validator and inspect CLI.
-8. [ ] Phase 3E.7 Phase 4 read-only dry-run loader.
+8. [x] Phase 3E.7 Phase 4 read-only dry-run loader.
 9. [ ] Phase 3E.8 isolated copy proof and negative portability mutations.
 10. [ ] Phase 3E.9 final Phase 3E closure gate.
 11. [ ] Phase 3E.10 documentation alignment and final candidate procedure.
@@ -636,7 +636,7 @@ Suggested development commits:
 4. [x] `phase 3e: harden manifest schemas and package hashes`
 5. [x] `phase 3e: share reviewed slot provenance`
 6. [x] `phase 3e: add portable validation commands`
-7. [ ] `phase 3e: prove isolated handoff loading`
+7. [x] `phase 3e: prove isolated handoff loading`
 8. [ ] `phase 3e: add portability mutation proofs`
 9. [ ] `phase 3e: add final clean-head gate`
 10. [ ] `phase 3e: align closure docs`
@@ -681,7 +681,7 @@ Portable validation and loading:
 
 - [x] `PortableHandoffValidatorTests`
 - [x] `PortableHandoffCliTests`
-- [ ] `HandoffConsumerDryRunLoaderTests`
+- [x] `HandoffConsumerDryRunLoaderTests`
 - [ ] `PortableHandoffCopyProofTests`
 
 Negative portability:
@@ -834,7 +834,7 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 - [x] Implement Phase 3E.4 manifest and schema hardening.
 - [x] Implement Phase 3E.5 shared slot provenance.
 - [x] Implement Phase 3E.6 portable validation commands.
-- [ ] Implement Phase 3E.7 consumer dry-run loader.
+- [x] Implement Phase 3E.7 consumer dry-run loader.
 - [ ] Implement Phase 3E.8 isolated copy proof and mutations.
 - [ ] Implement Phase 3E.9 final gate.
 - [ ] Implement Phase 3E.10 documentation alignment.
