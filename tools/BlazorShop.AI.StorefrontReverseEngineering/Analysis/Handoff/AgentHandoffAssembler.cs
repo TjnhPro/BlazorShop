@@ -62,15 +62,20 @@ public sealed class AgentHandoffAssembler
             WriteTask(project, readiness, allowed, protectedFiles, compositions, ReadPageContracts(root)),
             cancellationToken);
 
+        var artifactEntries = BuildArtifactEntries(root);
+        var schemaRequirements = BuildSchemaRequirements();
+        var packageHash = PortableHandoffPackageHasher.ComputePackageHash(
+            artifactEntries.Select(ToPortableArtifactEntry),
+            schemaRequirements);
         var manifest = new AgentHandoffManifest(
             "1.0",
             "agent-handoff-manifest",
             $"agent-handoff-{project.ProjectId}",
             createdUtc,
             project.ProjectId,
-            root,
-            "diagnostics-only",
+            AgentHandoffContract.PackageVersion,
             AgentHandoffContract.HandoffRoot,
+            new AgentHandoffManifestDiagnostics(root, "diagnostics-only"),
             project.LatestRunId,
             TryGetGitSha(),
             "phase3d-agent-handoff-v2",
@@ -82,7 +87,12 @@ public sealed class AgentHandoffAssembler
             FileHash(root, "analysis/agent-handoff/page-compositions.json"),
             FileHash(root, "analysis/agent-handoff/evidence-manifest.json"),
             AgentHandoffContract.RequiredArtifacts.Select(artifact => artifact.RelativePath).ToArray(),
-            BuildArtifactEntries(root),
+            artifactEntries,
+            schemaRequirements,
+            BuildReferencePolicy(),
+            packageHash,
+            "External project paths are diagnostics-only and must not be required consumer dependencies.",
+            "dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- validate-handoff --handoff-root <path> --schema-root <path>",
             "Phase 4 consumers may read analysis/agent-handoff/* and schemas only; they must not reinterpret raw capture evidence or modify StorefrontBuilder generation without a separate approved plan.",
             readiness.Findings.Where(finding => finding.Severity == "blocking").Select(finding => $"{finding.Code}:{finding.Message}").ToArray());
         await WriteAsync(root, "manifest.json", manifest, cancellationToken);
@@ -441,25 +451,120 @@ public sealed class AgentHandoffAssembler
     private static IReadOnlyList<AgentHandoffArtifactEntry> BuildArtifactEntries(string root) =>
         AgentHandoffContract.RequiredArtifacts
             .Select(artifact => BuildArtifactEntry(root, artifact))
+            .Concat(BuildDirectoryFileArtifactEntries(root))
+            .OrderBy(entry => entry.Path, StringComparer.Ordinal)
             .ToArray();
+
+    private static IEnumerable<AgentHandoffArtifactEntry> BuildDirectoryFileArtifactEntries(string root)
+    {
+        foreach (var artifact in AgentHandoffContract.RequiredArtifacts.Where(artifact => artifact.IsDirectory))
+        {
+            var directory = Path.Combine(root, artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!Directory.Exists(directory))
+            {
+                continue;
+            }
+
+            foreach (var path in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+            {
+                var relative = Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+                yield return new AgentHandoffArtifactEntry(
+                    relative,
+                    "agent-handoff-evidence-file",
+                    FileHash(path) ?? "",
+                    new FileInfo(path).Length,
+                    Required: true,
+                    "binary-file",
+                    "1.0",
+                    IncludeInPackageHash: true,
+                    IsDirectory: false);
+            }
+        }
+    }
 
     private static AgentHandoffArtifactEntry BuildArtifactEntry(string root, RequiredHandoffArtifact artifact)
     {
         if (artifact.RelativePath is "analysis/agent-handoff/manifest.json" or "analysis/agent-handoff/handoff-readiness.json")
         {
-            return new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, "", 0, Required: true);
+            return new AgentHandoffArtifactEntry(
+                artifact.RelativePath,
+                artifact.ArtifactKind,
+                "",
+                0,
+                Required: true,
+                artifact.SchemaName,
+                "1.0",
+                IncludeInPackageHash: false,
+                IsDirectory: false);
         }
 
         var path = Path.Combine(root, artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
         if (artifact.IsDirectory)
         {
-            return new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, "", Directory.Exists(path) ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Count() : 0, Required: true);
+            return new AgentHandoffArtifactEntry(
+                artifact.RelativePath,
+                artifact.ArtifactKind,
+                "",
+                Directory.Exists(path) ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Count() : 0,
+                Required: true,
+                artifact.SchemaName,
+                "1.0",
+                IncludeInPackageHash: false,
+                IsDirectory: true);
         }
 
         return File.Exists(path)
-            ? new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, artifact.HashRequired ? FileHash(path) ?? "" : "", new FileInfo(path).Length, Required: true)
-            : new AgentHandoffArtifactEntry(artifact.RelativePath, artifact.ArtifactKind, "", 0, Required: true);
+            ? new AgentHandoffArtifactEntry(
+                artifact.RelativePath,
+                artifact.ArtifactKind,
+                artifact.HashRequired ? FileHash(path) ?? "" : "",
+                new FileInfo(path).Length,
+                Required: true,
+                artifact.SchemaName,
+                "1.0",
+                IncludeInPackageHash: artifact.HashRequired,
+                IsDirectory: false)
+            : new AgentHandoffArtifactEntry(
+                artifact.RelativePath,
+                artifact.ArtifactKind,
+                "",
+                0,
+                Required: true,
+                artifact.SchemaName,
+                "1.0",
+                IncludeInPackageHash: false,
+                IsDirectory: false);
     }
+
+    private static IReadOnlyList<PortableHandoffSchemaRequirement> BuildSchemaRequirements() =>
+        AgentHandoffContract.RequiredSchemaKinds
+            .Select(schema => new PortableHandoffSchemaRequirement(
+                schema.SchemaKind,
+                schema.ArtifactKind,
+                schema.SchemaVersion,
+                schema.SchemaFileName,
+                schema.Sha256,
+                schema.Required))
+            .ToArray();
+
+    private static PortableHandoffReferencePolicy BuildReferencePolicy() =>
+        new(
+            AgentHandoffContract.HandoffRoot,
+            PortableHandoffReferenceCategories.All,
+            RejectAbsoluteConsumerPaths: true,
+            RejectConsumerPathEscape: true,
+            RejectDraftConsumerReferences: true);
+
+    private static PortableHandoffArtifactEntry ToPortableArtifactEntry(AgentHandoffArtifactEntry entry) =>
+        new(
+            entry.Path,
+            entry.ArtifactKind,
+            entry.SchemaKind,
+            entry.SchemaVersion,
+            entry.Sha256,
+            entry.SizeBytes,
+            entry.Required,
+            entry.IncludeInPackageHash);
 
     private static string? ReadReviewBundleHash(string root)
     {

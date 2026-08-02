@@ -30,9 +30,27 @@ public sealed class AgentHandoffTests
         Assert.Contains("analysis/agent-handoff/screenshots/", manifest.ArtifactList);
         Assert.Contains("analysis/agent-handoff/section-screenshots/", manifest.ArtifactList);
         Assert.Contains(manifest.ArtifactEntries, entry => entry.Path == "analysis/agent-handoff/evidence-manifest.json" && entry.SizeBytes > 0 && !string.IsNullOrWhiteSpace(entry.Sha256));
+        Assert.Contains(manifest.ArtifactEntries, entry => entry.ArtifactKind == "agent-handoff-evidence-file" && entry.IncludeInPackageHash && entry.Path.StartsWith("analysis/agent-handoff/section-screenshots/", StringComparison.Ordinal));
         Assert.Equal("analysis/agent-handoff", manifest.HandoffRoot);
-        Assert.Equal("diagnostics-only", manifest.SourceProjectPathRole);
+        Assert.Equal(AgentHandoffContract.PackageVersion, manifest.PackageVersion);
+        Assert.Equal("diagnostics-only", manifest.Diagnostics.Role);
+        Assert.NotEmpty(manifest.SchemaRequirements);
+        Assert.NotEmpty(manifest.PackageHash);
+        Assert.Equal("analysis/agent-handoff", manifest.ConsumerReferencePolicy.HandoffRoot);
+        Assert.Contains("validate-handoff", manifest.PortableValidationCommand, StringComparison.Ordinal);
         Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "agent-handoff", "task.md")));
+    }
+
+    [Fact]
+    public async Task AgentHandoff_ManifestDoesNotRequireRootSourceProjectPath()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Portable Manifest");
+        var raw = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(projectRoot, "analysis", "agent-handoff", "manifest.json")))!.AsObject();
+
+        Assert.False(raw.ContainsKey("sourceProjectPath"));
+        Assert.True(raw.ContainsKey("diagnostics"));
+        Assert.Equal("diagnostics-only", raw["diagnostics"]!["role"]!.GetValue<string>());
+        new VisualSchemaValidator(new VisualSchemaRegistry()).Validate("agent-handoff-manifest", raw);
     }
 
     [Fact]
@@ -233,6 +251,79 @@ public sealed class AgentHandoffTests
 
         Assert.False(report.Passed);
         Assert.Contains(report.Findings, finding => finding.Code == "handoff-hash-mismatch");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_MissingRequiredSchemaEntryFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Missing Schema Entry");
+        await MutateJsonAsync(projectRoot, "analysis/agent-handoff/manifest.json", json =>
+        {
+            json["schemaRequirements"]!.AsArray().RemoveAt(0);
+        });
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "missing-required-schema-entry");
+    }
+
+    [Fact]
+    public async Task AgentHandoffReadiness_PackageHashMismatchFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Package Hash");
+        await MutateJsonAsync(projectRoot, "analysis/agent-handoff/manifest.json", json =>
+        {
+            json["artifactEntries"]!.AsArray()[1]!["sha256"] = "changed";
+        });
+
+        var report = await new AgentHandoffReadinessValidator(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "handoff-package-hash-mismatch");
+    }
+
+    [Fact]
+    public async Task AgentHandoff_PackageHashIsStableAfterCopyingHandoffPackage()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Copy Stable Hash");
+        var manifest = await ReadAsync<AgentHandoffManifest>(projectRoot, "analysis/agent-handoff/manifest.json");
+        var copyRoot = Path.Combine(Path.GetTempPath(), "sre-handoff-copy-" + Guid.NewGuid().ToString("N"));
+        CopyDirectory(
+            Path.Combine(projectRoot, "analysis", "agent-handoff"),
+            Path.Combine(copyRoot, "analysis", "agent-handoff"));
+        var copied = JsonSerializer.Deserialize<AgentHandoffManifest>(
+            await File.ReadAllTextAsync(Path.Combine(copyRoot, "analysis", "agent-handoff", "manifest.json")),
+            VisualJson.Options) ?? throw new InvalidOperationException("Copied manifest did not parse.");
+
+        var recomputed = PortableHandoffPackageHasher.ComputePackageHash(
+            copied.ArtifactEntries.Select(entry => new PortableHandoffArtifactEntry(
+                entry.Path,
+                entry.ArtifactKind,
+                entry.SchemaKind,
+                entry.SchemaVersion,
+                entry.Sha256,
+                entry.SizeBytes,
+                entry.Required,
+                entry.IncludeInPackageHash)),
+            copied.SchemaRequirements);
+
+        Assert.Equal(manifest.PackageHash, copied.PackageHash);
+        Assert.Equal(copied.PackageHash, recomputed);
+    }
+
+    [Fact]
+    public async Task AgentHandoff_DiagnosticsSourceRootDoesNotAffectPackageHash()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Agent Handoff Diagnostics Hash");
+        var before = await ReadAsync<AgentHandoffManifest>(projectRoot, "analysis/agent-handoff/manifest.json");
+        await MutateJsonAsync(projectRoot, "analysis/agent-handoff/manifest.json", json =>
+        {
+            json["diagnostics"]!["sourceProjectRoot"] = "D:/different/source/root";
+        });
+        var after = await ReadAsync<AgentHandoffManifest>(projectRoot, "analysis/agent-handoff/manifest.json");
+
+        Assert.Equal(before.PackageHash, after.PackageHash);
     }
 
     [Fact]
@@ -916,6 +1007,20 @@ public sealed class AgentHandoffTests
             ?? throw new InvalidOperationException($"Artifact '{relativePath}' did not parse.");
         mutate(json);
         await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static void CopyDirectory(string sourceRoot, string destinationRoot)
+    {
+        Directory.CreateDirectory(destinationRoot);
+        foreach (var directory in Directory.EnumerateDirectories(sourceRoot, "*", SearchOption.AllDirectories))
+        {
+            Directory.CreateDirectory(Path.Combine(destinationRoot, Path.GetRelativePath(sourceRoot, directory)));
+        }
+
+        foreach (var file in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
+        {
+            File.Copy(file, Path.Combine(destinationRoot, Path.GetRelativePath(sourceRoot, file)), overwrite: true);
+        }
     }
 
     private static string Sha256(string projectRoot, string relativePath)

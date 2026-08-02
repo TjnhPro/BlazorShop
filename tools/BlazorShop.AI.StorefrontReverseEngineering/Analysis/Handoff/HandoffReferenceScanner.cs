@@ -30,9 +30,11 @@ public static class HandoffReferenceRegistry
     [
         PackageIndex("analysis/agent-handoff/manifest.json", "/artifactList/*"),
         PackageIndex("analysis/agent-handoff/manifest.json", "/artifactEntries/*/path"),
-        Diagnostic("analysis/agent-handoff/manifest.json", "/sourceProjectPath"),
+        Diagnostic("analysis/agent-handoff/manifest.json", "/diagnostics/sourceProjectRoot"),
         Diagnostic("analysis/agent-handoff/manifest.json", "/handoffRoot"),
         Diagnostic("analysis/agent-handoff/manifest.json", "/requiredConsumerContract"),
+        Opaque("analysis/agent-handoff/manifest.json", "/schemaRequirements/*/schemaFileName"),
+        Opaque("analysis/agent-handoff/manifest.json", "/consumerReferencePolicy/handoffRoot"),
         Consumer("analysis/agent-handoff/visual-blueprint.json", "/consumerReferences/*"),
         Diagnostic("analysis/agent-handoff/visual-blueprint.json", "/diagnosticProvenance/*/path"),
         Diagnostic("analysis/agent-handoff/visual-blueprint.json", "/generationRestrictions/*"),

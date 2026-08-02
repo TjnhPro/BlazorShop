@@ -343,7 +343,7 @@ public sealed class VisualProjectService
             screenshotCount,
             sectionCropCount,
             missingEvidenceCount,
-            FileHash(projectRoot, "analysis/agent-handoff/manifest.json"),
+            handoffManifest.Node?["packageHash"]?.GetValue<string>() ?? FileHash(projectRoot, "analysis/agent-handoff/manifest.json"),
             handoffReadiness,
             handoffPassed,
             handoffFindings.Count(finding => string.Equals(finding.Severity, "blocking", StringComparison.OrdinalIgnoreCase)),

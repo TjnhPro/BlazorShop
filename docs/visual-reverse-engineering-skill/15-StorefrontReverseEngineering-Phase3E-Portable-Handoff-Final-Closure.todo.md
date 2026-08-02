@@ -269,36 +269,36 @@ Goal: make `manifest.json` portable and useful as the package entry point.
 
 Implementation checklist:
 
-- [ ] Remove `sourceProjectPath` as a required manifest field.
-- [ ] If original source root is kept, move it to `diagnostics.sourceProjectRoot` with `role: diagnostics-only`.
-- [ ] Add manifest fields:
-  - [ ] `packageVersion`
-  - [ ] `handoffRoot`
-  - [ ] `schemaRequirements`
-  - [ ] `consumerReferencePolicy`
-  - [ ] `artifactEntries`
-  - [ ] `packageHash`
-  - [ ] `diagnosticProvenancePolicy`
-  - [ ] `portableValidationCommand`
-- [ ] Replace directory-size artifact entries with file-level entries or explicit directory metadata that is excluded from package hash.
-- [ ] Ensure `manifest.json` does not require access to `project.json`.
-- [ ] Ensure `handoff-readiness.json` can report project ID from the handoff manifest, not the original project.
-- [ ] Update `agent-handoff-manifest.schema.json`.
-- [ ] Update `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas/README.md`.
+- [x] Remove `sourceProjectPath` as a required manifest field.
+- [x] If original source root is kept, move it to `diagnostics.sourceProjectRoot` with `role: diagnostics-only`.
+- [x] Add manifest fields:
+  - [x] `packageVersion`
+  - [x] `handoffRoot`
+  - [x] `schemaRequirements`
+  - [x] `consumerReferencePolicy`
+  - [x] `artifactEntries`
+  - [x] `packageHash`
+  - [x] `diagnosticProvenancePolicy`
+  - [x] `portableValidationCommand`
+- [x] Replace directory-size artifact entries with file-level entries or explicit directory metadata that is excluded from package hash.
+- [x] Ensure `manifest.json` does not require access to `project.json`.
+- [x] Ensure `handoff-readiness.json` can report project ID from the handoff manifest, not the original project.
+- [x] Update `agent-handoff-manifest.schema.json`.
+- [x] Update `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas/README.md`.
 
 Tests:
 
-- [ ] Manifest validates without original project root.
-- [ ] Copy package to another folder preserves `packageHash`.
-- [ ] Absolute source path changes do not affect `packageHash`.
-- [ ] Missing required artifact entry fails.
-- [ ] Missing required schema entry fails.
-- [ ] Changed artifact bytes fail hash validation.
-- [ ] Manifest self-hash does not create nondeterministic hash drift.
+- [x] Manifest validates without original project root.
+- [x] Copy package to another folder preserves `packageHash`.
+- [x] Absolute source path changes do not affect `packageHash`.
+- [x] Missing required artifact entry fails.
+- [x] Missing required schema entry fails.
+- [x] Changed artifact bytes fail hash validation.
+- [x] Manifest self-hash does not create nondeterministic hash drift.
 
 Done when:
 
-- [ ] The handoff manifest is the portable package index and no longer requires source-project context for consumer validation.
+- [x] The handoff manifest is the portable package index and no longer requires source-project context for consumer validation.
 
 ## Phase 3E.5 - Shared Authoritative Slot Resolution And Evidence Provenance
 
@@ -617,7 +617,7 @@ Done when:
 2. [x] Phase 3E.1 canonical package contract, schema list, reference registry, and hash rules.
 3. [x] Phase 3E.2 handoff-specific consumer artifacts.
 4. [x] Phase 3E.3 typed reference containment validator.
-5. [ ] Phase 3E.4 portable manifest and schema hardening.
+5. [x] Phase 3E.4 portable manifest and schema hardening.
 6. [ ] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
 7. [ ] Phase 3E.6 portable validator and inspect CLI.
 8. [ ] Phase 3E.7 Phase 4 read-only dry-run loader.
@@ -630,10 +630,10 @@ Done when:
 
 Suggested development commits:
 
-1. [ ] `phase 3e: define portable handoff contract`
+1. [x] `phase 3e: define portable handoff contract`
 2. [x] `phase 3e: package handoff-local consumer artifacts`
 3. [x] `phase 3e: enforce typed handoff references`
-4. [ ] `phase 3e: harden manifest schemas and package hashes`
+4. [x] `phase 3e: harden manifest schemas and package hashes`
 5. [ ] `phase 3e: share reviewed slot provenance`
 6. [ ] `phase 3e: add portable validation commands`
 7. [ ] `phase 3e: prove isolated handoff loading`
@@ -645,10 +645,10 @@ Suggested development commits:
 
 Contract and schemas:
 
-- [ ] `PortableHandoffContractTests`
-- [ ] `PortableHandoffSchemaRequirementTests`
-- [ ] `AgentHandoffManifestSchemaTests`
-- [ ] `AgentHandoffRequiredArtifactTests`
+- [x] `PortableHandoffContractTests`
+- [x] `PortableHandoffSchemaRequirementTests`
+- [x] `AgentHandoffManifestSchemaTests`
+- [x] `AgentHandoffRequiredArtifactTests`
 
 Handoff artifact normalization:
 
@@ -667,9 +667,9 @@ Reference validation:
 
 Manifest and hashing:
 
-- [ ] `PortableHandoffManifestTests`
-- [ ] `PortableHandoffPackageHashTests`
-- [ ] `PortableHandoffSchemaHashTests`
+- [x] `PortableHandoffManifestTests`
+- [x] `PortableHandoffPackageHashTests`
+- [x] `PortableHandoffSchemaHashTests`
 
 Slot provenance:
 
@@ -702,10 +702,10 @@ Gate:
 
 Portable contract:
 
-- [ ] Handoff manifest does not require absolute source project path.
-- [ ] Required artifacts and required schemas are canonical and shared.
-- [ ] Package hash is stable across copy locations.
-- [ ] Directory entries are not hash substitutes for file-level entries.
+- [x] Handoff manifest does not require absolute source project path.
+- [x] Required artifacts and required schemas are canonical and shared.
+- [x] Package hash is stable across copy locations.
+- [x] Directory entries are not hash substitutes for file-level entries.
 
 Artifact completeness:
 

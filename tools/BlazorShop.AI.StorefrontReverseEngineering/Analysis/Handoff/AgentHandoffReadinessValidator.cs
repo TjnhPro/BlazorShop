@@ -62,13 +62,16 @@ public sealed class AgentHandoffReadinessValidator
         AddTaskContractFindings(root, findings);
         AddSemanticContractFindings(root, findings);
         AddStaticBoundaryFindings(findings);
+        var manifest = TryReadManifest(root);
+        var projectId = manifest?.ProjectId ?? project.ProjectId;
+        var createdUtc = manifest?.CreatedUtc ?? project.CreatedUtc;
 
         var report = new AgentHandoffReadinessReport(
             "1.0",
             "agent-handoff-readiness",
-            $"agent-handoff-readiness-{project.ProjectId}",
-            project.CreatedUtc,
-            project.ProjectId,
+            $"agent-handoff-readiness-{projectId}",
+            createdUtc,
+            projectId,
             findings.All(finding => finding.Severity != "blocking"),
             findings,
             "analysis/agent-handoff");
@@ -192,6 +195,47 @@ public sealed class AgentHandoffReadinessValidator
                     findings.Add(Block("handoff-hash-mismatch", $"Manifest entry hash does not match artifact: {entry.Path}", entry.Path));
                 }
             }
+
+            AddSchemaRequirementFindings(manifest, findings);
+            AddPackageHashFindings(manifest, findings);
+        }
+    }
+
+    private static void AddSchemaRequirementFindings(AgentHandoffManifest manifest, List<AgentHandoffReadinessFinding> findings)
+    {
+        var schemaByKind = manifest.SchemaRequirements.ToDictionary(schema => schema.SchemaKind, StringComparer.Ordinal);
+        foreach (var required in AgentHandoffContract.RequiredSchemaKinds)
+        {
+            if (!schemaByKind.TryGetValue(required.SchemaKind, out var actual))
+            {
+                findings.Add(Block("missing-required-schema-entry", $"Manifest is missing required schema entry: {required.SchemaKind}", "analysis/agent-handoff/manifest.json"));
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(actual.Sha256))
+            {
+                findings.Add(Block("missing-required-schema-entry", $"Manifest required schema entry has no SHA-256: {required.SchemaKind}", "analysis/agent-handoff/manifest.json"));
+            }
+        }
+    }
+
+    private static void AddPackageHashFindings(AgentHandoffManifest manifest, List<AgentHandoffReadinessFinding> findings)
+    {
+        var packageHash = PortableHandoffPackageHasher.ComputePackageHash(
+            manifest.ArtifactEntries.Select(entry => new PortableHandoffArtifactEntry(
+                entry.Path,
+                entry.ArtifactKind,
+                entry.SchemaKind,
+                entry.SchemaVersion,
+                entry.Sha256,
+                entry.SizeBytes,
+                entry.Required,
+                entry.IncludeInPackageHash)),
+            manifest.SchemaRequirements);
+
+        if (!string.Equals(packageHash, manifest.PackageHash, StringComparison.Ordinal))
+        {
+            findings.Add(Block("handoff-package-hash-mismatch", "Manifest packageHash does not match canonical artifact/schema entries.", "analysis/agent-handoff/manifest.json"));
         }
     }
 
@@ -541,6 +585,9 @@ public sealed class AgentHandoffReadinessValidator
             ? JsonSerializer.Deserialize<T>(File.ReadAllText(path), VisualJson.Options)
             : default;
     }
+
+    private static AgentHandoffManifest? TryReadManifest(string root) =>
+        Read<AgentHandoffManifest>(root, "analysis/agent-handoff/manifest.json");
 
     private static string StableHash(object value)
     {

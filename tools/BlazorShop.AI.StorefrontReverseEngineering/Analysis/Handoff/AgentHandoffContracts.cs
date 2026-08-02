@@ -6,9 +6,9 @@ public sealed record AgentHandoffManifest(
     string ArtifactId,
     DateTimeOffset CreatedUtc,
     string ProjectId,
-    string SourceProjectPath,
-    string SourceProjectPathRole,
+    string PackageVersion,
     string HandoffRoot,
+    AgentHandoffManifestDiagnostics Diagnostics,
     string? SourceRunId,
     string? SourceCommitSha,
     string HandoffSchemaVersion,
@@ -21,15 +21,28 @@ public sealed record AgentHandoffManifest(
     string? EvidenceManifestHash,
     IReadOnlyList<string> ArtifactList,
     IReadOnlyList<AgentHandoffArtifactEntry> ArtifactEntries,
+    IReadOnlyList<PortableHandoffSchemaRequirement> SchemaRequirements,
+    PortableHandoffReferencePolicy ConsumerReferencePolicy,
+    string PackageHash,
+    string DiagnosticProvenancePolicy,
+    string PortableValidationCommand,
     string RequiredConsumerContract,
     IReadOnlyList<string> UnsupportedPatternSummary);
+
+public sealed record AgentHandoffManifestDiagnostics(
+    string SourceProjectRoot,
+    string Role);
 
 public sealed record AgentHandoffArtifactEntry(
     string Path,
     string ArtifactKind,
     string Sha256,
     long SizeBytes,
-    bool Required);
+    bool Required,
+    string SchemaKind = "",
+    string SchemaVersion = "1.0",
+    bool IncludeInPackageHash = true,
+    bool IsDirectory = false);
 
 public sealed record AgentHandoffFileManifest(
     string SchemaVersion,
