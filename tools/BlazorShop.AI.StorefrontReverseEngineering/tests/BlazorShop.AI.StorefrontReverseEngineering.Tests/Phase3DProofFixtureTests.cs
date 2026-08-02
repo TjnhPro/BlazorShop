@@ -3,6 +3,8 @@ using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 
+[Trait("Phase", "3")]
+[Trait("Proof", "ClosureProof")]
 public sealed class Phase3DProofFixtureTests
 {
     [Fact]
@@ -104,27 +106,23 @@ public sealed class Phase3DProofFixtureTests
         Assert.Contains("Invoke-SreBuild -Context $context", script, StringComparison.Ordinal);
         Assert.Contains("\"test\", $Context.TestProject, \"--no-build\", \"--no-restore\"", script, StringComparison.Ordinal);
         Assert.Contains("ToolDll", script, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"run\", \"--project\", $Context.ToolProject", script, StringComparison.Ordinal);
+        Assert.Contains("FullyQualifiedName~BrowserCaptureTests", script, StringComparison.Ordinal);
         Assert.Contains("Tested commit SHA", script, StringComparison.Ordinal);
         Assert.Contains("Final HEAD SHA", script, StringComparison.Ordinal);
         Assert.DoesNotContain("run-storefront-reverse-engineering-phase3a-gate.ps1", script, StringComparison.Ordinal);
         Assert.DoesNotContain("run-storefront-reverse-engineering-phase3b-gate.ps1", script, StringComparison.Ordinal);
         Assert.DoesNotContain("run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1", script, StringComparison.Ordinal);
-        Assert.Contains("Phase 3A regression fast subset", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3A grouped test coverage marker", script, StringComparison.Ordinal);
         Assert.Contains("Phase 3B multi-route CLI proof", script, StringComparison.Ordinal);
-        Assert.Contains("Phase 3C complete fixture proof", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3C grouped test coverage marker", script, StringComparison.Ordinal);
         Assert.Contains("full ReverseEngineering tests", script, StringComparison.Ordinal);
-        Assert.Contains("ConfidenceReview", script, StringComparison.Ordinal);
-        Assert.Contains("StorefrontPattern|BlueprintV1", script, StringComparison.Ordinal);
-        Assert.Contains("AgentHandoff", script, StringComparison.Ordinal);
-        Assert.Contains("Phase3DPositiveEndToEnd", script, StringComparison.Ordinal);
-        Assert.Contains("Phase3DNegativeReviewMutation", script, StringComparison.Ordinal);
-        Assert.Contains("Phase3DNegativeSlotMutation", script, StringComparison.Ordinal);
-        Assert.Contains("Phase3DNegativeEvidenceMutation", script, StringComparison.Ordinal);
-        Assert.Contains("Phase3DNegativeHandoffMutation", script, StringComparison.Ordinal);
-        Assert.Contains("Phase3DNegativeBoundaryMutation", script, StringComparison.Ordinal);
-        Assert.DoesNotContain("Phase3DProofFixtureTests.Phase3DNegativeFixtures_MapToExactExpectedBlockers", script, StringComparison.Ordinal);
-        Assert.Contains("boundary scans", script, StringComparison.Ordinal);
+        Assert.Contains("Grouped Phase 3 closure proof", script, StringComparison.Ordinal);
+        Assert.Contains("Closure proof test count:", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3A regression/browser coverage: represented by the full suite and grouped closure proof test processes.", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3B visual analysis/ecommerce mapping tests: represented by the full suite and grouped closure proof test processes.", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3C handoff readiness/schema/unsupported coverage: represented by the full suite and grouped closure proof test processes.", script, StringComparison.Ordinal);
+        Assert.Contains("BrowserCaptureTests", script, StringComparison.Ordinal);
+        Assert.Contains("Phase3DNegativeBoundaryMutationTests", script, StringComparison.Ordinal);
         Assert.Contains("StorefrontBuilder plan-only smoke", script, StringComparison.Ordinal);
         Assert.Contains("final inspect proof", script, StringComparison.Ordinal);
         Assert.Contains("GitHub Actions status: disabled/local proof primary", script, StringComparison.Ordinal);

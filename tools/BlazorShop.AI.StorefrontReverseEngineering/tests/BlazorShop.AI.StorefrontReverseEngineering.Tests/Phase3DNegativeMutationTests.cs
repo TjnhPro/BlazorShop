@@ -8,6 +8,8 @@ using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 
+[Trait("Phase", "3")]
+[Trait("Proof", "ClosureProof")]
 public sealed class Phase3DNegativeReviewMutationTests
 {
     [Theory]
@@ -86,6 +88,8 @@ public sealed class Phase3DNegativeReviewMutationTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "ClosureProof")]
 public sealed class Phase3DNegativeSlotMutationTests
 {
     [Theory]
@@ -200,6 +204,8 @@ public sealed class Phase3DNegativeSlotMutationTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "ClosureProof")]
 public sealed class Phase3DNegativeEvidenceMutationTests
 {
     [Theory]
@@ -269,6 +275,8 @@ public sealed class Phase3DNegativeEvidenceMutationTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "ClosureProof")]
 public sealed class Phase3DNegativeHandoffMutationTests
 {
     [Theory]
@@ -347,6 +355,8 @@ public sealed class Phase3DNegativeHandoffMutationTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "Browser")]
 public sealed class Phase3DNegativeBoundaryMutationTests
 {
     [Theory]

@@ -165,29 +165,36 @@ Goal: stop starting many test hosts for reports that can be grouped.
 
 Implementation checklist:
 
-- [ ] Add or standardize traits for the ReverseEngineering tests:
-  - [ ] `Phase`
-  - [ ] `Proof`
-  - [ ] `Browser`
-  - [ ] `ClosureProof`
-  - [ ] `PortableProof`
-- [ ] Group the closure proof tests into one or two test invocations instead of many tiny filter runs.
-- [ ] Keep the full suite run only once if it is still needed for closure evidence.
-- [ ] Parse TRX once and summarize the results rather than rerunning the same tests to produce a different report section.
-- [ ] Keep exact blocker assertions visible in the report.
+- [x] Add or standardize traits for the ReverseEngineering tests:
+  - [x] `Phase`
+  - [x] `Proof`
+  - [x] `Browser`
+  - [x] `ClosureProof`
+  - [x] `PortableProof`
+- [x] Group the closure proof tests into one or two test invocations instead of many tiny filter runs.
+- [x] Keep the full suite run only once if it is still needed for closure evidence.
+- [x] Parse TRX once and summarize the results rather than rerunning the same tests to produce a different report section.
+- [x] Keep exact blocker assertions visible in the report.
 
 Recommended proof buckets:
 
-- [ ] `Unit/Regression`
-- [ ] `ClosureProof`
-- [ ] `Browser`
-- [ ] `PortableProof`
+- [x] `Unit/Regression`
+- [x] `ClosureProof`
+- [x] `Browser`
+- [x] `PortableProof`
 
 Acceptance criteria:
 
-- [ ] The final gate runs at most one full suite process and one grouped closure proof process.
-- [ ] Report sections still show phase/proof coverage.
-- [ ] No test process exists only to decorate the report.
+- [x] The final gate runs at most one full suite process and one grouped closure proof process.
+- [x] Report sections still show phase/proof coverage.
+- [x] No test process exists only to decorate the report.
+
+O3 evidence:
+
+- Traits were standardized on the ReverseEngineering proof classes for `Phase`, `Proof`, `Browser`, `ClosureProof`, and `PortableProof`.
+- `Get-SreClosureProofFilter` now groups the closure bucket by `FullyQualifiedName~...` patterns instead of many tiny filter runs.
+- Final-gate execution now uses one full ReverseEngineering suite process and one grouped closure proof process; `Phase 3A`, `Phase 3B`, `Phase 3C`, and portable proof markers are summarized instead of rerun separately.
+- Verification: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-build --no-restore --filter "<grouped filter>" --blame-hang --blame-hang-timeout 5m` passed with `217` selected tests.
 
 ## Phase O4 - Reuse A Shared Positive Baseline
 

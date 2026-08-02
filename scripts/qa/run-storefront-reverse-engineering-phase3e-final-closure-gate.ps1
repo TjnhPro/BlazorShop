@@ -70,7 +70,7 @@ try {
     Invoke-SrePhase3AProof -Context $context
     Invoke-SrePhase3BProof -Context $context
     Invoke-SrePhase3CProof -Context $context
-    Invoke-SrePhase3DProof -Context $context
+    Invoke-SrePhase3DProof -Context $context -IncludePortableProof
     Invoke-SrePhase3EProof -Context $context
     $portablePackageResult = "passed"
     $referenceContainmentResult = "passed"

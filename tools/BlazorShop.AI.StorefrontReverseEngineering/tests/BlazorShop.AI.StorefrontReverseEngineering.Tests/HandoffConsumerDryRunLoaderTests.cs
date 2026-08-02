@@ -5,6 +5,8 @@ using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 
+[Trait("Phase", "3")]
+[Trait("Proof", "PortableProof")]
 public sealed class HandoffConsumerDryRunLoaderTests
 {
     [Fact]

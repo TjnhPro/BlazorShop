@@ -2,6 +2,8 @@ using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 
+[Trait("Phase", "3")]
+[Trait("Proof", "ClosureProof")]
 public sealed class Phase3CBaselineTests
 {
     [Fact]

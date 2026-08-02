@@ -5,6 +5,8 @@ using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 
+[Trait("Phase", "3")]
+[Trait("Proof", "PortableProof")]
 public sealed class PortableHandoffCopyProofTests
 {
     [Fact]
@@ -73,6 +75,8 @@ public sealed class PortableHandoffCopyProofTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "PortableProof")]
 public sealed class Phase3ENegativeReferenceMutationTests
 {
     [Theory]
@@ -99,6 +103,8 @@ public sealed class Phase3ENegativeReferenceMutationTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "PortableProof")]
 public sealed class Phase3ENegativeArtifactMutationTests
 {
     [Theory]
@@ -144,6 +150,8 @@ public sealed class Phase3ENegativeArtifactMutationTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "PortableProof")]
 public sealed class Phase3ENegativeSchemaMutationTests
 {
     [Fact]
@@ -160,6 +168,8 @@ public sealed class Phase3ENegativeSchemaMutationTests
     }
 }
 
+[Trait("Phase", "3")]
+[Trait("Proof", "PortableProof")]
 public sealed class Phase3ENegativeHashMutationTests
 {
     [Fact]

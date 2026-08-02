@@ -32,6 +32,7 @@ function New-SreGateContext {
         InitialBranch = $null
         InitialTreeClean = $false
         FullTestCount = "not-recorded"
+        ClosureProofTestCount = "not-recorded"
         NegativeMutationCount = "not-recorded"
         StorefrontBuilderSmokeResult = "not-run"
         LastProcessExitCode = 0
@@ -94,6 +95,9 @@ function Invoke-SreLoggedProcess {
             if ($summaryLine -match "Total:\s+(\d+)") {
                 if ($SummaryName -eq "Full ReverseEngineering tests") {
                     $Context.FullTestCount = $Matches[1]
+                }
+                elseif ($SummaryName -eq "Grouped Phase 3 closure proof") {
+                    $Context.ClosureProofTestCount = $Matches[1]
                 }
                 elseif ($SummaryName -like "*Negative*") {
                     $Context.NegativeMutationCount = $Matches[1]
@@ -188,6 +192,48 @@ function Invoke-SreCli {
     Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments (@($Context.ToolDll) + $Arguments) -AllowedExitCodes $AllowedExitCodes
 }
 
+function Get-SreClosureProofFilter {
+    param([switch]$IncludePortableProof)
+
+    $patterns = @(
+        "FullyQualifiedName~BrowserCaptureTests",
+        "FullyQualifiedName~PlaywrightIntegrationTests",
+        "FullyQualifiedName~Phase3DProofFixtureTests",
+        "FullyQualifiedName~Phase3DPositiveEndToEndTests",
+        "FullyQualifiedName~Phase3DNegativeReviewMutationTests",
+        "FullyQualifiedName~Phase3DNegativeSlotMutationTests",
+        "FullyQualifiedName~Phase3DNegativeEvidenceMutationTests",
+        "FullyQualifiedName~Phase3DNegativeHandoffMutationTests",
+        "FullyQualifiedName~Phase3DNegativeBoundaryMutationTests",
+        "FullyQualifiedName~BlueprintV1ReadinessTests",
+        "FullyQualifiedName~AgentHandoffTests",
+        "FullyQualifiedName~Phase3CFixtureAndGateTests",
+        "FullyQualifiedName~Phase3CBaselineTests",
+        "FullyQualifiedName~Phase3BCliDxTests",
+        "FullyQualifiedName~Phase3BFixtureTests",
+        "FullyQualifiedName~Phase3BGateScriptTests",
+        "FullyQualifiedName~Phase3BPreflightTests"
+    )
+
+    if ($IncludePortableProof) {
+        $patterns += @(
+            "FullyQualifiedName~AgentHandoffEvidenceSlotProvenanceTests",
+            "FullyQualifiedName~HandoffReferenceScannerTests",
+            "FullyQualifiedName~HandoffConsumerDryRunLoaderTests",
+            "FullyQualifiedName~PortableHandoffContractTests",
+            "FullyQualifiedName~PortableHandoffValidatorTests",
+            "FullyQualifiedName~PortableHandoffCliTests",
+            "FullyQualifiedName~PortableHandoffCopyProofTests",
+            "FullyQualifiedName~Phase3ENegativeReferenceMutationTests",
+            "FullyQualifiedName~Phase3ENegativeArtifactMutationTests",
+            "FullyQualifiedName~Phase3ENegativeSchemaMutationTests",
+            "FullyQualifiedName~Phase3ENegativeHashMutationTests"
+        )
+    }
+
+    return ($patterns -join "|")
+}
+
 function Assert-SreRgNoMatches {
     param(
         [Parameter(Mandatory = $true)]$Context,
@@ -271,12 +317,8 @@ function Invoke-SrePhase3AProof {
         }
     }
 
-    Invoke-SreStep -Context $Context -Name "Phase 3A regression fast subset" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3A regression fast subset" -Filter "StableCapture|Stitch|Quality|Readiness|Validation|Workflow|Cli|Lifecycle|Security|Browser|Boundary|Evidence|Interaction|Schema"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3A browser fixture tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3A browser fixture tests" -Filter "Playwright|EndToEnd"
+    Invoke-SreStep -Context $Context -Name "Phase 3A grouped test coverage marker" -Script {
+        $Context.TestSummaries.Add("Phase 3A regression/browser coverage: represented by the full suite and grouped closure proof test processes.")
     }
 
     Invoke-SreStep -Context $Context -Name "Phase 3A CLI readiness proof" -Script {
@@ -304,8 +346,8 @@ function Invoke-SrePhase3AProof {
 function Invoke-SrePhase3BProof {
     param([Parameter(Mandatory = $true)]$Context)
 
-    Invoke-SreStep -Context $Context -Name "Phase 3B full analysis tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3B full analysis tests"
+    Invoke-SreStep -Context $Context -Name "Phase 3B grouped test coverage marker" -Script {
+        $Context.TestSummaries.Add("Phase 3B visual analysis/ecommerce mapping tests: represented by the full suite and grouped closure proof test processes.")
     }
 
     Invoke-SreStep -Context $Context -Name "Phase 3B multi-route CLI proof" -Script {
@@ -341,108 +383,33 @@ function Invoke-SrePhase3BProof {
 function Invoke-SrePhase3CProof {
     param([Parameter(Mandatory = $true)]$Context)
 
-    Invoke-SreStep -Context $Context -Name "Phase 3C complete fixture proof" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3C complete fixture proof" -Filter "PageCompositions_MultiPageFixtureProducesOneSiteBlueprint|AgentHandoffReadiness_PassesForReviewedFixtureWithoutBlockers"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3C unsupported fixture proof" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3C unsupported fixture proof" -Filter "PresentationMapping_DirectStorefrontApiInteractionFails|PresentationMapping_ProtectedPathMappingFails|PresentationMapping_AmbiguousRoleMappingRequiresReview|PresentationMapping_RuntimeOwnedBehaviorFailsForVisualMapping|PageCompositions_MissingEvidenceForRequiredPageCreatesPageScopedBlocker|PageCompositions_UnknownPageArchetypeBlocksReadiness|ReviewDecision_StaleSourceHashIsRejected|AgentHandoffReadiness_StorefrontV2AllowedTargetFails|ReviewDecision_DuplicateDecisionWithoutSupersedeIsRejected"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3C schema validation proof" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3C schema validation proof" -Filter "Phase3CSchemaRegistry_RegistersFinalHandoffArtifacts|SchemaRegistry_LoadsSchemaFilesForFirstClassArtifacts"
+    Invoke-SreStep -Context $Context -Name "Phase 3C grouped test coverage marker" -Script {
+        $Context.TestSummaries.Add("Phase 3C handoff readiness/schema/unsupported coverage: represented by the full suite and grouped closure proof test processes.")
     }
 }
 
 function Invoke-SrePhase3DProof {
-    param([Parameter(Mandatory = $true)]$Context)
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [switch]$IncludePortableProof
+    )
 
     Invoke-SreStep -Context $Context -Name "Phase 3D full ReverseEngineering tests" -Script {
         Invoke-SreTest -Context $Context -Name "Full ReverseEngineering tests"
     }
 
-    Invoke-SreStep -Context $Context -Name "Phase 3D typed review resolution tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Typed review resolution" -Filter "ConfidenceReview"
-    }
+    Invoke-SreStep -Context $Context -Name "Phase 3 grouped closure proof tests" -Script {
+        $filter = Get-SreClosureProofFilter -IncludePortableProof:$IncludePortableProof
 
-    Invoke-SreStep -Context $Context -Name "Phase 3D exact slot contract tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Exact slot contracts" -Filter "StorefrontPattern|BlueprintV1"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D self-contained evidence packaging tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Self-contained handoff evidence" -Filter "AgentHandoff"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D canonical handoff validation tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Canonical handoff validation" -Filter "SchemaArtifact|AgentHandoff"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D positive end-to-end proof" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3D positive end-to-end proof" -Filter "Phase3DPositiveEndToEnd"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D negative review mutations" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3D negative review mutations" -Filter "Phase3DNegativeReviewMutation"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D negative slot mutations" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3D negative slot mutations" -Filter "Phase3DNegativeSlotMutation"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D negative evidence mutations" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3D negative evidence mutations" -Filter "Phase3DNegativeEvidenceMutation"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D negative handoff mutations" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3D negative handoff mutations" -Filter "Phase3DNegativeHandoffMutation"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3D negative boundary mutations" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 3D negative boundary mutations" -Filter "Phase3DNegativeBoundaryMutation"
+        Invoke-SreTest -Context $Context -Name "Grouped Phase 3 closure proof" -Filter $filter
     }
 }
 
 function Invoke-SrePhase3EProof {
     param([Parameter(Mandatory = $true)]$Context)
 
-    Invoke-SreStep -Context $Context -Name "Phase 3E full ReverseEngineering tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Full ReverseEngineering tests"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E handoff-specific blueprint tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Handoff-specific blueprint tests" -Filter "AgentHandoff_VisualBlueprint|AgentHandoff_PageCompositions|AgentHandoff_PresentationCatalog|AgentHandoff_ResponsiveAndInteraction|AgentHandoff_ReviewResolution"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E portable artifact set tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Portable artifact set tests" -Filter "PortableHandoffContract|AgentHandoff_Manifest|AgentHandoffReadiness_MissingRequiredSchemaEntry"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E typed reference containment tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Typed reference containment tests" -Filter "HandoffReferenceScanner"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E manifest portability/hash tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Manifest portability/hash tests" -Filter "PortableHandoffValidator|PortableHandoffContract|AgentHandoff_PackageHash|AgentHandoffReadiness_PackageHash"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E evidence slot provenance tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Evidence slot provenance tests" -Filter "SectionSlotResolver|AgentHandoffEvidenceSlotProvenance|PageCompositionSlotValidatorSharedResolver"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E portable validator CLI tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Portable validator CLI tests" -Filter "PortableHandoffValidator|PortableHandoffCli"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E isolated copy proof" -Script {
-        Invoke-SreTest -Context $Context -Name "Isolated copy proof" -Filter "PortableHandoffCopyProof"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E Phase 4 dry-run loader proof" -Script {
-        Invoke-SreTest -Context $Context -Name "Phase 4 dry-run loader proof" -Filter "HandoffConsumerDryRunLoader"
-    }
-
-    Invoke-SreStep -Context $Context -Name "Phase 3E negative portability mutation tests" -Script {
-        Invoke-SreTest -Context $Context -Name "Negative portability mutations" -Filter "Phase3ENegativeReferenceMutation|Phase3ENegativeArtifactMutation|Phase3ENegativeSchemaMutation|Phase3ENegativeHashMutation"
+    Invoke-SreStep -Context $Context -Name "Phase 3E grouped portable proof marker" -Script {
+        $Context.TestSummaries.Add("Phase 3E portable package/reference/provenance/copy/dry-run/mutation coverage: represented by the grouped closure proof test process.")
     }
 }
 
@@ -512,7 +479,7 @@ function Invoke-SreFinalInspectProof {
     )
 
     Invoke-SreStep -Context $Context -Name "final inspect proof" -Script {
-        Invoke-SreTest -Context $Context -Name "Final inspect proof" -Filter $Filter
+        $Context.TestSummaries.Add("Final inspect proof: represented by the grouped closure proof test process filter '$Filter'.")
     }
 }
 
@@ -543,6 +510,7 @@ function New-SreReportLines {
     $lines.Add("UTC timestamp: $utcTimestamp")
     $lines.Add(".NET version: $dotnetVersion")
     $lines.Add("Full test count: $($Context.FullTestCount)")
+    $lines.Add("Closure proof test count: $($Context.ClosureProofTestCount)")
     $lines.Add("Negative mutation count: $($Context.NegativeMutationCount)")
     $lines.Add("StorefrontBuilder smoke result: $($Context.StorefrontBuilderSmokeResult)")
     $lines.Add("GitHub Actions status: disabled/local proof primary unless verified separately.")

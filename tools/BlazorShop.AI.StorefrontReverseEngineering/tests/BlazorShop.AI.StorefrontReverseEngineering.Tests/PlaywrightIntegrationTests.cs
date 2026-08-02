@@ -8,6 +8,8 @@ using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 
+[Trait("Phase", "3")]
+[Trait("Proof", "Browser")]
 public sealed class PlaywrightIntegrationTests
 {
     [Fact]
