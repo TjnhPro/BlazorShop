@@ -39,12 +39,14 @@ Status: Final candidate procedure pending runtime gate
 ## Implemented Phase 3E Evidence
 
 - Portable package contract, schema list, typed reference registry, and deterministic file-level hash rules.
+- Portable validation enforces canonical artifact/schema membership inside copied packages, manifest/readiness agreement, and separate reference categories for consumer dependencies, diagnostic provenance, generated target paths, and external informational URLs.
 - Handoff-local consumer artifacts for page compositions, reviewed blueprint, design tokens, visual style, Presentation catalog, mappings, components, responsive behavior, interaction models, confidence, originality restrictions, review resolution, evidence manifest, screenshots, and section crops.
 - `validate-handoff --handoff-root <path> --schema-root <path>` and `inspect-handoff --handoff-root <path> --schema-root <path>` validate copied packages without the source project.
 - Shared `SectionSlotResolver` feeds slot validation, evidence packaging, and the read-only consumer dry-run loader.
 - `HandoffConsumerDryRunLoader` reads only `handoffRoot`, `schemaRoot`, and a cancellation token, refuses failed readiness, required-slot loss, and package escape, and performs no generation writes.
 - `PortableHandoffCopyProofTests` copies only the portable package and schema root, deletes the source project, validates both copies, dry-run loads one copy, and verifies package hash stability.
-- Phase 3E negative mutation tests cover reference escape, diagnostics-as-consumer misuse, absolute paths, missing consumer artifacts, missing section crops, missing schemas, corrupt artifacts, and canonical manifest order drift.
+- Phase 3E negative mutation tests cover reference escape, diagnostics-as-consumer misuse, absolute paths, missing consumer artifacts, missing section crops, missing schemas, corrupt artifacts, canonical manifest order drift, canonical artifact/schema membership drift, and manifest/readiness mismatch.
+- Source-aware slot proof treats reviewed mappings as authoritative only when their source page and section belong to the reviewed page composition; orphan mappings fail with `reviewed-slot-mapping-orphan`.
 - `scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1` is a no-skip clean-HEAD gate. It now orchestrates Phase 3A/3B/3C/3D/3E proof steps directly without starting the Phase 3D gate as a child process, restores/builds once, runs later tests with `--no-build --no-restore`, groups CLI/browser/portable coverage into the closure proof test process, performs one canonical boundary scan, runs StorefrontBuilder plan-only smoke once, asserts final `HEAD` unchanged, cleans transient success artifacts, and writes the ignored runtime report.
 - The runtime report records global timeout budget, remaining budget, process/test-process counts, step start/end/duration/exit code, slowest steps, artifact count/bytes for report artifacts, cleanup result, baseline cache status, and GitHub Actions status.
 

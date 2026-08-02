@@ -1,6 +1,6 @@
 # Visual Reverse Engineering Closure Integrity.todo
 
-Status: In Progress
+Status: Complete
 Owner: Storefront Platform
 Created: 2026-08-02
 Target folder: `docs/visual-reverse-engineering-skill`
@@ -18,15 +18,15 @@ The current codebase is close to final closure, but a few small proof gaps still
 
 GitHub Actions evidence is intentionally out of scope for this cleanup round because Actions are disabled during active development.
 
-## Current Codebase Findings
+## Baseline Codebase Findings Before Phase 3E.0
 
-- `tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1` writes a useful plan, but the report is not surfaced in a stable developer-visible location by default.
-- The current `-WhatIf` path still depends on temporary candidate artifacts unless debug retention is enabled.
-- StorefrontBuilder version provenance is split between PowerShell and Node-facing generation code.
-- `tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Handoff/AgentHandoffAssembler.cs` still treats `analysis/agent-handoff/manifest.json` and `analysis/agent-handoff/handoff-readiness.json` as special bootstrap artifacts.
-- `tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Handoff/PortableHandoffValidator.cs` already validates portable copied packages, but the canonical membership and readiness alignment rules can be made clearer.
-- `tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Blueprint/PageCompositionSlotValidator.cs` is already source-aware; the remaining risk is not the old `Dictionary<string,int>` model, but whether the current authoritative-slot proof is covered by focused tests and docs.
-- `tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/Phase3EFinalClosureGateTests.cs` still encodes the final gate through script assertions and needs to keep proving the same end state after any plan/report changes.
+- At baseline, `tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1` wrote a useful plan, but the report was not surfaced in a stable developer-visible location by default.
+- At baseline, the normal `-WhatIf` review path still depended on temporary candidate artifacts unless debug retention was enabled.
+- At baseline, StorefrontBuilder version provenance was split between PowerShell and Node-facing generation code.
+- At baseline, `tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Handoff/AgentHandoffAssembler.cs` still treated `analysis/agent-handoff/manifest.json` and `analysis/agent-handoff/handoff-readiness.json` as special bootstrap artifacts.
+- At baseline, `tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Handoff/PortableHandoffValidator.cs` already validated portable copied packages, but the canonical membership and readiness alignment rules needed clearer enforcement.
+- At baseline, `tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Blueprint/PageCompositionSlotValidator.cs` was already source-aware; the remaining risk was not the old `Dictionary<string,int>` model, but whether the current authoritative-slot proof was covered by focused tests and docs.
+- At baseline, `tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/Phase3EFinalClosureGateTests.cs` encoded the final gate through script assertions and needed to keep proving the same end state after any plan/report changes.
 
 ## Locked Decisions
 
@@ -300,12 +300,12 @@ Goal: align docs with the final local behavior and close the phase without CI de
 
 Tasks:
 
-- [ ] Update the visual reverse engineering docs to describe the stable `-WhatIf` report path.
-- [ ] Update docs to explain the unified generator version source.
-- [ ] Update any closure docs that still tell people to rely on hidden candidate artifacts for normal usage.
-- [ ] Record that GitHub Actions is intentionally out of scope while disabled during development.
-- [ ] Capture local command summaries for the final closure note.
-- [ ] Confirm the final plan no longer mentions a temporary-only workaround as the normal path.
+- [x] Update the visual reverse engineering docs to describe the stable `-WhatIf` report path.
+- [x] Update docs to explain the unified generator version source.
+- [x] Update any closure docs that still tell people to rely on hidden candidate artifacts for normal usage.
+- [x] Record that GitHub Actions is intentionally out of scope while disabled during development.
+- [x] Capture local command summaries for the final closure note.
+- [x] Confirm the final plan no longer mentions a temporary-only workaround as the normal path.
 
 Local closure evidence:
 
@@ -325,16 +325,30 @@ Optional:
 
 Done when:
 
-- [ ] The docs, the plan output, and the local proof all describe the same closure behavior.
+- [x] The docs, the plan output, and the local proof all describe the same closure behavior.
+
+Phase 3E.5 evidence:
+
+- Updated active docs to describe the stable `-WhatIf` report path and approved `-WhatIfReportPath` roots in `docs/architecture/11-storefront-builder.md`, `docs/visual-reverse-engineering-skill/reference.md`, and `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
+- Updated active docs to identify `tools/BlazorShop.AI.StorefrontBuilder/version.json` as the unified `generatorVersion` source for generated metadata and generated-file manifests.
+- Updated ReverseEngineering docs and `docs/qa/phase3e-final-closure.md` to record portable copied-package canonical artifact/schema checks, manifest/readiness agreement, typed reference categories, and source-aware slot provenance with `reviewed-slot-mapping-orphan`.
+- GitHub Actions remains intentionally out of scope while disabled during development; local deterministic gates are the closure evidence.
+- Confirmed the final plan treats hidden candidate retention only as baseline/debug context, not the normal `-WhatIf` review path.
+- QA passed: `.\scripts\qa\run-storefront-client-regeneration-gate.ps1` completed without drift.
+- QA passed: `.\scripts\qa\run-storefront-builder-regeneration-gate.ps1` completed without live Commerce Node data; its intentional rollback case printed a build failure and the gate still ended in `PASS`.
+- QA passed: `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` completed generated package/build/static validation/isolation/regeneration proof.
+- QA passed: `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` completed generated fast browser proof and wrote `fast-foundation-functional-report.md` under the ignored generated artifact.
+- QA passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder" --blame-hang --blame-hang-timeout 5m` passed `39/39`.
+- Known warnings observed during package/test proof: existing `MessagePack` NuGet vulnerability warnings, existing Presentation package `NU5100` content placement warnings, and Browserslist `caniuse-lite` freshness warning.
 
 ## Final Closure Gate
 
 The phase is complete only when all of the following are true:
 
-- [ ] Normal `-WhatIf` output is readable without debug env vars.
-- [ ] The stable report location is documented.
-- [ ] One generator version source is used everywhere.
-- [ ] Portable handoff validation works on a copied package.
-- [ ] Slot proof still blocks incorrect mappings and extra sections.
-- [ ] Docs match the runtime behavior.
-- [ ] GitHub Actions remains intentionally excluded while disabled.
+- [x] Normal `-WhatIf` output is readable without debug env vars.
+- [x] The stable report location is documented.
+- [x] One generator version source is used everywhere.
+- [x] Portable handoff validation works on a copied package.
+- [x] Slot proof still blocks incorrect mappings and extra sections.
+- [x] Docs match the runtime behavior.
+- [x] GitHub Actions remains intentionally excluded while disabled.
