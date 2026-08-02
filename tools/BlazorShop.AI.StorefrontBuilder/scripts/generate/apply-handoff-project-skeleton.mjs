@@ -7,6 +7,7 @@ const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-b
 const planPath = resolve(readArg("--plan-json") ?? join(projectRoot, "docs/storefront-analysis/generation-plan.json"));
 const summaryPath = resolve(readArg("--summary-output") ?? join(projectRoot, "docs/storefront-analysis/handoff-generation-summary.md"));
 const placeholderManifestPath = resolve(readArg("--placeholder-manifest-output") ?? join(projectRoot, "docs/storefront-analysis/handoff-placeholders.json"));
+const regenerationCandidate = process.argv.includes("--regeneration-candidate");
 
 if (!existsSync(planPath)) {
   fail("SFB-HANDOFF-GEN-001", `Generation plan is missing: ${planPath}`);
@@ -59,7 +60,9 @@ for (const file of plan.files ?? []) {
   if (targetPath.endsWith(".razor")) {
     if (existsSync(fullPath)) {
       const original = readFileSync(fullPath, "utf8");
-      const updated = applyRazorMarkers(original, file);
+      const updated = regenerationCandidate && !original.includes("storefront-builder-handoff-placeholder")
+        ? buildRazorPlaceholder(file)
+        : applyRazorMarkers(original, file);
       writeFileSync(fullPath, updated, "utf8");
       written.push(record(file, targetPath, updated === original ? "razor-placeholder-present" : "razor-placeholder-marker"));
     } else {

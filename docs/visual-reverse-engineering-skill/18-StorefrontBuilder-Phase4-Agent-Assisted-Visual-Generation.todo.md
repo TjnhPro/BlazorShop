@@ -629,38 +629,52 @@ Implementation targets:
 
 Tasks:
 
-- [ ] Extend regeneration candidate creation to preserve handoff generation metadata.
-- [ ] Ensure no-op regeneration from the same handoff is deterministic.
-- [ ] Ensure scoped regeneration works for:
-  - [ ] `css`
-  - [ ] `component`
-  - [ ] `page`
-  - [ ] `foundation`
-  - [ ] `validate`
-  - [ ] `conflicts`
-- [ ] Ensure manual edits to generated-owned files are detected.
-- [ ] Ensure user-owned files are preserved.
-- [ ] Ensure protected files are skipped unless `foundation` scope explicitly permits metadata update.
-- [ ] Ensure obsolete planned files are reported.
-- [ ] Ensure `-WhatIf` prints meaningful action lines and writes a stable report outside the target.
-- [ ] Ensure handoff package hash drift produces an explicit re-plan/update requirement.
-- [ ] Ensure Starter contract drift produces an explicit foundation upgrade requirement.
+- [x] Extend regeneration candidate creation to preserve handoff generation metadata.
+- [x] Ensure no-op regeneration from the same handoff is deterministic.
+- [x] Ensure scoped regeneration works for:
+  - [x] `css`
+  - [x] `component`
+  - [x] `page`
+  - [x] `foundation`
+  - [x] `validate`
+  - [x] `conflicts`
+- [x] Ensure manual edits to generated-owned files are detected.
+- [x] Ensure user-owned files are preserved.
+- [x] Ensure protected files are skipped unless `foundation` scope explicitly permits metadata update.
+- [x] Ensure obsolete planned files are reported.
+- [x] Ensure `-WhatIf` prints meaningful action lines and writes a stable report outside the target.
+- [x] Ensure handoff package hash drift produces an explicit re-plan/update requirement.
+- [x] Ensure Starter contract drift produces an explicit foundation upgrade requirement.
 
 Tests:
 
-- [ ] Positive: no-op regeneration produces no diff.
-- [ ] Positive: scoped CSS regeneration touches only planned CSS files.
-- [ ] Positive: scoped component regeneration touches only planned component files.
-- [ ] Positive: manual edit conflict is reported, not overwritten.
-- [ ] Positive: obsolete generated file is reported.
-- [ ] Positive: `-WhatIf` report is visible after candidate cleanup.
-- [ ] Negative: changed handoff hash without re-plan fails.
-- [ ] Negative: protected-file target in plan fails.
+- [x] Positive: no-op regeneration produces no diff.
+- [x] Positive: scoped CSS regeneration touches only planned CSS files.
+- [x] Positive: scoped component regeneration touches only planned component files.
+- [x] Positive: manual edit conflict is reported, not overwritten.
+- [x] Positive: obsolete generated file is reported.
+- [x] Positive: `-WhatIf` report is visible after candidate cleanup.
+- [x] Negative: changed handoff hash without re-plan fails.
+- [x] Negative: protected-file target in plan fails.
 
 Exit criteria:
 
-- [ ] Handoff-generated storefronts are safe to regenerate.
-- [ ] Developer/agent can review update actions before applying them.
+- [x] Handoff-generated storefronts are safe to regenerate.
+- [x] Developer/agent can review update actions before applying them.
+
+Phase 4.8 evidence:
+
+- Updated `regenerate-storefront.ps1` so handoff-generated targets are detected through stored metadata/generation plan and candidates are created by copying the target project, reapplying the stored handoff generation plan, and preserving handoff metadata/package lineage instead of regenerating a neutral Starter project.
+- Added handoff regeneration drift checks for generation plan hash, handoff package hash, handoff readiness hash, and Starter contract hash. Handoff/source drift now fails closed with explicit re-plan/update guidance; Starter contract drift fails with explicit foundation upgrade guidance.
+- Added protected-target validation before candidate generation so a handoff plan cannot regenerate package/platform files as generated-owned visual output.
+- Updated regeneration planning so generated/managed manual edits are reported as `conflict manual edit` even when the copied handoff candidate still matches the edited target.
+- Added `--regeneration-candidate` support to `apply-handoff-project-skeleton.mjs` so stale generated Razor files without handoff markers can be reset deterministically in candidates without changing initial project generation behavior.
+- Added `StorefrontBuilderHandoffRegenerationSafetyTests` covering no-op determinism, scoped CSS/component regeneration, page/foundation/validate/conflicts scope support, manual-edit preservation, obsolete candidate reporting, stable WhatIf reports after candidate cleanup, handoff hash drift rejection, and protected plan target rejection.
+- Focused verification passed: `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\apply-handoff-project-skeleton.mjs`.
+- Focused verification passed: `pwsh -NoProfile -Command "& { $script = Get-Content -LiteralPath 'tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1' -Raw; [void][scriptblock]::Create($script); Write-Output 'regen syntax ok' }"`.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffRegenerationSafetyTests" --blame-hang --blame-hang-timeout 5m` (`9` passed).
+- Handoff regression verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffProjectGenerationTests|FullyQualifiedName~StorefrontBuilderHandoffBoundaryValidationTests|FullyQualifiedName~StorefrontBuilderHandoffRepairLoopTests" --blame-hang --blame-hang-timeout 5m` (`17` passed).
+- Existing non-handoff StorefrontBuilder architecture verification passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderFoundationTests" --blame-hang --blame-hang-timeout 5m` (`39` passed; existing MessagePack vulnerability and Browserslist warnings only).
 
 ## Phase 4.9 - Documentation And Closure Evidence
 

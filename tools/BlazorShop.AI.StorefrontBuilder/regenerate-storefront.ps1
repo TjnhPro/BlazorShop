@@ -80,6 +80,36 @@ function Get-NormalizedFileHash {
     return "sha256:$hex"
 }
 
+function Get-NormalizedTextSha256 {
+    param([Parameter(Mandatory = $true)][string]$Text)
+
+    $normalized = $Text.Replace("`r`n", "`n").Replace("`r", "`n")
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($normalized)
+    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
+    return [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+}
+
+function Get-NormalizedFileSha256 {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return ""
+    }
+
+    return Get-NormalizedTextSha256 -Text (Get-Content -LiteralPath $Path -Raw)
+}
+
+function Normalize-RecordedHash {
+    param([string]$Hash)
+
+    $value = [string]$Hash
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        return ""
+    }
+
+    return $value.Trim().Replace("sha256:", "")
+}
+
 function Test-PlatformMetadataPath {
     param([string]$FilePath)
 
@@ -199,6 +229,7 @@ function New-RegenerationPlan {
         }
         elseif ($targetHash -eq $candidateHash) {
             if (($ownership -eq "generated" -or $ownership -eq "managed") -and $previousGeneratedHash -ne "none" -and $targetHash -ne $previousGeneratedHash) {
+                $action = "conflict manual edit"
                 $reason = "Target already matches candidate content; manual edit preserved."
             }
             else {
@@ -452,6 +483,19 @@ function Copy-ChangedFile {
     Copy-Item -LiteralPath $source -Destination $target -Force
 }
 
+function Remove-DirectoryIfExists {
+    param([string]$Path)
+
+    try {
+        if ([System.IO.Directory]::Exists($Path)) {
+            [System.IO.Directory]::Delete($Path, $true)
+        }
+    }
+    catch {
+        Write-Verbose "Ignoring cleanup failure for '$Path': $($_.Exception.Message)"
+    }
+}
+
 function Read-SimpleYamlValue {
     param(
         [Parameter(Mandatory = $true)][string]$Text,
@@ -487,7 +531,138 @@ function Read-GeneratedStorefrontMetadata {
         storeKey = Read-SimpleYamlValue -Text $text -Key "storeKey" -Default "default"
         outputRoot = Read-SimpleYamlValue -Text $text -Key "outputRoot" -Default (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MetadataPath)))
         sourceStarterPath = Read-SimpleYamlValue -Text $text -Key "sourceStarterPath" -Default "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"
+        generationMode = Read-SimpleYamlValue -Text $text -Key "generationMode" -Default ""
+        starterContractSha256 = Read-SimpleYamlValue -Text $text -Key "starterContractSha256" -Default ""
+        planSha256 = Read-SimpleYamlValue -Text $text -Key "planSha256" -Default ""
+        sourceHandoffPackageHash = Read-SimpleYamlValue -Text $text -Key "sourceHandoffPackageHash" -Default ""
+        sourceHandoffReadinessHash = Read-SimpleYamlValue -Text $text -Key "sourceHandoffReadinessHash" -Default ""
+        sourceStarterContractHash = Read-SimpleYamlValue -Text $text -Key "sourceStarterContractHash" -Default ""
     }
+}
+
+function Test-HandoffGeneratedStorefront {
+    param(
+        [hashtable]$Metadata,
+        [string]$ProjectRoot
+    )
+
+    return $Metadata["generationMode"] -eq "handoff-project-skeleton" `
+        -or (Test-Path -LiteralPath (Join-Path $ProjectRoot "docs\storefront-analysis\generation-plan.json"))
+}
+
+function Read-HandoffGenerationPlan {
+    param([Parameter(Mandatory = $true)][string]$ProjectRoot)
+
+    $planPath = Join-Path $ProjectRoot "docs\storefront-analysis\generation-plan.json"
+    if (-not (Test-Path -LiteralPath $planPath)) {
+        throw "[SFB-REGEN-HANDOFF-001] Handoff generation plan is missing. Problem: '$planPath' does not exist. Cause: handoff regeneration requires the compiled generation plan stored with the generated project. Fix: rerun handoff generation or restore docs/storefront-analysis/generation-plan.json."
+    }
+
+    $planText = Get-Content -LiteralPath $planPath -Raw
+    return @{
+        path = $planPath
+        text = $planText
+        hash = Get-NormalizedTextSha256 -Text $planText
+        json = $planText | ConvertFrom-Json
+    }
+}
+
+function Get-HandoffPlannedIntentionalChanges {
+    param([Parameter(Mandatory = $true)]$Plan)
+
+    $paths = [System.Collections.Generic.List[string]]::new()
+    foreach ($file in @($Plan.files)) {
+        $ownership = [string]$file.ownership
+        $action = [string]($file.allowedOperation ?? $file.action)
+        $targetPath = [string]$file.targetPath
+        if ([string]::IsNullOrWhiteSpace($targetPath)) {
+            continue
+        }
+
+        if ($ownership -eq "protected" -or $action -eq "skip") {
+            continue
+        }
+
+        $paths.Add($targetPath.Replace("\", "/").TrimStart("/"))
+    }
+
+    $paths.Add("Components/Layout/ApplicationHead.razor")
+    return @($paths | Sort-Object -Unique)
+}
+
+function Assert-HandoffPlanTargetsAreRegeneratable {
+    param([Parameter(Mandatory = $true)]$Plan)
+
+    foreach ($file in @($Plan.files)) {
+        $targetPath = [string]$file.targetPath
+        if ([string]::IsNullOrWhiteSpace($targetPath)) {
+            continue
+        }
+
+        $normalized = $targetPath.Replace("\", "/").TrimStart("/")
+        $ownership = [string]$file.ownership
+        $action = [string]($file.allowedOperation ?? $file.action)
+        $protectedTarget = $normalized -eq "StorefrontPackageVersions.props" `
+            -or $normalized -eq "starter-generation.contract.yaml" `
+            -or $normalized.Contains("BlazorShop.Storefront.Starter", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or $normalized.Contains("BlazorShop.Storefront.Presentation", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or $normalized.Contains("BlazorShop.Storefront.Runtime", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or $normalized.Contains("BlazorShop.Storefront.Client", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or $normalized.Contains("BlazorShop.Storefront.V2", [System.StringComparison]::OrdinalIgnoreCase)
+
+        if ($protectedTarget -and $ownership -ne "protected" -and $action -ne "skip") {
+            throw "[SFB-REGEN-HANDOFF-020] Handoff generation plan targets a protected file. Problem: '$normalized' is planned as '$ownership/$action'. Cause: handoff regeneration can only rewrite generated-owned visual files; platform/package files require an explicit foundation path. Fix: re-plan the handoff generation so protected targets are skipped or run a reviewed foundation upgrade."
+        }
+    }
+}
+
+function Assert-HandoffRegenerationState {
+    param(
+        [hashtable]$Metadata,
+        [string]$ProjectRoot
+    )
+
+    if (-not (Test-HandoffGeneratedStorefront -Metadata $Metadata -ProjectRoot $ProjectRoot)) {
+        return $null
+    }
+
+    $planInfo = Read-HandoffGenerationPlan -ProjectRoot $ProjectRoot
+    $plan = $planInfo["json"]
+    if ($plan.generationMode -ne "handoff") {
+        throw "[SFB-REGEN-HANDOFF-002] Handoff regeneration requires a handoff generation plan. Problem: generationMode is '$($plan.generationMode)'. Cause: this target is marked as handoff-generated but the stored plan is not a handoff plan. Fix: restore the matching handoff generation plan or regenerate from the reviewed handoff package."
+    }
+
+    $recordedPlanHash = Normalize-RecordedHash -Hash $Metadata["planSha256"]
+    if (-not [string]::IsNullOrWhiteSpace($recordedPlanHash) -and $recordedPlanHash -ne $planInfo["hash"]) {
+        throw "[SFB-REGEN-HANDOFF-003] Handoff generation plan hash drift requires explicit re-plan/update. Problem: metadata records '$recordedPlanHash' but generation-plan.json hashes to '$($planInfo["hash"])'. Cause: the generation plan changed after project generation. Fix: rerun handoff planning/generation from the reviewed package before regeneration."
+    }
+
+    $recordedPackageHash = Normalize-RecordedHash -Hash $Metadata["sourceHandoffPackageHash"]
+    $planPackageHash = Normalize-RecordedHash -Hash $plan.sourceHandoffPackageHash
+    if (-not [string]::IsNullOrWhiteSpace($recordedPackageHash) -and $recordedPackageHash -ne $planPackageHash) {
+        throw "[SFB-REGEN-HANDOFF-010] Handoff package hash drift requires explicit re-plan/update. Problem: metadata records package '$recordedPackageHash' but the generation plan records '$planPackageHash'. Cause: handoff source identity changed without a new generation plan. Fix: rerun handoff preflight and planning before regeneration."
+    }
+
+    $recordedReadinessHash = Normalize-RecordedHash -Hash $Metadata["sourceHandoffReadinessHash"]
+    $planReadinessHash = Normalize-RecordedHash -Hash $plan.sourceHandoffReadinessHash
+    if (-not [string]::IsNullOrWhiteSpace($recordedReadinessHash) -and $recordedReadinessHash -ne $planReadinessHash) {
+        throw "[SFB-REGEN-HANDOFF-010] Handoff readiness hash drift requires explicit re-plan/update. Problem: metadata records readiness '$recordedReadinessHash' but the generation plan records '$planReadinessHash'. Cause: handoff readiness changed without a new generation plan. Fix: rerun handoff preflight and planning before regeneration."
+    }
+
+    $recordedStarterHash = Normalize-RecordedHash -Hash $Metadata["sourceStarterContractHash"]
+    $planStarterHash = Normalize-RecordedHash -Hash $plan.sourceStarterContractHash
+    if (-not [string]::IsNullOrWhiteSpace($recordedStarterHash) -and $recordedStarterHash -ne $planStarterHash) {
+        throw "[SFB-REGEN-HANDOFF-011] Starter contract drift requires an explicit foundation upgrade. Problem: metadata records Starter contract '$recordedStarterHash' but the generation plan records '$planStarterHash'. Cause: platform foundation identity changed without a reviewed foundation update. Fix: run a foundation regeneration/upgrade path after reviewing Starter contract changes."
+    }
+
+    $starterContractPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\starter-generation.contract.yaml"
+    $currentStarterHash = Get-NormalizedFileSha256 -Path $starterContractPath
+    if (-not [string]::IsNullOrWhiteSpace($planStarterHash) -and $currentStarterHash -ne $planStarterHash) {
+        throw "[SFB-REGEN-HANDOFF-011] Starter contract drift requires an explicit foundation upgrade. Problem: current Starter contract hashes to '$currentStarterHash' but the handoff plan records '$planStarterHash'. Cause: the shared Starter foundation changed after this handoff project was generated. Fix: run a reviewed foundation upgrade/re-plan before regenerating visual files."
+    }
+
+    Assert-HandoffPlanTargetsAreRegeneratable -Plan $plan
+    return $planInfo
 }
 
 function Get-YamlTopLevelBlock {
@@ -582,8 +757,35 @@ function Invoke-RegenerationCandidateGeneration {
     param(
         [Parameter(Mandatory = $true)][string]$CandidateOutputRoot,
         [Parameter(Mandatory = $true)][string]$ProjectName,
-        [Parameter(Mandatory = $true)][string]$StoreKey
+        [Parameter(Mandatory = $true)][string]$StoreKey,
+        [Parameter(Mandatory = $true)][string]$TargetProjectRoot,
+        [hashtable]$HandoffPlanInfo
     )
+
+    if ($null -ne $HandoffPlanInfo) {
+        New-Item -ItemType Directory -Force -Path $CandidateOutputRoot | Out-Null
+        Copy-Item -LiteralPath $TargetProjectRoot -Destination $CandidateOutputRoot -Recurse -Force
+        $candidateProjectRoot = Join-Path $CandidateOutputRoot $ProjectName
+        $candidatePlanPath = Join-Path $candidateProjectRoot "docs\storefront-analysis\generation-plan.json"
+        & node "$PSScriptRoot/scripts/generate/apply-handoff-project-skeleton.mjs" `
+            --project-root $candidateProjectRoot `
+            --plan-json $candidatePlanPath `
+            --regeneration-candidate
+        if ($LASTEXITCODE -ne 0) {
+            throw "[SFB-REGEN-HANDOFF-030] Failed to apply handoff generation plan to regeneration candidate."
+        }
+
+        $intentionalChanges = Get-HandoffPlannedIntentionalChanges -Plan $HandoffPlanInfo["json"]
+        $intentionalChangesArgument = [string]::Join(",", $intentionalChanges)
+        & node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" `
+            --project-root $candidateProjectRoot `
+            --intentional-changes $intentionalChangesArgument
+        if ($LASTEXITCODE -ne 0) {
+            throw "[SFB-REGEN-HANDOFF-031] Failed to update handoff regeneration candidate manifest."
+        }
+
+        return
+    }
 
     & "$PSScriptRoot/build-storefront.ps1" `
         -Name $ProjectName `
@@ -683,6 +885,7 @@ if (-not [string]::IsNullOrWhiteSpace($env:SFB_DROP_CANDIDATE_FILE_PATHS)) {
 $validationResult = "not-requested"
 $buildResult = "not-requested"
 $plan = [System.Collections.Generic.List[hashtable]]::new()
+$handoffPlanInfo = Assert-HandoffRegenerationState -Metadata $metadata -ProjectRoot $resolvedProjectRoot
 
 Assert-StorefrontBuilderPathUnderRoot -Path $candidateOutputRoot -Root $resolvedOutputRoot
 Assert-StorefrontBuilderPathUnderRoot -Path $backupRoot -Root $resolvedOutputRoot
@@ -700,7 +903,7 @@ if ($Scope -eq "conflicts") {
 }
 
 try {
-    Invoke-RegenerationCandidateGeneration -CandidateOutputRoot $candidateOutputRoot -ProjectName $projectName -StoreKey $storeKey
+    Invoke-RegenerationCandidateGeneration -CandidateOutputRoot $candidateOutputRoot -ProjectName $projectName -StoreKey $storeKey -TargetProjectRoot $resolvedProjectRoot -HandoffPlanInfo $handoffPlanInfo
 
     foreach ($dropPath in $candidateDropPaths) {
         $resolvedDropPath = Join-Path $candidateProjectRoot $dropPath
@@ -715,7 +918,7 @@ try {
         node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $candidateProjectRoot --intentional-changes "docs/storefront-analysis/metadata.yaml"
         if ($LASTEXITCODE -ne 0) { throw "[SFB-REGEN-014] Failed to prepare foundation metadata in regeneration candidate." }
     }
-    elseif ($Scope -ne "foundation" -and (Test-Path -LiteralPath $metadataPath)) {
+    elseif ($null -eq $handoffPlanInfo -and $Scope -ne "foundation" -and (Test-Path -LiteralPath $metadataPath)) {
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $candidateMetadataPath) | Out-Null
         Copy-Item -LiteralPath $metadataPath -Destination $candidateMetadataPath -Force
         node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $candidateProjectRoot
@@ -794,11 +997,9 @@ catch {
     throw
 }
 finally {
-    if (-not $preserveCandidateArtifacts -and (Test-Path -LiteralPath $candidateOutputRoot)) {
-        Remove-Item -LiteralPath $candidateOutputRoot -Recurse -Force
+    if (-not $preserveCandidateArtifacts) {
+        Remove-DirectoryIfExists -Path $candidateOutputRoot
     }
 
-    if (Test-Path -LiteralPath $backupRoot) {
-        Remove-Item -LiteralPath $backupRoot -Recurse -Force
-    }
+    Remove-DirectoryIfExists -Path $backupRoot
 }
