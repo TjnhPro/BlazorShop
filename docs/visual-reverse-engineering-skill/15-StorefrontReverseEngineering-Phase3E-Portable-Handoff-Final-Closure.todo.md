@@ -42,7 +42,7 @@ The follow-up review found one remaining contract gap: Phase 3D proves consisten
 - Extend canonical schema registration with required schema kinds and schema hashes, so portable packages can validate against the exact expected contract set.
 - Keep Phase 3E CLI commands in ReverseEngineering only. Do not connect StorefrontBuilder generation or validation to handoff consumption.
 - Label responsive and interaction artifacts as evidence-derived unless explicit confidence-review support is added for them.
-- Avoid duplicate gate execution: Phase 3E should call the existing Phase 3D gate once, then run Phase 3E portable proofs and final `HEAD` checks.
+- Historical closure note superseded by `16-StorefrontReverseEngineering-Phase3E-QA-Gate-Optimization.todo.md`: Phase 3E now orchestrates proof steps directly instead of calling the Phase 3D gate as a child process.
 
 ## Scope
 

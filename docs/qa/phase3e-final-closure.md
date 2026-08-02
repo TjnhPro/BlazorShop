@@ -45,7 +45,8 @@ Status: Final candidate procedure pending runtime gate
 - `HandoffConsumerDryRunLoader` reads only `handoffRoot`, `schemaRoot`, and a cancellation token, refuses failed readiness, required-slot loss, and package escape, and performs no generation writes.
 - `PortableHandoffCopyProofTests` copies only the portable package and schema root, deletes the source project, validates both copies, dry-run loads one copy, and verifies package hash stability.
 - Phase 3E negative mutation tests cover reference escape, diagnostics-as-consumer misuse, absolute paths, missing consumer artifacts, missing section crops, missing schemas, corrupt artifacts, and canonical manifest order drift.
-- `scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1` is a no-skip clean-HEAD gate. It invokes the Phase 3D final closure gate once, runs the Phase 3E portable proof suite, performs boundary scans, runs StorefrontBuilder plan-only smoke, asserts final `HEAD` unchanged, and writes the ignored runtime report.
+- `scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1` is a no-skip clean-HEAD gate. It now orchestrates Phase 3A/3B/3C/3D/3E proof steps directly without starting the Phase 3D gate as a child process, restores/builds once, runs later tests with `--no-build --no-restore`, groups CLI/browser/portable coverage into the closure proof test process, performs one canonical boundary scan, runs StorefrontBuilder plan-only smoke once, asserts final `HEAD` unchanged, cleans transient success artifacts, and writes the ignored runtime report.
+- The runtime report records global timeout budget, remaining budget, process/test-process counts, step start/end/duration/exit code, slowest steps, artifact count/bytes for report artifacts, cleanup result, baseline cache status, and GitHub Actions status.
 
 ## Final Runtime Gate Rule
 
@@ -62,3 +63,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-re
 ## Final Closure Strategy
 
 The tracked closure document is prepared before final proof. The ignored runtime gate report under `obj/storefront-reverse-engineering/reports/` is the final authoritative proof so no post-gate source/docs commit is required.
+
+GitHub Actions evidence remains intentionally out of scope while Actions are disabled during development; local clean-HEAD gate output is the approved closure evidence.

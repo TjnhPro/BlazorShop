@@ -86,7 +86,7 @@ Use the Phase 3E gate only after the final candidate commit and a clean working 
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1
 ```
 
-The Phase 3E gate has no skip flags. It invokes the Phase 3D final closure gate once, then proves portable package validation, copied-package dry-run loading, negative portability mutations, boundary scans, StorefrontBuilder plan-only smoke, and final `HEAD` equality. Phase 3E remains in progress until the final Phase 3E runtime gate passes on this same clean HEAD. The ignored gate report is authoritative final proof; tracked docs must not require a post-gate source commit.
+The Phase 3E gate has no skip flags and is non-recursive: it does not invoke the Phase 3D gate or the historical Phase 3A/3B/3C gates. It restores once, builds once, runs later tests with `--no-build --no-restore`, groups closure proofs into the minimum test-host processes, reuses shared positive/portable baselines in the test host, runs one canonical boundary scan, runs StorefrontBuilder plan-only smoke once, records global timeout telemetry, cleans transient success artifacts, and verifies final `HEAD` equality. GitHub Actions evidence is intentionally out of scope while Actions are disabled during development. Phase 3E remains in progress until the final Phase 3E runtime gate passes on this same clean HEAD. The ignored gate report is authoritative final proof; tracked docs must not require a post-gate source commit.
 
 `BlazorShop.Storefront.Components.Features` is retired. StorefrontBuilder output should generate project-local visual templates from evidence while consuming shared `Contracts`, `Headless`, and `Browser` primitives.
 

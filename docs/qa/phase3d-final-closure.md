@@ -130,9 +130,9 @@ Status: passed
 ## Phase 3D.11 Evidence
 
 - Added `scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`.
-- The Phase 3D gate exposes only `-CommandTimeoutSeconds`; it does not expose Phase 3B or StorefrontBuilder skip flags.
+- The Phase 3D gate exposes bounded `-CommandTimeoutSeconds` and `-GlobalTimeoutSeconds`; it does not expose Phase 3B or StorefrontBuilder skip flags.
 - The gate records tested HEAD, final HEAD, branch, UTC timestamp, .NET version, clean tree state, test summaries, phase gate results, proof summaries, boundary assertions, known limitations, and local-proof/GitHub Actions status.
-- The gate order includes clean tree check, build, Phase 3A/3B/3C gates, full ReverseEngineering tests, focused review/slot/evidence/handoff tests, positive and negative Phase 3D fixtures, boundary scans, StorefrontBuilder plan-only smoke, final inspect proof, and final HEAD check.
+- The gate order includes clean tree check, restore/build once, direct Phase 3A/3B/3C proof markers, one full ReverseEngineering suite, one grouped closure proof bucket, positive and negative Phase 3D fixtures, canonical boundary scans, StorefrontBuilder plan-only smoke, timeout telemetry, success cleanup, final inspect proof, and final HEAD check.
 - Fixed Phase 3C gate switch forwarding so no-skip execution no longer passes `-SkipStorefrontBuilderSmoke:False` as a string.
 - Verification command: `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "Phase3DProof" --blame-hang --blame-hang-timeout 5m`
 - Result: passed `3/3`.

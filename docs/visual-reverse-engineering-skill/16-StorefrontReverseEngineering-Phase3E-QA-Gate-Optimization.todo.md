@@ -1,6 +1,6 @@
 # StorefrontReverseEngineering Phase 3E - QA Gate Optimization
 
-Status: In Progress  
+Status: Complete  
 Owner area: `tools/BlazorShop.AI.StorefrontReverseEngineering`  
 Target folder: `docs/visual-reverse-engineering-skill`  
 Depends on: Phase 3D correctness proof and Phase 3E portable handoff proof being present  
@@ -400,16 +400,22 @@ Goal: make the plan and QA docs match the optimized execution model.
 
 Implementation checklist:
 
-- [ ] Update the relevant Phase 3 QA notes to explain that the final gate is non-recursive.
-- [ ] Document the one-build / no-build-later rule.
-- [ ] Document the shared-baseline reuse rule.
-- [ ] Document that GitHub Actions is intentionally not part of this closure path while disabled.
-- [ ] Keep the phase plan and QA notes consistent with the actual scripts after the refactor.
+- [x] Update the relevant Phase 3 QA notes to explain that the final gate is non-recursive.
+- [x] Document the one-build / no-build-later rule.
+- [x] Document the shared-baseline reuse rule.
+- [x] Document that GitHub Actions is intentionally not part of this closure path while disabled.
+- [x] Keep the phase plan and QA notes consistent with the actual scripts after the refactor.
 
 Acceptance criteria:
 
-- [ ] The docs describe the optimized gate accurately.
-- [ ] The docs do not promise repeated work that the scripts no longer do.
+- [x] The docs describe the optimized gate accurately.
+- [x] The docs do not promise repeated work that the scripts no longer do.
+
+O11 evidence:
+
+- Updated `docs/visual-reverse-engineering-skill/README.md`, `reference.md`, and `how-to-generate-and-validate.md` to describe the non-recursive Phase 3E gate, one restore/build rule, no-build/no-restore later tests, grouped proof buckets, shared baselines, telemetry, cleanup, and local-only closure while Actions are disabled.
+- Updated `docs/qa/phase3e-final-closure.md` to match the optimized final runtime gate and report fields.
+- Updated `docs/qa/phase3d-final-closure.md` to mention both per-command and global timeout parameters.
 
 ## Recommended Implementation Order
 
@@ -430,30 +436,30 @@ Acceptance criteria:
 
 The optimized plan must still cover:
 
-- [ ] phase 3A readiness and evidence hardening
-- [ ] phase 3B visual analysis and ecommerce mapping
-- [ ] phase 3C final handoff readiness
-- [ ] phase 3D correctness proof
-- [ ] phase 3E portable handoff proof
-- [ ] exact blocker codes
-- [ ] browser proof
-- [ ] CLI proof
-- [ ] portability proof
-- [ ] boundary scan proof
-- [ ] StorefrontBuilder smoke proof
+- [x] phase 3A readiness and evidence hardening
+- [x] phase 3B visual analysis and ecommerce mapping
+- [x] phase 3C final handoff readiness
+- [x] phase 3D correctness proof
+- [x] phase 3E portable handoff proof
+- [x] exact blocker codes
+- [x] browser proof
+- [x] CLI proof
+- [x] portability proof
+- [x] boundary scan proof
+- [x] StorefrontBuilder smoke proof
 
 ## Definition Of Done
 
 The optimization is complete when all of the following are true:
 
-- [ ] The final Phase 3E gate no longer nests the Phase 3D gate.
-- [ ] The Phase 3D gate no longer nests Phase 3A, Phase 3B, and Phase 3C in the final closure path.
-- [ ] Build happens once.
-- [ ] The full suite, closure suite, CLI proof, browser proof, StorefrontBuilder smoke, and boundary scan each run once or in the minimum grouped form that preserves coverage.
-- [ ] Shared positive and portable baselines are reused.
-- [ ] Cleanup is deterministic.
-- [ ] Local reports clearly show counts, timings, and closure evidence.
-- [ ] GitHub Actions remains out of this phase because it is disabled in development.
+- [x] The final Phase 3E gate no longer nests the Phase 3D gate.
+- [x] The Phase 3D gate no longer nests Phase 3A, Phase 3B, and Phase 3C in the final closure path.
+- [x] Build happens once.
+- [x] The full suite, closure suite, CLI proof, browser proof, StorefrontBuilder smoke, and boundary scan each run once or in the minimum grouped form that preserves coverage.
+- [x] Shared positive and portable baselines are reused.
+- [x] Cleanup is deterministic.
+- [x] Local reports clearly show counts, timings, and closure evidence.
+- [x] GitHub Actions remains out of this phase because it is disabled in development.
 
 ## Decision Notes
 

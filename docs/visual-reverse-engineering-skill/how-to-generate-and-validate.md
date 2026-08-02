@@ -150,6 +150,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-re
 
 Phase 3E remains in progress until the final Phase 3E runtime gate passes on this same clean HEAD. The ignored gate report is authoritative final proof; tracked docs must not require a post-gate source commit.
 
+The Phase 3E gate is non-recursive: it does not call the Phase 3D gate as a child process. It restores/builds once, runs later tests with `--no-build --no-restore`, relies on the grouped closure proof bucket for CLI/browser/portable coverage, uses shared positive and portable baselines, runs one StorefrontBuilder plan-only smoke, runs one canonical boundary scan, records timeout/process/slow-step telemetry, and cleans transient success artifacts. GitHub Actions evidence remains intentionally outside this development closure path while Actions are disabled.
+
 Phase 4 may read only `analysis/agent-handoff/*` and schemas as future input. It must fail unless `analysis/agent-handoff/handoff-readiness.json` passed, must not reinterpret raw captures unless running a new ReverseEngineering pass, must not write into Starter, and must not change StorefrontBuilder generation without its own approved plan.
 
 ## Validate
