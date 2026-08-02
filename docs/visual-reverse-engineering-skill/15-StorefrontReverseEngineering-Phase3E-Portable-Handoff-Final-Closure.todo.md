@@ -448,40 +448,40 @@ create ready Phase 3D/3E fixture project
 
 Positive assertions:
 
-- [ ] Manifest loads.
-- [ ] Every required artifact loads.
-- [ ] Every required schema loads.
-- [ ] All hashes validate.
-- [ ] All consumer references resolve inside the copied package.
-- [ ] Diagnostics provenance is ignored by consumer loading.
-- [ ] Required page slots remain available.
-- [ ] Screenshots and section crops remain available.
-- [ ] Original project access is not attempted.
-- [ ] Package hash is stable across destination folders.
+- [x] Manifest loads.
+- [x] Every required artifact loads.
+- [x] Every required schema loads.
+- [x] All hashes validate.
+- [x] All consumer references resolve inside the copied package.
+- [x] Diagnostics provenance is ignored by consumer loading.
+- [x] Required page slots remain available.
+- [x] Screenshots and section crops remain available.
+- [x] Original project access is not attempted.
+- [x] Package hash is stable across destination folders.
 
 Negative mutations:
 
-- [ ] Delete `presentation-catalog.json`.
-- [ ] Delete `presentation-mappings.json`.
-- [ ] Delete `responsive-behavior.json`.
-- [ ] Delete `interaction-models.json`.
-- [ ] Delete one section crop.
-- [ ] Replace a consumer reference with `analysis/resolved/foo.json`.
-- [ ] Replace a consumer reference with an absolute original project path.
-- [ ] Replace a consumer reference with `../outside.json`.
-- [ ] Move a diagnostics path into a consumer field.
-- [ ] Remove a required schema file.
-- [ ] Corrupt an artifact after copy.
-- [ ] Mutate package hash ordering.
+- [x] Delete `presentation-catalog.json`.
+- [x] Delete `presentation-mappings.json`.
+- [x] Delete `responsive-behavior.json`.
+- [x] Delete `interaction-models.json`.
+- [x] Delete one section crop.
+- [x] Replace a consumer reference with `analysis/resolved/foo.json`.
+- [x] Replace a consumer reference with an absolute original project path.
+- [x] Replace a consumer reference with `../outside.json`.
+- [x] Move a diagnostics path into a consumer field.
+- [x] Remove a required schema file.
+- [x] Corrupt an artifact after copy.
+- [x] Mutate package hash ordering.
 
 Tests:
 
-- [ ] Each negative mutation returns the exact Phase 3E blocker code.
-- [ ] Positive copy proof passes after original project is unavailable.
+- [x] Each negative mutation returns the exact Phase 3E blocker code.
+- [x] Positive copy proof passes after original project is unavailable.
 
 Done when:
 
-- [ ] The isolated copy proof is the main Phase 3E portability evidence.
+- [x] The isolated copy proof is the main Phase 3E portability evidence.
 
 ## Phase 3E.9 - Final Phase 3E Closure Gate
 
@@ -621,7 +621,7 @@ Done when:
 6. [x] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
 7. [x] Phase 3E.6 portable validator and inspect CLI.
 8. [x] Phase 3E.7 Phase 4 read-only dry-run loader.
-9. [ ] Phase 3E.8 isolated copy proof and negative portability mutations.
+9. [x] Phase 3E.8 isolated copy proof and negative portability mutations.
 10. [ ] Phase 3E.9 final Phase 3E closure gate.
 11. [ ] Phase 3E.10 documentation alignment and final candidate procedure.
 12. [ ] Final candidate commit.
@@ -637,7 +637,7 @@ Suggested development commits:
 5. [x] `phase 3e: share reviewed slot provenance`
 6. [x] `phase 3e: add portable validation commands`
 7. [x] `phase 3e: prove isolated handoff loading`
-8. [ ] `phase 3e: add portability mutation proofs`
+8. [x] `phase 3e: add portability mutation proofs`
 9. [ ] `phase 3e: add final clean-head gate`
 10. [ ] `phase 3e: align closure docs`
 
@@ -682,14 +682,14 @@ Portable validation and loading:
 - [x] `PortableHandoffValidatorTests`
 - [x] `PortableHandoffCliTests`
 - [x] `HandoffConsumerDryRunLoaderTests`
-- [ ] `PortableHandoffCopyProofTests`
+- [x] `PortableHandoffCopyProofTests`
 
 Negative portability:
 
-- [ ] `Phase3ENegativeReferenceMutationTests`
-- [ ] `Phase3ENegativeArtifactMutationTests`
-- [ ] `Phase3ENegativeSchemaMutationTests`
-- [ ] `Phase3ENegativeHashMutationTests`
+- [x] `Phase3ENegativeReferenceMutationTests`
+- [x] `Phase3ENegativeArtifactMutationTests`
+- [x] `Phase3ENegativeSchemaMutationTests`
+- [x] `Phase3ENegativeHashMutationTests`
 
 Gate:
 
@@ -737,11 +737,11 @@ Evidence provenance:
 
 Portability:
 
-- [ ] Package copied to isolated temp root validates.
-- [ ] Original Phase 3 project is not required.
-- [ ] Consumer loader reads package without external access.
-- [ ] Screenshots and section crops remain available inside copied package.
-- [ ] Negative portability mutations fail with exact blocker codes.
+- [x] Package copied to isolated temp root validates.
+- [x] Original Phase 3 project is not required.
+- [x] Consumer loader reads package without external access.
+- [x] Screenshots and section crops remain available inside copied package.
+- [x] Negative portability mutations fail with exact blocker codes.
 
 Boundaries:
 
@@ -835,6 +835,6 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 - [x] Implement Phase 3E.5 shared slot provenance.
 - [x] Implement Phase 3E.6 portable validation commands.
 - [x] Implement Phase 3E.7 consumer dry-run loader.
-- [ ] Implement Phase 3E.8 isolated copy proof and mutations.
+- [x] Implement Phase 3E.8 isolated copy proof and mutations.
 - [ ] Implement Phase 3E.9 final gate.
 - [ ] Implement Phase 3E.10 documentation alignment.

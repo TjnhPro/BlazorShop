@@ -116,6 +116,8 @@ public sealed class PortableHandoffValidator
                 "Reassemble the handoff package."));
         }
 
+        AddManifestOrderFindings(manifest, manifestPath, findings);
+
         foreach (var entry in manifest.ArtifactEntries.OrderBy(entry => entry.Path, StringComparer.Ordinal))
         {
             var entryPath = Path.Combine(root, entry.Path.Replace('/', Path.DirectorySeparatorChar));
@@ -266,6 +268,29 @@ public sealed class PortableHandoffValidator
         string? cause = null,
         string? fixSuggestion = null) =>
         new(code, "blocking", message, artifactPath, problem, cause, fixSuggestion);
+
+    private static void AddManifestOrderFindings(
+        AgentHandoffManifest manifest,
+        string manifestPath,
+        List<PortableHandoffValidationFinding> findings)
+    {
+        var artifactPaths = manifest.ArtifactEntries.Select(entry => entry.Path).ToArray();
+        var canonicalArtifactPaths = artifactPaths.Order(StringComparer.Ordinal).ToArray();
+        var schemaKinds = manifest.SchemaRequirements.Select(schema => schema.SchemaKind).ToArray();
+        var canonicalSchemaKinds = schemaKinds.Order(StringComparer.Ordinal).ToArray();
+
+        if (!artifactPaths.SequenceEqual(canonicalArtifactPaths, StringComparer.Ordinal) ||
+            !schemaKinds.SequenceEqual(canonicalSchemaKinds, StringComparer.Ordinal))
+        {
+            findings.Add(Block(
+                "portable-handoff-manifest-order-mismatch",
+                "Portable handoff manifest order does not match the canonical portable package order.",
+                manifestPath,
+                "Portable handoff manifest order mismatch.",
+                "The manifest lists are not written in the canonical sorted order expected by the portable contract.",
+                "Regenerate the manifest without reordering artifact entries, artifact lists, or schema requirements."));
+        }
+    }
 
     private static PortableHandoffValidationFinding ConvertFinding(HandoffReferenceScanFinding finding) =>
         finding.Code switch
