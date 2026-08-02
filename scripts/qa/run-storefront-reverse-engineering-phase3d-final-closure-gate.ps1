@@ -41,6 +41,7 @@ try {
     Invoke-SreBoundaryScans -Context $context
     Invoke-SreStorefrontBuilderSmoke -Context $context -Name "Phase3DClosure" -OutputRoot "obj/storefront-builder/generated/reverse-engineering-phase3d-gate"
     Invoke-SreFinalInspectProof -Context $context
+    Invoke-SreCleanupSuccessfulArtifacts -Context $context -StorefrontBuilderOutputRoots @("obj\storefront-builder\generated\reverse-engineering-phase3d-gate")
 
     Invoke-SreStep -Context $context -Name "final HEAD check" -Script {
         Assert-SreHeadUnchanged -Context $context

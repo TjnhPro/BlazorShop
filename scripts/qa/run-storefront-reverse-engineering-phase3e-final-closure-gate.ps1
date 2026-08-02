@@ -70,6 +70,7 @@ try {
     Invoke-SreBoundaryScans -Context $context
     Invoke-SreStorefrontBuilderSmoke -Context $context -Name "Phase3EClosure" -OutputRoot "obj/storefront-builder/generated/reverse-engineering-phase3e-gate"
     Invoke-SreFinalInspectProof -Context $context -Filter "PortableHandoffCli"
+    Invoke-SreCleanupSuccessfulArtifacts -Context $context -StorefrontBuilderOutputRoots @("obj\storefront-builder\generated\reverse-engineering-phase3e-gate")
 
     Invoke-SreStep -Context $context -Name "final HEAD check" -Script {
         Assert-SreHeadUnchanged -Context $context

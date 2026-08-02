@@ -74,6 +74,8 @@ public sealed class Phase3EFinalClosureGateTests
         Assert.Contains("Slowest steps:", script, StringComparison.Ordinal);
         Assert.Contains("Artifact bytes written:", script, StringComparison.Ordinal);
         Assert.Contains("Baseline cache status:", script, StringComparison.Ordinal);
+        Assert.Contains("Cleanup result:", script, StringComparison.Ordinal);
+        Assert.Contains("Cleanup removed path count:", script, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,6 +86,17 @@ public sealed class Phase3EFinalClosureGateTests
         Assert.Single(Regex.Matches(script, "Invoke-SreStorefrontBuilderSmoke"));
         Assert.Contains("StorefrontBuilder smoke result:", ReadScript(), StringComparison.Ordinal);
         Assert.DoesNotContain("run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Phase3EFinalClosureGate_CleansTransientArtifactsOnlyOnSuccessPath()
+    {
+        var script = ReadPhase3EGateOnly();
+
+        Assert.Contains("Invoke-SreCleanupSuccessfulArtifacts", script, StringComparison.Ordinal);
+        Assert.Contains("reverse-engineering-phase3e-gate", script, StringComparison.Ordinal);
+        Assert.True(script.IndexOf("Invoke-SreCleanupSuccessfulArtifacts", StringComparison.Ordinal) < script.IndexOf("final HEAD check", StringComparison.Ordinal));
+        Assert.DoesNotContain("Invoke-SreCleanupSuccessfulArtifacts", script[(script.IndexOf("catch", StringComparison.Ordinal))..], StringComparison.Ordinal);
     }
 
     [Fact]

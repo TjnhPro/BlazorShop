@@ -45,6 +45,8 @@ function New-SreGateContext {
         TestProcessCount = 0
         MajorStepCount = 0
         BaselineCacheStatus = "process-local shared fixture"
+        CleanupResult = "not-run"
+        CleanupRemovedPathCount = 0
     }
 }
 
@@ -575,6 +577,65 @@ function Get-SreArtifactStats {
     }
 }
 
+function Remove-SreDirectoryIfUnderRoot {
+    param(
+        [Parameter(Mandatory = $true)][string]$Root,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if (-not (Test-Path $Path)) {
+        return $false
+    }
+
+    $resolvedRoot = (Resolve-Path $Root).Path.TrimEnd('\', '/')
+    $resolvedPath = (Resolve-Path $Path).Path.TrimEnd('\', '/')
+    if (-not ($resolvedPath.StartsWith($resolvedRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase))) {
+        throw "Refusing to cleanup path outside approved root. Root: $resolvedRoot. Path: $resolvedPath"
+    }
+
+    Remove-Item -LiteralPath $resolvedPath -Recurse -Force
+    return $true
+}
+
+function Invoke-SreCleanupSuccessfulArtifacts {
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [string[]]$StorefrontBuilderOutputRoots = @()
+    )
+
+    Invoke-SreStep -Context $Context -Name "cleanup successful transient artifacts" -Script {
+        $removed = 0
+        $projectRoot = Join-Path $Context.RepoRoot "obj\storefront-reverse-engineering\projects"
+        $builderRoot = Join-Path $Context.RepoRoot "obj\storefront-builder\generated"
+
+        if (Test-Path $projectRoot) {
+            $projectPrefixes = @(
+                "phase3d-positive-baseline-*",
+                "phase3d-positive-copy-*",
+                "phase3-cli-proof-*"
+            )
+            foreach ($prefix in $projectPrefixes) {
+                foreach ($directory in Get-ChildItem -Path $projectRoot -Directory -Filter $prefix -ErrorAction SilentlyContinue) {
+                    if (Remove-SreDirectoryIfUnderRoot -Root $projectRoot -Path $directory.FullName) {
+                        $removed++
+                    }
+                }
+            }
+        }
+
+        foreach ($outputRoot in $StorefrontBuilderOutputRoots) {
+            $absoluteOutputRoot = Join-Path $Context.RepoRoot $outputRoot
+            if (Remove-SreDirectoryIfUnderRoot -Root $builderRoot -Path $absoluteOutputRoot) {
+                $removed++
+            }
+        }
+
+        $Context.CleanupRemovedPathCount = $removed
+        $Context.CleanupResult = "passed"
+        $Context.TestSummaries.Add("Cleanup removed $removed successful transient artifact roots; failed-run artifacts are retained because cleanup runs only on the success path.")
+    }
+}
+
 function New-SreReportLines {
     param(
         [Parameter(Mandatory = $true)]$Context,
@@ -613,6 +674,8 @@ function New-SreReportLines {
     $lines.Add("Artifact count: $($artifactStats.Count)")
     $lines.Add("Artifact bytes written: $($artifactStats.Bytes)")
     $lines.Add("Baseline cache status: $($Context.BaselineCacheStatus)")
+    $lines.Add("Cleanup result: $($Context.CleanupResult)")
+    $lines.Add("Cleanup removed path count: $($Context.CleanupRemovedPathCount)")
     $lines.Add("StorefrontBuilder smoke result: $($Context.StorefrontBuilderSmokeResult)")
     $lines.Add("GitHub Actions status: disabled/local proof primary unless verified separately.")
     if (-not [string]::IsNullOrWhiteSpace($Context.FailedStep)) {

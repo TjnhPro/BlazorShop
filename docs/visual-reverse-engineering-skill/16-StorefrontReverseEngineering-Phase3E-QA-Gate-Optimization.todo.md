@@ -375,17 +375,24 @@ Goal: remove transient artifacts cleanly while preserving failed-run inspectabil
 
 Implementation checklist:
 
-- [ ] Delete passing test copies immediately after use.
-- [ ] Retain failed test copies long enough to inspect them.
-- [ ] Keep the positive baseline only for the current process.
-- [ ] Keep gate reports and closure reports.
-- [ ] Prevent GUID-based temp trees from accumulating indefinitely.
+- [x] Delete passing test copies immediately after use.
+- [x] Retain failed test copies long enough to inspect them.
+- [x] Keep the positive baseline only for the current process.
+- [x] Keep gate reports and closure reports.
+- [x] Prevent GUID-based temp trees from accumulating indefinitely.
 
 Acceptance criteria:
 
-- [ ] The final gate leaves the workspace clean on success.
-- [ ] Failed artifacts remain inspectable.
-- [ ] Disk usage does not grow without bound.
+- [x] The final gate leaves the workspace clean on success.
+- [x] Failed artifacts remain inspectable.
+- [x] Disk usage does not grow without bound.
+
+O10 evidence:
+
+- Test fixture temp roots are registered through `Phase3TempPathRegistry` and removed when the passing test host exits.
+- Final gates now call `Invoke-SreCleanupSuccessfulArtifacts` only on the success path before the final HEAD check; the `catch` path writes a failure report and leaves artifacts inspectable.
+- Cleanup validates every resolved path is under its approved `obj` root before recursive deletion and keeps report artifacts.
+- Verification: cleanup smoke created two dummy roots under approved `obj` locations, removed exactly those roots, and reported `cleanup=passed`.
 
 ## Phase O11 - Documentation And Report Alignment
 
