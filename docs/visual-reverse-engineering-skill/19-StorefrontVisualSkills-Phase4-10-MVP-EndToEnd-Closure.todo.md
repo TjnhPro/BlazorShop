@@ -678,35 +678,35 @@ Goal: add one local command that proves a generated storefront has enough eviden
 
 Tasks:
 
-- [ ] Add `scripts/qa/run-storefront-phase4-mvp-gate.ps1`.
-- [ ] Inputs:
-  - [ ] generated project root.
-  - [ ] optional fixture root.
-  - [ ] optional handoff root.
-  - [ ] optional screenshot/evidence root.
-  - [ ] optional max repair attempts.
-  - [ ] switch to skip repair but not skip QA.
-- [ ] Gate steps:
-  - [ ] validate generated project metadata.
-  - [ ] validate generation plan presence.
-  - [ ] validate agent task package presence.
-  - [ ] validate visual plan/checklist/report schemas when present.
-  - [ ] run StorefrontBuilder handoff boundary validation.
-  - [ ] run generated project restore/build.
-  - [ ] run visual write ownership validation.
-  - [ ] run `run-visual-qa.mjs`.
-  - [ ] run bounded repair only when configured.
-  - [ ] rerun visual QA after repair.
-  - [ ] run regeneration `-WhatIf` or no-op ownership check where supported.
-  - [ ] write `phase4-mvp-gate-report.json`.
-  - [ ] write `phase4-mvp-gate-report.md`.
-- [ ] Failure output must include:
-  - [ ] problem.
-  - [ ] likely cause.
-  - [ ] exact command to rerun.
-  - [ ] report path.
-  - [ ] evidence path.
-- [ ] Do not invoke GitHub Actions.
+- [x] Add `scripts/qa/run-storefront-phase4-mvp-gate.ps1`.
+- [x] Inputs:
+  - [x] generated project root.
+  - [x] optional fixture root.
+  - [x] optional handoff root.
+  - [x] optional screenshot/evidence root.
+  - [x] optional max repair attempts.
+  - [x] switch to skip repair but not skip QA.
+- [x] Gate steps:
+  - [x] validate generated project metadata.
+  - [x] validate generation plan presence.
+  - [x] validate agent task package presence.
+  - [x] validate visual plan/checklist/report schemas when present.
+  - [x] run StorefrontBuilder handoff boundary validation.
+  - [x] run generated project restore/build.
+  - [x] run visual write ownership validation.
+  - [x] run `run-visual-qa.mjs`.
+  - [x] run bounded repair only when configured.
+  - [x] rerun visual QA after repair.
+  - [x] run regeneration `-WhatIf` or no-op ownership check where supported.
+  - [x] write `phase4-mvp-gate-report.json`.
+  - [x] write `phase4-mvp-gate-report.md`.
+- [x] Failure output must include:
+  - [x] problem.
+  - [x] likely cause.
+  - [x] exact command to rerun.
+  - [x] report path.
+  - [x] evidence path.
+- [x] Do not invoke GitHub Actions.
 
 Checks:
 
@@ -716,8 +716,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-ph
 
 DoD:
 
-- [ ] One local command can prove the visual MVP workflow for a generated storefront.
-- [ ] The command fails with actionable evidence, not only a shell exit code.
+- [x] One local command can prove the visual MVP workflow for a generated storefront.
+- [x] The command fails with actionable evidence, not only a shell exit code.
+
+Phase 4.10.11 evidence:
+
+- Added `scripts/qa/run-storefront-phase4-mvp-gate.ps1`.
+- Inputs cover generated project root, optional fixture root, optional handoff root, optional screenshot/evidence root, optional max repair attempts, and `-SkipRepair` while still requiring visual QA.
+- Gate steps validate metadata, generation plan, agent task package, optional visual JSON artifacts, StorefrontBuilder handoff boundary, restore/build, visual write record, browser visual QA, bounded repair/rerun, regeneration `-WhatIf`, and project-local JSON/MD report output.
+- Failure report entries include problem, likely cause, rerun command, report path, and evidence path.
+- Help output states the gate is local-only and does not invoke GitHub Actions.
+- External commands in the gate run with `-CommandTimeoutSeconds` to avoid unbounded hangs.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -Help` printed usage and exited successfully.
+- PowerShell parser validation for `scripts\qa\run-storefront-phase4-mvp-gate.ps1` passed.
 
 ## Phase 4.10.12 - End-To-End Pilot
 
