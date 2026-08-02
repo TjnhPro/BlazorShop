@@ -128,7 +128,7 @@ public sealed class Phase3DNegativeSlotMutationTests
 
         var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
 
-        Assert.Contains(findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("product.gallery", StringComparison.Ordinal));
+        Assert.Contains(findings, finding => finding.Code == "unapproved-extra-section" && finding.Message.Contains("duplicate-gallery", StringComparison.Ordinal));
     }
 
     [Theory]
