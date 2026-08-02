@@ -103,31 +103,31 @@ Goal: prove Phase 4 starts from a valid Phase 3E handoff and does not reopen clo
 
 Tasks:
 
-- [ ] Confirm current `HEAD` is clean before Phase 4 implementation.
-- [ ] Confirm Phase 3E local closure report exists or rerun the local Phase 3E gate if the code changed since the last proof.
-- [ ] Confirm `docs/architecture/11-storefront-builder.md` still states that Phase 4 may read only `analysis/agent-handoff/*`.
-- [ ] Confirm `BlazorShop.Storefront.Starter/starter-generation.contract.yaml` still declares:
-  - [ ] generated project naming convention.
-  - [ ] allowed generated zones.
-  - [ ] protected zones.
-  - [ ] route metadata.
-  - [ ] browser action policy.
-  - [ ] view slot metadata.
-- [ ] Confirm `tools/BlazorShop.AI.StorefrontBuilder/version.json` is still the single generator version source.
-- [ ] Confirm `regenerate-storefront.ps1 -WhatIf` still writes a stable report outside the target project.
-- [ ] Capture the current list of StorefrontBuilder scripts touched by Phase 4.
+- [x] Confirm current `HEAD` is clean before Phase 4 implementation.
+- [x] Confirm Phase 3E local closure report exists or rerun the local Phase 3E gate if the code changed since the last proof.
+- [x] Confirm `docs/architecture/11-storefront-builder.md` still states that Phase 4 may read only `analysis/agent-handoff/*`.
+- [x] Confirm `BlazorShop.Storefront.Starter/starter-generation.contract.yaml` still declares:
+  - [x] generated project naming convention.
+  - [x] allowed generated zones.
+  - [x] protected zones.
+  - [x] route metadata.
+  - [x] browser action policy.
+  - [x] view slot metadata.
+- [x] Confirm `tools/BlazorShop.AI.StorefrontBuilder/version.json` is still the single generator version source.
+- [x] Confirm `regenerate-storefront.ps1 -WhatIf` still writes a stable report outside the target project.
+- [x] Capture the current list of StorefrontBuilder scripts touched by Phase 4.
 
 Checks:
 
-- [ ] `git status --short`
-- [ ] `rg -n "Phase 4 may read only|agent-handoff|StorefrontBuilder generation does not yet consume" docs\architecture docs\visual-reverse-engineering-skill`
-- [ ] `rg -n "generatorVersion|WhatIfReportPath|plan-generation-files|apply-composition" tools\BlazorShop.AI.StorefrontBuilder`
+- [x] `git status --short`
+- [x] `rg -n "Phase 4 may read only|agent-handoff|StorefrontBuilder generation does not yet consume" docs\architecture docs\visual-reverse-engineering-skill`
+- [x] `rg -n "generatorVersion|WhatIfReportPath|plan-generation-files|apply-composition" tools\BlazorShop.AI.StorefrontBuilder`
 
 Exit criteria:
 
-- [ ] Phase 4 starts from documented current architecture.
-- [ ] No hidden requirement to update GitHub Actions.
-- [ ] No decision in this phase requires changing Storefront API contracts.
+- [x] Phase 4 starts from documented current architecture.
+- [x] No hidden requirement to update GitHub Actions.
+- [x] No decision in this phase requires changing Storefront API contracts.
 
 Phase 4.0 intake evidence:
 
@@ -135,6 +135,19 @@ Phase 4.0 intake evidence:
 - Latest discovered Phase 3E final closure report before Phase 4.0 intake: `obj/storefront-reverse-engineering/reports/phase3e-final-closure-gate-20260802122027.md`, status `passed`, tested SHA `9bdb4d4be4019392360ab08796cf067422aa9597`.
 - Current `HEAD` at Phase 4.0 intake was `8e20d68c`; because source commits exist after the Phase 3E report, the Phase 3E gate must be rerun from a clean tree before Phase 4.0 closes.
 - The gate rerun requires this plan/README intake to be committed first so the clean-tree check can run honestly.
+- Phase 4.0 intake committed in `48cb2009`.
+- Phase 4.0 baseline repair commits:
+  - `0f2c7fae` fixed the Phase 3E dry-run negative test so it mutates the registered consumer reference field and rehashes the portable manifest, and fixed failed-report writing in the Phase 3E gate.
+  - `3ea54006` fixed StorefrontBuilder smoke name shadowing in the shared Phase 3 proof helper so the gate passes `Phase3EClosure` to the PascalCase project-name validator.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~HandoffConsumerDryRunLoaderTests" --blame-hang --blame-hang-timeout 5m`.
+- StorefrontBuilder smoke verification passed: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Url https://example.test -Name Phase3EClosure -StoreKey sample -OutputRoot obj/storefront-builder/generated/reverse-engineering-phase3e-gate -Mode plan-only`.
+- Final Phase 3E closure gate passed on clean `HEAD` `3ea54006bb90230a756c55a061ef0b88e6952cd6`: `obj/storefront-reverse-engineering/reports/phase3e-final-closure-gate-20260802171238.md`.
+- Phase 4.0 checklist commands were run after the passing gate:
+  - `git status --short` returned clean.
+  - `rg -n "Phase 4 may read only|agent-handoff|StorefrontBuilder generation does not yet consume" docs\architecture docs\visual-reverse-engineering-skill`.
+  - `rg -n "generatorVersion|WhatIfReportPath|plan-generation-files|apply-composition" tools\BlazorShop.AI.StorefrontBuilder`.
+  - `rg -n "namingConvention|allowedGeneratedZones|protectedZones|routes|browserActionPolicy|slots" BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\starter-generation.contract.yaml`.
+- Phase 4 StorefrontBuilder script surface captured for later phases: `build-storefront.ps1`, `regenerate-storefront.ps1`, `scripts/generate/plan-generation-files.mjs`, `scripts/generate/apply-composition.mjs`, `scripts/generate/new-storefront-project.ps1`, existing `scripts/validate/*`, and `scripts/qa/run-visual-qa.mjs`.
 
 ## Phase 4.1 - Handoff Preflight In StorefrontBuilder
 
