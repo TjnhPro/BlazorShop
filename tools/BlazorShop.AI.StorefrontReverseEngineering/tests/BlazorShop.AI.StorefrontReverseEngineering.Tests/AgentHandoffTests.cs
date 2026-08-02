@@ -561,7 +561,8 @@ public sealed class AgentHandoffTests
         Assert.Contains("`error-state`: `layout.header`, `system.error`, `layout.footer`", task, StringComparison.Ordinal);
         Assert.Contains("Stop if handoff readiness is false", task, StringComparison.Ordinal);
         Assert.Contains("Validation Commands", task, StringComparison.Ordinal);
-        Assert.Contains("StorefrontBuilder must not consume this package", task, StringComparison.Ordinal);
+        Assert.Contains("StorefrontBuilder must consume this package only through the approved Phase 4 preflight and generation plan", task, StringComparison.Ordinal);
+        Assert.Contains("do not read raw captures", task, StringComparison.Ordinal);
         Assert.Contains("reference-only", task, StringComparison.Ordinal);
         Assert.Contains("No `@page` route declarations", task, StringComparison.Ordinal);
     }

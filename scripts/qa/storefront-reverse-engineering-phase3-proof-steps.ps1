@@ -425,7 +425,7 @@ function Invoke-SrePhase3EProof {
 function Get-SreBoundaryAssertionSummaries {
     return @(
         "ReverseEngineering has no production project references.",
-        "StorefrontBuilder does not consume analysis/agent-handoff/* yet.",
+        "StorefrontBuilder consumes analysis/agent-handoff/* only through the approved Phase 4 portable preflight boundary.",
         "ReverseEngineering does not write Razor/CSS/JS storefront output.",
         "ReverseEngineering does not write to Starter or generated storefront source.",
         "No direct Commerce Node browser calls are generated or recommended.",
@@ -468,11 +468,6 @@ function Get-SreBoundaryScanDefinitions {
             Pattern = "ProjectReference.*(BlazorShop\.Storefront\.V2|BlazorShop\.Storefront\.Runtime|BlazorShop\.Storefront\.Presentation|BlazorShop\.Storefront\.Components|BlazorShop\.ControlPlane|BlazorShop\.CommerceNode|BlazorShop\.Domain|BlazorShop\.Infrastructure|BlazorShop\.Web\.SharedV2)"
             Paths = @("tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj")
             ExtraArgs = @("--glob", "*.csproj")
-        },
-        [pscustomobject]@{
-            Pattern = "analysis/agent-handoff|agent-handoff-readiness|visual-blueprint\.v1"
-            Paths = @("tools\BlazorShop.AI.StorefrontBuilder")
-            ExtraArgs = @("--glob", "!bin/**", "--glob", "!obj/**")
         },
         [pscustomobject]@{
             Pattern = "WriteAllText(Async)?\([^\r\n]*(storefront-builder/generated|BlazorShop\.Storefront\.Generated|BlazorShop\.Storefront\.Starter)|Directory\.CreateDirectory\([^\r\n]*(storefront-builder/generated|BlazorShop\.Storefront\.Generated|BlazorShop\.Storefront\.Starter)"
@@ -720,7 +715,7 @@ function New-SreReportLines {
     $lines.Add("")
     $lines.Add("Known limitations:")
     if ($Context.KnownLimitations.Count -eq 0) {
-        $lines.Add("- StorefrontBuilder consumption remains disabled until Phase 4 approved cutover.")
+        $lines.Add("- Handoff-driven visual generation remains gated behind Phase 4 generation-plan closure; Phase 4.1 only enables portable preflight.")
     }
     else {
         foreach ($limitation in $Context.KnownLimitations) {

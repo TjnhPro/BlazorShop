@@ -19,6 +19,7 @@ public sealed class PortableHandoffCliTests
         Assert.Equal(0, exitCode);
         Assert.Contains("validate-handoff", output, StringComparison.Ordinal);
         Assert.Contains("inspect-handoff", output, StringComparison.Ordinal);
+        Assert.Contains("dry-run-handoff", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -56,5 +57,25 @@ public sealed class PortableHandoffCliTests
         Assert.Equal(0, exitCode);
         Assert.Contains("Package hash:", stdout.ToString(), StringComparison.Ordinal);
         Assert.Contains("First blocking finding: (none)", stdout.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DryRunHandoffCommandLoadsCopiedPackage()
+    {
+        var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 4 StorefrontBuilder CLI Dry Run");
+        fixture.DeleteSourceProject();
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = await CliHost.RunAsync(
+            ["dry-run-handoff", "--handoff-root", fixture.PortableRoot, "--schema-root", fixture.SchemaRoot],
+            stdout,
+            stderr,
+            CancellationToken.None);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("Readiness passed: True", stdout.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Page count:", stdout.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Allowed target file count:", stdout.ToString(), StringComparison.Ordinal);
     }
 }

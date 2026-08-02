@@ -675,7 +675,7 @@ public sealed class AgentHandoffAssembler
             "- Stop if a target path is missing, outside allowed zones, or protected." + Environment.NewLine +
             "- Stop if unsupported critical pattern remains." + Environment.NewLine +
             "- Stop if implementation would require routes, BFF, SEO/media, cart/checkout/account/auth logic, payment logic, or functional JavaScript." + Environment.NewLine +
-            "- StorefrontBuilder must not consume this package until a later approved Phase 4 cutover." + Environment.NewLine;
+            "- StorefrontBuilder must consume this package only through the approved Phase 4 preflight and generation plan; do not read raw captures, source analysis, Storefront V2 source, or reports as fallback input." + Environment.NewLine;
     }
 
     private static StorefrontPageContractsDocument? ReadPageContracts(string root)

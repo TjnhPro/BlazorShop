@@ -164,58 +164,68 @@ Implementation targets:
 
 Tasks:
 
-- [ ] Add a handoff input parameter to StorefrontBuilder generation entrypoints, for example `-HandoffRoot <path>`.
-- [ ] Support a preflight-only mode without generating files.
-- [ ] Validate that `-HandoffRoot` points to an `analysis/agent-handoff` folder or a copied portable package root with the same internal shape.
-- [ ] Reject handoff roots that are inside raw source-only artifact folders unless they expose the portable handoff package.
-- [ ] Load and validate:
-  - [ ] `manifest.json`
-  - [ ] `handoff-readiness.json`
-  - [ ] `page-compositions.json`
-  - [ ] `storefront-pattern.json`
-  - [ ] `presentation-catalog.json`
-  - [ ] `presentation-mappings.json`
-  - [ ] `allowed-files.json`
-  - [ ] `protected-files.json`
-  - [ ] `design-tokens.json`
-  - [ ] `visual-style.json`
-  - [ ] `responsive-behavior.json`
-  - [ ] `interaction-models.json`
-  - [ ] `originality-restrictions.json`
-  - [ ] `evidence-manifest.json`
-  - [ ] `unresolved-regions.json`
-- [ ] Fail when `handoff-readiness.json` is missing or not passed.
-- [ ] Fail when manifest readiness disagrees with `handoff-readiness.json`.
-- [ ] Fail when schema hashes or artifact hashes drift according to the portable validator.
-- [ ] Fail when required schemas are missing.
-- [ ] Fail when any consumer dependency points outside `analysis/agent-handoff/*`.
-- [ ] Fail when unresolved blocking regions exist.
-- [ ] Print problem/cause/fix messages consistent with current StorefrontBuilder error style.
-- [ ] Produce a preflight report under `obj/storefront-builder/handoff-preflight/` or the generated artifact's `docs/storefront-analysis/` only after a generated project exists.
+- [x] Add a handoff input parameter to StorefrontBuilder generation entrypoints, for example `-HandoffRoot <path>`.
+- [x] Support a preflight-only mode without generating files.
+- [x] Validate that `-HandoffRoot` points to an `analysis/agent-handoff` folder or a copied portable package root with the same internal shape.
+- [x] Reject handoff roots that are inside raw source-only artifact folders unless they expose the portable handoff package.
+- [x] Load and validate:
+  - [x] `manifest.json`
+  - [x] `handoff-readiness.json`
+  - [x] `page-compositions.json`
+  - [x] `storefront-pattern.json`
+  - [x] `presentation-catalog.json`
+  - [x] `presentation-mappings.json`
+  - [x] `allowed-files.json`
+  - [x] `protected-files.json`
+  - [x] `design-tokens.json`
+  - [x] `visual-style.json`
+  - [x] `responsive-behavior.json`
+  - [x] `interaction-models.json`
+  - [x] `originality-restrictions.json`
+  - [x] `evidence-manifest.json`
+  - [x] `unresolved-regions.json`
+- [x] Fail when `handoff-readiness.json` is missing or not passed.
+- [x] Fail when manifest readiness disagrees with `handoff-readiness.json`.
+- [x] Fail when schema hashes or artifact hashes drift according to the portable validator.
+- [x] Fail when required schemas are missing.
+- [x] Fail when any consumer dependency points outside `analysis/agent-handoff/*`.
+- [x] Fail when unresolved blocking regions exist.
+- [x] Print problem/cause/fix messages consistent with current StorefrontBuilder error style.
+- [x] Produce a preflight report under `obj/storefront-builder/handoff-preflight/` or the generated artifact's `docs/storefront-analysis/` only after a generated project exists.
 
 Forbidden behavior:
 
-- [ ] Do not read raw `captures/*` as fallback.
-- [ ] Do not read source `analysis/pages/*` as fallback.
-- [ ] Do not read source `analysis/resolved/*` as fallback.
-- [ ] Do not read Storefront V2 source as fallback.
-- [ ] Do not infer routes from screenshots.
+- [x] Do not read raw `captures/*` as fallback.
+- [x] Do not read source `analysis/pages/*` as fallback.
+- [x] Do not read source `analysis/resolved/*` as fallback.
+- [x] Do not read Storefront V2 source as fallback.
+- [x] Do not infer routes from screenshots.
 
 Tests:
 
-- [ ] Positive: valid copied portable handoff passes preflight.
-- [ ] Negative: missing `handoff-readiness.json` fails.
-- [ ] Negative: readiness failed fails.
-- [ ] Negative: manifest/readiness mismatch fails.
-- [ ] Negative: artifact hash drift fails.
-- [ ] Negative: missing schema fails.
-- [ ] Negative: consumer reference outside handoff fails.
-- [ ] Negative: raw capture fallback attempt fails.
+- [x] Positive: valid copied portable handoff passes preflight.
+- [x] Negative: missing `handoff-readiness.json` fails.
+- [x] Negative: readiness failed fails.
+- [x] Negative: manifest/readiness mismatch fails.
+- [x] Negative: artifact hash drift fails.
+- [x] Negative: missing schema fails.
+- [x] Negative: consumer reference outside handoff fails.
+- [x] Negative: raw capture fallback attempt fails.
 
 Exit criteria:
 
-- [ ] StorefrontBuilder can perform handoff preflight without generating a project.
-- [ ] The preflight is portable and does not require the original reverse-engineering source project.
+- [x] StorefrontBuilder can perform handoff preflight without generating a project.
+- [x] The preflight is portable and does not require the original reverse-engineering source project.
+
+Phase 4.1 evidence:
+
+- Added `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path> -HandoffSchemaRoot <path>` and StorefrontBuilder preflight report output under `obj/storefront-builder/handoff-preflight/`.
+- Added `scripts/generate/Test-HandoffPreflight.ps1` with package-root/direct-`analysis/agent-handoff` resolution, required artifact checks, raw-folder rejection, `validate-handoff`, `dry-run-handoff`, unresolved-blocker rejection, and problem/cause/fix error codes `SFB-HANDOFF-001` through `SFB-HANDOFF-009` plus `SFB-HANDOFF-012`.
+- Added `dry-run-handoff` CLI command over `HandoffConsumerDryRunLoader` for StorefrontBuilder-facing portable preflight output.
+- Updated Phase 3/4 boundary docs and gate wording so approved Phase 4 preflight can read portable `analysis/agent-handoff/*` packages while handoff-driven generation remains gated behind later phases.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~AgentHandoffTests|FullyQualifiedName~PortableHandoffCliTests|FullyQualifiedName~StorefrontBuilderHandoffPreflightTests" --blame-hang --blame-hang-timeout 5m` (`63` passed).
+- StorefrontBuilder preflight verification passed through `StorefrontBuilderHandoffPreflightTests` (`9` passed) including positive copied-package/direct-folder cases and negative readiness, manifest mismatch, hash drift, missing schema, consumer-reference escape, and raw folder fallback cases.
+- Script syntax verification passed: `pwsh -NoProfile -Command "& { `$script = Get-Content -LiteralPath 'scripts\qa\storefront-reverse-engineering-phase3-proof-steps.ps1' -Raw; [void][scriptblock]::Create(`$script); Write-Output 'phase3 proof steps syntax ok' }"`.
 
 ## Phase 4.2 - Handoff-To-Generation-Plan Compiler
 

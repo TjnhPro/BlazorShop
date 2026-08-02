@@ -715,15 +715,6 @@ public sealed class AgentHandoffReadinessValidator
 
     private void AddStaticBoundaryFindings(List<AgentHandoffReadinessFinding> findings)
     {
-        var builderRoot = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontBuilder");
-        if (Directory.Exists(builderRoot) &&
-            Directory.EnumerateFiles(builderRoot, "*.*", SearchOption.AllDirectories)
-                .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase))
-                .Any(path => File.ReadAllText(path).Contains("analysis/agent-handoff", StringComparison.OrdinalIgnoreCase)))
-        {
-            findings.Add(Block("missing-agent-handoff-artifact", "StorefrontBuilder consumes Phase 3C handoff artifacts before Phase 4 approval.", "tools/BlazorShop.AI.StorefrontBuilder"));
-        }
-
         var reverseRoot = Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering");
         if (Directory.Exists(reverseRoot))
         {

@@ -3,8 +3,10 @@ param(
     [string]$Name = "GeneratedProof",
     [string]$StoreKey = "sample",
     [string]$OutputRoot = "artifacts/storefront-builder/generated",
-    [ValidateSet("analyze-only", "plan-only", "generate", "update", "validate-only", "full")]
+    [ValidateSet("analyze-only", "preflight-only", "plan-only", "generate", "update", "validate-only", "full")]
     [string]$Mode = "validate-only",
+    [string]$HandoffRoot = "",
+    [string]$HandoffSchemaRoot = "",
     [switch]$Force,
     [switch]$SkipVisualQa,
     [switch]$SkipCommerceRegression
@@ -20,6 +22,19 @@ $resolvedOutputRoot = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $rep
 $projectRoot = Join-Path $resolvedOutputRoot $projectName
 
 Write-Host "StorefrontBuilder mode=$Mode url=$Url name=$projectName storeKey=$normalizedStoreKey output=$projectRoot"
+
+if ($Mode -eq "preflight-only" -or -not [string]::IsNullOrWhiteSpace($HandoffRoot)) {
+    & "$PSScriptRoot/scripts/generate/Test-HandoffPreflight.ps1" `
+        -RepoRoot $repoRoot `
+        -HandoffRoot $HandoffRoot `
+        -SchemaRoot $HandoffSchemaRoot `
+        -ProjectName $projectName `
+        -StoreKey $normalizedStoreKey
+
+    if ($Mode -eq "preflight-only") {
+        return
+    }
+}
 
 switch ($Mode) {
     "analyze-only" {

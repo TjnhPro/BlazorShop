@@ -16,6 +16,7 @@ public static class CliHost
         "discover",
         "capture",
         "analyze",
+        "dry-run-handoff",
         "inspect",
         "inspect-handoff",
         "validate",
@@ -68,6 +69,7 @@ public static class CliHost
         output.WriteLine("  inspect --project obj/storefront-reverse-engineering/projects/<project-id>");
         output.WriteLine("  validate-handoff --handoff-root <path> --schema-root <path>");
         output.WriteLine("  inspect-handoff --handoff-root <path> --schema-root <path>");
+        output.WriteLine("  dry-run-handoff --handoff-root <path> --schema-root <path>");
         output.WriteLine();
         output.WriteLine("Phase 3B force-step values:");
         output.WriteLine("  aggregate-evidence, extract-raw-tokens, normalize-semantic-tokens, classify-page-archetypes");
@@ -135,6 +137,12 @@ public static class CliHost
                     var portableReport = await portableValidator.ValidateAsync(handoffRoot, schemaRoot, cancellationToken);
                     WritePortableHandoffInspection(output, portableReport);
                     return portableReport.Findings.Any(finding => finding.Severity == "blocking") ? 3 : 0;
+                case "dry-run-handoff":
+                    var dryRunRoot = options.GetRequired("handoff-root", "SRE-HANDOFF-001");
+                    var dryRunSchemaRoot = options.GetRequired("schema-root", "SRE-HANDOFF-002");
+                    var package = await new HandoffConsumerDryRunLoader().LoadAsync(dryRunRoot, dryRunSchemaRoot, cancellationToken);
+                    WriteHandoffDryRun(output, package);
+                    return 0;
                 case "discover":
                     var projectPath = options.GetRequired("project", "SRE-DISCOVER-001");
                     var projectInspection = await service.InspectAsync(projectPath, cancellationToken);
@@ -247,6 +255,18 @@ public static class CliHost
         output.WriteLine($"Consumer reference count: {report.ConsumerReferenceCount}");
         output.WriteLine($"Diagnostic provenance count: {report.DiagnosticProvenanceCount}");
         output.WriteLine($"First blocking finding: {FormatPortableFinding(report.Findings.FirstOrDefault(finding => finding.Severity == "blocking"))}");
+    }
+
+    private static void WriteHandoffDryRun(TextWriter output, HandoffConsumerDryRunPackage package)
+    {
+        output.WriteLine($"Project ID: {package.ProjectId}");
+        output.WriteLine($"Readiness passed: {package.ReadinessReport.Passed}");
+        output.WriteLine($"Page count: {package.Pages.Count}");
+        output.WriteLine($"Allowed target file count: {package.AllowedTargetFiles.Count}");
+        output.WriteLine($"Protected file count: {package.ProtectedFiles.Count}");
+        output.WriteLine($"Evidence file count: {package.EvidenceFilePaths.Count}");
+        output.WriteLine($"Unresolved region count: {package.UnresolvedRegions.Count}");
+        output.WriteLine($"First unresolved region: {package.UnresolvedRegions.FirstOrDefault() ?? "(none)"}");
     }
 
     private static string FormatPortableFinding(PortableHandoffValidationFinding? finding) =>
