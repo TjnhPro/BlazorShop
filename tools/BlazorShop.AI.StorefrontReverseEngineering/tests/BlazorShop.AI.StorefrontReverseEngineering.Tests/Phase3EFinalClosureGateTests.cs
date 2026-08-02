@@ -20,6 +20,11 @@ public sealed class Phase3EFinalClosureGateTests
         Assert.DoesNotContain("AllowDirtyTree", script, StringComparison.Ordinal);
         Assert.Contains("Assert-SreCleanWorkingTree", script, StringComparison.Ordinal);
         Assert.Contains("Assert-SreHeadUnchanged", script, StringComparison.Ordinal);
+        Assert.Contains("Invoke-SreRestore -Context $context", script, StringComparison.Ordinal);
+        Assert.Contains("Invoke-SreBuild -Context $context", script, StringComparison.Ordinal);
+        Assert.Contains("\"test\", $Context.TestProject, \"--no-build\", \"--no-restore\"", script, StringComparison.Ordinal);
+        Assert.Contains("ToolDll", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"run\", \"--project\", $Context.ToolProject", script, StringComparison.Ordinal);
         Assert.Contains("Tested commit SHA", script, StringComparison.Ordinal);
         Assert.Contains("Final HEAD SHA", script, StringComparison.Ordinal);
         Assert.Contains("final HEAD check", script, StringComparison.Ordinal);

@@ -17,6 +17,7 @@ function New-SreGateContext {
     return [ordered]@{
         RepoRoot = $RepoRoot
         ToolProject = Join-Path $RepoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj"
+        ToolDll = Join-Path $RepoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\bin\Debug\net10.0\BlazorShop.AI.StorefrontReverseEngineering.dll"
         TestProject = Join-Path $RepoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj"
         FixtureRoot = Join-Path $RepoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures"
         ReportRoot = Join-Path $RepoRoot "obj\storefront-reverse-engineering\reports"
@@ -164,13 +165,27 @@ function Invoke-SreTest {
         [string]$Filter = ""
     )
 
-    $arguments = @("test", $Context.TestProject, "--no-restore")
+    $arguments = @("test", $Context.TestProject, "--no-build", "--no-restore")
     if (-not [string]::IsNullOrWhiteSpace($Filter)) {
         $arguments += @("--filter", $Filter)
     }
 
     $arguments += @("--blame-hang", "--blame-hang-timeout", "5m")
     Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments $arguments -SummaryName $Name
+}
+
+function Invoke-SreCli {
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [int[]]$AllowedExitCodes = @(0)
+    )
+
+    if (-not (Test-Path $Context.ToolDll)) {
+        throw "ReverseEngineering CLI DLL was not found. Run the restore/build steps before CLI proofs: $($Context.ToolDll)"
+    }
+
+    Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments (@($Context.ToolDll) + $Arguments) -AllowedExitCodes $AllowedExitCodes
 }
 
 function Assert-SreRgNoMatches {
@@ -229,7 +244,15 @@ function Invoke-SreBuild {
     param([Parameter(Mandatory = $true)]$Context)
 
     Invoke-SreStep -Context $Context -Name "build ReverseEngineering" -Script {
-        Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments @("build", $Context.ToolProject)
+        Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments @("build", $Context.TestProject, "--no-restore")
+    }
+}
+
+function Invoke-SreRestore {
+    param([Parameter(Mandatory = $true)]$Context)
+
+    Invoke-SreStep -Context $Context -Name "restore ReverseEngineering" -Script {
+        Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments @("restore", $Context.TestProject)
     }
 }
 
@@ -263,10 +286,9 @@ function Invoke-SrePhase3AProof {
         $fixtureUrl = [Uri]::new((Resolve-Path $fixturePath).Path).AbsoluteUri
         $runId = "phase3a-gate"
 
-        Invoke-SreLoggedProcess `
+        Invoke-SreCli `
             -Context $Context `
-            -FileName "dotnet" `
-            -Arguments @("run", "--project", $Context.ToolProject, "--", "run", "--url", $fixtureUrl, "--name", "Phase3AGate", "--output-root", $projectOutputRoot, "--no-ai", "--force", "--run-id", $runId) `
+            -Arguments @("run", "--url", $fixtureUrl, "--name", "Phase3AGate", "--output-root", $projectOutputRoot, "--no-ai", "--force", "--run-id", $runId) `
             -AllowedExitCodes @(0, 3)
 
         if ($Context.LastProcessExitCode -eq 3) {
@@ -274,8 +296,8 @@ function Invoke-SrePhase3AProof {
             $Context.TestSummaries.Add("Phase 3A CLI readiness workflow: readiness passed; final reviewed handoff stopped on expected strict review-decision blockers.")
         }
 
-        Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments @("run", "--project", $Context.ToolProject, "--", "validate", "--project", $artifactProjectRoot)
-        Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments @("run", "--project", $Context.ToolProject, "--", "inspect", "--project", $artifactProjectRoot)
+        Invoke-SreCli -Context $Context -Arguments @("validate", "--project", $artifactProjectRoot)
+        Invoke-SreCli -Context $Context -Arguments @("inspect", "--project", $artifactProjectRoot)
     }
 }
 
@@ -301,10 +323,9 @@ function Invoke-SrePhase3BProof {
             $artifactRoot = Join-Path $projectOutputRoot $fixture["ProjectId"]
             $runId = "phase3b-gate-" + $fixture["Label"]
 
-            Invoke-SreLoggedProcess `
+            Invoke-SreCli `
                 -Context $Context `
-                -FileName "dotnet" `
-                -Arguments @("run", "--project", $Context.ToolProject, "--", "run", "--url", $fixtureUrl, "--name", $fixture["ProjectId"], "--output-root", $projectOutputRoot, "--no-ai", "--force", "--run-id", $runId) `
+                -Arguments @("run", "--url", $fixtureUrl, "--name", $fixture["ProjectId"], "--output-root", $projectOutputRoot, "--no-ai", "--force", "--run-id", $runId) `
                 -AllowedExitCodes @(0, 3)
 
             if ($Context.LastProcessExitCode -eq 3) {
@@ -312,7 +333,7 @@ function Invoke-SrePhase3BProof {
                 $Context.TestSummaries.Add("Phase 3B fixture $($fixture["Label"]): analysis/readiness passed; final reviewed handoff stopped on expected strict review-decision blockers.")
             }
 
-            Invoke-SreLoggedProcess -Context $Context -FileName "dotnet" -Arguments @("run", "--project", $Context.ToolProject, "--", "inspect", "--project", $artifactRoot)
+            Invoke-SreCli -Context $Context -Arguments @("inspect", "--project", $artifactRoot)
         }
     }
 }

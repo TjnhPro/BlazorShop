@@ -65,6 +65,7 @@ try {
         Assert-SreCleanWorkingTree -Context $context
     }
 
+    Invoke-SreRestore -Context $context
     Invoke-SreBuild -Context $context
     Invoke-SrePhase3AProof -Context $context
     Invoke-SrePhase3BProof -Context $context

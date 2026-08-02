@@ -138,18 +138,26 @@ Goal: restore and build once, then reuse the same outputs for every later comman
 
 Implementation checklist:
 
-- [ ] Add one explicit restore step at the top of the final gate.
-- [ ] Add one explicit build step at the top of the final gate.
-- [ ] Ensure every later `dotnet test` call uses `--no-build --no-restore`.
-- [ ] Ensure every later `dotnet run` call uses `--no-build --no-restore` or a direct DLL invocation when appropriate.
-- [ ] Ensure StorefrontBuilder smoke does not trigger hidden rebuilds.
-- [ ] Ensure helper functions do not call build internally during the final gate.
+- [x] Add one explicit restore step at the top of the final gate.
+- [x] Add one explicit build step at the top of the final gate.
+- [x] Ensure every later `dotnet test` call uses `--no-build --no-restore`.
+- [x] Ensure every later `dotnet run` call uses `--no-build --no-restore` or a direct DLL invocation when appropriate.
+- [x] Ensure StorefrontBuilder smoke does not trigger hidden rebuilds.
+- [x] Ensure helper functions do not call build internally during the final gate.
 
 Acceptance criteria:
 
-- [ ] Exactly one build occurs in the final closure path.
-- [ ] No later test or CLI step rebuilds the same projects.
-- [ ] Process count drops without changing coverage.
+- [x] Exactly one build occurs in the final closure path.
+- [x] No later test or CLI step rebuilds the same projects.
+- [x] Process count drops without changing coverage.
+
+O2 evidence:
+
+- `run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1` and `run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1` now execute `Invoke-SreRestore` once followed by `Invoke-SreBuild` once before proof steps.
+- `Invoke-SreTest` now passes `--no-build --no-restore` to every later ReverseEngineering test invocation.
+- ReverseEngineering CLI proofs now use direct DLL invocation through `dotnet <ToolDll> ...`; no final closure helper path contains `dotnet run --project` for the ReverseEngineering tool.
+- StorefrontBuilder smoke remains `build-storefront.ps1 -Mode plan-only`, which runs the plan generator dry-run path and does not build generated storefront projects.
+- Verification: `dotnet build tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore`; `dotnet test tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-build --no-restore --filter "Phase3DFinalClosureGate|Phase3EFinalClosureGate" --blame-hang --blame-hang-timeout 5m`.
 
 ## Phase O3 - Consolidate Proof Test Execution
 
