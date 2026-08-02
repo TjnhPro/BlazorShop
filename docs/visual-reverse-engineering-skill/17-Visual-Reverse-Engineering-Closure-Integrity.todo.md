@@ -162,12 +162,12 @@ Goal: make `generatorVersion` come from one place only.
 
 Tasks:
 
-- [ ] Add one shared version source file for StorefrontBuilder generation.
-- [ ] Read that version from both PowerShell and Node-side generation paths.
-- [ ] Normalize the naming so both outputs use the same `generatorVersion` semantics.
-- [ ] Update any tests or fixtures that still hard-code stale generator version values.
-- [ ] Add a guard test that fails if the version source drifts between script families.
-- [ ] Update docs to point at the same source of truth.
+- [x] Add one shared version source file for StorefrontBuilder generation.
+- [x] Read that version from both PowerShell and Node-side generation paths.
+- [x] Normalize the naming so both outputs use the same `generatorVersion` semantics.
+- [x] Update any tests or fixtures that still hard-code stale generator version values.
+- [x] Add a guard test that fails if the version source drifts between script families.
+- [x] Update docs to point at the same source of truth.
 
 Preferred shape:
 
@@ -192,7 +192,17 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Done when:
 
-- [ ] Generated metadata and generated-file manifests use one clear provenance source.
+- [x] Generated metadata and generated-file manifests use one clear provenance source.
+
+Phase 3E.2 evidence:
+
+- Shared source: `tools/BlazorShop.AI.StorefrontBuilder/version.json` contains `generatorVersion`.
+- PowerShell generation reads the shared source through `Read-StorefrontBuilderGeneratorVersion` in `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/StorefrontBuilderProjectSafety.ps1`; Node manifest generation reads the same file through `storefront-builder-version.mjs`.
+- `generated-file-manifest.mjs` imports `generatorVersion` from the Node reader, while `new-storefront-project.ps1` writes metadata from `$script:StorefrontBuilderGeneratorVersion`.
+- Guard coverage exists in `StorefrontBuilderQaRegenerationTests.StorefrontBuilderGeneratorVersion_UsesSingleSource` and generation safety tests assert metadata/manifest version agreement.
+- Docs already point to `tools/BlazorShop.AI.StorefrontBuilder/version.json` in `docs/architecture/11-storefront-builder.md`.
+- QA passed: `.\scripts\qa\run-storefront-builder-regeneration-gate.ps1`; `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder" --blame-hang --blame-hang-timeout 5m` passed `39/39`.
+- Note: the V2 test run emitted existing `MessagePack` vulnerability warnings; no phase source changes were required.
 
 ## Phase 3E.3 - Portable Handoff Canonical Integrity
 
