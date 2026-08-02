@@ -485,28 +485,28 @@ Goal: implement visual-only changes in generated-owned files and record them thr
 
 Tasks:
 
-- [ ] Define required read order in `storefront-visual-implement/SKILL.md`:
-  - [ ] shared references.
-  - [ ] generated project metadata.
-  - [ ] visual plan.
-  - [ ] visual checklist.
-  - [ ] task package manifest.
-- [ ] Require the implementation skill to stop on blockers from the visual plan.
-- [ ] Require edits to stay inside allowed generated visual files.
-- [ ] Require edits to preserve:
-  - [ ] `@page` absence in generated visual components.
-  - [ ] product purchase descriptors.
-  - [ ] same-origin browser action descriptors.
-  - [ ] route ownership.
-  - [ ] SEO ownership.
-  - [ ] account/cart/checkout contract behavior.
-- [ ] Require visual code to use existing generated project patterns before introducing new local abstractions.
-- [ ] Require 1:1 product gallery image frames where product gallery is touched.
-- [ ] Require responsive states for header, main nav, product detail, listing, cart/account/checkout visual shells when those files are in scope.
-- [ ] Require running `record-agent-visual-writes.mjs` after edits.
-- [ ] Require a build or focused generated project compile check after edits.
-- [ ] Emit `docs/storefront-analysis/visual-implementation-report.json`.
-- [ ] Emit `docs/storefront-analysis/visual-implementation-report.md`.
+- [x] Define required read order in `storefront-visual-implement/SKILL.md`:
+  - [x] shared references.
+  - [x] generated project metadata.
+  - [x] visual plan.
+  - [x] visual checklist.
+  - [x] task package manifest.
+- [x] Require the implementation skill to stop on blockers from the visual plan.
+- [x] Require edits to stay inside allowed generated visual files.
+- [x] Require edits to preserve:
+  - [x] `@page` absence in generated visual components.
+  - [x] product purchase descriptors.
+  - [x] same-origin browser action descriptors.
+  - [x] route ownership.
+  - [x] SEO ownership.
+  - [x] account/cart/checkout contract behavior.
+- [x] Require visual code to use existing generated project patterns before introducing new local abstractions.
+- [x] Require 1:1 product gallery image frames where product gallery is touched.
+- [x] Require responsive states for header, main nav, product detail, listing, cart/account/checkout visual shells when those files are in scope.
+- [x] Require running `record-agent-visual-writes.mjs` after edits.
+- [x] Require a build or focused generated project compile check after edits.
+- [x] Emit `docs/storefront-analysis/visual-implementation-report.json`.
+- [x] Emit `docs/storefront-analysis/visual-implementation-report.md`.
 
 Checks:
 
@@ -518,9 +518,17 @@ dotnet build <generated-project-csproj> --no-restore
 
 DoD:
 
-- [ ] Implementation creates no transport, business, auth, SEO, or runtime drift.
-- [ ] StorefrontBuilder recorder accepts the changed files.
-- [ ] Generated project still builds.
+- [x] Implementation creates no transport, business, auth, SEO, or runtime drift.
+- [x] StorefrontBuilder recorder accepts the changed files.
+- [x] Generated project still builds.
+
+Phase 4.10.7 evidence:
+
+- Expanded `tools/BlazorShop.AI.Visual/skills/storefront-visual-implement/SKILL.md` with read order, blocker stop conditions, visual-only edit rules, descriptor preservation, product gallery/responsive requirements, recorder/build commands, forbidden drift scan, checkpoint output, and implementation report output.
+- Added `--help` support to `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/record-agent-visual-writes.mjs` so the documented check is artifact-independent.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --help` printed usage and exited successfully.
+- `rg -n "visual-implementation-report|record-agent-visual-writes|dotnet build|@page|same-origin|product gallery|responsive|checkpoint" tools\BlazorShop.AI.Visual\skills\storefront-visual-implement` returned matches.
 
 ## Phase 4.10.8 - Visual Capture Evidence
 

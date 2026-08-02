@@ -3,6 +3,17 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(`Usage: node record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <file[,file...]>
+
+Options:
+  --project-root <path>  Generated storefront project root.
+  --task-package <path>  Agent task package root. Defaults under project docs/storefront-analysis.
+  --written-files <csv>  Comma-separated generated visual files changed by the agent.
+  --help, -h             Show this help text.`);
+  process.exit(0);
+}
+
 const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const taskPackageRoot = resolve(readArg("--task-package") ?? join(projectRoot, "docs/storefront-analysis/agent-task-package"));
 const writtenFiles = readListArg("--written-files").map(normalizeTargetPath);
