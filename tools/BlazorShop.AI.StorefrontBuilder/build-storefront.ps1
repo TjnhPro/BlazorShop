@@ -41,7 +41,20 @@ switch ($Mode) {
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
     }
     "plan-only" {
-        node "$PSScriptRoot/scripts/generate/plan-generation-files.mjs" --project-name $projectName --output-root $OutputRoot --dry-run
+        $planArgs = @(
+            "$PSScriptRoot/scripts/generate/plan-generation-files.mjs",
+            "--project-name", $projectName,
+            "--store-key", $normalizedStoreKey,
+            "--output-root", $OutputRoot,
+            "--repo-root", $repoRoot,
+            "--dry-run"
+        )
+
+        if (-not [string]::IsNullOrWhiteSpace($HandoffRoot)) {
+            $planArgs += @("--handoff-root", $HandoffRoot)
+        }
+
+        node @planArgs
     }
     "generate" {
         & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $normalizedStoreKey -OutputRoot $OutputRoot -CommandMode generate -Force:$Force

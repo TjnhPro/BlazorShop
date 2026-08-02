@@ -1,1 +1,71 @@
-{ "$schema": "https://json-schema.org/draft/2020-12/schema", "title": "StorefrontBuilder Generation Plan", "type": "object", "required": [ "schemaVersion", "artifactKind", "artifactId", "files" ], "properties": { "schemaVersion": { "type": "string" }, "artifactKind": { "const": "generation-plan" }, "artifactId": { "type": "string" }, "files": { "type": "array" } }, "additionalProperties": true }
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StorefrontBuilder Generation Plan",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifactKind",
+    "artifactId",
+    "generatorVersion",
+    "sourceHandoffPackageHash",
+    "sourceHandoffReadinessHash",
+    "sourceStarterContractHash",
+    "projectName",
+    "storeKey",
+    "generationMode",
+    "files",
+    "slots",
+    "assets",
+    "copyBlocks",
+    "tokens",
+    "warnings",
+    "blockedItems"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "artifactKind": { "const": "generation-plan" },
+    "artifactId": { "type": "string" },
+    "generatorVersion": { "type": "string" },
+    "sourceHandoffPackageHash": { "type": "string" },
+    "sourceHandoffReadinessHash": { "type": "string" },
+    "sourceStarterContractHash": { "type": "string" },
+    "projectName": { "type": "string" },
+    "storeKey": { "type": "string" },
+    "generationMode": { "type": "string", "enum": [ "static", "handoff" ] },
+    "generationOrder": { "type": "array", "items": { "type": "string" } },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "targetPath",
+          "ownership",
+          "action",
+          "sourceHandoffArtifacts",
+          "sourceEvidenceReferences",
+          "rationale",
+          "sourceSpecHash",
+          "generatedHash"
+        ],
+        "properties": {
+          "targetPath": { "type": "string" },
+          "ownership": { "type": "string", "enum": [ "generated", "managed", "protected", "user-owned candidate", "obsolete candidate" ] },
+          "action": { "type": "string", "enum": [ "create", "replace", "patch", "skip", "conflict", "obsolete" ] },
+          "sourceHandoffArtifacts": { "type": "array", "items": { "type": "string" } },
+          "sourceEvidenceReferences": { "type": "array", "items": { "type": "string" } },
+          "rationale": { "type": "string" },
+          "sourceSpecHash": { "type": "string" },
+          "generatedHash": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "slots": { "type": "array" },
+    "assets": { "type": "array" },
+    "copyBlocks": { "type": "array" },
+    "tokens": { "type": "array" },
+    "warnings": { "type": "array" },
+    "blockedItems": { "type": "array" }
+  },
+  "additionalProperties": true
+}

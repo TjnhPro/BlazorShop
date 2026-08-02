@@ -1,1 +1,19 @@
-{ "schemaVersion": "1", "artifactKind": "generation-plan", "artifactId": "generation-plan.sample", "files": [] }
+{
+  "schemaVersion": "2.0.0",
+  "artifactKind": "generation-plan",
+  "artifactId": "generation-plan.sample",
+  "generatorVersion": "1.0.0",
+  "sourceHandoffPackageHash": "hash-package",
+  "sourceHandoffReadinessHash": "hash-readiness",
+  "sourceStarterContractHash": "hash-starter",
+  "projectName": "BlazorShop.Storefront.Sample",
+  "storeKey": "sample",
+  "generationMode": "handoff",
+  "files": [],
+  "slots": [],
+  "assets": [],
+  "copyBlocks": [],
+  "tokens": [],
+  "warnings": [],
+  "blockedItems": []
+}

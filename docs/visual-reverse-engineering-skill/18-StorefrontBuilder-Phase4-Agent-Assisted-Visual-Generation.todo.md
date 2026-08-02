@@ -240,70 +240,81 @@ Implementation targets:
 
 Tasks:
 
-- [ ] Add a handoff-aware generation plan mode that accepts the validated handoff package.
-- [ ] Keep existing static `plan-only` behavior available for current generated proof until handoff mode is proven.
-- [ ] Extend the generation plan schema from broad file list to an explicit contract:
-  - [ ] `schemaVersion`
-  - [ ] `artifactKind`
-  - [ ] `artifactId`
-  - [ ] `generatorVersion`
-  - [ ] `sourceHandoffPackageHash`
-  - [ ] `sourceHandoffReadinessHash`
-  - [ ] `sourceStarterContractHash`
-  - [ ] `projectName`
-  - [ ] `storeKey`
-  - [ ] `generationMode`
-  - [ ] `files`
-  - [ ] `slots`
-  - [ ] `assets`
-  - [ ] `copyBlocks`
-  - [ ] `tokens`
-  - [ ] `warnings`
-  - [ ] `blockedItems`
-- [ ] For each planned file, include:
-  - [ ] normalized target path.
-  - [ ] ownership classification: generated, managed, protected, user-owned candidate, obsolete candidate.
-  - [ ] source handoff artifact references.
-  - [ ] source evidence references, only by handoff-local paths.
-  - [ ] allowed operation: create, replace, patch, skip, conflict, obsolete.
-  - [ ] rationale.
-  - [ ] slot id or page id when applicable.
-  - [ ] checksum/provenance fields for deterministic regeneration.
-- [ ] Map handoff `page-compositions.json` to Presentation view slots.
-- [ ] Map handoff `storefront-pattern.json` and Starter contract slots to generated file targets.
-- [ ] Map handoff `design-tokens.json` and `visual-style.json` to generated CSS token files.
-- [ ] Map handoff `responsive-behavior.json` to responsive layout instructions without generating functional application logic.
-- [ ] Map handoff `interaction-models.json` only to visual affordance metadata or allowed semantic descriptors.
-- [ ] Map `originality-restrictions.json` to asset/copy reuse policy:
-  - [ ] block disallowed copied assets.
-  - [ ] mark assets needing replacement.
-  - [ ] mark copy that must be rewritten.
-  - [ ] preserve evidence references without copying restricted originals.
-- [ ] Map `unresolved-regions.json` to blocking or warning plan entries.
-- [ ] Ensure cart/checkout/account/auth/payment result plans are visual shell plans only.
-- [ ] Ensure no planned generated file targets Starter.
-- [ ] Ensure no planned generated file declares route ownership.
-- [ ] Sort all arrays and output deterministically.
-- [ ] Add readable dry-run output that summarizes create/update/skip/conflict/blocked entries.
+- [x] Add a handoff-aware generation plan mode that accepts the validated handoff package.
+- [x] Keep existing static `plan-only` behavior available for current generated proof until handoff mode is proven.
+- [x] Extend the generation plan schema from broad file list to an explicit contract:
+  - [x] `schemaVersion`
+  - [x] `artifactKind`
+  - [x] `artifactId`
+  - [x] `generatorVersion`
+  - [x] `sourceHandoffPackageHash`
+  - [x] `sourceHandoffReadinessHash`
+  - [x] `sourceStarterContractHash`
+  - [x] `projectName`
+  - [x] `storeKey`
+  - [x] `generationMode`
+  - [x] `files`
+  - [x] `slots`
+  - [x] `assets`
+  - [x] `copyBlocks`
+  - [x] `tokens`
+  - [x] `warnings`
+  - [x] `blockedItems`
+- [x] For each planned file, include:
+  - [x] normalized target path.
+  - [x] ownership classification: generated, managed, protected, user-owned candidate, obsolete candidate.
+  - [x] source handoff artifact references.
+  - [x] source evidence references, only by handoff-local paths.
+  - [x] allowed operation: create, replace, patch, skip, conflict, obsolete.
+  - [x] rationale.
+  - [x] slot id or page id when applicable.
+  - [x] checksum/provenance fields for deterministic regeneration.
+- [x] Map handoff `page-compositions.json` to Presentation view slots.
+- [x] Map handoff `storefront-pattern.json` and Starter contract slots to generated file targets.
+- [x] Map handoff `design-tokens.json` and `visual-style.json` to generated CSS token files.
+- [x] Map handoff `responsive-behavior.json` to responsive layout instructions without generating functional application logic.
+- [x] Map handoff `interaction-models.json` only to visual affordance metadata or allowed semantic descriptors.
+- [x] Map `originality-restrictions.json` to asset/copy reuse policy:
+  - [x] block disallowed copied assets.
+  - [x] mark assets needing replacement.
+  - [x] mark copy that must be rewritten.
+  - [x] preserve evidence references without copying restricted originals.
+- [x] Map `unresolved-regions.json` to blocking or warning plan entries.
+- [x] Ensure cart/checkout/account/auth/payment result plans are visual shell plans only.
+- [x] Ensure no planned generated file targets Starter.
+- [x] Ensure no planned generated file declares route ownership.
+- [x] Sort all arrays and output deterministically.
+- [x] Add readable dry-run output that summarizes create/update/skip/conflict/blocked entries.
 
 Tests:
 
-- [ ] Positive: same handoff package produces byte-stable generation plan across two runs.
-- [ ] Positive: valid ecommerce page composition maps to expected Presentation slots.
-- [ ] Positive: product gallery, product purchase, product grid, layout, footer, and state pages map to generated-owned zones.
-- [ ] Positive: cart/checkout/account map only to shell/template zones.
-- [ ] Negative: forbidden target path fails.
-- [ ] Negative: protected target path fails.
-- [ ] Negative: missing required slot fails.
-- [ ] Negative: unsupported interaction requiring business logic fails or becomes manual blocker.
-- [ ] Negative: restricted copied asset is blocked or marked replacement-required.
-- [ ] Negative: raw evidence path in plan fails validation.
+- [x] Positive: same handoff package produces byte-stable generation plan across two runs.
+- [x] Positive: valid ecommerce page composition maps to expected Presentation slots.
+- [x] Positive: product gallery, product purchase, product grid, layout, footer, and state pages map to generated-owned zones.
+- [x] Positive: cart/checkout/account map only to shell/template zones.
+- [x] Negative: forbidden target path fails.
+- [x] Negative: protected target path fails.
+- [x] Negative: missing required slot fails.
+- [x] Negative: unsupported interaction requiring business logic fails or becomes manual blocker.
+- [x] Negative: restricted copied asset is blocked or marked replacement-required.
+- [x] Negative: raw evidence path in plan fails validation.
 
 Exit criteria:
 
-- [ ] StorefrontBuilder has a deterministic handoff-driven generation plan.
-- [ ] The plan is reviewable before any file writes.
-- [ ] The plan contains enough provenance to debug why each generated file exists.
+- [x] StorefrontBuilder has a deterministic handoff-driven generation plan.
+- [x] The plan is reviewable before any file writes.
+- [x] The plan contains enough provenance to debug why each generated file exists.
+
+Phase 4.2 evidence:
+
+- Added `scripts/generate/handoff-generation-plan.mjs` and extended `plan-generation-files.mjs` so `--handoff-root` compiles reviewed portable `analysis/agent-handoff/*` artifacts into deterministic JSON/YAML generation plans while preserving static `plan-only` behavior.
+- Expanded `generation-plan.schema.json`, the valid schema fixture, and `Test-StorefrontBuilderGenerationPlan.ps1` to require handoff hashes, Starter contract hash, store/project metadata, file ownership, target paths, handoff-local evidence references, provenance, slots, assets, copy blocks, token summaries, warnings, and blockers.
+- Added `StorefrontBuilderHandoffGenerationPlanTests` for deterministic output, ecommerce slot mapping, visual-shell cart/checkout/account mapping, forbidden/protected target rejection, missing required slots, unsupported functional interactions, restricted assets, and raw evidence rejection.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffPreflightTests|FullyQualifiedName~StorefrontBuilderHandoffGenerationPlanTests|FullyQualifiedName~PortableHandoffCliTests|FullyQualifiedName~AgentHandoffTests" --blame-hang --blame-hang-timeout 5m` (`72` passed).
+- Schema verification passed: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderSchemas.ps1`.
+- Static plan compatibility passed: `node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\plan-generation-files.mjs --project-name BlazorShop.Storefront.GeneratedProof --store-key sample --output-root obj/storefront-builder/generated/static-plan-check --output obj/storefront-builder/static-plan-check/generation-plan.yaml --dry-run` followed by `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderGenerationPlan.ps1 -PlanPath obj\storefront-builder\static-plan-check\generation-plan.yaml`.
+- Handoff entrypoint proof passed: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Url https://example.test -Name Phase4PlanEntrypoint -StoreKey sample -OutputRoot obj/storefront-builder/generated/phase4-plan-entrypoint -Mode plan-only -HandoffRoot <portable-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas`.
+- Generated handoff plan validation passed: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderGenerationPlan.ps1 -PlanPath obj\storefront-builder\generation-plan.yaml`.
 
 ## Phase 4.3 - Starter-Based Handoff Project Generation
 

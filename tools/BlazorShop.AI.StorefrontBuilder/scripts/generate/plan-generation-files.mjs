@@ -2,13 +2,44 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { buildHandoffGenerationPlan, stableJson, summarizePlan } from "./handoff-generation-plan.mjs";
 
 const output = readArg("--output") ?? "obj/storefront-builder/generation-plan.yaml";
+const jsonOutput = readArg("--json-output") ?? output.replace(/\.(yaml|yml)$/i, ".json");
 const dryRun = process.argv.includes("--dry-run");
 const projectName = readArg("--project-name") ?? "BlazorShop.Storefront.GeneratedProof";
+const storeKey = readArg("--store-key") ?? "sample";
 const outputRoot = readArg("--output-root") ?? "artifacts/storefront-builder/generated";
+const handoffRoot = readArg("--handoff-root");
+const repoRoot = readArg("--repo-root") ?? process.cwd();
 const root = `${outputRoot.replaceAll("\\", "/").replace(/\/$/, "")}/${projectName}`;
 const specHash = sha("composition-manifest.default");
+
+if (handoffRoot) {
+  const plan = buildHandoffGenerationPlan({
+    repoRoot,
+    handoffRoot,
+    projectName,
+    storeKey,
+    outputRoot,
+  });
+
+  if (dryRun) {
+    for (const line of summarizePlan(plan)) {
+      console.log(line);
+    }
+
+    for (const file of plan.files) {
+      console.log(`${file.action.padEnd(7)} ${file.ownership.padEnd(9)} ${file.targetPath}`);
+    }
+  }
+
+  mkdirSync(dirname(output), { recursive: true });
+  mkdirSync(dirname(jsonOutput), { recursive: true });
+  writeFileSync(output, `${toYaml(plan)}\n`, "utf8");
+  writeFileSync(jsonOutput, stableJson(plan), "utf8");
+  process.exit(0);
+}
 
 const files = [
   entry(`${root}/wwwroot/css/storefront-builder.generated.css`, "generated", "replace", ["design-tokens.yaml", "ui-patterns.yaml"], "theme.foundation", ["SFB-CSS-001"], "replace only when generated hash matches"),
@@ -25,10 +56,22 @@ const plan = {
   schemaVersion: "1.0.0",
   artifactKind: "generation-plan",
   artifactId: "generation-plan.default",
+  generatorVersion: "static",
+  sourceHandoffPackageHash: "static",
+  sourceHandoffReadinessHash: "static",
+  sourceStarterContractHash: specHash,
   projectName,
+  storeKey,
+  generationMode: "static",
   generationOrder: ["generate-from-starter", "apply-visual-files"],
   sourceSpecHash: specHash,
   files,
+  slots: [],
+  assets: [],
+  copyBlocks: [],
+  tokens: [],
+  warnings: [],
+  blockedItems: [],
 };
 
 if (dryRun) {
@@ -41,16 +84,22 @@ mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, `${toYaml(plan)}\n`, "utf8");
 
 function entry(filePath, ownership, action, sourceArtifactIds, expectedSlot, validationRuleIds, conflictBehavior) {
+  const targetPath = filePath.startsWith(`${root}/`) ? filePath.slice(root.length + 1) : filePath;
   return {
     filePath,
+    targetPath,
     ownership,
     action,
+    allowedOperation: action,
     sourceArtifactIds,
+    sourceHandoffArtifacts: sourceArtifactIds,
+    sourceEvidenceReferences: [],
     expectedSlot,
     validationRuleIds,
     conflictBehavior,
     sourceSpecHash: specHash,
     generatedHash: sha(`${filePath}:${ownership}:${action}:${sourceArtifactIds.join(",")}`),
+    rationale: "Static StorefrontBuilder default generation plan entry.",
   };
 }
 
