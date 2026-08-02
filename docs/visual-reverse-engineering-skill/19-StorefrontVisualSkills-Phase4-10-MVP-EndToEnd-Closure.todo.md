@@ -400,22 +400,22 @@ Inputs:
 
 Tasks:
 
-- [ ] Define required read order in `storefront-visual-plan/SKILL.md`.
-- [ ] Require the skill to verify all expected inputs exist before planning.
-- [ ] Require the skill to hash the generation plan and task package manifest.
-- [ ] Require the skill to list every allowed output file from the task package.
-- [ ] Require the skill to map every visual slot/page from the generation plan to an implementation task or a blocked reason.
-- [ ] Require the skill to mark unsupported behavior as blocked instead of inventing transport or business logic.
-- [ ] Require the skill to emit:
-  - [ ] `docs/storefront-analysis/visual-plan.json`.
-  - [ ] `docs/storefront-analysis/visual-implementation-checklist.todo.md`.
-  - [ ] `docs/storefront-analysis/visual-plan-summary.md`.
-- [ ] Require schema validation of `visual-plan.json`.
-- [ ] Require stable output ordering:
-  - [ ] pages sorted by route priority or generation plan order.
-  - [ ] files sorted by normalized relative path.
-  - [ ] tasks grouped by page/slot/capability.
-- [ ] Add a negative example showing a blocked item when the handoff asks for unsupported behavior.
+- [x] Define required read order in `storefront-visual-plan/SKILL.md`.
+- [x] Require the skill to verify all expected inputs exist before planning.
+- [x] Require the skill to hash the generation plan and task package manifest.
+- [x] Require the skill to list every allowed output file from the task package.
+- [x] Require the skill to map every visual slot/page from the generation plan to an implementation task or a blocked reason.
+- [x] Require the skill to mark unsupported behavior as blocked instead of inventing transport or business logic.
+- [x] Require the skill to emit:
+  - [x] `docs/storefront-analysis/visual-plan.json`.
+  - [x] `docs/storefront-analysis/visual-implementation-checklist.todo.md`.
+  - [x] `docs/storefront-analysis/visual-plan-summary.md`.
+- [x] Require schema validation of `visual-plan.json`.
+- [x] Require stable output ordering:
+  - [x] pages sorted by route priority or generation plan order.
+  - [x] files sorted by normalized relative path.
+  - [x] tasks grouped by page/slot/capability.
+- [x] Add a negative example showing a blocked item when the handoff asks for unsupported behavior.
 
 Checks:
 
@@ -426,8 +426,18 @@ rg -n "visual-plan.json|visual-implementation-checklist.todo.md|blocked|generati
 
 DoD:
 
-- [ ] Visual planning can be reviewed before any visual edits happen.
-- [ ] Missing/unsupported requirements become explicit checklist blockers.
+- [x] Visual planning can be reviewed before any visual edits happen.
+- [x] Missing/unsupported requirements become explicit checklist blockers.
+
+Phase 4.10.5 evidence:
+
+- Expanded `tools/BlazorShop.AI.Visual/skills/storefront-visual-plan/SKILL.md` with read order, required input checks, hashing, allowed file listing, slot-to-task/blocker mapping, stable ordering, generated-project-local outputs, and schema validation requirements.
+- Added negative example `tools/BlazorShop.AI.Visual/examples/visual-plan.blocked-unsupported-behavior.json`.
+- Added `--help` support to `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-agent-task-package.mjs` so the documented check is artifact-independent.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\write-agent-task-package.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\write-agent-task-package.mjs --help` printed usage and exited successfully.
+- `node tools\BlazorShop.AI.Visual\scripts\validate-visual-examples.mjs` passed.
+- `rg -n "visual-plan.json|visual-implementation-checklist.todo.md|blocked|generation-plan" tools\BlazorShop.AI.Visual\skills\storefront-visual-plan tools\BlazorShop.AI.Visual\examples\visual-plan.blocked-unsupported-behavior.json` returned matches.
 
 ## Phase 4.10.6 - Implementation Checkpoint Foundation
 

@@ -13,6 +13,18 @@ const FORBIDDEN_SOURCE_ONLY_PREFIXES = [
   "reports/",
 ];
 
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(`Usage: node write-agent-task-package.mjs --project-root <generated-project-root> [options]
+
+Options:
+  --project-root <path>  Generated storefront project root.
+  --handoff-root <path>  Portable handoff package root or analysis/agent-handoff folder.
+  --plan-json <path>     Generation plan JSON path. Defaults under project docs/storefront-analysis.
+  --output <path>        Agent task package output folder. Defaults under project docs/storefront-analysis.
+  --help, -h             Show this help text.`);
+  process.exit(0);
+}
+
 const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const handoffRoot = readArg("--handoff-root");
 const planPath = resolve(readArg("--plan-json") ?? join(projectRoot, "docs/storefront-analysis/generation-plan.json"));
