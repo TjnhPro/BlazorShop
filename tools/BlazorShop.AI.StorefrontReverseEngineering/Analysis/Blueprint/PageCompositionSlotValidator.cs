@@ -50,12 +50,14 @@ public sealed class PageCompositionSlotValidator
                 continue;
             }
 
+            var sectionNodeIds = Flatten(composition.SectionTree).Select(node => node.NodeId).ToHashSet(StringComparer.Ordinal);
             var allowed = contract.RequiredSlotIds
                 .Concat(contract.OptionalSlotIds)
                 .Concat(contract.RepeatableSlotIds)
                 .Concat(contract.AllowedAdditionalSlotIds)
                 .ToHashSet(StringComparer.Ordinal);
-            var observed = CollectObservedSlots(composition, contract, mappings.Mappings, slotResolver);
+            AddReviewedMappingSourceFindings(composition, mappings.Mappings, sectionNodeIds, findings);
+            var observed = CollectObservedSlots(composition, contract, mappings.Mappings, slotResolver, sectionNodeIds);
             foreach (var missing in contract.RequiredSlotIds.Where(slot => !observed.Sources.ContainsKey(slot)))
             {
                 var suggested = observed.Suggestions.Any(suggestion => string.Equals(suggestion.SlotId, missing, StringComparison.Ordinal));
@@ -119,7 +121,8 @@ public sealed class PageCompositionSlotValidator
         PageComposition composition,
         StorefrontPageContract contract,
         IReadOnlyList<PresentationMapping> mappings,
-        SectionSlotResolver slotResolver)
+        SectionSlotResolver slotResolver,
+        IReadOnlySet<string> sectionNodeIds)
     {
         var sources = new Dictionary<string, HashSet<SlotObservationSource>>(StringComparer.Ordinal);
         var suggestions = new List<SlotObservationSource>();
@@ -139,6 +142,11 @@ public sealed class PageCompositionSlotValidator
 
         foreach (var mapping in mappings.Where(mapping => string.Equals(mapping.SourcePageId, composition.PageId, StringComparison.Ordinal)))
         {
+            if (!sectionNodeIds.Contains(mapping.SourceSectionId))
+            {
+                continue;
+            }
+
             AddObservation(
                 sources,
                 new SlotObservationSource(
@@ -154,7 +162,10 @@ public sealed class PageCompositionSlotValidator
         foreach (var node in Flatten(composition.SectionTree))
         {
             var resolution = slotResolver.Resolve(composition, node, contract);
-            if (resolution.HasAuthoritativeSlot)
+            if (resolution.HasAuthoritativeSlot &&
+                (resolution.SlotSource != SectionSlotResolver.ReviewedPresentationMappingSource ||
+                    (string.Equals(resolution.SourcePageId, composition.PageId, StringComparison.Ordinal) &&
+                        sectionNodeIds.Contains(resolution.SourceSectionId))))
             {
                 AddObservation(
                     sources,
@@ -182,6 +193,27 @@ public sealed class PageCompositionSlotValidator
         }
 
         return new ObservedSlots(sources, suggestions);
+    }
+
+    private static void AddReviewedMappingSourceFindings(
+        PageComposition composition,
+        IEnumerable<PresentationMapping> mappings,
+        IReadOnlySet<string> sectionNodeIds,
+        List<GenerationReadinessFinding> findings)
+    {
+        foreach (var mapping in mappings.Where(mapping => string.Equals(mapping.SourcePageId, composition.PageId, StringComparison.Ordinal)))
+        {
+            if (sectionNodeIds.Contains(mapping.SourceSectionId))
+            {
+                continue;
+            }
+
+            findings.Add(new GenerationReadinessFinding(
+                "reviewed-slot-mapping-orphan",
+                "blocking",
+                $"Page '{composition.PageId}' reviewed mapping '{mapping.SourceCandidateId}' points at missing section '{mapping.SourceSectionId}'.",
+                "analysis/resolved/presentation-mappings.reviewed.json"));
+        }
     }
 
     private static void ValidateExtraSection(
@@ -237,6 +269,17 @@ public sealed class PageCompositionSlotValidator
 
         if (mapping is not null)
         {
+            if (!string.Equals(mapping.SourcePageId, composition.PageId, StringComparison.Ordinal) ||
+                !string.Equals(mapping.SourceSectionId, node.NodeId, StringComparison.Ordinal))
+            {
+                findings.Add(new GenerationReadinessFinding(
+                    "reviewed-slot-mapping-orphan",
+                    "blocking",
+                    $"Page '{composition.PageId}' section '{node.NodeId}' references reviewed mapping '{mapping.SourceCandidateId}' for page '{mapping.SourcePageId}' section '{mapping.SourceSectionId}'.",
+                    "analysis/resolved/presentation-mappings.reviewed.json"));
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(mapping.StarterSlotId) ||
                 string.IsNullOrWhiteSpace(mapping.PresentationComponentId) ||
                 !catalogByComponent.TryGetValue(mapping.PresentationComponentId, out var mappedComponent) ||

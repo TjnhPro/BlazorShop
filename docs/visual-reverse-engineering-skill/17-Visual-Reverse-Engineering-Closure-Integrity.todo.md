@@ -259,15 +259,15 @@ Goal: keep the current authoritative slot model honest with focused regressions.
 
 Tasks:
 
-- [ ] Preserve the current source-aware slot observation model.
-- [ ] Update any stale comments or docs that still describe the old counter-only model.
-- [ ] Add or refresh regression tests for:
-  - [ ] `duplicate-non-repeatable-slot`
-  - [ ] `unapproved-extra-section`
-  - [ ] reviewed mapping missing from slot proof
-  - [ ] orphan reviewed mapping if the validator needs that explicit blocker
-- [ ] Keep role/text inference as suggestion-only, not authoritative.
-- [ ] Make sure the tests prove the actual validator behavior, not just fixture string matching.
+- [x] Preserve the current source-aware slot observation model.
+- [x] Update any stale comments or docs that still describe the old counter-only model.
+- [x] Add or refresh regression tests for:
+  - [x] `duplicate-non-repeatable-slot`
+  - [x] `unapproved-extra-section`
+  - [x] reviewed mapping missing from slot proof
+  - [x] orphan reviewed mapping if the validator needs that explicit blocker
+- [x] Keep role/text inference as suggestion-only, not authoritative.
+- [x] Make sure the tests prove the actual validator behavior, not just fixture string matching.
 
 Implementation notes:
 
@@ -282,7 +282,17 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Done when:
 
-- [ ] Slot proof still blocks the wrong graph and still accepts the reviewed graph.
+- [x] Slot proof still blocks the wrong graph and still accepts the reviewed graph.
+
+Phase 3E.4 evidence:
+
+- `PageCompositionSlotValidator` still uses `SlotObservationSource` and role suggestions remain warning-only through `section-slot-suggestion-unreviewed`.
+- Reviewed mappings now only contribute authoritative slot observations when their source page and section exist in the reviewed page composition tree.
+- Added blocker `reviewed-slot-mapping-orphan` for reviewed mappings that point at a missing section or when a composition node references a reviewed mapping for another page/section.
+- Existing tests already cover `duplicate-non-repeatable-slot`, `unapproved-extra-section`, role suggestion warnings, repeatable product cards, and accepted reviewed mappings.
+- Added focused behavioral tests proving orphan reviewed mappings do not satisfy required slots and node-to-mapping section mismatch is blocked.
+- QA passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~PageCompositionSlotValidator|FullyQualifiedName~Phase3EFinalClosureGateTests" --blame-hang --blame-hang-timeout 5m` passed `9/9`.
+- Additional fixture regression passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~BlueprintV1ReadinessTests" --blame-hang --blame-hang-timeout 5m` passed `34/34`.
 
 ## Phase 3E.5 - Documentation And Local Closure Evidence
 
