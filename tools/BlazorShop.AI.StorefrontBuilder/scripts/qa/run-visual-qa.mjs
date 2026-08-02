@@ -4,6 +4,21 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "@playwright/test";
 
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(`Usage: node run-visual-qa.mjs [options]
+
+Options:
+  --base-url <url>                 Running generated storefront base URL.
+  --project-root <path>            Generated storefront project root.
+  --screenshot-root <path>         Screenshot/evidence output root.
+  --fixture-root <path>            File-based fixture root for handoff skeleton proof.
+  --category-slug <slug>           Category slug for baseline route checks.
+  --product-slug <slug>            Product slug for baseline route checks.
+  --allow-planned-placeholders     Allow handoff placeholder markers during skeleton proof.
+  --help, -h                       Show this help text.`);
+  process.exit(0);
+}
+
 const baseUrl = readArg("--base-url") ?? "http://127.0.0.1:18991";
 const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const screenshotRoot = readArg("--screenshot-root") ?? "output/playwright/storefront-builder-visual-qa";
@@ -27,10 +42,27 @@ const discrepancies = [];
 const captures = [];
 const cssResponses = [];
 const cssResponseKeys = new Set();
+const browserEvents = [];
 
 try {
   for (const [viewportName, width, height] of viewports) {
     const page = await browser.newPage({ viewport: { width, height } });
+    page.on("console", (message) => {
+      if (["error", "warning"].includes(message.type())) {
+        browserEvents.push({ type: `console.${message.type()}`, viewportName, text: message.text() });
+      }
+    });
+    page.on("pageerror", (error) => {
+      browserEvents.push({ type: "pageerror", viewportName, text: error.message });
+    });
+    page.on("requestfailed", (request) => {
+      browserEvents.push({
+        type: "requestfailed",
+        viewportName,
+        url: request.url(),
+        text: request.failure()?.errorText ?? "request failed",
+      });
+    });
 
     for (const pageSpec of pages) {
       const { pageName, route, requiredSlots } = pageSpec;
@@ -217,6 +249,10 @@ const report = [
   "## CSS Responses",
   "",
   ...(cssResponses.length === 0 ? ["- None."] : cssResponses.map((response) => `- ${response.status} length=${response.length} contentType=${response.contentType} ${response.url}`)),
+  "",
+  "## Browser Event Summary",
+  "",
+  ...(browserEvents.length === 0 ? ["- None."] : browserEvents.map((event) => `- ${event.type} viewport=${event.viewportName} ${event.url ? `url=${event.url} ` : ""}${event.text}`)),
   "",
   "## Captures",
   "",

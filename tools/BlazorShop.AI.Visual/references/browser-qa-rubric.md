@@ -9,6 +9,8 @@ Visual QA must use browser evidence from StorefrontBuilder's `run-visual-qa.mjs`
 
 Evidence must cover desktop, tablet, and mobile viewports when the generated project and fixture support those routes. Screenshots, per-page status, console or network failure summaries, CSS asset status, broken image summaries, overflow findings, blank-page findings, and placeholder findings must be available to the QA skill.
 
+Use StorefrontBuilder's `--screenshot-root <path>` option as the stable evidence root convention. The default visual QA report remains generated-project-local at `docs/storefront-analysis/visual-qa-report.md`.
+
 ## Review Checklist
 
 Inspect:

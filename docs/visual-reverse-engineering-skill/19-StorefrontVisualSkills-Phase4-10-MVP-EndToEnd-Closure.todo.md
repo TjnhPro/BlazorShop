@@ -536,19 +536,19 @@ Goal: make browser evidence available to the QA skill in a stable location.
 
 Tasks:
 
-- [ ] Reuse `run-visual-qa.mjs` for browser captures instead of creating a second capture tool.
-- [ ] Ensure the visual QA output includes or can link to:
-  - [ ] desktop screenshots.
-  - [ ] tablet screenshots.
-  - [ ] mobile screenshots.
-  - [ ] per-page status.
-  - [ ] console/network failure summary.
-  - [ ] CSS asset status.
-  - [ ] broken image summary.
-  - [ ] overflow/blank/placeholder findings.
-- [ ] Add an optional `--evidence-root` or documented screenshot root convention if current output paths are not stable enough.
-- [ ] Keep capture evidence read-only for the QA skill.
-- [ ] Do not let capture automatically repair visual files.
+- [x] Reuse `run-visual-qa.mjs` for browser captures instead of creating a second capture tool.
+- [x] Ensure the visual QA output includes or can link to:
+  - [x] desktop screenshots.
+  - [x] tablet screenshots.
+  - [x] mobile screenshots.
+  - [x] per-page status.
+  - [x] console/network failure summary.
+  - [x] CSS asset status.
+  - [x] broken image summary.
+  - [x] overflow/blank/placeholder findings.
+- [x] Add an optional `--evidence-root` or documented screenshot root convention if current output paths are not stable enough.
+- [x] Keep capture evidence read-only for the QA skill.
+- [x] Do not let capture automatically repair visual files.
 
 Checks:
 
@@ -558,8 +558,19 @@ node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --help
 
 DoD:
 
-- [ ] QA can review real browser artifacts, not only compile output.
-- [ ] Capture and repair remain separate steps.
+- [x] QA can review real browser artifacts, not only compile output.
+- [x] Capture and repair remain separate steps.
+
+Phase 4.10.8 evidence:
+
+- Reused `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs`; no second capture tool was added.
+- Added artifact-independent `--help` support to `run-visual-qa.mjs`.
+- Added browser event capture for console warnings/errors, page errors, and failed requests, reported under `Browser Event Summary`.
+- Confirmed existing visual QA captures desktop, tablet, and mobile screenshots, per-page route captures, CSS responses, broken images, overflow, blank body, required slot visibility, product gallery shape, and placeholder findings.
+- Documented `--screenshot-root <path>` as the stable evidence root convention in `tools/BlazorShop.AI.Visual/references/browser-qa-rubric.md`.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --help` printed usage and exited successfully.
+- `rg -n "screenshot-root|Browser Event Summary|console|network|desktop|tablet|mobile|broken image|overflow|placeholder|repair" tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs tools\BlazorShop.AI.Visual\references\browser-qa-rubric.md` returned matches.
 
 ## Phase 4.10.9 - `storefront-visual-qa`
 
