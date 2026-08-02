@@ -388,61 +388,72 @@ Implementation targets:
 
 Tasks:
 
-- [ ] Generate an agent task package from the generation plan.
-- [ ] Include only these allowed inputs in the task package:
-  - [ ] generation plan.
-  - [ ] handoff-local evidence references.
-  - [ ] approved section screenshots/crops.
-  - [ ] design token/style summaries.
-  - [ ] Starter/Presentation slot contract summaries.
-  - [ ] allowed/protected file manifests.
-  - [ ] originality restrictions.
-- [ ] Exclude raw captures, source project folders, Storefront V2 source, backend source, and hidden fallback artifacts.
-- [ ] Write explicit instructions that generated code may only modify generated-owned files.
-- [ ] Allow generated visual outputs for:
-  - [ ] layout/header/footer/navigation view slot files.
-  - [ ] home/category/search/deals/new releases/content visual templates.
-  - [ ] product summary card.
-  - [ ] product gallery.
-  - [ ] product purchase visual template.
-  - [ ] cart visual shell.
-  - [ ] checkout visual shell.
-  - [ ] account visual shell.
-  - [ ] state pages.
-  - [ ] CSS tokens/theme files.
-  - [ ] generated local assets.
-- [ ] Forbid generated outputs for:
-  - [ ] route declarations.
-  - [ ] BFF endpoints.
-  - [ ] HTTP clients.
-  - [ ] DTOs.
-  - [ ] payment/cart/checkout/account business commands.
-  - [ ] authentication flow logic.
-  - [ ] SEO route/canonical logic.
-  - [ ] server configuration.
-  - [ ] appsettings secrets.
-  - [ ] Storefront Runtime registration.
-- [ ] Require generated components to use existing Presentation descriptors and semantic `data-storefront-*` attributes where applicable.
-- [ ] Require copy to be store-owned and localizable later; do not embed backend error copy as final UX.
-- [ ] Require image outputs to respect asset originality restrictions.
-- [ ] Update generated file manifest after agent writes.
-- [ ] Record every agent-written file with source plan entry id and checksum.
+- [x] Generate an agent task package from the generation plan.
+- [x] Include only these allowed inputs in the task package:
+  - [x] generation plan.
+  - [x] handoff-local evidence references.
+  - [x] approved section screenshots/crops.
+  - [x] design token/style summaries.
+  - [x] Starter/Presentation slot contract summaries.
+  - [x] allowed/protected file manifests.
+  - [x] originality restrictions.
+- [x] Exclude raw captures, source project folders, Storefront V2 source, backend source, and hidden fallback artifacts.
+- [x] Write explicit instructions that generated code may only modify generated-owned files.
+- [x] Allow generated visual outputs for:
+  - [x] layout/header/footer/navigation view slot files.
+  - [x] home/category/search/deals/new releases/content visual templates.
+  - [x] product summary card.
+  - [x] product gallery.
+  - [x] product purchase visual template.
+  - [x] cart visual shell.
+  - [x] checkout visual shell.
+  - [x] account visual shell.
+  - [x] state pages.
+  - [x] CSS tokens/theme files.
+  - [x] generated local assets.
+- [x] Forbid generated outputs for:
+  - [x] route declarations.
+  - [x] BFF endpoints.
+  - [x] HTTP clients.
+  - [x] DTOs.
+  - [x] payment/cart/checkout/account business commands.
+  - [x] authentication flow logic.
+  - [x] SEO route/canonical logic.
+  - [x] server configuration.
+  - [x] appsettings secrets.
+  - [x] Storefront Runtime registration.
+- [x] Require generated components to use existing Presentation descriptors and semantic `data-storefront-*` attributes where applicable.
+- [x] Require copy to be store-owned and localizable later; do not embed backend error copy as final UX.
+- [x] Require image outputs to respect asset originality restrictions.
+- [x] Update generated file manifest after agent writes.
+- [x] Record every agent-written file with source plan entry id and checksum.
 
 Tests:
 
-- [ ] Positive: agent task package contains only handoff-local references.
-- [ ] Positive: generated visual files land only in allowed generated zones.
-- [ ] Positive: generated file manifest records agent-written files.
-- [ ] Negative: attempted `@page` directive fails gate.
-- [ ] Negative: attempted `HttpClient`, `fetch`, or direct Commerce Node URL fails gate.
-- [ ] Negative: attempted write to Starter fails gate.
-- [ ] Negative: attempted write to Presentation/Runtime/Client/Browser/Components packages fails gate.
-- [ ] Negative: generated functional JS outside approved visual zone fails gate.
+- [x] Positive: agent task package contains only handoff-local references.
+- [x] Positive: generated visual files land only in allowed generated zones.
+- [x] Positive: generated file manifest records agent-written files.
+- [x] Negative: attempted `@page` directive fails gate.
+- [x] Negative: attempted `HttpClient`, `fetch`, or direct Commerce Node URL fails gate.
+- [x] Negative: attempted write to Starter fails gate.
+- [x] Negative: attempted write to Presentation/Runtime/Client/Browser/Components packages fails gate.
+- [x] Negative: generated functional JS outside approved visual zone fails gate.
 
 Exit criteria:
 
-- [ ] Agent work is constrained by the plan and file ownership model.
-- [ ] Generated visuals can be inspected and regenerated safely.
+- [x] Agent work is constrained by the plan and file ownership model.
+- [x] Generated visuals can be inspected and regenerated safely.
+
+Phase 4.4 evidence:
+
+- Added `scripts/generate/write-agent-task-package.mjs` and wired handoff project generation to publish an agent task package under generated `docs/storefront-analysis/agent-task-package`.
+- Added `scripts/generate/record-agent-visual-writes.mjs` to validate agent-written files against `allowedOutputFiles`, reject route/transport/business/auth/SEO/server tokens, preserve required Presentation descriptors for product purchase visuals, and write `agent-written-files.json`.
+- Updated generated `docs/storefront-analysis/generated-files.yaml` after agent writes with `agentWrittenFiles` entries containing `filePath`, `sourcePlanEntryId`, checksum, and ownership.
+- Added `StorefrontBuilderAgentTaskPackageTests` covering package input boundaries, allowed visual writes, manifest recording, `@page`, transport/direct Commerce Node calls, DTO/business token rejection, protected package writes, Starter writes, and unplanned functional JS writes.
+- Manual probe passed for handoff-generated project under `obj/storefront-builder/generated/phase4-agent-package-probe/.../BlazorShop.Storefront.Phase4AgentPackageProbe`.
+- Manual write-recording probe passed for `Components/Catalog/ProductSummaryCard.razor`, producing `agent-written-files.json` and `agentWrittenFiles` manifest entries.
+- Task package forbidden-reference scan passed: no `captures/`, source analysis folders, Storefront V2 package references, or backend API package references were present in generated task package text files.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderAgentTaskPackageTests" --blame-hang --blame-hang-timeout 5m` (`14` passed).
 
 ## Phase 4.5 - Boundary, Manifest, And Ownership Gates
 
