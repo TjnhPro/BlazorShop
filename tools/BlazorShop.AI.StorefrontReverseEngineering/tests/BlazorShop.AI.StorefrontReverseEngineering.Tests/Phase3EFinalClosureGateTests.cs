@@ -69,6 +69,16 @@ public sealed class Phase3EFinalClosureGateTests
     }
 
     [Fact]
+    public void Phase3EFinalClosureGate_RunsStorefrontBuilderSmokeExactlyOnce()
+    {
+        var script = ReadPhase3EGateOnly();
+
+        Assert.Single(Regex.Matches(script, "Invoke-SreStorefrontBuilderSmoke"));
+        Assert.Contains("StorefrontBuilder smoke result:", ReadScript(), StringComparison.Ordinal);
+        Assert.DoesNotContain("run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Phase3EFinalClosureGate_FailsDirtyTree()
     {
         var script = ReadScript();
@@ -85,6 +95,12 @@ public sealed class Phase3EFinalClosureGateTests
         return File.ReadAllText(Path.Combine(root, "scripts", "qa", "run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1")) +
             Environment.NewLine +
             File.ReadAllText(Path.Combine(root, "scripts", "qa", "storefront-reverse-engineering-phase3-proof-steps.ps1"));
+    }
+
+    private static string ReadPhase3EGateOnly()
+    {
+        var root = GetRepoRoot();
+        return File.ReadAllText(Path.Combine(root, "scripts", "qa", "run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1"));
     }
 
     private static string GetRepoRoot()

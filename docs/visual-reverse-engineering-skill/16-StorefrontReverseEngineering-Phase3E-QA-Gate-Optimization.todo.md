@@ -294,15 +294,21 @@ Goal: preserve StorefrontBuilder compatibility proof, but only once per final ga
 
 Implementation checklist:
 
-- [ ] Keep plan-only StorefrontBuilder smoke in the final gate exactly once.
-- [ ] Do not run StorefrontBuilder smoke inside nested historical gates during the final closure path.
-- [ ] Keep standalone historical gates usable if someone runs them manually.
-- [ ] Keep the smoke result visible in the final report.
+- [x] Keep plan-only StorefrontBuilder smoke in the final gate exactly once.
+- [x] Do not run StorefrontBuilder smoke inside nested historical gates during the final closure path.
+- [x] Keep standalone historical gates usable if someone runs them manually.
+- [x] Keep the smoke result visible in the final report.
 
 Acceptance criteria:
 
-- [ ] StorefrontBuilder plan-only smoke runs once in the final closure path.
-- [ ] StorefrontBuilder smoke is not duplicated by nested gates.
+- [x] StorefrontBuilder plan-only smoke runs once in the final closure path.
+- [x] StorefrontBuilder smoke is not duplicated by nested gates.
+
+O7 evidence:
+
+- `run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1` contains exactly one `Invoke-SreStorefrontBuilderSmoke` call.
+- The final closure path does not invoke the Phase 3D gate, so standalone historical smoke remains available only when that gate is run directly.
+- The report still emits `StorefrontBuilder smoke result:`.
 
 ## Phase O8 - Make Boundary Scans Canonical
 
