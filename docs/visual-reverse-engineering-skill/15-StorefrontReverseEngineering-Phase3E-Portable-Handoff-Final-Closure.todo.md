@@ -71,10 +71,10 @@ Out of scope:
 ## P0 Blockers
 
 - [ ] P0-1: Handoff package is not portable because validators and manifests still depend on original project-root files.
-- [ ] P0-2: `visual-blueprint.json` and other handoff artifacts can carry consumer-looking references outside `analysis/agent-handoff/*`.
-- [ ] P0-3: Required consumer artifact set is incomplete for Phase 4 dry-run loading.
+- [x] P0-2: `visual-blueprint.json` and other handoff artifacts can carry consumer-looking references outside `analysis/agent-handoff/*`.
+- [x] P0-3: Required consumer artifact set is incomplete for Phase 4 dry-run loading.
 - [ ] P0-4: Evidence section slot provenance can still come from role text inference.
-- [ ] P0-5: Manifest schema and package hash are not portable across copied package locations.
+- [x] P0-5: Manifest schema and package hash are not portable across copied package locations.
 - [ ] P0-6: Final Phase 3 closure lacks a Phase 3E gate that proves isolated copy validation and no post-proof commits.
 
 ## Phase 3E.0 - Baseline And Contract Lock
@@ -153,7 +153,7 @@ Implementation checklist:
 - [x] Give the handoff blueprint artifact kind `agent-handoff-visual-blueprint`.
 - [x] Add explicit `consumerReferences` for handoff-local artifacts only.
 - [x] Add explicit `diagnosticProvenance` entries for original Phase 3 artifacts with `consumerReadable: false`.
-- [ ] Add handoff-specific normalized contracts where needed:
+- [x] Add handoff-specific normalized contracts where needed:
   - [x] `HandoffPageCompositions`
   - [x] `HandoffDesignTokens`
   - [x] `HandoffVisualStyle`
@@ -211,14 +211,14 @@ Implementation checklist:
   - [x] required/optional behavior.
   - [x] allowed target root.
   - [x] cycle policy.
-- [ ] Reference categories:
+- [x] Reference categories:
   - [x] `consumer-dependency`
   - [x] `diagnostic-provenance`
   - [x] `generated-target-path`
   - [x] `external-informational-url`
   - [x] `opaque-id`
 - [x] Add `HandoffReferenceScanner`.
-- [ ] Scan registered fields in:
+- [x] Scan registered fields in:
   - [x] manifest artifact list and entries.
   - [x] handoff visual blueprint.
   - [x] page compositions.
@@ -827,11 +827,11 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 
 ### Implementation Tasks
 
-- [ ] Implement Phase 3E.0 baseline and boundary lock.
-- [ ] Implement Phase 3E.1 portable package contract.
+- [x] Implement Phase 3E.0 baseline and boundary lock.
+- [x] Implement Phase 3E.1 portable package contract.
 - [x] Implement Phase 3E.2 handoff-specific consumer artifacts.
 - [x] Implement Phase 3E.3 typed reference containment.
-- [ ] Implement Phase 3E.4 manifest and schema hardening.
+- [x] Implement Phase 3E.4 manifest and schema hardening.
 - [ ] Implement Phase 3E.5 shared slot provenance.
 - [ ] Implement Phase 3E.6 portable validation commands.
 - [ ] Implement Phase 3E.7 consumer dry-run loader.
