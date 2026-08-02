@@ -94,17 +94,20 @@ public sealed class Phase3DProofFixtureTests
     [Fact]
     public void Phase3DFinalClosureGate_IsNoSkipCleanHeadGate()
     {
-        var script = File.ReadAllText(Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1"));
+        var script = ReadPhase3DGateAndHelper();
 
         Assert.DoesNotContain("SkipPhase3BGate", script, StringComparison.Ordinal);
         Assert.DoesNotContain("SkipStorefrontBuilderSmoke", script, StringComparison.Ordinal);
-        Assert.Contains("Assert-CleanWorkingTree", script, StringComparison.Ordinal);
-        Assert.Contains("Assert-HeadUnchanged", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-SreCleanWorkingTree", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-SreHeadUnchanged", script, StringComparison.Ordinal);
         Assert.Contains("Tested commit SHA", script, StringComparison.Ordinal);
         Assert.Contains("Final HEAD SHA", script, StringComparison.Ordinal);
-        Assert.Contains("Phase 3A regression gate", script, StringComparison.Ordinal);
-        Assert.Contains("Phase 3B gate", script, StringComparison.Ordinal);
-        Assert.Contains("Phase 3C gate", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("run-storefront-reverse-engineering-phase3a-gate.ps1", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("run-storefront-reverse-engineering-phase3b-gate.ps1", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3A regression fast subset", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3B multi-route CLI proof", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3C complete fixture proof", script, StringComparison.Ordinal);
         Assert.Contains("full ReverseEngineering tests", script, StringComparison.Ordinal);
         Assert.Contains("ConfidenceReview", script, StringComparison.Ordinal);
         Assert.Contains("StorefrontPattern|BlueprintV1", script, StringComparison.Ordinal);
@@ -120,6 +123,14 @@ public sealed class Phase3DProofFixtureTests
         Assert.Contains("StorefrontBuilder plan-only smoke", script, StringComparison.Ordinal);
         Assert.Contains("final inspect proof", script, StringComparison.Ordinal);
         Assert.Contains("GitHub Actions status: disabled/local proof primary", script, StringComparison.Ordinal);
+    }
+
+    private static string ReadPhase3DGateAndHelper()
+    {
+        var root = GetRepoRoot();
+        return File.ReadAllText(Path.Combine(root, "scripts", "qa", "run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1")) +
+            Environment.NewLine +
+            File.ReadAllText(Path.Combine(root, "scripts", "qa", "storefront-reverse-engineering-phase3-proof-steps.ps1"));
     }
 
     [Fact]

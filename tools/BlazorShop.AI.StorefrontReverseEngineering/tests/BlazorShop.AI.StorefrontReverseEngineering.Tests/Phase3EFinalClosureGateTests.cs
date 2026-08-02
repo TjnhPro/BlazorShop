@@ -18,23 +18,24 @@ public sealed class Phase3EFinalClosureGateTests
         Assert.DoesNotContain("SkipPortableProof", script, StringComparison.Ordinal);
         Assert.DoesNotContain("SkipStorefrontBuilderSmoke", script, StringComparison.Ordinal);
         Assert.DoesNotContain("AllowDirtyTree", script, StringComparison.Ordinal);
-        Assert.Contains("Assert-CleanWorkingTree", script, StringComparison.Ordinal);
-        Assert.Contains("Assert-HeadUnchanged", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-SreCleanWorkingTree", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-SreHeadUnchanged", script, StringComparison.Ordinal);
         Assert.Contains("Tested commit SHA", script, StringComparison.Ordinal);
         Assert.Contains("Final HEAD SHA", script, StringComparison.Ordinal);
         Assert.Contains("final HEAD check", script, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Phase3EFinalClosureGate_InvokesPhase3DOnce()
+    public void Phase3EFinalClosureGate_DoesNotInvokeNestedPhase3DGate()
     {
         var script = ReadScript();
 
-        Assert.Single(Regex.Matches(script, "run-storefront-reverse-engineering-phase3d-final-closure-gate\\.ps1"));
+        Assert.Empty(Regex.Matches(script, "run-storefront-reverse-engineering-phase3d-final-closure-gate\\.ps1"));
         Assert.DoesNotContain("run-storefront-reverse-engineering-phase3a-gate.ps1", script, StringComparison.Ordinal);
         Assert.DoesNotContain("run-storefront-reverse-engineering-phase3b-gate.ps1", script, StringComparison.Ordinal);
         Assert.DoesNotContain("run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1", script, StringComparison.Ordinal);
-        Assert.Contains("Phase 3D final closure gate", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3D correctness proof runs directly", script, StringComparison.Ordinal);
+        Assert.Contains("Invoke-SrePhase3DProof", script, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -54,9 +55,9 @@ public sealed class Phase3EFinalClosureGateTests
         Assert.Contains("negative portability mutation tests", script, StringComparison.Ordinal);
         Assert.Contains("boundary scans", script, StringComparison.Ordinal);
         Assert.Contains("StorefrontBuilder plan-only smoke", script, StringComparison.Ordinal);
-        Assert.Contains("final inspect-handoff proof", script, StringComparison.Ordinal);
+        Assert.Contains("final inspect proof", script, StringComparison.Ordinal);
         Assert.Contains("Full test count:", script, StringComparison.Ordinal);
-        Assert.Contains("Phase 3D gate result:", script, StringComparison.Ordinal);
+        Assert.Contains("Phase 3D proof result:", script, StringComparison.Ordinal);
         Assert.Contains("Portable package result:", script, StringComparison.Ordinal);
         Assert.Contains("Reference containment result:", script, StringComparison.Ordinal);
         Assert.Contains("Evidence slot provenance result:", script, StringComparison.Ordinal);
@@ -75,11 +76,16 @@ public sealed class Phase3EFinalClosureGateTests
         Assert.Contains("git status --porcelain", script, StringComparison.Ordinal);
         Assert.Contains("Working tree is dirty", script, StringComparison.Ordinal);
         Assert.Contains("clean tree check", script, StringComparison.Ordinal);
-        Assert.Contains("Assert-CleanWorkingTree", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-SreCleanWorkingTree", script, StringComparison.Ordinal);
     }
 
-    private static string ReadScript() =>
-        File.ReadAllText(Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1"));
+    private static string ReadScript()
+    {
+        var root = GetRepoRoot();
+        return File.ReadAllText(Path.Combine(root, "scripts", "qa", "run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1")) +
+            Environment.NewLine +
+            File.ReadAllText(Path.Combine(root, "scripts", "qa", "storefront-reverse-engineering-phase3-proof-steps.ps1"));
+    }
 
     private static string GetRepoRoot()
     {

@@ -113,24 +113,24 @@ Goal: Phase 3E must orchestrate proofs directly instead of calling the entire Ph
 
 Implementation checklist:
 
-- [ ] Split the Phase 3D and Phase 3E scripts into two layers:
-  - [ ] a reusable proof layer
-  - [ ] a top-level orchestration layer
-- [ ] Make the Phase 3E final gate call proof steps directly rather than invoking `run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`.
-- [ ] Keep the standalone Phase 3D final gate usable, but prevent it from being a nested dependency inside Phase 3E.
-- [ ] If skip flags are needed for compatibility, keep them narrow and explicit:
-  - [ ] `-SkipBuild`
-  - [ ] `-SkipFullTests`
-  - [ ] `-SkipNestedGates`
-  - [ ] `-SkipStorefrontBuilderSmoke`
-- [ ] Prefer a reusable helper surface over a web of new gate scripts.
-- [ ] Avoid introducing a new recursive gate chain.
+- [x] Split the Phase 3D and Phase 3E scripts into two layers:
+  - [x] a reusable proof layer
+  - [x] a top-level orchestration layer
+- [x] Make the Phase 3E final gate call proof steps directly rather than invoking `run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1`.
+- [x] Keep the standalone Phase 3D final gate usable, but prevent it from being a nested dependency inside Phase 3E.
+- [x] If skip flags are needed for compatibility, keep them narrow and explicit:
+  - [x] `-SkipBuild`
+  - [x] `-SkipFullTests`
+  - [x] `-SkipNestedGates`
+  - [x] `-SkipStorefrontBuilderSmoke`
+- [x] Prefer a reusable helper surface over a web of new gate scripts.
+- [x] Avoid introducing a new recursive gate chain.
 
 Acceptance criteria:
 
-- [ ] Phase 3E no longer calls Phase 3D as a nested gate.
-- [ ] No proof path calls another full gate recursively.
-- [ ] Standalone Phase 3A/3B/3C/3D scripts still work when run directly.
+- [x] Phase 3E no longer calls Phase 3D as a nested gate.
+- [x] No proof path calls another full gate recursively.
+- [x] Standalone Phase 3A/3B/3C/3D scripts still work when run directly.
 
 ## Phase O2 - Build Once And Propagate No-Build Execution
 
