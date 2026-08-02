@@ -576,34 +576,46 @@ Goal: allow bounded repair of generated-owned visual files based on build, bound
 
 Tasks:
 
-- [ ] Add a repair report format under generated `docs/storefront-analysis/repair-history.md` or equivalent.
-- [ ] Record each repair attempt:
-  - [ ] timestamp.
-  - [ ] failure source.
-  - [ ] failing file.
-  - [ ] plan entry id.
-  - [ ] attempted fix.
-  - [ ] result.
-  - [ ] remaining blockers.
-- [ ] Limit repair inputs to failed validation output, generation plan, and handoff package.
-- [ ] Limit repair writes to generated-owned files only.
-- [ ] Stop after a bounded number of repair attempts.
-- [ ] Escalate unresolved protected-file, route, transport, or business-logic issues to manual blockers.
-- [ ] Ensure repair cannot broaden scope or change generation plan without explicit re-plan.
+- [x] Add a repair report format under generated `docs/storefront-analysis/repair-history.md` or equivalent.
+- [x] Record each repair attempt:
+  - [x] timestamp.
+  - [x] failure source.
+  - [x] failing file.
+  - [x] plan entry id.
+  - [x] attempted fix.
+  - [x] result.
+  - [x] remaining blockers.
+- [x] Limit repair inputs to failed validation output, generation plan, and handoff package.
+- [x] Limit repair writes to generated-owned files only.
+- [x] Stop after a bounded number of repair attempts.
+- [x] Escalate unresolved protected-file, route, transport, or business-logic issues to manual blockers.
+- [x] Ensure repair cannot broaden scope or change generation plan without explicit re-plan.
 
 Tests:
 
-- [ ] Positive: CSS/layout failure can be repaired in generated-owned file.
-- [ ] Positive: missing slot markup can be repaired in generated-owned file.
-- [ ] Negative: repair attempt to modify protected file is blocked.
-- [ ] Negative: repair attempt to add `@page` is blocked.
-- [ ] Negative: repair attempt to add direct API call is blocked.
-- [ ] Negative: repeated repair failure stops with manual blocker.
+- [x] Positive: CSS/layout failure can be repaired in generated-owned file.
+- [x] Positive: missing slot markup can be repaired in generated-owned file.
+- [x] Negative: repair attempt to modify protected file is blocked.
+- [x] Negative: repair attempt to add `@page` is blocked.
+- [x] Negative: repair attempt to add direct API call is blocked.
+- [x] Negative: repeated repair failure stops with manual blocker.
 
 Exit criteria:
 
-- [ ] Repair loop improves generated visuals without weakening architectural boundaries.
-- [ ] All unresolved issues are visible in a durable report.
+- [x] Repair loop improves generated visuals without weakening architectural boundaries.
+- [x] All unresolved issues are visible in a durable report.
+
+Phase 4.7 evidence:
+
+- Added `scripts/qa/repair-visual-generation.mjs` as a bounded repair loop for handoff-generated projects. It reads only a failure report, `generation-plan.json`, and the generated agent task package manifest.
+- Repair writes are limited to agent-allowed generated-owned/visual-shell files and are revalidated through `scripts/generate/record-agent-visual-writes.mjs`.
+- Repair history is recorded in generated `docs/storefront-analysis/repair-history.md` with timestamp, failure source, failing file, plan entry id, attempted fix, result, and remaining blockers.
+- CSS/layout repair appends bounded responsive CSS stabilization to planned generated CSS; missing-slot repair appends a planned slot marker or required product purchase descriptors.
+- Protected-file, route declaration, direct transport/Commerce Node, and business/auth/SEO failures escalate to manual blockers instead of attempting code changes.
+- Max repair attempts stop with a durable manual-blocker history entry, and the script verifies `generation-plan.json` is unchanged after repair.
+- Manual smoke repair passed against `obj/storefront-builder/generated/phase4-boundary-probe/.../BlazorShop.Storefront.Phase4BoundaryProbe` using a synthetic overflow failure report.
+- Added `StorefrontBuilderHandoffRepairLoopTests` covering CSS/layout repair, missing-slot repair, protected-file blocker, `@page` blocker, direct API blocker, and repeated failure stop.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffRepairLoopTests" --blame-hang --blame-hang-timeout 5m` (`6` passed).
 
 ## Phase 4.8 - Regeneration And WhatIf Safety
 
