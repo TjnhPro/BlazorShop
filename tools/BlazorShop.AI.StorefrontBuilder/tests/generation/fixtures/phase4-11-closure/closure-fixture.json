@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "0.1.0",
+  "artifactKind": "storefront-builder-phase4-11-closure-fixture",
+  "artifactId": "phase4-11-closure-pilot",
+  "projectName": "BlazorShop.Storefront.Phase411ClosurePilot",
+  "storeKey": "sample",
+  "generatedOutputRoot": "obj/storefront-builder/generated/phase4-11-closure-pilot",
+  "pageViewportCoverage": [
+    {
+      "pageId": "home",
+      "route": "/",
+      "viewports": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  ],
+  "visualArtifactManifest": [
+    "visual-artifacts/visual-plan.json",
+    "visual-artifacts/visual-implementation-checklist.json",
+    "visual-artifacts/visual-checkpoints/phase4-11-closure-pilot/visual-checkpoint.json",
+    "visual-artifacts/visual-implementation-report.json",
+    "visual-artifacts/visual-qa-report.json",
+    "visual-artifacts/agent-written-files.json"
+  ],
+  "referenceEvidencePaths": [
+    "reference/home-desktop.reference.md"
+  ],
+  "notes": [
+    "Tracked fixture input only; generated storefront output must be produced under obj during the closure gate.",
+    "The portable-handoff directory is intentionally minimal for Phase 4.11 gate reproducibility checks."
+  ]
+}

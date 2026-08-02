@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "0.1.0",
+  "checkpointId": "phase4-11-closure-home-checkpoint",
+  "operationId": "phase4-11-closure-pilot",
+  "visualPlanHash": "sha256:phase4-11-closure-visual-plan",
+  "checklistHash": "sha256:phase4-11-closure-checklist",
+  "preEditSnapshotHash": "sha256:phase4-11-before",
+  "postEditSnapshotHash": "sha256:phase4-11-after",
+  "changedFiles": [
+    "Pages/Ssr/Home/HomePage.razor"
+  ],
+  "unexpectedFiles": [],
+  "sourceTreeSnapshotScope": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
+  "preEditFileHashes": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "sha256": "sha256:phase4-11-before-home"
+    }
+  ],
+  "postEditFileHashes": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "sha256": "sha256:phase4-11-after-home"
+    }
+  ],
+  "diffSummary": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "changeType": "modified"
+    }
+  ]
+}

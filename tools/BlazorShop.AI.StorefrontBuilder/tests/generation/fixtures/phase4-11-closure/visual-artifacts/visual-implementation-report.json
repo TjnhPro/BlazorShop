@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "0.1.0",
+  "operationId": "phase4-11-closure-pilot",
+  "checkpointPath": "docs/storefront-analysis/visual-checkpoints/phase4-11-closure-pilot/visual-checkpoint.json",
+  "beforeSnapshotHash": "sha256:phase4-11-before",
+  "afterSnapshotHash": "sha256:phase4-11-after",
+  "changedFiles": [
+    "Pages/Ssr/Home/HomePage.razor"
+  ],
+  "recorderResultPath": "docs/storefront-analysis/agent-written-files.json",
+  "buildResult": {
+    "status": "passed",
+    "command": "dotnet build BlazorShop.Storefront.Phase411ClosurePilot.csproj --no-restore"
+  },
+  "boundaryResult": {
+    "status": "passed",
+    "command": "node tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/record-agent-visual-writes.mjs --from-checkpoint docs/storefront-analysis/visual-checkpoints/phase4-11-closure-pilot/visual-checkpoint.json --closure-mode"
+  },
+  "unresolvedItems": []
+}

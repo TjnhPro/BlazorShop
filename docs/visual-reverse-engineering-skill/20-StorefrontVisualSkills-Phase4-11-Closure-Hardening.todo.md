@@ -493,29 +493,29 @@ Goal: remove hidden dependency on existing `obj` artifacts.
 
 Tasks:
 
-- [ ] Create a tracked Phase 4.11 closure fixture package:
-  - [ ] portable handoff input or minimal fixture able to produce it.
-  - [ ] expected project name and store key.
-  - [ ] expected page/viewport coverage.
-  - [ ] expected visual artifact manifest.
-  - [ ] reference evidence paths or approved reference evidence fixture.
-- [ ] Place fixture under the correct ownership path:
-  - [ ] StorefrontBuilder test fixture path when consumed directly by StorefrontBuilder closure.
-  - [ ] ReverseEngineering test fixture path only when it must be validated by ReverseEngineering test code.
-- [ ] Update final closure gate defaults:
-  - [ ] Do not default `PilotGeneratedProjectRoot` to a pre-existing generated project.
-  - [ ] Generate the pilot into `obj/storefront-builder/generated/...` during the gate.
-  - [ ] Clean/recreate the generated pilot output before use.
-  - [ ] Derive `PilotHandoffRoot` from the tracked fixture or copy it into `obj` from tracked source during the gate.
-- [ ] Ensure the gate fails if required tracked fixture files are missing.
-- [ ] Ensure the gate does not write generated output into tracked source.
-- [ ] Add deterministic cleanup rules:
-  - [ ] success cleans transient generated output unless report retention is explicitly configured.
-  - [ ] failure keeps enough report paths for investigation.
-- [ ] Add tests or scripted checks proving:
-  - [ ] missing fixture fails clearly.
-  - [ ] fresh generation happens during the gate.
-  - [ ] stale `obj` content is not reused.
+- [x] Create a tracked Phase 4.11 closure fixture package:
+  - [x] portable handoff input or minimal fixture able to produce it.
+  - [x] expected project name and store key.
+  - [x] expected page/viewport coverage.
+  - [x] expected visual artifact manifest.
+  - [x] reference evidence paths or approved reference evidence fixture.
+- [x] Place fixture under the correct ownership path:
+  - [x] StorefrontBuilder test fixture path when consumed directly by StorefrontBuilder closure.
+  - [x] ReverseEngineering test fixture path only when it must be validated by ReverseEngineering test code.
+- [x] Update final closure gate defaults:
+  - [x] Do not default `PilotGeneratedProjectRoot` to a pre-existing generated project.
+  - [x] Generate the pilot into `obj/storefront-builder/generated/...` during the gate.
+  - [x] Clean/recreate the generated pilot output before use.
+  - [x] Derive `PilotHandoffRoot` from the tracked fixture or copy it into `obj` from tracked source during the gate.
+- [x] Ensure the gate fails if required tracked fixture files are missing.
+- [x] Ensure the gate does not write generated output into tracked source.
+- [x] Add deterministic cleanup rules:
+  - [x] success cleans transient generated output unless report retention is explicitly configured.
+  - [x] failure keeps enough report paths for investigation.
+- [x] Add tests or scripted checks proving:
+  - [x] missing fixture fails clearly.
+  - [x] fresh generation happens during the gate.
+  - [x] stale `obj` content is not reused.
 
 Checks:
 
@@ -528,9 +528,21 @@ rg -n "Phase4VisualPilot|PilotGeneratedProjectRoot|PilotHandoffRoot|obj\\storefr
 
 DoD:
 
-- [ ] A clean checkout can run the final closure gate without pre-existing `obj` pilot artifacts.
-- [ ] Tracked fixture input is the only source of pilot truth.
-- [ ] Generated pilot output remains disposable.
+- [x] A clean checkout can run the final closure gate without pre-existing `obj` pilot artifacts.
+- [x] Tracked fixture input is the only source of pilot truth.
+- [x] Generated pilot output remains disposable.
+
+Evidence:
+
+- Added tracked fixture package under `tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/phase4-11-closure/` with project/store metadata, page viewport coverage, visual artifact manifest, reference evidence, portable-handoff marker, visual plan/checklist/checkpoint/report/QA, and auto-detected write evidence.
+- `run-storefront-phase4-final-closure-gate.ps1` no longer defaults `PilotGeneratedProjectRoot` to a pre-existing project; it derives the project path from `PilotGeneratedOutputRoot` and `PilotProjectName`.
+- The final gate now removes stale pilot output before generation, generates a fresh pilot under `obj/storefront-builder/generated/phase4-11-closure-pilot`, seeds tracked fixture artifacts into the fresh pilot, and copies tracked handoff input into obj.
+- Required tracked fixture artifacts are validated before generation, including `closure-fixture.json`, mandatory visual artifacts, reference evidence, and portable handoff marker.
+- Success cleanup deletes the disposable generated pilot output unless `-KeepGeneratedPilot` is supplied; failures retain generated/report paths for investigation.
+- `Test-Path tools\BlazorShop.AI.StorefrontBuilder` passed.
+- `Test-Path tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures` passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -Help` passed.
+- `rg -n "Phase4VisualPilot|PilotGeneratedProjectRoot|PilotHandoffRoot|obj\\storefront-reverse-engineering|fresh" scripts\qa docs\visual-reverse-engineering-skill tools` returned the expected final gate and historical-doc references.
 
 ## Phase 4.11.7 - Final End-To-End Closure
 

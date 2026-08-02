@@ -1,13 +1,17 @@
 param(
-    [string]$PilotGeneratedProjectRoot = "obj\storefront-builder\generated\BlazorShop.Storefront.Phase4VisualPilot",
-    [string]$PilotFixtureRoot = "obj\storefront-builder\generated\BlazorShop.Storefront.Phase4VisualPilot\docs\storefront-analysis\visual-fixtures",
-    [string]$PilotHandoffRoot = "obj\storefront-reverse-engineering\portable-handoff\root-006c38f3058b44fc8791e7298a99c36e",
+    [string]$ClosureFixtureRoot = "tools\BlazorShop.AI.StorefrontBuilder\tests\generation\fixtures\phase4-11-closure",
+    [string]$PilotGeneratedOutputRoot = "obj\storefront-builder\generated\phase4-11-closure-pilot",
+    [string]$PilotProjectName = "BlazorShop.Storefront.Phase411ClosurePilot",
+    [string]$PilotStoreKey = "sample",
+    [string]$PilotGeneratedProjectRoot = "",
+    [string]$PilotHandoffRoot = "",
     [string]$PilotBaseUrl = "http://127.0.0.1:18620",
     [string]$GeneratedProofOutputRoot = "obj\storefront-builder\generated\phase4-final-closure",
     [ValidateSet("FoundationFunctionalFast", "FoundationFunctionalFull")]
     [string]$FunctionalProofLevel = "FoundationFunctionalFast",
     [switch]$SkipFullFixtureProof,
     [switch]$RequireCommerceRegression,
+    [switch]$KeepGeneratedPilot,
     [int]$CommandTimeoutSeconds = 900,
     [switch]$Help
 )
@@ -21,14 +25,18 @@ function Show-Help {
     Write-Host "  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 [options]"
     Write-Host ""
     Write-Host "Options:"
-    Write-Host "  -PilotGeneratedProjectRoot <path>  Pilot generated storefront root."
-    Write-Host "  -PilotFixtureRoot <path>           Pilot visual fixture root."
-    Write-Host "  -PilotHandoffRoot <path>           Pilot portable handoff root."
+    Write-Host "  -ClosureFixtureRoot <path>         Tracked Phase 4.11 closure fixture root."
+    Write-Host "  -PilotGeneratedOutputRoot <path>   Disposable fresh pilot output root under obj/storefront-builder/generated."
+    Write-Host "  -PilotProjectName <name>           Fresh pilot project name."
+    Write-Host "  -PilotStoreKey <key>               Fresh pilot store key."
+    Write-Host "  -PilotGeneratedProjectRoot <path>  Optional override for pilot generated storefront root."
+    Write-Host "  -PilotHandoffRoot <path>           Optional override for copied pilot handoff root."
     Write-Host "  -PilotBaseUrl <url>                Running pilot generated storefront URL for runtime MVP visual proof."
     Write-Host "  -GeneratedProofOutputRoot <path>   Disposable generated proof output root."
     Write-Host "  -FunctionalProofLevel <level>      FoundationFunctionalFast or FoundationFunctionalFull. Defaults to FoundationFunctionalFast."
     Write-Host "  -SkipFullFixtureProof              Local-development escape hatch; invalid with FoundationFunctionalFull or -RequireCommerceRegression."
     Write-Host "  -RequireCommerceRegression         Require the full fixture wrapper, which runs run-commerce-regression.mjs."
+    Write-Host "  -KeepGeneratedPilot                Keep disposable fresh pilot output after success."
     Write-Host "  -CommandTimeoutSeconds <sec>       Timeout for each external command. Defaults to 900."
     Write-Host "  -Help                              Show this help text."
     Write-Host ""
@@ -51,6 +59,7 @@ $testedHead = ""
 $finalHead = ""
 $finalDecision = "failed"
 $runFullFixtureProof = $FunctionalProofLevel -eq "FoundationFunctionalFull" -or $RequireCommerceRegression
+$generatedPilotRetained = $true
 
 if ($SkipFullFixtureProof -and $runFullFixtureProof) {
     throw "-SkipFullFixtureProof cannot be combined with -FunctionalProofLevel FoundationFunctionalFull or -RequireCommerceRegression."
@@ -146,6 +155,22 @@ function Add-EvidencePath {
     }
 }
 
+function Copy-DirectoryContents {
+    param(
+        [Parameter(Mandatory = $true)][string]$Source,
+        [Parameter(Mandatory = $true)][string]$Destination
+    )
+
+    if (-not (Test-Path -LiteralPath $Source)) {
+        throw "Source directory is missing: $Source"
+    }
+
+    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
+    }
+}
+
 function Assert-CleanWorkingTree {
     $status = (& git status --porcelain=v1)
     if (-not [string]::IsNullOrWhiteSpace(($status -join "`n"))) {
@@ -236,6 +261,10 @@ function Save-GateReports {
         functionalProofLevel = $FunctionalProofLevel
         requireCommerceRegression = [bool]$RequireCommerceRegression
         skipFullFixtureProof = [bool]$SkipFullFixtureProof
+        closureFixtureRoot = Convert-ToRepoRelativePath $resolvedClosureFixtureRoot
+        pilotGeneratedProjectRoot = Convert-ToRepoRelativePath $resolvedPilotGeneratedProjectRoot
+        pilotHandoffRoot = Convert-ToRepoRelativePath $resolvedPilotHandoffRoot
+        generatedPilotRetained = $generatedPilotRetained
         evidencePaths = @($evidencePaths)
         gateSteps = @($steps)
         finalDecision = $Status
@@ -253,6 +282,10 @@ function Save-GateReports {
     $lines.Add("- Functional proof level: $FunctionalProofLevel")
     $lines.Add("- Require commerce regression: $([bool]$RequireCommerceRegression)")
     $lines.Add("- Skip full fixture proof: $([bool]$SkipFullFixtureProof)")
+    $lines.Add("- Closure fixture root: $(Convert-ToRepoRelativePath $resolvedClosureFixtureRoot)")
+    $lines.Add("- Pilot generated project root: $(Convert-ToRepoRelativePath $resolvedPilotGeneratedProjectRoot)")
+    $lines.Add("- Pilot handoff root: $(Convert-ToRepoRelativePath $resolvedPilotHandoffRoot)")
+    $lines.Add("- Generated pilot retained: $generatedPilotRetained")
     $lines.Add("- GitHub Actions: not required")
     if (-not [string]::IsNullOrWhiteSpace($ErrorMessage)) {
         $lines.Add("- Error: $ErrorMessage")
@@ -281,6 +314,19 @@ function Save-GateReports {
 
     Set-Content -LiteralPath $mdPath -Value $lines -Encoding UTF8
     return $mdPath
+}
+
+$resolvedClosureFixtureRoot = Resolve-RepoPath $ClosureFixtureRoot
+$resolvedPilotGeneratedOutputRoot = Resolve-RepoPath $PilotGeneratedOutputRoot
+$resolvedPilotGeneratedProjectRoot = if ([string]::IsNullOrWhiteSpace($PilotGeneratedProjectRoot)) {
+    Join-Path $resolvedPilotGeneratedOutputRoot $PilotProjectName
+} else {
+    Resolve-RepoPath $PilotGeneratedProjectRoot
+}
+$resolvedPilotHandoffRoot = if ([string]::IsNullOrWhiteSpace($PilotHandoffRoot)) {
+    Join-Path $resolvedPilotGeneratedOutputRoot "portable-handoff"
+} else {
+    Resolve-RepoPath $PilotHandoffRoot
 }
 
 try {
@@ -336,6 +382,25 @@ try {
         "tools\BlazorShop.AI.Visual\scripts\validate-visual-examples.mjs"
     ) -LikelyCause "A visual schema or example artifact is invalid."
 
+    Invoke-AssertionStep -Name "validate tracked Phase 4.11 closure fixture" -Command "Test-Path tracked closure fixture artifacts" -LikelyCause "The tracked StorefrontBuilder Phase 4.11 closure fixture was moved or is incomplete." -Assertion {
+        foreach ($path in @(
+            "closure-fixture.json",
+            "visual-artifacts\visual-plan.json",
+            "visual-artifacts\visual-implementation-checklist.json",
+            "visual-artifacts\visual-implementation-report.json",
+            "visual-artifacts\visual-qa-report.json",
+            "visual-artifacts\agent-written-files.json",
+            "visual-artifacts\visual-checkpoints\phase4-11-closure-pilot\visual-checkpoint.json",
+            "reference\home-desktop.reference.md",
+            "portable-handoff\README.md"
+        )) {
+            $fullPath = Join-Path $resolvedClosureFixtureRoot $path
+            if (-not (Test-Path -LiteralPath $fullPath)) {
+                throw "Required tracked closure fixture artifact is missing: $(Convert-ToRepoRelativePath $fullPath)"
+            }
+        }
+    }
+
     Invoke-AssertionStep -Name "StorefrontBuilder visual helper availability" -Command "StorefrontBuilder helper file checks" -LikelyCause "A required StorefrontBuilder Phase 4 helper is missing." -Assertion {
         foreach ($path in @(
             "scripts\generate\record-agent-visual-writes.mjs",
@@ -348,6 +413,38 @@ try {
                 throw "Required StorefrontBuilder helper is missing: $(Convert-ToRepoRelativePath $fullPath)"
             }
         }
+    }
+
+    Invoke-AssertionStep -Name "prepare fresh generated pilot output" -Command "remove stale obj pilot output" -LikelyCause "The disposable pilot output root could not be cleaned before fresh generation." -Assertion {
+        if (Test-Path -LiteralPath $resolvedPilotGeneratedOutputRoot) {
+            Remove-Item -LiteralPath $resolvedPilotGeneratedOutputRoot -Recurse -Force
+        }
+
+        if (Test-Path -LiteralPath $resolvedPilotGeneratedOutputRoot) {
+            throw "Fresh pilot output root still exists after cleanup: $(Convert-ToRepoRelativePath $resolvedPilotGeneratedOutputRoot)"
+        }
+    }
+
+    Invoke-GateCommand -Name "generate fresh Phase 4.11 pilot from tracked fixture defaults" -FileName (Get-PreferredPowerShell) -Arguments @(
+        "-NoProfile", "-ExecutionPolicy", "Bypass",
+        "-File", "tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1",
+        "-Name", $PilotProjectName,
+        "-StoreKey", $PilotStoreKey,
+        "-OutputRoot", $resolvedPilotGeneratedOutputRoot,
+        "-Mode", "generate",
+        "-Force"
+    ) -LikelyCause "Fresh pilot generation from Starter failed."
+
+    Invoke-AssertionStep -Name "seed tracked closure visual artifacts into fresh pilot" -Command "copy tracked fixture visual/reference artifacts" -LikelyCause "Tracked closure fixture artifacts could not be copied into disposable generated output." -Assertion {
+        $analysisRoot = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
+        if (-not (Test-Path -LiteralPath $analysisRoot)) {
+            throw "Generated pilot analysis root is missing: $(Convert-ToRepoRelativePath $analysisRoot)"
+        }
+
+        Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "visual-artifacts") -Destination $analysisRoot
+        Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "reference") -Destination (Join-Path $analysisRoot "reference")
+        Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "portable-handoff") -Destination $resolvedPilotHandoffRoot
+        Set-Content -LiteralPath (Join-Path $analysisRoot "fresh-generation-marker.txt") -Value "fresh generated during Phase 4.11 final closure gate" -Encoding UTF8
     }
 
     if ($FunctionalProofLevel -eq "FoundationFunctionalFast") {
@@ -382,20 +479,36 @@ try {
     Invoke-GateCommand -Name "run Phase 4 MVP pilot gate" -FileName (Get-PreferredPowerShell) -Arguments @(
         "-NoProfile", "-ExecutionPolicy", "Bypass",
         "-File", "scripts\qa\run-storefront-phase4-mvp-gate.ps1",
-        "-GeneratedProjectRoot", $PilotGeneratedProjectRoot,
+        "-GeneratedProjectRoot", $resolvedPilotGeneratedProjectRoot,
         "-ProofMode", "Runtime",
         "-BaseUrl", $PilotBaseUrl,
-        "-HandoffRoot", $PilotHandoffRoot,
+        "-HandoffRoot", $resolvedPilotHandoffRoot,
         "-SkipRepair",
         "-CommandTimeoutSeconds", $CommandTimeoutSeconds
     ) -LikelyCause "The pilot generated storefront no longer proves the Phase 4 MVP workflow."
-    $pilotAnalysisRoot = Join-Path (Resolve-RepoPath $PilotGeneratedProjectRoot) "docs\storefront-analysis"
+    $pilotAnalysisRoot = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
     Add-EvidencePath (Join-Path $pilotAnalysisRoot "phase4-mvp-gate-report.md")
     Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-report.md")
 
     Invoke-AssertionStep -Name "final HEAD and clean tree check" -Command "git rev-parse HEAD; git status --porcelain=v1" -LikelyCause "A gate step changed tracked source files or HEAD." -Assertion {
         Assert-HeadUnchanged
         Assert-CleanWorkingTree
+    }
+
+    Invoke-AssertionStep -Name "cleanup disposable generated pilot output" -Command "Remove-Item obj/storefront-builder/generated/phase4-11-closure-pilot" -LikelyCause "The disposable generated pilot output could not be cleaned after success." -Assertion {
+        if ($KeepGeneratedPilot) {
+            return
+        }
+
+        if (Test-Path -LiteralPath $resolvedPilotGeneratedOutputRoot) {
+            Remove-Item -LiteralPath $resolvedPilotGeneratedOutputRoot -Recurse -Force
+        }
+
+        if (Test-Path -LiteralPath $resolvedPilotGeneratedOutputRoot) {
+            throw "Disposable pilot output still exists after cleanup: $(Convert-ToRepoRelativePath $resolvedPilotGeneratedOutputRoot)"
+        }
+
+        $script:generatedPilotRetained = $false
     }
 
     $finalDecision = "passed"

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "0.1.0",
+  "checklistId": "phase4-11-closure-home-checklist",
+  "sourceVisualPlanHash": "sha256:phase4-11-closure-visual-plan",
+  "fileTasks": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "taskIds": [
+        "home.hero"
+      ],
+      "status": "completed"
+    },
+    {
+      "filePath": "wwwroot/css/storefront-builder.generated.css",
+      "taskIds": [
+        "home.hero"
+      ],
+      "status": "completed"
+    }
+  ],
+  "acceptanceChecks": [
+    "No @page directives are added.",
+    "No browser transport or Commerce Node API calls are added.",
+    "Generated output remains under obj during the closure gate."
+  ],
+  "requiredScreenshots": [
+    "desktop",
+    "tablet",
+    "mobile"
+  ],
+  "forbiddenEdits": [
+    "Program.cs",
+    "StorefrontPackageVersions.props",
+    "BlazorShop.Storefront.Phase411ClosurePilot.csproj"
+  ]
+}

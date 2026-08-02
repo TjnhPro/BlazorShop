@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "0.1.0",
+  "operationId": "phase4-11-closure-pilot",
+  "referenceEvidenceReviewed": true,
+  "runtimeEvidencePaths": [
+    "docs/storefront-analysis/visual-qa/home-desktop.png",
+    "docs/storefront-analysis/visual-qa/home-tablet.png",
+    "docs/storefront-analysis/visual-qa/home-mobile.png"
+  ],
+  "referenceEvidencePaths": [
+    "docs/storefront-analysis/reference/home-desktop.reference.md"
+  ],
+  "pageViewportCoverage": [
+    {
+      "pageId": "home",
+      "viewports": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  ],
+  "independentReviewer": "phase4-11-closure-fixture",
+  "comparisonDimensions": [
+    "layout",
+    "typography",
+    "color",
+    "responsive",
+    "ecommerce-slot-coverage"
+  ],
+  "acceptedDifferences": [],
+  "unacceptedCriticalCount": 0,
+  "unacceptedMajorCount": 0,
+  "finalDecision": "passed",
+  "viewportCaptures": [
+    {
+      "pageId": "home",
+      "viewport": "desktop",
+      "screenshotPath": "docs/storefront-analysis/visual-qa/home-desktop.png",
+      "status": "passed"
+    },
+    {
+      "pageId": "home",
+      "viewport": "tablet",
+      "screenshotPath": "docs/storefront-analysis/visual-qa/home-tablet.png",
+      "status": "passed"
+    },
+    {
+      "pageId": "home",
+      "viewport": "mobile",
+      "screenshotPath": "docs/storefront-analysis/visual-qa/home-mobile.png",
+      "status": "passed"
+    }
+  ],
+  "evidencePaths": [
+    "docs/storefront-analysis/visual-qa-report.md"
+  ],
+  "issues": [],
+  "repairAttempts": [
+    {
+      "attempt": 0,
+      "source": "no-repair-attempted",
+      "status": "skipped"
+    }
+  ],
+  "passed": true
+}

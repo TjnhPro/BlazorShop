@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "0.1.0",
+  "operationId": "phase4-11-closure-pilot",
+  "projectName": "BlazorShop.Storefront.Phase411ClosurePilot",
+  "storeKey": "sample",
+  "handoffHash": "sha256:phase4-11-closure-handoff",
+  "generationPlanHash": "sha256:phase4-11-closure-generation-plan",
+  "taskPackageHash": "sha256:phase4-11-closure-task-package",
+  "pages": [
+    {
+      "id": "home",
+      "route": "/",
+      "priority": 1
+    }
+  ],
+  "pageViewportCoverage": [
+    {
+      "pageId": "home",
+      "viewports": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  ],
+  "visualSlots": [
+    {
+      "id": "home.hero",
+      "pageId": "home",
+      "targetFiles": [
+        "Pages/Ssr/Home/HomePage.razor",
+        "wwwroot/css/storefront-builder.generated.css"
+      ],
+      "status": "planned"
+    }
+  ],
+  "allowedFiles": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
+  "plannedGeneratedOwnedFiles": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
+  "protectedFiles": [
+    "Program.cs",
+    "StorefrontPackageVersions.props",
+    "BlazorShop.Storefront.Phase411ClosurePilot.csproj"
+  ],
+  "implementationOrder": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
+  "risks": [],
+  "blockers": []
+}
