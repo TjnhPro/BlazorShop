@@ -1,4 +1,5 @@
 using System.Text.Json;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Handoff;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.StorefrontPattern;
@@ -34,6 +35,7 @@ public sealed class PageCompositionSlotValidator
             .ToDictionary(group => group.Key, group => group.Select(pair => pair.Component).ToArray(), StringComparer.Ordinal);
         var knownSlots = catalogBySlot.Keys.ToHashSet(StringComparer.Ordinal);
         var mappingsById = mappings.Mappings.ToDictionary(mapping => mapping.SourceCandidateId, StringComparer.Ordinal);
+        var slotResolver = new SectionSlotResolver(mappings.Mappings, catalog.Components);
 
         foreach (var composition in compositions.Compositions)
         {
@@ -53,7 +55,7 @@ public sealed class PageCompositionSlotValidator
                 .Concat(contract.RepeatableSlotIds)
                 .Concat(contract.AllowedAdditionalSlotIds)
                 .ToHashSet(StringComparer.Ordinal);
-            var observed = CollectObservedSlots(composition, contract, mappings.Mappings, mappingsById, catalogBySlot);
+            var observed = CollectObservedSlots(composition, contract, mappings.Mappings, slotResolver);
             foreach (var missing in contract.RequiredSlotIds.Where(slot => !observed.Sources.ContainsKey(slot)))
             {
                 var suggested = observed.Suggestions.Any(suggestion => string.Equals(suggestion.SlotId, missing, StringComparison.Ordinal));
@@ -117,12 +119,11 @@ public sealed class PageCompositionSlotValidator
         PageComposition composition,
         StorefrontPageContract contract,
         IReadOnlyList<PresentationMapping> mappings,
-        IReadOnlyDictionary<string, PresentationMapping> mappingsById,
-        IReadOnlyDictionary<string, PresentationCatalogEntry[]> catalogBySlot)
+        SectionSlotResolver slotResolver)
     {
         var sources = new Dictionary<string, HashSet<SlotObservationSource>>(StringComparer.Ordinal);
         var suggestions = new List<SlotObservationSource>();
-        if (!string.IsNullOrWhiteSpace(composition.TargetViewSlot) && ContractAllowsSlot(contract, composition.TargetViewSlot))
+        if (!string.IsNullOrWhiteSpace(composition.TargetViewSlot) && SectionSlotResolver.ContractAllowsSlot(contract, composition.TargetViewSlot))
         {
             AddObservation(
                 sources,
@@ -141,7 +142,7 @@ public sealed class PageCompositionSlotValidator
             AddObservation(
                 sources,
                 new SlotObservationSource(
-                    "reviewed-mapping",
+                    SectionSlotResolver.ReviewedPresentationMappingSource,
                     mapping.SourceCandidateId,
                     composition.PageId,
                     mapping.SourceSectionId,
@@ -152,64 +153,30 @@ public sealed class PageCompositionSlotValidator
 
         foreach (var node in Flatten(composition.SectionTree))
         {
-            if (!string.IsNullOrWhiteSpace(node.ComponentMappingRef) && mappingsById.TryGetValue(node.ComponentMappingRef, out var mapping))
+            var resolution = slotResolver.Resolve(composition, node, contract);
+            if (resolution.HasAuthoritativeSlot)
             {
                 AddObservation(
                     sources,
                     new SlotObservationSource(
-                        "reviewed-mapping",
-                        mapping.SourceCandidateId,
-                        composition.PageId,
-                        node.NodeId,
-                        mapping.SourceCandidateId,
-                        mapping.StarterSlotId,
-                        mapping.TargetGeneratedPath));
+                        resolution.SlotSource,
+                        resolution.MappingId ?? resolution.SourceSectionId + ":" + resolution.StarterSlotId,
+                        resolution.SourcePageId,
+                        resolution.SourceSectionId,
+                        resolution.MappingId,
+                        resolution.StarterSlotId,
+                        resolution.TargetPath));
             }
 
-            if (string.IsNullOrWhiteSpace(node.ComponentMappingRef))
-            {
-                foreach (var slot in ExactSlotsForTargetPath(node.TargetFilePath, catalogBySlot))
-                {
-                    AddObservation(
-                        sources,
-                        new SlotObservationSource(
-                            "catalog-target",
-                            node.NodeId + ":" + node.TargetFilePath,
-                            composition.PageId,
-                            node.NodeId,
-                            node.ComponentMappingRef,
-                            slot,
-                            node.TargetFilePath));
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionId) && !string.IsNullOrWhiteSpace(node.TargetGeneratedZone))
-            {
-                var extensionSlot = ContractAllowsSlot(contract, node.TargetGeneratedZone)
-                    ? node.TargetGeneratedZone
-                    : contract.AllowedAdditionalSlotIds.FirstOrDefault(slot => node.TargetGeneratedZone.Contains(slot.Split('.').Last(), StringComparison.OrdinalIgnoreCase));
-                AddObservation(
-                    sources,
-                    new SlotObservationSource(
-                        "approved-extension",
-                        node.ApprovedVisualExtensionId,
-                        composition.PageId,
-                        node.NodeId,
-                        node.ComponentMappingRef,
-                        extensionSlot,
-                        node.TargetFilePath));
-            }
-
-            var suggested = SuggestSlotFromRole(composition.PageArchetype, node.Role);
-            if (!string.IsNullOrWhiteSpace(suggested))
+            if (!string.IsNullOrWhiteSpace(resolution.SuggestedSlotId))
             {
                 suggestions.Add(new SlotObservationSource(
                     "role-suggestion",
-                    node.NodeId + ":" + suggested,
+                    node.NodeId + ":" + resolution.SuggestedSlotId,
                     composition.PageId,
                     node.NodeId,
                     node.ComponentMappingRef,
-                    suggested,
+                    resolution.SuggestedSlotId,
                     node.TargetFilePath));
             }
         }
@@ -236,7 +203,8 @@ public sealed class PageCompositionSlotValidator
 
         if (!string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionId) &&
             !node.ProtectedBehaviorMarkers.Any() &&
-            !string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionReason))
+            !string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionReason) &&
+            nodeSources.Any(source => string.Equals(source.SourceKind, SectionSlotResolver.ApprovedVisualExtensionSource, StringComparison.Ordinal)))
         {
             return;
         }
@@ -391,27 +359,6 @@ public sealed class PageCompositionSlotValidator
         }
     }
 
-    private static string? SuggestSlotFromRole(string pageArchetype, string role)
-    {
-        if (role.Contains("header", StringComparison.OrdinalIgnoreCase)) return "layout.header";
-        if (role.Contains("footer", StringComparison.OrdinalIgnoreCase)) return "layout.footer";
-        if (role.Contains("navigation", StringComparison.OrdinalIgnoreCase) || role.Contains("nav", StringComparison.OrdinalIgnoreCase)) return "layout.main-navigation";
-        if (role.Contains("product card", StringComparison.OrdinalIgnoreCase)) return "catalog.product-card";
-        if (role.Contains("filter", StringComparison.OrdinalIgnoreCase)) return "catalog.filters";
-        if (role.Contains("sort", StringComparison.OrdinalIgnoreCase)) return "catalog.sorting";
-        if (role.Contains("pagination", StringComparison.OrdinalIgnoreCase)) return "catalog.pagination";
-        if (role.Contains("gallery", StringComparison.OrdinalIgnoreCase) || role.Contains("media gallery", StringComparison.OrdinalIgnoreCase)) return "product.gallery";
-        if (role.Contains("purchase", StringComparison.OrdinalIgnoreCase) || role.Contains("add-to-cart", StringComparison.OrdinalIgnoreCase)) return "product.purchase";
-        if (role.Contains("information", StringComparison.OrdinalIgnoreCase) || role.Contains("description", StringComparison.OrdinalIgnoreCase)) return "product.information";
-        if (role.Contains("review", StringComparison.OrdinalIgnoreCase)) return "product.reviews";
-        if (role.Contains("related", StringComparison.OrdinalIgnoreCase)) return "product.related-products";
-        if (role.Contains("cart", StringComparison.OrdinalIgnoreCase)) return "cart.page";
-        if (role.Contains("checkout", StringComparison.OrdinalIgnoreCase)) return "checkout.page";
-        if (role.Contains("account", StringComparison.OrdinalIgnoreCase) || role.Contains("auth", StringComparison.OrdinalIgnoreCase)) return "account.shell";
-        if (role.Contains("error", StringComparison.OrdinalIgnoreCase) || role.Contains("not found", StringComparison.OrdinalIgnoreCase) || role.Contains("maintenance", StringComparison.OrdinalIgnoreCase)) return "system.error";
-        return pageArchetype.Contains("home", StringComparison.OrdinalIgnoreCase) ? "home.sections" : null;
-    }
-
     private static IEnumerable<string> SlotsForTargetPath(string? targetPath, IReadOnlyDictionary<string, PresentationCatalogEntry[]> catalogBySlot)
     {
         if (string.IsNullOrWhiteSpace(targetPath))
@@ -428,24 +375,12 @@ public sealed class PageCompositionSlotValidator
         }
     }
 
-    private static IEnumerable<string> ExactSlotsForTargetPath(string? targetPath, IReadOnlyDictionary<string, PresentationCatalogEntry[]> catalogBySlot)
-    {
-        var slots = SlotsForTargetPath(targetPath, catalogBySlot).Distinct(StringComparer.Ordinal).ToArray();
-        return slots.Length == 1 ? slots : [];
-    }
-
     private static IReadOnlyList<string> ProtectedPathMarkers() =>
         ["starter-generation.contract.yaml", "StorefrontPackageVersions.props", "BlazorShop.Storefront.Presentation"];
 
-    private static bool ContractAllowsSlot(StorefrontPageContract contract, string slot) =>
-        contract.RequiredSlotIds.Contains(slot, StringComparer.Ordinal) ||
-        contract.OptionalSlotIds.Contains(slot, StringComparer.Ordinal) ||
-        contract.RepeatableSlotIds.Contains(slot, StringComparer.Ordinal) ||
-        contract.AllowedAdditionalSlotIds.Contains(slot, StringComparer.Ordinal);
-
     private static string SourceIdentity(SlotObservationSource source) =>
         !string.IsNullOrWhiteSpace(source.SectionNodeId) ? source.SectionNodeId! :
-        source.SourceKind == "reviewed-mapping" && !string.IsNullOrWhiteSpace(source.SlotId) ? "page-level:" + source.SlotId :
+        source.SourceKind == SectionSlotResolver.ReviewedPresentationMappingSource && !string.IsNullOrWhiteSpace(source.SlotId) ? "page-level:" + source.SlotId :
         source.SourceId;
 
     private static void AddObservation(Dictionary<string, HashSet<SlotObservationSource>> sources, SlotObservationSource source)

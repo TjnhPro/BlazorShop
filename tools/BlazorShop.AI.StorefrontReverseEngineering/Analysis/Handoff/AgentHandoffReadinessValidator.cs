@@ -366,6 +366,78 @@ public sealed class AgentHandoffReadinessValidator
                 findings.Add(Block("evidence-labeled-production-safe", $"Section evidence must not be labeled production-safe: {section.HandoffPath}", section.HandoffPath));
             }
         }
+
+        AddEvidenceSlotProvenanceFindings(root, manifest, findings);
+    }
+
+    private static void AddEvidenceSlotProvenanceFindings(
+        string root,
+        AgentHandoffEvidenceManifest manifest,
+        List<AgentHandoffReadinessFinding> findings)
+    {
+        var mappings = Read<PresentationMappingsDocument>(root, "analysis/agent-handoff/presentation-mappings.json");
+        var pattern = Read<StorefrontPatternContract>(root, "analysis/agent-handoff/storefront-pattern.json");
+        var compositions = Read<HandoffPageCompositions>(root, "analysis/agent-handoff/page-compositions.json");
+        var mappingsById = mappings?.Mappings.ToDictionary(mapping => mapping.SourceCandidateId, StringComparer.Ordinal)
+            ?? new Dictionary<string, PresentationMapping>(StringComparer.Ordinal);
+        var knownSlots = pattern?.Slots.Select(slot => slot.SlotId).ToHashSet(StringComparer.Ordinal)
+            ?? new HashSet<string>(StringComparer.Ordinal);
+        var nodesByPageAndSection = compositions?.Compositions
+            .SelectMany(composition => composition.SectionTree.SelectMany(Flatten).Select(node => (composition.PageId, Node: node)))
+            .GroupBy(item => item.PageId + "\u001f" + item.Node.NodeId, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First().Node, StringComparer.Ordinal)
+            ?? new Dictionary<string, PageCompositionNode>(StringComparer.Ordinal);
+
+        foreach (var page in manifest.Pages)
+        {
+            foreach (var section in page.Sections)
+            {
+                if (!string.IsNullOrWhiteSpace(section.StarterSlotId) && knownSlots.Count > 0 && !knownSlots.Contains(section.StarterSlotId))
+                {
+                    findings.Add(Block("unknown-slot", $"Evidence section '{section.SectionId}' references unknown starter slot '{section.StarterSlotId}'.", "analysis/agent-handoff/evidence-manifest.json"));
+                }
+
+                if (string.Equals(section.SlotSource, SectionSlotResolver.ReviewedPresentationMappingSource, StringComparison.Ordinal))
+                {
+                    if (string.IsNullOrWhiteSpace(section.StarterSlotId) || string.IsNullOrWhiteSpace(section.MappingId))
+                    {
+                        findings.Add(Block("evidence-slot-mapping-missing", $"Evidence section '{section.SectionId}' has reviewed mapping slot source without starter slot or mapping ID.", "analysis/agent-handoff/evidence-manifest.json"));
+                        continue;
+                    }
+
+                    if (!mappingsById.TryGetValue(section.MappingId, out var mapping))
+                    {
+                        findings.Add(Block("evidence-slot-mapping-missing", $"Evidence section '{section.SectionId}' references missing handoff mapping '{section.MappingId}'.", "analysis/agent-handoff/presentation-mappings.json"));
+                        continue;
+                    }
+
+                    if (!string.Equals(mapping.StarterSlotId, section.StarterSlotId, StringComparison.Ordinal) ||
+                        !string.Equals(mapping.SourcePageId, page.PageId, StringComparison.Ordinal) ||
+                        !string.Equals(mapping.SourceSectionId, section.SectionId, StringComparison.Ordinal))
+                    {
+                        findings.Add(Block("evidence-slot-mapping-mismatch", $"Evidence section '{section.SectionId}' slot provenance does not match handoff mapping '{section.MappingId}'.", "analysis/agent-handoff/evidence-manifest.json"));
+                    }
+                }
+                else if (string.Equals(section.SlotSource, SectionSlotResolver.ApprovedVisualExtensionSource, StringComparison.Ordinal))
+                {
+                    var nodeKey = page.PageId + "\u001f" + section.SectionId;
+                    var hasReviewedExtension = nodesByPageAndSection.TryGetValue(nodeKey, out var node) &&
+                        !string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionId) &&
+                        !string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionReason) &&
+                        node.ProtectedBehaviorMarkers.Count == 0 &&
+                        !string.IsNullOrWhiteSpace(section.StarterSlotId);
+                    if (!hasReviewedExtension)
+                    {
+                        findings.Add(Block("approved-visual-extension-slot-unreviewed", $"Evidence section '{section.SectionId}' uses approved visual extension slot source without reviewed extension metadata.", "analysis/agent-handoff/evidence-manifest.json"));
+                    }
+                }
+                else if (!string.Equals(section.SlotSource, SectionSlotResolver.ExactStorefrontContractSource, StringComparison.Ordinal) &&
+                    !string.Equals(section.SlotSource, SectionSlotResolver.UnresolvedSource, StringComparison.Ordinal))
+                {
+                    findings.Add(Block("evidence-slot-source-invalid", $"Evidence section '{section.SectionId}' has unknown slot source '{section.SlotSource}'.", "analysis/agent-handoff/evidence-manifest.json"));
+                }
+            }
+        }
     }
 
     private static void AddTaskContractFindings(string root, List<AgentHandoffReadinessFinding> findings)
@@ -434,6 +506,15 @@ public sealed class AgentHandoffReadinessValidator
         if (!string.Equals(actual, expectedHash, StringComparison.Ordinal))
         {
             findings.Add(Block("evidence-hash-mismatch", $"Evidence hash mismatch for {handoffPath}.", handoffPath));
+        }
+    }
+
+    private static IEnumerable<PageCompositionNode> Flatten(PageCompositionNode node)
+    {
+        yield return node;
+        foreach (var child in node.Children.SelectMany(Flatten))
+        {
+            yield return child;
         }
     }
 

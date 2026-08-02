@@ -73,7 +73,7 @@ Out of scope:
 - [ ] P0-1: Handoff package is not portable because validators and manifests still depend on original project-root files.
 - [x] P0-2: `visual-blueprint.json` and other handoff artifacts can carry consumer-looking references outside `analysis/agent-handoff/*`.
 - [x] P0-3: Required consumer artifact set is incomplete for Phase 4 dry-run loading.
-- [ ] P0-4: Evidence section slot provenance can still come from role text inference.
+- [x] P0-4: Evidence section slot provenance can still come from role text inference.
 - [x] P0-5: Manifest schema and package hash are not portable across copied package locations.
 - [ ] P0-6: Final Phase 3 closure lacks a Phase 3E gate that proves isolated copy validation and no post-proof commits.
 
@@ -306,39 +306,39 @@ Goal: evidence packaging must use reviewed mapping/catalog slot provenance, not 
 
 Implementation checklist:
 
-- [ ] Extract shared `SectionSlotResolver` used by:
-  - [ ] `PageCompositionSlotValidator`
-  - [ ] `AgentHandoffEvidencePackager`
+- [x] Extract shared `SectionSlotResolver` used by:
+  - [x] `PageCompositionSlotValidator`
+  - [x] `AgentHandoffEvidencePackager`
   - [ ] portable consumer loader
-- [ ] Resolver output:
-  - [ ] exact `starterSlotId`.
-  - [ ] `slotSource`.
-  - [ ] mapping ID.
-  - [ ] source section ID.
-  - [ ] source page ID.
-  - [ ] target path.
-  - [ ] diagnostic `suggestedSlotId`.
-  - [ ] problem/cause/fix suggestion when unresolved.
-- [ ] Replace evidence manifest's ambiguous slot field with:
-  - [ ] `starterSlotId`
-  - [ ] `slotSource`
-  - [ ] `mappingId`
-  - [ ] `suggestedSlotId`
-- [ ] Rename evidence packager heuristic to `SuggestSlotFromRole`.
-- [ ] Ensure `SuggestSlotFromRole` is diagnostics-only.
-- [ ] Validate `slotSource=reviewed-presentation-mapping` requires non-empty `starterSlotId` and a handoff-local mapping ID.
-- [ ] Validate `starterSlotId` exists in `storefront-pattern.json`.
-- [ ] Validate approved visual extension slot source is explicit and reviewed.
+- [x] Resolver output:
+  - [x] exact `starterSlotId`.
+  - [x] `slotSource`.
+  - [x] mapping ID.
+  - [x] source section ID.
+  - [x] source page ID.
+  - [x] target path.
+  - [x] diagnostic `suggestedSlotId`.
+  - [x] problem/cause/fix suggestion when unresolved.
+- [x] Replace evidence manifest's ambiguous slot field with:
+  - [x] `starterSlotId`
+  - [x] `slotSource`
+  - [x] `mappingId`
+  - [x] `suggestedSlotId`
+- [x] Rename evidence packager heuristic to `SuggestSlotFromRole`.
+- [x] Ensure `SuggestSlotFromRole` is diagnostics-only.
+- [x] Validate `slotSource=reviewed-presentation-mapping` requires non-empty `starterSlotId` and a handoff-local mapping ID.
+- [x] Validate `starterSlotId` exists in `storefront-pattern.json`.
+- [x] Validate approved visual extension slot source is explicit and reviewed.
 
 Tests:
 
-- [ ] Product purchase crop gets `product.purchase` from reviewed mapping.
-- [ ] Ambiguous role text does not create authoritative slot.
-- [ ] Suggested slot is serialized only as diagnostics.
-- [ ] Mapping ID missing from `presentation-mappings.json` fails.
-- [ ] Evidence slot and mapping slot mismatch fails.
-- [ ] Unknown starter slot fails.
-- [ ] Approved visual extension records correct source.
+- [x] Product purchase crop gets `product.purchase` from reviewed mapping.
+- [x] Ambiguous role text does not create authoritative slot.
+- [x] Suggested slot is serialized only as diagnostics.
+- [x] Mapping ID missing from `presentation-mappings.json` fails.
+- [x] Evidence slot and mapping slot mismatch fails.
+- [x] Unknown starter slot fails.
+- [x] Approved visual extension records correct source.
 
 Done when:
 
@@ -618,7 +618,7 @@ Done when:
 3. [x] Phase 3E.2 handoff-specific consumer artifacts.
 4. [x] Phase 3E.3 typed reference containment validator.
 5. [x] Phase 3E.4 portable manifest and schema hardening.
-6. [ ] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
+6. [x] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
 7. [ ] Phase 3E.6 portable validator and inspect CLI.
 8. [ ] Phase 3E.7 Phase 4 read-only dry-run loader.
 9. [ ] Phase 3E.8 isolated copy proof and negative portability mutations.
@@ -634,7 +634,7 @@ Suggested development commits:
 2. [x] `phase 3e: package handoff-local consumer artifacts`
 3. [x] `phase 3e: enforce typed handoff references`
 4. [x] `phase 3e: harden manifest schemas and package hashes`
-5. [ ] `phase 3e: share reviewed slot provenance`
+5. [x] `phase 3e: share reviewed slot provenance`
 6. [ ] `phase 3e: add portable validation commands`
 7. [ ] `phase 3e: prove isolated handoff loading`
 8. [ ] `phase 3e: add portability mutation proofs`
@@ -673,9 +673,9 @@ Manifest and hashing:
 
 Slot provenance:
 
-- [ ] `SectionSlotResolverTests`
-- [ ] `AgentHandoffEvidenceSlotProvenanceTests`
-- [ ] `PageCompositionSlotValidatorSharedResolverTests`
+- [x] `SectionSlotResolverTests`
+- [x] `AgentHandoffEvidenceSlotProvenanceTests`
+- [x] `PageCompositionSlotValidatorSharedResolverTests`
 
 Portable validation and loading:
 
@@ -730,10 +730,10 @@ Reference validation:
 
 Evidence provenance:
 
-- [ ] Authoritative slot comes from reviewed mapping, exact contract, or approved visual extension.
-- [ ] Role inference is diagnostic-only.
-- [ ] Mapping ID and evidence slot consistency is validated.
-- [ ] Unknown slots are blocked.
+- [x] Authoritative slot comes from reviewed mapping, exact contract, or approved visual extension.
+- [x] Role inference is diagnostic-only.
+- [x] Mapping ID and evidence slot consistency is validated.
+- [x] Unknown slots are blocked.
 
 Portability:
 
@@ -832,7 +832,7 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 - [x] Implement Phase 3E.2 handoff-specific consumer artifacts.
 - [x] Implement Phase 3E.3 typed reference containment.
 - [x] Implement Phase 3E.4 manifest and schema hardening.
-- [ ] Implement Phase 3E.5 shared slot provenance.
+- [x] Implement Phase 3E.5 shared slot provenance.
 - [ ] Implement Phase 3E.6 portable validation commands.
 - [ ] Implement Phase 3E.7 consumer dry-run loader.
 - [ ] Implement Phase 3E.8 isolated copy proof and mutations.

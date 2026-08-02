@@ -106,7 +106,10 @@ public sealed record AgentHandoffScreenshotEvidence(
 
 public sealed record AgentHandoffSectionEvidence(
     string SectionId,
-    string? SlotId,
+    string? StarterSlotId,
+    string SlotSource,
+    string? MappingId,
+    string? SuggestedSlotId,
     string ViewportId,
     string HandoffPath,
     string SourcePath,

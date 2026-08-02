@@ -2,6 +2,9 @@ using System.Security.Cryptography;
 using System.Globalization;
 using System.Text.Json;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.StorefrontPattern;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
 using BlazorShop.AI.StorefrontReverseEngineering.Evidence;
@@ -20,6 +23,10 @@ public sealed class AgentHandoffEvidencePackager
         ReviewedPageCompositionsDocument compositions,
         CancellationToken cancellationToken)
     {
+        var mappings = Read<PresentationMappingsDocument>(projectRoot, "analysis/resolved/presentation-mappings.reviewed.json")?.Mappings ?? [];
+        var catalog = Read<PresentationComponentCatalog>(projectRoot, "presentation-catalog/presentation-component-catalog.json")?.Components ?? [];
+        var contracts = Read<StorefrontPageContractsDocument>(projectRoot, "analysis/storefront-pattern/page-contracts.json")?.Pages ?? [];
+        var slotResolver = new SectionSlotResolver(mappings, catalog);
         var pages = new List<AgentHandoffEvidencePage>();
         foreach (var page in compositions.Pages.OrderBy(page => page.PageId, StringComparer.Ordinal))
         {
@@ -39,9 +46,9 @@ public sealed class AgentHandoffEvidencePackager
 
                     var screenshot = await CopyScreenshotAsync(projectRoot, page.PageId, viewport, cancellationToken);
                     screenshots.Add(screenshot);
-                    foreach (var node in MajorSectionsForPage(compositions, page.PageId))
+                    foreach (var sectionSource in MajorSectionsForPage(compositions, page.PageId, contracts, slotResolver))
                     {
-                        var section = await CropSectionAsync(projectRoot, page.PageId, viewport, node, cancellationToken);
+                        var section = await CropSectionAsync(projectRoot, page.PageId, viewport, sectionSource.Node, sectionSource.Slot, cancellationToken);
                         if (section is not null)
                         {
                             sections.Add(section);
@@ -105,6 +112,7 @@ public sealed class AgentHandoffEvidencePackager
         string pageId,
         CaptureViewportManifest viewport,
         PageCompositionNode node,
+        SectionSlotResolution slotResolution,
         CancellationToken cancellationToken)
     {
         var sourceRelative = NormalizeProjectPath(viewport.ScreenshotPath);
@@ -150,7 +158,10 @@ public sealed class AgentHandoffEvidencePackager
         await image.WriteAsync(destination, cancellationToken);
         return new AgentHandoffSectionEvidence(
             node.NodeId,
-            InferSlot(node.Role),
+            slotResolution.StarterSlotId,
+            slotResolution.SlotSource,
+            slotResolution.MappingId,
+            slotResolution.SuggestedSlotId,
             viewport.ViewportId,
             handoffRelative,
             sourceRelative,
@@ -160,12 +171,22 @@ public sealed class AgentHandoffEvidencePackager
             ["evidence-only", "reference-only", "not-production-safe"]);
     }
 
-    private static IEnumerable<PageCompositionNode> MajorSectionsForPage(ReviewedPageCompositionsDocument compositions, string pageId) =>
+    private static IEnumerable<SectionEvidenceSource> MajorSectionsForPage(
+        ReviewedPageCompositionsDocument compositions,
+        string pageId,
+        IReadOnlyList<StorefrontPageContract> contracts,
+        SectionSlotResolver slotResolver) =>
         compositions.Compositions
             .Where(composition => string.Equals(composition.PageId, pageId, StringComparison.Ordinal))
-            .SelectMany(composition => composition.SectionTree.SelectMany(Flatten))
-            .Where(IsMajorSection)
-            .DistinctBy(node => node.NodeId);
+            .SelectMany(composition =>
+            {
+                var contract = MatchContract(contracts, composition.PageId, composition.PageArchetype);
+                return composition.SectionTree
+                    .SelectMany(Flatten)
+                    .Where(IsMajorSection)
+                    .Select(node => new SectionEvidenceSource(node, slotResolver.Resolve(composition, node, contract)));
+            })
+            .DistinctBy(source => source.Node.NodeId);
 
     private static IEnumerable<PageCompositionNode> Flatten(PageCompositionNode node)
     {
@@ -211,6 +232,14 @@ public sealed class AgentHandoffEvidencePackager
             : null;
     }
 
+    private static T? Read<T>(string projectRoot, string relativePath)
+    {
+        var path = Path.Combine(projectRoot, NormalizeProjectPath(relativePath).Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(path)
+            ? JsonSerializer.Deserialize<T>(File.ReadAllText(path), VisualJson.Options)
+            : default;
+    }
+
     private static string NormalizeProjectPath(string path) => path.Replace('\\', '/').TrimStart('/');
 
     private static string Sha256File(string path) =>
@@ -220,22 +249,6 @@ public sealed class AgentHandoffEvidencePackager
     {
         var safe = new string(value.Select(character => char.IsLetterOrDigit(character) || character is '-' or '_' ? character : '-').ToArray());
         return string.IsNullOrWhiteSpace(safe) ? "unknown" : safe;
-    }
-
-    private static string? InferSlot(string role)
-    {
-        if (role.Contains("header", StringComparison.OrdinalIgnoreCase)) return "layout.header";
-        if (role.Contains("footer", StringComparison.OrdinalIgnoreCase)) return "layout.footer";
-        if (role.Contains("navigation", StringComparison.OrdinalIgnoreCase) || role.Contains("nav", StringComparison.OrdinalIgnoreCase)) return "layout.main-navigation";
-        if (role.Contains("product card", StringComparison.OrdinalIgnoreCase)) return "catalog.product-card";
-        if (role.Contains("gallery", StringComparison.OrdinalIgnoreCase)) return "product.gallery";
-        if (role.Contains("information", StringComparison.OrdinalIgnoreCase)) return "product.information";
-        if (role.Contains("purchase", StringComparison.OrdinalIgnoreCase)) return "product.purchase";
-        if (role.Contains("cart", StringComparison.OrdinalIgnoreCase)) return "cart.page";
-        if (role.Contains("checkout", StringComparison.OrdinalIgnoreCase)) return "checkout.page";
-        if (role.Contains("account", StringComparison.OrdinalIgnoreCase)) return "account.shell";
-        if (role.Contains("state", StringComparison.OrdinalIgnoreCase)) return "system.error";
-        return null;
     }
 
     private static bool IsHiddenInViewport(PageCompositionNode node, string viewportId) =>
@@ -271,4 +284,13 @@ public sealed class AgentHandoffEvidencePackager
     }
 
     private static int Clamp(int value, int min, int max) => Math.Min(Math.Max(value, min), max);
+
+    private static StorefrontPageContract? MatchContract(IReadOnlyList<StorefrontPageContract> contracts, string pageId, string pageArchetype) =>
+        contracts.FirstOrDefault(contract =>
+            string.Equals(contract.PageId, pageId, StringComparison.Ordinal) ||
+            string.Equals(contract.StablePageArchetype, pageArchetype, StringComparison.Ordinal));
+
+    private sealed record SectionEvidenceSource(
+        PageCompositionNode Node,
+        SectionSlotResolution Slot);
 }
