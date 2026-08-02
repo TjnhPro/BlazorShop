@@ -339,28 +339,35 @@ Goal: make long final runs diagnosable without increasing duplication.
 
 Implementation checklist:
 
-- [ ] Track a global timeout for the final gate, not only per-process timeouts.
-- [ ] Track remaining budget before each step.
-- [ ] Record start/end/duration for each major step.
-- [ ] Record the slowest steps in the final report.
-- [ ] Record process count, test process count, and major proof counts.
+- [x] Track a global timeout for the final gate, not only per-process timeouts.
+- [x] Track remaining budget before each step.
+- [x] Record start/end/duration for each major step.
+- [x] Record the slowest steps in the final report.
+- [x] Record process count, test process count, and major proof counts.
 
 Suggested telemetry fields:
 
-- [ ] step name
-- [ ] start UTC
-- [ ] end UTC
-- [ ] duration
-- [ ] exit code
-- [ ] test count
-- [ ] artifact count
-- [ ] bytes written
-- [ ] baseline cache hit/miss
+- [x] step name
+- [x] start UTC
+- [x] end UTC
+- [x] duration
+- [x] exit code
+- [x] test count
+- [x] artifact count
+- [x] bytes written
+- [x] baseline cache hit/miss
 
 Acceptance criteria:
 
-- [ ] The final gate can report where time went.
-- [ ] Slow steps are visible without adding repeated test runs.
+- [x] The final gate can report where time went.
+- [x] Slow steps are visible without adding repeated test runs.
+
+O9 evidence:
+
+- Final gates now accept `-GlobalTimeoutSeconds` and pass it into `New-SreGateContext`.
+- The shared proof helper tracks remaining budget, process count, test process count, major step count, step start/end UTC, duration, exit code, and slowest steps.
+- Reports now include artifact count/bytes for report artifacts and baseline cache status for the process-local shared fixture.
+- Verification: telemetry smoke dot-sourced the helper, generated report lines, and found `Global timeout seconds`, `Process count`, `Slowest steps`, `Artifact bytes written`, and `Baseline cache status`.
 
 ## Phase O10 - Keep Cleanup Strict And Predictable
 

@@ -11,6 +11,7 @@ public sealed class Phase3EFinalClosureGateTests
         var script = ReadScript();
 
         Assert.Contains("[int]$CommandTimeoutSeconds", script, StringComparison.Ordinal);
+        Assert.Contains("[int]$GlobalTimeoutSeconds", script, StringComparison.Ordinal);
         Assert.DoesNotContain("SkipPhase3AGate", script, StringComparison.Ordinal);
         Assert.DoesNotContain("SkipPhase3BGate", script, StringComparison.Ordinal);
         Assert.DoesNotContain("SkipPhase3CGate", script, StringComparison.Ordinal);
@@ -66,6 +67,13 @@ public sealed class Phase3EFinalClosureGateTests
         Assert.Contains("StorefrontBuilder smoke result:", script, StringComparison.Ordinal);
         Assert.Contains("GitHub Actions status:", script, StringComparison.Ordinal);
         Assert.Contains("Closure decision:", script, StringComparison.Ordinal);
+        Assert.Contains("Global timeout seconds:", script, StringComparison.Ordinal);
+        Assert.Contains("Remaining budget seconds:", script, StringComparison.Ordinal);
+        Assert.Contains("Process count:", script, StringComparison.Ordinal);
+        Assert.Contains("Test process count:", script, StringComparison.Ordinal);
+        Assert.Contains("Slowest steps:", script, StringComparison.Ordinal);
+        Assert.Contains("Artifact bytes written:", script, StringComparison.Ordinal);
+        Assert.Contains("Baseline cache status:", script, StringComparison.Ordinal);
     }
 
     [Fact]

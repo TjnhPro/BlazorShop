@@ -1,5 +1,6 @@
 param(
-    [int]$CommandTimeoutSeconds = 900
+    [int]$CommandTimeoutSeconds = 900,
+    [int]$GlobalTimeoutSeconds = 3600
 )
 
 $ErrorActionPreference = "Stop"
@@ -7,7 +8,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 . (Join-Path $PSScriptRoot "storefront-reverse-engineering-phase3-proof-steps.ps1")
 
-$context = New-SreGateContext -RepoRoot $repoRoot -CommandTimeoutSeconds $CommandTimeoutSeconds
+$context = New-SreGateContext -RepoRoot $repoRoot -CommandTimeoutSeconds $CommandTimeoutSeconds -GlobalTimeoutSeconds $GlobalTimeoutSeconds
 $portablePackageResult = "not-run"
 $referenceContainmentResult = "not-run"
 $evidenceSlotProvenanceResult = "not-run"

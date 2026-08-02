@@ -11,9 +11,11 @@ function Format-SreCommandArgument {
 function New-SreGateContext {
     param(
         [Parameter(Mandatory = $true)][string]$RepoRoot,
-        [int]$CommandTimeoutSeconds = 900
+        [int]$CommandTimeoutSeconds = 900,
+        [int]$GlobalTimeoutSeconds = 3600
     )
 
+    $gateStartedUtc = [DateTimeOffset]::UtcNow
     return [ordered]@{
         RepoRoot = $RepoRoot
         ToolProject = Join-Path $RepoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj"
@@ -22,6 +24,9 @@ function New-SreGateContext {
         FixtureRoot = Join-Path $RepoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures"
         ReportRoot = Join-Path $RepoRoot "obj\storefront-reverse-engineering\reports"
         CommandTimeoutSeconds = $CommandTimeoutSeconds
+        GlobalTimeoutSeconds = $GlobalTimeoutSeconds
+        GateStartedUtc = $gateStartedUtc
+        GlobalDeadlineUtc = $gateStartedUtc.AddSeconds($GlobalTimeoutSeconds)
         Commands = New-Object System.Collections.Generic.List[string]
         Steps = New-Object System.Collections.Generic.List[object]
         TestSummaries = New-Object System.Collections.Generic.List[string]
@@ -35,7 +40,29 @@ function New-SreGateContext {
         ClosureProofTestCount = "not-recorded"
         NegativeMutationCount = "not-recorded"
         StorefrontBuilderSmokeResult = "not-run"
-        LastProcessExitCode = 0
+        LastProcessExitCode = "not-run"
+        ProcessCount = 0
+        TestProcessCount = 0
+        MajorStepCount = 0
+        BaselineCacheStatus = "process-local shared fixture"
+    }
+}
+
+function Get-SreRemainingBudgetSeconds {
+    param([Parameter(Mandatory = $true)]$Context)
+
+    return [int][Math]::Max(0, [Math]::Ceiling(($Context.GlobalDeadlineUtc - [DateTimeOffset]::UtcNow).TotalSeconds))
+}
+
+function Assert-SreGlobalTimeoutBudget {
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [Parameter(Mandatory = $true)][string]$StepName
+    )
+
+    $remaining = Get-SreRemainingBudgetSeconds -Context $Context
+    if ($remaining -le 0) {
+        throw "Global gate timeout exhausted before step '$StepName'. Budget: $($Context.GlobalTimeoutSeconds)s."
     }
 }
 
@@ -51,6 +78,12 @@ function Invoke-SreLoggedProcess {
 
     $commandLine = (Format-SreCommandArgument $FileName) + " " + (($Arguments | ForEach-Object { Format-SreCommandArgument $_ }) -join " ")
     $Context.Commands.Add($commandLine)
+    Assert-SreGlobalTimeoutBudget -Context $Context -StepName $commandLine
+    $effectiveTimeoutSeconds = [Math]::Min($TimeoutSeconds, (Get-SreRemainingBudgetSeconds -Context $Context))
+    $Context.ProcessCount++
+    if ($FileName -eq "dotnet" -and $Arguments.Count -gt 0 -and $Arguments[0] -eq "test") {
+        $Context.TestProcessCount++
+    }
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = $FileName
@@ -68,7 +101,7 @@ function Invoke-SreLoggedProcess {
 
     $stdoutTask = $process.StandardOutput.ReadToEndAsync()
     $stderrTask = $process.StandardError.ReadToEndAsync()
-    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+    if (-not $process.WaitForExit($effectiveTimeoutSeconds * 1000)) {
         try {
             $process.Kill($true)
         }
@@ -76,7 +109,8 @@ function Invoke-SreLoggedProcess {
             $process.Kill()
         }
 
-        throw "Command timed out after ${TimeoutSeconds}s: $commandLine"
+        $Context.LastProcessExitCode = "timeout"
+        throw "Command timed out after ${effectiveTimeoutSeconds}s: $commandLine"
     }
 
     $stdout = $stdoutTask.GetAwaiter().GetResult()
@@ -120,23 +154,36 @@ function Invoke-SreStep {
     )
 
     Write-Host "== $Name =="
+    Assert-SreGlobalTimeoutBudget -Context $Context -StepName $Name
+    $Context.LastProcessExitCode = "not-run"
+    $Context.MajorStepCount++
     $startedUtc = [DateTimeOffset]::UtcNow
     try {
         & $Script
-        $duration = [DateTimeOffset]::UtcNow - $startedUtc
+        $endedUtc = [DateTimeOffset]::UtcNow
+        $duration = $endedUtc - $startedUtc
         $Context.Steps.Add([pscustomobject]@{
             Name = $Name
             Status = "passed"
+            StartUtc = $startedUtc.ToString("u", [System.Globalization.CultureInfo]::InvariantCulture)
+            EndUtc = $endedUtc.ToString("u", [System.Globalization.CultureInfo]::InvariantCulture)
             DurationSeconds = [Math]::Round($duration.TotalSeconds, 2)
+            ExitCode = $Context.LastProcessExitCode
+            RemainingBudgetSeconds = Get-SreRemainingBudgetSeconds -Context $Context
         })
     }
     catch {
-        $duration = [DateTimeOffset]::UtcNow - $startedUtc
+        $endedUtc = [DateTimeOffset]::UtcNow
+        $duration = $endedUtc - $startedUtc
         $Context.FailedStep = $Name
         $Context.Steps.Add([pscustomobject]@{
             Name = $Name
             Status = "failed"
+            StartUtc = $startedUtc.ToString("u", [System.Globalization.CultureInfo]::InvariantCulture)
+            EndUtc = $endedUtc.ToString("u", [System.Globalization.CultureInfo]::InvariantCulture)
             DurationSeconds = [Math]::Round($duration.TotalSeconds, 2)
+            ExitCode = $Context.LastProcessExitCode
+            RemainingBudgetSeconds = Get-SreRemainingBudgetSeconds -Context $Context
         })
         throw
     }
@@ -505,6 +552,29 @@ function Invoke-SreFinalInspectProof {
     }
 }
 
+function Get-SreArtifactStats {
+    param([Parameter(Mandatory = $true)]$Context)
+
+    $roots = @($Context.ReportRoot)
+    $count = 0
+    $bytes = 0L
+    foreach ($root in $roots) {
+        if (-not (Test-Path $root)) {
+            continue
+        }
+
+        foreach ($file in Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue) {
+            $count++
+            $bytes += $file.Length
+        }
+    }
+
+    return [pscustomobject]@{
+        Count = $count
+        Bytes = $bytes
+    }
+}
+
 function New-SreReportLines {
     param(
         [Parameter(Mandatory = $true)]$Context,
@@ -517,6 +587,7 @@ function New-SreReportLines {
 
     $dotnetVersion = (& dotnet --version).Trim()
     $utcTimestamp = [DateTimeOffset]::UtcNow.ToString("u", [System.Globalization.CultureInfo]::InvariantCulture)
+    $artifactStats = Get-SreArtifactStats -Context $Context
     if ([string]::IsNullOrWhiteSpace($Context.FinalHead)) {
         $Context.FinalHead = (& git rev-parse HEAD).Trim()
     }
@@ -531,9 +602,17 @@ function New-SreReportLines {
     $lines.Add("Branch: $($Context.InitialBranch)")
     $lines.Add("UTC timestamp: $utcTimestamp")
     $lines.Add(".NET version: $dotnetVersion")
+    $lines.Add("Global timeout seconds: $($Context.GlobalTimeoutSeconds)")
+    $lines.Add("Remaining budget seconds: $(Get-SreRemainingBudgetSeconds -Context $Context)")
+    $lines.Add("Process count: $($Context.ProcessCount)")
+    $lines.Add("Test process count: $($Context.TestProcessCount)")
+    $lines.Add("Major step count: $($Context.MajorStepCount)")
     $lines.Add("Full test count: $($Context.FullTestCount)")
     $lines.Add("Closure proof test count: $($Context.ClosureProofTestCount)")
     $lines.Add("Negative mutation count: $($Context.NegativeMutationCount)")
+    $lines.Add("Artifact count: $($artifactStats.Count)")
+    $lines.Add("Artifact bytes written: $($artifactStats.Bytes)")
+    $lines.Add("Baseline cache status: $($Context.BaselineCacheStatus)")
     $lines.Add("StorefrontBuilder smoke result: $($Context.StorefrontBuilderSmokeResult)")
     $lines.Add("GitHub Actions status: disabled/local proof primary unless verified separately.")
     if (-not [string]::IsNullOrWhiteSpace($Context.FailedStep)) {
@@ -547,7 +626,12 @@ function New-SreReportLines {
     $lines.Add("")
     $lines.Add("Steps:")
     foreach ($step in $Context.Steps) {
-        $lines.Add("- $($step.Name): $($step.Status) ($($step.DurationSeconds)s)")
+        $lines.Add("- $($step.Name): $($step.Status) ($($step.DurationSeconds)s, start=$($step.StartUtc), end=$($step.EndUtc), exit=$($step.ExitCode), remaining=$($step.RemainingBudgetSeconds)s)")
+    }
+    $lines.Add("")
+    $lines.Add("Slowest steps:")
+    foreach ($step in ($Context.Steps | Sort-Object -Property DurationSeconds -Descending | Select-Object -First 5)) {
+        $lines.Add("- $($step.Name): $($step.DurationSeconds)s")
     }
     $lines.Add("")
     $lines.Add("Test summaries:")
