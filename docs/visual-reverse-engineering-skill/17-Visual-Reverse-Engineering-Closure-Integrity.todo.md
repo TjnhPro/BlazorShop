@@ -99,26 +99,26 @@ Goal: make `-WhatIf` useful without hidden artifacts.
 
 Tasks:
 
-- [ ] Define one stable report path outside the temporary candidate tree.
-- [ ] Prefer a path under the builder output root, not inside the generated project.
-- [ ] Keep candidate cleanup on by default.
-- [ ] Copy or write the computed plan report to the stable location before cleanup runs.
-- [ ] Print the stable report path to console.
-- [ ] Print a short summary of the plan:
-  - [ ] create count
-  - [ ] update count
-  - [ ] metadata update count
-  - [ ] conflict count
-  - [ ] obsolete count
-  - [ ] protected/user-owned skip count
-- [ ] Print meaningful per-file plan lines only, not noisy no-op spam.
-- [ ] Add `-WhatIfReportPath` support if the current default report location still needs an override.
-- [ ] Validate `-WhatIfReportPath`:
-  - [ ] reject paths under the generated project;
-  - [ ] reject traversal;
-  - [ ] reject unsafe roots;
-  - [ ] create parent folders safely.
-- [ ] Keep `SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS=1` as debug-only, not as the normal way to read the report.
+- [x] Define one stable report path outside the temporary candidate tree.
+- [x] Prefer a path under the builder output root, not inside the generated project.
+- [x] Keep candidate cleanup on by default.
+- [x] Copy or write the computed plan report to the stable location before cleanup runs.
+- [x] Print the stable report path to console.
+- [x] Print a short summary of the plan:
+  - [x] create count
+  - [x] update count
+  - [x] metadata update count
+  - [x] conflict count
+  - [x] obsolete count
+  - [x] protected/user-owned skip count
+- [x] Print meaningful per-file plan lines only, not noisy no-op spam.
+- [x] Add `-WhatIfReportPath` support if the current default report location still needs an override.
+- [x] Validate `-WhatIfReportPath`:
+  - [x] reject paths under the generated project;
+  - [x] reject traversal;
+  - [x] reject unsafe roots;
+  - [x] create parent folders safely.
+- [x] Keep `SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS=1` as debug-only, not as the normal way to read the report.
 
 Implementation notes:
 
@@ -137,15 +137,24 @@ QA:
 
 Expected verification:
 
-- [ ] Console prints the report path.
-- [ ] Console prints a readable action summary.
-- [ ] Stable report file exists after the command exits.
-- [ ] Generated target tree is unchanged.
-- [ ] Candidate cleanup still runs by default.
+- [x] Console prints the report path.
+- [x] Console prints a readable action summary.
+- [x] Stable report file exists after the command exits.
+- [x] Generated target tree is unchanged.
+- [x] Candidate cleanup still runs by default.
 
 Done when:
 
-- [ ] A developer can review the plan without knowing internal cleanup switches.
+- [x] A developer can review the plan without knowing internal cleanup switches.
+
+Phase 3E.1 evidence:
+
+- Existing implementation in `regenerate-storefront.ps1` resolves default `-WhatIf` reports to `{OutputRoot}/.regeneration-reports/{ProjectName}-{operationId}.md`, copies the candidate `docs/storefront-analysis/regeneration-report.md` there before cleanup, and prints `WhatIf report: <path>`.
+- Console summary includes `create`, `update`, `platformMetadataUpdate`, `conflict`, `obsolete`, and `protectedOrUserOwnedSkip`; per-file console output is filtered by `Test-MeaningfulWhatIfAction`.
+- `Resolve-WhatIfReportPath` rejects paths under the generated target, rejects paths outside approved roots, rejects missing parent/file names, and creates approved parent directories safely.
+- QA command: `.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -WhatIf`.
+- Result: passed; report path printed as `artifacts/storefront-builder/generated/.regeneration-reports/BlazorShop.Storefront.GeneratedProof-c20dacd02c2442309997747f9aacfe55.md`, summary printed `create=0; update=0; platformMetadataUpdate=0; conflict=0; obsolete=0; protectedOrUserOwnedSkip=16`, stable report existed after exit, and `.regeneration-candidate/c20dacd02c2442309997747f9aacfe55` was removed.
+- `git status --short` was clean after the QA command; generated proof output remains ignored.
 
 ## Phase 3E.2 - Unified Generator Version Source
 
