@@ -550,49 +550,49 @@ Goal: make one no-skip local command prove the whole Phase 4.11 closure contract
 
 Tasks:
 
-- [ ] Update `run-storefront-phase4-final-closure-gate.ps1` to execute the final flow:
-  - [ ] assert clean working tree at start.
-  - [ ] capture tested HEAD.
-  - [ ] validate Visual workspace remains docs/schema/skill-only.
-  - [ ] validate Visual examples and stronger schemas.
-  - [ ] validate StorefrontBuilder closure fixture exists.
-  - [ ] preflight portable handoff.
-  - [ ] plan deterministic generation.
-  - [ ] generate fresh project from Starter into `obj`.
-  - [ ] verify generated project isolation.
-  - [ ] verify mandatory visual artifacts or create deterministic fixture artifacts for the pilot.
-  - [ ] run automatic changed-file detection.
-  - [ ] run generated Blazor runtime visual proof.
-  - [ ] run independent reference visual QA contract checks.
-  - [ ] run bounded visual repair only if configured and allowed.
-  - [ ] rerun runtime visual QA after repair.
-  - [ ] run `FoundationFunctionalFast` minimum.
-  - [ ] run full fixture commerce proof when release closure mode is selected.
-  - [ ] run regeneration/no-op ownership proof.
-  - [ ] assert final HEAD unchanged.
-  - [ ] assert clean working tree at end.
-  - [ ] write final JSON and Markdown reports under `obj/storefront-builder/reports/`.
-- [ ] Remove or rename any skip flags that would allow release closure without runtime visual proof or functional proof.
-- [ ] Keep local-development switches clearly named as non-release modes.
-- [ ] Ensure failure output includes:
-  - [ ] problem.
-  - [ ] likely cause.
-  - [ ] exact rerun command.
-  - [ ] report path.
-  - [ ] evidence path.
-  - [ ] whether generated artifacts were retained.
-- [ ] Add final report fields:
-  - [ ] tested HEAD.
-  - [ ] final HEAD.
-  - [ ] fixture source path.
-  - [ ] generated project path.
-  - [ ] proof mode.
-  - [ ] visual artifact paths.
-  - [ ] visual QA report path.
-  - [ ] functional proof report path.
-  - [ ] commerce proof report path when applicable.
-  - [ ] regeneration report path.
-  - [ ] final decision.
+- [x] Update `run-storefront-phase4-final-closure-gate.ps1` to execute the final flow:
+  - [x] assert clean working tree at start.
+  - [x] capture tested HEAD.
+  - [x] validate Visual workspace remains docs/schema/skill-only.
+  - [x] validate Visual examples and stronger schemas.
+  - [x] validate StorefrontBuilder closure fixture exists.
+  - [x] preflight portable handoff.
+  - [x] plan deterministic generation.
+  - [x] generate fresh project from Starter into `obj`.
+  - [x] verify generated project isolation.
+  - [x] verify mandatory visual artifacts or create deterministic fixture artifacts for the pilot.
+  - [x] run automatic changed-file detection.
+  - [x] run generated Blazor runtime visual proof.
+  - [x] run independent reference visual QA contract checks.
+  - [x] run bounded visual repair only if configured and allowed.
+  - [x] rerun runtime visual QA after repair.
+  - [x] run `FoundationFunctionalFast` minimum.
+  - [x] run full fixture commerce proof when release closure mode is selected.
+  - [x] run regeneration/no-op ownership proof.
+  - [x] assert final HEAD unchanged.
+  - [x] assert clean working tree at end.
+  - [x] write final JSON and Markdown reports under `obj/storefront-builder/reports/`.
+- [x] Remove or rename any skip flags that would allow release closure without runtime visual proof or functional proof.
+- [x] Keep local-development switches clearly named as non-release modes.
+- [x] Ensure failure output includes:
+  - [x] problem.
+  - [x] likely cause.
+  - [x] exact rerun command.
+  - [x] report path.
+  - [x] evidence path.
+  - [x] whether generated artifacts were retained.
+- [x] Add final report fields:
+  - [x] tested HEAD.
+  - [x] final HEAD.
+  - [x] fixture source path.
+  - [x] generated project path.
+  - [x] proof mode.
+  - [x] visual artifact paths.
+  - [x] visual QA report path.
+  - [x] functional proof report path.
+  - [x] commerce proof report path when applicable.
+  - [x] regeneration report path.
+  - [x] final decision.
 
 Checks:
 
@@ -604,11 +604,24 @@ git status --porcelain=v1
 
 DoD:
 
-- [ ] Final closure gate passes from a clean unchanged `HEAD`.
-- [ ] Final closure gate is reproducible from tracked inputs.
-- [ ] Final closure gate does not require GitHub Actions.
-- [ ] Final closure gate proves generated runtime visual QA and functional generated storefront behavior.
-- [ ] Final report is enough to decide whether Phase 4 is complete.
+- [x] Final closure gate passes from a clean unchanged `HEAD`.
+- [x] Final closure gate is reproducible from tracked inputs.
+- [x] Final closure gate does not require GitHub Actions.
+- [x] Final closure gate proves generated runtime visual QA and functional generated storefront behavior.
+- [x] Final report is enough to decide whether Phase 4 is complete.
+
+Evidence:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -Help` passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900` passed and wrote `obj/storefront-builder/reports/phase4-final-closure-gate-20260803001434.md`.
+- The final gate report recorded `Decision: passed`, `Tested HEAD: f48fb420e037390f8658aa51d46c463241b860ad`, `Final HEAD: f48fb420e037390f8658aa51d46c463241b860ad`, `Functional proof level: FoundationFunctionalFast`, and `GitHub Actions: not required`.
+- The final gate validated Visual static boundaries, six Visual schema examples, the tracked Phase 4.11 closure fixture, fresh pilot generation from tracked input, deterministic generation plan/task package output, automatic pilot changed-file detection, generated fast functional proof, regeneration ownership proof, runtime MVP pilot proof, and final clean tree.
+- The runtime MVP pilot proof ran with a generated host and deterministic fast Commerce fixture, produced runtime visual QA evidence, and used the public `/signin` auth baseline instead of a protected account route.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\start-fast-commerce-fixture.mjs` passed.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs` passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -Help` passed and documents `-StartRuntimeHost` plus `-RuntimeCommerceNodeBaseUrl`.
+- `git status --porcelain=v1` was clean before the final gate; the gate also asserted clean working tree at start and end.
+- The generated proof emitted known package NU5100 warnings while packing Storefront Presentation, but the proof and final closure gate completed successfully.
 
 ## Phase 4.11.8 - Documentation And Agent Guide Updates
 

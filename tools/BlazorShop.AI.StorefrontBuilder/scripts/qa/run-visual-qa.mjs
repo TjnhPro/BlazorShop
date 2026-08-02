@@ -408,7 +408,7 @@ function buildPages(plan) {
     pageSpec("product", `/product/${productSlug}`, "product", []),
     pageSpec("cart", "/cart", "cart", []),
     pageSpec("checkout", "/checkout", "checkout", []),
-    pageSpec("account", "/account", "account", []),
+    pageSpec("sign-in", "/signin", "auth", []),
   ];
 
   if (!plan) {

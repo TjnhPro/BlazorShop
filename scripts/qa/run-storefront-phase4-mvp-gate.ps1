@@ -8,6 +8,8 @@ param(
     [switch]$SkeletonProof,
     [string]$ProofMode = "",
     [string]$BaseUrl = "",
+    [switch]$StartRuntimeHost,
+    [string]$RuntimeCommerceNodeBaseUrl = "",
     [string]$Configuration = "Debug",
     [int]$CommandTimeoutSeconds = 600,
     [switch]$Help
@@ -31,6 +33,8 @@ function Show-Help {
     Write-Host "  -SkeletonProof                 Compatibility mode for early file-fixture skeleton checks; not valid for release closure."
     Write-Host "  -ProofMode <Skeleton|Runtime>  Visual QA proof mode. Closure requires Runtime; Skeleton is for early fixture proof only."
     Write-Host "  -BaseUrl <url>                 Running storefront base URL for runtime visual QA."
+    Write-Host "  -StartRuntimeHost              Start and stop the generated storefront host around runtime visual QA."
+    Write-Host "  -RuntimeCommerceNodeBaseUrl    Optional Commerce Node URL for the generated runtime host; defaults to a deterministic local fake fixture when -StartRuntimeHost is used."
     Write-Host "  -Configuration <name>          Build configuration. Defaults to Debug."
     Write-Host "  -CommandTimeoutSeconds <sec>   Timeout for each external command. Defaults to 600."
     Write-Host "  -Help                          Show this help text."
@@ -201,6 +205,14 @@ $resolvedHandoffRoot = Resolve-RepoPath $HandoffRoot
 $projectName = Split-Path -Leaf $resolvedProjectRoot
 $storeKey = "sample"
 $finalDecision = "failed"
+$runtimeHostProcess = $null
+$runtimeCommerceFixtureProcess = $null
+$runtimeCommerceFixtureUrl = ""
+$runtimeHostOutputPath = Join-Path $analysisRoot "phase4-mvp-runtime-host.out.log"
+$runtimeHostErrorPath = Join-Path $analysisRoot "phase4-mvp-runtime-host.err.log"
+$runtimeCommerceFixtureReadyPath = Join-Path $analysisRoot "phase4-mvp-commerce-fixture.ready.json"
+$runtimeCommerceFixtureOutputPath = Join-Path $analysisRoot "phase4-mvp-commerce-fixture.out.log"
+$runtimeCommerceFixtureErrorPath = Join-Path $analysisRoot "phase4-mvp-commerce-fixture.err.log"
 
 $effectiveProofMode = if (-not [string]::IsNullOrWhiteSpace($ProofMode)) {
     $ProofMode.Trim()
@@ -236,6 +248,39 @@ function New-RerunCommand {
     return "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot `"$GeneratedProjectRoot`""
 }
 
+function Get-FreeTcpPort {
+    $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse("127.0.0.1"), 0)
+    try {
+        $listener.Start()
+        return $listener.LocalEndpoint.Port
+    }
+    finally {
+        $listener.Stop()
+    }
+}
+
+function Test-TcpEndpoint {
+    param([string]$Url)
+
+    $uri = [System.Uri]::new($Url)
+    $client = [System.Net.Sockets.TcpClient]::new()
+    try {
+        $asyncResult = $client.BeginConnect($uri.Host, $uri.Port, $null, $null)
+        if (-not $asyncResult.AsyncWaitHandle.WaitOne(1000)) {
+            return $false
+        }
+
+        $client.EndConnect($asyncResult)
+        return $true
+    }
+    catch {
+        return $false
+    }
+    finally {
+        $client.Close()
+    }
+}
+
 function Add-GateStep {
     param(
         [string]$Name,
@@ -258,6 +303,181 @@ function Add-GateStep {
     if (-not [string]::IsNullOrWhiteSpace($LikelyCause)) { $entry.likelyCause = $LikelyCause }
     if (-not [string]::IsNullOrWhiteSpace($RerunCommand)) { $entry.rerunCommand = $RerunCommand }
     $steps.Add([pscustomobject]$entry)
+}
+
+function Start-GeneratedRuntimeHost {
+    param(
+        [string]$ProjectFile,
+        [string]$Url,
+        [string]$CommerceNodeBaseUrl
+    )
+
+    if ($null -ne $script:runtimeHostProcess -and -not $script:runtimeHostProcess.HasExited) {
+        return
+    }
+
+    New-Item -ItemType Directory -Force -Path $analysisRoot | Out-Null
+    foreach ($path in @($runtimeHostOutputPath, $runtimeHostErrorPath)) {
+        if (Test-Path -LiteralPath $path) {
+            Remove-Item -LiteralPath $path -Force
+        }
+    }
+
+    $arguments = @(
+        "run",
+        "--project", $ProjectFile,
+        "--configuration", $Configuration,
+        "--no-build",
+        "--no-launch-profile",
+        "--urls", $Url
+    )
+    $argumentText = (($arguments | ForEach-Object { Convert-ToProcessArgument $_ }) -join " ")
+
+    $previousEnvironment = @{
+        ASPNETCORE_ENVIRONMENT = $env:ASPNETCORE_ENVIRONMENT
+        DOTNET_ENVIRONMENT = $env:DOTNET_ENVIRONMENT
+        Storefront__CommerceNodeBaseUrl = $env:Storefront__CommerceNodeBaseUrl
+        Storefront__StoreKey = $env:Storefront__StoreKey
+        Storefront__PublicBaseUrl = $env:Storefront__PublicBaseUrl
+        PublicUrl__BaseUrl = $env:PublicUrl__BaseUrl
+        ClientApp__BaseUrl = $env:ClientApp__BaseUrl
+    }
+
+    try {
+        $env:ASPNETCORE_ENVIRONMENT = "Development"
+        $env:DOTNET_ENVIRONMENT = "Development"
+        $env:Storefront__CommerceNodeBaseUrl = $CommerceNodeBaseUrl
+        $env:Storefront__StoreKey = $storeKey
+        $env:Storefront__PublicBaseUrl = $Url
+        $env:PublicUrl__BaseUrl = $Url
+        $env:ClientApp__BaseUrl = $Url
+
+        $script:runtimeHostProcess = Start-Process `
+            -FilePath "dotnet" `
+            -ArgumentList $argumentText `
+            -WorkingDirectory $resolvedProjectRoot `
+            -WindowStyle Hidden `
+            -RedirectStandardOutput $runtimeHostOutputPath `
+            -RedirectStandardError $runtimeHostErrorPath `
+            -PassThru
+    }
+    finally {
+        foreach ($key in $previousEnvironment.Keys) {
+            if ($null -eq $previousEnvironment[$key]) {
+                Remove-Item -Path "Env:$key" -ErrorAction SilentlyContinue
+            }
+            else {
+                Set-Item -Path "Env:$key" -Value $previousEnvironment[$key]
+            }
+        }
+    }
+
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds([Math]::Min($CommandTimeoutSeconds, 90))
+    do {
+        if ($script:runtimeHostProcess.HasExited) {
+            throw "Generated runtime host exited early with code $($script:runtimeHostProcess.ExitCode). Error log: $(Convert-ToRepoRelativePath $runtimeHostErrorPath)"
+        }
+
+        try {
+            if (Test-TcpEndpoint -Url $Url) {
+                return
+            }
+        }
+        catch {
+            Start-Sleep -Seconds 1
+        }
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+
+    throw "Generated runtime host did not become reachable at $Url before timeout. Error log: $(Convert-ToRepoRelativePath $runtimeHostErrorPath)"
+}
+
+function Start-RuntimeCommerceFixture {
+    param([string]$RequestedCommerceNodeBaseUrl)
+
+    if (-not [string]::IsNullOrWhiteSpace($RequestedCommerceNodeBaseUrl)) {
+        return $RequestedCommerceNodeBaseUrl.TrimEnd("/")
+    }
+
+    if ($null -ne $script:runtimeCommerceFixtureProcess -and -not $script:runtimeCommerceFixtureProcess.HasExited) {
+        return $script:runtimeCommerceFixtureUrl
+    }
+
+    New-Item -ItemType Directory -Force -Path $analysisRoot | Out-Null
+    foreach ($path in @($runtimeCommerceFixtureReadyPath, $runtimeCommerceFixtureOutputPath, $runtimeCommerceFixtureErrorPath)) {
+        if (Test-Path -LiteralPath $path) {
+            Remove-Item -LiteralPath $path -Force
+        }
+    }
+
+    $fixturePort = Get-FreeTcpPort
+    $fixtureScript = Join-Path $builderRoot "scripts\qa\start-fast-commerce-fixture.mjs"
+    $arguments = @(
+        $fixtureScript,
+        "--store-key", $storeKey,
+        "--port", "$fixturePort",
+        "--ready-file", $runtimeCommerceFixtureReadyPath
+    )
+    $argumentText = (($arguments | ForEach-Object { Convert-ToProcessArgument $_ }) -join " ")
+
+    $script:runtimeCommerceFixtureProcess = Start-Process `
+        -FilePath "node" `
+        -ArgumentList $argumentText `
+        -WorkingDirectory $repoRoot `
+        -WindowStyle Hidden `
+        -RedirectStandardOutput $runtimeCommerceFixtureOutputPath `
+        -RedirectStandardError $runtimeCommerceFixtureErrorPath `
+        -PassThru
+
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds([Math]::Min($CommandTimeoutSeconds, 45))
+    do {
+        if ($script:runtimeCommerceFixtureProcess.HasExited) {
+            throw "Runtime Commerce fixture exited early with code $($script:runtimeCommerceFixtureProcess.ExitCode). Error log: $(Convert-ToRepoRelativePath $runtimeCommerceFixtureErrorPath)"
+        }
+
+        if (Test-Path -LiteralPath $runtimeCommerceFixtureReadyPath) {
+            $ready = Get-Content -LiteralPath $runtimeCommerceFixtureReadyPath -Raw | ConvertFrom-Json
+            $script:runtimeCommerceFixtureUrl = [string]$ready.url
+            return $script:runtimeCommerceFixtureUrl
+        }
+
+        Start-Sleep -Milliseconds 250
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+
+    throw "Runtime Commerce fixture did not become ready before timeout. Error log: $(Convert-ToRepoRelativePath $runtimeCommerceFixtureErrorPath)"
+}
+
+function Stop-GeneratedRuntimeHost {
+    if ($null -eq $script:runtimeHostProcess) {
+        return
+    }
+
+    if ($script:runtimeHostProcess.HasExited) {
+        return
+    }
+
+    try {
+        $script:runtimeHostProcess.Kill()
+        $script:runtimeHostProcess.WaitForExit(10000) | Out-Null
+    }
+    catch {
+    }
+}
+
+function Stop-RuntimeCommerceFixture {
+    if ($null -eq $script:runtimeCommerceFixtureProcess) {
+        return
+    }
+
+    if ($script:runtimeCommerceFixtureProcess.HasExited) {
+        return
+    }
+
+    try {
+        $script:runtimeCommerceFixtureProcess.Kill()
+        $script:runtimeCommerceFixtureProcess.WaitForExit(10000) | Out-Null
+    }
+    catch {
+    }
 }
 
 function Invoke-GateCommand {
@@ -371,7 +591,7 @@ function Save-GateReports {
 
     New-Item -ItemType Directory -Force -Path $analysisRoot | Out-Null
     $artifactPaths.Clear()
-    foreach ($path in @($reportJsonPath, $reportMdPath, $visualQaReportPath, $resolvedScreenshotRoot)) {
+    foreach ($path in @($reportJsonPath, $reportMdPath, $visualQaReportPath, $resolvedScreenshotRoot, $runtimeHostOutputPath, $runtimeHostErrorPath, $runtimeCommerceFixtureReadyPath, $runtimeCommerceFixtureOutputPath, $runtimeCommerceFixtureErrorPath)) {
         if (-not [string]::IsNullOrWhiteSpace($path)) {
             $artifactPaths.Add((Convert-ToRepoRelativePath $path))
         }
@@ -565,6 +785,13 @@ try {
         "build", $projectFile, "--configuration", $Configuration, "--no-restore"
     ) -LikelyCause "Generated visual files do not compile against Storefront Presentation packages."
 
+    if ($effectiveProofMode -eq "Runtime" -and $StartRuntimeHost) {
+        Invoke-AssertionStep -Name "start generated runtime host" -Command "dotnet run --project generated storefront --no-build" -LikelyCause "The generated storefront runtime could not start for browser visual QA." -Assertion {
+            $commerceNodeBaseUrl = Start-RuntimeCommerceFixture -RequestedCommerceNodeBaseUrl $RuntimeCommerceNodeBaseUrl
+            Start-GeneratedRuntimeHost -ProjectFile $projectFile -Url $BaseUrl -CommerceNodeBaseUrl $commerceNodeBaseUrl
+        }
+    }
+
     Invoke-AssertionStep -Name "run visual write ownership validation" -Command "agent-written-files.json checksum and allowlist check" -LikelyCause "Run record-agent-visual-writes.mjs after visual implementation or repair." -Assertion {
         if (-not (Test-Path -LiteralPath $agentWrittenFilesPath)) {
             throw "Agent visual write record is missing: $agentWrittenFilesPath"
@@ -614,13 +841,33 @@ try {
         throw "Visual QA did not pass. Report: $visualQaReportPath. Evidence: $resolvedScreenshotRoot"
     }
 
-    $null = Invoke-GateCommand -Name "run regeneration WhatIf" -FileName (Get-PreferredPowerShell) -Arguments @(
-        "-NoProfile", "-ExecutionPolicy", "Bypass",
-        "-File", (Join-Path $builderRoot "regenerate-storefront.ps1"),
-        "-ProjectRoot", $resolvedProjectRoot,
-        "-Scope", "all",
-        "-WhatIf"
-    ) -LikelyCause "Generated ownership, regeneration metadata, or handoff plan identity drifted."
+    $currentGenerationPlan = Get-Content -LiteralPath $generationPlanPath -Raw | ConvertFrom-Json
+    if ([string]$currentGenerationPlan.generationMode -eq "handoff") {
+        $null = Invoke-GateCommand -Name "run regeneration WhatIf" -FileName (Get-PreferredPowerShell) -Arguments @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", (Join-Path $builderRoot "regenerate-storefront.ps1"),
+            "-ProjectRoot", $resolvedProjectRoot,
+            "-Scope", "all",
+            "-WhatIf"
+        ) -LikelyCause "Generated ownership, regeneration metadata, or handoff plan identity drifted."
+    }
+    else {
+        Invoke-AssertionStep -Name "run static generation no-op ownership validation" -Command "generation-plan.json static ownership proof" -LikelyCause "Static pilot generation metadata is incomplete or no longer records protected ownership." -Assertion {
+            if ([string]$currentGenerationPlan.generationMode -ne "static") {
+                throw "Unsupported generationMode '$($currentGenerationPlan.generationMode)' for non-handoff MVP regeneration proof."
+            }
+
+            $plannedFiles = @($currentGenerationPlan.files)
+            if ($plannedFiles.Count -lt 1) {
+                throw "Static generation plan must record at least one planned file."
+            }
+
+            $protectedFiles = @($plannedFiles | Where-Object { [string]$_.ownership -eq "protected" -and ([string]$_.allowedOperation -eq "skip" -or [string]$_.action -eq "skip") })
+            if ($protectedFiles.Count -lt 1) {
+                throw "Static generation plan must record protected skip entries for platform-owned files."
+            }
+        }
+    }
 
     $finalDecision = "passed"
     Save-GateReports -Status $finalDecision
@@ -630,4 +877,8 @@ catch {
     Save-GateReports -Status $finalDecision
     Write-Error "Phase 4 MVP gate failed. Problem: $($_.Exception.Message). Likely cause: see $(Convert-ToRepoRelativePath $reportMdPath). Rerun: $(New-RerunCommand). Report: $(Convert-ToRepoRelativePath $reportMdPath). Evidence: $(Convert-ToRepoRelativePath $resolvedScreenshotRoot)"
     exit 1
+}
+finally {
+    Stop-GeneratedRuntimeHost
+    Stop-RuntimeCommerceFixture
 }

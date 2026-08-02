@@ -171,6 +171,38 @@ function Copy-DirectoryContents {
     }
 }
 
+function Write-PilotAgentTaskPackage {
+    param(
+        [string]$AnalysisRoot,
+        [string]$GenerationPlanPath
+    )
+
+    $taskPackageRoot = Join-Path $AnalysisRoot "agent-task-package"
+    New-Item -ItemType Directory -Force -Path $taskPackageRoot | Out-Null
+    $generationPlanHash = "sha256:" + (Get-FileHash -LiteralPath $GenerationPlanPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $manifest = [ordered]@{
+        schemaVersion = "1.0.0"
+        artifactKind = "agent-task-package"
+        artifactId = "agent-task-package.$PilotProjectName"
+        projectName = $PilotProjectName
+        storeKey = $PilotStoreKey
+        generationPlanHash = $generationPlanHash
+        allowedOutputFiles = @(
+            [ordered]@{
+                targetPath = "Pages/Ssr/Home/HomePage.razor"
+                planEntryId = "home-page-visual-shell"
+                ownership = "generated"
+                visualShellOnly = $true
+                slots = @("home.hero")
+            }
+        )
+    }
+
+    $manifestPath = Join-Path $taskPackageRoot "manifest.json"
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 20), $utf8NoBom)
+}
+
 function Assert-CleanWorkingTree {
     $status = (& git status --porcelain=v1)
     if (-not [string]::IsNullOrWhiteSpace(($status -join "`n"))) {
@@ -447,6 +479,30 @@ try {
         Set-Content -LiteralPath (Join-Path $analysisRoot "fresh-generation-marker.txt") -Value "fresh generated during Phase 4.11 final closure gate" -Encoding UTF8
     }
 
+    $pilotAnalysisRootForPlan = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
+    $pilotGenerationPlanPath = Join-Path $pilotAnalysisRootForPlan "generation-plan.json"
+    Invoke-GateCommand -Name "write deterministic pilot generation plan" -FileName "node" -Arguments @(
+        "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\plan-generation-files.mjs",
+        "--project-name", $PilotProjectName,
+        "--store-key", $PilotStoreKey,
+        "--output-root", $resolvedPilotGeneratedOutputRoot,
+        "--repo-root", $repoRoot,
+        "--output", (Join-Path $pilotAnalysisRootForPlan "generation-plan.yaml"),
+        "--json-output", $pilotGenerationPlanPath
+    ) -LikelyCause "The pilot generation plan could not be written from deterministic StorefrontBuilder inputs."
+
+    Invoke-AssertionStep -Name "write deterministic pilot agent task package" -Command "write agent-task-package/manifest.json" -LikelyCause "The generated pilot task package manifest could not be written." -Assertion {
+        Write-PilotAgentTaskPackage -AnalysisRoot $pilotAnalysisRootForPlan -GenerationPlanPath $pilotGenerationPlanPath
+    }
+
+    Invoke-GateCommand -Name "run automatic pilot changed-file detection" -FileName "node" -Arguments @(
+        "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs",
+        "--project-root", $resolvedPilotGeneratedProjectRoot,
+        "--from-checkpoint", "docs\storefront-analysis\visual-checkpoints\phase4-11-closure-pilot\visual-checkpoint.json",
+        "--implementation-report", "docs\storefront-analysis\visual-implementation-report.json",
+        "--closure-mode"
+    ) -LikelyCause "Automatic changed-file detection failed for the fresh pilot visual checkpoint."
+
     if ($FunctionalProofLevel -eq "FoundationFunctionalFast") {
         Invoke-GateCommand -Name "run StorefrontBuilder generated fast functional proof" -FileName (Get-PreferredPowerShell) -Arguments @(
             "-NoProfile", "-ExecutionPolicy", "Bypass",
@@ -482,6 +538,7 @@ try {
         "-GeneratedProjectRoot", $resolvedPilotGeneratedProjectRoot,
         "-ProofMode", "Runtime",
         "-BaseUrl", $PilotBaseUrl,
+        "-StartRuntimeHost",
         "-HandoffRoot", $resolvedPilotHandoffRoot,
         "-SkipRepair",
         "-CommandTimeoutSeconds", $CommandTimeoutSeconds

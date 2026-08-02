@@ -20,6 +20,10 @@ const agentPackageManifestPath = join(analysisRoot, "agent-task-package", "manif
 const agentWrittenFilesPath = join(analysisRoot, "agent-written-files.json");
 const planText = readFileSync(generationPlanPath, "utf8");
 const plan = JSON.parse(planText);
+if (plan.generationMode !== "handoff") {
+  console.log(`StorefrontBuilder handoff boundary validation skipped for non-handoff generation plan: ${projectRoot}`);
+  process.exit(0);
+}
 const metadata = readFile(metadataPath);
 const generatedManifest = readFile(generatedManifestPath);
 const manifestEntries = parseManifestEntries(generatedManifest);

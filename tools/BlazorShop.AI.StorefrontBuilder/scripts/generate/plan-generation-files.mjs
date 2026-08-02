@@ -82,6 +82,8 @@ if (dryRun) {
 
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, `${toYaml(plan)}\n`, "utf8");
+mkdirSync(dirname(jsonOutput), { recursive: true });
+writeFileSync(jsonOutput, stableJson(plan), "utf8");
 
 function entry(filePath, ownership, action, sourceArtifactIds, expectedSlot, validationRuleIds, conflictBehavior) {
   const targetPath = filePath.startsWith(`${root}/`) ? filePath.slice(root.length + 1) : filePath;
