@@ -24,7 +24,7 @@ public sealed class StorefrontBuilderHandoffVisualQaTests
         var report = await File.ReadAllTextAsync(Path.Combine(projectRoot, "docs", "storefront-analysis", "visual-qa-report.md"));
         Assert.Contains("Proof mode: skeleton", report, StringComparison.Ordinal);
         Assert.Contains("Handoff mode: true", report, StringComparison.Ordinal);
-        Assert.Contains("Visual fidelity diff is not a hard gate in this phase.", report, StringComparison.Ordinal);
+        Assert.Contains("Visual fidelity diff is not a hard gate for skeleton proof.", report, StringComparison.Ordinal);
         Assert.Contains("shell-home desktop-1440", report, StringComparison.Ordinal);
         Assert.Contains("shell-home mobile-390", report, StringComparison.Ordinal);
         Assert.Contains("product.purchase", report, StringComparison.Ordinal);

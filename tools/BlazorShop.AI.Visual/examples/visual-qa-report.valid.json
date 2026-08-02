@@ -1,6 +1,7 @@
 {
   "schemaVersion": "0.1.0",
   "operationId": "pilot-css-foundation",
+  "referenceEvidenceReviewed": true,
   "runtimeEvidencePaths": [
     "docs/storefront-analysis/visual-qa/home-desktop.png"
   ],
@@ -25,6 +26,17 @@
     "responsive",
     "ecommerce-slot-coverage"
   ],
+  "acceptedDifferences": [
+    {
+      "id": "minor-copy-wrap-home-mobile",
+      "severity": "Minor",
+      "pageId": "home",
+      "viewport": "mobile",
+      "reason": "Runtime line wrap differs from reference but the product card and primary action remain visible.",
+      "reviewer": "visual-qa-agent",
+      "followUp": "Track as polish outside release closure."
+    }
+  ],
   "unacceptedCriticalCount": 0,
   "unacceptedMajorCount": 0,
   "finalDecision": "passed",
@@ -39,7 +51,18 @@
   "evidencePaths": [
     "docs/storefront-analysis/visual-qa-report.md"
   ],
-  "issues": [],
+  "issues": [
+    {
+      "id": "minor-copy-wrap-home-mobile",
+      "severity": "Minor",
+      "message": "Mobile headline wraps one line earlier than reference.",
+      "targetFileHints": [
+        "wwwroot/css/storefront-builder.generated.css"
+      ],
+      "accepted": true,
+      "acceptedReason": "Polish-only difference with no ecommerce flow impact."
+    }
+  ],
   "repairAttempts": [
     {
       "attempt": 0,

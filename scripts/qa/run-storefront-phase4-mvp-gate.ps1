@@ -477,7 +477,71 @@ try {
             Assert-RequiredFields -Json $implementationReport -ArtifactName "visual-implementation-report.json" -Fields @("schemaVersion", "operationId", "checkpointPath", "changedFiles", "recorderResultPath", "boundaryResult", "buildResult", "unresolvedItems")
 
             $qaReport = Read-RequiredJsonArtifact -Path $visualQaReportJsonPath -ArtifactName "visual-qa-report.json" -FixCommand "storefront-visual-qa"
-            Assert-RequiredFields -Json $qaReport -ArtifactName "visual-qa-report.json" -Fields @("schemaVersion", "operationId", "runtimeEvidencePaths", "referenceEvidencePaths", "pageViewportCoverage", "independentReviewer", "comparisonDimensions", "unacceptedCriticalCount", "unacceptedMajorCount", "finalDecision", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed")
+            Assert-RequiredFields -Json $qaReport -ArtifactName "visual-qa-report.json" -Fields @("schemaVersion", "operationId", "referenceEvidenceReviewed", "runtimeEvidencePaths", "referenceEvidencePaths", "pageViewportCoverage", "independentReviewer", "comparisonDimensions", "acceptedDifferences", "unacceptedCriticalCount", "unacceptedMajorCount", "finalDecision", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed")
+            if ($qaReport.referenceEvidenceReviewed -ne $true) {
+                throw "visual-qa-report.json referenceEvidenceReviewed must be true for closure. Fix: compare reference evidence with runtime screenshots and rerun storefront-visual-qa."
+            }
+
+            if (@($qaReport.referenceEvidencePaths).Count -lt 1) {
+                throw "visual-qa-report.json referenceEvidencePaths must contain at least one reviewed reference artifact."
+            }
+
+            if (@($qaReport.runtimeEvidencePaths).Count -lt 1) {
+                throw "visual-qa-report.json runtimeEvidencePaths must contain at least one runtime evidence artifact."
+            }
+
+            $unacceptedCriticalCount = [int]$qaReport.unacceptedCriticalCount
+            $unacceptedMajorCount = [int]$qaReport.unacceptedMajorCount
+            if (($qaReport.passed -eq $true -or [string]$qaReport.finalDecision -eq "passed") -and ($unacceptedCriticalCount -gt 0 -or $unacceptedMajorCount -gt 0)) {
+                throw "visual-qa-report.json says pass but unaccepted critical/major counters are nonzero."
+            }
+
+            if ($unacceptedCriticalCount -ne 0) {
+                throw "visual-qa-report.json has $unacceptedCriticalCount unaccepted critical issue(s). Closure requires zero."
+            }
+
+            if ($unacceptedMajorCount -ne 0) {
+                throw "visual-qa-report.json has $unacceptedMajorCount unaccepted major issue(s). Closure requires zero."
+            }
+
+            if ($qaReport.passed -ne $true -or [string]$qaReport.finalDecision -ne "passed") {
+                throw "visual-qa-report.json must have passed=true and finalDecision='passed' for closure."
+            }
+
+            $requiredCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($coverage in @($visualPlan.pageViewportCoverage)) {
+                foreach ($viewport in @($coverage.viewports)) {
+                    [void]$requiredCoverage.Add(("{0}|{1}" -f $coverage.pageId, $viewport))
+                }
+            }
+
+            if ($requiredCoverage.Count -lt 1) {
+                throw "visual-plan.json pageViewportCoverage must require at least one page/viewport for closure."
+            }
+
+            $qaCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($coverage in @($qaReport.pageViewportCoverage)) {
+                foreach ($viewport in @($coverage.viewports)) {
+                    [void]$qaCoverage.Add(("{0}|{1}" -f $coverage.pageId, $viewport))
+                }
+            }
+
+            $captureCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($capture in @($qaReport.viewportCaptures)) {
+                if (-not [string]::IsNullOrWhiteSpace([string]$capture.screenshotPath)) {
+                    [void]$captureCoverage.Add(("{0}|{1}" -f $capture.pageId, $capture.viewport))
+                }
+            }
+
+            foreach ($required in $requiredCoverage) {
+                if (-not $qaCoverage.Contains($required)) {
+                    throw "visual-qa-report.json pageViewportCoverage is missing required coverage '$required' from visual-plan.json."
+                }
+
+                if (-not $captureCoverage.Contains($required)) {
+                    throw "visual-qa-report.json viewportCaptures is missing runtime screenshot coverage '$required' from visual-plan.json."
+                }
+            }
 
             $written = Read-RequiredJsonArtifact -Path $agentWrittenFilesPath -ArtifactName "agent-written-files.json" -FixCommand "record-agent-visual-writes.mjs"
             Assert-RequiredFields -Json $written -ArtifactName "agent-written-files.json" -Fields @("schemaVersion", "artifactKind", "artifactId", "detectionMode", "generationPlanHash", "files")

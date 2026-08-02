@@ -31,6 +31,7 @@ const proofMode = normalizeProofMode(proofModeArg, fixtureRoot);
 const baseUrl = baseUrlArg ?? "";
 const allowPlannedPlaceholders = hasFlag("--allow-planned-placeholders");
 const reportPath = `${projectRoot}/docs/storefront-analysis/visual-qa-report.md`;
+const runtimeSummaryPath = `${projectRoot}/docs/storefront-analysis/visual-qa-runtime-summary.json`;
 const handoffPlan = readHandoffPlan(projectRoot);
 const pages = buildPages(handoffPlan);
 const baseOrigin = proofMode === "runtime" ? new URL(baseUrl).origin : "";
@@ -300,6 +301,7 @@ discrepancies.push(...placeholderFindings);
 const criticalCount = discrepancies.filter((item) => item.severity === "Critical").length;
 const majorCount = discrepancies.filter((item) => item.severity === "Major").length;
 const minorCount = discrepancies.filter((item) => item.severity === "Minor").length;
+const passed = criticalCount === 0 && majorCount <= 3;
 const report = [
   "# StorefrontBuilder Visual Smoke QA Report",
   "",
@@ -308,8 +310,16 @@ const report = [
   `Fixture root: ${fixtureRoot ?? "none"}`,
   `Handoff mode: ${handoffPlan ? "true" : "false"}`,
   `Runtime proof: ${proofMode === "runtime" ? "true" : "false"}`,
-  "Reference visual diff: not implemented",
-  "Visual fidelity diff is not a hard gate in this phase.",
+  ...(proofMode === "skeleton"
+    ? [
+        "Reference visual diff: not implemented for skeleton proof.",
+        "Visual fidelity diff is not a hard gate for skeleton proof.",
+      ]
+    : [
+        "Reference visual review: required in visual-qa-report.json.",
+        "Pixel-perfect scoring: deferred; independent reference review remains required.",
+      ]),
+  `Machine-readable runtime summary: ${runtimeSummaryPath.replaceAll("\\", "/")}`,
   "",
   "## Severity Model",
   "",
@@ -323,8 +333,8 @@ const report = [
   `- Major: ${majorCount}`,
   `- Minor: ${minorCount}`,
   "- Major threshold: 3",
-  "- Smoke result: " + (criticalCount === 0 && majorCount <= 3 ? "pass" : "fail"),
-  "- Visual fidelity result: not implemented",
+  "- Smoke result: " + (passed ? "pass" : "fail"),
+  "- Visual fidelity result: " + (proofMode === "runtime" ? "requires independent reference QA report" : "not implemented for skeleton proof"),
   "",
   "## CSS Responses",
   "",
@@ -358,9 +368,36 @@ const report = [
 
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, report, "utf8");
+writeFileSync(runtimeSummaryPath, JSON.stringify({
+  schemaVersion: "0.1.0",
+  artifactKind: "storefront-builder.visual-qa-runtime-summary",
+  proofMode,
+  baseUrl: baseUrl || null,
+  fixtureRoot: fixtureRoot ? fixtureRoot.replaceAll("\\", "/") : null,
+  handoffMode: Boolean(handoffPlan),
+  pages: pages.map((page) => ({
+    pageName: page.pageName,
+    pageId: page.pageId,
+    route: page.route,
+    requiredSlots: page.requiredSlots,
+  })),
+  routeStatuses,
+  captures,
+  cssResponses,
+  browserEvents,
+  runtimeNetworkAudit: runtimeRequests,
+  discrepancies,
+  counts: {
+    critical: criticalCount,
+    major: majorCount,
+    minor: minorCount,
+  },
+  passed,
+}, null, 2), "utf8");
 console.log(`Visual QA report written to ${reportPath}`);
+console.log(`Visual QA runtime summary written to ${runtimeSummaryPath}`);
 
-if (criticalCount > 0 || majorCount > 3) {
+if (!passed) {
   process.exitCode = 1;
 }
 

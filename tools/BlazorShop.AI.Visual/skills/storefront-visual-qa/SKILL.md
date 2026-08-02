@@ -20,13 +20,14 @@ Use this skill after visual implementation evidence exists and StorefrontBuilder
 7. generated project `docs/storefront-analysis/visual-implementation-checklist.json`
 8. generated project `docs/storefront-analysis/visual-implementation-report.json`
 9. generated project latest `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`
-10. generated project visual QA report and screenshots from `run-visual-qa.mjs`
+10. reference evidence paths listed by the visual plan or task package manifest
+11. generated project runtime visual QA report and screenshots from `run-visual-qa.mjs`
 
 Stop if browser evidence is missing, stale, or only compile/smoke evidence exists.
 
 ## Browser Evidence Review
 
-Inspect every captured desktop, tablet, and mobile screenshot required by the visual plan. Review the markdown output from `run-visual-qa.mjs` and record:
+Inspect every captured desktop, tablet, and mobile screenshot required by the visual plan. Compare each runtime screenshot against the approved reference evidence for the same page and viewport. Review the markdown output and machine-readable summary from `run-visual-qa.mjs` and record:
 
 - blank page findings
 - overlapping text
@@ -40,7 +41,21 @@ Inspect every captured desktop, tablet, and mobile screenshot required by the vi
 - missing required visual slots from the plan
 - console warnings/errors, page errors, failed requests, CSS status, overflow findings, and placeholder findings
 
+Record `referenceEvidenceReviewed: true` only after the reference evidence paths were opened and compared against runtime evidence. QA must fail if reference evidence is missing, stale, or not comparable to the required page/viewport matrix.
+
 QA cannot pass from compile-only, restore-only, or smoke-only evidence.
+
+## Closure Severity
+
+Use this severity vocabulary in `visual-qa-report.json`:
+
+- `Critical`: blank route, broken core layout, missing checkout/cart/account entry, blocked main flow, fatal runtime browser error.
+- `Major`: visible mismatch against reference that harms ecommerce use, important responsive break, missing visual slot, broken gallery or product action area.
+- `Minor`: polish difference that does not block release.
+
+Closure requires `unacceptedCriticalCount: 0` and `unacceptedMajorCount: 0`. Minor issues may remain only when they are recorded with a follow-up and are not a release blocker.
+
+Accepted differences must be explicit in `acceptedDifferences` with page, viewport, severity, reviewer, and reason. Do not hide accepted differences inside prose-only notes.
 
 ## Repair Policy
 
@@ -76,9 +91,11 @@ The JSON output must follow `tools/BlazorShop.AI.Visual/schemas/visual-qa-report
 - evidence paths reviewed
 - runtime evidence paths
 - reference evidence paths
+- `referenceEvidenceReviewed`
 - page and viewport coverage
 - independent reviewer identity
 - comparison dimensions
+- accepted differences with reason
 - unaccepted critical and major issue counters
 - pass/fail decision
 - issue severity

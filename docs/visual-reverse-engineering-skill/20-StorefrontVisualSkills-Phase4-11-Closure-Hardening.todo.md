@@ -365,41 +365,41 @@ Goal: make independent QA compare runtime output against approved reference evid
 
 Tasks:
 
-- [ ] Update `tools/BlazorShop.AI.Visual/schemas/visual-qa-report.schema.json` to require:
-  - [ ] `referenceEvidenceReviewed`.
-  - [ ] `referenceEvidencePaths`.
-  - [ ] `runtimeEvidencePaths`.
-  - [ ] `pageViewportCoverage`.
-  - [ ] `comparisonDimensions`.
-  - [ ] `acceptedDifferences`.
-  - [ ] `unacceptedCriticalCount`.
-  - [ ] `unacceptedMajorCount`.
-  - [ ] `independentReviewer`.
-  - [ ] `finalDecision`.
-- [ ] Define severity vocabulary for closure:
-  - [ ] `Critical`: blank route, broken core layout, missing checkout/cart/account entry, blocked main flow, fatal runtime browser error.
-  - [ ] `Major`: visible mismatch against reference that harms ecommerce use, important responsive break, missing visual slot, broken gallery or product action area.
-  - [ ] `Minor`: polish difference that does not block release.
-- [ ] Update `storefront-visual-qa/SKILL.md`:
-  - [ ] Read `agent-task-package/manifest.json`, reference evidence paths, visual plan, implementation checklist, implementation report, checkpoint, and runtime visual QA report.
-  - [ ] Compare reference and runtime screenshots per required page/viewport.
-  - [ ] Record accepted differences with reason.
-  - [ ] Require zero unaccepted critical and zero unaccepted major for closure.
-  - [ ] Allow minor issues only if recorded with follow-up and not a release blocker.
-- [ ] Update `run-visual-qa.mjs`:
-  - [ ] Stop writing `Reference visual diff: not implemented` for closure mode.
-  - [ ] Either emit a JSON evidence report or produce machine-readable summary consumed by the QA skill.
-  - [ ] Include screenshot paths in stable generated-project-local or report-root-relative form.
-- [ ] Update MVP gate:
-  - [ ] Read `visual-qa-report.json`.
-  - [ ] Fail when `referenceEvidenceReviewed` is false.
-  - [ ] Fail when required page/viewport coverage is missing.
-  - [ ] Fail when unaccepted critical or major counts are nonzero.
-- [ ] Add negative fixture/test cases:
-  - [ ] reference evidence missing.
-  - [ ] runtime capture missing.
-  - [ ] major issue left unaccepted.
-  - [ ] QA report says pass but counters disagree.
+- [x] Update `tools/BlazorShop.AI.Visual/schemas/visual-qa-report.schema.json` to require:
+  - [x] `referenceEvidenceReviewed`.
+  - [x] `referenceEvidencePaths`.
+  - [x] `runtimeEvidencePaths`.
+  - [x] `pageViewportCoverage`.
+  - [x] `comparisonDimensions`.
+  - [x] `acceptedDifferences`.
+  - [x] `unacceptedCriticalCount`.
+  - [x] `unacceptedMajorCount`.
+  - [x] `independentReviewer`.
+  - [x] `finalDecision`.
+- [x] Define severity vocabulary for closure:
+  - [x] `Critical`: blank route, broken core layout, missing checkout/cart/account entry, blocked main flow, fatal runtime browser error.
+  - [x] `Major`: visible mismatch against reference that harms ecommerce use, important responsive break, missing visual slot, broken gallery or product action area.
+  - [x] `Minor`: polish difference that does not block release.
+- [x] Update `storefront-visual-qa/SKILL.md`:
+  - [x] Read `agent-task-package/manifest.json`, reference evidence paths, visual plan, implementation checklist, implementation report, checkpoint, and runtime visual QA report.
+  - [x] Compare reference and runtime screenshots per required page/viewport.
+  - [x] Record accepted differences with reason.
+  - [x] Require zero unaccepted critical and zero unaccepted major for closure.
+  - [x] Allow minor issues only if recorded with follow-up and not a release blocker.
+- [x] Update `run-visual-qa.mjs`:
+  - [x] Stop writing `Reference visual diff: not implemented` for closure mode.
+  - [x] Either emit a JSON evidence report or produce machine-readable summary consumed by the QA skill.
+  - [x] Include screenshot paths in stable generated-project-local or report-root-relative form.
+- [x] Update MVP gate:
+  - [x] Read `visual-qa-report.json`.
+  - [x] Fail when `referenceEvidenceReviewed` is false.
+  - [x] Fail when required page/viewport coverage is missing.
+  - [x] Fail when unaccepted critical or major counts are nonzero.
+- [x] Add negative fixture/test cases:
+  - [x] reference evidence missing.
+  - [x] runtime capture missing.
+  - [x] major issue left unaccepted.
+  - [x] QA report says pass but counters disagree.
 
 Checks:
 
@@ -411,10 +411,25 @@ rg -n "Reference visual diff|referenceEvidenceReviewed|unacceptedMajor|unaccepte
 
 DoD:
 
-- [ ] Visual QA closure cannot pass without reference evidence review.
-- [ ] Closure requires zero unaccepted critical and zero unaccepted major issues.
-- [ ] Accepted differences are explicit and reviewable.
-- [ ] Pixel-perfect scoring remains deferred and clearly out of scope.
+- [x] Visual QA closure cannot pass without reference evidence review.
+- [x] Closure requires zero unaccepted critical and zero unaccepted major issues.
+- [x] Accepted differences are explicit and reviewable.
+- [x] Pixel-perfect scoring remains deferred and clearly out of scope.
+
+Evidence:
+
+- `visual-qa-report.schema.json` now requires `referenceEvidenceReviewed`, evidence paths, coverage, comparison dimensions, `acceptedDifferences`, independent reviewer, final decision, and unaccepted critical/major counters.
+- QA report issue severity now uses closure vocabulary: `Critical`, `Major`, and `Minor`; accepted differences require page, viewport, severity, reviewer, and reason.
+- `storefront-visual-qa/SKILL.md` now requires reading reference evidence, comparing reference/runtime screenshots per page/viewport, recording accepted differences, and blocking closure on any unaccepted critical or major issue.
+- `run-visual-qa.mjs` now writes `visual-qa-runtime-summary.json` with proof mode, route statuses, captures, CSS responses, browser events, runtime network audit, discrepancies, counts, and pass status.
+- Runtime visual QA report no longer writes `Reference visual diff: not implemented`; it states independent reference review is required and pixel-perfect scoring is deferred.
+- MVP gate now validates `visual-qa-report.json` reference review, runtime/reference evidence presence, required coverage from `visual-plan.json`, viewport capture coverage, zero unaccepted critical/major counters, and pass/counter consistency.
+- Added negative MVP gate tests for missing reference review, missing runtime evidence, unaccepted major issue, pass flag with nonzero counters, and missing required viewport coverage.
+- `node tools\BlazorShop.AI.Visual\scripts\validate-visual-examples.mjs` passed: 6 examples.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --help` passed.
+- `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffVisualQaTests|FullyQualifiedName~StorefrontPhase4MvpGateVisualQaContractTests" --blame-hang --blame-hang-timeout 5m` passed: 15 tests in 3m 29s.
+- `rg -n "Reference visual diff|referenceEvidenceReviewed|unacceptedMajor|unacceptedCritical|acceptedDifferences|independentReviewer" tools\BlazorShop.AI.Visual tools\BlazorShop.AI.StorefrontBuilder scripts\qa` returned the expected schema, skill, gate, example, and skeleton-only reference-diff references.
 
 ## Phase 4.11.5 - Functional And Commerce Closure Gate
 
