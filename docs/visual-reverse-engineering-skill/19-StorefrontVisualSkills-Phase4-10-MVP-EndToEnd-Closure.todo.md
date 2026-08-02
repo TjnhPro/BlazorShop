@@ -167,26 +167,26 @@ Goal: create the visual skill workspace without adding production runtime coupli
 
 Tasks:
 
-- [ ] Create `tools/BlazorShop.AI.Visual/`.
-- [ ] Add `tools/BlazorShop.AI.Visual/README.md` explaining:
-  - [ ] this is a development-time skill workspace.
-  - [ ] it does not generate storefront projects directly.
-  - [ ] it consumes StorefrontBuilder artifacts.
-  - [ ] it never calls Commerce Node, Control Plane, Storefront Runtime, or Storefront V2.
-- [ ] Add `tools/BlazorShop.AI.Visual/version.json` for visual skill/report contract versioning.
-- [ ] Add folders:
-  - [ ] `skills/`.
-  - [ ] `skills/storefront-visual-plan/`.
-  - [ ] `skills/storefront-visual-implement/`.
-  - [ ] `skills/storefront-visual-qa/`.
-  - [ ] `references/`.
-  - [ ] `schemas/`.
-  - [ ] `scripts/`.
-  - [ ] `adapters/`.
-  - [ ] `examples/`.
-- [ ] Do not add a `.csproj`.
-- [ ] Do not add references from existing production projects into this folder.
-- [ ] Add `.gitkeep` files only where empty folders are needed.
+- [x] Create `tools/BlazorShop.AI.Visual/`.
+- [x] Add `tools/BlazorShop.AI.Visual/README.md` explaining:
+  - [x] this is a development-time skill workspace.
+  - [x] it does not generate storefront projects directly.
+  - [x] it consumes StorefrontBuilder artifacts.
+  - [x] it never calls Commerce Node, Control Plane, Storefront Runtime, or Storefront V2.
+- [x] Add `tools/BlazorShop.AI.Visual/version.json` for visual skill/report contract versioning.
+- [x] Add folders:
+  - [x] `skills/`.
+  - [x] `skills/storefront-visual-plan/`.
+  - [x] `skills/storefront-visual-implement/`.
+  - [x] `skills/storefront-visual-qa/`.
+  - [x] `references/`.
+  - [x] `schemas/`.
+  - [x] `scripts/`.
+  - [x] `adapters/`.
+  - [x] `examples/`.
+- [x] Do not add a `.csproj`.
+- [x] Do not add references from existing production projects into this folder.
+- [x] Add `.gitkeep` files only where empty folders are needed.
 
 Checks:
 
@@ -197,9 +197,18 @@ rg -n "<Project Sdk=|ProjectReference|PackageReference|CommerceNode|ControlPlane
 
 DoD:
 
-- [ ] Workspace exists.
-- [ ] Workspace is documentation/script/schema only.
-- [ ] Static search proves no runtime dependency has been introduced.
+- [x] Workspace exists.
+- [x] Workspace is documentation/script/schema only.
+- [x] Static search proves no runtime dependency has been introduced.
+
+Phase 4.10.1 evidence:
+
+- Added inert workspace root `tools/BlazorShop.AI.Visual/`.
+- Added `README.md`, `version.json`, and required folders with `.gitkeep` files for empty folders.
+- Did not add a `.csproj`.
+- `Get-ChildItem tools\BlazorShop.AI.Visual -Recurse` confirmed the expected folder/file layout.
+- `Get-ChildItem tools\BlazorShop.AI.Visual -Recurse -Filter *.csproj` returned no files.
+- `rg -n "<Project Sdk=|ProjectReference|PackageReference|CommerceNode|ControlPlane|Storefront\.V2" tools\BlazorShop.AI.Visual -S` returned no matches.
 
 ## Phase 4.10.2 - Shared Visual References
 
