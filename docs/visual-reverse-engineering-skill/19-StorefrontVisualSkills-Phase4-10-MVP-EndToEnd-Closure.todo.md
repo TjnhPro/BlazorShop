@@ -445,20 +445,20 @@ Goal: capture before/after evidence around agent edits so QA can prove exactly w
 
 Tasks:
 
-- [ ] Add a checkpoint contract that records:
-  - [ ] generated project root.
-  - [ ] operation ID.
-  - [ ] source visual plan hash.
-  - [ ] source checklist hash.
-  - [ ] pre-edit hashes for all allowed files.
-  - [ ] post-edit hashes for all changed files.
-  - [ ] changed file detection result.
-  - [ ] visual write recorder result path.
-- [ ] Add guidance that changed files must be detected from filesystem diff, not trusted only from an agent-supplied list.
-- [ ] Require the checkpoint to fail if changed files include paths outside the allowed task package.
-- [ ] Require the checkpoint to fail if plan/checklist hashes do not match the files used by the implementation skill.
-- [ ] Require checkpoint artifacts under `docs/storefront-analysis/visual-checkpoints/{operationId}/`.
-- [ ] Ensure checkpoint artifacts are generated-project-local and disposable.
+- [x] Add a checkpoint contract that records:
+  - [x] generated project root.
+  - [x] operation ID.
+  - [x] source visual plan hash.
+  - [x] source checklist hash.
+  - [x] pre-edit hashes for all allowed files.
+  - [x] post-edit hashes for all changed files.
+  - [x] changed file detection result.
+  - [x] visual write recorder result path.
+- [x] Add guidance that changed files must be detected from filesystem diff, not trusted only from an agent-supplied list.
+- [x] Require the checkpoint to fail if changed files include paths outside the allowed task package.
+- [x] Require the checkpoint to fail if plan/checklist hashes do not match the files used by the implementation skill.
+- [x] Require checkpoint artifacts under `docs/storefront-analysis/visual-checkpoints/{operationId}/`.
+- [x] Ensure checkpoint artifacts are generated-project-local and disposable.
 
 Checks:
 
@@ -468,8 +468,16 @@ rg -n "visual-checkpoints|before|after|hash|allowed files|changed files" tools\B
 
 DoD:
 
-- [ ] QA can inspect exact visual changes without reading conversation history.
-- [ ] A stale checklist cannot silently drive implementation.
+- [x] QA can inspect exact visual changes without reading conversation history.
+- [x] A stale checklist cannot silently drive implementation.
+
+Phase 4.10.6 evidence:
+
+- Added `tools/BlazorShop.AI.Visual/references/visual-checkpoint-contract.md`.
+- The contract records generated project root, operation ID, source plan/checklist hashes, pre/post file hashes, changed file detection, diff summary, and StorefrontBuilder recorder path.
+- The contract requires filesystem hash/path detection rather than trusting agent-supplied changed file lists.
+- The contract fails on out-of-package changes, protected changes, plan/checklist hash drift, and missing recorder result.
+- `rg -n "visual-checkpoints|before|after|hash|allowed files|changed files" tools\BlazorShop.AI.Visual` returned checkpoint contract and schema/example matches.
 
 ## Phase 4.10.7 - `storefront-visual-implement`
 
