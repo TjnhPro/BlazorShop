@@ -26,6 +26,7 @@ $consumerDryRunResult = "not-run"
 $negativeMutationCount = "not-recorded"
 $storefrontBuilderSmokeResult = "not-run"
 $closureDecision = "blocked until gate passes on final clean HEAD"
+$phase3DWrapperTimeoutSeconds = [Math]::Max($CommandTimeoutSeconds * 3, 3600)
 
 function Format-CommandArgument {
     param([Parameter(Mandatory = $true)][string]$Value)
@@ -280,7 +281,8 @@ try {
     Invoke-Step "Phase 3D final closure gate" {
         Invoke-LoggedProcess `
             -FileName "powershell" `
-            -Arguments @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $repoRoot "scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1"), "-CommandTimeoutSeconds", "$CommandTimeoutSeconds")
+            -Arguments @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $repoRoot "scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1"), "-CommandTimeoutSeconds", "$CommandTimeoutSeconds") `
+            -TimeoutSeconds $phase3DWrapperTimeoutSeconds
         $script:phase3DGateResult = "passed"
     }
 
