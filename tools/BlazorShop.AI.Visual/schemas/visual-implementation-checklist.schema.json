@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/schemas/visual-implementation-checklist.schema.json",
+  "title": "Storefront Visual Implementation Checklist",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "checklistId",
+    "sourceVisualPlanHash",
+    "fileTasks",
+    "acceptanceChecks",
+    "requiredScreenshots",
+    "forbiddenEdits"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "checklistId": { "type": "string" },
+    "sourceVisualPlanHash": { "type": "string" },
+    "fileTasks": { "type": "array", "items": { "$ref": "#/$defs/fileTask" } },
+    "acceptanceChecks": { "type": "array", "items": { "type": "string" } },
+    "requiredScreenshots": { "type": "array", "items": { "type": "string" } },
+    "forbiddenEdits": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "fileTask": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "filePath", "taskIds", "status" ],
+      "properties": {
+        "filePath": { "type": "string" },
+        "taskIds": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": [ "pending", "blocked", "complete" ] },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

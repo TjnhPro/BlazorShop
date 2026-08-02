@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "0.1.0",
+  "commandMetadata": {
+    "command": "scripts/qa/run-storefront-phase4-mvp-gate.ps1",
+    "startedUtc": "2026-08-02T00:00:00Z",
+    "finishedUtc": "2026-08-02T00:01:00Z"
+  },
+  "generatedProjectRoot": "obj/storefront-builder/generated/BlazorShop.Storefront.Phase4VisualPilot",
+  "inputHandoffMetadata": {
+    "handoffRoot": "obj/storefront-reverse-engineering/portable-handoff/root-sample",
+    "handoffHash": "sha256:handoff",
+    "generationPlanHash": "sha256:generation-plan",
+    "taskPackageHash": "sha256:task-package"
+  },
+  "gateSteps": [
+    {
+      "name": "visual-qa",
+      "status": "passed",
+      "command": "node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs"
+    }
+  ],
+  "artifactPaths": [
+    "docs/storefront-analysis/phase4-mvp-gate-report.md"
+  ],
+  "finalDecision": "passed"
+}

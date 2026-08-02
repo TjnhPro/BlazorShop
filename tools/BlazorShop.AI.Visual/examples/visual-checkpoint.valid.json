@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "0.1.0",
+  "checkpointId": "checkpoint-home-visual",
+  "operationId": "home-visual-pass",
+  "planHash": "sha256:visual-plan",
+  "checklistHash": "sha256:checklist",
+  "preEditFileHashes": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "sha256": "sha256:before"
+    }
+  ],
+  "postEditFileHashes": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "sha256": "sha256:after"
+    }
+  ],
+  "diffSummary": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "changeType": "modified"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/schemas/phase4-mvp-gate-report.schema.json",
+  "title": "Storefront Phase 4 MVP Gate Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "commandMetadata",
+    "generatedProjectRoot",
+    "inputHandoffMetadata",
+    "gateSteps",
+    "artifactPaths",
+    "finalDecision"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "commandMetadata": { "$ref": "#/$defs/commandMetadata" },
+    "generatedProjectRoot": { "type": "string" },
+    "inputHandoffMetadata": { "$ref": "#/$defs/inputHandoffMetadata" },
+    "gateSteps": { "type": "array", "items": { "$ref": "#/$defs/gateStep" } },
+    "artifactPaths": { "type": "array", "items": { "type": "string" } },
+    "finalDecision": { "type": "string", "enum": [ "passed", "failed" ] }
+  },
+  "$defs": {
+    "commandMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "command", "startedUtc" ],
+      "properties": {
+        "command": { "type": "string" },
+        "startedUtc": { "type": "string" },
+        "finishedUtc": { "type": "string" }
+      }
+    },
+    "inputHandoffMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "handoffRoot", "handoffHash", "generationPlanHash", "taskPackageHash" ],
+      "properties": {
+        "handoffRoot": { "type": "string" },
+        "handoffHash": { "type": "string" },
+        "generationPlanHash": { "type": "string" },
+        "taskPackageHash": { "type": "string" }
+      }
+    },
+    "gateStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "name", "status", "command" ],
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": [ "passed", "failed", "skipped" ] },
+        "command": { "type": "string" },
+        "reportPath": { "type": "string" },
+        "problem": { "type": "string" },
+        "likelyCause": { "type": "string" },
+        "rerunCommand": { "type": "string" }
+      }
+    }
+  }
+}

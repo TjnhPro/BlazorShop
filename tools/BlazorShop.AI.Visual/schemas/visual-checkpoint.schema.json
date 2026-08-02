@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/schemas/visual-checkpoint.schema.json",
+  "title": "Storefront Visual Checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "checkpointId",
+    "operationId",
+    "planHash",
+    "checklistHash",
+    "preEditFileHashes",
+    "postEditFileHashes",
+    "diffSummary"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "checkpointId": { "type": "string" },
+    "operationId": { "type": "string" },
+    "planHash": { "type": "string" },
+    "checklistHash": { "type": "string" },
+    "preEditFileHashes": { "type": "array", "items": { "$ref": "#/$defs/fileHash" } },
+    "postEditFileHashes": { "type": "array", "items": { "$ref": "#/$defs/fileHash" } },
+    "diffSummary": { "type": "array", "items": { "$ref": "#/$defs/diffEntry" } }
+  },
+  "$defs": {
+    "fileHash": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "filePath", "sha256" ],
+      "properties": {
+        "filePath": { "type": "string" },
+        "sha256": { "type": "string" }
+      }
+    },
+    "diffEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "filePath", "changeType" ],
+      "properties": {
+        "filePath": { "type": "string" },
+        "changeType": { "type": "string", "enum": [ "added", "modified", "deleted", "unchanged" ] }
+      }
+    }
+  }
+}

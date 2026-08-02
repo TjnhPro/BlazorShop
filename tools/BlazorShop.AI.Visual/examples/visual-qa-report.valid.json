@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1.0",
+  "viewportCaptures": [
+    {
+      "pageId": "home",
+      "viewport": "desktop",
+      "screenshotPath": "docs/storefront-analysis/visual-qa/home-desktop.png",
+      "status": "passed"
+    }
+  ],
+  "evidencePaths": [
+    "docs/storefront-analysis/visual-qa-report.md"
+  ],
+  "issues": [],
+  "repairAttempts": [
+    {
+      "attempt": 0,
+      "source": "no-repair-attempted",
+      "status": "skipped"
+    }
+  ],
+  "passed": true
+}

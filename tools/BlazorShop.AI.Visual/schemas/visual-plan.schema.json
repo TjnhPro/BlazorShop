@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/schemas/visual-plan.schema.json",
+  "title": "Storefront Visual Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "projectName",
+    "storeKey",
+    "handoffHash",
+    "generationPlanHash",
+    "taskPackageHash",
+    "pages",
+    "visualSlots",
+    "allowedFiles",
+    "protectedFiles",
+    "implementationOrder",
+    "risks",
+    "blockers"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "projectName": { "type": "string", "minLength": 1 },
+    "storeKey": { "type": "string", "minLength": 1 },
+    "handoffHash": { "type": "string", "minLength": 1 },
+    "generationPlanHash": { "type": "string", "minLength": 1 },
+    "taskPackageHash": { "type": "string", "minLength": 1 },
+    "pages": { "type": "array", "items": { "$ref": "#/$defs/page" } },
+    "visualSlots": { "type": "array", "items": { "$ref": "#/$defs/visualSlot" } },
+    "allowedFiles": { "type": "array", "items": { "type": "string" } },
+    "protectedFiles": { "type": "array", "items": { "type": "string" } },
+    "implementationOrder": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "$ref": "#/$defs/note" } },
+    "blockers": { "type": "array", "items": { "$ref": "#/$defs/note" } }
+  },
+  "$defs": {
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "id", "route", "priority" ],
+      "properties": {
+        "id": { "type": "string" },
+        "route": { "type": "string" },
+        "priority": { "type": "integer" }
+      }
+    },
+    "visualSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "id", "pageId", "targetFiles", "status" ],
+      "properties": {
+        "id": { "type": "string" },
+        "pageId": { "type": "string" },
+        "targetFiles": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": [ "planned", "blocked" ] },
+        "blockedReason": { "type": "string" }
+      }
+    },
+    "note": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "id", "severity", "message" ],
+      "properties": {
+        "id": { "type": "string" },
+        "severity": { "type": "string", "enum": [ "info", "warning", "error", "blocked" ] },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "0.1.0",
+  "projectName": "BlazorShop.Storefront.Phase4VisualPilot",
+  "storeKey": "sample",
+  "handoffHash": "sha256:handoff",
+  "generationPlanHash": "sha256:generation-plan",
+  "taskPackageHash": "sha256:task-package",
+  "pages": [
+    {
+      "id": "home",
+      "route": "/",
+      "priority": 1
+    }
+  ],
+  "visualSlots": [
+    {
+      "id": "home.hero",
+      "pageId": "home",
+      "targetFiles": [
+        "Pages/Ssr/Home/HomePage.razor"
+      ],
+      "status": "planned"
+    }
+  ],
+  "allowedFiles": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
+  "protectedFiles": [
+    "Program.cs"
+  ],
+  "implementationOrder": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
+  "risks": [],
+  "blockers": []
+}

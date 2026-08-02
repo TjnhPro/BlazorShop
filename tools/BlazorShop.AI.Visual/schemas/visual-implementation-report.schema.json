@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/schemas/visual-implementation-report.schema.json",
+  "title": "Storefront Visual Implementation Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "beforeSnapshotHash",
+    "afterSnapshotHash",
+    "changedFiles",
+    "recorderResultPath",
+    "buildResult",
+    "boundaryResult",
+    "unresolvedItems"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "beforeSnapshotHash": { "type": "string" },
+    "afterSnapshotHash": { "type": "string" },
+    "changedFiles": { "type": "array", "items": { "type": "string" } },
+    "recorderResultPath": { "type": "string" },
+    "buildResult": { "$ref": "#/$defs/result" },
+    "boundaryResult": { "$ref": "#/$defs/result" },
+    "unresolvedItems": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "status", "command" ],
+      "properties": {
+        "status": { "type": "string", "enum": [ "passed", "failed", "skipped" ] },
+        "command": { "type": "string" },
+        "reportPath": { "type": "string" }
+      }
+    }
+  }
+}

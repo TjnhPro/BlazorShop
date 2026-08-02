@@ -276,59 +276,59 @@ Goal: define machine-readable artifacts before agents produce them.
 
 Tasks:
 
-- [ ] Add `schemas/visual-plan.schema.json` for `storefront-visual-plan` output:
-  - [ ] project name.
-  - [ ] store key.
-  - [ ] handoff hash.
-  - [ ] generation plan hash.
-  - [ ] task package hash.
-  - [ ] pages.
-  - [ ] visual slots.
-  - [ ] allowed files.
-  - [ ] protected files.
-  - [ ] implementation order.
-  - [ ] risks.
-  - [ ] blockers.
-- [ ] Add `schemas/visual-implementation-checklist.schema.json`:
-  - [ ] checklist ID.
-  - [ ] source visual plan hash.
-  - [ ] file tasks.
-  - [ ] acceptance checks.
-  - [ ] required screenshots.
-  - [ ] forbidden edits.
-- [ ] Add `schemas/visual-implementation-report.schema.json`:
-  - [ ] before snapshot hash.
-  - [ ] after snapshot hash.
-  - [ ] changed file list.
-  - [ ] recorder result path.
-  - [ ] build result.
-  - [ ] boundary result.
-  - [ ] unresolved items.
-- [ ] Add `schemas/visual-checkpoint.schema.json`:
-  - [ ] checkpoint ID.
-  - [ ] operation ID.
-  - [ ] plan hash.
-  - [ ] checklist hash.
-  - [ ] pre-edit file hashes.
-  - [ ] post-edit file hashes.
-  - [ ] diff summary.
-- [ ] Add `schemas/visual-qa-report.schema.json`:
-  - [ ] viewport captures.
-  - [ ] evidence paths.
-  - [ ] issue list.
-  - [ ] severity.
-  - [ ] target file hints.
-  - [ ] repair attempts.
-  - [ ] pass/fail.
-- [ ] Add `schemas/phase4-mvp-gate-report.schema.json`:
-  - [ ] command metadata.
-  - [ ] generated project root.
-  - [ ] input handoff metadata.
-  - [ ] gate steps.
-  - [ ] artifact paths.
-  - [ ] final decision.
-- [ ] Add a lightweight schema validation script only if existing repo test helpers cannot validate these JSON files cleanly.
-- [ ] Add example valid JSON artifacts under `examples/`.
+- [x] Add `schemas/visual-plan.schema.json` for `storefront-visual-plan` output:
+  - [x] project name.
+  - [x] store key.
+  - [x] handoff hash.
+  - [x] generation plan hash.
+  - [x] task package hash.
+  - [x] pages.
+  - [x] visual slots.
+  - [x] allowed files.
+  - [x] protected files.
+  - [x] implementation order.
+  - [x] risks.
+  - [x] blockers.
+- [x] Add `schemas/visual-implementation-checklist.schema.json`:
+  - [x] checklist ID.
+  - [x] source visual plan hash.
+  - [x] file tasks.
+  - [x] acceptance checks.
+  - [x] required screenshots.
+  - [x] forbidden edits.
+- [x] Add `schemas/visual-implementation-report.schema.json`:
+  - [x] before snapshot hash.
+  - [x] after snapshot hash.
+  - [x] changed file list.
+  - [x] recorder result path.
+  - [x] build result.
+  - [x] boundary result.
+  - [x] unresolved items.
+- [x] Add `schemas/visual-checkpoint.schema.json`:
+  - [x] checkpoint ID.
+  - [x] operation ID.
+  - [x] plan hash.
+  - [x] checklist hash.
+  - [x] pre-edit file hashes.
+  - [x] post-edit file hashes.
+  - [x] diff summary.
+- [x] Add `schemas/visual-qa-report.schema.json`:
+  - [x] viewport captures.
+  - [x] evidence paths.
+  - [x] issue list.
+  - [x] severity.
+  - [x] target file hints.
+  - [x] repair attempts.
+  - [x] pass/fail.
+- [x] Add `schemas/phase4-mvp-gate-report.schema.json`:
+  - [x] command metadata.
+  - [x] generated project root.
+  - [x] input handoff metadata.
+  - [x] gate steps.
+  - [x] artifact paths.
+  - [x] final decision.
+- [x] Add a lightweight schema validation script only if existing repo test helpers cannot validate these JSON files cleanly.
+- [x] Add example valid JSON artifacts under `examples/`.
 
 Checks:
 
@@ -338,9 +338,18 @@ rg -n "\"\\$schema\"|visual-plan|visual-implementation|visual-qa|phase4-mvp" too
 
 DoD:
 
-- [ ] Skill outputs are schema-backed.
-- [ ] Example artifacts validate.
-- [ ] Schema names do not conflict with StorefrontBuilder or ReverseEngineering schemas.
+- [x] Skill outputs are schema-backed.
+- [x] Example artifacts validate.
+- [x] Schema names do not conflict with StorefrontBuilder or ReverseEngineering schemas.
+
+Phase 4.10.3 evidence:
+
+- Added six visual workspace schemas under `tools/BlazorShop.AI.Visual/schemas/`.
+- Added six matching valid examples under `tools/BlazorShop.AI.Visual/examples/`.
+- Added dependency-free validator `tools/BlazorShop.AI.Visual/scripts/validate-visual-examples.mjs` because existing schema helpers target StorefrontBuilder/ReverseEngineering schemas rather than this workspace.
+- `node --check tools\BlazorShop.AI.Visual\scripts\validate-visual-examples.mjs` passed.
+- `node tools\BlazorShop.AI.Visual\scripts\validate-visual-examples.mjs` passed with `Visual schema examples validated: 6.`
+- `rg -n '"\$schema"|visual-plan|visual-implementation|visual-qa|phase4-mvp' tools\BlazorShop.AI.Visual\schemas tools\BlazorShop.AI.Visual\examples` returned visual schema/example matches.
 
 ## Phase 4.10.4 - Skill Discovery And Host Adapters
 

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "0.1.0",
+  "beforeSnapshotHash": "sha256:before",
+  "afterSnapshotHash": "sha256:after",
+  "changedFiles": [
+    "Pages/Ssr/Home/HomePage.razor"
+  ],
+  "recorderResultPath": "docs/storefront-analysis/agent-written-files.json",
+  "buildResult": {
+    "status": "passed",
+    "command": "dotnet build BlazorShop.Storefront.Phase4VisualPilot.csproj --no-restore"
+  },
+  "boundaryResult": {
+    "status": "passed",
+    "command": "node tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/record-agent-visual-writes.mjs"
+  },
+  "unresolvedItems": []
+}

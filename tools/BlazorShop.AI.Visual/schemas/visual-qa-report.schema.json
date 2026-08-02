@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blazorshop.local/schemas/visual-qa-report.schema.json",
+  "title": "Storefront Visual QA Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "viewportCaptures",
+    "evidencePaths",
+    "issues",
+    "repairAttempts",
+    "passed"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "viewportCaptures": { "type": "array", "items": { "$ref": "#/$defs/viewportCapture" } },
+    "evidencePaths": { "type": "array", "items": { "type": "string" } },
+    "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "repairAttempts": { "type": "array", "items": { "$ref": "#/$defs/repairAttempt" } },
+    "passed": { "type": "boolean" }
+  },
+  "$defs": {
+    "viewportCapture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "pageId", "viewport", "screenshotPath", "status" ],
+      "properties": {
+        "pageId": { "type": "string" },
+        "viewport": { "type": "string", "enum": [ "desktop", "tablet", "mobile" ] },
+        "screenshotPath": { "type": "string" },
+        "status": { "type": "string", "enum": [ "passed", "failed" ] }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "id", "severity", "message", "targetFileHints" ],
+      "properties": {
+        "id": { "type": "string" },
+        "severity": { "type": "string", "enum": [ "info", "warning", "error", "blocked" ] },
+        "message": { "type": "string" },
+        "targetFileHints": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "repairAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "attempt", "source", "status" ],
+      "properties": {
+        "attempt": { "type": "integer" },
+        "source": { "type": "string", "enum": [ "manual-agent-edit", "mechanical-repair-helper", "no-repair-attempted" ] },
+        "status": { "type": "string", "enum": [ "passed", "failed", "skipped" ] },
+        "reportPath": { "type": "string" }
+      }
+    }
+  }
+}
