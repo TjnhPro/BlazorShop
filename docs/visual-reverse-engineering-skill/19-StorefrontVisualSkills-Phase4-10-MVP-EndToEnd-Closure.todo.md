@@ -773,27 +773,27 @@ Goal: create the final local closure command for Phase 4.10 after the pilot is s
 
 Tasks:
 
-- [ ] Add `scripts/qa/run-storefront-phase4-final-closure-gate.ps1`.
-- [ ] Require a clean working tree at start.
-- [ ] Require tested `HEAD` equality at end.
-- [ ] Run visual workspace static checks:
-  - [ ] no `.csproj` under `tools/BlazorShop.AI.Visual`.
-  - [ ] no runtime project references.
-  - [ ] canonical skill paths exist.
-  - [ ] adapters point to canonical skill paths.
-  - [ ] schemas exist.
-  - [ ] examples validate.
-- [ ] Run relevant StorefrontBuilder static checks:
-  - [ ] generated write recorder available.
-  - [ ] visual QA script available.
-  - [ ] repair helper available.
-  - [ ] handoff boundary validator available.
-- [ ] Run StorefrontBuilder generated proof at the minimum level needed for the phase.
-- [ ] Run StorefrontBuilder regeneration/no-op ownership gate.
-- [ ] Run the Phase 4 MVP gate against the chosen pilot generated storefront or fixture.
-- [ ] Write final closure report under `obj/storefront-builder/reports/`.
-- [ ] Track only human-readable closure summary if needed; keep transient screenshots/reports ignored.
-- [ ] Do not require GitHub Actions.
+- [x] Add `scripts/qa/run-storefront-phase4-final-closure-gate.ps1`.
+- [x] Require a clean working tree at start.
+- [x] Require tested `HEAD` equality at end.
+- [x] Run visual workspace static checks:
+  - [x] no `.csproj` under `tools/BlazorShop.AI.Visual`.
+  - [x] no runtime project references.
+  - [x] canonical skill paths exist.
+  - [x] adapters point to canonical skill paths.
+  - [x] schemas exist.
+  - [x] examples validate.
+- [x] Run relevant StorefrontBuilder static checks:
+  - [x] generated write recorder available.
+  - [x] visual QA script available.
+  - [x] repair helper available.
+  - [x] handoff boundary validator available.
+- [x] Run StorefrontBuilder generated proof at the minimum level needed for the phase.
+- [x] Run StorefrontBuilder regeneration/no-op ownership gate.
+- [x] Run the Phase 4 MVP gate against the chosen pilot generated storefront or fixture.
+- [x] Write final closure report under `obj/storefront-builder/reports/`.
+- [x] Track only human-readable closure summary if needed; keep transient screenshots/reports ignored.
+- [x] Do not require GitHub Actions.
 
 Checks:
 
@@ -803,9 +803,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-ph
 
 DoD:
 
-- [ ] Final gate passes locally on clean `HEAD`.
-- [ ] Closure evidence does not require Actions.
-- [ ] Failure output is actionable.
+- [x] Final gate passes locally on clean `HEAD`.
+- [x] Closure evidence does not require Actions.
+- [x] Failure output is actionable.
 
 ## Phase 4.10.14 - Documentation And Agent Guide Updates
 
