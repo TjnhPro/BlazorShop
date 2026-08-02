@@ -357,16 +357,16 @@ Goal: make the skills usable by agents without assuming repo-local automatic dis
 
 Tasks:
 
-- [ ] Add canonical `SKILL.md` files under:
-  - [ ] `tools/BlazorShop.AI.Visual/skills/storefront-visual-plan/SKILL.md`.
-  - [ ] `tools/BlazorShop.AI.Visual/skills/storefront-visual-implement/SKILL.md`.
-  - [ ] `tools/BlazorShop.AI.Visual/skills/storefront-visual-qa/SKILL.md`.
-- [ ] Add `adapters/codex/README.md` with the exact recommended invocation pattern.
-- [ ] Add `adapters/claude/README.md` with the exact recommended invocation pattern.
-- [ ] Add optional copy/install script only if it copies from canonical skill files and does not create divergent skill bodies.
-- [ ] Add a rule that adapters are thin pointers; canonical instructions stay in `tools/BlazorShop.AI.Visual/skills/*/SKILL.md`.
-- [ ] Add a static check that adapter files mention the canonical source path.
-- [ ] Document how to invoke the skills explicitly by path when they are not installed into the user's skill root.
+- [x] Add canonical `SKILL.md` files under:
+  - [x] `tools/BlazorShop.AI.Visual/skills/storefront-visual-plan/SKILL.md`.
+  - [x] `tools/BlazorShop.AI.Visual/skills/storefront-visual-implement/SKILL.md`.
+  - [x] `tools/BlazorShop.AI.Visual/skills/storefront-visual-qa/SKILL.md`.
+- [x] Add `adapters/codex/README.md` with the exact recommended invocation pattern.
+- [x] Add `adapters/claude/README.md` with the exact recommended invocation pattern.
+- [x] Add optional copy/install script only if it copies from canonical skill files and does not create divergent skill bodies.
+- [x] Add a rule that adapters are thin pointers; canonical instructions stay in `tools/BlazorShop.AI.Visual/skills/*/SKILL.md`.
+- [x] Add a static check that adapter files mention the canonical source path.
+- [x] Document how to invoke the skills explicitly by path when they are not installed into the user's skill root.
 
 Checks:
 
@@ -376,8 +376,15 @@ rg -n "canonical|tools/BlazorShop.AI.Visual/skills|storefront-visual-plan|storef
 
 DoD:
 
-- [ ] Agents have a clear path to use the skills.
-- [ ] No duplicated skill body becomes a second source of truth.
+- [x] Agents have a clear path to use the skills.
+- [x] No duplicated skill body becomes a second source of truth.
+
+Phase 4.10.4 evidence:
+
+- Added canonical `SKILL.md` files under `tools/BlazorShop.AI.Visual/skills/storefront-visual-plan/`, `storefront-visual-implement/`, and `storefront-visual-qa/`.
+- Added thin pointer adapter docs under `tools/BlazorShop.AI.Visual/adapters/codex/` and `tools/BlazorShop.AI.Visual/adapters/claude/`.
+- Did not add a copy/install script because it would add no value before install automation is requested; adapters explicitly point to canonical files.
+- `rg -n "canonical|tools/BlazorShop.AI.Visual/skills|storefront-visual-plan|storefront-visual-implement|storefront-visual-qa" tools\BlazorShop.AI.Visual\adapters tools\BlazorShop.AI.Visual\skills` returned matches for canonical paths and all three skill names.
 
 ## Phase 4.10.5 - `storefront-visual-plan`
 
