@@ -202,12 +202,12 @@ Goal: create one immutable positive baseline and reuse copies of it across mutat
 
 Implementation checklist:
 
-- [ ] Introduce a shared positive project baseline fixture.
-- [ ] Create the positive baseline once per test collection.
-- [ ] Give each mutation proof a private copy of that baseline.
-- [ ] Stop calling `CreatePositiveProjectAsync()` independently in every negative test.
-- [ ] Preserve deterministic cleanup of private copies.
-- [ ] Keep the baseline immutable after creation.
+- [x] Introduce a shared positive project baseline fixture.
+- [x] Create the positive baseline once per test collection.
+- [x] Give each mutation proof a private copy of that baseline.
+- [x] Stop calling `CreatePositiveProjectAsync()` independently in every negative test.
+- [x] Preserve deterministic cleanup of private copies.
+- [x] Keep the baseline immutable after creation.
 
 Recommended fixture shape:
 
@@ -227,9 +227,16 @@ public sealed class Phase3PositiveProjectBaseline : IAsyncLifetime
 
 Acceptance criteria:
 
-- [ ] The positive workflow runs once per collection, not once per mutation test.
-- [ ] Mutation tests use private copies.
-- [ ] Fixture cleanup removes generated copies.
+- [x] The positive workflow runs once per collection, not once per mutation test.
+- [x] Mutation tests use private copies.
+- [x] Fixture cleanup removes generated copies.
+
+O4 evidence:
+
+- `Phase3DPositiveEndToEndTests.CreatePositiveProjectAsync()` now returns a copy from `Phase3PositiveProjectBaseline`; the expensive positive workflow moved to `CreateBaselineProjectAsync()` and is initialized once per process.
+- Negative mutation tests continue to call the same public helper, but each call now gets a private copy of the shared baseline.
+- Baseline copies are process-unique under `obj/storefront-reverse-engineering/projects/phase3d-positive-copy-{guid}`.
+- Verification: representative positive and portable tests passed after the baseline refactor.
 
 ## Phase O5 - Reuse A Shared Portable Baseline
 

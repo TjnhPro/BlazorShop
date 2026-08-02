@@ -85,10 +85,18 @@ public sealed class Phase3DPositiveEndToEndTests
         Assert.Equal(firstCompositionIds, secondCompositionIds);
     }
 
-    internal static async Task<string> CreatePositiveProjectAsync(string name)
+    internal static Task<string> CreatePositiveProjectAsync(string name) =>
+        Phase3PositiveProjectBaseline.CreateProjectCopyAsync(name);
+
+    internal static async Task<string> CreateBaselineProjectAsync(string name)
     {
         var repoRoot = GetRepoRoot();
-        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "phase3d-positive-" + Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "phase3d-positive-baseline-" + Environment.ProcessId);
+        if (Directory.Exists(outputRoot))
+        {
+            Directory.Delete(outputRoot, recursive: true);
+        }
+
         var fixtureUrl = new Uri(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html")).AbsoluteUri;
         var service = new VisualProjectWorkflowService(repoRoot);
         var summary = await service.RunAsync(fixtureUrl, name, outputRoot, force: true, resume: false, noAi: true, CancellationToken.None, runId: "phase3d-positive");
