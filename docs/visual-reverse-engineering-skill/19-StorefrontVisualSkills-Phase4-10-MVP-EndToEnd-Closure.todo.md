@@ -216,39 +216,39 @@ Goal: create one shared reference base consumed by all three skills.
 
 Tasks:
 
-- [ ] Add `references/architecture-boundary.md`:
-  - [ ] StorefrontBuilder owns generation/regeneration.
-  - [ ] ReverseEngineering owns evidence/handoff.
-  - [ ] visual skills own planning, visual edits, and visual QA reports only.
-- [ ] Add `references/handoff-input-contract.md`:
-  - [ ] allowed input files.
-  - [ ] required `agent-task-package` files.
-  - [ ] required `generation-plan` files.
-  - [ ] forbidden fallback folders.
-- [ ] Add `references/visual-ownership.md`:
-  - [ ] generated-owned Razor files.
-  - [ ] generated-owned CSS files.
-  - [ ] generated-owned static assets.
-  - [ ] protected files and protected descriptors.
-- [ ] Add `references/razor-visual-rules.md`:
-  - [ ] no `@page`.
-  - [ ] no API transport.
-  - [ ] no business logic.
-  - [ ] no direct auth/session/customer/order assumptions.
-  - [ ] preserve descriptors and component contracts.
-- [ ] Add `references/css-visual-rules.md`:
-  - [ ] responsive behavior.
-  - [ ] no hidden overflow masking as a general fix.
-  - [ ] no blocking overlay.
-  - [ ] avoid one-note palettes.
-  - [ ] preserve ecommerce scanability.
-- [ ] Add `references/browser-qa-rubric.md`:
-  - [ ] desktop, tablet, mobile evidence.
-  - [ ] product gallery 1:1 checks.
-  - [ ] header/navigation/cart/action visibility.
-  - [ ] overflow, blank, broken image, and placeholder checks.
-  - [ ] functional flows remain covered by existing StorefrontBuilder/browser gates.
-- [ ] Add a reference version/provenance section to each file.
+- [x] Add `references/architecture-boundary.md`:
+  - [x] StorefrontBuilder owns generation/regeneration.
+  - [x] ReverseEngineering owns evidence/handoff.
+  - [x] visual skills own planning, visual edits, and visual QA reports only.
+- [x] Add `references/handoff-input-contract.md`:
+  - [x] allowed input files.
+  - [x] required `agent-task-package` files.
+  - [x] required `generation-plan` files.
+  - [x] forbidden fallback folders.
+- [x] Add `references/visual-ownership.md`:
+  - [x] generated-owned Razor files.
+  - [x] generated-owned CSS files.
+  - [x] generated-owned static assets.
+  - [x] protected files and protected descriptors.
+- [x] Add `references/razor-visual-rules.md`:
+  - [x] no `@page`.
+  - [x] no API transport.
+  - [x] no business logic.
+  - [x] no direct auth/session/customer/order assumptions.
+  - [x] preserve descriptors and component contracts.
+- [x] Add `references/css-visual-rules.md`:
+  - [x] responsive behavior.
+  - [x] no hidden overflow masking as a general fix.
+  - [x] no blocking overlay.
+  - [x] avoid one-note palettes.
+  - [x] preserve ecommerce scanability.
+- [x] Add `references/browser-qa-rubric.md`:
+  - [x] desktop, tablet, mobile evidence.
+  - [x] product gallery 1:1 checks.
+  - [x] header/navigation/cart/action visibility.
+  - [x] overflow, blank, broken image, and placeholder checks.
+  - [x] functional flows remain covered by existing StorefrontBuilder/browser gates.
+- [x] Add a reference version/provenance section to each file.
 
 Checks:
 
@@ -258,8 +258,17 @@ rg -n "StorefrontBuilder|ReverseEngineering|agent-task-package|generation-plan|n
 
 DoD:
 
-- [ ] Every visual skill can link to the shared references instead of duplicating boundary rules.
-- [ ] References explicitly reject raw capture/source fallback.
+- [x] Every visual skill can link to the shared references instead of duplicating boundary rules.
+- [x] References explicitly reject raw capture/source fallback.
+
+Phase 4.10.2 evidence:
+
+- Added shared reference docs under `tools/BlazorShop.AI.Visual/references/`.
+- `architecture-boundary.md` records StorefrontBuilder, ReverseEngineering, and Visual skill ownership.
+- `handoff-input-contract.md` lists allowed generated-project-local inputs and forbidden raw/source fallback folders.
+- `visual-ownership.md` defines generated-owned Razor, CSS, static assets, protected files, and protected descriptors.
+- `razor-visual-rules.md`, `css-visual-rules.md`, and `browser-qa-rubric.md` define visual edit and browser QA boundaries.
+- `rg -n "StorefrontBuilder|ReverseEngineering|agent-task-package|generation-plan|no @page|same-origin" tools\BlazorShop.AI.Visual\references` returned matches across the reference set.
 
 ## Phase 4.10.3 - Schemas And Report Contracts
 
