@@ -495,17 +495,17 @@ scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1
 
 Allowed parameter:
 
-- [ ] `-CommandTimeoutSeconds`
+- [x] `-CommandTimeoutSeconds`
 
 Forbidden parameters:
 
-- [ ] `-SkipPhase3AGate`
-- [ ] `-SkipPhase3BGate`
-- [ ] `-SkipPhase3CGate`
-- [ ] `-SkipPhase3DGate`
-- [ ] `-SkipPortableProof`
-- [ ] `-SkipStorefrontBuilderSmoke`
-- [ ] `-AllowDirtyTree`
+- [x] `-SkipPhase3AGate`
+- [x] `-SkipPhase3BGate`
+- [x] `-SkipPhase3CGate`
+- [x] `-SkipPhase3DGate`
+- [x] `-SkipPortableProof`
+- [x] `-SkipStorefrontBuilderSmoke`
+- [x] `-AllowDirtyTree`
 
 Gate order:
 
@@ -534,40 +534,40 @@ clean tree check
 
 Boundary scans:
 
-- [ ] No StorefrontBuilder handoff consumption.
-- [ ] No Razor/CSS/JS storefront output from ReverseEngineering.
-- [ ] No Starter writes.
-- [ ] No generated storefront writes.
-- [ ] No production project references ReverseEngineering.
-- [ ] No consumer reference outside handoff in positive proof fixtures.
-- [ ] No absolute consumer paths in positive proof fixtures.
-- [ ] No `.draft.json` consumer references in positive proof fixtures.
-- [ ] No direct Commerce Node browser calls.
-- [ ] No generated route behavior.
+- [x] No StorefrontBuilder handoff consumption.
+- [x] No Razor/CSS/JS storefront output from ReverseEngineering.
+- [x] No Starter writes.
+- [x] No generated storefront writes.
+- [x] No production project references ReverseEngineering.
+- [x] No consumer reference outside handoff in positive proof fixtures.
+- [x] No absolute consumer paths in positive proof fixtures.
+- [x] No `.draft.json` consumer references in positive proof fixtures.
+- [x] No direct Commerce Node browser calls.
+- [x] No generated route behavior.
 
 Gate report must record:
 
-- [ ] status.
-- [ ] tested SHA.
-- [ ] final `HEAD`.
-- [ ] branch.
-- [ ] working tree clean status.
-- [ ] UTC timestamp.
-- [ ] .NET version.
-- [ ] full test count.
-- [ ] Phase 3D gate result.
-- [ ] portable package result.
-- [ ] reference containment result.
-- [ ] evidence slot provenance result.
-- [ ] consumer dry-run result.
-- [ ] negative mutation counts.
-- [ ] StorefrontBuilder smoke result.
-- [ ] GitHub Actions status.
-- [ ] closure decision.
+- [x] status.
+- [x] tested SHA.
+- [x] final `HEAD`.
+- [x] branch.
+- [x] working tree clean status.
+- [x] UTC timestamp.
+- [x] .NET version.
+- [x] full test count.
+- [x] Phase 3D gate result.
+- [x] portable package result.
+- [x] reference containment result.
+- [x] evidence slot provenance result.
+- [x] consumer dry-run result.
+- [x] negative mutation counts.
+- [x] StorefrontBuilder smoke result.
+- [x] GitHub Actions status.
+- [x] closure decision.
 
 Done when:
 
-- [ ] The Phase 3E gate can fail dirty tree, fail changed `HEAD`, prove isolated package validation, and write an ignored runtime report.
+- [x] The Phase 3E gate can fail dirty tree, fail changed `HEAD`, prove isolated package validation, and write an ignored runtime report.
 
 ## Phase 3E.10 - Documentation Alignment And Final Candidate Procedure
 
@@ -622,7 +622,7 @@ Done when:
 7. [x] Phase 3E.6 portable validator and inspect CLI.
 8. [x] Phase 3E.7 Phase 4 read-only dry-run loader.
 9. [x] Phase 3E.8 isolated copy proof and negative portability mutations.
-10. [ ] Phase 3E.9 final Phase 3E closure gate.
+10. [x] Phase 3E.9 final Phase 3E closure gate.
 11. [ ] Phase 3E.10 documentation alignment and final candidate procedure.
 12. [ ] Final candidate commit.
 13. [ ] Run final Phase 3E gate.
@@ -638,7 +638,7 @@ Suggested development commits:
 6. [x] `phase 3e: add portable validation commands`
 7. [x] `phase 3e: prove isolated handoff loading`
 8. [x] `phase 3e: add portability mutation proofs`
-9. [ ] `phase 3e: add final clean-head gate`
+9. [x] `phase 3e: add final clean-head gate`
 10. [ ] `phase 3e: align closure docs`
 
 ## Test Matrix
@@ -693,10 +693,10 @@ Negative portability:
 
 Gate:
 
-- [ ] `Phase3EFinalClosureGate_IsNoSkipCleanHeadGate`
-- [ ] `Phase3EFinalClosureGate_InvokesPhase3DOnce`
-- [ ] `Phase3EFinalClosureGate_RecordsPortableProof`
-- [ ] `Phase3EFinalClosureGate_FailsDirtyTree`
+- [x] `Phase3EFinalClosureGate_IsNoSkipCleanHeadGate`
+- [x] `Phase3EFinalClosureGate_InvokesPhase3DOnce`
+- [x] `Phase3EFinalClosureGate_RecordsPortableProof`
+- [x] `Phase3EFinalClosureGate_FailsDirtyTree`
 
 ## Definition Of Done
 
@@ -836,5 +836,5 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 - [x] Implement Phase 3E.6 portable validation commands.
 - [x] Implement Phase 3E.7 consumer dry-run loader.
 - [x] Implement Phase 3E.8 isolated copy proof and mutations.
-- [ ] Implement Phase 3E.9 final gate.
+- [x] Implement Phase 3E.9 final gate.
 - [ ] Implement Phase 3E.10 documentation alignment.
