@@ -529,6 +529,7 @@ function Invoke-SreStorefrontBuilderSmoke {
         [Parameter(Mandatory = $true)][string]$OutputRoot
     )
 
+    $smokeProjectName = $Name
     Invoke-SreStep -Context $Context -Name "StorefrontBuilder plan-only smoke" -Script {
         $pwsh = Get-Command pwsh -ErrorAction SilentlyContinue
         if ($null -eq $pwsh) {
@@ -538,7 +539,7 @@ function Invoke-SreStorefrontBuilderSmoke {
         Invoke-SreLoggedProcess `
             -Context $Context `
             -FileName $pwsh.Source `
-            -Arguments @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $Context.RepoRoot "tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1"), "-Url", "https://example.test", "-Name", $Name, "-StoreKey", "sample", "-OutputRoot", $OutputRoot, "-Mode", "plan-only")
+            -Arguments @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $Context.RepoRoot "tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1"), "-Url", "https://example.test", "-Name", $smokeProjectName, "-StoreKey", "sample", "-OutputRoot", $OutputRoot, "-Mode", "plan-only")
         $Context.StorefrontBuilderSmokeResult = "passed"
     }
 }
