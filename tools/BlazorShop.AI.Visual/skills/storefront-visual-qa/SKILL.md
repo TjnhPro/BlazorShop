@@ -15,9 +15,9 @@ Use this skill after visual implementation evidence exists and StorefrontBuilder
 2. `tools/BlazorShop.AI.Visual/references/visual-ownership.md`
 3. `tools/BlazorShop.AI.Visual/references/browser-qa-rubric.md`
 4. `tools/BlazorShop.AI.Visual/references/visual-checkpoint-contract.md`
-5. generated project `docs/storefront-analysis/agent-task-package.json`
+5. generated project `docs/storefront-analysis/agent-task-package/manifest.json`
 6. generated project `docs/storefront-analysis/visual-plan.json`
-7. generated project `docs/storefront-analysis/visual-implementation-checklist.todo.md`
+7. generated project `docs/storefront-analysis/visual-implementation-checklist.json`
 8. generated project `docs/storefront-analysis/visual-implementation-report.json`
 9. generated project latest `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`
 10. generated project visual QA report and screenshots from `run-visual-qa.mjs`
@@ -74,6 +74,12 @@ Write both generated-project-local outputs:
 The JSON output must follow `tools/BlazorShop.AI.Visual/schemas/visual-qa-report.schema.json`. The markdown output must be release-decision friendly and include:
 
 - evidence paths reviewed
+- runtime evidence paths
+- reference evidence paths
+- page and viewport coverage
+- independent reviewer identity
+- comparison dimensions
+- unaccepted critical and major issue counters
 - pass/fail decision
 - issue severity
 - target file hints

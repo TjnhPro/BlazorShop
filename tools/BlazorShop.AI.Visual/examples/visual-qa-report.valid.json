@@ -1,5 +1,33 @@
 {
   "schemaVersion": "0.1.0",
+  "operationId": "pilot-css-foundation",
+  "runtimeEvidencePaths": [
+    "docs/storefront-analysis/visual-qa/home-desktop.png"
+  ],
+  "referenceEvidencePaths": [
+    "docs/storefront-analysis/reference/home-desktop.png"
+  ],
+  "pageViewportCoverage": [
+    {
+      "pageId": "home",
+      "viewports": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  ],
+  "independentReviewer": "visual-qa-agent",
+  "comparisonDimensions": [
+    "layout",
+    "typography",
+    "color",
+    "responsive",
+    "ecommerce-slot-coverage"
+  ],
+  "unacceptedCriticalCount": 0,
+  "unacceptedMajorCount": 0,
+  "finalDecision": "passed",
   "viewportCaptures": [
     {
       "pageId": "home",

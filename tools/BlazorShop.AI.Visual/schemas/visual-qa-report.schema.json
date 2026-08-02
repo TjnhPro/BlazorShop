@@ -6,6 +6,15 @@
   "additionalProperties": false,
   "required": [
     "schemaVersion",
+    "operationId",
+    "runtimeEvidencePaths",
+    "referenceEvidencePaths",
+    "pageViewportCoverage",
+    "independentReviewer",
+    "comparisonDimensions",
+    "unacceptedCriticalCount",
+    "unacceptedMajorCount",
+    "finalDecision",
     "viewportCaptures",
     "evidencePaths",
     "issues",
@@ -14,6 +23,15 @@
   ],
   "properties": {
     "schemaVersion": { "type": "string" },
+    "operationId": { "type": "string", "minLength": 1 },
+    "runtimeEvidencePaths": { "type": "array", "items": { "type": "string" } },
+    "referenceEvidencePaths": { "type": "array", "items": { "type": "string" } },
+    "pageViewportCoverage": { "type": "array", "items": { "$ref": "#/$defs/pageViewportCoverage" } },
+    "independentReviewer": { "type": "string", "minLength": 1 },
+    "comparisonDimensions": { "type": "array", "items": { "type": "string" } },
+    "unacceptedCriticalCount": { "type": "integer" },
+    "unacceptedMajorCount": { "type": "integer" },
+    "finalDecision": { "type": "string", "enum": [ "passed", "failed", "blocked" ] },
     "viewportCaptures": { "type": "array", "items": { "$ref": "#/$defs/viewportCapture" } },
     "evidencePaths": { "type": "array", "items": { "type": "string" } },
     "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
@@ -52,6 +70,15 @@
         "source": { "type": "string", "enum": [ "manual-agent-edit", "mechanical-repair-helper", "no-repair-attempted" ] },
         "status": { "type": "string", "enum": [ "passed", "failed", "skipped" ] },
         "reportPath": { "type": "string" }
+      }
+    },
+    "pageViewportCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "pageId", "viewports" ],
+      "properties": {
+        "pageId": { "type": "string", "minLength": 1 },
+        "viewports": { "type": "array", "items": { "type": "string", "enum": [ "desktop", "tablet", "mobile" ] } }
       }
     }
   }

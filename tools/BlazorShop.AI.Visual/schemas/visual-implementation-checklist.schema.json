@@ -30,7 +30,7 @@
       "properties": {
         "filePath": { "type": "string" },
         "taskIds": { "type": "array", "items": { "type": "string" } },
-        "status": { "type": "string", "enum": [ "pending", "blocked", "complete" ] },
+        "status": { "type": "string", "enum": [ "completed", "blocked", "not-applicable" ] },
         "notes": { "type": "string" }
       }
     }

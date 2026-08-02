@@ -1,9 +1,19 @@
 {
   "schemaVersion": "0.1.0",
   "checkpointId": "checkpoint-home-visual",
-  "operationId": "home-visual-pass",
-  "planHash": "sha256:visual-plan",
+  "operationId": "pilot-css-foundation",
+  "visualPlanHash": "sha256:visual-plan",
   "checklistHash": "sha256:checklist",
+  "preEditSnapshotHash": "sha256:before-snapshot",
+  "postEditSnapshotHash": "sha256:after-snapshot",
+  "changedFiles": [
+    "Pages/Ssr/Home/HomePage.razor"
+  ],
+  "unexpectedFiles": [],
+  "sourceTreeSnapshotScope": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
   "preEditFileHashes": [
     {
       "filePath": "Pages/Ssr/Home/HomePage.razor",

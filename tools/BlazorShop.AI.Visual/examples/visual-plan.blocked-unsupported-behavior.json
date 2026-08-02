@@ -1,5 +1,6 @@
 {
   "schemaVersion": "0.1.0",
+  "operationId": "checkout-payment-provider-blocked",
   "projectName": "BlazorShop.Storefront.Phase4VisualPilot",
   "storeKey": "sample",
   "handoffHash": "sha256:handoff",
@@ -12,6 +13,16 @@
       "priority": 4
     }
   ],
+  "pageViewportCoverage": [
+    {
+      "pageId": "checkout",
+      "viewports": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  ],
   "visualSlots": [
     {
       "id": "checkout.payment-provider",
@@ -22,6 +33,9 @@
     }
   ],
   "allowedFiles": [
+    "Pages/Hybrid/Commerce/CheckoutPage.razor"
+  ],
+  "plannedGeneratedOwnedFiles": [
     "Pages/Hybrid/Commerce/CheckoutPage.razor"
   ],
   "protectedFiles": [

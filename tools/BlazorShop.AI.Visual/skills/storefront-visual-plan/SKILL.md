@@ -52,9 +52,12 @@ Do not edit generated visual files in this skill.
 Write these generated-project-local artifacts:
 
 - `docs/storefront-analysis/visual-plan.json`
+- `docs/storefront-analysis/visual-implementation-checklist.json`
 - `docs/storefront-analysis/visual-implementation-checklist.todo.md`
 - `docs/storefront-analysis/visual-plan-summary.md`
 
 `visual-plan.json` must validate against `tools/BlazorShop.AI.Visual/schemas/visual-plan.schema.json`. Use `node tools/BlazorShop.AI.Visual/scripts/validate-visual-examples.mjs` to prove schema/example integrity before relying on the contract.
 
-The checklist must include each allowed file, its planned tasks, required screenshots, acceptance checks, and explicit blockers. Missing inputs, unsupported behavior, protected file requests, and raw/source fallback needs become blockers.
+`visual-implementation-checklist.json` is the closure contract artifact and must validate against `tools/BlazorShop.AI.Visual/schemas/visual-implementation-checklist.schema.json`. The `.todo.md` checklist may mirror the JSON for human review, but closure gates read the JSON artifact.
+
+The checklist must include each allowed file, its planned tasks, required screenshots, acceptance checks, and explicit blockers. Missing inputs, unsupported behavior, protected file requests, and raw/source fallback needs become blockers. Use only `completed`, `blocked`, or `not-applicable` as closure status values.

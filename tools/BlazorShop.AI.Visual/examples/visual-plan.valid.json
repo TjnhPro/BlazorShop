@@ -1,5 +1,6 @@
 {
   "schemaVersion": "0.1.0",
+  "operationId": "pilot-css-foundation",
   "projectName": "BlazorShop.Storefront.Phase4VisualPilot",
   "storeKey": "sample",
   "handoffHash": "sha256:handoff",
@@ -10,6 +11,16 @@
       "id": "home",
       "route": "/",
       "priority": 1
+    }
+  ],
+  "pageViewportCoverage": [
+    {
+      "pageId": "home",
+      "viewports": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
     }
   ],
   "visualSlots": [
@@ -23,6 +34,10 @@
     }
   ],
   "allowedFiles": [
+    "Pages/Ssr/Home/HomePage.razor",
+    "wwwroot/css/storefront-builder.generated.css"
+  ],
+  "plannedGeneratedOwnedFiles": [
     "Pages/Ssr/Home/HomePage.razor",
     "wwwroot/css/storefront-builder.generated.css"
   ],

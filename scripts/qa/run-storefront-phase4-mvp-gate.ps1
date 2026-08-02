@@ -5,6 +5,7 @@ param(
     [string]$ScreenshotRoot = "",
     [int]$MaxRepairAttempts = 2,
     [switch]$SkipRepair,
+    [switch]$SkeletonProof,
     [string]$BaseUrl = "",
     [string]$Configuration = "Debug",
     [int]$CommandTimeoutSeconds = 600,
@@ -26,6 +27,7 @@ function Show-Help {
     Write-Host "  -ScreenshotRoot <path>         Optional screenshot/evidence root. Defaults under generated project docs."
     Write-Host "  -MaxRepairAttempts <number>    Optional bounded repair cap. Defaults to 2."
     Write-Host "  -SkipRepair                    Skip bounded repair attempts, but still run visual QA."
+    Write-Host "  -SkeletonProof                 Compatibility mode for early file-fixture skeleton checks; not valid for release closure."
     Write-Host "  -BaseUrl <url>                 Optional running storefront base URL for visual QA."
     Write-Host "  -Configuration <name>          Build configuration. Defaults to Debug."
     Write-Host "  -CommandTimeoutSeconds <sec>   Timeout for each external command. Defaults to 600."
@@ -179,6 +181,10 @@ $analysisRoot = Join-Path $resolvedProjectRoot "docs\storefront-analysis"
 $metadataPath = Join-Path $analysisRoot "metadata.yaml"
 $generationPlanPath = Join-Path $analysisRoot "generation-plan.json"
 $taskPackageManifestPath = Join-Path $analysisRoot "agent-task-package\manifest.json"
+$visualPlanPath = Join-Path $analysisRoot "visual-plan.json"
+$visualImplementationChecklistPath = Join-Path $analysisRoot "visual-implementation-checklist.json"
+$visualImplementationReportJsonPath = Join-Path $analysisRoot "visual-implementation-report.json"
+$visualQaReportJsonPath = Join-Path $analysisRoot "visual-qa-report.json"
 $agentWrittenFilesPath = Join-Path $analysisRoot "agent-written-files.json"
 $reportJsonPath = Join-Path $analysisRoot "phase4-mvp-gate-report.json"
 $reportMdPath = Join-Path $analysisRoot "phase4-mvp-gate-report.md"
@@ -281,6 +287,39 @@ function Invoke-AssertionStep {
     }
 }
 
+function Read-RequiredJsonArtifact {
+    param(
+        [string]$Path,
+        [string]$ArtifactName,
+        [string]$FixCommand
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "$ArtifactName is required for closure mode but is missing: $Path. Fix: create the artifact and rerun $FixCommand."
+    }
+
+    try {
+        return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    }
+    catch {
+        throw "$ArtifactName is not valid JSON: $Path. Fix: regenerate or repair the artifact and rerun $FixCommand. $($_.Exception.Message)"
+    }
+}
+
+function Assert-RequiredFields {
+    param(
+        [object]$Json,
+        [string]$ArtifactName,
+        [string[]]$Fields
+    )
+
+    foreach ($field in $Fields) {
+        if ($Json.PSObject.Properties.Name -notcontains $field) {
+            throw "$ArtifactName is missing required field '$field'. Fix: recreate this artifact from the Phase 4 visual skill workflow and rerun $(New-RerunCommand)."
+        }
+    }
+}
+
 function Convert-ToProcessArgument {
     param([string]$Argument)
 
@@ -379,22 +418,37 @@ try {
         }
     }
 
-    Invoke-AssertionStep -Name "validate visual schemas when present" -Command "ConvertFrom-Json visual artifacts" -LikelyCause "One of the generated visual JSON artifacts is malformed or missing required top-level fields." -Assertion {
-        foreach ($artifact in @(
-            @{ Path = Join-Path $analysisRoot "visual-plan.json"; Required = @("schemaVersion", "projectName", "storeKey", "handoffHash", "generationPlanHash", "taskPackageHash", "pages", "visualSlots", "allowedFiles", "protectedFiles", "implementationOrder", "risks", "blockers") },
-            @{ Path = Join-Path $analysisRoot "visual-implementation-report.json"; Required = @("schemaVersion", "beforeSnapshotHash", "afterSnapshotHash", "changedFiles", "recorderResultPath", "buildResult", "boundaryResult", "unresolvedItems") },
-            @{ Path = Join-Path $analysisRoot "visual-qa-report.json"; Required = @("schemaVersion", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed") }
-        )) {
-            if (-not (Test-Path -LiteralPath $artifact.Path)) {
-                continue
+    if ($SkeletonProof) {
+        Add-GateStep -Name "validate mandatory visual artifact chain" -Status "skipped" -Command "skeleton proof mode" -Problem "SkeletonProof mode does not prove the closure artifact chain." -LikelyCause "This mode is only for early generated skeleton feedback, not release closure." -RerunCommand (New-RerunCommand)
+    }
+    else {
+        Invoke-AssertionStep -Name "validate mandatory visual artifact chain" -Command "Test-Path closure visual artifacts" -LikelyCause "Run storefront-visual-plan, storefront-visual-implement, record-agent-visual-writes.mjs, and storefront-visual-qa before the MVP gate." -Assertion {
+            $visualPlan = Read-RequiredJsonArtifact -Path $visualPlanPath -ArtifactName "visual-plan.json" -FixCommand "storefront-visual-plan"
+            Assert-RequiredFields -Json $visualPlan -ArtifactName "visual-plan.json" -Fields @("schemaVersion", "operationId", "projectName", "storeKey", "handoffHash", "generationPlanHash", "taskPackageHash", "pages", "pageViewportCoverage", "visualSlots", "allowedFiles", "plannedGeneratedOwnedFiles", "protectedFiles", "implementationOrder", "risks", "blockers")
+
+            $checklist = Read-RequiredJsonArtifact -Path $visualImplementationChecklistPath -ArtifactName "visual-implementation-checklist.json" -FixCommand "storefront-visual-plan"
+            Assert-RequiredFields -Json $checklist -ArtifactName "visual-implementation-checklist.json" -Fields @("schemaVersion", "checklistId", "sourceVisualPlanHash", "fileTasks", "acceptanceChecks", "requiredScreenshots", "forbiddenEdits")
+
+            $operationId = [string]$visualPlan.operationId
+            if ([string]::IsNullOrWhiteSpace($operationId)) {
+                throw "visual-plan.json operationId is empty. Fix: rerun storefront-visual-plan and then $(New-RerunCommand)."
             }
 
-            $json = Get-Content -LiteralPath $artifact.Path -Raw | ConvertFrom-Json
-            foreach ($required in $artifact.Required) {
-                if ($json.PSObject.Properties.Name -notcontains $required) {
-                    throw "$($artifact.Path) is missing required field '$required'."
-                }
+            $checkpointPath = Join-Path $analysisRoot ("visual-checkpoints\{0}\visual-checkpoint.json" -f $operationId)
+            $checkpoint = Read-RequiredJsonArtifact -Path $checkpointPath -ArtifactName "visual-checkpoint.json" -FixCommand "storefront-visual-implement"
+            Assert-RequiredFields -Json $checkpoint -ArtifactName "visual-checkpoint.json" -Fields @("schemaVersion", "checkpointId", "operationId", "visualPlanHash", "checklistHash", "preEditSnapshotHash", "postEditSnapshotHash", "changedFiles", "unexpectedFiles", "sourceTreeSnapshotScope", "preEditFileHashes", "postEditFileHashes", "diffSummary")
+            if ([string]$checkpoint.operationId -ne $operationId) {
+                throw "visual-checkpoint.json operationId '$($checkpoint.operationId)' does not match visual-plan.json operationId '$operationId'. Fix: rerun storefront-visual-implement and then $(New-RerunCommand)."
             }
+
+            $implementationReport = Read-RequiredJsonArtifact -Path $visualImplementationReportJsonPath -ArtifactName "visual-implementation-report.json" -FixCommand "storefront-visual-implement"
+            Assert-RequiredFields -Json $implementationReport -ArtifactName "visual-implementation-report.json" -Fields @("schemaVersion", "operationId", "checkpointPath", "changedFiles", "recorderResultPath", "boundaryResult", "buildResult", "unresolvedItems")
+
+            $qaReport = Read-RequiredJsonArtifact -Path $visualQaReportJsonPath -ArtifactName "visual-qa-report.json" -FixCommand "storefront-visual-qa"
+            Assert-RequiredFields -Json $qaReport -ArtifactName "visual-qa-report.json" -Fields @("schemaVersion", "operationId", "runtimeEvidencePaths", "referenceEvidencePaths", "pageViewportCoverage", "independentReviewer", "comparisonDimensions", "unacceptedCriticalCount", "unacceptedMajorCount", "finalDecision", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed")
+
+            $written = Read-RequiredJsonArtifact -Path $agentWrittenFilesPath -ArtifactName "agent-written-files.json" -FixCommand "record-agent-visual-writes.mjs"
+            Assert-RequiredFields -Json $written -ArtifactName "agent-written-files.json" -Fields @("schemaVersion", "artifactKind", "artifactId", "generationPlanHash", "files")
         }
     }
 

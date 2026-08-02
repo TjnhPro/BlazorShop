@@ -1,5 +1,7 @@
 {
   "schemaVersion": "0.1.0",
+  "operationId": "pilot-css-foundation",
+  "checkpointPath": "docs/storefront-analysis/visual-checkpoints/pilot-css-foundation/visual-checkpoint.json",
   "beforeSnapshotHash": "sha256:before",
   "afterSnapshotHash": "sha256:after",
   "changedFiles": [

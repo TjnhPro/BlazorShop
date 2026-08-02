@@ -163,59 +163,59 @@ Goal: make the Phase 4 MVP gate prove the full visual workflow happened, not onl
 
 Tasks:
 
-- [ ] Update `tools/BlazorShop.AI.Visual/schemas/visual-plan.schema.json` if needed so closure-required fields are explicit:
-  - [ ] `operationId`.
-  - [ ] `projectName`.
-  - [ ] `storeKey`.
-  - [ ] `handoffHash`.
-  - [ ] `generationPlanHash`.
-  - [ ] `taskPackageHash`.
-  - [ ] page and viewport coverage.
-  - [ ] planned generated-owned files.
-  - [ ] protected files.
-  - [ ] risks and blockers.
-- [ ] Update `visual-implementation-checklist.schema.json` so status values are closure-friendly and unambiguous:
-  - [ ] `completed`.
-  - [ ] `blocked`.
-  - [ ] `not-applicable`.
-- [ ] Update `visual-checkpoint.schema.json` to support a strong chain:
-  - [ ] `operationId`.
-  - [ ] `visualPlanHash`.
-  - [ ] `checklistHash`.
-  - [ ] `preEditSnapshotHash`.
-  - [ ] `postEditSnapshotHash`.
-  - [ ] `changedFiles`.
-  - [ ] `unexpectedFiles`.
-  - [ ] `sourceTreeSnapshotScope`.
-- [ ] Update `visual-implementation-report.schema.json` to require:
-  - [ ] operation ID.
-  - [ ] checkpoint path.
-  - [ ] changed files.
-  - [ ] recorder result path.
-  - [ ] boundary validation result.
-  - [ ] build result.
-  - [ ] unresolved items.
-- [ ] Update `visual-qa-report.schema.json` for closure:
-  - [ ] operation ID.
-  - [ ] runtime evidence paths.
-  - [ ] reference evidence paths.
-  - [ ] page and viewport coverage.
-  - [ ] independent reviewer field.
-  - [ ] comparison dimensions.
-  - [ ] unaccepted critical count.
-  - [ ] unaccepted major count.
-  - [ ] pass/fail decision.
-- [ ] Update example JSON artifacts under `tools/BlazorShop.AI.Visual/examples/`.
-- [ ] Update `tools/BlazorShop.AI.Visual/scripts/validate-visual-examples.mjs` only as needed to validate the stronger required fields.
-- [ ] Update `scripts/qa/run-storefront-phase4-mvp-gate.ps1` so closure mode requires:
-  - [ ] `docs/storefront-analysis/visual-plan.json`.
-  - [ ] `docs/storefront-analysis/visual-implementation-checklist.json`.
-  - [ ] `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`.
-  - [ ] `docs/storefront-analysis/visual-implementation-report.json`.
-  - [ ] `docs/storefront-analysis/visual-qa-report.json`.
-  - [ ] `docs/storefront-analysis/agent-written-files.json`.
-- [ ] Keep a compatibility or skeleton mode only if needed, but name it clearly so it cannot be confused with release closure.
-- [ ] Fail with problem/cause/fix when any mandatory artifact is missing.
+- [x] Update `tools/BlazorShop.AI.Visual/schemas/visual-plan.schema.json` if needed so closure-required fields are explicit:
+  - [x] `operationId`.
+  - [x] `projectName`.
+  - [x] `storeKey`.
+  - [x] `handoffHash`.
+  - [x] `generationPlanHash`.
+  - [x] `taskPackageHash`.
+  - [x] page and viewport coverage.
+  - [x] planned generated-owned files.
+  - [x] protected files.
+  - [x] risks and blockers.
+- [x] Update `visual-implementation-checklist.schema.json` so status values are closure-friendly and unambiguous:
+  - [x] `completed`.
+  - [x] `blocked`.
+  - [x] `not-applicable`.
+- [x] Update `visual-checkpoint.schema.json` to support a strong chain:
+  - [x] `operationId`.
+  - [x] `visualPlanHash`.
+  - [x] `checklistHash`.
+  - [x] `preEditSnapshotHash`.
+  - [x] `postEditSnapshotHash`.
+  - [x] `changedFiles`.
+  - [x] `unexpectedFiles`.
+  - [x] `sourceTreeSnapshotScope`.
+- [x] Update `visual-implementation-report.schema.json` to require:
+  - [x] operation ID.
+  - [x] checkpoint path.
+  - [x] changed files.
+  - [x] recorder result path.
+  - [x] boundary validation result.
+  - [x] build result.
+  - [x] unresolved items.
+- [x] Update `visual-qa-report.schema.json` for closure:
+  - [x] operation ID.
+  - [x] runtime evidence paths.
+  - [x] reference evidence paths.
+  - [x] page and viewport coverage.
+  - [x] independent reviewer field.
+  - [x] comparison dimensions.
+  - [x] unaccepted critical count.
+  - [x] unaccepted major count.
+  - [x] pass/fail decision.
+- [x] Update example JSON artifacts under `tools/BlazorShop.AI.Visual/examples/`.
+- [x] Update `tools/BlazorShop.AI.Visual/scripts/validate-visual-examples.mjs` only as needed to validate the stronger required fields.
+- [x] Update `scripts/qa/run-storefront-phase4-mvp-gate.ps1` so closure mode requires:
+  - [x] `docs/storefront-analysis/visual-plan.json`.
+  - [x] `docs/storefront-analysis/visual-implementation-checklist.json`.
+  - [x] `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`.
+  - [x] `docs/storefront-analysis/visual-implementation-report.json`.
+  - [x] `docs/storefront-analysis/visual-qa-report.json`.
+  - [x] `docs/storefront-analysis/agent-written-files.json`.
+- [x] Keep a compatibility or skeleton mode only if needed, but name it clearly so it cannot be confused with release closure.
+- [x] Fail with problem/cause/fix when any mandatory artifact is missing.
 
 Checks:
 
@@ -227,9 +227,20 @@ rg -n "visual-implementation-checklist|visual-checkpoint|unacceptedMajor|unaccep
 
 DoD:
 
-- [ ] Missing visual plan, checklist, checkpoint, implementation report, QA report, or write record fails the closure gate.
-- [ ] Example artifacts validate against the stronger schemas.
-- [ ] Error messages tell the agent exactly which artifact to create and which command to rerun.
+- [x] Missing visual plan, checklist, checkpoint, implementation report, QA report, or write record fails the closure gate.
+- [x] Example artifacts validate against the stronger schemas.
+- [x] Error messages tell the agent exactly which artifact to create and which command to rerun.
+
+Phase 4.11.1 evidence:
+
+- Strengthened visual plan/checklist/checkpoint/implementation/QA schemas and matching valid examples.
+- Kept the Visual workspace dependency-free; `validate-visual-examples.mjs` required no code changes because it already enforces required fields and additional properties.
+- Added MVP gate `-SkeletonProof` as the explicit non-release compatibility mode.
+- Default MVP gate closure mode now requires `visual-plan.json`, `visual-implementation-checklist.json`, `visual-checkpoints/{operationId}/visual-checkpoint.json`, `visual-implementation-report.json`, `visual-qa-report.json`, and `agent-written-files.json`.
+- Updated visual skill instructions so closure checklist JSON is the gate contract and `.todo.md` is only a human-readable mirror.
+- `node tools\BlazorShop.AI.Visual\scripts\validate-visual-examples.mjs` passed with `Visual schema examples validated: 6.`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -Help` passed and documents `-SkeletonProof`.
+- A closure-mode run against the older Phase 4.10 pilot failed before build/browser because `visual-plan.json` lacked required `operationId`, proving missing/stale closure artifacts now block the gate with problem/fix/rerun output.
 
 ## Phase 4.11.2 - Automatic Changed-File Detection
 

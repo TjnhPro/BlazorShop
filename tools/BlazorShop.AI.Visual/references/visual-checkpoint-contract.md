@@ -29,6 +29,8 @@ Each checkpoint must record:
 
 The JSON artifact must conform to `tools/BlazorShop.AI.Visual/schemas/visual-checkpoint.schema.json`.
 
+Closure checkpoints must include `operationId`, `visualPlanHash`, `checklistHash`, `preEditSnapshotHash`, `postEditSnapshotHash`, `changedFiles`, `unexpectedFiles`, and `sourceTreeSnapshotScope`. `unexpectedFiles` must be an empty array for closure pass.
+
 ## Detection Rules
 
 Changed files must be detected from filesystem content hashes and path comparison, not trusted only from an agent-supplied list.

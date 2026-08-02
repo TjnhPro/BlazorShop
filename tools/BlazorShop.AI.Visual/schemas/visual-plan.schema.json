@@ -6,14 +6,17 @@
   "additionalProperties": false,
   "required": [
     "schemaVersion",
+    "operationId",
     "projectName",
     "storeKey",
     "handoffHash",
     "generationPlanHash",
     "taskPackageHash",
     "pages",
+    "pageViewportCoverage",
     "visualSlots",
     "allowedFiles",
+    "plannedGeneratedOwnedFiles",
     "protectedFiles",
     "implementationOrder",
     "risks",
@@ -21,14 +24,17 @@
   ],
   "properties": {
     "schemaVersion": { "type": "string" },
+    "operationId": { "type": "string", "minLength": 1 },
     "projectName": { "type": "string", "minLength": 1 },
     "storeKey": { "type": "string", "minLength": 1 },
     "handoffHash": { "type": "string", "minLength": 1 },
     "generationPlanHash": { "type": "string", "minLength": 1 },
     "taskPackageHash": { "type": "string", "minLength": 1 },
     "pages": { "type": "array", "items": { "$ref": "#/$defs/page" } },
+    "pageViewportCoverage": { "type": "array", "items": { "$ref": "#/$defs/pageViewportCoverage" } },
     "visualSlots": { "type": "array", "items": { "$ref": "#/$defs/visualSlot" } },
     "allowedFiles": { "type": "array", "items": { "type": "string" } },
+    "plannedGeneratedOwnedFiles": { "type": "array", "items": { "type": "string" } },
     "protectedFiles": { "type": "array", "items": { "type": "string" } },
     "implementationOrder": { "type": "array", "items": { "type": "string" } },
     "risks": { "type": "array", "items": { "$ref": "#/$defs/note" } },
@@ -55,6 +61,15 @@
         "targetFiles": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": [ "planned", "blocked" ] },
         "blockedReason": { "type": "string" }
+      }
+    },
+    "pageViewportCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "pageId", "viewports" ],
+      "properties": {
+        "pageId": { "type": "string", "minLength": 1 },
+        "viewports": { "type": "array", "items": { "type": "string", "enum": [ "desktop", "tablet", "mobile" ] } }
       }
     },
     "note": {

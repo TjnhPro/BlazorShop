@@ -18,7 +18,7 @@ Use this skill only after `storefront-visual-plan` has produced a visual plan an
 5. `tools/BlazorShop.AI.Visual/references/visual-checkpoint-contract.md`
 6. generated project metadata under `docs/storefront-analysis/metadata.yaml`
 7. generated project `docs/storefront-analysis/visual-plan.json`
-8. generated project `docs/storefront-analysis/visual-implementation-checklist.todo.md`
+8. generated project `docs/storefront-analysis/visual-implementation-checklist.json`
 9. generated project `docs/storefront-analysis/agent-task-package/manifest.json`
 
 ## Stop Conditions
@@ -74,3 +74,4 @@ Emit:
 - checkpoint artifacts under `docs/storefront-analysis/visual-checkpoints/{operationId}/`
 
 `visual-implementation-report.json` must include before/after snapshot hashes, changed file list, visual write recorder result path, build result, boundary result, and unresolved items.
+For closure, it must also include the visual plan `operationId` and the checkpoint path under `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`.
