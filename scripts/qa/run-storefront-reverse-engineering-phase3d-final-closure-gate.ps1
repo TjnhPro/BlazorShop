@@ -17,17 +17,7 @@ $proofSummary = @(
     "StorefrontBuilder smoke result is plan-only and does not consume agent handoff artifacts.",
     "Phase 3 closure decision: close only when this gate status is passed on final HEAD."
 )
-$boundaryAssertions = @(
-    "ReverseEngineering has no production project references.",
-    "StorefrontBuilder does not consume analysis/agent-handoff/* yet.",
-    "ReverseEngineering does not write Razor/CSS/JS storefront output.",
-    "ReverseEngineering does not write to Starter or generated storefront source.",
-    "No direct Commerce Node browser calls are generated or recommended.",
-    "No generated @page output exists.",
-    "No captures/home or plan.Pages.First() hardcode exists in workflow code.",
-    "No reviewed blueprint reference to .draft.json is accepted.",
-    "No handoff reference outside analysis/agent-handoff is accepted."
-)
+$boundaryAssertions = Get-SreBoundaryAssertionSummaries
 
 try {
     Set-Location $repoRoot

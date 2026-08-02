@@ -316,16 +316,22 @@ Goal: run one canonical boundary scan instead of repeating similar scans across 
 
 Implementation checklist:
 
-- [ ] Centralize the boundary regex and path list used by final closure.
-- [ ] Run one canonical ReverseEngineering boundary scan in the final gate.
-- [ ] Keep exact blocker strings stable.
-- [ ] Remove duplicate boundary scans that only restate the same rule in another script layer.
-- [ ] Keep all previous coverage represented once in the final report.
+- [x] Centralize the boundary regex and path list used by final closure.
+- [x] Run one canonical ReverseEngineering boundary scan in the final gate.
+- [x] Keep exact blocker strings stable.
+- [x] Remove duplicate boundary scans that only restate the same rule in another script layer.
+- [x] Keep all previous coverage represented once in the final report.
 
 Acceptance criteria:
 
-- [ ] One canonical boundary scan remains in the final closure path.
-- [ ] The scan still proves no forbidden cross-boundary references.
+- [x] One canonical boundary scan remains in the final closure path.
+- [x] The scan still proves no forbidden cross-boundary references.
+
+O8 evidence:
+
+- `Get-SreBoundaryScanDefinitions` now owns the final closure regex/path matrix and `Invoke-SreBoundaryScans` loops that canonical list.
+- `Get-SreBoundaryAssertionSummaries` now owns the report text used by both Phase 3D and Phase 3E gates.
+- Verification: helper dot-source returned `10` boundary scan definitions and `9` report assertions.
 
 ## Phase O9 - Add A Global Timeout And Step Telemetry
 

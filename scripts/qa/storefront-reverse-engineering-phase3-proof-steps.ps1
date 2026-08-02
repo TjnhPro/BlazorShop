@@ -373,41 +373,103 @@ function Invoke-SrePhase3EProof {
     }
 }
 
+function Get-SreBoundaryAssertionSummaries {
+    return @(
+        "ReverseEngineering has no production project references.",
+        "StorefrontBuilder does not consume analysis/agent-handoff/* yet.",
+        "ReverseEngineering does not write Razor/CSS/JS storefront output.",
+        "ReverseEngineering does not write to Starter or generated storefront source.",
+        "No direct Commerce Node browser calls are generated or recommended.",
+        "No generated @page output exists.",
+        "No captures/home or plan.Pages.First() hardcode exists in workflow code.",
+        "No reviewed blueprint reference to .draft.json is accepted.",
+        "No handoff reference outside analysis/agent-handoff is accepted."
+    )
+}
+
+function Get-SreBoundaryScanDefinitions {
+    $reverseEngineeringPaths = @(
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Analysis",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Application",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Browser",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Cli",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Contracts",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Domain",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Evidence",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Interactions",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Provenance",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Storage",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Validation",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Workflows",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj"
+    )
+    $workflowPaths = @(
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Analysis\Blueprint",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Application",
+        "tools\BlazorShop.AI.StorefrontReverseEngineering\Workflows"
+    )
+
+    return @(
+        [pscustomobject]@{
+            Pattern = "BlazorShop.AI.StorefrontReverseEngineering|StorefrontReverseEngineering"
+            Paths = @("BlazorShop.PresentationV2", "BlazorShop.Domain", "BlazorShop.Application", "BlazorShop.Infrastructure", "BlazorShop.ServiceDefaults", "BlazorShop.Tests.V2", "BlazorShop.sln")
+            ExtraArgs = @("--glob", "!bin/**", "--glob", "!obj/**")
+        },
+        [pscustomobject]@{
+            Pattern = "ProjectReference.*(BlazorShop\.Storefront\.V2|BlazorShop\.Storefront\.Runtime|BlazorShop\.Storefront\.Presentation|BlazorShop\.Storefront\.Components|BlazorShop\.ControlPlane|BlazorShop\.CommerceNode|BlazorShop\.Domain|BlazorShop\.Infrastructure|BlazorShop\.Web\.SharedV2)"
+            Paths = @("tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj")
+            ExtraArgs = @("--glob", "*.csproj")
+        },
+        [pscustomobject]@{
+            Pattern = "analysis/agent-handoff|agent-handoff-readiness|visual-blueprint\.v1"
+            Paths = @("tools\BlazorShop.AI.StorefrontBuilder")
+            ExtraArgs = @("--glob", "!bin/**", "--glob", "!obj/**")
+        },
+        [pscustomobject]@{
+            Pattern = "WriteAllText(Async)?\([^\r\n]*(storefront-builder/generated|BlazorShop\.Storefront\.Generated|BlazorShop\.Storefront\.Starter)|Directory\.CreateDirectory\([^\r\n]*(storefront-builder/generated|BlazorShop\.Storefront\.Generated|BlazorShop\.Storefront\.Starter)"
+            Paths = $reverseEngineeringPaths
+            ExtraArgs = @("--glob", "*.cs", "--glob", "*.csproj", "--glob", "!bin/**", "--glob", "!obj/**")
+        },
+        [pscustomobject]@{
+            Pattern = "WriteAllText(Async)?\([^\r\n]*\.(razor|css|js)([^a-zA-Z0-9]|$)"
+            Paths = $reverseEngineeringPaths
+            ExtraArgs = @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
+        },
+        [pscustomobject]@{
+            Pattern = "@page|api/storefront|api/commerce|CommerceNode"
+            Paths = @("tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures\Phase3D")
+            ExtraArgs = @("--glob", "*.json")
+        },
+        [pscustomobject]@{
+            Pattern = "captures/home"
+            Paths = $workflowPaths
+            ExtraArgs = @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
+        },
+        [pscustomobject]@{
+            Pattern = "plan\.Pages\.First\("
+            Paths = $workflowPaths
+            ExtraArgs = @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
+        },
+        [pscustomobject]@{
+            Pattern = "\.draft\.json"
+            Paths = @("tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures\Phase3D\positive-multipage-handoff-proof.json")
+            ExtraArgs = @()
+        },
+        [pscustomobject]@{
+            Pattern = "\.\./|[A-Za-z]:\\"
+            Paths = @("tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures\Phase3D\positive-multipage-handoff-proof.json")
+            ExtraArgs = @()
+        }
+    )
+}
+
 function Invoke-SreBoundaryScans {
     param([Parameter(Mandatory = $true)]$Context)
 
     Invoke-SreStep -Context $Context -Name "boundary scans" -Script {
-        $reverseEngineeringPaths = @(
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Analysis",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Application",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Browser",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Cli",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Contracts",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Domain",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Evidence",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Interactions",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Provenance",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Storage",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Validation",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Workflows",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj"
-        )
-        $workflowPaths = @(
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Analysis\Blueprint",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Application",
-            "tools\BlazorShop.AI.StorefrontReverseEngineering\Workflows"
-        )
-
-        Assert-SreRgNoMatches -Context $Context -Pattern "BlazorShop.AI.StorefrontReverseEngineering|StorefrontReverseEngineering" -Paths @("BlazorShop.PresentationV2", "BlazorShop.Domain", "BlazorShop.Application", "BlazorShop.Infrastructure", "BlazorShop.ServiceDefaults", "BlazorShop.Tests.V2", "BlazorShop.sln") -ExtraArgs @("--glob", "!bin/**", "--glob", "!obj/**")
-        Assert-SreRgNoMatches -Context $Context -Pattern "ProjectReference.*(BlazorShop\.Storefront\.V2|BlazorShop\.Storefront\.Runtime|BlazorShop\.Storefront\.Presentation|BlazorShop\.Storefront\.Components|BlazorShop\.ControlPlane|BlazorShop\.CommerceNode|BlazorShop\.Domain|BlazorShop\.Infrastructure|BlazorShop\.Web\.SharedV2)" -Paths @("tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj") -ExtraArgs @("--glob", "*.csproj")
-        Assert-SreRgNoMatches -Context $Context -Pattern "analysis/agent-handoff|agent-handoff-readiness|visual-blueprint\.v1" -Paths @("tools\BlazorShop.AI.StorefrontBuilder") -ExtraArgs @("--glob", "!bin/**", "--glob", "!obj/**")
-        Assert-SreRgNoMatches -Context $Context -Pattern "WriteAllText(Async)?\([^\r\n]*(storefront-builder/generated|BlazorShop\.Storefront\.Generated|BlazorShop\.Storefront\.Starter)|Directory\.CreateDirectory\([^\r\n]*(storefront-builder/generated|BlazorShop\.Storefront\.Generated|BlazorShop\.Storefront\.Starter)" -Paths $reverseEngineeringPaths -ExtraArgs @("--glob", "*.cs", "--glob", "*.csproj", "--glob", "!bin/**", "--glob", "!obj/**")
-        Assert-SreRgNoMatches -Context $Context -Pattern "WriteAllText(Async)?\([^\r\n]*\.(razor|css|js)([^a-zA-Z0-9]|$)" -Paths $reverseEngineeringPaths -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
-        Assert-SreRgNoMatches -Context $Context -Pattern "@page|api/storefront|api/commerce|CommerceNode" -Paths @("tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures\Phase3D") -ExtraArgs @("--glob", "*.json")
-        Assert-SreRgNoMatches -Context $Context -Pattern "captures/home" -Paths $workflowPaths -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
-        Assert-SreRgNoMatches -Context $Context -Pattern "plan\.Pages\.First\(" -Paths $workflowPaths -ExtraArgs @("--glob", "*.cs", "--glob", "!bin/**", "--glob", "!obj/**")
-        Assert-SreRgNoMatches -Context $Context -Pattern "\.draft\.json" -Paths @("tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures\Phase3D\positive-multipage-handoff-proof.json")
-        Assert-SreRgNoMatches -Context $Context -Pattern "\.\./|[A-Za-z]:\\" -Paths @("tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\Fixtures\Phase3D\positive-multipage-handoff-proof.json")
+        foreach ($scan in Get-SreBoundaryScanDefinitions) {
+            Assert-SreRgNoMatches -Context $Context -Pattern $scan.Pattern -Paths @($scan.Paths) -ExtraArgs @($scan.ExtraArgs)
+        }
     }
 }
 
