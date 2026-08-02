@@ -523,43 +523,52 @@ Implementation targets:
 
 Tasks:
 
-- [ ] Extend visual QA report to understand handoff-generated projects.
-- [ ] Capture desktop and mobile screenshots for required routes.
-- [ ] Verify generated CSS is loaded.
-- [ ] Verify generated assets resolve.
-- [ ] Verify body is nonblank.
-- [ ] Verify required slots are visible for:
-  - [ ] layout/header/footer/navigation.
-  - [ ] home sections.
-  - [ ] category/product grid.
-  - [ ] search result state.
-  - [ ] deals/new releases if planned.
-  - [ ] product gallery.
-  - [ ] product purchase panel.
-  - [ ] cart shell.
-  - [ ] checkout shell.
-  - [ ] account shell.
-  - [ ] state pages.
-- [ ] Verify no obvious viewport overflow for generated primary regions.
-- [ ] Verify no known placeholder text remains in generated-owned visual files unless explicitly planned.
-- [ ] Verify semantic descriptors needed by browser actions remain present.
-- [ ] Verify product image gallery uses stable square media containers where product gallery is generated.
-- [ ] Record screenshots and report paths in generated analysis docs.
-- [ ] Clearly label visual fidelity diff as not yet a hard gate unless implemented in this phase.
+- [x] Extend visual QA report to understand handoff-generated projects.
+- [x] Capture desktop and mobile screenshots for required routes.
+- [x] Verify generated CSS is loaded.
+- [x] Verify generated assets resolve.
+- [x] Verify body is nonblank.
+- [x] Verify required slots are visible for:
+  - [x] layout/header/footer/navigation.
+  - [x] home sections.
+  - [x] category/product grid.
+  - [x] search result state.
+  - [x] deals/new releases if planned.
+  - [x] product gallery.
+  - [x] product purchase panel.
+  - [x] cart shell.
+  - [x] checkout shell.
+  - [x] account shell.
+  - [x] state pages.
+- [x] Verify no obvious viewport overflow for generated primary regions.
+- [x] Verify no known placeholder text remains in generated-owned visual files unless explicitly planned.
+- [x] Verify semantic descriptors needed by browser actions remain present.
+- [x] Verify product image gallery uses stable square media containers where product gallery is generated.
+- [x] Record screenshots and report paths in generated analysis docs.
+- [x] Clearly label visual fidelity diff as not yet a hard gate unless implemented in this phase.
 
 Tests:
 
-- [ ] Positive: handoff-generated project passes visual proof with seeded/mock data.
-- [ ] Negative: missing CSS fails.
-- [ ] Negative: blank page fails.
-- [ ] Negative: missing required slot fails.
-- [ ] Negative: broken asset fails.
-- [ ] Negative: removed browser action descriptor fails.
+- [x] Positive: handoff-generated project passes visual proof with seeded/mock data.
+- [x] Negative: missing CSS fails.
+- [x] Negative: blank page fails.
+- [x] Negative: missing required slot fails.
+- [x] Negative: broken asset fails.
+- [x] Negative: removed browser action descriptor fails.
 
 Exit criteria:
 
-- [ ] Generated visual project has browser evidence across desktop and mobile.
-- [ ] Failures identify the route, viewport, selector/slot, cause, and fix.
+- [x] Generated visual project has browser evidence across desktop and mobile.
+- [x] Failures identify the route, viewport, selector/slot, cause, and fix.
+
+Phase 4.6 evidence:
+
+- Extended `scripts/qa/run-visual-qa.mjs` to auto-detect handoff generation plans, derive required route/slot checks, support local seeded/mock fixture pages through `--fixture-root`, and write handoff-aware `visual-qa-report.md`.
+- Visual QA now checks generated CSS linkage, readable styles, body nonblank state, required slot visibility, product purchase descriptors, square product gallery containers, broken images/assets, horizontal overflow, and generated placeholder markers unless `--allow-planned-placeholders` is supplied for skeleton proof.
+- Visual QA report now records fixture root, handoff mode, required slot selectors, screenshot paths, and discrepancy lines with route, viewport, selector, cause, and fix. It explicitly states that visual fidelity diff is not a hard gate in this phase.
+- Added `StorefrontBuilderHandoffVisualQaTests` covering positive seeded/mock visual proof across desktop/mobile/tablet and negative cases for missing CSS, blank page, missing required slot, broken asset, removed browser action descriptor, and placeholder text without explicit allowance.
+- Manual seeded fixture proof passed against `obj/storefront-builder/generated/phase4-boundary-probe/.../BlazorShop.Storefront.Phase4BoundaryProbe` using `node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <project> --fixture-root <fixture> --screenshot-root <screens> --allow-planned-placeholders`.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffVisualQaTests" --blame-hang --blame-hang-timeout 5m` (`7` passed).
 
 ## Phase 4.7 - Repair Loop V1
 
