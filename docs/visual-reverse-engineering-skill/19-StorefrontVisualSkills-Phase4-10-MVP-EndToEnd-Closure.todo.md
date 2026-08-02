@@ -736,22 +736,22 @@ Goal: run the workflow on one generated storefront and record closure evidence.
 
 Tasks:
 
-- [ ] Choose one portable handoff fixture or real reviewed handoff package.
-- [ ] Run StorefrontBuilder:
-  - [ ] `preflight-only`.
-  - [ ] `plan-only`.
-  - [ ] `generate` or `full`.
-- [ ] Run `storefront-visual-plan`.
-- [ ] Review generated checklist for completeness.
-- [ ] Run `storefront-visual-implement` on a small but real visual scope.
-- [ ] Record visual writes.
-- [ ] Build generated project.
-- [ ] Run visual capture/QA.
-- [ ] Run bounded repair if QA finds generated-owned visual defects.
-- [ ] Rerun QA.
-- [ ] Run the target MVP gate.
-- [ ] Store evidence under generated project `docs/storefront-analysis/` and ignored `obj/storefront-builder/reports/`.
-- [ ] Record the exact commands and result in a tracked pilot summary only if it does not include machine-specific absolute paths or transient screenshots.
+- [x] Choose one portable handoff fixture or real reviewed handoff package.
+- [x] Run StorefrontBuilder:
+  - [x] `preflight-only`.
+  - [x] `plan-only`.
+  - [x] `generate` or `full`.
+- [x] Run `storefront-visual-plan`.
+- [x] Review generated checklist for completeness.
+- [x] Run `storefront-visual-implement` on a small but real visual scope.
+- [x] Record visual writes.
+- [x] Build generated project.
+- [x] Run visual capture/QA.
+- [x] Run bounded repair if QA finds generated-owned visual defects.
+- [x] Rerun QA.
+- [x] Run the target MVP gate.
+- [x] Store evidence under generated project `docs/storefront-analysis/` and ignored `obj/storefront-builder/reports/`.
+- [x] Record the exact commands and result in a tracked pilot summary only if it does not include machine-specific absolute paths or transient screenshots.
 
 Checks:
 
@@ -764,8 +764,8 @@ Checks:
 
 DoD:
 
-- [ ] One complete plan -> implement -> QA -> repair -> gate loop has passed locally.
-- [ ] Any failures are captured as follow-up TODOs instead of silently ignored.
+- [x] One complete plan -> implement -> QA -> repair -> gate loop has passed locally.
+- [x] Any failures are captured as follow-up TODOs instead of silently ignored.
 
 ## Phase 4.10.13 - Final Closure Gate
 

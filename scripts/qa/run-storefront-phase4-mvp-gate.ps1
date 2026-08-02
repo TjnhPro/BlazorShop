@@ -66,7 +66,29 @@ function Convert-ToRepoRelativePath {
 
     $fullPath = [System.IO.Path]::GetFullPath($Path)
     if ($fullPath.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-        return [System.IO.Path]::GetRelativePath($repoRoot, $fullPath).Replace("\", "/")
+        $rootWithSeparator = $repoRoot.TrimEnd("\", "/") + [System.IO.Path]::DirectorySeparatorChar
+        if ($fullPath.Equals($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return "."
+        }
+
+        if ($fullPath.StartsWith($rootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $fullPath.Substring($rootWithSeparator.Length).Replace("\", "/")
+        }
+    }
+
+    return $fullPath.Replace("\", "/")
+}
+
+function Convert-ToRelativePath {
+    param(
+        [string]$BasePath,
+        [string]$Path
+    )
+
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd("\", "/") + [System.IO.Path]::DirectorySeparatorChar
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    if ($fullPath.StartsWith($baseFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $fullPath.Substring($baseFullPath.Length).Replace("\", "/")
     }
 
     return $fullPath.Replace("\", "/")
@@ -81,8 +103,14 @@ function Get-NormalizedFileSha256 {
 
     $content = (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
-    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
-    return [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha256.ComputeHash($bytes)
+        return [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    }
+    finally {
+        $sha256.Dispose()
+    }
 }
 
 function Get-DirectorySha256 {
@@ -96,14 +124,29 @@ function Get-DirectorySha256 {
     Get-ChildItem -LiteralPath $Path -Recurse -File |
         Sort-Object FullName |
         ForEach-Object {
-            $relative = [System.IO.Path]::GetRelativePath($Path, $_.FullName).Replace("\", "/")
+            $relative = Convert-ToRelativePath -BasePath $Path -Path $_.FullName
             [void]$builder.AppendLine($relative)
             [void]$builder.AppendLine((Get-NormalizedFileSha256 -Path $_.FullName))
         }
 
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($builder.ToString())
-    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
-    return [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha256.ComputeHash($bytes)
+        return [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
+function Get-PreferredPowerShell {
+    $pwsh = Get-Command "pwsh" -ErrorAction SilentlyContinue
+    if ($null -ne $pwsh) {
+        return $pwsh.Source
+    }
+
+    return "powershell"
 }
 
 function Read-SimpleYamlValue {
@@ -197,9 +240,7 @@ function Invoke-GateCommand {
     $process.StartInfo.UseShellExecute = $false
     $process.StartInfo.RedirectStandardOutput = $false
     $process.StartInfo.RedirectStandardError = $false
-    foreach ($argument in $Arguments) {
-        [void]$process.StartInfo.ArgumentList.Add($argument)
-    }
+    $process.StartInfo.Arguments = (($Arguments | ForEach-Object { Convert-ToProcessArgument $_ }) -join " ")
 
     [void]$process.Start()
     if (-not $process.WaitForExit($CommandTimeoutSeconds * 1000)) {
@@ -238,6 +279,20 @@ function Invoke-AssertionStep {
         Add-GateStep -Name $Name -Status "failed" -Command $Command -Problem $_.Exception.Message -LikelyCause $LikelyCause -RerunCommand (New-RerunCommand)
         throw
     }
+}
+
+function Convert-ToProcessArgument {
+    param([string]$Argument)
+
+    if ($null -eq $Argument) {
+        return '""'
+    }
+
+    if ($Argument -notmatch '[\s"]') {
+        return $Argument
+    }
+
+    return '"' + $Argument.Replace('\', '\\').Replace('"', '\"') + '"'
 }
 
 function Save-GateReports {
@@ -326,8 +381,8 @@ try {
 
     Invoke-AssertionStep -Name "validate visual schemas when present" -Command "ConvertFrom-Json visual artifacts" -LikelyCause "One of the generated visual JSON artifacts is malformed or missing required top-level fields." -Assertion {
         foreach ($artifact in @(
-            @{ Path = Join-Path $analysisRoot "visual-plan.json"; Required = @("schemaVersion", "inputs", "plannedTasks") },
-            @{ Path = Join-Path $analysisRoot "visual-implementation-report.json"; Required = @("schemaVersion", "appliedTasks", "changedFiles", "validation") },
+            @{ Path = Join-Path $analysisRoot "visual-plan.json"; Required = @("schemaVersion", "projectName", "storeKey", "handoffHash", "generationPlanHash", "taskPackageHash", "pages", "visualSlots", "allowedFiles", "protectedFiles", "implementationOrder", "risks", "blockers") },
+            @{ Path = Join-Path $analysisRoot "visual-implementation-report.json"; Required = @("schemaVersion", "beforeSnapshotHash", "afterSnapshotHash", "changedFiles", "recorderResultPath", "buildResult", "boundaryResult", "unresolvedItems") },
             @{ Path = Join-Path $analysisRoot "visual-qa-report.json"; Required = @("schemaVersion", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed") }
         )) {
             if (-not (Test-Path -LiteralPath $artifact.Path)) {
@@ -343,17 +398,17 @@ try {
         }
     }
 
-    Invoke-GateCommand -Name "run StorefrontBuilder handoff boundary validation" -FileName "node" -Arguments @(
+    $null = Invoke-GateCommand -Name "run StorefrontBuilder handoff boundary validation" -FileName "node" -Arguments @(
         (Join-Path $builderRoot "scripts\validate\Test-StorefrontBuilderHandoffBoundary.mjs"),
         "--project-root", $resolvedProjectRoot,
         "--name", $projectName
     ) -LikelyCause "Generated handoff artifacts, allowed outputs, or protected boundary metadata drifted."
 
-    Invoke-GateCommand -Name "restore generated project" -FileName "dotnet" -Arguments @(
+    $null = Invoke-GateCommand -Name "restore generated project" -FileName "dotnet" -Arguments @(
         "restore", $projectFile, "--no-cache", "--force-evaluate"
     ) -LikelyCause "Generated package references or local NuGet package availability are invalid."
 
-    Invoke-GateCommand -Name "build generated project" -FileName "dotnet" -Arguments @(
+    $null = Invoke-GateCommand -Name "build generated project" -FileName "dotnet" -Arguments @(
         "build", $projectFile, "--configuration", $Configuration, "--no-restore"
     ) -LikelyCause "Generated visual files do not compile against Storefront Presentation packages."
 
@@ -406,7 +461,7 @@ try {
         throw "Visual QA did not pass. Report: $visualQaReportPath. Evidence: $resolvedScreenshotRoot"
     }
 
-    Invoke-GateCommand -Name "run regeneration WhatIf" -FileName "powershell" -Arguments @(
+    $null = Invoke-GateCommand -Name "run regeneration WhatIf" -FileName (Get-PreferredPowerShell) -Arguments @(
         "-NoProfile", "-ExecutionPolicy", "Bypass",
         "-File", (Join-Path $builderRoot "regenerate-storefront.ps1"),
         "-ProjectRoot", $resolvedProjectRoot,

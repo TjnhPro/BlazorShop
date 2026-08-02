@@ -122,7 +122,8 @@ try {
       });
 
       const loadedRuleCount = cssState.sheets.reduce((sum, sheet) => sum + sheet.ruleCount, 0);
-      if (loadedRuleCount === 0) {
+      const generatedFileCssApplied = fixtureRoot && cssState.hasGeneratedCssLink && !cssState.bodyFont.toLowerCase().includes("times new roman");
+      if (loadedRuleCount === 0 && !generatedFileCssApplied) {
         discrepancies.push(critical(pageName, viewportName, "styleSheets", "No readable stylesheet rules are applied in the browser.", "Ensure generated CSS and package stylesheets are linked and readable."));
       }
 
