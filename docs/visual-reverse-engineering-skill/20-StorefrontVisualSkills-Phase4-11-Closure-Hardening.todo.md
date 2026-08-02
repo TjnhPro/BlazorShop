@@ -306,30 +306,30 @@ Goal: separate static skeleton proof from generated Blazor runtime proof and mak
 
 Tasks:
 
-- [ ] Update `run-visual-qa.mjs` to expose explicit proof modes:
-  - [ ] `--proof-mode skeleton` for file fixture proof.
-  - [ ] `--proof-mode runtime` for running generated Blazor storefront proof.
-  - [ ] optional default remains backward-compatible, but final gates must pass `runtime`.
-- [ ] In runtime mode:
-  - [ ] Require `--base-url`.
-  - [ ] Reject `--fixture-root`.
-  - [ ] Capture HTTP status for each route.
-  - [ ] Fail on unresolved page errors.
-  - [ ] Fail on unaccepted console errors.
-  - [ ] Fail on unaccepted failed network requests.
-  - [ ] Verify generated CSS and assets load from the runtime host.
-  - [ ] Verify body nonblank and required slots visible.
-  - [ ] Verify no direct Commerce Node, Control Plane, Commerce Admin, or legacy API calls from browser.
-- [ ] Add or extract a small generated-host startup wrapper only if current generated proof scripts cannot be reused directly.
-  - [ ] Prefer reusing `run-storefront-builder-generated-proof.ps1` and `run-storefront-builder-full-proof-with-fixture.ps1`.
-  - [ ] If adding `start-generated-storefront.ps1`, keep it in `scripts/qa/` or StorefrontBuilder scripts and make it a thin wrapper.
-  - [ ] Ensure startup wrapper has deterministic port handling and teardown.
-- [ ] Update `run-storefront-phase4-mvp-gate.ps1`:
-  - [ ] Add an explicit `-ProofMode` or `-RequireRuntime` switch.
-  - [ ] In closure mode, require `-BaseUrl` or start the generated host itself.
-  - [ ] Do not pass `-FixtureRoot` for release closure.
-- [ ] Keep skeleton fixture mode available only for early visual plan/placeholder proof.
-- [ ] Add report fields distinguishing skeleton proof from runtime proof.
+- [x] Update `run-visual-qa.mjs` to expose explicit proof modes:
+  - [x] `--proof-mode skeleton` for file fixture proof.
+  - [x] `--proof-mode runtime` for running generated Blazor storefront proof.
+  - [x] optional default remains backward-compatible, but final gates must pass `runtime`.
+- [x] In runtime mode:
+  - [x] Require `--base-url`.
+  - [x] Reject `--fixture-root`.
+  - [x] Capture HTTP status for each route.
+  - [x] Fail on unresolved page errors.
+  - [x] Fail on unaccepted console errors.
+  - [x] Fail on unaccepted failed network requests.
+  - [x] Verify generated CSS and assets load from the runtime host.
+  - [x] Verify body nonblank and required slots visible.
+  - [x] Verify no direct Commerce Node, Control Plane, Commerce Admin, or legacy API calls from browser.
+- [x] Add or extract a small generated-host startup wrapper only if current generated proof scripts cannot be reused directly.
+  - [x] Prefer reusing `run-storefront-builder-generated-proof.ps1` and `run-storefront-builder-full-proof-with-fixture.ps1`.
+  - [x] If adding `start-generated-storefront.ps1`, keep it in `scripts/qa/` or StorefrontBuilder scripts and make it a thin wrapper.
+  - [x] Ensure startup wrapper has deterministic port handling and teardown.
+- [x] Update `run-storefront-phase4-mvp-gate.ps1`:
+  - [x] Add an explicit `-ProofMode` or `-RequireRuntime` switch.
+  - [x] In closure mode, require `-BaseUrl` or start the generated host itself.
+  - [x] Do not pass `-FixtureRoot` for release closure.
+- [x] Keep skeleton fixture mode available only for early visual plan/placeholder proof.
+- [x] Add report fields distinguishing skeleton proof from runtime proof.
 
 Checks:
 
@@ -342,9 +342,22 @@ rg -n "proof-mode|RequireRuntime|fixture-root|base-url|requestfailed|console.err
 
 DoD:
 
-- [ ] Runtime proof cannot accidentally fall back to file fixture proof.
-- [ ] Closure mode requires generated Blazor host evidence.
-- [ ] Browser console, page error, and network failures are visible in the report and fail when unaccepted.
+- [x] Runtime proof cannot accidentally fall back to file fixture proof.
+- [x] Closure mode requires generated Blazor host evidence.
+- [x] Browser console, page error, and network failures are visible in the report and fail when unaccepted.
+
+Evidence:
+
+- `run-visual-qa.mjs` now supports `--proof-mode skeleton|runtime`; skeleton requires `--fixture-root`, runtime requires `--base-url` and rejects `--fixture-root`.
+- Runtime visual QA records route HTTP statuses, runtime network audit entries, CSS responses, browser events, same-origin runtime asset checks, and forbidden direct browser API calls.
+- Runtime mode fails on page errors, console errors, request failures, invalid/off-origin CSS, off-origin runtime assets, non-2xx/3xx route statuses, blank body, missing required slots, and direct `/api/storefront/stores/*`, `/api/commerce/*`, `/api/control-plane/*`, `/api/admin/*`, `/api/public/*`, or `/api/internal/*` calls.
+- No new startup wrapper was added; runtime bootstrap remains owned by `run-storefront-builder-generated-proof.ps1` and `run-storefront-builder-full-proof-with-fixture.ps1`.
+- `run-storefront-phase4-mvp-gate.ps1` now exposes `-ProofMode`, defaults closure to `Runtime`, requires `-BaseUrl` in runtime mode, rejects `-FixtureRoot` in runtime mode, and passes `--proof-mode` to visual QA.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --help` passed and lists `--proof-mode`.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -Help` passed and documents `-ProofMode <Skeleton|Runtime>`.
+- `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffVisualQaTests" --blame-hang --blame-hang-timeout 5m` passed: 10 tests in 3m 29s.
+- `rg -n "proof-mode|Runtime Route Statuses|Runtime Network Audit|SFB-VISUAL-QA-00|ProofMode|SkeletonProof|BaseUrl|fixture-root" tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs scripts\qa\run-storefront-phase4-mvp-gate.ps1 tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\StorefrontBuilderHandoffVisualQaTests.cs` returned the expected runtime/skeleton mode references.
 
 ## Phase 4.11.4 - Reference Visual QA Contract
 

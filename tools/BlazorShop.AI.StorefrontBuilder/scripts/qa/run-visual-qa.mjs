@@ -8,6 +8,7 @@ if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(`Usage: node run-visual-qa.mjs [options]
 
 Options:
+  --proof-mode <mode>             Proof mode: skeleton or runtime. Defaults to skeleton when --fixture-root is present, otherwise runtime.
   --base-url <url>                 Running generated storefront base URL.
   --project-root <path>            Generated storefront project root.
   --screenshot-root <path>         Screenshot/evidence output root.
@@ -19,16 +20,20 @@ Options:
   process.exit(0);
 }
 
-const baseUrl = readArg("--base-url") ?? "http://127.0.0.1:18991";
+const baseUrlArg = readArg("--base-url");
 const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const screenshotRoot = readArg("--screenshot-root") ?? "output/playwright/storefront-builder-visual-qa";
 const categorySlug = readArg("--category-slug") ?? "apparel";
 const productSlug = readArg("--product-slug") ?? "qa-simple-product-100";
 const fixtureRoot = readArg("--fixture-root") ? resolve(readArg("--fixture-root")) : null;
+const proofModeArg = readArg("--proof-mode");
+const proofMode = normalizeProofMode(proofModeArg, fixtureRoot);
+const baseUrl = baseUrlArg ?? "";
 const allowPlannedPlaceholders = hasFlag("--allow-planned-placeholders");
 const reportPath = `${projectRoot}/docs/storefront-analysis/visual-qa-report.md`;
 const handoffPlan = readHandoffPlan(projectRoot);
 const pages = buildPages(handoffPlan);
+const baseOrigin = proofMode === "runtime" ? new URL(baseUrl).origin : "";
 
 const viewports = [
   ["desktop-1440", 1440, 1000],
@@ -43,6 +48,9 @@ const captures = [];
 const cssResponses = [];
 const cssResponseKeys = new Set();
 const browserEvents = [];
+const runtimeRequests = [];
+const routeStatuses = [];
+const assetFindings = [];
 
 try {
   for (const [viewportName, width, height] of viewports) {
@@ -63,11 +71,29 @@ try {
         text: request.failure()?.errorText ?? "request failed",
       });
     });
+    page.on("request", (request) => {
+      if (proofMode !== "runtime") {
+        return;
+      }
+
+      runtimeRequests.push({
+        viewportName,
+        method: request.method(),
+        resourceType: request.resourceType(),
+        url: request.url(),
+      });
+    });
 
     for (const pageSpec of pages) {
       const { pageName, route, requiredSlots } = pageSpec;
       const url = resolvePageUrl(pageSpec);
-      await page.goto(url, { waitUntil: "networkidle" });
+      const response = await page.goto(url, { waitUntil: "networkidle" });
+      const status = response?.status() ?? 0;
+      routeStatuses.push({ pageName, viewportName, route, url, status });
+      if (proofMode === "runtime" && (status < 200 || status > 399)) {
+        discrepancies.push(critical(pageName, viewportName, "route", `Runtime route returned HTTP status ${status}: ${url}`, "Serve every generated visual QA route from the generated runtime host."));
+      }
+
       const bodyText = await page.locator("body").innerText();
       if (!bodyText.trim()) {
         discrepancies.push(critical(pageName, viewportName, "body", "Hidden primary content or blank body.", "Render visible route content before visual QA."));
@@ -118,6 +144,7 @@ try {
           hasGeneratedCssLink: linkedStylesheets.some((href) => href.includes("storefront-builder.generated.css")),
           sheets,
           responses,
+          linkedStylesheets,
         };
       });
 
@@ -182,10 +209,16 @@ try {
         const brokenImages = Array.from(document.images)
           .filter((image) => image.currentSrc && (image.naturalWidth <= 0 || image.naturalHeight <= 0))
           .map((image) => image.currentSrc);
+        const assetUrls = [
+          ...Array.from(document.images).map((image) => image.currentSrc).filter(Boolean),
+          ...Array.from(document.querySelectorAll("script[src]")).map((script) => new URL(script.getAttribute("src"), document.baseURI).toString()),
+          ...Array.from(document.querySelectorAll("link[rel~='stylesheet'][href]")).map((link) => new URL(link.getAttribute("href"), document.baseURI).toString()),
+        ];
         return {
           scrollWidth: document.documentElement.scrollWidth,
           viewportWidth: window.innerWidth,
           brokenImages,
+          assetUrls,
         };
       });
       if (pageMetrics.scrollWidth > pageMetrics.viewportWidth + 2) {
@@ -194,6 +227,25 @@ try {
 
       for (const imageUrl of pageMetrics.brokenImages) {
         discrepancies.push(critical(pageName, viewportName, "img", `Broken generated asset: ${imageUrl}`, "Ensure generated assets resolve from the project wwwroot."));
+      }
+
+      if (proofMode === "runtime") {
+        for (const assetUrl of pageMetrics.assetUrls) {
+          if (isExternalAssetAllowed(assetUrl)) {
+            continue;
+          }
+
+          let origin = "";
+          try {
+            origin = new URL(assetUrl).origin;
+          } catch {
+            origin = "";
+          }
+
+          if (origin && origin !== baseOrigin) {
+            assetFindings.push(critical(pageName, viewportName, "asset", `Runtime asset is not served by the generated host: ${assetUrl}`, "Serve generated CSS, scripts, and assets through the generated runtime host."));
+          }
+        }
       }
 
       const screenshot = join(screenshotRoot, `${pageName}-${viewportName}.png`);
@@ -215,7 +267,32 @@ for (const response of cssResponses) {
   if (response.status < 200 || response.status > 399 || response.length <= 0 || !response.contentType.includes("css")) {
     discrepancies.push(critical("stylesheet", "network", response.url, `Invalid CSS response ${response.status} length=${response.length} contentType=${response.contentType} url=${response.url}`, "Serve generated CSS with a 2xx status and CSS content type."));
   }
+
+  if (proofMode === "runtime") {
+    const origin = new URL(response.url).origin;
+    if (origin !== baseOrigin) {
+      discrepancies.push(critical("stylesheet", "network", response.url, `Stylesheet was not loaded from runtime host: ${response.url}`, "Serve generated CSS from the generated runtime base URL."));
+    }
+  }
 }
+
+for (const event of browserEvents) {
+  if (proofMode !== "runtime") {
+    continue;
+  }
+
+  if (event.type === "pageerror" || event.type === "console.error" || event.type === "requestfailed") {
+    discrepancies.push(critical("browser", event.viewportName, event.type, `${event.url ? `${event.url}: ` : ""}${event.text}`, "Resolve runtime browser errors before closure visual QA."));
+  }
+}
+
+for (const request of runtimeRequests) {
+  if (isForbiddenBrowserRequest(request.url)) {
+    discrepancies.push(critical("browser", request.viewportName, "network", `Forbidden direct browser request: ${request.method} ${request.url}`, "Generated visuals must use same-origin Presentation/BFF behavior and must not call Commerce Node, Control Plane, Commerce Admin, or legacy APIs directly from the browser."));
+  }
+}
+
+discrepancies.push(...dedupeFindings(assetFindings));
 
 const placeholderFindings = validateGeneratedPlaceholderText(projectRoot, handoffPlan, allowPlannedPlaceholders);
 discrepancies.push(...placeholderFindings);
@@ -226,9 +303,11 @@ const minorCount = discrepancies.filter((item) => item.severity === "Minor").len
 const report = [
   "# StorefrontBuilder Visual Smoke QA Report",
   "",
-  `Base URL: ${baseUrl}`,
+  `Proof mode: ${proofMode}`,
+  `Base URL: ${baseUrl || "none"}`,
   `Fixture root: ${fixtureRoot ?? "none"}`,
   `Handoff mode: ${handoffPlan ? "true" : "false"}`,
+  `Runtime proof: ${proofMode === "runtime" ? "true" : "false"}`,
   "Reference visual diff: not implemented",
   "Visual fidelity diff is not a hard gate in this phase.",
   "",
@@ -250,6 +329,14 @@ const report = [
   "## CSS Responses",
   "",
   ...(cssResponses.length === 0 ? ["- None."] : cssResponses.map((response) => `- ${response.status} length=${response.length} contentType=${response.contentType} ${response.url}`)),
+  "",
+  "## Runtime Route Statuses",
+  "",
+  ...(routeStatuses.length === 0 ? ["- None."] : routeStatuses.map((routeStatus) => `- ${routeStatus.status} ${routeStatus.pageName} ${routeStatus.viewportName} ${routeStatus.route}: ${routeStatus.url}`)),
+  "",
+  "## Runtime Network Audit",
+  "",
+  ...(proofMode !== "runtime" ? ["- Not applicable for skeleton proof."] : runtimeRequests.map((request) => `- ${request.method} ${request.resourceType} viewport=${request.viewportName} ${request.url}`)),
   "",
   "## Browser Event Summary",
   "",
@@ -333,7 +420,7 @@ function pageSpec(pageName, route, pageId, requiredSlots) {
 }
 
 function resolvePageUrl(pageSpec) {
-  if (!fixtureRoot) {
+  if (proofMode === "runtime") {
     return new URL(pageSpec.route, baseUrl).toString();
   }
 
@@ -343,6 +430,69 @@ function resolvePageUrl(pageSpec) {
   }
 
   return pathToFileURL(fixturePath).toString();
+}
+
+function normalizeProofMode(mode, currentFixtureRoot) {
+  const normalized = (mode ?? (currentFixtureRoot ? "skeleton" : "runtime")).toLowerCase();
+  if (!["skeleton", "runtime"].includes(normalized)) {
+    throw new Error(`[SFB-VISUAL-QA-000] Invalid --proof-mode '${mode}'. Expected skeleton or runtime.`);
+  }
+
+  if (normalized === "runtime") {
+    if (!baseUrlArg) {
+      throw new Error("[SFB-VISUAL-QA-002] Runtime proof requires --base-url.");
+    }
+
+    if (currentFixtureRoot) {
+      throw new Error("[SFB-VISUAL-QA-003] Runtime proof must not use --fixture-root. Start the generated storefront and pass --base-url instead.");
+    }
+  }
+
+  if (normalized === "skeleton" && !currentFixtureRoot) {
+    throw new Error("[SFB-VISUAL-QA-004] Skeleton proof requires --fixture-root.");
+  }
+
+  return normalized;
+}
+
+function isForbiddenBrowserRequest(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+
+  const path = parsed.pathname.toLowerCase();
+  return path.includes("/api/storefront/stores/")
+    || path.startsWith("/api/commerce/")
+    || path.startsWith("/api/control-plane/")
+    || path.startsWith("/api/admin/")
+    || path.startsWith("/api/public/")
+    || path.startsWith("/api/internal/");
+}
+
+function isExternalAssetAllowed(url) {
+  return url.startsWith("data:")
+    || url.startsWith("blob:")
+    || url.startsWith("about:")
+    || url.startsWith("file:");
+}
+
+function dedupeFindings(findings) {
+  const seen = new Set();
+  const result = [];
+  for (const finding of findings) {
+    const key = `${finding.severity}|${finding.pageName}|${finding.viewportName}|${finding.selector}|${finding.message}`;
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(finding);
+  }
+
+  return result;
 }
 
 function readHandoffPlan(root) {

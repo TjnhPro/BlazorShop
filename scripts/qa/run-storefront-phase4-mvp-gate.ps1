@@ -6,6 +6,7 @@ param(
     [int]$MaxRepairAttempts = 2,
     [switch]$SkipRepair,
     [switch]$SkeletonProof,
+    [string]$ProofMode = "",
     [string]$BaseUrl = "",
     [string]$Configuration = "Debug",
     [int]$CommandTimeoutSeconds = 600,
@@ -28,7 +29,8 @@ function Show-Help {
     Write-Host "  -MaxRepairAttempts <number>    Optional bounded repair cap. Defaults to 2."
     Write-Host "  -SkipRepair                    Skip bounded repair attempts, but still run visual QA."
     Write-Host "  -SkeletonProof                 Compatibility mode for early file-fixture skeleton checks; not valid for release closure."
-    Write-Host "  -BaseUrl <url>                 Optional running storefront base URL for visual QA."
+    Write-Host "  -ProofMode <Skeleton|Runtime>  Visual QA proof mode. Closure requires Runtime; Skeleton is for early fixture proof only."
+    Write-Host "  -BaseUrl <url>                 Running storefront base URL for runtime visual QA."
     Write-Host "  -Configuration <name>          Build configuration. Defaults to Debug."
     Write-Host "  -CommandTimeoutSeconds <sec>   Timeout for each external command. Defaults to 600."
     Write-Host "  -Help                          Show this help text."
@@ -199,6 +201,36 @@ $resolvedHandoffRoot = Resolve-RepoPath $HandoffRoot
 $projectName = Split-Path -Leaf $resolvedProjectRoot
 $storeKey = "sample"
 $finalDecision = "failed"
+
+$effectiveProofMode = if (-not [string]::IsNullOrWhiteSpace($ProofMode)) {
+    $ProofMode.Trim()
+} elseif ($SkeletonProof) {
+    "Skeleton"
+} else {
+    "Runtime"
+}
+
+if ($effectiveProofMode -notin @("Skeleton", "Runtime")) {
+    throw "ProofMode must be Skeleton or Runtime, but was '$effectiveProofMode'. Rerun with -Help for usage."
+}
+
+if ($SkeletonProof -and $effectiveProofMode -ne "Skeleton") {
+    throw "-SkeletonProof cannot be combined with -ProofMode $effectiveProofMode."
+}
+
+if ($effectiveProofMode -eq "Runtime") {
+    if ([string]::IsNullOrWhiteSpace($BaseUrl)) {
+        throw "Runtime closure proof requires -BaseUrl. Start the generated storefront with the generated proof/full fixture wrapper and rerun the Phase 4 MVP gate."
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($resolvedFixtureRoot)) {
+        throw "Runtime closure proof must not use -FixtureRoot. Remove -FixtureRoot and rerun with -ProofMode Runtime -BaseUrl <generated-host-url>."
+    }
+}
+
+if ($effectiveProofMode -eq "Skeleton" -and [string]::IsNullOrWhiteSpace($resolvedFixtureRoot)) {
+    throw "Skeleton proof requires -FixtureRoot."
+}
 
 function New-RerunCommand {
     return "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot `"$GeneratedProjectRoot`""
@@ -418,7 +450,7 @@ try {
         }
     }
 
-    if ($SkeletonProof) {
+    if ($effectiveProofMode -eq "Skeleton") {
         Add-GateStep -Name "validate mandatory visual artifact chain" -Status "skipped" -Command "skeleton proof mode" -Problem "SkeletonProof mode does not prove the closure artifact chain." -LikelyCause "This mode is only for early generated skeleton feedback, not release closure." -RerunCommand (New-RerunCommand)
     }
     else {
@@ -480,11 +512,11 @@ try {
         }
     }
 
-    $qaArguments = @((Join-Path $builderRoot "scripts\qa\run-visual-qa.mjs"), "--project-root", $resolvedProjectRoot, "--screenshot-root", $resolvedScreenshotRoot)
-    if (-not [string]::IsNullOrWhiteSpace($resolvedFixtureRoot)) {
+    $qaArguments = @((Join-Path $builderRoot "scripts\qa\run-visual-qa.mjs"), "--proof-mode", $effectiveProofMode.ToLowerInvariant(), "--project-root", $resolvedProjectRoot, "--screenshot-root", $resolvedScreenshotRoot)
+    if ($effectiveProofMode -eq "Skeleton" -and -not [string]::IsNullOrWhiteSpace($resolvedFixtureRoot)) {
         $qaArguments += @("--fixture-root", $resolvedFixtureRoot)
     }
-    if (-not [string]::IsNullOrWhiteSpace($BaseUrl)) {
+    if ($effectiveProofMode -eq "Runtime") {
         $qaArguments += @("--base-url", $BaseUrl)
     }
 
