@@ -204,64 +204,64 @@ Goal: validate consumer dependencies precisely without misclassifying diagnostic
 
 Implementation checklist:
 
-- [ ] Add a reference registry under `Analysis/Handoff`:
-  - [ ] artifact kind.
-  - [ ] JSON pointer or markdown section.
-  - [ ] reference category.
-  - [ ] required/optional behavior.
-  - [ ] allowed target root.
-  - [ ] cycle policy.
+- [x] Add a reference registry under `Analysis/Handoff`:
+  - [x] artifact kind.
+  - [x] JSON pointer or markdown section.
+  - [x] reference category.
+  - [x] required/optional behavior.
+  - [x] allowed target root.
+  - [x] cycle policy.
 - [ ] Reference categories:
-  - [ ] `consumer-dependency`
-  - [ ] `diagnostic-provenance`
-  - [ ] `generated-target-path`
-  - [ ] `external-informational-url`
-  - [ ] `opaque-id`
-- [ ] Add `HandoffReferenceScanner`.
+  - [x] `consumer-dependency`
+  - [x] `diagnostic-provenance`
+  - [x] `generated-target-path`
+  - [x] `external-informational-url`
+  - [x] `opaque-id`
+- [x] Add `HandoffReferenceScanner`.
 - [ ] Scan registered fields in:
-  - [ ] manifest artifact list and entries.
-  - [ ] handoff visual blueprint.
-  - [ ] page compositions.
-  - [ ] design tokens and visual style.
-  - [ ] presentation catalog and mappings.
-  - [ ] component candidates and instances.
-  - [ ] responsive behavior and interaction models.
-  - [ ] evidence manifest.
-  - [ ] review resolution.
-  - [ ] task inputs when machine-readable.
-- [ ] Reject consumer references that are absolute, UNC, drive-letter paths, path escapes, missing, unregistered, `.draft.json`, or outside handoff.
-- [ ] Allow diagnostic provenance outside handoff only when explicitly marked diagnostics-only and not required.
-- [ ] Allow external URLs only for source/reference documentation context, never as required files.
+  - [x] manifest artifact list and entries.
+  - [x] handoff visual blueprint.
+  - [x] page compositions.
+  - [x] design tokens and visual style.
+  - [x] presentation catalog and mappings.
+  - [x] component candidates and instances.
+  - [x] responsive behavior and interaction models.
+  - [x] evidence manifest.
+  - [x] review resolution.
+  - [x] task inputs when machine-readable.
+- [x] Reject consumer references that are absolute, UNC, drive-letter paths, path escapes, missing, unregistered, `.draft.json`, or outside handoff.
+- [x] Allow diagnostic provenance outside handoff only when explicitly marked diagnostics-only and not required.
+- [x] Allow external URLs only for source/reference documentation context, never as required files.
 
 Blocking codes:
 
-- [ ] `handoff-consumer-reference-escape`
-- [ ] `handoff-consumer-reference-missing`
-- [ ] `handoff-consumer-reference-absolute`
-- [ ] `handoff-consumer-reference-draft`
-- [ ] `handoff-consumer-reference-unregistered`
-- [ ] `handoff-diagnostic-reference-used-as-consumer`
-- [ ] `handoff-artifact-reference-cycle`
-- [ ] `handoff-reference-category-mismatch`
+- [x] `handoff-consumer-reference-escape`
+- [x] `handoff-consumer-reference-missing`
+- [x] `handoff-consumer-reference-absolute`
+- [x] `handoff-consumer-reference-draft`
+- [x] `handoff-consumer-reference-unregistered`
+- [x] `handoff-diagnostic-reference-used-as-consumer`
+- [x] `handoff-artifact-reference-cycle`
+- [x] `handoff-reference-category-mismatch`
 
 Tests:
 
-- [ ] `analysis/resolved/foo.json` in a consumer field fails.
-- [ ] `../foo.json` fails.
-- [ ] `C:/foo.json` fails.
-- [ ] `C:\\foo.json` fails.
-- [ ] `//server/share/foo.json` fails.
-- [ ] `/tmp/foo.json` fails.
-- [ ] Missing handoff-local consumer artifact fails.
-- [ ] Diagnostic provenance outside handoff passes.
-- [ ] Diagnostic path moved into a consumer field fails.
-- [ ] Generated target paths are validated as target paths, not file dependencies.
-- [ ] External URLs are accepted only in registered URL fields.
-- [ ] Valid portable reference graph passes.
+- [x] `analysis/resolved/foo.json` in a consumer field fails.
+- [x] `../foo.json` fails.
+- [x] `C:/foo.json` fails.
+- [x] `C:\\foo.json` fails.
+- [x] `//server/share/foo.json` fails.
+- [x] `/tmp/foo.json` fails.
+- [x] Missing handoff-local consumer artifact fails.
+- [x] Diagnostic provenance outside handoff passes.
+- [x] Diagnostic path moved into a consumer field fails.
+- [x] Generated target paths are validated as target paths, not file dependencies.
+- [x] External URLs are accepted only in registered URL fields.
+- [x] Valid portable reference graph passes.
 
 Done when:
 
-- [ ] Readiness can prove that every consumer dependency resolves inside the handoff package and every external path is diagnostics-only.
+- [x] Readiness can prove that every consumer dependency resolves inside the handoff package and every external path is diagnostics-only.
 
 ## Phase 3E.4 - Portable Manifest And Schema Hardening
 
@@ -616,7 +616,7 @@ Done when:
 1. [x] Phase 3E.0 baseline and contract lock.
 2. [x] Phase 3E.1 canonical package contract, schema list, reference registry, and hash rules.
 3. [x] Phase 3E.2 handoff-specific consumer artifacts.
-4. [ ] Phase 3E.3 typed reference containment validator.
+4. [x] Phase 3E.3 typed reference containment validator.
 5. [ ] Phase 3E.4 portable manifest and schema hardening.
 6. [ ] Phase 3E.5 shared authoritative slot resolver and evidence provenance.
 7. [ ] Phase 3E.6 portable validator and inspect CLI.
@@ -632,7 +632,7 @@ Suggested development commits:
 
 1. [ ] `phase 3e: define portable handoff contract`
 2. [x] `phase 3e: package handoff-local consumer artifacts`
-3. [ ] `phase 3e: enforce typed handoff references`
+3. [x] `phase 3e: enforce typed handoff references`
 4. [ ] `phase 3e: harden manifest schemas and package hashes`
 5. [ ] `phase 3e: share reviewed slot provenance`
 6. [ ] `phase 3e: add portable validation commands`
@@ -660,10 +660,10 @@ Handoff artifact normalization:
 
 Reference validation:
 
-- [ ] `HandoffReferenceScannerTests`
-- [ ] `HandoffReferenceContainmentTests`
-- [ ] `HandoffReferenceCategoryTests`
-- [ ] `HandoffReferenceCycleTests`
+- [x] `HandoffReferenceScannerTests`
+- [x] `HandoffReferenceContainmentTests`
+- [x] `HandoffReferenceCategoryTests`
+- [x] `HandoffReferenceCycleTests`
 
 Manifest and hashing:
 
@@ -720,13 +720,13 @@ Artifact completeness:
 
 Reference validation:
 
-- [ ] Every registered consumer reference is scanned.
-- [ ] Consumer path escape is blocked.
-- [ ] Missing consumer target is blocked.
-- [ ] Absolute consumer path is blocked.
-- [ ] `.draft.json` consumer reference is blocked.
-- [ ] Diagnostic-as-consumer misuse is blocked.
-- [ ] External URLs are not treated as required file dependencies.
+- [x] Every registered consumer reference is scanned.
+- [x] Consumer path escape is blocked.
+- [x] Missing consumer target is blocked.
+- [x] Absolute consumer path is blocked.
+- [x] `.draft.json` consumer reference is blocked.
+- [x] Diagnostic-as-consumer misuse is blocked.
+- [x] External URLs are not treated as required file dependencies.
 
 Evidence provenance:
 
@@ -830,7 +830,7 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 - [ ] Implement Phase 3E.0 baseline and boundary lock.
 - [ ] Implement Phase 3E.1 portable package contract.
 - [x] Implement Phase 3E.2 handoff-specific consumer artifacts.
-- [ ] Implement Phase 3E.3 typed reference containment.
+- [x] Implement Phase 3E.3 typed reference containment.
 - [ ] Implement Phase 3E.4 manifest and schema hardening.
 - [ ] Implement Phase 3E.5 shared slot provenance.
 - [ ] Implement Phase 3E.6 portable validation commands.

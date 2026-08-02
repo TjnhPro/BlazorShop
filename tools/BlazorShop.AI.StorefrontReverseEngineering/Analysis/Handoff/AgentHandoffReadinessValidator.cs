@@ -398,6 +398,7 @@ public sealed class AgentHandoffReadinessValidator
         AddPageCompositionSlotFindings(root, findings);
         AddReviewHashFindings(root, findings);
         AddBlueprintReferenceFindings(root, findings);
+        AddReferenceContainmentFindings(root, findings);
         AddMappingCatalogFindings(root, findings);
         AddStorefrontPatternFindings(root, findings);
     }
@@ -460,6 +461,15 @@ public sealed class AgentHandoffReadinessValidator
                 findings.Add(Block("reviewed-blueprint-references-draft", "Reviewed handoff blueprint references draft artifacts.", "analysis/agent-handoff/visual-blueprint.json"));
                 return;
             }
+        }
+    }
+
+    private static void AddReferenceContainmentFindings(string root, List<AgentHandoffReadinessFinding> findings)
+    {
+        var result = new HandoffReferenceScanner().Scan(root);
+        foreach (var finding in result.Findings)
+        {
+            findings.Add(Block(finding.Code, finding.Message, finding.ArtifactPath));
         }
     }
 
