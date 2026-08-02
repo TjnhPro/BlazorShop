@@ -16,6 +16,7 @@ StorefrontReverseEngineering is the evidence/runtime foundation. It captures ren
 
 The phase plans are retained as implementation history and checklist evidence:
 
+- [18-StorefrontBuilder-Phase4-Agent-Assisted-Visual-Generation.todo.md](18-StorefrontBuilder-Phase4-Agent-Assisted-Visual-Generation.todo.md)
 - [01-StorefrontBuilder-Foundation.todo.md](01-StorefrontBuilder-Foundation.todo.md)
 - [02-StorefrontBuilder-Visual-Generation.todo.md](02-StorefrontBuilder-Visual-Generation.todo.md)
 - [03-StorefrontBuilder-QA-Regeneration.todo.md](03-StorefrontBuilder-QA-Regeneration.todo.md)
