@@ -14,7 +14,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
-| Reverse-engineering evidence tooling | `tools/BlazorShop.AI.StorefrontReverseEngineering` | Development-time executable that creates reference-site evidence, workflow state, validation reports, originality notes, visual-blueprint drafts, reviewed mappings, and Phase 3C/3D/3E-hardened portable `analysis/agent-handoff/*` packages for later StorefrontBuilder phases. |
+| Reverse-engineering evidence tooling | `tools/BlazorShop.AI.StorefrontReverseEngineering` | Development-time executable that creates reference-site evidence, workflow state, validation reports, originality notes, visual-blueprint drafts, reviewed mappings, and Phase 3C/3D/3E-hardened portable `analysis/agent-handoff/*` packages for Phase 4 StorefrontBuilder consumption. |
 | Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, isolation-checks, and runs structure, fast functional, or full fixture-backed browser proof for the canonical generated proof artifact. |
 | Full fixture proof wrapper | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | CI-safe manual/scheduled/release wrapper that stops any existing V2 runtime, starts Docker dependencies plus the local Control Plane/Commerce Node/Storefront fixture runtime, verifies fixture data, runs `FoundationFunctionalFull`, collects reports, and tears down in `finally`. |
 | Regeneration ownership gate | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly generated update proof for no-op determinism, scoped updates, manual-edit conflicts, user-owned preservation, protected-file rejection, and obsolete-file reporting without live Commerce Node data. |
@@ -36,7 +36,7 @@ artifacts/storefront-reverse-engineering/projects/{ProjectId}
 obj/storefront-reverse-engineering/projects/{ProjectId}
 ```
 
-`BlazorShop.AI.StorefrontReverseEngineering` is validated by direct `dotnet build`, `dotnet test`, `dotnet run --project`, `validate-handoff`, `inspect-handoff`, and Phase 3 gate commands. It is not added to `BlazorShop.sln` by default, no production runtime project may reference it, and StorefrontBuilder may consume only portable `analysis/agent-handoff/*` packages through the approved Phase 4 preflight before handoff-driven generation planning. StorefrontBuilder must not consume `visual-blueprint.draft.json`, Visual Blueprint v1, raw source analysis, or evidence/report folders as fallback generation input. The ReverseEngineering tool produces evidence, reviewed analysis, and constrained handoff artifacts only; it does not generate Razor, CSS, generated storefront projects, or runtime API changes.
+`BlazorShop.AI.StorefrontReverseEngineering` is validated by direct `dotnet build`, `dotnet test`, `dotnet run --project`, `validate-handoff`, `inspect-handoff`, and Phase 3 gate commands. It is not added to `BlazorShop.sln` by default, no production runtime project may reference it, and StorefrontBuilder may consume only portable `analysis/agent-handoff/*` packages through the approved Phase 4 preflight, generation-plan compiler, and Starter-based generated project path. StorefrontBuilder must not consume `visual-blueprint.draft.json`, Visual Blueprint v1, raw source analysis, or evidence/report folders as fallback generation input. The ReverseEngineering tool produces evidence, reviewed analysis, and constrained handoff artifacts only; StorefrontBuilder owns Razor/CSS/generated project output.
 
 Phase 3A hardening makes the ReverseEngineering runtime evidence layer deterministic enough for later analysis work: real Chromium fixture tests, stateful per-viewport browser sessions, stabilized full-page capture, native quality gates with stitched fallback, single capture correlation IDs, schema-backed artifacts, workflow run/resume state, safe interaction diffs, and readiness reports. The release gate is:
 
@@ -46,11 +46,11 @@ powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engin
 
 The gate uses local fixtures and StorefrontBuilder compatibility smoke; it must not require an external website or mutate generated storefront source.
 
-ReverseEngineering handoff artifacts are inactive in Phase 3A, Phase 3B, Phase 3C, Phase 3D, and Phase 3E. Phase 4.1 enables StorefrontBuilder preflight-only consumption of portable Phase 3E packages under `analysis/agent-handoff/`; handoff-driven generation remains gated behind the later Phase 4 generation-plan phases. Phase 3E portability proof requires canonical artifact/schema membership, manifest/readiness agreement, deterministic copied-package validation, and source-aware reviewed slot provenance. Current non-handoff StorefrontBuilder generation still uses its existing StorefrontBuilder artifacts and scripts.
+ReverseEngineering handoff artifacts are inactive in Phase 3A, Phase 3B, Phase 3C, Phase 3D, and Phase 3E. Phase 4 enables StorefrontBuilder to preflight portable Phase 3E packages under `analysis/agent-handoff/`, compile a deterministic handoff generation plan, create a Starter-based handoff project skeleton, package constrained agent visual tasks, validate visual-only boundaries, run browser visual proof, run bounded repair, and regenerate safely through stored handoff metadata. Phase 3E portability proof requires canonical artifact/schema membership, manifest/readiness agreement, deterministic copied-package validation, and source-aware reviewed slot provenance. Existing non-handoff StorefrontBuilder generation still uses its original StorefrontBuilder artifacts and scripts.
 
-Phase 4 may read only `analysis/agent-handoff/*` and schemas as input after the Phase 3E final runtime gate passes on a clean unchanged `HEAD`. It must fail when `analysis/agent-handoff/handoff-readiness.json` is missing, not passed, or disagrees with `manifest.json` readiness. It must not reinterpret raw reference evidence unless it explicitly runs a new ReverseEngineering pass, must not write into `BlazorShop.Storefront.Starter`, and must not change protected Storefront runtime behavior. Portable preflight uses `validate-handoff`, `inspect-handoff`, and the read-only dry-run loader through `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path>`; source project folders, raw captures, `analysis/pages/*`, `analysis/resolved/*`, `presentation-catalog/*`, `review/*`, and `reports/*` are not fallback inputs.
+Phase 4 may read only `analysis/agent-handoff/*` and schemas as input after the Phase 3E final runtime gate passes on a clean unchanged `HEAD`. It must fail when `analysis/agent-handoff/handoff-readiness.json` is missing, not passed, or disagrees with `manifest.json` readiness. It must not reinterpret raw reference evidence unless it explicitly runs a new ReverseEngineering pass, must not write into `BlazorShop.Storefront.Starter`, and must not change protected Storefront runtime behavior. Portable preflight uses `validate-handoff`, `inspect-handoff`, and the read-only dry-run loader through `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path>`. Handoff generation uses `build-storefront.ps1 -Mode plan-only|generate|full -HandoffRoot <path>` and writes only generated project artifacts. Source project folders, raw captures, `analysis/pages/*`, `analysis/resolved/*`, `presentation-catalog/*`, `review/*`, and `reports/*` are not fallback inputs.
 
-Phase 3A does not perform full design-token extraction, semantic token normalization, ecommerce region mapping, component detection, component generation, or visual generation. Captured reference assets, logos, copy, and brand-specific visual material are reference-only by default until later human review and an approved workflow clear reuse. Phase 3B starts from the stable runtime evidence and adds visual interpretation: design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and reviewed blueprint assembly for later handoff planning. Phase 3D proves resolved reviewed inputs, exact slot enforcement, per-viewport evidence packaging, and positive/negative closure behavior. Phase 3E proves the handoff can be copied, validated, and dry-run loaded without its source project, and blocks orphan reviewed slot mappings that do not belong to the active page composition. Phase 4.1 exposes that portable validation/dry-run path through StorefrontBuilder preflight without generating files.
+Phase 3A does not perform full design-token extraction, semantic token normalization, ecommerce region mapping, component detection, component generation, or visual generation. Captured reference assets, logos, copy, and brand-specific visual material are reference-only by default until later human review and an approved workflow clear reuse. Phase 3B starts from the stable runtime evidence and adds visual interpretation: design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and reviewed blueprint assembly for later handoff planning. Phase 3D proves resolved reviewed inputs, exact slot enforcement, per-viewport evidence packaging, and positive/negative closure behavior. Phase 3E proves the handoff can be copied, validated, and dry-run loaded without its source project, and blocks orphan reviewed slot mappings that do not belong to the active page composition. Phase 4 exposes that portable validation/dry-run path through StorefrontBuilder and adds controlled visual generation/QA/regeneration on top of it.
 
 Compatibility map for future handoff:
 
@@ -157,6 +157,15 @@ Required artifacts:
 - `asset-manifest.yaml`
 - `generated-files.yaml`
 
+Handoff-generated projects additionally keep:
+
+- `generation-plan.json` and `generation-plan.yaml`
+- `handoff-generation-summary.md`
+- `handoff-placeholders.json`
+- `agent-task-package/`
+- `agent-written-files.json` after constrained agent visual writes
+- `repair-history.md` after bounded visual repair attempts
+
 Current review and QA artifacts:
 
 - `review-summary.md`
@@ -184,11 +193,32 @@ Supported modes:
 | Mode | Behavior |
 | --- | --- |
 | `analyze-only` | Writes review artifacts from the reference URL for the target generated project. |
+| `preflight-only` | Validates a portable `analysis/agent-handoff/*` package and writes a preflight report without generating a storefront project. |
 | `plan-only` | Produces a dry-run generation plan. |
 | `generate` | Creates a generated storefront project from Starter and writes analysis artifacts. |
 | `update` | Runs regeneration for the generated storefront. |
 | `validate-only` | Runs the static validation gate for the generated storefront. |
 | `full` | Generates, writes artifacts, validates, and reports visual/commerce QA script entrypoints. |
+
+Handoff preflight:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode preflight-only -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+```
+
+Handoff plan review:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode plan-only -Name Demo -StoreKey sample -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+```
+
+Handoff project generation:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode generate -Name Demo -StoreKey sample -OutputRoot obj/storefront-builder/generated -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas -Force
+```
+
+Handoff generation writes a Starter-based `BlazorShop.Storefront.{Name}` project, records `generationMode: handoff-project-skeleton` in `metadata.yaml`, stores the compiled generation plan under `docs/storefront-analysis/`, writes an agent task package containing only handoff-local inputs and allowed visual target boundaries, and does not mutate Starter or add the generated project to `BlazorShop.sln`.
 
 Regeneration command:
 
@@ -196,7 +226,7 @@ Regeneration command:
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all
 ```
 
-Supported scopes are `all`, `page`, `component`, `css`, `foundation`, `validate`, and `conflicts`. Regeneration creates a fresh candidate from the current Starter/template source, writes a shared action plan, and applies only safe generated/managed changes from that candidate into the target. It does not use the existing target as the primary candidate source.
+Supported scopes are `all`, `page`, `component`, `css`, `foundation`, `validate`, and `conflicts`. Non-handoff regeneration creates a fresh candidate from the current Starter/template source, writes a shared action plan, and applies only safe generated/managed changes from that candidate into the target. Handoff regeneration preserves stored handoff metadata, copies the target into a candidate, reapplies the stored `generation-plan.json`, rejects package/readiness/Starter contract drift, and applies only safe generated/managed visual changes. Manual edits to generated/managed files are reported as conflicts, user-owned/artifact-only files are preserved, protected files are skipped unless an explicit reviewed foundation path is used, and obsolete candidates are reported instead of deleted.
 
 Use `-WhatIf` with any update scope to run the same candidate generation and planning pipeline without copying changed files into the generated target:
 
@@ -216,6 +246,18 @@ CI-friendly regeneration ownership gate:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+```
+
+Constrained agent writes are recorded after an agent updates generated visual files:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+```
+
+The recorder validates that writes are planned generated-owned visual outputs, reject route declarations, direct Commerce Node/Admin/Control Plane calls, protected package paths, business/auth/SEO ownership leaks, and unplanned JavaScript. Bounded visual repair uses only failure output, the generation plan, and the generated agent task package:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
 ```
 
 Static validation command:
@@ -275,6 +317,12 @@ The isolation gate additionally restores and builds the generated storefront, pa
 `Structure` proof generates/restores/builds the proof project, runs the static StorefrontBuilder gate, runs the isolation gate, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `FoundationFunctionalFast` is the PR gate: it starts from deterministic generated proof markup, uses mocked same-origin Presentation BFF routes in Playwright, and proves product descriptors, selection preview, add-to-cart, cart badge, cart page, checkout route, consent save/revoke, and no direct Commerce Node browser calls. `FoundationFunctionalFull` requires fixture-backed store/category/product/page/payment data, starts the generated host, runs visual smoke QA, and runs commerce regression checks for same-origin add-to-cart, cart badge, cart, checkout entry, account route, SEO, consent, missing slug, and direct Commerce Node browser-call rejection. Run the self-contained wrapper for scheduled/manual/release validation because it owns fixture runtime bootstrap, endpoint checks, report collection, and teardown. `FoundationFunctional` remains a compatibility alias for the full gate.
 
 Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run the fast proof on PR and closure guardrail changes; run the regeneration ownership gate whenever generated ownership, manifests, or regeneration behavior changes; run the full proof for manual, scheduled, and release validation. Commit the resulting QA report only when a phase explicitly asks for tracked evidence.
+
+For handoff-generated projects, `run-visual-qa.mjs` auto-detects `docs/storefront-analysis/generation-plan.json`, derives required route/slot checks from planned slots, verifies generated CSS linkage, seeded/mock data visibility, body nonblank state, required slot visibility, browser-action descriptors, generated asset resolution, product gallery shape, and horizontal overflow. Use `--fixture-root <folder>` for file-based seeded/mock proof and `--allow-planned-placeholders` only while proving the generated skeleton before agent visual replacement. The report records screenshots, route/viewport/selector discrepancies, and explicitly labels visual fidelity diff as not a hard gate in Phase 4.
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
+```
 
 ## Deferred Scope
 

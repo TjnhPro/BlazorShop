@@ -26,11 +26,11 @@
 
 `BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review. Phase 3C adds strict Storefront pattern contracts, reviewed page compositions, constrained agent handoff files under `analysis/agent-handoff/`, and final handoff readiness under `analysis/agent-handoff/handoff-readiness.json`. Phase 3D hardens that handoff so reviewed page compositions read resolved artifacts, ecommerce slots come from reviewed mappings or exact contracts, crops use per-viewport bounds, and closure proof uses real positive/negative behavior tests. Phase 3E makes `analysis/agent-handoff/*` portable by adding handoff-local consumer contracts, canonical artifact/schema membership checks, file-level hashes, typed reference containment, manifest/readiness agreement, reviewed slot provenance, portable validator/inspect commands, a read-only dry-run loader, isolated copy proof, negative portability mutations, and the final Phase 3E clean-HEAD gate.
 
-StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. Phase 4.1 StorefrontBuilder preflight may consume portable `analysis/agent-handoff/*` packages through `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path>`, but it must not consume `analysis/visual-blueprint.v1.*.json`, raw source analysis, captures, review folders, or reports as fallback input. Existing non-handoff generation commands, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
+StorefrontBuilder Phase 4 consumes ReverseEngineering artifacts only through portable `analysis/agent-handoff/*` packages and registered schemas. The supported StorefrontBuilder surface is `build-storefront.ps1 -Mode preflight-only|plan-only|generate|full -HandoffRoot <path>`. It must not consume `analysis/visual-blueprint.v1.*.json`, raw source analysis, captures, review folders, or reports as fallback input. Existing non-handoff generation commands, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
 
 Phase 3B is not a visual generator. It performs design-token extraction, ecommerce region mapping, confidence review, and blueprint assembly, but it does not produce component source, Razor, CSS, generated projects, or blueprint-driven StorefrontBuilder output. Reference assets, logos, copy, and brand-specific visual material are reference-only by default unless later human review and approved workflow clear reuse.
 
-Phase 3B starts from Phase 3A runtime evidence and adds design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and reviewed blueprint assembly for later handoff planning. StorefrontBuilder generation consumption remains disabled until a later approved implementation phase; Phase 4.1 only exposes portable preflight.
+Phase 3B starts from Phase 3A runtime evidence and adds design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and reviewed blueprint assembly for later handoff planning. Phase 4 StorefrontBuilder consumption is now limited to the portable handoff package, deterministic generation plan, generated project boundary manifest, constrained visual write recorder, visual proof, repair loop, and handoff-aware regeneration.
 
 Final Phase 3A capture flow:
 
@@ -138,6 +138,25 @@ Common Phase 3B failures are reported as problem/cause/fix lines:
 
 Phase 4 may read only `analysis/agent-handoff/*` and schemas as input. It must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass. It must not write into `BlazorShop.Storefront.Starter`. It must not change protected Storefront runtime behavior. It must fail if `analysis/agent-handoff/handoff-readiness.json` is missing, not passed, or disagrees with `manifest.json` readiness. The portable preflight surface is `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path>`, `validate-handoff`, `inspect-handoff`, and the read-only `HandoffConsumerDryRunLoader`; none of these may read the original source project as a fallback. A reviewed mapping is authoritative for slot proof only when its source page and source section belong to the active reviewed page composition; orphan mappings fail with `reviewed-slot-mapping-orphan`.
 
+Handoff generation commands:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode preflight-only -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode plan-only -Name Demo -StoreKey sample -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode generate -Name Demo -StoreKey sample -OutputRoot obj/storefront-builder/generated -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas -Force
+```
+
+Handoff-generated project artifacts under `docs/storefront-analysis/`:
+
+| Artifact | Role |
+| --- | --- |
+| `generation-plan.json` and `generation-plan.yaml` | Deterministic compiled plan from reviewed handoff artifacts. |
+| `handoff-generation-summary.md` | Human-readable plan/skeleton summary. |
+| `handoff-placeholders.json` | Placeholder skeleton write manifest. |
+| `agent-task-package/` | Handoff-local task package for constrained visual generation. |
+| `agent-written-files.json` | Recorded generated visual files after constrained agent writes. |
+| `repair-history.md` | Durable bounded repair attempt history. |
+
 ## ReverseEngineering Browser Setup
 
 Install .NET Playwright Chromium once before running browser tests or the hardening gate:
@@ -228,6 +247,8 @@ Parameters:
 | `StoreKey` | `sample` | Storefront API route scope for generated configuration. |
 | `OutputRoot` | `artifacts/storefront-builder/generated` | Generated artifact root. |
 | `Mode` | `validate-only` | One of `analyze-only`, `plan-only`, `generate`, `update`, `validate-only`, `full`. |
+| `HandoffRoot` | empty | Portable handoff package root or its `analysis/agent-handoff` folder for Phase 4 preflight/planning/generation. |
+| `HandoffSchemaRoot` | `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas` | Registered schema root for handoff validation. |
 | `Force` | off | Allows project generation to overwrite an existing generated target when the generation script permits it. |
 | `SkipVisualQa` | off | Suppresses visual QA runner reporting in `full` mode. |
 | `SkipCommerceRegression` | off | Suppresses commerce regression runner reporting in `full` mode. |
@@ -237,11 +258,12 @@ Modes:
 | Mode | Result |
 | --- | --- |
 | `analyze-only` | Runs `write-review-artifacts.mjs`. |
-| `plan-only` | Runs `plan-generation-files.mjs --dry-run`. |
-| `generate` | Creates a new storefront project and writes review artifacts. |
+| `preflight-only` | Validates a portable handoff package without generating a project. |
+| `plan-only` | Runs `plan-generation-files.mjs --dry-run`; with `-HandoffRoot`, compiles a handoff generation plan. |
+| `generate` | Creates a new storefront project and writes review artifacts; with `-HandoffRoot`, creates a Starter-based handoff skeleton and task package. |
 | `update` | Runs regeneration with `Scope all`. |
 | `validate-only` | Runs `validate-storefront.ps1`. |
-| `full` | Generates, writes artifacts, validates, and prints browser QA runner names. |
+| `full` | Generates, writes artifacts, validates, and prints browser QA runner names; with `-HandoffRoot`, runs the handoff project path. |
 
 ## Regeneration Command
 
@@ -255,7 +277,7 @@ Scopes:
 
 | Scope | Behavior |
 | --- | --- |
-| `all` | Generates a fresh candidate from current Starter/template inputs, plans all generated/managed visual file actions, applies safe changes, updates generated manifest, and checks idempotency. |
+| `all` | Generates a candidate, plans all generated/managed visual file actions, applies safe changes, updates generated manifest, and checks idempotency. |
 | `page` | Plans and applies page/composition output for the optional `Target`. |
 | `component` | Plans and applies component/composition output for the optional `Target`. |
 | `css` | Plans and applies generated visual foundation CSS. |
@@ -263,7 +285,9 @@ Scopes:
 | `validate` | Runs the static storefront validation gate. |
 | `conflicts` | Runs idempotency/conflict validation. |
 
-Use `-WhatIf` to run the same fresh-candidate planning pipeline as apply mode without copying changed files into the generated target. The console prints a stable `WhatIf report:` path, summary counts, meaningful `filePath: action - reason` lines, and conflict next-action guidance when needed. By default the report is written outside the target under `{OutputRoot}/.regeneration-reports/{ProjectName}-{operationId}.md`; `-WhatIfReportPath <path>` can redirect it to an approved report path under the output report folder, repo `obj`, or `artifacts/storefront-builder`. The report records create, update, skip unchanged, skip user-owned, skip protected, manual-edit conflict, platform metadata update, and obsolete candidate actions.
+Use `-WhatIf` to run the same candidate planning pipeline as apply mode without copying changed files into the generated target. The console prints a stable `WhatIf report:` path, summary counts, meaningful `filePath: action - reason` lines, and conflict next-action guidance when needed. By default the report is written outside the target under `{OutputRoot}/.regeneration-reports/{ProjectName}-{operationId}.md`; `-WhatIfReportPath <path>` can redirect it to an approved report path under the output report folder, repo `obj`, or `artifacts/storefront-builder`. The report records create, update, skip unchanged, skip user-owned, skip protected, manual-edit conflict, platform metadata update, and obsolete candidate actions.
+
+For non-handoff projects, regeneration candidates come from the current Starter/template inputs. For handoff-generated projects, candidates preserve stored handoff metadata, copy the target project, reapply stored `docs/storefront-analysis/generation-plan.json`, and then compare the candidate against the target. Handoff package/readiness hash drift fails with an explicit re-plan/update requirement. Starter contract drift fails with an explicit foundation upgrade requirement. Protected target paths in a handoff generation plan fail before candidate writes.
 
 StorefrontBuilder generator provenance comes from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Generated `metadata.yaml` and `generated-files.yaml` entries must agree on the same `generatorVersion`.
 

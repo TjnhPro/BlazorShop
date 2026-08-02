@@ -40,6 +40,33 @@ Use a full project name only when the folder must already include the `BlazorSho
   -Mode generate
 ```
 
+Generate from a portable Phase 3E handoff package:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 `
+  -Mode preflight-only `
+  -HandoffRoot <portable-handoff-root> `
+  -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 `
+  -Mode plan-only `
+  -Name Demo `
+  -StoreKey sample `
+  -HandoffRoot <portable-handoff-root> `
+  -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 `
+  -Mode generate `
+  -Name Demo `
+  -StoreKey sample `
+  -OutputRoot obj/storefront-builder/generated `
+  -HandoffRoot <portable-handoff-root> `
+  -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas `
+  -Force
+```
+
+The handoff generation path writes a Starter-based `BlazorShop.Storefront.{Name}` project and stores `generation-plan.json`, `handoff-generation-summary.md`, `handoff-placeholders.json`, and `agent-task-package/` under `docs/storefront-analysis/`. It consumes only the portable `analysis/agent-handoff/*` package and schemas; it does not read raw captures or mutate Starter.
+
 ## Update
 
 Regenerate all generated visual/composition output:
@@ -72,6 +99,8 @@ Preview before applying:
 
 `-WhatIf` runs the same fresh-candidate planning pipeline as apply mode and exits before copying target changes. Read the `WhatIf report:` path printed by the command; by default it is written under the output root `.regeneration-reports/` folder and contains create/update/conflict/obsolete/platform metadata actions. Use `-WhatIfReportPath <path>` only when you need a custom approved report path under the output report folder, repo `obj`, or `artifacts/storefront-builder`.
 
+For handoff-generated projects, regeneration preserves handoff metadata and reapplies stored `docs/storefront-analysis/generation-plan.json` in the candidate. Handoff package/readiness hash drift fails with a re-plan/update requirement; Starter contract drift fails with a foundation upgrade requirement.
+
 Require validation and build after applying:
 
 ```powershell
@@ -94,11 +123,23 @@ Refresh platform metadata, package compatibility versions, and the copied Starte
 
 Manual edits to generated/managed files are not overwritten automatically. They are recorded in `docs/storefront-analysis/generated-files.yaml` and summarized by `docs/storefront-analysis/regeneration-report.md`; resolve the file intentionally, then rerun `-Scope conflicts`.
 
+After constrained agent visual edits in a handoff-generated project, record the files:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+```
+
+If visual proof fails in generated-owned CSS/markup, run bounded repair:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
+```
+
 Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder `generatorVersion` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Validation fails if those artifact versions drift.
 
-ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Phase 3D is the final correctness and no-skip closure proof for that package. Phase 3E makes the package portable with handoff-local artifacts, canonical artifact/schema membership, hashes, reference containment, manifest/readiness agreement, portable validation commands, dry-run loading, isolated copy proof, source-aware slot provenance, and a final clean-HEAD gate. Generated storefront commands do not consume those artifacts yet. Treat Phase 3C/3D/3E output as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
+ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Phase 3D is the final correctness and no-skip closure proof for that package. Phase 3E makes the package portable with handoff-local artifacts, canonical artifact/schema membership, hashes, reference containment, manifest/readiness agreement, portable validation commands, dry-run loading, isolated copy proof, source-aware slot provenance, and a final clean-HEAD gate. Phase 4 StorefrontBuilder commands consume only the portable package and schemas through preflight, deterministic planning, generated project skeletons, constrained visual writes, visual QA, repair, and safe regeneration.
 
-For future Phase 4 planning, the approved input root is only `analysis/agent-handoff/*` plus the registered schemas. A Phase 4 consumer must not read draft artifacts such as `analysis/pages/*`, raw `captures/*`, `analysis/visual-blueprint.draft.json`, `analysis/visual-blueprint.v1.draft.json`, or any unresolved reviewed-source file as generation input.
+The approved Phase 4 input root is only `analysis/agent-handoff/*` plus the registered schemas. A Phase 4 consumer must not read draft artifacts such as `analysis/pages/*`, raw `captures/*`, `analysis/visual-blueprint.draft.json`, `analysis/visual-blueprint.v1.draft.json`, or any unresolved reviewed-source file as generation input.
 
 To run the Phase 3A fixture evidence workflow:
 
@@ -232,6 +273,12 @@ Run visual and commerce checks from another PowerShell session:
 ```powershell
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
+```
+
+For handoff skeleton proof with seeded/mock fixture pages:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
 ```
 
 Review the resulting reports under the generated artifact's `docs/storefront-analysis/`. Do not commit the generated artifact by default.

@@ -1,6 +1,6 @@
 # Visual Reverse Engineering Skill Docs
 
-This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects. Phase 3A introduced `BlazorShop.AI.StorefrontReverseEngineering`, a separate development-time executable that records reference-site evidence and neutral visual-blueprint drafts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3B extends that executable with visual analysis, ecommerce mapping, confidence review, and Visual Blueprint v1 artifacts. Phase 3C turns the reviewed analysis into a strict site-level `analysis/agent-handoff/*` package with allowed/protected files, page compositions, Storefront pattern contracts, and final handoff readiness. Phase 3D is the completed final correctness and closure-proof phase for that handoff; D13-D19 prove resolved reviewed inputs, exact slot mapping, viewport-specific crops, real positive/negative mutation behavior, and clean-HEAD final gate closure. Phase 3E makes that handoff portable: manifests, schemas, hashes, canonical artifact/schema membership, manifest/readiness agreement, references, evidence slot provenance, CLI validation, dry-run loading, isolated copy proof, and the final Phase 3E gate all operate without the original source project. StorefrontBuilder remains the generation/regeneration tool; Phase 4.1 adds portable handoff preflight only, while handoff-driven generation remains gated behind later Phase 4 phases.
+This folder documents the StorefrontBuilder workflow for turning reference ecommerce storefront evidence into reviewable, generated Blazor storefront projects. Phase 3A introduced `BlazorShop.AI.StorefrontReverseEngineering`, a separate development-time executable that records reference-site evidence and neutral visual-blueprint drafts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3B extends that executable with visual analysis, ecommerce mapping, confidence review, and Visual Blueprint v1 artifacts. Phase 3C turns the reviewed analysis into a strict site-level `analysis/agent-handoff/*` package with allowed/protected files, page compositions, Storefront pattern contracts, and final handoff readiness. Phase 3D is the completed final correctness and closure-proof phase for that handoff; D13-D19 prove resolved reviewed inputs, exact slot mapping, viewport-specific crops, real positive/negative mutation behavior, and clean-HEAD final gate closure. Phase 3E makes that handoff portable: manifests, schemas, hashes, canonical artifact/schema membership, manifest/readiness agreement, references, evidence slot provenance, CLI validation, dry-run loading, isolated copy proof, and the final Phase 3E gate all operate without the original source project. StorefrontBuilder remains the generation/regeneration tool; Phase 4 consumes portable handoff packages through preflight, deterministic planning, Starter-based skeleton generation, constrained agent visual writes, visual QA, bounded repair, and safe regeneration.
 
 StorefrontReverseEngineering is the evidence/runtime foundation. It captures rendered browser evidence, workflow state, readiness reports, Phase 3B analysis artifacts, Phase 3C handoff artifacts, and conservative originality/provenance findings. Its final capture flow extracts rendered evidence before native screenshots, records explicit quality/fallback decisions, uses stitched fallback only with real segment artifacts, and keeps raw/normalized artifacts tied by capture correlation IDs. StorefrontBuilder is the generator. Phase 3C does not create Razor, CSS, generated projects, or active blueprint consumption.
 
@@ -55,7 +55,7 @@ dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop
 dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step assemble-blueprint-v1
 ```
 
-`inspect` reports problem/cause/fix guidance for missing Phase 3A readiness, missing evidence snapshots, invalid token schemas, Presentation catalog drift, unresolved blocking review items, unsupported critical patterns, and final handoff readiness blockers. StorefrontBuilder preflight may consume portable `analysis/agent-handoff/*` packages through `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path>`; generation remains unchanged until the later Phase 4 generation-plan cutover.
+`inspect` reports problem/cause/fix guidance for missing Phase 3A readiness, missing evidence snapshots, invalid token schemas, Presentation catalog drift, unresolved blocking review items, unsupported critical patterns, and final handoff readiness blockers. StorefrontBuilder consumes portable `analysis/agent-handoff/*` packages through `build-storefront.ps1 -Mode preflight-only|plan-only|generate|full -HandoffRoot <path>`; generation remains constrained to the compiled handoff plan and generated project boundaries.
 
 Use the Phase 3B gate for StorefrontReverseEngineering visual analysis, mapping, review, blueprint, inspect, docs, and StorefrontBuilder boundary changes:
 
@@ -73,6 +73,31 @@ powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engin
 
 Phase 3C handoff readiness is machine-readable in `analysis/agent-handoff/handoff-readiness.json`. The handoff package under `analysis/agent-handoff/` is the only approved input shape for a Phase 4 consumer. Phase 4 may read those files and the registered schemas, must fail unless final handoff readiness passed, must not reinterpret raw evidence unless it runs a new ReverseEngineering pass, must not write into Starter, and must not change protected Storefront runtime behavior.
 
+Phase 4 handoff generation commands:
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode preflight-only -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode plan-only -Name Demo -StoreKey sample -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas
+.\tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1 -Mode generate -Name Demo -StoreKey sample -OutputRoot obj/storefront-builder/generated -HandoffRoot <portable-handoff-root> -HandoffSchemaRoot tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas -Force
+```
+
+Handoff-generated projects record `generationMode: handoff-project-skeleton` in `docs/storefront-analysis/metadata.yaml`, keep the compiled `generation-plan.json`, write `handoff-generation-summary.md`, `handoff-placeholders.json`, and `agent-task-package/`, and remain disposable generated artifacts outside `BlazorShop.sln`.
+
+After agent visual edits, record constrained writes and run visual proof:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
+```
+
+Use bounded repair only for generated-owned visual failures:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
+```
+
+Regeneration for handoff-generated projects reuses stored handoff metadata and `generation-plan.json`, rejects handoff hash drift with a re-plan/update requirement, rejects Starter contract drift with a foundation upgrade requirement, and keeps `-WhatIf` reports outside the target project.
+
 Use the Phase 3D gate only for final local closure proof after all Phase 3D commits are in place and the working tree is clean:
 
 ```powershell
@@ -89,6 +114,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-re
 
 The Phase 3E gate has no skip flags and is non-recursive: it does not invoke the Phase 3D gate or the historical Phase 3A/3B/3C gates. It restores once, builds once, runs later tests with `--no-build --no-restore`, groups closure proofs into the minimum test-host processes, reuses shared positive/portable baselines in the test host, runs one canonical boundary scan, runs StorefrontBuilder plan-only smoke once, records global timeout telemetry, cleans transient success artifacts, and verifies final `HEAD` equality. Portable validation checks copied-package canonical artifacts, schema requirements, package hashes, typed reference categories, and `manifest.json` readiness against `handoff-readiness.json`; source-aware slot validation blocks orphan reviewed mappings through `reviewed-slot-mapping-orphan`. GitHub Actions evidence is intentionally out of scope while Actions are disabled during development. Phase 3E remains in progress until the final Phase 3E runtime gate passes on this same clean HEAD. The ignored gate report is authoritative final proof; tracked docs must not require a post-gate source commit.
 
-`BlazorShop.Storefront.Components.Features` is retired. StorefrontBuilder output should generate project-local visual templates from evidence while consuming shared `Contracts`, `Headless`, and `Browser` primitives.
+`BlazorShop.Storefront.Components.Features` is retired. StorefrontBuilder output should generate project-local visual templates from reviewed handoff evidence while consuming shared `Contracts`, `Headless`, and `Browser` primitives.
 
-Phase 3B through Phase 3E ReverseEngineering artifacts are handoff evidence only. StorefrontBuilder generation remains unchanged until a later approved phase wires the reviewed `analysis/agent-handoff/*` package into generation planning. Phase 4 may read only `analysis/agent-handoff/*` and registered handoff schemas, using `build-storefront.ps1 -Mode preflight-only`, `validate-handoff`, `inspect-handoff`, or the dry-run loader as portable preflight checks.
+Phase 3B through Phase 3E ReverseEngineering artifacts are handoff evidence only. Phase 4 StorefrontBuilder consumption is limited to the reviewed portable `analysis/agent-handoff/*` package and registered handoff schemas. It uses `build-storefront.ps1 -Mode preflight-only` for preflight, `-Mode plan-only -HandoffRoot <path>` for reviewable generation plans, and `-Mode generate|full -HandoffRoot <path>` for Starter-based handoff project skeletons. Raw captures, source analysis, review folders, reports, Storefront V2 source, backend source, and Starter mutation are not fallback paths.

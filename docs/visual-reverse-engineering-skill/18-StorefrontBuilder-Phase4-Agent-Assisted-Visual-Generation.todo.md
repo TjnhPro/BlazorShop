@@ -222,7 +222,7 @@ Phase 4.1 evidence:
 - Added `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path> -HandoffSchemaRoot <path>` and StorefrontBuilder preflight report output under `obj/storefront-builder/handoff-preflight/`.
 - Added `scripts/generate/Test-HandoffPreflight.ps1` with package-root/direct-`analysis/agent-handoff` resolution, required artifact checks, raw-folder rejection, `validate-handoff`, `dry-run-handoff`, unresolved-blocker rejection, and problem/cause/fix error codes `SFB-HANDOFF-001` through `SFB-HANDOFF-009` plus `SFB-HANDOFF-012`.
 - Added `dry-run-handoff` CLI command over `HandoffConsumerDryRunLoader` for StorefrontBuilder-facing portable preflight output.
-- Updated Phase 3/4 boundary docs and gate wording so approved Phase 4 preflight can read portable `analysis/agent-handoff/*` packages while handoff-driven generation remains gated behind later phases.
+- Updated Phase 3/4 boundary docs and gate wording so approved Phase 4.1 preflight can read portable `analysis/agent-handoff/*` packages; later Phase 4 phases enabled handoff-driven generation, visual QA, repair, and regeneration.
 - Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~AgentHandoffTests|FullyQualifiedName~PortableHandoffCliTests|FullyQualifiedName~StorefrontBuilderHandoffPreflightTests" --blame-hang --blame-hang-timeout 5m` (`63` passed).
 - StorefrontBuilder preflight verification passed through `StorefrontBuilderHandoffPreflightTests` (`9` passed) including positive copied-package/direct-folder cases and negative readiness, manifest mismatch, hash drift, missing schema, consumer-reference escape, and raw folder fallback cases.
 - Script syntax verification passed: `pwsh -NoProfile -Command "& { `$script = Get-Content -LiteralPath 'scripts\qa\storefront-reverse-engineering-phase3-proof-steps.ps1' -Raw; [void][scriptblock]::Create(`$script); Write-Output 'phase3 proof steps syntax ok' }"`.
@@ -682,44 +682,57 @@ Goal: update operator docs and record local proof for Phase 4 without relying on
 
 Docs to update:
 
-- [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] `docs/visual-reverse-engineering-skill/README.md`
-- [ ] `docs/visual-reverse-engineering-skill/reference.md`
-- [ ] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
-- [ ] `docs/agents/storefront-builder.md`
+- [x] `docs/architecture/11-storefront-builder.md`
+- [x] `docs/visual-reverse-engineering-skill/README.md`
+- [x] `docs/visual-reverse-engineering-skill/reference.md`
+- [x] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
+- [x] `docs/agents/storefront-builder.md`
 
 Documentation tasks:
 
-- [ ] Document handoff generation command.
-- [ ] Document handoff preflight command.
-- [ ] Document generation plan artifact format.
-- [ ] Document allowed/forbidden inputs.
-- [ ] Document generated project output roots.
-- [ ] Document visual-only boundaries.
-- [ ] Document repair loop behavior.
-- [ ] Document regeneration/WhatIf behavior for handoff-generated projects.
-- [ ] Document QA commands for local proof.
-- [ ] Document that GitHub Actions evidence is intentionally out of scope while disabled.
+- [x] Document handoff generation command.
+- [x] Document handoff preflight command.
+- [x] Document generation plan artifact format.
+- [x] Document allowed/forbidden inputs.
+- [x] Document generated project output roots.
+- [x] Document visual-only boundaries.
+- [x] Document repair loop behavior.
+- [x] Document regeneration/WhatIf behavior for handoff-generated projects.
+- [x] Document QA commands for local proof.
+- [x] Document that GitHub Actions evidence is intentionally out of scope while disabled.
 
 Closure report:
 
-- [ ] Add a tracked closure summary only after implementation and local gates pass.
-- [ ] Record tested commit SHA.
-- [ ] Record exact commands run.
-- [ ] Record generated project path.
-- [ ] Record handoff package path and hash.
-- [ ] Record plan hash.
-- [ ] Record build result.
-- [ ] Record static gate result.
-- [ ] Record isolation gate result.
-- [ ] Record browser visual proof result.
-- [ ] Record regeneration/WhatIf proof result.
-- [ ] Record known deferred scope.
+- [x] Add a tracked closure summary only after implementation and local gates pass.
+- [x] Record tested commit SHA.
+- [x] Record exact commands run.
+- [x] Record generated project path.
+- [x] Record handoff package path and hash.
+- [x] Record plan hash.
+- [x] Record build result.
+- [x] Record static gate result.
+- [x] Record isolation gate result.
+- [x] Record browser visual proof result.
+- [x] Record regeneration/WhatIf proof result.
+- [x] Record known deferred scope.
 
 Exit criteria:
 
-- [ ] Future agents can run the Phase 4 path without guessing commands or inputs.
-- [ ] Docs match actual scripts and validation behavior.
+- [x] Future agents can run the Phase 4 path without guessing commands or inputs.
+- [x] Docs match actual scripts and validation behavior.
+
+Phase 4.9 evidence:
+
+- Added tracked closure report: `docs/visual-reverse-engineering-skill/phase4-agent-assisted-visual-generation-closure.md`.
+- Updated operator and architecture docs for the active Phase 4 command surface: preflight, plan-only, generate/full, constrained visual writes, visual QA, repair, regeneration, and WhatIf.
+- Verified handoff proof with portable package `obj/storefront-reverse-engineering/portable-handoff/root-03a72762a47c4dde97fcae4609d5167a`.
+- Generated handoff proof project: `obj/storefront-builder/generated/phase4-closure-proof/BlazorShop.Storefront.Phase4ClosureProof`.
+- Handoff package hash: `89077dfcc6db159ce63d3e92f2dc0f894a2b2f6a12028e1eab2c04b60abcaa7f`.
+- Closure generation plan hash: `6650ecea716354e3ad6b2d01ceab925cb4efafb92cc583a8f1fde951ed05f84c`.
+- Tested implementation SHA before Phase 4.9 documentation closure: `c655f0b583d07a0eb3fce91d7cd410c2c55470cc`.
+- `tools\BlazorShop.AI.StorefrontBuilder\BlazorShop.AI.StorefrontBuilder.csproj` does not exist in this repo; StorefrontBuilder is PowerShell/Node tooling, so Node syntax checks covered the script surface.
+- Required local gate results: ReverseEngineering build passed; regeneration gate passed; isolation gate passed; Structure proof passed; FoundationFunctionalFast proof passed; focused handoff suite passed 65/65; focused V2 StorefrontBuilder suite passed 39/39.
+- Existing warnings observed: MessagePack vulnerability advisories and Browserslist caniuse-lite warning.
 
 ## Required Local QA Gate
 
@@ -743,31 +756,31 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.Storefro
 
 ## Definition Of Done
 
-- [ ] Phase 4 consumes only `analysis/agent-handoff/*` plus registered schemas.
-- [ ] Phase 4 fails when final handoff readiness is not passed.
-- [ ] Phase 4 has a deterministic handoff-to-generation-plan compiler.
-- [ ] Generation plan is reviewable before file writes.
-- [ ] Generated project uses `BlazorShop.Storefront.{Name}` naming when promoted.
-- [ ] Disposable proof outputs remain under `artifacts/storefront-builder/generated` or `obj/storefront-builder/generated`.
-- [ ] Generated project is not added to `BlazorShop.sln` by default.
-- [ ] Generated project is created from Starter without mutating Starter.
-- [ ] Generated project does not reference Storefront V2.
-- [ ] Generated project does not reference backend/core/API projects.
-- [ ] Generated files do not declare `@page`.
-- [ ] Generated browser code does not call Commerce Node directly.
-- [ ] Generated visuals keep Presentation semantic descriptors required for browser actions.
-- [ ] Cart, checkout, account, auth, payment result, SEO, BFF, and business behavior remain Presentation/Runtime/Browser-owned.
-- [ ] Generated file manifest records ownership, source plan ids, hashes, and provenance.
-- [ ] Static validation covers handoff-generated projects.
-- [ ] Isolation gate passes.
-- [ ] Generated project restores and builds.
-- [ ] Browser visual proof passes on desktop and mobile.
-- [ ] Regeneration no-op proof passes.
-- [ ] Manual-edit conflict proof passes.
-- [ ] `-WhatIf` proof passes and report survives candidate cleanup.
-- [ ] Docs describe the implemented command surface.
-- [ ] Closure evidence records tested SHA and exact local commands.
-- [ ] Working tree is clean after final closure commit.
+- [x] Phase 4 consumes only `analysis/agent-handoff/*` plus registered schemas.
+- [x] Phase 4 fails when final handoff readiness is not passed.
+- [x] Phase 4 has a deterministic handoff-to-generation-plan compiler.
+- [x] Generation plan is reviewable before file writes.
+- [x] Generated project uses `BlazorShop.Storefront.{Name}` naming when promoted.
+- [x] Disposable proof outputs remain under `artifacts/storefront-builder/generated` or `obj/storefront-builder/generated`.
+- [x] Generated project is not added to `BlazorShop.sln` by default.
+- [x] Generated project is created from Starter without mutating Starter.
+- [x] Generated project does not reference Storefront V2.
+- [x] Generated project does not reference backend/core/API projects.
+- [x] Generated files do not declare `@page`.
+- [x] Generated browser code does not call Commerce Node directly.
+- [x] Generated visuals keep Presentation semantic descriptors required for browser actions.
+- [x] Cart, checkout, account, auth, payment result, SEO, BFF, and business behavior remain Presentation/Runtime/Browser-owned.
+- [x] Generated file manifest records ownership, source plan ids, hashes, and provenance.
+- [x] Static validation covers handoff-generated projects.
+- [x] Isolation gate passes.
+- [x] Generated project restores and builds.
+- [x] Browser visual proof passes on desktop and mobile.
+- [x] Regeneration no-op proof passes.
+- [x] Manual-edit conflict proof passes.
+- [x] `-WhatIf` proof passes and report survives candidate cleanup.
+- [x] Docs describe the implemented command surface.
+- [x] Closure evidence records tested SHA and exact local commands.
+- [x] Working tree is clean after final closure commit.
 
 ## Deferred After Phase 4
 
