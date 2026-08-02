@@ -117,6 +117,7 @@ public sealed class PortableHandoffValidator
         }
 
         AddManifestOrderFindings(manifest, manifestPath, findings);
+        AddCanonicalContractFindings(manifest, manifestPath, findings);
 
         foreach (var entry in manifest.ArtifactEntries.OrderBy(entry => entry.Path, StringComparer.Ordinal))
         {
@@ -225,6 +226,14 @@ public sealed class PortableHandoffValidator
                 "Fix the blocking findings before trying to hand off the package."));
         }
 
+        if (readiness is not null && readiness.Passed != manifest.ReadinessPassed)
+        {
+            findings.Add(Block("portable-handoff-readiness-mismatch", "Portable manifest readiness and handoff readiness report do not agree.", readinessPath,
+                "Portable readiness mismatch.",
+                "The manifest readiness flag and analysis/agent-handoff/handoff-readiness.json passed flag differ.",
+                "Revalidate and reassemble the handoff package so manifest readiness matches the packaged readiness report."));
+        }
+
         return Report(
             root,
             manifest.ProjectId,
@@ -289,6 +298,257 @@ public sealed class PortableHandoffValidator
                 "Portable handoff manifest order mismatch.",
                 "The manifest lists are not written in the canonical sorted order expected by the portable contract.",
                 "Regenerate the manifest without reordering artifact entries, artifact lists, or schema requirements."));
+        }
+    }
+
+    private static void AddCanonicalContractFindings(
+        AgentHandoffManifest manifest,
+        string manifestPath,
+        List<PortableHandoffValidationFinding> findings)
+    {
+        if (!string.Equals(manifest.PackageVersion, AgentHandoffContract.PackageVersion, StringComparison.Ordinal))
+        {
+            findings.Add(Block(
+                "portable-handoff-package-version-mismatch",
+                "Portable handoff packageVersion does not match the canonical contract.",
+                manifestPath,
+                "Portable package version mismatch.",
+                "The manifest was produced by a different portable handoff contract.",
+                "Reassemble the handoff package with the current ReverseEngineering tool."));
+        }
+
+        if (!string.Equals(manifest.HandoffRoot, AgentHandoffContract.HandoffRoot, StringComparison.Ordinal))
+        {
+            findings.Add(Block(
+                "portable-handoff-root-mismatch",
+                "Portable handoff root does not match the canonical contract.",
+                manifestPath,
+                "Portable handoff root mismatch.",
+                "The manifest points at a non-canonical handoff root.",
+                "Reassemble the package so handoffRoot is analysis/agent-handoff."));
+        }
+
+        AddCanonicalArtifactFindings(manifest, manifestPath, findings);
+        AddCanonicalSchemaFindings(manifest, manifestPath, findings);
+        AddCanonicalReferencePolicyFindings(manifest, manifestPath, findings);
+    }
+
+    private static void AddCanonicalArtifactFindings(
+        AgentHandoffManifest manifest,
+        string manifestPath,
+        List<PortableHandoffValidationFinding> findings)
+    {
+        var requiredByPath = AgentHandoffContract.RequiredArtifacts.ToDictionary(artifact => artifact.RelativePath, StringComparer.Ordinal);
+        var artifactList = manifest.ArtifactList.ToHashSet(StringComparer.Ordinal);
+        var entryGroups = manifest.ArtifactEntries.GroupBy(entry => entry.Path, StringComparer.Ordinal).ToArray();
+        var entriesByPath = entryGroups.ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+
+        foreach (var duplicate in entryGroups.Where(group => group.Count() > 1))
+        {
+            findings.Add(Block(
+                "portable-handoff-canonical-artifact-duplicate",
+                $"Portable manifest declares duplicate artifact entries: {duplicate.Key}",
+                manifestPath,
+                "Portable manifest has duplicate artifact entries.",
+                "The same artifact path is listed more than once.",
+                "Regenerate the manifest from the canonical handoff contract."));
+        }
+
+        foreach (var required in AgentHandoffContract.RequiredArtifacts)
+        {
+            if (!artifactList.Contains(required.RelativePath))
+            {
+                findings.Add(Block(
+                    "portable-handoff-canonical-artifact-missing",
+                    $"Portable manifest artifactList is missing canonical artifact: {required.RelativePath}",
+                    manifestPath,
+                    "Portable manifest is missing a canonical artifact.",
+                    "The copied package contract is incomplete.",
+                    "Copy the full analysis/agent-handoff package and regenerate the manifest."));
+            }
+
+            if (!entriesByPath.TryGetValue(required.RelativePath, out var entries) || entries.Length == 0)
+            {
+                findings.Add(Block(
+                    "portable-handoff-canonical-artifact-missing",
+                    $"Portable manifest artifactEntries is missing canonical artifact: {required.RelativePath}",
+                    manifestPath,
+                    "Portable manifest is missing a canonical artifact entry.",
+                    "The validator cannot prove this required artifact from the copied package contract.",
+                    "Copy the full analysis/agent-handoff package and regenerate the manifest."));
+                continue;
+            }
+
+            var entry = entries[0];
+            var expectedIncludeInPackageHash = required.HashRequired &&
+                required.RelativePath is not ("analysis/agent-handoff/manifest.json" or "analysis/agent-handoff/handoff-readiness.json");
+            if (!string.Equals(entry.ArtifactKind, required.ArtifactKind, StringComparison.Ordinal) ||
+                !string.Equals(entry.SchemaKind, required.SchemaName, StringComparison.Ordinal) ||
+                entry.Required != true ||
+                entry.IsDirectory != required.IsDirectory ||
+                entry.IncludeInPackageHash != expectedIncludeInPackageHash)
+            {
+                findings.Add(Block(
+                    "portable-handoff-canonical-artifact-mismatch",
+                    $"Portable manifest canonical artifact metadata does not match contract: {required.RelativePath}",
+                    manifestPath,
+                    "Portable manifest artifact metadata mismatch.",
+                    "The artifact entry no longer matches the canonical required artifact contract.",
+                    "Regenerate the manifest from the current handoff contract."));
+            }
+        }
+
+        foreach (var path in artifactList.Where(path => !requiredByPath.ContainsKey(path)))
+        {
+            findings.Add(Block(
+                "portable-handoff-canonical-artifact-extra",
+                $"Portable manifest artifactList contains a non-canonical artifact: {path}",
+                manifestPath,
+                "Portable manifest contains a non-canonical artifact.",
+                "artifactList must contain only the required portable contract roots.",
+                "Remove the extra artifact from artifactList and regenerate the manifest."));
+        }
+
+        foreach (var entry in manifest.ArtifactEntries.Where(entry => !requiredByPath.ContainsKey(entry.Path) && !IsEvidenceFileEntry(entry)))
+        {
+            findings.Add(Block(
+                "portable-handoff-canonical-artifact-extra",
+                $"Portable manifest artifactEntries contains a non-canonical artifact entry: {entry.Path}",
+                manifestPath,
+                "Portable manifest contains a non-canonical artifact entry.",
+                "Only canonical artifacts and evidence files under the packaged evidence directories are allowed.",
+                "Remove the extra artifact entry and regenerate the manifest."));
+        }
+    }
+
+    private static bool IsEvidenceFileEntry(AgentHandoffArtifactEntry entry) =>
+        string.Equals(entry.ArtifactKind, "agent-handoff-evidence-file", StringComparison.Ordinal) &&
+        !entry.IsDirectory &&
+        entry.Required &&
+        entry.IncludeInPackageHash &&
+        (entry.Path.StartsWith("analysis/agent-handoff/screenshots/", StringComparison.Ordinal) ||
+            entry.Path.StartsWith("analysis/agent-handoff/section-screenshots/", StringComparison.Ordinal));
+
+    private static void AddCanonicalSchemaFindings(
+        AgentHandoffManifest manifest,
+        string manifestPath,
+        List<PortableHandoffValidationFinding> findings)
+    {
+        var requiredByKind = AgentHandoffContract.RequiredSchemaKinds.ToDictionary(schema => schema.SchemaKind, StringComparer.Ordinal);
+        var groups = manifest.SchemaRequirements.GroupBy(schema => schema.SchemaKind, StringComparer.Ordinal).ToArray();
+        var byKind = groups.ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+
+        foreach (var duplicate in groups.Where(group => group.Count() > 1))
+        {
+            findings.Add(Block(
+                "portable-handoff-canonical-schema-duplicate",
+                $"Portable manifest declares duplicate schema requirements: {duplicate.Key}",
+                manifestPath,
+                "Portable manifest has duplicate schema requirements.",
+                "The same schema kind is listed more than once.",
+                "Regenerate the manifest from the canonical handoff contract."));
+        }
+
+        foreach (var required in AgentHandoffContract.RequiredSchemaKinds)
+        {
+            if (!byKind.TryGetValue(required.SchemaKind, out var schemas) || schemas.Length == 0)
+            {
+                findings.Add(Block(
+                    "portable-handoff-canonical-schema-missing",
+                    $"Portable manifest is missing canonical schema requirement: {required.SchemaKind}",
+                    manifestPath,
+                    "Portable manifest is missing a canonical schema.",
+                    "The copied package contract does not include every required schema kind.",
+                    "Copy the exact schema set and regenerate the manifest."));
+                continue;
+            }
+
+            var schema = schemas[0];
+            if (!string.Equals(schema.ArtifactKind, required.ArtifactKind, StringComparison.Ordinal) ||
+                !string.Equals(schema.SchemaFileName, required.SchemaFileName, StringComparison.Ordinal) ||
+                !string.Equals(schema.SchemaVersion, required.SchemaVersion, StringComparison.Ordinal) ||
+                schema.Required != required.Required)
+            {
+                findings.Add(Block(
+                    "portable-handoff-canonical-schema-mismatch",
+                    $"Portable manifest schema metadata does not match contract: {required.SchemaKind}",
+                    manifestPath,
+                    "Portable manifest schema metadata mismatch.",
+                    "A required schema entry no longer matches the canonical schema contract.",
+                    "Regenerate the manifest from the current handoff contract."));
+            }
+        }
+
+        foreach (var schema in manifest.SchemaRequirements.Where(schema => !requiredByKind.ContainsKey(schema.SchemaKind)))
+        {
+            findings.Add(Block(
+                "portable-handoff-canonical-schema-extra",
+                $"Portable manifest contains a non-canonical schema requirement: {schema.SchemaKind}",
+                manifestPath,
+                "Portable manifest contains a non-canonical schema.",
+                "The portable validator accepts only the registered handoff schema set.",
+                "Remove the extra schema requirement and regenerate the manifest."));
+        }
+    }
+
+    private static void AddCanonicalReferencePolicyFindings(
+        AgentHandoffManifest manifest,
+        string manifestPath,
+        List<PortableHandoffValidationFinding> findings)
+    {
+        if (!string.Equals(manifest.ConsumerReferencePolicy.HandoffRoot, AgentHandoffContract.HandoffRoot, StringComparison.Ordinal) ||
+            !manifest.ConsumerReferencePolicy.RejectAbsoluteConsumerPaths ||
+            !manifest.ConsumerReferencePolicy.RejectConsumerPathEscape ||
+            !manifest.ConsumerReferencePolicy.RejectDraftConsumerReferences)
+        {
+            findings.Add(Block(
+                "portable-handoff-reference-policy-mismatch",
+                "Portable manifest reference policy does not match the canonical handoff policy.",
+                manifestPath,
+                "Portable reference policy mismatch.",
+                "The manifest no longer enforces the required consumer reference guardrails.",
+                "Regenerate the manifest from the current handoff contract."));
+        }
+
+        var requiredCategories = PortableHandoffReferenceCategories.All.ToDictionary(category => category.Category, StringComparer.Ordinal);
+        var actualCategoryGroups = manifest.ConsumerReferencePolicy.Categories.GroupBy(category => category.Category, StringComparer.Ordinal).ToArray();
+        var actualCategories = actualCategoryGroups.ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        foreach (var duplicate in actualCategoryGroups.Where(group => group.Count() > 1))
+        {
+            findings.Add(Block(
+                "portable-handoff-reference-policy-mismatch",
+                $"Portable manifest reference policy declares duplicate category: {duplicate.Key}",
+                manifestPath,
+                "Portable reference category mismatch.",
+                "The same reference category is listed more than once.",
+                "Regenerate the manifest from the current handoff contract."));
+        }
+
+        foreach (var required in PortableHandoffReferenceCategories.All)
+        {
+            if (!actualCategories.TryGetValue(required.Category, out var actual) ||
+                actual.RequiredFileDependency != required.RequiredFileDependency ||
+                actual.MustStayInsideHandoffRoot != required.MustStayInsideHandoffRoot)
+            {
+                findings.Add(Block(
+                    "portable-handoff-reference-policy-mismatch",
+                    $"Portable manifest reference policy is missing or changes category: {required.Category}",
+                    manifestPath,
+                    "Portable reference category mismatch.",
+                    "Consumer dependency, diagnostic provenance, generated target path, and external URL references must remain separate categories.",
+                    "Regenerate the manifest from the current handoff contract."));
+            }
+        }
+
+        foreach (var actual in manifest.ConsumerReferencePolicy.Categories.Where(category => !requiredCategories.ContainsKey(category.Category)))
+        {
+            findings.Add(Block(
+                "portable-handoff-reference-policy-mismatch",
+                $"Portable manifest reference policy contains a non-canonical category: {actual.Category}",
+                manifestPath,
+                "Portable reference category mismatch.",
+                "The portable manifest contains an unknown reference category.",
+                "Remove the unknown category and regenerate the manifest."));
         }
     }
 

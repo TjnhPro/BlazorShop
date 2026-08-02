@@ -210,16 +210,16 @@ Goal: keep copied handoff packages valid without the source project, while avoid
 
 Tasks:
 
-- [ ] Keep the portable package contract explicit about required artifacts and schema kinds.
-- [ ] Make canonical membership checks part of `PortableHandoffValidator`, not just source-side assembly.
-- [ ] Keep the portable validator focused on the copied package root.
-- [ ] Decide and enforce one readiness invariant:
-  - [ ] either include readiness in the integrity chain directly,
-  - [ ] or assert that manifest readiness and handoff readiness agree exactly.
-- [ ] Preserve deterministic package hash behavior across copied package locations.
-- [ ] Keep diagnostic-only provenance out of the consumer contract.
-- [ ] Keep generated-target-path and external-url references in their own reference category.
-- [ ] Make the validator failure messages tell the developer what to copy or repair.
+- [x] Keep the portable package contract explicit about required artifacts and schema kinds.
+- [x] Make canonical membership checks part of `PortableHandoffValidator`, not just source-side assembly.
+- [x] Keep the portable validator focused on the copied package root.
+- [x] Decide and enforce one readiness invariant:
+  - [x] keep readiness outside the package hash because it is a bootstrap artifact written after manifest assembly,
+  - [x] assert that manifest readiness and handoff readiness agree exactly.
+- [x] Preserve deterministic package hash behavior across copied package locations.
+- [x] Keep diagnostic-only provenance out of the consumer contract.
+- [x] Keep generated-target-path and external-url references in their own reference category.
+- [x] Make the validator failure messages tell the developer what to copy or repair.
 
 Implementation notes:
 
@@ -235,14 +235,23 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 Expected verification:
 
-- [ ] Copied package validates independently.
-- [ ] Mutating readiness fails clearly.
-- [ ] Missing canonical artifact or schema fails clearly.
-- [ ] Package hash remains stable across copy.
+- [x] Copied package validates independently.
+- [x] Mutating readiness fails clearly.
+- [x] Missing canonical artifact or schema fails clearly.
+- [x] Package hash remains stable across copy.
 
 Done when:
 
-- [ ] Portable closure no longer depends on hidden source-project state.
+- [x] Portable closure no longer depends on hidden source-project state.
+
+Phase 3E.3 evidence:
+
+- `PortableHandoffValidator` now checks manifest membership against `AgentHandoffContract.RequiredArtifacts`, allows only canonical required artifacts plus packaged evidence files, and returns explicit blocker codes for missing/extra/duplicate/mismatched artifact entries.
+- `PortableHandoffValidator` now checks required schema kind membership against `AgentHandoffContract.RequiredSchemaKinds` and returns explicit blocker codes for missing/extra/duplicate/mismatched schema requirements.
+- Chosen readiness invariant: `handoff-readiness.json` stays out of the package hash because it is a bootstrap artifact written after manifest assembly, and the portable validator enforces `manifest.readinessPassed == handoff-readiness.passed`.
+- Reference policy validation keeps consumer dependency, diagnostic provenance, generated target path, and external informational URL categories distinct.
+- Added focused tests for manifest/readiness mismatch, missing canonical artifact entry, and missing canonical schema requirement.
+- QA passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~PortableHandoff" --blame-hang --blame-hang-timeout 5m` passed `18/18`.
 
 ## Phase 3E.4 - Slot Proof Regression Coverage
 

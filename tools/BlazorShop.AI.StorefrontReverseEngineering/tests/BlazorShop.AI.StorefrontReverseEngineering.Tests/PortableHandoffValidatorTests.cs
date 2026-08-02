@@ -59,6 +59,50 @@ public sealed class PortableHandoffValidatorTests
     }
 
     [Fact]
+    public async Task PortableValidator_ManifestReadinessMustMatchReadinessReport()
+    {
+        var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Portable Readiness Mismatch");
+        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/manifest.json", json => json["readinessPassed"] = false);
+
+        var report = await new PortableHandoffValidator().ValidateAsync(fixture.PortableRoot, fixture.SchemaRoot, CancellationToken.None);
+
+        Assert.Contains(report.Findings, finding => finding.Code == "portable-handoff-readiness-mismatch");
+    }
+
+    [Fact]
+    public async Task PortableValidator_MissingCanonicalArtifactEntryFailsClearly()
+    {
+        var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Portable Missing Canonical Artifact");
+        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/manifest.json", json =>
+        {
+            RemoveString(json["artifactList"]!.AsArray(), "analysis/agent-handoff/presentation-catalog.json");
+            RemoveObjectByProperty(json["artifactEntries"]!.AsArray(), "path", "analysis/agent-handoff/presentation-catalog.json");
+        });
+
+        var report = await new PortableHandoffValidator().ValidateAsync(fixture.PortableRoot, fixture.SchemaRoot, CancellationToken.None);
+
+        Assert.Contains(report.Findings, finding =>
+            finding.Code == "portable-handoff-canonical-artifact-missing" &&
+            finding.FixSuggestion == "Copy the full analysis/agent-handoff package and regenerate the manifest.");
+    }
+
+    [Fact]
+    public async Task PortableValidator_MissingCanonicalSchemaRequirementFailsClearly()
+    {
+        var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Portable Missing Canonical Schema");
+        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/manifest.json", json =>
+        {
+            RemoveObjectByProperty(json["schemaRequirements"]!.AsArray(), "schemaKind", "agent-handoff-visual-blueprint");
+        });
+
+        var report = await new PortableHandoffValidator().ValidateAsync(fixture.PortableRoot, fixture.SchemaRoot, CancellationToken.None);
+
+        Assert.Contains(report.Findings, finding =>
+            finding.Code == "portable-handoff-canonical-schema-missing" &&
+            finding.FixSuggestion == "Copy the exact schema set and regenerate the manifest.");
+    }
+
+    [Fact]
     public async Task PortableValidator_ReferenceEscapeFails()
     {
         var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Portable Reference Escape");
@@ -90,5 +134,29 @@ public sealed class PortableHandoffValidatorTests
             ?? throw new InvalidOperationException("Artifact did not parse: " + relativePath);
         mutate(json);
         await File.WriteAllTextAsync(path, json.ToJsonString(VisualJson.Options));
+    }
+
+    private static void RemoveString(JsonArray array, string value)
+    {
+        for (var index = array.Count - 1; index >= 0; index--)
+        {
+            if (string.Equals(array[index]?.GetValue<string>(), value, StringComparison.Ordinal))
+            {
+                array.RemoveAt(index);
+            }
+        }
+    }
+
+    private static void RemoveObjectByProperty(JsonArray array, string propertyName, string value)
+    {
+        for (var index = array.Count - 1; index >= 0; index--)
+        {
+            if (array[index] is JsonObject item &&
+                item.TryGetPropertyValue(propertyName, out var propertyValue) &&
+                string.Equals(propertyValue?.GetValue<string>(), value, StringComparison.Ordinal))
+            {
+                array.RemoveAt(index);
+            }
+        }
     }
 }
