@@ -437,25 +437,25 @@ Goal: make final closure prove generated storefront behavior, not only structure
 
 Tasks:
 
-- [ ] Update `run-storefront-phase4-final-closure-gate.ps1` so it no longer relies only on `-ProofLevel Structure`.
-- [ ] Decide the minimum default proof:
-  - [ ] `FoundationFunctionalFast` for deterministic PR/local closure without live Commerce Node.
-  - [ ] `FoundationFunctionalFull` or `run-storefront-builder-full-proof-with-fixture.ps1` for release closure when fixture runtime is available.
-- [ ] Add gate parameters:
-  - [ ] `-FunctionalProofLevel FoundationFunctionalFast|FoundationFunctionalFull`.
-  - [ ] `-SkipFullFixtureProof` only if explicitly needed for local development, not for final release closure.
-  - [ ] `-RequireCommerceRegression` for final closure when fixture data is available.
-- [ ] In final closure mode, run:
-  - [ ] visual workspace static checks.
-  - [ ] generated project isolation gate.
-  - [ ] generated proof at `FoundationFunctionalFast` minimum.
-  - [ ] Phase 4 MVP gate in runtime closure mode.
-  - [ ] commerce regression against generated runtime when fixture runtime is available.
-  - [ ] regeneration/no-op ownership proof.
-  - [ ] clean HEAD and clean working tree check.
-- [ ] Reuse `run-commerce-regression.mjs` instead of duplicating commerce checks.
-- [ ] Ensure COD/test payment flow can place an order against the fixture when full fixture proof is selected.
-- [ ] Record which proof level was run in the final closure report.
+- [x] Update `run-storefront-phase4-final-closure-gate.ps1` so it no longer relies only on `-ProofLevel Structure`.
+- [x] Decide the minimum default proof:
+  - [x] `FoundationFunctionalFast` for deterministic PR/local closure without live Commerce Node.
+  - [x] `FoundationFunctionalFull` or `run-storefront-builder-full-proof-with-fixture.ps1` for release closure when fixture runtime is available.
+- [x] Add gate parameters:
+  - [x] `-FunctionalProofLevel FoundationFunctionalFast|FoundationFunctionalFull`.
+  - [x] `-SkipFullFixtureProof` only if explicitly needed for local development, not for final release closure.
+  - [x] `-RequireCommerceRegression` for final closure when fixture data is available.
+- [x] In final closure mode, run:
+  - [x] visual workspace static checks.
+  - [x] generated project isolation gate.
+  - [x] generated proof at `FoundationFunctionalFast` minimum.
+  - [x] Phase 4 MVP gate in runtime closure mode.
+  - [x] commerce regression against generated runtime when fixture runtime is available.
+  - [x] regeneration/no-op ownership proof.
+  - [x] clean HEAD and clean working tree check.
+- [x] Reuse `run-commerce-regression.mjs` instead of duplicating commerce checks.
+- [x] Ensure COD/test payment flow can place an order against the fixture when full fixture proof is selected.
+- [x] Record which proof level was run in the final closure report.
 
 Checks:
 
@@ -468,10 +468,24 @@ rg -n "FoundationFunctionalFast|FoundationFunctionalFull|run-commerce-regression
 
 DoD:
 
-- [ ] Final closure gate no longer closes on structure-only proof.
-- [ ] Fast functional proof is the minimum default.
-- [ ] Full fixture commerce proof is available and documented for release closure.
-- [ ] Final closure report records functional and commerce evidence paths.
+- [x] Final closure gate no longer closes on structure-only proof.
+- [x] Fast functional proof is the minimum default.
+- [x] Full fixture commerce proof is available and documented for release closure.
+- [x] Final closure report records functional and commerce evidence paths.
+
+Evidence:
+
+- `run-storefront-phase4-final-closure-gate.ps1` now defaults to `-FunctionalProofLevel FoundationFunctionalFast` and no longer invokes generated proof with `-ProofLevel Structure`.
+- The final gate now exposes `-FunctionalProofLevel FoundationFunctionalFast|FoundationFunctionalFull`, `-SkipFullFixtureProof`, `-RequireCommerceRegression`, and `-PilotBaseUrl`.
+- `FoundationFunctionalFast` runs the generated proof path for local/PR closure; `FoundationFunctionalFull` or `-RequireCommerceRegression` runs `run-storefront-builder-full-proof-with-fixture.ps1`.
+- Full fixture proof reuses the existing wrapper, which runs `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull`; that path invokes `run-commerce-regression.mjs` and proves the COD/test payment fixture flow.
+- Final closure gate report now records `functionalProofLevel`, `requireCommerceRegression`, `skipFullFixtureProof`, and evidence paths including fast functional, full fixture, visual QA, commerce regression, and MVP gate reports when those steps run.
+- Phase 4 MVP pilot gate invocation now uses runtime closure mode with `-ProofMode Runtime -BaseUrl <PilotBaseUrl>` instead of fixture fallback.
+- Added Windows PowerShell compatibility fixes for generated proof project creation (`Contains(..., StringComparison)` and `Path.GetRelativePath` replacements in the generator path touched by this proof).
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -Help` passed and documents the new functional/commerce parameters.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1 -Describe` passed and documents fixture runtime bootstrap, `FoundationFunctionalFull`, reports, and teardown.
+- `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` passed in 64.9s and wrote `fast-foundation-functional-report.md`.
+- `rg -n "FoundationFunctionalFast|FoundationFunctionalFull|run-commerce-regression|RequireCommerceRegression|ProofLevel Structure" scripts\qa` returned expected final gate, generated proof, full wrapper, and commerce regression references.
 
 ## Phase 4.11.6 - Fresh Checkout Reproducible Pilot
 

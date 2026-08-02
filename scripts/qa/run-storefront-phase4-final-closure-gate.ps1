@@ -2,7 +2,12 @@ param(
     [string]$PilotGeneratedProjectRoot = "obj\storefront-builder\generated\BlazorShop.Storefront.Phase4VisualPilot",
     [string]$PilotFixtureRoot = "obj\storefront-builder\generated\BlazorShop.Storefront.Phase4VisualPilot\docs\storefront-analysis\visual-fixtures",
     [string]$PilotHandoffRoot = "obj\storefront-reverse-engineering\portable-handoff\root-006c38f3058b44fc8791e7298a99c36e",
+    [string]$PilotBaseUrl = "http://127.0.0.1:18620",
     [string]$GeneratedProofOutputRoot = "obj\storefront-builder\generated\phase4-final-closure",
+    [ValidateSet("FoundationFunctionalFast", "FoundationFunctionalFull")]
+    [string]$FunctionalProofLevel = "FoundationFunctionalFast",
+    [switch]$SkipFullFixtureProof,
+    [switch]$RequireCommerceRegression,
     [int]$CommandTimeoutSeconds = 900,
     [switch]$Help
 )
@@ -19,7 +24,11 @@ function Show-Help {
     Write-Host "  -PilotGeneratedProjectRoot <path>  Pilot generated storefront root."
     Write-Host "  -PilotFixtureRoot <path>           Pilot visual fixture root."
     Write-Host "  -PilotHandoffRoot <path>           Pilot portable handoff root."
+    Write-Host "  -PilotBaseUrl <url>                Running pilot generated storefront URL for runtime MVP visual proof."
     Write-Host "  -GeneratedProofOutputRoot <path>   Disposable generated proof output root."
+    Write-Host "  -FunctionalProofLevel <level>      FoundationFunctionalFast or FoundationFunctionalFull. Defaults to FoundationFunctionalFast."
+    Write-Host "  -SkipFullFixtureProof              Local-development escape hatch; invalid with FoundationFunctionalFull or -RequireCommerceRegression."
+    Write-Host "  -RequireCommerceRegression         Require the full fixture wrapper, which runs run-commerce-regression.mjs."
     Write-Host "  -CommandTimeoutSeconds <sec>       Timeout for each external command. Defaults to 900."
     Write-Host "  -Help                              Show this help text."
     Write-Host ""
@@ -37,9 +46,15 @@ $builderRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
 $reportRoot = Join-Path $repoRoot "obj\storefront-builder\reports"
 $startedUtc = [DateTimeOffset]::UtcNow.ToString("o")
 $steps = [System.Collections.Generic.List[object]]::new()
+$evidencePaths = [System.Collections.Generic.List[string]]::new()
 $testedHead = ""
 $finalHead = ""
 $finalDecision = "failed"
+$runFullFixtureProof = $FunctionalProofLevel -eq "FoundationFunctionalFull" -or $RequireCommerceRegression
+
+if ($SkipFullFixtureProof -and $runFullFixtureProof) {
+    throw "-SkipFullFixtureProof cannot be combined with -FunctionalProofLevel FoundationFunctionalFull or -RequireCommerceRegression."
+}
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -116,6 +131,19 @@ function Add-GateStep {
     if (-not [string]::IsNullOrWhiteSpace($Problem)) { $entry.problem = $Problem }
     if (-not [string]::IsNullOrWhiteSpace($LikelyCause)) { $entry.likelyCause = $LikelyCause }
     $steps.Add([pscustomobject]$entry)
+}
+
+function Add-EvidencePath {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return
+    }
+
+    $relative = Convert-ToRepoRelativePath (Resolve-RepoPath $Path)
+    if (-not $evidencePaths.Contains($relative)) {
+        $evidencePaths.Add($relative)
+    }
 }
 
 function Assert-CleanWorkingTree {
@@ -205,6 +233,10 @@ function Save-GateReports {
         }
         testedHead = $testedHead
         finalHead = $finalHead
+        functionalProofLevel = $FunctionalProofLevel
+        requireCommerceRegression = [bool]$RequireCommerceRegression
+        skipFullFixtureProof = [bool]$SkipFullFixtureProof
+        evidencePaths = @($evidencePaths)
         gateSteps = @($steps)
         finalDecision = $Status
         errorMessage = $ErrorMessage
@@ -218,6 +250,9 @@ function Save-GateReports {
     $lines.Add("- Decision: $Status")
     $lines.Add("- Tested HEAD: $testedHead")
     $lines.Add("- Final HEAD: $finalHead")
+    $lines.Add("- Functional proof level: $FunctionalProofLevel")
+    $lines.Add("- Require commerce regression: $([bool]$RequireCommerceRegression)")
+    $lines.Add("- Skip full fixture proof: $([bool]$SkipFullFixtureProof)")
     $lines.Add("- GitHub Actions: not required")
     if (-not [string]::IsNullOrWhiteSpace($ErrorMessage)) {
         $lines.Add("- Error: $ErrorMessage")
@@ -230,6 +265,18 @@ function Save-GateReports {
         $lines.Add(('  - command: `{0}`' -f $step.command))
         if ($step.PSObject.Properties.Name -contains "problem") { $lines.Add("  - problem: $($step.problem)") }
         if ($step.PSObject.Properties.Name -contains "likelyCause") { $lines.Add("  - likely cause: $($step.likelyCause)") }
+    }
+    $lines.Add("")
+    $lines.Add("## Evidence Paths")
+    if ($evidencePaths.Count -eq 0) {
+        $lines.Add("")
+        $lines.Add("- None recorded.")
+    }
+    else {
+        foreach ($path in $evidencePaths) {
+            $lines.Add("")
+            $lines.Add("- $path")
+        }
     }
 
     Set-Content -LiteralPath $mdPath -Value $lines -Encoding UTF8
@@ -303,13 +350,29 @@ try {
         }
     }
 
-    Invoke-GateCommand -Name "run StorefrontBuilder generated proof" -FileName (Get-PreferredPowerShell) -Arguments @(
-        "-NoProfile", "-ExecutionPolicy", "Bypass",
-        "-File", "scripts\qa\run-storefront-builder-generated-proof.ps1",
-        "-Name", "BlazorShop.Storefront.Phase4FinalProof",
-        "-OutputRoot", $GeneratedProofOutputRoot,
-        "-ProofLevel", "Structure"
-    ) -LikelyCause "Generated proof, package boundary, isolation, or regeneration lifecycle failed."
+    if ($FunctionalProofLevel -eq "FoundationFunctionalFast") {
+        Invoke-GateCommand -Name "run StorefrontBuilder generated fast functional proof" -FileName (Get-PreferredPowerShell) -Arguments @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", "scripts\qa\run-storefront-builder-generated-proof.ps1",
+            "-Name", "BlazorShop.Storefront.Phase4FinalProof",
+            "-OutputRoot", $GeneratedProofOutputRoot,
+            "-ProofLevel", "FoundationFunctionalFast"
+        ) -LikelyCause "Generated proof, package boundary, isolation, regeneration lifecycle, or fast browser behavior failed."
+        Add-EvidencePath (Join-Path (Join-Path (Resolve-RepoPath $GeneratedProofOutputRoot) "BlazorShop.Storefront.Phase4FinalProof") "docs\storefront-analysis\fast-foundation-functional-report.md")
+    }
+
+    if ($runFullFixtureProof) {
+        Invoke-GateCommand -Name "run StorefrontBuilder full fixture commerce proof" -FileName (Get-PreferredPowerShell) -Arguments @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", "scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1",
+            "-Name", "BlazorShop.Storefront.Phase4FinalProof",
+            "-OutputRoot", $GeneratedProofOutputRoot
+        ) -LikelyCause "Full fixture runtime, generated visual QA, COD/test payment flow, or run-commerce-regression.mjs failed."
+        $fullProofAnalysisRoot = Join-Path (Join-Path (Resolve-RepoPath $GeneratedProofOutputRoot) "BlazorShop.Storefront.Phase4FinalProof") "docs\storefront-analysis"
+        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "full-proof-with-fixture-report.md")
+        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "visual-qa-report.md")
+        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "functional-commerce-report.md")
+    }
 
     Invoke-GateCommand -Name "run StorefrontBuilder regeneration ownership gate" -FileName (Get-PreferredPowerShell) -Arguments @(
         "-NoProfile", "-ExecutionPolicy", "Bypass",
@@ -320,11 +383,15 @@ try {
         "-NoProfile", "-ExecutionPolicy", "Bypass",
         "-File", "scripts\qa\run-storefront-phase4-mvp-gate.ps1",
         "-GeneratedProjectRoot", $PilotGeneratedProjectRoot,
-        "-FixtureRoot", $PilotFixtureRoot,
+        "-ProofMode", "Runtime",
+        "-BaseUrl", $PilotBaseUrl,
         "-HandoffRoot", $PilotHandoffRoot,
         "-SkipRepair",
         "-CommandTimeoutSeconds", $CommandTimeoutSeconds
     ) -LikelyCause "The pilot generated storefront no longer proves the Phase 4 MVP workflow."
+    $pilotAnalysisRoot = Join-Path (Resolve-RepoPath $PilotGeneratedProjectRoot) "docs\storefront-analysis"
+    Add-EvidencePath (Join-Path $pilotAnalysisRoot "phase4-mvp-gate-report.md")
+    Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-report.md")
 
     Invoke-AssertionStep -Name "final HEAD and clean tree check" -Command "git rev-parse HEAD; git status --porcelain=v1" -LikelyCause "A gate step changed tracked source files or HEAD." -Assertion {
         Assert-HeadUnchanged

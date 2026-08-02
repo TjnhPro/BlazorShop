@@ -61,6 +61,19 @@ $stagedProjectRoot = Join-Path $stagingOutputRoot $projectName
 $backupProjectRoot = Join-Path (Join-Path $outputRootPath ".replace-backup") "$projectName-$operationId"
 $movedExistingTarget = $false
 
+function Get-PortableRelativePath {
+    param(
+        [Parameter(Mandatory = $true)][string]$BasePath,
+        [Parameter(Mandatory = $true)][string]$TargetPath
+    )
+
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace('\', '/')
+}
+
 function Set-GeneratedNuGetConfig {
     param([Parameter(Mandatory = $true)][string]$ProjectRoot)
 
@@ -70,7 +83,7 @@ function Set-GeneratedNuGetConfig {
     }
 
     $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
-    $relativePackageFeed = [System.IO.Path]::GetRelativePath($ProjectRoot, $packageFeed).Replace('\', '/')
+    $relativePackageFeed = Get-PortableRelativePath -BasePath $ProjectRoot -TargetPath $packageFeed
     $nugetConfig = @(
         '<?xml version="1.0" encoding="utf-8"?>',
         '<configuration>',
@@ -165,7 +178,7 @@ try {
         "projectName: $projectName",
         "normalizedProjectName: $projectName",
         "storeKey: $normalizedStoreKey",
-        "outputRoot: $([System.IO.Path]::GetRelativePath($repoRoot, $outputRootPath).Replace('\', '/'))",
+        "outputRoot: $(Get-PortableRelativePath -BasePath $repoRoot -TargetPath $outputRootPath)",
         "storefrontContractPath: $storefrontContractPath",
         "storefrontContractSha256: $storefrontContractSha256",
         "sourceStarterPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",

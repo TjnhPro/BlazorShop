@@ -72,6 +72,19 @@ function Copy-StarterTemplate {
         }
 }
 
+function Get-PortableRelativePath {
+    param(
+        [Parameter(Mandatory = $true)][string]$BasePath,
+        [Parameter(Mandatory = $true)][string]$TargetPath
+    )
+
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace('\', '/')
+}
+
 function Rewrite-GeneratedSource {
     if (Test-Path $starterProject) {
         Rename-Item -LiteralPath $starterProject -NewName "$Name.csproj"
@@ -95,7 +108,7 @@ function Rewrite-GeneratedSource {
     $nugetConfigPath = Join-Path $projectRoot "nuget.config"
     if (Test-Path $nugetConfigPath) {
         $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
-        $relativePackageFeed = [System.IO.Path]::GetRelativePath($projectRoot, $packageFeed).Replace('\', '/')
+        $relativePackageFeed = Get-PortableRelativePath -BasePath $projectRoot -TargetPath $packageFeed
         $nugetConfig = @(
             '<?xml version="1.0" encoding="utf-8"?>',
             '<configuration>',
@@ -144,7 +157,7 @@ function Assert-GeneratedOutput {
     $violations = foreach ($file in $sourceFiles) {
         $content = Get-Content -LiteralPath $file.FullName -Raw
         foreach ($pattern in $forbiddenPatterns) {
-            if ($content.Contains($pattern, [System.StringComparison]::OrdinalIgnoreCase)) {
+            if ($content.IndexOf($pattern, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
                 "$($file.FullName): $pattern"
             }
         }

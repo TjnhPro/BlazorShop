@@ -35,10 +35,10 @@ function Normalize-StorefrontProjectName {
         throw "[SFB-PROJECT-001] Name must not be empty."
     }
 
-    if ($trimmed.Contains("..", [System.StringComparison]::Ordinal) `
-        -or $trimmed.Contains("\", [System.StringComparison]::Ordinal) `
-        -or $trimmed.Contains("/", [System.StringComparison]::Ordinal) `
-        -or $trimmed.Contains(":", [System.StringComparison]::Ordinal)) {
+    if ($trimmed.IndexOf("..", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf("\", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf("/", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf(":", [System.StringComparison]::Ordinal) -ge 0) {
         throw "[SFB-PROJECT-001] Name must not contain traversal, separators, or drive markers."
     }
 
@@ -46,14 +46,14 @@ function Normalize-StorefrontProjectName {
     $suffix = if ($trimmed.StartsWith($prefix, [System.StringComparison]::Ordinal)) {
         $trimmed.Substring($prefix.Length)
     } else {
-        if ($trimmed.Contains(".", [System.StringComparison]::Ordinal)) {
+        if ($trimmed.IndexOf(".", [System.StringComparison]::Ordinal) -ge 0) {
             throw "[SFB-PROJECT-001] Friendly name must be a single PascalCase suffix or the full BlazorShop.Storefront.{Name} project name."
         }
 
         $trimmed
     }
 
-    if ([string]::IsNullOrWhiteSpace($suffix) -or $suffix.Contains(".", [System.StringComparison]::Ordinal)) {
+    if ([string]::IsNullOrWhiteSpace($suffix) -or $suffix.IndexOf(".", [System.StringComparison]::Ordinal) -ge 0) {
         throw "[SFB-PROJECT-001] Name must have one non-empty project suffix segment."
     }
 
@@ -77,10 +77,10 @@ function Normalize-StorefrontStoreKey {
         throw "[SFB-PROJECT-010] StoreKey must not be empty."
     }
 
-    if ($trimmed.Contains("..", [System.StringComparison]::Ordinal) `
-        -or $trimmed.Contains("\", [System.StringComparison]::Ordinal) `
-        -or $trimmed.Contains("/", [System.StringComparison]::Ordinal) `
-        -or $trimmed.Contains(":", [System.StringComparison]::Ordinal)) {
+    if ($trimmed.IndexOf("..", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf("\", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf("/", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf(":", [System.StringComparison]::Ordinal) -ge 0) {
         throw "[SFB-PROJECT-010] StoreKey must not contain traversal, separators, or drive markers."
     }
 
