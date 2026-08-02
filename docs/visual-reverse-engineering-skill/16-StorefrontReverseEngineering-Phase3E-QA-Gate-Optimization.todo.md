@@ -268,18 +268,25 @@ Goal: preserve browser and CLI coverage while shrinking the number of independen
 
 Implementation checklist:
 
-- [ ] Convert the CLI proof to a multi-route fixture where one workflow covers home, category/listing, product detail, and unsupported behavior.
-- [ ] Keep unsupported-path behavior proven explicitly.
-- [ ] Use one browser lifecycle for all browser-required proofs when safe.
-- [ ] Keep isolated browser contexts/pages per case.
-- [ ] Avoid separate `dotnet run` invocations whose only purpose is to repeat the same proof family.
-- [ ] Keep CLI/browser proof evidence readable in the final report.
+- [x] Convert the CLI proof to a multi-route fixture where one workflow covers home, category/listing, product detail, and unsupported behavior.
+- [x] Keep unsupported-path behavior proven explicitly.
+- [x] Use one browser lifecycle for all browser-required proofs when safe.
+- [x] Keep isolated browser contexts/pages per case.
+- [x] Avoid separate `dotnet run` invocations whose only purpose is to repeat the same proof family.
+- [x] Keep CLI/browser proof evidence readable in the final report.
 
 Acceptance criteria:
 
-- [ ] The CLI proof family uses fewer processes without losing page coverage.
-- [ ] Browser evidence remains real and isolated.
-- [ ] No proof class is silently dropped.
+- [x] The CLI proof family uses fewer processes without losing page coverage.
+- [x] Browser evidence remains real and isolated.
+- [x] No proof class is silently dropped.
+
+O6 evidence:
+
+- `Phase3CliProofCollectionTests` now covers home, listing, product, and unsupported fixtures through `CliHost.RunAsync` inside the grouped closure proof test process.
+- Phase 3A/3B proof helpers now report CLI proof collection markers instead of spawning repeated CLI child processes.
+- `PlaywrightReferenceBrowser` reuses one Chromium browser per process while each capture still receives a private browser context and page.
+- Verification: `dotnet test ... --filter "FullyQualifiedName~Phase3CliProofCollectionTests|FullyQualifiedName~Phase3DProofFixtureTests|FullyQualifiedName~Phase3EFinalClosureGateTests|FullyQualifiedName~PlaywrightIntegrationTests" --blame-hang --blame-hang-timeout 5m` passed with `17` tests.
 
 ## Phase O7 - Run StorefrontBuilder Smoke Once
 

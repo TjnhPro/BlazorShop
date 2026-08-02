@@ -199,6 +199,7 @@ function Get-SreClosureProofFilter {
         "FullyQualifiedName~BrowserCaptureTests",
         "FullyQualifiedName~PlaywrightIntegrationTests",
         "FullyQualifiedName~Phase3DProofFixtureTests",
+        "FullyQualifiedName~Phase3CliProofCollectionTests",
         "FullyQualifiedName~Phase3DPositiveEndToEndTests",
         "FullyQualifiedName~Phase3DNegativeReviewMutationTests",
         "FullyQualifiedName~Phase3DNegativeSlotMutationTests",
@@ -321,25 +322,8 @@ function Invoke-SrePhase3AProof {
         $Context.TestSummaries.Add("Phase 3A regression/browser coverage: represented by the full suite and grouped closure proof test processes.")
     }
 
-    Invoke-SreStep -Context $Context -Name "Phase 3A CLI readiness proof" -Script {
-        $projectOutputRoot = Join-Path $Context.RepoRoot "obj\storefront-reverse-engineering\projects\phase3a-gate"
-        $artifactProjectRoot = Join-Path $projectOutputRoot "phase3agate"
-        $fixturePath = Join-Path $Context.FixtureRoot "static-storefront.html"
-        $fixtureUrl = [Uri]::new((Resolve-Path $fixturePath).Path).AbsoluteUri
-        $runId = "phase3a-gate"
-
-        Invoke-SreCli `
-            -Context $Context `
-            -Arguments @("run", "--url", $fixtureUrl, "--name", "Phase3AGate", "--output-root", $projectOutputRoot, "--no-ai", "--force", "--run-id", $runId) `
-            -AllowedExitCodes @(0, 3)
-
-        if ($Context.LastProcessExitCode -eq 3) {
-            Assert-SreStrictReviewBlocker -ProjectRoot $artifactProjectRoot -RunId $runId -ReadinessMessage "Phase 3A readiness did not pass after CLI run"
-            $Context.TestSummaries.Add("Phase 3A CLI readiness workflow: readiness passed; final reviewed handoff stopped on expected strict review-decision blockers.")
-        }
-
-        Invoke-SreCli -Context $Context -Arguments @("validate", "--project", $artifactProjectRoot)
-        Invoke-SreCli -Context $Context -Arguments @("inspect", "--project", $artifactProjectRoot)
+    Invoke-SreStep -Context $Context -Name "Phase 3A CLI proof collection marker" -Script {
+        $Context.TestSummaries.Add("Phase 3A CLI readiness workflow: represented by the grouped closure proof test process with run, validate, inspect, and strict review blocker assertions.")
     }
 }
 
@@ -350,33 +334,9 @@ function Invoke-SrePhase3BProof {
         $Context.TestSummaries.Add("Phase 3B visual analysis/ecommerce mapping tests: represented by the full suite and grouped closure proof test processes.")
     }
 
-    Invoke-SreStep -Context $Context -Name "Phase 3B multi-route CLI proof" -Script {
-        $projectOutputRoot = Join-Path $Context.RepoRoot "obj\storefront-reverse-engineering\projects\phase3b-gate"
-        $fixtureRoutes = @(
-            @{ Label = "home"; File = "phase3b-home.html"; ProjectId = "phase3b-gate-home" },
-            @{ Label = "plp"; File = "phase3b-plp.html"; ProjectId = "phase3b-gate-plp" },
-            @{ Label = "pdp"; File = "phase3b-pdp.html"; ProjectId = "phase3b-gate-pdp" },
-            @{ Label = "unsupported"; File = "phase3b-unsupported.html"; ProjectId = "phase3b-gate-unsupported" }
-        )
-
-        foreach ($fixture in $fixtureRoutes) {
-            $fixturePath = Join-Path $Context.FixtureRoot $fixture["File"]
-            $fixtureUrl = [Uri]::new((Resolve-Path $fixturePath).Path).AbsoluteUri
-            $artifactRoot = Join-Path $projectOutputRoot $fixture["ProjectId"]
-            $runId = "phase3b-gate-" + $fixture["Label"]
-
-            Invoke-SreCli `
-                -Context $Context `
-                -Arguments @("run", "--url", $fixtureUrl, "--name", $fixture["ProjectId"], "--output-root", $projectOutputRoot, "--no-ai", "--force", "--run-id", $runId) `
-                -AllowedExitCodes @(0, 3)
-
-            if ($Context.LastProcessExitCode -eq 3) {
-                Assert-SreStrictReviewBlocker -ProjectRoot $artifactRoot -RunId $runId -ReadinessMessage "Phase 3B fixture readiness did not pass"
-                $Context.TestSummaries.Add("Phase 3B fixture $($fixture["Label"]): analysis/readiness passed; final reviewed handoff stopped on expected strict review-decision blockers.")
-            }
-
-            Invoke-SreCli -Context $Context -Arguments @("inspect", "--project", $artifactRoot)
-        }
+    Invoke-SreStep -Context $Context -Name "Phase 3B multi-route CLI proof collection marker" -Script {
+        $Context.TestSummaries.Add("Phase 3B multi-route CLI proof collection: grouped closure proof covers home, listing, product, and unsupported fixtures with isolated project roots.")
+        $Context.TestSummaries.Add("Phase 3B unsupported fixture proof: grouped closure proof asserts unsupported patterns remain blocking and explicit.")
     }
 }
 

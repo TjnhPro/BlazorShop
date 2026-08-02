@@ -7,6 +7,11 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Browser;
 
 public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
 {
+    private static readonly SemaphoreSlim BrowserGate = new(1, 1);
+    private static IPlaywright? sharedPlaywright;
+    private static IBrowser? sharedBrowser;
+    private static int cleanupHooked;
+
     public override async Task<IReferenceBrowserSession> OpenSessionAsync(
         BrowserPageSession session,
         ViewportDefinition viewport,
@@ -15,12 +20,7 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var playwright = await Playwright.CreateAsync();
-        var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
-        {
-            Headless = true,
-            Timeout = policy.TimeoutMilliseconds
-        });
+        var browser = await GetSharedBrowserAsync(policy);
         var context = await browser.NewContextAsync(new BrowserNewContextOptions
         {
             ViewportSize = new ViewportSize { Width = viewport.Width, Height = viewport.Height },
@@ -29,13 +29,60 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
         });
         var page = await context.NewPageAsync();
 
-        return new PlaywrightReferenceBrowserSession(playwright, browser, context, page, session, viewport, policy);
+        return new PlaywrightReferenceBrowserSession(context, page, session, viewport, policy);
+    }
+
+    private static async Task<IBrowser> GetSharedBrowserAsync(CapturePolicy policy)
+    {
+        if (sharedBrowser is not null)
+        {
+            return sharedBrowser;
+        }
+
+        await BrowserGate.WaitAsync();
+        try
+        {
+            if (sharedBrowser is not null)
+            {
+                return sharedBrowser;
+            }
+
+            sharedPlaywright = await Playwright.CreateAsync();
+            sharedBrowser = await sharedPlaywright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            {
+                Headless = true,
+                Timeout = policy.TimeoutMilliseconds
+            });
+            EnsureCleanupHooked();
+            return sharedBrowser;
+        }
+        finally
+        {
+            BrowserGate.Release();
+        }
+    }
+
+    private static void EnsureCleanupHooked()
+    {
+        if (Interlocked.Exchange(ref cleanupHooked, 1) == 0)
+        {
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                try
+                {
+                    sharedBrowser?.CloseAsync().GetAwaiter().GetResult();
+                }
+                catch
+                {
+                }
+
+                sharedPlaywright?.Dispose();
+            };
+        }
     }
 
     private sealed class PlaywrightReferenceBrowserSession : IReferenceBrowserSession
     {
-        private readonly IPlaywright playwright;
-        private readonly IBrowser browser;
         private readonly IBrowserContext context;
         private readonly IPage page;
         private readonly BrowserPageSession session;
@@ -44,16 +91,12 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
         private bool navigated;
 
         public PlaywrightReferenceBrowserSession(
-            IPlaywright playwright,
-            IBrowser browser,
             IBrowserContext context,
             IPage page,
             BrowserPageSession session,
             ViewportDefinition viewport,
             CapturePolicy policy)
         {
-            this.playwright = playwright;
-            this.browser = browser;
             this.context = context;
             this.page = page;
             this.session = session;
@@ -298,8 +341,6 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
         public async ValueTask DisposeAsync()
         {
             await context.DisposeAsync();
-            await browser.DisposeAsync();
-            playwright.Dispose();
         }
 
         private void EnsureNavigated()
