@@ -448,7 +448,10 @@ try {
             Assert-RequiredFields -Json $qaReport -ArtifactName "visual-qa-report.json" -Fields @("schemaVersion", "operationId", "runtimeEvidencePaths", "referenceEvidencePaths", "pageViewportCoverage", "independentReviewer", "comparisonDimensions", "unacceptedCriticalCount", "unacceptedMajorCount", "finalDecision", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed")
 
             $written = Read-RequiredJsonArtifact -Path $agentWrittenFilesPath -ArtifactName "agent-written-files.json" -FixCommand "record-agent-visual-writes.mjs"
-            Assert-RequiredFields -Json $written -ArtifactName "agent-written-files.json" -Fields @("schemaVersion", "artifactKind", "artifactId", "generationPlanHash", "files")
+            Assert-RequiredFields -Json $written -ArtifactName "agent-written-files.json" -Fields @("schemaVersion", "artifactKind", "artifactId", "detectionMode", "generationPlanHash", "files")
+            if ([string]$written.detectionMode -ne "checkpoint-auto-detect") {
+                throw "agent-written-files.json detectionMode must be 'checkpoint-auto-detect' for closure mode, but was '$($written.detectionMode)'. Fix: rerun record-agent-visual-writes.mjs with --from-checkpoint and then $(New-RerunCommand)."
+            }
         }
     }
 

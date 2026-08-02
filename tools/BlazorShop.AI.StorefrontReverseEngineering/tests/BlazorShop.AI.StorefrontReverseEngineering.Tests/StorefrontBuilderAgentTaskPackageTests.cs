@@ -57,6 +57,79 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
         Assert.Contains("sourcePlanEntryId: file.Components-Catalog-ProductSummaryCard.razor", generatedManifest, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task AgentWriteRecorder_AutoDetectsGeneratedVisualFromCheckpoint()
+    {
+        var projectRoot = await CreateHandoffProjectAsync("Phase4AgentAutoDetect");
+        var targetPath = "Components/Catalog/ProductSummaryCard.razor";
+        var target = Path.Combine(projectRoot, targetPath.Replace('/', Path.DirectorySeparatorChar));
+        await File.AppendAllTextAsync(target, Environment.NewLine + "@* auto-detected visual polish marker *@");
+        var checkpointPath = await WriteCheckpointAsync(projectRoot, "auto-detect", targetPath);
+
+        var result = await RunRecordAsync(projectRoot, checkpointPath: checkpointPath, closureMode: true);
+
+        Assert.True(result.ExitCode == 0, result.Output);
+        var record = await File.ReadAllTextAsync(Path.Combine(projectRoot, "docs", "storefront-analysis", "agent-written-files.json"));
+        Assert.Contains("\"detectionMode\": \"checkpoint-auto-detect\"", record, StringComparison.Ordinal);
+        Assert.Contains("\"detectionSource\": \"auto-detected\"", record, StringComparison.Ordinal);
+        Assert.Contains(targetPath, record, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentWriteRecorder_RejectsCheckpointUnexpectedFiles()
+    {
+        var projectRoot = await CreateHandoffProjectAsync("Phase4AgentUnexpected");
+        var checkpointPath = await WriteCheckpointAsync(
+            projectRoot,
+            "unexpected",
+            "Components/Catalog/ProductSummaryCard.razor",
+            unexpectedFiles: ["wwwroot/js/bad.js"]);
+
+        var result = await RunRecordAsync(projectRoot, checkpointPath: checkpointPath, closureMode: true);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("SFB-AGENT-WRITE-021", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentWriteRecorder_RejectsOmittedChangedFileHintInClosureMode()
+    {
+        var projectRoot = await CreateHandoffProjectAsync("Phase4AgentOmitted");
+        var checkpointPath = await WriteCheckpointAsync(projectRoot, "omitted", "Components/Catalog/ProductSummaryCard.razor");
+
+        var result = await RunRecordAsync(projectRoot, "wwwroot/css/storefront-builder.generated.css", checkpointPath, closureMode: true);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("SFB-AGENT-WRITE-025", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentWriteRecorder_RejectsProtectedCheckpointChange()
+    {
+        var projectRoot = await CreateHandoffProjectAsync("Phase4AgentProtectedDetect");
+        var checkpointPath = await WriteCheckpointAsync(projectRoot, "protected", "Program.cs");
+
+        var result = await RunRecordAsync(projectRoot, checkpointPath: checkpointPath, closureMode: true);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("SFB-AGENT-WRITE-022", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentWriteRecorder_WarnsForUnchangedHintOutsideClosureMode()
+    {
+        var projectRoot = await CreateHandoffProjectAsync("Phase4AgentHintWarn");
+        var targetPath = "Components/Catalog/ProductSummaryCard.razor";
+        var checkpointPath = await WriteCheckpointAsync(projectRoot, "hint-warn", targetPath);
+
+        var result = await RunRecordAsync(projectRoot, $"{targetPath},wwwroot/css/storefront-builder.generated.css", checkpointPath);
+
+        Assert.True(result.ExitCode == 0, result.Output);
+        Assert.Contains("SFB-AGENT-WRITE-WARN", result.Output, StringComparison.Ordinal);
+        var record = await File.ReadAllTextAsync(Path.Combine(projectRoot, "docs", "storefront-analysis", "agent-written-files.json"));
+        Assert.Contains("\"detectionSource\": \"auto-detected+hint-agreed\"", record, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("@page \"/bad\"\n<div></div>", "SFB-AGENT-WRITE-010")]
     [InlineData("@inject HttpClient Http\n<div></div>", "SFB-AGENT-WRITE-011")]
@@ -146,17 +219,86 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
             TimeSpan.FromMinutes(5));
     }
 
-    private static Task<ProcessResult> RunRecordAsync(string projectRoot, string writtenFiles) =>
-        RunProcessAsync(
-            "node",
-            [
-                Path.Combine(GetRepoRoot(), "tools", "BlazorShop.AI.StorefrontBuilder", "scripts", "generate", "record-agent-visual-writes.mjs"),
-                "--project-root",
-                projectRoot,
-                "--written-files",
-                writtenFiles
-            ],
-            TimeSpan.FromMinutes(2));
+    private static Task<ProcessResult> RunRecordAsync(string projectRoot, string writtenFiles = "", string checkpointPath = "", bool closureMode = false)
+    {
+        var arguments = new List<string>
+        {
+            Path.Combine(GetRepoRoot(), "tools", "BlazorShop.AI.StorefrontBuilder", "scripts", "generate", "record-agent-visual-writes.mjs"),
+            "--project-root",
+            projectRoot
+        };
+
+        if (!string.IsNullOrWhiteSpace(writtenFiles))
+        {
+            arguments.Add("--written-files");
+            arguments.Add(writtenFiles);
+        }
+
+        if (!string.IsNullOrWhiteSpace(checkpointPath))
+        {
+            arguments.Add("--from-checkpoint");
+            arguments.Add(checkpointPath);
+        }
+
+        if (closureMode)
+        {
+            arguments.Add("--closure-mode");
+        }
+
+        return RunProcessAsync("node", arguments, TimeSpan.FromMinutes(2));
+    }
+
+    private static async Task<string> WriteCheckpointAsync(
+        string projectRoot,
+        string operationId,
+        string changedFile,
+        IReadOnlyList<string>? unexpectedFiles = null)
+    {
+        var checkpointRoot = Path.Combine(projectRoot, "docs", "storefront-analysis", "visual-checkpoints", operationId);
+        Directory.CreateDirectory(checkpointRoot);
+        var checkpointPath = Path.Combine(checkpointRoot, "visual-checkpoint.json");
+        var normalizedFile = changedFile.Replace('\\', '/');
+        var checkpoint = $$"""
+        {
+          "schemaVersion": "0.1.0",
+          "checkpointId": "checkpoint-{{operationId}}",
+          "operationId": "{{operationId}}",
+          "visualPlanHash": "sha256:visual-plan",
+          "checklistHash": "sha256:checklist",
+          "preEditSnapshotHash": "sha256:before",
+          "postEditSnapshotHash": "sha256:after",
+          "changedFiles": [
+            "{{normalizedFile}}"
+          ],
+          "unexpectedFiles": [
+            {{string.Join(",\n            ", (unexpectedFiles ?? []).Select(file => $"\"{file}\""))}}
+          ],
+          "sourceTreeSnapshotScope": [
+            "{{normalizedFile}}"
+          ],
+          "preEditFileHashes": [
+            {
+              "filePath": "{{normalizedFile}}",
+              "sha256": "sha256:before"
+            }
+          ],
+          "postEditFileHashes": [
+            {
+              "filePath": "{{normalizedFile}}",
+              "sha256": "sha256:after"
+            }
+          ],
+          "diffSummary": [
+            {
+              "filePath": "{{normalizedFile}}",
+              "changeType": "modified"
+            }
+          ]
+        }
+        """;
+        await File.WriteAllTextAsync(checkpointPath, checkpoint);
+        return Path.GetRelativePath(projectRoot, checkpointPath).Replace('\\', '/');
+    }
 
     private static async Task<ProcessResult> RunProcessAsync(string fileName, IReadOnlyList<string> arguments, TimeSpan timeout)
     {

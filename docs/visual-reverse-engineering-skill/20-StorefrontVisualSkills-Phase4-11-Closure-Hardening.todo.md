@@ -248,31 +248,31 @@ Goal: stop trusting the agent-supplied file list as the source of truth.
 
 Tasks:
 
-- [ ] Add a StorefrontBuilder helper to compute changed generated visual files from a source snapshot or diff:
-  - [ ] before snapshot from planned generated-owned visual files.
-  - [ ] after snapshot from the same scope plus newly created allowed files.
-  - [ ] changed, created, deleted, and unexpected files.
-  - [ ] normalized repo-relative or generated-project-relative paths.
-- [ ] Update `record-agent-visual-writes.mjs` to support automatic detection:
-  - [ ] Keep `--written-files` as optional hint/backcompat.
-  - [ ] Add `--from-checkpoint <path>` or `--detect-from-snapshot`.
-  - [ ] Reject files changed outside task-package allowed visual files.
-  - [ ] Reject protected generated files.
-  - [ ] Reject route declarations, transport, auth, SEO, backend/API calls, and business logic leaks as today.
-  - [ ] Write detected files into `agent-written-files.json`.
-  - [ ] Record whether each file came from auto-detection, hint agreement, or hint mismatch.
-- [ ] Add mismatch handling:
-  - [ ] If hint omits a changed file, fail unless the file is user-owned and outside closure scope.
-  - [ ] If hint includes an unchanged file, warn or fail based on closure mode.
-  - [ ] If auto-detection finds no changes but implementation report claims changes, fail.
-- [ ] Update visual checkpoint creation docs and skill instructions so the implement skill captures pre/post snapshots.
-- [ ] Add unit tests or script-level tests for:
-  - [ ] automatic detection success.
-  - [ ] extra unexpected file failure.
-  - [ ] omitted changed file failure.
-  - [ ] protected file failure.
-  - [ ] unchanged hint handling.
-- [ ] Ensure the MVP gate reads `agent-written-files.json` and verifies it was produced by auto-detection in closure mode.
+- [x] Add a StorefrontBuilder helper to compute changed generated visual files from a source snapshot or diff:
+  - [x] before snapshot from planned generated-owned visual files.
+  - [x] after snapshot from the same scope plus newly created allowed files.
+  - [x] changed, created, deleted, and unexpected files.
+  - [x] normalized repo-relative or generated-project-relative paths.
+- [x] Update `record-agent-visual-writes.mjs` to support automatic detection:
+  - [x] Keep `--written-files` as optional hint/backcompat.
+  - [x] Add `--from-checkpoint <path>` or `--detect-from-snapshot`.
+  - [x] Reject files changed outside task-package allowed visual files.
+  - [x] Reject protected generated files.
+  - [x] Reject route declarations, transport, auth, SEO, backend/API calls, and business logic leaks as today.
+  - [x] Write detected files into `agent-written-files.json`.
+  - [x] Record whether each file came from auto-detection, hint agreement, or hint mismatch.
+- [x] Add mismatch handling:
+  - [x] If hint omits a changed file, fail unless the file is user-owned and outside closure scope.
+  - [x] If hint includes an unchanged file, warn or fail based on closure mode.
+  - [x] If auto-detection finds no changes but implementation report claims changes, fail.
+- [x] Update visual checkpoint creation docs and skill instructions so the implement skill captures pre/post snapshots.
+- [x] Add unit tests or script-level tests for:
+  - [x] automatic detection success.
+  - [x] extra unexpected file failure.
+  - [x] omitted changed file failure.
+  - [x] protected file failure.
+  - [x] unchanged hint handling.
+- [x] Ensure the MVP gate reads `agent-written-files.json` and verifies it was produced by auto-detection in closure mode.
 
 Checks:
 
@@ -285,9 +285,20 @@ rg -n "auto-detect|checkpoint|unexpectedFiles|hintMismatch|agent-written-files" 
 
 DoD:
 
-- [ ] Closure write evidence is derived from actual generated project source state.
-- [ ] `--written-files` is no longer the only truth source.
-- [ ] Unexpected visual, protected, platform, or behavior files fail before browser QA.
+- [x] Closure write evidence is derived from actual generated project source state.
+- [x] `--written-files` is no longer the only truth source.
+- [x] Unexpected visual, protected, platform, or behavior files fail before browser QA.
+
+Evidence:
+
+- `record-agent-visual-writes.mjs` now supports `--from-checkpoint`, optional `--written-files` hints, closure-mode mismatch failures, deleted-file detection, protected-file rejection, and per-file `detectionSource`.
+- `agent-written-files.json` now records `detectionMode`, `checkpointPath`, `hintMismatch`, `hintFiles`, `detectedFiles`, `deletedFiles`, and `unexpectedFiles`.
+- The Phase 4 MVP gate requires `agent-written-files.json` to have `detectionMode: checkpoint-auto-detect` in closure mode.
+- Visual implement/QA skill docs and the checkpoint contract now require checkpoint pre/post snapshots and checkpoint-driven recorder execution.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --help` passed and lists `--from-checkpoint`, `--implementation-report`, and `--closure-mode`.
+- `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffBoundaryValidationTests|FullyQualifiedName~StorefrontBuilderHandoffVisualQaTests|FullyQualifiedName~StorefrontBuilderAgentTaskPackageTests" --blame-hang --blame-hang-timeout 5m` passed: 33 tests in 3m 50s.
+- `rg -n "auto-detect|checkpoint|unexpectedFiles|hintMismatch|agent-written-files" tools\BlazorShop.AI.StorefrontBuilder tools\BlazorShop.AI.Visual scripts\qa` returned the expected recorder, gate, docs, and test references.
 
 ## Phase 4.11.3 - Runtime Visual Proof Mode
 

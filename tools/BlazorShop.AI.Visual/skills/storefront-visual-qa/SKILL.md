@@ -62,7 +62,7 @@ Each repair attempt must identify its source as one of:
 - `mechanical-repair-helper`
 - `no-repair-attempted`
 
-After every repair pass, run StorefrontBuilder visual write recording with `record-agent-visual-writes.mjs`, then rerun browser evidence capture with `run-visual-qa.mjs`. If either step fails, stop repair and keep the issue unresolved in the report.
+After every repair pass, update the checkpoint pre/post snapshot and run StorefrontBuilder visual write recording with `record-agent-visual-writes.mjs --from-checkpoint <checkpoint> --closure-mode`, then rerun browser evidence capture with `run-visual-qa.mjs`. If either step fails, stop repair and keep the issue unresolved in the report.
 
 ## Outputs
 

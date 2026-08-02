@@ -50,8 +50,10 @@ Do not add transport, business logic, auth/session logic, SEO logic, route decla
 After edits, run StorefrontBuilder's visual write recorder:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --from-checkpoint docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json --closure-mode
 ```
+
+`--written-files` may be passed as a hint, but closure truth comes from the checkpoint pre/post snapshot.
 
 Then run a generated project build or focused compile check:
 
@@ -75,3 +77,4 @@ Emit:
 
 `visual-implementation-report.json` must include before/after snapshot hashes, changed file list, visual write recorder result path, build result, boundary result, and unresolved items.
 For closure, it must also include the visual plan `operationId` and the checkpoint path under `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`.
+The recorder output must have `detectionMode: checkpoint-auto-detect`; hint-only write records are not valid closure evidence.

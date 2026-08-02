@@ -37,6 +37,14 @@ Changed files must be detected from filesystem content hashes and path compariso
 
 Before edits, hash every task-package allowed file in scope. After edits, re-hash those files and scan the generated project for changed files relative to the pre-edit snapshot. A file reported by the agent but unchanged stays in the report as `unchanged`. A changed file not reported by the agent is still included.
 
+Closure write recording must use:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --from-checkpoint docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json --closure-mode
+```
+
+`--written-files` is only a hint. In closure mode, omitted changed files, unchanged hint files, unexpected files, deleted generated visual files, and implementation-report/checkpoint mismatches fail before browser QA.
+
 ## Failure Rules
 
 The checkpoint fails when:
