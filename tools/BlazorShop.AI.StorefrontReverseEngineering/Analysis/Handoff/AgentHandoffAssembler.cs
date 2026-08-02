@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
@@ -247,6 +248,8 @@ public sealed class AgentHandoffAssembler
     {
         var source = Read<SemanticTokenDocument>(root, "analysis/resolved/semantic-tokens.reviewed.json")
             ?? throw new InvalidOperationException("[SRE-HANDOFF-PORTABLE-002] Required reviewed semantic tokens are missing. Problem: 'analysis/resolved/semantic-tokens.reviewed.json' was not found or did not parse. Cause: design tokens and visual style must be packaged as handoff-local artifacts. Fix: rerun review resolution.");
+        var sourceJson = ReadJsonObject(root, "analysis/resolved/semantic-tokens.reviewed.json")
+            ?? throw new InvalidOperationException("[SRE-HANDOFF-PORTABLE-002] Required reviewed semantic tokens are missing. Problem: 'analysis/resolved/semantic-tokens.reviewed.json' was not found or did not parse. Cause: design tokens and visual style must be packaged as handoff-local artifacts. Fix: rerun review resolution.");
         var provenance = new[]
         {
             new HandoffDiagnosticReference(source.SourceRawTokensPath, "diagnostics-only", ConsumerReadable: false)
@@ -255,35 +258,55 @@ public sealed class AgentHandoffAssembler
         await WriteAsync(
             root,
             "design-tokens.json",
-            new HandoffSemanticTokens(
-                "1.0",
+            BuildSemanticHandoffDocument(
+                sourceJson,
                 "agent-handoff-design-tokens",
                 $"agent-handoff-design-tokens-{projectId}",
                 createdUtc,
                 projectId,
-                source.Tokens,
-                source.PageLocalOverrides,
-                source.ComponentLocalOverrides,
-                source.HumanReviewRequired,
-                source.ReviewReasons,
                 provenance),
             cancellationToken);
         await WriteAsync(
             root,
             "visual-style.json",
-            new HandoffSemanticTokens(
-                "1.0",
+            BuildSemanticHandoffDocument(
+                sourceJson,
                 "agent-handoff-visual-style",
                 $"agent-handoff-visual-style-{projectId}",
                 createdUtc,
                 projectId,
-                source.Tokens,
-                source.PageLocalOverrides,
-                source.ComponentLocalOverrides,
-                source.HumanReviewRequired,
-                source.ReviewReasons,
                 provenance),
             cancellationToken);
+    }
+
+    private static JsonObject? ReadJsonObject(string root, string relativePath)
+    {
+        var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        return JsonNode.Parse(File.ReadAllText(path)) as JsonObject;
+    }
+
+    private static JsonObject BuildSemanticHandoffDocument(
+        JsonObject source,
+        string artifactKind,
+        string artifactId,
+        DateTimeOffset createdUtc,
+        string projectId,
+        IReadOnlyList<HandoffDiagnosticReference> provenance)
+    {
+        var document = source.DeepClone().AsObject();
+        document["schemaVersion"] = "1.0";
+        document["artifactKind"] = artifactKind;
+        document["artifactId"] = artifactId;
+        document["createdUtc"] = JsonSerializer.SerializeToNode(createdUtc, VisualJson.Options);
+        document["projectId"] = projectId;
+        document.Remove("sourceRawTokensPath");
+        document["diagnosticProvenance"] = JsonSerializer.SerializeToNode(provenance, VisualJson.Options);
+        return document;
     }
 
     private static async Task WriteResponsiveHandoffArtifactAsync(
