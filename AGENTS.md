@@ -56,8 +56,11 @@ Active V2 presentation/runtime:
 Active StorefrontBuilder tooling:
 
 - `tools/BlazorShop.AI.StorefrontBuilder`
+- `tools/BlazorShop.AI.Visual`
 - `scripts/qa/run-storefront-builder-generated-proof.ps1`
 - `scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- `scripts/qa/run-storefront-phase4-mvp-gate.ps1`
+- `scripts/qa/run-storefront-phase4-final-closure-gate.ps1`
 
 Legacy presentation projects have been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison and migration reference.
 
@@ -204,6 +207,8 @@ Commerce Node QA should verify API route groups, credential behavior for `api/co
 Storefront V2 QA should verify public page rendering, store key route behavior, catalog pages, slug routes, auth forms, checkout redirects, SEO documents, sitemap, robots, and visible browser flows when requested.
 
 StorefrontBuilder QA should verify static gates, generated project isolation, package boundaries, generated artifacts, browser visual checks, and commerce-regression reports. Use `docs/visual-reverse-engineering-skill/` and `docs/agents/storefront-builder.md` for exact commands.
+
+Phase 4 visual skill work should also verify `tools/BlazorShop.AI.Visual` remains a docs/schema/skill-only workspace, visual writes are recorded through StorefrontBuilder, browser visual QA evidence exists, the Phase 4 MVP gate passes for the generated project, and the final closure gate passes from a clean unchanged `HEAD` when closing the workflow.
 
 If browser behavior changes, use Playwright. If the user asks to observe the test, run with a visible browser.
 

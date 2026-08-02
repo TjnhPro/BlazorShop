@@ -67,6 +67,52 @@ Generate from a portable Phase 3E handoff package:
 
 The handoff generation path writes a Starter-based `BlazorShop.Storefront.{Name}` project and stores `generation-plan.json`, `handoff-generation-summary.md`, `handoff-placeholders.json`, and `agent-task-package/` under `docs/storefront-analysis/`. It consumes only the portable `analysis/agent-handoff/*` package and schemas; it does not read raw captures or mutate Starter.
 
+## Plan, Implement, And QA Visuals
+
+Use the visual skills only after StorefrontBuilder has created a handoff-generated project. StorefrontBuilder remains the source of project creation; `tools/BlazorShop.AI.Visual` only defines agent instructions, references, schemas, examples, and report contracts.
+
+1. Run `tools/BlazorShop.AI.Visual/skills/storefront-visual-plan/SKILL.md`.
+   - Read `docs/storefront-analysis/generation-plan.json`.
+   - Read `docs/storefront-analysis/agent-task-package/manifest.json`.
+   - Emit `docs/storefront-analysis/visual-plan.json`.
+   - Emit `docs/storefront-analysis/visual-implementation-checklist.todo.md`.
+2. Run `tools/BlazorShop.AI.Visual/skills/storefront-visual-implement/SKILL.md`.
+   - Edit only generated visual files listed by the task package.
+   - Preserve Presentation semantic descriptors such as product purchase and cart commands.
+   - Emit `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`.
+   - Run `record-agent-visual-writes.mjs`.
+   - Build the generated project.
+   - Emit `docs/storefront-analysis/visual-implementation-report.json` and `.md`.
+3. Run `tools/BlazorShop.AI.Visual/skills/storefront-visual-qa/SKILL.md`.
+   - Run browser evidence with `run-visual-qa.mjs`.
+   - Inspect screenshots for blank states, missing slots, overflow, broken assets, and descriptor loss.
+   - Repair only generated-owned visual defects, then rerun recorder and QA.
+   - Emit `docs/storefront-analysis/visual-qa-report.json` and `.md`.
+
+Record visual writes:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+```
+
+Run visual QA:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens
+```
+
+Run target MVP closure after plan, implementation, recorder, build, QA, and optional repair evidence exist:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+```
+
+Run final closure only after the candidate commit is complete and the working tree is clean:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
+```
+
 ## Update
 
 Regenerate all generated visual/composition output:

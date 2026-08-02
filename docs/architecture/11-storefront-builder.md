@@ -15,10 +15,12 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
 | Reverse-engineering evidence tooling | `tools/BlazorShop.AI.StorefrontReverseEngineering` | Development-time executable that creates reference-site evidence, workflow state, validation reports, originality notes, visual-blueprint drafts, reviewed mappings, and Phase 3C/3D/3E-hardened portable `analysis/agent-handoff/*` packages for Phase 4 StorefrontBuilder consumption. |
+| Visual skill/report workspace | `tools/BlazorShop.AI.Visual` | Development-time agent instruction, schema, reference, adapter, and example workspace for Phase 4 visual plan/implementation/QA reports. It is not a generator, runtime package, production service, or project reference target. |
 | Generated proof workflow | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Recreates, restores, builds, validates, isolation-checks, and runs structure, fast functional, or full fixture-backed browser proof for the canonical generated proof artifact. |
 | Full fixture proof wrapper | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | CI-safe manual/scheduled/release wrapper that stops any existing V2 runtime, starts Docker dependencies plus the local Control Plane/Commerce Node/Storefront fixture runtime, verifies fixture data, runs `FoundationFunctionalFull`, collects reports, and tears down in `finally`. |
 | Regeneration ownership gate | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly generated update proof for no-op determinism, scoped updates, manual-edit conflicts, user-owned preservation, protected-file rejection, and obsolete-file reporting without live Commerce Node data. |
 | Isolation gate | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Verifies generated storefronts consume Presentation/Components as direct packages, keep Client/Runtime package metadata for transitive package proof, and avoid forbidden Runtime/Client, project, V2, Web.SharedV2, backend, core, or API references. |
+| Phase 4 visual gates | `scripts/qa/run-storefront-phase4-mvp-gate.ps1`, `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` | Local closure gates for the visual skill MVP flow and clean-HEAD final closure. They do not require GitHub Actions. |
 
 Generated storefront artifacts live under ignored output roots:
 
@@ -49,6 +51,8 @@ The gate uses local fixtures and StorefrontBuilder compatibility smoke; it must 
 ReverseEngineering handoff artifacts are inactive in Phase 3A, Phase 3B, Phase 3C, Phase 3D, and Phase 3E. Phase 4 enables StorefrontBuilder to preflight portable Phase 3E packages under `analysis/agent-handoff/`, compile a deterministic handoff generation plan, create a Starter-based handoff project skeleton, package constrained agent visual tasks, validate visual-only boundaries, run browser visual proof, run bounded repair, and regenerate safely through stored handoff metadata. Phase 3E portability proof requires canonical artifact/schema membership, manifest/readiness agreement, deterministic copied-package validation, and source-aware reviewed slot provenance. Existing non-handoff StorefrontBuilder generation still uses its original StorefrontBuilder artifacts and scripts.
 
 Phase 4 may read only `analysis/agent-handoff/*` and schemas as input after the Phase 3E final runtime gate passes on a clean unchanged `HEAD`. It must fail when `analysis/agent-handoff/handoff-readiness.json` is missing, not passed, or disagrees with `manifest.json` readiness. It must not reinterpret raw reference evidence unless it explicitly runs a new ReverseEngineering pass, must not write into `BlazorShop.Storefront.Starter`, and must not change protected Storefront runtime behavior. Portable preflight uses `validate-handoff`, `inspect-handoff`, and the read-only dry-run loader through `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path>`. Handoff generation uses `build-storefront.ps1 -Mode plan-only|generate|full -HandoffRoot <path>` and writes only generated project artifacts. Source project folders, raw captures, `analysis/pages/*`, `analysis/resolved/*`, `presentation-catalog/*`, `review/*`, and `reports/*` are not fallback inputs.
+
+`tools/BlazorShop.AI.Visual` sits beside StorefrontBuilder and ReverseEngineering as a docs/schema/skill-only workspace. StorefrontBuilder remains the only owner of generated project creation, regeneration, write recording, boundary validation, browser QA execution, and repair wrappers. ReverseEngineering remains the only owner of reference evidence and portable handoff packages. Visual skills consume the generated project's `generation-plan.json`, `agent-task-package/*`, manifests, allowed visual source files, and StorefrontBuilder browser evidence; they must not add `.csproj` files, runtime references, generators, routes, transports, protected browser actions, SEO behavior, auth behavior, cart/checkout semantics, or backend/API calls.
 
 Phase 3A does not perform full design-token extraction, semantic token normalization, ecommerce region mapping, component detection, component generation, or visual generation. Captured reference assets, logos, copy, and brand-specific visual material are reference-only by default until later human review and an approved workflow clear reuse. Phase 3B starts from the stable runtime evidence and adds visual interpretation: design-token extraction, semantic token normalization, section segmentation, responsive comparison, component detection, ecommerce region mapping, confidence scoring, human review, and reviewed blueprint assembly for later handoff planning. Phase 3D proves resolved reviewed inputs, exact slot enforcement, per-viewport evidence packaging, and positive/negative closure behavior. Phase 3E proves the handoff can be copied, validated, and dry-run loaded without its source project, and blocks orphan reviewed slot mappings that do not belong to the active page composition. Phase 4 exposes that portable validation/dry-run path through StorefrontBuilder and adds controlled visual generation/QA/regeneration on top of it.
 
@@ -165,6 +169,10 @@ Handoff-generated projects additionally keep:
 - `agent-task-package/`
 - `agent-written-files.json` after constrained agent visual writes
 - `repair-history.md` after bounded visual repair attempts
+- `visual-plan.json` when `storefront-visual-plan` is used
+- `visual-implementation-checklist.todo.md` and `visual-checkpoints/{operationId}/visual-checkpoint.json` when `storefront-visual-implement` is used
+- `visual-implementation-report.json` and `visual-qa-report.json` when visual implementation or QA evidence is produced
+- `phase4-mvp-gate-report.json` and `phase4-mvp-gate-report.md` after the Phase 4 MVP gate
 
 Current review and QA artifacts:
 
@@ -260,6 +268,15 @@ The recorder validates that writes are planned generated-owned visual outputs, r
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
 ```
 
+Phase 4 visual skills run only after StorefrontBuilder creates a handoff-generated project and its `agent-task-package/manifest.json` exists. Use the skills in this order: `storefront-visual-plan`, `storefront-visual-implement`, then `storefront-visual-qa`. StorefrontBuilder remains the only project generator and recorder:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens
+.\scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
+```
+
 Static validation command:
 
 ```powershell
@@ -319,6 +336,8 @@ The isolation gate additionally restores and builds the generated storefront, pa
 Browser QA is owned by the Node/Playwright scripts in `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`. Run the fast proof on PR and closure guardrail changes; run the regeneration ownership gate whenever generated ownership, manifests, or regeneration behavior changes; run the full proof for manual, scheduled, and release validation. Commit the resulting QA report only when a phase explicitly asks for tracked evidence.
 
 For handoff-generated projects, `run-visual-qa.mjs` auto-detects `docs/storefront-analysis/generation-plan.json`, derives required route/slot checks from planned slots, verifies generated CSS linkage, seeded/mock data visibility, body nonblank state, required slot visibility, browser-action descriptors, generated asset resolution, product gallery shape, and horizontal overflow. Use `--fixture-root <folder>` for file-based seeded/mock proof and `--allow-planned-placeholders` only while proving the generated skeleton before agent visual replacement. The report records screenshots, route/viewport/selector discrepancies, and explicitly labels visual fidelity diff as not a hard gate in Phase 4.
+
+Before closing Phase 4 visual-skill work, the MVP gate must prove the generated visual plan/implementation/QA path against a handoff project, and the final closure gate must pass from a clean unchanged `HEAD`. GitHub Actions are not required for this local closure.
 
 ```powershell
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders

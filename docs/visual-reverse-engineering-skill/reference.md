@@ -12,6 +12,11 @@
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/` | Static validation scripts and guardrails. |
 | `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/` | Browser visual QA and commerce regression runners. |
 | `tools/BlazorShop.AI.StorefrontReverseEngineering/Skills/reverse-engineering-skills.json` | Phase 3A reverse-engineering skill catalog manifest. It documents deterministic, hybrid, and review-required steps; it is not an executable skill runtime. |
+| `tools/BlazorShop.AI.Visual/skills/storefront-visual-plan/SKILL.md` | Canonical Phase 4 visual planning skill. |
+| `tools/BlazorShop.AI.Visual/skills/storefront-visual-implement/SKILL.md` | Canonical Phase 4 generated visual implementation skill. |
+| `tools/BlazorShop.AI.Visual/skills/storefront-visual-qa/SKILL.md` | Canonical Phase 4 browser evidence and visual QA skill. |
+| `tools/BlazorShop.AI.Visual/references/` | Shared architecture, ownership, Razor, CSS, handoff input, checkpoint, and browser QA references for the visual skills. |
+| `tools/BlazorShop.AI.Visual/schemas/` | Schema contracts for visual plan, checklist, checkpoint, implementation, QA, and MVP gate reports. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3a-gate.ps1` | Phase 3A hardening gate for the ReverseEngineering executable, local fixture browser tests, readiness validation, boundary scan, and StorefrontBuilder compatibility smoke. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3b-gate.ps1` | Phase 3B gate for visual analysis, ecommerce mapping, confidence review, Visual Blueprint v1, local multi-page fixture workflows, boundary scans, and StorefrontBuilder plan-only smoke. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1` | Phase 3C final handoff gate for site-level fixtures, mutation blockers, schema validation, final handoff readiness, and StorefrontBuilder non-consumption boundary scans. |
@@ -21,6 +26,8 @@
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
 | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Generated storefront build/package/reference isolation gate. |
+| `scripts/qa/run-storefront-phase4-mvp-gate.ps1` | Target-specific local Phase 4 MVP gate for one handoff-generated project after visual plan, implementation, recorder, build, and browser evidence. |
+| `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` | Clean-HEAD final Phase 4 closure gate. It runs visual workspace static checks, generated proof, regeneration ownership proof, the MVP pilot gate, and final HEAD/clean-tree verification without GitHub Actions. |
 
 ## ReverseEngineering Handoff
 
@@ -138,6 +145,14 @@ Common Phase 3B failures are reported as problem/cause/fix lines:
 
 Phase 4 may read only `analysis/agent-handoff/*` and schemas as input. It must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass. It must not write into `BlazorShop.Storefront.Starter`. It must not change protected Storefront runtime behavior. It must fail if `analysis/agent-handoff/handoff-readiness.json` is missing, not passed, or disagrees with `manifest.json` readiness. The portable preflight surface is `build-storefront.ps1 -Mode preflight-only -HandoffRoot <path>`, `validate-handoff`, `inspect-handoff`, and the read-only `HandoffConsumerDryRunLoader`; none of these may read the original source project as a fallback. A reviewed mapping is authoritative for slot proof only when its source page and source section belong to the active reviewed page composition; orphan mappings fail with `reviewed-slot-mapping-orphan`.
 
+`tools/BlazorShop.AI.Visual` is the Phase 4 skill/report workspace. It is documentation, schemas, examples, and optional host adapter instructions only. It has no `.csproj`, no runtime references, and no authority to generate or mutate projects by itself. StorefrontBuilder still owns project creation, regeneration, recorder validation, browser QA scripts, and generated artifact layout. ReverseEngineering still owns reference evidence and portable handoff packages.
+
+Visual skills are used in this order:
+
+1. `storefront-visual-plan`: read the StorefrontBuilder generation plan and `agent-task-package/manifest.json`, hash inputs, map slots to allowed files, and emit `docs/storefront-analysis/visual-plan.json` plus `visual-implementation-checklist.todo.md`.
+2. `storefront-visual-implement`: edit only allowed generated visual files, preserve Presentation descriptors, emit checkpoints, run the recorder, and write `visual-implementation-report.json` plus `.md`.
+3. `storefront-visual-qa`: run browser evidence through `run-visual-qa.mjs`, inspect screenshots, run bounded generated-owned repair when needed, and write `visual-qa-report.json` plus `.md`.
+
 Handoff generation commands:
 
 ```powershell
@@ -156,6 +171,12 @@ Handoff-generated project artifacts under `docs/storefront-analysis/`:
 | `agent-task-package/` | Handoff-local task package for constrained visual generation. |
 | `agent-written-files.json` | Recorded generated visual files after constrained agent writes. |
 | `repair-history.md` | Durable bounded repair attempt history. |
+| `visual-plan.json` | Schema-backed visual planning output from `storefront-visual-plan`. |
+| `visual-implementation-checklist.todo.md` | Reviewable visual implementation checklist created before edits. |
+| `visual-checkpoints/{operationId}/visual-checkpoint.json` | File-hash checkpoint for a visual implementation operation. |
+| `visual-implementation-report.json` and `.md` | Changed-file, recorder, build, boundary, and unresolved-item report from `storefront-visual-implement`. |
+| `visual-qa-report.json` and `.md` | Browser capture, issue, repair-attempt, and pass/fail report from `storefront-visual-qa`. |
+| `phase4-mvp-gate-report.json` and `.md` | Target-specific MVP gate evidence for the generated project. |
 
 ## ReverseEngineering Browser Setup
 
@@ -349,6 +370,18 @@ CI-friendly regeneration ownership gate:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-regeneration-gate.ps1
+```
+
+Phase 4 visual MVP gate:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+```
+
+Phase 4 final closure gate:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
 ```
 
 `Structure` generates/restores/builds the proof project, runs static validation, runs isolation, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `run-storefront-builder-regeneration-gate.ps1` separately proves no-op determinism, scoped CSS/page/component updates, real `-WhatIf` planning, platform metadata update, manual generated-file conflicts, user-owned preservation, protected-file rejection, obsolete-file reporting, and rollback without live Commerce Node data. `FoundationFunctionalFast` uses mocked same-origin Presentation BFF routes in Playwright and writes `fast-foundation-functional-report.md` under the generated artifact. `FoundationFunctionalFull` verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. Use `run-storefront-builder-full-proof-with-fixture.ps1` for scheduled/manual/release validation because it starts Docker dependencies and the local V2 fixture runtime, checks health and fixture endpoints, runs the full proof, writes `full-proof-with-fixture-report.md`, and tears down services. `FoundationFunctional` and `-RunBrowserQa` remain compatibility aliases for the full proof.

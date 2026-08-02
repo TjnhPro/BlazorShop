@@ -813,27 +813,27 @@ Goal: make the new workflow visible without making historical plans the source o
 
 Tasks:
 
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`:
-  - [ ] add this plan to historical plans.
-  - [ ] document visual skill workflow.
-  - [ ] link target MVP/final gates after they exist.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`:
-  - [ ] add skill paths.
-  - [ ] add report artifacts.
-  - [ ] add gate commands.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`:
-  - [ ] add plan -> implement -> QA sequence.
-  - [ ] keep StorefrontBuilder generation commands as the source of project creation.
-- [ ] Update `docs/architecture/11-storefront-builder.md`:
-  - [ ] describe `tools/BlazorShop.AI.Visual` as a dev-time skill/report workspace.
-  - [ ] state it is not a generator/runtime package.
-  - [ ] preserve StorefrontBuilder and ReverseEngineering ownership.
-- [ ] Update `docs/agents/storefront-builder.md`:
-  - [ ] when to use visual skills.
-  - [ ] what files they may read.
-  - [ ] what files they may edit.
-  - [ ] which gates must pass before closure.
-- [ ] Update `AGENTS.md` only if the workflow becomes part of standard agent required reading.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`:
+  - [x] add this plan to historical plans.
+  - [x] document visual skill workflow.
+  - [x] link target MVP/final gates after they exist.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`:
+  - [x] add skill paths.
+  - [x] add report artifacts.
+  - [x] add gate commands.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`:
+  - [x] add plan -> implement -> QA sequence.
+  - [x] keep StorefrontBuilder generation commands as the source of project creation.
+- [x] Update `docs/architecture/11-storefront-builder.md`:
+  - [x] describe `tools/BlazorShop.AI.Visual` as a dev-time skill/report workspace.
+  - [x] state it is not a generator/runtime package.
+  - [x] preserve StorefrontBuilder and ReverseEngineering ownership.
+- [x] Update `docs/agents/storefront-builder.md`:
+  - [x] when to use visual skills.
+  - [x] what files they may read.
+  - [x] what files they may edit.
+  - [x] which gates must pass before closure.
+- [x] Update `AGENTS.md` only if the workflow becomes part of standard agent required reading.
 
 Checks:
 
@@ -843,8 +843,8 @@ rg -n "BlazorShop.AI.Visual|storefront-visual-plan|storefront-visual-implement|s
 
 DoD:
 
-- [ ] Agent workflow can be followed from docs without conversation context.
-- [ ] Architecture docs remain the source of truth over historical plans.
+- [x] Agent workflow can be followed from docs without conversation context.
+- [x] Architecture docs remain the source of truth over historical plans.
 
 ## Required QA Gates For Implementation Commits
 
@@ -878,23 +878,23 @@ Use `FoundationFunctionalFast` or the full fixture proof when the implementation
 
 ## Release Definition Of Done
 
-- [ ] `tools/BlazorShop.AI.Visual` exists and has no `.csproj`.
-- [ ] `tools/BlazorShop.AI.Visual` has no production runtime references.
-- [ ] Three canonical skills exist:
-  - [ ] `storefront-visual-plan`.
-  - [ ] `storefront-visual-implement`.
-  - [ ] `storefront-visual-qa`.
-- [ ] Host adapters point to canonical skill files instead of duplicating them.
-- [ ] Shared references define boundaries, inputs, ownership, Razor rules, CSS rules, and browser QA rubric.
-- [ ] Visual output schemas exist and validate example artifacts.
-- [ ] Visual plan output is deterministic and reviewable before edits.
-- [ ] Visual implementation reports exact changed files and StorefrontBuilder recorder result.
-- [ ] Visual QA uses browser evidence and cannot pass from compile-only smoke output.
-- [ ] Repair is bounded and generated-visual-only.
-- [ ] Target-specific MVP gate exists and runs locally.
-- [ ] Final closure gate exists and does not require GitHub Actions.
-- [ ] Documentation explains how StorefrontBuilder, ReverseEngineering, and Visual skills relate.
-- [ ] A pilot generated storefront proves the end-to-end flow.
+- [x] `tools/BlazorShop.AI.Visual` exists and has no `.csproj`.
+- [x] `tools/BlazorShop.AI.Visual` has no production runtime references.
+- [x] Three canonical skills exist:
+  - [x] `storefront-visual-plan`.
+  - [x] `storefront-visual-implement`.
+  - [x] `storefront-visual-qa`.
+- [x] Host adapters point to canonical skill files instead of duplicating them.
+- [x] Shared references define boundaries, inputs, ownership, Razor rules, CSS rules, and browser QA rubric.
+- [x] Visual output schemas exist and validate example artifacts.
+- [x] Visual plan output is deterministic and reviewable before edits.
+- [x] Visual implementation reports exact changed files and StorefrontBuilder recorder result.
+- [x] Visual QA uses browser evidence and cannot pass from compile-only smoke output.
+- [x] Repair is bounded and generated-visual-only.
+- [x] Target-specific MVP gate exists and runs locally.
+- [x] Final closure gate exists and does not require GitHub Actions.
+- [x] Documentation explains how StorefrontBuilder, ReverseEngineering, and Visual skills relate.
+- [x] A pilot generated storefront proves the end-to-end flow.
 
 ## Deferred Scope
 

@@ -21,6 +21,12 @@ Phase 3A ReverseEngineering work is evidence hardening only. Phase 3B adds visua
 
 Phase 4 may read only `analysis/agent-handoff/*` and schemas as input after the Phase 3E final runtime gate passes on a clean unchanged `HEAD`. It must fail unless `analysis/agent-handoff/handoff-readiness.json` passed, must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass, must not write into Starter, and must not change protected Storefront runtime behavior. Use `build-storefront.ps1 -Mode preflight-only|plan-only|generate|full -HandoffRoot <path>`, `validate-handoff`, `inspect-handoff`, or the read-only dry-run loader as portable handoff surfaces; do not read source project folders, raw captures, `analysis/pages/*`, `analysis/resolved/*`, `presentation-catalog/*`, `review/*`, or `reports/*` as fallback inputs.
 
+Use Phase 4 visual skills only after StorefrontBuilder has produced a handoff-generated project and `docs/storefront-analysis/agent-task-package/manifest.json` exists. The canonical skill instructions live at `tools/BlazorShop.AI.Visual/skills/storefront-visual-plan/SKILL.md`, `tools/BlazorShop.AI.Visual/skills/storefront-visual-implement/SKILL.md`, and `tools/BlazorShop.AI.Visual/skills/storefront-visual-qa/SKILL.md`.
+
+Visual skills may read `tools/BlazorShop.AI.Visual/references/*`, `tools/BlazorShop.AI.Visual/schemas/*`, `tools/BlazorShop.AI.Visual/examples/*`, the generated project's `docs/storefront-analysis/generation-plan.json`, `agent-task-package/*`, generated file manifests, task-package-listed visual source files, and browser evidence from `run-visual-qa.mjs`. They must not read raw ReverseEngineering captures, draft visual-blueprint artifacts, Storefront V2 source, backend/API/core source, or Starter as a fallback implementation source.
+
+Visual skills may edit only allowed generated visual files in the generated project and may write generated-project-local reports such as `visual-plan.json`, `visual-implementation-checklist.todo.md`, `visual-checkpoints/*`, `visual-implementation-report.json`, and `visual-qa-report.json`. Preserve Presentation descriptors and do not add routes, transport, auth, SEO, business behavior, or protected-file changes. After visual edits, run `record-agent-visual-writes.mjs` before browser QA or closure gates.
+
 Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
@@ -80,6 +86,8 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 .\scripts\qa\run-storefront-client-regeneration-gate.ps1
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+.\scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffPreflightTests|FullyQualifiedName~StorefrontBuilderHandoffGenerationPlanTests|FullyQualifiedName~StorefrontBuilderHandoffProjectGenerationTests|FullyQualifiedName~StorefrontBuilderAgentTaskPackageTests|FullyQualifiedName~StorefrontBuilderHandoffBoundaryValidationTests|FullyQualifiedName~StorefrontBuilderHandoffVisualQaTests|FullyQualifiedName~StorefrontBuilderHandoffRepairLoopTests|FullyQualifiedName~StorefrontBuilderHandoffRegenerationSafetyTests" --blame-hang --blame-hang-timeout 5m
 ```
 
@@ -130,7 +138,7 @@ node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
 ```
 
-Browser QA reports are written under the generated artifact. Do not commit the generated artifact unless a phase explicitly asks for tracked evidence.
+Browser QA reports are written under the generated artifact. Do not commit the generated artifact unless a phase explicitly asks for tracked evidence. Before closing Phase 4 visual work, the MVP gate must pass on a handoff-generated project and the final closure gate must pass from a clean unchanged `HEAD`; GitHub Actions are not required for that local closure.
 
 ## Documentation
 

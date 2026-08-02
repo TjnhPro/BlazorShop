@@ -4,6 +4,14 @@ This folder documents the StorefrontBuilder workflow for turning reference ecomm
 
 StorefrontReverseEngineering is the evidence/runtime foundation. It captures rendered browser evidence, workflow state, readiness reports, Phase 3B analysis artifacts, Phase 3C handoff artifacts, and conservative originality/provenance findings. Its final capture flow extracts rendered evidence before native screenshots, records explicit quality/fallback decisions, uses stitched fallback only with real segment artifacts, and keeps raw/normalized artifacts tied by capture correlation IDs. StorefrontBuilder is the generator. Phase 3C does not create Razor, CSS, generated projects, or active blueprint consumption.
 
+Phase 4 visual skills live under `tools/BlazorShop.AI.Visual`. They are canonical agent instructions, shared references, schemas, examples, and report contracts only. They are not a generator, runtime package, production service, or project dependency. The visual workflow is:
+
+1. Generate or refresh a handoff-backed project with StorefrontBuilder `preflight-only`, `plan-only`, and `generate`.
+2. Use `storefront-visual-plan` to turn the generation plan and agent task package into `visual-plan.json` plus an implementation checklist.
+3. Use `storefront-visual-implement` only inside allowed generated visual files, then run `record-agent-visual-writes.mjs`.
+4. Use `storefront-visual-qa` with `run-visual-qa.mjs` browser evidence, bounded repair when applicable, and schema-backed QA reports.
+5. Close with `scripts/qa/run-storefront-phase4-mvp-gate.ps1` for the target generated project and `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` for the clean-HEAD local closure gate.
+
 ## Read First
 
 1. [StorefrontBuilder Architecture](../architecture/11-storefront-builder.md) - ownership, boundaries, artifact rules, and validation gates.
@@ -17,6 +25,7 @@ StorefrontReverseEngineering is the evidence/runtime foundation. It captures ren
 The phase plans are retained as implementation history and checklist evidence:
 
 - [18-StorefrontBuilder-Phase4-Agent-Assisted-Visual-Generation.todo.md](18-StorefrontBuilder-Phase4-Agent-Assisted-Visual-Generation.todo.md)
+- [19-StorefrontVisualSkills-Phase4-10-MVP-EndToEnd-Closure.todo.md](19-StorefrontVisualSkills-Phase4-10-MVP-EndToEnd-Closure.todo.md)
 - [01-StorefrontBuilder-Foundation.todo.md](01-StorefrontBuilder-Foundation.todo.md)
 - [02-StorefrontBuilder-Visual-Generation.todo.md](02-StorefrontBuilder-Visual-Generation.todo.md)
 - [03-StorefrontBuilder-QA-Regeneration.todo.md](03-StorefrontBuilder-QA-Regeneration.todo.md)
@@ -94,6 +103,18 @@ Use bounded repair only for generated-owned visual failures:
 
 ```powershell
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
+```
+
+Use the Phase 4 visual MVP gate for a handoff-generated project after plan, implementation, recorder, build, and browser QA evidence exist:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+```
+
+Use the final Phase 4 closure gate only after the candidate commit is complete and the working tree is clean:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
 ```
 
 Regeneration for handoff-generated projects reuses stored handoff metadata and `generation-plan.json`, rejects handoff hash drift with a re-plan/update requirement, rejects Starter contract drift with a foundation upgrade requirement, and keeps `-WhatIf` reports outside the target project.
