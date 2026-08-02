@@ -1,6 +1,6 @@
 # Storefront Reverse Engineering Phase 3E Final Closure
 
-Status: In progress
+Status: Final candidate procedure pending runtime gate
 
 ## Baseline
 
@@ -36,15 +36,28 @@ Status: In progress
   - `Microsoft.Playwright`
 - Phase 3D closure proof is current for the baseline HEAD.
 
-## Pending Phase 3E Work
+## Implemented Phase 3E Evidence
 
-- Portable package contract, schema list, reference registry, and hash rules.
-- Handoff-local consumer artifact normalization.
-- Portable validator and inspect CLI.
-- Shared reviewed slot provenance for evidence.
-- Read-only Phase 4 consumer dry-run loader.
-- Isolated copy proof and negative portability mutations.
-- Final Phase 3E no-skip clean-HEAD closure gate.
+- Portable package contract, schema list, typed reference registry, and deterministic file-level hash rules.
+- Handoff-local consumer artifacts for page compositions, reviewed blueprint, design tokens, visual style, Presentation catalog, mappings, components, responsive behavior, interaction models, confidence, originality restrictions, review resolution, evidence manifest, screenshots, and section crops.
+- `validate-handoff --handoff-root <path> --schema-root <path>` and `inspect-handoff --handoff-root <path> --schema-root <path>` validate copied packages without the source project.
+- Shared `SectionSlotResolver` feeds slot validation, evidence packaging, and the read-only consumer dry-run loader.
+- `HandoffConsumerDryRunLoader` reads only `handoffRoot`, `schemaRoot`, and a cancellation token, refuses failed readiness, required-slot loss, and package escape, and performs no generation writes.
+- `PortableHandoffCopyProofTests` copies only the portable package and schema root, deletes the source project, validates both copies, dry-run loads one copy, and verifies package hash stability.
+- Phase 3E negative mutation tests cover reference escape, diagnostics-as-consumer misuse, absolute paths, missing consumer artifacts, missing section crops, missing schemas, corrupt artifacts, and canonical manifest order drift.
+- `scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1` is a no-skip clean-HEAD gate. It invokes the Phase 3D final closure gate once, runs the Phase 3E portable proof suite, performs boundary scans, runs StorefrontBuilder plan-only smoke, asserts final `HEAD` unchanged, and writes the ignored runtime report.
+
+## Final Runtime Gate Rule
+
+Phase 3E remains in progress until the final Phase 3E runtime gate passes
+on this same clean HEAD. The ignored gate report is authoritative final
+proof; tracked docs must not require a post-gate source commit.
+
+Run from a clean working tree after the final candidate commit:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1
+```
 
 ## Final Closure Strategy
 

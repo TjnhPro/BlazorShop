@@ -96,7 +96,7 @@ Manual edits to generated/managed files are not overwritten automatically. They 
 
 Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder `generatorVersion` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Validation fails if those artifact versions drift.
 
-ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Phase 3D is the final correctness and no-skip closure proof for that package. Generated storefront commands do not consume those artifacts yet. Treat Phase 3C/3D output as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
+ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-blueprint.draft.json`. Phase 3B can add reviewed visual analysis and Visual Blueprint v1. Phase 3C can assemble a strict final handoff package under `analysis/agent-handoff/`. Phase 3D is the final correctness and no-skip closure proof for that package. Phase 3E makes the package portable with handoff-local artifacts, schema requirements, hashes, reference containment, portable validation commands, dry-run loading, isolated copy proof, and a final clean-HEAD gate. Generated storefront commands do not consume those artifacts yet. Treat Phase 3C/3D/3E output as future handoff evidence until a later StorefrontBuilder phase explicitly enables consumption.
 
 For future Phase 4 planning, the approved input root is only `analysis/agent-handoff/*` plus the registered schemas. A Phase 4 consumer must not read draft artifacts such as `analysis/pages/*`, raw `captures/*`, `analysis/visual-blueprint.draft.json`, `analysis/visual-blueprint.v1.draft.json`, or any unresolved reviewed-source file as generation input.
 
@@ -112,6 +112,13 @@ Inspect final handoff readiness:
 
 ```powershell
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project obj/storefront-reverse-engineering/projects/fixturedemo
+```
+
+Validate or inspect a copied portable handoff package without the original project root:
+
+```powershell
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- validate-handoff --handoff-root obj/storefront-reverse-engineering/projects/fixturedemo --schema-root tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect-handoff --handoff-root obj/storefront-reverse-engineering/projects/fixturedemo --schema-root tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas
 ```
 
 Apply review decisions and rerun final handoff validation:
@@ -134,6 +141,14 @@ powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engin
 ```
 
 The Phase 3D gate has no skip flags. It records clean-tree proof, tested SHA, final `HEAD`, focused fixture results, boundary scans, and the final handoff readiness path `analysis/agent-handoff/handoff-readiness.json`.
+
+Run the Phase 3E final closure gate only after the final candidate commit and a clean working tree:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1
+```
+
+Phase 3E remains in progress until the final Phase 3E runtime gate passes on this same clean HEAD. The ignored gate report is authoritative final proof; tracked docs must not require a post-gate source commit.
 
 Phase 4 may read only `analysis/agent-handoff/*` and schemas as future input. It must fail unless `analysis/agent-handoff/handoff-readiness.json` passed, must not reinterpret raw captures unless running a new ReverseEngineering pass, must not write into Starter, and must not change StorefrontBuilder generation without its own approved plan.
 

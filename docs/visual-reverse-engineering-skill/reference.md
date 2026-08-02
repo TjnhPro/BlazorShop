@@ -16,6 +16,7 @@
 | `scripts/qa/run-storefront-reverse-engineering-phase3b-gate.ps1` | Phase 3B gate for visual analysis, ecommerce mapping, confidence review, Visual Blueprint v1, local multi-page fixture workflows, boundary scans, and StorefrontBuilder plan-only smoke. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1` | Phase 3C final handoff gate for site-level fixtures, mutation blockers, schema validation, final handoff readiness, and StorefrontBuilder non-consumption boundary scans. |
 | `scripts/qa/run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1` | Phase 3D no-skip final closure gate for clean-tree proof, Phase 3A/3B/3C gates, full and focused ReverseEngineering tests, real positive end-to-end proof, real negative mutation proofs, boundary scans, StorefrontBuilder plan-only smoke, and final HEAD verification. |
+| `scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1` | Phase 3E no-skip final closure gate. It invokes the Phase 3D gate once, then proves portable validation, isolated copy loading, negative portability mutations, boundary scans, StorefrontBuilder plan-only smoke, and final HEAD verification. |
 | `scripts/qa/run-storefront-builder-generated-proof.ps1` | Canonical generated proof workflow. |
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
@@ -23,7 +24,7 @@
 
 ## ReverseEngineering Handoff
 
-`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review. Phase 3C adds strict Storefront pattern contracts, reviewed page compositions, constrained agent handoff files under `analysis/agent-handoff/`, and final handoff readiness under `analysis/agent-handoff/handoff-readiness.json`. Phase 3D hardens that handoff so reviewed page compositions read resolved artifacts, ecommerce slots come from reviewed mappings or exact contracts, crops use per-viewport bounds, and closure proof uses real positive/negative behavior tests.
+`BlazorShop.AI.StorefrontReverseEngineering` writes neutral evidence and draft artifacts under `artifacts/storefront-reverse-engineering/projects/{ProjectId}` or `obj/storefront-reverse-engineering/projects/{ProjectId}`. Phase 3A writes `analysis/visual-blueprint.draft.json`; Phase 3B adds `analysis/visual-blueprint.v1.draft.json`, `analysis/visual-blueprint.v1.reviewed.json`, and `reports/generation-readiness.json` for later handoff review. Phase 3C adds strict Storefront pattern contracts, reviewed page compositions, constrained agent handoff files under `analysis/agent-handoff/`, and final handoff readiness under `analysis/agent-handoff/handoff-readiness.json`. Phase 3D hardens that handoff so reviewed page compositions read resolved artifacts, ecommerce slots come from reviewed mappings or exact contracts, crops use per-viewport bounds, and closure proof uses real positive/negative behavior tests. Phase 3E makes `analysis/agent-handoff/*` portable by adding handoff-local consumer contracts, schema requirements, file-level hashes, typed reference containment, reviewed slot provenance, portable validator/inspect commands, a read-only dry-run loader, isolated copy proof, negative portability mutations, and the final Phase 3E clean-HEAD gate.
 
 StorefrontBuilder generation does not yet consume ReverseEngineering artifacts. StorefrontBuilder does not consume `analysis/visual-blueprint.v1.*.json` or `analysis/agent-handoff/*` until a later approved phase changes the handoff boundary. Existing commands such as `build-storefront.ps1`, `regenerate-storefront.ps1`, and generated proof gates continue to use current StorefrontBuilder capture, analysis, generation, and validation artifacts.
 
@@ -52,6 +53,8 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project artifacts/storefront-reverse-engineering/projects/demo --force-step capture
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project artifacts/storefront-reverse-engineering/projects/demo
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- validate --project artifacts/storefront-reverse-engineering/projects/demo
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- validate-handoff --handoff-root artifacts/storefront-reverse-engineering/projects/demo --schema-root tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect-handoff --handoff-root artifacts/storefront-reverse-engineering/projects/demo --schema-root tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas
 ```
 
 Manual artifacts should use `artifacts/storefront-reverse-engineering/projects/{ProjectId}`. Automated tests and gates should use `obj/storefront-reverse-engineering/projects/{ProjectId}`.
@@ -81,7 +84,15 @@ Phase 3D final closure command:
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3d-final-closure-gate.ps1
 ```
 
-The Phase 3D gate has no skip flags and must be run from a clean working tree. Phase 3D and Phase 3 overall are locally closed by the passed gate report where the tested SHA equals final `HEAD`; see `docs/qa/phase3d-final-closure.md` for the current proof.
+The Phase 3D gate has no skip flags and must be run from a clean working tree. It remains the Phase 3D correctness proof where the tested SHA equals final `HEAD`; see `docs/qa/phase3d-final-closure.md` for the current Phase 3D proof. Phase 3 final closure after Phase 3E requires the Phase 3E gate below.
+
+Phase 3E final closure command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1
+```
+
+Phase 3E remains in progress until the final Phase 3E runtime gate passes on this same clean HEAD. The ignored gate report is authoritative final proof; tracked docs must not require a post-gate source commit.
 
 Review decisions are edited in `review/review-decisions.json`. Apply approved, modified, rejected, or deferred decisions by rerunning `apply-review-decisions` or any downstream step. Decisions must include reviewer metadata, source artifact ID, source artifact hash, and a stable decision ID; stale or duplicate decisions fail before reviewed artifacts are emitted.
 
@@ -110,14 +121,20 @@ Common Phase 3B failures are reported as problem/cause/fix lines:
 | `analysis/agent-handoff/page-compositions.json` | Source-of-truth page/section composition input for future generation. |
 | `analysis/agent-handoff/storefront-pattern.json` | Source-of-truth Storefront Presentation/Starter pattern contract. |
 | `analysis/agent-handoff/visual-blueprint.json` | Reviewed evidence index for handoff traceability. |
+| `analysis/agent-handoff/presentation-catalog.json` | Handoff-local Presentation component catalog used for exact slot and target-path validation. |
+| `analysis/agent-handoff/presentation-mappings.json` | Handoff-local reviewed mapping contract used for authoritative slot provenance. |
+| `analysis/agent-handoff/component-candidates.json` and `component-instances.json` | Handoff-local component analysis contracts for future generated visual planning. |
+| `analysis/agent-handoff/responsive-behavior.json` and `interaction-models.json` | Evidence-derived responsive and interaction behavior summaries. |
 | `analysis/agent-handoff/design-tokens.json` and `visual-style.json` | Reviewed visual token/style evidence for future implementation. |
+| `analysis/agent-handoff/evidence-manifest.json` | Packaged screenshot/crop index with hashes, viewport data, bounds, interaction state, and reviewed slot provenance. |
+| `analysis/agent-handoff/screenshots/` and `section-screenshots/` | Portable visual evidence copied into the package; future consumers must not read raw `captures/*` as fallback input. |
 | `analysis/agent-handoff/unresolved-regions.json` | Machine-readable blocker/warning summary. |
 | `analysis/agent-handoff/handoff-readiness.json` | Final machine-readable readiness gate; Phase 4 must fail when this is not passed. |
 | Raw `captures/*`, `analysis/pages/*`, and screenshots/crops | Evidence-only inputs; Phase 4 must not reinterpret them unless explicitly running a new ReverseEngineering pass. |
 
 ## Phase 4 Consumption Contract
 
-Phase 4 may read only `analysis/agent-handoff/*` and schemas as input. It must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass. It must not write into `BlazorShop.Storefront.Starter`. It must not modify StorefrontBuilder generation until a separate implementation plan is approved. It must fail if `analysis/agent-handoff/handoff-readiness.json` is missing or not passed.
+Phase 4 may read only `analysis/agent-handoff/*` and schemas as input. It must not reinterpret raw reference evidence unless explicitly running a new ReverseEngineering pass. It must not write into `BlazorShop.Storefront.Starter`. It must not modify StorefrontBuilder generation until a separate implementation plan is approved. It must fail if `analysis/agent-handoff/handoff-readiness.json` is missing or not passed. The portable preflight surface is `validate-handoff`, `inspect-handoff`, and the read-only `HandoffConsumerDryRunLoader`; none of these may read the original source project as a fallback.
 
 ## ReverseEngineering Browser Setup
 

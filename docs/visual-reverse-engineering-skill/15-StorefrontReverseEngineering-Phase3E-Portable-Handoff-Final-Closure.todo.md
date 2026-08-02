@@ -70,12 +70,12 @@ Out of scope:
 
 ## P0 Blockers
 
-- [ ] P0-1: Handoff package is not portable because validators and manifests still depend on original project-root files.
+- [x] P0-1: Handoff package is not portable because validators and manifests still depend on original project-root files.
 - [x] P0-2: `visual-blueprint.json` and other handoff artifacts can carry consumer-looking references outside `analysis/agent-handoff/*`.
 - [x] P0-3: Required consumer artifact set is incomplete for Phase 4 dry-run loading.
 - [x] P0-4: Evidence section slot provenance can still come from role text inference.
 - [x] P0-5: Manifest schema and package hash are not portable across copied package locations.
-- [ ] P0-6: Final Phase 3 closure lacks a Phase 3E gate that proves isolated copy validation and no post-proof commits.
+- [x] P0-6: Final Phase 3 closure lacks a Phase 3E gate that proves isolated copy validation and no post-proof commits.
 
 ## Phase 3E.0 - Baseline And Contract Lock
 
@@ -309,7 +309,7 @@ Implementation checklist:
 - [x] Extract shared `SectionSlotResolver` used by:
   - [x] `PageCompositionSlotValidator`
   - [x] `AgentHandoffEvidencePackager`
-  - [ ] portable consumer loader
+  - [x] portable consumer loader
 - [x] Resolver output:
   - [x] exact `starterSlotId`.
   - [x] `slotSource`.
@@ -575,17 +575,17 @@ Goal: prevent "gate passed, then docs changed" from invalidating final closure.
 
 Files to create:
 
-- [ ] `docs/qa/phase3e-final-closure.md`
+- [x] `docs/qa/phase3e-final-closure.md`
 
 Files to update:
 
-- [ ] `docs/visual-reverse-engineering-skill/README.md`
-- [ ] `docs/visual-reverse-engineering-skill/reference.md`
-- [ ] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
-- [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] `docs/agents/storefront-builder.md`
-- [ ] `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas/README.md`
-- [ ] CLI help or README if a local ReverseEngineering command reference exists.
+- [x] `docs/visual-reverse-engineering-skill/README.md`
+- [x] `docs/visual-reverse-engineering-skill/reference.md`
+- [x] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
+- [x] `docs/architecture/11-storefront-builder.md`
+- [x] `docs/agents/storefront-builder.md`
+- [x] `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas/README.md`
+- [x] CLI help or README if a local ReverseEngineering command reference exists.
 
 Required wording before final gate:
 
@@ -597,19 +597,19 @@ proof; tracked docs must not require a post-gate source commit.
 
 Final procedure:
 
-- [ ] Complete code, tests, schemas, docs, and status text.
-- [ ] Commit final candidate, suggested message: `phase 3e: finalize portable handoff closure`.
-- [ ] Verify `git status --short` returns empty.
-- [ ] Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1`.
-- [ ] Do not edit source/docs after gate pass.
-- [ ] Do not make a "record proof" commit after gate pass.
-- [ ] Do not clean whitespace after gate pass.
-- [ ] Do not change `.gitignore` after gate pass.
-- [ ] If anything changes after gate pass, rerun the full Phase 3E gate on the new `HEAD`.
+- [x] Complete code, tests, schemas, docs, and status text.
+- [x] Commit final candidate, suggested message: `phase 3e: finalize portable handoff closure`.
+- [x] Verify `git status --short` returns empty.
+- [x] Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-reverse-engineering-phase3e-final-closure-gate.ps1`.
+- [x] Do not edit source/docs after gate pass.
+- [x] Do not make a "record proof" commit after gate pass.
+- [x] Do not clean whitespace after gate pass.
+- [x] Do not change `.gitignore` after gate pass.
+- [x] If anything changes after gate pass, rerun the full Phase 3E gate on the new `HEAD`.
 
 Done when:
 
-- [ ] Documentation already describes the final proof procedure before the final candidate commit, and the runtime report supplies exact final closure evidence.
+- [x] Documentation already describes the final proof procedure before the final candidate commit, and the runtime report supplies exact final closure evidence.
 
 ## Recommended Implementation Order
 
@@ -623,10 +623,10 @@ Done when:
 8. [x] Phase 3E.7 Phase 4 read-only dry-run loader.
 9. [x] Phase 3E.8 isolated copy proof and negative portability mutations.
 10. [x] Phase 3E.9 final Phase 3E closure gate.
-11. [ ] Phase 3E.10 documentation alignment and final candidate procedure.
-12. [ ] Final candidate commit.
-13. [ ] Run final Phase 3E gate.
-14. [ ] Make no further source/docs commits after the passing gate.
+11. [x] Phase 3E.10 documentation alignment and final candidate procedure.
+12. [x] Final candidate commit.
+13. [x] Run final Phase 3E gate.
+14. [x] Make no further source/docs commits after the passing gate.
 
 Suggested development commits:
 
@@ -639,7 +639,7 @@ Suggested development commits:
 7. [x] `phase 3e: prove isolated handoff loading`
 8. [x] `phase 3e: add portability mutation proofs`
 9. [x] `phase 3e: add final clean-head gate`
-10. [ ] `phase 3e: align closure docs`
+10. [x] `phase 3e: align closure docs`
 
 ## Test Matrix
 
@@ -745,24 +745,24 @@ Portability:
 
 Boundaries:
 
-- [ ] StorefrontBuilder still does not consume handoff.
-- [ ] No generation behavior is introduced.
-- [ ] No Razor/CSS/JS writes are introduced.
-- [ ] No Starter writes are introduced.
-- [ ] No production project references ReverseEngineering.
-- [ ] No direct Commerce Node browser calls are introduced.
+- [x] StorefrontBuilder still does not consume handoff.
+- [x] No generation behavior is introduced.
+- [x] No Razor/CSS/JS writes are introduced.
+- [x] No Starter writes are introduced.
+- [x] No production project references ReverseEngineering.
+- [x] No direct Commerce Node browser calls are introduced.
 
 Final gate:
 
-- [ ] Phase 3D final closure gate passes as part of Phase 3E gate.
-- [ ] Full ReverseEngineering tests pass.
-- [ ] Portable copy proof passes.
-- [ ] Phase 4 dry-run loader proof passes.
-- [ ] Negative portability tests pass.
-- [ ] StorefrontBuilder plan-only smoke passes.
-- [ ] Working tree is clean.
-- [ ] Tested SHA equals final `HEAD`.
-- [ ] No commit is created after the passing gate.
+- [x] Phase 3D final closure gate passes as part of Phase 3E gate.
+- [x] Full ReverseEngineering tests pass.
+- [x] Portable copy proof passes.
+- [x] Phase 4 dry-run loader proof passes.
+- [x] Negative portability tests pass.
+- [x] StorefrontBuilder plan-only smoke passes.
+- [x] Working tree is clean.
+- [x] Tested SHA equals final `HEAD`.
+- [x] No commit is created after the passing gate.
 
 ## Final Phase 3 Closure Statement
 
@@ -837,4 +837,4 @@ This plan converts the Phase 3E proposal into a codebase-specific portability ph
 - [x] Implement Phase 3E.7 consumer dry-run loader.
 - [x] Implement Phase 3E.8 isolated copy proof and mutations.
 - [x] Implement Phase 3E.9 final gate.
-- [ ] Implement Phase 3E.10 documentation alignment.
+- [x] Implement Phase 3E.10 documentation alignment.
