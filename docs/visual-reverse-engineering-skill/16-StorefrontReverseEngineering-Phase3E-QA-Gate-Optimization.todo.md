@@ -244,17 +244,23 @@ Goal: avoid rebuilding a fresh portable handoff source project for every portabl
 
 Implementation checklist:
 
-- [ ] Change `PortableHandoffTestFixture.CreateAsync()` so it reuses the shared positive baseline.
-- [ ] Keep schema copies local to the portable proof fixture.
-- [ ] Copy only the portable handoff subtree that must be validated.
-- [ ] Ensure negative portable mutation cases mutate copies, not the shared source.
-- [ ] Keep a dedicated source-deletion proof for the case where the source project must be removed.
+- [x] Change `PortableHandoffTestFixture.CreateAsync()` so it reuses the shared positive baseline.
+- [x] Keep schema copies local to the portable proof fixture.
+- [x] Copy only the portable handoff subtree that must be validated.
+- [x] Ensure negative portable mutation cases mutate copies, not the shared source.
+- [x] Keep a dedicated source-deletion proof for the case where the source project must be removed.
 
 Acceptance criteria:
 
-- [ ] Portable validator and copy proofs no longer recreate the full positive project each time.
-- [ ] Portable negative cases still exercise exact blocker codes.
-- [ ] The portable package remains self-contained.
+- [x] Portable validator and copy proofs no longer recreate the full positive project each time.
+- [x] Portable negative cases still exercise exact blocker codes.
+- [x] The portable package remains self-contained.
+
+O5 evidence:
+
+- `PortableHandoffTestFixture.CreateAsync()` now copies from the shared positive baseline instead of calling the workflow service again.
+- Schema roots remain fixture-local and are still copied from the repository schemas directory for each portable proof.
+- The portable copy proof, validator tests, and CLI tests passed after the fixture rewrite.
 
 ## Phase O6 - Reduce CLI And Browser Proof Process Count
 

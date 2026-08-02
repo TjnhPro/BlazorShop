@@ -5,9 +5,12 @@ internal sealed record PortableHandoffTestFixture(string SourceProjectRoot, stri
     public static async Task<PortableHandoffTestFixture> CreateAsync(string name)
     {
         var repoRoot = Phase3DNegativeReviewMutationTests.GetRepoRoot();
-        var sourceProjectRoot = await Phase3DPositiveEndToEndTests.CreatePositiveProjectAsync(name);
+        var sourceProjectRoot = await Phase3PositiveProjectBaseline.CreateProjectCopyAsync(name);
         var portableRoot = Path.Combine(repoRoot, "obj", "storefront-reverse-engineering", "portable-handoff", "root-" + Guid.NewGuid().ToString("N"));
         var schemaRoot = Path.Combine(repoRoot, "obj", "storefront-reverse-engineering", "portable-handoff", "schemas-" + Guid.NewGuid().ToString("N"));
+        Phase3TempPathRegistry.Register(sourceProjectRoot);
+        Phase3TempPathRegistry.Register(portableRoot);
+        Phase3TempPathRegistry.Register(schemaRoot);
         CopyDirectory(Path.Combine(sourceProjectRoot, "analysis", "agent-handoff"), Path.Combine(portableRoot, "analysis", "agent-handoff"));
         CopyDirectory(Path.Combine(repoRoot, "tools", "BlazorShop.AI.StorefrontReverseEngineering", "Schemas"), schemaRoot);
         return new PortableHandoffTestFixture(sourceProjectRoot, portableRoot, schemaRoot);
