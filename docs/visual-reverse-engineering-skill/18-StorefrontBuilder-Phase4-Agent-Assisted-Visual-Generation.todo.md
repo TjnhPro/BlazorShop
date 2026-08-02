@@ -329,38 +329,52 @@ Implementation targets:
 
 Tasks:
 
-- [ ] Add a handoff generation mode that starts from the existing Starter copy process.
-- [ ] Keep Starter immutable; all project-specific output must go to generated output root or promoted `BlazorShop.Storefront.{Name}` project.
-- [ ] Write generation plan into generated project `docs/storefront-analysis/generation-plan.json` or equivalent review artifact.
-- [ ] Write a readable `docs/storefront-analysis/handoff-generation-summary.md`.
-- [ ] Write metadata linking:
-  - [ ] generator version.
-  - [ ] Starter contract hash.
-  - [ ] Storefront OpenAPI hash.
-  - [ ] handoff package hash.
-  - [ ] handoff readiness hash.
-  - [ ] plan hash.
-- [ ] Create visual file placeholders according to the plan before agent implementation.
-- [ ] Preserve Presentation package/reference behavior already used by generated proof.
-- [ ] Preserve Components/Browser dependency rules already used by Starter.
-- [ ] Do not add generated project to `BlazorShop.sln`.
-- [ ] Ensure generated project can restore/build before AI-tuned visuals are applied.
-- [ ] Ensure missing optional pages/components are represented as explicit warnings, not silent omissions.
+- [x] Add a handoff generation mode that starts from the existing Starter copy process.
+- [x] Keep Starter immutable; all project-specific output must go to generated output root or promoted `BlazorShop.Storefront.{Name}` project.
+- [x] Write generation plan into generated project `docs/storefront-analysis/generation-plan.json` or equivalent review artifact.
+- [x] Write a readable `docs/storefront-analysis/handoff-generation-summary.md`.
+- [x] Write metadata linking:
+  - [x] generator version.
+  - [x] Starter contract hash.
+  - [x] Storefront OpenAPI hash.
+  - [x] handoff package hash.
+  - [x] handoff readiness hash.
+  - [x] plan hash.
+- [x] Create visual file placeholders according to the plan before agent implementation.
+- [x] Preserve Presentation package/reference behavior already used by generated proof.
+- [x] Preserve Components/Browser dependency rules already used by Starter.
+- [x] Do not add generated project to `BlazorShop.sln`.
+- [x] Ensure generated project can restore/build before AI-tuned visuals are applied.
+- [x] Ensure missing optional pages/components are represented as explicit warnings, not silent omissions.
 
 Tests:
 
-- [ ] Positive: valid handoff creates a generated project under `artifacts/storefront-builder/generated/{ProjectName}`.
-- [ ] Positive: valid handoff can create a disposable project under `obj/storefront-builder/generated/{ProjectName}` for automated proof.
-- [ ] Positive: generated project restores and builds before agent visual fill.
-- [ ] Negative: unsafe project name fails before files are created.
-- [ ] Negative: handoff plan targeting Starter fails.
-- [ ] Negative: attempt to add generated project to solution is absent.
+- [x] Positive: valid handoff creates a generated project under `artifacts/storefront-builder/generated/{ProjectName}`.
+- [x] Positive: valid handoff can create a disposable project under `obj/storefront-builder/generated/{ProjectName}` for automated proof.
+- [x] Positive: generated project restores and builds before agent visual fill.
+- [x] Negative: unsafe project name fails before files are created.
+- [x] Negative: handoff plan targeting Starter fails.
+- [x] Negative: attempt to add generated project to solution is absent.
 
 Exit criteria:
 
-- [ ] A valid handoff can produce a buildable project skeleton from Starter.
-- [ ] The skeleton contains plan and provenance artifacts.
-- [ ] No AI implementation is required for this phase to pass.
+- [x] A valid handoff can produce a buildable project skeleton from Starter.
+- [x] The skeleton contains plan and provenance artifacts.
+- [x] No AI implementation is required for this phase to pass.
+
+Phase 4.3 evidence:
+
+- Extended `build-storefront.ps1 -Mode generate/full -HandoffRoot <path>` to route through the Starter copy process and handoff skeleton path while preserving the existing static generation path when no handoff root is supplied.
+- Extended `scripts/generate/new-storefront-project.ps1` to compile the handoff plan into generated `docs/storefront-analysis/generation-plan.json` and `.yaml`, write handoff metadata/provenance into `metadata.yaml`, apply placeholders in staging, validate the generated project, and publish atomically.
+- Added `scripts/generate/apply-handoff-project-skeleton.mjs` to write visual-only CSS/markup placeholders from plan entries, add the generated CSS link in the generated project copy, write `handoff-generation-summary.md`, and write `handoff-placeholders.json`.
+- Adjusted handoff generation plans so protected package zones are validation inputs, not published `plan.files` entries, preventing generated analysis artifacts from containing forbidden Storefront V2/backend package references.
+- Added `StorefrontBuilderHandoffProjectGenerationTests` covering artifact-root generation, disposable obj-root generation, restore/build before visual fill, unsafe name rejection, Starter target rejection, and solution-file non-registration.
+- Generated artifact-root proof passed under `artifacts/storefront-builder/generated/phase4-project-tests/.../BlazorShop.Storefront.Phase4ArtifactProject`.
+- Generated disposable proof passed under `obj/storefront-builder/generated/phase4-skeleton-probe/BlazorShop.Storefront.Phase4SkeletonProbe`.
+- Restore/build proof passed: `dotnet restore obj\storefront-builder\generated\phase4-skeleton-probe\BlazorShop.Storefront.Phase4SkeletonProbe\BlazorShop.Storefront.Phase4SkeletonProbe.csproj` and `dotnet build obj\storefront-builder\generated\phase4-skeleton-probe\BlazorShop.Storefront.Phase4SkeletonProbe\BlazorShop.Storefront.Phase4SkeletonProbe.csproj --no-restore`.
+- Focused verification passed: `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffGenerationPlanTests|FullyQualifiedName~StorefrontBuilderHandoffProjectGenerationTests" --blame-hang --blame-hang-timeout 5m` (`13` passed).
+- StorefrontBuilder architecture verification passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderVisualGenerationTests|FullyQualifiedName~StorefrontBuilderQaRegenerationTests|FullyQualifiedName~StorefrontBuilderFoundationTests" --blame-hang --blame-hang-timeout 5m` (`39` passed; existing MessagePack vulnerability warnings only).
+- Published generation-plan validation passed: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.StorefrontBuilder\scripts\validate\Test-StorefrontBuilderGenerationPlan.ps1 -PlanPath <generated-project>\docs\storefront-analysis\generation-plan.yaml`.
 
 ## Phase 4.4 - Constrained Agent Visual Implementation
 

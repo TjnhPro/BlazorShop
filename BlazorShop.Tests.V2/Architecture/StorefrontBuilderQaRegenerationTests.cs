@@ -166,8 +166,8 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains(marker, generator, StringComparison.Ordinal);
             }
 
-            Assert.Contains("-CommandMode generate", command, StringComparison.Ordinal);
-            Assert.Contains("-CommandMode full", command, StringComparison.Ordinal);
+            Assert.Contains("CommandMode = \"generate\"", command, StringComparison.Ordinal);
+            Assert.Contains("CommandMode = \"full\"", command, StringComparison.Ordinal);
             Assert.Contains("Normalize-StorefrontProjectName", command, StringComparison.Ordinal);
             Assert.Contains("Normalize-StorefrontStoreKey", command, StringComparison.Ordinal);
 

@@ -139,22 +139,6 @@ export function buildHandoffGenerationPlan(options) {
     }
   }
 
-  for (const path of sortedUnique([...(artifacts.protectedFiles.paths ?? []), ...(artifacts.storefrontPattern.generationZones?.protectedZones ?? [])])) {
-    const targetPath = normalizeTargetPath(path);
-    ensureFilePlan(filesByPath, {
-      projectRoot,
-      targetPath,
-      ownership: "protected",
-      action: "skip",
-      slotId: "none",
-      pageId: "",
-      sourceHandoffArtifacts: [HANDOFF_ARTIFACTS.protectedFiles, HANDOFF_ARTIFACTS.storefrontPattern],
-      sourceEvidenceReferences: [],
-      rationale: "Protected by Starter/Presentation boundary.",
-      sourceSpecHash: sourceStarterContractHash,
-    });
-  }
-
   const plan = {
     schemaVersion: "2.0.0",
     artifactKind: "generation-plan",
