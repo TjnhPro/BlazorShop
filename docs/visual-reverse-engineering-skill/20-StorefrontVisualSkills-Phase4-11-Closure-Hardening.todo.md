@@ -629,30 +629,30 @@ Goal: update the source-of-truth docs after the hardening behavior exists.
 
 Tasks:
 
-- [ ] Update `docs/architecture/11-storefront-builder.md`:
-  - [ ] final closure now requires runtime visual proof.
-  - [ ] static fixture proof is skeleton-only.
-  - [ ] final closure uses tracked fixture input and fresh generated output.
-  - [ ] final closure minimum functional proof is `FoundationFunctionalFast`.
-  - [ ] full fixture commerce proof is the release-level proof when fixture runtime is available.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`:
-  - [ ] add this plan to historical plans.
-  - [ ] document Phase 4.11 closure flow.
-  - [ ] document local gates and proof modes.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`:
-  - [ ] document mandatory visual artifacts.
-  - [ ] document runtime visual QA.
-  - [ ] document reference QA contract.
-  - [ ] document automatic changed-file detection.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`:
-  - [ ] show the no-skip closure workflow.
-  - [ ] show skeleton proof only as early feedback.
-- [ ] Update `docs/agents/storefront-builder.md`:
-  - [ ] explain that final closure cannot rely on `obj` artifacts.
-  - [ ] explain changed-file detection requirements.
-  - [ ] explain mandatory runtime visual and functional proof.
-- [ ] Update `AGENTS.md` only if agent required reading or closure commands change.
-- [ ] Do not rewrite completed Phase 4.10 history except for factual corrections if any doc has become misleading.
+- [x] Update `docs/architecture/11-storefront-builder.md`:
+  - [x] final closure now requires runtime visual proof.
+  - [x] static fixture proof is skeleton-only.
+  - [x] final closure uses tracked fixture input and fresh generated output.
+  - [x] final closure minimum functional proof is `FoundationFunctionalFast`.
+  - [x] full fixture commerce proof is the release-level proof when fixture runtime is available.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`:
+  - [x] add this plan to historical plans.
+  - [x] document Phase 4.11 closure flow.
+  - [x] document local gates and proof modes.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`:
+  - [x] document mandatory visual artifacts.
+  - [x] document runtime visual QA.
+  - [x] document reference QA contract.
+  - [x] document automatic changed-file detection.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`:
+  - [x] show the no-skip closure workflow.
+  - [x] show skeleton proof only as early feedback.
+- [x] Update `docs/agents/storefront-builder.md`:
+  - [x] explain that final closure cannot rely on `obj` artifacts.
+  - [x] explain changed-file detection requirements.
+  - [x] explain mandatory runtime visual and functional proof.
+- [x] Update `AGENTS.md` only if agent required reading or closure commands change.
+- [x] Do not rewrite completed Phase 4.10 history except for factual corrections if any doc has become misleading.
 
 Checks:
 
@@ -662,9 +662,18 @@ rg -n "Phase 4.11|runtime visual proof|Reference visual|FoundationFunctionalFast
 
 DoD:
 
-- [ ] Docs match the implemented closure behavior.
-- [ ] Agents can run the closure workflow without conversation context.
-- [ ] Historical Phase 4.10 remains implementation history, not the current closure source of truth.
+- [x] Docs match the implemented closure behavior.
+- [x] Agents can run the closure workflow without conversation context.
+- [x] Historical Phase 4.10 remains implementation history, not the current closure source of truth.
+
+Evidence:
+
+- `docs/architecture/11-storefront-builder.md` now documents Phase 4.11 runtime visual proof, skeleton/static fixture proof as early feedback only, tracked fixture input, fresh generated output, `FoundationFunctionalFast` minimum closure proof, and the release-level full fixture commerce proof.
+- `docs/visual-reverse-engineering-skill/README.md` now lists this plan in historical plans and documents the Phase 4.11 no-skip local closure flow.
+- `docs/visual-reverse-engineering-skill/reference.md` now documents mandatory visual artifacts, Reference visual QA contract evidence, automatic changed-file detection, runtime visual MVP proof, and `--fixture-root` as non-runtime skeleton proof.
+- `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` now shows the no-skip closure workflow and separates skeleton/static feedback from runtime closure.
+- `docs/agents/storefront-builder.md` and `AGENTS.md` now tell agents that final closure cannot rely on pre-existing `obj` artifacts, must record changed-file evidence, and must include runtime visual plus functional proof.
+- `rg -n "Phase 4.11|runtime visual proof|Reference visual|FoundationFunctionalFast|changed-file|tracked fixture|GitHub Actions" docs\architecture docs\visual-reverse-engineering-skill docs\agents AGENTS.md` passed and returned the expected updated docs and historical-plan references.
 
 ## Required QA Gates By Phase
 
@@ -716,23 +725,23 @@ Run the full fixture proof when release-level fixture services are available:
 
 ## Release Definition Of Done
 
-- [ ] `tools/BlazorShop.AI.Visual` remains docs/schema/reference/skill-only.
-- [ ] No `.csproj` exists under `tools/BlazorShop.AI.Visual`.
-- [ ] No production project references `tools/BlazorShop.AI.Visual`.
-- [ ] Phase 4 MVP gate requires the complete visual artifact chain in closure mode.
-- [ ] `agent-written-files.json` is produced from automatic changed-file detection in closure mode.
-- [ ] Runtime visual QA mode exists and rejects `--fixture-root`.
-- [ ] Skeleton/static fixture mode is clearly non-release.
-- [ ] Visual QA report records reference evidence reviewed.
-- [ ] Visual QA closure requires zero unaccepted critical and zero unaccepted major issues.
-- [ ] Final closure gate uses tracked fixture input and regenerates pilot output fresh.
-- [ ] Final closure gate does not depend on pre-existing `obj` generated projects or handoff packages.
-- [ ] Final closure gate runs `FoundationFunctionalFast` minimum.
-- [ ] Full fixture commerce proof is documented and runnable when fixture runtime is available.
-- [ ] Final closure gate starts and ends on the same clean `HEAD`.
-- [ ] Final reports are written under ignored report/output folders.
-- [ ] Documentation reflects the hardened closure behavior.
-- [ ] GitHub Actions are not required for closure while disabled in development.
+- [x] `tools/BlazorShop.AI.Visual` remains docs/schema/reference/skill-only.
+- [x] No `.csproj` exists under `tools/BlazorShop.AI.Visual`.
+- [x] No production project references `tools/BlazorShop.AI.Visual`.
+- [x] Phase 4 MVP gate requires the complete visual artifact chain in closure mode.
+- [x] `agent-written-files.json` is produced from automatic changed-file detection in closure mode.
+- [x] Runtime visual QA mode exists and rejects `--fixture-root`.
+- [x] Skeleton/static fixture mode is clearly non-release.
+- [x] Visual QA report records reference evidence reviewed.
+- [x] Visual QA closure requires zero unaccepted critical and zero unaccepted major issues.
+- [x] Final closure gate uses tracked fixture input and regenerates pilot output fresh.
+- [x] Final closure gate does not depend on pre-existing `obj` generated projects or handoff packages.
+- [x] Final closure gate runs `FoundationFunctionalFast` minimum.
+- [x] Full fixture commerce proof is documented and runnable when fixture runtime is available.
+- [x] Final closure gate starts and ends on the same clean `HEAD`.
+- [x] Final reports are written under ignored report/output folders.
+- [x] Documentation reflects the hardened closure behavior.
+- [x] GitHub Actions are not required for closure while disabled in development.
 
 ## Risk Register
 

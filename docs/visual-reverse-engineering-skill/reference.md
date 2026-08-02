@@ -26,8 +26,8 @@
 | `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` | Self-contained CI/manual/release wrapper for full fixture proof. |
 | `scripts/qa/run-storefront-builder-regeneration-gate.ps1` | CI-friendly regeneration ownership gate. |
 | `scripts/qa/run-storefront-builder-isolation-gate.ps1` | Generated storefront build/package/reference isolation gate. |
-| `scripts/qa/run-storefront-phase4-mvp-gate.ps1` | Target-specific local Phase 4 MVP gate for one handoff-generated project after visual plan, implementation, recorder, build, and browser evidence. |
-| `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` | Clean-HEAD final Phase 4 closure gate. It runs visual workspace static checks, generated proof, regeneration ownership proof, the MVP pilot gate, and final HEAD/clean-tree verification without GitHub Actions. |
+| `scripts/qa/run-storefront-phase4-mvp-gate.ps1` | Target-specific local Phase 4 MVP gate for one handoff-generated project after visual plan, implementation, recorder, build, and browser evidence. In skeleton mode it is early feedback only; runtime mode is required for closure. |
+| `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` | Clean-HEAD Phase 4.11 final closure gate. It runs visual workspace static checks, tracked fixture validation, fresh pilot generation, changed-file detection, generated runtime visual proof, Reference visual QA contract checks, generated functional proof, regeneration ownership proof, and final HEAD/clean-tree verification without GitHub Actions. |
 
 ## ReverseEngineering Handoff
 
@@ -177,6 +177,18 @@ Handoff-generated project artifacts under `docs/storefront-analysis/`:
 | `visual-implementation-report.json` and `.md` | Changed-file, recorder, build, boundary, and unresolved-item report from `storefront-visual-implement`. |
 | `visual-qa-report.json` and `.md` | Browser capture, issue, repair-attempt, and pass/fail report from `storefront-visual-qa`. |
 | `phase4-mvp-gate-report.json` and `.md` | Target-specific MVP gate evidence for the generated project. |
+
+Mandatory Phase 4 closure visual artifacts:
+
+- `generation-plan.json` and `generation-plan.yaml`.
+- `agent-task-package/manifest.json`.
+- `visual-plan.json`.
+- `visual-implementation-checklist.todo.md`.
+- `visual-checkpoints/{operationId}/visual-checkpoint.json`.
+- `agent-written-files.json` produced by `record-agent-visual-writes.mjs`; in closure mode this must come from automatic checkpoint comparison or explicit recorded generated visual paths, not from a hand-written placeholder.
+- `visual-implementation-report.json` and `.md`.
+- `visual-qa-report.json` and `.md`.
+- Reference visual QA evidence, including reviewed reference evidence paths, severity counters, accepted differences, and the final pass/fail decision.
 
 ## ReverseEngineering Browser Setup
 
@@ -378,13 +390,19 @@ Phase 4 visual MVP gate:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 ```
 
+Runtime visual MVP proof:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -ProofMode Runtime -BaseUrl http://127.0.0.1:18620 -StartRuntimeHost -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+```
+
 Phase 4 final closure gate:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
 ```
 
-`Structure` generates/restores/builds the proof project, runs static validation, runs isolation, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `run-storefront-builder-regeneration-gate.ps1` separately proves no-op determinism, scoped CSS/page/component updates, real `-WhatIf` planning, platform metadata update, manual generated-file conflicts, user-owned preservation, protected-file rejection, obsolete-file reporting, and rollback without live Commerce Node data. `FoundationFunctionalFast` uses mocked same-origin Presentation BFF routes in Playwright and writes `fast-foundation-functional-report.md` under the generated artifact. `FoundationFunctionalFull` verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. Use `run-storefront-builder-full-proof-with-fixture.ps1` for scheduled/manual/release validation because it starts Docker dependencies and the local V2 fixture runtime, checks health and fixture endpoints, runs the full proof, writes `full-proof-with-fixture-report.md`, and tears down services. `FoundationFunctional` and `-RunBrowserQa` remain compatibility aliases for the full proof.
+`Structure` generates/restores/builds the proof project, runs static validation, runs isolation, runs the shared visual consumer boundary validator, proves post-regeneration build, proves deterministic no-op regeneration, and proves manual-edit conflict reporting. `run-storefront-builder-regeneration-gate.ps1` separately proves no-op determinism, scoped CSS/page/component updates, real `-WhatIf` planning, platform metadata update, manual generated-file conflicts, user-owned preservation, protected-file rejection, obsolete-file reporting, and rollback without live Commerce Node data. `FoundationFunctionalFast` uses mocked same-origin Presentation BFF routes in Playwright and writes `fast-foundation-functional-report.md` under the generated artifact. Phase 4.11 final closure runs `FoundationFunctionalFast` as the minimum generated functional proof. `FoundationFunctionalFull` verifies fixture data, starts the generated storefront in Development, runs visual smoke QA and commerce-regression network checks, and writes `visual-qa-report.md` plus `functional-commerce-report.md` under the generated artifact. Use `run-storefront-builder-full-proof-with-fixture.ps1` for scheduled/manual/release validation because it starts Docker dependencies and the local V2 fixture runtime, checks health and fixture endpoints, runs the full proof, writes `full-proof-with-fixture-report.md`, and tears down services. `FoundationFunctional` and `-RunBrowserQa` remain compatibility aliases for the full proof.
 
 Generated storefront validation must fail when generated source declares `@page`, imports `BlazorShop.Storefront.Components.Features`, or recreates protected Presentation-owned application logic; normal generation consumes Presentation plus `Contracts`, `Headless`, and `Browser` primitives and renders project-local DOM.
 
@@ -418,3 +436,11 @@ node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mj
 ```
 
 Browser QA writes `visual-qa-report.md` and `functional-commerce-report.md` under the generated artifact. Do not commit generated proof output by default.
+
+Runtime visual QA uses a running generated host:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
+```
+
+Do not pass `--fixture-root` in runtime visual proof. File-based `--fixture-root` proof is for skeleton/static validation and early feedback only; it is not final release closure.

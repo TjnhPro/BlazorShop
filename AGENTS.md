@@ -208,7 +208,7 @@ Storefront V2 QA should verify public page rendering, store key route behavior, 
 
 StorefrontBuilder QA should verify static gates, generated project isolation, package boundaries, generated artifacts, browser visual checks, and commerce-regression reports. Use `docs/visual-reverse-engineering-skill/` and `docs/agents/storefront-builder.md` for exact commands.
 
-Phase 4 visual skill work should also verify `tools/BlazorShop.AI.Visual` remains a docs/schema/skill-only workspace, visual writes are recorded through StorefrontBuilder, browser visual QA evidence exists, the Phase 4 MVP gate passes for the generated project, and the final closure gate passes from a clean unchanged `HEAD` when closing the workflow.
+Phase 4 visual skill work should also verify `tools/BlazorShop.AI.Visual` remains a docs/schema/skill-only workspace, visual writes are recorded through StorefrontBuilder changed-file detection, runtime browser visual QA evidence exists for closure, the Phase 4 MVP gate passes for the generated project, and the final closure gate passes from tracked fixture input and a clean unchanged `HEAD` when closing the workflow.
 
 If browser behavior changes, use Playwright. If the user asks to observe the test, run with a visible browser.
 

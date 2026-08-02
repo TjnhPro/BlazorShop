@@ -4,6 +4,8 @@ This folder documents the StorefrontBuilder workflow for turning reference ecomm
 
 StorefrontReverseEngineering is the evidence/runtime foundation. It captures rendered browser evidence, workflow state, readiness reports, Phase 3B analysis artifacts, Phase 3C handoff artifacts, and conservative originality/provenance findings. Its final capture flow extracts rendered evidence before native screenshots, records explicit quality/fallback decisions, uses stitched fallback only with real segment artifacts, and keeps raw/normalized artifacts tied by capture correlation IDs. StorefrontBuilder is the generator. Phase 3C does not create Razor, CSS, generated projects, or active blueprint consumption.
 
+Phase 4.11 is the current closure contract for visual-skill work. Static skeleton proof is allowed only as early feedback for handoff shell generation. Final closure uses tracked fixture input, deletes and regenerates fresh pilot output under ignored `obj`, requires the complete visual artifact chain, records changed-file evidence, runs runtime visual QA against a generated host, runs Reference visual QA contract checks, runs `FoundationFunctionalFast` at minimum, runs regeneration ownership proof, and verifies the same clean `HEAD` at the end. GitHub Actions are not required for this local closure.
+
 Phase 4 visual skills live under `tools/BlazorShop.AI.Visual`. They are canonical agent instructions, shared references, schemas, examples, and report contracts only. They are not a generator, runtime package, production service, or project dependency. The visual workflow is:
 
 1. Generate or refresh a handoff-backed project with StorefrontBuilder `preflight-only`, `plan-only`, and `generate`.
@@ -26,6 +28,7 @@ The phase plans are retained as implementation history and checklist evidence:
 
 - [18-StorefrontBuilder-Phase4-Agent-Assisted-Visual-Generation.todo.md](18-StorefrontBuilder-Phase4-Agent-Assisted-Visual-Generation.todo.md)
 - [19-StorefrontVisualSkills-Phase4-10-MVP-EndToEnd-Closure.todo.md](19-StorefrontVisualSkills-Phase4-10-MVP-EndToEnd-Closure.todo.md)
+- [20-StorefrontVisualSkills-Phase4-11-Closure-Hardening.todo.md](20-StorefrontVisualSkills-Phase4-11-Closure-Hardening.todo.md)
 - [01-StorefrontBuilder-Foundation.todo.md](01-StorefrontBuilder-Foundation.todo.md)
 - [02-StorefrontBuilder-Visual-Generation.todo.md](02-StorefrontBuilder-Visual-Generation.todo.md)
 - [03-StorefrontBuilder-QA-Regeneration.todo.md](03-StorefrontBuilder-QA-Regeneration.todo.md)
@@ -116,6 +119,8 @@ Use the final Phase 4 closure gate only after the candidate commit is complete a
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
 ```
+
+The final closure gate is the no-skip local Phase 4.11 proof. It validates the Visual workspace boundary, Visual schemas/examples, tracked closure fixture input, fresh pilot generation, mandatory visual artifacts, automatic changed-file detection, generated runtime visual proof, Reference visual QA contract evidence, `FoundationFunctionalFast`, regeneration/no-op ownership, and clean-tree HEAD equality. The target MVP gate still supports skeleton/static fixture proof for fast feedback, but skeleton proof is not release closure. Run `.\scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1` when release-level fixture-backed commerce proof is available.
 
 Regeneration for handoff-generated projects reuses stored handoff metadata and `generation-plan.json`, rejects handoff hash drift with a re-plan/update requirement, rejects Starter contract drift with a foundation upgrade requirement, and keeps `-WhatIf` reports outside the target project.
 

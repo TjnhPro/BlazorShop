@@ -101,13 +101,21 @@ Run visual QA:
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens
 ```
 
+This fixture-root command is skeleton/static proof for fast feedback. It can prove generated shell coverage, planned placeholders, required slots, and artifact wiring before a generated host is running, but it is not final release closure.
+
 Run target MVP closure after plan, implementation, recorder, build, QA, and optional repair evidence exist:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 ```
 
-Run final closure only after the candidate commit is complete and the working tree is clean:
+Run runtime MVP closure when the generated host should be started and proved end to end:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -ProofMode Runtime -BaseUrl http://127.0.0.1:18620 -StartRuntimeHost -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+```
+
+Run final closure only after the candidate commit is complete and the working tree is clean. Do not seed `obj` manually for this gate; it validates tracked fixture input, removes stale pilot output, regenerates fresh disposable output, records changed-file evidence, runs runtime visual QA, runs the Reference visual QA contract, runs `FoundationFunctionalFast`, runs regeneration ownership proof, and verifies the same clean `HEAD` at the end.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
@@ -327,6 +335,14 @@ For handoff skeleton proof with seeded/mock fixture pages:
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
 ```
 
+For runtime visual proof against a generated host:
+
+```powershell
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root <generated-project-root> --screenshot-root obj/storefront-builder/visual-qa-screens
+```
+
+Do not mix `--fixture-root` with runtime visual proof. Runtime proof is the closure path; skeleton proof is early feedback only.
+
 Review the resulting reports under the generated artifact's `docs/storefront-analysis/`. Do not commit the generated artifact by default.
 
 ## Before Commit
@@ -343,7 +359,10 @@ Check these points before promoting generated storefront output or committing to
 - Regeneration ownership gate passes when generated ownership, manifest, or regeneration behavior changed.
 - Generated proof `Structure` passes before release closure because it recreates the proof, builds it, validates package/reference boundaries, proves safe regeneration, proves no-op determinism, and proves manual-edit conflict reporting.
 - Generated proof `FoundationFunctionalFast` passes for PR-safe browser action behavior.
-- Self-contained full fixture proof passes before release closure; it starts V2 fixture runtime, verifies store/category/product/page/payment data, runs `FoundationFunctionalFull`, collects reports, and tears down.
+- Phase 4.11 final closure passes from tracked fixture input and fresh generated output; it does not depend on pre-existing `obj` artifacts or GitHub Actions.
+- Runtime visual proof passes for final closure; skeleton/static fixture proof is early feedback only.
+- Generated proof `FoundationFunctionalFast` passes as the minimum closure functional proof.
+- Self-contained full fixture proof passes before release-level commerce closure when the fixture runtime is available; it starts V2 fixture runtime, verifies store/category/product/page/payment data, runs `FoundationFunctionalFull`, collects reports, and tears down.
 - Storefront client regeneration gate passes before package proof if the canonical Storefront contract or generated client changed.
 - Browser QA reports are current when page behavior changed.
 - Generated storefront artifacts remain out of `BlazorShop.sln` unless a separate architecture decision promotes them.
