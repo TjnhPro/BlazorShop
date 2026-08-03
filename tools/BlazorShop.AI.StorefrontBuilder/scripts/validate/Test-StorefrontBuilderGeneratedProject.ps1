@@ -13,6 +13,16 @@ $projectFile = Join-Path $ProjectRoot "$Name.csproj"
 $metadata = Join-Path $ProjectRoot "docs\storefront-analysis\metadata.yaml"
 $featureManifest = Join-Path $ProjectRoot "Features\feature-manifest.json"
 
+function Test-TextContains {
+    param(
+        [string]$Text,
+        [string]$Needle,
+        [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal
+    )
+
+    return $Text.IndexOf($Needle, $Comparison) -ge 0
+}
+
 foreach ($path in @($projectFile, $metadata, $featureManifest)) {
     if (-not (Test-Path $path)) {
         throw "[SFB-PROJECT-003] Generated project required file is missing: $path"
@@ -21,26 +31,26 @@ foreach ($path in @($projectFile, $metadata, $featureManifest)) {
 
 $project = Get-Content -LiteralPath $projectFile -Raw
 foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
-    if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains -Text $project -Needle "PackageReference Include=`"$package`"")) {
         throw "[SFB-PROJECT-004] Generated project is missing package reference '$package'."
     }
 }
 
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
-    if ($project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+    if (Test-TextContains -Text $project -Needle "PackageReference Include=`"$package`"") {
         throw "[SFB-PROJECT-004] Generated project must not direct-reference '$package'. Presentation/Runtime own application transport."
     }
 }
 
 $packageVersions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
-if (-not $packageVersions.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal)) {
+if (-not (Test-TextContains -Text $packageVersions -Needle "StorefrontClientPackageVersion")) {
     throw "[SFB-PROJECT-004] Generated project is missing Client package compatibility metadata."
 }
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
 $canonicalContractPath = "contracts/storefront/storefront.openapi.json"
 foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterVersion:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
-    if (-not $metadataText.Contains($required, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains -Text $metadataText -Needle $required)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
 }
@@ -66,7 +76,7 @@ if (-not $updatedUtcMatch.Success) {
 }
 
 foreach ($packageVersionMarker in @("BlazorShop.Storefront.Client:", "BlazorShop.Storefront.Runtime:", "BlazorShop.Storefront.Presentation:", "BlazorShop.Storefront.Components:")) {
-    if (-not $metadataText.Contains($packageVersionMarker, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains -Text $metadataText -Needle $packageVersionMarker)) {
         throw "[SFB-PROJECT-009] metadata.yaml is missing package version marker '$packageVersionMarker'."
     }
 }
@@ -84,7 +94,7 @@ Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File |
     ForEach-Object {
         $content = Get-Content -LiteralPath $_.FullName -Raw
         foreach ($pattern in $forbidden) {
-            if ($content.Contains($pattern, [System.StringComparison]::OrdinalIgnoreCase)) {
+            if (Test-TextContains -Text $content -Needle $pattern -Comparison ([System.StringComparison]::OrdinalIgnoreCase)) {
                 throw "[SFB-PROJECT-006] Forbidden dependency '$pattern' found in $($_.FullName)."
             }
         }

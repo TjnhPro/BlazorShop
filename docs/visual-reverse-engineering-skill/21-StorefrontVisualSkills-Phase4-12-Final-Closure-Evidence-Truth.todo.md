@@ -231,35 +231,35 @@ Goal: make the final closure gate generate the pilot through the same handoff pa
 
 Tasks:
 
-- [ ] Update `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` defaults:
-  - [ ] `PilotHandoffRoot` resolves to the tracked fixture package root, not an output copy created after generation;
-  - [ ] add `PilotHandoffSchemaRoot`, defaulting to `tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas`;
-  - [ ] keep copied handoff output only as optional retained evidence if useful, not as the source for generation.
-- [ ] Before generation, run StorefrontBuilder preflight:
-  - [ ] `build-storefront.ps1 -Mode preflight-only -HandoffRoot ... -HandoffSchemaRoot ...`;
-  - [ ] record the preflight report path in final gate evidence.
-- [ ] Generate pilot with:
-  - [ ] `build-storefront.ps1 -Mode generate`;
-  - [ ] `-Name $PilotProjectName`;
-  - [ ] `-StoreKey $PilotStoreKey`;
-  - [ ] `-OutputRoot $resolvedPilotGeneratedOutputRoot`;
-  - [ ] `-HandoffRoot $resolvedPilotHandoffRoot`;
-  - [ ] `-HandoffSchemaRoot $resolvedPilotHandoffSchemaRoot`;
-  - [ ] `-Force`.
-- [ ] Remove `Write-PilotAgentTaskPackage` from the final closure gate.
-- [ ] Remove the final-gate direct call to non-handoff `plan-generation-files.mjs`.
-- [ ] Assert generated metadata:
-  - [ ] `metadata.yaml` has `generationMode: handoff-project-skeleton`;
-  - [ ] `metadata.yaml` has `handoffGeneration.planPath`;
-  - [ ] `metadata.yaml` has `handoffGeneration.sourceHandoffPackageHash`;
-  - [ ] `docs/storefront-analysis/generation-plan.json` exists;
-  - [ ] `generation-plan.json` has `generationMode: handoff`;
-  - [ ] `docs/storefront-analysis/agent-task-package/manifest.json` exists;
-  - [ ] `agent-task-package/manifest.json` has `artifactKind: agent-visual-task-package`;
-  - [ ] task package `generationPlanHash` matches the actual generation plan SHA-256.
-- [ ] Fail if generation plan mode is `static`.
-- [ ] Fail if `agent-task-package/manifest.json` contains the old manual `artifactKind: agent-task-package`.
-- [ ] Fail if final gate tries to seed `generation-plan.json` or task package into the pilot.
+- [x] Update `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` defaults:
+  - [x] `PilotHandoffRoot` resolves to the tracked fixture package root, not an output copy created after generation;
+  - [x] add `PilotHandoffSchemaRoot`, defaulting to `tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas`;
+  - [x] keep copied handoff output only as optional retained evidence if useful, not as the source for generation.
+- [x] Before generation, run StorefrontBuilder preflight:
+  - [x] `build-storefront.ps1 -Mode preflight-only -HandoffRoot ... -HandoffSchemaRoot ...`;
+  - [x] record the preflight report path in final gate evidence.
+- [x] Generate pilot with:
+  - [x] `build-storefront.ps1 -Mode generate`;
+  - [x] `-Name $PilotProjectName`;
+  - [x] `-StoreKey $PilotStoreKey`;
+  - [x] `-OutputRoot $resolvedPilotGeneratedOutputRoot`;
+  - [x] `-HandoffRoot $resolvedPilotHandoffRoot`;
+  - [x] `-HandoffSchemaRoot $resolvedPilotHandoffSchemaRoot`;
+  - [x] `-Force`.
+- [x] Remove `Write-PilotAgentTaskPackage` from the final closure gate.
+- [x] Remove the final-gate direct call to non-handoff `plan-generation-files.mjs`.
+- [x] Assert generated metadata:
+  - [x] `metadata.yaml` has `generationMode: handoff-project-skeleton`;
+  - [x] `metadata.yaml` has `handoffGeneration.planPath`;
+  - [x] `metadata.yaml` has `handoffGeneration.sourceHandoffPackageHash`;
+  - [x] `docs/storefront-analysis/generation-plan.json` exists;
+  - [x] `generation-plan.json` has `generationMode: handoff`;
+  - [x] `docs/storefront-analysis/agent-task-package/manifest.json` exists;
+  - [x] `agent-task-package/manifest.json` has `artifactKind: agent-visual-task-package`;
+  - [x] task package `generationPlanHash` matches the actual generation plan SHA-256.
+- [x] Fail if generation plan mode is `static`.
+- [x] Fail if `agent-task-package/manifest.json` contains the old manual `artifactKind: agent-task-package`.
+- [x] Fail if final gate tries to seed `generation-plan.json` or task package into the pilot.
 
 Checks:
 
@@ -271,10 +271,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.Storefro
 
 DoD:
 
-- [ ] Final closure pilot is generated from the tracked handoff fixture.
-- [ ] No final gate path manually writes generation plan or task package.
-- [ ] Generated metadata proves handoff-project skeleton generation.
-- [ ] Static generation is rejected for final closure.
+- [x] Final closure pilot is generated from the tracked handoff fixture.
+- [x] No final gate path manually writes generation plan or task package.
+- [x] Generated metadata proves handoff-project skeleton generation.
+- [x] Static generation is rejected for final closure.
+
+Evidence:
+
+- `run-storefront-phase4-final-closure-gate.ps1 -Help` passed and now documents `-PilotHandoffSchemaRoot`.
+- `rg -n "Write-PilotAgentTaskPackage|plan-generation-files.mjs|HandoffSchemaRoot|handoff-project-skeleton|agent-visual-task-package" scripts\qa\run-storefront-phase4-final-closure-gate.ps1` shows schema/assertion markers and no manual helper/non-handoff plan call.
+- `build-storefront.ps1 -Mode generate ... -HandoffRoot ... -HandoffSchemaRoot ... -Force` passed for `BlazorShop.Storefront.Phase412Probe`.
+- Probe metadata contained `generationMode: handoff-project-skeleton`, generation plan `generationMode` was `handoff`, and task package `artifactKind` was `agent-visual-task-package`.
 
 ## Phase 4.12.3 - Deterministic Visual Edit And Real Checkpoint
 

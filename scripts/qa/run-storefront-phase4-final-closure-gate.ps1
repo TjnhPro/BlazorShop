@@ -5,6 +5,7 @@ param(
     [string]$PilotStoreKey = "sample",
     [string]$PilotGeneratedProjectRoot = "",
     [string]$PilotHandoffRoot = "",
+    [string]$PilotHandoffSchemaRoot = "",
     [string]$PilotBaseUrl = "http://127.0.0.1:18620",
     [string]$GeneratedProofOutputRoot = "obj\storefront-builder\generated\phase4-final-closure",
     [ValidateSet("FoundationFunctionalFast", "FoundationFunctionalFull")]
@@ -30,7 +31,8 @@ function Show-Help {
     Write-Host "  -PilotProjectName <name>           Fresh pilot project name."
     Write-Host "  -PilotStoreKey <key>               Fresh pilot store key."
     Write-Host "  -PilotGeneratedProjectRoot <path>  Optional override for pilot generated storefront root."
-    Write-Host "  -PilotHandoffRoot <path>           Optional override for copied pilot handoff root."
+    Write-Host "  -PilotHandoffRoot <path>           Optional override for tracked portable handoff package root."
+    Write-Host "  -PilotHandoffSchemaRoot <path>     Optional override for portable handoff schema root."
     Write-Host "  -PilotBaseUrl <url>                Running pilot generated storefront URL for runtime MVP visual proof."
     Write-Host "  -GeneratedProofOutputRoot <path>   Disposable generated proof output root."
     Write-Host "  -FunctionalProofLevel <level>      FoundationFunctionalFast or FoundationFunctionalFull. Defaults to FoundationFunctionalFast."
@@ -171,38 +173,6 @@ function Copy-DirectoryContents {
     }
 }
 
-function Write-PilotAgentTaskPackage {
-    param(
-        [string]$AnalysisRoot,
-        [string]$GenerationPlanPath
-    )
-
-    $taskPackageRoot = Join-Path $AnalysisRoot "agent-task-package"
-    New-Item -ItemType Directory -Force -Path $taskPackageRoot | Out-Null
-    $generationPlanHash = "sha256:" + (Get-FileHash -LiteralPath $GenerationPlanPath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $manifest = [ordered]@{
-        schemaVersion = "1.0.0"
-        artifactKind = "agent-task-package"
-        artifactId = "agent-task-package.$PilotProjectName"
-        projectName = $PilotProjectName
-        storeKey = $PilotStoreKey
-        generationPlanHash = $generationPlanHash
-        allowedOutputFiles = @(
-            [ordered]@{
-                targetPath = "Pages/Ssr/Home/HomePage.razor"
-                planEntryId = "home-page-visual-shell"
-                ownership = "generated"
-                visualShellOnly = $true
-                slots = @("home.hero")
-            }
-        )
-    }
-
-    $manifestPath = Join-Path $taskPackageRoot "manifest.json"
-    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
-    [System.IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 20), $utf8NoBom)
-}
-
 function Assert-CleanWorkingTree {
     $status = (& git status --porcelain=v1)
     if (-not [string]::IsNullOrWhiteSpace(($status -join "`n"))) {
@@ -270,6 +240,104 @@ function Invoke-GateCommand {
     }
 
     Add-GateStep -Name $Name -Status "passed" -Command $commandText
+}
+
+function Read-RequiredJsonArtifact {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$ArtifactName
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "$ArtifactName is missing: $(Convert-ToRepoRelativePath $Path)"
+    }
+
+    try {
+        return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    }
+    catch {
+        throw "$ArtifactName is not valid JSON: $(Convert-ToRepoRelativePath $Path). $($_.Exception.Message)"
+    }
+}
+
+function Read-SimpleYamlValue {
+    param(
+        [string]$Text,
+        [string]$Key,
+        [string]$Default = ""
+    )
+
+    foreach ($line in $Text -split "\r?\n") {
+        $match = [regex]::Match($line, "^\s*$([regex]::Escape($Key)):\s*(.*?)\s*$")
+        if ($match.Success) {
+            return $match.Groups[1].Value.Trim().Trim('"')
+        }
+    }
+
+    return $Default
+}
+
+function Get-NormalizedFileSha256 {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "Hash input is missing: $(Convert-ToRepoRelativePath $Path)"
+    }
+
+    $content = (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha256.ComputeHash($bytes)
+        return "sha256:" + [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
+function Assert-HandoffGeneratedArtifacts {
+    param([string]$ProjectRoot)
+
+    $analysisRoot = Join-Path $ProjectRoot "docs\storefront-analysis"
+    $metadataPath = Join-Path $analysisRoot "metadata.yaml"
+    $generationPlanPath = Join-Path $analysisRoot "generation-plan.json"
+    $taskPackageManifestPath = Join-Path $analysisRoot "agent-task-package\manifest.json"
+
+    if (-not (Test-Path -LiteralPath $metadataPath)) {
+        throw "Generated metadata.yaml is missing: $(Convert-ToRepoRelativePath $metadataPath)"
+    }
+
+    $metadata = Get-Content -LiteralPath $metadataPath -Raw
+    $generationMode = Read-SimpleYamlValue -Text $metadata -Key "generationMode"
+    if ($generationMode -ne "handoff-project-skeleton") {
+        throw "metadata.yaml generationMode must be handoff-project-skeleton for final closure, but was '$generationMode'."
+    }
+
+    foreach ($required in @("planPath:", "sourceHandoffPackageHash:", "sourceHandoffReadinessHash:")) {
+        if ($metadata.IndexOf($required, [System.StringComparison]::Ordinal) -lt 0) {
+            throw "metadata.yaml handoffGeneration is missing '$required'."
+        }
+    }
+
+    $generationPlan = Read-RequiredJsonArtifact -Path $generationPlanPath -ArtifactName "generation-plan.json"
+    if ([string]$generationPlan.generationMode -ne "handoff") {
+        throw "generation-plan.json generationMode must be handoff for final closure, but was '$($generationPlan.generationMode)'."
+    }
+
+    $taskPackage = Read-RequiredJsonArtifact -Path $taskPackageManifestPath -ArtifactName "agent-task-package/manifest.json"
+    if ([string]$taskPackage.artifactKind -ne "agent-visual-task-package") {
+        throw "agent-task-package/manifest.json artifactKind must be agent-visual-task-package, but was '$($taskPackage.artifactKind)'."
+    }
+
+    $actualPlanHash = Get-NormalizedFileSha256 -Path $generationPlanPath
+    if ([string]$taskPackage.generationPlanHash -ne $actualPlanHash) {
+        throw "agent-task-package generationPlanHash '$($taskPackage.generationPlanHash)' does not match actual generation plan hash '$actualPlanHash'."
+    }
+
+    Add-EvidencePath $metadataPath
+    Add-EvidencePath $generationPlanPath
+    Add-EvidencePath $taskPackageManifestPath
 }
 
 function Save-GateReports {
@@ -356,9 +424,14 @@ $resolvedPilotGeneratedProjectRoot = if ([string]::IsNullOrWhiteSpace($PilotGene
     Resolve-RepoPath $PilotGeneratedProjectRoot
 }
 $resolvedPilotHandoffRoot = if ([string]::IsNullOrWhiteSpace($PilotHandoffRoot)) {
-    Join-Path $resolvedPilotGeneratedOutputRoot "portable-handoff"
+    Join-Path $resolvedClosureFixtureRoot "portable-handoff"
 } else {
     Resolve-RepoPath $PilotHandoffRoot
+}
+$resolvedPilotHandoffSchemaRoot = if ([string]::IsNullOrWhiteSpace($PilotHandoffSchemaRoot)) {
+    Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas"
+} else {
+    Resolve-RepoPath $PilotHandoffSchemaRoot
 }
 
 try {
@@ -424,13 +497,32 @@ try {
             "visual-artifacts\agent-written-files.json",
             "visual-artifacts\visual-checkpoints\phase4-11-closure-pilot\visual-checkpoint.json",
             "reference\home-desktop.reference.md",
-            "portable-handoff\README.md"
+            "portable-handoff\analysis\agent-handoff\manifest.json"
         )) {
             $fullPath = Join-Path $resolvedClosureFixtureRoot $path
             if (-not (Test-Path -LiteralPath $fullPath)) {
                 throw "Required tracked closure fixture artifact is missing: $(Convert-ToRepoRelativePath $fullPath)"
             }
         }
+    }
+
+    Invoke-GateCommand -Name "run StorefrontBuilder handoff preflight" -FileName (Get-PreferredPowerShell) -Arguments @(
+        "-NoProfile", "-ExecutionPolicy", "Bypass",
+        "-File", "tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1",
+        "-Name", $PilotProjectName,
+        "-StoreKey", $PilotStoreKey,
+        "-Mode", "preflight-only",
+        "-HandoffRoot", $resolvedPilotHandoffRoot,
+        "-HandoffSchemaRoot", $resolvedPilotHandoffSchemaRoot
+    ) -LikelyCause "Tracked portable handoff fixture failed StorefrontBuilder preflight."
+
+    $preflightReportRoot = Join-Path $repoRoot "obj\storefront-builder\handoff-preflight"
+    $safePilotName = $PilotProjectName -replace "[^A-Za-z0-9_.-]", "_"
+    $handoffPreflightReport = Get-ChildItem -LiteralPath $preflightReportRoot -Filter "handoff-preflight-$safePilotName-*.md" -File -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -ne $handoffPreflightReport) {
+        Add-EvidencePath $handoffPreflightReport.FullName
     }
 
     Invoke-AssertionStep -Name "StorefrontBuilder visual helper availability" -Command "StorefrontBuilder helper file checks" -LikelyCause "A required StorefrontBuilder Phase 4 helper is missing." -Assertion {
@@ -457,15 +549,21 @@ try {
         }
     }
 
-    Invoke-GateCommand -Name "generate fresh Phase 4.11 pilot from tracked fixture defaults" -FileName (Get-PreferredPowerShell) -Arguments @(
+    Invoke-GateCommand -Name "generate fresh Phase 4.11 pilot from tracked portable handoff fixture" -FileName (Get-PreferredPowerShell) -Arguments @(
         "-NoProfile", "-ExecutionPolicy", "Bypass",
         "-File", "tools\BlazorShop.AI.StorefrontBuilder\build-storefront.ps1",
         "-Name", $PilotProjectName,
         "-StoreKey", $PilotStoreKey,
         "-OutputRoot", $resolvedPilotGeneratedOutputRoot,
         "-Mode", "generate",
+        "-HandoffRoot", $resolvedPilotHandoffRoot,
+        "-HandoffSchemaRoot", $resolvedPilotHandoffSchemaRoot,
         "-Force"
-    ) -LikelyCause "Fresh pilot generation from Starter failed."
+    ) -LikelyCause "Fresh pilot handoff generation from Starter failed."
+
+    Invoke-AssertionStep -Name "assert generated handoff metadata and task package" -Command "metadata/generation-plan/agent-task-package handoff checks" -LikelyCause "Generated pilot was not produced through the official handoff path." -Assertion {
+        Assert-HandoffGeneratedArtifacts -ProjectRoot $resolvedPilotGeneratedProjectRoot
+    }
 
     Invoke-AssertionStep -Name "seed tracked closure visual artifacts into fresh pilot" -Command "copy tracked fixture visual/reference artifacts" -LikelyCause "Tracked closure fixture artifacts could not be copied into disposable generated output." -Assertion {
         $analysisRoot = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
@@ -475,24 +573,7 @@ try {
 
         Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "visual-artifacts") -Destination $analysisRoot
         Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "reference") -Destination (Join-Path $analysisRoot "reference")
-        Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "portable-handoff") -Destination $resolvedPilotHandoffRoot
         Set-Content -LiteralPath (Join-Path $analysisRoot "fresh-generation-marker.txt") -Value "fresh generated during Phase 4.11 final closure gate" -Encoding UTF8
-    }
-
-    $pilotAnalysisRootForPlan = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
-    $pilotGenerationPlanPath = Join-Path $pilotAnalysisRootForPlan "generation-plan.json"
-    Invoke-GateCommand -Name "write deterministic pilot generation plan" -FileName "node" -Arguments @(
-        "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\plan-generation-files.mjs",
-        "--project-name", $PilotProjectName,
-        "--store-key", $PilotStoreKey,
-        "--output-root", $resolvedPilotGeneratedOutputRoot,
-        "--repo-root", $repoRoot,
-        "--output", (Join-Path $pilotAnalysisRootForPlan "generation-plan.yaml"),
-        "--json-output", $pilotGenerationPlanPath
-    ) -LikelyCause "The pilot generation plan could not be written from deterministic StorefrontBuilder inputs."
-
-    Invoke-AssertionStep -Name "write deterministic pilot agent task package" -Command "write agent-task-package/manifest.json" -LikelyCause "The generated pilot task package manifest could not be written." -Assertion {
-        Write-PilotAgentTaskPackage -AnalysisRoot $pilotAnalysisRootForPlan -GenerationPlanPath $pilotGenerationPlanPath
     }
 
     Invoke-GateCommand -Name "run automatic pilot changed-file detection" -FileName "node" -Arguments @(
