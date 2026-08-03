@@ -115,11 +115,13 @@ Run runtime MVP closure when the generated host should be started and proved end
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -ProofMode Runtime -BaseUrl http://127.0.0.1:18620 -StartRuntimeHost -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 ```
 
-Run final closure only after the candidate commit is complete and the working tree is clean. Do not seed `obj` manually for this gate; it validates tracked fixture input, removes stale pilot output, regenerates fresh disposable output, records changed-file evidence, runs runtime visual QA, runs the Reference visual QA contract, runs `FoundationFunctionalFast`, runs regeneration ownership proof, and verifies the same clean `HEAD` at the end.
+Run final closure only after the candidate commit is complete and the working tree is clean. Do not seed `obj` manually for this gate; it validates the tracked portable handoff fixture, removes stale pilot output, regenerates fresh disposable output through `build-storefront.ps1 -Mode generate -HandoffRoot ... -HandoffSchemaRoot ...`, records changed-file evidence, runs runtime visual QA, materializes the Reference QA JSON from the current `visual-qa-runtime-summary.json`, runs the MVP gate, runs `FoundationFunctionalFast`, runs regeneration ownership proof, and verifies the same clean `HEAD` at the end.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
 ```
+
+Failure output identifies the broken evidence link and writes a report under `obj/storefront-builder/reports/phase4-final-closure-gate-*.md` plus JSON beside it. Inspect the failed step name, command, problem, likely cause, and rerun command in that report. Generated pilot output, screenshots, MVP reports, and closure reports under `obj` are disposable local artifacts and should not be committed unless a later plan explicitly asks for tracked evidence.
 
 ## Update
 
@@ -359,7 +361,7 @@ Check these points before promoting generated storefront output or committing to
 - Regeneration ownership gate passes when generated ownership, manifest, or regeneration behavior changed.
 - Generated proof `Structure` passes before release closure because it recreates the proof, builds it, validates package/reference boundaries, proves safe regeneration, proves no-op determinism, and proves manual-edit conflict reporting.
 - Generated proof `FoundationFunctionalFast` passes for PR-safe browser action behavior.
-- Phase 4.11 final closure passes from tracked fixture input and fresh generated output; it does not depend on pre-existing `obj` artifacts or GitHub Actions.
+- Phase 4.12 final closure passes from tracked portable handoff fixture input and fresh generated output; it does not depend on pre-existing `obj` artifacts or GitHub Actions.
 - Runtime visual proof passes for final closure; skeleton/static fixture proof is early feedback only.
 - Generated proof `FoundationFunctionalFast` passes as the minimum closure functional proof.
 - Self-contained full fixture proof passes before release-level commerce closure when the fixture runtime is available; it starts V2 fixture runtime, verifies store/category/product/page/payment data, runs `FoundationFunctionalFull`, collects reports, and tears down.

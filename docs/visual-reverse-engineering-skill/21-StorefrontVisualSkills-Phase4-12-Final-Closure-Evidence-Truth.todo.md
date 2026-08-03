@@ -668,29 +668,29 @@ Goal: make docs match the final closure behavior so future agents do not reintro
 
 Tasks:
 
-- [ ] Update `docs/architecture/11-storefront-builder.md`:
-  - [ ] final closure consumes tracked portable handoff fixture;
-  - [ ] final closure must call `build-storefront.ps1` with `-HandoffRoot`;
-  - [ ] final closure must use StorefrontBuilder-generated task package;
-  - [ ] final closure must materialize Reference QA from current-run runtime summary;
-  - [ ] GitHub Actions are not required while disabled.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`:
-  - [ ] add this plan to historical/current plans;
-  - [ ] document final Phase 4.12 closure command;
-  - [ ] explain seeded reports are not closure evidence.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`:
-  - [ ] document valid handoff fixture path;
-  - [ ] document runtime summary to Reference QA materialization;
-  - [ ] document required evidence paths.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`:
-  - [ ] show final closure workflow command;
-  - [ ] show how to inspect failure reports;
-  - [ ] show that `obj` artifacts are disposable.
-- [ ] Update `docs/agents/storefront-builder.md`:
-  - [ ] forbid final closure from writing task package manually;
-  - [ ] forbid final closure from accepting marker-only handoff;
-  - [ ] require current-run runtime summary binding.
-- [ ] Update `AGENTS.md` only if required reading or closure command wording changes.
+- [x] Update `docs/architecture/11-storefront-builder.md`:
+  - [x] final closure consumes tracked portable handoff fixture;
+  - [x] final closure must call `build-storefront.ps1` with `-HandoffRoot`;
+  - [x] final closure must use StorefrontBuilder-generated task package;
+  - [x] final closure must materialize Reference QA from current-run runtime summary;
+  - [x] GitHub Actions are not required while disabled.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`:
+  - [x] add this plan to historical/current plans;
+  - [x] document final Phase 4.12 closure command;
+  - [x] explain seeded reports are not closure evidence.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`:
+  - [x] document valid handoff fixture path;
+  - [x] document runtime summary to Reference QA materialization;
+  - [x] document required evidence paths.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`:
+  - [x] show final closure workflow command;
+  - [x] show how to inspect failure reports;
+  - [x] show that `obj` artifacts are disposable.
+- [x] Update `docs/agents/storefront-builder.md`:
+  - [x] forbid final closure from writing task package manually;
+  - [x] forbid final closure from accepting marker-only handoff;
+  - [x] require current-run runtime summary binding.
+- [x] Update `AGENTS.md` only if required reading or closure command wording changes.
 
 Checks:
 
@@ -700,9 +700,19 @@ rg -n "Phase 4.12|handoff-project-skeleton|agent-visual-task-package|visual-qa-r
 
 DoD:
 
-- [ ] Docs describe implemented behavior, not planned behavior.
-- [ ] A future agent can run final closure without conversation context.
-- [ ] Historical Phase 4.11 remains history and Phase 4.12 is the current closure patch.
+- [x] Docs describe implemented behavior, not planned behavior.
+- [x] A future agent can run final closure without conversation context.
+- [x] Historical Phase 4.11 remains history and Phase 4.12 is the current closure patch.
+
+Evidence:
+
+- Updated `docs/architecture/11-storefront-builder.md` to make Phase 4.12 the current final closure behavior, require tracked portable handoff fixture input, require `-HandoffRoot`/`-HandoffSchemaRoot`, require StorefrontBuilder-generated plan/task package, and forbid seeded closure evidence.
+- Updated `docs/visual-reverse-engineering-skill/README.md` to list this Phase 4.12 plan, document the final closure command, and explain that seeded reports, marker-only handoff folders, and manually written task packages are not closure evidence.
+- Updated `docs/visual-reverse-engineering-skill/reference.md` with the valid fixture path, runtime summary artifact, materialized Reference QA behavior, and required closure evidence paths.
+- Updated `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` with the final closure workflow, failure report inspection path, and disposable `obj` artifact guidance.
+- Updated `docs/agents/storefront-builder.md` to forbid manual task package/generation plan writes, marker-only handoff closure, seeded QA reports, and stale runtime evidence binding.
+- `AGENTS.md` already requires `docs/architecture/11-storefront-builder.md`, `docs/visual-reverse-engineering-skill/README.md`, and `docs/agents/storefront-builder.md`; no required-reading change was needed.
+- `rg -n "Phase 4.12|handoff-project-skeleton|agent-visual-task-package|visual-qa-runtime-summary|materialize|materialized|seeded|GitHub Actions" docs\architecture\11-storefront-builder.md docs\visual-reverse-engineering-skill\README.md docs\visual-reverse-engineering-skill\reference.md docs\visual-reverse-engineering-skill\how-to-generate-and-validate.md docs\agents\storefront-builder.md AGENTS.md` passed and showed the updated current behavior markers.
 
 ## Phase 4.12.9 - Final Local Closure Evidence
 
