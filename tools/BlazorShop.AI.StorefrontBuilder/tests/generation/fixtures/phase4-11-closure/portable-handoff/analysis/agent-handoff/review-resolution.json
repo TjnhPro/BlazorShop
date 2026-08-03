@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-review-resolution",
+  "artifactId": "agent-handoff-review-resolution-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "sourceReviewQueueId": "review-queue-phase-3d-shared-baseline",
+  "sourceReviewQueueHash": "cece965dbfba4e30e6ec7d43d92400e5d308c707b23d2f812ad96d98306b907c",
+  "decisionBundleHash": "fba47e00c3198b2e4f2f1493346a36144cdc018e0c438ea1fcffe6af2a7b6aae",
+  "resolvedItemCount": 9,
+  "blockingUnresolvedCount": 0,
+  "resolvedArtifactReferences": [
+    "analysis/resolved/component-candidates.reviewed.json",
+    "analysis/resolved/ecommerce-regions.reviewed.json",
+    "analysis/resolved/originality-restrictions.reviewed.json",
+    "analysis/resolved/page-archetypes.reviewed.json",
+    "analysis/resolved/page-sections.reviewed.json",
+    "analysis/resolved/presentation-mappings.reviewed.json",
+    "analysis/resolved/semantic-tokens.reviewed.json",
+    "analysis/resolved/unsupported-pattern-decisions.json"
+  ],
+  "blockedItems": [],
+  "diagnosticProvenance": [
+    {
+      "path": "analysis/resolved/component-candidates.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/ecommerce-regions.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/originality-restrictions.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/page-archetypes.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/page-sections.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/presentation-mappings.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/review-resolution-manifest.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/semantic-tokens.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/unsupported-pattern-decisions.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    }
+  ]
+}

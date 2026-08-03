@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "allowed-files",
+  "artifactId": "allowed-files-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "paths": [
+    "Components/Catalog/ProductDetailShell.razor",
+    "Components/Catalog/ProductGalleryPlaceholder.razor",
+    "Components/Catalog/ProductSummaryCard.razor",
+    "Components/Catalog/PurchasePanelPlaceholder.razor",
+    "Components/Layout/MainLayout.razor",
+    "Pages/Hybrid/Account/AccountPage.razor",
+    "Pages/Hybrid/Cart/CartPage.razor",
+    "Pages/Hybrid/Checkout/CheckoutPage.razor",
+    "Pages/Ssr/Home/HomePage.razor",
+    "Pages/Ssr/System/MaintenancePage.razor"
+  ],
+  "rules": [
+    "Only generated storefront visual Razor/CSS/assets/copy/view-registration files are allowed.",
+    "Do not add @page route ownership to generated visual files.",
+    "Do not call Commerce Node Storefront APIs directly from browser code."
+  ]
+}

@@ -1,0 +1,2950 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-page-compositions",
+  "artifactId": "agent-handoff-page-compositions-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "diagnosticProvenance": [
+    {
+      "path": "analysis/resolved/ecommerce-regions.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/originality-restrictions.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/page-archetypes.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/page-sections.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/presentation-mappings.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/review-resolution-manifest.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/semantic-tokens.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    }
+  ],
+  "site": {
+    "siteId": "phase-3d-shared-baseline",
+    "sourceUrls": [
+      "file:///D:/C%23 APP/MudblazorTemplate/BlazorShop/tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/Fixtures/static-storefront.html",
+      "https://example.test/account",
+      "https://example.test/cart",
+      "https://example.test/category/women",
+      "https://example.test/checkout",
+      "https://example.test/maintenance",
+      "https://example.test/product/linen-jacket"
+    ],
+    "storeArchetypeSummary": "account-auth-shell, cart-shell, checkout-shell, home, maintenance, product-detail, product-listing",
+    "sharedVisualLanguage": {
+      "font-body": "Inter",
+      "radius-small": "8px",
+      "shadow-card": "0 8px 24px rgba(0,0,0,.12)",
+      "surface-card": "#101820",
+      "surface-page": "#101820",
+      "surface-section": "#ffffff",
+      "text-inverse": "#ffffff",
+      "text-muted": "#13201a",
+      "text-primary": "#13201a",
+      "text-secondary": "#ffffff"
+    },
+    "sharedLayoutSystem": [
+      "footer",
+      "header"
+    ],
+    "sharedResponsiveRules": [
+      "analysis/pages/account/responsive-behavior.json",
+      "analysis/pages/cart/responsive-behavior.json",
+      "analysis/pages/category/responsive-behavior.json",
+      "analysis/pages/checkout/responsive-behavior.json",
+      "analysis/pages/home/responsive-behavior.json",
+      "analysis/pages/maintenance/responsive-behavior.json",
+      "analysis/pages/product/responsive-behavior.json"
+    ],
+    "pageIds": [
+      "account",
+      "cart",
+      "category",
+      "checkout",
+      "home",
+      "maintenance",
+      "product"
+    ],
+    "unresolvedSiteLevelIssues": []
+  },
+  "pages": [
+    {
+      "pageId": "account",
+      "archetype": "account-auth-shell",
+      "sourceUrl": "https://example.test/account",
+      "captureArtifactPaths": [
+        "captures/account/capture-manifest.json",
+        "captures/account/desktop-1440/asset-inventory.normalized.json",
+        "captures/account/desktop-1440/capture-quality-report.json",
+        "captures/account/desktop-1440/element-evidence-index.json",
+        "captures/account/desktop-1440/manifest.json",
+        "captures/account/mobile-390/asset-inventory.normalized.json",
+        "captures/account/mobile-390/capture-quality-report.json",
+        "captures/account/mobile-390/element-evidence-index.json",
+        "captures/account/mobile-390/manifest.json",
+        "captures/account/tablet-768/asset-inventory.normalized.json",
+        "captures/account/tablet-768/capture-quality-report.json",
+        "captures/account/tablet-768/element-evidence-index.json",
+        "captures/account/tablet-768/manifest.json"
+      ],
+      "viewportCoverage": [
+        "desktop-1440",
+        "mobile-390",
+        "tablet-768"
+      ],
+      "ecommerceRegions": [
+        "region-01",
+        "region-02",
+        "region-03"
+      ],
+      "presentationMappings": [],
+      "compositionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "account-layout.header",
+          "evidenceIds": [
+            "ev-account-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-account-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "account-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/account/capture-manifest.json",
+            "captures/account/desktop-1440/manifest.json",
+            "captures/account/mobile-390/manifest.json",
+            "captures/account/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "account-account.shell",
+          "evidenceIds": [
+            "ev-account-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-account-shell-02-ev-account-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "account-account.shell",
+          "targetFilePath": "Pages/Hybrid/Account/AccountPage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/account/capture-manifest.json",
+            "captures/account/desktop-1440/manifest.json",
+            "captures/account/mobile-390/manifest.json",
+            "captures/account/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "account-layout.footer",
+          "evidenceIds": [
+            "ev-account-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-account-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "account-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/account/capture-manifest.json",
+            "captures/account/desktop-1440/manifest.json",
+            "captures/account/mobile-390/manifest.json",
+            "captures/account/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "pageTokenOverrides": {},
+      "targetViewSlot": "account.shell",
+      "targetGeneratedFilePath": "Pages/WasmHost/Account/AccountHostPage.razor",
+      "unsupportedOrBlockedRegions": []
+    },
+    {
+      "pageId": "cart",
+      "archetype": "cart-shell",
+      "sourceUrl": "https://example.test/cart",
+      "captureArtifactPaths": [
+        "captures/cart/capture-manifest.json",
+        "captures/cart/desktop-1440/asset-inventory.normalized.json",
+        "captures/cart/desktop-1440/capture-quality-report.json",
+        "captures/cart/desktop-1440/element-evidence-index.json",
+        "captures/cart/desktop-1440/manifest.json",
+        "captures/cart/mobile-390/asset-inventory.normalized.json",
+        "captures/cart/mobile-390/capture-quality-report.json",
+        "captures/cart/mobile-390/element-evidence-index.json",
+        "captures/cart/mobile-390/manifest.json",
+        "captures/cart/tablet-768/asset-inventory.normalized.json",
+        "captures/cart/tablet-768/capture-quality-report.json",
+        "captures/cart/tablet-768/element-evidence-index.json",
+        "captures/cart/tablet-768/manifest.json"
+      ],
+      "viewportCoverage": [
+        "desktop-1440",
+        "mobile-390",
+        "tablet-768"
+      ],
+      "ecommerceRegions": [
+        "region-01",
+        "region-02",
+        "region-03"
+      ],
+      "presentationMappings": [],
+      "compositionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "cart-layout.header",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-cart-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "cart-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/cart/capture-manifest.json",
+            "captures/cart/desktop-1440/manifest.json",
+            "captures/cart/mobile-390/manifest.json",
+            "captures/cart/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "cart-cart.page",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-cart-page-02-ev-cart-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "cart-cart.page",
+          "targetFilePath": "Pages/Hybrid/Cart/CartPage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/cart/capture-manifest.json",
+            "captures/cart/desktop-1440/manifest.json",
+            "captures/cart/mobile-390/manifest.json",
+            "captures/cart/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "cart-layout.footer",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-cart-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "cart-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/cart/capture-manifest.json",
+            "captures/cart/desktop-1440/manifest.json",
+            "captures/cart/mobile-390/manifest.json",
+            "captures/cart/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "pageTokenOverrides": {},
+      "targetViewSlot": "cart.page",
+      "targetGeneratedFilePath": "Pages/Hybrid/Commerce/CartPage.razor",
+      "unsupportedOrBlockedRegions": []
+    },
+    {
+      "pageId": "category",
+      "archetype": "product-listing",
+      "sourceUrl": "https://example.test/category/women",
+      "captureArtifactPaths": [
+        "captures/category/capture-manifest.json",
+        "captures/category/desktop-1440/asset-inventory.normalized.json",
+        "captures/category/desktop-1440/capture-quality-report.json",
+        "captures/category/desktop-1440/element-evidence-index.json",
+        "captures/category/desktop-1440/manifest.json",
+        "captures/category/mobile-390/asset-inventory.normalized.json",
+        "captures/category/mobile-390/capture-quality-report.json",
+        "captures/category/mobile-390/element-evidence-index.json",
+        "captures/category/mobile-390/manifest.json",
+        "captures/category/tablet-768/asset-inventory.normalized.json",
+        "captures/category/tablet-768/capture-quality-report.json",
+        "captures/category/tablet-768/element-evidence-index.json",
+        "captures/category/tablet-768/manifest.json"
+      ],
+      "viewportCoverage": [
+        "desktop-1440",
+        "mobile-390",
+        "tablet-768"
+      ],
+      "ecommerceRegions": [
+        "region-01",
+        "region-02",
+        "region-03"
+      ],
+      "presentationMappings": [],
+      "compositionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "category-layout.header",
+          "evidenceIds": [
+            "ev-category-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-category-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "category-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/category/capture-manifest.json",
+            "captures/category/desktop-1440/manifest.json",
+            "captures/category/mobile-390/manifest.json",
+            "captures/category/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "category-catalog.product-card",
+          "evidenceIds": [
+            "ev-category-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-product-card-02-ev-category-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "category-catalog.product-card",
+          "targetFilePath": "Components/Catalog/ProductSummaryCard.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/category/capture-manifest.json",
+            "captures/category/desktop-1440/manifest.json",
+            "captures/category/mobile-390/manifest.json",
+            "captures/category/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "category-layout.footer",
+          "evidenceIds": [
+            "ev-category-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-category-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "category-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/category/capture-manifest.json",
+            "captures/category/desktop-1440/manifest.json",
+            "captures/category/mobile-390/manifest.json",
+            "captures/category/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "pageTokenOverrides": {},
+      "targetViewSlot": "catalog.product-card",
+      "targetGeneratedFilePath": "Pages/Hybrid/Catalog/CategoryPage.razor",
+      "unsupportedOrBlockedRegions": []
+    },
+    {
+      "pageId": "checkout",
+      "archetype": "checkout-shell",
+      "sourceUrl": "https://example.test/checkout",
+      "captureArtifactPaths": [
+        "captures/checkout/capture-manifest.json",
+        "captures/checkout/desktop-1440/asset-inventory.normalized.json",
+        "captures/checkout/desktop-1440/capture-quality-report.json",
+        "captures/checkout/desktop-1440/element-evidence-index.json",
+        "captures/checkout/desktop-1440/manifest.json",
+        "captures/checkout/mobile-390/asset-inventory.normalized.json",
+        "captures/checkout/mobile-390/capture-quality-report.json",
+        "captures/checkout/mobile-390/element-evidence-index.json",
+        "captures/checkout/mobile-390/manifest.json",
+        "captures/checkout/tablet-768/asset-inventory.normalized.json",
+        "captures/checkout/tablet-768/capture-quality-report.json",
+        "captures/checkout/tablet-768/element-evidence-index.json",
+        "captures/checkout/tablet-768/manifest.json"
+      ],
+      "viewportCoverage": [
+        "desktop-1440",
+        "mobile-390",
+        "tablet-768"
+      ],
+      "ecommerceRegions": [
+        "region-01",
+        "region-02",
+        "region-03"
+      ],
+      "presentationMappings": [],
+      "compositionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "checkout-layout.header",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-checkout-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "checkout-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/checkout/capture-manifest.json",
+            "captures/checkout/desktop-1440/manifest.json",
+            "captures/checkout/mobile-390/manifest.json",
+            "captures/checkout/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "checkout-checkout.page",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-checkout-page-02-ev-checkout-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "checkout-checkout.page",
+          "targetFilePath": "Pages/Hybrid/Checkout/CheckoutPage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/checkout/capture-manifest.json",
+            "captures/checkout/desktop-1440/manifest.json",
+            "captures/checkout/mobile-390/manifest.json",
+            "captures/checkout/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "checkout-layout.footer",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-checkout-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "checkout-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/checkout/capture-manifest.json",
+            "captures/checkout/desktop-1440/manifest.json",
+            "captures/checkout/mobile-390/manifest.json",
+            "captures/checkout/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "pageTokenOverrides": {},
+      "targetViewSlot": "checkout.page",
+      "targetGeneratedFilePath": "Pages/Hybrid/Commerce/CheckoutPage.razor",
+      "unsupportedOrBlockedRegions": []
+    },
+    {
+      "pageId": "home",
+      "archetype": "home",
+      "sourceUrl": "file:///D:/C%23 APP/MudblazorTemplate/BlazorShop/tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/Fixtures/static-storefront.html",
+      "captureArtifactPaths": [
+        "captures/home/capture-manifest.json",
+        "captures/home/desktop-1440/asset-inventory.normalized.json",
+        "captures/home/desktop-1440/capture-quality-report.json",
+        "captures/home/desktop-1440/element-evidence-index.json",
+        "captures/home/desktop-1440/manifest.json",
+        "captures/home/mobile-390/asset-inventory.normalized.json",
+        "captures/home/mobile-390/capture-quality-report.json",
+        "captures/home/mobile-390/element-evidence-index.json",
+        "captures/home/mobile-390/manifest.json",
+        "captures/home/tablet-768/asset-inventory.normalized.json",
+        "captures/home/tablet-768/capture-quality-report.json",
+        "captures/home/tablet-768/element-evidence-index.json",
+        "captures/home/tablet-768/manifest.json"
+      ],
+      "viewportCoverage": [
+        "desktop-1440",
+        "mobile-390",
+        "tablet-768"
+      ],
+      "ecommerceRegions": [
+        "region-01",
+        "region-02",
+        "region-03"
+      ],
+      "presentationMappings": [],
+      "compositionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "family-header",
+          "evidenceIds": [
+            "ev-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "family-header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/home/capture-manifest.json",
+            "captures/home/desktop-1440/manifest.json",
+            "captures/home/mobile-390/manifest.json",
+            "captures/home/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": null,
+          "evidenceIds": [
+            "ev-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-hero-02-ev-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": null,
+          "targetFilePath": "Pages/Ssr/Home/HomePage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [],
+          "screenshotReferences": [
+            "captures/home/capture-manifest.json",
+            "captures/home/desktop-1440/manifest.json",
+            "captures/home/mobile-390/manifest.json",
+            "captures/home/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "family-footer",
+          "evidenceIds": [
+            "ev-desktop-1440-004"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-desktop-1440-004",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "family-footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/home/capture-manifest.json",
+            "captures/home/desktop-1440/manifest.json",
+            "captures/home/mobile-390/manifest.json",
+            "captures/home/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "pageTokenOverrides": {},
+      "targetViewSlot": "home.sections",
+      "targetGeneratedFilePath": "Pages/Ssr/Home/HomePage.razor",
+      "unsupportedOrBlockedRegions": []
+    },
+    {
+      "pageId": "maintenance",
+      "archetype": "maintenance",
+      "sourceUrl": "https://example.test/maintenance",
+      "captureArtifactPaths": [
+        "captures/maintenance/capture-manifest.json",
+        "captures/maintenance/desktop-1440/asset-inventory.normalized.json",
+        "captures/maintenance/desktop-1440/capture-quality-report.json",
+        "captures/maintenance/desktop-1440/element-evidence-index.json",
+        "captures/maintenance/desktop-1440/manifest.json",
+        "captures/maintenance/mobile-390/asset-inventory.normalized.json",
+        "captures/maintenance/mobile-390/capture-quality-report.json",
+        "captures/maintenance/mobile-390/element-evidence-index.json",
+        "captures/maintenance/mobile-390/manifest.json",
+        "captures/maintenance/tablet-768/asset-inventory.normalized.json",
+        "captures/maintenance/tablet-768/capture-quality-report.json",
+        "captures/maintenance/tablet-768/element-evidence-index.json",
+        "captures/maintenance/tablet-768/manifest.json"
+      ],
+      "viewportCoverage": [
+        "desktop-1440",
+        "mobile-390",
+        "tablet-768"
+      ],
+      "ecommerceRegions": [
+        "region-01",
+        "region-02",
+        "region-03"
+      ],
+      "presentationMappings": [],
+      "compositionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "maintenance-layout.header",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-maintenance-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "maintenance-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/maintenance/capture-manifest.json",
+            "captures/maintenance/desktop-1440/manifest.json",
+            "captures/maintenance/mobile-390/manifest.json",
+            "captures/maintenance/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "maintenance-system.error",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-system-error-state-02-ev-maintenance-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "maintenance-system.error",
+          "targetFilePath": "Pages/Ssr/System/MaintenancePage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/maintenance/capture-manifest.json",
+            "captures/maintenance/desktop-1440/manifest.json",
+            "captures/maintenance/mobile-390/manifest.json",
+            "captures/maintenance/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "maintenance-layout.footer",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-maintenance-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "maintenance-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/maintenance/capture-manifest.json",
+            "captures/maintenance/desktop-1440/manifest.json",
+            "captures/maintenance/mobile-390/manifest.json",
+            "captures/maintenance/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "pageTokenOverrides": {},
+      "targetViewSlot": "system.error",
+      "targetGeneratedFilePath": "Components/States/ErrorState.razor",
+      "unsupportedOrBlockedRegions": []
+    },
+    {
+      "pageId": "product",
+      "archetype": "product-detail",
+      "sourceUrl": "https://example.test/product/linen-jacket",
+      "captureArtifactPaths": [
+        "captures/product/capture-manifest.json",
+        "captures/product/desktop-1440/asset-inventory.normalized.json",
+        "captures/product/desktop-1440/capture-quality-report.json",
+        "captures/product/desktop-1440/element-evidence-index.json",
+        "captures/product/desktop-1440/manifest.json",
+        "captures/product/mobile-390/asset-inventory.normalized.json",
+        "captures/product/mobile-390/capture-quality-report.json",
+        "captures/product/mobile-390/element-evidence-index.json",
+        "captures/product/mobile-390/manifest.json",
+        "captures/product/tablet-768/asset-inventory.normalized.json",
+        "captures/product/tablet-768/capture-quality-report.json",
+        "captures/product/tablet-768/element-evidence-index.json",
+        "captures/product/tablet-768/manifest.json"
+      ],
+      "viewportCoverage": [
+        "desktop-1440",
+        "mobile-390",
+        "tablet-768"
+      ],
+      "ecommerceRegions": [
+        "region-01",
+        "region-02",
+        "region-03"
+      ],
+      "presentationMappings": [],
+      "compositionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "product-layout.header",
+          "evidenceIds": [
+            "ev-product-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-product-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "product-product.gallery",
+          "evidenceIds": [
+            "ev-product-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-product-gallery-02-ev-product-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-product.gallery",
+          "targetFilePath": "Components/Catalog/ProductGalleryPlaceholder.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "product information",
+          "presentationMappingId": "product-product.information",
+          "evidenceIds": [
+            "ev-product-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "product-information-product-information-03-ev-product-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-product.information",
+          "targetFilePath": "Components/Catalog/ProductDetailShell.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-04",
+          "role": "purchase actions",
+          "presentationMappingId": "product-product.purchase",
+          "evidenceIds": [
+            "ev-product-desktop-1440-004"
+          ],
+          "children": [],
+          "stableFingerprint": "purchase-actions-purchase-actions-04-ev-product-desktop-1440-004",
+          "ecommerceRole": null,
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-product.purchase",
+          "targetFilePath": "Components/Catalog/PurchasePanelPlaceholder.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-action-descriptor",
+            "no-direct-storefront-api",
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-05",
+          "role": "footer",
+          "presentationMappingId": "product-layout.footer",
+          "evidenceIds": [
+            "ev-product-desktop-1440-005"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-05-ev-product-desktop-1440-005",
+          "ecommerceRole": null,
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "pageTokenOverrides": {},
+      "targetViewSlot": "product.gallery",
+      "targetGeneratedFilePath": "Components/Catalog/RelatedProductsPlaceholder.razor",
+      "unsupportedOrBlockedRegions": []
+    }
+  ],
+  "compositions": [
+    {
+      "pageId": "account",
+      "pageArchetype": "account-auth-shell",
+      "targetViewSlot": "account.shell",
+      "sectionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "account-layout.header",
+          "evidenceIds": [
+            "ev-account-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-account-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "account-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/account/capture-manifest.json",
+            "captures/account/desktop-1440/manifest.json",
+            "captures/account/mobile-390/manifest.json",
+            "captures/account/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "account-account.shell",
+          "evidenceIds": [
+            "ev-account-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-account-shell-02-ev-account-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "account-account.shell",
+          "targetFilePath": "Pages/Hybrid/Account/AccountPage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/account/capture-manifest.json",
+            "captures/account/desktop-1440/manifest.json",
+            "captures/account/mobile-390/manifest.json",
+            "captures/account/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "account-layout.footer",
+          "evidenceIds": [
+            "ev-account-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-account-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "account-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/account/capture-manifest.json",
+            "captures/account/desktop-1440/manifest.json",
+            "captures/account/mobile-390/manifest.json",
+            "captures/account/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "layoutZones": [
+        "footer",
+        "header"
+      ],
+      "repeatedGroups": [],
+      "responsiveTransformationRules": [],
+      "sourceEvidenceLinks": [
+        "captures/account/capture-manifest.json",
+        "captures/account/desktop-1440/asset-inventory.normalized.json",
+        "captures/account/desktop-1440/capture-quality-report.json",
+        "captures/account/desktop-1440/element-evidence-index.json",
+        "captures/account/desktop-1440/manifest.json",
+        "captures/account/mobile-390/asset-inventory.normalized.json",
+        "captures/account/mobile-390/capture-quality-report.json",
+        "captures/account/mobile-390/element-evidence-index.json",
+        "captures/account/mobile-390/manifest.json",
+        "captures/account/tablet-768/asset-inventory.normalized.json",
+        "captures/account/tablet-768/capture-quality-report.json",
+        "captures/account/tablet-768/element-evidence-index.json",
+        "captures/account/tablet-768/manifest.json"
+      ],
+      "unresolvedIssues": []
+    },
+    {
+      "pageId": "cart",
+      "pageArchetype": "cart-shell",
+      "targetViewSlot": "cart.page",
+      "sectionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "cart-layout.header",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-cart-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "cart-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/cart/capture-manifest.json",
+            "captures/cart/desktop-1440/manifest.json",
+            "captures/cart/mobile-390/manifest.json",
+            "captures/cart/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "cart-cart.page",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-cart-page-02-ev-cart-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "cart-cart.page",
+          "targetFilePath": "Pages/Hybrid/Cart/CartPage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/cart/capture-manifest.json",
+            "captures/cart/desktop-1440/manifest.json",
+            "captures/cart/mobile-390/manifest.json",
+            "captures/cart/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "cart-layout.footer",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-cart-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "cart-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/cart/capture-manifest.json",
+            "captures/cart/desktop-1440/manifest.json",
+            "captures/cart/mobile-390/manifest.json",
+            "captures/cart/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "layoutZones": [
+        "footer",
+        "header"
+      ],
+      "repeatedGroups": [],
+      "responsiveTransformationRules": [],
+      "sourceEvidenceLinks": [
+        "captures/cart/capture-manifest.json",
+        "captures/cart/desktop-1440/asset-inventory.normalized.json",
+        "captures/cart/desktop-1440/capture-quality-report.json",
+        "captures/cart/desktop-1440/element-evidence-index.json",
+        "captures/cart/desktop-1440/manifest.json",
+        "captures/cart/mobile-390/asset-inventory.normalized.json",
+        "captures/cart/mobile-390/capture-quality-report.json",
+        "captures/cart/mobile-390/element-evidence-index.json",
+        "captures/cart/mobile-390/manifest.json",
+        "captures/cart/tablet-768/asset-inventory.normalized.json",
+        "captures/cart/tablet-768/capture-quality-report.json",
+        "captures/cart/tablet-768/element-evidence-index.json",
+        "captures/cart/tablet-768/manifest.json"
+      ],
+      "unresolvedIssues": []
+    },
+    {
+      "pageId": "category",
+      "pageArchetype": "product-listing",
+      "targetViewSlot": "catalog.product-card",
+      "sectionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "category-layout.header",
+          "evidenceIds": [
+            "ev-category-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-category-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "category-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/category/capture-manifest.json",
+            "captures/category/desktop-1440/manifest.json",
+            "captures/category/mobile-390/manifest.json",
+            "captures/category/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "category-catalog.product-card",
+          "evidenceIds": [
+            "ev-category-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-product-card-02-ev-category-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "category-catalog.product-card",
+          "targetFilePath": "Components/Catalog/ProductSummaryCard.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/category/capture-manifest.json",
+            "captures/category/desktop-1440/manifest.json",
+            "captures/category/mobile-390/manifest.json",
+            "captures/category/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "category-layout.footer",
+          "evidenceIds": [
+            "ev-category-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-category-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "category-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/category/capture-manifest.json",
+            "captures/category/desktop-1440/manifest.json",
+            "captures/category/mobile-390/manifest.json",
+            "captures/category/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "layoutZones": [
+        "footer",
+        "header"
+      ],
+      "repeatedGroups": [],
+      "responsiveTransformationRules": [],
+      "sourceEvidenceLinks": [
+        "captures/category/capture-manifest.json",
+        "captures/category/desktop-1440/asset-inventory.normalized.json",
+        "captures/category/desktop-1440/capture-quality-report.json",
+        "captures/category/desktop-1440/element-evidence-index.json",
+        "captures/category/desktop-1440/manifest.json",
+        "captures/category/mobile-390/asset-inventory.normalized.json",
+        "captures/category/mobile-390/capture-quality-report.json",
+        "captures/category/mobile-390/element-evidence-index.json",
+        "captures/category/mobile-390/manifest.json",
+        "captures/category/tablet-768/asset-inventory.normalized.json",
+        "captures/category/tablet-768/capture-quality-report.json",
+        "captures/category/tablet-768/element-evidence-index.json",
+        "captures/category/tablet-768/manifest.json"
+      ],
+      "unresolvedIssues": []
+    },
+    {
+      "pageId": "checkout",
+      "pageArchetype": "checkout-shell",
+      "targetViewSlot": "checkout.page",
+      "sectionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "checkout-layout.header",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-checkout-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "checkout-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/checkout/capture-manifest.json",
+            "captures/checkout/desktop-1440/manifest.json",
+            "captures/checkout/mobile-390/manifest.json",
+            "captures/checkout/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "checkout-checkout.page",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-checkout-page-02-ev-checkout-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "checkout-checkout.page",
+          "targetFilePath": "Pages/Hybrid/Checkout/CheckoutPage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/checkout/capture-manifest.json",
+            "captures/checkout/desktop-1440/manifest.json",
+            "captures/checkout/mobile-390/manifest.json",
+            "captures/checkout/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "checkout-layout.footer",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-checkout-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "checkout-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/checkout/capture-manifest.json",
+            "captures/checkout/desktop-1440/manifest.json",
+            "captures/checkout/mobile-390/manifest.json",
+            "captures/checkout/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "layoutZones": [
+        "footer",
+        "header"
+      ],
+      "repeatedGroups": [],
+      "responsiveTransformationRules": [],
+      "sourceEvidenceLinks": [
+        "captures/checkout/capture-manifest.json",
+        "captures/checkout/desktop-1440/asset-inventory.normalized.json",
+        "captures/checkout/desktop-1440/capture-quality-report.json",
+        "captures/checkout/desktop-1440/element-evidence-index.json",
+        "captures/checkout/desktop-1440/manifest.json",
+        "captures/checkout/mobile-390/asset-inventory.normalized.json",
+        "captures/checkout/mobile-390/capture-quality-report.json",
+        "captures/checkout/mobile-390/element-evidence-index.json",
+        "captures/checkout/mobile-390/manifest.json",
+        "captures/checkout/tablet-768/asset-inventory.normalized.json",
+        "captures/checkout/tablet-768/capture-quality-report.json",
+        "captures/checkout/tablet-768/element-evidence-index.json",
+        "captures/checkout/tablet-768/manifest.json"
+      ],
+      "unresolvedIssues": []
+    },
+    {
+      "pageId": "home",
+      "pageArchetype": "home",
+      "targetViewSlot": "home.sections",
+      "sectionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "family-header",
+          "evidenceIds": [
+            "ev-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "family-header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/home/capture-manifest.json",
+            "captures/home/desktop-1440/manifest.json",
+            "captures/home/mobile-390/manifest.json",
+            "captures/home/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": null,
+          "evidenceIds": [
+            "ev-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-hero-02-ev-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": null,
+          "targetFilePath": "Pages/Ssr/Home/HomePage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [],
+          "screenshotReferences": [
+            "captures/home/capture-manifest.json",
+            "captures/home/desktop-1440/manifest.json",
+            "captures/home/mobile-390/manifest.json",
+            "captures/home/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "family-footer",
+          "evidenceIds": [
+            "ev-desktop-1440-004"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-desktop-1440-004",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "family-footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/home/capture-manifest.json",
+            "captures/home/desktop-1440/manifest.json",
+            "captures/home/mobile-390/manifest.json",
+            "captures/home/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "layoutZones": [
+        "footer",
+        "header"
+      ],
+      "repeatedGroups": [],
+      "responsiveTransformationRules": [],
+      "sourceEvidenceLinks": [
+        "captures/home/capture-manifest.json",
+        "captures/home/desktop-1440/asset-inventory.normalized.json",
+        "captures/home/desktop-1440/capture-quality-report.json",
+        "captures/home/desktop-1440/element-evidence-index.json",
+        "captures/home/desktop-1440/manifest.json",
+        "captures/home/mobile-390/asset-inventory.normalized.json",
+        "captures/home/mobile-390/capture-quality-report.json",
+        "captures/home/mobile-390/element-evidence-index.json",
+        "captures/home/mobile-390/manifest.json",
+        "captures/home/tablet-768/asset-inventory.normalized.json",
+        "captures/home/tablet-768/capture-quality-report.json",
+        "captures/home/tablet-768/element-evidence-index.json",
+        "captures/home/tablet-768/manifest.json"
+      ],
+      "unresolvedIssues": []
+    },
+    {
+      "pageId": "maintenance",
+      "pageArchetype": "maintenance",
+      "targetViewSlot": "system.error",
+      "sectionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "maintenance-layout.header",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-maintenance-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "maintenance-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/maintenance/capture-manifest.json",
+            "captures/maintenance/desktop-1440/manifest.json",
+            "captures/maintenance/mobile-390/manifest.json",
+            "captures/maintenance/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "maintenance-system.error",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-system-error-state-02-ev-maintenance-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "maintenance-system.error",
+          "targetFilePath": "Pages/Ssr/System/MaintenancePage.razor",
+          "targetGeneratedZone": "pages",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/maintenance/capture-manifest.json",
+            "captures/maintenance/desktop-1440/manifest.json",
+            "captures/maintenance/mobile-390/manifest.json",
+            "captures/maintenance/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "footer",
+          "presentationMappingId": "maintenance-layout.footer",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-03-ev-maintenance-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "maintenance-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/maintenance/capture-manifest.json",
+            "captures/maintenance/desktop-1440/manifest.json",
+            "captures/maintenance/mobile-390/manifest.json",
+            "captures/maintenance/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "layoutZones": [
+        "footer",
+        "header"
+      ],
+      "repeatedGroups": [],
+      "responsiveTransformationRules": [],
+      "sourceEvidenceLinks": [
+        "captures/maintenance/capture-manifest.json",
+        "captures/maintenance/desktop-1440/asset-inventory.normalized.json",
+        "captures/maintenance/desktop-1440/capture-quality-report.json",
+        "captures/maintenance/desktop-1440/element-evidence-index.json",
+        "captures/maintenance/desktop-1440/manifest.json",
+        "captures/maintenance/mobile-390/asset-inventory.normalized.json",
+        "captures/maintenance/mobile-390/capture-quality-report.json",
+        "captures/maintenance/mobile-390/element-evidence-index.json",
+        "captures/maintenance/mobile-390/manifest.json",
+        "captures/maintenance/tablet-768/asset-inventory.normalized.json",
+        "captures/maintenance/tablet-768/capture-quality-report.json",
+        "captures/maintenance/tablet-768/element-evidence-index.json",
+        "captures/maintenance/tablet-768/manifest.json"
+      ],
+      "unresolvedIssues": []
+    },
+    {
+      "pageId": "product",
+      "pageArchetype": "product-detail",
+      "targetViewSlot": "product.gallery",
+      "sectionTree": [
+        {
+          "nodeId": "section-01",
+          "role": "header",
+          "presentationMappingId": "product-layout.header",
+          "evidenceIds": [
+            "ev-product-desktop-1440-001"
+          ],
+          "children": [],
+          "stableFingerprint": "header-header-01-ev-product-desktop-1440-001",
+          "ecommerceRole": "store header",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=0;width=1440;height=72",
+            "tablet-768": "x=0;y=0;width=768;height=72",
+            "mobile-390": "x=0;y=0;width=390;height=72"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-layout.header",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-02",
+          "role": "featured hero",
+          "presentationMappingId": "product-product.gallery",
+          "evidenceIds": [
+            "ev-product-desktop-1440-002"
+          ],
+          "children": [],
+          "stableFingerprint": "featured-hero-product-gallery-02-ev-product-desktop-1440-002",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=72;width=1440;height=440",
+            "tablet-768": "x=0;y=72;width=768;height=440",
+            "mobile-390": "x=0;y=72;width=390;height=520"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-product.gallery",
+          "targetFilePath": "Components/Catalog/ProductGalleryPlaceholder.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-03",
+          "role": "product information",
+          "presentationMappingId": "product-product.information",
+          "evidenceIds": [
+            "ev-product-desktop-1440-003"
+          ],
+          "children": [],
+          "stableFingerprint": "product-information-product-information-03-ev-product-desktop-1440-003",
+          "ecommerceRole": "unknown role",
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-product.information",
+          "targetFilePath": "Components/Catalog/ProductDetailShell.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-04",
+          "role": "purchase actions",
+          "presentationMappingId": "product-product.purchase",
+          "evidenceIds": [
+            "ev-product-desktop-1440-004"
+          ],
+          "children": [],
+          "stableFingerprint": "purchase-actions-purchase-actions-04-ev-product-desktop-1440-004",
+          "ecommerceRole": null,
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-product.purchase",
+          "targetFilePath": "Components/Catalog/PurchasePanelPlaceholder.razor",
+          "targetGeneratedZone": "catalog-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-action-descriptor",
+            "no-direct-storefront-api",
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        },
+        {
+          "nodeId": "section-05",
+          "role": "footer",
+          "presentationMappingId": "product-layout.footer",
+          "evidenceIds": [
+            "ev-product-desktop-1440-005"
+          ],
+          "children": [],
+          "stableFingerprint": "footer-footer-05-ev-product-desktop-1440-005",
+          "ecommerceRole": null,
+          "parentNodeId": null,
+          "childNodeIds": [],
+          "viewportBoundingBoxes": {
+            "desktop-1440": "x=0;y=1100;width=1440;height=260",
+            "tablet-768": "x=0;y=1100;width=768;height=260",
+            "mobile-390": "x=0;y=1600;width=390;height=260"
+          },
+          "visualStyleTokenRefs": [
+            "font-body",
+            "radius-small",
+            "shadow-card",
+            "surface-card",
+            "surface-page",
+            "surface-section",
+            "text-inverse",
+            "text-muted"
+          ],
+          "componentMappingRef": "product-layout.footer",
+          "targetFilePath": "Components/Layout/MainLayout.razor",
+          "targetGeneratedZone": "layout-components",
+          "allowedOperations": [
+            "visual-markup",
+            "css",
+            "responsive-layout"
+          ],
+          "protectedBehaviorMarkers": [
+            "preserve-presentation-mapping"
+          ],
+          "screenshotReferences": [
+            "captures/product/capture-manifest.json",
+            "captures/product/desktop-1440/manifest.json",
+            "captures/product/mobile-390/manifest.json",
+            "captures/product/tablet-768/manifest.json"
+          ],
+          "cropReferences": [],
+          "approvedVisualExtensionId": null,
+          "approvedVisualExtensionReason": null,
+          "repeatedGroupId": null,
+          "stateExpectations": [],
+          "responsiveTransformationRules": [],
+          "unresolvedIssues": []
+        }
+      ],
+      "layoutZones": [
+        "footer",
+        "header"
+      ],
+      "repeatedGroups": [],
+      "responsiveTransformationRules": [],
+      "sourceEvidenceLinks": [
+        "captures/product/capture-manifest.json",
+        "captures/product/desktop-1440/asset-inventory.normalized.json",
+        "captures/product/desktop-1440/capture-quality-report.json",
+        "captures/product/desktop-1440/element-evidence-index.json",
+        "captures/product/desktop-1440/manifest.json",
+        "captures/product/mobile-390/asset-inventory.normalized.json",
+        "captures/product/mobile-390/capture-quality-report.json",
+        "captures/product/mobile-390/element-evidence-index.json",
+        "captures/product/mobile-390/manifest.json",
+        "captures/product/tablet-768/asset-inventory.normalized.json",
+        "captures/product/tablet-768/capture-quality-report.json",
+        "captures/product/tablet-768/element-evidence-index.json",
+        "captures/product/tablet-768/manifest.json"
+      ],
+      "unresolvedIssues": []
+    }
+  ]
+}

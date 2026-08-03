@@ -1,0 +1,3700 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-presentation-catalog",
+  "artifactId": "agent-handoff-presentation-catalog-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "components": [
+    {
+      "componentId": "account.shell",
+      "category": "runtime-owned behavior",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [
+        "account.shell"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "runtime-owned behavior",
+      "capabilityOwnership": [
+        "Runtime-owned Commerce Node transport behavior",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "semantic descriptor"
+      ],
+      "fallbackBehavior": "keep Presentation/Runtime behavior and only restyle visual shell"
+    },
+    {
+      "componentId": "action.account-address",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.account-order",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.account-password",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.account-profile",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.auth-login",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.auth-logout",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.auth-recovery",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.auth-register",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.cart-add-line",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [
+        "data-storefront-command=\u0022cart.add-line\u0022"
+      ],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.cart-remove-line",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.cart-update-line",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.checkout-place-order",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "checkout form region",
+        "order summary visual"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.checkout-review",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "checkout form region",
+        "order summary visual"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.checkout-start",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "checkout form region",
+        "order summary visual"
+      ],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.consent-revoke",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [
+        "data-storefront-consent-revoke-url"
+      ],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.consent-save",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [
+        "data-storefront-consent-accept-url"
+      ],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "action.product-selection-preview",
+      "category": "presentation action binding",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [],
+      "visualProperties": [
+        "data-attribute"
+      ],
+      "responsiveCapabilities": [],
+      "interactionCapabilities": [
+        "data-selection-preview-route"
+      ],
+      "dataContract": "bff-action-descriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "presentation action binding",
+      "capabilityOwnership": [
+        "browser-safe action",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "action descriptor"
+      ],
+      "fallbackBehavior": "preserve descriptor and route through same-origin BFF"
+    },
+    {
+      "componentId": "cart.page",
+      "category": "runtime-owned behavior",
+      "supportedPageArchetypes": [
+        "cart-shell"
+      ],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [
+        "cart.page"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "runtime-owned behavior",
+      "capabilityOwnership": [
+        "Runtime-owned Commerce Node transport behavior",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "semantic descriptor"
+      ],
+      "fallbackBehavior": "keep Presentation/Runtime behavior and only restyle visual shell"
+    },
+    {
+      "componentId": "catalog.filters",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-listing",
+        "search-results"
+      ],
+      "supportedRegionRoles": [],
+      "slots": [
+        "catalog.filters"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Pages/Hybrid/Catalog/CategoryPage.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "catalog.pagination",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-listing",
+        "search-results"
+      ],
+      "supportedRegionRoles": [],
+      "slots": [
+        "catalog.pagination"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Pages/Hybrid/Catalog/CategoryPage.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "catalog.product-card",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-listing",
+        "search-results"
+      ],
+      "supportedRegionRoles": [
+        "product card collection"
+      ],
+      "slots": [
+        "catalog.product-card"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Catalog/ProductSummaryCard.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "catalog.sorting",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-listing",
+        "search-results"
+      ],
+      "supportedRegionRoles": [],
+      "slots": [
+        "catalog.sorting"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Pages/Hybrid/Catalog/CategoryPage.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "checkout.page",
+      "category": "runtime-owned behavior",
+      "supportedPageArchetypes": [
+        "checkout-shell"
+      ],
+      "supportedRegionRoles": [
+        "checkout form region",
+        "order summary visual"
+      ],
+      "slots": [
+        "checkout.page"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "runtime-owned behavior",
+      "capabilityOwnership": [
+        "Runtime-owned Commerce Node transport behavior",
+        "BFF-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "semantic descriptor"
+      ],
+      "fallbackBehavior": "keep Presentation/Runtime behavior and only restyle visual shell"
+    },
+    {
+      "componentId": "contract.account-labels",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "AccountLabels",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Account/AccountLabels.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Account/AccountLabels.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.account-navigation-contracts",
+      "category": "headless behavior contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "primary/category navigation"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "AccountNavigationContracts",
+      "behaviorOwnedByPresentation": false,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/AccountNavigationContracts.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "headless behavior contract",
+      "capabilityOwnership": [
+        "runtime-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/AccountNavigationContracts.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "do not target for visual generation"
+    },
+    {
+      "componentId": "contract.account-route-descriptor",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "AccountRouteDescriptor",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Account/AccountRouteDescriptor.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Account/AccountRouteDescriptor.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.cart-labels",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "CartLabels",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/CartLabels.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/CartLabels.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.catalog-filter-category-option",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "CatalogFilterCategoryOption",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/CatalogFilterCategoryOption.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/CatalogFilterCategoryOption.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.checkout-labels",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "checkout form region",
+        "order summary visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "CheckoutLabels",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/CheckoutLabels.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/CheckoutLabels.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.deals-placement",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "DealsPlacement",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Deals/DealsPlacement.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Deals/DealsPlacement.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-gallery-item",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "product media"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductGalleryItem",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductGalleryItem.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductGalleryItem.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-gallery-labels",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "product media"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductGalleryLabels",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductGalleryLabels.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductGalleryLabels.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-gallery-state",
+      "category": "headless behavior contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "product media"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductGalleryState",
+      "behaviorOwnedByPresentation": false,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductGalleryState.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "headless behavior contract",
+      "capabilityOwnership": [
+        "runtime-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductGalleryState.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "do not target for visual generation"
+    },
+    {
+      "componentId": "contract.product-purchase-behavior",
+      "category": "headless behavior contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "add-to-cart/buy-now visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductPurchaseBehavior",
+      "behaviorOwnedByPresentation": false,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "headless behavior contract",
+      "capabilityOwnership": [
+        "runtime-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "do not target for visual generation"
+    },
+    {
+      "componentId": "contract.product-purchase-labels",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "add-to-cart/buy-now visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductPurchaseLabels",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseLabels.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseLabels.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-purchase-option-item",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "add-to-cart/buy-now visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductPurchaseOptionItem",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseOptionItem.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseOptionItem.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-purchase-option-value-item",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "add-to-cart/buy-now visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductPurchaseOptionValueItem",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseOptionValueItem.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseOptionValueItem.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-purchase-panel-model",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "add-to-cart/buy-now visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductPurchasePanelModel",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchasePanelModel.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchasePanelModel.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-purchase-variant-item",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "add-to-cart/buy-now visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductPurchaseVariantItem",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseVariantItem.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseVariantItem.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-summary-item",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductSummaryItem",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryItem.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryItem.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.product-summary-labels",
+      "category": "component data contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "ProductSummaryLabels",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryLabels.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "component data contract",
+      "capabilityOwnership": [
+        "browser-safe action"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryLabels.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "consume through shared contract only"
+    },
+    {
+      "componentId": "contract.storefront-account-form-behavior",
+      "category": "headless behavior contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontAccountFormBehavior",
+      "behaviorOwnedByPresentation": false,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "headless behavior contract",
+      "capabilityOwnership": [
+        "runtime-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Account/StorefrontAccountFormBehavior.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "do not target for visual generation"
+    },
+    {
+      "componentId": "contract.storefront-cart-behavior",
+      "category": "headless behavior contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontCartBehavior",
+      "behaviorOwnedByPresentation": false,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "headless behavior contract",
+      "capabilityOwnership": [
+        "runtime-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Cart/StorefrontCartBehavior.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "do not target for visual generation"
+    },
+    {
+      "componentId": "contract.storefront-checkout-behavior",
+      "category": "headless behavior contract",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "checkout form region",
+        "order summary visual"
+      ],
+      "slots": [],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "labels",
+        "model"
+      ],
+      "responsiveCapabilities": [
+        "state-aware"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontCheckoutBehavior",
+      "behaviorOwnedByPresentation": false,
+      "behaviorOwnedByRuntime": true,
+      "visualOverrideAllowed": false,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [
+        "generated-functional-js"
+      ],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Checkout/StorefrontCheckoutBehavior.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "headless behavior contract",
+      "capabilityOwnership": [
+        "runtime-owned behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Checkout/StorefrontCheckoutBehavior.cs"
+      ],
+      "requiredEvidenceTypes": [
+        "contract shape"
+      ],
+      "fallbackBehavior": "do not target for visual generation"
+    },
+    {
+      "componentId": "foundation.account-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [
+        "AccountPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontAccountPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.application-head",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "ApplicationHead"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontShellContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.auth-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "AuthPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontAuthPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.cart-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [
+        "CartPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontCartPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.category-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "CategoryPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontCategoryPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.checkout-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "checkout form region",
+        "order summary visual"
+      ],
+      "slots": [
+        "CheckoutPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontCheckoutPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.consent-banner",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "ConsentBanner"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontConsentContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.content-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "ContentPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontContentPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.deals-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "DealsPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontDealsPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.error-state",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "error",
+        "not found",
+        "service unavailable"
+      ],
+      "slots": [
+        "ErrorState"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontSystemStateContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required system-state fallback visual"
+    },
+    {
+      "componentId": "foundation.home-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "HomePage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontHomePageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.main-layout",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "MainLayout"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontShellContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.maintenance-state",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "error",
+        "not found",
+        "service unavailable"
+      ],
+      "slots": [
+        "MaintenanceState"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontSystemStateContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required system-state fallback visual"
+    },
+    {
+      "componentId": "foundation.new-releases-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "NewReleasesPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontNewReleasesPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.not-found-state",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "NotFoundState"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontSystemStateContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required system-state fallback visual"
+    },
+    {
+      "componentId": "foundation.payment-result-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "PaymentResultPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontPaymentResultPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.product-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "ProductPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontProductPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.search-page",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "SearchPage"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontSearchPageContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "foundation.service-unavailable-state",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "ServiceUnavailableState"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "StorefrontSystemStateContext",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required system-state fallback visual"
+    },
+    {
+      "componentId": "foundation.visual-scripts",
+      "category": "foundation view slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "VisualScripts"
+      ],
+      "variants": [],
+      "visualProperties": [
+        "visual-component-type"
+      ],
+      "responsiveCapabilities": [
+        "host-specific"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "visual-script-slot-context",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "foundation view slot",
+      "capabilityOwnership": [
+        "Presentation-owned routing/SEO/media behavior"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation/**"
+      ],
+      "requiredEvidenceTypes": [
+        "foundation slot",
+        "component type",
+        "context parameter"
+      ],
+      "fallbackBehavior": "required host visual registration"
+    },
+    {
+      "componentId": "home.sections",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [
+        "home"
+      ],
+      "supportedRegionRoles": [],
+      "slots": [
+        "home.sections"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Pages/Ssr/Home/HomePage.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "layout.account-menu",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "account access"
+      ],
+      "slots": [
+        "layout.account-menu"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Layout/MainLayout.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "layout.cart-badge",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "cart line items visual",
+        "cart summary"
+      ],
+      "slots": [
+        "layout.cart-badge"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Layout/MainLayout.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "layout.footer",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [],
+      "slots": [
+        "layout.footer"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Layout/MainLayout.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "layout.header",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "store header"
+      ],
+      "slots": [
+        "layout.header"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Layout/MainLayout.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "layout.main-navigation",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "primary/category navigation"
+      ],
+      "slots": [
+        "layout.main-navigation"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Layout/MainLayout.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "layout.mobile-navigation",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "primary/category navigation"
+      ],
+      "slots": [
+        "layout.mobile-navigation"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Layout/MainLayout.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "product.gallery",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-detail"
+      ],
+      "supportedRegionRoles": [
+        "product media"
+      ],
+      "slots": [
+        "product.gallery"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Catalog/ProductGalleryPlaceholder.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "product.information",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-detail"
+      ],
+      "supportedRegionRoles": [],
+      "slots": [
+        "product.information"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Catalog/ProductDetailShell.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "product.purchase",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-detail"
+      ],
+      "supportedRegionRoles": [
+        "add-to-cart/buy-now visual"
+      ],
+      "slots": [
+        "product.purchase"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [
+        "cart.add-line"
+      ],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Catalog/PurchasePanelPlaceholder.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "product.related-products",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-detail"
+      ],
+      "supportedRegionRoles": [],
+      "slots": [
+        "product.related-products"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Catalog/RelatedProductsPlaceholder.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "product.reviews",
+      "category": "visual generation target",
+      "supportedPageArchetypes": [
+        "product-detail"
+      ],
+      "supportedRegionRoles": [],
+      "slots": [
+        "product.reviews"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "visual generation target",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [
+        "Components/Catalog/ProductReviewsPlaceholder.razor"
+      ],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "DOM",
+        "computed styles",
+        "bounding boxes"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    },
+    {
+      "componentId": "system.error",
+      "category": "starter visual slot",
+      "supportedPageArchetypes": [],
+      "supportedRegionRoles": [
+        "error",
+        "not found",
+        "service unavailable"
+      ],
+      "slots": [
+        "system.error"
+      ],
+      "variants": [
+        "default"
+      ],
+      "visualProperties": [
+        "css",
+        "markup"
+      ],
+      "responsiveCapabilities": [
+        "responsive-layout"
+      ],
+      "interactionCapabilities": [],
+      "dataContract": "starter-generation-contract",
+      "behaviorOwnedByPresentation": true,
+      "behaviorOwnedByRuntime": false,
+      "visualOverrideAllowed": true,
+      "behaviorOverrideAllowed": false,
+      "requiredChildren": [],
+      "optionalChildren": [],
+      "unsupportedPatterns": [],
+      "sourceFiles": [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
+      ],
+      "contractVersion": "2",
+      "intentCategory": "starter visual slot",
+      "capabilityOwnership": [
+        "visual-only"
+      ],
+      "allowedFilePatterns": [],
+      "protectedFilePatterns": [
+        "BlazorShop.Storefront.Presentation",
+        "StorefrontPackageVersions.props",
+        "starter-generation.contract.yaml",
+        "docs/storefront-analysis/generated-files.yaml"
+      ],
+      "requiredEvidenceTypes": [
+        "semantic descriptor"
+      ],
+      "fallbackBehavior": "optional visual region may use Starter fallback when evidence is absent"
+    }
+  ],
+  "diagnosticProvenance": [
+    {
+      "path": "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    }
+  ]
+}

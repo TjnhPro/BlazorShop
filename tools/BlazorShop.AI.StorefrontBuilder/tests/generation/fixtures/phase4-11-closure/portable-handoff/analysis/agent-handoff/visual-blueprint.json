@@ -1,0 +1,197 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-visual-blueprint",
+  "artifactId": "agent-handoff-blueprint-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "consumerReferences": {
+    "manifest": "analysis/agent-handoff/manifest.json",
+    "task": "analysis/agent-handoff/task.md",
+    "allowedFiles": "analysis/agent-handoff/allowed-files.json",
+    "protectedFiles": "analysis/agent-handoff/protected-files.json",
+    "pageCompositions": "analysis/agent-handoff/page-compositions.json",
+    "designTokens": "analysis/agent-handoff/design-tokens.json",
+    "visualStyle": "analysis/agent-handoff/visual-style.json",
+    "storefrontPattern": "analysis/agent-handoff/storefront-pattern.json",
+    "presentationCatalog": "analysis/agent-handoff/presentation-catalog.json",
+    "presentationMappings": "analysis/agent-handoff/presentation-mappings.json",
+    "componentDefinitions": "analysis/agent-handoff/component-candidates.json",
+    "componentInstances": "analysis/agent-handoff/component-instances.json",
+    "responsiveBehavior": "analysis/agent-handoff/responsive-behavior.json",
+    "interactionModels": "analysis/agent-handoff/interaction-models.json",
+    "originalityRestrictions": "analysis/agent-handoff/originality-restrictions.json",
+    "confidence": "analysis/agent-handoff/confidence.json",
+    "reviewResolution": "analysis/agent-handoff/review-resolution.json",
+    "evidence": "analysis/agent-handoff/evidence-manifest.json",
+    "unresolvedRegions": "analysis/agent-handoff/unresolved-regions.json",
+    "generationReadiness": "analysis/agent-handoff/generation-readiness.json",
+    "handoffReadiness": "analysis/agent-handoff/handoff-readiness.json"
+  },
+  "diagnosticProvenance": [
+    {
+      "path": "analysis/components/component-instances.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/confidence/confidence-report.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/evidence-snapshot.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/account/interaction-model.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/account/responsive-behavior.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/cart/interaction-model.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/cart/responsive-behavior.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/category/interaction-model.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/category/responsive-behavior.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/checkout/interaction-model.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/checkout/responsive-behavior.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/home/interaction-model.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/home/responsive-behavior.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/maintenance/interaction-model.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/maintenance/responsive-behavior.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/product/interaction-model.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/pages/product/responsive-behavior.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/component-candidates.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/ecommerce-regions.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/originality-restrictions.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/page-archetypes.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/page-compositions.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/page-sections.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/presentation-mappings.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/review-resolution-manifest.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/semantic-tokens.reviewed.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/resolved/unsupported-pattern-decisions.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/storefront-pattern/page-contracts.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "analysis/storefront-pattern/storefront-pattern.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    },
+    {
+      "path": "presentation-catalog/presentation-component-catalog.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    }
+  ],
+  "sourceArtifactHashes": {},
+  "pages": [
+    "account",
+    "cart",
+    "category",
+    "checkout",
+    "home",
+    "maintenance",
+    "product"
+  ],
+  "generationRestrictions": [
+    "Use analysis/resolved/page-compositions.reviewed.json as the site-level generation plan.",
+    "Do not reuse reference assets by default.",
+    "Do not generate unsupported runtime behavior."
+  ]
+}

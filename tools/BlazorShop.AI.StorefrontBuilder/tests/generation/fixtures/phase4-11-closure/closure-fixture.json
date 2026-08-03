@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "artifactKind": "storefront-builder-phase4-11-closure-fixture",
+  "artifactKind": "storefront-builder-phase4-12-closure-fixture",
   "artifactId": "phase4-11-closure-pilot",
   "projectName": "BlazorShop.Storefront.Phase411ClosurePilot",
   "storeKey": "sample",
@@ -25,10 +25,22 @@
     "visual-artifacts/agent-written-files.json"
   ],
   "referenceEvidencePaths": [
-    "reference/home-desktop.reference.md"
+    "reference/home-desktop.reference.md",
+    "portable-handoff/analysis/agent-handoff/screenshots/home/desktop-1440.png",
+    "portable-handoff/analysis/agent-handoff/screenshots/home/tablet-768.png",
+    "portable-handoff/analysis/agent-handoff/screenshots/home/mobile-390.png"
   ],
+  "portableHandoff": {
+    "packageRoot": "portable-handoff",
+    "manifestPath": "portable-handoff/analysis/agent-handoff/manifest.json",
+    "packageHash": "8d968f35b91ed44b192dee850d80f9e5e86de9bcf8d59d577d13b41ecdfbadb2",
+    "sourceCommitSha": "5f57eb6c2692dc6f6854287d43122b019b2502e3",
+    "sourceRunId": "phase3d-positive",
+    "fileCount": 112,
+    "sizeBytes": 629449
+  },
   "notes": [
     "Tracked fixture input only; generated storefront output must be produced under obj during the closure gate.",
-    "The portable-handoff directory is intentionally minimal for Phase 4.11 gate reproducibility checks."
+    "The portable-handoff directory is a valid portable package consumed by StorefrontBuilder preflight, dry-run, and handoff generation."
   ]
 }

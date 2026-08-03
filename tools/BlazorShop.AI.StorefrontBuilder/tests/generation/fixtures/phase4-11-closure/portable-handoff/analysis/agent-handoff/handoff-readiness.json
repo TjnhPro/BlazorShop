@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-readiness",
+  "artifactId": "agent-handoff-readiness-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "passed": true,
+  "findings": [],
+  "agentHandoffPath": "analysis/agent-handoff"
+}

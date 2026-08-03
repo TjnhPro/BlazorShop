@@ -1,0 +1,1643 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-evidence-manifest",
+  "artifactId": "agent-handoff-evidence-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "pages": [
+    {
+      "pageId": "account",
+      "sourceUrl": "https://example.test/account",
+      "screenshots": [
+        {
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/screenshots/account/desktop-1440.png",
+          "sourcePath": "captures/account/desktop-1440/full-page.png",
+          "sha256": "899dd1de40c8d09a003374dce549f098134cc1cf93c9bb8aa1a29b50172d6275",
+          "viewportWidth": 1440,
+          "viewportHeight": 1000,
+          "documentWidth": 1440,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/screenshots/account/mobile-390.png",
+          "sourcePath": "captures/account/mobile-390/full-page.png",
+          "sha256": "d75e25435055b8c114584544958308930573cf6b6fd2df43774bd27683a44f87",
+          "viewportWidth": 390,
+          "viewportHeight": 900,
+          "documentWidth": 390,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/screenshots/account/tablet-768.png",
+          "sourcePath": "captures/account/tablet-768/full-page.png",
+          "sha256": "b370e6d33d219287d0d60dd415a72b77e04764c8be8056e4fd4b9764d344d549",
+          "viewportWidth": 768,
+          "viewportHeight": 1000,
+          "documentWidth": 768,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-01.desktop-1440.png",
+          "sourcePath": "captures/account/desktop-1440/full-page.png",
+          "sha256": "e7487850a10d57732f1269b03c3b1a91ec9083a9148ac512752982d455711e17",
+          "bounds": "x=0;y=0;width=1440;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-01.mobile-390.png",
+          "sourcePath": "captures/account/mobile-390/full-page.png",
+          "sha256": "41e96953c26097bb15ffef8df1118b124d0e8594d4cf47f09b40bb8c33166b09",
+          "bounds": "x=0;y=0;width=390;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-01.tablet-768.png",
+          "sourcePath": "captures/account/tablet-768/full-page.png",
+          "sha256": "44f614cd44059c9b11b72be11218204dabdcadc6a73d6dc533592c1dc8d24307",
+          "bounds": "x=0;y=0;width=768;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "account.shell",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-account.shell",
+          "suggestedSlotId": null,
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-02.desktop-1440.png",
+          "sourcePath": "captures/account/desktop-1440/full-page.png",
+          "sha256": "caa9ed71d1c407c8061b9ee5d0c37f094fe80a68399cf8b4b90dda9601c044a3",
+          "bounds": "x=0;y=72;width=1440;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "account.shell",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-account.shell",
+          "suggestedSlotId": null,
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-02.mobile-390.png",
+          "sourcePath": "captures/account/mobile-390/full-page.png",
+          "sha256": "66d8927e65bcf75fb2d9f5e96eb1c4ffa4c42e18c19735c8e57c955e3d0ea84e",
+          "bounds": "x=0;y=72;width=390;height=520",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "account.shell",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-account.shell",
+          "suggestedSlotId": null,
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-02.tablet-768.png",
+          "sourcePath": "captures/account/tablet-768/full-page.png",
+          "sha256": "8947821958301ac2f8efb4471219fc95bb7894c3145b460c0489483d2920f6d3",
+          "bounds": "x=0;y=72;width=768;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-03.desktop-1440.png",
+          "sourcePath": "captures/account/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-03.mobile-390.png",
+          "sourcePath": "captures/account/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "account-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/account/section-03.tablet-768.png",
+          "sourcePath": "captures/account/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "cart",
+      "sourceUrl": "https://example.test/cart",
+      "screenshots": [
+        {
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/screenshots/cart/desktop-1440.png",
+          "sourcePath": "captures/cart/desktop-1440/full-page.png",
+          "sha256": "899dd1de40c8d09a003374dce549f098134cc1cf93c9bb8aa1a29b50172d6275",
+          "viewportWidth": 1440,
+          "viewportHeight": 1000,
+          "documentWidth": 1440,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/screenshots/cart/mobile-390.png",
+          "sourcePath": "captures/cart/mobile-390/full-page.png",
+          "sha256": "d75e25435055b8c114584544958308930573cf6b6fd2df43774bd27683a44f87",
+          "viewportWidth": 390,
+          "viewportHeight": 900,
+          "documentWidth": 390,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/screenshots/cart/tablet-768.png",
+          "sourcePath": "captures/cart/tablet-768/full-page.png",
+          "sha256": "b370e6d33d219287d0d60dd415a72b77e04764c8be8056e4fd4b9764d344d549",
+          "viewportWidth": 768,
+          "viewportHeight": 1000,
+          "documentWidth": 768,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-01.desktop-1440.png",
+          "sourcePath": "captures/cart/desktop-1440/full-page.png",
+          "sha256": "e7487850a10d57732f1269b03c3b1a91ec9083a9148ac512752982d455711e17",
+          "bounds": "x=0;y=0;width=1440;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-01.mobile-390.png",
+          "sourcePath": "captures/cart/mobile-390/full-page.png",
+          "sha256": "41e96953c26097bb15ffef8df1118b124d0e8594d4cf47f09b40bb8c33166b09",
+          "bounds": "x=0;y=0;width=390;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-01.tablet-768.png",
+          "sourcePath": "captures/cart/tablet-768/full-page.png",
+          "sha256": "44f614cd44059c9b11b72be11218204dabdcadc6a73d6dc533592c1dc8d24307",
+          "bounds": "x=0;y=0;width=768;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "cart.page",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-cart.page",
+          "suggestedSlotId": null,
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-02.desktop-1440.png",
+          "sourcePath": "captures/cart/desktop-1440/full-page.png",
+          "sha256": "caa9ed71d1c407c8061b9ee5d0c37f094fe80a68399cf8b4b90dda9601c044a3",
+          "bounds": "x=0;y=72;width=1440;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "cart.page",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-cart.page",
+          "suggestedSlotId": null,
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-02.mobile-390.png",
+          "sourcePath": "captures/cart/mobile-390/full-page.png",
+          "sha256": "66d8927e65bcf75fb2d9f5e96eb1c4ffa4c42e18c19735c8e57c955e3d0ea84e",
+          "bounds": "x=0;y=72;width=390;height=520",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "cart.page",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-cart.page",
+          "suggestedSlotId": null,
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-02.tablet-768.png",
+          "sourcePath": "captures/cart/tablet-768/full-page.png",
+          "sha256": "8947821958301ac2f8efb4471219fc95bb7894c3145b460c0489483d2920f6d3",
+          "bounds": "x=0;y=72;width=768;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-03.desktop-1440.png",
+          "sourcePath": "captures/cart/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-03.mobile-390.png",
+          "sourcePath": "captures/cart/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "cart-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/cart/section-03.tablet-768.png",
+          "sourcePath": "captures/cart/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "category",
+      "sourceUrl": "https://example.test/category/women",
+      "screenshots": [
+        {
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/screenshots/category/desktop-1440.png",
+          "sourcePath": "captures/category/desktop-1440/full-page.png",
+          "sha256": "899dd1de40c8d09a003374dce549f098134cc1cf93c9bb8aa1a29b50172d6275",
+          "viewportWidth": 1440,
+          "viewportHeight": 1000,
+          "documentWidth": 1440,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/screenshots/category/mobile-390.png",
+          "sourcePath": "captures/category/mobile-390/full-page.png",
+          "sha256": "d75e25435055b8c114584544958308930573cf6b6fd2df43774bd27683a44f87",
+          "viewportWidth": 390,
+          "viewportHeight": 900,
+          "documentWidth": 390,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/screenshots/category/tablet-768.png",
+          "sourcePath": "captures/category/tablet-768/full-page.png",
+          "sha256": "b370e6d33d219287d0d60dd415a72b77e04764c8be8056e4fd4b9764d344d549",
+          "viewportWidth": 768,
+          "viewportHeight": 1000,
+          "documentWidth": 768,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-01.desktop-1440.png",
+          "sourcePath": "captures/category/desktop-1440/full-page.png",
+          "sha256": "e7487850a10d57732f1269b03c3b1a91ec9083a9148ac512752982d455711e17",
+          "bounds": "x=0;y=0;width=1440;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-01.mobile-390.png",
+          "sourcePath": "captures/category/mobile-390/full-page.png",
+          "sha256": "41e96953c26097bb15ffef8df1118b124d0e8594d4cf47f09b40bb8c33166b09",
+          "bounds": "x=0;y=0;width=390;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-01.tablet-768.png",
+          "sourcePath": "captures/category/tablet-768/full-page.png",
+          "sha256": "44f614cd44059c9b11b72be11218204dabdcadc6a73d6dc533592c1dc8d24307",
+          "bounds": "x=0;y=0;width=768;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "catalog.product-card",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-catalog.product-card",
+          "suggestedSlotId": null,
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-02.desktop-1440.png",
+          "sourcePath": "captures/category/desktop-1440/full-page.png",
+          "sha256": "caa9ed71d1c407c8061b9ee5d0c37f094fe80a68399cf8b4b90dda9601c044a3",
+          "bounds": "x=0;y=72;width=1440;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "catalog.product-card",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-catalog.product-card",
+          "suggestedSlotId": null,
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-02.mobile-390.png",
+          "sourcePath": "captures/category/mobile-390/full-page.png",
+          "sha256": "66d8927e65bcf75fb2d9f5e96eb1c4ffa4c42e18c19735c8e57c955e3d0ea84e",
+          "bounds": "x=0;y=72;width=390;height=520",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "catalog.product-card",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-catalog.product-card",
+          "suggestedSlotId": null,
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-02.tablet-768.png",
+          "sourcePath": "captures/category/tablet-768/full-page.png",
+          "sha256": "8947821958301ac2f8efb4471219fc95bb7894c3145b460c0489483d2920f6d3",
+          "bounds": "x=0;y=72;width=768;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-03.desktop-1440.png",
+          "sourcePath": "captures/category/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-03.mobile-390.png",
+          "sourcePath": "captures/category/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "category-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/category/section-03.tablet-768.png",
+          "sourcePath": "captures/category/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "checkout",
+      "sourceUrl": "https://example.test/checkout",
+      "screenshots": [
+        {
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/screenshots/checkout/desktop-1440.png",
+          "sourcePath": "captures/checkout/desktop-1440/full-page.png",
+          "sha256": "899dd1de40c8d09a003374dce549f098134cc1cf93c9bb8aa1a29b50172d6275",
+          "viewportWidth": 1440,
+          "viewportHeight": 1000,
+          "documentWidth": 1440,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/screenshots/checkout/mobile-390.png",
+          "sourcePath": "captures/checkout/mobile-390/full-page.png",
+          "sha256": "d75e25435055b8c114584544958308930573cf6b6fd2df43774bd27683a44f87",
+          "viewportWidth": 390,
+          "viewportHeight": 900,
+          "documentWidth": 390,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/screenshots/checkout/tablet-768.png",
+          "sourcePath": "captures/checkout/tablet-768/full-page.png",
+          "sha256": "b370e6d33d219287d0d60dd415a72b77e04764c8be8056e4fd4b9764d344d549",
+          "viewportWidth": 768,
+          "viewportHeight": 1000,
+          "documentWidth": 768,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-01.desktop-1440.png",
+          "sourcePath": "captures/checkout/desktop-1440/full-page.png",
+          "sha256": "e7487850a10d57732f1269b03c3b1a91ec9083a9148ac512752982d455711e17",
+          "bounds": "x=0;y=0;width=1440;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-01.mobile-390.png",
+          "sourcePath": "captures/checkout/mobile-390/full-page.png",
+          "sha256": "41e96953c26097bb15ffef8df1118b124d0e8594d4cf47f09b40bb8c33166b09",
+          "bounds": "x=0;y=0;width=390;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-01.tablet-768.png",
+          "sourcePath": "captures/checkout/tablet-768/full-page.png",
+          "sha256": "44f614cd44059c9b11b72be11218204dabdcadc6a73d6dc533592c1dc8d24307",
+          "bounds": "x=0;y=0;width=768;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "checkout.page",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-checkout.page",
+          "suggestedSlotId": null,
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-02.desktop-1440.png",
+          "sourcePath": "captures/checkout/desktop-1440/full-page.png",
+          "sha256": "caa9ed71d1c407c8061b9ee5d0c37f094fe80a68399cf8b4b90dda9601c044a3",
+          "bounds": "x=0;y=72;width=1440;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "checkout.page",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-checkout.page",
+          "suggestedSlotId": null,
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-02.mobile-390.png",
+          "sourcePath": "captures/checkout/mobile-390/full-page.png",
+          "sha256": "66d8927e65bcf75fb2d9f5e96eb1c4ffa4c42e18c19735c8e57c955e3d0ea84e",
+          "bounds": "x=0;y=72;width=390;height=520",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "checkout.page",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-checkout.page",
+          "suggestedSlotId": null,
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-02.tablet-768.png",
+          "sourcePath": "captures/checkout/tablet-768/full-page.png",
+          "sha256": "8947821958301ac2f8efb4471219fc95bb7894c3145b460c0489483d2920f6d3",
+          "bounds": "x=0;y=72;width=768;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-03.desktop-1440.png",
+          "sourcePath": "captures/checkout/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-03.mobile-390.png",
+          "sourcePath": "captures/checkout/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "checkout-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/checkout/section-03.tablet-768.png",
+          "sourcePath": "captures/checkout/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "home",
+      "sourceUrl": "file:///D:/C%23 APP/MudblazorTemplate/BlazorShop/tools/BlazorShop.AI.StorefrontReverseEngineering/tests/BlazorShop.AI.StorefrontReverseEngineering.Tests/Fixtures/static-storefront.html",
+      "screenshots": [
+        {
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/screenshots/home/desktop-1440.png",
+          "sourcePath": "captures/home/desktop-1440/full-page.png",
+          "sha256": "899dd1de40c8d09a003374dce549f098134cc1cf93c9bb8aa1a29b50172d6275",
+          "viewportWidth": 1440,
+          "viewportHeight": 1000,
+          "documentWidth": 1440,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/screenshots/home/mobile-390.png",
+          "sourcePath": "captures/home/mobile-390/full-page.png",
+          "sha256": "d75e25435055b8c114584544958308930573cf6b6fd2df43774bd27683a44f87",
+          "viewportWidth": 390,
+          "viewportHeight": 900,
+          "documentWidth": 390,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/screenshots/home/tablet-768.png",
+          "sourcePath": "captures/home/tablet-768/full-page.png",
+          "sha256": "b370e6d33d219287d0d60dd415a72b77e04764c8be8056e4fd4b9764d344d549",
+          "viewportWidth": 768,
+          "viewportHeight": 1000,
+          "documentWidth": 768,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "family-header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-01.desktop-1440.png",
+          "sourcePath": "captures/home/desktop-1440/full-page.png",
+          "sha256": "e7487850a10d57732f1269b03c3b1a91ec9083a9148ac512752982d455711e17",
+          "bounds": "x=0;y=0;width=1440;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "family-header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-01.mobile-390.png",
+          "sourcePath": "captures/home/mobile-390/full-page.png",
+          "sha256": "41e96953c26097bb15ffef8df1118b124d0e8594d4cf47f09b40bb8c33166b09",
+          "bounds": "x=0;y=0;width=390;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "family-header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-01.tablet-768.png",
+          "sourcePath": "captures/home/tablet-768/full-page.png",
+          "sha256": "44f614cd44059c9b11b72be11218204dabdcadc6a73d6dc533592c1dc8d24307",
+          "bounds": "x=0;y=0;width=768;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "home.sections",
+          "slotSource": "exact-storefront-contract",
+          "mappingId": null,
+          "suggestedSlotId": "home.sections",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-02.desktop-1440.png",
+          "sourcePath": "captures/home/desktop-1440/full-page.png",
+          "sha256": "caa9ed71d1c407c8061b9ee5d0c37f094fe80a68399cf8b4b90dda9601c044a3",
+          "bounds": "x=0;y=72;width=1440;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "home.sections",
+          "slotSource": "exact-storefront-contract",
+          "mappingId": null,
+          "suggestedSlotId": "home.sections",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-02.mobile-390.png",
+          "sourcePath": "captures/home/mobile-390/full-page.png",
+          "sha256": "66d8927e65bcf75fb2d9f5e96eb1c4ffa4c42e18c19735c8e57c955e3d0ea84e",
+          "bounds": "x=0;y=72;width=390;height=520",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "home.sections",
+          "slotSource": "exact-storefront-contract",
+          "mappingId": null,
+          "suggestedSlotId": "home.sections",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-02.tablet-768.png",
+          "sourcePath": "captures/home/tablet-768/full-page.png",
+          "sha256": "8947821958301ac2f8efb4471219fc95bb7894c3145b460c0489483d2920f6d3",
+          "bounds": "x=0;y=72;width=768;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "family-footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-03.desktop-1440.png",
+          "sourcePath": "captures/home/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "family-footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-03.mobile-390.png",
+          "sourcePath": "captures/home/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "family-footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/home/section-03.tablet-768.png",
+          "sourcePath": "captures/home/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "maintenance",
+      "sourceUrl": "https://example.test/maintenance",
+      "screenshots": [
+        {
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/screenshots/maintenance/desktop-1440.png",
+          "sourcePath": "captures/maintenance/desktop-1440/full-page.png",
+          "sha256": "899dd1de40c8d09a003374dce549f098134cc1cf93c9bb8aa1a29b50172d6275",
+          "viewportWidth": 1440,
+          "viewportHeight": 1000,
+          "documentWidth": 1440,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/screenshots/maintenance/mobile-390.png",
+          "sourcePath": "captures/maintenance/mobile-390/full-page.png",
+          "sha256": "d75e25435055b8c114584544958308930573cf6b6fd2df43774bd27683a44f87",
+          "viewportWidth": 390,
+          "viewportHeight": 900,
+          "documentWidth": 390,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/screenshots/maintenance/tablet-768.png",
+          "sourcePath": "captures/maintenance/tablet-768/full-page.png",
+          "sha256": "b370e6d33d219287d0d60dd415a72b77e04764c8be8056e4fd4b9764d344d549",
+          "viewportWidth": 768,
+          "viewportHeight": 1000,
+          "documentWidth": 768,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-01.desktop-1440.png",
+          "sourcePath": "captures/maintenance/desktop-1440/full-page.png",
+          "sha256": "e7487850a10d57732f1269b03c3b1a91ec9083a9148ac512752982d455711e17",
+          "bounds": "x=0;y=0;width=1440;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-01.mobile-390.png",
+          "sourcePath": "captures/maintenance/mobile-390/full-page.png",
+          "sha256": "41e96953c26097bb15ffef8df1118b124d0e8594d4cf47f09b40bb8c33166b09",
+          "bounds": "x=0;y=0;width=390;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-01.tablet-768.png",
+          "sourcePath": "captures/maintenance/tablet-768/full-page.png",
+          "sha256": "44f614cd44059c9b11b72be11218204dabdcadc6a73d6dc533592c1dc8d24307",
+          "bounds": "x=0;y=0;width=768;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "system.error",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-system.error",
+          "suggestedSlotId": null,
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-02.desktop-1440.png",
+          "sourcePath": "captures/maintenance/desktop-1440/full-page.png",
+          "sha256": "caa9ed71d1c407c8061b9ee5d0c37f094fe80a68399cf8b4b90dda9601c044a3",
+          "bounds": "x=0;y=72;width=1440;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "system.error",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-system.error",
+          "suggestedSlotId": null,
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-02.mobile-390.png",
+          "sourcePath": "captures/maintenance/mobile-390/full-page.png",
+          "sha256": "66d8927e65bcf75fb2d9f5e96eb1c4ffa4c42e18c19735c8e57c955e3d0ea84e",
+          "bounds": "x=0;y=72;width=390;height=520",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "system.error",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-system.error",
+          "suggestedSlotId": null,
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-02.tablet-768.png",
+          "sourcePath": "captures/maintenance/tablet-768/full-page.png",
+          "sha256": "8947821958301ac2f8efb4471219fc95bb7894c3145b460c0489483d2920f6d3",
+          "bounds": "x=0;y=72;width=768;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-03.desktop-1440.png",
+          "sourcePath": "captures/maintenance/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-03.mobile-390.png",
+          "sourcePath": "captures/maintenance/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "maintenance-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/maintenance/section-03.tablet-768.png",
+          "sourcePath": "captures/maintenance/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "product",
+      "sourceUrl": "https://example.test/product/linen-jacket",
+      "screenshots": [
+        {
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/screenshots/product/desktop-1440.png",
+          "sourcePath": "captures/product/desktop-1440/full-page.png",
+          "sha256": "899dd1de40c8d09a003374dce549f098134cc1cf93c9bb8aa1a29b50172d6275",
+          "viewportWidth": 1440,
+          "viewportHeight": 1000,
+          "documentWidth": 1440,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/screenshots/product/mobile-390.png",
+          "sourcePath": "captures/product/mobile-390/full-page.png",
+          "sha256": "d75e25435055b8c114584544958308930573cf6b6fd2df43774bd27683a44f87",
+          "viewportWidth": 390,
+          "viewportHeight": 900,
+          "documentWidth": 390,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/screenshots/product/tablet-768.png",
+          "sourcePath": "captures/product/tablet-768/full-page.png",
+          "sha256": "b370e6d33d219287d0d60dd415a72b77e04764c8be8056e4fd4b9764d344d549",
+          "viewportWidth": 768,
+          "viewportHeight": 1000,
+          "documentWidth": 768,
+          "documentHeight": 1390,
+          "scale": "css-pixel",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-01.desktop-1440.png",
+          "sourcePath": "captures/product/desktop-1440/full-page.png",
+          "sha256": "e7487850a10d57732f1269b03c3b1a91ec9083a9148ac512752982d455711e17",
+          "bounds": "x=0;y=0;width=1440;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-01.mobile-390.png",
+          "sourcePath": "captures/product/mobile-390/full-page.png",
+          "sha256": "41e96953c26097bb15ffef8df1118b124d0e8594d4cf47f09b40bb8c33166b09",
+          "bounds": "x=0;y=0;width=390;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-01",
+          "starterSlotId": "layout.header",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-layout.header",
+          "suggestedSlotId": "layout.header",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-01.tablet-768.png",
+          "sourcePath": "captures/product/tablet-768/full-page.png",
+          "sha256": "44f614cd44059c9b11b72be11218204dabdcadc6a73d6dc533592c1dc8d24307",
+          "bounds": "x=0;y=0;width=768;height=72",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "product.gallery",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.gallery",
+          "suggestedSlotId": null,
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-02.desktop-1440.png",
+          "sourcePath": "captures/product/desktop-1440/full-page.png",
+          "sha256": "caa9ed71d1c407c8061b9ee5d0c37f094fe80a68399cf8b4b90dda9601c044a3",
+          "bounds": "x=0;y=72;width=1440;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "product.gallery",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.gallery",
+          "suggestedSlotId": null,
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-02.mobile-390.png",
+          "sourcePath": "captures/product/mobile-390/full-page.png",
+          "sha256": "66d8927e65bcf75fb2d9f5e96eb1c4ffa4c42e18c19735c8e57c955e3d0ea84e",
+          "bounds": "x=0;y=72;width=390;height=520",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-02",
+          "starterSlotId": "product.gallery",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.gallery",
+          "suggestedSlotId": null,
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-02.tablet-768.png",
+          "sourcePath": "captures/product/tablet-768/full-page.png",
+          "sha256": "8947821958301ac2f8efb4471219fc95bb7894c3145b460c0489483d2920f6d3",
+          "bounds": "x=0;y=72;width=768;height=440",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "product.information",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.information",
+          "suggestedSlotId": "product.information",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-03.desktop-1440.png",
+          "sourcePath": "captures/product/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "product.information",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.information",
+          "suggestedSlotId": "product.information",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-03.mobile-390.png",
+          "sourcePath": "captures/product/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-03",
+          "starterSlotId": "product.information",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.information",
+          "suggestedSlotId": "product.information",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-03.tablet-768.png",
+          "sourcePath": "captures/product/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-04",
+          "starterSlotId": "product.purchase",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.purchase",
+          "suggestedSlotId": "product.purchase",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-04.desktop-1440.png",
+          "sourcePath": "captures/product/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-04",
+          "starterSlotId": "product.purchase",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.purchase",
+          "suggestedSlotId": "product.purchase",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-04.mobile-390.png",
+          "sourcePath": "captures/product/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-04",
+          "starterSlotId": "product.purchase",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-product.purchase",
+          "suggestedSlotId": "product.purchase",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-04.tablet-768.png",
+          "sourcePath": "captures/product/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-05",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "desktop-1440",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-05.desktop-1440.png",
+          "sourcePath": "captures/product/desktop-1440/full-page.png",
+          "sha256": "fcee1f3c974cb4d98a192b8faae41ef61b60352e0e10b5bb3f7ca66500b5edaf",
+          "bounds": "x=0;y=1100;width=1440;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-05",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "mobile-390",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-05.mobile-390.png",
+          "sourcePath": "captures/product/mobile-390/full-page.png",
+          "sha256": "f7bb594a1869b784bf51bab1d46e33dac1f3cb3a39185e44abbb7b0d21af9581",
+          "bounds": "x=0;y=1389;width=390;height=1",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        },
+        {
+          "sectionId": "section-05",
+          "starterSlotId": "layout.footer",
+          "slotSource": "reviewed-presentation-mapping",
+          "mappingId": "product-layout.footer",
+          "suggestedSlotId": "layout.footer",
+          "viewportId": "tablet-768",
+          "handoffPath": "analysis/agent-handoff/section-screenshots/product/section-05.tablet-768.png",
+          "sourcePath": "captures/product/tablet-768/full-page.png",
+          "sha256": "4ab5a8b09411c5f6640fb05beb812b5499c62772d277385db56f4c863e9050d7",
+          "bounds": "x=0;y=1100;width=768;height=260",
+          "interactionState": "default",
+          "originalityRestrictions": [
+            "evidence-only",
+            "reference-only",
+            "not-production-safe"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "component-instances",
+  "artifactId": "component-instances-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:39.6553453\u002B00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "instances": [
+    {
+      "instanceId": "instance-family-footer-001",
+      "familyId": "family-footer",
+      "variantId": "family-footer-default",
+      "pageId": "home",
+      "viewportId": "desktop-1440",
+      "selector": "footer",
+      "evidenceIds": [
+        "ev-desktop-1440-004"
+      ]
+    },
+    {
+      "instanceId": "instance-family-footer-002",
+      "familyId": "family-footer",
+      "variantId": "family-footer-default",
+      "pageId": "home",
+      "viewportId": "tablet-768",
+      "selector": "footer",
+      "evidenceIds": [
+        "ev-tablet-768-004"
+      ]
+    },
+    {
+      "instanceId": "instance-family-footer-003",
+      "familyId": "family-footer",
+      "variantId": "family-footer-default",
+      "pageId": "home",
+      "viewportId": "mobile-390",
+      "selector": "footer",
+      "evidenceIds": [
+        "ev-mobile-390-004"
+      ]
+    },
+    {
+      "instanceId": "instance-family-header-001",
+      "familyId": "family-header",
+      "variantId": "family-header-default",
+      "pageId": "home",
+      "viewportId": "desktop-1440",
+      "selector": "header.site-header",
+      "evidenceIds": [
+        "ev-desktop-1440-001"
+      ]
+    },
+    {
+      "instanceId": "instance-family-header-002",
+      "familyId": "family-header",
+      "variantId": "family-header-default",
+      "pageId": "home",
+      "viewportId": "tablet-768",
+      "selector": "header.site-header",
+      "evidenceIds": [
+        "ev-tablet-768-001"
+      ]
+    },
+    {
+      "instanceId": "instance-family-header-003",
+      "familyId": "family-header",
+      "variantId": "family-header-default",
+      "pageId": "home",
+      "viewportId": "mobile-390",
+      "selector": "header.site-header",
+      "evidenceIds": [
+        "ev-mobile-390-001"
+      ]
+    },
+    {
+      "instanceId": "instance-family-hero-001",
+      "familyId": "family-hero",
+      "variantId": "family-hero-default",
+      "pageId": "home",
+      "viewportId": "desktop-1440",
+      "selector": "section.hero",
+      "evidenceIds": [
+        "ev-desktop-1440-002"
+      ]
+    },
+    {
+      "instanceId": "instance-family-hero-002",
+      "familyId": "family-hero",
+      "variantId": "family-hero-default",
+      "pageId": "home",
+      "viewportId": "tablet-768",
+      "selector": "section.hero",
+      "evidenceIds": [
+        "ev-tablet-768-002"
+      ]
+    },
+    {
+      "instanceId": "instance-family-hero-003",
+      "familyId": "family-hero",
+      "variantId": "family-hero-default",
+      "pageId": "home",
+      "viewportId": "mobile-390",
+      "selector": "section.hero",
+      "evidenceIds": [
+        "ev-mobile-390-002"
+      ]
+    },
+    {
+      "instanceId": "instance-family-product-card-001",
+      "familyId": "family-product-card",
+      "variantId": "family-product-card-default",
+      "pageId": "home",
+      "viewportId": "desktop-1440",
+      "selector": ".product-card",
+      "evidenceIds": [
+        "ev-desktop-1440-003"
+      ]
+    },
+    {
+      "instanceId": "instance-family-product-card-002",
+      "familyId": "family-product-card",
+      "variantId": "family-product-card-default",
+      "pageId": "home",
+      "viewportId": "tablet-768",
+      "selector": ".product-card",
+      "evidenceIds": [
+        "ev-tablet-768-003"
+      ]
+    },
+    {
+      "instanceId": "instance-family-product-card-003",
+      "familyId": "family-product-card",
+      "variantId": "family-product-card-default",
+      "pageId": "home",
+      "viewportId": "mobile-390",
+      "selector": ".product-card",
+      "evidenceIds": [
+        "ev-mobile-390-003"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1690 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-responsive-behavior",
+  "artifactId": "agent-handoff-responsive-behavior-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227+00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "reviewStatus": "evidence-derived",
+  "pages": [
+    {
+      "pageId": "account",
+      "sections": [
+        {
+          "crossViewportIdentityKey": "header.site-header",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-account-desktop-1440-001",
+            "ev-account-tablet-768-001",
+            "ev-account-mobile-390-001"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "section.hero",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 72,
+              "width": 390,
+              "height": 520,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 72,
+              "width": 768,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 72,
+              "width": 1440,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-account-desktop-1440-002",
+            "ev-account-tablet-768-002",
+            "ev-account-mobile-390-002"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "product-card",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-account-desktop-1440-003",
+            "ev-account-tablet-768-003",
+            "ev-account-mobile-390-003"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "footer",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 1600,
+              "width": 390,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 1100,
+              "width": 768,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 1100,
+              "width": 1440,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-account-desktop-1440-004",
+            "ev-account-tablet-768-004",
+            "ev-account-mobile-390-004"
+          ]
+        }
+      ],
+      "inferredBreakpointRanges": [
+        "between-observed-viewports"
+      ],
+      "issues": [
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027header.site-header\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-account-desktop-1440-001",
+            "ev-account-tablet-768-001",
+            "ev-account-mobile-390-001"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027section.hero\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-account-desktop-1440-002",
+            "ev-account-tablet-768-002",
+            "ev-account-mobile-390-002"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027footer\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-account-desktop-1440-004",
+            "ev-account-tablet-768-004",
+            "ev-account-mobile-390-004"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "cart",
+      "sections": [
+        {
+          "crossViewportIdentityKey": "header.site-header",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-cart-desktop-1440-001",
+            "ev-cart-tablet-768-001",
+            "ev-cart-mobile-390-001"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "section.hero",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 72,
+              "width": 390,
+              "height": 520,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 72,
+              "width": 768,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 72,
+              "width": 1440,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-cart-desktop-1440-002",
+            "ev-cart-tablet-768-002",
+            "ev-cart-mobile-390-002"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "product-card",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-cart-desktop-1440-003",
+            "ev-cart-tablet-768-003",
+            "ev-cart-mobile-390-003"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "footer",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 1600,
+              "width": 390,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 1100,
+              "width": 768,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 1100,
+              "width": 1440,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-cart-desktop-1440-004",
+            "ev-cart-tablet-768-004",
+            "ev-cart-mobile-390-004"
+          ]
+        }
+      ],
+      "inferredBreakpointRanges": [
+        "between-observed-viewports"
+      ],
+      "issues": [
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027header.site-header\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-001",
+            "ev-cart-tablet-768-001",
+            "ev-cart-mobile-390-001"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027section.hero\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-002",
+            "ev-cart-tablet-768-002",
+            "ev-cart-mobile-390-002"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027footer\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-cart-desktop-1440-004",
+            "ev-cart-tablet-768-004",
+            "ev-cart-mobile-390-004"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "category",
+      "sections": [
+        {
+          "crossViewportIdentityKey": "header.site-header",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-category-desktop-1440-001",
+            "ev-category-tablet-768-001",
+            "ev-category-mobile-390-001"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "section.hero",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 72,
+              "width": 390,
+              "height": 520,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 72,
+              "width": 768,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 72,
+              "width": 1440,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-category-desktop-1440-002",
+            "ev-category-tablet-768-002",
+            "ev-category-mobile-390-002"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "product-card",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-category-desktop-1440-003",
+            "ev-category-tablet-768-003",
+            "ev-category-mobile-390-003"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "footer",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 1600,
+              "width": 390,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 1100,
+              "width": 768,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 1100,
+              "width": 1440,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-category-desktop-1440-004",
+            "ev-category-tablet-768-004",
+            "ev-category-mobile-390-004"
+          ]
+        }
+      ],
+      "inferredBreakpointRanges": [
+        "between-observed-viewports"
+      ],
+      "issues": [
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027header.site-header\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-category-desktop-1440-001",
+            "ev-category-tablet-768-001",
+            "ev-category-mobile-390-001"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027section.hero\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-category-desktop-1440-002",
+            "ev-category-tablet-768-002",
+            "ev-category-mobile-390-002"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027footer\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-category-desktop-1440-004",
+            "ev-category-tablet-768-004",
+            "ev-category-mobile-390-004"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "checkout",
+      "sections": [
+        {
+          "crossViewportIdentityKey": "header.site-header",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-001",
+            "ev-checkout-tablet-768-001",
+            "ev-checkout-mobile-390-001"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "section.hero",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 72,
+              "width": 390,
+              "height": 520,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 72,
+              "width": 768,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 72,
+              "width": 1440,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-002",
+            "ev-checkout-tablet-768-002",
+            "ev-checkout-mobile-390-002"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "product-card",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-003",
+            "ev-checkout-tablet-768-003",
+            "ev-checkout-mobile-390-003"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "footer",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 1600,
+              "width": 390,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 1100,
+              "width": 768,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 1100,
+              "width": 1440,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-004",
+            "ev-checkout-tablet-768-004",
+            "ev-checkout-mobile-390-004"
+          ]
+        }
+      ],
+      "inferredBreakpointRanges": [
+        "between-observed-viewports"
+      ],
+      "issues": [
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027header.site-header\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-001",
+            "ev-checkout-tablet-768-001",
+            "ev-checkout-mobile-390-001"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027section.hero\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-002",
+            "ev-checkout-tablet-768-002",
+            "ev-checkout-mobile-390-002"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027footer\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-checkout-desktop-1440-004",
+            "ev-checkout-tablet-768-004",
+            "ev-checkout-mobile-390-004"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "home",
+      "sections": [
+        {
+          "crossViewportIdentityKey": "header.site-header",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-desktop-1440-001",
+            "ev-tablet-768-001",
+            "ev-mobile-390-001"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "section.hero",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 72,
+              "width": 390,
+              "height": 520,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 72,
+              "width": 768,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 72,
+              "width": 1440,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-desktop-1440-002",
+            "ev-tablet-768-002",
+            "ev-mobile-390-002"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "product-card",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-desktop-1440-003",
+            "ev-tablet-768-003",
+            "ev-mobile-390-003"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "footer",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 1600,
+              "width": 390,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 1100,
+              "width": 768,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 1100,
+              "width": 1440,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-desktop-1440-004",
+            "ev-tablet-768-004",
+            "ev-mobile-390-004"
+          ]
+        }
+      ],
+      "inferredBreakpointRanges": [
+        "between-observed-viewports"
+      ],
+      "issues": [
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027header.site-header\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-desktop-1440-001",
+            "ev-tablet-768-001",
+            "ev-mobile-390-001"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027section.hero\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-desktop-1440-002",
+            "ev-tablet-768-002",
+            "ev-mobile-390-002"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027footer\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-desktop-1440-004",
+            "ev-tablet-768-004",
+            "ev-mobile-390-004"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "maintenance",
+      "sections": [
+        {
+          "crossViewportIdentityKey": "header.site-header",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-001",
+            "ev-maintenance-tablet-768-001",
+            "ev-maintenance-mobile-390-001"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "section.hero",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 72,
+              "width": 390,
+              "height": 520,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 72,
+              "width": 768,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 72,
+              "width": 1440,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-002",
+            "ev-maintenance-tablet-768-002",
+            "ev-maintenance-mobile-390-002"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "product-card",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-003",
+            "ev-maintenance-tablet-768-003",
+            "ev-maintenance-mobile-390-003"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "footer",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 1600,
+              "width": 390,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 1100,
+              "width": 768,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 1100,
+              "width": 1440,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-004",
+            "ev-maintenance-tablet-768-004",
+            "ev-maintenance-mobile-390-004"
+          ]
+        }
+      ],
+      "inferredBreakpointRanges": [
+        "between-observed-viewports"
+      ],
+      "issues": [
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027header.site-header\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-001",
+            "ev-maintenance-tablet-768-001",
+            "ev-maintenance-mobile-390-001"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027section.hero\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-002",
+            "ev-maintenance-tablet-768-002",
+            "ev-maintenance-mobile-390-002"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027footer\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-maintenance-desktop-1440-004",
+            "ev-maintenance-tablet-768-004",
+            "ev-maintenance-mobile-390-004"
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "product",
+      "sections": [
+        {
+          "crossViewportIdentityKey": "header.site-header",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 72,
+              "display": "flex",
+              "visibility": null,
+              "position": "sticky",
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-product-desktop-1440-001",
+            "ev-product-tablet-768-001",
+            "ev-product-mobile-390-001"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "section.hero",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 72,
+              "width": 390,
+              "height": 520,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 72,
+              "width": 768,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 72,
+              "width": 1440,
+              "height": 440,
+              "display": "grid",
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-product-desktop-1440-002",
+            "ev-product-tablet-768-002",
+            "ev-product-mobile-390-002"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "product-card",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": null,
+              "y": null,
+              "width": null,
+              "height": null,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-product-desktop-1440-003",
+            "ev-product-tablet-768-003",
+            "ev-product-mobile-390-003"
+          ]
+        },
+        {
+          "crossViewportIdentityKey": "footer",
+          "viewports": [
+            {
+              "viewportId": "mobile-390",
+              "x": 0,
+              "y": 1600,
+              "width": 390,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "tablet-768",
+              "x": 0,
+              "y": 1100,
+              "width": 768,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            },
+            {
+              "viewportId": "desktop-1440",
+              "x": 0,
+              "y": 1100,
+              "width": 1440,
+              "height": 260,
+              "display": null,
+              "visibility": null,
+              "position": null,
+              "gap": null,
+              "fontSize": null,
+              "assetCount": 0
+            }
+          ],
+          "behaviorFlags": [],
+          "evidenceIds": [
+            "ev-product-desktop-1440-004",
+            "ev-product-tablet-768-004",
+            "ev-product-mobile-390-004"
+          ]
+        }
+      ],
+      "inferredBreakpointRanges": [
+        "between-observed-viewports"
+      ],
+      "issues": [
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027header.site-header\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-product-desktop-1440-001",
+            "ev-product-tablet-768-001",
+            "ev-product-mobile-390-001"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027section.hero\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-product-desktop-1440-002",
+            "ev-product-tablet-768-002",
+            "ev-product-mobile-390-002"
+          ]
+        },
+        {
+          "code": "horizontal-overflow-or-carousel",
+          "severity": "warning",
+          "message": "Section \u0027footer\u0027 may overflow horizontally.",
+          "evidenceIds": [
+            "ev-product-desktop-1440-004",
+            "ev-product-tablet-768-004",
+            "ev-product-mobile-390-004"
+          ]
+        }
+      ]
+    }
+  ]
+}

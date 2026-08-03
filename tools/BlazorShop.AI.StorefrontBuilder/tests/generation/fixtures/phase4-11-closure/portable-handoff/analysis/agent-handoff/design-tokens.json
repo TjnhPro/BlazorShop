@@ -1,0 +1,693 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "agent-handoff-design-tokens",
+  "artifactId": "agent-handoff-design-tokens-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:36.8582227\u002B00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "tokens": [
+    {
+      "role": "surface-card",
+      "group": "color",
+      "values": [
+        "#101820"
+      ],
+      "rawTokenIds": [
+        "raw-color-background-color-395cae5498"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "confidence": 0.55,
+      "reasonCodes": [
+        "card-background-candidate"
+      ],
+      "humanReviewRequired": false,
+      "reviewState": "Approved",
+      "originalProposal": {
+        "role": "surface-card",
+        "group": "color",
+        "values": [
+          "#101820"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-395cae5498"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.55,
+        "reasonCodes": [
+          "card-background-candidate"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewedValue": {
+        "role": "surface-card",
+        "group": "color",
+        "values": [
+          "#101820"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-395cae5498"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.55,
+        "reasonCodes": [
+          "card-background-candidate"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "role": "surface-page",
+      "group": "color",
+      "values": [
+        "#101820"
+      ],
+      "rawTokenIds": [
+        "raw-color-background-color-395cae5498"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "confidence": 0.76,
+      "reasonCodes": [
+        "background-frequency"
+      ],
+      "humanReviewRequired": false
+    },
+    {
+      "role": "surface-section",
+      "group": "color",
+      "values": [
+        "#ffffff"
+      ],
+      "rawTokenIds": [
+        "raw-color-background-color-d6dfa1b667"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001",
+        "ev-mobile-390-001",
+        "ev-tablet-768-001"
+      ],
+      "confidence": 0.58,
+      "reasonCodes": [
+        "secondary-background"
+      ],
+      "humanReviewRequired": false,
+      "reviewState": "Approved",
+      "originalProposal": {
+        "role": "surface-section",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-d6dfa1b667"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-mobile-390-001",
+          "ev-tablet-768-001"
+        ],
+        "confidence": 0.58,
+        "reasonCodes": [
+          "secondary-background"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewedValue": {
+        "role": "surface-section",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-d6dfa1b667"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-mobile-390-001",
+          "ev-tablet-768-001"
+        ],
+        "confidence": 0.58,
+        "reasonCodes": [
+          "secondary-background"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "role": "text-inverse",
+      "group": "color",
+      "values": [
+        "#ffffff"
+      ],
+      "rawTokenIds": [
+        "raw-color-color-44f53d0059"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "confidence": 0.66,
+      "reasonCodes": [
+        "light-text-candidate"
+      ],
+      "humanReviewRequired": false
+    },
+    {
+      "role": "text-muted",
+      "group": "color",
+      "values": [
+        "#13201a"
+      ],
+      "rawTokenIds": [
+        "raw-color-color-6151b06662"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-mobile-390-002",
+        "ev-tablet-768-002"
+      ],
+      "confidence": 0.45,
+      "reasonCodes": [
+        "low-frequency-text-candidate"
+      ],
+      "humanReviewRequired": true,
+      "reviewState": "Approved",
+      "originalProposal": {
+        "role": "text-muted",
+        "group": "color",
+        "values": [
+          "#13201a"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-6151b06662"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-mobile-390-002",
+          "ev-tablet-768-002"
+        ],
+        "confidence": 0.45,
+        "reasonCodes": [
+          "low-frequency-text-candidate"
+        ],
+        "humanReviewRequired": true
+      },
+      "reviewedValue": {
+        "role": "text-muted",
+        "group": "color",
+        "values": [
+          "#13201a"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-6151b06662"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-mobile-390-002",
+          "ev-tablet-768-002"
+        ],
+        "confidence": 0.45,
+        "reasonCodes": [
+          "low-frequency-text-candidate"
+        ],
+        "humanReviewRequired": true
+      }
+    },
+    {
+      "role": "text-primary",
+      "group": "color",
+      "values": [
+        "#13201a"
+      ],
+      "rawTokenIds": [
+        "raw-color-color-6151b06662"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-mobile-390-002",
+        "ev-tablet-768-002"
+      ],
+      "confidence": 0.78,
+      "reasonCodes": [
+        "dark-text-frequency"
+      ],
+      "humanReviewRequired": false
+    },
+    {
+      "role": "text-secondary",
+      "group": "color",
+      "values": [
+        "#ffffff"
+      ],
+      "rawTokenIds": [
+        "raw-color-color-44f53d0059"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "confidence": 0.52,
+      "reasonCodes": [
+        "secondary-text-candidate"
+      ],
+      "humanReviewRequired": false,
+      "reviewState": "Approved",
+      "originalProposal": {
+        "role": "text-secondary",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-44f53d0059"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.52,
+        "reasonCodes": [
+          "secondary-text-candidate"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewedValue": {
+        "role": "text-secondary",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-44f53d0059"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.52,
+        "reasonCodes": [
+          "secondary-text-candidate"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "role": "radius-small",
+      "group": "shape",
+      "values": [
+        "8px"
+      ],
+      "rawTokenIds": [
+        "raw-shape-border-radius-4e955727ff"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-003",
+        "ev-mobile-390-003",
+        "ev-tablet-768-003"
+      ],
+      "confidence": 0.62,
+      "reasonCodes": [
+        "radius-scale-rank"
+      ],
+      "humanReviewRequired": false
+    },
+    {
+      "role": "shadow-card",
+      "group": "shape",
+      "values": [
+        "0 8px 24px rgba(0,0,0,.12)"
+      ],
+      "rawTokenIds": [
+        "raw-shape-box-shadow-97d35f5ff4"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-003",
+        "ev-mobile-390-003",
+        "ev-tablet-768-003"
+      ],
+      "confidence": 0.62,
+      "reasonCodes": [
+        "shadow-frequency"
+      ],
+      "humanReviewRequired": false
+    },
+    {
+      "role": "font-body",
+      "group": "typography",
+      "values": [
+        "Inter"
+      ],
+      "rawTokenIds": [
+        "raw-typography-font-family-c93abe4689"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-mobile-390-002",
+        "ev-tablet-768-002"
+      ],
+      "confidence": 0.78,
+      "reasonCodes": [
+        "font-family-frequency"
+      ],
+      "humanReviewRequired": false
+    }
+  ],
+  "pageLocalOverrides": [
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-c6603ddd25"
+      ],
+      "evidenceIds": [
+        "ev-mobile-390-002"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-0cdd7d9a46"
+      ],
+      "evidenceIds": [
+        "ev-mobile-390-004"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-4fa2eb403b"
+      ],
+      "evidenceIds": [
+        "ev-tablet-768-002"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-a276be7926"
+      ],
+      "evidenceIds": [
+        "ev-tablet-768-001"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-c943a9a777"
+      ],
+      "evidenceIds": [
+        "ev-tablet-768-004"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-b09b327b7d"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-32a47eaa29"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-cf34f7928a"
+      ],
+      "evidenceIds": [
+        "ev-mobile-390-001"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-aspect-ratio",
+      "rawTokenIds": [
+        "raw-layout-aspect-ratio-81cc6f8729"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-height",
+      "rawTokenIds": [
+        "raw-layout-height-c9aee5654c"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-tablet-768-002"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    },
+    {
+      "scopeId": "home",
+      "role": "local-layout-height",
+      "rawTokenIds": [
+        "raw-layout-height-3eae043309"
+      ],
+      "evidenceIds": [
+        "ev-mobile-390-002"
+      ],
+      "reasonCode": "page-local-low-frequency-token"
+    }
+  ],
+  "componentLocalOverrides": [],
+  "humanReviewRequired": true,
+  "reviewReasons": [],
+  "reviewedItems": [
+    {
+      "itemId": "token:surface-card",
+      "status": "Approved",
+      "originalValue": {
+        "role": "surface-card",
+        "group": "color",
+        "values": [
+          "#101820"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-395cae5498"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.55,
+        "reasonCodes": [
+          "card-background-candidate"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewedValue": {
+        "role": "surface-card",
+        "group": "color",
+        "values": [
+          "#101820"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-395cae5498"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.55,
+        "reasonCodes": [
+          "card-background-candidate"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewerNote": "Approved by positive proof.",
+      "decidedUtc": "2026-08-03T03:13:41.0017896\u002B00:00"
+    },
+    {
+      "itemId": "token:surface-section",
+      "status": "Approved",
+      "originalValue": {
+        "role": "surface-section",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-d6dfa1b667"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-mobile-390-001",
+          "ev-tablet-768-001"
+        ],
+        "confidence": 0.58,
+        "reasonCodes": [
+          "secondary-background"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewedValue": {
+        "role": "surface-section",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-d6dfa1b667"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-mobile-390-001",
+          "ev-tablet-768-001"
+        ],
+        "confidence": 0.58,
+        "reasonCodes": [
+          "secondary-background"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewerNote": "Approved by positive proof.",
+      "decidedUtc": "2026-08-03T03:13:41.0017897\u002B00:00"
+    },
+    {
+      "itemId": "token:text-muted",
+      "status": "Approved",
+      "originalValue": {
+        "role": "text-muted",
+        "group": "color",
+        "values": [
+          "#13201a"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-6151b06662"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-mobile-390-002",
+          "ev-tablet-768-002"
+        ],
+        "confidence": 0.45,
+        "reasonCodes": [
+          "low-frequency-text-candidate"
+        ],
+        "humanReviewRequired": true
+      },
+      "reviewedValue": {
+        "role": "text-muted",
+        "group": "color",
+        "values": [
+          "#13201a"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-6151b06662"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-mobile-390-002",
+          "ev-tablet-768-002"
+        ],
+        "confidence": 0.45,
+        "reasonCodes": [
+          "low-frequency-text-candidate"
+        ],
+        "humanReviewRequired": true
+      },
+      "reviewerNote": "Approved by positive proof.",
+      "decidedUtc": "2026-08-03T03:13:41.0017899\u002B00:00"
+    },
+    {
+      "itemId": "token:text-secondary",
+      "status": "Approved",
+      "originalValue": {
+        "role": "text-secondary",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-44f53d0059"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.52,
+        "reasonCodes": [
+          "secondary-text-candidate"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewedValue": {
+        "role": "text-secondary",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-44f53d0059"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.52,
+        "reasonCodes": [
+          "secondary-text-candidate"
+        ],
+        "humanReviewRequired": false
+      },
+      "reviewerNote": "Approved by positive proof.",
+      "decidedUtc": "2026-08-03T03:13:41.00179\u002B00:00"
+    }
+  ],
+  "diagnosticProvenance": [
+    {
+      "path": "analysis/tokens/raw-design-tokens.json",
+      "role": "diagnostics-only",
+      "consumerReadable": false
+    }
+  ]
+}

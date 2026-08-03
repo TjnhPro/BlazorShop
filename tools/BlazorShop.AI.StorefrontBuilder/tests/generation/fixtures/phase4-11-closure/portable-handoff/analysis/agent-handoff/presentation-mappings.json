@@ -1,0 +1,697 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "reviewed-presentation-mappings",
+  "artifactId": "reviewed-presentation-mappings",
+  "createdUtc": "2026-08-03T03:13:39.8836654\u002B00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "mappings": [
+    {
+      "sourceCandidateId": "family-footer",
+      "presentationComponentId": "layout.footer",
+      "starterSlotId": "layout.footer",
+      "variant": "default",
+      "slotAssignments": [
+        "root:container"
+      ],
+      "responsiveProperties": [
+        "home:footer"
+      ],
+      "tokenBindings": [
+        "surface-card",
+        "surface-page",
+        "text-inverse",
+        "text-secondary"
+      ],
+      "interactionBindings": [],
+      "dataRequirements": [
+        "catalog"
+      ],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.78,
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-tablet-768-004",
+        "ev-mobile-390-004"
+      ],
+      "mappingReason": "preferred-id-match",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "home",
+      "sourceSectionId": "section-03",
+      "ecommerceRegionId": "region-03",
+      "pageArchetype": "home",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "reasonCodes": [
+        "page-archetype-compatible",
+        "ecommerce-role-compatible",
+        "target-generated-path-allowed"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "family-header",
+      "presentationComponentId": "layout.header",
+      "starterSlotId": "layout.header",
+      "variant": "default",
+      "slotAssignments": [
+        "root:container"
+      ],
+      "responsiveProperties": [
+        "home:header.site-header"
+      ],
+      "tokenBindings": [
+        "surface-section"
+      ],
+      "interactionBindings": [],
+      "dataRequirements": [
+        "shell"
+      ],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.78,
+      "evidenceIds": [
+        "ev-desktop-1440-001",
+        "ev-tablet-768-001",
+        "ev-mobile-390-001"
+      ],
+      "mappingReason": "preferred-id-match",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "home",
+      "sourceSectionId": "section-01",
+      "ecommerceRegionId": "region-01",
+      "pageArchetype": "home",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "reasonCodes": [
+        "page-archetype-compatible",
+        "ecommerce-role-compatible",
+        "target-generated-path-allowed"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "category-layout.header",
+      "presentationComponentId": "layout.header",
+      "starterSlotId": "layout.header",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-category-desktop-1440-001"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "category",
+      "sourceSectionId": "section-01",
+      "ecommerceRegionId": "section-01",
+      "pageArchetype": "category",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "category-catalog.product-card",
+      "presentationComponentId": "catalog.product-card",
+      "starterSlotId": "catalog.product-card",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-category-desktop-1440-002"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "category",
+      "sourceSectionId": "section-02",
+      "ecommerceRegionId": "section-02",
+      "pageArchetype": "category",
+      "targetGeneratedPath": "Components/Catalog/ProductSummaryCard.razor",
+      "generatedZone": "catalog-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "category-layout.footer",
+      "presentationComponentId": "layout.footer",
+      "starterSlotId": "layout.footer",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-category-desktop-1440-003"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "category",
+      "sourceSectionId": "section-03",
+      "ecommerceRegionId": "section-03",
+      "pageArchetype": "category",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "product-layout.header",
+      "presentationComponentId": "layout.header",
+      "starterSlotId": "layout.header",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-product-desktop-1440-001"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "product",
+      "sourceSectionId": "section-01",
+      "ecommerceRegionId": "section-01",
+      "pageArchetype": "product",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "product-product.gallery",
+      "presentationComponentId": "product.gallery",
+      "starterSlotId": "product.gallery",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-product-desktop-1440-002"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "product",
+      "sourceSectionId": "section-02",
+      "ecommerceRegionId": "section-02",
+      "pageArchetype": "product",
+      "targetGeneratedPath": "Components/Catalog/ProductGalleryPlaceholder.razor",
+      "generatedZone": "catalog-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "product-product.information",
+      "presentationComponentId": "product.information",
+      "starterSlotId": "product.information",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-product-desktop-1440-003"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "product",
+      "sourceSectionId": "section-03",
+      "ecommerceRegionId": "section-03",
+      "pageArchetype": "product",
+      "targetGeneratedPath": "Components/Catalog/ProductDetailShell.razor",
+      "generatedZone": "catalog-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "product-product.purchase",
+      "presentationComponentId": "product.purchase",
+      "starterSlotId": "product.purchase",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-product-desktop-1440-004"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "product",
+      "sourceSectionId": "section-04",
+      "ecommerceRegionId": "section-04",
+      "pageArchetype": "product",
+      "targetGeneratedPath": "Components/Catalog/PurchasePanelPlaceholder.razor",
+      "generatedZone": "catalog-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "product-layout.footer",
+      "presentationComponentId": "layout.footer",
+      "starterSlotId": "layout.footer",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-product-desktop-1440-005"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "product",
+      "sourceSectionId": "section-05",
+      "ecommerceRegionId": "section-05",
+      "pageArchetype": "product",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "cart-layout.header",
+      "presentationComponentId": "layout.header",
+      "starterSlotId": "layout.header",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-cart-desktop-1440-001"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "cart",
+      "sourceSectionId": "section-01",
+      "ecommerceRegionId": "section-01",
+      "pageArchetype": "cart",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "cart-cart.page",
+      "presentationComponentId": "cart.page",
+      "starterSlotId": "cart.page",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-cart-desktop-1440-002"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "cart",
+      "sourceSectionId": "section-02",
+      "ecommerceRegionId": "section-02",
+      "pageArchetype": "cart",
+      "targetGeneratedPath": "Pages/Hybrid/Cart/CartPage.razor",
+      "generatedZone": "pages",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "cart-layout.footer",
+      "presentationComponentId": "layout.footer",
+      "starterSlotId": "layout.footer",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-cart-desktop-1440-003"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "cart",
+      "sourceSectionId": "section-03",
+      "ecommerceRegionId": "section-03",
+      "pageArchetype": "cart",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "checkout-layout.header",
+      "presentationComponentId": "layout.header",
+      "starterSlotId": "layout.header",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-checkout-desktop-1440-001"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "checkout",
+      "sourceSectionId": "section-01",
+      "ecommerceRegionId": "section-01",
+      "pageArchetype": "checkout",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "checkout-checkout.page",
+      "presentationComponentId": "checkout.page",
+      "starterSlotId": "checkout.page",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-checkout-desktop-1440-002"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "checkout",
+      "sourceSectionId": "section-02",
+      "ecommerceRegionId": "section-02",
+      "pageArchetype": "checkout",
+      "targetGeneratedPath": "Pages/Hybrid/Checkout/CheckoutPage.razor",
+      "generatedZone": "pages",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "checkout-layout.footer",
+      "presentationComponentId": "layout.footer",
+      "starterSlotId": "layout.footer",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-checkout-desktop-1440-003"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "checkout",
+      "sourceSectionId": "section-03",
+      "ecommerceRegionId": "section-03",
+      "pageArchetype": "checkout",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "account-layout.header",
+      "presentationComponentId": "layout.header",
+      "starterSlotId": "layout.header",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-account-desktop-1440-001"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "account",
+      "sourceSectionId": "section-01",
+      "ecommerceRegionId": "section-01",
+      "pageArchetype": "account",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "account-account.shell",
+      "presentationComponentId": "account.shell",
+      "starterSlotId": "account.shell",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-account-desktop-1440-002"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "account",
+      "sourceSectionId": "section-02",
+      "ecommerceRegionId": "section-02",
+      "pageArchetype": "account",
+      "targetGeneratedPath": "Pages/Hybrid/Account/AccountPage.razor",
+      "generatedZone": "pages",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "account-layout.footer",
+      "presentationComponentId": "layout.footer",
+      "starterSlotId": "layout.footer",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-account-desktop-1440-003"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "account",
+      "sourceSectionId": "section-03",
+      "ecommerceRegionId": "section-03",
+      "pageArchetype": "account",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "maintenance-layout.header",
+      "presentationComponentId": "layout.header",
+      "starterSlotId": "layout.header",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-maintenance-desktop-1440-001"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "maintenance",
+      "sourceSectionId": "section-01",
+      "ecommerceRegionId": "section-01",
+      "pageArchetype": "maintenance",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "maintenance-system.error",
+      "presentationComponentId": "system.error",
+      "starterSlotId": "system.error",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-maintenance-desktop-1440-002"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "maintenance",
+      "sourceSectionId": "section-02",
+      "ecommerceRegionId": "section-02",
+      "pageArchetype": "maintenance",
+      "targetGeneratedPath": "Pages/Ssr/System/MaintenancePage.razor",
+      "generatedZone": "pages",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    },
+    {
+      "sourceCandidateId": "maintenance-layout.footer",
+      "presentationComponentId": "layout.footer",
+      "starterSlotId": "layout.footer",
+      "variant": "default",
+      "slotAssignments": [],
+      "responsiveProperties": [],
+      "tokenBindings": [],
+      "interactionBindings": [],
+      "dataRequirements": [],
+      "behaviorOwnership": "presentation",
+      "confidence": 0.95,
+      "evidenceIds": [
+        "ev-maintenance-desktop-1440-003"
+      ],
+      "mappingReason": "positive end-to-end proof mapping",
+      "alternativeMappings": [],
+      "humanReviewRequired": false,
+      "sourcePageId": "maintenance",
+      "sourceSectionId": "section-03",
+      "ecommerceRegionId": "section-03",
+      "pageArchetype": "maintenance",
+      "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+      "generatedZone": "layout-components",
+      "routeOwnership": "presentation",
+      "reasonCodes": [
+        "positive-proof"
+      ],
+      "reviewState": "Approved"
+    }
+  ],
+  "reviewedItems": []
+}

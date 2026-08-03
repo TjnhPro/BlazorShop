@@ -171,35 +171,35 @@ Goal: replace the marker handoff fixture with a minimal valid portable handoff p
 
 Tasks:
 
-- [ ] Replace `tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/phase4-11-closure/portable-handoff/README.md` marker-only content with a real portable package shape.
-- [ ] The fixture root must be accepted as a package root by `Test-HandoffPreflight.ps1`.
-- [ ] Include `analysis/agent-handoff/manifest.json`.
-- [ ] Include all required handoff artifacts:
-  - [ ] `handoff-readiness.json`;
-  - [ ] `page-compositions.json`;
-  - [ ] `storefront-pattern.json`;
-  - [ ] `presentation-catalog.json`;
-  - [ ] `presentation-mappings.json`;
-  - [ ] `allowed-files.json`;
-  - [ ] `protected-files.json`;
-  - [ ] `design-tokens.json`;
-  - [ ] `visual-style.json`;
-  - [ ] `responsive-behavior.json`;
-  - [ ] `interaction-models.json`;
-  - [ ] `originality-restrictions.json`;
-  - [ ] `evidence-manifest.json`;
-  - [ ] `unresolved-regions.json`.
-- [ ] Include at least one page composition for home page and the required viewport coverage:
-  - [ ] desktop;
-  - [ ] tablet;
-  - [ ] mobile.
-- [ ] Include at least one allowed generated visual output that maps to an actual generated file in the pilot project.
-- [ ] Include protected files that prove the agent cannot edit platform/runtime files.
-- [ ] Include no blocking unresolved regions.
-- [ ] Include only handoff-local evidence references, such as `analysis/agent-handoff/screenshots/*` or `analysis/agent-handoff/section-screenshots/*`.
-- [ ] If image evidence is too heavy for Git, use tiny deterministic placeholder PNGs or text fixtures only where existing schema/tests accept them. Do not use real reference-site copyrighted assets.
-- [ ] Update `closure-fixture.json` so it no longer says the handoff directory is intentionally minimal.
-- [ ] Add fixture hash/provenance fields that the final gate can report.
+- [x] Replace `tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/phase4-11-closure/portable-handoff/README.md` marker-only content with a real portable package shape.
+- [x] The fixture root must be accepted as a package root by `Test-HandoffPreflight.ps1`.
+- [x] Include `analysis/agent-handoff/manifest.json`.
+- [x] Include all required handoff artifacts:
+  - [x] `handoff-readiness.json`;
+  - [x] `page-compositions.json`;
+  - [x] `storefront-pattern.json`;
+  - [x] `presentation-catalog.json`;
+  - [x] `presentation-mappings.json`;
+  - [x] `allowed-files.json`;
+  - [x] `protected-files.json`;
+  - [x] `design-tokens.json`;
+  - [x] `visual-style.json`;
+  - [x] `responsive-behavior.json`;
+  - [x] `interaction-models.json`;
+  - [x] `originality-restrictions.json`;
+  - [x] `evidence-manifest.json`;
+  - [x] `unresolved-regions.json`.
+- [x] Include at least one page composition for home page and the required viewport coverage:
+  - [x] desktop;
+  - [x] tablet;
+  - [x] mobile.
+- [x] Include at least one allowed generated visual output that maps to an actual generated file in the pilot project.
+- [x] Include protected files that prove the agent cannot edit platform/runtime files.
+- [x] Include no blocking unresolved regions.
+- [x] Include only handoff-local evidence references, such as `analysis/agent-handoff/screenshots/*` or `analysis/agent-handoff/section-screenshots/*`.
+- [x] If image evidence is too heavy for Git, use tiny deterministic placeholder PNGs or text fixtures only where existing schema/tests accept them. Do not use real reference-site copyrighted assets.
+- [x] Update `closure-fixture.json` so it no longer says the handoff directory is intentionally minimal.
+- [x] Add fixture hash/provenance fields that the final gate can report.
 
 Validation commands:
 
@@ -211,11 +211,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\BlazorShop.AI.Storefro
 
 DoD:
 
-- [ ] The fixture is a valid portable handoff package, not a marker.
-- [ ] StorefrontBuilder preflight passes on the tracked fixture.
-- [ ] Dry-run handoff passes on the tracked fixture.
-- [ ] The fixture contains no raw source-only folders such as `captures/`, `analysis/pages/`, `analysis/resolved/`, `presentation-catalog/`, `review/`, or `reports/`.
-- [ ] The fixture is small and deterministic enough for Git.
+- [x] The fixture is a valid portable handoff package, not a marker.
+- [x] StorefrontBuilder preflight passes on the tracked fixture.
+- [x] Dry-run handoff passes on the tracked fixture.
+- [x] The fixture contains no raw source-only folders such as `captures/`, `analysis/pages/`, `analysis/resolved/`, `presentation-catalog/`, `review/`, or `reports/`.
+- [x] The fixture is small and deterministic enough for Git.
+
+Evidence:
+
+- Replaced marker `portable-handoff/README.md` with tracked `portable-handoff/analysis/agent-handoff`.
+- Package hash: `8d968f35b91ed44b192dee850d80f9e5e86de9bcf8d59d577d13b41ecdfbadb2`.
+- `validate-handoff` passed: readiness true, artifact count 114, schema count 21, no blocking finding.
+- `dry-run-handoff` passed: 7 pages, 10 allowed target files, 9 protected files, 90 evidence files, 0 unresolved regions.
+- StorefrontBuilder preflight passed; report: `obj/storefront-builder/handoff-preflight/handoff-preflight-BlazorShop.Storefront.GeneratedProof-20260803102001.md`.
 
 ## Phase 4.12.2 - Handoff-First Final Gate Generation
 

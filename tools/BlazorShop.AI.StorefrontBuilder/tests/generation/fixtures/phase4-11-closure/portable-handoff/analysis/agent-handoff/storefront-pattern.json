@@ -1,0 +1,1337 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "storefront-pattern",
+  "artifactId": "storefront-pattern",
+  "createdUtc": "2026-08-03T03:13:39.7942741\u002B00:00",
+  "metadata": {
+    "contractVersion": "1",
+    "starterTemplateVersion": "1.0.0-local",
+    "targetFramework": "net10.0",
+    "generatedProjectNamingConvention": "BlazorShop.Storefront.{Name}",
+    "generatedProjectOutputRoot": "BlazorShop.PresentationV2",
+    "packageVersionMetadata": {
+      "BlazorShop.Storefront.Presentation": "StorefrontPresentationPackageVersion",
+      "BlazorShop.Storefront.Components": "StorefrontComponentsPackageVersion"
+    },
+    "fileOverwritePolicy": "generated files may be updated only inside generated zones; protected zones are read-only"
+  },
+  "generationZones": {
+    "schemaVersion": "1.0",
+    "artifactKind": "generation-zones",
+    "artifactId": "generation-zones",
+    "createdUtc": "2026-08-03T03:13:39.7938573\u002B00:00",
+    "managedZones": [
+      "Features/feature-manifest.json",
+      "docs/storefront-analysis"
+    ],
+    "generatedZones": [
+      "Components/Layout",
+      "Components/Catalog",
+      "Components/Commerce",
+      "Components/Account",
+      "Components/States",
+      "Pages/Ssr",
+      "Pages/Hybrid",
+      "Pages/WasmHost",
+      "wwwroot/css",
+      "wwwroot/assets/generated"
+    ],
+    "protectedZones": [
+      "BlazorShop.Storefront.Presentation",
+      "StorefrontPackageVersions.props",
+      "starter-generation.contract.yaml",
+      "docs/storefront-analysis/generated-files.yaml"
+    ],
+    "assetZones": [
+      "wwwroot/assets/generated"
+    ],
+    "analysisArtifactZone": "docs/storefront-analysis"
+  },
+  "behaviorBoundaries": [
+    {
+      "boundaryId": "browser-action-policy",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "policy": "same-origin-bff-only",
+      "protectedDescriptors": [
+        "data-selection-preview-route",
+        "data-storefront-command=\u0022cart.add-line\u0022",
+        "data-storefront-consent-accept-url",
+        "data-storefront-consent-revoke-url"
+      ],
+      "requiredSameOriginBffActions": [
+        "cart.add-line",
+        "cart.update-line",
+        "cart.remove-line",
+        "checkout.start",
+        "checkout.review",
+        "checkout.place-order",
+        "account.profile",
+        "account.password",
+        "account.address",
+        "account.order",
+        "auth.login",
+        "auth.logout",
+        "auth.register",
+        "auth.recovery",
+        "consent.save",
+        "consent.revoke"
+      ],
+      "prohibitedBehavior": [
+        "generated-functional-js",
+        "direct-commerce-node-browser-call",
+        "route-bff-seo-media-reimplementation",
+        "runtime-transport-from-visual-code"
+      ]
+    }
+  ],
+  "pageContracts": [
+    {
+      "pageId": "home",
+      "stablePageArchetype": "home",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "home.sections"
+      ],
+      "requiredVisualRegions": [
+        "hero or home content",
+        "store header",
+        "store footer"
+      ],
+      "optionalVisualRegions": [
+        "promotion band",
+        "newsletter"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "home.sections",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu"
+      ],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Pages/Ssr/Home/HomePage.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "category-listing",
+      "stablePageArchetype": "product-listing",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/category/{Slug}"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "catalog.product-card",
+        "catalog.filters",
+        "catalog.sorting",
+        "catalog.pagination"
+      ],
+      "requiredVisualRegions": [
+        "product grid",
+        "product card"
+      ],
+      "optionalVisualRegions": [
+        "filters",
+        "sorting",
+        "pagination"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "catalog.product-card",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [
+        "catalog.filters",
+        "catalog.sorting",
+        "catalog.pagination",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu"
+      ],
+      "repeatableSlotIds": [
+        "catalog.product-card"
+      ],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Components/Catalog/ProductSummaryCard.razor",
+        "Pages/Hybrid/Catalog/CategoryPage.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "search-results",
+      "stablePageArchetype": "search-results",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/search"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "catalog.product-card",
+        "catalog.filters",
+        "catalog.sorting",
+        "catalog.pagination"
+      ],
+      "requiredVisualRegions": [
+        "search results",
+        "product card"
+      ],
+      "optionalVisualRegions": [
+        "filters",
+        "sorting"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "catalog.product-card",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [
+        "catalog.filters",
+        "catalog.sorting",
+        "catalog.pagination"
+      ],
+      "repeatableSlotIds": [
+        "catalog.product-card"
+      ],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Components/Catalog/ProductSummaryCard.razor",
+        "Pages/Hybrid/Catalog/CategoryPage.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "product-detail",
+      "stablePageArchetype": "product-detail",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/product/{Slug}"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "product.gallery",
+        "product.information",
+        "product.purchase",
+        "product.reviews",
+        "product.related-products"
+      ],
+      "requiredVisualRegions": [
+        "product gallery",
+        "purchase panel",
+        "product information"
+      ],
+      "optionalVisualRegions": [
+        "reviews",
+        "related products"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "product.gallery",
+        "product.information",
+        "product.purchase",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [
+        "product.reviews",
+        "product.related-products",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu"
+      ],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "checkout.place-order",
+        "payment.capture",
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [
+        "cart.add-line"
+      ],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Components/Catalog/ProductGalleryPlaceholder.razor",
+        "Components/Catalog/ProductDetailShell.razor",
+        "Components/Catalog/PurchasePanelPlaceholder.razor",
+        "Components/Catalog/ProductReviewsPlaceholder.razor",
+        "Components/Catalog/RelatedProductsPlaceholder.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "cart-shell",
+      "stablePageArchetype": "cart-shell",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/cart",
+        "/my-cart"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "cart.page"
+      ],
+      "requiredVisualRegions": [
+        "cart line items",
+        "cart summary"
+      ],
+      "optionalVisualRegions": [
+        "empty cart state"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "cart.page",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "checkout.place-order",
+        "payment.capture",
+        "auth.token"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Pages/Hybrid/Commerce/CartPage.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "checkout-shell",
+      "stablePageArchetype": "checkout-shell",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/checkout",
+        "/payment/result",
+        "/payment-success",
+        "/payment-cancel"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "checkout.page"
+      ],
+      "requiredVisualRegions": [
+        "checkout form",
+        "order summary"
+      ],
+      "optionalVisualRegions": [
+        "payment result"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "checkout.page",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "payment.capture",
+        "checkout.place-order"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Pages/Hybrid/Commerce/CheckoutPage.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "account-auth-shell",
+      "stablePageArchetype": "account-auth-shell",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/signin",
+        "/register",
+        "/forgot-password",
+        "/reset-password",
+        "/account",
+        "/account/{*Path}"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "account.shell"
+      ],
+      "requiredVisualRegions": [
+        "authentication/account shell"
+      ],
+      "optionalVisualRegions": [
+        "account menu"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "account.shell",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "auth.token",
+        "auth.login",
+        "auth.logout"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Pages/WasmHost/Account/AccountHostPage.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "content-page",
+      "stablePageArchetype": "content-page",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/pages/{Slug}",
+        "/todays-deals",
+        "/new-releases"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "home.sections"
+      ],
+      "requiredVisualRegions": [
+        "content body"
+      ],
+      "optionalVisualRegions": [
+        "breadcrumbs"
+      ],
+      "requiredSlotIds": [
+        "layout.header",
+        "home.sections",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [
+        "layout.main-navigation",
+        "layout.mobile-navigation"
+      ],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Pages/Ssr/Home/HomePage.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "maintenance",
+      "stablePageArchetype": "maintenance",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/maintenance"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "system.error"
+      ],
+      "requiredVisualRegions": [
+        "maintenance state"
+      ],
+      "optionalVisualRegions": [],
+      "requiredSlotIds": [
+        "layout.header",
+        "system.error",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Components/States/ErrorState.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "not-found",
+      "stablePageArchetype": "not-found",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [
+        "/{*Path:nonfile}"
+      ],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "system.error"
+      ],
+      "requiredVisualRegions": [
+        "not found state"
+      ],
+      "optionalVisualRegions": [],
+      "requiredSlotIds": [
+        "layout.header",
+        "system.error",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Components/States/ErrorState.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "service-unavailable",
+      "stablePageArchetype": "service-unavailable",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "system.error"
+      ],
+      "requiredVisualRegions": [
+        "service unavailable state"
+      ],
+      "optionalVisualRegions": [],
+      "requiredSlotIds": [
+        "layout.header",
+        "system.error",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Components/States/ErrorState.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    {
+      "pageId": "error-state",
+      "stablePageArchetype": "error-state",
+      "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+      "routes": [],
+      "allowedVisualSlots": [
+        "layout.header",
+        "layout.footer",
+        "layout.main-navigation",
+        "layout.mobile-navigation",
+        "layout.cart-badge",
+        "layout.account-menu",
+        "system.error"
+      ],
+      "requiredVisualRegions": [
+        "error state"
+      ],
+      "optionalVisualRegions": [],
+      "requiredSlotIds": [
+        "layout.header",
+        "system.error",
+        "layout.footer"
+      ],
+      "optionalSlotIds": [],
+      "repeatableSlotIds": [],
+      "allowedAdditionalSlotIds": [],
+      "forbiddenBehaviorIds": [
+        "route-bff-seo-media-reimplementation"
+      ],
+      "prohibitedBehavior": [
+        "@page route declarations",
+        "Commerce Node direct browser calls",
+        "BFF/SEO/media route reimplementation"
+      ],
+      "protectedActionDescriptors": [],
+      "targetGeneratedPathRules": [
+        "Components/Layout/MainLayout.razor",
+        "Components/States/ErrorState.razor"
+      ],
+      "supportedResponsiveZones": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  ],
+  "slots": [
+    {
+      "slotId": "layout.header",
+      "owner": "generated",
+      "path": "Components/Layout/MainLayout.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Components/Layout",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "layout.footer",
+      "owner": "generated",
+      "path": "Components/Layout/MainLayout.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Components/Layout",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "layout.main-navigation",
+      "owner": "generated",
+      "path": "Components/Layout/MainLayout.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Components/Layout",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "layout.mobile-navigation",
+      "owner": "generated",
+      "path": "Components/Layout/MainLayout.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Components/Layout",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "layout.cart-badge",
+      "owner": "generated",
+      "path": "Components/Layout/MainLayout.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Components/Layout",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "layout.account-menu",
+      "owner": "generated",
+      "path": "Components/Layout/MainLayout.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Components/Layout",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "home.sections",
+      "owner": "generated",
+      "path": "Pages/Ssr/Home/HomePage.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Pages/Ssr",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "catalog.product-card",
+      "owner": "generated",
+      "path": "Components/Catalog/ProductSummaryCard.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Components/Catalog",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "catalog.filters",
+      "owner": "generated",
+      "path": "Pages/Hybrid/Catalog/CategoryPage.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Pages/Hybrid",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "catalog.sorting",
+      "owner": "generated",
+      "path": "Pages/Hybrid/Catalog/CategoryPage.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Pages/Hybrid",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "catalog.pagination",
+      "owner": "generated",
+      "path": "Pages/Hybrid/Catalog/CategoryPage.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Pages/Hybrid",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "product.gallery",
+      "owner": "generated",
+      "path": "Components/Catalog/ProductGalleryPlaceholder.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Components/Catalog",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "product.information",
+      "owner": "generated",
+      "path": "Components/Catalog/ProductDetailShell.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Components/Catalog",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "product.purchase",
+      "owner": "generated",
+      "path": "Components/Catalog/PurchasePanelPlaceholder.razor",
+      "action": "cart.add-line",
+      "category": "visual generation target",
+      "generatedZone": "Components/Catalog",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "product.reviews",
+      "owner": "generated",
+      "path": "Components/Catalog/ProductReviewsPlaceholder.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Components/Catalog",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "product.related-products",
+      "owner": "generated",
+      "path": "Components/Catalog/RelatedProductsPlaceholder.razor",
+      "action": null,
+      "category": "visual generation target",
+      "generatedZone": "Components/Catalog",
+      "visualGenerationTarget": true
+    },
+    {
+      "slotId": "cart.page",
+      "owner": "managed",
+      "path": "Pages/Hybrid/Commerce/CartPage.razor",
+      "action": null,
+      "category": "runtime-owned behavior",
+      "generatedZone": "Pages/Hybrid",
+      "visualGenerationTarget": false
+    },
+    {
+      "slotId": "checkout.page",
+      "owner": "managed",
+      "path": "Pages/Hybrid/Commerce/CheckoutPage.razor",
+      "action": null,
+      "category": "runtime-owned behavior",
+      "generatedZone": "Pages/Hybrid",
+      "visualGenerationTarget": false
+    },
+    {
+      "slotId": "account.shell",
+      "owner": "managed",
+      "path": "Pages/WasmHost/Account/AccountHostPage.razor",
+      "action": null,
+      "category": "runtime-owned behavior",
+      "generatedZone": "Pages/WasmHost",
+      "visualGenerationTarget": false
+    },
+    {
+      "slotId": "system.error",
+      "owner": "managed",
+      "path": "Components/States/ErrorState.razor",
+      "action": null,
+      "category": "starter visual slot",
+      "generatedZone": "Components/States",
+      "visualGenerationTarget": false
+    }
+  ],
+  "routes": [
+    {
+      "route": "/",
+      "path": "Pages/Ssr/Home/HomePage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "home"
+    },
+    {
+      "route": "/pages/{Slug}",
+      "path": "Pages/Ssr/Content/ContentPage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "content-page"
+    },
+    {
+      "route": "/signin",
+      "path": "Pages/Ssr/Auth/AuthShellPage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "account-auth-shell"
+    },
+    {
+      "route": "/register",
+      "path": "Pages/Ssr/Auth/AuthShellPage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "account-auth-shell"
+    },
+    {
+      "route": "/forgot-password",
+      "path": "Pages/Ssr/Auth/AuthShellPage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "account-auth-shell"
+    },
+    {
+      "route": "/reset-password",
+      "path": "Pages/Ssr/Auth/AuthShellPage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "account-auth-shell"
+    },
+    {
+      "route": "/maintenance",
+      "path": "Pages/Ssr/System/MaintenancePage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "maintenance"
+    },
+    {
+      "route": "/{*Path:nonfile}",
+      "path": "Pages/Ssr/System/NotFoundPage.razor",
+      "renderOwner": "SSR",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "not-found"
+    },
+    {
+      "route": "/category/{Slug}",
+      "path": "Pages/Hybrid/Catalog/CategoryPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "category-listing"
+    },
+    {
+      "route": "/product/{Slug}",
+      "path": "Pages/Hybrid/Catalog/ProductPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "InitialSnapshot",
+      "pageId": "product-detail"
+    },
+    {
+      "route": "/search",
+      "path": "Pages/Hybrid/Catalog/SearchPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "search-results"
+    },
+    {
+      "route": "/cart",
+      "path": "Pages/Hybrid/Commerce/CartPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "cart-shell"
+    },
+    {
+      "route": "/my-cart",
+      "path": "Pages/Hybrid/Commerce/CartPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "cart-shell"
+    },
+    {
+      "route": "/checkout",
+      "path": "Pages/Hybrid/Commerce/CheckoutPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "checkout-shell"
+    },
+    {
+      "route": "/payment/result",
+      "path": "Pages/Hybrid/Commerce/PaymentResultPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "RefreshAfterHydration",
+      "pageId": "checkout-shell"
+    },
+    {
+      "route": "/payment-success",
+      "path": "Pages/Hybrid/Commerce/PaymentResultPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "RefreshAfterHydration",
+      "pageId": "checkout-shell"
+    },
+    {
+      "route": "/payment-cancel",
+      "path": "Pages/Hybrid/Commerce/PaymentResultPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "RefreshAfterHydration",
+      "pageId": "checkout-shell"
+    },
+    {
+      "route": "/todays-deals",
+      "path": "Pages/Hybrid/Commerce/DealsPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "content-page"
+    },
+    {
+      "route": "/new-releases",
+      "path": "Pages/Hybrid/Catalog/NewReleasesPage.razor",
+      "renderOwner": "Hybrid",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "content-page"
+    },
+    {
+      "route": "/account",
+      "path": "Pages/WasmHost/Account/AccountHostPage.razor",
+      "renderOwner": "WASM-host",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "account-auth-shell"
+    },
+    {
+      "route": "/account/{*Path}",
+      "path": "Pages/WasmHost/Account/AccountHostPage.razor",
+      "renderOwner": "WASM-host",
+      "hydrationMode": "BrowserFetch",
+      "pageId": "account-auth-shell"
+    }
+  ],
+  "actions": [
+    {
+      "actionId": "product.selection-preview",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": "data-selection-preview-route",
+      "route": null,
+      "routeSource": "ProductPurchaseActionDescriptor.SelectionPreviewRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "cart.add-line",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": "data-storefront-command=\u0022cart.add-line\u0022",
+      "route": null,
+      "routeSource": "StorefrontCartActionDescriptor.CurrentCartRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "cart.update-line",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontCartActionDescriptor.UpdateLineRouteTemplate",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "cart.remove-line",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontCartActionDescriptor.RemoveLineRouteTemplate",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "checkout.start",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontCheckoutActionDescriptor.CurrentCheckoutRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "checkout.review",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontCheckoutActionDescriptor.ReviewRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "checkout.place-order",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontCheckoutActionDescriptor.PlaceOrderRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "account.profile",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontAccountProfileActionDescriptor.SaveProfileRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "account.password",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontAccountPasswordActionDescriptor.ChangePasswordRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "account.address",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontAccountAddressActionDescriptor.CurrentAddressesRoute",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "account.order",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": null,
+      "routeSource": "StorefrontAccountOrderActionDescriptor.OrderListRouteTemplate",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "auth.login",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": "/signin",
+      "routeSource": null,
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "auth.logout",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": "/logout",
+      "routeSource": null,
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "auth.register",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": "/register",
+      "routeSource": null,
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "auth.recovery",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": null,
+      "route": "/forgot-password",
+      "routeSource": null,
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "consent.save",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": "data-storefront-consent-accept-url",
+      "route": null,
+      "routeSource": "StorefrontConsentActionContext.AcceptUrl",
+      "sameOriginBffOnly": true
+    },
+    {
+      "actionId": "consent.revoke",
+      "owner": "BlazorShop.Storefront.Presentation",
+      "descriptor": "data-storefront-consent-revoke-url",
+      "route": null,
+      "routeSource": "StorefrontConsentActionContext.RevokeUrl",
+      "sameOriginBffOnly": true
+    }
+  ],
+  "protectedFiles": [
+    {
+      "path": "BlazorShop.Storefront.Presentation",
+      "reason": "protected by Starter contract"
+    },
+    {
+      "path": "StorefrontPackageVersions.props",
+      "reason": "protected by Starter contract"
+    },
+    {
+      "path": "starter-generation.contract.yaml",
+      "reason": "protected by Starter contract"
+    },
+    {
+      "path": "docs/storefront-analysis/generated-files.yaml",
+      "reason": "protected by Starter contract"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "pathPattern": "Components/Layout/**",
+      "zone": "Components/Layout",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "Components/Catalog/**",
+      "zone": "Components/Catalog",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "Components/Commerce/**",
+      "zone": "Components/Commerce",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "Components/Account/**",
+      "zone": "Components/Account",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "Components/States/**",
+      "zone": "Components/States",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "Pages/Ssr/**",
+      "zone": "Pages/Ssr",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "Pages/Hybrid/**",
+      "zone": "Pages/Hybrid",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "Pages/WasmHost/**",
+      "zone": "Pages/WasmHost",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "wwwroot/css/**",
+      "zone": "wwwroot/css",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    },
+    {
+      "pathPattern": "wwwroot/assets/generated/**",
+      "zone": "wwwroot/assets/generated",
+      "allowedOperations": [
+        "create",
+        "update",
+        "restyle",
+        "reposition"
+      ]
+    }
+  ],
+  "extensions": {}
+}

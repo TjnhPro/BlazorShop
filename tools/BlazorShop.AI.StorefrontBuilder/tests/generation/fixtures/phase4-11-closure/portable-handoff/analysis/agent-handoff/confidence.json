@@ -1,0 +1,1101 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "confidence-report",
+  "artifactId": "confidence-phase-3d-shared-baseline",
+  "createdUtc": "2026-08-03T03:13:39.9233586\u002B00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "projectConfidence": 0.614,
+  "items": [
+    {
+      "itemId": "component:family-footer",
+      "itemType": "component families",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "structural-similarity",
+        "repetition-count",
+        "cross-viewport-consistency"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-tablet-768-004",
+        "ev-mobile-390-004"
+      ],
+      "proposal": {
+        "familyId": "family-footer",
+        "family": "footer",
+        "variantId": "family-footer-default",
+        "confidence": 0.78,
+        "instanceIds": [
+          "instance-family-footer-001",
+          "instance-family-footer-002",
+          "instance-family-footer-003"
+        ],
+        "slots": [
+          {
+            "slotName": "root",
+            "slotKind": "container",
+            "evidenceIds": [
+              "ev-desktop-1440-004",
+              "ev-tablet-768-004",
+              "ev-mobile-390-004"
+            ],
+            "confidence": 0.64
+          }
+        ],
+        "tokenReferences": [
+          "surface-card",
+          "surface-page",
+          "text-inverse",
+          "text-secondary"
+        ],
+        "localOverrideIds": [
+          "local-layout-aspect-ratio",
+          "local-layout-aspect-ratio",
+          "local-layout-aspect-ratio"
+        ],
+        "responsiveBehaviorRefs": [
+          "home:footer"
+        ],
+        "interactionBehaviorRefs": [],
+        "alternatives": [],
+        "humanReviewRequired": false,
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-tablet-768-004",
+          "ev-mobile-390-004"
+        ]
+      }
+    },
+    {
+      "itemId": "component:family-header",
+      "itemType": "component families",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "structural-similarity",
+        "repetition-count",
+        "cross-viewport-consistency"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001",
+        "ev-tablet-768-001",
+        "ev-mobile-390-001"
+      ],
+      "proposal": {
+        "familyId": "family-header",
+        "family": "header",
+        "variantId": "family-header-default",
+        "confidence": 0.78,
+        "instanceIds": [
+          "instance-family-header-001",
+          "instance-family-header-002",
+          "instance-family-header-003"
+        ],
+        "slots": [
+          {
+            "slotName": "root",
+            "slotKind": "container",
+            "evidenceIds": [
+              "ev-desktop-1440-001",
+              "ev-tablet-768-001",
+              "ev-mobile-390-001"
+            ],
+            "confidence": 0.64
+          }
+        ],
+        "tokenReferences": [
+          "surface-section"
+        ],
+        "localOverrideIds": [
+          "local-layout-aspect-ratio",
+          "local-layout-aspect-ratio",
+          "local-layout-aspect-ratio"
+        ],
+        "responsiveBehaviorRefs": [
+          "home:header.site-header"
+        ],
+        "interactionBehaviorRefs": [],
+        "alternatives": [],
+        "humanReviewRequired": false,
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-tablet-768-001",
+          "ev-mobile-390-001"
+        ]
+      }
+    },
+    {
+      "itemId": "component:family-hero",
+      "itemType": "component families",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "structural-similarity",
+        "repetition-count",
+        "cross-viewport-consistency"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-tablet-768-002",
+        "ev-mobile-390-002"
+      ],
+      "proposal": {
+        "familyId": "family-hero",
+        "family": "hero",
+        "variantId": "family-hero-default",
+        "confidence": 0.78,
+        "instanceIds": [
+          "instance-family-hero-001",
+          "instance-family-hero-002",
+          "instance-family-hero-003"
+        ],
+        "slots": [
+          {
+            "slotName": "root",
+            "slotKind": "container",
+            "evidenceIds": [
+              "ev-desktop-1440-002",
+              "ev-tablet-768-002",
+              "ev-mobile-390-002"
+            ],
+            "confidence": 0.64
+          }
+        ],
+        "tokenReferences": [
+          "text-muted",
+          "text-primary",
+          "font-body"
+        ],
+        "localOverrideIds": [
+          "local-layout-aspect-ratio",
+          "local-layout-aspect-ratio",
+          "local-layout-aspect-ratio",
+          "local-layout-height",
+          "local-layout-height"
+        ],
+        "responsiveBehaviorRefs": [
+          "home:section.hero"
+        ],
+        "interactionBehaviorRefs": [],
+        "alternatives": [],
+        "humanReviewRequired": false,
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-tablet-768-002",
+          "ev-mobile-390-002"
+        ]
+      }
+    },
+    {
+      "itemId": "component:family-product-card",
+      "itemType": "component families",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "structural-similarity",
+        "repetition-count",
+        "cross-viewport-consistency"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-003",
+        "ev-tablet-768-003",
+        "ev-mobile-390-003"
+      ],
+      "proposal": {
+        "familyId": "family-product-card",
+        "family": "product card",
+        "variantId": "family-product-card-default",
+        "confidence": 0.78,
+        "instanceIds": [
+          "instance-family-product-card-001",
+          "instance-family-product-card-002",
+          "instance-family-product-card-003"
+        ],
+        "slots": [
+          {
+            "slotName": "root",
+            "slotKind": "container",
+            "evidenceIds": [
+              "ev-desktop-1440-003",
+              "ev-tablet-768-003",
+              "ev-mobile-390-003"
+            ],
+            "confidence": 0.64
+          }
+        ],
+        "tokenReferences": [
+          "radius-small",
+          "shadow-card"
+        ],
+        "localOverrideIds": [],
+        "responsiveBehaviorRefs": [
+          "home:product-card"
+        ],
+        "interactionBehaviorRefs": [],
+        "alternatives": [
+          "content card"
+        ],
+        "humanReviewRequired": false,
+        "evidenceIds": [
+          "ev-desktop-1440-003",
+          "ev-tablet-768-003",
+          "ev-mobile-390-003"
+        ]
+      }
+    },
+    {
+      "itemId": "mapping:family-footer",
+      "itemType": "Presentation mappings",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "catalog-compatibility",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-tablet-768-004",
+        "ev-mobile-390-004"
+      ],
+      "proposal": {
+        "sourceCandidateId": "family-footer",
+        "presentationComponentId": "layout.footer",
+        "starterSlotId": "layout.footer",
+        "variant": "default",
+        "slotAssignments": [
+          "root:container"
+        ],
+        "responsiveProperties": [
+          "home:footer"
+        ],
+        "tokenBindings": [
+          "surface-card",
+          "surface-page",
+          "text-inverse",
+          "text-secondary"
+        ],
+        "interactionBindings": [],
+        "dataRequirements": [
+          "catalog"
+        ],
+        "behaviorOwnership": "presentation",
+        "confidence": 0.78,
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-tablet-768-004",
+          "ev-mobile-390-004"
+        ],
+        "mappingReason": "preferred-id-match",
+        "alternativeMappings": [],
+        "humanReviewRequired": false,
+        "sourcePageId": "home",
+        "sourceSectionId": "section-03",
+        "ecommerceRegionId": "region-03",
+        "pageArchetype": "home",
+        "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+        "generatedZone": "layout-components",
+        "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+        "reasonCodes": [
+          "page-archetype-compatible",
+          "ecommerce-role-compatible",
+          "target-generated-path-allowed"
+        ],
+        "reviewState": "Approved"
+      }
+    },
+    {
+      "itemId": "mapping:family-header",
+      "itemType": "Presentation mappings",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "catalog-compatibility",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001",
+        "ev-tablet-768-001",
+        "ev-mobile-390-001"
+      ],
+      "proposal": {
+        "sourceCandidateId": "family-header",
+        "presentationComponentId": "layout.header",
+        "starterSlotId": "layout.header",
+        "variant": "default",
+        "slotAssignments": [
+          "root:container"
+        ],
+        "responsiveProperties": [
+          "home:header.site-header"
+        ],
+        "tokenBindings": [
+          "surface-section"
+        ],
+        "interactionBindings": [],
+        "dataRequirements": [
+          "shell"
+        ],
+        "behaviorOwnership": "presentation",
+        "confidence": 0.78,
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-tablet-768-001",
+          "ev-mobile-390-001"
+        ],
+        "mappingReason": "preferred-id-match",
+        "alternativeMappings": [],
+        "humanReviewRequired": false,
+        "sourcePageId": "home",
+        "sourceSectionId": "section-01",
+        "ecommerceRegionId": "region-01",
+        "pageArchetype": "home",
+        "targetGeneratedPath": "Components/Layout/MainLayout.razor",
+        "generatedZone": "layout-components",
+        "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
+        "reasonCodes": [
+          "page-archetype-compatible",
+          "ecommerce-role-compatible",
+          "target-generated-path-allowed"
+        ],
+        "reviewState": "Approved"
+      }
+    },
+    {
+      "itemId": "page:home",
+      "itemType": "page archetype",
+      "confidence": 0.70,
+      "critical": false,
+      "factorCodes": [
+        "evidence-completeness",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001",
+        "ev-desktop-1440-002",
+        "ev-desktop-1440-003",
+        "ev-desktop-1440-004",
+        "ev-mobile-390-001",
+        "ev-mobile-390-002",
+        "ev-mobile-390-003",
+        "ev-mobile-390-004",
+        "ev-tablet-768-001",
+        "ev-tablet-768-002",
+        "ev-tablet-768-003",
+        "ev-tablet-768-004"
+      ],
+      "proposal": {
+        "schemaVersion": "1.0",
+        "artifactKind": "page-archetype",
+        "artifactId": "page-archetype-phase-3d-shared-baseline-home",
+        "createdUtc": "2026-08-03T03:13:39.5490019\u002B00:00",
+        "projectId": "phase-3d-shared-baseline",
+        "pageId": "home",
+        "primaryArchetype": "home",
+        "confidence": 0.70,
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-desktop-1440-002",
+          "ev-desktop-1440-003",
+          "ev-desktop-1440-004",
+          "ev-mobile-390-001",
+          "ev-mobile-390-002",
+          "ev-mobile-390-003",
+          "ev-mobile-390-004",
+          "ev-tablet-768-001",
+          "ev-tablet-768-002",
+          "ev-tablet-768-003",
+          "ev-tablet-768-004"
+        ],
+        "reasonCodes": [
+          "home-route-signal",
+          "landmark-section-home-signal"
+        ],
+        "alternatives": [
+          {
+            "archetype": "product-listing",
+            "confidence": 0.45,
+            "evidenceIds": [
+              "ev-desktop-1440-003",
+              "ev-mobile-390-003",
+              "ev-tablet-768-003"
+            ],
+            "reasonCodes": [
+              "repeated-product-card-signals"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "itemId": "region:home:region-01",
+      "itemType": "ecommerce roles",
+      "confidence": 0.68,
+      "critical": false,
+      "factorCodes": [
+        "data-dependency",
+        "behavior-ownership"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001"
+      ],
+      "proposal": {
+        "regionId": "region-01",
+        "role": "store header",
+        "dataDependency": "shell",
+        "behaviorContractRequirement": "presentation-only",
+        "seoRelevant": false,
+        "presentationOnly": true,
+        "unsupported": false,
+        "sourceSectionIds": [
+          "section-01"
+        ],
+        "sourceComponentFamilyIds": [
+          "family-header"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-001"
+        ],
+        "alternatives": []
+      }
+    },
+    {
+      "itemId": "region:home:region-02",
+      "itemType": "ecommerce roles",
+      "confidence": 0.30,
+      "critical": true,
+      "factorCodes": [
+        "data-dependency",
+        "behavior-ownership"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002"
+      ],
+      "proposal": {
+        "regionId": "region-02",
+        "role": "unknown role",
+        "dataDependency": "system state",
+        "behaviorContractRequirement": "presentation-only",
+        "seoRelevant": false,
+        "presentationOnly": true,
+        "unsupported": true,
+        "sourceSectionIds": [
+          "section-02"
+        ],
+        "sourceComponentFamilyIds": [
+          "family-hero"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002"
+        ],
+        "alternatives": [
+          "presentation-only region",
+          "unsupported role"
+        ]
+      }
+    },
+    {
+      "itemId": "region:home:region-03",
+      "itemType": "ecommerce roles",
+      "confidence": 0.30,
+      "critical": true,
+      "factorCodes": [
+        "data-dependency",
+        "behavior-ownership"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004"
+      ],
+      "proposal": {
+        "regionId": "region-03",
+        "role": "unknown role",
+        "dataDependency": "system state",
+        "behaviorContractRequirement": "presentation-only",
+        "seoRelevant": false,
+        "presentationOnly": true,
+        "unsupported": true,
+        "sourceSectionIds": [
+          "section-03"
+        ],
+        "sourceComponentFamilyIds": [
+          "family-footer"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004"
+        ],
+        "alternatives": [
+          "presentation-only region",
+          "unsupported role"
+        ]
+      }
+    },
+    {
+      "itemId": "section:home:section-01",
+      "itemType": "sections",
+      "confidence": 0.66,
+      "critical": false,
+      "factorCodes": [
+        "evidence-completeness",
+        "structural-similarity"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001"
+      ],
+      "proposal": {
+        "sectionId": "section-01",
+        "sectionType": "header",
+        "order": 1,
+        "confidence": 0.66,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 72
+        },
+        "parentSectionId": null,
+        "childSectionIds": [],
+        "crossViewportIdentityKey": "header-01",
+        "evidenceIds": [
+          "ev-desktop-1440-001"
+        ],
+        "reasonCodes": [
+          "sticky-fixed-region-signal"
+        ],
+        "viewportBoundingBoxes": {
+          "desktop-1440": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 72
+          },
+          "tablet-768": {
+            "x": 0,
+            "y": 0,
+            "width": 768,
+            "height": 72
+          },
+          "mobile-390": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 72
+          }
+        }
+      }
+    },
+    {
+      "itemId": "section:home:section-02",
+      "itemType": "sections",
+      "confidence": 0.66,
+      "critical": false,
+      "factorCodes": [
+        "evidence-completeness",
+        "structural-similarity"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002"
+      ],
+      "proposal": {
+        "sectionId": "section-02",
+        "sectionType": "hero",
+        "order": 2,
+        "confidence": 0.66,
+        "bounds": {
+          "x": 0,
+          "y": 72,
+          "width": 1440,
+          "height": 440
+        },
+        "parentSectionId": null,
+        "childSectionIds": [],
+        "crossViewportIdentityKey": "hero-02",
+        "evidenceIds": [
+          "ev-desktop-1440-002"
+        ],
+        "reasonCodes": [
+          "grid-flex-transition"
+        ],
+        "viewportBoundingBoxes": {
+          "desktop-1440": {
+            "x": 0,
+            "y": 72,
+            "width": 1440,
+            "height": 440
+          },
+          "tablet-768": {
+            "x": 0,
+            "y": 72,
+            "width": 768,
+            "height": 440
+          },
+          "mobile-390": {
+            "x": 0,
+            "y": 72,
+            "width": 390,
+            "height": 520
+          }
+        }
+      }
+    },
+    {
+      "itemId": "section:home:section-03",
+      "itemType": "sections",
+      "confidence": 0.66,
+      "critical": false,
+      "factorCodes": [
+        "evidence-completeness",
+        "structural-similarity"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004"
+      ],
+      "proposal": {
+        "sectionId": "section-03",
+        "sectionType": "footer",
+        "order": 3,
+        "confidence": 0.66,
+        "bounds": {
+          "x": 0,
+          "y": 1100,
+          "width": 1440,
+          "height": 260
+        },
+        "parentSectionId": null,
+        "childSectionIds": [],
+        "crossViewportIdentityKey": "footer-03",
+        "evidenceIds": [
+          "ev-desktop-1440-004"
+        ],
+        "reasonCodes": [
+          "background-change-boundary"
+        ],
+        "viewportBoundingBoxes": {
+          "desktop-1440": {
+            "x": 0,
+            "y": 1100,
+            "width": 1440,
+            "height": 260
+          },
+          "tablet-768": {
+            "x": 0,
+            "y": 1100,
+            "width": 768,
+            "height": 260
+          },
+          "mobile-390": {
+            "x": 0,
+            "y": 1600,
+            "width": 390,
+            "height": 260
+          }
+        }
+      }
+    },
+    {
+      "itemId": "token:font-body",
+      "itemType": "semantic tokens",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-mobile-390-002",
+        "ev-tablet-768-002"
+      ],
+      "proposal": {
+        "role": "font-body",
+        "group": "typography",
+        "values": [
+          "Inter"
+        ],
+        "rawTokenIds": [
+          "raw-typography-font-family-c93abe4689"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-mobile-390-002",
+          "ev-tablet-768-002"
+        ],
+        "confidence": 0.78,
+        "reasonCodes": [
+          "font-family-frequency"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:radius-small",
+      "itemType": "semantic tokens",
+      "confidence": 0.62,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-003",
+        "ev-mobile-390-003",
+        "ev-tablet-768-003"
+      ],
+      "proposal": {
+        "role": "radius-small",
+        "group": "shape",
+        "values": [
+          "8px"
+        ],
+        "rawTokenIds": [
+          "raw-shape-border-radius-4e955727ff"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-003",
+          "ev-mobile-390-003",
+          "ev-tablet-768-003"
+        ],
+        "confidence": 0.62,
+        "reasonCodes": [
+          "radius-scale-rank"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:shadow-card",
+      "itemType": "semantic tokens",
+      "confidence": 0.62,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-003",
+        "ev-mobile-390-003",
+        "ev-tablet-768-003"
+      ],
+      "proposal": {
+        "role": "shadow-card",
+        "group": "shape",
+        "values": [
+          "0 8px 24px rgba(0,0,0,.12)"
+        ],
+        "rawTokenIds": [
+          "raw-shape-box-shadow-97d35f5ff4"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-003",
+          "ev-mobile-390-003",
+          "ev-tablet-768-003"
+        ],
+        "confidence": 0.62,
+        "reasonCodes": [
+          "shadow-frequency"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:surface-card",
+      "itemType": "semantic tokens",
+      "confidence": 0.55,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "proposal": {
+        "role": "surface-card",
+        "group": "color",
+        "values": [
+          "#101820"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-395cae5498"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.55,
+        "reasonCodes": [
+          "card-background-candidate"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:surface-page",
+      "itemType": "semantic tokens",
+      "confidence": 0.76,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "proposal": {
+        "role": "surface-page",
+        "group": "color",
+        "values": [
+          "#101820"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-395cae5498"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.76,
+        "reasonCodes": [
+          "background-frequency"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:surface-section",
+      "itemType": "semantic tokens",
+      "confidence": 0.58,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-001",
+        "ev-mobile-390-001",
+        "ev-tablet-768-001"
+      ],
+      "proposal": {
+        "role": "surface-section",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-background-color-d6dfa1b667"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-001",
+          "ev-mobile-390-001",
+          "ev-tablet-768-001"
+        ],
+        "confidence": 0.58,
+        "reasonCodes": [
+          "secondary-background"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:text-inverse",
+      "itemType": "semantic tokens",
+      "confidence": 0.66,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "proposal": {
+        "role": "text-inverse",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-44f53d0059"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.66,
+        "reasonCodes": [
+          "light-text-candidate"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:text-muted",
+      "itemType": "semantic tokens",
+      "confidence": 0.45,
+      "critical": true,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-mobile-390-002",
+        "ev-tablet-768-002"
+      ],
+      "proposal": {
+        "role": "text-muted",
+        "group": "color",
+        "values": [
+          "#13201a"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-6151b06662"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-mobile-390-002",
+          "ev-tablet-768-002"
+        ],
+        "confidence": 0.45,
+        "reasonCodes": [
+          "low-frequency-text-candidate"
+        ],
+        "humanReviewRequired": true
+      }
+    },
+    {
+      "itemId": "token:text-primary",
+      "itemType": "semantic tokens",
+      "confidence": 0.78,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-mobile-390-002",
+        "ev-tablet-768-002"
+      ],
+      "proposal": {
+        "role": "text-primary",
+        "group": "color",
+        "values": [
+          "#13201a"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-6151b06662"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-mobile-390-002",
+          "ev-tablet-768-002"
+        ],
+        "confidence": 0.78,
+        "reasonCodes": [
+          "dark-text-frequency"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "token:text-secondary",
+      "itemType": "semantic tokens",
+      "confidence": 0.52,
+      "critical": false,
+      "factorCodes": [
+        "token-consistency",
+        "rule-strength"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-mobile-390-004",
+        "ev-tablet-768-004"
+      ],
+      "proposal": {
+        "role": "text-secondary",
+        "group": "color",
+        "values": [
+          "#ffffff"
+        ],
+        "rawTokenIds": [
+          "raw-color-color-44f53d0059"
+        ],
+        "evidenceIds": [
+          "ev-desktop-1440-004",
+          "ev-mobile-390-004",
+          "ev-tablet-768-004"
+        ],
+        "confidence": 0.52,
+        "reasonCodes": [
+          "secondary-text-candidate"
+        ],
+        "humanReviewRequired": false
+      }
+    },
+    {
+      "itemId": "unsupported:family-hero",
+      "itemType": "unsupported patterns",
+      "confidence": 0.20,
+      "critical": true,
+      "factorCodes": [
+        "ambiguity",
+        "catalog-compatibility"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-tablet-768-002",
+        "ev-mobile-390-002"
+      ],
+      "proposal": {
+        "sourceCandidateId": "family-hero",
+        "group": "missing component",
+        "reason": "No compatible catalog component supports candidate family \u0027hero\u0027 on page archetype \u0027home\u0027.",
+        "evidenceIds": [
+          "ev-desktop-1440-002",
+          "ev-tablet-768-002",
+          "ev-mobile-390-002"
+        ],
+        "humanReviewRequired": true
+      }
+    },
+    {
+      "itemId": "unsupported:family-product-card",
+      "itemType": "unsupported patterns",
+      "confidence": 0.20,
+      "critical": true,
+      "factorCodes": [
+        "ambiguity",
+        "catalog-compatibility"
+      ],
+      "evidenceIds": [
+        "ev-desktop-1440-003",
+        "ev-tablet-768-003",
+        "ev-mobile-390-003"
+      ],
+      "proposal": {
+        "sourceCandidateId": "family-product-card",
+        "group": "missing component",
+        "reason": "No compatible catalog component supports candidate family \u0027product card\u0027 on page archetype \u0027unknown\u0027.",
+        "evidenceIds": [
+          "ev-desktop-1440-003",
+          "ev-tablet-768-003",
+          "ev-mobile-390-003"
+        ],
+        "humanReviewRequired": true
+      }
+    }
+  ],
+  "thresholds": {
+    "criticalReviewThreshold": 0.60,
+    "warningThreshold": 0.75
+  }
+}

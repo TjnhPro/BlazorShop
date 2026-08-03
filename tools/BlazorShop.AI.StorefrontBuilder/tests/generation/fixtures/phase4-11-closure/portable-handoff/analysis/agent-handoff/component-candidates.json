@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "1.0",
+  "artifactKind": "reviewed-component-candidates",
+  "artifactId": "reviewed-component-candidates",
+  "createdUtc": "2026-08-03T03:13:39.6550499\u002B00:00",
+  "projectId": "phase-3d-shared-baseline",
+  "candidates": [
+    {
+      "familyId": "family-footer",
+      "family": "footer",
+      "variantId": "family-footer-default",
+      "confidence": 0.78,
+      "instanceIds": [
+        "instance-family-footer-001",
+        "instance-family-footer-002",
+        "instance-family-footer-003"
+      ],
+      "slots": [
+        {
+          "slotName": "root",
+          "slotKind": "container",
+          "evidenceIds": [
+            "ev-desktop-1440-004",
+            "ev-tablet-768-004",
+            "ev-mobile-390-004"
+          ],
+          "confidence": 0.64
+        }
+      ],
+      "tokenReferences": [
+        "surface-card",
+        "surface-page",
+        "text-inverse",
+        "text-secondary"
+      ],
+      "localOverrideIds": [
+        "local-layout-aspect-ratio",
+        "local-layout-aspect-ratio",
+        "local-layout-aspect-ratio"
+      ],
+      "responsiveBehaviorRefs": [
+        "home:footer"
+      ],
+      "interactionBehaviorRefs": [],
+      "alternatives": [],
+      "humanReviewRequired": false,
+      "evidenceIds": [
+        "ev-desktop-1440-004",
+        "ev-tablet-768-004",
+        "ev-mobile-390-004"
+      ]
+    },
+    {
+      "familyId": "family-header",
+      "family": "header",
+      "variantId": "family-header-default",
+      "confidence": 0.78,
+      "instanceIds": [
+        "instance-family-header-001",
+        "instance-family-header-002",
+        "instance-family-header-003"
+      ],
+      "slots": [
+        {
+          "slotName": "root",
+          "slotKind": "container",
+          "evidenceIds": [
+            "ev-desktop-1440-001",
+            "ev-tablet-768-001",
+            "ev-mobile-390-001"
+          ],
+          "confidence": 0.64
+        }
+      ],
+      "tokenReferences": [
+        "surface-section"
+      ],
+      "localOverrideIds": [
+        "local-layout-aspect-ratio",
+        "local-layout-aspect-ratio",
+        "local-layout-aspect-ratio"
+      ],
+      "responsiveBehaviorRefs": [
+        "home:header.site-header"
+      ],
+      "interactionBehaviorRefs": [],
+      "alternatives": [],
+      "humanReviewRequired": false,
+      "evidenceIds": [
+        "ev-desktop-1440-001",
+        "ev-tablet-768-001",
+        "ev-mobile-390-001"
+      ]
+    },
+    {
+      "familyId": "family-hero",
+      "family": "hero",
+      "variantId": "family-hero-default",
+      "confidence": 0.78,
+      "instanceIds": [
+        "instance-family-hero-001",
+        "instance-family-hero-002",
+        "instance-family-hero-003"
+      ],
+      "slots": [
+        {
+          "slotName": "root",
+          "slotKind": "container",
+          "evidenceIds": [
+            "ev-desktop-1440-002",
+            "ev-tablet-768-002",
+            "ev-mobile-390-002"
+          ],
+          "confidence": 0.64
+        }
+      ],
+      "tokenReferences": [
+        "text-muted",
+        "text-primary",
+        "font-body"
+      ],
+      "localOverrideIds": [
+        "local-layout-aspect-ratio",
+        "local-layout-aspect-ratio",
+        "local-layout-aspect-ratio",
+        "local-layout-height",
+        "local-layout-height"
+      ],
+      "responsiveBehaviorRefs": [
+        "home:section.hero"
+      ],
+      "interactionBehaviorRefs": [],
+      "alternatives": [],
+      "humanReviewRequired": false,
+      "evidenceIds": [
+        "ev-desktop-1440-002",
+        "ev-tablet-768-002",
+        "ev-mobile-390-002"
+      ]
+    },
+    {
+      "familyId": "family-product-card",
+      "family": "product card",
+      "variantId": "family-product-card-default",
+      "confidence": 0.78,
+      "instanceIds": [
+        "instance-family-product-card-001",
+        "instance-family-product-card-002",
+        "instance-family-product-card-003"
+      ],
+      "slots": [
+        {
+          "slotName": "root",
+          "slotKind": "container",
+          "evidenceIds": [
+            "ev-desktop-1440-003",
+            "ev-tablet-768-003",
+            "ev-mobile-390-003"
+          ],
+          "confidence": 0.64
+        }
+      ],
+      "tokenReferences": [
+        "radius-small",
+        "shadow-card"
+      ],
+      "localOverrideIds": [],
+      "responsiveBehaviorRefs": [
+        "home:product-card"
+      ],
+      "interactionBehaviorRefs": [],
+      "alternatives": [
+        "content card"
+      ],
+      "humanReviewRequired": false,
+      "evidenceIds": [
+        "ev-desktop-1440-003",
+        "ev-tablet-768-003",
+        "ev-mobile-390-003"
+      ]
+    }
+  ],
+  "issues": [],
+  "reviewedItems": []
+}
