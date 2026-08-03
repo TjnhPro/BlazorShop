@@ -368,54 +368,54 @@ Goal: make `visual-qa-report.json` a current-run report derived from runtime scr
 
 Tasks:
 
-- [ ] Keep `run-visual-qa.mjs` as the browser screenshot/runtime evidence collector.
-- [ ] Ensure `run-visual-qa.mjs` writes `visual-qa-runtime-summary.json` with:
-  - [ ] `artifactKind: storefront-builder.visual-qa-runtime-summary`;
-  - [ ] `proofMode: runtime`;
-  - [ ] `baseUrl`;
-  - [ ] `startedUtc`;
-  - [ ] `finishedUtc`;
-  - [ ] `operationId` or closure run marker passed from the gate;
-  - [ ] capture list with page, viewport, route, and screenshot path;
-  - [ ] runtime network audit;
-  - [ ] pass/fail status.
-- [ ] If `run-visual-qa.mjs` does not currently record `operationId`, add an optional `--operation-id` argument.
-- [ ] If it does not record timestamps, add `startedUtc` and `finishedUtc`.
-- [ ] Add a materializer script, for example:
-  - [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/materialize-reference-visual-qa-report.mjs`.
-- [ ] The materializer must read:
-  - [ ] generated project root;
-  - [ ] `visual-plan.json`;
-  - [ ] `visual-qa-runtime-summary.json`;
-  - [ ] tracked or generated reference evidence paths;
-  - [ ] operation ID.
-- [ ] The materializer must write `docs/storefront-analysis/visual-qa-report.json`.
-- [ ] The materialized report must include:
-  - [ ] same operation ID as `visual-plan.json`;
-  - [ ] `referenceEvidenceReviewed: true`;
-  - [ ] `runtimeEvidencePaths` from runtime summary captures;
-  - [ ] `referenceEvidencePaths` from tracked fixture/handoff evidence;
-  - [ ] `pageViewportCoverage` matching the visual plan;
-  - [ ] `viewportCaptures` mapped from runtime summary captures;
-  - [ ] normalized viewport mapping, for example `desktop-1440 -> desktop`, `tablet-768 -> tablet`, `mobile-390 -> mobile`;
-  - [ ] zero unaccepted critical issues;
-  - [ ] zero unaccepted major issues;
-  - [ ] `finalDecision: passed` only when all coverage and evidence checks pass;
-  - [ ] `passed: true` only when all checks pass;
-  - [ ] evidence paths that are repo-relative or generated-project-relative consistently.
-- [ ] The materializer must fail if:
-  - [ ] runtime summary is missing;
-  - [ ] runtime summary proof mode is not `runtime`;
-  - [ ] runtime summary base URL does not match the expected base URL;
-  - [ ] runtime summary operation ID does not match visual plan;
-  - [ ] any screenshot path is missing on disk;
-  - [ ] screenshot files are older than runtime summary `startedUtc`;
-  - [ ] any visual-plan page/viewport coverage is missing from runtime captures;
-  - [ ] reference evidence paths are missing;
-  - [ ] runtime evidence was copied from a previous run;
-  - [ ] the materialized report would pass with unaccepted critical or major issues.
-- [ ] Update final closure gate so it runs the materializer after runtime visual QA and before the MVP gate's final artifact validation.
-- [ ] Do not pre-copy `visual-qa-report.json` from the tracked fixture into the generated project as final proof.
+- [x] Keep `run-visual-qa.mjs` as the browser screenshot/runtime evidence collector.
+- [x] Ensure `run-visual-qa.mjs` writes `visual-qa-runtime-summary.json` with:
+  - [x] `artifactKind: storefront-builder.visual-qa-runtime-summary`;
+  - [x] `proofMode: runtime`;
+  - [x] `baseUrl`;
+  - [x] `startedUtc`;
+  - [x] `finishedUtc`;
+  - [x] `operationId` or closure run marker passed from the gate;
+  - [x] capture list with page, viewport, route, and screenshot path;
+  - [x] runtime network audit;
+  - [x] pass/fail status.
+- [x] If `run-visual-qa.mjs` does not currently record `operationId`, add an optional `--operation-id` argument.
+- [x] If it does not record timestamps, add `startedUtc` and `finishedUtc`.
+- [x] Add a materializer script, for example:
+  - [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/materialize-reference-visual-qa-report.mjs`.
+- [x] The materializer must read:
+  - [x] generated project root;
+  - [x] `visual-plan.json`;
+  - [x] `visual-qa-runtime-summary.json`;
+  - [x] tracked or generated reference evidence paths;
+  - [x] operation ID.
+- [x] The materializer must write `docs/storefront-analysis/visual-qa-report.json`.
+- [x] The materialized report must include:
+  - [x] same operation ID as `visual-plan.json`;
+  - [x] `referenceEvidenceReviewed: true`;
+  - [x] `runtimeEvidencePaths` from runtime summary captures;
+  - [x] `referenceEvidencePaths` from tracked fixture/handoff evidence;
+  - [x] `pageViewportCoverage` matching the visual plan;
+  - [x] `viewportCaptures` mapped from runtime summary captures;
+  - [x] normalized viewport mapping, for example `desktop-1440 -> desktop`, `tablet-768 -> tablet`, `mobile-390 -> mobile`;
+  - [x] zero unaccepted critical issues;
+  - [x] zero unaccepted major issues;
+  - [x] `finalDecision: passed` only when all coverage and evidence checks pass;
+  - [x] `passed: true` only when all checks pass;
+  - [x] evidence paths that are repo-relative or generated-project-relative consistently.
+- [x] The materializer must fail if:
+  - [x] runtime summary is missing;
+  - [x] runtime summary proof mode is not `runtime`;
+  - [x] runtime summary base URL does not match the expected base URL;
+  - [x] runtime summary operation ID does not match visual plan;
+  - [x] any screenshot path is missing on disk;
+  - [x] screenshot files are older than runtime summary `startedUtc`;
+  - [x] any visual-plan page/viewport coverage is missing from runtime captures;
+  - [x] reference evidence paths are missing;
+  - [x] runtime evidence was copied from a previous run;
+  - [x] the materialized report would pass with unaccepted critical or major issues.
+- [x] Update final closure gate so it runs the materializer after runtime visual QA and before the MVP gate's final artifact validation.
+- [x] Do not pre-copy `visual-qa-report.json` from the tracked fixture into the generated project as final proof.
 
 Checks:
 
@@ -427,10 +427,24 @@ rg -n "visual-qa-runtime-summary|operation-id|startedUtc|finishedUtc|materialize
 
 DoD:
 
-- [ ] `visual-qa-report.json` is produced after runtime browser proof.
-- [ ] `visual-qa-report.json` cannot pass with stale, missing, or copied screenshots.
-- [ ] Runtime summary and Reference QA report share the same operation ID and base URL.
-- [ ] Coverage in the report matches the visual plan.
+- [x] `visual-qa-report.json` is produced after runtime browser proof.
+- [x] `visual-qa-report.json` cannot pass with stale, missing, or copied screenshots.
+- [x] Runtime summary and Reference QA report share the same operation ID and base URL.
+- [x] Coverage in the report matches the visual plan.
+
+Evidence:
+
+- `run-visual-qa.mjs` now accepts `--operation-id` and writes `operationId`, `startedUtc`, `finishedUtc`, `screenshotRoot`, canonical `viewport`, `pageId`, route, screenshot path, runtime network audit, counts, and pass/fail into `visual-qa-runtime-summary.json`.
+- Added `materialize-reference-visual-qa-report.mjs`, which reads the generated project root, visual plan, runtime summary, reference evidence root, expected operation ID, and expected base URL; it writes schema-shaped `visual-qa-report.json` plus Markdown from current runtime evidence.
+- The materializer validates runtime proof mode, operation ID, base URL, timestamp order, screenshot existence and mtime, visual-plan coverage, reference evidence presence, and rejects Critical/Major runtime discrepancies instead of producing a passing report.
+- Updated final closure gate to run runtime visual QA with `--operation-id phase4-12-final-closure-pilot`, then run the materializer, and only seed tracked reference artifacts into the pilot.
+- Removed final gate dependency on tracked `visual-artifacts/visual-qa-report.json`.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs` passed.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\materialize-reference-visual-qa-report.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\materialize-reference-visual-qa-report.mjs --help` passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -Help` passed.
+- Probe materializer run passed against current-mtime runtime summary/screenshots under `obj/storefront-builder/generated/phase4-12-probe/...`.
+- `rg -n "visual-artifacts[\\/]visual-qa-report\.json|visual-artifacts\\visual-qa-report\.json" scripts\qa\run-storefront-phase4-final-closure-gate.ps1` returned no matches.
 
 ## Phase 4.12.5 - MVP Gate Evidence Enforcement
 

@@ -12,6 +12,7 @@ Options:
   --base-url <url>                 Running generated storefront base URL.
   --project-root <path>            Generated storefront project root.
   --screenshot-root <path>         Screenshot/evidence output root.
+  --operation-id <id>              Visual QA operation ID. Defaults to visual-plan.json operationId or runtime-visual-qa.
   --fixture-root <path>            File-based fixture root for handoff skeleton proof.
   --category-slug <slug>           Category slug for baseline route checks.
   --product-slug <slug>            Product slug for baseline route checks.
@@ -28,13 +29,17 @@ const productSlug = readArg("--product-slug") ?? "qa-simple-product-100";
 const fixtureRoot = readArg("--fixture-root") ? resolve(readArg("--fixture-root")) : null;
 const proofModeArg = readArg("--proof-mode");
 const proofMode = normalizeProofMode(proofModeArg, fixtureRoot);
+const runtimeSummaryContract = { proofMode: "runtime" };
 const baseUrl = baseUrlArg ?? "";
 const allowPlannedPlaceholders = hasFlag("--allow-planned-placeholders");
 const reportPath = `${projectRoot}/docs/storefront-analysis/visual-qa-report.md`;
 const runtimeSummaryPath = `${projectRoot}/docs/storefront-analysis/visual-qa-runtime-summary.json`;
 const handoffPlan = readHandoffPlan(projectRoot);
+const visualPlan = readVisualPlan(projectRoot);
+const operationId = readArg("--operation-id") ?? visualPlan?.operationId ?? "runtime-visual-qa";
 const pages = buildPages(handoffPlan);
 const baseOrigin = proofMode === "runtime" ? new URL(baseUrl).origin : "";
+const startedUtc = new Date().toISOString();
 
 const viewports = [
   ["desktop-1440", 1440, 1000],
@@ -251,7 +256,15 @@ try {
 
       const screenshot = join(screenshotRoot, `${pageName}-${viewportName}.png`);
       await page.screenshot({ path: screenshot, fullPage: true });
-      captures.push({ pageName, viewportName, route, screenshot: screenshot.replaceAll("\\", "/") });
+      captures.push({
+        pageName,
+        pageId: pageSpec.pageId,
+        viewportName,
+        viewport: canonicalViewport(viewportName),
+        route,
+        screenshot: screenshot.replaceAll("\\", "/"),
+        capturedUtc: new Date().toISOString(),
+      });
     }
 
     await page.close();
@@ -302,6 +315,7 @@ const criticalCount = discrepancies.filter((item) => item.severity === "Critical
 const majorCount = discrepancies.filter((item) => item.severity === "Major").length;
 const minorCount = discrepancies.filter((item) => item.severity === "Minor").length;
 const passed = criticalCount === 0 && majorCount <= 3;
+const finishedUtc = new Date().toISOString();
 const report = [
   "# StorefrontBuilder Visual Smoke QA Report",
   "",
@@ -371,9 +385,13 @@ writeFileSync(reportPath, report, "utf8");
 writeFileSync(runtimeSummaryPath, JSON.stringify({
   schemaVersion: "0.1.0",
   artifactKind: "storefront-builder.visual-qa-runtime-summary",
-  proofMode,
+  operationId,
+  proofMode: proofMode === "runtime" ? runtimeSummaryContract.proofMode : proofMode,
   baseUrl: baseUrl || null,
   fixtureRoot: fixtureRoot ? fixtureRoot.replaceAll("\\", "/") : null,
+  screenshotRoot: screenshotRoot.replaceAll("\\", "/"),
+  startedUtc,
+  finishedUtc,
   handoffMode: Boolean(handoffPlan),
   pages: pages.map((page) => ({
     pageName: page.pageName,
@@ -539,6 +557,31 @@ function readHandoffPlan(root) {
   }
 
   return JSON.parse(readFileSync(planPath, "utf8"));
+}
+
+function readVisualPlan(root) {
+  const planPath = join(root, "docs", "storefront-analysis", "visual-plan.json");
+  if (!existsSync(planPath)) {
+    return null;
+  }
+
+  return JSON.parse(readFileSync(planPath, "utf8"));
+}
+
+function canonicalViewport(viewportName) {
+  if (viewportName.startsWith("desktop")) {
+    return "desktop";
+  }
+
+  if (viewportName.startsWith("tablet")) {
+    return "tablet";
+  }
+
+  if (viewportName.startsWith("mobile")) {
+    return "mobile";
+  }
+
+  return viewportName;
 }
 
 function pageFromSlot(slotId) {

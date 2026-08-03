@@ -62,6 +62,9 @@ $finalHead = ""
 $finalDecision = "failed"
 $runFullFixtureProof = $FunctionalProofLevel -eq "FoundationFunctionalFull" -or $RequireCommerceRegression
 $generatedPilotRetained = $true
+$runtimeHostProcess = $null
+$runtimeCommerceFixtureProcess = $null
+$runtimeCommerceFixtureUrl = ""
 
 if ($SkipFullFixtureProof -and $runFullFixtureProof) {
     throw "-SkipFullFixtureProof cannot be combined with -FunctionalProofLevel FoundationFunctionalFull or -RequireCommerceRegression."
@@ -122,6 +125,39 @@ function Get-PreferredPowerShell {
     }
 
     return "powershell"
+}
+
+function Get-FreeTcpPort {
+    $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse("127.0.0.1"), 0)
+    try {
+        $listener.Start()
+        return $listener.LocalEndpoint.Port
+    }
+    finally {
+        $listener.Stop()
+    }
+}
+
+function Test-TcpEndpoint {
+    param([string]$Url)
+
+    $uri = [System.Uri]::new($Url)
+    $client = [System.Net.Sockets.TcpClient]::new()
+    try {
+        $asyncResult = $client.BeginConnect($uri.Host, $uri.Port, $null, $null)
+        if (-not $asyncResult.AsyncWaitHandle.WaitOne(1000)) {
+            return $false
+        }
+
+        $client.EndConnect($asyncResult)
+        return $true
+    }
+    catch {
+        return $false
+    }
+    finally {
+        $client.Close()
+    }
 }
 
 function Add-GateStep {
@@ -240,6 +276,164 @@ function Invoke-GateCommand {
     }
 
     Add-GateStep -Name $Name -Status "passed" -Command $commandText
+}
+
+function Start-RuntimeCommerceFixture {
+    if ($null -ne $script:runtimeCommerceFixtureProcess -and -not $script:runtimeCommerceFixtureProcess.HasExited) {
+        return $script:runtimeCommerceFixtureUrl
+    }
+
+    New-Item -ItemType Directory -Force -Path $pilotAnalysisRoot | Out-Null
+    foreach ($path in @($runtimeCommerceFixtureReadyPath, $runtimeCommerceFixtureOutputPath, $runtimeCommerceFixtureErrorPath)) {
+        if (Test-Path -LiteralPath $path) {
+            Remove-Item -LiteralPath $path -Force
+        }
+    }
+
+    $fixturePort = Get-FreeTcpPort
+    $fixtureScript = Join-Path $builderRoot "scripts\qa\start-fast-commerce-fixture.mjs"
+    $arguments = @(
+        $fixtureScript,
+        "--store-key", $PilotStoreKey,
+        "--port", "$fixturePort",
+        "--ready-file", $runtimeCommerceFixtureReadyPath
+    )
+    $argumentText = (($arguments | ForEach-Object { Convert-ToProcessArgument $_ }) -join " ")
+
+    $script:runtimeCommerceFixtureProcess = Start-Process `
+        -FilePath "node" `
+        -ArgumentList $argumentText `
+        -WorkingDirectory $repoRoot `
+        -WindowStyle Hidden `
+        -RedirectStandardOutput $runtimeCommerceFixtureOutputPath `
+        -RedirectStandardError $runtimeCommerceFixtureErrorPath `
+        -PassThru
+
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds([Math]::Min($CommandTimeoutSeconds, 45))
+    do {
+        if ($script:runtimeCommerceFixtureProcess.HasExited) {
+            throw "Runtime Commerce fixture exited early with code $($script:runtimeCommerceFixtureProcess.ExitCode). Error log: $(Convert-ToRepoRelativePath $runtimeCommerceFixtureErrorPath)"
+        }
+
+        if (Test-Path -LiteralPath $runtimeCommerceFixtureReadyPath) {
+            $ready = Get-Content -LiteralPath $runtimeCommerceFixtureReadyPath -Raw | ConvertFrom-Json
+            $script:runtimeCommerceFixtureUrl = [string]$ready.url
+            return $script:runtimeCommerceFixtureUrl
+        }
+
+        Start-Sleep -Milliseconds 250
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+
+    throw "Runtime Commerce fixture did not become ready before timeout. Error log: $(Convert-ToRepoRelativePath $runtimeCommerceFixtureErrorPath)"
+}
+
+function Start-GeneratedRuntimeHost {
+    param(
+        [string]$ProjectFile,
+        [string]$Url,
+        [string]$CommerceNodeBaseUrl
+    )
+
+    if ($null -ne $script:runtimeHostProcess -and -not $script:runtimeHostProcess.HasExited) {
+        return
+    }
+
+    New-Item -ItemType Directory -Force -Path $pilotAnalysisRoot | Out-Null
+    foreach ($path in @($runtimeHostOutputPath, $runtimeHostErrorPath)) {
+        if (Test-Path -LiteralPath $path) {
+            Remove-Item -LiteralPath $path -Force
+        }
+    }
+
+    $arguments = @(
+        "run",
+        "--project", $ProjectFile,
+        "--configuration", "Debug",
+        "--no-build",
+        "--no-launch-profile",
+        "--urls", $Url
+    )
+    $argumentText = (($arguments | ForEach-Object { Convert-ToProcessArgument $_ }) -join " ")
+
+    $previousEnvironment = @{
+        ASPNETCORE_ENVIRONMENT = $env:ASPNETCORE_ENVIRONMENT
+        DOTNET_ENVIRONMENT = $env:DOTNET_ENVIRONMENT
+        Storefront__CommerceNodeBaseUrl = $env:Storefront__CommerceNodeBaseUrl
+        Storefront__StoreKey = $env:Storefront__StoreKey
+        Storefront__PublicBaseUrl = $env:Storefront__PublicBaseUrl
+        PublicUrl__BaseUrl = $env:PublicUrl__BaseUrl
+        ClientApp__BaseUrl = $env:ClientApp__BaseUrl
+    }
+
+    try {
+        $env:ASPNETCORE_ENVIRONMENT = "Development"
+        $env:DOTNET_ENVIRONMENT = "Development"
+        $env:Storefront__CommerceNodeBaseUrl = $CommerceNodeBaseUrl
+        $env:Storefront__StoreKey = $PilotStoreKey
+        $env:Storefront__PublicBaseUrl = $Url
+        $env:PublicUrl__BaseUrl = $Url
+        $env:ClientApp__BaseUrl = $Url
+
+        $script:runtimeHostProcess = Start-Process `
+            -FilePath "dotnet" `
+            -ArgumentList $argumentText `
+            -WorkingDirectory $resolvedPilotGeneratedProjectRoot `
+            -WindowStyle Hidden `
+            -RedirectStandardOutput $runtimeHostOutputPath `
+            -RedirectStandardError $runtimeHostErrorPath `
+            -PassThru
+    }
+    finally {
+        foreach ($key in $previousEnvironment.Keys) {
+            if ($null -eq $previousEnvironment[$key]) {
+                Remove-Item -Path "Env:$key" -ErrorAction SilentlyContinue
+            }
+            else {
+                Set-Item -Path "Env:$key" -Value $previousEnvironment[$key]
+            }
+        }
+    }
+
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds([Math]::Min($CommandTimeoutSeconds, 90))
+    do {
+        if ($script:runtimeHostProcess.HasExited) {
+            throw "Generated runtime host exited early with code $($script:runtimeHostProcess.ExitCode). Error log: $(Convert-ToRepoRelativePath $runtimeHostErrorPath)"
+        }
+
+        if (Test-TcpEndpoint -Url $Url) {
+            return
+        }
+
+        Start-Sleep -Seconds 1
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+
+    throw "Generated runtime host did not become reachable at $Url before timeout. Error log: $(Convert-ToRepoRelativePath $runtimeHostErrorPath)"
+}
+
+function Stop-GeneratedRuntimeHost {
+    if ($null -eq $script:runtimeHostProcess -or $script:runtimeHostProcess.HasExited) {
+        return
+    }
+
+    try {
+        $script:runtimeHostProcess.Kill()
+        $script:runtimeHostProcess.WaitForExit(10000) | Out-Null
+    }
+    catch {
+    }
+}
+
+function Stop-RuntimeCommerceFixture {
+    if ($null -eq $script:runtimeCommerceFixtureProcess -or $script:runtimeCommerceFixtureProcess.HasExited) {
+        return
+    }
+
+    try {
+        $script:runtimeCommerceFixtureProcess.Kill()
+        $script:runtimeCommerceFixtureProcess.WaitForExit(10000) | Out-Null
+    }
+    catch {
+    }
 }
 
 function Read-RequiredJsonArtifact {
@@ -433,6 +627,14 @@ $resolvedPilotHandoffSchemaRoot = if ([string]::IsNullOrWhiteSpace($PilotHandoff
 } else {
     Resolve-RepoPath $PilotHandoffSchemaRoot
 }
+$pilotAnalysisRoot = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
+$pilotProjectFile = Join-Path $resolvedPilotGeneratedProjectRoot "$PilotProjectName.csproj"
+$pilotScreenshotRoot = Join-Path $pilotAnalysisRoot "visual-qa"
+$runtimeHostOutputPath = Join-Path $pilotAnalysisRoot "phase4-final-runtime-host.out.log"
+$runtimeHostErrorPath = Join-Path $pilotAnalysisRoot "phase4-final-runtime-host.err.log"
+$runtimeCommerceFixtureReadyPath = Join-Path $pilotAnalysisRoot "phase4-final-commerce-fixture.ready.json"
+$runtimeCommerceFixtureOutputPath = Join-Path $pilotAnalysisRoot "phase4-final-commerce-fixture.out.log"
+$runtimeCommerceFixtureErrorPath = Join-Path $pilotAnalysisRoot "phase4-final-commerce-fixture.err.log"
 
 try {
     Set-Location $repoRoot
@@ -493,7 +695,6 @@ try {
             "visual-artifacts\visual-plan.json",
             "visual-artifacts\visual-implementation-checklist.json",
             "visual-artifacts\visual-implementation-report.json",
-            "visual-artifacts\visual-qa-report.json",
             "visual-artifacts\agent-written-files.json",
             "visual-artifacts\visual-checkpoints\phase4-11-closure-pilot\visual-checkpoint.json",
             "reference\home-desktop.reference.md",
@@ -530,6 +731,7 @@ try {
             "scripts\generate\record-agent-visual-writes.mjs",
             "scripts\generate\apply-final-closure-visual-fixture-edit.mjs",
             "scripts\qa\run-visual-qa.mjs",
+            "scripts\qa\materialize-reference-visual-qa-report.mjs",
             "scripts\qa\repair-visual-generation.mjs",
             "scripts\validate\Test-StorefrontBuilderHandoffBoundary.mjs"
         )) {
@@ -593,6 +795,40 @@ try {
         "--implementation-report", "docs\storefront-analysis\visual-implementation-report.json",
         "--closure-mode"
     ) -LikelyCause "Automatic changed-file detection failed for the fresh pilot visual checkpoint."
+    Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\agent-written-files.json")
+
+    Invoke-GateCommand -Name "restore generated pilot before runtime visual QA" -FileName "dotnet" -Arguments @(
+        "restore", $pilotProjectFile, "--no-cache", "--force-evaluate"
+    ) -LikelyCause "Generated pilot package references could not be restored before runtime visual QA."
+
+    Invoke-GateCommand -Name "build generated pilot before runtime visual QA" -FileName "dotnet" -Arguments @(
+        "build", $pilotProjectFile, "--configuration", "Debug", "--no-restore"
+    ) -LikelyCause "Generated pilot visual files do not compile before runtime visual QA."
+
+    Invoke-AssertionStep -Name "start generated pilot runtime host" -Command "dotnet run --project generated pilot --no-build" -LikelyCause "The generated pilot runtime host could not start for browser visual QA." -Assertion {
+        $commerceNodeBaseUrl = Start-RuntimeCommerceFixture
+        Start-GeneratedRuntimeHost -ProjectFile $pilotProjectFile -Url $PilotBaseUrl -CommerceNodeBaseUrl $commerceNodeBaseUrl
+    }
+
+    Invoke-GateCommand -Name "run runtime visual QA for current closure operation" -FileName "node" -Arguments @(
+        "tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs",
+        "--proof-mode", "runtime",
+        "--project-root", $resolvedPilotGeneratedProjectRoot,
+        "--screenshot-root", $pilotScreenshotRoot,
+        "--base-url", $PilotBaseUrl,
+        "--operation-id", "phase4-12-final-closure-pilot"
+    ) -LikelyCause "Runtime browser visual QA failed before Reference QA materialization."
+    Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-runtime-summary.json")
+    Add-EvidencePath $pilotScreenshotRoot
+
+    Invoke-GateCommand -Name "materialize Reference QA from current runtime evidence" -FileName "node" -Arguments @(
+        "tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\materialize-reference-visual-qa-report.mjs",
+        "--project-root", $resolvedPilotGeneratedProjectRoot,
+        "--base-url", $PilotBaseUrl,
+        "--operation-id", "phase4-12-final-closure-pilot"
+    ) -LikelyCause "Runtime screenshots and reference evidence could not be bound into visual-qa-report.json."
+    Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-report.json")
+    Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-report.md")
 
     if ($FunctionalProofLevel -eq "FoundationFunctionalFast") {
         Invoke-GateCommand -Name "run StorefrontBuilder generated fast functional proof" -FileName (Get-PreferredPowerShell) -Arguments @(
@@ -629,7 +865,6 @@ try {
         "-GeneratedProjectRoot", $resolvedPilotGeneratedProjectRoot,
         "-ProofMode", "Runtime",
         "-BaseUrl", $PilotBaseUrl,
-        "-StartRuntimeHost",
         "-HandoffRoot", $resolvedPilotHandoffRoot,
         "-SkipRepair",
         "-CommandTimeoutSeconds", $CommandTimeoutSeconds
@@ -668,4 +903,8 @@ catch {
     $reportPath = Save-GateReports -Status $finalDecision -ErrorMessage $_.Exception.Message
     Write-Error "Phase 4 final closure gate failed. Report: $(Convert-ToRepoRelativePath $reportPath). Error: $($_.Exception.Message)"
     exit 1
+}
+finally {
+    Stop-GeneratedRuntimeHost
+    Stop-RuntimeCommerceFixture
 }
