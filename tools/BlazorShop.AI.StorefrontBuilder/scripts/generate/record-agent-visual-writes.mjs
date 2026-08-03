@@ -109,6 +109,11 @@ function detectFromCheckpoint(path, allowedByPath) {
   const detected = new Set(normalizeUnique(checkpoint.changedFiles ?? []));
   const deleted = new Set();
 
+  if (closureMode) {
+    assertNoPlaceholderHashes(pre, post);
+    assertCheckpointHashesMatchCurrentSource(scope, pre, post, detected);
+  }
+
   for (const file of new Set([...scope, ...pre.keys(), ...post.keys()])) {
     const before = pre.get(file) ?? "missing";
     const after = post.get(file) ?? "missing";
@@ -131,7 +136,7 @@ function detectFromCheckpoint(path, allowedByPath) {
     fail("SFB-AGENT-WRITE-023", `Auto-detection found deleted generated visual files, which cannot be recorded as valid closure writes: ${[...deleted].join(", ")}`);
   }
 
-  assertImplementationReportClaims([...detected]);
+  assertImplementationReportClaims([...detected], pre, post);
 
   return {
     mode: "checkpoint-auto-detect",
@@ -171,7 +176,46 @@ function resolveTargetFiles(detection, hints) {
   return detected;
 }
 
-function assertImplementationReportClaims(detectedFiles) {
+function assertNoPlaceholderHashes(pre, post) {
+  for (const [file, hash] of [...pre.entries(), ...post.entries()]) {
+    if (/^sha256:phase4-11-|^sha256:(before|after|visual-plan|checklist|placeholder|fake|hash)$/i.test(hash)) {
+      fail("SFB-AGENT-WRITE-033", `Visual checkpoint contains placeholder hash '${hash}' for ${file}. Closure mode requires current SHA-256 values.`);
+    }
+  }
+}
+
+function assertCheckpointHashesMatchCurrentSource(scope, pre, post, declaredChangedFiles) {
+  for (const file of scope) {
+    if (!post.has(file)) {
+      fail("SFB-AGENT-WRITE-030", `Closure checkpoint sourceTreeSnapshotScope includes '${file}' but postEditFileHashes does not list it.`);
+    }
+
+    if (!pre.has(file)) {
+      fail("SFB-AGENT-WRITE-030", `Closure checkpoint sourceTreeSnapshotScope includes '${file}' but preEditFileHashes does not list it.`);
+    }
+  }
+
+  for (const file of post.keys()) {
+    const fullPath = resolve(projectRoot, file);
+    assertUnderProject(fullPath, file);
+    if (!existsSync(fullPath)) {
+      fail("SFB-AGENT-WRITE-029", `Checkpoint claims changed file '${file}' but the current generated file does not exist.`);
+    }
+
+    const currentHash = `sha256:${sha(normalizeText(readFileSync(fullPath, "utf8")))}`;
+    const expectedPostHash = post.get(file);
+    if (currentHash !== expectedPostHash) {
+      fail("SFB-AGENT-WRITE-029", `Checkpoint post hash differs from current file content for ${file}. Expected ${expectedPostHash}, actual ${currentHash}.`);
+    }
+
+    const beforeHash = pre.get(file) ?? "missing";
+    if (beforeHash !== currentHash && !declaredChangedFiles.has(file)) {
+      fail("SFB-AGENT-WRITE-031", `Current file changed but checkpoint did not list it in changedFiles: ${file}`);
+    }
+  }
+}
+
+function assertImplementationReportClaims(detectedFiles, pre, post) {
   if (!existsSync(implementationReportPath)) {
     return;
   }
@@ -183,8 +227,20 @@ function assertImplementationReportClaims(detectedFiles) {
   }
 
   const missingDetected = claimed.filter(file => !detectedFiles.includes(file));
-  if (missingDetected.length > 0) {
-    fail("SFB-AGENT-WRITE-028", `Implementation report changedFiles disagree with checkpoint auto-detection: ${missingDetected.join(", ")}`);
+  const unclaimedDetected = detectedFiles.filter(file => !claimed.includes(file));
+  if (missingDetected.length > 0 || unclaimedDetected.length > 0) {
+    fail("SFB-AGENT-WRITE-028", `Implementation report changedFiles differ from checkpoint changed files. Missing from checkpoint: ${missingDetected.join(", ") || "(none)"}. Missing from report: ${unclaimedDetected.join(", ") || "(none)"}.`);
+  }
+
+  for (const change of report.fileChanges ?? []) {
+    const file = normalizeTargetPath(change.filePath);
+    const checkpointBefore = pre.get(file) ?? "missing";
+    const checkpointAfter = post.get(file) ?? "missing";
+    const reportBefore = String(change.beforeSha256 ?? "missing");
+    const reportAfter = String(change.afterSha256 ?? "missing");
+    if (checkpointBefore !== reportBefore || checkpointAfter !== reportAfter) {
+      fail("SFB-AGENT-WRITE-034", `Implementation report before/after hashes differ from checkpoint hashes for ${file}.`);
+    }
   }
 }
 

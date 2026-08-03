@@ -1,9 +1,10 @@
 {
   "schemaVersion": "0.1.0",
+  "fixtureTemplate": true,
   "operationId": "phase4-11-closure-pilot",
   "checkpointPath": "docs/storefront-analysis/visual-checkpoints/phase4-11-closure-pilot/visual-checkpoint.json",
-  "beforeSnapshotHash": "sha256:phase4-11-before",
-  "afterSnapshotHash": "sha256:phase4-11-after",
+  "beforeSnapshotHash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+  "afterSnapshotHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
   "changedFiles": [
     "Pages/Ssr/Home/HomePage.razor"
   ],

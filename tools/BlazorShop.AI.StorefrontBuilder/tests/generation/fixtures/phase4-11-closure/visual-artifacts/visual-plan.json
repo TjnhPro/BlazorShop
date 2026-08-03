@@ -1,11 +1,12 @@
 {
   "schemaVersion": "0.1.0",
+  "fixtureTemplate": true,
   "operationId": "phase4-11-closure-pilot",
   "projectName": "BlazorShop.Storefront.Phase411ClosurePilot",
   "storeKey": "sample",
-  "handoffHash": "sha256:phase4-11-closure-handoff",
-  "generationPlanHash": "sha256:phase4-11-closure-generation-plan",
-  "taskPackageHash": "sha256:phase4-11-closure-task-package",
+  "handoffHash": "sha256:8d968f35b91ed44b192dee850d80f9e5e86de9bcf8d59d577d13b41ecdfbadb2",
+  "generationPlanHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+  "taskPackageHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
   "pages": [
     {
       "id": "home",

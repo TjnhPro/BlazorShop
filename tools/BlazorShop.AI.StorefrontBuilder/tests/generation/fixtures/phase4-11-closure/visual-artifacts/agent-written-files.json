@@ -1,10 +1,11 @@
 {
   "schemaVersion": "1.0.0",
+  "fixtureTemplate": true,
   "artifactKind": "agent-written-files",
   "artifactId": "agent-written-files.BlazorShop.Storefront.Phase411ClosurePilot",
   "detectionMode": "checkpoint-auto-detect",
   "checkpointPath": "docs/storefront-analysis/visual-checkpoints/phase4-11-closure-pilot/visual-checkpoint.json",
-  "generationPlanHash": "sha256:phase4-11-closure-generation-plan",
+  "generationPlanHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
   "hintMismatch": {
     "omittedChangedFiles": [],
     "unchangedHintFiles": []
@@ -20,7 +21,7 @@
       "filePath": "Pages/Ssr/Home/HomePage.razor",
       "detectionSource": "auto-detected",
       "sourcePlanEntryId": "home-page-visual-shell",
-      "checksum": "sha256:phase4-11-closure-home",
+      "checksum": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
       "slots": [
         "home.hero"
       ],

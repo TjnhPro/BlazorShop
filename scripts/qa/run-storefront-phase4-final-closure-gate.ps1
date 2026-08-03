@@ -528,6 +528,7 @@ try {
     Invoke-AssertionStep -Name "StorefrontBuilder visual helper availability" -Command "StorefrontBuilder helper file checks" -LikelyCause "A required StorefrontBuilder Phase 4 helper is missing." -Assertion {
         foreach ($path in @(
             "scripts\generate\record-agent-visual-writes.mjs",
+            "scripts\generate\apply-final-closure-visual-fixture-edit.mjs",
             "scripts\qa\run-visual-qa.mjs",
             "scripts\qa\repair-visual-generation.mjs",
             "scripts\validate\Test-StorefrontBuilderHandoffBoundary.mjs"
@@ -565,21 +566,30 @@ try {
         Assert-HandoffGeneratedArtifacts -ProjectRoot $resolvedPilotGeneratedProjectRoot
     }
 
-    Invoke-AssertionStep -Name "seed tracked closure visual artifacts into fresh pilot" -Command "copy tracked fixture visual/reference artifacts" -LikelyCause "Tracked closure fixture artifacts could not be copied into disposable generated output." -Assertion {
+    Invoke-AssertionStep -Name "seed tracked closure reference evidence into fresh pilot" -Command "copy tracked fixture reference artifacts" -LikelyCause "Tracked closure fixture reference artifacts could not be copied into disposable generated output." -Assertion {
         $analysisRoot = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
         if (-not (Test-Path -LiteralPath $analysisRoot)) {
             throw "Generated pilot analysis root is missing: $(Convert-ToRepoRelativePath $analysisRoot)"
         }
 
-        Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "visual-artifacts") -Destination $analysisRoot
         Copy-DirectoryContents -Source (Join-Path $resolvedClosureFixtureRoot "reference") -Destination (Join-Path $analysisRoot "reference")
         Set-Content -LiteralPath (Join-Path $analysisRoot "fresh-generation-marker.txt") -Value "fresh generated during Phase 4.11 final closure gate" -Encoding UTF8
     }
 
+    Invoke-GateCommand -Name "apply deterministic final closure visual edit" -FileName "node" -Arguments @(
+        "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\apply-final-closure-visual-fixture-edit.mjs",
+        "--project-root", $resolvedPilotGeneratedProjectRoot,
+        "--operation-id", "phase4-12-final-closure-pilot"
+    ) -LikelyCause "The deterministic closure visual edit could not create real checkpoint evidence from generated source."
+    Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-plan.json")
+    Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-implementation-checklist.json")
+    Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json")
+    Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-implementation-report.json")
+
     Invoke-GateCommand -Name "run automatic pilot changed-file detection" -FileName "node" -Arguments @(
         "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs",
         "--project-root", $resolvedPilotGeneratedProjectRoot,
-        "--from-checkpoint", "docs\storefront-analysis\visual-checkpoints\phase4-11-closure-pilot\visual-checkpoint.json",
+        "--from-checkpoint", "docs\storefront-analysis\visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json",
         "--implementation-report", "docs\storefront-analysis\visual-implementation-report.json",
         "--closure-mode"
     ) -LikelyCause "Automatic changed-file detection failed for the fresh pilot visual checkpoint."

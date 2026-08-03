@@ -289,50 +289,50 @@ Goal: replace placeholder checkpoint proof with actual source mutations and real
 
 Tasks:
 
-- [ ] Add a deterministic final-closure helper script if needed, for example:
-  - [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-final-closure-visual-fixture-edit.mjs`, or;
-  - [ ] a tightly scoped PowerShell helper under `scripts/qa`.
-- [ ] The helper must read `docs/storefront-analysis/agent-task-package/manifest.json`.
-- [ ] Select exactly one allowed generated visual output from `allowedOutputFiles`.
-- [ ] Verify selected file exists under the generated project root.
-- [ ] Verify selected file is not protected and does not declare a route.
-- [ ] Compute normalized SHA-256 before edit.
-- [ ] Apply one deterministic, behavior-safe visual-only edit:
-  - [ ] prefer CSS class/text/markup decoration inside the selected generated visual file;
-  - [ ] do not add `@page`;
-  - [ ] do not add HTTP clients, BFF endpoints, DTOs, auth, SEO, cart/checkout/payment/order logic, or appsettings;
-  - [ ] preserve existing `data-storefront-*` descriptors if present.
-- [ ] Compute normalized SHA-256 after edit.
-- [ ] Write `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json` with:
-  - [ ] `operationId` matching `visual-plan.json`;
-  - [ ] real `preEditFileHashes`;
-  - [ ] real `postEditFileHashes`;
-  - [ ] real `changedFiles`;
-  - [ ] empty `unexpectedFiles`;
-  - [ ] `sourceTreeSnapshotScope` containing the selected file and relevant allowed files;
-  - [ ] `diffSummary` explaining the deterministic visual fixture edit.
-- [ ] Write or update `docs/storefront-analysis/visual-implementation-report.json` from the same helper:
-  - [ ] same `operationId`;
-  - [ ] checkpoint path;
-  - [ ] changed files;
-  - [ ] real before/after SHA-256 values;
-  - [ ] unresolved items empty;
-  - [ ] boundary/build status initially pending if validation happens later.
-- [ ] Update or generate `visual-plan.json` and `visual-implementation-checklist.json` only if current generated output requires alignment with the handoff plan.
-- [ ] Remove placeholder hashes from tracked closure fixture artifacts.
-- [ ] If fixture artifacts remain tracked, they must be valid templates with explicit `fixtureTemplate` markers and must not be copied as final proof.
+- [x] Add a deterministic final-closure helper script if needed, for example:
+  - [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-final-closure-visual-fixture-edit.mjs`, or;
+  - [x] a tightly scoped PowerShell helper under `scripts/qa` was not needed because the final gate calls the Node helper directly.
+- [x] The helper must read `docs/storefront-analysis/agent-task-package/manifest.json`.
+- [x] Select exactly one allowed generated visual output from `allowedOutputFiles`.
+- [x] Verify selected file exists under the generated project root.
+- [x] Verify selected file is not protected and does not declare a route.
+- [x] Compute normalized SHA-256 before edit.
+- [x] Apply one deterministic, behavior-safe visual-only edit:
+  - [x] prefer CSS class/text/markup decoration inside the selected generated visual file;
+  - [x] do not add `@page`;
+  - [x] do not add HTTP clients, BFF endpoints, DTOs, auth, SEO, cart/checkout/payment/order logic, or appsettings;
+  - [x] preserve existing `data-storefront-*` descriptors if present.
+- [x] Compute normalized SHA-256 after edit.
+- [x] Write `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json` with:
+  - [x] `operationId` matching `visual-plan.json`;
+  - [x] real `preEditFileHashes`;
+  - [x] real `postEditFileHashes`;
+  - [x] real `changedFiles`;
+  - [x] empty `unexpectedFiles`;
+  - [x] `sourceTreeSnapshotScope` containing the selected file and relevant allowed files;
+  - [x] `diffSummary` explaining the deterministic visual fixture edit.
+- [x] Write or update `docs/storefront-analysis/visual-implementation-report.json` from the same helper:
+  - [x] same `operationId`;
+  - [x] checkpoint path;
+  - [x] changed files;
+  - [x] real before/after SHA-256 values;
+  - [x] unresolved items empty;
+  - [x] boundary/build status initially pending if validation happens later.
+- [x] Update or generate `visual-plan.json` and `visual-implementation-checklist.json` only if current generated output requires alignment with the handoff plan.
+- [x] Remove placeholder hashes from tracked closure fixture artifacts.
+- [x] If fixture artifacts remain tracked, they must be valid templates with explicit `fixtureTemplate` markers and must not be copied as final proof.
 
 Recorder hardening:
 
-- [ ] Update `record-agent-visual-writes.mjs` to verify checkpoint `postEditFileHashes` against actual current file content.
-- [ ] Use the same normalized text hash algorithm as checkpoint creation.
-- [ ] Fail when:
-  - [ ] post hash differs from current file content;
-  - [ ] checkpoint claims a changed file that does not exist;
-  - [ ] current file changed but checkpoint did not list it;
-  - [ ] implementation report changed files differ from checkpoint changed files;
-  - [ ] implementation report before/after hashes differ from checkpoint hashes;
-  - [ ] placeholder hash strings such as `sha256:phase4-11-*` are present in closure mode.
+- [x] Update `record-agent-visual-writes.mjs` to verify checkpoint `postEditFileHashes` against actual current file content.
+- [x] Use the same normalized text hash algorithm as checkpoint creation.
+- [x] Fail when:
+  - [x] post hash differs from current file content;
+  - [x] checkpoint claims a changed file that does not exist;
+  - [x] current file changed but checkpoint did not list it;
+  - [x] implementation report changed files differ from checkpoint changed files;
+  - [x] implementation report before/after hashes differ from checkpoint hashes;
+  - [x] placeholder hash strings such as `sha256:phase4-11-*` are present in closure mode.
 
 Checks:
 
@@ -344,10 +344,23 @@ rg -n "postEditFileHashes|current file|placeholder|phase4-11-before|phase4-11-af
 
 DoD:
 
-- [ ] Final closure checkpoint hashes are computed from generated source at runtime.
-- [ ] Recorder refuses fake or stale checkpoint hashes.
-- [ ] `agent-written-files.json` checksum matches the current generated file content.
-- [ ] Placeholder checkpoint hashes cannot pass closure mode.
+- [x] Final closure checkpoint hashes are computed from generated source at runtime.
+- [x] Recorder refuses fake or stale checkpoint hashes.
+- [x] `agent-written-files.json` checksum matches the current generated file content.
+- [x] Placeholder checkpoint hashes cannot pass closure mode.
+
+Evidence:
+
+- Added `apply-final-closure-visual-fixture-edit.mjs`, which reads the StorefrontBuilder-generated task package and handoff generation plan, selects one allowed generated Razor visual output, rejects protected/route targets, applies a deterministic `sfb-phase412-proof` class edit, and writes real visual plan/checklist/checkpoint/implementation-report artifacts from generated source.
+- Hardened `record-agent-visual-writes.mjs` closure mode to reject placeholder checkpoint hashes, verify checkpoint post hashes against current file contents, require changed source to appear in checkpoint `changedFiles`, and compare implementation report file hashes against checkpoint hashes.
+- Updated the final closure gate to apply the deterministic edit and run automatic changed-file recording after handoff generation instead of copying tracked visual proof artifacts.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\apply-final-closure-visual-fixture-edit.mjs` passed.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\apply-final-closure-visual-fixture-edit.mjs --help` passed.
+- `node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --help` passed.
+- Fresh handoff probe generation passed for `BlazorShop.Storefront.Phase412Probe`.
+- Probe deterministic edit changed exactly `Components/Catalog/ProductGalleryPlaceholder.razor`.
+- Probe recorder passed in `--closure-mode` and recorded one `checkpoint-auto-detect` agent-written file.
 
 ## Phase 4.12.4 - Runtime Evidence Binding And Reference QA Materializer
 

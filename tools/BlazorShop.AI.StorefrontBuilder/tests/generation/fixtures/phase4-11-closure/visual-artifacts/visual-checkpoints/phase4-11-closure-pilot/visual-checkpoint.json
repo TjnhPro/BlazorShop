@@ -1,11 +1,12 @@
 {
   "schemaVersion": "0.1.0",
+  "fixtureTemplate": true,
   "checkpointId": "phase4-11-closure-home-checkpoint",
   "operationId": "phase4-11-closure-pilot",
-  "visualPlanHash": "sha256:phase4-11-closure-visual-plan",
-  "checklistHash": "sha256:phase4-11-closure-checklist",
-  "preEditSnapshotHash": "sha256:phase4-11-before",
-  "postEditSnapshotHash": "sha256:phase4-11-after",
+  "visualPlanHash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+  "checklistHash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+  "preEditSnapshotHash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+  "postEditSnapshotHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
   "changedFiles": [
     "Pages/Ssr/Home/HomePage.razor"
   ],
@@ -17,13 +18,13 @@
   "preEditFileHashes": [
     {
       "filePath": "Pages/Ssr/Home/HomePage.razor",
-      "sha256": "sha256:phase4-11-before-home"
+      "sha256": "sha256:7777777777777777777777777777777777777777777777777777777777777777"
     }
   ],
   "postEditFileHashes": [
     {
       "filePath": "Pages/Ssr/Home/HomePage.razor",
-      "sha256": "sha256:phase4-11-after-home"
+      "sha256": "sha256:8888888888888888888888888888888888888888888888888888888888888888"
     }
   ],
   "diffSummary": [

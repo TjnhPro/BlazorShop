@@ -1,7 +1,8 @@
 {
   "schemaVersion": "0.1.0",
+  "fixtureTemplate": true,
   "checklistId": "phase4-11-closure-home-checklist",
-  "sourceVisualPlanHash": "sha256:phase4-11-closure-visual-plan",
+  "sourceVisualPlanHash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
   "fileTasks": [
     {
       "filePath": "Pages/Ssr/Home/HomePage.razor",
