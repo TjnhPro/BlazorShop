@@ -24,6 +24,20 @@ function Resolve-InputPath {
     return [System.IO.Path]::GetFullPath((Join-Path (Get-Location) $Path))
 }
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
+function Get-Sha256Hex([byte[]]$Bytes) {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [System.BitConverter]::ToString($sha.ComputeHash($Bytes)).Replace("-", "").ToLowerInvariant()
+    }
+    finally {
+        $sha.Dispose()
+    }
+}
+
 function Read-GeneratedFileManifestEntries {
     param([Parameter(Mandatory = $true)][string]$ManifestPath)
 
@@ -73,10 +87,9 @@ function Get-NormalizedFileHash {
         return "none"
     }
 
-    $content = (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+    $content = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($Path)).Replace("`r`n", "`n").Replace("`r", "`n")
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
-    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
-    $hex = [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    $hex = Get-Sha256Hex $bytes
     return "sha256:$hex"
 }
 
@@ -85,8 +98,7 @@ function Get-NormalizedTextSha256 {
 
     $normalized = $Text.Replace("`r`n", "`n").Replace("`r", "`n")
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($normalized)
-    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
-    return [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    return Get-Sha256Hex $bytes
 }
 
 function Get-NormalizedFileSha256 {
@@ -96,7 +108,8 @@ function Get-NormalizedFileSha256 {
         return ""
     }
 
-    return Get-NormalizedTextSha256 -Text (Get-Content -LiteralPath $Path -Raw)
+    $content = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($Path))
+    return Get-NormalizedTextSha256 -Text $content
 }
 
 function Normalize-RecordedHash {
@@ -143,7 +156,7 @@ function Test-ScopeMatch {
             return $false
         }
 
-        return [string]::IsNullOrWhiteSpace($Target) -or $Entry["filePath"].Contains($Target, [System.StringComparison]::OrdinalIgnoreCase)
+        return [string]::IsNullOrWhiteSpace($Target) -or (Test-TextContains $Entry["filePath"] $Target ([System.StringComparison]::OrdinalIgnoreCase))
     }
 
     return $false
@@ -573,7 +586,12 @@ function Get-HandoffPlannedIntentionalChanges {
     $paths = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @($Plan.files)) {
         $ownership = [string]$file.ownership
-        $action = [string]($file.allowedOperation ?? $file.action)
+        $actionValue = $file.allowedOperation
+        if ($null -eq $actionValue) {
+            $actionValue = $file.action
+        }
+
+        $action = [string]$actionValue
         $targetPath = [string]$file.targetPath
         if ([string]::IsNullOrWhiteSpace($targetPath)) {
             continue
@@ -601,14 +619,19 @@ function Assert-HandoffPlanTargetsAreRegeneratable {
 
         $normalized = $targetPath.Replace("\", "/").TrimStart("/")
         $ownership = [string]$file.ownership
-        $action = [string]($file.allowedOperation ?? $file.action)
+        $actionValue = $file.allowedOperation
+        if ($null -eq $actionValue) {
+            $actionValue = $file.action
+        }
+
+        $action = [string]$actionValue
         $protectedTarget = $normalized -eq "StorefrontPackageVersions.props" `
             -or $normalized -eq "starter-generation.contract.yaml" `
-            -or $normalized.Contains("BlazorShop.Storefront.Starter", [System.StringComparison]::OrdinalIgnoreCase) `
-            -or $normalized.Contains("BlazorShop.Storefront.Presentation", [System.StringComparison]::OrdinalIgnoreCase) `
-            -or $normalized.Contains("BlazorShop.Storefront.Runtime", [System.StringComparison]::OrdinalIgnoreCase) `
-            -or $normalized.Contains("BlazorShop.Storefront.Client", [System.StringComparison]::OrdinalIgnoreCase) `
-            -or $normalized.Contains("BlazorShop.Storefront.V2", [System.StringComparison]::OrdinalIgnoreCase)
+            -or (Test-TextContains $normalized "BlazorShop.Storefront.Starter" ([System.StringComparison]::OrdinalIgnoreCase)) `
+            -or (Test-TextContains $normalized "BlazorShop.Storefront.Presentation" ([System.StringComparison]::OrdinalIgnoreCase)) `
+            -or (Test-TextContains $normalized "BlazorShop.Storefront.Runtime" ([System.StringComparison]::OrdinalIgnoreCase)) `
+            -or (Test-TextContains $normalized "BlazorShop.Storefront.Client" ([System.StringComparison]::OrdinalIgnoreCase)) `
+            -or (Test-TextContains $normalized "BlazorShop.Storefront.V2" ([System.StringComparison]::OrdinalIgnoreCase))
 
         if ($protectedTarget -and $ownership -ne "protected" -and $action -ne "skip") {
             throw "[SFB-REGEN-HANDOFF-020] Handoff generation plan targets a protected file. Problem: '$normalized' is planned as '$ownership/$action'. Cause: handoff regeneration can only rewrite generated-owned visual files; platform/package files require an explicit foundation path. Fix: re-plan the handoff generation so protected targets are skipped or run a reviewed foundation upgrade."

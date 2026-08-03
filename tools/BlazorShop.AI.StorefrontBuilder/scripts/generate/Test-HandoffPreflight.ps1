@@ -20,13 +20,21 @@ function New-HandoffPreflightFailure {
     return "[$Code] StorefrontBuilder handoff preflight failed. Problem: $Problem Cause: $Cause Fix: $Fix"
 }
 
+function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+}
+
 function Test-ForbiddenRawHandoffFolder {
     param(
         [Parameter(Mandatory = $true)][string]$ResolvedPath,
         [Parameter(Mandatory = $true)][string]$ResolvedRepoRoot
     )
 
-    $relative = [System.IO.Path]::GetRelativePath($ResolvedRepoRoot, $ResolvedPath).Replace("\", "/")
+    $relative = (Get-RelativePathCompat $ResolvedRepoRoot $ResolvedPath).Replace("\", "/")
     return $relative -match "(^|/)captures(/|$)|(^|/)analysis/(pages|resolved)(/|$)|(^|/)presentation-catalog(/|$)|(^|/)review(/|$)|(^|/)reports(/|$)"
 }
 

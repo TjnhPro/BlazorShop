@@ -42,6 +42,28 @@ function Resolve-RepoPath {
     return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
 }
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
+function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+}
+
+function Get-Sha256Hex([byte[]]$Bytes) {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [System.BitConverter]::ToString($sha.ComputeHash($Bytes)).Replace("-", "").ToLowerInvariant()
+    }
+    finally {
+        $sha.Dispose()
+    }
+}
+
 function Invoke-Step {
     param(
         [string]$StepName,
@@ -231,15 +253,14 @@ function Get-ProofFileHashes {
     $hashes = @{}
     Get-ChildItem -LiteralPath $Root -Recurse -File |
         Where-Object {
-            $relative = [System.IO.Path]::GetRelativePath($Root, $_.FullName).Replace("\", "/")
+            $relative = (Get-RelativePathCompat $Root $_.FullName).Replace("\", "/")
             $relative -notmatch "(^|/)(bin|obj|\.regeneration-staging|\.regeneration-backup)/"
         } |
         ForEach-Object {
-            $relative = [System.IO.Path]::GetRelativePath($Root, $_.FullName).Replace("\", "/")
-            $content = (Get-Content -LiteralPath $_.FullName -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+            $relative = (Get-RelativePathCompat $Root $_.FullName).Replace("\", "/")
+            $content = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($_.FullName)).Replace("`r`n", "`n").Replace("`r", "`n")
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
-            $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
-            $hashes[$relative] = [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+            $hashes[$relative] = Get-Sha256Hex $bytes
         }
 
     return $hashes
@@ -273,7 +294,7 @@ function Invoke-GeneratedProofRegenerationLifecycle {
     $manualConflictFile = Join-Path $projectRoot "Components\Catalog\PurchasePanelPlaceholder.razor"
 
     Invoke-Step "Run post-regeneration build proof" {
-        & $regenerator -ProjectRoot $projectRoot -Scope all
+        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
     }
 
     Invoke-Step "Run regenerate no-op proof" {
@@ -297,7 +318,7 @@ function Invoke-GeneratedProofRegenerationLifecycle {
                 "manualEditDetected: true",
                 "conflictStatus: manual-edit"
             )) {
-                if (-not $manifest.Contains($marker, [System.StringComparison]::Ordinal)) {
+                if (-not (Test-TextContains $manifest $marker)) {
                     throw "[SFB-PROOF-REGEN-002] Manual-edit conflict proof did not record marker '$marker'."
                 }
             }

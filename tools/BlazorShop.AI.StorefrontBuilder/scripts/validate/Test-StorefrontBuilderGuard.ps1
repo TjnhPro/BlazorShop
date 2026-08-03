@@ -32,6 +32,18 @@ function Fail-Guard {
     throw "[$RuleId] $Path $Message"
 }
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
+function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+}
+
 function Get-SourceFiles {
     Get-ChildItem -LiteralPath $resolvedProjectRoot -Recurse -File |
         Where-Object {
@@ -41,33 +53,33 @@ function Get-SourceFiles {
 }
 
 foreach ($file in Get-SourceFiles) {
-    $relative = [System.IO.Path]::GetRelativePath($repoRoot, $file.FullName)
+    $relative = Get-RelativePathCompat $repoRoot $file.FullName
     $content = Get-Content -LiteralPath $file.FullName -Raw
     $isBrowserFile = $file.Extension -in @(".razor", ".css", ".js")
 
-    $usesDirectTransport = $content.Contains("HttpClient", [System.StringComparison]::Ordinal) `
-        -or $content.Contains("fetch(""http", [System.StringComparison]::OrdinalIgnoreCase) `
-        -or $content.Contains("fetch('http", [System.StringComparison]::OrdinalIgnoreCase)
+    $usesDirectTransport = (Test-TextContains $content "HttpClient") `
+        -or (Test-TextContains $content "fetch(""http" ([System.StringComparison]::OrdinalIgnoreCase)) `
+        -or (Test-TextContains $content "fetch('http" ([System.StringComparison]::OrdinalIgnoreCase))
     if ($isBrowserFile -and $usesDirectTransport) {
         Fail-Guard "SFB-GUARD-001" $relative "Generated presentation must not use HttpClient or direct HTTP transport."
     }
 
-    $exposesCommerceNode = $content.Contains("CommerceNodeBaseUrl", [System.StringComparison]::OrdinalIgnoreCase) `
-        -or $content.Contains("localhost:5180", [System.StringComparison]::OrdinalIgnoreCase) `
-        -or $content.Contains("/api/storefront/stores/", [System.StringComparison]::OrdinalIgnoreCase)
+    $exposesCommerceNode = (Test-TextContains $content "CommerceNodeBaseUrl" ([System.StringComparison]::OrdinalIgnoreCase)) `
+        -or (Test-TextContains $content "localhost:5180" ([System.StringComparison]::OrdinalIgnoreCase)) `
+        -or (Test-TextContains $content "/api/storefront/stores/" ([System.StringComparison]::OrdinalIgnoreCase))
     if ($isBrowserFile -and $exposesCommerceNode) {
         Fail-Guard "SFB-GUARD-002" $relative "Browser presentation must not know Commerce Node URL or protected Storefront API paths."
     }
 
-    $handlesBrowserCredential = $content.Contains("accessToken", [System.StringComparison]::OrdinalIgnoreCase) `
-        -or $content.Contains("refreshToken", [System.StringComparison]::OrdinalIgnoreCase) `
-        -or $content.Contains("localStorage", [System.StringComparison]::OrdinalIgnoreCase) `
-        -or $content.Contains("sessionStorage", [System.StringComparison]::OrdinalIgnoreCase)
+    $handlesBrowserCredential = (Test-TextContains $content "accessToken" ([System.StringComparison]::OrdinalIgnoreCase)) `
+        -or (Test-TextContains $content "refreshToken" ([System.StringComparison]::OrdinalIgnoreCase)) `
+        -or (Test-TextContains $content "localStorage" ([System.StringComparison]::OrdinalIgnoreCase)) `
+        -or (Test-TextContains $content "sessionStorage" ([System.StringComparison]::OrdinalIgnoreCase))
     if ($isBrowserFile -and $handlesBrowserCredential) {
         Fail-Guard "SFB-GUARD-003" $relative "Browser presentation must not handle credentials or browser token storage."
     }
 
-    if ($file.Extension -eq ".csproj" -and $content.Contains("ProjectReference", [System.StringComparison]::OrdinalIgnoreCase)) {
+    if ($file.Extension -eq ".csproj" -and (Test-TextContains $content "ProjectReference" ([System.StringComparison]::OrdinalIgnoreCase))) {
         Fail-Guard "SFB-GUARD-004" $relative "Generated storefront must not use ProjectReference to backend/core/API/V2 projects."
     }
 
@@ -77,7 +89,7 @@ foreach ($file in Get-SourceFiles) {
         "using BlazorShop.Infrastructure",
         "using BlazorShop.PresentationV2.BlazorShop.CommerceNode.API"
     )) {
-        if ($content.Contains($namespace, [System.StringComparison]::Ordinal)) {
+        if (Test-TextContains $content $namespace) {
             Fail-Guard "SFB-GUARD-005" $relative "Generated source must not import backend/core/API namespaces: $namespace."
         }
     }
@@ -88,8 +100,8 @@ foreach ($file in Get-SourceFiles) {
         "StorefrontCheckoutSessionResponse",
         "StorefrontProductResponse"
     )) {
-        $duplicatesDto = $content.Contains("class $dtoName", [System.StringComparison]::Ordinal) `
-            -or $content.Contains("record $dtoName", [System.StringComparison]::Ordinal)
+        $duplicatesDto = (Test-TextContains $content "class $dtoName") `
+            -or (Test-TextContains $content "record $dtoName")
         if ($duplicatesDto) {
             Fail-Guard "SFB-GUARD-006" $relative "Generated source must not duplicate generated API DTO: $dtoName."
         }
@@ -103,7 +115,7 @@ foreach ($file in Get-SourceFiles) {
         "PlaceOrder",
         "CapturePayment"
     )) {
-        if ($isBrowserFile -and $content.Contains($businessTerm, [System.StringComparison]::OrdinalIgnoreCase)) {
+        if ($isBrowserFile -and (Test-TextContains $content $businessTerm ([System.StringComparison]::OrdinalIgnoreCase))) {
             Fail-Guard "SFB-GUARD-007" $relative "Generated presentation must not own ecommerce business validation logic: $businessTerm."
         }
     }

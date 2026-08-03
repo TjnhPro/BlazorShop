@@ -12,6 +12,18 @@ $ErrorActionPreference = "Stop"
 $toolRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $repoRoot = Resolve-Path (Join-Path $toolRoot "..\..")
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
+function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+}
+
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderSchemas.ps1")
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderGeneratedProject.ps1") -ProjectRoot $ProjectRoot -Name $Name -StoreKey $StoreKey
 $analysisRoot = Join-Path $ProjectRoot "docs\storefront-analysis"
@@ -63,18 +75,18 @@ if ($routeDirectives.Count -gt 0) {
 $versions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
 $project = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.csproj") -Raw
 foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
-    if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $project "PackageReference Include=`"$package`"")) {
         throw "[SFB-STATIC-003] Package version mismatch or missing package reference: $package"
     }
 }
 
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
-    if ($project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+    if (Test-TextContains $project "PackageReference Include=`"$package`"") {
         throw "[SFB-STATIC-003] Generated project must not direct-reference application transport package: $package"
     }
 }
 
-if (-not $versions.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $versions.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal) -or -not $versions.Contains("StorefrontComponentsPackageVersion", [System.StringComparison]::Ordinal)) {
+if (-not (Test-TextContains $versions "StorefrontClientPackageVersion") -or -not (Test-TextContains $versions "StorefrontRuntimePackageVersion") -or -not (Test-TextContains $versions "StorefrontComponentsPackageVersion")) {
     throw "[SFB-STATIC-004] Package compatibility metadata is missing."
 }
 
@@ -101,10 +113,10 @@ $forbiddenSourceTokens = @(
 )
 
 foreach ($sourceFile in $sourceFiles) {
-    $relativeToProject = [System.IO.Path]::GetRelativePath($ProjectRoot, $sourceFile.FullName).Replace("\", "/")
+    $relativeToProject = (Get-RelativePathCompat $ProjectRoot $sourceFile.FullName).Replace("\", "/")
     $content = Get-Content -LiteralPath $sourceFile.FullName -Raw
     foreach ($token in $forbiddenSourceTokens) {
-        if ($content.Contains($token, [System.StringComparison]::Ordinal)) {
+        if (Test-TextContains $content $token) {
             throw "[SFB-STATIC-008] Generated visual source must not own browser transport, service location, or Browser request DTO orchestration: $relativeToProject contains $token"
         }
     }
@@ -139,10 +151,10 @@ $forbiddenBootstrapTokens = @(
 )
 
 foreach ($sourceFile in $sourceFiles | Where-Object { $_.Name -eq "Program.cs" -or $_.Name.EndsWith("FoundationViewRegistration.cs", [System.StringComparison]::Ordinal) }) {
-    $relativeToProject = [System.IO.Path]::GetRelativePath($ProjectRoot, $sourceFile.FullName).Replace("\", "/")
+    $relativeToProject = (Get-RelativePathCompat $ProjectRoot $sourceFile.FullName).Replace("\", "/")
     $content = Get-Content -LiteralPath $sourceFile.FullName -Raw
     foreach ($token in $forbiddenBootstrapTokens) {
-        if ($content.Contains($token, [System.StringComparison]::Ordinal)) {
+        if (Test-TextContains $content $token) {
             throw "[SFB-STATIC-009] Generated bootstrap files may only compose Storefront application and view registrations: $relativeToProject contains $token"
         }
     }
@@ -158,7 +170,7 @@ if (Test-Path $jsRoot) {
     Get-ChildItem -LiteralPath $jsRoot -Recurse -File -Filter *.js |
         Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
         ForEach-Object {
-            $relativeToProject = [System.IO.Path]::GetRelativePath($ProjectRoot, $_.FullName).Replace("\", "/")
+            $relativeToProject = (Get-RelativePathCompat $ProjectRoot $_.FullName).Replace("\", "/")
             if (-not $relativeToProject.StartsWith("wwwroot/js/visual/", [System.StringComparison]::Ordinal)) {
                 throw "[SFB-STATIC-006] Generated storefront JS is only allowed in wwwroot/js/visual for event-only visuals: $relativeToProject"
             }
@@ -182,7 +194,7 @@ if (Test-Path $jsRoot) {
                 "selectedAttributes:",
                 "currencyCode:"
             )) {
-                if ($content.Contains($token, [System.StringComparison]::Ordinal)) {
+                if (Test-TextContains $content $token) {
                     throw "[SFB-STATIC-007] Generated visual JS must not invoke application commands or construct command payloads: $relativeToProject contains $token"
                 }
             }

@@ -2,6 +2,28 @@ param([Parameter(Mandatory = $true)][string]$ProjectRoot)
 
 $ErrorActionPreference = "Stop"
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
+function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+}
+
+function Get-Sha256Hex([byte[]]$Bytes) {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [System.BitConverter]::ToString($sha.ComputeHash($Bytes)).Replace("-", "").ToLowerInvariant()
+    }
+    finally {
+        $sha.Dispose()
+    }
+}
+
 function Read-GeneratedFileManifestEntries {
     param([Parameter(Mandatory = $true)][string]$Manifest)
 
@@ -47,10 +69,9 @@ function Get-NormalizedFileHash {
         return "none"
     }
 
-    $content = (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+    $content = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($Path)).Replace("`r`n", "`n").Replace("`r", "`n")
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
-    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
-    $hex = [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    $hex = Get-Sha256Hex $bytes
     return "sha256:$hex"
 }
 
@@ -104,7 +125,7 @@ $requiredFields = @(
 )
 
 foreach ($field in $requiredFields) {
-    if (-not $manifest.Contains($field, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $manifest $field)) {
         throw "[SFB-IDEMPOTENCY-001] Generated file manifest is missing '$field'."
     }
 }
@@ -131,7 +152,7 @@ foreach ($entry in $entries) {
         throw "[SFB-IDEMPOTENCY-007] Duplicate generated file manifest entry: $filePath"
     }
 
-    if ([System.IO.Path]::IsPathRooted($filePath) -or $filePath.Contains("..", [System.StringComparison]::Ordinal) -or $filePath.Contains(":", [System.StringComparison]::Ordinal)) {
+    if ([System.IO.Path]::IsPathRooted($filePath) -or (Test-TextContains $filePath "..") -or (Test-TextContains $filePath ":")) {
         throw "[SFB-IDEMPOTENCY-008] Manifest file path must be project-relative and traversal-free: $filePath"
     }
 
@@ -188,13 +209,13 @@ foreach ($entry in $entries) {
 
 $report = Get-Content -LiteralPath $reportPath -Raw
 foreach ($command in @("Scope all", "Scope page", "Scope component", "Scope css", "Scope validate", "Scope conflicts", "no unexpected file changes")) {
-    if (-not $report.Contains($command, [System.StringComparison]::OrdinalIgnoreCase)) {
+    if (-not (Test-TextContains $report $command ([System.StringComparison]::OrdinalIgnoreCase))) {
         throw "[SFB-IDEMPOTENCY-004] Regeneration report is missing command proof '$command'."
     }
 }
 
 foreach ($conflictEntry in $entries | Where-Object { $_["conflictStatus"] -ne "none" }) {
-    if (-not $report.Contains($conflictEntry["filePath"], [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $report ($conflictEntry["filePath"]))) {
         throw "[SFB-IDEMPOTENCY-010] Conflict report is missing '$($conflictEntry["filePath"])'."
     }
 }

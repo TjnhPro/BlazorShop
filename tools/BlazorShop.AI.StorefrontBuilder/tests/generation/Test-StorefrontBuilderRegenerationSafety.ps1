@@ -17,6 +17,28 @@ function Assert-Condition {
     }
 }
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
+function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+}
+
+function Get-Sha256Hex([byte[]]$Bytes) {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [System.BitConverter]::ToString($sha.ComputeHash($Bytes)).Replace("-", "").ToLowerInvariant()
+    }
+    finally {
+        $sha.Dispose()
+    }
+}
+
 function Assert-Throws {
     param(
         [Parameter(Mandatory = $true)][scriptblock]$Action,
@@ -27,7 +49,7 @@ function Assert-Throws {
         & $Action
     }
     catch {
-        if (-not $_.Exception.Message.Contains($ExpectedCode, [System.StringComparison]::Ordinal)) {
+        if (-not (Test-TextContains $_.Exception.Message $ExpectedCode)) {
             throw "Expected '$ExpectedCode' but saw: $($_.Exception.Message)"
         }
 
@@ -44,7 +66,7 @@ function Assert-ContainsText {
         [Parameter(Mandatory = $true)][string]$Message
     )
 
-    Assert-Condition -Condition $Text.Contains($Expected, [System.StringComparison]::Ordinal) -Message $Message
+    Assert-Condition -Condition (Test-TextContains $Text $Expected) -Message $Message
 }
 
 function Get-TreeHashes {
@@ -54,11 +76,10 @@ function Get-TreeHashes {
     Get-ChildItem -LiteralPath $Root -Recurse -File |
         Where-Object { $_.FullName -notmatch "\\(bin|obj|\.regeneration-staging|\.regeneration-backup)\\" } |
         ForEach-Object {
-            $relative = [System.IO.Path]::GetRelativePath($Root, $_.FullName).Replace('\', '/')
+            $relative = (Get-RelativePathCompat $Root $_.FullName).Replace('\', '/')
             $content = (Get-Content -LiteralPath $_.FullName -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
-            $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
-            $hashes[$relative] = [System.BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+            $hashes[$relative] = Get-Sha256Hex $bytes
         }
 
     return $hashes
@@ -334,7 +355,7 @@ try {
     Assert-ContainsText -Text $report -Expected "Components/Layout/MainLayout.razor: conflict manual edit" -Message "Stable WhatIf report did not include manual-edit conflict."
     Assert-ContainsText -Text $report -Expected "Pages/Hybrid/Catalog/SearchPage.razor" -Message "Stable WhatIf report did not include obsolete candidate path."
     Assert-ContainsText -Text $report -Expected "obsolete candidate" -Message "Stable WhatIf report did not include obsolete candidate action."
-    Assert-Condition -Condition ($report.Contains("README.md: skip user-owned", [System.StringComparison]::Ordinal) -or $report.Contains("README.md: skip protected", [System.StringComparison]::Ordinal)) -Message "Stable WhatIf report did not preserve user-owned or protected README."
+    Assert-Condition -Condition ((Test-TextContains $report "README.md: skip user-owned") -or (Test-TextContains $report "README.md: skip protected")) -Message "Stable WhatIf report did not preserve user-owned or protected README."
 
     Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf report: $stableReportPath" -Message "WhatIf console did not print the stable report path."
     Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf summary: create=" -Message "WhatIf console did not print summary counts."
@@ -427,7 +448,7 @@ Set-TextFileContent -Path $missingProductPath -Content $missingProductOriginal
             Select-Object -First 1).FullName
         $cssWhatIfCandidateRoot = Join-Path $cssWhatIfCandidateRoot $projectName
         $cssReport = Get-Content -LiteralPath (Join-Path $cssWhatIfCandidateRoot "docs\storefront-analysis\regeneration-report.md") -Raw
-        Assert-Condition -Condition $cssReport.Contains("StorefrontPackageVersions.props: skip out-of-scope", [System.StringComparison]::Ordinal) -Message "CSS scope did not keep StorefrontPackageVersions.props out of scope."
+        Assert-Condition -Condition (Test-TextContains $cssReport "StorefrontPackageVersions.props: skip out-of-scope") -Message "CSS scope did not keep StorefrontPackageVersions.props out of scope."
         if ($cssWhatIfCandidateRoot -and (Test-Path -LiteralPath $cssWhatIfCandidateRoot)) {
             Remove-Item -LiteralPath $cssWhatIfCandidateRoot -Recurse -Force
         }
@@ -435,8 +456,8 @@ Set-TextFileContent -Path $missingProductPath -Content $missingProductOriginal
 
         & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope foundation -ValidateAfterApply
         $foundationReport = Get-Content -LiteralPath (Join-Path $projectRoot "docs\storefront-analysis\regeneration-report.md") -Raw
-        Assert-Condition -Condition $foundationReport.Contains("StorefrontPackageVersions.props: platform metadata update", [System.StringComparison]::Ordinal) -Message "Foundation update did not plan StorefrontPackageVersions.props."
-        Assert-Condition -Condition ((Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw).Contains("9.9.9-test", [System.StringComparison]::Ordinal)) -Message "Foundation update did not apply StorefrontPackageVersions.props."
+        Assert-Condition -Condition (Test-TextContains $foundationReport "StorefrontPackageVersions.props: platform metadata update") -Message "Foundation update did not plan StorefrontPackageVersions.props."
+        Assert-Condition -Condition (Test-TextContains (Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw) "9.9.9-test") -Message "Foundation update did not apply StorefrontPackageVersions.props."
     }
     finally {
         Set-TextFileContent -Path $starterPackagePropsPath -Content $starterPackagePropsOriginal
@@ -458,9 +479,9 @@ finally {
 }
 
 $regenerator = Get-Content -LiteralPath (Join-Path $toolRoot "regenerate-storefront.ps1") -Raw
-Assert-Condition -Condition $regenerator.Contains('Copy-Item -LiteralPath $backupRoot -Destination $resolvedProjectRoot', [System.StringComparison]::Ordinal) -Message "Rollback restore path is missing."
-Assert-Condition -Condition $regenerator.Contains("delete only if explicitly allowed", [System.StringComparison]::OrdinalIgnoreCase) -Message "Obsolete delete-safety marker is missing."
-Assert-Condition -Condition $regenerator.Contains("SkipIdempotency", [System.StringComparison]::Ordinal) -Message "Validation skip marker is missing."
-Assert-Condition -Condition $regenerator.Contains("SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS", [System.StringComparison]::Ordinal) -Message "Candidate preservation marker is missing."
+Assert-Condition -Condition (Test-TextContains $regenerator 'Copy-Item -LiteralPath $backupRoot -Destination $resolvedProjectRoot') -Message "Rollback restore path is missing."
+Assert-Condition -Condition (Test-TextContains $regenerator "delete only if explicitly allowed" ([System.StringComparison]::OrdinalIgnoreCase)) -Message "Obsolete delete-safety marker is missing."
+Assert-Condition -Condition (Test-TextContains $regenerator "SkipIdempotency") -Message "Validation skip marker is missing."
+Assert-Condition -Condition (Test-TextContains $regenerator "SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS") -Message "Candidate preservation marker is missing."
 
 Write-Host "StorefrontBuilder regeneration safety tests passed."

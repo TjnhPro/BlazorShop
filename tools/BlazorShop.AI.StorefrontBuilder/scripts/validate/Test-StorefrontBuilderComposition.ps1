@@ -2,6 +2,10 @@ param([string]$ManifestPath)
 
 $ErrorActionPreference = "Stop"
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
 if (-not (Test-Path $ManifestPath)) {
     throw "[SFB-COMPOSITION-000] composition-manifest.yaml is missing: $ManifestPath"
 }
@@ -9,7 +13,7 @@ if (-not (Test-Path $ManifestPath)) {
 $manifest = Get-Content -LiteralPath $ManifestPath -Raw
 
 foreach ($field in @("projectName", "storeKey", "sourceStarterPath", "starterContractVersion", "packageVersions", "generatedFileRoot", "assetRoot", "shellComposition", "pageComposition", "slotBindings", "featureDecisions", "fallbackPages", "evidenceReferences", "inferenceReferences")) {
-    if (-not $manifest.Contains($field, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $manifest $field)) {
         throw "[SFB-COMPOSITION-001] Manifest field '$field' is missing."
     }
 }

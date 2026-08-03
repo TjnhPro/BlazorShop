@@ -4,6 +4,10 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")
 $toolRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
 . (Join-Path $toolRoot "scripts\generate\StorefrontBuilderProjectSafety.ps1")
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
 function Assert-Throws {
     param(
         [Parameter(Mandatory = $true)][scriptblock]$Action,
@@ -14,7 +18,7 @@ function Assert-Throws {
         & $Action
     }
     catch {
-        if (-not $_.Exception.Message.Contains($ExpectedCode, [System.StringComparison]::Ordinal)) {
+        if (-not (Test-TextContains $_.Exception.Message $ExpectedCode)) {
             throw "Expected '$ExpectedCode' but saw: $($_.Exception.Message)"
         }
 

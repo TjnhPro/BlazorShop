@@ -5,6 +5,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
 if (-not (Test-Path $TopologyPath)) {
     throw "[SFB-TOPOLOGY-000] page-topology.yaml is missing: $TopologyPath"
 }
@@ -17,21 +21,21 @@ $topology = Get-Content -LiteralPath $TopologyPath -Raw
 $contract = Get-Content -LiteralPath $ContractPath -Raw
 
 foreach ($topologyName in @("global-shell", "home-page-sections", "catalog-page-regions", "search-result-page-regions", "product-detail-regions", "cart-fallback-style-regions", "checkout-fallback-style-regions", "account-fallback-style-regions", "content-error-system-page-shell")) {
-    if (-not $topology.Contains("regionId: $topologyName", [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $topology "regionId: $topologyName")) {
         throw "[SFB-TOPOLOGY-002] Topology '$topologyName' is missing."
     }
 }
 
 foreach ($field in @("regionId", "parentRegion", "slotId", "renderOwner", "hydrationMode", "source", "evidenceIds", "responsiveBehavior")) {
-    if (-not $topology.Contains($field, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $topology $field)) {
         throw "[SFB-TOPOLOGY-003] Region metadata field '$field' is missing."
     }
 }
 
 $requiredSlots = [regex]::Matches($contract, "(?m)^\s{4}- id:\s+([a-z0-9.-]+)\s*$") | ForEach-Object { $_.Groups[1].Value }
 foreach ($slot in $requiredSlots) {
-    $isMapped = $topology.Contains("slotId: $slot", [System.StringComparison]::Ordinal)
-    $isSkipped = $topology.Contains("slotId: $slot", [System.StringComparison]::Ordinal) -and $topology.Contains("reason:", [System.StringComparison]::Ordinal)
+    $isMapped = Test-TextContains $topology "slotId: $slot"
+    $isSkipped = (Test-TextContains $topology "slotId: $slot") -and (Test-TextContains $topology "reason:")
     if (-not $isMapped -and -not $isSkipped) {
         throw "[SFB-TOPOLOGY-004] Starter slot '$slot' is neither mapped nor skipped with reason."
     }

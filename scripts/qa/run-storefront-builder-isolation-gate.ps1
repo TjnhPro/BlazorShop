@@ -21,6 +21,18 @@ function Resolve-RepoPath {
     return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
 }
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
+function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
+    $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $baseUri = [System.Uri]::new($baseFullPath)
+    $targetUri = [System.Uri]::new($targetFullPath)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+}
+
 $projectRoot = if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
     Join-Path $repoRoot "artifacts\storefront-builder\generated\$Name"
 } else {
@@ -68,7 +80,7 @@ function Clear-StorefrontLocalPackageCache {
 
 function Write-GeneratedNuGetConfig {
     $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
-    $relativePackageFeed = [System.IO.Path]::GetRelativePath($projectRoot, $packageFeed).Replace('\', '/')
+    $relativePackageFeed = (Get-RelativePathCompat $projectRoot $packageFeed).Replace('\', '/')
     $nugetConfig = @(
         '<?xml version="1.0" encoding="utf-8"?>',
         '<configuration>',
@@ -100,13 +112,13 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
 foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
-    if (-not $project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $project "PackageReference Include=`"$package`"")) {
         throw "[SFB-ISOLATION-001] Generated storefront must consume '$package' as a package reference."
     }
 }
 
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
-    if ($project.Contains("PackageReference Include=`"$package`"", [System.StringComparison]::Ordinal)) {
+    if (Test-TextContains $project "PackageReference Include=`"$package`"") {
         throw "[SFB-ISOLATION-001] Generated storefront must not direct-reference '$package'."
     }
 }
@@ -117,14 +129,14 @@ Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
     ForEach-Object {
         $content = Get-Content -LiteralPath $_.FullName -Raw
         foreach ($pattern in $forbidden) {
-            if ($content.Contains($pattern, [System.StringComparison]::OrdinalIgnoreCase)) {
+            if (Test-TextContains $content $pattern ([System.StringComparison]::OrdinalIgnoreCase)) {
                 throw "[SFB-ISOLATION-002] Forbidden dependency '$pattern' found in $($_.FullName)."
             }
         }
     }
 
 $metadata = Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw
-if (-not $metadata.Contains("StorefrontClientPackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontRuntimePackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontPresentationPackageVersion", [System.StringComparison]::Ordinal) -or -not $metadata.Contains("StorefrontComponentsPackageVersion", [System.StringComparison]::Ordinal)) {
+if (-not (Test-TextContains $metadata "StorefrontClientPackageVersion") -or -not (Test-TextContains $metadata "StorefrontRuntimePackageVersion") -or -not (Test-TextContains $metadata "StorefrontPresentationPackageVersion") -or -not (Test-TextContains $metadata "StorefrontComponentsPackageVersion")) {
     throw "[SFB-ISOLATION-003] Package compatibility metadata is missing."
 }
 

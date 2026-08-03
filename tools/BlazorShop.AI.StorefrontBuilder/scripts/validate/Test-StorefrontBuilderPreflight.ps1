@@ -29,6 +29,10 @@ function Fail-Preflight {
     throw "[$RuleId] $Problem Cause: $Cause Fix: $Fix"
 }
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
 function Resolve-RepoPath {
     param([string]$Path)
     return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
@@ -92,7 +96,7 @@ if (-not (Test-Path $resolvedStarterContract)) {
 
 $contract = Get-Content -LiteralPath $resolvedStarterContract -Raw
 foreach ($required in @("contractVersion:", "protectedZones:", "slots:", "routes:")) {
-    if (-not $contract.Contains($required, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $contract $required)) {
         Fail-Preflight "SFB-PRE-010" "Starter generation contract failed validation." "Missing '$required'." "Regenerate or repair starter-generation.contract.yaml."
     }
 }

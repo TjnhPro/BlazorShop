@@ -5,6 +5,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
+    return $Text.IndexOf($Value, $Comparison) -ge 0
+}
+
 if (-not (Test-Path $CapabilitiesPath)) {
     throw "[SFB-CAPABILITY-000] capability-decisions.yaml is missing: $CapabilitiesPath"
 }
@@ -18,20 +22,20 @@ $contract = Get-Content -LiteralPath $ContractPath -Raw
 $slots = [regex]::Matches($contract, "(?m)^\s+- id:\s+([a-z0-9.-]+)\s*$") | ForEach-Object { $_.Groups[1].Value }
 
 foreach ($inputName in @("Starter feature manifest", "Backend public configuration feature map", "Store module manifest if available", "Target visual detections", "Starter generation contract slots")) {
-    if (-not $capabilities.Contains($inputName, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $capabilities $inputName)) {
         throw "[SFB-CAPABILITY-002] Capability input '$inputName' is missing."
     }
 }
 
 foreach ($decision in @("target", "target-with-starter-binding", "starter", "hidden", "unsupported")) {
-    if (-not $capabilities.Contains($decision, [System.StringComparison]::Ordinal)) {
+    if (-not (Test-TextContains $capabilities $decision)) {
         throw "[SFB-CAPABILITY-003] Decision value '$decision' is missing."
     }
 }
 
 $lines = $capabilities -split "`r?`n"
 for ($index = 0; $index -lt $lines.Count; $index++) {
-    if ($lines[$index].Contains("decision: target-with-starter-binding", [System.StringComparison]::Ordinal)) {
+    if (Test-TextContains $lines[$index] "decision: target-with-starter-binding") {
         $start = [Math]::Max($index - 5, 0)
         $end = [Math]::Min($index + 6, $lines.Count - 1)
         $window = ($lines[$start..$end] -join "`n")
@@ -41,9 +45,9 @@ for ($index = 0; $index -lt $lines.Count; $index++) {
         }
     }
 
-    if ($lines[$index].Contains("decision: unsupported", [System.StringComparison]::Ordinal)) {
+    if (Test-TextContains $lines[$index] "decision: unsupported") {
         $window = ($lines[$index..([Math]::Min($index + 8, $lines.Count - 1))] -join "`n")
-        if (-not $window.Contains("fallbackDecision:", [System.StringComparison]::Ordinal)) {
+        if (-not (Test-TextContains $window "fallbackDecision:")) {
             throw "[SFB-CAPABILITY-005] Unsupported feature has no user-facing fallback decision."
         }
     }
