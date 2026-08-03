@@ -509,62 +509,62 @@ Goal: update the final closure command so the whole proof chain runs in the corr
 
 Tasks:
 
-- [ ] Update `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` order to:
-  - [ ] assert clean working tree at start;
-  - [ ] capture tested `HEAD`;
-  - [ ] validate Visual workspace is docs/schema/skill-only;
-  - [ ] validate Visual examples;
-  - [ ] validate tracked portable handoff fixture exists;
-  - [ ] run StorefrontBuilder handoff preflight;
-  - [ ] delete stale pilot output root;
-  - [ ] generate fresh pilot with `-HandoffRoot` and `-HandoffSchemaRoot`;
-  - [ ] assert generated metadata and generation plan are handoff-based;
-  - [ ] assert generated agent task package was produced by StorefrontBuilder;
-  - [ ] apply deterministic final-closure visual edit;
-  - [ ] write real checkpoint and implementation report;
-  - [ ] run automatic changed-file recorder;
-  - [ ] restore and build the generated pilot;
-  - [ ] start runtime Commerce fixture if needed;
-  - [ ] start generated runtime host;
-  - [ ] run runtime visual QA with operation ID and base URL;
-  - [ ] materialize Reference QA report from runtime summary;
-  - [ ] run MVP gate in runtime closure mode;
-  - [ ] run `FoundationFunctionalFast` generated proof minimum;
-  - [ ] optionally run full fixture commerce proof when `-FunctionalProofLevel FoundationFunctionalFull` or `-RequireCommerceRegression`;
-  - [ ] run regeneration ownership gate;
-  - [ ] assert `HEAD` unchanged;
-  - [ ] assert clean working tree at end;
-  - [ ] clean disposable pilot output on success unless `-KeepGeneratedPilot`;
-  - [ ] write final JSON and Markdown reports under ignored `obj/storefront-builder/reports`.
-- [ ] Remove final-gate seeding of:
-  - [ ] `generation-plan.json`;
-  - [ ] `agent-task-package`;
-  - [ ] final `visual-qa-report.json`.
-- [ ] Seed only reference fixture/handoff evidence if the generated project needs a local copy for report materialization.
-- [ ] Record final report fields:
-  - [ ] tested HEAD;
-  - [ ] final HEAD;
-  - [ ] closure fixture root;
-  - [ ] handoff schema root;
-  - [ ] handoff preflight report path;
-  - [ ] generated pilot root;
-  - [ ] generated metadata path;
-  - [ ] generation plan path and hash;
-  - [ ] task package path and hash;
-  - [ ] checkpoint path and hash;
-  - [ ] implementation report path;
-  - [ ] agent-written-files path;
-  - [ ] runtime summary path;
-  - [ ] screenshot root;
-  - [ ] materialized QA report path;
-  - [ ] MVP gate report path;
-  - [ ] functional proof report path;
-  - [ ] regeneration gate report path;
-  - [ ] final decision.
-- [ ] Make local-development bypasses explicit:
-  - [ ] `-KeepGeneratedPilot` keeps output only for inspection;
-  - [ ] `-SkipFullFixtureProof` does not skip fast functional proof or runtime MVP proof;
-  - [ ] no switch may skip handoff preflight, runtime visual QA, materialized QA report, MVP gate, fast functional proof, regeneration gate, start clean tree, or end clean tree.
+- [x] Update `scripts/qa/run-storefront-phase4-final-closure-gate.ps1` order to:
+  - [x] assert clean working tree at start;
+  - [x] capture tested `HEAD`;
+  - [x] validate Visual workspace is docs/schema/skill-only;
+  - [x] validate Visual examples;
+  - [x] validate tracked portable handoff fixture exists;
+  - [x] run StorefrontBuilder handoff preflight;
+  - [x] delete stale pilot output root;
+  - [x] generate fresh pilot with `-HandoffRoot` and `-HandoffSchemaRoot`;
+  - [x] assert generated metadata and generation plan are handoff-based;
+  - [x] assert generated agent task package was produced by StorefrontBuilder;
+  - [x] apply deterministic final-closure visual edit;
+  - [x] write real checkpoint and implementation report;
+  - [x] run automatic changed-file recorder;
+  - [x] restore and build the generated pilot;
+  - [x] start runtime Commerce fixture if needed;
+  - [x] start generated runtime host;
+  - [x] run runtime visual QA with operation ID and base URL;
+  - [x] materialize Reference QA report from runtime summary;
+  - [x] run MVP gate in runtime closure mode;
+  - [x] run `FoundationFunctionalFast` generated proof minimum;
+  - [x] optionally run full fixture commerce proof when `-FunctionalProofLevel FoundationFunctionalFull` or `-RequireCommerceRegression`;
+  - [x] run regeneration ownership gate;
+  - [x] assert `HEAD` unchanged;
+  - [x] assert clean working tree at end;
+  - [x] clean disposable pilot output on success unless `-KeepGeneratedPilot`;
+  - [x] write final JSON and Markdown reports under ignored `obj/storefront-builder/reports`.
+- [x] Remove final-gate seeding of:
+  - [x] `generation-plan.json`;
+  - [x] `agent-task-package`;
+  - [x] final `visual-qa-report.json`.
+- [x] Seed only reference fixture/handoff evidence if the generated project needs a local copy for report materialization.
+- [x] Record final report fields:
+  - [x] tested HEAD;
+  - [x] final HEAD;
+  - [x] closure fixture root;
+  - [x] handoff schema root;
+  - [x] handoff preflight report path;
+  - [x] generated pilot root;
+  - [x] generated metadata path;
+  - [x] generation plan path and hash;
+  - [x] task package path and hash;
+  - [x] checkpoint path and hash;
+  - [x] implementation report path;
+  - [x] agent-written-files path;
+  - [x] runtime summary path;
+  - [x] screenshot root;
+  - [x] materialized QA report path;
+  - [x] MVP gate report path;
+  - [x] functional proof report path;
+  - [x] regeneration gate report path;
+  - [x] final decision.
+- [x] Make local-development bypasses explicit:
+  - [x] `-KeepGeneratedPilot` keeps output only for inspection;
+  - [x] `-SkipFullFixtureProof` does not skip fast functional proof or runtime MVP proof;
+  - [x] no switch may skip handoff preflight, runtime visual QA, materialized QA report, MVP gate, fast functional proof, regeneration gate, start clean tree, or end clean tree.
 
 Checks:
 
@@ -575,8 +575,14 @@ rg -n "Write-PilotAgentTaskPackage|plan-generation-files.mjs|visual-qa-report.js
 
 DoD:
 
-- [ ] One local final gate command proves the full evidence chain.
-- [ ] No final closure step relies on pre-existing `obj` output.
+- [x] One local final gate command proves the full evidence chain.
+- [x] No final closure step relies on pre-existing `obj` output.
+
+Evidence:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -Help`
+- `rg -n "Write-PilotAgentTaskPackage|plan-generation-files\.mjs|visual-qa-report\.json|HandoffSchemaRoot|preflight-only|materialize-reference|FoundationFunctionalFast|run-storefront-builder-regeneration-gate" scripts\qa\run-storefront-phase4-final-closure-gate.ps1`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900` passed from clean `HEAD`; report `obj/storefront-builder/reports/phase4-final-closure-gate-20260803110012.md`.
 - [ ] No final closure step writes generated artifacts to tracked source.
 - [ ] Failure output identifies the broken evidence link.
 

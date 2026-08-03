@@ -65,6 +65,10 @@ $generatedPilotRetained = $true
 $runtimeHostProcess = $null
 $runtimeCommerceFixtureProcess = $null
 $runtimeCommerceFixtureUrl = ""
+$handoffPreflightReportPath = ""
+$functionalProofReportPath = ""
+$regenerationGateReportPath = ""
+$mvpGateReportPath = ""
 
 if ($SkipFullFixtureProof -and $runFullFixtureProof) {
     throw "-SkipFullFixtureProof cannot be combined with -FunctionalProofLevel FoundationFunctionalFull or -RequireCommerceRegression."
@@ -478,7 +482,8 @@ function Get-NormalizedFileSha256 {
         throw "Hash input is missing: $(Convert-ToRepoRelativePath $Path)"
     }
 
-    $content = (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+    $fileBytes = [System.IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $Path).Path)
+    $content = ([System.Text.Encoding]::UTF8.GetString($fileBytes)).Replace("`r`n", "`n").Replace("`r", "`n")
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
     $sha256 = [System.Security.Cryptography.SHA256]::Create()
     try {
@@ -556,8 +561,25 @@ function Save-GateReports {
         requireCommerceRegression = [bool]$RequireCommerceRegression
         skipFullFixtureProof = [bool]$SkipFullFixtureProof
         closureFixtureRoot = Convert-ToRepoRelativePath $resolvedClosureFixtureRoot
+        handoffSchemaRoot = Convert-ToRepoRelativePath $resolvedPilotHandoffSchemaRoot
+        handoffPreflightReportPath = Convert-ToRepoRelativePath $handoffPreflightReportPath
         pilotGeneratedProjectRoot = Convert-ToRepoRelativePath $resolvedPilotGeneratedProjectRoot
         pilotHandoffRoot = Convert-ToRepoRelativePath $resolvedPilotHandoffRoot
+        generatedMetadataPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "metadata.yaml")
+        generationPlanPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "generation-plan.json")
+        generationPlanHash = if (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "generation-plan.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "generation-plan.json") } else { "" }
+        taskPackagePath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json")
+        taskPackageHash = if (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json") } else { "" }
+        checkpointPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json")
+        checkpointHash = if (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json") } else { "" }
+        implementationReportPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-implementation-report.json")
+        agentWrittenFilesPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "agent-written-files.json")
+        runtimeSummaryPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-qa-runtime-summary.json")
+        screenshotRoot = Convert-ToRepoRelativePath $pilotScreenshotRoot
+        materializedQaReportPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-qa-report.json")
+        mvpGateReportPath = Convert-ToRepoRelativePath $mvpGateReportPath
+        functionalProofReportPath = Convert-ToRepoRelativePath $functionalProofReportPath
+        regenerationGateReportPath = Convert-ToRepoRelativePath $regenerationGateReportPath
         generatedPilotRetained = $generatedPilotRetained
         evidencePaths = @($evidencePaths)
         gateSteps = @($steps)
@@ -577,8 +599,18 @@ function Save-GateReports {
     $lines.Add("- Require commerce regression: $([bool]$RequireCommerceRegression)")
     $lines.Add("- Skip full fixture proof: $([bool]$SkipFullFixtureProof)")
     $lines.Add("- Closure fixture root: $(Convert-ToRepoRelativePath $resolvedClosureFixtureRoot)")
+    $lines.Add("- Handoff schema root: $(Convert-ToRepoRelativePath $resolvedPilotHandoffSchemaRoot)")
+    $lines.Add("- Handoff preflight report: $(Convert-ToRepoRelativePath $handoffPreflightReportPath)")
     $lines.Add("- Pilot generated project root: $(Convert-ToRepoRelativePath $resolvedPilotGeneratedProjectRoot)")
     $lines.Add("- Pilot handoff root: $(Convert-ToRepoRelativePath $resolvedPilotHandoffRoot)")
+    $lines.Add("- Generation plan: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "generation-plan.json"))")
+    $lines.Add("- Agent task package: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json"))")
+    $lines.Add("- Visual checkpoint: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json"))")
+    $lines.Add("- Runtime summary: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-qa-runtime-summary.json"))")
+    $lines.Add("- Materialized QA report: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-qa-report.json"))")
+    $lines.Add("- MVP gate report: $(Convert-ToRepoRelativePath $mvpGateReportPath)")
+    $lines.Add("- Functional proof report: $(Convert-ToRepoRelativePath $functionalProofReportPath)")
+    $lines.Add("- Regeneration gate report: $(Convert-ToRepoRelativePath $regenerationGateReportPath)")
     $lines.Add("- Generated pilot retained: $generatedPilotRetained")
     $lines.Add("- GitHub Actions: not required")
     if (-not [string]::IsNullOrWhiteSpace($ErrorMessage)) {
@@ -638,11 +670,14 @@ $runtimeCommerceFixtureErrorPath = Join-Path $pilotAnalysisRoot "phase4-final-co
 
 try {
     Set-Location $repoRoot
-    $testedHead = (& git rev-parse HEAD).Trim()
-    $finalHead = $testedHead
 
     Invoke-AssertionStep -Name "clean working tree at start" -Command "git status --porcelain=v1" -LikelyCause "Commit, stash, or remove pending source changes before running the final closure gate." -Assertion {
         Assert-CleanWorkingTree
+    }
+
+    Invoke-AssertionStep -Name "capture tested HEAD" -Command "git rev-parse HEAD" -LikelyCause "Git HEAD could not be read before running the final closure gate." -Assertion {
+        $script:testedHead = (& git rev-parse HEAD).Trim()
+        $script:finalHead = $script:testedHead
     }
 
     Invoke-AssertionStep -Name "visual workspace static checks" -Command "tools/BlazorShop.AI.Visual static assertions" -LikelyCause "The visual workspace contract drifted." -Assertion {
@@ -723,7 +758,8 @@ try {
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
     if ($null -ne $handoffPreflightReport) {
-        Add-EvidencePath $handoffPreflightReport.FullName
+        $script:handoffPreflightReportPath = $handoffPreflightReport.FullName
+        Add-EvidencePath $script:handoffPreflightReportPath
     }
 
     Invoke-AssertionStep -Name "StorefrontBuilder visual helper availability" -Command "StorefrontBuilder helper file checks" -LikelyCause "A required StorefrontBuilder Phase 4 helper is missing." -Assertion {
@@ -805,9 +841,15 @@ try {
         "build", $pilotProjectFile, "--configuration", "Debug", "--no-restore"
     ) -LikelyCause "Generated pilot visual files do not compile before runtime visual QA."
 
+    Invoke-AssertionStep -Name "start runtime Commerce fixture if needed" -Command "node start-fast-commerce-fixture.mjs" -LikelyCause "The local fast Commerce fixture could not start for generated runtime visual QA." -Assertion {
+        $script:runtimeCommerceFixtureUrl = Start-RuntimeCommerceFixture
+        Add-EvidencePath $runtimeCommerceFixtureReadyPath
+    }
+
     Invoke-AssertionStep -Name "start generated pilot runtime host" -Command "dotnet run --project generated pilot --no-build" -LikelyCause "The generated pilot runtime host could not start for browser visual QA." -Assertion {
-        $commerceNodeBaseUrl = Start-RuntimeCommerceFixture
-        Start-GeneratedRuntimeHost -ProjectFile $pilotProjectFile -Url $PilotBaseUrl -CommerceNodeBaseUrl $commerceNodeBaseUrl
+        Start-GeneratedRuntimeHost -ProjectFile $pilotProjectFile -Url $PilotBaseUrl -CommerceNodeBaseUrl $script:runtimeCommerceFixtureUrl
+        Add-EvidencePath $runtimeHostOutputPath
+        Add-EvidencePath $runtimeHostErrorPath
     }
 
     Invoke-GateCommand -Name "run runtime visual QA for current closure operation" -FileName "node" -Arguments @(
@@ -830,35 +872,6 @@ try {
     Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-report.json")
     Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-report.md")
 
-    if ($FunctionalProofLevel -eq "FoundationFunctionalFast") {
-        Invoke-GateCommand -Name "run StorefrontBuilder generated fast functional proof" -FileName (Get-PreferredPowerShell) -Arguments @(
-            "-NoProfile", "-ExecutionPolicy", "Bypass",
-            "-File", "scripts\qa\run-storefront-builder-generated-proof.ps1",
-            "-Name", "BlazorShop.Storefront.Phase4FinalProof",
-            "-OutputRoot", $GeneratedProofOutputRoot,
-            "-ProofLevel", "FoundationFunctionalFast"
-        ) -LikelyCause "Generated proof, package boundary, isolation, regeneration lifecycle, or fast browser behavior failed."
-        Add-EvidencePath (Join-Path (Join-Path (Resolve-RepoPath $GeneratedProofOutputRoot) "BlazorShop.Storefront.Phase4FinalProof") "docs\storefront-analysis\fast-foundation-functional-report.md")
-    }
-
-    if ($runFullFixtureProof) {
-        Invoke-GateCommand -Name "run StorefrontBuilder full fixture commerce proof" -FileName (Get-PreferredPowerShell) -Arguments @(
-            "-NoProfile", "-ExecutionPolicy", "Bypass",
-            "-File", "scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1",
-            "-Name", "BlazorShop.Storefront.Phase4FinalProof",
-            "-OutputRoot", $GeneratedProofOutputRoot
-        ) -LikelyCause "Full fixture runtime, generated visual QA, COD/test payment flow, or run-commerce-regression.mjs failed."
-        $fullProofAnalysisRoot = Join-Path (Join-Path (Resolve-RepoPath $GeneratedProofOutputRoot) "BlazorShop.Storefront.Phase4FinalProof") "docs\storefront-analysis"
-        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "full-proof-with-fixture-report.md")
-        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "visual-qa-report.md")
-        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "functional-commerce-report.md")
-    }
-
-    Invoke-GateCommand -Name "run StorefrontBuilder regeneration ownership gate" -FileName (Get-PreferredPowerShell) -Arguments @(
-        "-NoProfile", "-ExecutionPolicy", "Bypass",
-        "-File", "scripts\qa\run-storefront-builder-regeneration-gate.ps1"
-    ) -LikelyCause "Regeneration/no-op ownership safety failed."
-
     Invoke-GateCommand -Name "run Phase 4 MVP pilot gate" -FileName (Get-PreferredPowerShell) -Arguments @(
         "-NoProfile", "-ExecutionPolicy", "Bypass",
         "-File", "scripts\qa\run-storefront-phase4-mvp-gate.ps1",
@@ -869,9 +882,50 @@ try {
         "-SkipRepair",
         "-CommandTimeoutSeconds", $CommandTimeoutSeconds
     ) -LikelyCause "The pilot generated storefront no longer proves the Phase 4 MVP workflow."
-    $pilotAnalysisRoot = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
-    Add-EvidencePath (Join-Path $pilotAnalysisRoot "phase4-mvp-gate-report.md")
+    $script:mvpGateReportPath = Join-Path $pilotAnalysisRoot "phase4-mvp-gate-report.md"
+    Add-EvidencePath $script:mvpGateReportPath
     Add-EvidencePath (Join-Path $pilotAnalysisRoot "visual-qa-report.md")
+
+    if ($FunctionalProofLevel -eq "FoundationFunctionalFast") {
+        Invoke-GateCommand -Name "run StorefrontBuilder generated fast functional proof" -FileName (Get-PreferredPowerShell) -Arguments @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", "scripts\qa\run-storefront-builder-generated-proof.ps1",
+            "-Name", "BlazorShop.Storefront.Phase4FinalProof",
+            "-OutputRoot", $GeneratedProofOutputRoot,
+            "-ProofLevel", "FoundationFunctionalFast"
+        ) -LikelyCause "Generated proof, package boundary, isolation, regeneration lifecycle, or fast browser behavior failed."
+        $script:functionalProofReportPath = Join-Path (Join-Path (Resolve-RepoPath $GeneratedProofOutputRoot) "BlazorShop.Storefront.Phase4FinalProof") "docs\storefront-analysis\fast-foundation-functional-report.md"
+        Add-EvidencePath $script:functionalProofReportPath
+    }
+
+    if ($runFullFixtureProof) {
+        Invoke-GateCommand -Name "run StorefrontBuilder full fixture commerce proof" -FileName (Get-PreferredPowerShell) -Arguments @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", "scripts\qa\run-storefront-builder-full-proof-with-fixture.ps1",
+            "-Name", "BlazorShop.Storefront.Phase4FinalProof",
+            "-OutputRoot", $GeneratedProofOutputRoot
+        ) -LikelyCause "Full fixture runtime, generated visual QA, COD/test payment flow, or run-commerce-regression.mjs failed."
+        $fullProofAnalysisRoot = Join-Path (Join-Path (Resolve-RepoPath $GeneratedProofOutputRoot) "BlazorShop.Storefront.Phase4FinalProof") "docs\storefront-analysis"
+        $script:functionalProofReportPath = Join-Path $fullProofAnalysisRoot "full-proof-with-fixture-report.md"
+        Add-EvidencePath $script:functionalProofReportPath
+        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "visual-qa-report.md")
+        Add-EvidencePath (Join-Path $fullProofAnalysisRoot "functional-commerce-report.md")
+    }
+
+    Invoke-GateCommand -Name "run StorefrontBuilder regeneration ownership gate" -FileName (Get-PreferredPowerShell) -Arguments @(
+        "-NoProfile", "-ExecutionPolicy", "Bypass",
+        "-File", "scripts\qa\run-storefront-builder-regeneration-gate.ps1"
+    ) -LikelyCause "Regeneration/no-op ownership safety failed."
+    $script:regenerationGateReportPath = Join-Path $reportRoot "storefront-builder-regeneration-gate-latest.md"
+    New-Item -ItemType Directory -Force -Path $reportRoot | Out-Null
+    Set-Content -LiteralPath $script:regenerationGateReportPath -Value @(
+        "# StorefrontBuilder Regeneration Ownership Gate",
+        "",
+        "- Decision: passed",
+        "- Command: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-builder-regeneration-gate.ps1",
+        "- Finished UTC: $([DateTimeOffset]::UtcNow.ToString("o"))"
+    ) -Encoding UTF8
+    Add-EvidencePath $script:regenerationGateReportPath
 
     Invoke-AssertionStep -Name "final HEAD and clean tree check" -Command "git rev-parse HEAD; git status --porcelain=v1" -LikelyCause "A gate step changed tracked source files or HEAD." -Assertion {
         Assert-HeadUnchanged
@@ -882,6 +936,9 @@ try {
         if ($KeepGeneratedPilot) {
             return
         }
+
+        Stop-GeneratedRuntimeHost
+        Stop-RuntimeCommerceFixture
 
         if (Test-Path -LiteralPath $resolvedPilotGeneratedOutputRoot) {
             Remove-Item -LiteralPath $resolvedPilotGeneratedOutputRoot -Recurse -Force
