@@ -109,7 +109,8 @@ function Get-NormalizedFileSha256 {
         return "missing"
     }
 
-    $content = (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+    $fileBytes = [System.IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $Path).Path)
+    $content = ([System.Text.Encoding]::UTF8.GetString($fileBytes)).Replace("`r`n", "`n").Replace("`r", "`n")
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
     $sha256 = [System.Security.Cryptography.SHA256]::Create()
     try {
@@ -191,6 +192,7 @@ $visualPlanPath = Join-Path $analysisRoot "visual-plan.json"
 $visualImplementationChecklistPath = Join-Path $analysisRoot "visual-implementation-checklist.json"
 $visualImplementationReportJsonPath = Join-Path $analysisRoot "visual-implementation-report.json"
 $visualQaReportJsonPath = Join-Path $analysisRoot "visual-qa-report.json"
+$visualQaRuntimeSummaryPath = Join-Path $analysisRoot "visual-qa-runtime-summary.json"
 $agentWrittenFilesPath = Join-Path $analysisRoot "agent-written-files.json"
 $reportJsonPath = Join-Path $analysisRoot "phase4-mvp-gate-report.json"
 $reportMdPath = Join-Path $analysisRoot "phase4-mvp-gate-report.md"
@@ -213,6 +215,7 @@ $runtimeHostErrorPath = Join-Path $analysisRoot "phase4-mvp-runtime-host.err.log
 $runtimeCommerceFixtureReadyPath = Join-Path $analysisRoot "phase4-mvp-commerce-fixture.ready.json"
 $runtimeCommerceFixtureOutputPath = Join-Path $analysisRoot "phase4-mvp-commerce-fixture.out.log"
 $runtimeCommerceFixtureErrorPath = Join-Path $analysisRoot "phase4-mvp-commerce-fixture.err.log"
+$materializerScript = Join-Path $builderRoot "scripts\qa\materialize-reference-visual-qa-report.mjs"
 
 $effectiveProofMode = if (-not [string]::IsNullOrWhiteSpace($ProofMode)) {
     $ProofMode.Trim()
@@ -572,6 +575,281 @@ function Assert-RequiredFields {
     }
 }
 
+function Normalize-BaseUrl {
+    param([string]$Url)
+
+    return ([string]$Url).Trim().TrimEnd("/")
+}
+
+function Convert-ToCanonicalViewport {
+    param([string]$Viewport)
+
+    $value = ([string]$Viewport).Trim()
+    if ($value.StartsWith("desktop", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return "desktop"
+    }
+
+    if ($value.StartsWith("tablet", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return "tablet"
+    }
+
+    if ($value.StartsWith("mobile", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return "mobile"
+    }
+
+    if ($value -in @("desktop", "tablet", "mobile")) {
+        return $value
+    }
+
+    throw "Unsupported viewport '$Viewport'."
+}
+
+function Resolve-EvidencePath {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return ""
+    }
+
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    $projectRelative = [System.IO.Path]::GetFullPath((Join-Path $resolvedProjectRoot $Path))
+    if (Test-Path -LiteralPath $projectRelative) {
+        return $projectRelative
+    }
+
+    $repoRelative = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
+    if (Test-Path -LiteralPath $repoRelative) {
+        return $repoRelative
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($resolvedHandoffRoot)) {
+        $handoffRelative = [System.IO.Path]::GetFullPath((Join-Path $resolvedHandoffRoot $Path))
+        if (Test-Path -LiteralPath $handoffRelative) {
+            return $handoffRelative
+        }
+    }
+
+    return $projectRelative
+}
+
+function Get-PageIdFromCapture {
+    param([object]$Capture)
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Capture.pageId)) {
+        return [string]$Capture.pageId
+    }
+
+    switch ([string]$Capture.pageName) {
+        "shell-home" { return "home" }
+        "catalog" { return "category" }
+        "product" { return "product" }
+        "cart" { return "cart" }
+        "checkout" { return "checkout" }
+        "sign-in" { return "auth" }
+        default { return [string]$Capture.pageName }
+    }
+}
+
+function Assert-NoPlaceholderHashText {
+    param(
+        [string]$Path,
+        [string]$ArtifactName
+    )
+
+    $content = Get-Content -LiteralPath $Path -Raw
+    if ($content -match "sha256:(phase4-11-|before|after|visual-plan|checklist|placeholder|fake|hash)") {
+        throw "$ArtifactName contains placeholder hash text. Fix: recreate runtime closure evidence from current generated source and rerun $(New-RerunCommand)."
+    }
+}
+
+function Assert-AgentWrittenFileChecksums {
+    param([object]$Written)
+
+    if ([string]$Written.detectionMode -ne "checkpoint-auto-detect") {
+        throw "agent-written-files.json detectionMode must be 'checkpoint-auto-detect' for runtime closure, but was '$($Written.detectionMode)'. Fix: rerun record-agent-visual-writes.mjs with --from-checkpoint and then $(New-RerunCommand)."
+    }
+
+    foreach ($file in @($Written.files)) {
+        $filePath = [string]$file.filePath
+        $fullPath = Resolve-EvidencePath $filePath
+        if (-not (Test-Path -LiteralPath $fullPath)) {
+            throw "agent-written-files.json references a missing generated source file: $filePath. Evidence path: $fullPath."
+        }
+
+        $currentChecksum = "sha256:$(Get-NormalizedFileSha256 -Path $fullPath)"
+        if ([string]$file.checksum -ne $currentChecksum) {
+            throw "agent-written-files.json checksum for '$filePath' does not match current source file hash. Expected current checksum $currentChecksum, recorded $($file.checksum)."
+        }
+    }
+}
+
+function Assert-HandoffRuntimeGenerationMetadata {
+    $metadata = Get-Content -LiteralPath $metadataPath -Raw
+    $generationMode = Read-SimpleYamlValue -Text $metadata -Key "generationMode"
+    if ($generationMode -ne "handoff-project-skeleton") {
+        throw "metadata.yaml generationMode must be handoff-project-skeleton for runtime closure, but was '$generationMode'."
+    }
+
+    $generationPlan = Read-RequiredJsonArtifact -Path $generationPlanPath -ArtifactName "generation-plan.json" -FixCommand "build-storefront.ps1 -Mode generate -HandoffRoot"
+    if ([string]$generationPlan.generationMode -ne "handoff") {
+        throw "generation-plan.json generationMode must be handoff for runtime closure, but was '$($generationPlan.generationMode)'."
+    }
+}
+
+function Assert-RuntimeEvidenceBinding {
+    $visualPlan = Read-RequiredJsonArtifact -Path $visualPlanPath -ArtifactName "visual-plan.json" -FixCommand "storefront-visual-plan"
+    $runtimeSummary = Read-RequiredJsonArtifact -Path $visualQaRuntimeSummaryPath -ArtifactName "visual-qa-runtime-summary.json" -FixCommand "run-visual-qa.mjs --proof-mode runtime"
+    $qaReport = Read-RequiredJsonArtifact -Path $visualQaReportJsonPath -ArtifactName "visual-qa-report.json" -FixCommand "materialize-reference-visual-qa-report.mjs"
+    $written = Read-RequiredJsonArtifact -Path $agentWrittenFilesPath -ArtifactName "agent-written-files.json" -FixCommand "record-agent-visual-writes.mjs"
+
+    Assert-RequiredFields -Json $runtimeSummary -ArtifactName "visual-qa-runtime-summary.json" -Fields @("schemaVersion", "artifactKind", "operationId", "proofMode", "baseUrl", "startedUtc", "finishedUtc", "captures", "runtimeNetworkAudit", "passed")
+    Assert-RequiredFields -Json $qaReport -ArtifactName "visual-qa-report.json" -Fields @("schemaVersion", "operationId", "referenceEvidenceReviewed", "runtimeEvidencePaths", "referenceEvidencePaths", "pageViewportCoverage", "independentReviewer", "comparisonDimensions", "acceptedDifferences", "unacceptedCriticalCount", "unacceptedMajorCount", "finalDecision", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed")
+    Assert-RequiredFields -Json $written -ArtifactName "agent-written-files.json" -Fields @("schemaVersion", "artifactKind", "artifactId", "detectionMode", "generationPlanHash", "files")
+
+    if ([string]$runtimeSummary.artifactKind -ne "storefront-builder.visual-qa-runtime-summary") {
+        throw "visual-qa-runtime-summary.json artifactKind must be storefront-builder.visual-qa-runtime-summary, but was '$($runtimeSummary.artifactKind)'."
+    }
+
+    if ([string]$runtimeSummary.proofMode -ne "runtime") {
+        throw "visual-qa-runtime-summary.json proofMode must be runtime, but was '$($runtimeSummary.proofMode)'."
+    }
+
+    if ((Normalize-BaseUrl $runtimeSummary.baseUrl) -ne (Normalize-BaseUrl $BaseUrl)) {
+        throw "visual-qa-runtime-summary.json baseUrl '$($runtimeSummary.baseUrl)' does not match MVP gate BaseUrl '$BaseUrl'."
+    }
+
+    $operationId = [string]$visualPlan.operationId
+    if ([string]$runtimeSummary.operationId -ne $operationId -or [string]$qaReport.operationId -ne $operationId) {
+        throw "Runtime evidence operationId mismatch. visual-plan='$operationId', runtime-summary='$($runtimeSummary.operationId)', visual-qa-report='$($qaReport.operationId)'."
+    }
+
+    if ($qaReport.referenceEvidenceReviewed -ne $true) {
+        throw "visual-qa-report.json referenceEvidenceReviewed must be true for runtime closure."
+    }
+
+    $summaryStartedUtc = [DateTimeOffset]::Parse([string]$runtimeSummary.startedUtc, [System.Globalization.CultureInfo]::InvariantCulture)
+    $summaryFinishedUtc = [DateTimeOffset]::Parse([string]$runtimeSummary.finishedUtc, [System.Globalization.CultureInfo]::InvariantCulture)
+    if ($summaryFinishedUtc -lt $summaryStartedUtc) {
+        throw "visual-qa-runtime-summary.json finishedUtc is earlier than startedUtc."
+    }
+
+    $summaryCapturePaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $summaryCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($capture in @($runtimeSummary.captures)) {
+        $capturePath = [string]$capture.screenshot
+        $resolvedCapturePath = Resolve-EvidencePath $capturePath
+        if (-not (Test-Path -LiteralPath $resolvedCapturePath)) {
+            throw "visual-qa-runtime-summary.json references a missing screenshot: $capturePath. Evidence path: $resolvedCapturePath."
+        }
+
+        $captureItem = Get-Item -LiteralPath $resolvedCapturePath
+        $captureWriteTime = [DateTimeOffset]$captureItem.LastWriteTimeUtc
+        if ($captureWriteTime.AddSeconds(2) -lt $summaryStartedUtc) {
+            throw "Runtime screenshot is older than visual-qa-runtime-summary.json startedUtc and cannot be current-run evidence: $capturePath."
+        }
+
+        [void]$summaryCapturePaths.Add($resolvedCapturePath)
+        $pageId = Get-PageIdFromCapture -Capture $capture
+        $viewportValue = if (-not [string]::IsNullOrWhiteSpace([string]$capture.viewport)) { [string]$capture.viewport } else { [string]$capture.viewportName }
+        $viewport = Convert-ToCanonicalViewport $viewportValue
+        [void]$summaryCoverage.Add(("{0}|{1}" -f $pageId, $viewport))
+    }
+
+    if ($summaryCapturePaths.Count -lt 1) {
+        throw "visual-qa-runtime-summary.json must contain at least one current summary capture path."
+    }
+
+    $requiredCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($coverage in @($visualPlan.pageViewportCoverage)) {
+        foreach ($viewport in @($coverage.viewports)) {
+            [void]$requiredCoverage.Add(("{0}|{1}" -f $coverage.pageId, (Convert-ToCanonicalViewport $viewport)))
+        }
+    }
+
+    foreach ($required in $requiredCoverage) {
+        if (-not $summaryCoverage.Contains($required)) {
+            throw "visual-qa-runtime-summary.json captures are missing visual-plan coverage '$required'."
+        }
+    }
+
+    $reportRuntimePaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($path in @($qaReport.runtimeEvidencePaths)) {
+        $resolvedPath = Resolve-EvidencePath ([string]$path)
+        if (-not (Test-Path -LiteralPath $resolvedPath)) {
+            throw "visual-qa-report.json runtimeEvidencePaths references missing evidence: $path."
+        }
+
+        [void]$reportRuntimePaths.Add($resolvedPath)
+    }
+
+    $missingFromReport = @($summaryCapturePaths | Where-Object { -not $reportRuntimePaths.Contains($_) })
+    $notFromSummary = @($reportRuntimePaths | Where-Object { -not $summaryCapturePaths.Contains($_) })
+    if ($missingFromReport.Count -gt 0 -or $notFromSummary.Count -gt 0) {
+        throw "visual-qa-report.json runtimeEvidencePaths must match current summary capture paths. Missing from report: $($missingFromReport -join ', '). Not from summary: $($notFromSummary -join ', ')."
+    }
+
+    $reportCapturePaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $reportCaptureCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($capture in @($qaReport.viewportCaptures)) {
+        $resolvedCapturePath = Resolve-EvidencePath ([string]$capture.screenshotPath)
+        if (-not (Test-Path -LiteralPath $resolvedCapturePath)) {
+            throw "visual-qa-report.json viewportCaptures references a missing screenshot: $($capture.screenshotPath)."
+        }
+
+        if (-not $summaryCapturePaths.Contains($resolvedCapturePath)) {
+            throw "visual-qa-report.json viewportCaptures screenshot is not one of the current summary capture paths: $($capture.screenshotPath)."
+        }
+
+        [void]$reportCapturePaths.Add($resolvedCapturePath)
+        [void]$reportCaptureCoverage.Add(("{0}|{1}" -f $capture.pageId, (Convert-ToCanonicalViewport $capture.viewport)))
+    }
+
+    foreach ($required in $requiredCoverage) {
+        if (-not $reportCaptureCoverage.Contains($required)) {
+            throw "visual-qa-report.json viewportCaptures is missing visual-plan coverage '$required'."
+        }
+    }
+
+    foreach ($coverage in @($qaReport.pageViewportCoverage)) {
+        foreach ($viewport in @($coverage.viewports)) {
+            $key = "{0}|{1}" -f $coverage.pageId, (Convert-ToCanonicalViewport $viewport)
+            if (-not $requiredCoverage.Contains($key)) {
+                throw "visual-qa-report.json pageViewportCoverage includes coverage not required by visual-plan.json: $key."
+            }
+        }
+    }
+
+    foreach ($path in @($qaReport.referenceEvidencePaths)) {
+        $resolvedReferencePath = Resolve-EvidencePath ([string]$path)
+        if (-not (Test-Path -LiteralPath $resolvedReferencePath)) {
+            throw "visual-qa-report.json referenceEvidencePaths references missing evidence: $path."
+        }
+    }
+
+    $unacceptedCriticalCount = [int]$qaReport.unacceptedCriticalCount
+    $unacceptedMajorCount = [int]$qaReport.unacceptedMajorCount
+    if (($qaReport.passed -eq $true -or [string]$qaReport.finalDecision -eq "passed") -and ($unacceptedCriticalCount -gt 0 -or $unacceptedMajorCount -gt 0)) {
+        throw "visual-qa-report.json says pass but unaccepted critical/major counters are nonzero."
+    }
+
+    if ($unacceptedCriticalCount -ne 0 -or $unacceptedMajorCount -ne 0) {
+        throw "visual-qa-report.json has unaccepted critical/major issues. Critical=$unacceptedCriticalCount Major=$unacceptedMajorCount."
+    }
+
+    if ($qaReport.passed -ne $true -or [string]$qaReport.finalDecision -ne "passed") {
+        throw "visual-qa-report.json must have passed=true and finalDecision='passed' for runtime closure."
+    }
+
+    $checkpointPath = Join-Path $analysisRoot ("visual-checkpoints\{0}\visual-checkpoint.json" -f $operationId)
+    Assert-NoPlaceholderHashText -Path $checkpointPath -ArtifactName "visual-checkpoint.json"
+    Assert-NoPlaceholderHashText -Path $visualImplementationReportJsonPath -ArtifactName "visual-implementation-report.json"
+    Assert-AgentWrittenFileChecksums -Written $written
+    Assert-HandoffRuntimeGenerationMetadata
+}
+
 function Convert-ToProcessArgument {
     param([string]$Argument)
 
@@ -696,38 +974,6 @@ try {
             $implementationReport = Read-RequiredJsonArtifact -Path $visualImplementationReportJsonPath -ArtifactName "visual-implementation-report.json" -FixCommand "storefront-visual-implement"
             Assert-RequiredFields -Json $implementationReport -ArtifactName "visual-implementation-report.json" -Fields @("schemaVersion", "operationId", "checkpointPath", "changedFiles", "recorderResultPath", "boundaryResult", "buildResult", "unresolvedItems")
 
-            $qaReport = Read-RequiredJsonArtifact -Path $visualQaReportJsonPath -ArtifactName "visual-qa-report.json" -FixCommand "storefront-visual-qa"
-            Assert-RequiredFields -Json $qaReport -ArtifactName "visual-qa-report.json" -Fields @("schemaVersion", "operationId", "referenceEvidenceReviewed", "runtimeEvidencePaths", "referenceEvidencePaths", "pageViewportCoverage", "independentReviewer", "comparisonDimensions", "acceptedDifferences", "unacceptedCriticalCount", "unacceptedMajorCount", "finalDecision", "viewportCaptures", "evidencePaths", "issues", "repairAttempts", "passed")
-            if ($qaReport.referenceEvidenceReviewed -ne $true) {
-                throw "visual-qa-report.json referenceEvidenceReviewed must be true for closure. Fix: compare reference evidence with runtime screenshots and rerun storefront-visual-qa."
-            }
-
-            if (@($qaReport.referenceEvidencePaths).Count -lt 1) {
-                throw "visual-qa-report.json referenceEvidencePaths must contain at least one reviewed reference artifact."
-            }
-
-            if (@($qaReport.runtimeEvidencePaths).Count -lt 1) {
-                throw "visual-qa-report.json runtimeEvidencePaths must contain at least one runtime evidence artifact."
-            }
-
-            $unacceptedCriticalCount = [int]$qaReport.unacceptedCriticalCount
-            $unacceptedMajorCount = [int]$qaReport.unacceptedMajorCount
-            if (($qaReport.passed -eq $true -or [string]$qaReport.finalDecision -eq "passed") -and ($unacceptedCriticalCount -gt 0 -or $unacceptedMajorCount -gt 0)) {
-                throw "visual-qa-report.json says pass but unaccepted critical/major counters are nonzero."
-            }
-
-            if ($unacceptedCriticalCount -ne 0) {
-                throw "visual-qa-report.json has $unacceptedCriticalCount unaccepted critical issue(s). Closure requires zero."
-            }
-
-            if ($unacceptedMajorCount -ne 0) {
-                throw "visual-qa-report.json has $unacceptedMajorCount unaccepted major issue(s). Closure requires zero."
-            }
-
-            if ($qaReport.passed -ne $true -or [string]$qaReport.finalDecision -ne "passed") {
-                throw "visual-qa-report.json must have passed=true and finalDecision='passed' for closure."
-            }
-
             $requiredCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
             foreach ($coverage in @($visualPlan.pageViewportCoverage)) {
                 foreach ($viewport in @($coverage.viewports)) {
@@ -737,30 +983,6 @@ try {
 
             if ($requiredCoverage.Count -lt 1) {
                 throw "visual-plan.json pageViewportCoverage must require at least one page/viewport for closure."
-            }
-
-            $qaCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-            foreach ($coverage in @($qaReport.pageViewportCoverage)) {
-                foreach ($viewport in @($coverage.viewports)) {
-                    [void]$qaCoverage.Add(("{0}|{1}" -f $coverage.pageId, $viewport))
-                }
-            }
-
-            $captureCoverage = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-            foreach ($capture in @($qaReport.viewportCaptures)) {
-                if (-not [string]::IsNullOrWhiteSpace([string]$capture.screenshotPath)) {
-                    [void]$captureCoverage.Add(("{0}|{1}" -f $capture.pageId, $capture.viewport))
-                }
-            }
-
-            foreach ($required in $requiredCoverage) {
-                if (-not $qaCoverage.Contains($required)) {
-                    throw "visual-qa-report.json pageViewportCoverage is missing required coverage '$required' from visual-plan.json."
-                }
-
-                if (-not $captureCoverage.Contains($required)) {
-                    throw "visual-qa-report.json viewportCaptures is missing runtime screenshot coverage '$required' from visual-plan.json."
-                }
             }
 
             $written = Read-RequiredJsonArtifact -Path $agentWrittenFilesPath -ArtifactName "agent-written-files.json" -FixCommand "record-agent-visual-writes.mjs"
@@ -803,7 +1025,15 @@ try {
         }
     }
 
+    $qaOperationId = ""
+    if (Test-Path -LiteralPath $visualPlanPath) {
+        $qaOperationId = [string]((Get-Content -LiteralPath $visualPlanPath -Raw | ConvertFrom-Json).operationId)
+    }
+
     $qaArguments = @((Join-Path $builderRoot "scripts\qa\run-visual-qa.mjs"), "--proof-mode", $effectiveProofMode.ToLowerInvariant(), "--project-root", $resolvedProjectRoot, "--screenshot-root", $resolvedScreenshotRoot)
+    if (-not [string]::IsNullOrWhiteSpace($qaOperationId)) {
+        $qaArguments += @("--operation-id", $qaOperationId)
+    }
     if ($effectiveProofMode -eq "Skeleton" -and -not [string]::IsNullOrWhiteSpace($resolvedFixtureRoot)) {
         $qaArguments += @("--fixture-root", $resolvedFixtureRoot)
     }
@@ -839,6 +1069,23 @@ try {
 
     if (-not $qaPassed) {
         throw "Visual QA did not pass. Report: $visualQaReportPath. Evidence: $resolvedScreenshotRoot"
+    }
+
+    if ($effectiveProofMode -eq "Runtime") {
+        $materializerArguments = @(
+            $materializerScript,
+            "--project-root", $resolvedProjectRoot,
+            "--base-url", $BaseUrl
+        )
+        if (-not [string]::IsNullOrWhiteSpace($qaOperationId)) {
+            $materializerArguments += @("--operation-id", $qaOperationId)
+        }
+
+        $null = Invoke-GateCommand -Name "materialize Reference QA report from current runtime summary" -FileName "node" -Arguments $materializerArguments -LikelyCause "visual-qa-runtime-summary.json, screenshots, or reference evidence could not be bound to visual-qa-report.json."
+
+        Invoke-AssertionStep -Name "validate runtime evidence binding" -Command "visual-qa-runtime-summary.json and visual-qa-report.json current summary capture paths" -LikelyCause "Runtime visual evidence is stale, missing, copied from another run, or not tied to the current operation." -Assertion {
+            Assert-RuntimeEvidenceBinding
+        }
     }
 
     $currentGenerationPlan = Get-Content -LiteralPath $generationPlanPath -Raw | ConvertFrom-Json

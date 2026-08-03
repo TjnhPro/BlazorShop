@@ -452,35 +452,35 @@ Goal: make the MVP gate reject stale or unbound visual QA evidence.
 
 Tasks:
 
-- [ ] Update `scripts/qa/run-storefront-phase4-mvp-gate.ps1` closure mode.
-- [ ] Read `docs/storefront-analysis/visual-qa-runtime-summary.json` when `-ProofMode Runtime`.
-- [ ] Assert:
-  - [ ] runtime summary exists;
-  - [ ] runtime summary `artifactKind` is correct;
-  - [ ] runtime summary `proofMode` is `runtime`;
-  - [ ] runtime summary `baseUrl` matches `-BaseUrl` after normalization;
-  - [ ] runtime summary `operationId` matches `visual-plan.json`;
-  - [ ] runtime summary captures contain every page/viewport required by `visual-plan.json`;
-  - [ ] every summary screenshot path exists on disk;
-  - [ ] every report runtime evidence path exists on disk;
-  - [ ] every report viewport capture screenshot exists on disk;
-  - [ ] every report viewport capture screenshot belongs to runtime summary captures;
-  - [ ] every screenshot timestamp is at or after gate start or runtime summary start;
-  - [ ] report `runtimeEvidencePaths` are exactly the current summary capture paths or a documented normalized subset;
-  - [ ] report `referenceEvidencePaths` exist in the tracked fixture or copied handoff evidence;
-  - [ ] report operation ID matches visual plan and runtime summary;
-  - [ ] no placeholder hash strings remain in checkpoint or implementation report;
-  - [ ] `agent-written-files.json` detection mode is `checkpoint-auto-detect`;
-  - [ ] `agent-written-files.json` file checksums match current source file hashes;
-  - [ ] generated metadata uses `generationMode: handoff-project-skeleton`;
-  - [ ] `generation-plan.json` uses `generationMode: handoff`.
-- [ ] Improve failure output:
-  - [ ] problem;
-  - [ ] likely cause;
-  - [ ] exact rerun command;
-  - [ ] report path;
-  - [ ] evidence path.
-- [ ] Keep `-SkeletonProof` as a clearly non-release mode and avoid applying runtime evidence requirements there.
+- [x] Update `scripts/qa/run-storefront-phase4-mvp-gate.ps1` closure mode.
+- [x] Read `docs/storefront-analysis/visual-qa-runtime-summary.json` when `-ProofMode Runtime`.
+- [x] Assert:
+  - [x] runtime summary exists;
+  - [x] runtime summary `artifactKind` is correct;
+  - [x] runtime summary `proofMode` is `runtime`;
+  - [x] runtime summary `baseUrl` matches `-BaseUrl` after normalization;
+  - [x] runtime summary `operationId` matches `visual-plan.json`;
+  - [x] runtime summary captures contain every page/viewport required by `visual-plan.json`;
+  - [x] every summary screenshot path exists on disk;
+  - [x] every report runtime evidence path exists on disk;
+  - [x] every report viewport capture screenshot exists on disk;
+  - [x] every report viewport capture screenshot belongs to runtime summary captures;
+  - [x] every screenshot timestamp is at or after gate start or runtime summary start;
+  - [x] report `runtimeEvidencePaths` are exactly the current summary capture paths or a documented normalized subset;
+  - [x] report `referenceEvidencePaths` exist in the tracked fixture or copied handoff evidence;
+  - [x] report operation ID matches visual plan and runtime summary;
+  - [x] no placeholder hash strings remain in checkpoint or implementation report;
+  - [x] `agent-written-files.json` detection mode is `checkpoint-auto-detect`;
+  - [x] `agent-written-files.json` file checksums match current source file hashes;
+  - [x] generated metadata uses `generationMode: handoff-project-skeleton`;
+  - [x] `generation-plan.json` uses `generationMode: handoff`.
+- [x] Improve failure output:
+  - [x] problem;
+  - [x] likely cause;
+  - [x] exact rerun command;
+  - [x] report path;
+  - [x] evidence path.
+- [x] Keep `-SkeletonProof` as a clearly non-release mode and avoid applying runtime evidence requirements there.
 
 Checks:
 
@@ -491,10 +491,17 @@ rg -n "visual-qa-runtime-summary|checkpoint-auto-detect|handoff-project-skeleton
 
 DoD:
 
-- [ ] MVP gate cannot pass with a preseeded `visual-qa-report.json`.
-- [ ] MVP gate cannot pass when runtime summary or screenshots are stale.
-- [ ] MVP gate cannot pass when runtime evidence is not from the current operation.
-- [ ] MVP gate still supports skeleton proof for non-release feedback.
+- [x] MVP gate cannot pass with a preseeded `visual-qa-report.json`.
+- [x] MVP gate cannot pass when runtime summary or screenshots are stale.
+- [x] MVP gate cannot pass when runtime evidence is not from the current operation.
+- [x] MVP gate still supports skeleton proof for non-release feedback.
+
+Evidence:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -Help`
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs`
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot obj\storefront-builder\generated\phase4-12-probe\BlazorShop.Storefront.Phase412Probe -ProofMode Runtime -BaseUrl http://127.0.0.1:18621 -StartRuntimeHost -HandoffRoot tools\BlazorShop.AI.StorefrontBuilder\tests\generation\fixtures\phase4-11-closure\portable-handoff -SkipRepair -CommandTimeoutSeconds 300`
 
 ## Phase 4.12.6 - Final Closure Orchestration
 

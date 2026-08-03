@@ -341,12 +341,12 @@ function validateVisualContent(targetPath, content, allowed) {
 function appendAgentManifestSection(projectRoot, records) {
   const manifestPath = join(projectRoot, "docs/storefront-analysis/generated-files.yaml");
   const existing = existsSync(manifestPath) ? readFileSync(manifestPath, "utf8").replace(/\r\n/g, "\n").replace(/\r/g, "\n") : "";
-  const base = existing.replace(/\nagentWrittenFiles:\n[\s\S]*$/m, "").trimEnd();
+  const base = updateGeneratedFileManifestState(existing.replace(/\nagentWrittenFiles:\n[\s\S]*$/m, "").trimEnd(), records);
   const section = [
     "",
     "agentWrittenFiles:",
     ...records.flatMap(record => [
-      `  - filePath: ${record.filePath}`,
+      `  - agentFilePath: ${record.filePath}`,
       `    sourcePlanEntryId: ${record.sourcePlanEntryId}`,
       `    checksum: ${record.checksum}`,
       `    ownership: ${record.ownership}`,
@@ -355,6 +355,48 @@ function appendAgentManifestSection(projectRoot, records) {
   ].join("\n");
   mkdirSync(dirname(manifestPath), { recursive: true });
   writeFileSync(manifestPath, `${base}${section}`, "utf8");
+}
+
+function updateGeneratedFileManifestState(content, records) {
+  let updated = content;
+  for (const record of records) {
+    updated = updateGeneratedFileManifestEntry(updated, record);
+  }
+
+  return updated;
+}
+
+function updateGeneratedFileManifestEntry(content, record) {
+  const filePathLine = `  - filePath: ${record.filePath}`;
+  const start = content.indexOf(filePathLine);
+  if (start < 0) {
+    return content;
+  }
+
+  const next = content.indexOf("\n  - filePath: ", start + filePathLine.length);
+  const end = next < 0 ? content.length : next;
+  const entry = content.slice(start, end);
+  const updatedEntry = replaceYamlScalar(
+    replaceYamlScalar(
+      replaceYamlScalar(
+        replaceYamlScalar(entry, "currentHash", record.checksum),
+        "manualEditDetected",
+        "true"),
+      "conflictStatus",
+      "agent-visual-edit"),
+    "conflictReason",
+    "Recorded by record-agent-visual-writes.mjs from a verified visual checkpoint.");
+
+  return `${content.slice(0, start)}${updatedEntry}${content.slice(end)}`;
+}
+
+function replaceYamlScalar(entry, key, value) {
+  const pattern = new RegExp(`^(\\s+${escapeRegex(key)}:\\s*).*$`, "m");
+  if (!pattern.test(entry)) {
+    return `${entry.replace(/\s*$/, "")}\n    ${key}: ${value}\n`;
+  }
+
+  return entry.replace(pattern, `$1${value}`);
 }
 
 function normalizeTargetPath(path) {
@@ -430,6 +472,10 @@ function normalizeText(value) {
 
 function sha(value) {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function fail(code, message) {

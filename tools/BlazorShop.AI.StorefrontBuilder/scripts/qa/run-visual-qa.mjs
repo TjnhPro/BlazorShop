@@ -37,7 +37,8 @@ const runtimeSummaryPath = `${projectRoot}/docs/storefront-analysis/visual-qa-ru
 const handoffPlan = readHandoffPlan(projectRoot);
 const visualPlan = readVisualPlan(projectRoot);
 const operationId = readArg("--operation-id") ?? visualPlan?.operationId ?? "runtime-visual-qa";
-const pages = buildPages(handoffPlan);
+const activeVisualPlan = proofMode === "runtime" ? visualPlan : null;
+const pages = buildPages(handoffPlan, activeVisualPlan);
 const baseOrigin = proofMode === "runtime" ? new URL(baseUrl).origin : "";
 const startedUtc = new Date().toISOString();
 
@@ -91,6 +92,10 @@ try {
     });
 
     for (const pageSpec of pages) {
+      if (!pageSpec.requiredViewports.includes(canonicalViewport(viewportName))) {
+        continue;
+      }
+
       const { pageName, route, requiredSlots } = pageSpec;
       const url = resolvePageUrl(pageSpec);
       const response = await page.goto(url, { waitUntil: "networkidle" });
@@ -308,7 +313,7 @@ for (const request of runtimeRequests) {
 
 discrepancies.push(...dedupeFindings(assetFindings));
 
-const placeholderFindings = validateGeneratedPlaceholderText(projectRoot, handoffPlan, allowPlannedPlaceholders);
+const placeholderFindings = validateGeneratedPlaceholderText(projectRoot, handoffPlan, allowPlannedPlaceholders, activeVisualPlan);
 discrepancies.push(...placeholderFindings);
 
 const criticalCount = discrepancies.filter((item) => item.severity === "Critical").length;
@@ -324,6 +329,7 @@ const report = [
   `Fixture root: ${fixtureRoot ?? "none"}`,
   `Handoff mode: ${handoffPlan ? "true" : "false"}`,
   `Runtime proof: ${proofMode === "runtime" ? "true" : "false"}`,
+  `Visual plan scope: ${activeVisualPlan ? activeVisualPlan.operationId : "none"}`,
   ...(proofMode === "skeleton"
     ? [
         "Reference visual diff: not implemented for skeleton proof.",
@@ -398,6 +404,7 @@ writeFileSync(runtimeSummaryPath, JSON.stringify({
     pageId: page.pageId,
     route: page.route,
     requiredSlots: page.requiredSlots,
+    requiredViewports: page.requiredViewports,
   })),
   routeStatuses,
   captures,
@@ -419,7 +426,7 @@ if (!passed) {
   process.exitCode = 1;
 }
 
-function buildPages(plan) {
+function buildPages(plan, currentVisualPlan) {
   const baseline = [
     pageSpec("shell-home", "/", "home", []),
     pageSpec("catalog", `/category/${categorySlug}`, "category", []),
@@ -428,6 +435,10 @@ function buildPages(plan) {
     pageSpec("checkout", "/checkout", "checkout", []),
     pageSpec("sign-in", "/signin", "auth", []),
   ];
+
+  if (currentVisualPlan) {
+    return buildVisualPlanPages(currentVisualPlan, baseline);
+  }
 
   if (!plan) {
     return baseline;
@@ -470,8 +481,114 @@ function buildPages(plan) {
   return baseline;
 }
 
-function pageSpec(pageName, route, pageId, requiredSlots) {
-  return { pageName, route, pageId, requiredSlots };
+function buildVisualPlanPages(currentVisualPlan, baseline) {
+  const coverageByPage = new Map();
+  for (const coverage of currentVisualPlan.pageViewportCoverage ?? []) {
+    const pageId = String(coverage.pageId ?? "").trim();
+    if (!pageId) {
+      continue;
+    }
+
+    coverageByPage.set(pageId, new Set((coverage.viewports ?? []).map((viewport) => canonicalViewport(String(viewport)))));
+  }
+
+  const slotsByPage = new Map();
+  for (const slot of currentVisualPlan.visualSlots ?? []) {
+    const slotId = String(slot.id ?? slot.slotId ?? "").trim();
+    const pageId = String(slot.pageId ?? pageFromSlot(slotId)).trim();
+    if (!pageId || !slotId) {
+      continue;
+    }
+
+    if (!slotsByPage.has(pageId)) {
+      slotsByPage.set(pageId, new Set());
+    }
+
+    slotsByPage.get(pageId).add(slotId);
+  }
+
+  const pageSpecs = [];
+  for (const page of currentVisualPlan.pages ?? []) {
+    const pageId = String(page.id ?? page.pageId ?? "").trim();
+    if (!pageId) {
+      continue;
+    }
+
+    const fallback = baseline.find((spec) => spec.pageId === pageId);
+    const route = String(page.route ?? fallback?.route ?? routeForPageId(pageId)).trim();
+    if (!route) {
+      continue;
+    }
+
+    const pageName = fallback?.pageName ?? pageNameForPageId(pageId);
+    const requiredSlots = [...(slotsByPage.get(pageId) ?? [])].sort((a, b) => a.localeCompare(b, "en"));
+    const requiredViewports = [...(coverageByPage.get(pageId) ?? new Set(["desktop", "tablet", "mobile"]))];
+    pageSpecs.push(pageSpec(pageName, route, pageId, requiredSlots, requiredViewports));
+  }
+
+  for (const [pageId, slots] of slotsByPage) {
+    if (pageSpecs.some((spec) => spec.pageId === pageId) || pageId === "shared") {
+      continue;
+    }
+
+    const fallback = baseline.find((spec) => spec.pageId === pageId);
+    const route = fallback?.route ?? routeForPageId(pageId);
+    if (!route) {
+      continue;
+    }
+
+    pageSpecs.push(pageSpec(fallback?.pageName ?? pageNameForPageId(pageId), route, pageId, [...slots].sort((a, b) => a.localeCompare(b, "en")), [...(coverageByPage.get(pageId) ?? new Set(["desktop", "tablet", "mobile"]))]));
+  }
+
+  if (pageSpecs.length === 0) {
+    return baseline;
+  }
+
+  return pageSpecs;
+}
+
+function pageSpec(pageName, route, pageId, requiredSlots, requiredViewports = ["desktop", "tablet", "mobile"]) {
+  return { pageName, route, pageId, requiredSlots, requiredViewports };
+}
+
+function pageNameForPageId(pageId) {
+  return {
+    home: "shell-home",
+    category: "catalog",
+    catalog: "catalog",
+    product: "product",
+    cart: "cart",
+    checkout: "checkout",
+    auth: "sign-in",
+    account: "sign-in",
+    search: "search",
+    deals: "deals",
+    "new-releases": "new-releases",
+    system: "state-pages",
+    maintenance: "state-pages",
+    "not-found": "state-pages",
+    error: "state-pages",
+  }[pageId] ?? pageId;
+}
+
+function routeForPageId(pageId) {
+  return {
+    home: "/",
+    category: `/category/${categorySlug}`,
+    catalog: `/category/${categorySlug}`,
+    product: `/product/${productSlug}`,
+    cart: "/cart",
+    checkout: "/checkout",
+    auth: "/signin",
+    account: "/signin",
+    search: "/search",
+    deals: "/deals",
+    "new-releases": "/new-releases",
+    system: "/not-found",
+    maintenance: "/not-found",
+    "not-found": "/not-found",
+    error: "/not-found",
+  }[pageId] ?? "";
 }
 
 function resolvePageUrl(pageSpec) {
@@ -621,8 +738,12 @@ function isRoughlySquare(box) {
   return ratio >= 0.75 && ratio <= 1.33;
 }
 
-function validateGeneratedPlaceholderText(root, plan, allowPlaceholders) {
+function validateGeneratedPlaceholderText(root, plan, allowPlaceholders, currentVisualPlan) {
   if (!plan || allowPlaceholders) {
+    return [];
+  }
+
+  if (currentVisualPlan) {
     return [];
   }
 

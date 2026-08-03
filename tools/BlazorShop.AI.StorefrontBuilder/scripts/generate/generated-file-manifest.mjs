@@ -159,6 +159,10 @@ export function parseManifestEntries(text) {
   const entries = [];
   let current = null;
   for (const line of text.split(/\r?\n/)) {
+    if (/^agentWrittenFiles:\s*$/.test(line)) {
+      break;
+    }
+
     const fileMatch = line.match(/^\s+- filePath:\s*(.+?)\s*$/);
     if (fileMatch) {
       current = { filePath: unquote(fileMatch[1]) };
