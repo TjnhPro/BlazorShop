@@ -1,6 +1,6 @@
 # StorefrontVisualSkills Phase 4.12 Final Closure Evidence Truth.todo
 
-Status: In Progress
+Status: Complete
 Owner: Storefront Platform
 Created: 2026-08-03
 Target folder: `docs/visual-reverse-engineering-skill`
@@ -744,51 +744,73 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-bu
 
 DoD:
 
-- [ ] Final closure gate passes from clean `HEAD`.
-- [ ] Final closure report records tested `HEAD` and final `HEAD`.
-- [ ] Final closure report records handoff preflight report path.
-- [ ] Final closure report records generated metadata and generation plan hash.
-- [ ] Final closure report records task package hash.
-- [ ] Final closure report records real checkpoint path and hash.
-- [ ] Final closure report records runtime summary path.
-- [ ] Final closure report records screenshot root.
-- [ ] Final closure report records materialized Reference QA report path.
-- [ ] Final closure report records MVP gate report path.
-- [ ] Final closure report records functional proof report path.
-- [ ] Final closure report records regeneration proof path.
-- [ ] Final closure report says GitHub Actions are not required for this local dev closure.
-- [ ] `git status --porcelain=v1` is clean after the gate.
+- [x] Final closure gate passes from clean `HEAD`.
+- [x] Final closure report records tested `HEAD` and final `HEAD`.
+- [x] Final closure report records handoff preflight report path.
+- [x] Final closure report records generated metadata and generation plan hash.
+- [x] Final closure report records task package hash.
+- [x] Final closure report records real checkpoint path and hash.
+- [x] Final closure report records runtime summary path.
+- [x] Final closure report records screenshot root.
+- [x] Final closure report records materialized Reference QA report path.
+- [x] Final closure report records MVP gate report path.
+- [x] Final closure report records functional proof report path.
+- [x] Final closure report records regeneration proof path.
+- [x] Final closure report says GitHub Actions are not required for this local dev closure.
+- [x] `git status --porcelain=v1` is clean after the gate.
+
+Evidence:
+
+- `node tools\BlazorShop.AI.Visual\scripts\validate-visual-examples.mjs` passed: 6 schema examples validated.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -Help` passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -Help` passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-builder-regeneration-gate.ps1` passed. The intentional rollback negative test produced expected compile errors, then the gate reported pass.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900` passed from clean `HEAD`; report: `obj/storefront-builder/reports/phase4-final-closure-gate-20260803115620.md`.
+- Final closure report tested and finished on `bc9c717b6088daefe132dfb9df1529807d7e66af`.
+- Handoff preflight report: `obj/storefront-builder/handoff-preflight/handoff-preflight-BlazorShop.Storefront.Phase411ClosurePilot-20260803115406.md`.
+- Generation plan hash: `sha256:32edf05a0258c4d4595e956b7a6267cbfb49c8d08ca0b13bb48c912bd28b0ac7`.
+- Agent task package hash: `sha256:346145b51f57f764bc2a95e91f97053d83044b3df7523f46d1bdbb0cabd1864b`.
+- Visual checkpoint hash: `sha256:9a2873be54968613bf997dff2bb79b83f3018ec2c7ba7b62afd9c924908f64d9`.
+- Runtime summary: `obj/storefront-builder/generated/phase4-11-closure-pilot/BlazorShop.Storefront.Phase411ClosurePilot/docs/storefront-analysis/visual-qa-runtime-summary.json`.
+- Screenshot root: `obj/storefront-builder/generated/phase4-11-closure-pilot/BlazorShop.Storefront.Phase411ClosurePilot/docs/storefront-analysis/visual-qa`.
+- Materialized Reference QA report: `obj/storefront-builder/generated/phase4-11-closure-pilot/BlazorShop.Storefront.Phase411ClosurePilot/docs/storefront-analysis/visual-qa-report.json`.
+- MVP gate report: `obj/storefront-builder/generated/phase4-11-closure-pilot/BlazorShop.Storefront.Phase411ClosurePilot/docs/storefront-analysis/phase4-mvp-gate-report.md`.
+- Functional proof report: `obj/storefront-builder/generated/phase4-final-closure/BlazorShop.Storefront.Phase4FinalProof/docs/storefront-analysis/fast-foundation-functional-report.md`.
+- Regeneration proof report: `obj/storefront-builder/reports/storefront-builder-regeneration-gate-latest.md`.
+- Final closure report states `GitHub Actions: not required`.
+- `git status --porcelain=v1` was clean after the gate.
 
 ## Release Definition Of Done
 
-- [ ] Tracked closure fixture contains a valid portable handoff package.
-- [ ] `validate-handoff` passes on the fixture.
-- [ ] `dry-run-handoff` passes on the fixture.
-- [ ] StorefrontBuilder preflight passes on the fixture.
-- [ ] Final closure generation uses `-HandoffRoot`.
-- [ ] Final closure generation uses `-HandoffSchemaRoot`.
-- [ ] Generated metadata says `generationMode: handoff-project-skeleton`.
-- [ ] Generated plan says `generationMode: handoff`.
-- [ ] Agent task package is generated by `write-agent-task-package.mjs`.
-- [ ] Final closure gate has no `Write-PilotAgentTaskPackage` helper.
-- [ ] Final closure gate does not call non-handoff `plan-generation-files.mjs` after generation.
-- [ ] Deterministic visual edit modifies only allowed generated visual source.
-- [ ] Checkpoint hashes are real SHA-256 values from current source.
-- [ ] Placeholder closure hashes cannot pass.
-- [ ] Recorder verifies checkpoint post hash against current file content.
-- [ ] Recorder verifies implementation report and checkpoint agree.
-- [ ] Runtime visual QA writes current `visual-qa-runtime-summary.json`.
-- [ ] Runtime summary contains proof mode, base URL, operation ID, timestamps, and screenshot captures.
-- [ ] Reference QA report is materialized after runtime QA.
-- [ ] Reference QA report is bound to runtime summary and existing screenshot files.
-- [ ] MVP gate rejects stale, missing, or unbound visual QA evidence.
-- [ ] MVP gate rejects static generation for final runtime closure.
-- [ ] MVP gate rejects non-auto-detected agent write records.
-- [ ] Final closure runs `FoundationFunctionalFast` minimum.
-- [ ] Final closure runs regeneration ownership proof.
-- [ ] Final closure starts and ends on the same clean `HEAD`.
-- [ ] GitHub Actions are explicitly not required while disabled.
-- [ ] No generated pilot, screenshots, or transient `obj` evidence is committed.
+- [x] Tracked closure fixture contains a valid portable handoff package.
+- [x] `validate-handoff` passes on the fixture.
+- [x] `dry-run-handoff` passes on the fixture.
+- [x] StorefrontBuilder preflight passes on the fixture.
+- [x] Final closure generation uses `-HandoffRoot`.
+- [x] Final closure generation uses `-HandoffSchemaRoot`.
+- [x] Generated metadata says `generationMode: handoff-project-skeleton`.
+- [x] Generated plan says `generationMode: handoff`.
+- [x] Agent task package is generated by `write-agent-task-package.mjs`.
+- [x] Final closure gate has no `Write-PilotAgentTaskPackage` helper.
+- [x] Final closure gate does not call non-handoff `plan-generation-files.mjs` after generation.
+- [x] Deterministic visual edit modifies only allowed generated visual source.
+- [x] Checkpoint hashes are real SHA-256 values from current source.
+- [x] Placeholder closure hashes cannot pass.
+- [x] Recorder verifies checkpoint post hash against current file content.
+- [x] Recorder verifies implementation report and checkpoint agree.
+- [x] Runtime visual QA writes current `visual-qa-runtime-summary.json`.
+- [x] Runtime summary contains proof mode, base URL, operation ID, timestamps, and screenshot captures.
+- [x] Reference QA report is materialized after runtime QA.
+- [x] Reference QA report is bound to runtime summary and existing screenshot files.
+- [x] MVP gate rejects stale, missing, or unbound visual QA evidence.
+- [x] MVP gate rejects static generation for final runtime closure.
+- [x] MVP gate rejects non-auto-detected agent write records.
+- [x] Final closure runs `FoundationFunctionalFast` minimum.
+- [x] Final closure runs regeneration ownership proof.
+- [x] Final closure starts and ends on the same clean `HEAD`.
+- [x] GitHub Actions are explicitly not required while disabled.
+- [x] No generated pilot, screenshots, or transient `obj` evidence is committed.
 
 ## Risk Register
 
