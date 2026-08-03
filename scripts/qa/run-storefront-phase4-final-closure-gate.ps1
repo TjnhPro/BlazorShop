@@ -69,6 +69,9 @@ $handoffPreflightReportPath = ""
 $functionalProofReportPath = ""
 $regenerationGateReportPath = ""
 $mvpGateReportPath = ""
+$generationPlanHash = ""
+$taskPackageHash = ""
+$checkpointHash = ""
 
 if ($SkipFullFixtureProof -and $runFullFixtureProof) {
     throw "-SkipFullFixtureProof cannot be combined with -FunctionalProofLevel FoundationFunctionalFull or -RequireCommerceRegression."
@@ -534,6 +537,9 @@ function Assert-HandoffGeneratedArtifacts {
         throw "agent-task-package generationPlanHash '$($taskPackage.generationPlanHash)' does not match actual generation plan hash '$actualPlanHash'."
     }
 
+    $script:generationPlanHash = $actualPlanHash
+    $script:taskPackageHash = Get-NormalizedFileSha256 -Path $taskPackageManifestPath
+
     Add-EvidencePath $metadataPath
     Add-EvidencePath $generationPlanPath
     Add-EvidencePath $taskPackageManifestPath
@@ -567,11 +573,11 @@ function Save-GateReports {
         pilotHandoffRoot = Convert-ToRepoRelativePath $resolvedPilotHandoffRoot
         generatedMetadataPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "metadata.yaml")
         generationPlanPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "generation-plan.json")
-        generationPlanHash = if (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "generation-plan.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "generation-plan.json") } else { "" }
+        generationPlanHash = if (-not [string]::IsNullOrWhiteSpace($generationPlanHash)) { $generationPlanHash } elseif (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "generation-plan.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "generation-plan.json") } else { "" }
         taskPackagePath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json")
-        taskPackageHash = if (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json") } else { "" }
+        taskPackageHash = if (-not [string]::IsNullOrWhiteSpace($taskPackageHash)) { $taskPackageHash } elseif (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json") } else { "" }
         checkpointPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json")
-        checkpointHash = if (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json") } else { "" }
+        checkpointHash = if (-not [string]::IsNullOrWhiteSpace($checkpointHash)) { $checkpointHash } elseif (Test-Path -LiteralPath (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json")) { Get-NormalizedFileSha256 -Path (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json") } else { "" }
         implementationReportPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-implementation-report.json")
         agentWrittenFilesPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "agent-written-files.json")
         runtimeSummaryPath = Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-qa-runtime-summary.json")
@@ -604,8 +610,11 @@ function Save-GateReports {
     $lines.Add("- Pilot generated project root: $(Convert-ToRepoRelativePath $resolvedPilotGeneratedProjectRoot)")
     $lines.Add("- Pilot handoff root: $(Convert-ToRepoRelativePath $resolvedPilotHandoffRoot)")
     $lines.Add("- Generation plan: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "generation-plan.json"))")
+    $lines.Add("- Generation plan hash: $generationPlanHash")
     $lines.Add("- Agent task package: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "agent-task-package\manifest.json"))")
+    $lines.Add("- Agent task package hash: $taskPackageHash")
     $lines.Add("- Visual checkpoint: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json"))")
+    $lines.Add("- Visual checkpoint hash: $checkpointHash")
     $lines.Add("- Runtime summary: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-qa-runtime-summary.json"))")
     $lines.Add("- Materialized QA report: $(Convert-ToRepoRelativePath (Join-Path $pilotAnalysisRoot "visual-qa-report.json"))")
     $lines.Add("- MVP gate report: $(Convert-ToRepoRelativePath $mvpGateReportPath)")
@@ -821,7 +830,9 @@ try {
     ) -LikelyCause "The deterministic closure visual edit could not create real checkpoint evidence from generated source."
     Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-plan.json")
     Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-implementation-checklist.json")
-    Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json")
+    $checkpointPath = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json"
+    $script:checkpointHash = Get-NormalizedFileSha256 -Path $checkpointPath
+    Add-EvidencePath $checkpointPath
     Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\visual-implementation-report.json")
 
     Invoke-GateCommand -Name "run automatic pilot changed-file detection" -FileName "node" -Arguments @(
