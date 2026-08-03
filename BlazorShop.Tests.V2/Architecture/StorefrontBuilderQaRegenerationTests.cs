@@ -248,7 +248,9 @@ namespace BlazorShop.Tests.Architecture
                 "output/playwright/storefront-builder-visual-qa",
                 "StorefrontBuilder Visual Smoke QA Report",
                 "No readable stylesheet rules are applied",
-                "Visual fidelity result: not implemented",
+                "Visual fidelity result: ",
+                "requires independent reference QA report",
+                "not implemented for skeleton proof",
             })
             {
                 Assert.Contains(marker, runner, StringComparison.Ordinal);

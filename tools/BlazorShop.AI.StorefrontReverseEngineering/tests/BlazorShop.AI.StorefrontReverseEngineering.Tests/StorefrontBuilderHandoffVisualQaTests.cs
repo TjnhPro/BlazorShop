@@ -168,10 +168,10 @@ public sealed class StorefrontBuilderHandoffVisualQaTests
             : "";
         var body = blankBody
             ? ""
-            : $"<header class=\"sfb-shell-header\"><nav class=\"sfb-main-nav\">Nav</nav><span class=\"sfb-cart-badge\" data-storefront-cart-badge>0</span></header><main><h1 class=\"sfb-hero\">Visual Fixture</h1><section class=\"sfb-catalog-toolbar\">Filters</section><article class=\"sfb-product-card\">Card</article><article class=\"sfb-product-page\">Product info</article><section class=\"sfb-product-gallery\">{image}</section>{purchase}<section class=\"sfb-fallback-page\">Shell</section></main><footer>Footer</footer>";
+            : $"<header class=\"sfb-shell-header\"><nav class=\"sfb-main-nav\">Nav</nav><nav class=\"sfb-mobile-nav\">Mobile</nav><span data-storefront-slot=\"layout.account-menu\">Account</span><span class=\"sfb-cart-badge\" data-storefront-cart-badge>0</span></header><main><h1 class=\"sfb-hero\">Visual Fixture</h1><section class=\"sfb-catalog-toolbar\">Filters</section><div data-storefront-slot=\"catalog.pagination catalog.sorting product.related-products product.reviews\">Extras</div><article class=\"sfb-product-card\">Card</article><article class=\"sfb-product-page\">Product info</article><section class=\"sfb-product-gallery\">{image}</section>{purchase}<section class=\"sfb-fallback-page\">Shell</section></main><footer>Footer</footer>";
         var html = $"<!doctype html><html><head><meta charset=\"utf-8\">{cssLink}<style>body{{font-family:Arial,sans-serif}}.sfb-product-gallery{{width:320px;aspect-ratio:1/1;background:#eee}}.sfb-shell-header,.sfb-hero,.sfb-product-card,.sfb-product-page,.sfb-product-purchase,.sfb-fallback-page,footer{{display:block;padding:8px}}</style><title>Fixture</title></head><body>{body}{directApiScript}</body></html>";
 
-        foreach (var page in new[] { "shell-home", "catalog", "product", "cart", "checkout", "account", "state-pages" })
+        foreach (var page in new[] { "shell-home", "catalog", "product", "cart", "checkout", "sign-in", "account", "search", "deals", "new-releases", "state-pages" })
         {
             await File.WriteAllTextAsync(Path.Combine(root, $"{page}.html"), html);
         }

@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using System.Text.Json;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
@@ -9,270 +8,171 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 public sealed class StorefrontPhase4MvpGateVisualQaContractTests
 {
     [Fact]
-    public async Task MvpGate_RejectsMissingReferenceEvidenceReview()
+    public void MvpGate_RuntimeClosureRequiresCurrentRuntimeSummaryBinding()
     {
-        var projectRoot = await CreateProjectAsync(report => report with { ReferenceEvidenceReviewed = false });
+        var script = ReadMvpGateScript();
 
-        var result = await RunGateAsync(projectRoot);
-
-        Assert.NotEqual(0, result.ExitCode);
-        Assert.Contains("referenceEvidenceReviewed must be true", result.Output, StringComparison.Ordinal);
+        Assert.Contains("$visualQaRuntimeSummaryPath", script, StringComparison.Ordinal);
+        Assert.Contains("visual-qa-runtime-summary.json", script, StringComparison.Ordinal);
+        Assert.Contains("artifactKind must be storefront-builder.visual-qa-runtime-summary", script, StringComparison.Ordinal);
+        Assert.Contains("proofMode must be runtime", script, StringComparison.Ordinal);
+        Assert.Contains("baseUrl", script, StringComparison.Ordinal);
+        Assert.Contains("Runtime evidence operationId mismatch", script, StringComparison.Ordinal);
+        Assert.Contains("captures are missing visual-plan coverage", script, StringComparison.Ordinal);
+        Assert.Contains("Runtime screenshot is older than visual-qa-runtime-summary.json startedUtc", script, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task MvpGate_RejectsMissingRuntimeEvidence()
+    public void MvpGate_RuntimeClosureRejectsSeededOrStaleVisualQaReports()
     {
-        var projectRoot = await CreateProjectAsync(report => report with { RuntimeEvidencePaths = [] });
+        var script = ReadMvpGateScript();
 
-        var result = await RunGateAsync(projectRoot);
-
-        Assert.NotEqual(0, result.ExitCode);
-        Assert.Contains("runtimeEvidencePaths must contain at least one runtime evidence artifact", result.Output, StringComparison.Ordinal);
+        Assert.True(
+            script.IndexOf("run visual QA", StringComparison.Ordinal) < script.IndexOf("materialize Reference QA report from current runtime summary", StringComparison.Ordinal),
+            "Runtime visual QA must run before Reference QA materialization.");
+        Assert.True(
+            script.IndexOf("materialize Reference QA report from current runtime summary", StringComparison.Ordinal) < script.IndexOf("validate runtime evidence binding", StringComparison.Ordinal),
+            "The materialized report must be bound before final runtime evidence assertions.");
+        Assert.Contains("runtimeEvidencePaths must match current summary capture paths", script, StringComparison.Ordinal);
+        Assert.Contains("viewportCaptures screenshot is not one of the current summary capture paths", script, StringComparison.Ordinal);
+        Assert.Contains("referenceEvidencePaths references missing evidence", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("visual-artifacts\\visual-qa-report.json", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("visual-artifacts/visual-qa-report.json", script, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task MvpGate_RejectsUnacceptedMajorIssue()
+    public void MvpGate_RuntimeClosureRejectsBadQaDecisionsAndPlaceholderHashes()
     {
-        var projectRoot = await CreateProjectAsync(report => report with
-        {
-            UnacceptedMajorCount = 1,
-            Passed = false,
-            FinalDecision = "failed"
-        });
+        var script = ReadMvpGateScript();
 
-        var result = await RunGateAsync(projectRoot);
-
-        Assert.NotEqual(0, result.ExitCode);
-        Assert.Contains("unaccepted major issue", result.Output, StringComparison.Ordinal);
+        Assert.Contains("unaccepted critical/major counters are nonzero", script, StringComparison.Ordinal);
+        Assert.Contains("has unaccepted critical/major issues", script, StringComparison.Ordinal);
+        Assert.Contains("passed=true and finalDecision='passed'", script, StringComparison.Ordinal);
+        Assert.Contains("contains placeholder hash text", script, StringComparison.Ordinal);
+        Assert.Contains("checkpoint-auto-detect", script, StringComparison.Ordinal);
+        Assert.Contains("does not match current source file hash", script, StringComparison.Ordinal);
+        Assert.Contains("generationMode must be handoff-project-skeleton", script, StringComparison.Ordinal);
+        Assert.Contains("generationMode must be handoff", script, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task MvpGate_RejectsPassFlagWithNonzeroCounters()
+    public void MvpGate_SkeletonProofRemainsNonReleaseFeedbackOnly()
     {
-        var projectRoot = await CreateProjectAsync(report => report with { UnacceptedMajorCount = 1 });
+        var script = ReadMvpGateScript();
 
-        var result = await RunGateAsync(projectRoot);
-
-        Assert.NotEqual(0, result.ExitCode);
-        Assert.Contains("says pass but unaccepted critical/major counters are nonzero", result.Output, StringComparison.Ordinal);
+        Assert.Contains("Skeleton is for early fixture proof only", script, StringComparison.Ordinal);
+        Assert.Contains("Closure requires Runtime", script, StringComparison.Ordinal);
+        Assert.Contains("if ($effectiveProofMode -eq \"Runtime\")", script, StringComparison.Ordinal);
+        Assert.Contains("if ($SkeletonProof -and $effectiveProofMode -ne \"Skeleton\")", script, StringComparison.Ordinal);
+        Assert.Contains("SkeletonProof mode does not prove the closure artifact chain.", script, StringComparison.Ordinal);
+        Assert.Contains("This mode is only for early generated skeleton feedback, not release closure.", script, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task MvpGate_RejectsMissingRequiredViewportCoverage()
+    public void FinalClosureGate_RunsNoSkipEvidenceChainInOrder()
     {
-        var projectRoot = await CreateProjectAsync(report => report with
+        var script = ReadFinalGateScript();
+        var orderedMarkers = new[]
         {
-            PageViewportCoverage = [new("home", ["desktop"])],
-            ViewportCaptures = [new("home", "desktop", "docs/storefront-analysis/visual-qa/home-desktop.png", "passed")]
-        });
-
-        var result = await RunGateAsync(projectRoot);
-
-        Assert.NotEqual(0, result.ExitCode);
-        Assert.Contains("pageViewportCoverage is missing required coverage", result.Output, StringComparison.Ordinal);
-    }
-
-    private static async Task<string> CreateProjectAsync(Func<VisualQaReportFixture, VisualQaReportFixture> mutate)
-    {
-        var repoRoot = GetRepoRoot();
-        var projectName = "BlazorShop.Storefront.Phase4QaContractProbe";
-        var projectRoot = Path.Combine(repoRoot, "obj", "storefront-builder", "phase4-mvp-gate-contract", Guid.NewGuid().ToString("N"), projectName);
-        var analysisRoot = Path.Combine(projectRoot, "docs", "storefront-analysis");
-        Directory.CreateDirectory(Path.Combine(projectRoot, "Features"));
-        Directory.CreateDirectory(Path.Combine(analysisRoot, "agent-task-package"));
-        Directory.CreateDirectory(Path.Combine(analysisRoot, "visual-checkpoints", "qa-contract"));
-        Directory.CreateDirectory(Path.Combine(analysisRoot, "visual-qa"));
-
-        await File.WriteAllTextAsync(Path.Combine(projectRoot, $"{projectName}.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\"></Project>");
-        await File.WriteAllTextAsync(Path.Combine(projectRoot, "Features", "feature-manifest.json"), "{}");
-        await File.WriteAllTextAsync(Path.Combine(analysisRoot, "metadata.yaml"), $"projectName: {projectName}\nstoreKey: sample\n");
-        await WriteJsonAsync(Path.Combine(analysisRoot, "generation-plan.json"), new { schemaVersion = "0.1.0" });
-        await WriteJsonAsync(Path.Combine(analysisRoot, "agent-task-package", "manifest.json"), new { schemaVersion = "0.1.0" });
-
-        await WriteJsonAsync(Path.Combine(analysisRoot, "visual-plan.json"), new
-        {
-            schemaVersion = "0.1.0",
-            operationId = "qa-contract",
-            projectName,
-            storeKey = "sample",
-            handoffHash = "hash",
-            generationPlanHash = "hash",
-            taskPackageHash = "hash",
-            pages = new[] { "home" },
-            pageViewportCoverage = new[] { new Coverage("home", ["desktop", "tablet", "mobile"]) },
-            visualSlots = Array.Empty<string>(),
-            allowedFiles = new[] { "wwwroot/css/storefront-builder.generated.css" },
-            plannedGeneratedOwnedFiles = new[] { "wwwroot/css/storefront-builder.generated.css" },
-            protectedFiles = Array.Empty<string>(),
-            implementationOrder = Array.Empty<string>(),
-            risks = Array.Empty<string>(),
-            blockers = Array.Empty<string>()
-        });
-
-        await WriteJsonAsync(Path.Combine(analysisRoot, "visual-implementation-checklist.json"), new
-        {
-            schemaVersion = "0.1.0",
-            checklistId = "qa-contract",
-            sourceVisualPlanHash = "hash",
-            fileTasks = Array.Empty<object>(),
-            acceptanceChecks = Array.Empty<object>(),
-            requiredScreenshots = Array.Empty<object>(),
-            forbiddenEdits = Array.Empty<object>()
-        });
-
-        await WriteJsonAsync(Path.Combine(analysisRoot, "visual-checkpoints", "qa-contract", "visual-checkpoint.json"), new
-        {
-            schemaVersion = "0.1.0",
-            checkpointId = "qa-contract",
-            operationId = "qa-contract",
-            visualPlanHash = "hash",
-            checklistHash = "hash",
-            preEditSnapshotHash = "hash",
-            postEditSnapshotHash = "hash",
-            changedFiles = new[] { "wwwroot/css/storefront-builder.generated.css" },
-            unexpectedFiles = Array.Empty<string>(),
-            sourceTreeSnapshotScope = new[] { "wwwroot/css/storefront-builder.generated.css" },
-            preEditFileHashes = new { },
-            postEditFileHashes = new { },
-            diffSummary = new { }
-        });
-
-        await WriteJsonAsync(Path.Combine(analysisRoot, "visual-implementation-report.json"), new
-        {
-            schemaVersion = "0.1.0",
-            operationId = "qa-contract",
-            checkpointPath = "docs/storefront-analysis/visual-checkpoints/qa-contract/visual-checkpoint.json",
-            changedFiles = new[] { "wwwroot/css/storefront-builder.generated.css" },
-            recorderResultPath = "docs/storefront-analysis/agent-written-files.json",
-            boundaryResult = "passed",
-            buildResult = "passed",
-            unresolvedItems = Array.Empty<string>()
-        });
-
-        await WriteJsonAsync(Path.Combine(analysisRoot, "agent-written-files.json"), new
-        {
-            schemaVersion = "0.1.0",
-            artifactKind = "storefront-builder.agent-written-files",
-            artifactId = "qa-contract",
-            detectionMode = "checkpoint-auto-detect",
-            generationPlanHash = "hash",
-            files = new[] { new { path = "wwwroot/css/storefront-builder.generated.css" } }
-        });
-
-        await File.WriteAllTextAsync(Path.Combine(analysisRoot, "visual-qa", "home-desktop.png"), "placeholder");
-        await File.WriteAllTextAsync(Path.Combine(analysisRoot, "reference-home-desktop.png"), "placeholder");
-        await WriteJsonAsync(Path.Combine(analysisRoot, "visual-qa-report.json"), mutate(VisualQaReportFixture.Valid()));
-
-        return projectRoot;
-    }
-
-    private static async Task<ProcessResult> RunGateAsync(string projectRoot)
-    {
-        var result = await RunProcessAsync(
-            "powershell",
-            [
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-phase4-mvp-gate.ps1"),
-                "-GeneratedProjectRoot",
-                projectRoot,
-                "-ProofMode",
-                "Runtime",
-                "-BaseUrl",
-                "http://127.0.0.1:1",
-                "-SkipRepair",
-                "-CommandTimeoutSeconds",
-                "5"
-            ],
-            TimeSpan.FromSeconds(30));
-        return result;
-    }
-
-    private static Task WriteJsonAsync(string path, object value) =>
-        File.WriteAllTextAsync(path, JsonSerializer.Serialize(value, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        }));
-
-    private static async Task<ProcessResult> RunProcessAsync(string fileName, IReadOnlyList<string> arguments, TimeSpan timeout)
-    {
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                WorkingDirectory = GetRepoRoot(),
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false
-            }
+            "clean working tree at start",
+            "capture tested HEAD",
+            "visual workspace static checks",
+            "validate visual schema examples",
+            "validate tracked Phase 4.11 closure fixture",
+            "run StorefrontBuilder handoff preflight",
+            "prepare fresh generated pilot output",
+            "generate fresh Phase 4.11 pilot from tracked portable handoff fixture",
+            "assert generated handoff metadata and task package",
+            "apply deterministic final closure visual edit",
+            "run automatic pilot changed-file detection",
+            "restore generated pilot before runtime visual QA",
+            "build generated pilot before runtime visual QA",
+            "start runtime Commerce fixture if needed",
+            "start generated pilot runtime host",
+            "run runtime visual QA for current closure operation",
+            "materialize Reference QA from current runtime evidence",
+            "run Phase 4 MVP pilot gate",
+            "run StorefrontBuilder generated fast functional proof",
+            "run StorefrontBuilder regeneration ownership gate",
+            "final HEAD and clean tree check",
+            "cleanup disposable generated pilot output"
         };
 
-        foreach (var argument in arguments)
+        var previous = -1;
+        foreach (var marker in orderedMarkers)
         {
-            process.StartInfo.ArgumentList.Add(argument);
+            var index = script.IndexOf(marker, StringComparison.Ordinal);
+            Assert.True(index > previous, $"Expected '{marker}' after prior gate marker.");
+            previous = index;
+        }
+    }
+
+    [Fact]
+    public void FinalClosureGate_RecordsRequiredEvidenceFieldsAndNoManualSeededArtifacts()
+    {
+        var script = ReadFinalGateScript();
+
+        foreach (var field in new[]
+        {
+            "testedHead",
+            "finalHead",
+            "closureFixtureRoot",
+            "handoffSchemaRoot",
+            "handoffPreflightReportPath",
+            "pilotGeneratedProjectRoot",
+            "generatedMetadataPath",
+            "generationPlanPath",
+            "generationPlanHash",
+            "taskPackagePath",
+            "taskPackageHash",
+            "checkpointPath",
+            "checkpointHash",
+            "implementationReportPath",
+            "agentWrittenFilesPath",
+            "runtimeSummaryPath",
+            "screenshotRoot",
+            "materializedQaReportPath",
+            "mvpGateReportPath",
+            "functionalProofReportPath",
+            "regenerationGateReportPath",
+            "finalDecision"
+        })
+        {
+            Assert.Contains(field, script, StringComparison.Ordinal);
         }
 
-        process.Start();
-        var stdoutTask = process.StandardOutput.ReadToEndAsync();
-        var stderrTask = process.StandardError.ReadToEndAsync();
-        using var cts = new CancellationTokenSource(timeout);
-        await process.WaitForExitAsync(cts.Token);
-        return new ProcessResult(process.ExitCode, (await stdoutTask) + (await stderrTask));
+        Assert.DoesNotContain("Write-PilotAgentTaskPackage", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("plan-generation-files.mjs", script, StringComparison.Ordinal);
+        Assert.DoesNotMatch(new Regex(@"visual-artifacts[\\/]+visual-qa-report\.json", RegexOptions.IgnoreCase), script);
     }
+
+    [Fact]
+    public void FinalClosureGate_BypassesCannotSkipMandatoryClosureProof()
+    {
+        var script = ReadFinalGateScript();
+
+        Assert.Contains("SkipFullFixtureProof", script, StringComparison.Ordinal);
+        Assert.Contains("KeepGeneratedPilot", script, StringComparison.Ordinal);
+        foreach (var forbidden in new[]
+        {
+            "SkipHandoffPreflight",
+            "SkipRuntimeVisualQa",
+            "SkipMaterializedQaReport",
+            "SkipMvpGate",
+            "SkipFastFunctionalProof",
+            "SkipRegenerationGate",
+            "AllowDirtyTree"
+        })
+        {
+            Assert.DoesNotContain(forbidden, script, StringComparison.Ordinal);
+        }
+    }
+
+    private static string ReadMvpGateScript() =>
+        File.ReadAllText(Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-phase4-mvp-gate.ps1"));
+
+    private static string ReadFinalGateScript() =>
+        File.ReadAllText(Path.Combine(GetRepoRoot(), "scripts", "qa", "run-storefront-phase4-final-closure-gate.ps1"));
 
     private static string GetRepoRoot() => Phase3DNegativeReviewMutationTests.GetRepoRoot();
-
-    private sealed record Coverage(string PageId, string[] Viewports);
-
-    private sealed record ViewportCapture(string PageId, string Viewport, string ScreenshotPath, string Status);
-
-    private sealed record VisualQaReportFixture(
-        string SchemaVersion,
-        string OperationId,
-        bool ReferenceEvidenceReviewed,
-        string[] RuntimeEvidencePaths,
-        string[] ReferenceEvidencePaths,
-        Coverage[] PageViewportCoverage,
-        string IndependentReviewer,
-        string[] ComparisonDimensions,
-        object[] AcceptedDifferences,
-        int UnacceptedCriticalCount,
-        int UnacceptedMajorCount,
-        string FinalDecision,
-        ViewportCapture[] ViewportCaptures,
-        string[] EvidencePaths,
-        object[] Issues,
-        object[] RepairAttempts,
-        bool Passed)
-    {
-        public static VisualQaReportFixture Valid() =>
-            new(
-                "0.1.0",
-                "qa-contract",
-                true,
-                ["docs/storefront-analysis/visual-qa/home-desktop.png"],
-                ["docs/storefront-analysis/reference-home-desktop.png"],
-                [new("home", ["desktop", "tablet", "mobile"])],
-                "visual-qa-agent",
-                ["layout", "responsive", "ecommerce-slot-coverage"],
-                [],
-                0,
-                0,
-                "passed",
-                [
-                    new("home", "desktop", "docs/storefront-analysis/visual-qa/home-desktop.png", "passed"),
-                    new("home", "tablet", "docs/storefront-analysis/visual-qa/home-tablet.png", "passed"),
-                    new("home", "mobile", "docs/storefront-analysis/visual-qa/home-mobile.png", "passed")
-                ],
-                ["docs/storefront-analysis/visual-qa-report.md"],
-                [],
-                [new { attempt = 0, source = "no-repair-attempted", status = "skipped" }],
-                true);
-    }
-
-    private sealed record ProcessResult(int ExitCode, string Output);
 }

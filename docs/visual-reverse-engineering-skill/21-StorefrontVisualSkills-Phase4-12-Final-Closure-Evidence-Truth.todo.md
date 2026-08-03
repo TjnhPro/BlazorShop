@@ -583,8 +583,8 @@ Evidence:
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -Help`
 - `rg -n "Write-PilotAgentTaskPackage|plan-generation-files\.mjs|visual-qa-report\.json|HandoffSchemaRoot|preflight-only|materialize-reference|FoundationFunctionalFast|run-storefront-builder-regeneration-gate" scripts\qa\run-storefront-phase4-final-closure-gate.ps1`
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900` passed from clean `HEAD`; report `obj/storefront-builder/reports/phase4-final-closure-gate-20260803110012.md`.
-- [ ] No final closure step writes generated artifacts to tracked source.
-- [ ] Failure output identifies the broken evidence link.
+- [x] No final closure step writes generated artifacts to tracked source.
+- [x] Failure output identifies the broken evidence link.
 
 ## Phase 4.12.7 - Positive And Negative Test Suite
 
@@ -592,46 +592,46 @@ Goal: protect the closure patch from regressing back into seeded proof.
 
 Positive tests:
 
-- [ ] valid portable handoff fixture passes StorefrontBuilder preflight.
-- [ ] final gate generates a pilot with `metadata.yaml` `generationMode: handoff-project-skeleton`.
-- [ ] generated `generation-plan.json` has `generationMode: handoff`.
-- [ ] generated `agent-task-package/manifest.json` has `artifactKind: agent-visual-task-package`.
-- [ ] deterministic edit creates exactly one allowed changed file.
-- [ ] recorder writes `agent-written-files.json` with `detectionMode: checkpoint-auto-detect`.
-- [ ] recorder checksum matches current generated file content.
-- [ ] runtime visual QA writes `visual-qa-runtime-summary.json`.
-- [ ] materializer writes `visual-qa-report.json` from runtime summary.
-- [ ] MVP gate passes with valid current runtime evidence.
-- [ ] final closure gate passes from clean `HEAD`.
+- [x] valid portable handoff fixture passes StorefrontBuilder preflight.
+- [x] final gate generates a pilot with `metadata.yaml` `generationMode: handoff-project-skeleton`.
+- [x] generated `generation-plan.json` has `generationMode: handoff`.
+- [x] generated `agent-task-package/manifest.json` has `artifactKind: agent-visual-task-package`.
+- [x] deterministic edit creates exactly one allowed changed file.
+- [x] recorder writes `agent-written-files.json` with `detectionMode: checkpoint-auto-detect`.
+- [x] recorder checksum matches current generated file content.
+- [x] runtime visual QA writes `visual-qa-runtime-summary.json`.
+- [x] materializer writes `visual-qa-report.json` from runtime summary.
+- [x] MVP gate passes with valid current runtime evidence.
+- [x] final closure gate passes from clean `HEAD`.
 
 Negative tests:
 
-- [ ] marker-only handoff fixture fails.
-- [ ] missing `analysis/agent-handoff/manifest.json` fails.
-- [ ] missing required handoff artifact fails.
-- [ ] blocking unresolved region fails.
-- [ ] raw source-only handoff path fails.
-- [ ] final gate without `-HandoffRoot` fails.
-- [ ] static generation plan fails final closure.
-- [ ] manual task package artifact kind fails final closure.
-- [ ] checkpoint placeholder hash fails.
-- [ ] checkpoint post hash not equal to current file hash fails.
-- [ ] implementation report changed files not equal checkpoint changed files fails.
-- [ ] runtime summary missing fails.
-- [ ] runtime summary `proofMode: skeleton` fails runtime closure.
-- [ ] runtime summary base URL mismatch fails.
-- [ ] runtime summary operation ID mismatch fails.
-- [ ] `visual-qa-report.json` operation ID mismatch fails.
-- [ ] `visual-qa-report.json` screenshot path missing fails.
-- [ ] `visual-qa-report.json` screenshot not in runtime summary fails.
-- [ ] screenshot older than runtime summary start fails.
-- [ ] missing reference evidence fails.
-- [ ] unaccepted critical issue fails.
-- [ ] unaccepted major issue fails.
-- [ ] `passed: true` with nonzero issue counters fails.
-- [ ] changed file outside allowed outputs fails.
-- [ ] protected file edit fails.
-- [ ] final gate leaves dirty tracked files fails.
+- [x] marker-only handoff fixture fails.
+- [x] missing `analysis/agent-handoff/manifest.json` fails.
+- [x] missing required handoff artifact fails.
+- [x] blocking unresolved region fails.
+- [x] raw source-only handoff path fails.
+- [x] final gate without `-HandoffRoot` fails.
+- [x] static generation plan fails final closure.
+- [x] manual task package artifact kind fails final closure.
+- [x] checkpoint placeholder hash fails.
+- [x] checkpoint post hash not equal to current file hash fails.
+- [x] implementation report changed files not equal checkpoint changed files fails.
+- [x] runtime summary missing fails.
+- [x] runtime summary `proofMode: skeleton` fails runtime closure.
+- [x] runtime summary base URL mismatch fails.
+- [x] runtime summary operation ID mismatch fails.
+- [x] `visual-qa-report.json` operation ID mismatch fails.
+- [x] `visual-qa-report.json` screenshot path missing fails.
+- [x] `visual-qa-report.json` screenshot not in runtime summary fails.
+- [x] screenshot older than runtime summary start fails.
+- [x] missing reference evidence fails.
+- [x] unaccepted critical issue fails.
+- [x] unaccepted major issue fails.
+- [x] `passed: true` with nonzero issue counters fails.
+- [x] changed file outside allowed outputs fails.
+- [x] protected file edit fails.
+- [x] final gate leaves dirty tracked files fails.
 
 Suggested test commands:
 
@@ -645,9 +645,22 @@ node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\materialize-refere
 
 DoD:
 
-- [ ] Positive path proves the new handoff/runtime chain.
-- [ ] Negative tests prove seeded or stale evidence cannot pass.
-- [ ] Test names make future regressions obvious.
+- [x] Positive path proves the new handoff/runtime chain.
+- [x] Negative tests prove seeded or stale evidence cannot pass.
+- [x] Test names make future regressions obvious.
+
+Evidence:
+
+- Added positive/negative contract coverage in `StorefrontPhase4MvpGateVisualQaContractTests` for runtime summary binding, seeded/stale Reference QA rejection, bad QA decisions, placeholder hashes, and final closure no-skip orchestration.
+- Hardened `StorefrontBuilderAgentTaskPackageTests` with current-file checksum assertions and a negative checkpoint post-hash mismatch case.
+- Updated Visual QA fixture tests so skeleton fixtures cover the current handoff page/slot set, including `sign-in`, layout slots, catalog controls, product gallery/purchase, cart/checkout/account, and state pages.
+- Updated architecture contract tests to match the current StorefrontBuilder docs and runtime/skeleton Visual QA fidelity wording.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"` passed: 46/46.
+- `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontPhase4MvpGateVisualQaContractTests|FullyQualifiedName~StorefrontBuilderAgentTaskPackageTests"` passed: 27/27.
+- `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilderHandoffPreflightTests|FullyQualifiedName~StorefrontBuilderHandoffGenerationPlanTests|FullyQualifiedName~StorefrontBuilderHandoffProjectGenerationTests|FullyQualifiedName~StorefrontBuilderAgentTaskPackageTests|FullyQualifiedName~StorefrontBuilderHandoffVisualQaTests|FullyQualifiedName~StorefrontBuilderHandoffRegenerationSafetyTests" --blame-hang --blame-hang-timeout 5m` passed: 61/61.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs` passed.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs` passed.
+- `node --check tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\materialize-reference-visual-qa-report.mjs` passed.
 
 ## Phase 4.12.8 - Documentation And Agent Guide Updates
 

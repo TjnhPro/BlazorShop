@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Nodes;
 using Xunit;
 
@@ -54,7 +56,11 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
         Assert.Contains("checksum", record, StringComparison.Ordinal);
         var generatedManifest = await File.ReadAllTextAsync(Path.Combine(projectRoot, "docs", "storefront-analysis", "generated-files.yaml"));
         Assert.Contains("agentWrittenFiles:", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("agentFilePath: Components/Catalog/ProductSummaryCard.razor", generatedManifest, StringComparison.Ordinal);
         Assert.Contains("sourcePlanEntryId: file.Components-Catalog-ProductSummaryCard.razor", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("manualEditDetected: true", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("conflictStatus: agent-visual-edit", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("currentHash: sha256:", generatedManifest, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -101,6 +107,22 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
 
         Assert.NotEqual(0, result.ExitCode);
         Assert.Contains("SFB-AGENT-WRITE-025", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentWriteRecorder_RejectsCheckpointPostHashThatDoesNotMatchCurrentFile()
+    {
+        var projectRoot = await CreateHandoffProjectAsync("Phase4AgentPostHash");
+        var targetPath = "Components/Catalog/ProductSummaryCard.razor";
+        var target = Path.Combine(projectRoot, targetPath.Replace('/', Path.DirectorySeparatorChar));
+        await File.AppendAllTextAsync(target, Environment.NewLine + "@* stale post hash marker *@");
+        var checkpointPath = await WriteCheckpointAsync(projectRoot, "post-hash", targetPath, postHashOverride: "sha256:0000000000000000000000000000000000000000000000000000000000000000");
+
+        var result = await RunRecordAsync(projectRoot, checkpointPath: checkpointPath, closureMode: true);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("SFB-AGENT-WRITE-029", result.Output, StringComparison.Ordinal);
+        Assert.Contains("Checkpoint post hash differs from current file content", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -252,12 +274,16 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
         string projectRoot,
         string operationId,
         string changedFile,
-        IReadOnlyList<string>? unexpectedFiles = null)
+        IReadOnlyList<string>? unexpectedFiles = null,
+        string? postHashOverride = null)
     {
         var checkpointRoot = Path.Combine(projectRoot, "docs", "storefront-analysis", "visual-checkpoints", operationId);
         Directory.CreateDirectory(checkpointRoot);
         var checkpointPath = Path.Combine(checkpointRoot, "visual-checkpoint.json");
         var normalizedFile = changedFile.Replace('\\', '/');
+        var fullChangedPath = Path.Combine(projectRoot, normalizedFile.Replace('/', Path.DirectorySeparatorChar));
+        var currentHash = ComputeNormalizedSha256(fullChangedPath);
+        var postHash = postHashOverride ?? currentHash;
         var checkpoint = $$"""
         {
           "schemaVersion": "0.1.0",
@@ -279,13 +305,13 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
           "preEditFileHashes": [
             {
               "filePath": "{{normalizedFile}}",
-              "sha256": "sha256:before"
+              "sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
             }
           ],
           "postEditFileHashes": [
             {
               "filePath": "{{normalizedFile}}",
-              "sha256": "sha256:after"
+              "sha256": "{{postHash}}"
             }
           ],
           "diffSummary": [
@@ -298,6 +324,15 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
         """;
         await File.WriteAllTextAsync(checkpointPath, checkpoint);
         return Path.GetRelativePath(projectRoot, checkpointPath).Replace('\\', '/');
+    }
+
+    private static string ComputeNormalizedSha256(string path)
+    {
+        var text = Encoding.UTF8.GetString(File.ReadAllBytes(path))
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace("\r", "\n", StringComparison.Ordinal);
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(text));
+        return "sha256:" + Convert.ToHexString(hash).ToLowerInvariant();
     }
 
     private static async Task<ProcessResult> RunProcessAsync(string fileName, IReadOnlyList<string> arguments, TimeSpan timeout)

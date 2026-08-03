@@ -179,7 +179,7 @@ namespace BlazorShop.Tests.Architecture
                 "shared `Contracts`, `Headless`, and `Browser` primitives",
                 "render project-local DOM/CSS",
                 "project-local visual templates",
-                "generate project-local visual templates from evidence",
+                "replace product card, grid, gallery, purchase, cart, checkout, and account visual templates in the generated/custom project",
                 "Components `Features` wrappers as the generated/custom storefront presentation source",
             })
             {
