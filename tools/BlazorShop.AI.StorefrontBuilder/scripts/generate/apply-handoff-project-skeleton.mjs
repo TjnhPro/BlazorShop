@@ -84,9 +84,10 @@ const placeholderManifest = stableObject({
   schemaVersion: "1.0.0",
   artifactKind: "handoff-placeholders",
   artifactId: `handoff-placeholders.${plan.projectName}`,
-  projectName: plan.projectName,
-  storeKey: plan.storeKey,
-  generationPlanHash: planHash,
+    projectName: plan.projectName,
+    storeKey: plan.storeKey,
+    projects: plan.projects ?? buildProjects(plan.projectName),
+    generationPlanHash: planHash,
   files: written.sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en")),
   skipped: skipped.sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en")),
 });
@@ -248,6 +249,8 @@ function buildSummary(plan, planHash, writtenFiles, skippedFiles) {
     "",
     `- Project: ${plan.projectName}`,
     `- Store key: ${plan.storeKey}`,
+    `- Server project: ${(plan.projects ?? buildProjects(plan.projectName)).server.projectPath}`,
+    `- WASM project: ${(plan.projects ?? buildProjects(plan.projectName)).wasm.projectPath}`,
     `- Generator version: ${plan.generatorVersion}`,
     `- Handoff package hash: ${plan.sourceHandoffPackageHash}`,
     `- Handoff readiness hash: ${plan.sourceHandoffReadinessHash}`,
@@ -275,6 +278,8 @@ function buildSummary(plan, planHash, writtenFiles, skippedFiles) {
 function record(file, targetPath, operation) {
   return {
     targetPath,
+    targetProject: file.targetProject ?? inferTargetProject(plan.projectName, targetPath),
+    projectRelativePath: file.projectRelativePath ?? inferProjectRelativePath(plan.projectName, targetPath),
     operation,
     planEntryId: file.id,
     ownership: file.ownership,
@@ -283,6 +288,31 @@ function record(file, targetPath, operation) {
     sourceEvidenceReferences: file.sourceEvidenceReferences ?? [],
     checksum: `sha256:${sha(`${targetPath}:${operation}:${file.id}:${(file.slots ?? []).join(",")}`)}`,
   };
+}
+
+function buildProjects(projectName) {
+  return {
+    server: {
+      name: projectName,
+      rootPath: ".",
+      projectPath: `${projectName}.csproj`,
+    },
+    wasm: {
+      name: `${projectName}.WASM`,
+      rootPath: `${projectName}.WASM`,
+      projectPath: `${projectName}.WASM/${projectName}.WASM.csproj`,
+    },
+  };
+}
+
+function inferTargetProject(projectName, targetPath) {
+  const normalized = normalizeProjectPath(targetPath);
+  return normalized.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+}
+
+function inferProjectRelativePath(projectName, targetPath) {
+  const normalized = normalizeProjectPath(targetPath);
+  return normalized.startsWith(`${projectName}.WASM/`) ? normalized.slice(`${projectName}.WASM/`.length) : normalized;
 }
 
 function classForSlot(slot) {
@@ -318,6 +348,10 @@ function normalizeTargetPath(targetPath, allowProtected = false) {
   }
 
   return normalized;
+}
+
+function normalizeProjectPath(path) {
+  return String(path ?? "").replaceAll("\\", "/").replace(/^\/+/, "");
 }
 
 function assertUnderProject(fullPath, targetPath) {

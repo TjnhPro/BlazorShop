@@ -87,6 +87,19 @@ function Get-PortableRelativePath {
     return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace('\', '/')
 }
 
+function Remove-StorefrontBuilderDirectoryIfEmpty {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+
+    Assert-StorefrontBuilderPathUnderRoot -Path $Path -Root $outputRootPath
+    if (-not (Get-ChildItem -LiteralPath $Path -Force | Select-Object -First 1)) {
+        Remove-Item -LiteralPath $Path -Force
+    }
+}
+
 function Set-GeneratedNuGetConfig {
     param([Parameter(Mandatory = $true)][string]$ProjectRoot)
 
@@ -203,6 +216,7 @@ try {
         "storefrontContractPath: $storefrontContractPath",
         "storefrontContractSha256: $storefrontContractSha256",
         "sourceStarterPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
+        "sourceStarterWasmPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM",
         "sourceStarterVersion: $($starterVersionMatch.Groups[1].Value)",
         "sourceHead: $metadataSourceHead",
         "packageBuildIdentity: $metadataPackageBuildIdentity",
@@ -210,6 +224,13 @@ try {
         "starterContractVersion: $($starterContractVersionMatch.Groups[1].Value)",
         "starterContractSha256: $starterContractSha256",
         "generationMode: $(if ($isHandoffGeneration) { "handoff-project-skeleton" } else { "starter-copy-before-visual-generation" })",
+        "projects:",
+        "  server:",
+        "    name: $projectName",
+        "    path: $projectName.csproj",
+        "  wasm:",
+        "    name: $projectName.WASM",
+        "    path: $projectName.WASM/$projectName.WASM.csproj",
         "protectedFiles:",
         "  - BlazorShop.Storefront.Presentation",
         "  - StorefrontPackageVersions.props",
@@ -295,6 +316,8 @@ catch {
 }
 finally {
     Remove-StorefrontBuilderPath -Path $stagingOutputRoot -ApprovedRoot $outputRootPath
+    Remove-StorefrontBuilderDirectoryIfEmpty -Path (Split-Path -Parent $stagingOutputRoot)
+    Remove-StorefrontBuilderDirectoryIfEmpty -Path (Split-Path -Parent $backupProjectRoot)
 }
 
 Write-Host "StorefrontBuilder generated $projectName for store '$normalizedStoreKey' at $projectRoot."

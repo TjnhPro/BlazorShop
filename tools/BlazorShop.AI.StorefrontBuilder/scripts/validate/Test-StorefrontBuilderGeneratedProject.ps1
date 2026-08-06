@@ -10,6 +10,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 $projectFile = Join-Path $ProjectRoot "$Name.csproj"
+$wasmProjectRoot = Join-Path $ProjectRoot "$Name.WASM"
+$wasmProjectFile = Join-Path $wasmProjectRoot "$Name.WASM.csproj"
 $metadata = Join-Path $ProjectRoot "docs\storefront-analysis\metadata.yaml"
 $featureManifest = Join-Path $ProjectRoot "Features\feature-manifest.json"
 
@@ -23,23 +25,51 @@ function Test-TextContains {
     return $Text.IndexOf($Needle, $Comparison) -ge 0
 }
 
-foreach ($path in @($projectFile, $metadata, $featureManifest)) {
+foreach ($path in @($projectFile, $wasmProjectFile, $metadata, $featureManifest)) {
     if (-not (Test-Path $path)) {
         throw "[SFB-PROJECT-003] Generated project required file is missing: $path"
     }
 }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
+$wasmProject = Get-Content -LiteralPath $wasmProjectFile -Raw
 foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains -Text $project -Needle "PackageReference Include=`"$package`"")) {
-        throw "[SFB-PROJECT-004] Generated project is missing package reference '$package'."
+        throw "[SFB-PROJECT-004] Generated server project is missing package reference '$package'."
+    }
+}
+
+foreach ($package in @("BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+    if (-not (Test-TextContains -Text $wasmProject -Needle "PackageReference Include=`"$package`"")) {
+        throw "[SFB-PROJECT-004] Generated WASM project is missing package reference '$package'."
     }
 }
 
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
     if (Test-TextContains -Text $project -Needle "PackageReference Include=`"$package`"") {
-        throw "[SFB-PROJECT-004] Generated project must not direct-reference '$package'. Presentation/Runtime own application transport."
+        throw "[SFB-PROJECT-004] Generated server project must not direct-reference '$package'. Presentation/Runtime own application transport."
     }
+
+    if (Test-TextContains -Text $wasmProject -Needle "PackageReference Include=`"$package`"") {
+        throw "[SFB-PROJECT-004] Generated WASM project must not direct-reference '$package'. Browser/Presentation own application transport."
+    }
+}
+
+[xml]$serverProjectDocument = Get-Content -LiteralPath $projectFile -Raw
+[xml]$wasmProjectDocument = Get-Content -LiteralPath $wasmProjectFile -Raw
+$serverProjectReferences = @(@($serverProjectDocument.Project.ItemGroup.ProjectReference) |
+    ForEach-Object { [string]$_.Include } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$wasmProjectReferences = @(@($wasmProjectDocument.Project.ItemGroup.ProjectReference) |
+    ForEach-Object { [string]$_.Include } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$expectedWasmReference = "$Name.WASM\$Name.WASM.csproj"
+if ($serverProjectReferences.Count -ne 1 -or -not ([string]$serverProjectReferences[0]).Equals($expectedWasmReference, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "[SFB-PROJECT-004] Generated server must reference only generated sibling WASM '$expectedWasmReference'. Actual: $($serverProjectReferences -join ', ')"
+}
+
+if ($wasmProjectReferences.Count -ne 0) {
+    throw "[SFB-PROJECT-004] Generated WASM project must not contain ProjectReference entries. Actual: $($wasmProjectReferences -join ', ')"
 }
 
 $packageVersions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
@@ -49,7 +79,7 @@ if (-not (Test-TextContains -Text $packageVersions -Needle "StorefrontClientPack
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
 $canonicalContractPath = "contracts/storefront/storefront.openapi.json"
-foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterVersion:", "sourceHead:", "packageBuildIdentity:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "packageProvenance:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterWasmPath:", "sourceStarterVersion:", "sourceHead:", "packageBuildIdentity:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "projects:", "server:", "path: $Name.csproj", "wasm:", "path: $Name.WASM/$Name.WASM.csproj", "protectedFiles:", "packageVersions:", "packageProvenance:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains -Text $metadataText -Needle $required)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
@@ -88,7 +118,7 @@ foreach ($directory in $forbiddenDirectories) {
     }
 }
 
-$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "BlazorShop.ControlPlane.Web", "PackageReference Include=`"BlazorShop.Storefront.Runtime`"", "PackageReference Include=`"BlazorShop.Storefront.Client`"")
+$forbidden = @("BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "BlazorShop.ControlPlane.Web", "PackageReference Include=`"BlazorShop.Storefront.Runtime`"", "PackageReference Include=`"BlazorShop.Storefront.Client`"")
 Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File |
     Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
     ForEach-Object {
@@ -97,6 +127,15 @@ Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File |
             if (Test-TextContains -Text $content -Needle $pattern -Comparison ([System.StringComparison]::OrdinalIgnoreCase)) {
                 throw "[SFB-PROJECT-006] Forbidden dependency '$pattern' found in $($_.FullName)."
             }
+        }
+    }
+
+Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File -Include *.cs,*.razor,*.csproj |
+    Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
+    ForEach-Object {
+        $content = Get-Content -LiteralPath $_.FullName -Raw
+        if (Test-TextContains -Text $content -Needle "BlazorShop.Storefront.Starter" -Comparison ([System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "[SFB-PROJECT-006] Starter namespace/source reference found in generated code/project file $($_.FullName)."
         }
     }
 

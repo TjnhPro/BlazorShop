@@ -13,6 +13,7 @@ const outputRoot = readArg("--output-root") ?? "artifacts/storefront-builder/gen
 const handoffRoot = readArg("--handoff-root");
 const repoRoot = readArg("--repo-root") ?? process.cwd();
 const root = `${outputRoot.replaceAll("\\", "/").replace(/\/$/, "")}/${projectName}`;
+const projects = buildProjects(projectName);
 const specHash = sha("composition-manifest.default");
 
 if (handoffRoot) {
@@ -62,6 +63,7 @@ const plan = {
   sourceStarterContractHash: specHash,
   projectName,
   storeKey,
+  projects,
   generationMode: "static",
   generationOrder: ["generate-from-starter", "apply-visual-files"],
   sourceSpecHash: specHash,
@@ -87,9 +89,12 @@ writeFileSync(jsonOutput, stableJson(plan), "utf8");
 
 function entry(filePath, ownership, action, sourceArtifactIds, expectedSlot, validationRuleIds, conflictBehavior) {
   const targetPath = filePath.startsWith(`${root}/`) ? filePath.slice(root.length + 1) : filePath;
+  const targetProject = targetPath.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
   return {
     filePath,
     targetPath,
+    targetProject,
+    projectRelativePath: targetProject === "wasm" ? targetPath.slice(`${projectName}.WASM/`.length) : targetPath,
     ownership,
     action,
     allowedOperation: action,
@@ -102,6 +107,21 @@ function entry(filePath, ownership, action, sourceArtifactIds, expectedSlot, val
     sourceSpecHash: specHash,
     generatedHash: sha(`${filePath}:${ownership}:${action}:${sourceArtifactIds.join(",")}`),
     rationale: "Static StorefrontBuilder default generation plan entry.",
+  };
+}
+
+function buildProjects(name) {
+  return {
+    server: {
+      name,
+      rootPath: ".",
+      projectPath: `${name}.csproj`,
+    },
+    wasm: {
+      name: `${name}.WASM`,
+      rootPath: `${name}.WASM`,
+      projectPath: `${name}.WASM/${name}.WASM.csproj`,
+    },
   };
 }
 

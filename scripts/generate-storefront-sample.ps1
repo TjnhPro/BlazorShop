@@ -16,6 +16,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path $PSScriptRoot\..
 $starterRoot = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter"
+$starterWasmRoot = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM"
 function Resolve-RepoPath {
     param([string]$Path)
 
@@ -27,12 +28,19 @@ function Resolve-RepoPath {
 }
 
 $generatedRoot = Resolve-RepoPath $OutputRoot
-$projectRoot = Join-Path $generatedRoot $Name
+$targetProjectRoot = Join-Path $generatedRoot $Name
+$operationId = [System.Guid]::NewGuid().ToString("N")
+$stagingOutputRoot = Join-Path (Join-Path $generatedRoot ".staging") $operationId
+$backupProjectRoot = Join-Path (Join-Path $generatedRoot ".replace-backup") "$Name-$operationId"
+$projectRoot = Join-Path $stagingOutputRoot $Name
 $starterProject = Join-Path $projectRoot "BlazorShop.Storefront.Starter.csproj"
 $generatedProject = Join-Path $projectRoot "$Name.csproj"
+$starterWasmProjectRoot = Join-Path $projectRoot "BlazorShop.Storefront.Starter.WASM"
+$generatedWasmProjectRoot = Join-Path $projectRoot "$Name.WASM"
+$starterWasmProject = Join-Path $starterWasmProjectRoot "BlazorShop.Storefront.Starter.WASM.csproj"
+$generatedWasmProject = Join-Path $generatedWasmProjectRoot "$Name.WASM.csproj"
 
 $forbiddenPatterns = @(
-    "ProjectReference",
     "BlazorShop.Storefront.V2",
     "BlazorShop.Application",
     "BlazorShop.Domain",
@@ -60,6 +68,29 @@ function Assert-OutputPath {
     }
 }
 
+function Assert-GeneratedRootPath {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $resolved = [System.IO.Path]::GetFullPath($Path)
+    $expectedPrefix = [System.IO.Path]::GetFullPath($generatedRoot)
+    if (-not $resolved.StartsWith($expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to modify path outside StorefrontBuilder generated output root: $resolved"
+    }
+}
+
+function Remove-GeneratedDirectoryIfEmpty {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+
+    Assert-GeneratedRootPath -Path $Path
+    if (-not (Get-ChildItem -LiteralPath $Path -Force | Select-Object -First 1)) {
+        Remove-Item -LiteralPath $Path -Force
+    }
+}
+
 function Copy-StarterTemplate {
     if (Test-Path $projectRoot) {
         if (-not $Force) {
@@ -74,6 +105,13 @@ function Copy-StarterTemplate {
         Where-Object { $_.Name -notin @("bin", "obj") -and (-not $_.PSIsContainer -or $_.Name -notin $forbiddenTemplateDirectories) } |
         ForEach-Object {
             Copy-Item -LiteralPath $_.FullName -Destination $projectRoot -Recurse -Force
+        }
+
+    New-Item -ItemType Directory -Force -Path $starterWasmProjectRoot | Out-Null
+    Get-ChildItem -LiteralPath $starterWasmRoot -Force |
+        Where-Object { $_.Name -notin @("bin", "obj") } |
+        ForEach-Object {
+            Copy-Item -LiteralPath $_.FullName -Destination $starterWasmProjectRoot -Recurse -Force
         }
 }
 
@@ -93,6 +131,14 @@ function Get-PortableRelativePath {
 function Rewrite-GeneratedSource {
     if (Test-Path $starterProject) {
         Rename-Item -LiteralPath $starterProject -NewName "$Name.csproj"
+    }
+
+    if (Test-Path $starterWasmProject) {
+        Rename-Item -LiteralPath $starterWasmProject -NewName "$Name.WASM.csproj"
+    }
+
+    if (Test-Path $starterWasmProjectRoot) {
+        Rename-Item -LiteralPath $starterWasmProjectRoot -NewName "$Name.WASM"
     }
 
     $textFiles = Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
@@ -160,18 +206,42 @@ function Rewrite-GeneratedSource {
     $projectContent = $projectContent.Replace(
         '    <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />',
         '    <PackageReference Include="BlazorShop.Storefront.Presentation" Version="$(StorefrontPresentationPackageVersion)" />')
-    if ($projectContent.IndexOf('PackageReference Include="BlazorShop.Storefront.Browser"', [System.StringComparison]::Ordinal) -lt 0) {
-        $projectContent = $projectContent.Replace(
-            '    <PackageReference Include="BlazorShop.Storefront.Components" Version="$(StorefrontComponentsPackageVersion)" />',
-            "    <PackageReference Include=`"BlazorShop.Storefront.Components`" Version=`"`$(StorefrontComponentsPackageVersion)`" />`r`n    <PackageReference Include=`"BlazorShop.Storefront.Browser`" Version=`"`$(StorefrontBrowserPackageVersion)`" />")
-    }
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Components" Version="$(StorefrontComponentsPackageVersion)" />')
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />')
+    $projectContent = $projectContent.Replace(
+        "..\$Name.WASM\$Name.WASM.csproj",
+        "$Name.WASM\$Name.WASM.csproj")
     Set-Content -LiteralPath $generatedProject -Value $projectContent -Encoding UTF8
+
+    if (Test-Path $generatedWasmProject) {
+        $wasmProjectContent = Get-Content -LiteralPath $generatedWasmProject -Raw
+        $wasmProjectContent = $wasmProjectContent.Replace(
+            '<Import Project="StorefrontPackageVersions.props" Condition="Exists(''StorefrontPackageVersions.props'')" />',
+            '<Import Project="..\StorefrontPackageVersions.props" />')
+        $wasmProjectContent = $wasmProjectContent.Replace(
+            '    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />',
+            '    <PackageReference Include="BlazorShop.Storefront.Components" Version="$(StorefrontComponentsPackageVersion)" />')
+        $wasmProjectContent = $wasmProjectContent.Replace(
+            '    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />',
+            '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />')
+        Set-Content -LiteralPath $generatedWasmProject -Value $wasmProjectContent -Encoding UTF8
+    }
 }
 
 function Assert-GeneratedOutput {
     if (-not (Test-Path $generatedProject)) {
         throw "Generated project file was not created: $generatedProject"
     }
+
+    if (-not (Test-Path $generatedWasmProject)) {
+        throw "Generated WASM project file was not created: $generatedWasmProject"
+    }
+
+    Assert-GeneratedProjectReferences
 
     $sourceFiles = Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
         Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" }
@@ -191,9 +261,71 @@ function Assert-GeneratedOutput {
     }
 }
 
-Assert-OutputPath
-Copy-StarterTemplate
-Rewrite-GeneratedSource
-Assert-GeneratedOutput
+function Assert-GeneratedProjectReferences {
+    [xml]$serverProject = Get-Content -LiteralPath $generatedProject -Raw
+    [xml]$wasmProject = Get-Content -LiteralPath $generatedWasmProject -Raw
+    $expectedServerReference = "$Name.WASM\$Name.WASM.csproj"
+    $serverReferences = @(@($serverProject.Project.ItemGroup.ProjectReference) |
+        ForEach-Object { [string]$_.Include } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $wasmReferences = @(@($wasmProject.Project.ItemGroup.ProjectReference) |
+        ForEach-Object { [string]$_.Include } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
-Write-Host "Generated $Name at $projectRoot"
+    if ($serverReferences.Count -ne 1 -or -not ([string]$serverReferences[0]).Equals($expectedServerReference, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Generated server must reference only generated sibling WASM project '$expectedServerReference'. Actual: $($serverReferences -join ', ')"
+    }
+
+    if ($wasmReferences.Count -ne 0) {
+        throw "Generated WASM project must not contain ProjectReference entries. Actual: $($wasmReferences -join ', ')"
+    }
+}
+
+Assert-OutputPath
+Assert-GeneratedRootPath -Path $targetProjectRoot
+Assert-GeneratedRootPath -Path $stagingOutputRoot
+Assert-GeneratedRootPath -Path $backupProjectRoot
+
+$movedExistingTarget = $false
+
+try {
+    if ((Test-Path $targetProjectRoot) -and -not $Force) {
+        throw "Output '$targetProjectRoot' already exists. Re-run with -Force to replace deterministic generated output."
+    }
+
+    if (Test-Path $stagingOutputRoot) {
+        Remove-Item -LiteralPath $stagingOutputRoot -Recurse -Force
+    }
+
+    Copy-StarterTemplate
+    Rewrite-GeneratedSource
+    Assert-GeneratedOutput
+
+    if (Test-Path $targetProjectRoot) {
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $backupProjectRoot) | Out-Null
+        Move-Item -LiteralPath $targetProjectRoot -Destination $backupProjectRoot
+        $movedExistingTarget = $true
+    }
+
+    Move-Item -LiteralPath $projectRoot -Destination $targetProjectRoot
+
+    if ($movedExistingTarget) {
+        Remove-Item -LiteralPath $backupProjectRoot -Recurse -Force
+    }
+}
+catch {
+    if ($movedExistingTarget -and -not (Test-Path $targetProjectRoot) -and (Test-Path $backupProjectRoot)) {
+        Move-Item -LiteralPath $backupProjectRoot -Destination $targetProjectRoot
+    }
+
+    throw
+}
+finally {
+    if (Test-Path $stagingOutputRoot) {
+        Remove-Item -LiteralPath $stagingOutputRoot -Recurse -Force
+    }
+    Remove-GeneratedDirectoryIfEmpty -Path (Split-Path -Parent $stagingOutputRoot)
+    Remove-GeneratedDirectoryIfEmpty -Path (Split-Path -Parent $backupProjectRoot)
+}
+
+Write-Host "Generated $Name at $targetProjectRoot"

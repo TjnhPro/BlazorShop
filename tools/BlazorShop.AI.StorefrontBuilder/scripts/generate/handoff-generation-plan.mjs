@@ -156,6 +156,7 @@ export function buildHandoffGenerationPlan(options) {
     sourceStarterContractHash,
     projectName,
     storeKey,
+    projects: buildProjects(projectName),
     generationMode: "handoff",
     generationOrder: ["generate-from-starter", "compile-handoff-plan", "apply-visual-files"],
     files: sortedBy([...filesByPath.values()].map(finalizeFilePlan), item => item.targetPath),
@@ -324,6 +325,8 @@ function ensureFilePlan(filesByPath, input) {
     id: `file.${slug(input.targetPath)}`,
     filePath: `${input.projectRoot}/${input.targetPath}`,
     targetPath: input.targetPath,
+    targetProject: inferTargetProject(input.projectRoot, input.targetPath),
+    projectRelativePath: inferProjectRelativePath(input.projectRoot, input.targetPath),
     ownership: input.ownership,
     action: input.action,
     allowedOperation: input.action,
@@ -348,6 +351,31 @@ function ensureFilePlan(filesByPath, input) {
   file.generatedHash = fileHash(file);
   filesByPath.set(input.targetPath, file);
   return file;
+}
+
+function buildProjects(projectName) {
+  return {
+    server: {
+      name: projectName,
+      rootPath: ".",
+      projectPath: `${projectName}.csproj`,
+    },
+    wasm: {
+      name: `${projectName}.WASM`,
+      rootPath: `${projectName}.WASM`,
+      projectPath: `${projectName}.WASM/${projectName}.WASM.csproj`,
+    },
+  };
+}
+
+function inferTargetProject(projectRoot, targetPath) {
+  const projectName = normalizePath(projectRoot).split("/").pop();
+  return targetPath.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+}
+
+function inferProjectRelativePath(projectRoot, targetPath) {
+  const projectName = normalizePath(projectRoot).split("/").pop();
+  return targetPath.startsWith(`${projectName}.WASM/`) ? targetPath.slice(`${projectName}.WASM/`.length) : targetPath;
 }
 
 function finalizeFilePlan(file) {
@@ -579,6 +607,7 @@ function fileHash(file) {
     sourceHandoffArtifacts: file.sourceHandoffArtifacts,
     sourceSpecHash: file.sourceSpecHash,
     targetPath: file.targetPath,
+    targetProject: file.targetProject,
     visualShellOnly: file.visualShellOnly,
   }));
 }

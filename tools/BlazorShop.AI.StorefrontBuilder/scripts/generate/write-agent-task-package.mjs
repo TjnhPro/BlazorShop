@@ -103,6 +103,7 @@ const manifest = stableObject({
   artifactId: `agent-visual-task-package.${plan.projectName}`,
   projectName: plan.projectName,
   storeKey: plan.storeKey,
+  projects: plan.projects ?? buildProjects(plan.projectName),
   handoffHash,
   sourceHandoffPackageHash: handoffHash,
   generationPlanHash: planHash,
@@ -143,6 +144,8 @@ function buildAllowedOutputs(plan) {
     .filter(file => file.ownership === "generated" || file.visualShellOnly === true)
     .map(file => stableObject({
       targetPath: normalizeProjectPath(file.targetPath),
+      targetProject: file.targetProject ?? inferTargetProject(plan.projectName, file.targetPath),
+      projectRelativePath: file.projectRelativePath ?? inferProjectRelativePath(plan.projectName, file.targetPath),
       planEntryId: file.id,
       ownership: file.ownership,
       allowedOperation: file.allowedOperation ?? file.action,
@@ -151,6 +154,31 @@ function buildAllowedOutputs(plan) {
       sourceEvidenceReferences: (file.sourceEvidenceReferences ?? []).map(assertHandoffReference),
     }))
     .sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
+}
+
+function buildProjects(projectName) {
+  return {
+    server: {
+      name: projectName,
+      rootPath: ".",
+      projectPath: `${projectName}.csproj`,
+    },
+    wasm: {
+      name: `${projectName}.WASM`,
+      rootPath: `${projectName}.WASM`,
+      projectPath: `${projectName}.WASM/${projectName}.WASM.csproj`,
+    },
+  };
+}
+
+function inferTargetProject(projectName, targetPath) {
+  const normalized = normalizeProjectPath(targetPath);
+  return normalized.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+}
+
+function inferProjectRelativePath(projectName, targetPath) {
+  const normalized = normalizeProjectPath(targetPath);
+  return normalized.startsWith(`${projectName}.WASM/`) ? normalized.slice(`${projectName}.WASM/`.length) : normalized;
 }
 
 function collectEvidenceReferences(plan) {

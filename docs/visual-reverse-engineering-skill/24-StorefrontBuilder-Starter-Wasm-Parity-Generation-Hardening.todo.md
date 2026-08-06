@@ -107,11 +107,11 @@ Use these files as baseline during implementation:
 - [x] Starter server registers Browser controllers.
 - [x] Starter server maps the Starter.WASM assembly.
 - [x] Starter.WASM calls `AddStorefrontBrowserRuntime`.
-- [ ] StorefrontBuilder generates server and sibling WASM projects.
-- [ ] Generated server references only generated sibling WASM by ProjectReference.
-- [ ] Generated server uses package references for Presentation, Components and Browser.
-- [ ] Generated WASM uses package references for Components and Browser.
-- [ ] Generated WASM does not direct-reference Runtime or Client.
+- [x] StorefrontBuilder generates server and sibling WASM projects.
+- [x] Generated server references only generated sibling WASM by ProjectReference.
+- [x] Generated server uses package references for Presentation, Components and Browser.
+- [x] Generated WASM uses package references for Components and Browser.
+- [x] Generated WASM does not direct-reference Runtime or Client.
 - [x] Browser package is included in package version props, metadata, pack scripts, proof scripts, static gates and isolation gates.
 - [x] Package versions are immutable per build identity.
 - [x] Local feed cleanup is scoped and deterministic.
@@ -437,79 +437,79 @@ BlazorShop.Storefront.{Name}/
 
 ### Tasks
 
-- [ ] Update copy/generation flow.
-  - [ ] Copy Starter server into staging root.
-  - [ ] Copy Starter.WASM into staging root as a nested sibling.
-  - [ ] Rename server `.csproj`.
-  - [ ] Rename WASM `.csproj`.
-  - [ ] Rewrite server root namespace.
-  - [ ] Rewrite WASM root namespace.
-  - [ ] Rewrite server `Program.cs` assembly marker from Starter.WASM to generated WASM.
-  - [ ] Rewrite `_Imports.razor` namespace.
-  - [ ] Rewrite any generated project-local namespaces.
-  - [ ] Rewrite package version props.
-  - [ ] Rewrite metadata paths.
-- [ ] Update server references.
-  - [ ] PackageReference Presentation.
-  - [ ] PackageReference Components.
-  - [ ] PackageReference Browser.
-  - [ ] PackageReference `Microsoft.AspNetCore.Components.WebAssembly.Server`.
-  - [ ] ProjectReference to generated sibling WASM only.
-  - [ ] No ProjectReference to monorepo source.
-- [ ] Update WASM references.
-  - [ ] PackageReference Browser.
-  - [ ] PackageReference Components.
-  - [ ] PackageReference `Microsoft.AspNetCore.Components.WebAssembly`.
-  - [ ] No ProjectReference.
-  - [ ] No Runtime package.
-  - [ ] No Client package.
-- [ ] Update generated `nuget.config`.
-  - [ ] Place at generated root.
-  - [ ] Ensure both server and WASM use same local feed.
-  - [ ] Use relative local package feed path.
-  - [ ] Keep nuget.org only for third-party packages.
-- [ ] Preserve atomic generation.
-  - [ ] Generate into staging root.
-  - [ ] Validate staging artifact before replace.
-  - [ ] Move existing target to backup only after staging validates.
-  - [ ] Restore backup if move/apply fails.
-  - [ ] Cleanup staging and backup safely.
-  - [ ] Verify all resolved paths stay under approved output root.
-- [ ] Update handoff generation.
-  - [ ] Handoff plan knows server target project.
-  - [ ] Handoff plan knows WASM target project.
-  - [ ] Agent task package includes project ownership.
-  - [ ] Handoff placeholders can target server or WASM.
-  - [ ] Handoff generation summary reports server/WASM outputs.
+- [x] Update copy/generation flow.
+  - [x] Copy Starter server into staging root.
+  - [x] Copy Starter.WASM into staging root as a nested sibling.
+  - [x] Rename server `.csproj`.
+  - [x] Rename WASM `.csproj`.
+  - [x] Rewrite server root namespace.
+  - [x] Rewrite WASM root namespace.
+  - [x] Rewrite server `Program.cs` assembly marker from Starter.WASM to generated WASM.
+  - [x] Rewrite `_Imports.razor` namespace.
+  - [x] Rewrite any generated project-local namespaces.
+  - [x] Rewrite package version props.
+  - [x] Rewrite metadata paths.
+- [x] Update server references.
+  - [x] PackageReference Presentation.
+  - [x] PackageReference Components.
+  - [x] PackageReference Browser.
+  - [x] PackageReference `Microsoft.AspNetCore.Components.WebAssembly.Server`.
+  - [x] ProjectReference to generated sibling WASM only.
+  - [x] No ProjectReference to monorepo source.
+- [x] Update WASM references.
+  - [x] PackageReference Browser.
+  - [x] PackageReference Components.
+  - [x] PackageReference `Microsoft.AspNetCore.Components.WebAssembly`.
+  - [x] No ProjectReference.
+  - [x] No Runtime package.
+  - [x] No Client package.
+- [x] Update generated `nuget.config`.
+  - [x] Place at generated root.
+  - [x] Ensure both server and WASM use same local feed.
+  - [x] Use relative local package feed path.
+  - [x] Keep nuget.org only for third-party packages.
+- [x] Preserve atomic generation.
+  - [x] Generate into staging root.
+  - [x] Validate staging artifact before replace.
+  - [x] Move existing target to backup only after staging validates.
+  - [x] Restore backup if move/apply fails.
+  - [x] Cleanup staging and backup safely.
+  - [x] Verify all resolved paths stay under approved output root.
+- [x] Update handoff generation.
+  - [x] Handoff plan knows server target project.
+  - [x] Handoff plan knows WASM target project.
+  - [x] Agent task package includes project ownership.
+  - [x] Handoff placeholders can target server or WASM.
+  - [x] Handoff generation summary reports server/WASM outputs.
 
 ### Files To Update
 
-- [ ] `scripts/generate-storefront-sample.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/plan-generation-files.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-handoff-project-skeleton.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-agent-task-package.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/update-generated-files-manifest.mjs`
+- [x] `scripts/generate-storefront-sample.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/plan-generation-files.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-handoff-project-skeleton.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-agent-task-package.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/update-generated-files-manifest.mjs`
 
 ### Tests And Gates
 
-- [ ] Generate with friendly name.
-- [ ] Generate with full `BlazorShop.Storefront.{Name}` name.
-- [ ] Invalid name fails before file writes.
-- [ ] Generated server project exists.
-- [ ] Generated WASM project exists.
-- [ ] Generated server references generated sibling WASM.
-- [ ] Generated WASM has no ProjectReference.
-- [ ] Generated output contains no `BlazorShop.Storefront.Starter` namespace.
-- [ ] Generated output contains no `BlazorShop.Storefront.V2` namespace.
-- [ ] Generated server `Program.cs` maps generated WASM assembly.
-- [ ] Generation fail preserves old target.
-- [ ] Generated artifact is not added to `BlazorShop.sln`.
+- [x] Generate with friendly name.
+- [x] Generate with full `BlazorShop.Storefront.{Name}` name.
+- [x] Invalid name fails before file writes.
+- [x] Generated server project exists.
+- [x] Generated WASM project exists.
+- [x] Generated server references generated sibling WASM.
+- [x] Generated WASM has no ProjectReference.
+- [x] Generated output contains no `BlazorShop.Storefront.Starter` namespace.
+- [x] Generated output contains no `BlazorShop.Storefront.V2` namespace.
+- [x] Generated server `Program.cs` maps generated WASM assembly.
+- [x] Generation fail preserves old target.
+- [x] Generated artifact is not added to `BlazorShop.sln`.
 
 ### Done When
 
-- [ ] One StorefrontBuilder command creates a complete server + WASM generated storefront.
+- [x] One StorefrontBuilder command creates a complete server + WASM generated storefront.
 
 ## Phase 5 - Validator, Isolation And Metadata Hardening
 

@@ -936,9 +936,32 @@ namespace BlazorShop.Tests.Architecture
         {
             var script = ReadRepositoryFile("scripts/generate-storefront-sample.ps1");
             var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1");
+            var plan = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/plan-generation-files.mjs");
+            var handoffPlan = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/handoff-generation-plan.mjs");
+            var taskPackage = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-agent-task-package.mjs");
+            var skeleton = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-handoff-project-skeleton.mjs");
+            var manifest = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs");
 
             Assert.Contains("Copy-StarterTemplate", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Starter", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Starter.WASM", script, StringComparison.Ordinal);
+            Assert.Contains("$Name.WASM", script, StringComparison.Ordinal);
+            Assert.Contains("Assert-GeneratedProjectReferences", script, StringComparison.Ordinal);
+            Assert.Contains("Generated server must reference only generated sibling WASM project", script, StringComparison.Ordinal);
+            Assert.Contains("sourceStarterWasmPath:", generator, StringComparison.Ordinal);
+            Assert.Contains("projects:", generator, StringComparison.Ordinal);
+            Assert.Contains("path: $projectName.csproj", generator, StringComparison.Ordinal);
+            Assert.Contains("path: $projectName.WASM/$projectName.WASM.csproj", generator, StringComparison.Ordinal);
+            Assert.Contains("targetProject", plan, StringComparison.Ordinal);
+            Assert.Contains("projectRelativePath", plan, StringComparison.Ordinal);
+            Assert.Contains("targetProject", handoffPlan, StringComparison.Ordinal);
+            Assert.Contains("projectRelativePath", handoffPlan, StringComparison.Ordinal);
+            Assert.Contains("targetProject", taskPackage, StringComparison.Ordinal);
+            Assert.Contains("projectRelativePath", taskPackage, StringComparison.Ordinal);
+            Assert.Contains("targetProject", skeleton, StringComparison.Ordinal);
+            Assert.Contains("projectRelativePath", skeleton, StringComparison.Ordinal);
+            Assert.Contains("project: inferProject(file.filePath)", manifest, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
             Assert.Contains("Generated\\StorefrontClient.g.cs", script, StringComparison.Ordinal);
             Assert.Contains("ProjectReference", script, StringComparison.Ordinal);

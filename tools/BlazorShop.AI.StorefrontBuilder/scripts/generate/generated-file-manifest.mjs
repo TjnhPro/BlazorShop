@@ -49,6 +49,7 @@ export function buildManifestEntries(projectRoot, previousEntries, intentionalUp
 
     entries.push({
       filePath: file.filePath,
+      project: inferProject(file.filePath),
       ownership: descriptor.ownership,
       capability: descriptor.capability,
       scope: descriptor.scope,
@@ -78,6 +79,7 @@ export function buildManifestEntries(projectRoot, previousEntries, intentionalUp
     if (previous.ownership === "generated" || previous.ownership === "managed") {
       entries.push({
         filePath: previous.filePath,
+        project: previous.project ?? inferProject(previous.filePath),
         ownership: previous.ownership,
         capability: previous.capability ?? "unknown",
         scope: previous.scope ?? "unknown",
@@ -109,6 +111,7 @@ export function writeManifestYaml(entries) {
     "files:",
     ...entries.flatMap((entry) => [
       `  - filePath: ${entry.filePath}`,
+      `    project: ${entry.project}`,
       `    ownership: ${entry.ownership}`,
       `    capability: ${quote(entry.capability)}`,
       `    scope: ${entry.scope}`,
@@ -128,6 +131,10 @@ export function writeManifestYaml(entries) {
     ]),
     "",
   ].join("\n");
+}
+
+function inferProject(filePath) {
+  return filePath.includes(".WASM/") ? "wasm" : "server";
 }
 
 export function buildRegenerationReport(entries) {
@@ -275,7 +282,7 @@ function classifyFile(filePath) {
     return descriptor("user-owned", "shell/layout", "project", ["none"]);
   }
 
-  if (filePath.endsWith(".csproj") || filePath === "Program.cs" || filePath === "StarterFoundationViewRegistration.cs") {
+  if (filePath.endsWith(".csproj") || filePath === "Program.cs" || filePath.endsWith("/Program.cs") || filePath === "StarterFoundationViewRegistration.cs") {
     return descriptor("managed", "shell/layout", "project", ["metadata.yaml"]);
   }
 

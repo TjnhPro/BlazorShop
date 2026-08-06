@@ -19,7 +19,7 @@ const entries = buildManifestEntries(projectRoot, previousEntries, intentionalCh
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, writeManifestYaml(entries), "utf8");
 writeFileSync(report, buildRegenerationReport(entries), "utf8");
-console.log(`Updated generated file manifest at ${output}`);
+console.log(`Updated multi-project generated file manifest at ${output}`);
 
 function readArg(name) {
   const index = process.argv.indexOf(name);
