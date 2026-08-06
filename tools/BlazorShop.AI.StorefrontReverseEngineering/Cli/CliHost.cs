@@ -1,5 +1,6 @@
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Blueprint;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Handoff;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Review;
 using BlazorShop.AI.StorefrontReverseEngineering.Application;
 using BlazorShop.AI.StorefrontReverseEngineering.Browser;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
@@ -19,6 +20,7 @@ public static class CliHost
         "dry-run-handoff",
         "inspect",
         "inspect-handoff",
+        "resolve-safe-review",
         "validate",
         "validate-handoff",
         "run",
@@ -67,6 +69,7 @@ public static class CliHost
         output.WriteLine("  run --url <url> --name <name> --output-root obj/storefront-reverse-engineering/projects --no-ai [--run-id <id>] [--force-step <step>]");
         output.WriteLine("  resume --project obj/storefront-reverse-engineering/projects/<project-id> [--run-id <id>] [--force-step <step>]");
         output.WriteLine("  inspect --project obj/storefront-reverse-engineering/projects/<project-id>");
+        output.WriteLine("  resolve-safe-review --project obj/storefront-reverse-engineering/projects/<project-id>");
         output.WriteLine("  validate-handoff --handoff-root <path> --schema-root <path>");
         output.WriteLine("  inspect-handoff --handoff-root <path> --schema-root <path>");
         output.WriteLine("  dry-run-handoff --handoff-root <path> --schema-root <path>");
@@ -143,6 +146,20 @@ public static class CliHost
                     var package = await new HandoffConsumerDryRunLoader().LoadAsync(dryRunRoot, dryRunSchemaRoot, cancellationToken);
                     WriteHandoffDryRun(output, package);
                     return 0;
+                case "resolve-safe-review":
+                    var reviewSummary = await new SafeReviewDecisionMaterializer(FindRepositoryRoot())
+                        .MaterializeAsync(options.GetRequired("project", "SRE-REVIEW-003"), cancellationToken);
+                    output.WriteLine($"Safe review decisions: approved={reviewSummary.Approved}; modified={reviewSummary.Modified}; blocked={reviewSummary.Blocked}; skipped={reviewSummary.Skipped}; stale={reviewSummary.Stale}");
+                    output.WriteLine($"Decision path: {reviewSummary.DecisionPath}");
+                    output.WriteLine($"Summary path: {reviewSummary.SummaryPath}");
+                    foreach (var item in reviewSummary.Items.Where(item => item.Status is "Blocked"))
+                    {
+                        output.WriteLine($"Review blocker: {item.ItemId}");
+                        output.WriteLine($"Cause: {item.Reason}");
+                        output.WriteLine("Fix: Provide an explicit manual review decision or regenerate the upstream artifact with safe visual provenance.");
+                    }
+
+                    return reviewSummary.Blocked == 0 && reviewSummary.Stale == 0 ? 0 : 3;
                 case "discover":
                     var projectPath = options.GetRequired("project", "SRE-DISCOVER-001");
                     var projectInspection = await service.InspectAsync(projectPath, cancellationToken);

@@ -12,6 +12,18 @@ namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
 public sealed class EndToEndCliTests
 {
     [Fact]
+    public async Task Help_IncludesSafeReviewCommand()
+    {
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = await CliHost.RunAsync(["--help"], stdout, stderr, CancellationToken.None);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("resolve-safe-review --project", stdout.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Run_LocalFixtureFullWorkflow_Passes()
     {
         var repoRoot = GetRepoRoot();

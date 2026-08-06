@@ -8,6 +8,7 @@ param(
     [switch]$Force,
     [switch]$Resume,
     [switch]$UseAi,
+    [switch]$ResolveSafeReviewItems,
     [switch]$InstallPlaywright,
     [switch]$FailOnBlockers,
     [switch]$Help
@@ -30,6 +31,7 @@ function Write-Usage {
     Write-Host "  -Force                        Replace the single resolved project root under the approved output root."
     Write-Host "  -Resume                       Resume an existing resolved project root instead of starting a new run."
     Write-Host "  -UseAi                        Do not pass --no-ai to the CLI."
+    Write-Host "  -ResolveSafeReviewItems       Materialize safe visual-only review decisions, then rerun from assemble-blueprint-v1."
     Write-Host "  -InstallPlaywright            Install Chromium through the built Playwright script when missing."
     Write-Host "  -FailOnBlockers               Return exit code 3 when the workflow completes with readiness/handoff blockers."
     Write-Host "  -Help                         Show this help text."
@@ -68,6 +70,7 @@ $notes = New-Object System.Collections.Generic.List[string]
 $failedStep = ""
 $lastExitCode = "not-run"
 $runExitCode = "not-run"
+$resolveReviewExitCode = "not-run"
 $inspectExitCode = "not-run"
 $validateExitCode = "not-run"
 $handoffValidationExitCode = "not-run"
@@ -241,6 +244,7 @@ function New-ProductionReportLines {
     $lines.Add("Report path: $reportPath")
     $lines.Add("Source URL probe: $sourceUrlStatus")
     $lines.Add("Run exit code: $runExitCode")
+    $lines.Add("Resolve safe review exit code: $resolveReviewExitCode")
     $lines.Add("Inspect exit code: $inspectExitCode")
     $lines.Add("Validate exit code: $validateExitCode")
     $lines.Add("Handoff validation exit code: $handoffValidationExitCode")
@@ -375,6 +379,29 @@ try {
         $script:runExitCode = $result.ExitCode
         if ($result.ExitCode -eq 3) {
             $notes.Add("Workflow reached CLI exit code 3. This is usually a produced-but-blocked review/readiness state; inspect output and readiness report are collected below.")
+        }
+    }
+
+    if ($ResolveSafeReviewItems) {
+        Invoke-ProductionStep -Name "materialize safe review decisions" -Script {
+            $result = Invoke-ProductionProcess -FileName "dotnet" -Arguments @($toolDll, "resolve-safe-review", "--project", $projectRoot) -AllowedExitCodes @(0, 3)
+            $script:resolveReviewExitCode = $result.ExitCode
+            if ($result.ExitCode -eq 3) {
+                $notes.Add("Safe review materialization left manual blockers. The rerun still executes so generation readiness records the remaining blocker set.")
+            }
+        }
+
+        Invoke-ProductionStep -Name "rerun blueprint and handoff after safe review decisions" -Script {
+            $noAiArgs = @()
+            if (-not $UseAi) {
+                $noAiArgs += "--no-ai"
+            }
+
+            $result = Invoke-ProductionProcess -FileName "dotnet" -Arguments (@($toolDll, "resume", "--project", $projectRoot, "--force-step", "assemble-blueprint-v1") + $noAiArgs) -AllowedExitCodes @(0, 3)
+            $script:runExitCode = $result.ExitCode
+            if ($result.ExitCode -eq 3) {
+                $notes.Add("Post-review workflow rerun returned exit code 3. Inspect generation readiness for remaining blockers.")
+            }
         }
     }
 

@@ -344,19 +344,19 @@ Goal: add a deterministic, auditable way to resolve safe review items for non-in
 
 Implementation checklist:
 
-- [ ] Add a review decision materializer service or command that reads `review/review-queue.json`.
-- [ ] Generate decisions only for safe visual-only items that pass source hash validation.
-- [ ] Preserve exact `sourceArtifactId`, `sourceArtifactHash`, `reviewer`, `reviewerNote`, and stable `decisionId`.
-- [ ] Use `Approved` only when the original proposal is already valid.
-- [ ] Use `Modified` only when the modified value is deterministic, schema-valid, and narrower than the original proposal.
-- [ ] Never auto-approve direct Storefront API calls, runtime-owned behavior, stale hashes, protected paths, or unknown source provenance.
-- [ ] Emit a machine-readable review decision summary with counts: approved, modified, blocked, skipped, stale.
-- [ ] Emit human-readable problem/cause/fix output for skipped blocking items.
-- [ ] Add CLI help text for the new command or flag.
-- [ ] Wire the production script only if an explicit flag is provided.
-- [ ] Prefer a flag name that makes the boundary clear, such as `-ResolveSafeReviewItems`.
-- [ ] Keep default behavior unchanged for users who want manual review.
-- [ ] Add tests for safe approvals, deterministic modifications, stale hash failure, duplicate decision prevention, and unsafe item refusal.
+- [x] Add a review decision materializer service or command that reads `review/review-queue.json`.
+- [x] Generate decisions only for safe visual-only items that pass source hash validation.
+- [x] Preserve exact `sourceArtifactId`, `sourceArtifactHash`, `reviewer`, `reviewerNote`, and stable `decisionId`.
+- [x] Use `Approved` only when the original proposal is already valid.
+- [x] Use `Modified` only when the modified value is deterministic, schema-valid, and narrower than the original proposal.
+- [x] Never auto-approve direct Storefront API calls, runtime-owned behavior, stale hashes, protected paths, or unknown source provenance.
+- [x] Emit a machine-readable review decision summary with counts: approved, modified, blocked, skipped, stale.
+- [x] Emit human-readable problem/cause/fix output for skipped blocking items.
+- [x] Add CLI help text for the new command or flag.
+- [x] Wire the production script only if an explicit flag is provided.
+- [x] Prefer a flag name that makes the boundary clear, such as `-ResolveSafeReviewItems`.
+- [x] Keep default behavior unchanged for users who want manual review.
+- [x] Add tests for safe approvals, deterministic modifications, stale hash failure, duplicate decision prevention, and unsafe item refusal.
 
 Candidate files:
 
@@ -373,12 +373,20 @@ Checks:
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~ConfidenceReviewTests|FullyQualifiedName~EndToEndCliTests|FullyQualifiedName~Phase3CliProofCollectionTests" --blame-hang --blame-hang-timeout 5m
 ```
 
+Phase 3 evidence:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~ConfidenceReviewTests|FullyQualifiedName~EndToEndCliTests|FullyQualifiedName~Phase3CliProofCollectionTests" --no-restore
+```
+
+Result: passed, 40/40.
+
 Done when:
 
-- [ ] Missing review decisions still block by default.
-- [ ] Safe review materialization can write valid decisions for safe items.
-- [ ] Unsafe/unsupported items still block and explain why.
-- [ ] The production runner can opt in without changing default semantics.
+- [x] Missing review decisions still block by default.
+- [x] Safe review materialization can write valid decisions for safe items.
+- [x] Unsafe/unsupported items still block and explain why.
+- [x] The production runner can opt in without changing default semantics.
 
 Commit:
 

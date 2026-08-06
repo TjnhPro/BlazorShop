@@ -81,6 +81,41 @@ public sealed class ConfidenceReviewTests
     }
 
     [Fact]
+    public async Task SafeReviewDecisionMaterializer_ApprovesSafeVisualItemsAndBlocksUnsupported()
+    {
+        var projectRoot = await CreateReviewProjectAsync();
+
+        var summary = await new SafeReviewDecisionMaterializer(GetRepoRoot()).MaterializeAsync(projectRoot, CancellationToken.None);
+        var decisions = await ReadDecisionsAsync(projectRoot);
+        var tokenDecision = Assert.Single(decisions.Decisions, decision => decision.ItemId == "token:text-body");
+
+        Assert.True(summary.Approved > 0);
+        Assert.Equal(1, summary.Blocked);
+        Assert.Contains(summary.Items, item => item.ItemId == "unsupported:family-unsafe" && item.Status == "Blocked");
+        Assert.Equal("Approved", tokenDecision.Status);
+        Assert.Equal("storefront-reverse-engineering-safe-review", tokenDecision.Reviewer);
+        Assert.Equal("hash-token", tokenDecision.SourceArtifactHash);
+        Assert.StartsWith("safe-", tokenDecision.DecisionId, StringComparison.Ordinal);
+        Assert.DoesNotContain(decisions.Decisions, decision => decision.ItemId == "unsupported:family-unsafe");
+        Assert.True(File.Exists(Path.Combine(projectRoot, "review", "review-decision-summary.json")));
+    }
+
+    [Fact]
+    public async Task SafeReviewDecisionMaterializer_RefusesStaleExistingDecisionWithoutDuplicate()
+    {
+        var projectRoot = await CreateReviewProjectAsync();
+        var queue = await ReadQueueAsync(projectRoot);
+        await WriteDecisionsAsync(projectRoot, [Decision(queue, "token:text-body", "Approved", null, "old") with { SourceArtifactHash = "stale" }]);
+
+        var summary = await new SafeReviewDecisionMaterializer(GetRepoRoot()).MaterializeAsync(projectRoot, CancellationToken.None);
+        var decisions = await ReadDecisionsAsync(projectRoot);
+
+        Assert.Equal(1, summary.Stale);
+        Assert.Contains(summary.Items, item => item.ItemId == "token:text-body" && item.Status == "Blocked");
+        Assert.Single(decisions.Decisions, decision => decision.ItemId == "token:text-body");
+    }
+
+    [Fact]
     public async Task ReviewDecision_ModifiedValuesAreAppliedToReviewedArtifacts()
     {
         var projectRoot = await CreateReviewProjectAsync();
@@ -324,6 +359,13 @@ public sealed class ConfidenceReviewTests
         var json = await File.ReadAllTextAsync(Path.Combine(projectRoot, "review", "review-queue.json"));
         return JsonSerializer.Deserialize<ReviewQueue>(json, VisualJson.Options)
             ?? throw new InvalidOperationException("Review queue did not deserialize.");
+    }
+
+    private static async Task<ReviewDecisions> ReadDecisionsAsync(string projectRoot)
+    {
+        var json = await File.ReadAllTextAsync(Path.Combine(projectRoot, "review", "review-decisions.json"));
+        return JsonSerializer.Deserialize<ReviewDecisions>(json, VisualJson.Options)
+            ?? throw new InvalidOperationException("Review decisions did not deserialize.");
     }
 
     private static JsonNode ReadNode(string projectRoot, string relativePath) =>
