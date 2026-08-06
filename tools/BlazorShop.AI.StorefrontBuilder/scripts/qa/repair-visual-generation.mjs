@@ -177,12 +177,13 @@ function chooseRepair(text) {
 
   const slotMatch = text.match(/Required handoff slot '([^']+)' is not visible/i);
   if (slotMatch) {
-    const slotId = slotMatch[1];
+    const reportedSlotId = slotMatch[1];
+    const slotId = canonicalizePlannedSlotId(reportedSlotId);
     const file = findPlannedFileBySlot(slotId);
     return {
       targetPath: file.targetPath,
       planEntryId: file.id,
-      description: `append bounded missing-slot marker for ${slotId}`,
+      description: `append bounded missing-slot marker for ${reportedSlotId}${slotId === reportedSlotId ? "" : ` (${slotId})`}`,
       apply: content => appendSlotMarkup(content, slotId, file),
     };
   }
@@ -220,6 +221,22 @@ function findPlannedFileBySlot(slotId) {
   }
 
   return { ...file, targetPath: normalizePath(file.targetPath) };
+}
+
+function canonicalizePlannedSlotId(slotId) {
+  const normalized = normalizePath(slotId);
+  if (!normalized) {
+    return "";
+  }
+
+  const knownSlots = [...new Set((plan.files ?? []).flatMap(item => item.slots ?? []).map(normalizePath).filter(Boolean))]
+    .sort((a, b) => b.length - a.length || a.localeCompare(b, "en"));
+
+  if (knownSlots.includes(normalized)) {
+    return normalized;
+  }
+
+  return knownSlots.find(knownSlot => normalized.includes(knownSlot)) ?? normalized;
 }
 
 function assertAllowedRepair(targetPath) {

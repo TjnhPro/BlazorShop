@@ -437,7 +437,7 @@ function buildPages(plan, currentVisualPlan) {
   ];
 
   if (currentVisualPlan) {
-    return buildVisualPlanPages(currentVisualPlan, baseline);
+    return buildVisualPlanPages(currentVisualPlan, baseline, plan);
   }
 
   if (!plan) {
@@ -481,7 +481,8 @@ function buildPages(plan, currentVisualPlan) {
   return baseline;
 }
 
-function buildVisualPlanPages(currentVisualPlan, baseline) {
+function buildVisualPlanPages(currentVisualPlan, baseline, generationPlan) {
+  const canonicalSlots = collectCanonicalSlots(generationPlan);
   const coverageByPage = new Map();
   for (const coverage of currentVisualPlan.pageViewportCoverage ?? []) {
     const pageId = String(coverage.pageId ?? "").trim();
@@ -494,7 +495,7 @@ function buildVisualPlanPages(currentVisualPlan, baseline) {
 
   const slotsByPage = new Map();
   for (const slot of currentVisualPlan.visualSlots ?? []) {
-    const slotId = String(slot.id ?? slot.slotId ?? "").trim();
+    const slotId = canonicalizeVisualSlotId(slot.id ?? slot.slotId, canonicalSlots);
     const pageId = String(slot.pageId ?? pageFromSlot(slotId)).trim();
     if (!pageId || !slotId) {
       continue;
@@ -545,6 +546,45 @@ function buildVisualPlanPages(currentVisualPlan, baseline) {
   }
 
   return pageSpecs;
+}
+
+function collectCanonicalSlots(plan) {
+  const slots = new Set();
+
+  for (const slot of plan?.slots ?? []) {
+    const slotId = normalizeSlotId(slot.slotId);
+    if (slotId) {
+      slots.add(slotId);
+    }
+  }
+
+  for (const file of plan?.files ?? []) {
+    for (const slotId of file.slots ?? []) {
+      const normalized = normalizeSlotId(slotId);
+      if (normalized) {
+        slots.add(normalized);
+      }
+    }
+  }
+
+  return [...slots].sort((a, b) => b.length - a.length || a.localeCompare(b, "en"));
+}
+
+function canonicalizeVisualSlotId(slotId, canonicalSlots) {
+  const normalized = normalizeSlotId(slotId);
+  if (!normalized) {
+    return "";
+  }
+
+  if (canonicalSlots.includes(normalized)) {
+    return normalized;
+  }
+
+  return canonicalSlots.find(slot => normalized.includes(slot)) ?? normalized;
+}
+
+function normalizeSlotId(value) {
+  return String(value ?? "").trim();
 }
 
 function pageSpec(pageName, route, pageId, requiredSlots, requiredViewports = ["desktop", "tablet", "mobile"]) {
