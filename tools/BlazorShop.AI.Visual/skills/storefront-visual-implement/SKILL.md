@@ -61,11 +61,18 @@ Then run a generated project build or focused compile check:
 dotnet build <generated-project-csproj> --no-restore
 ```
 
-Also scan the generated project for forbidden visual drift:
+Also scan only generated visual files that are allowed by `agent-task-package/manifest.json`, or the changed files recorded by the checkpoint recorder, for forbidden visual drift:
 
 ```powershell
-rg -n "@page|HttpClient|fetch\(|/api/storefront/stores|CommerceNodeBaseUrl" <generated-project-root>
+$visualFiles = @(
+  "<generated-project-root>\Components\Layout\MainLayout.razor",
+  "<generated-project-root>\Pages\Ssr\Home\HomePage.razor",
+  "<generated-project-root>\wwwroot\css\storefront-builder.generated.css"
+)
+rg -n "@page|HttpClient|fetch\(|/api/storefront/stores|CommerceNodeBaseUrl" $visualFiles
 ```
+
+Do not treat a broad project scan hit in generated `appsettings*.json` or `docs/storefront-analysis/**` as an implementation failure by itself; those are baseline configuration and evidence artifacts, not visual edits.
 
 ## Outputs
 
