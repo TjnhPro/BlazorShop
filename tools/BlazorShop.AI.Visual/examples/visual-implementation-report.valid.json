@@ -7,6 +7,13 @@
   "changedFiles": [
     "Pages/Ssr/Home/HomePage.razor"
   ],
+  "changedFileTargets": [
+    {
+      "filePath": "Pages/Ssr/Home/HomePage.razor",
+      "project": "server",
+      "projectRelativePath": "Pages/Ssr/Home/HomePage.razor"
+    }
+  ],
   "recorderResultPath": "docs/storefront-analysis/agent-written-files.json",
   "buildResult": {
     "status": "passed",

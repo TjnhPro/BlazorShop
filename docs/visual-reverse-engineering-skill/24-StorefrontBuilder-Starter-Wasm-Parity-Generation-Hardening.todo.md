@@ -593,92 +593,92 @@ Make visual skills and StorefrontBuilder task packages understand server-owned v
 
 ### Tasks
 
-- [ ] Update generation plan schema.
-  - [ ] Add `targetProject`.
-  - [ ] Values: `server`, `wasm`.
-  - [ ] Add project-relative path.
-  - [ ] Add artifact-root-relative path.
-  - [ ] Add ownership.
-  - [ ] Add protected markers.
-- [ ] Update agent task package.
-  - [ ] Include server project root.
-  - [ ] Include WASM project root.
-  - [ ] Include server allowed visual files.
-  - [ ] Include WASM allowed visual files.
-  - [ ] Include server protected files.
-  - [ ] Include WASM protected files.
-  - [ ] Include package hashes.
-  - [ ] Include generation plan hash.
-  - [ ] Include handoff hash when applicable.
-- [ ] Update `storefront-visual-plan`.
-  - [ ] Plan server visual slots separately.
-  - [ ] Plan WASM visual slots separately.
-  - [ ] Account, cart and checkout visual work targets WASM by default.
-  - [ ] SSR layout/catalog/content targets server by default.
-  - [ ] Product/cart descriptors remain Presentation-owned.
-- [ ] Update `storefront-visual-implement`.
-  - [ ] Allow server visual CSS and Razor files.
-  - [ ] Allow WASM visual Razor/CSS files.
-  - [ ] Reject server `Program.cs`.
-  - [ ] Reject WASM `Program.cs`.
-  - [ ] Reject `.csproj`.
-  - [ ] Reject runtime registration changes.
-  - [ ] Reject BFF/API transport changes.
-  - [ ] Reject route declarations.
-  - [ ] Reject auth/cart/checkout semantic changes.
-- [ ] Update visual write recorder.
-  - [ ] Record project for every written file.
-  - [ ] Validate planned target project.
-  - [ ] Validate allowed path under correct project.
-  - [ ] Reject writes crossing project boundary.
-  - [ ] Reject protected runtime files.
-- [ ] Update visual QA.
-  - [ ] Check server SSR routes.
-  - [ ] Check WASM routes/components.
-  - [ ] Check WASM bootstrap loads.
-  - [ ] Check interactive component hydration/startup.
-  - [ ] Check same-origin network calls.
-  - [ ] Check direct route refresh.
-  - [ ] Check browser console errors.
-  - [ ] Check generated CSS is linked.
-  - [ ] Check no horizontal overflow.
+- [x] Update generation plan schema.
+  - [x] Add `targetProject`.
+  - [x] Values: `server`, `wasm`.
+  - [x] Add project-relative path.
+  - [x] Add artifact-root-relative path.
+  - [x] Add ownership.
+  - [x] Add protected markers.
+- [x] Update agent task package.
+  - [x] Include server project root.
+  - [x] Include WASM project root.
+  - [x] Include server allowed visual files.
+  - [x] Include WASM allowed visual files.
+  - [x] Include server protected files.
+  - [x] Include WASM protected files.
+  - [x] Include package hashes.
+  - [x] Include generation plan hash.
+  - [x] Include handoff hash when applicable.
+- [x] Update `storefront-visual-plan`.
+  - [x] Plan server visual slots separately.
+  - [x] Plan WASM visual slots separately.
+  - [x] Account, cart and checkout visual work targets WASM by default.
+  - [x] SSR layout/catalog/content targets server by default.
+  - [x] Product/cart descriptors remain Presentation-owned.
+- [x] Update `storefront-visual-implement`.
+  - [x] Allow server visual CSS and Razor files.
+  - [x] Allow WASM visual Razor/CSS files.
+  - [x] Reject server `Program.cs`.
+  - [x] Reject WASM `Program.cs`.
+  - [x] Reject `.csproj`.
+  - [x] Reject runtime registration changes.
+  - [x] Reject BFF/API transport changes.
+  - [x] Reject route declarations.
+  - [x] Reject auth/cart/checkout semantic changes.
+- [x] Update visual write recorder.
+  - [x] Record project for every written file.
+  - [x] Validate planned target project.
+  - [x] Validate allowed path under correct project.
+  - [x] Reject writes crossing project boundary.
+  - [x] Reject protected runtime files.
+- [x] Update visual QA.
+  - [x] Check server SSR routes.
+  - [x] Check WASM routes/components.
+  - [x] Check WASM bootstrap loads.
+  - [x] Check interactive component hydration/startup.
+  - [x] Check same-origin network calls.
+  - [x] Check direct route refresh.
+  - [x] Check browser console errors.
+  - [x] Check generated CSS is linked.
+  - [x] Check no horizontal overflow.
 
 ### Allowed Visual Targets
 
-- [ ] Server:
-  - [ ] `Components/Layout/**`
-  - [ ] `Components/Catalog/**`
-  - [ ] `Components/Commerce/**` only when it is server visual wrapper, not action semantics.
-  - [ ] `Components/States/**`
-  - [ ] `Pages/Ssr/**`
-  - [ ] `Pages/Hybrid/**` visual wrappers only, no route declarations.
-  - [ ] `wwwroot/css/**`
-  - [ ] `wwwroot/assets/generated/**`
-- [ ] WASM:
-  - [ ] `BlazorShop.Storefront.{Name}.WASM/Components/Account/**`
-  - [ ] `BlazorShop.Storefront.{Name}.WASM/Components/Cart/**`
-  - [ ] `BlazorShop.Storefront.{Name}.WASM/Components/Checkout/**`
-  - [ ] `BlazorShop.Storefront.{Name}.WASM/wwwroot/**` visual assets only when needed.
+- [x] Server:
+  - [x] `Components/Layout/**`
+  - [x] `Components/Catalog/**`
+  - [x] `Components/Commerce/**` only when it is server visual wrapper, not action semantics.
+  - [x] `Components/States/**`
+  - [x] `Pages/Ssr/**`
+  - [x] `Pages/Hybrid/**` visual wrappers only, no route declarations.
+  - [x] `wwwroot/css/**`
+  - [x] `wwwroot/assets/generated/**`
+- [x] WASM:
+  - [x] `BlazorShop.Storefront.{Name}.WASM/Components/Account/**`
+  - [x] `BlazorShop.Storefront.{Name}.WASM/Components/Cart/**`
+  - [x] `BlazorShop.Storefront.{Name}.WASM/Components/Checkout/**`
+  - [x] `BlazorShop.Storefront.{Name}.WASM/wwwroot/**` visual assets only when needed.
 
 ### Forbidden Visual Targets
 
-- [ ] Server `Program.cs`
-- [ ] WASM `Program.cs`
-- [ ] Server `.csproj`
-- [ ] WASM `.csproj`
-- [ ] `StorefrontPackageVersions.props`
-- [ ] `starter-generation.contract.yaml`
-- [ ] `nuget.config`
-- [ ] BFF endpoint code.
-- [ ] API transport code.
-- [ ] Auth/cart/checkout action descriptors.
-- [ ] SEO route behavior.
-- [ ] Direct Commerce Node calls.
-- [ ] Direct Runtime/Client package references.
+- [x] Server `Program.cs`
+- [x] WASM `Program.cs`
+- [x] Server `.csproj`
+- [x] WASM `.csproj`
+- [x] `StorefrontPackageVersions.props`
+- [x] `starter-generation.contract.yaml`
+- [x] `nuget.config`
+- [x] BFF endpoint code.
+- [x] API transport code.
+- [x] Auth/cart/checkout action descriptors.
+- [x] SEO route behavior.
+- [x] Direct Commerce Node calls.
+- [x] Direct Runtime/Client package references.
 
 ### Done When
 
-- [ ] Visual agent can change account/cart/checkout visuals in generated WASM without touching runtime behavior.
+- [x] Visual agent can change account/cart/checkout visuals in generated WASM without touching runtime behavior.
 
 ## Phase 7 - Regeneration And Runner Hardening
 

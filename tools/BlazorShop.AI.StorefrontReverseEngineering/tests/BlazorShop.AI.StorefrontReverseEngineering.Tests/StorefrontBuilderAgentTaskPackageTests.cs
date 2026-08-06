@@ -26,8 +26,26 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
         Assert.Contains("inputs/originality-restrictions.json", inputs);
         Assert.Contains("instructions.md", inputs);
 
-        Assert.Contains(manifest["allowedOutputFiles"]!.AsArray(), item => item!["targetPath"]!.GetValue<string>() == "Components/Catalog/PurchasePanelPlaceholder.razor");
-        Assert.Contains(manifest["allowedOutputFiles"]!.AsArray(), item => item!["targetPath"]!.GetValue<string>() == "Pages/Hybrid/Commerce/CartPage.razor" && item["visualShellOnly"]!.GetValue<bool>());
+        Assert.Equal(".", manifest["serverProjectRoot"]!.GetValue<string>());
+        Assert.Equal($"{manifest["projectName"]!.GetValue<string>()}.WASM", manifest["wasmProjectRoot"]!.GetValue<string>());
+        Assert.NotEmpty(manifest["allowedOutputFilesByProject"]!["server"]!.AsArray());
+        Assert.NotEmpty(manifest["allowedOutputFilesByProject"]!["wasm"]!.AsArray());
+        Assert.NotEmpty(manifest["protectedFilesByProject"]!["server"]!.AsArray());
+        Assert.NotEmpty(manifest["protectedFilesByProject"]!["wasm"]!.AsArray());
+        Assert.NotEmpty(manifest["packageProvenance"]!["packages"]!.AsArray());
+        Assert.NotEmpty(manifest["packageHashes"]!.AsObject());
+        Assert.StartsWith("sha256:", manifest["generationPlanHash"]!.GetValue<string>(), StringComparison.Ordinal);
+
+        var allowedOutputFiles = manifest["allowedOutputFiles"]!.AsArray();
+        Assert.Contains(allowedOutputFiles, item => item!["targetPath"]!.GetValue<string>() == "Components/Catalog/PurchasePanelPlaceholder.razor" && item["targetProject"]!.GetValue<string>() == "server");
+        Assert.Contains(allowedOutputFiles, item => item!["targetPath"]!.GetValue<string>().EndsWith(".WASM/Components/Cart/StorefrontCartApp.razor", StringComparison.Ordinal) && item["targetProject"]!.GetValue<string>() == "wasm" && item["visualShellOnly"]!.GetValue<bool>());
+        foreach (var file in allowedOutputFiles)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(file!["targetProject"]!.GetValue<string>()));
+            Assert.False(string.IsNullOrWhiteSpace(file["projectRelativePath"]!.GetValue<string>()));
+            Assert.False(string.IsNullOrWhiteSpace(file["artifactRootRelativePath"]!.GetValue<string>()));
+        }
+
         Assert.NotEmpty(manifest["copiedEvidence"]!.AsArray());
 
         foreach (var file in Directory.EnumerateFiles(packageRoot, "*", SearchOption.AllDirectories).Where(path => !Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase)))
@@ -54,13 +72,41 @@ public sealed class StorefrontBuilderAgentTaskPackageTests
         Assert.Contains("sourcePlanEntryId", record, StringComparison.Ordinal);
         Assert.Contains("file.Components-Catalog-ProductSummaryCard.razor", record, StringComparison.Ordinal);
         Assert.Contains("checksum", record, StringComparison.Ordinal);
+        Assert.Contains("\"project\": \"server\"", record, StringComparison.Ordinal);
+        Assert.Contains("\"projectRelativePath\": \"Components/Catalog/ProductSummaryCard.razor\"", record, StringComparison.Ordinal);
+        Assert.Contains("\"artifactRootRelativePath\":", record, StringComparison.Ordinal);
         var generatedManifest = await File.ReadAllTextAsync(Path.Combine(projectRoot, "docs", "storefront-analysis", "generated-files.yaml"));
         Assert.Contains("agentWrittenFiles:", generatedManifest, StringComparison.Ordinal);
         Assert.Contains("agentFilePath: Components/Catalog/ProductSummaryCard.razor", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("project: server", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("projectRelativePath: Components/Catalog/ProductSummaryCard.razor", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("artifactRootRelativePath:", generatedManifest, StringComparison.Ordinal);
         Assert.Contains("sourcePlanEntryId: file.Components-Catalog-ProductSummaryCard.razor", generatedManifest, StringComparison.Ordinal);
         Assert.Contains("manualEditDetected: true", generatedManifest, StringComparison.Ordinal);
         Assert.Contains("conflictStatus: agent-visual-edit", generatedManifest, StringComparison.Ordinal);
         Assert.Contains("currentHash: sha256:", generatedManifest, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AgentWriteRecorder_AllowsGeneratedWasmVisualAndUpdatesManifest()
+    {
+        var projectRoot = await CreateHandoffProjectAsync("Phase4AgentWasmWrite");
+        var projectName = Path.GetFileName(projectRoot);
+        var targetPath = $"{projectName}.WASM/Components/Cart/StorefrontCartApp.razor";
+        var target = Path.Combine(projectRoot, targetPath.Replace('/', Path.DirectorySeparatorChar));
+        await File.AppendAllTextAsync(target, Environment.NewLine + "@* agent wasm visual polish marker *@");
+
+        var result = await RunRecordAsync(projectRoot, targetPath);
+
+        Assert.True(result.ExitCode == 0, result.Output);
+        var record = await File.ReadAllTextAsync(Path.Combine(projectRoot, "docs", "storefront-analysis", "agent-written-files.json"));
+        Assert.Contains($"\"filePath\": \"{targetPath}\"", record, StringComparison.Ordinal);
+        Assert.Contains("\"project\": \"wasm\"", record, StringComparison.Ordinal);
+        Assert.Contains("\"projectRelativePath\": \"Components/Cart/StorefrontCartApp.razor\"", record, StringComparison.Ordinal);
+        var generatedManifest = await File.ReadAllTextAsync(Path.Combine(projectRoot, "docs", "storefront-analysis", "generated-files.yaml"));
+        Assert.Contains($"agentFilePath: {targetPath}", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("project: wasm", generatedManifest, StringComparison.Ordinal);
+        Assert.Contains("projectRelativePath: Components/Cart/StorefrontCartApp.razor", generatedManifest, StringComparison.Ordinal);
     }
 
     [Fact]

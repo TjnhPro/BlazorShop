@@ -29,6 +29,13 @@ Stop if browser evidence is missing, stale, or only compile/smoke evidence exist
 
 Inspect every captured desktop, tablet, and mobile screenshot required by the visual plan. Compare each runtime screenshot against the approved reference evidence for the same page and viewport. Review the markdown output and machine-readable summary from `run-visual-qa.mjs` and record:
 
+- server SSR route status for planned `server` pages
+- WASM bootstrap asset loading for planned `wasm` components/routes
+- interactive component hydration/startup on account, cart, and checkout visual shells
+- direct refresh results for `/account`, `/cart`, and `/checkout` when those pages are in scope
+- same-origin network behavior and absence of direct Commerce Node, Control Plane, Commerce Admin, or legacy API calls
+- generated CSS link/load status and whether the page applies generated typography/styles
+- horizontal overflow across desktop, tablet, and mobile
 - blank page findings
 - overlapping text
 - cropped controls
@@ -44,6 +51,8 @@ Inspect every captured desktop, tablet, and mobile screenshot required by the vi
 Record `referenceEvidenceReviewed: true` only after the reference evidence paths were opened and compared against runtime evidence. QA must fail if reference evidence is missing, stale, or not comparable to the required page/viewport matrix.
 
 QA cannot pass from compile-only, restore-only, or smoke-only evidence.
+
+When `visual-plan.json` or the task package includes `targetProject`, record whether each issue belongs to `server` or `wasm`. Use `server` for SSR layout/catalog/content/CSS rendering issues and `wasm` for account/cart/checkout hydration, browser bootstrap, or interactive visual shell issues. Do not recommend protected server/WASM runtime edits as fixes for visual-only QA findings.
 
 ## Closure Severity
 

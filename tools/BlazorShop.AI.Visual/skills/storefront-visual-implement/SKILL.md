@@ -25,9 +25,18 @@ Use this skill only after `storefront-visual-plan` has produced a visual plan an
 
 Stop before edits when the visual plan contains blockers for the requested scope, when the checklist hash does not match the approved plan, or when a requested file is not allowed by the task package.
 
+Stop before edits when the requested file's `targetProject` does not match the task package plan. Server files must be edited from the generated server root. WASM files must be edited only under the generated sibling `<ProjectName>.WASM/` root.
+
 ## Edit Rules
 
 Edits must stay inside generated-owned visual files allowed by StorefrontBuilder's task package.
+
+Allowed visual zones are project-specific:
+
+- Server: `Components/Layout/**`, `Components/Catalog/**`, server-only `Components/Commerce/**` visual wrappers, `Components/States/**`, `Pages/Ssr/**`, `Pages/Hybrid/**` visual wrappers with no route declarations, `wwwroot/css/**`, and `wwwroot/assets/generated/**`.
+- WASM: `<ProjectName>.WASM/Components/Account/**`, `<ProjectName>.WASM/Components/Cart/**`, `<ProjectName>.WASM/Components/Checkout/**`, and `<ProjectName>.WASM/wwwroot/**` visual assets only when the plan lists them.
+
+Forbidden targets include server `Program.cs`, WASM `Program.cs`, any `.csproj`, `StorefrontPackageVersions.props`, `starter-generation.contract.yaml`, `nuget.config`, BFF endpoint code, API transport code, auth/cart/checkout action descriptors, SEO route behavior, direct Commerce Node calls, and direct Runtime/Client package references.
 
 Preserve:
 
@@ -82,6 +91,6 @@ Emit:
 - `docs/storefront-analysis/visual-implementation-report.md`
 - checkpoint artifacts under `docs/storefront-analysis/visual-checkpoints/{operationId}/`
 
-`visual-implementation-report.json` must include before/after snapshot hashes, changed file list, visual write recorder result path, build result, boundary result, and unresolved items.
+`visual-implementation-report.json` must include before/after snapshot hashes, changed file list, `changedFileTargets` with `project` and `projectRelativePath`, visual write recorder result path, build result, boundary result, and unresolved items.
 For closure, it must also include the visual plan `operationId` and the checkpoint path under `docs/storefront-analysis/visual-checkpoints/{operationId}/visual-checkpoint.json`.
 The recorder output must have `detectionMode: checkpoint-auto-detect`; hint-only write records are not valid closure evidence.

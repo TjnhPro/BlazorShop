@@ -62,6 +62,9 @@ for (const targetPath of targetFiles) {
   validateVisualContent(targetPath, content, allowed);
   records.push({
     filePath: targetPath,
+    project: allowed.targetProject ?? inferTargetProject(packageManifest.projectName, targetPath),
+    projectRelativePath: allowed.projectRelativePath ?? inferProjectRelativePath(packageManifest.projectName, targetPath),
+    artifactRootRelativePath: allowed.artifactRootRelativePath ?? `${packageManifest.projectName}/${targetPath}`,
     detectionSource: describeDetectionSource(targetPath, detection, writtenFiles),
     sourcePlanEntryId: allowed.planEntryId,
     checksum: `sha256:${sha(normalizeText(content))}`,
@@ -275,11 +278,25 @@ function assertAllowedPath(targetPath, allowedByPath) {
     fail("SFB-AGENT-WRITE-003", `Agent write targets a protected package or Starter zone: ${targetPath}`);
   }
 
-  if (!allowedByPath.has(targetPath)) {
+  const allowed = allowedByPath.get(targetPath);
+  if (!allowed) {
     fail("SFB-AGENT-WRITE-004", `Agent write is outside allowed generated-owned outputs: ${targetPath}`);
   }
 
-  if (targetPath === "appsettings.json" || targetPath.endsWith(".csproj") || targetPath === "Program.cs") {
+  const inferredProject = inferTargetProject(packageManifest.projectName, targetPath);
+  const inferredProjectRelativePath = inferProjectRelativePath(packageManifest.projectName, targetPath);
+  if ((allowed.targetProject && allowed.targetProject !== inferredProject) ||
+      (allowed.projectRelativePath && allowed.projectRelativePath !== inferredProjectRelativePath)) {
+    fail("SFB-AGENT-WRITE-007", `Agent write crosses planned project boundary: ${targetPath}`);
+  }
+
+  if (targetPath === "appsettings.json" ||
+      targetPath === "nuget.config" ||
+      targetPath === "StorefrontPackageVersions.props" ||
+      targetPath === "starter-generation.contract.yaml" ||
+      targetPath.endsWith(".csproj") ||
+      targetPath === "Program.cs" ||
+      targetPath.endsWith("/Program.cs")) {
     fail("SFB-AGENT-WRITE-005", `Agent write targets project/server configuration: ${targetPath}`);
   }
 }
@@ -347,6 +364,9 @@ function appendAgentManifestSection(projectRoot, records) {
     "agentWrittenFiles:",
     ...records.flatMap(record => [
       `  - agentFilePath: ${record.filePath}`,
+      `    project: ${record.project}`,
+      `    projectRelativePath: ${record.projectRelativePath}`,
+      `    artifactRootRelativePath: ${record.artifactRootRelativePath}`,
       `    sourcePlanEntryId: ${record.sourcePlanEntryId}`,
       `    checksum: ${record.checksum}`,
       `    ownership: ${record.ownership}`,
@@ -406,6 +426,15 @@ function normalizeTargetPath(path) {
   }
 
   return normalized;
+}
+
+function inferTargetProject(projectName, targetPath) {
+  return normalizeTargetPath(targetPath).startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+}
+
+function inferProjectRelativePath(projectName, targetPath) {
+  const normalized = normalizeTargetPath(targetPath);
+  return normalized.startsWith(`${projectName}.WASM/`) ? normalized.slice(`${projectName}.WASM/`.length) : normalized;
 }
 
 function isProtectedPackagePath(path) {

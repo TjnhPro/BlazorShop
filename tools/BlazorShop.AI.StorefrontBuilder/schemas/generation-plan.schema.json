@@ -12,6 +12,7 @@
     "sourceStarterContractHash",
     "projectName",
     "storeKey",
+    "projects",
     "generationMode",
     "files",
     "slots",
@@ -33,26 +34,51 @@
     "storeKey": { "type": "string" },
     "generationMode": { "type": "string", "enum": [ "static", "handoff" ] },
     "generationOrder": { "type": "array", "items": { "type": "string" } },
+    "projects": {
+      "type": "object",
+      "required": [ "server", "wasm" ],
+      "properties": {
+        "server": { "$ref": "#/$defs/project" },
+        "wasm": { "$ref": "#/$defs/project" }
+      },
+      "additionalProperties": false
+    },
     "files": {
       "type": "array",
       "items": {
         "type": "object",
         "required": [
+          "filePath",
           "targetPath",
+          "targetProject",
+          "projectRelativePath",
+          "artifactRootRelativePath",
           "ownership",
           "action",
+          "allowedOperation",
           "sourceHandoffArtifacts",
           "sourceEvidenceReferences",
+          "validationRuleIds",
+          "conflictBehavior",
+          "declaresRoute",
           "rationale",
           "sourceSpecHash",
           "generatedHash"
         ],
         "properties": {
+          "filePath": { "type": "string" },
           "targetPath": { "type": "string" },
+          "targetProject": { "type": "string", "enum": [ "server", "wasm" ] },
+          "projectRelativePath": { "type": "string" },
+          "artifactRootRelativePath": { "type": "string" },
           "ownership": { "type": "string", "enum": [ "generated", "managed", "protected", "user-owned candidate", "obsolete candidate" ] },
           "action": { "type": "string", "enum": [ "create", "replace", "patch", "skip", "conflict", "obsolete" ] },
+          "allowedOperation": { "type": "string", "enum": [ "create", "replace", "patch", "skip", "conflict", "obsolete" ] },
           "sourceHandoffArtifacts": { "type": "array", "items": { "type": "string" } },
           "sourceEvidenceReferences": { "type": "array", "items": { "type": "string" } },
+          "validationRuleIds": { "type": "array", "items": { "type": "string" } },
+          "conflictBehavior": { "type": "string" },
+          "declaresRoute": { "type": "boolean" },
           "rationale": { "type": "string" },
           "sourceSpecHash": { "type": "string" },
           "generatedHash": { "type": "string" }
@@ -67,5 +93,17 @@
     "warnings": { "type": "array" },
     "blockedItems": { "type": "array" }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "$defs": {
+    "project": {
+      "type": "object",
+      "required": [ "name", "rootPath", "projectPath" ],
+      "properties": {
+        "name": { "type": "string" },
+        "rootPath": { "type": "string" },
+        "projectPath": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  }
 }

@@ -22,6 +22,11 @@ const HANDOFF_ARTIFACTS = {
 };
 
 const VISUAL_SHELL_SLOTS = new Set(["cart.page", "checkout.page", "account.shell", "system.error"]);
+const WASM_VISUAL_SLOT_TARGETS = {
+  "account.shell": "Components/Account/StorefrontAccountApp.razor",
+  "cart.page": "Components/Cart/StorefrontCartApp.razor",
+  "checkout.page": "Components/Checkout/StorefrontCheckoutApp.razor",
+};
 const DEFAULT_TOKEN_TARGET = "wwwroot/css/storefront-builder.generated.css";
 
 export function buildHandoffGenerationPlan(options) {
@@ -96,7 +101,7 @@ export function buildHandoffGenerationPlan(options) {
         validateTargetPath(normalizeTargetPath(section.targetFilePath), artifacts.storefrontPattern, artifacts.protectedFiles);
       }
 
-      const targetPath = normalizeTargetPath(slotContract.path);
+      const targetPath = resolveVisualTargetPath(projectName, slotId, slotContract.path);
       validateTargetPath(targetPath, artifacts.storefrontPattern, artifacts.protectedFiles);
       const ownership = slotContract.owner ?? (VISUAL_SHELL_SLOTS.has(slotId) ? "managed" : "generated");
       const evidenceRefs = evidenceCatalog.refsFor(pageId, slotId);
@@ -327,6 +332,7 @@ function ensureFilePlan(filesByPath, input) {
     targetPath: input.targetPath,
     targetProject: inferTargetProject(input.projectRoot, input.targetPath),
     projectRelativePath: inferProjectRelativePath(input.projectRoot, input.targetPath),
+    artifactRootRelativePath: `${normalizePath(input.projectRoot).split("/").pop()}/${input.targetPath}`,
     ownership: input.ownership,
     action: input.action,
     allowedOperation: input.action,
@@ -422,9 +428,27 @@ function validateTargetPath(targetPath, pattern, protectedFiles, allowProtected 
 
   const zones = sortedUnique([...(pattern.generationZones?.generatedZones ?? []), ...(pattern.generationZones?.managedZones ?? [])]).map(normalizePath);
   const inAllowedZone = zones.some(zone => targetPath === zone || targetPath.startsWith(`${zone}/`));
+  const inGeneratedWasmVisualZone = isGeneratedWasmVisualPath(targetPath);
   if (!allowProtected && !inAllowedZone) {
+    if (inGeneratedWasmVisualZone) {
+      return;
+    }
+
     throw planError("SFB-HANDOFF-PLAN-006", `Target path '${targetPath}' is outside allowed generated zones.`, "The target is not declared by the Starter generation contract.", "Regenerate the handoff from current Starter/Presentation contracts.");
   }
+}
+
+function resolveVisualTargetPath(projectName, slotId, contractPath) {
+  const wasmTarget = WASM_VISUAL_SLOT_TARGETS[slotId];
+  if (wasmTarget) {
+    return `${projectName}.WASM/${wasmTarget}`;
+  }
+
+  return normalizeTargetPath(contractPath);
+}
+
+function isGeneratedWasmVisualPath(targetPath) {
+  return /^[A-Za-z0-9_.-]+\.WASM\/(Components\/(Account|Cart|Checkout)\/|wwwroot\/)/.test(targetPath);
 }
 
 function validateHandoffEvidenceReferences(refs) {

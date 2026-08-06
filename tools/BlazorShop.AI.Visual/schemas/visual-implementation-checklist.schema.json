@@ -26,9 +26,11 @@
     "fileTask": {
       "type": "object",
       "additionalProperties": false,
-      "required": [ "filePath", "taskIds", "status" ],
+      "required": [ "filePath", "project", "projectRelativePath", "taskIds", "status" ],
       "properties": {
         "filePath": { "type": "string" },
+        "project": { "type": "string", "enum": [ "server", "wasm" ] },
+        "projectRelativePath": { "type": "string" },
         "taskIds": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": [ "completed", "blocked", "not-applicable" ] },
         "notes": { "type": "string" }

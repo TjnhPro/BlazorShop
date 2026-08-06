@@ -43,6 +43,7 @@ const packageRoot = resolveHandoffPackageRoot(handoffRoot);
 const plan = readJson(planPath);
 const planText = readFileSync(planPath, "utf8");
 const planHash = `sha256:${sha(normalizeText(planText))}`;
+const projects = normalizeProjects(plan.projectName, plan.projects);
 const artifacts = {
   allowedFiles: readHandoffJson(packageRoot, "allowed-files.json"),
   protectedFiles: readHandoffJson(packageRoot, "protected-files.json"),
@@ -64,7 +65,17 @@ const warnings = evidenceReferences
   .filter(reference => !copiedEvidence.some(item => item.handoffPath === reference))
   .map(reference => ({ code: "evidence-not-copied", handoffPath: reference, message: "Evidence path was not an approved screenshot/crop or was missing from the portable package." }));
 const handoffHash = normalizeHash(plan.sourceHandoffPackageHash ?? artifacts.storefrontPattern.sourceHandoffPackageHash ?? artifacts.storefrontPattern.handoffHash);
-const protectedFiles = listProtectedFiles(artifacts.protectedFiles);
+const protectedFiles = sortedUnique([
+  ...listProtectedFiles(artifacts.protectedFiles),
+  ...listGeneratedProtectedFiles(projectRoot),
+]);
+const protectedFilesByProject = groupPathsByProject(plan.projectName, protectedFiles.map(path => ({
+  targetPath: path,
+  targetProject: inferTargetProject(plan.projectName, path),
+  projectRelativePath: inferProjectRelativePath(plan.projectName, path),
+})));
+const allowedOutputFilesByProject = groupPathsByProject(plan.projectName, allowedOutputs);
+const packageProvenance = readGeneratedPackageProvenance(projectRoot);
 
 writeJson(join(outputRoot, "inputs", "generation-plan.json"), plan);
 writeJson(join(outputRoot, "inputs", "handoff-evidence-references.json"), {
@@ -93,6 +104,8 @@ writeJson(join(outputRoot, "inputs", "file-boundary-manifest.json"), {
   protectedFileCount: protectedFiles.length,
   protectedFiles,
   allowedOutputFiles: allowedOutputs,
+  allowedOutputFilesByProject,
+  protectedFilesByProject,
 });
 writeJson(join(outputRoot, "inputs", "originality-restrictions.json"), artifacts.originalityRestrictions);
 writeFileSync(join(outputRoot, "instructions.md"), buildInstructions(plan, allowedOutputs), "utf8");
@@ -103,10 +116,14 @@ const manifest = stableObject({
   artifactId: `agent-visual-task-package.${plan.projectName}`,
   projectName: plan.projectName,
   storeKey: plan.storeKey,
-  projects: plan.projects ?? buildProjects(plan.projectName),
+  projects,
+  serverProjectRoot: projects.server.rootPath,
+  wasmProjectRoot: projects.wasm.rootPath,
   handoffHash,
   sourceHandoffPackageHash: handoffHash,
   generationPlanHash: planHash,
+  packageProvenance,
+  packageHashes: Object.fromEntries(packageProvenance.packages.map(item => [item.id, item.sha256])),
   inputs: [
     "inputs/generation-plan.json",
     "inputs/handoff-evidence-references.json",
@@ -118,7 +135,9 @@ const manifest = stableObject({
   ],
   copiedEvidence,
   allowedOutputFiles: allowedOutputs,
+  allowedOutputFilesByProject,
   protectedFiles,
+  protectedFilesByProject,
   forbiddenOutputs: [
     "route declarations",
     "BFF endpoints",
@@ -146,6 +165,7 @@ function buildAllowedOutputs(plan) {
       targetPath: normalizeProjectPath(file.targetPath),
       targetProject: file.targetProject ?? inferTargetProject(plan.projectName, file.targetPath),
       projectRelativePath: file.projectRelativePath ?? inferProjectRelativePath(plan.projectName, file.targetPath),
+      artifactRootRelativePath: file.artifactRootRelativePath ?? `${plan.projectName}/${normalizeProjectPath(file.targetPath)}`,
       planEntryId: file.id,
       ownership: file.ownership,
       allowedOperation: file.allowedOperation ?? file.action,
@@ -171,10 +191,66 @@ function buildProjects(projectName) {
   };
 }
 
+function normalizeProjects(projectName, value) {
+  const fallback = buildProjects(projectName);
+  return {
+    server: {
+      ...fallback.server,
+      ...(value?.server ?? {}),
+    },
+    wasm: {
+      ...fallback.wasm,
+      ...(value?.wasm ?? {}),
+    },
+  };
+}
+
 function inferTargetProject(projectName, targetPath) {
   const normalized = normalizeProjectPath(targetPath);
   return normalized.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
 }
+
+function groupPathsByProject(projectName, items) {
+  const grouped = { server: [], wasm: [] };
+  for (const item of items) {
+    const targetPath = normalizeProjectPath(item.targetPath ?? item);
+    const targetProject = item.targetProject ?? inferTargetProject(projectName, targetPath);
+    grouped[targetProject].push(stableObject({
+      targetPath,
+      targetProject,
+      projectRelativePath: item.projectRelativePath ?? inferProjectRelativePath(projectName, targetPath),
+      artifactRootRelativePath: item.artifactRootRelativePath ?? `${projectName}/${targetPath}`,
+      ownership: item.ownership,
+      allowedOperation: item.allowedOperation,
+      visualShellOnly: item.visualShellOnly === true,
+      planEntryId: item.planEntryId,
+    }));
+  }
+
+  grouped.server.sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
+  grouped.wasm.sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
+  return grouped;
+}
+
+function readGeneratedPackageProvenance(projectRoot) {
+  const metadataPath = join(projectRoot, "docs", "storefront-analysis", "metadata.yaml");
+  if (!existsSync(metadataPath)) {
+    return { feedPath: "unknown", packages: [] };
+  }
+
+  const text = readFileSync(metadataPath, "utf8");
+  const feedPath = text.match(/^\s*feedPath:\s*(\S+)\s*$/m)?.[1] ?? "unknown";
+  const packages = [...text.matchAll(/^\s+- id:\s*(?<id>\S+)\s*\r?\n\s+version:\s*(?<version>\S+)\s*\r?\n\s+sha256:\s*(?<sha256>\S+)\s*$/gm)]
+    .map(match => stableObject({
+      id: match.groups.id,
+      version: match.groups.version,
+      sha256: match.groups.sha256,
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id, "en"));
+
+  return stableObject({ feedPath, packages });
+}
+
 
 function inferProjectRelativePath(projectName, targetPath) {
   const normalized = normalizeProjectPath(targetPath);
@@ -223,13 +299,15 @@ function buildInstructions(plan, allowedOutputs) {
     `Store key: ${plan.storeKey}`,
     "",
     "Only modify files listed in `manifest.json` `allowedOutputFiles`.",
+    "Respect each allowed file's `targetProject`: `server` paths are relative to the generated server project root, `wasm` paths are relative to the sibling WASM project root and appear in `targetPath` with the `<ProjectName>.WASM/` prefix.",
+    "Use `allowedOutputFilesByProject` and `protectedFilesByProject` before editing; never move a planned server change into WASM or a planned WASM change into the server.",
     "Generated visual files must not declare routes, endpoints, HTTP clients, DTOs, commerce commands, auth flow logic, SEO canonical logic, server configuration, appsettings secrets, or runtime registration.",
     "Use existing Presentation descriptors and semantic `data-storefront-*` attributes where a plan slot already depends on them.",
     "All UX copy written by the agent must be store-owned copy that can be localized later.",
     "Images and assets must follow `inputs/originality-restrictions.json`; restricted reference material must be replaced, not copied.",
     "",
     "Allowed output files:",
-    ...allowedOutputs.map(file => `- ${file.targetPath} (${file.planEntryId})`),
+    ...allowedOutputs.map(file => `- ${file.targetPath} (${file.targetProject}; ${file.projectRelativePath}; ${file.planEntryId})`),
     "",
   ].join("\n");
 }
@@ -303,6 +381,34 @@ function listProtectedFiles(value) {
     .sort((a, b) => a.localeCompare(b, "en"));
 }
 
+function listGeneratedProtectedFiles(projectRoot) {
+  const manifestPath = join(projectRoot, "docs", "storefront-analysis", "generated-files.yaml");
+  if (!existsSync(manifestPath)) {
+    return [];
+  }
+
+  const text = readFileSync(manifestPath, "utf8").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const protectedFiles = [];
+  for (const match of text.matchAll(/^\s+- filePath:\s*(?<file>[^\n]+)\n(?<body>.*?)(?=^\s+- filePath:|\z)/gms)) {
+    const filePath = normalizeProjectPath(match.groups.file);
+    if (/^\s+ownership:\s*protected\s*$/m.test(match.groups.body) || isGeneratedRuntimeProtectedPath(filePath)) {
+      protectedFiles.push(filePath);
+    }
+  }
+
+  return protectedFiles;
+}
+
+function isGeneratedRuntimeProtectedPath(path) {
+  return path === "Program.cs" ||
+    path.endsWith("/Program.cs") ||
+    path.endsWith(".csproj") ||
+    path === "StorefrontPackageVersions.props" ||
+    path === "starter-generation.contract.yaml" ||
+    path === "nuget.config" ||
+    path === "appsettings.json";
+}
+
 function redactForbiddenProtectedPath(path) {
   return FORBIDDEN_PACKAGE_TEXT_MARKERS.some(marker => path.includes(marker))
     ? `protected-path:${sha(path)}`
@@ -333,6 +439,10 @@ function writeJson(path, value) {
 
 function stableJson(value) {
   return JSON.stringify(stableObject(value));
+}
+
+function sortedUnique(items) {
+  return [...new Set(items)].sort((a, b) => a.localeCompare(b, "en"));
 }
 
 function stableObject(value) {

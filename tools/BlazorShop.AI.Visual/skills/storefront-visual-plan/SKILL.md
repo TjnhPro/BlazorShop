@@ -34,9 +34,18 @@ Hash `generation-plan.json` and `agent-task-package/manifest.json` with SHA-256.
 
 List every allowed output file and every protected file from the task package. Read protected files from `agent-task-package/manifest.json` `protectedFiles`, or from `agent-task-package/inputs/file-boundary-manifest.json` `protectedFiles` for older packages. Normalize paths to forward slashes, reject traversal, and sort by normalized relative path.
 
+Read `projects`, `serverProjectRoot`, `wasmProjectRoot`, `allowedOutputFilesByProject`, and `protectedFilesByProject` from `agent-task-package/manifest.json` when present. Every planned file must record `targetProject` (`server` or `wasm`) and `projectRelativePath`. If an older package lacks grouped fields, derive `targetProject` from `targetPath`: paths starting with `<ProjectName>.WASM/` are `wasm`; all other generated-project-relative paths are `server`.
+
 ## Planning Rules
 
 Map every page and visual slot from `generation-plan.json` to exactly one implementation task or one blocked reason. Unsupported behavior must be blocked instead of implemented through transport, route, auth, SEO, BFF, cart, checkout, account, payment, order, or runtime changes.
+
+Plan server and WASM work separately:
+
+- SSR layout, catalog, content, state pages, generated CSS, and server visual wrappers target `server`.
+- Account, cart, checkout, auth, and other hydrated browser-facing visual shells target `wasm` by default.
+- Product, cart, and checkout descriptors remain Presentation-owned contracts; plan only visual wrapper changes that preserve descriptors.
+- If a requested change would require moving a slot across `server`/`wasm` or editing protected runtime files, block it.
 
 Stable output ordering is required:
 
@@ -56,7 +65,7 @@ Write these generated-project-local artifacts:
 - `docs/storefront-analysis/visual-implementation-checklist.todo.md`
 - `docs/storefront-analysis/visual-plan-summary.md`
 
-`visual-plan.json` must validate against `tools/BlazorShop.AI.Visual/schemas/visual-plan.schema.json`. Use `node tools/BlazorShop.AI.Visual/scripts/validate-visual-examples.mjs` to prove schema/example integrity before relying on the contract.
+`visual-plan.json` must validate against `tools/BlazorShop.AI.Visual/schemas/visual-plan.schema.json` and include `projects`, `allowedFileTargets`, `protectedFileTargets`, and `targetProject` for every visual slot. Use `node tools/BlazorShop.AI.Visual/scripts/validate-visual-examples.mjs` to prove schema/example integrity before relying on the contract.
 
 `visual-implementation-checklist.json` is the closure contract artifact and must validate against `tools/BlazorShop.AI.Visual/schemas/visual-implementation-checklist.schema.json`. The `.todo.md` checklist may mirror the JSON for human review, but closure gates read the JSON artifact.
 

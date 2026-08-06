@@ -3,6 +3,18 @@
   "operationId": "pilot-css-foundation",
   "projectName": "BlazorShop.Storefront.Phase4VisualPilot",
   "storeKey": "sample",
+  "projects": {
+    "server": {
+      "name": "BlazorShop.Storefront.Phase4VisualPilot",
+      "rootPath": ".",
+      "projectPath": "BlazorShop.Storefront.Phase4VisualPilot.csproj"
+    },
+    "wasm": {
+      "name": "BlazorShop.Storefront.Phase4VisualPilot.WASM",
+      "rootPath": "BlazorShop.Storefront.Phase4VisualPilot.WASM",
+      "projectPath": "BlazorShop.Storefront.Phase4VisualPilot.WASM/BlazorShop.Storefront.Phase4VisualPilot.WASM.csproj"
+    }
+  },
   "handoffHash": "sha256:handoff",
   "generationPlanHash": "sha256:generation-plan",
   "taskPackageHash": "sha256:task-package",
@@ -27,6 +39,7 @@
     {
       "id": "home.hero",
       "pageId": "home",
+      "targetProject": "server",
       "targetFiles": [
         "Pages/Ssr/Home/HomePage.razor"
       ],
@@ -37,12 +50,46 @@
     "Pages/Ssr/Home/HomePage.razor",
     "wwwroot/css/storefront-builder.generated.css"
   ],
+  "allowedFileTargets": [
+    {
+      "targetPath": "Pages/Ssr/Home/HomePage.razor",
+      "targetProject": "server",
+      "projectRelativePath": "Pages/Ssr/Home/HomePage.razor",
+      "ownership": "generated",
+      "allowedOperation": "patch",
+      "visualShellOnly": false,
+      "planEntryId": "file.Pages-Ssr-Home-HomePage.razor"
+    },
+    {
+      "targetPath": "wwwroot/css/storefront-builder.generated.css",
+      "targetProject": "server",
+      "projectRelativePath": "wwwroot/css/storefront-builder.generated.css",
+      "ownership": "generated",
+      "allowedOperation": "replace",
+      "visualShellOnly": false,
+      "planEntryId": "file.wwwroot-css-storefront-builder.generated.css"
+    }
+  ],
   "plannedGeneratedOwnedFiles": [
     "Pages/Ssr/Home/HomePage.razor",
     "wwwroot/css/storefront-builder.generated.css"
   ],
   "protectedFiles": [
     "Program.cs"
+  ],
+  "protectedFileTargets": [
+    {
+      "targetPath": "Program.cs",
+      "targetProject": "server",
+      "projectRelativePath": "Program.cs",
+      "ownership": "protected"
+    },
+    {
+      "targetPath": "BlazorShop.Storefront.Phase4VisualPilot.WASM/Program.cs",
+      "targetProject": "wasm",
+      "projectRelativePath": "Program.cs",
+      "ownership": "protected"
+    }
   ],
   "implementationOrder": [
     "Pages/Ssr/Home/HomePage.razor",

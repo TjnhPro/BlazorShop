@@ -226,9 +226,11 @@ if ($manifestEntries.Count -eq 0) {
 
 $hasServerManifestEntry = $false
 $hasWasmManifestEntry = $false
+$manifestBodiesByPath = @{}
 foreach ($entry in $manifestEntries) {
     $filePath = $entry.Groups["file"].Value.Trim()
     $body = $entry.Groups["body"].Value
+    $manifestBodiesByPath[$filePath] = $body
     $projectMatch = [regex]::Match($body, "(?m)^\s+project:\s*(server|wasm)\s*$")
     if (-not $projectMatch.Success) {
         throw "[SFB-PROJECT-011] generated-files.yaml entry '$filePath' is missing project ownership."
@@ -253,7 +255,8 @@ foreach ($requiredManifestMarker in @(
     }
 }
 
-if (Test-TextContains -Text $generatedFilesText -Needle "filePath: wwwroot/css/storefront-builder.generated.css" -and -not (Test-TextContains -Text $generatedFilesText -Needle "ownership: generated")) {
+$cssManifestBody = $manifestBodiesByPath["wwwroot/css/storefront-builder.generated.css"]
+if ($null -ne $cssManifestBody -and -not [regex]::IsMatch($cssManifestBody, "(?m)^\s+ownership:\s*generated\s*$")) {
     throw "[SFB-PROJECT-011] generated-files.yaml must mark generated visual CSS ownership as generated."
 }
 

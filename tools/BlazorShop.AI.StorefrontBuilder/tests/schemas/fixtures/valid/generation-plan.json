@@ -8,6 +8,18 @@
   "sourceStarterContractHash": "hash-starter",
   "projectName": "BlazorShop.Storefront.Sample",
   "storeKey": "sample",
+  "projects": {
+    "server": {
+      "name": "BlazorShop.Storefront.Sample",
+      "rootPath": ".",
+      "projectPath": "BlazorShop.Storefront.Sample.csproj"
+    },
+    "wasm": {
+      "name": "BlazorShop.Storefront.Sample.WASM",
+      "rootPath": "BlazorShop.Storefront.Sample.WASM",
+      "projectPath": "BlazorShop.Storefront.Sample.WASM/BlazorShop.Storefront.Sample.WASM.csproj"
+    }
+  },
   "generationMode": "handoff",
   "files": [],
   "slots": [],

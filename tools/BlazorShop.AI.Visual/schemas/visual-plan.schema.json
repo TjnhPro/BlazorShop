@@ -9,6 +9,7 @@
     "operationId",
     "projectName",
     "storeKey",
+    "projects",
     "handoffHash",
     "generationPlanHash",
     "taskPackageHash",
@@ -16,8 +17,10 @@
     "pageViewportCoverage",
     "visualSlots",
     "allowedFiles",
+    "allowedFileTargets",
     "plannedGeneratedOwnedFiles",
     "protectedFiles",
+    "protectedFileTargets",
     "implementationOrder",
     "risks",
     "blockers"
@@ -27,6 +30,15 @@
     "operationId": { "type": "string", "minLength": 1 },
     "projectName": { "type": "string", "minLength": 1 },
     "storeKey": { "type": "string", "minLength": 1 },
+    "projects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "server", "wasm" ],
+      "properties": {
+        "server": { "$ref": "#/$defs/project" },
+        "wasm": { "$ref": "#/$defs/project" }
+      }
+    },
     "handoffHash": { "type": "string", "minLength": 1 },
     "generationPlanHash": { "type": "string", "minLength": 1 },
     "taskPackageHash": { "type": "string", "minLength": 1 },
@@ -34,8 +46,10 @@
     "pageViewportCoverage": { "type": "array", "items": { "$ref": "#/$defs/pageViewportCoverage" } },
     "visualSlots": { "type": "array", "items": { "$ref": "#/$defs/visualSlot" } },
     "allowedFiles": { "type": "array", "items": { "type": "string" } },
+    "allowedFileTargets": { "type": "array", "items": { "$ref": "#/$defs/fileTarget" } },
     "plannedGeneratedOwnedFiles": { "type": "array", "items": { "type": "string" } },
     "protectedFiles": { "type": "array", "items": { "type": "string" } },
+    "protectedFileTargets": { "type": "array", "items": { "$ref": "#/$defs/fileTarget" } },
     "implementationOrder": { "type": "array", "items": { "type": "string" } },
     "risks": { "type": "array", "items": { "$ref": "#/$defs/note" } },
     "blockers": { "type": "array", "items": { "$ref": "#/$defs/note" } }
@@ -54,13 +68,38 @@
     "visualSlot": {
       "type": "object",
       "additionalProperties": false,
-      "required": [ "id", "pageId", "targetFiles", "status" ],
+      "required": [ "id", "pageId", "targetProject", "targetFiles", "status" ],
       "properties": {
         "id": { "type": "string" },
         "pageId": { "type": "string" },
+        "targetProject": { "type": "string", "enum": [ "server", "wasm" ] },
         "targetFiles": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": [ "planned", "blocked" ] },
         "blockedReason": { "type": "string" }
+      }
+    },
+    "fileTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "targetPath", "targetProject", "projectRelativePath", "ownership" ],
+      "properties": {
+        "targetPath": { "type": "string", "minLength": 1 },
+        "targetProject": { "type": "string", "enum": [ "server", "wasm" ] },
+        "projectRelativePath": { "type": "string", "minLength": 1 },
+        "ownership": { "type": "string", "minLength": 1 },
+        "allowedOperation": { "type": "string" },
+        "visualShellOnly": { "type": "boolean" },
+        "planEntryId": { "type": "string" }
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "name", "rootPath", "projectPath" ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "rootPath": { "type": "string", "minLength": 1 },
+        "projectPath": { "type": "string", "minLength": 1 }
       }
     },
     "pageViewportCoverage": {

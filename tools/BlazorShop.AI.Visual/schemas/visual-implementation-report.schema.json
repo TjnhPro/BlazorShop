@@ -11,6 +11,7 @@
     "beforeSnapshotHash",
     "afterSnapshotHash",
     "changedFiles",
+    "changedFileTargets",
     "recorderResultPath",
     "buildResult",
     "boundaryResult",
@@ -23,6 +24,7 @@
     "beforeSnapshotHash": { "type": "string" },
     "afterSnapshotHash": { "type": "string" },
     "changedFiles": { "type": "array", "items": { "type": "string" } },
+    "changedFileTargets": { "type": "array", "items": { "$ref": "#/$defs/fileTarget" } },
     "recorderResultPath": { "type": "string" },
     "buildResult": { "$ref": "#/$defs/result" },
     "boundaryResult": { "$ref": "#/$defs/result" },
@@ -37,6 +39,16 @@
         "status": { "type": "string", "enum": [ "passed", "failed", "skipped" ] },
         "command": { "type": "string" },
         "reportPath": { "type": "string" }
+      }
+    },
+    "fileTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "filePath", "project", "projectRelativePath" ],
+      "properties": {
+        "filePath": { "type": "string", "minLength": 1 },
+        "project": { "type": "string", "enum": [ "server", "wasm" ] },
+        "projectRelativePath": { "type": "string", "minLength": 1 }
       }
     }
   }

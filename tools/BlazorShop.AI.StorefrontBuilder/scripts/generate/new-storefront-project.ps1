@@ -185,14 +185,6 @@ try {
             throw "[SFB-HANDOFF-GEN-011] Handoff project skeleton failed with exit code $LASTEXITCODE."
         }
 
-        & node (Join-Path $PSScriptRoot "write-agent-task-package.mjs") `
-            --project-root $stagedProjectRoot `
-            --handoff-root $HandoffRoot `
-            --plan-json $handoffPlanJsonPath
-        if ($LASTEXITCODE -ne 0) {
-            throw "[SFB-AGENT-PACKAGE-010] Agent task package writer failed with exit code $LASTEXITCODE."
-        }
-
         $handoffPlanSha256 = (Get-FileHash -LiteralPath $handoffPlanJsonPath -Algorithm SHA256).Hash.ToLowerInvariant()
         $handoffPlan = Get-Content -LiteralPath $handoffPlanJsonPath -Raw | ConvertFrom-Json
     }
@@ -302,6 +294,16 @@ try {
     & node (Join-Path $PSScriptRoot "update-generated-files-manifest.mjs") --project-root $stagedProjectRoot
     if ($LASTEXITCODE -ne 0) {
         throw "[SFB-HANDOFF-GEN-012] Generated file manifest update failed with exit code $LASTEXITCODE."
+    }
+
+    if ($isHandoffGeneration) {
+        & node (Join-Path $PSScriptRoot "write-agent-task-package.mjs") `
+            --project-root $stagedProjectRoot `
+            --handoff-root $HandoffRoot `
+            --plan-json $handoffPlanJsonPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "[SFB-AGENT-PACKAGE-010] Agent task package writer failed with exit code $LASTEXITCODE."
+        }
     }
 
     & $projectValidator -ProjectRoot $stagedProjectRoot -Name $projectName -StoreKey $normalizedStoreKey
