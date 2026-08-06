@@ -62,8 +62,10 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project artifacts/storefront-reverse-engineering/projects/demo --force-step capture
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project artifacts/storefront-reverse-engineering/projects/demo
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- validate --project artifacts/storefront-reverse-engineering/projects/demo
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- resolve-safe-review --project artifacts/storefront-reverse-engineering/projects/demo
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- validate-handoff --handoff-root artifacts/storefront-reverse-engineering/projects/demo --schema-root tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas
 dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect-handoff --handoff-root artifacts/storefront-reverse-engineering/projects/demo --schema-root tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas
+dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj -- dry-run-handoff --handoff-root artifacts/storefront-reverse-engineering/projects/demo --schema-root tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas
 ```
 
 Manual artifacts should use `artifacts/storefront-reverse-engineering/projects/{ProjectId}`. Automated tests and gates should use `obj/storefront-reverse-engineering/projects/{ProjectId}`.
@@ -82,10 +84,19 @@ Phase 3C final handoff commands:
 
 ```powershell
 dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- inspect --project obj/storefront-reverse-engineering/projects/fixturedemo
+dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resolve-safe-review --project obj/storefront-reverse-engineering/projects/fixturedemo
 dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step apply-review-decisions
 dotnet run --project tools/BlazorShop.AI.StorefrontReverseEngineering/BlazorShop.AI.StorefrontReverseEngineering.csproj -- resume --project obj/storefront-reverse-engineering/projects/fixturedemo --force-step validate-agent-handoff-readiness
 powershell -ExecutionPolicy Bypass -File scripts\qa\run-storefront-reverse-engineering-phase3c-final-handoff-gate.ps1
 ```
+
+Strict real-site Phase 3B/3C proof:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -ResolveSafeReviewItems -FailOnBlockers -CommandTimeoutSeconds 900
+```
+
+Use this command for closure evidence, not `-Resume`, when proving that current code can regenerate a production handoff from the reference site. The production runner builds the tool, runs the workflow, optionally materializes safe review decisions, reruns from reviewed blueprint assembly, inspects, validates, validates the portable package from the project root, and dry-run loads the handoff as a future consumer. `-FailOnBlockers` returns non-zero for any remaining readiness, portable validation, or dry-run handoff blocker.
 
 Phase 3D final closure command:
 
@@ -107,6 +118,8 @@ The Phase 3E gate restores and builds once, then later `dotnet test` invocations
 
 Review decisions are edited in `review/review-decisions.json`. Apply approved, modified, rejected, or deferred decisions by rerunning `apply-review-decisions` or any downstream step. Decisions must include reviewer metadata, source artifact ID, source artifact hash, and a stable decision ID; stale or duplicate decisions fail before reviewed artifacts are emitted.
 
+`resolve-safe-review --project <project>` is the only non-interactive review materialization path. It may approve deterministic safe visual-only items when the source artifact ID and hash still match the current review queue, and it writes `review/review-decision-summary.json` with approved, modified, blocked, skipped, and stale counts. It must not approve direct Storefront API calls, protected-path changes, runtime-owned behavior, stale hashes, unsupported critical patterns, or unknown unsafe provenance. If the summary reports blocked or stale items, inspect those items and write explicit manual decisions before rerunning `assemble-blueprint-v1` or `validate-agent-handoff-readiness`.
+
 `inspect` reads `project.json`, `runs/{runId}.json`, `reports/readiness-report.json`, Phase 3B analysis JSON, review queue JSON, `reports/generation-readiness.json`, and Phase 3C handoff readiness without launching a browser. Its output includes latest run status, readiness pass/fail/unknown, blocking and warning counts, the latest blocking finding, blueprint path, readiness report path, Phase 3B artifact status, review queue count, generation readiness, latest Phase 3B blocker, final handoff readiness, final handoff blocker/warning counts, agent handoff path, and step status rows when a valid run file exists.
 
 Common Phase 3B failures are reported as problem/cause/fix lines:
@@ -117,7 +130,7 @@ Common Phase 3B failures are reported as problem/cause/fix lines:
 | Missing evidence snapshot | Rerun `--force-step aggregate-evidence`. |
 | Invalid token schema | Rerun `--force-step extract-raw-tokens` or `--force-step normalize-semantic-tokens`. |
 | Presentation catalog drift | Update catalog extraction against current Presentation/Starter contracts and rerun `--force-step build-presentation-catalog`. |
-| Unresolved blocking review item | Write `review/review-decisions.json`, then rerun confidence review and blueprint assembly. |
+| Unresolved blocking review item | Run `resolve-safe-review --project <project>` for deterministic safe visual-only items, or write `review/review-decisions.json` manually for unsafe/manual items, then rerun confidence review and blueprint assembly. |
 | Unsupported critical pattern | Resolve the unsupported mapping before the reviewed handoff can be approved as future generation input. |
 | Failed final handoff readiness | Inspect `analysis/agent-handoff/handoff-readiness.json`, resolve blocking codes, and rerun `validate-agent-handoff-readiness`. |
 

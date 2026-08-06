@@ -65,6 +65,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\
 
 `completed-with-blockers` can still be a valid Phase 3A evidence outcome when `reports/readiness-report.json` says `passed: true` and Phase 3B review/handoff blockers remain. Do not treat missing `review/review-decisions.json` or missing reviewed blueprint output as an offscreen evidence readiness failure.
 
+Use the strict production proof when closing Phase 3B/3C blockers on a real site:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -ResolveSafeReviewItems -FailOnBlockers -CommandTimeoutSeconds 900
+```
+
+`-ResolveSafeReviewItems` materializes only deterministic safe visual-only review decisions from the current review queue. Unsafe runtime behavior, stale hashes, protected paths, direct Storefront API/browser actions, or unsupported critical patterns still block. `-FailOnBlockers` makes Phase 3B generation readiness, Phase 3C handoff readiness, portable validation, and dry-run handoff blockers return non-zero, so final closure should use `-Force` rather than relying on stale `-Resume` artifacts. The portable `validate-handoff` and `dry-run-handoff` commands take the portable package root that contains `analysis/agent-handoff/manifest.json`, not the `analysis/agent-handoff` subfolder itself.
+
 Phase 3B artifacts can be inspected without Playwright:
 
 ```powershell

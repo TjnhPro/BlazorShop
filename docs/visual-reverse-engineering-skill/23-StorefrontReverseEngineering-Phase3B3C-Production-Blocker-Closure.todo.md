@@ -1,6 +1,6 @@
 # StorefrontReverseEngineering Phase 3B/3C Production Blocker Closure
 
-Status: In progress
+Status: Complete
 Owner area: `tools/BlazorShop.AI.StorefrontReverseEngineering`
 Target folder: `docs/visual-reverse-engineering-skill`
 Created: 2026-08-06
@@ -583,16 +583,16 @@ Goal: update operator docs and close this plan without claiming Phase 4 generati
 
 Implementation checklist:
 
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md` with the strict Phase 3B/3C production proof command.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md` with review decision materialization guidance.
-- [ ] Update `docs/architecture/11-storefront-builder.md` only if public architecture or command surface changed.
-- [ ] Add a tracked QA summary under `docs/qa/` if this phase produces final closure evidence that should survive ignored artifacts.
-- [ ] Mark every completed checklist item in this file.
-- [ ] Record exact final commands and outcomes.
-- [ ] Record any skipped checks with reason.
-- [ ] Confirm no ignored production artifacts are accidentally staged.
-- [ ] Confirm unrelated `scripts/reverse-engineering/readme.md` remains untouched unless the user explicitly asks otherwise.
-- [ ] Run final `git status --short`.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md` with the strict Phase 3B/3C production proof command.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md` with review decision materialization guidance.
+- [x] Update `docs/architecture/11-storefront-builder.md` only if public architecture or command surface changed.
+- [x] Add a tracked QA summary under `docs/qa/` if this phase produces final closure evidence that should survive ignored artifacts.
+- [x] Mark every completed checklist item in this file.
+- [x] Record exact final commands and outcomes.
+- [x] Record any skipped checks with reason.
+- [x] Confirm no ignored production artifacts are accidentally staged.
+- [x] Confirm unrelated `scripts/reverse-engineering/readme.md` remains untouched unless the user explicitly asks otherwise.
+- [x] Run final `git status --short`.
 
 Checks:
 
@@ -603,9 +603,21 @@ rg -n "ResolveSafeReviewItems|review decision materialization|completed-with-blo
 
 Done when:
 
-- [ ] Docs describe the new production proof path.
-- [ ] This plan reflects real completed state.
-- [ ] Final working tree contains only intentional tracked changes plus any pre-existing unrelated files.
+- [x] Docs describe the new production proof path.
+- [x] This plan reflects real completed state.
+- [x] Final working tree contains only intentional tracked changes plus any pre-existing unrelated files.
+
+Phase 7 evidence:
+
+| Check | Result |
+| --- | --- |
+| README update | `docs/visual-reverse-engineering-skill/README.md` documents strict production proof with `-Force -ResolveSafeReviewItems -FailOnBlockers` and portable package root expectations. |
+| Reference update | `docs/visual-reverse-engineering-skill/reference.md` documents `resolve-safe-review`, strict real-site proof, portable validation, dry-run handoff, and safe/manual review boundaries. |
+| Architecture doc update | Skipped by design: `docs/architecture/11-storefront-builder.md` already states the public StorefrontBuilder handoff boundary; this phase changed ReverseEngineering production proof/DX behavior, not StorefrontBuilder architecture. |
+| QA summary | Added `docs/qa/storefront-reverse-engineering-phase3b3c-production-blocker-closure.md`. |
+| Ignored artifacts | Production and `obj` artifacts remain unstaged/ignored. |
+| Unrelated file | Pre-existing `?? scripts/reverse-engineering/readme.md` remains untouched and unstaged. |
+| Final doc scan | `rg -n "ResolveSafeReviewItems|review decision materialization|completed-with-blockers|generation readiness" docs\visual-reverse-engineering-skill docs\architecture scripts\reverse-engineering tools\BlazorShop.AI.StorefrontReverseEngineering` completed for updated command/report coverage. |
 
 Commit:
 
@@ -618,21 +630,21 @@ git commit -m "Phase 3B3C.7: document production blocker closure"
 
 The work is complete only when all of the following are true:
 
-- [ ] Phase 3A readiness passes for KindredCoast.
-- [ ] Phase 3B generation readiness passes for KindredCoast.
-- [ ] Phase 3C handoff readiness passes for KindredCoast.
-- [ ] `analysis/visual-blueprint.v1.reviewed.json` is assembled.
-- [ ] `analysis/agent-handoff/handoff-readiness.json` passes.
-- [ ] Review queue blocking unresolved count is zero.
-- [ ] No unsupported critical pattern remains unreviewed.
-- [ ] No orphan reviewed mapping remains.
-- [ ] No missing required slot remains.
-- [ ] No duplicate non-repeatable slot remains.
-- [ ] No unapproved extra section remains.
-- [ ] Strict production proof with `-FailOnBlockers` exits `0`.
-- [ ] Phase 3B gate passes.
-- [ ] Phase 3C final handoff gate passes or a concrete environment blocker is recorded.
-- [ ] No StorefrontBuilder Phase 4 generation behavior is changed in this closure unless a checklist item explicitly requires docs for a command surface.
+- [x] Phase 3A readiness passes for KindredCoast.
+- [x] Phase 3B generation readiness passes for KindredCoast.
+- [x] Phase 3C handoff readiness passes for KindredCoast.
+- [x] `analysis/visual-blueprint.v1.reviewed.json` is assembled.
+- [x] `analysis/agent-handoff/handoff-readiness.json` passes.
+- [x] Review queue blocking unresolved count is zero.
+- [x] No unsupported critical pattern remains unreviewed.
+- [x] No orphan reviewed mapping remains.
+- [x] No missing required slot remains.
+- [x] No duplicate non-repeatable slot remains.
+- [x] No unapproved extra section remains.
+- [x] Strict production proof with `-FailOnBlockers` exits `0`.
+- [x] Phase 3B gate passes.
+- [x] Phase 3C final handoff gate passes or a concrete environment blocker is recorded.
+- [x] No StorefrontBuilder Phase 4 generation behavior is changed in this closure unless a checklist item explicitly requires docs for a command surface.
 
 ## Final Evidence Log
 
