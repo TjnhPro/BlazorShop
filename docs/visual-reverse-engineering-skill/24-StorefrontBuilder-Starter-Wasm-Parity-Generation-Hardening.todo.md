@@ -103,9 +103,9 @@ Use these files as baseline during implementation:
 ## Definition Of Done
 
 - [x] `BlazorShop.Storefront.Starter.WASM` exists and builds.
-- [ ] Starter server references Starter.WASM in monorepo development.
-- [ ] Starter server registers Browser controllers.
-- [ ] Starter server maps the Starter.WASM assembly.
+- [x] Starter server references Starter.WASM in monorepo development.
+- [x] Starter server registers Browser controllers.
+- [x] Starter server maps the Starter.WASM assembly.
 - [x] Starter.WASM calls `AddStorefrontBrowserRuntime`.
 - [ ] StorefrontBuilder generates server and sibling WASM projects.
 - [ ] Generated server references only generated sibling WASM by ProjectReference.
@@ -362,47 +362,47 @@ Upgrade Starter server from SSR shell to canonical generated server host with Br
 
 ### Tasks
 
-- [ ] Update Starter server `.csproj`.
-  - [ ] Add ProjectReference to `BlazorShop.Storefront.Browser`.
-  - [ ] Keep ProjectReference to Presentation for monorepo development.
-  - [ ] Keep package reference to Components if current Starter pattern requires package proof.
-  - [ ] Add ProjectReference to `BlazorShop.Storefront.Starter.WASM`.
-  - [ ] Add `Microsoft.AspNetCore.Components.WebAssembly.Server`.
-  - [ ] Do not add ServiceDefaults as required dependency.
-- [ ] Update Starter `Program.cs`.
-  - [ ] Add Browser using.
-  - [ ] Register `AddStorefrontApplication(builder.Configuration)`.
-  - [ ] Register `AddStorefrontBrowserControllers()`.
-  - [ ] Register `AddStarterFoundationViews()`.
-  - [ ] Use `UseStorefrontApplication()`.
-  - [ ] Map `MapStorefrontApplication(typeof(StarterFoundationViewRegistration), typeof(BlazorShop.Storefront.Starter.WASM.Components.Account.StorefrontAccountApp).Assembly)`.
-  - [ ] Keep namespace/partial Program consistent.
-- [ ] Confirm route ownership.
-  - [ ] Starter visual files must not add `@page`.
-  - [ ] Presentation remains route truth.
-  - [ ] `starter-generation.contract.yaml` must list route metadata, not route declarations.
-- [ ] Confirm static web assets.
-  - [ ] Server can serve WASM static assets.
-  - [ ] Direct refresh of `/account`, `/cart`, `/checkout` does not fail due to missing WASM assembly.
-- [ ] Update docs.
-  - [ ] `docs/architecture/11-storefront-builder.md`
-  - [ ] `docs/architecture/01-system-map.md`
-  - [ ] `docs/architecture/05-project-and-folder-guide.md`
-  - [ ] `docs/architecture/03-runtime-boundaries.md`
-  - [ ] `docs/agents/storefront-builder.md`
+- [x] Update Starter server `.csproj`.
+  - [x] Add ProjectReference to `BlazorShop.Storefront.Browser`.
+  - [x] Keep ProjectReference to Presentation for monorepo development.
+  - [x] Keep Components as monorepo ProjectReference and rewrite it to PackageReference in independent proof/package mode.
+  - [x] Add ProjectReference to `BlazorShop.Storefront.Starter.WASM`.
+  - [x] Add `Microsoft.AspNetCore.Components.WebAssembly.Server`.
+  - [x] Do not add ServiceDefaults as required dependency.
+- [x] Update Starter `Program.cs`.
+  - [x] Add Browser using.
+  - [x] Register `AddStorefrontApplication(builder.Configuration)`.
+  - [x] Register `AddStorefrontBrowserControllers()`.
+  - [x] Register `AddStarterFoundationViews()`.
+  - [x] Use `UseStorefrontApplication()`.
+  - [x] Map `MapStorefrontApplication(typeof(StarterFoundationViewRegistration), typeof(BlazorShop.Storefront.Starter.WASM.Components.Account.StorefrontAccountApp).Assembly)`.
+  - [x] Keep namespace/partial Program consistent.
+- [x] Confirm route ownership.
+  - [x] Starter visual files must not add `@page`.
+  - [x] Presentation remains route truth.
+  - [x] `starter-generation.contract.yaml` must list route metadata, not route declarations.
+- [x] Confirm static web assets.
+  - [x] Server can serve WASM static assets.
+  - [x] Direct refresh of `/account`, `/cart`, `/checkout` does not fail due to missing WASM assembly.
+- [x] Update docs.
+  - [x] `docs/architecture/11-storefront-builder.md`
+  - [x] `docs/architecture/01-system-map.md`
+  - [x] `docs/architecture/05-project-and-folder-guide.md`
+  - [x] `docs/architecture/03-runtime-boundaries.md`
+  - [x] `docs/agents/storefront-builder.md`
 
 ### Tests And Gates
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
-- [ ] Architecture test confirms Starter server registers Browser controllers.
-- [ ] Architecture test confirms Starter server maps Starter.WASM assembly.
-- [ ] Architecture test confirms Starter server does not reference V2/V2.WASM.
-- [ ] Architecture test confirms Starter.WASM does not reference Runtime/Client.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
+- [x] Architecture test confirms Starter server registers Browser controllers.
+- [x] Architecture test confirms Starter server maps Starter.WASM assembly.
+- [x] Architecture test confirms Starter server does not reference V2/V2.WASM.
+- [x] Architecture test confirms Starter.WASM does not reference Runtime/Client.
 
 ### Done When
 
-- [ ] Starter server and Starter.WASM together represent the canonical generated storefront foundation.
+- [x] Starter server and Starter.WASM together represent the canonical generated storefront foundation.
 
 ## Phase 4 - Multi-Project Storefront Generation
 

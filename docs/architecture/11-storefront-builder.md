@@ -12,6 +12,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Browser runtime package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Browser` | Same-origin local API client primitives and browser-side cart, checkout, and account controllers for interactive WASM flows. |
 | Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Browser-safe Storefront contracts, headless interaction state, and temporary compatibility component primitives that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
+| Neutral browser skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM` | Template source for generated interactive account, cart, and checkout WASM roots. It uses Browser runtime/controllers and browser-safe Components contracts without Runtime/Client direct references. |
 | Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
 | Reverse-engineering evidence tooling | `tools/BlazorShop.AI.StorefrontReverseEngineering` | Development-time executable that creates reference-site evidence, workflow state, validation reports, originality notes, visual-blueprint drafts, reviewed mappings, and Phase 3C/3D/3E-hardened portable `analysis/agent-handoff/*` packages for Phase 4 StorefrontBuilder consumption. |
@@ -107,6 +108,8 @@ Generated storefronts must not:
 Starter consumer rules:
 
 - In monorepo development, consume `BlazorShop.Storefront.Presentation` through a `ProjectReference`; in independent proof and generated projects, rewrite it to a `PackageReference`.
+- In monorepo development, Starter server references `BlazorShop.Storefront.Starter.WASM` as its additional interactive assembly, registers `AddStorefrontBrowserControllers()`, and maps the WASM assembly through `MapStorefrontApplication`.
+- In monorepo development, Starter server may use ProjectReferences to Presentation, Components, Browser, and Starter.WASM. Independent proof and generated projects rewrite Presentation, Components, and Browser to PackageReferences and keep only the generated server to generated sibling WASM ProjectReference.
 - Use `BlazorShop.Storefront.Presentation` for server-side storefront application registration. Presentation composes `BlazorShop.Storefront.Runtime` internally for generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Use the `BlazorShop.Storefront.Presentation` package for shared App/Routes/page services/BFF/SEO/media composition. Starter/generated projects provide views, assets, copy, feature manifests, and host configuration.
 - Let Runtime own direct `BlazorShop.Storefront.Client` transport and generated DTO package usage. Presentation exposes the Runtime dependency to visual hosts. Starter/generator metadata still pins Client/Runtime package versions for package proof compatibility, but Starter/generated source must not directly compile against Runtime or Client types unless a documented low-level transport extension explicitly requires it.
@@ -132,6 +135,7 @@ Generated/custom storefront consumer rules:
 - Generated visual templates may render Presentation semantic product-selection event values such as price, stock, image, SKU, and GTIN labels. They must not read raw preview fields, build product-selection/add-to-cart payloads, or invoke browser application commands directly.
 - Generated storefronts must not emit copied browser application controller JavaScript. `wwwroot/js/storefront-builder.functional.js` is forbidden. If a later phase needs generated visual JavaScript, it must live only under `wwwroot/js/visual`, register through the visual script slot, and listen to Presentation semantic events without invoking application commands or constructing command payloads.
 - Browser and WASM code must not reference `BlazorShop.Storefront.Runtime`; it consumes same-origin generated endpoints through `BlazorShop.Storefront.Browser` and browser-safe `BlazorShop.Storefront.Components` contracts/headless behavior.
+- Generated server hosts must map their generated sibling WASM assembly and must not map Storefront V2, Starter.WASM, or any external monorepo source assembly.
 - Use generated package contracts instead of guessing API response shapes.
 - Do not reference `BlazorShop.Storefront.V2`, backend/API/core projects, Control Plane Web, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or generated proof output from another store.
 

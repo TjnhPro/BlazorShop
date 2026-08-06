@@ -17,14 +17,16 @@ $presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop
 $componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
 $browserProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj"
 $starterSource = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter"
+$starterWasmSource = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM"
 $isolationRoot = Join-Path $repoRoot "obj\storefront-starter-isolation"
 $feedRoot = Join-Path $isolationRoot "feed"
 $sampleRoot = Join-Path $isolationRoot "Storefront.Sample"
+$sampleWasmRoot = Join-Path $isolationRoot "BlazorShop.Storefront.Starter.WASM"
 $starterProject = Join-Path $sampleRoot "BlazorShop.Storefront.Starter.csproj"
+$starterWasmProject = Join-Path $sampleWasmRoot "BlazorShop.Storefront.Starter.WASM.csproj"
 $publishRoot = Join-Path $isolationRoot "publish"
 
 $forbiddenPatterns = @(
-    "ProjectReference",
     "BlazorShop.Application",
     "BlazorShop.Domain",
     "BlazorShop.Infrastructure",
@@ -34,8 +36,7 @@ $forbiddenPatterns = @(
     "BlazorShop.Storefront.V2",
     "BlazorShop.Web.SharedV2",
     "Web.SharedV2",
-    "..\BlazorShop.",
-    "../BlazorShop."
+    "BlazorShop.PresentationV2"
 )
 
 if ($Describe) {
@@ -46,11 +47,13 @@ if ($Describe) {
     Write-Host "- Pack Storefront.Components to local feed"
     Write-Host "- Pack Storefront.Browser to local feed"
     Write-Host "- Copy Starter source to obj/storefront-starter-isolation/Storefront.Sample"
-    Write-Host "- Rewrite Starter Presentation ProjectReference to a PackageReference"
+    Write-Host "- Copy Starter.WASM source beside the isolated Starter server"
+    Write-Host "- Rewrite Starter Presentation/Components/Browser ProjectReferences to PackageReferences"
+    Write-Host "- Rewrite Starter.WASM Components/Browser ProjectReferences to PackageReferences"
     Write-Host "- Restore from local package feed"
     Write-Host "- Build isolated Starter/Sample copy"
     Write-Host "- Publish isolated Starter/Sample copy"
-    Write-Host "- Fail on backend/V2/Web.SharedV2/ProjectReference source paths"
+    Write-Host "- Fail on backend/V2/Web.SharedV2/external ProjectReference source paths"
     exit 0
 }
 
@@ -98,6 +101,29 @@ function Clear-StorefrontLocalPackageCache {
     }
 }
 
+function Assert-OnlyAllowedProjectReferences {
+    $projectFiles = @($starterProject, $starterWasmProject)
+    $allowedReference = "..\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj"
+    $violations = foreach ($projectFile in $projectFiles) {
+        [xml]$document = Get-Content -LiteralPath $projectFile -Raw
+        foreach ($reference in $document.Project.ItemGroup.ProjectReference) {
+            $include = [string]$reference.Include
+            if ([string]::IsNullOrWhiteSpace($include)) {
+                continue
+            }
+
+            if (-not $include.Equals($allowedReference, [System.StringComparison]::OrdinalIgnoreCase)) {
+                "${projectFile}: forbidden ProjectReference '$include'"
+            }
+        }
+    }
+
+    if ($violations) {
+        $violations | ForEach-Object { Write-Error $_ }
+        throw "Isolated Starter/Sample source contains forbidden ProjectReference entries."
+    }
+}
+
 Assert-UnderRepoObj $isolationRoot
 
 Invoke-Step "Clean isolation directory" {
@@ -107,6 +133,7 @@ Invoke-Step "Clean isolation directory" {
 
     New-Item -ItemType Directory -Force -Path $feedRoot | Out-Null
     New-Item -ItemType Directory -Force -Path $sampleRoot | Out-Null
+    New-Item -ItemType Directory -Force -Path $sampleWasmRoot | Out-Null
     New-Item -ItemType Directory -Force -Path $publishRoot | Out-Null
 }
 
@@ -147,16 +174,49 @@ Invoke-Step "Copy Starter source into isolated sample directory" {
         }
 }
 
+Invoke-Step "Copy Starter.WASM source into isolated sibling directory" {
+    Get-ChildItem -LiteralPath $starterWasmSource -Force |
+        Where-Object { $_.Name -notin @("bin", "obj") } |
+        ForEach-Object {
+            Copy-Item -LiteralPath $_.FullName -Destination $sampleWasmRoot -Recurse -Force
+        }
+
+    Copy-Item -LiteralPath (Join-Path $sampleRoot "StorefrontPackageVersions.props") -Destination $sampleWasmRoot -Force
+}
+
 Invoke-Step "Rewrite isolated Starter to package mode" {
     $projectContent = Get-Content -LiteralPath $starterProject -Raw
     $projectContent = $projectContent.Replace(
         '    <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />',
         '    <PackageReference Include="BlazorShop.Storefront.Presentation" Version="$(StorefrontPresentationPackageVersion)" />')
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Components" Version="$(StorefrontComponentsPackageVersion)" />')
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />')
     Set-Content -LiteralPath $starterProject -Value $projectContent -Encoding UTF8
 }
 
+Invoke-Step "Rewrite isolated Starter.WASM to package mode" {
+    $projectContent = Get-Content -LiteralPath $starterWasmProject -Raw
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Components" Version="$(StorefrontComponentsPackageVersion)" />')
+    $projectContent = $projectContent.Replace(
+        '    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />',
+        '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />')
+    Set-Content -LiteralPath $starterWasmProject -Value $projectContent -Encoding UTF8
+}
+
 Invoke-Step "Write isolated local feed config" {
-    @"
+    foreach ($projectNugetConfig in @((Join-Path $sampleRoot "nuget.config"), (Join-Path $sampleWasmRoot "nuget.config"))) {
+        if (Test-Path $projectNugetConfig) {
+            Remove-Item -LiteralPath $projectNugetConfig -Force
+        }
+    }
+
+    $nugetConfig = @"
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -165,11 +225,16 @@ Invoke-Step "Write isolated local feed config" {
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
 </configuration>
-"@ | Set-Content -LiteralPath (Join-Path $sampleRoot "nuget.config") -Encoding UTF8
+"@
+
+    $nugetConfig | Set-Content -LiteralPath (Join-Path $isolationRoot "nuget.config") -Encoding UTF8
 }
 
 Invoke-Step "Check isolated source has no forbidden monorepo dependencies" {
-    $sourceFiles = Get-ChildItem -LiteralPath $sampleRoot -Recurse -File |
+    Assert-OnlyAllowedProjectReferences
+
+    $sourceFiles = @($sampleRoot, $sampleWasmRoot) |
+        ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File } |
         Where-Object {
             $_.FullName -notmatch "\\(bin|obj)\\"
         }

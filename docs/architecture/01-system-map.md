@@ -21,6 +21,7 @@
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Active | Neutral Storefront runtime options, generated-client registration, capability, and error primitives shared by V2 and Starter. No backend/core/API project references. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation` | Active | Shared Storefront App/Routes/page services/BFF/SEO/media composition and view-slot contracts consumed by V2, Starter, and generated storefronts. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Active | Neutral skeleton source for deterministic generated storefronts. It consumes package-based Storefront contracts and is not copied from Storefront V2. |
+| Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM` | Active | Neutral browser skeleton for generated account, cart, and checkout WASM roots. It consumes Browser and Components without Runtime/Client direct references. |
 | Tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Active dev-time | Visual reverse engineering, generated storefront creation, regeneration, static validation, and browser QA tooling. |
 | Tests | `BlazorShop.Tests.V2` | Active | V2 architecture, API contract, service, and smoke tests. |
 
@@ -40,7 +41,9 @@ Active V2 presentation projects reference shared core projects:
 - `BlazorShop.CommerceNode.API` references `Application`, `Infrastructure`, and `ServiceDefaults`.
 - `BlazorShop.ControlPlane.Web` references `Application` and `Web.SharedV2`.
 - `BlazorShop.Storefront.V2` references `ServiceDefaults`, `Storefront.Presentation`, `Storefront.Runtime`, `Storefront.Components`, and `Storefront.V2.WASM`; it must not reference `Storefront.Client` directly, `Application`, `Domain`, `Infrastructure`, Commerce Node API, Control Plane API projects, or `Web.SharedV2`.
-- `BlazorShop.Storefront.V2.WASM` references `Storefront.Components`.
+- `BlazorShop.Storefront.V2.WASM` references `Storefront.Components` and `Storefront.Browser`.
+- `BlazorShop.Storefront.Starter` references `Storefront.Presentation`, `Storefront.Components`, `Storefront.Browser`, and `Storefront.Starter.WASM` during monorepo development; generated output rewrites shared foundation references to packages and keeps only the generated server to generated sibling WASM ProjectReference.
+- `BlazorShop.Storefront.Starter.WASM` references `Storefront.Components` and `Storefront.Browser`; it must not reference `Storefront.Runtime`, `Storefront.Client`, Storefront V2, ServiceDefaults, backend/core/API projects, or `Web.SharedV2`.
 - `BlazorShop.Storefront.Components` is a Razor component library with no BlazorShop project references.
 - `BlazorShop.Web.SharedV2` has no project references.
 

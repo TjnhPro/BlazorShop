@@ -138,7 +138,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StarterProject_ConsumesPresentationAndComponentsWithoutDirectRuntimeOrClient()
+        public void StarterProject_UsesBrowserWasmParityWithoutDirectRuntimeOrClient()
         {
             var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
             var versionProps = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StorefrontPackageVersions.props");
@@ -148,8 +148,13 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.DoesNotContain("<PackageReference Include=\"BlazorShop.Storefront.Client\"", project, StringComparison.Ordinal);
             Assert.DoesNotContain("<PackageReference Include=\"BlazorShop.Storefront.Runtime\"", project, StringComparison.Ordinal);
-            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Components\" Version=\"$(StorefrontComponentsPackageVersion)\"", project, StringComparison.Ordinal);
+            Assert.Contains(@"<PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.Server""", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("<PackageReference Include=\"BlazorShop.Storefront.Components\"", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("<PackageReference Include=\"BlazorShop.Storefront.Browser\"", project, StringComparison.Ordinal);
+            Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj""", project, StringComparison.Ordinal);
+            Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj""", project, StringComparison.Ordinal);
             Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj""", project, StringComparison.Ordinal);
+            Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj""", project, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Client.csproj", project, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Runtime.csproj", project, StringComparison.Ordinal);
             Assert.Contains("<StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>", versionProps, StringComparison.Ordinal);
@@ -179,6 +184,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("<NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>", project, StringComparison.Ordinal);
             Assert.Contains("<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>", project, StringComparison.Ordinal);
             Assert.Contains(@"<RootNamespace>BlazorShop.Storefront.Starter.WASM</RootNamespace>", project, StringComparison.Ordinal);
+            Assert.Contains(@"<Import Project=""StorefrontPackageVersions.props"" Condition=""Exists('StorefrontPackageVersions.props')""", project, StringComparison.Ordinal);
             Assert.Contains(@"<PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly""", project, StringComparison.Ordinal);
             Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj""", project, StringComparison.Ordinal);
             Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj""", project, StringComparison.Ordinal);
@@ -336,8 +342,13 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("AddLineAsync", presentationCart, StringComparison.Ordinal);
             Assert.Contains("MapStorefrontPresentationCartEndpoints", presentationAggregation, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStaticAssets", program, StringComparison.Ordinal);
+            Assert.Contains("using BlazorShop.Storefront.Browser;", program, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontApplication(builder.Configuration)", program, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontBrowserControllers()", program, StringComparison.Ordinal);
+            Assert.Contains("AddStarterFoundationViews()", program, StringComparison.Ordinal);
             Assert.Contains("UseStorefrontApplication", program, StringComparison.Ordinal);
             Assert.Contains("MapStorefrontApplication", program, StringComparison.Ordinal);
+            Assert.Contains("typeof(BlazorShop.Storefront.Starter.WASM.Components.Account.StorefrontAccountApp).Assembly", program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStarterBffEndpoints", program, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs")));
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs")));
@@ -845,8 +856,13 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("dotnet pack $runtimeProject", script, StringComparison.Ordinal);
             Assert.Contains("dotnet pack $presentationProject", script, StringComparison.Ordinal);
             Assert.Contains("dotnet pack $componentsProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet pack $browserProject", script, StringComparison.Ordinal);
             Assert.Contains("Rewrite isolated Starter to package mode", script, StringComparison.Ordinal);
+            Assert.Contains("Rewrite isolated Starter.WASM to package mode", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Presentation", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Browser", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Starter.WASM", script, StringComparison.Ordinal);
+            Assert.Contains("Assert-OnlyAllowedProjectReferences", script, StringComparison.Ordinal);
             Assert.Contains("obj\\storefront-starter-isolation", script, StringComparison.Ordinal);
             Assert.Contains("Storefront.Sample", script, StringComparison.Ordinal);
             Assert.Contains("dotnet restore $starterProject", script, StringComparison.Ordinal);

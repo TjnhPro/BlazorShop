@@ -326,6 +326,8 @@ Use for:
 - Neutral visual templates for Presentation SSR, Hybrid, and WASM-host route shells.
 - Examples of generated Storefront API consumption through Runtime-backed Presentation contexts instead of direct generated-client use in visual source.
 - Examples of `BlazorShop.Storefront.Presentation` consumption for shared App/Routes/page services/BFF/SEO/media composition; monorepo development may use a ProjectReference, while independent proof and generated storefronts use a PackageReference.
+- Browser/WASM host parity with Storefront V2 through `AddStorefrontBrowserControllers()` and `MapStorefrontApplication(..., Starter.WASM assembly)`.
+- Monorepo-only ProjectReferences to Presentation, Components, Browser, and Starter.WASM. Independent proof and generated storefronts rewrite shared foundation references to packages and keep only server-to-sibling-WASM ProjectReference.
 - Examples of `BlazorShop.Storefront.Runtime` package consumption for server-side generated-client registration, store context, capability/error primitives, and BFF integration primitives.
 - Examples should use `AddStorefrontPlatformRuntime` for simple server/BFF composition or the specific `AddStorefront{Capability}Runtime` methods for intentionally narrow generated hosts.
 - Optional `BlazorShop.Storefront.Components` package consumption for reusable browser-safe UI components; Starter-local neutral components may remain local until shared reuse is needed.
@@ -342,6 +344,7 @@ Do not:
 - Reference `BlazorShop.Storefront.V2`, backend/core/API projects, Control Plane Web, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Copy the manual `StorefrontApiClient` transport from Storefront V2.
 - Move pricing, sellability, cart validation, checkout, order placement, payment, or authorization rules into Starter.
+- Reference ServiceDefaults as a required generated storefront dependency.
 
 Protected areas for scaffolding or AI generation:
 
@@ -374,6 +377,28 @@ Do not:
 - Use generated proof output as evidence that generated storefronts may reference Storefront V2, `BlazorShop.Web.SharedV2`/`Web.SharedV2`, or backend/core/API projects.
 - Use Storefront V2 visual markup as the generated/custom storefront presentation source.
 - Guess Storefront API response shapes instead of using generated package contracts.
+
+### `BlazorShop.Storefront.Starter.WASM`
+
+Status:
+
+- Active neutral browser skeleton source for deterministic generated storefront WASM projects.
+
+Use for:
+
+- Browser-safe account, cart, and checkout host components that consume `BlazorShop.Storefront.Browser` controllers and `BlazorShop.Storefront.Components` contracts/headless state.
+- `Program.cs` calls `WebAssemblyHostBuilder.CreateDefault(args)` and `AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
+- Store-neutral interactive component templates with no route declarations; route ownership remains in Storefront Presentation.
+
+Allowed:
+
+- Monorepo ProjectReferences to `BlazorShop.Storefront.Browser` and `BlazorShop.Storefront.Components`.
+- Store-neutral visual host components under `Components/Account`, `Components/Cart`, and `Components/Checkout`.
+
+Do not:
+
+- Reference `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Client`, Storefront V2/V2.WASM, ServiceDefaults, backend/core/API projects, or `Web.SharedV2`.
+- Declare routes or call Commerce Node directly from browser code.
 
 ### `tools/BlazorShop.AI.StorefrontBuilder`
 

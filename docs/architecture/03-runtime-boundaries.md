@@ -179,9 +179,9 @@ Browser and WASM code calls same-origin storefront endpoints under `/api/*`. It 
 
 Browser controller registration is split by runtime:
 
-- V2.WASM calls `AddStorefrontBrowserRuntime(builder.HostEnvironment)` to register browser-side local API transport, JS interop, and interactive controllers.
-- Server hosts such as Storefront V2 call the aggregate `AddStorefrontBrowserControllers()` path through Storefront Application registration when they need controller services for SSR/prerender composition.
-- Server hosts must not call the WASM runtime extension, and V2.WASM remains the only project that calls the host-environment Browser runtime extension.
+- V2.WASM, Starter.WASM, and generated WASM projects call `AddStorefrontBrowserRuntime(builder.HostEnvironment)` to register browser-side local API transport, JS interop, and interactive controllers.
+- Server hosts such as Storefront V2, Starter, and generated storefront servers call the aggregate `AddStorefrontBrowserControllers()` path through Storefront Application registration when they need controller services for SSR/prerender composition.
+- Server hosts must not call the WASM runtime extension; only browser/WASM projects call the host-environment Browser runtime extension.
 
 Browser controllers are scoped/component-owned runtime services, not app-wide page snapshot stores. They can receive an initial Presentation snapshot from the visual component, but they must reset loading/saving/busy flags through `try/finally`, normalize transport failures through `StorefrontLocalApiClient`, and refresh or reinitialize when cart, checkout session, or account identity changes.
 
@@ -218,13 +218,19 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}
           -> BlazorShop.Storefront.Client package
               -> BlazorShop.CommerceNode.API api/storefront/stores/{storeKey}/*
   -> BlazorShop.Storefront.Components package
+  -> BlazorShop.Storefront.Browser package
+  -> BlazorShop.Storefront.{Name}.WASM ProjectReference
+
+BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}.WASM
+  -> BlazorShop.Storefront.Components package
+  -> BlazorShop.Storefront.Browser package
 ```
 
 Rules:
 
 - Generated storefronts must not reference `BlazorShop.Storefront.V2`.
 - Generated storefronts that need full storefront routes/BFF/SEO/media composition must consume `BlazorShop.Storefront.Presentation` through a package boundary and provide project-local registered views/assets/copy.
-- Generated storefronts consume `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components` directly. Presentation exposes the required Runtime dependency, and Runtime owns the generated `BlazorShop.Storefront.Client` transport dependency. Generated hosts keep Client/Runtime version metadata only for package proof compatibility and must not direct-reference Runtime or Client.
+- Generated storefront servers consume `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Components`, and `BlazorShop.Storefront.Browser` directly through packages, and may reference only their generated sibling WASM project. Generated WASM projects consume Components and Browser through packages and must not have ProjectReferences. Presentation exposes the required Runtime dependency, and Runtime owns the generated `BlazorShop.Storefront.Client` transport dependency. Generated hosts keep Client/Runtime version metadata only for package proof compatibility and must not direct-reference Runtime or Client.
 - Generated storefronts must not reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.Web.SharedV2`/`Web.SharedV2`.
 - Browser code in generated storefronts must not call Commerce Node admin/control, Control Plane, or removed `api/internal/*` routes directly.
 - Generated storefront browser code must not emit copied browser application controllers. Product purchase/add-to-cart/consent behavior comes from Presentation binders over generated descriptors inherited from Starter templates. If generated visual JavaScript is introduced, it must live under `wwwroot/js/visual`, register through the visual script slot, and stay event-only with no application command invocation, command payload construction, or raw product-selection preview interpretation.
