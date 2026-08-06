@@ -110,8 +110,18 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
         await WriteHomeSlotArtifactsAsync(
             projectRoot,
             [
-                Node("section-hero", "hero", mappingId: null, targetPath: "Pages/Ssr/Home/HomePage.razor"),
-                Node("section-featured-products", "product card collection", mappingId: null, targetPath: "Pages/Ssr/Home/HomePage.razor")
+                Node("section-hero", "hero", mappingId: null, targetPath: null) with
+                {
+                    TargetGeneratedZone = "home.sections",
+                    ApprovedVisualExtensionId = "home-visual-extension-hero",
+                    ApprovedVisualExtensionReason = "Visual-only home hero inside page-level home.sections."
+                },
+                Node("section-featured-products", "product card collection", mappingId: null, targetPath: null) with
+                {
+                    TargetGeneratedZone = "home.sections",
+                    ApprovedVisualExtensionId = "home-visual-extension-products",
+                    ApprovedVisualExtensionReason = "Visual-only product rail inside page-level home.sections."
+                }
             ],
             [],
             targetViewSlot: "home.sections");

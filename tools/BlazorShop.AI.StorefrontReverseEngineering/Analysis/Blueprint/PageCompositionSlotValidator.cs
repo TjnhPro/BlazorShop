@@ -167,16 +167,19 @@ public sealed class PageCompositionSlotValidator
                     (string.Equals(resolution.SourcePageId, composition.PageId, StringComparison.Ordinal) &&
                         sectionNodeIds.Contains(resolution.SourceSectionId))))
             {
-                AddObservation(
-                    sources,
-                    new SlotObservationSource(
-                        resolution.SlotSource,
-                        resolution.MappingId ?? resolution.SourceSectionId + ":" + resolution.StarterSlotId,
-                        resolution.SourcePageId,
-                        resolution.SourceSectionId,
-                        resolution.MappingId,
-                        resolution.StarterSlotId,
-                        resolution.TargetPath));
+                if (!IsPageTargetVisualExtension(composition, resolution))
+                {
+                    AddObservation(
+                        sources,
+                        new SlotObservationSource(
+                            resolution.SlotSource,
+                            resolution.MappingId ?? resolution.SourceSectionId + ":" + resolution.StarterSlotId,
+                            resolution.SourcePageId,
+                            resolution.SourceSectionId,
+                            resolution.MappingId,
+                            resolution.StarterSlotId,
+                            resolution.TargetPath));
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(resolution.SuggestedSlotId))
@@ -233,10 +236,7 @@ public sealed class PageCompositionSlotValidator
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionId) &&
-            !node.ProtectedBehaviorMarkers.Any() &&
-            !string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionReason) &&
-            nodeSources.Any(source => string.Equals(source.SourceKind, SectionSlotResolver.ApprovedVisualExtensionSource, StringComparison.Ordinal)))
+        if (IsValidPageTargetVisualExtension(composition, node, allowed))
         {
             return;
         }
@@ -420,6 +420,28 @@ public sealed class PageCompositionSlotValidator
 
     private static IReadOnlyList<string> ProtectedPathMarkers() =>
         ["starter-generation.contract.yaml", "StorefrontPackageVersions.props", "BlazorShop.Storefront.Presentation"];
+
+    private static bool IsPageTargetVisualExtension(PageComposition composition, SectionSlotResolution resolution) =>
+        string.Equals(resolution.SlotSource, SectionSlotResolver.ApprovedVisualExtensionSource, StringComparison.Ordinal) &&
+        !string.IsNullOrWhiteSpace(composition.TargetViewSlot) &&
+        string.Equals(resolution.StarterSlotId, composition.TargetViewSlot, StringComparison.Ordinal);
+
+    private static bool IsValidPageTargetVisualExtension(
+        PageComposition composition,
+        PageCompositionNode node,
+        IReadOnlySet<string> allowed) =>
+        !string.IsNullOrWhiteSpace(composition.TargetViewSlot) &&
+        allowed.Contains(composition.TargetViewSlot) &&
+        string.Equals(node.TargetGeneratedZone, composition.TargetViewSlot, StringComparison.Ordinal) &&
+        !string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionId) &&
+        !string.IsNullOrWhiteSpace(node.ApprovedVisualExtensionReason) &&
+        node.ProtectedBehaviorMarkers.Count == 0 &&
+        node.AllowedOperations.All(IsVisualOnlyOperation);
+
+    private static bool IsVisualOnlyOperation(string operation) =>
+        string.IsNullOrWhiteSpace(operation) ||
+        operation.Contains("visual", StringComparison.OrdinalIgnoreCase) ||
+        operation.Contains("responsive", StringComparison.OrdinalIgnoreCase);
 
     private static string SourceIdentity(SlotObservationSource source) =>
         !string.IsNullOrWhiteSpace(source.SectionNodeId) ? source.SectionNodeId! :

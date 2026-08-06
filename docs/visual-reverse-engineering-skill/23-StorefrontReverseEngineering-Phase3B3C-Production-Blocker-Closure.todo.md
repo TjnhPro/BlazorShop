@@ -401,18 +401,18 @@ Goal: make reviewed page composition satisfy exact slot contracts without weaken
 
 Implementation checklist:
 
-- [ ] Update page composition assembly so `home.sections` is represented as one page body slot.
-- [ ] Keep individual hero, announcement, product rail, promo, newsletter, and editorial sections as child visual nodes under the home body slot when appropriate.
-- [ ] Do not count each child section as a separate non-repeatable `home.sections` source.
-- [ ] Resolve footer as a required shared layout section when footer evidence exists.
-- [ ] Add or update approved visual extension handling for presentation-only announcement/promo sections.
-- [ ] Ensure approved visual extensions require ID, reason, visual-only operations, and no protected behavior markers.
-- [ ] Make product-card/product-image/price-display on home resolve as visual content inside `home.sections` or as explicit allowed/repeatable catalog children only when the contract allows it.
-- [ ] Do not make `home.sections` globally repeatable.
-- [ ] Keep `catalog.product-card` repeatable for listing pages.
-- [ ] Add tests proving valid home sections do not trigger `duplicate-non-repeatable-slot`.
-- [ ] Add tests proving true duplicate non-repeatable slots still fail.
-- [ ] Add tests proving missing footer still fails when footer evidence is absent and the contract requires it.
+- [x] Update page composition assembly so `home.sections` is represented as one page body slot.
+- [x] Keep individual hero, announcement, product rail, promo, newsletter, and editorial sections as child visual nodes under the home body slot when appropriate.
+- [x] Do not count each child section as a separate non-repeatable `home.sections` source.
+- [x] Resolve footer as a required shared layout section when footer evidence exists.
+- [x] Add or update approved visual extension handling for presentation-only announcement/promo sections.
+- [x] Ensure approved visual extensions require ID, reason, visual-only operations, and no protected behavior markers.
+- [x] Make product-card/product-image/price-display on home resolve as visual content inside `home.sections` or as explicit allowed/repeatable catalog children only when the contract allows it.
+- [x] Do not make `home.sections` globally repeatable.
+- [x] Keep `catalog.product-card` repeatable for listing pages.
+- [x] Add tests proving valid home sections do not trigger `duplicate-non-repeatable-slot`.
+- [x] Add tests proving true duplicate non-repeatable slots still fail.
+- [x] Add tests proving missing footer still fails when footer evidence is absent and the contract requires it.
 
 Candidate files:
 
@@ -429,13 +429,21 @@ Checks:
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~BlueprintV1ReadinessTests|FullyQualifiedName~SectionSlotResolverTests|FullyQualifiedName~PageCompositionSlotValidatorSharedResolverTests|FullyQualifiedName~Phase3DPositiveEndToEndTests|FullyQualifiedName~Phase3DNegativeMutationTests" --blame-hang --blame-hang-timeout 5m
 ```
 
+Phase 4 evidence:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~BlueprintV1ReadinessTests|FullyQualifiedName~SectionSlotResolverTests|FullyQualifiedName~PageCompositionSlotValidatorSharedResolverTests|FullyQualifiedName~Phase3DPositiveEndToEndTests|FullyQualifiedName~Phase3DNegativeMutationTests" --no-restore
+```
+
+Result: passed, 46/46.
+
 Done when:
 
-- [ ] Valid home composition contains `layout.header`, one `home.sections`, and `layout.footer`.
-- [ ] Valid KindredCoast-like home content no longer trips `duplicate-non-repeatable-slot`.
-- [ ] Hero no longer targets `Components/Layout/MainLayout.razor` through `layout.header`.
-- [ ] Footer is authoritative and source-bound.
-- [ ] Negative slot mutation tests still fail for real contract violations.
+- [x] Valid home composition contains `layout.header`, one `home.sections`, and `layout.footer`.
+- [x] Valid KindredCoast-like home content no longer trips `duplicate-non-repeatable-slot`.
+- [x] Hero no longer targets `Components/Layout/MainLayout.razor` through `layout.header`.
+- [x] Footer is authoritative and source-bound.
+- [x] Negative slot mutation tests still fail for real contract violations.
 
 Commit:
 

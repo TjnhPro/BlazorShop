@@ -448,6 +448,7 @@ public sealed class BlueprintV1Assembler
                 sharedTokens,
                 page.ArtifactPaths,
                 page.ViewportIds,
+                targetContract?.SlotId,
                 targetContract?.GeneratedPath);
             var repeatedGroups = BuildRepeatedGroups(sectionNodes);
             var pageResponsiveRules = ReadPageResponsiveRules(root, page.PageId);
@@ -759,6 +760,7 @@ public sealed class BlueprintV1Assembler
         IReadOnlyDictionary<string, string> sharedTokens,
         IReadOnlyList<string> captureArtifacts,
         IReadOnlyList<string> viewportIds,
+        string? pageTargetSlot,
         string? pageTargetPath)
     {
         var groupIds = sections
@@ -774,7 +776,10 @@ public sealed class BlueprintV1Assembler
                 ?? mappings.FirstOrDefault(candidate =>
                     (string.IsNullOrWhiteSpace(candidate.SourcePageId) || string.Equals(candidate.SourcePageId, pageId, StringComparison.Ordinal)) &&
                     candidate.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any());
-            var targetFile = mapping?.TargetGeneratedPath ?? pageTargetPath;
+            var isHomeBodyVisualExtension = mapping is null &&
+                string.Equals(pageTargetSlot, "home.sections", StringComparison.Ordinal) &&
+                !IsSharedLayoutRole(section.Role);
+            var targetFile = mapping?.TargetGeneratedPath ?? (isHomeBodyVisualExtension ? null : pageTargetPath);
             var unresolved = new List<string>();
             if (section.EvidenceIds.Count == 0)
             {
@@ -801,13 +806,13 @@ public sealed class BlueprintV1Assembler
                 sharedTokens.Keys.Order(StringComparer.Ordinal).Take(8).ToArray(),
                 mapping?.Id,
                 targetFile,
-                mapping?.GeneratedZone ?? GeneratedZoneForPath(targetFile ?? string.Empty),
+                mapping?.GeneratedZone ?? (isHomeBodyVisualExtension ? pageTargetSlot : GeneratedZoneForPath(targetFile ?? string.Empty)),
                 AllowedOperationsFor(section.Role),
                 ProtectedMarkersFor(section.Role, mapping?.Id),
                 captureArtifacts.Where(path => path.Contains("screenshot", StringComparison.OrdinalIgnoreCase) || path.Contains("manifest.json", StringComparison.OrdinalIgnoreCase)).Take(6).ToArray(),
                 [],
-                null,
-                null,
+                isHomeBodyVisualExtension ? "home-visual-extension-" + StableId($"{pageId}:{section.Id}") : null,
+                isHomeBodyVisualExtension ? "Visual-only home content section approved inside the page-level home.sections container." : null,
                 groupIds.GetValueOrDefault(section.Role),
                 StateExpectationsFor(section.Role),
                 section.ReasonCodes.Where(code => code.Contains("responsive", StringComparison.OrdinalIgnoreCase)).ToArray(),
