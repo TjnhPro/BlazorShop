@@ -60,7 +60,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\ru
 
 - `-Mode`: chọn chế độ chạy StorefrontBuilder. Xem phần "Giải Thích Mode" bên dưới.
 - `-Url`: URL tham chiếu dùng cho các mode phân tích/generate không chạy qua handoff. Mặc định: `https://reference.example`.
-- `-Name`: tên project storefront được generate. Mặc định: `BlazorShop.Storefront.GeneratedProof`.
+- `-Name`: tên project storefront được generate. Có thể truyền dạng thân thiện như `kindredcoast`, `kindred-coast`, hoặc full name `BlazorShop.Storefront.KindredCoast`; wrapper sẽ chuẩn hóa thành project name hợp lệ trước khi gọi StorefrontBuilder gốc. Mặc định: `BlazorShop.Storefront.GeneratedProof`.
 - `-StoreKey`: store key của storefront được generate. Mặc định: `sample`.
 - `-OutputRoot`: thư mục output của generated project, tính từ repo root nếu truyền relative path. Mặc định: `obj/storefront-builder/generated`.
 - `-HandoffRoot`: thư mục portable `analysis/agent-handoff` package cho các mode Phase 4 handoff.
@@ -86,3 +86,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\ru
 Generated output là artifact dùng thử, không phải source chính. Dùng `obj/storefront-builder/generated` cho các proof run local. Chỉ dùng `artifacts/storefront-builder/generated` khi workflow yêu cầu giữ artifact thủ công lâu hơn.
 
 Nếu chỉ muốn kiểm tra command trước khi chạy thật, dùng `-Describe`. Nếu muốn kiểm tra tác động trước khi ghi file, dùng `-Mode plan-only`. Nếu muốn chạy proof đầy đủ, dùng `-Mode full -Force`.
+
+Ví dụ chạy full cho KindredCoast:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode full -Name kindredcoast -StoreKey kindredcoast -Url "https://www.kindredcoast.com/" -Force
+```

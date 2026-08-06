@@ -89,9 +89,66 @@ function Assert-NodeTooling {
     }
 }
 
+function ConvertTo-StorefrontBuilderProjectName {
+    param([Parameter(Mandatory = $true)][string]$InputName)
+
+    $trimmed = $InputName.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed)) {
+        throw "-Name must not be empty."
+    }
+
+    if ($trimmed.IndexOf("..", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf("\", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf("/", [System.StringComparison]::Ordinal) -ge 0 `
+        -or $trimmed.IndexOf(":", [System.StringComparison]::Ordinal) -ge 0) {
+        throw "-Name must not contain traversal, separators, or drive markers."
+    }
+
+    $prefix = "BlazorShop.Storefront."
+    $suffix = if ($trimmed.StartsWith($prefix, [System.StringComparison]::Ordinal)) {
+        $trimmed.Substring($prefix.Length)
+    }
+    else {
+        if ($trimmed.IndexOf(".", [System.StringComparison]::Ordinal) -ge 0) {
+            throw "-Name must be a friendly suffix or the full BlazorShop.Storefront.{Name} project name."
+        }
+
+        $trimmed
+    }
+
+    if ($suffix -cmatch "^[A-Z][A-Za-z0-9]*$") {
+        return "$prefix$suffix"
+    }
+
+    $parts = @($suffix -split "[^A-Za-z0-9]+" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($parts.Count -eq 0) {
+        throw "-Name must contain at least one alphanumeric segment."
+    }
+
+    $normalizedSuffix = (($parts | ForEach-Object {
+        $part = $_
+        if ($part.Length -eq 1) {
+            return $part.ToUpperInvariant()
+        }
+
+        return $part.Substring(0, 1).ToUpperInvariant() + $part.Substring(1).ToLowerInvariant()
+    }) -join "")
+
+    if ($normalizedSuffix -cnotmatch "^[A-Z][A-Za-z0-9]*$") {
+        throw "-Name could not be normalized to a PascalCase project suffix. Input: '$InputName'."
+    }
+
+    return "$prefix$normalizedSuffix"
+}
+
 $repoRoot = Find-RepoRoot -StartPath $PSScriptRoot
 $builderRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
 $builderScript = Join-Path $builderRoot "build-storefront.ps1"
+$projectName = ConvertTo-StorefrontBuilderProjectName -InputName $Name
+
+if ($projectName -ne $Name) {
+    Write-Host "Normalized StorefrontBuilder project name: $Name -> $projectName"
+}
 
 if ($Mode -eq "preflight-only" -and [string]::IsNullOrWhiteSpace($HandoffRoot)) {
     throw "-Mode preflight-only requires -HandoffRoot <portable-handoff-root>."
@@ -101,7 +158,7 @@ Assert-NodeTooling -BuilderRoot $builderRoot
 
 $builderArgs = @(
     "-Url", $Url,
-    "-Name", $Name,
+    "-Name", $projectName,
     "-StoreKey", $StoreKey,
     "-OutputRoot", $OutputRoot,
     "-Mode", $Mode
@@ -109,7 +166,7 @@ $builderArgs = @(
 
 $builderParams = @{
     Url = $Url
-    Name = $Name
+    Name = $projectName
     StoreKey = $StoreKey
     OutputRoot = $OutputRoot
     Mode = $Mode
