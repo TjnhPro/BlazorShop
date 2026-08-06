@@ -21,7 +21,10 @@ const generationPlanPath = join(analysisRoot, "generation-plan.json");
 const metadataPath = join(analysisRoot, "metadata.yaml");
 const visualPlanPath = join(analysisRoot, "visual-plan.json");
 const checklistPath = join(analysisRoot, "visual-implementation-checklist.json");
+const checklistTodoPath = join(analysisRoot, "visual-implementation-checklist.todo.md");
+const visualPlanSummaryPath = join(analysisRoot, "visual-plan-summary.md");
 const implementationReportPath = join(analysisRoot, "visual-implementation-report.json");
+const implementationReportMarkdownPath = join(analysisRoot, "visual-implementation-report.md");
 const checkpointPath = join(analysisRoot, "visual-checkpoints", operationId, "visual-checkpoint.json");
 
 if (!existsSync(projectRoot)) {
@@ -44,6 +47,14 @@ if (generationPlan.generationMode !== "handoff") {
   fail("SFB-FINAL-CLOSURE-EDIT-004", `Generation plan mode must be handoff, but was '${generationPlan.generationMode}'.`);
 }
 
+const projectName = readSimpleYamlValue(readFileSync(metadataPath, "utf8"), "projectName") ?? taskPackage.projectName ?? generationPlan.projectName;
+const storeKey = readSimpleYamlValue(readFileSync(metadataPath, "utf8"), "storeKey") ?? taskPackage.storeKey ?? generationPlan.storeKey ?? "sample";
+const taskPackageHash = normalizedFileHash(taskPackageManifestPath);
+const generationPlanHash = normalizedFileHash(generationPlanPath);
+const handoffHash = generationPlan.sourceHandoffPackageHash?.startsWith("sha256:")
+  ? generationPlan.sourceHandoffPackageHash
+  : `sha256:${generationPlan.sourceHandoffPackageHash ?? "unknown"}`;
+
 const allowedOutputs = (taskPackage.allowedOutputFiles ?? []).map(normalizeAllowedOutput);
 const generatedCandidate = allowedOutputs.find(file =>
   file.ownership === "generated" &&
@@ -60,6 +71,7 @@ if (!selected) {
 }
 
 const selectedPath = selected.targetPath;
+const selectedTarget = fileTargetFromAllowedOutput(selected, projectName);
 const selectedFullPath = join(projectRoot, selectedPath);
 assertSafeProjectPath(selectedPath, selectedFullPath);
 assertNotProtectedClosureTarget(selectedPath);
@@ -82,47 +94,63 @@ if (beforeSha === afterSha) {
   fail("SFB-FINAL-CLOSURE-EDIT-007", `Deterministic closure edit did not change ${selectedPath}.`);
 }
 
-const projectName = readSimpleYamlValue(readFileSync(metadataPath, "utf8"), "projectName") ?? taskPackage.projectName ?? generationPlan.projectName;
-const storeKey = readSimpleYamlValue(readFileSync(metadataPath, "utf8"), "storeKey") ?? taskPackage.storeKey ?? generationPlan.storeKey ?? "sample";
-const taskPackageHash = normalizedFileHash(taskPackageManifestPath);
-const generationPlanHash = normalizedFileHash(generationPlanPath);
-const handoffHash = generationPlan.sourceHandoffPackageHash?.startsWith("sha256:")
-  ? generationPlan.sourceHandoffPackageHash
-  : `sha256:${generationPlan.sourceHandoffPackageHash ?? "unknown"}`;
-
 const coverage = [{ pageId: "home", viewports: ["desktop", "tablet", "mobile"] }];
+const allowedFileTargets = allowedOutputs
+  .map(file => fileTargetFromAllowedOutput(file, projectName))
+  .sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
+const protectedFileTargets = normalizeProtectedTargets(taskPackage, projectName);
 const visualPlan = stableObject({
   schemaVersion: "0.1.0",
   operationId,
   projectName,
   storeKey,
+  projects: taskPackage.projects ?? {
+    server: {
+      name: projectName,
+      rootPath: ".",
+      projectPath: `${projectName}.csproj`,
+    },
+    wasm: {
+      name: `${projectName}.WASM`,
+      rootPath: `${projectName}.WASM`,
+      projectPath: `${projectName}.WASM/${projectName}.WASM.csproj`,
+    },
+  },
   handoffHash,
   generationPlanHash,
   taskPackageHash,
   pages: [{ id: "home", route: "/", priority: 1 }],
   pageViewportCoverage: coverage,
-  visualSlots: (selected.slots ?? []).map(slot => ({
+  visualSlots: (selected.slots?.length ? selected.slots : [selected.planEntryId]).map(slot => ({
     id: slot,
     pageId: slot.startsWith("home.") ? "home" : "shared",
+    targetProject: selectedTarget.targetProject,
     targetFiles: [selectedPath],
-    status: "completed",
+    status: "planned",
   })),
   allowedFiles: allowedOutputs.map(file => file.targetPath).sort((a, b) => a.localeCompare(b, "en")),
+  allowedFileTargets,
   plannedGeneratedOwnedFiles: allowedOutputs.filter(file => file.ownership === "generated" || file.visualShellOnly).map(file => file.targetPath).sort((a, b) => a.localeCompare(b, "en")),
-  protectedFiles: [
-    "Program.cs",
-    "appsettings.json",
-    "BlazorShop.Storefront.Starter",
-    "BlazorShop.Storefront.Presentation",
-    "BlazorShop.Storefront.Runtime",
-    "BlazorShop.Storefront.Client",
-  ],
+  protectedFiles: protectedFileTargets.map(file => file.targetPath),
+  protectedFileTargets,
   implementationOrder: [selectedPath],
   risks: [],
   blockers: [],
 });
 
 writeJson(visualPlanPath, visualPlan);
+writeMarkdown(visualPlanSummaryPath, [
+  "# Storefront Visual Plan Summary",
+  "",
+  `Operation: \`${operationId}\``,
+  `Project: \`${projectName}\``,
+  `Store key: \`${storeKey}\``,
+  `Handoff hash: \`${handoffHash}\``,
+  "",
+  "Planned generated-owned files:",
+  ...visualPlan.plannedGeneratedOwnedFiles.map(file => `- \`${file}\``),
+  "",
+]);
 const visualPlanHash = normalizedFileHash(visualPlanPath);
 const checklist = stableObject({
   schemaVersion: "0.1.0",
@@ -130,8 +158,11 @@ const checklist = stableObject({
   sourceVisualPlanHash: visualPlanHash,
   fileTasks: [{
     filePath: selectedPath,
+    project: selectedTarget.targetProject,
+    projectRelativePath: selectedTarget.projectRelativePath,
     taskIds: selected.slots?.length ? selected.slots : [selected.planEntryId],
     status: "completed",
+    notes: "Deterministic visual-only closure proof edit applied to an allowed generated file.",
   }],
   acceptanceChecks: [
     "No @page directives are added.",
@@ -142,6 +173,14 @@ const checklist = stableObject({
   forbiddenEdits: visualPlan.protectedFiles,
 });
 writeJson(checklistPath, checklist);
+writeMarkdown(checklistTodoPath, [
+  "# Storefront Visual Implementation Checklist",
+  "",
+  `- [x] ${selectedPath}`,
+  "- [x] No route, transport, auth, SEO, cart, checkout, payment, or order behavior changed.",
+  "- [x] Visual write recorder is required after checkpoint creation.",
+  "",
+]);
 const checklistHash = normalizedFileHash(checklistPath);
 const checkpoint = stableObject({
   schemaVersion: "0.1.0",
@@ -159,7 +198,6 @@ const checkpoint = stableObject({
   diffSummary: [{
     filePath: selectedPath,
     changeType: "modified",
-    summary: "Added deterministic Phase 4.12 visual-only proof class to an allowed generated Razor component.",
   }],
 });
 writeJson(checkpointPath, checkpoint);
@@ -171,10 +209,10 @@ const implementationReport = stableObject({
   beforeSnapshotHash: checkpoint.preEditSnapshotHash,
   afterSnapshotHash: checkpoint.postEditSnapshotHash,
   changedFiles: [selectedPath],
-  fileChanges: [{
+  changedFileTargets: [{
     filePath: selectedPath,
-    beforeSha256: beforeSha,
-    afterSha256: afterSha,
+    project: selectedTarget.targetProject,
+    projectRelativePath: selectedTarget.projectRelativePath,
   }],
   recorderResultPath: "docs/storefront-analysis/agent-written-files.json",
   boundaryResult: {
@@ -188,6 +226,18 @@ const implementationReport = stableObject({
   unresolvedItems: [],
 });
 writeJson(implementationReportPath, implementationReport);
+writeMarkdown(implementationReportMarkdownPath, [
+  "# Storefront Visual Implementation Report",
+  "",
+  `Operation: \`${operationId}\``,
+  `Changed file: \`${selectedPath}\``,
+  `Before: \`${beforeSha}\``,
+  `After: \`${afterSha}\``,
+  "",
+  "Boundary: pending recorder validation.",
+  "Build: pending generated project build.",
+  "",
+]);
 
 console.log(`Applied deterministic Phase 4.12 closure edit to ${selectedPath}`);
 console.log(`Visual checkpoint: ${checkpointPath}`);
@@ -228,8 +278,50 @@ function normalizeAllowedOutput(file) {
     planEntryId: String(file.planEntryId ?? targetPath),
     ownership: String(file.ownership ?? ""),
     visualShellOnly: file.visualShellOnly === true,
+    allowedOperation: String(file.allowedOperation ?? "replace"),
+    targetProject: String(file.targetProject ?? inferTargetProject("", targetPath)),
+    projectRelativePath: String(file.projectRelativePath ?? inferProjectRelativePath("", targetPath)),
+    sourceEvidenceReferences: file.sourceEvidenceReferences ?? [],
     slots: file.slots ?? [],
   };
+}
+
+function fileTargetFromAllowedOutput(file, projectName) {
+  return {
+    targetPath: file.targetPath,
+    targetProject: file.targetProject || inferTargetProject(projectName, file.targetPath),
+    projectRelativePath: file.projectRelativePath || inferProjectRelativePath(projectName, file.targetPath),
+    ownership: file.ownership || "generated",
+    allowedOperation: file.allowedOperation || "replace",
+    visualShellOnly: file.visualShellOnly === true,
+    planEntryId: file.planEntryId,
+  };
+}
+
+function normalizeProtectedTargets(packageManifest, projectName) {
+  const grouped = [
+    ...(packageManifest.protectedFilesByProject?.server ?? []),
+    ...(packageManifest.protectedFilesByProject?.wasm ?? []),
+  ];
+  const targets = grouped.length > 0
+    ? grouped
+    : (packageManifest.protectedFiles ?? []).map(path => ({
+      targetPath: path,
+      targetProject: inferTargetProject(projectName, path),
+      projectRelativePath: inferProjectRelativePath(projectName, path),
+      ownership: "protected",
+    }));
+
+  return targets.map(target => {
+    const targetPath = normalizeProtectedTargetPath(target.targetPath);
+    return {
+    targetPath,
+    targetProject: target.targetProject || inferTargetProject(projectName, targetPath),
+    projectRelativePath: target.projectRelativePath || inferProjectRelativePath(projectName, targetPath),
+    ownership: target.ownership || "protected",
+    visualShellOnly: target.visualShellOnly === true,
+  };
+  }).sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
 }
 
 function assertSafeProjectPath(targetPath, fullPath) {
@@ -259,6 +351,15 @@ function normalizeTargetPath(path) {
   return normalized;
 }
 
+function normalizeProtectedTargetPath(path) {
+  const normalized = String(path ?? "").replaceAll("\\", "/").replace(/^\/+/, "");
+  if (normalized.startsWith("protected-path:") && !normalized.includes("/") && !normalized.includes("\\")) {
+    return normalized;
+  }
+
+  return normalizeTargetPath(path);
+}
+
 function relativeToProject(path) {
   const root = resolve(projectRoot);
   const full = resolve(path);
@@ -283,6 +384,16 @@ function normalizeUnique(items) {
   return [...new Set((items ?? []).map(normalizeTargetPath))].sort((a, b) => a.localeCompare(b, "en"));
 }
 
+function inferTargetProject(projectName, targetPath) {
+  const normalized = normalizeTargetPath(targetPath);
+  return projectName && normalized.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+}
+
+function inferProjectRelativePath(projectName, targetPath) {
+  const normalized = normalizeTargetPath(targetPath);
+  return projectName && normalized.startsWith(`${projectName}.WASM/`) ? normalized.slice(`${projectName}.WASM/`.length) : normalized;
+}
+
 function stableObject(value) {
   if (Array.isArray(value)) {
     return value.map(stableObject);
@@ -298,6 +409,11 @@ function stableObject(value) {
 function writeJson(path, value) {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(stableObject(value), null, 2)}\n`, "utf8");
+}
+
+function writeMarkdown(path, lines) {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${lines.join("\n")}\n`, "utf8");
 }
 
 function readJson(path) {

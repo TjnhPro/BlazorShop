@@ -7,6 +7,19 @@ param(
     [string]$Mode = "validate-only",
     [string]$HandoffRoot = "",
     [string]$HandoffSchemaRoot = "",
+    [string]$SourceHead = "",
+    [string]$PackageBuildIdentity = "",
+    [string]$StorefrontClientPackageVersion = "",
+    [string]$StorefrontRuntimePackageVersion = "",
+    [string]$StorefrontPresentationPackageVersion = "",
+    [string]$StorefrontComponentsPackageVersion = "",
+    [string]$StorefrontBrowserPackageVersion = "",
+    [string]$StorefrontClientPackageHash = "",
+    [string]$StorefrontRuntimePackageHash = "",
+    [string]$StorefrontPresentationPackageHash = "",
+    [string]$StorefrontComponentsPackageHash = "",
+    [string]$StorefrontBrowserPackageHash = "",
+    [string]$PackageFeedPath = "",
     [switch]$Force,
     [switch]$SkipVisualQa,
     [switch]$SkipCommerceRegression
@@ -63,6 +76,19 @@ switch ($Mode) {
             OutputRoot = $OutputRoot
             CommandMode = "generate"
             Force = $Force
+            SourceHead = $SourceHead
+            PackageBuildIdentity = $PackageBuildIdentity
+            StorefrontClientPackageVersion = $StorefrontClientPackageVersion
+            StorefrontRuntimePackageVersion = $StorefrontRuntimePackageVersion
+            StorefrontPresentationPackageVersion = $StorefrontPresentationPackageVersion
+            StorefrontComponentsPackageVersion = $StorefrontComponentsPackageVersion
+            StorefrontBrowserPackageVersion = $StorefrontBrowserPackageVersion
+            StorefrontClientPackageHash = $StorefrontClientPackageHash
+            StorefrontRuntimePackageHash = $StorefrontRuntimePackageHash
+            StorefrontPresentationPackageHash = $StorefrontPresentationPackageHash
+            StorefrontComponentsPackageHash = $StorefrontComponentsPackageHash
+            StorefrontBrowserPackageHash = $StorefrontBrowserPackageHash
+            PackageFeedPath = $PackageFeedPath
         }
 
         if (-not [string]::IsNullOrWhiteSpace($HandoffRoot)) {
@@ -92,6 +118,19 @@ switch ($Mode) {
             OutputRoot = $OutputRoot
             CommandMode = "full"
             Force = $Force
+            SourceHead = $SourceHead
+            PackageBuildIdentity = $PackageBuildIdentity
+            StorefrontClientPackageVersion = $StorefrontClientPackageVersion
+            StorefrontRuntimePackageVersion = $StorefrontRuntimePackageVersion
+            StorefrontPresentationPackageVersion = $StorefrontPresentationPackageVersion
+            StorefrontComponentsPackageVersion = $StorefrontComponentsPackageVersion
+            StorefrontBrowserPackageVersion = $StorefrontBrowserPackageVersion
+            StorefrontClientPackageHash = $StorefrontClientPackageHash
+            StorefrontRuntimePackageHash = $StorefrontRuntimePackageHash
+            StorefrontPresentationPackageHash = $StorefrontPresentationPackageHash
+            StorefrontComponentsPackageHash = $StorefrontComponentsPackageHash
+            StorefrontBrowserPackageHash = $StorefrontBrowserPackageHash
+            PackageFeedPath = $PackageFeedPath
         }
 
         if (-not [string]::IsNullOrWhiteSpace($HandoffRoot)) {

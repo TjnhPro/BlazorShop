@@ -16,6 +16,7 @@ const directCommerceCalls = [];
 const sameOriginBffCalls = [];
 const fakeCommerceCalls = [];
 const hostLogs = [];
+const browserEvents = [];
 const checks = [];
 const failures = [];
 let failureScreenshotPath = null;
@@ -67,6 +68,15 @@ try {
   page = await browser.newPage();
   let presentationScriptLoaded = false;
 
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      browserEvents.push(`console error: ${message.text()}`);
+    }
+  });
+  page.on("pageerror", (error) => {
+    browserEvents.push(`page error: ${error?.message || error}`);
+  });
+
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (url.href.includes("/api/storefront/") || url.href.includes("/api/commerce/") || url.origin === fakeCommerce.url) {
@@ -89,7 +99,23 @@ try {
 
   await routeSameOriginBff(page, baseUrl);
 
-  await page.goto(`${baseUrl}${proofProductPath}`, { waitUntil: "networkidle" });
+  const homeResponse = await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
+  const homeText = await page.locator("body").innerText();
+  if (homeResponse?.ok() && homeText.includes("Generated Proof Store")) {
+    checks.push("home SSR renders");
+  } else {
+    failures.push("home SSR renders");
+  }
+
+  const categoryResponse = await page.goto(`${baseUrl}/category/proof-category`, { waitUntil: "networkidle" });
+  const categoryText = await page.locator("body").innerText();
+  if (categoryResponse?.ok() && categoryText.includes("Proof Category") && categoryText.includes("Proof Product")) {
+    checks.push("catalog page renders");
+  } else {
+    failures.push("catalog page renders");
+  }
+
+  const productResponse = await page.goto(`${baseUrl}${proofProductPath}`, { waitUntil: "networkidle" });
   await page.evaluate(() => {
     window.__storefrontProofSelectionDetails = [];
     document.addEventListener("storefront:product-purchase:selection-changed", (event) => {
@@ -101,6 +127,18 @@ try {
   });
   checks.push("product page renders");
   await page.waitForSelector("[data-storefront-product-purchase]");
+  if (productResponse?.ok() && await page.locator("[data-storefront-product-purchase]").count() > 0) {
+    checks.push("product detail renders");
+  } else {
+    failures.push("product detail renders");
+  }
+
+  if (await page.locator("[data-storefront-product-gallery], [data-storefront-gallery-placeholder], [data-storefront-gallery-main], .starter-gallery-placeholder, .sfb-product-gallery").count() > 0) {
+    checks.push("product image/gallery renders");
+  } else {
+    failures.push("product image/gallery renders");
+  }
+
   checks.push("product purchase descriptors exist");
 
   const descriptorSource = await page.locator("[data-storefront-product-purchase]").evaluate((element) => ({
@@ -150,6 +188,12 @@ try {
   });
   await page.fill("[data-storefront-purchase-quantity]", "2");
   await page.dispatchEvent("[data-storefront-purchase-quantity]", "change");
+  if (await page.locator("[data-storefront-purchase-quantity]").inputValue() === "2") {
+    checks.push("quantity changes work");
+  } else {
+    failures.push("quantity changes work");
+  }
+
   if ((await previewResponse).ok()) {
     checks.push("selection preview command is invoked through same-origin route");
   } else {
@@ -189,14 +233,24 @@ try {
   await page.goto(`${baseUrl}/my-cart`, { waitUntil: "networkidle" });
   if ((await page.locator("body").innerText()).includes("Proof Product")) {
     checks.push("cart page sees current cart");
+    checks.push("cart page hydrates");
   } else {
     failures.push("cart page sees current cart");
+  }
+
+  const cartRefreshResponse = await page.goto(`${baseUrl}/cart`, { waitUntil: "networkidle" });
+  if (cartRefreshResponse?.ok() && (await page.locator("body").innerText()).includes("Proof Product")) {
+    checks.push("direct refresh of /cart works");
+  } else {
+    failures.push("direct refresh of /cart works");
   }
 
   await page.goto(`${baseUrl}/checkout`, { waitUntil: "networkidle" });
   const checkoutText = await page.locator("body").innerText();
   if (checkoutText.includes("Checkout") && await page.locator("[data-storefront-checkout-form]").count() > 0) {
     checks.push("checkout form/route contract exists");
+    checks.push("checkout page hydrates");
+    checks.push("direct refresh of /checkout works");
   } else {
     failures.push("checkout form/route contract exists");
   }
@@ -213,6 +267,8 @@ try {
   const accountText = await page.locator("body").innerText();
   if (accountText.includes("Account") && await page.locator(".starter-account-shell").count() > 0) {
     checks.push("account shell route renders without direct Commerce transport");
+    checks.push("account page hydrates");
+    checks.push("direct refresh of /account works");
   } else {
     failures.push("account shell route renders without direct Commerce transport");
   }
@@ -246,6 +302,12 @@ try {
   } else {
     failures.push(`direct Commerce Node browser calls: ${directCommerceCalls.join(", ")}`);
   }
+
+  if (browserEvents.length === 0) {
+    checks.push("console audit has no blocking errors");
+  } else {
+    failures.push(`console audit has blocking errors: ${browserEvents.join("; ")}`);
+  }
 } catch (error) {
   failures.push(`fatal proof error: ${error?.stack || error?.message || error}`);
   if (page) {
@@ -264,20 +326,32 @@ try {
 }
 
 const required = [
+  "home SSR renders",
+  "catalog page renders",
   "product page renders",
+  "product detail renders",
+  "product image/gallery renders",
   "product purchase descriptors exist",
   "actual generated Razor emitted purchase descriptors",
   "Presentation core script loads through static web assets",
   "selection preview command is invoked through same-origin route",
   "SKU/GTIN semantic values update when preview response changes",
+  "quantity changes work",
   "command descriptor is required",
   "add-to-cart command is invoked through same-origin route",
   "cart badge changes",
   "cart page sees current cart",
+  "cart page hydrates",
   "checkout form/route contract exists",
+  "checkout page hydrates",
+  "direct refresh of /checkout works",
   "account shell route renders without direct Commerce transport",
+  "account page hydrates",
+  "direct refresh of /account works",
+  "direct refresh of /cart works",
   "consent current/save/revoke works",
   "no browser request goes directly to Commerce Node",
+  "console audit has no blocking errors",
 ];
 const missing = required.filter((check) => !checks.includes(check));
 const report = [
@@ -303,6 +377,10 @@ const report = [
   "## Host Logs",
   "",
   ...(hostLogs.length === 0 ? ["- None."] : hostLogs.slice(-40).map((line) => `- ${line}`)),
+  "",
+  "## Browser Events",
+  "",
+  ...(browserEvents.length === 0 ? ["- None."] : browserEvents.map((line) => `- ${line}`)),
   "",
   "## Failure Screenshot",
   "",

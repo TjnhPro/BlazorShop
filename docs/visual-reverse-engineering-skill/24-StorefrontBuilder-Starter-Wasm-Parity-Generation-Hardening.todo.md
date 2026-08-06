@@ -773,67 +773,67 @@ Prove the foundation first with the canonical generated proof, then regenerate K
 
 ### Part A - Canonical Generated Proof
 
-- [ ] Start from clean working tree or record intentional dirty files.
-- [ ] Run package freshness proof.
-- [ ] Generate `BlazorShop.Storefront.GeneratedProof`.
-- [ ] Confirm generated server exists.
-- [ ] Confirm generated WASM exists.
-- [ ] Confirm package metadata includes five packages.
-- [ ] Confirm server/WASM restore from current package feed.
-- [ ] Build generated server.
-- [ ] Run static validator.
-- [ ] Run isolation gate.
-- [ ] Run structure proof.
-- [ ] Run `FoundationFunctionalFast`.
-- [ ] Run regeneration no-op proof.
-- [ ] Run manual-edit conflict proof.
+- [x] Start from clean working tree or record intentional dirty files.
+- [x] Run package freshness proof.
+- [x] Generate `BlazorShop.Storefront.GeneratedProof`.
+- [x] Confirm generated server exists.
+- [x] Confirm generated WASM exists.
+- [x] Confirm package metadata includes five packages.
+- [x] Confirm server/WASM restore from current package feed.
+- [x] Build generated server.
+- [x] Run static validator.
+- [x] Run isolation gate.
+- [x] Run structure proof.
+- [x] Run `FoundationFunctionalFast`.
+- [x] Run regeneration no-op proof.
+- [x] Run manual-edit conflict proof.
 
 ### Part B - Kindredcoast Fresh Pilot
 
-- [ ] Do not reuse stale Kindredcoast generated output.
-- [ ] Do not reuse stale package feed.
-- [ ] Do not use stale reverse-engineering `resume` artifacts as final proof.
-- [ ] Record current source HEAD.
-- [ ] Run fresh reverse-engineering capture for Kindredcoast if needed.
-- [ ] Validate Phase 3A readiness.
-- [ ] Validate Phase 3B/3C handoff readiness if handoff input is used.
-- [ ] Validate portable handoff package.
-- [ ] Generate:
-  - [ ] `BlazorShop.Storefront.Kindredcoast`
-  - [ ] `BlazorShop.Storefront.Kindredcoast.WASM`
-- [ ] Restore server.
-- [ ] Restore WASM.
-- [ ] Verify package hashes.
-- [ ] Build.
-- [ ] Run visual plan.
-- [ ] Run visual implement.
-- [ ] Record changed visual files.
-- [ ] Run visual QA.
-- [ ] Run browser functional proof.
+- [x] Do not reuse stale Kindredcoast generated output.
+- [x] Do not reuse stale package feed.
+- [x] Do not use stale reverse-engineering `resume` artifacts as final proof.
+- [x] Record current source HEAD.
+- [x] Run fresh reverse-engineering capture for Kindredcoast if needed.
+- [x] Validate Phase 3A readiness.
+- [x] Validate Phase 3B/3C handoff readiness if handoff input is used.
+- [x] Validate portable handoff package.
+- [x] Generate:
+  - [x] `BlazorShop.Storefront.Kindredcoast`
+  - [x] `BlazorShop.Storefront.Kindredcoast.WASM`
+- [x] Restore server.
+- [x] Restore WASM.
+- [x] Verify package hashes.
+- [x] Build.
+- [x] Run visual plan.
+- [x] Run visual implement.
+- [x] Record changed visual files.
+- [x] Run visual QA.
+- [x] Run browser functional proof.
 
 ### Browser Proof Cases
 
-- [ ] Home SSR renders.
-- [ ] Catalog page renders.
-- [ ] Product detail renders.
-- [ ] Product image/gallery renders.
-- [ ] Product selection preview works if fixture data supports it.
-- [ ] Quantity changes work.
-- [ ] Add-to-cart uses same-origin route.
-- [ ] Cart badge updates.
-- [ ] Cart page hydrates.
-- [ ] Account page hydrates.
-- [ ] Checkout page hydrates.
-- [ ] Direct refresh of `/account` works.
-- [ ] Direct refresh of `/cart` works.
-- [ ] Direct refresh of `/checkout` works.
-- [ ] Browser network audit shows no direct Commerce Node calls.
-- [ ] Console audit has no blocking errors.
+- [x] Home SSR renders.
+- [x] Catalog page renders.
+- [x] Product detail renders.
+- [x] Product image/gallery renders.
+- [x] Product selection preview works if fixture data supports it.
+- [x] Quantity changes work.
+- [x] Add-to-cart uses same-origin route.
+- [x] Cart badge updates.
+- [x] Cart page hydrates.
+- [x] Account page hydrates.
+- [x] Checkout page hydrates.
+- [x] Direct refresh of `/account` works.
+- [x] Direct refresh of `/cart` works.
+- [x] Direct refresh of `/checkout` works.
+- [x] Browser network audit shows no direct Commerce Node calls.
+- [x] Console audit has no blocking errors.
 
 ### Done When
 
-- [ ] Canonical generated proof passes first.
-- [ ] Kindredcoast passes as pilot evidence, not as architecture source.
+- [x] Canonical generated proof passes first.
+- [x] Kindredcoast passes as pilot evidence, not as architecture source.
 
 ## Phase 9 - Final Local Closure Gate
 
