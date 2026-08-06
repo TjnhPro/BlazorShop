@@ -290,18 +290,18 @@ Goal: make `PresentationMapper` choose the correct source page, section, ecommer
 
 Implementation checklist:
 
-- [ ] Replace first-region source selection with deterministic source scoring.
-- [ ] Score candidate-to-region matches using evidence ID overlap, source component family ID, section ID, page ID, viewport coverage, and role compatibility.
-- [ ] Prefer exact evidence overlap over role-only matches.
-- [ ] Prevent layout mappings from absorbing page body evidence.
-- [ ] Ensure hero/home content maps to `home.sections` or an approved visual extension path, not `layout.header`.
-- [ ] Ensure footer maps to `layout.footer` with the actual source page and source section when footer section evidence exists.
-- [ ] Ensure navigation, cart badge, and account menu use `layout.main-navigation`, `layout.cart-badge`, and `layout.account-menu` only when catalog support and source section are compatible.
-- [ ] Keep unsupported runtime-owned behavior blocking.
-- [ ] Keep direct Storefront API/browser action detection blocking.
-- [ ] Add reason codes for evidence overlap, source-section binding, and fallback role match.
-- [ ] Update unsupported pattern output so supported ecommerce visual patterns do not remain in `unsupported-patterns.json`.
-- [ ] Update or add tests proving no `unknown` source is emitted when a known section exists.
+- [x] Replace first-region source selection with deterministic source scoring.
+- [x] Score candidate-to-region matches using evidence ID overlap, source component family ID, section ID, page ID, viewport coverage, and role compatibility.
+- [x] Prefer exact evidence overlap over role-only matches.
+- [x] Prevent layout mappings from absorbing page body evidence.
+- [x] Ensure hero/home content maps to `home.sections` or an approved visual extension path, not `layout.header`.
+- [x] Ensure footer maps to `layout.footer` with the actual source page and source section when footer section evidence exists.
+- [x] Ensure navigation, cart badge, and account menu use `layout.main-navigation`, `layout.cart-badge`, and `layout.account-menu` only when catalog support and source section are compatible.
+- [x] Keep unsupported runtime-owned behavior blocking.
+- [x] Keep direct Storefront API/browser action detection blocking.
+- [x] Add reason codes for evidence overlap, source-section binding, and fallback role match.
+- [x] Update unsupported pattern output so supported ecommerce visual patterns do not remain in `unsupported-patterns.json`.
+- [x] Update or add tests proving no `unknown` source is emitted when a known section exists.
 
 Candidate files:
 
@@ -316,12 +316,20 @@ Checks:
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationMappingTests|FullyQualifiedName~PresentationCatalogBuilderTests|FullyQualifiedName~Phase3BFixtureTests" --blame-hang --blame-hang-timeout 5m
 ```
 
+Phase 2 evidence:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~PresentationMappingTests|FullyQualifiedName~PresentationCatalogBuilderTests|FullyQualifiedName~Phase3BFixtureTests" --no-restore
+```
+
+Result: passed, 21/21.
+
 Done when:
 
-- [ ] Hero no longer maps to `layout.header`.
-- [ ] Footer no longer has `sourcePageId: unknown` when source evidence is page-bound.
-- [ ] Cart/account/product-card/price-display patterns either have valid Presentation mappings or remain explicitly blocked with actionable reason.
-- [ ] New mapping tests pass.
+- [x] Hero no longer maps to `layout.header`.
+- [x] Footer no longer has `sourcePageId: unknown` when source evidence is page-bound.
+- [x] Cart/account/product-card/price-display patterns either have valid Presentation mappings or remain explicitly blocked with actionable reason.
+- [x] New mapping tests pass.
 
 Commit:
 

@@ -28,6 +28,7 @@ public sealed class PresentationMapper
         var catalog = await store.ReadJsonAsync<PresentationComponentCatalog>(ArtifactPath.Create("presentation-catalog/presentation-component-catalog.json"), "presentation-component-catalog", cancellationToken);
         var semantic = await store.ReadJsonAsync<SemanticTokenDocument>(ArtifactPath.Create("analysis/tokens/semantic-tokens.draft.json"), "semantic-tokens", cancellationToken);
         var ecommerce = await ReadRegionsAsync(root, store, cancellationToken);
+        var sections = await ReadSectionsAsync(root, store, cancellationToken);
         var pageArchetypes = await ReadPageArchetypesAsync(root, store, cancellationToken);
         var mappings = new List<PresentationMapping>();
         var unsupported = new List<UnsupportedPattern>();
@@ -38,13 +39,21 @@ public sealed class PresentationMapper
                 .OrderBy(region => region.PageId, StringComparer.Ordinal)
                 .ThenBy(region => region.Region.RegionId, StringComparer.Ordinal)
                 .ToArray();
-            var roles = regionContexts.Select(region => region.Region.Role).Distinct(StringComparer.Ordinal).ToArray();
-            var sourcePageId = regionContexts.FirstOrDefault()?.PageId ?? "unknown";
+            var sectionContexts = sections
+                .Where(section => section.Section.EvidenceIds.Any(candidate.EvidenceIds.Contains))
+                .OrderBy(section => section.PageId, StringComparer.Ordinal)
+                .ThenBy(section => section.Section.Order)
+                .ThenBy(section => section.Section.SectionId, StringComparer.Ordinal)
+                .ToArray();
+            var source = SelectSource(candidate, regionContexts, sectionContexts);
+            var roles = source.Region is not null
+                ? [source.Region.Role]
+                : regionContexts.Select(region => region.Region.Role).Distinct(StringComparer.Ordinal).ToArray();
+            var sourcePageId = source.PageId ?? "unknown";
             var pageArchetype = pageArchetypes.GetValueOrDefault(sourcePageId, "unknown");
-            var sourceRegion = regionContexts.FirstOrDefault()?.Region;
-            var sourceSectionId = sourceRegion?.SourceSectionIds.FirstOrDefault() ?? "unknown";
-            var ecommerceRegionId = sourceRegion?.RegionId ?? "unknown";
-            var preferredCatalogId = PreferredCatalogId(candidate.Family);
+            var sourceSectionId = source.SectionId ?? "unknown";
+            var ecommerceRegionId = source.Region?.RegionId ?? "unknown";
+            var preferredCatalogId = PreferredCatalogId(candidate.Family, pageArchetype);
             var candidateMatches = catalog.Components
                 .Where(entry => entry.ComponentId == preferredCatalogId || entry.SupportedRegionRoles.Any(role => roles.Contains(role, StringComparer.Ordinal)))
                 .Where(entry => entry.ComponentId == preferredCatalogId || IsVisualMappingTarget(entry) || entry.IntentCategory == "presentation action binding")
@@ -94,7 +103,7 @@ public sealed class PresentationMapper
                 targetGeneratedPath,
                 GeneratedZoneForPath(targetGeneratedPath),
                 "Storefront Presentation owns route declarations; generated visuals register view slots only",
-                validation.ReasonCodes,
+                validation.ReasonCodes.Concat(source.ReasonCodes).Distinct(StringComparer.Ordinal).ToArray(),
                 humanReviewRequired ? "NeedsReview" : "Approved"));
         }
 
@@ -120,6 +129,21 @@ public sealed class PresentationMapper
         return regions;
     }
 
+    private static async Task<IReadOnlyList<PageSectionContext>> ReadSectionsAsync(string root, FileSystemVisualArtifactStore store, CancellationToken cancellationToken)
+    {
+        var pagesRoot = Path.Combine(root, "analysis", "pages");
+        if (!Directory.Exists(pagesRoot)) return [];
+        var sections = new List<PageSectionContext>();
+        foreach (var path in Directory.EnumerateFiles(pagesRoot, "sections.draft.json", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+            var document = await store.ReadJsonAsync<SectionsDraftDocument>(ArtifactPath.Create(relative), "sections", cancellationToken);
+            sections.AddRange(document.Sections.Select(section => new PageSectionContext(document.PageId, section)));
+        }
+
+        return sections;
+    }
+
     private static async Task<IReadOnlyDictionary<string, string>> ReadPageArchetypesAsync(string root, FileSystemVisualArtifactStore store, CancellationToken cancellationToken)
     {
         var pagesRoot = Path.Combine(root, "analysis", "pages");
@@ -135,14 +159,20 @@ public sealed class PresentationMapper
         return archetypes;
     }
 
-    private static string PreferredCatalogId(string family) =>
+    private static string PreferredCatalogId(string family, string pageArchetype) =>
         family switch
         {
-            "product card" => "catalog.product-card",
+            "product card" => pageArchetype == "home" ? "home.sections" : "catalog.product-card",
+            "product image" => pageArchetype == "home" ? "home.sections" : "catalog.product-card",
+            "price display" => pageArchetype == "home" ? "home.sections" : "catalog.product-card",
             "product gallery" => "product.gallery",
             "purchase action visual" => "product.purchase",
+            "hero" => pageArchetype == "home" ? "home.sections" : "missing.hero",
+            "announcement bar" => "home.sections",
             "header" => "layout.header",
             "navigation" => "layout.main-navigation",
+            "cart trigger" => "layout.cart-badge",
+            "account trigger" => "layout.account-menu",
             "footer" => "layout.footer",
             "account shell" => "account.shell",
             _ => "missing." + family.Replace(' ', '-')
@@ -250,7 +280,129 @@ public sealed class PresentationMapper
         string.IsNullOrWhiteSpace(path) ? "none" :
         "unknown";
 
+    private static SourceSelection SelectSource(
+        VisualComponentCandidate candidate,
+        IReadOnlyList<EcommerceRegionContext> regions,
+        IReadOnlyList<PageSectionContext> sections)
+    {
+        var bestRegion = regions
+            .Select(region => new
+            {
+                Context = region,
+                Score = ScoreRegion(candidate, region, sections)
+            })
+            .OrderByDescending(region => region.Score)
+            .ThenBy(region => region.Context.PageId, StringComparer.Ordinal)
+            .ThenBy(region => region.Context.Region.RegionId, StringComparer.Ordinal)
+            .FirstOrDefault();
+
+        var bestSection = sections
+            .Select(section => new
+            {
+                Context = section,
+                Score = ScoreSection(candidate, section)
+            })
+            .OrderByDescending(section => section.Score)
+            .ThenBy(section => section.Context.PageId, StringComparer.Ordinal)
+            .ThenBy(section => section.Context.Section.Order)
+            .ThenBy(section => section.Context.Section.SectionId, StringComparer.Ordinal)
+            .FirstOrDefault();
+
+        if (bestRegion is not null && bestRegion.Score >= (bestSection?.Score ?? 0))
+        {
+            var sectionId = BestRegionSectionId(candidate, bestRegion.Context, sections);
+            var reasonCodes = new List<string> { "source-region-binding" };
+            if (bestRegion.Context.Region.EvidenceIds.Any(candidate.EvidenceIds.Contains))
+            {
+                reasonCodes.Add("source-evidence-overlap");
+            }
+
+            if (!string.IsNullOrWhiteSpace(sectionId) && sectionId != "unknown")
+            {
+                reasonCodes.Add("source-section-binding");
+            }
+
+            return new SourceSelection(bestRegion.Context.PageId, sectionId, bestRegion.Context.Region, reasonCodes);
+        }
+
+        if (bestSection is not null)
+        {
+            return new SourceSelection(bestSection.Context.PageId, bestSection.Context.Section.SectionId, null, ["source-evidence-overlap", "source-section-binding"]);
+        }
+
+        return new SourceSelection(null, null, null, ["source-unknown"]);
+    }
+
+    private static int ScoreRegion(VisualComponentCandidate candidate, EcommerceRegionContext region, IReadOnlyList<PageSectionContext> sections)
+    {
+        var score = 0;
+        if (region.Region.EvidenceIds.Any(candidate.EvidenceIds.Contains))
+        {
+            score += 100;
+        }
+
+        if (region.Region.SourceComponentFamilyIds.Contains(candidate.FamilyId, StringComparer.Ordinal))
+        {
+            score += 40;
+        }
+
+        if (region.Region.SourceSectionIds.Any(sectionId => sections.Any(section => section.PageId == region.PageId && section.Section.SectionId == sectionId && section.Section.EvidenceIds.Any(candidate.EvidenceIds.Contains))))
+        {
+            score += 30;
+        }
+
+        if (RoleLooksCompatible(candidate.Family, region.Region.Role))
+        {
+            score += 20;
+        }
+
+        return score;
+    }
+
+    private static int ScoreSection(VisualComponentCandidate candidate, PageSectionContext section)
+    {
+        var score = section.Section.EvidenceIds.Any(candidate.EvidenceIds.Contains) ? 90 : 0;
+        if (RoleLooksCompatible(candidate.Family, section.Section.SectionType))
+        {
+            score += 20;
+        }
+
+        return score;
+    }
+
+    private static string BestRegionSectionId(VisualComponentCandidate candidate, EcommerceRegionContext region, IReadOnlyList<PageSectionContext> sections)
+    {
+        var matched = region.Region.SourceSectionIds
+            .Select(sectionId => sections.FirstOrDefault(section => section.PageId == region.PageId && section.Section.SectionId == sectionId))
+            .Where(section => section is not null)
+            .OrderByDescending(section => section!.Section.EvidenceIds.Any(candidate.EvidenceIds.Contains))
+            .ThenBy(section => section!.Section.Order)
+            .ThenBy(section => section!.Section.SectionId, StringComparer.Ordinal)
+            .FirstOrDefault();
+        return matched?.Section.SectionId ?? region.Region.SourceSectionIds.FirstOrDefault() ?? "unknown";
+    }
+
+    private static bool RoleLooksCompatible(string family, string role)
+    {
+        var normalizedFamily = family.Replace("-", " ", StringComparison.OrdinalIgnoreCase);
+        return role.Contains(normalizedFamily, StringComparison.OrdinalIgnoreCase) ||
+            (family.Contains("product", StringComparison.OrdinalIgnoreCase) && role.Contains("product", StringComparison.OrdinalIgnoreCase)) ||
+            (family.Contains("cart", StringComparison.OrdinalIgnoreCase) && role.Contains("cart", StringComparison.OrdinalIgnoreCase)) ||
+            (family.Contains("account", StringComparison.OrdinalIgnoreCase) && role.Contains("account", StringComparison.OrdinalIgnoreCase)) ||
+            (family.Contains("hero", StringComparison.OrdinalIgnoreCase) && role.Contains("hero", StringComparison.OrdinalIgnoreCase)) ||
+            (family.Contains("footer", StringComparison.OrdinalIgnoreCase) && role.Contains("footer", StringComparison.OrdinalIgnoreCase)) ||
+            (family.Contains("navigation", StringComparison.OrdinalIgnoreCase) && role.Contains("navigation", StringComparison.OrdinalIgnoreCase));
+    }
+
     private sealed record EcommerceRegionContext(string PageId, EcommerceRegion Region);
+
+    private sealed record PageSectionContext(string PageId, SectionDraft Section);
+
+    private sealed record SourceSelection(
+        string? PageId,
+        string? SectionId,
+        EcommerceRegion? Region,
+        IReadOnlyList<string> ReasonCodes);
 
     private sealed record MappingValidationResult(
         string? BlockingReason,
