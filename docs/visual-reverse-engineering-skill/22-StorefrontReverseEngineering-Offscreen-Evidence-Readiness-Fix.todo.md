@@ -315,12 +315,12 @@ Goal: make the fix understandable for future agents and users running production
 
 Tasks:
 
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md` if the production runner or evidence policy becomes part of the documented workflow.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` with the Kindred Coast production command if it is now the canonical example.
-- [ ] Update `docs/agents/storefront-builder.md` only if the agent workflow needs a new rule about offscreen accessibility/noise evidence.
-- [ ] Update `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md` if capture policy/default noise selector behavior changes.
-- [ ] If the runner gets new options, ensure `-Help` output explains problem/cause/fix clearly.
-- [ ] Do not document `artifacts` output as committed source.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md` if the production runner or evidence policy becomes part of the documented workflow.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` with the Kindred Coast production command if it is now the canonical example.
+- [x] Update `docs/agents/storefront-builder.md` only if the agent workflow needs a new rule about offscreen accessibility/noise evidence.
+- [x] Update `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md` if capture policy/default noise selector behavior changes.
+- [x] If the runner gets new options, ensure `-Help` output explains problem/cause/fix clearly.
+- [x] Do not document `artifacts` output as committed source.
 
 Checks:
 
@@ -331,9 +331,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\
 
 DoD:
 
-- [ ] Docs explain why offscreen accessibility helpers are not visual evidence.
-- [ ] Production runner usage remains copy-paste runnable.
-- [ ] Future agents know not to solve this by weakening all invalid-box validation.
+- [x] Docs explain why offscreen accessibility helpers are not visual evidence.
+- [x] Production runner usage remains copy-paste runnable.
+- [x] Future agents know not to solve this by weakening all invalid-box validation.
 
 ## Phase 3A.7 - Final Closure Evidence
 
@@ -490,6 +490,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\
   - `analysis/visual-blueprint.v1.reviewed.json` is missing;
   - generation readiness reports missing review decisions and unresolved required slots.
 - Those Phase 3B blockers are separate from the Phase 3A offscreen evidence readiness bug; Phase 3A readiness now passes with zero findings.
+
+### Phase 3A.6 Docs And Runner Guidance - 2026-08-06
+
+- Updated `docs/visual-reverse-engineering-skill/README.md` with the visual-only evidence policy, the Kindred Coast production command, and the distinction between Phase 3A readiness success and Phase 3B `completed-with-blockers`.
+- Updated `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md` with the Kindred Coast production smoke command, readiness report source of truth, and guidance not to weaken `invalid-element-box`.
+- Updated `tools/BlazorShop.AI.StorefrontReverseEngineering/README.md` with capture policy details for offscreen accessibility helpers and horizontally off-canvas carousel items.
+- `docs/agents/storefront-builder.md` did not need a new rule because this change is inside StorefrontReverseEngineering capture/readiness policy, not StorefrontBuilder generation boundaries.
+- No new runner option was added; `-Help` was checked to confirm existing usage remains copy-paste runnable.
+- Documentation mentions artifact paths as generated local output only and does not ask to commit production artifacts.
+- Documentation check command passed:
+
+```powershell
+rg -n "offscreen|skip-to-content|skip link|noiseSelectors|KindredCoast|run-storefront-reverse-engineering-production" docs\visual-reverse-engineering-skill docs\agents tools\BlazorShop.AI.StorefrontReverseEngineering\README.md scripts\reverse-engineering
+```
+
+- Runner help command passed:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Help
+```
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |

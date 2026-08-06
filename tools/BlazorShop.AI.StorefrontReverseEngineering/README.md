@@ -93,6 +93,16 @@ Readiness validates required file existence, schemas, screenshot/image quality, 
 
 `configuration.json` owns capture policy limits. Defaults are: timeout `30000ms`, maximum page height `12000`, maximum pages `1`, preserve viewport segments `false`, strict warnings `false`, automatic stitched fallback `true`, maximum single-color ratio `0.98`, maximum evidence elements/assets `80`, maximum text length `160`, maximum stitch segments `50`, segment overlap `80px`, scroll settle `100ms`, final settle `150ms`, and default noise selectors `.cookie-banner` plus `[data-capture-noise]`. Invalid non-positive limits or single-color ratios outside `0..1` fail with `SRE-POLICY-001`.
 
+Rendered element evidence is visual evidence for screenshot/readiness analysis, not a raw DOM inventory. Capture excludes known accessibility helpers such as offscreen skip links, visually-hidden/sr-only nodes, and offscreen ARIA live helpers when their boxes are intentionally outside or clipped away from the visual page. It also excludes elements fully outside the screenshot's horizontal capture width, such as off-canvas carousel items, while preserving below-fold sections that belong in the full-page screenshot. Do not fix `invalid-element-box` by relaxing readiness validation; visible elements with invalid coordinates must still block readiness.
+
+For a production smoke run against Kindred Coast:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -CommandTimeoutSeconds 900
+```
+
+The script can exit successfully while reporting `completed-with-blockers` when later Phase 3B review/handoff prerequisites are unresolved. Phase 3A readiness is the `reports/readiness-report.json` result and should pass with zero findings before reviewing Phase 3B blockers.
+
 ## Hardening Gate
 
 Run the Phase 3A hardening gate after changing the tool, schemas, workflow, browser runtime, interaction capture, or StorefrontBuilder handoff docs:

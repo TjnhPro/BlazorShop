@@ -55,6 +55,16 @@ The gate is fixture-based and runs without an external reference website after P
 
 Readiness is machine-readable in `reports/readiness-report.json`. It validates file existence, schemas, screenshot quality, evidence depth, correlation, originality, and latest workflow run state. Use `inspect --project <path>` before handoff to see latest run status, readiness status, blocking/warning counts, latest blocker, blueprint path, readiness report path, Phase 3B artifact status, review queue count, generation readiness, and step rows.
 
+ReverseEngineering element evidence is intentionally visual-only. Offscreen accessibility helpers, including skip-to-content links, visually hidden or sr-only nodes, and offscreen ARIA live helpers, are not meaningful visual evidence while they are clipped or positioned outside the visible page. Horizontally off-canvas carousel/product items are also excluded when they sit fully outside the screenshot capture width. This filtering happens before readiness validation; the validator must stay strict for visible visual boxes with invalid dimensions or coordinates.
+
+Use the production runner for a real-site smoke proof:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -CommandTimeoutSeconds 900
+```
+
+`completed-with-blockers` can still be a valid Phase 3A evidence outcome when `reports/readiness-report.json` says `passed: true` and Phase 3B review/handoff blockers remain. Do not treat missing `review/review-decisions.json` or missing reviewed blueprint output as an offscreen evidence readiness failure.
+
 Phase 3B artifacts can be inspected without Playwright:
 
 ```powershell

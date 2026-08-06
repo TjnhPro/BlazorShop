@@ -197,6 +197,16 @@ ReverseEngineering Phase 3A can create reference evidence and `analysis/visual-b
 
 The approved Phase 4 input root is only `analysis/agent-handoff/*` plus the registered schemas. A Phase 4 consumer must not read draft artifacts such as `analysis/pages/*`, raw `captures/*`, `analysis/visual-blueprint.draft.json`, `analysis/visual-blueprint.v1.draft.json`, or any unresolved reviewed-source file as generation input.
 
+Run a production Phase 3A evidence smoke against Kindred Coast:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -CommandTimeoutSeconds 900
+```
+
+Read `artifacts/storefront-reverse-engineering/projects/kindredcoast/reports/readiness-report.json` as the Phase 3A source of truth. Offscreen skip links, visually-hidden/sr-only helpers, offscreen ARIA live helpers, and horizontally off-canvas carousel items should not become rendered visual evidence. Visible visual elements with bad dimensions or coordinates should still produce `invalid-element-box`; do not weaken readiness validation to make a production run pass.
+
+The production script may finish as `completed-with-blockers` after Phase 3A passes because Phase 3B still requires review decisions and a reviewed blueprint before final handoff. Resolve those review/handoff blockers separately; they are not capture readiness failures when `readiness-report.json` has `passed: true` and no findings.
+
 To run the Phase 3A fixture evidence workflow:
 
 ```powershell
