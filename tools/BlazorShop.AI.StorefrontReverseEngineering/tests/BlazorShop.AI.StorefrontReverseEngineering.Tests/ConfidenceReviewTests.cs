@@ -49,6 +49,38 @@ public sealed class ConfidenceReviewTests
     }
 
     [Fact]
+    public async Task ReviewDecision_MissingDecisionIsDeferredAndBlocksReadiness()
+    {
+        var projectRoot = await CreateReviewProjectAsync();
+        await WriteDecisionsAsync(projectRoot, []);
+
+        var reviewed = await new ReviewDecisionApplier(GetRepoRoot()).ApplyAsync(projectRoot, CancellationToken.None);
+
+        Assert.True(reviewed.BlocksReadiness);
+        Assert.Contains(reviewed.Items, item => item.ItemId == "token:text-body" && item.Status == "Deferred" && item.ReviewerNote == "No decision recorded.");
+        Assert.All(reviewed.Items, item => Assert.Equal("Deferred", item.Status));
+    }
+
+    [Fact]
+    public async Task ReviewDecision_SafeDecisionMetadataIsPreserved()
+    {
+        var projectRoot = await CreateReviewProjectAsync();
+        var queue = await ReadQueueAsync(projectRoot);
+        var decision = Decision(queue, "token:text-body", "Approved", null, "safe visual token");
+        await WriteDecisionsAsync(projectRoot, [decision]);
+
+        var reviewed = await new ReviewDecisionApplier(GetRepoRoot()).ApplyAsync(projectRoot, CancellationToken.None);
+
+        var item = Assert.Single(reviewed.Items, candidate => candidate.ItemId == "token:text-body");
+        Assert.Equal(decision.ReviewerNote, item.ReviewerNote);
+        Assert.False(string.IsNullOrWhiteSpace(decision.SourceArtifactId));
+        Assert.False(string.IsNullOrWhiteSpace(decision.SourceArtifactHash));
+        Assert.False(string.IsNullOrWhiteSpace(decision.Reviewer));
+        Assert.False(string.IsNullOrWhiteSpace(decision.DecisionId));
+        Assert.True(File.Exists(Path.Combine(projectRoot, "analysis", "resolved", "review-resolution-manifest.json")));
+    }
+
+    [Fact]
     public async Task ReviewDecision_ModifiedValuesAreAppliedToReviewedArtifacts()
     {
         var projectRoot = await CreateReviewProjectAsync();

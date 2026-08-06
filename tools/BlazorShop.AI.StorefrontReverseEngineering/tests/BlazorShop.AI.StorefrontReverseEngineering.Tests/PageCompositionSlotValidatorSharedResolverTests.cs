@@ -88,6 +88,39 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
         Assert.Contains(findings, finding => finding.Code == "required-slot-unmapped" && finding.Message.Contains("product.purchase", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task UnknownFooterMappingDoesNotSatisfyRequiredFooterSlot()
+    {
+        var projectRoot = CreateProjectRoot();
+        await WriteHomeSlotArtifactsAsync(
+            projectRoot,
+            [Node("section-footer", "footer", mappingId: "footer-unknown", targetPath: "Components/Layout/MainLayout.razor")],
+            [Mapping("footer-unknown", "unknown", "unknown", "layout.footer", "layout.footer", "Components/Layout/MainLayout.razor")]);
+
+        var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
+
+        Assert.Contains(findings, finding => finding.Code == "reviewed-slot-mapping-orphan" && finding.Message.Contains("unknown", StringComparison.Ordinal));
+        Assert.Contains(findings, finding => (finding.Code == "missing-required-slot" || finding.Code == "required-slot-unmapped") && finding.Message.Contains("layout.footer", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task HomeBodyChildSectionsDoNotDuplicateHomeSectionsContainer()
+    {
+        var projectRoot = CreateProjectRoot();
+        await WriteHomeSlotArtifactsAsync(
+            projectRoot,
+            [
+                Node("section-hero", "hero", mappingId: null, targetPath: "Pages/Ssr/Home/HomePage.razor"),
+                Node("section-featured-products", "product card collection", mappingId: null, targetPath: "Pages/Ssr/Home/HomePage.razor")
+            ],
+            [],
+            targetViewSlot: "home.sections");
+
+        var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
+
+        Assert.DoesNotContain(findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("home.sections", StringComparison.Ordinal));
+    }
+
     private static string CreateProjectRoot()
     {
         var projectRoot = Path.Combine(
@@ -134,6 +167,47 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
             "presentation-component-catalog",
             DateTimeOffset.UtcNow,
             [Catalog("product.purchase", "product.purchase", "Components/Catalog/PurchasePanelPlaceholder.razor")],
+            []));
+    }
+
+    private static async Task WriteHomeSlotArtifactsAsync(
+        string projectRoot,
+        IReadOnlyList<PageCompositionNode> nodes,
+        IReadOnlyList<PresentationMapping> mappings,
+        string? targetViewSlot = null)
+    {
+        await WriteJsonAsync(projectRoot, "analysis/storefront-pattern/page-contracts.json", new StorefrontPageContractsDocument(
+            "1.0",
+            "page-contracts",
+            "page-contracts",
+            DateTimeOffset.UtcNow,
+            [Contract("home", "home", ["home.sections", "layout.footer"])]));
+        await WriteJsonAsync(projectRoot, "analysis/resolved/page-compositions.reviewed.json", new ReviewedPageCompositionsDocument(
+            "1.0",
+            "reviewed-page-compositions",
+            "page-compositions",
+            DateTimeOffset.UtcNow,
+            "phase3e-validator",
+            new ReviewedPageCompositionProvenance("analysis/resolved/review-resolution-manifest.json", "hash", new Dictionary<string, string>(StringComparer.Ordinal), [], new Dictionary<string, string>(StringComparer.Ordinal)),
+            new SiteBlueprint("site", [], "store", new Dictionary<string, string>(StringComparer.Ordinal), [], [], ["home"], []),
+            [new PageBlueprint("home", "home", "https://example.test/", [], [], [], [], nodes, new Dictionary<string, string>(StringComparer.Ordinal), targetViewSlot, targetViewSlot is null ? null : "Pages/Ssr/Home/HomePage.razor", [])],
+            [new PageComposition("home", "home", targetViewSlot, nodes, [], [], [], [], [])]));
+        await WriteJsonAsync(projectRoot, "analysis/resolved/presentation-mappings.reviewed.json", new PresentationMappingsDocument(
+            "1.0",
+            "presentation-mappings",
+            "presentation-mappings",
+            DateTimeOffset.UtcNow,
+            "phase3e-validator",
+            mappings));
+        await WriteJsonAsync(projectRoot, "presentation-catalog/presentation-component-catalog.json", new PresentationComponentCatalog(
+            "1.0",
+            "presentation-component-catalog",
+            "presentation-component-catalog",
+            DateTimeOffset.UtcNow,
+            [
+                Catalog("home.sections", "home.sections", "Pages/Ssr/Home/HomePage.razor"),
+                Catalog("layout.footer", "layout.footer", "Components/Layout/MainLayout.razor")
+            ],
             []));
     }
 

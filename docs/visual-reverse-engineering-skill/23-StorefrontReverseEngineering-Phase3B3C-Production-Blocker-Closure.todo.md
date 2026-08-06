@@ -236,16 +236,16 @@ Goal: add failing tests that reproduce the KindredCoast blocker shape without re
 
 Implementation checklist:
 
-- [ ] Add a fixture or test builder that creates a home page with header, announcement, hero, product-card content, and footer evidence.
-- [ ] Add a mapping test proving hero evidence must not map to `layout.header`.
-- [ ] Add a mapping test proving footer evidence with known section evidence resolves to `layout.footer` with non-unknown `sourcePageId` and `sourceSectionId`.
-- [ ] Add a mapping test proving account/cart trigger visual candidates map only to existing Presentation-safe layout slots or remain unsupported with blocking status.
-- [ ] Add a readiness test reproducing `reviewed-slot-mapping-orphan` when a mapping source section differs from the composition node.
-- [ ] Add a readiness test reproducing missing footer from unknown footer provenance.
-- [ ] Add a readiness test for multiple home body sections under one `home.sections` container.
-- [ ] Add a review workflow test proving missing decisions still block.
-- [ ] Add a review workflow test proving safe generated decisions include source artifact ID, hash, reviewer metadata, and stable decision ID.
-- [ ] Keep all new tests deterministic and fixture/local only.
+- [x] Add a fixture or test builder that creates a home page with header, announcement, hero, product-card content, and footer evidence.
+- [x] Add a mapping test proving hero evidence must not map to `layout.header`.
+- [x] Add a mapping test proving footer evidence with known section evidence resolves to `layout.footer` with non-unknown `sourcePageId` and `sourceSectionId`.
+- [x] Add a mapping test proving account/cart trigger visual candidates map only to existing Presentation-safe layout slots or remain unsupported with blocking status.
+- [x] Add a readiness test reproducing `reviewed-slot-mapping-orphan` when a mapping source section differs from the composition node.
+- [x] Add a readiness test reproducing missing footer from unknown footer provenance.
+- [x] Add a readiness test for multiple home body sections under one `home.sections` container.
+- [x] Add a review workflow test proving missing decisions still block.
+- [x] Add a review workflow test proving safe generated decisions include source artifact ID, hash, reviewer metadata, and stable decision ID.
+- [x] Keep all new tests deterministic and fixture/local only.
 
 Candidate test files:
 
@@ -260,10 +260,22 @@ Checks:
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationMappingTests|FullyQualifiedName~BlueprintV1ReadinessTests|FullyQualifiedName~ConfidenceReviewTests|FullyQualifiedName~PageCompositionSlotValidatorSharedResolverTests" --blame-hang --blame-hang-timeout 5m
 ```
 
+Phase 1 regression evidence:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~PresentationMappingTests|FullyQualifiedName~ConfidenceReviewTests|FullyQualifiedName~PageCompositionSlotValidatorSharedResolverTests" --no-restore
+```
+
+Expected pre-fix result: failed with 3 blocker reproductions:
+
+- `PresentationMapping_UsesEvidenceOverlapBeforeFirstRegion`: actual `section-header`, expected `section-product`.
+- `PresentationMapping_FooterFallsBackToSectionEvidenceWhenRegionMissing`: actual `sourcePageId=unknown`, expected `home`.
+- `HomeBodyChildSectionsDoNotDuplicateHomeSectionsContainer`: actual `duplicate-non-repeatable-slot` for `home.sections`.
+
 Done when:
 
-- [ ] New tests fail for the current behavior before implementation changes.
-- [ ] Existing unrelated tests are not modified to hide the blocker.
+- [x] New tests fail for the current behavior before implementation changes.
+- [x] Existing unrelated tests are not modified to hide the blocker.
 
 Commit:
 

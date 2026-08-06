@@ -36,6 +36,89 @@ public sealed class PresentationMappingTests
     }
 
     [Fact]
+    public async Task PresentationMapping_UsesEvidenceOverlapBeforeFirstRegion()
+    {
+        var candidate = Candidate("family-product-card", "product card", ["ev-product"]);
+        var projectRoot = await CreateProjectWithRegionsAsync(
+            candidate,
+            "category",
+            "product-listing",
+            [
+                new EcommerceRegion("region-01", "store header", "catalog", "presentation-only", false, true, false, ["section-header"], [candidate.FamilyId], ["ev-header"], Alternatives: []),
+                new EcommerceRegion("region-02", "product card collection", "catalog", "presentation-only", false, true, false, ["section-product"], [candidate.FamilyId], candidate.EvidenceIds, Alternatives: [])
+            ]);
+        await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
+
+        var mappings = await new PresentationMapper(GetRepoRoot()).MapAsync(projectRoot, CancellationToken.None);
+
+        var mapping = Assert.Single(mappings.Mappings);
+        Assert.Equal("catalog.product-card", mapping.PresentationComponentId);
+        Assert.Equal("category", mapping.SourcePageId);
+        Assert.Equal("section-product", mapping.SourceSectionId);
+        Assert.Equal("region-02", mapping.EcommerceRegionId);
+    }
+
+    [Fact]
+    public async Task PresentationMapping_FooterFallsBackToSectionEvidenceWhenRegionMissing()
+    {
+        var candidate = Candidate("family-footer", "footer", ["ev-footer"]);
+        var projectRoot = await CreateProjectWithSectionsAsync(
+            candidate,
+            "home",
+            "home",
+            [
+                new SectionDraft("section-footer", "store footer", 5, 0.87m, new SectionBounds(0, 900, 1440, 220), null, [], "footer-section", candidate.EvidenceIds, ["footer-evidence"])
+            ]);
+        await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
+
+        var mappings = await new PresentationMapper(GetRepoRoot()).MapAsync(projectRoot, CancellationToken.None);
+
+        var mapping = Assert.Single(mappings.Mappings);
+        Assert.Equal("layout.footer", mapping.PresentationComponentId);
+        Assert.Equal("home", mapping.SourcePageId);
+        Assert.Equal("section-footer", mapping.SourceSectionId);
+        Assert.Equal("home", mapping.PageArchetype);
+    }
+
+    [Fact]
+    public async Task PresentationMapping_HeroEvidenceDoesNotMapToHeaderSlot()
+    {
+        var candidate = Candidate("family-hero", "hero", ["ev-hero"]);
+        var projectRoot = await CreateProjectWithSectionsAsync(
+            candidate,
+            "home",
+            "home",
+            [
+                new SectionDraft("section-hero", "hero", 2, 0.91m, new SectionBounds(0, 120, 1440, 480), null, [], "hero-section", candidate.EvidenceIds, ["hero-evidence"])
+            ]);
+        await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
+
+        await new PresentationMapper(GetRepoRoot()).MapAsync(projectRoot, CancellationToken.None);
+        var mappings = await ReadMappingsAsync(projectRoot);
+        var unsupported = await ReadUnsupportedAsync(projectRoot);
+
+        Assert.DoesNotContain(mappings.Mappings, mapping => mapping.PresentationComponentId == "layout.header" || mapping.StarterSlotId == "layout.header");
+        Assert.True(mappings.Mappings.Any(mapping => mapping.StarterSlotId == "home.sections") || unsupported.Patterns.Any(pattern => pattern.SourceCandidateId == candidate.FamilyId && pattern.HumanReviewRequired));
+    }
+
+    [Theory]
+    [InlineData("family-cart-trigger", "cart trigger", "cart status", "layout.cart-badge")]
+    [InlineData("family-account-trigger", "account trigger", "account access", "layout.account-menu")]
+    public async Task PresentationMapping_LayoutTriggersMapOnlyToSafeSlotsOrBlock(string familyId, string family, string role, string expectedSlot)
+    {
+        var candidate = Candidate(familyId, family, ["ev-trigger"]);
+        var projectRoot = await CreateProjectAsync(candidate, role, pageId: "home", pageArchetype: "home");
+        await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
+
+        await new PresentationMapper(GetRepoRoot()).MapAsync(projectRoot, CancellationToken.None);
+        var mappings = await ReadMappingsAsync(projectRoot);
+        var unsupported = await ReadUnsupportedAsync(projectRoot);
+
+        Assert.All(mappings.Mappings, mapping => Assert.Equal(expectedSlot, mapping.StarterSlotId));
+        Assert.True(mappings.Mappings.Any(mapping => mapping.StarterSlotId == expectedSlot) || unsupported.Patterns.Any(pattern => pattern.SourceCandidateId == candidate.FamilyId && pattern.HumanReviewRequired));
+    }
+
+    [Fact]
     public async Task PresentationMapping_UnknownCandidateBecomesUnsupported()
     {
         var projectRoot = await CreateProjectAsync(Candidate("family-custom", "custom immersive widget", ["ev-custom"]), "unknown role");
@@ -174,21 +257,57 @@ public sealed class PresentationMappingTests
         string pageId = "category",
         string pageArchetype = "product-listing")
     {
-        var repoRoot = GetRepoRoot();
-        var root = Path.Combine(repoRoot, "obj", "storefront-reverse-engineering", "projects", "mapping-" + Guid.NewGuid().ToString("N"));
+        return await CreateProjectWithRegionsAsync(
+            candidate,
+            pageId,
+            pageArchetype,
+            [new EcommerceRegion("region-01", regionRole, "catalog", "presentation-only", false, true, regionRole == "unknown role", ["section-01"], [candidate.FamilyId], candidate.EvidenceIds, Alternatives: [])]);
+    }
+
+    private static async Task<string> CreateProjectWithRegionsAsync(
+        VisualComponentCandidate candidate,
+        string pageId,
+        string pageArchetype,
+        IReadOnlyList<EcommerceRegion> regions)
+    {
+        var root = CreateProjectRoot();
         Directory.CreateDirectory(Path.Combine(root, "analysis", "components"));
         Directory.CreateDirectory(Path.Combine(root, "analysis", "tokens"));
         Directory.CreateDirectory(Path.Combine(root, "analysis", "pages", pageId));
         var candidates = new ComponentCandidatesDocument("1.0", "component-candidates", "component-candidates-mapping", DateTimeOffset.UtcNow, "mapping", [candidate], Issues: []);
         var semantic = new SemanticTokenDocument("1.0", "semantic-tokens", "semantic-tokens-mapping", DateTimeOffset.UtcNow, "mapping", "analysis/tokens/raw-design-tokens.json", [new SemanticToken("text-body", "typography", ["16px"], ["raw"], candidate.EvidenceIds, 0.6m, ["test"], false)], PageLocalOverrides: [], ComponentLocalOverrides: [], HumanReviewRequired: false, ReviewReasons: []);
-        var regions = new EcommerceRegionsDocument("1.0", "ecommerce-regions", $"ecommerce-regions-mapping-{pageId}", DateTimeOffset.UtcNow, "mapping", pageId, [new EcommerceRegion("region-01", regionRole, "catalog", "presentation-only", false, true, regionRole == "unknown role", ["section-01"], [candidate.FamilyId], candidate.EvidenceIds, Alternatives: [])]);
+        var regionDocument = new EcommerceRegionsDocument("1.0", "ecommerce-regions", $"ecommerce-regions-mapping-{pageId}", DateTimeOffset.UtcNow, "mapping", pageId, regions);
         var archetype = new PageArchetypeDocument("1.0", "page-archetype", $"page-archetype-{pageId}", DateTimeOffset.UtcNow, "mapping", pageId, pageArchetype, 0.90m, candidate.EvidenceIds, ["test"], Alternatives: []);
         await WriteAsync(root, "analysis/components/component-candidates.json", candidates);
         await WriteAsync(root, "analysis/tokens/semantic-tokens.draft.json", semantic);
-        await WriteAsync(root, $"analysis/pages/{pageId}/ecommerce-regions.json", regions);
+        await WriteAsync(root, $"analysis/pages/{pageId}/ecommerce-regions.json", regionDocument);
         await WriteAsync(root, $"analysis/pages/{pageId}/page-archetype.json", archetype);
         return root;
     }
+
+    private static async Task<string> CreateProjectWithSectionsAsync(
+        VisualComponentCandidate candidate,
+        string pageId,
+        string pageArchetype,
+        IReadOnlyList<SectionDraft> sections)
+    {
+        var root = CreateProjectRoot();
+        Directory.CreateDirectory(Path.Combine(root, "analysis", "components"));
+        Directory.CreateDirectory(Path.Combine(root, "analysis", "tokens"));
+        Directory.CreateDirectory(Path.Combine(root, "analysis", "pages", pageId));
+        var candidates = new ComponentCandidatesDocument("1.0", "component-candidates", "component-candidates-mapping", DateTimeOffset.UtcNow, "mapping", [candidate], Issues: []);
+        var semantic = new SemanticTokenDocument("1.0", "semantic-tokens", "semantic-tokens-mapping", DateTimeOffset.UtcNow, "mapping", "analysis/tokens/raw-design-tokens.json", [new SemanticToken("text-body", "typography", ["16px"], ["raw"], candidate.EvidenceIds, 0.6m, ["test"], false)], PageLocalOverrides: [], ComponentLocalOverrides: [], HumanReviewRequired: false, ReviewReasons: []);
+        var sectionDocument = new SectionsDraftDocument("1.0", "sections", $"sections-mapping-{pageId}", DateTimeOffset.UtcNow, "mapping", pageId, sections, Issues: []);
+        var archetype = new PageArchetypeDocument("1.0", "page-archetype", $"page-archetype-{pageId}", DateTimeOffset.UtcNow, "mapping", pageId, pageArchetype, 0.90m, candidate.EvidenceIds, ["test"], Alternatives: []);
+        await WriteAsync(root, "analysis/components/component-candidates.json", candidates);
+        await WriteAsync(root, "analysis/tokens/semantic-tokens.draft.json", semantic);
+        await WriteAsync(root, $"analysis/pages/{pageId}/sections.draft.json", sectionDocument);
+        await WriteAsync(root, $"analysis/pages/{pageId}/page-archetype.json", archetype);
+        return root;
+    }
+
+    private static string CreateProjectRoot() =>
+        Path.Combine(GetRepoRoot(), "obj", "storefront-reverse-engineering", "projects", "mapping-" + Guid.NewGuid().ToString("N"));
 
     private static async Task MutateCatalogEntryAsync(string projectRoot, string componentId, Action<JsonObject> mutate)
     {
