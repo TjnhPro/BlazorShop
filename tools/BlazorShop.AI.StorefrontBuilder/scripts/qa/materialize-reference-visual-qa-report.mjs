@@ -9,7 +9,7 @@ Options:
   --project-root <path>        Generated storefront project root.
   --runtime-summary <path>     Runtime summary path. Defaults under project docs/storefront-analysis.
   --visual-plan <path>         Visual plan path. Defaults under project docs/storefront-analysis.
-  --reference-root <path>      Reference evidence root. Defaults under project docs/storefront-analysis/reference.
+  --reference-root <path>      Reference evidence root. Defaults to task package evidence when present, otherwise docs/storefront-analysis/reference.
   --operation-id <id>          Expected operation ID. Defaults to visual-plan.json operationId.
   --base-url <url>             Expected runtime base URL.
   --report-path <path>         Output JSON path. Defaults to docs/storefront-analysis/visual-qa-report.json.
@@ -21,7 +21,7 @@ const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-b
 const analysisRoot = join(projectRoot, "docs", "storefront-analysis");
 const runtimeSummaryPath = resolveMaybeProject(readArg("--runtime-summary") ?? "docs/storefront-analysis/visual-qa-runtime-summary.json");
 const visualPlanPath = resolveMaybeProject(readArg("--visual-plan") ?? "docs/storefront-analysis/visual-plan.json");
-const referenceRoot = resolveMaybeProject(readArg("--reference-root") ?? "docs/storefront-analysis/reference");
+const referenceRoot = resolveMaybeProject(readArg("--reference-root") ?? defaultReferenceRoot());
 const reportPath = resolveMaybeProject(readArg("--report-path") ?? "docs/storefront-analysis/visual-qa-report.json");
 const markdownReportPath = reportPath.replace(/\.json$/i, ".md");
 const expectedBaseUrl = readArg("--base-url");
@@ -171,6 +171,13 @@ function collectReferenceEvidence(root) {
   return listFiles(root)
     .map(path => toProjectRelative(path))
     .sort((a, b) => a.localeCompare(b, "en"));
+}
+
+function defaultReferenceRoot() {
+  const packagedEvidenceRoot = join(analysisRoot, "agent-task-package", "evidence");
+  return existsSync(packagedEvidenceRoot)
+    ? "docs/storefront-analysis/agent-task-package/evidence"
+    : "docs/storefront-analysis/reference";
 }
 
 function listFiles(root) {

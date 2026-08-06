@@ -1072,11 +1072,15 @@ try {
     }
 
     if ($effectiveProofMode -eq "Runtime") {
+        $packagedReferenceEvidenceRoot = Join-Path $analysisRoot "agent-task-package\evidence"
         $materializerArguments = @(
             $materializerScript,
             "--project-root", $resolvedProjectRoot,
             "--base-url", $BaseUrl
         )
+        if (Test-Path -LiteralPath $packagedReferenceEvidenceRoot) {
+            $materializerArguments += @("--reference-root", $packagedReferenceEvidenceRoot)
+        }
         if (-not [string]::IsNullOrWhiteSpace($qaOperationId)) {
             $materializerArguments += @("--operation-id", $qaOperationId)
         }
