@@ -12,6 +12,11 @@ const FORBIDDEN_SOURCE_ONLY_PREFIXES = [
   "review/",
   "reports/",
 ];
+const FORBIDDEN_PACKAGE_TEXT_MARKERS = [
+  "BlazorShop.Storefront.V2",
+  "BlazorShop.CommerceNode.API",
+  "BlazorShop.ControlPlane.API",
+];
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(`Usage: node write-agent-task-package.mjs --project-root <generated-project-root> [options]
@@ -202,7 +207,7 @@ function buildInstructions(plan, allowedOutputs) {
 }
 
 function validateTaskPackage(root) {
-  const forbidden = [...FORBIDDEN_SOURCE_ONLY_PREFIXES, "BlazorShop.Storefront.V2", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API"];
+  const forbidden = [...FORBIDDEN_SOURCE_ONLY_PREFIXES, ...FORBIDDEN_PACKAGE_TEXT_MARKERS];
   const stack = [root];
   while (stack.length > 0) {
     const current = stack.pop();
@@ -266,7 +271,14 @@ function listProtectedFiles(value) {
     .map(item => typeof item === "string" ? item : item.path ?? item.targetPath ?? item.file)
     .map(normalizeProjectPath)
     .filter(Boolean)
+    .map(redactForbiddenProtectedPath)
     .sort((a, b) => a.localeCompare(b, "en"));
+}
+
+function redactForbiddenProtectedPath(path) {
+  return FORBIDDEN_PACKAGE_TEXT_MARKERS.some(marker => path.includes(marker))
+    ? `protected-path:${sha(path)}`
+    : path;
 }
 
 function normalizeHash(value) {
