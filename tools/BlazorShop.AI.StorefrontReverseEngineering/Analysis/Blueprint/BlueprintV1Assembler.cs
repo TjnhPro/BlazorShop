@@ -441,6 +441,7 @@ public sealed class BlueprintV1Assembler
                 .Select(pattern => $"unsupported:{pattern.Id}"));
 
             var sectionNodes = BuildSectionTree(
+                page.PageId,
                 sections,
                 presentationMappings,
                 inputs.EcommerceRegionsBySection.GetValueOrDefault(page.PageId) ?? new Dictionary<string, string>(StringComparer.Ordinal),
@@ -708,7 +709,9 @@ public sealed class BlueprintV1Assembler
                 StringValue(mapping, "mappingId") ?? StringValue(mapping, "sourceCandidateId") ?? $"mapping-{index + 1}",
                 StringArray(mapping, "evidenceIds"),
                 StringValue(mapping, "targetGeneratedPath"),
-                StringValue(mapping, "generatedZone")))
+                StringValue(mapping, "generatedZone"),
+                StringValue(mapping, "sourcePageId"),
+                StringValue(mapping, "sourceSectionId")))
             .ToArray()
             ?? [];
     }
@@ -749,6 +752,7 @@ public sealed class BlueprintV1Assembler
     }
 
     private static IReadOnlyList<PageCompositionNode> BuildSectionTree(
+        string pageId,
         IReadOnlyList<PageSectionInfo> sections,
         IReadOnlyList<MappingInfo> mappings,
         IReadOnlyDictionary<string, string> ecommerceRoles,
@@ -763,7 +767,12 @@ public sealed class BlueprintV1Assembler
             .ToDictionary(group => group.Key, group => "group-" + StableId(group.Key), StringComparer.OrdinalIgnoreCase);
         var nodes = sections.Select(section =>
         {
-            var mapping = mappings.FirstOrDefault(candidate => candidate.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any());
+            var mapping = mappings.FirstOrDefault(candidate =>
+                    string.Equals(candidate.SourcePageId, pageId, StringComparison.Ordinal) &&
+                    string.Equals(candidate.SourceSectionId, section.Id, StringComparison.Ordinal))
+                ?? mappings.FirstOrDefault(candidate =>
+                    (string.IsNullOrWhiteSpace(candidate.SourcePageId) || string.Equals(candidate.SourcePageId, pageId, StringComparison.Ordinal)) &&
+                    candidate.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any());
             var targetFile = mapping?.TargetGeneratedPath ?? pageTargetPath;
             var unresolved = new List<string>();
             if (section.EvidenceIds.Count == 0)
@@ -1059,7 +1068,9 @@ public sealed class BlueprintV1Assembler
         string Id,
         IReadOnlyList<string> EvidenceIds,
         string? TargetGeneratedPath,
-        string? GeneratedZone);
+        string? GeneratedZone,
+        string? SourcePageId = null,
+        string? SourceSectionId = null);
 
     private sealed record CompositionInputs(
         IReadOnlyDictionary<string, string> PageArchetypes,
@@ -1287,7 +1298,9 @@ public sealed class BlueprintV1Assembler
                     StringValue(mapping, "sourceCandidateId") ?? StringValue(mapping, "mappingId") ?? $"mapping-{index + 1}",
                     StringArray(mapping, "evidenceIds"),
                     StringValue(mapping, "targetGeneratedPath"),
-                    StringValue(mapping, "generatedZone")))
+                    StringValue(mapping, "generatedZone"),
+                    StringValue(mapping, "sourcePageId"),
+                    StringValue(mapping, "sourceSectionId")))
                 .ToArray()
             ?? [];
 

@@ -72,6 +72,100 @@ public sealed class PlaywrightIntegrationTests
 
     [Fact]
     [Trait("Category", "Playwright")]
+    public async Task Playwright_HttpFixture_EvidenceLimitKeepsStructuralFooter()
+    {
+        var cards = string.Join(
+            Environment.NewLine,
+            Enumerable.Range(1, 24).Select(index => $"<article class=\"product-card\"><h2>Product {index}</h2><button>Choose</button></article>"));
+        await using var server = await StartServerFromHtmlAsync(
+            $$"""
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Structural footer fixture</title>
+              <style>
+                body { margin: 0; font-family: Inter, Arial, sans-serif; }
+                header, footer { min-height: 72px; padding: 24px; }
+                .hero { min-height: 320px; display: grid; }
+                .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 24px; }
+                .product-card { min-height: 180px; border: 1px solid #ddd; }
+              </style>
+            </head>
+            <body>
+              <header class="site-header"><strong>Fixture Brand</strong></header>
+              <main>
+                <section class="hero"><h1>Hero</h1></section>
+                <section class="product-grid">{{cards}}</section>
+              </main>
+              <footer class="site-footer">Footer links and copyright</footer>
+            </body>
+            </html>
+            """);
+        var browser = new PlaywrightReferenceBrowser();
+
+        var capture = await browser.CaptureAsync(
+            new BrowserPageSession("playwright-footer", "home", server.BaseUrl),
+            ViewportDefinition.Defaults[0],
+            new CapturePolicy(MaximumEvidenceElements: 8),
+            CancellationToken.None);
+
+        Assert.True(capture.Styles.Count <= 8);
+        Assert.Contains(capture.Styles, style => style.Selector.Contains("header.site-header", StringComparison.Ordinal));
+        Assert.Contains(capture.Styles, style => style.Selector.Contains("section.hero", StringComparison.Ordinal));
+        Assert.Contains(capture.Styles, style => style.Selector.Contains("footer.site-footer", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    [Trait("Category", "Playwright")]
+    public async Task Playwright_HttpFixture_ExcludesHorizontalOffCanvasCarouselItemsFromRenderedEvidence()
+    {
+        await using var server = await StartServerFromHtmlAsync(
+            """
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Off-canvas carousel fixture</title>
+              <style>
+                body { margin: 0; font-family: Inter, Arial, sans-serif; }
+                header, footer { min-height: 72px; padding: 24px; }
+                .hero { min-height: 280px; display: grid; }
+                .carousel-rail { position: relative; min-height: 320px; overflow: hidden; }
+                .product-card { position: absolute; top: 40px; width: 320px; min-height: 220px; border: 1px solid #ddd; }
+                .product-visible { left: 32px; }
+                .product-offscreen { left: 2000px; }
+              </style>
+            </head>
+            <body>
+              <header class="site-header">Fixture Brand</header>
+              <main>
+                <section class="hero"><h1>Visible hero</h1></section>
+                <section class="carousel-rail" aria-label="Featured products">
+                  <article class="product-card product-visible"><h2>Visible product</h2><button>Add</button></article>
+                  <article class="product-card product-offscreen"><h2>Off canvas product</h2><button>Add</button></article>
+                </section>
+              </main>
+              <footer class="site-footer">Footer links</footer>
+            </body>
+            </html>
+            """);
+        var browser = new PlaywrightReferenceBrowser();
+
+        var capture = await browser.CaptureAsync(
+            new BrowserPageSession("playwright-off-canvas", "home", server.BaseUrl),
+            ViewportDefinition.Defaults[0],
+            new CapturePolicy(MaximumEvidenceElements: 30),
+            CancellationToken.None);
+
+        Assert.Contains(capture.Boxes, box => box.Selector.Contains("article.product-card.product-visible", StringComparison.Ordinal));
+        Assert.Contains(capture.Styles, style => style.Selector.Contains("footer.site-footer", StringComparison.Ordinal));
+        Assert.DoesNotContain(capture.Boxes, box => box.Selector.Contains("product-offscreen", StringComparison.Ordinal));
+        Assert.DoesNotContain(capture.Styles, style => style.Selector.Contains("product-offscreen", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    [Trait("Category", "Playwright")]
     public async Task Playwright_HttpFixture_CustomNoiseSelectorIsHidden()
     {
         await using var server = await StartServerAsync();

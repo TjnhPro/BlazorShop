@@ -259,40 +259,40 @@ Goal: prove the fix on the original production site and update the existing `kin
 
 Tasks:
 
-- [ ] Start from a known Git state and record `git status --porcelain=v1`.
-- [ ] Decide whether to use `-Force` or targeted resume:
-  - [ ] use `-Force` if old artifact contents retain stale evidence IDs from the previous failed capture;
-  - [ ] use `-Resume` only if the workflow can force the relevant capture/readiness steps cleanly.
-- [ ] Run production capture against Kindred Coast:
+- [x] Start from a known Git state and record `git status --porcelain=v1`.
+- [x] Decide whether to use `-Force` or targeted resume:
+  - [x] use `-Force` if old artifact contents retain stale evidence IDs from the previous failed capture;
+  - [x] use `-Resume` only if the workflow can force the relevant capture/readiness steps cleanly.
+- [x] Run production capture against Kindred Coast:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -CommandTimeoutSeconds 900
 ```
 
-- [ ] If Playwright Chromium is missing, rerun once with `-InstallPlaywright`.
-- [ ] Confirm the runner writes report under:
+- [x] If Playwright Chromium is missing, rerun once with `-InstallPlaywright`.
+- [x] Confirm the runner writes report under:
 
 ```text
 artifacts/storefront-reverse-engineering/reports/
 ```
 
-- [ ] Confirm the project root remains:
+- [x] Confirm the project root remains:
 
 ```text
 artifacts/storefront-reverse-engineering/projects/kindredcoast
 ```
 
-- [ ] Inspect `readiness-report.json`.
-- [ ] Confirm no `invalid-element-box` finding exists for skip links or visually hidden helpers.
-- [ ] Confirm all three viewport capture quality reports pass.
-- [ ] Inspect screenshots for desktop and mobile:
-  - [ ] desktop screenshot nonblank and includes Kindred Coast header/hero;
-  - [ ] mobile screenshot nonblank and includes header/hero/product/customer sections.
-- [ ] If readiness still fails, classify remaining findings:
-  - [ ] true visual evidence issue;
-  - [ ] unrelated production-site dynamic issue;
-  - [ ] new tooling false positive.
-- [ ] Do not mark Phase 3A.5 complete while `invalid-element-box` still points to accessibility/offscreen helpers.
+- [x] Inspect `readiness-report.json`.
+- [x] Confirm no `invalid-element-box` finding exists for skip links or visually hidden helpers.
+- [x] Confirm all three viewport capture quality reports pass.
+- [x] Inspect screenshots for desktop and mobile:
+  - [x] desktop screenshot nonblank and includes Kindred Coast header/hero;
+  - [x] mobile screenshot nonblank and includes header/hero/product/customer sections.
+- [x] If readiness still fails, classify remaining findings:
+  - [x] true visual evidence issue;
+  - [x] unrelated production-site dynamic issue;
+  - [x] new tooling false positive.
+- [x] Do not mark Phase 3A.5 complete while `invalid-element-box` still points to accessibility/offscreen helpers.
 
 Checks:
 
@@ -304,10 +304,10 @@ dotnet run --project tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop
 
 DoD:
 
-- [ ] Production runner completes without script/path errors.
-- [ ] Kindred Coast capture produces all required viewport artifacts.
-- [ ] Readiness no longer fails because of offscreen skip-link evidence.
-- [ ] Any remaining `Readiness passed: False` is documented with a new root cause and is not this bug.
+- [x] Production runner completes without script/path errors.
+- [x] Kindred Coast capture produces all required viewport artifacts.
+- [x] Readiness no longer fails because of offscreen skip-link evidence.
+- [x] Any remaining `Readiness passed: False` is documented with a new root cause and is not this bug.
 
 ## Phase 3A.6 - Docs And Runner Guidance
 
@@ -462,6 +462,34 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 ```
 
 - Result: `Failed: 0, Passed: 154, Total: 154`, duration `2 m`.
+
+### Phase 3A.5 Kindred Coast Production Re-run - 2026-08-06
+
+- Git status before Phase 3A.5 included intentional source/test edits plus the unrelated untracked `scripts/reverse-engineering/readme.md`; the unrelated file was not edited.
+- Used `-Force`, not `-Resume`, so stale evidence IDs and stale failed readiness artifacts could not mask the result.
+- Production command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -CommandTimeoutSeconds 900
+```
+
+- Runner report: `artifacts/storefront-reverse-engineering/reports/storefront-reverse-engineering-production-kindredcoast-20260806113934.md`.
+- Project root: `artifacts/storefront-reverse-engineering/projects/kindredcoast`.
+- Latest run ID: `20260806043937037`.
+- Readiness report: `artifacts/storefront-reverse-engineering/projects/kindredcoast/reports/readiness-report.json`.
+- Readiness result: `passed=true`, `findings=[]`.
+- The runner completed without script/path errors and exited `0`.
+- Capture quality reports passed for `desktop-1440`, `tablet-768`, and `mobile-390`.
+- Screenshot inspection:
+  - `captures/home/desktop-1440/full-page.png` is nonblank and shows the Kindred Coast header and organic cotton hero.
+  - `captures/home/mobile-390/full-page.png` is nonblank and shows header, hero, product sections, sustainability/customer content, and footer.
+- No `invalid-element-box` finding remains for skip links, visually hidden helpers, ARIA helper nodes, or horizontally off-canvas carousel/product card items.
+- During production proof, structural evidence prioritization surfaced horizontally off-canvas product cards as a second false positive. The capture filter now excludes elements fully outside the screenshot's horizontal capture width while preserving below-fold structural content such as footer sections.
+- Production workflow status is still `completed-with-blockers` because Phase 3B review/handoff prerequisites remain unresolved:
+  - `review/review-decisions.json` contains no approved/modified/rejected/deferred decisions;
+  - `analysis/visual-blueprint.v1.reviewed.json` is missing;
+  - generation readiness reports missing review decisions and unresolved required slots.
+- Those Phase 3B blockers are separate from the Phase 3A offscreen evidence readiness bug; Phase 3A readiness now passes with zero findings.
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |

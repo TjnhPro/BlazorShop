@@ -470,6 +470,10 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             }
             return domPath(element) || tag;
           };
+          const root = document.documentElement;
+          const body = document.body;
+          const captureWidth = Math.ceil(window.innerWidth);
+          const documentHeight = Math.ceil(Math.max(root.scrollHeight, body ? body.scrollHeight : 0, window.innerHeight));
           const isNonVisualAccessibilityHelper = (element, style, rect) => {
             const helperText = [
               element.id,
@@ -502,6 +506,10 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             if (style.display === 'none' || style.visibility === 'hidden' || rect.width <= 0 || rect.height <= 0) {
               return false;
             }
+            const pageY = rect.top + window.scrollY;
+            if (rect.right <= 0 || rect.left >= captureWidth || pageY + rect.height <= 0 || pageY >= documentHeight) {
+              return false;
+            }
             if (isNonVisualAccessibilityHelper(element, style, rect)) {
               return false;
             }
@@ -514,7 +522,29 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             const role = element.getAttribute('role');
             return !!role;
           };
-          const elements = Array.from(document.querySelectorAll('body *')).filter(interesting).slice(0, maxElements);
+          const priority = element => {
+            const tag = element.tagName.toLowerCase();
+            const className = String(element.className || '');
+            const role = element.getAttribute('role') || '';
+            if (tag === 'footer' || /(^|\b)footer(\b|-|_)/i.test(className)) return 1200;
+            if (tag === 'header' || tag === 'main' || /(^|\b)(site-header|main-content)(\b|-|_)/i.test(className)) return 1100;
+            if (tag === 'section' || tag === 'aside' || role === 'banner' || role === 'contentinfo') return 1000;
+            if (/^h[1-6]$/.test(tag)) return 800;
+            if (tag === 'article') return 600;
+            if (/\b(product|card|gallery|price)\b/i.test(className)) return 520;
+            if (['nav','a','button','input','select','textarea','img','video','svg'].includes(tag)) return 420;
+            return role ? 300 : 100;
+          };
+          const candidates = Array.from(document.querySelectorAll('body *'))
+            .filter(interesting)
+            .map((element, index) => {
+              const rect = element.getBoundingClientRect();
+              return { element, index, priority: priority(element), y: Math.round((rect.top + window.scrollY) * 100) / 100 };
+            })
+            .sort((left, right) => right.priority - left.priority || left.y - right.y || left.index - right.index)
+            .slice(0, maxElements)
+            .sort((left, right) => left.y - right.y || left.index - right.index);
+          const elements = candidates.map(candidate => candidate.element);
           const styles = [];
           const boxes = [];
           const assets = [];
@@ -573,11 +603,9 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
               addAsset(fontFamily, 'font-family', null, null, selector, evidenceId);
             }
           });
-          const root = document.documentElement;
-          const body = document.body;
           return {
             DocumentWidth: Math.ceil(Math.max(root.scrollWidth, body ? body.scrollWidth : 0, window.innerWidth)),
-            DocumentHeight: Math.ceil(Math.max(root.scrollHeight, body ? body.scrollHeight : 0, window.innerHeight)),
+            DocumentHeight: documentHeight,
             Styles: styles,
             Boxes: boxes,
             Assets: assets,

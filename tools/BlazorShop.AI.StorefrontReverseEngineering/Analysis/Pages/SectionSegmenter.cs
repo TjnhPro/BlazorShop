@@ -84,6 +84,7 @@ public sealed class SectionSegmenter
     {
         var elements = viewport.Elements
             .Where(element => element.Box is { Width: > 0, Height: > 0 })
+            .Where(element => IsMajorSectionSignal(element, viewport))
             .OrderBy(element => element.Box!.Y)
             .ThenBy(element => element.Box!.X)
             .ToArray();
@@ -97,6 +98,11 @@ public sealed class SectionSegmenter
         foreach (var element in elements.Where(element => !productCards.Contains(element)))
         {
             var sectionType = Classify(element);
+            if (IsCoveredByExistingSection(element, sectionType, sections))
+            {
+                continue;
+            }
+
             sections.Add(CreateSection(sectionType, sections.Count + 1, [element], ReasonFor(sectionType, element), sectionType == "unknown section" ? 0.38m : 0.66m));
         }
 
@@ -107,6 +113,69 @@ public sealed class SectionSegmenter
             .ToList();
         return sections;
     }
+
+    private static bool IsMajorSectionSignal(EvidenceSnapshotElement element, EvidenceSnapshotViewport viewport)
+    {
+        var selector = element.Selector.ToLowerInvariant();
+        var sectionType = Classify(element);
+        var box = element.Box!;
+        var spansPageWidth = box.Width >= viewport.ViewportWidth * 0.45m;
+
+        if (element.Category is "section" or "article" or "product-card-candidate")
+        {
+            return true;
+        }
+
+        if (element.Category == "semantic-landmark")
+        {
+            return spansPageWidth || IsTagSelector(selector, "header") || IsTagSelector(selector, "footer") || IsTagSelector(selector, "main");
+        }
+
+        if (sectionType != "unknown section" && spansPageWidth)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsCoveredByExistingSection(EvidenceSnapshotElement element, string sectionType, IReadOnlyList<SectionDraft> sections)
+    {
+        var box = element.Box!;
+        return sections.Any(section =>
+            (string.Equals(section.SectionType, sectionType, StringComparison.Ordinal) || ContainsMostly(section.Bounds, box, 0.92m)) &&
+            ContainsMostly(section.Bounds, box, 0.86m));
+    }
+
+    private static bool ContainsMostly(SectionBounds container, ElementBox item, decimal threshold)
+    {
+        var left = Math.Max(container.X, item.X);
+        var top = Math.Max(container.Y, item.Y);
+        var right = Math.Min(container.X + container.Width, item.X + item.Width);
+        var bottom = Math.Min(container.Y + container.Height, item.Y + item.Height);
+        var width = right - left;
+        var height = bottom - top;
+        if (width <= 0 || height <= 0)
+        {
+            return false;
+        }
+
+        var itemArea = item.Width * item.Height;
+        if (itemArea <= 0)
+        {
+            return false;
+        }
+
+        return width * height / itemArea >= threshold;
+    }
+
+    private static bool IsTagSelector(string selector, string tag) =>
+        string.Equals(selector, tag, StringComparison.Ordinal) ||
+        selector.StartsWith(tag + ".", StringComparison.Ordinal) ||
+        selector.StartsWith(tag + "#", StringComparison.Ordinal) ||
+        selector.StartsWith(tag + "[", StringComparison.Ordinal) ||
+        selector.StartsWith(tag + ":", StringComparison.Ordinal) ||
+        selector.StartsWith(tag + " ", StringComparison.Ordinal);
 
     private static SectionDraft CreateSection(
         string sectionType,

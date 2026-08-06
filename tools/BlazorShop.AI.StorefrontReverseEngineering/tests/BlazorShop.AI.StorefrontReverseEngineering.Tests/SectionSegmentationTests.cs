@@ -39,6 +39,49 @@ public sealed class SectionSegmentationTests
     }
 
     [Fact]
+    public async Task Sections_NestedHeaderControlsDoNotBecomePeerSections()
+    {
+        var projectRoot = await CreateProjectWithSnapshotAsync([
+            Element("header", "header.site-header", "semantic-landmark", 80, 66, width: 1440),
+            Element("nav", "nav.menu-list", "semantic-landmark", 92, 44, x: 180, width: 500),
+            Element("header-menu", "header-menu.header-menu", "semantic-landmark", 93, 44, x: 180, width: 494),
+            Element("header-component", "header-component > svg", "semantic-landmark", 104, 22, x: 1281, width: 22),
+            Element("link", "a.menu-list__link", "link", 92, 44, x: 180, width: 72),
+            Element("icon", "button.header-actions__action", "button", 92, 44, x: 1270, width: 44),
+            Element("hero", "section.hero", "section", 148, 800, width: 1440)
+        ]);
+
+        var document = Assert.Single(await new SectionSegmenter(GetRepoRoot()).SegmentAsync(projectRoot, CancellationToken.None));
+
+        Assert.Contains(document.Sections, section => section.SectionType == "header" && section.EvidenceIds.Contains("header"));
+        Assert.DoesNotContain(document.Sections, section => section.EvidenceIds.Contains("nav"));
+        Assert.DoesNotContain(document.Sections, section => section.EvidenceIds.Contains("header-menu"));
+        Assert.DoesNotContain(document.Sections, section => section.EvidenceIds.Contains("header-component"));
+        Assert.DoesNotContain(document.Sections, section => section.EvidenceIds.Contains("link"));
+        Assert.DoesNotContain(document.Sections, section => section.EvidenceIds.Contains("icon"));
+        Assert.DoesNotContain(document.Issues, issue => issue.Code == "invalid-peer-overlap");
+    }
+
+    [Fact]
+    public async Task Sections_DuplicateHeroWrappersCollapseToSingleSection()
+    {
+        var projectRoot = await CreateProjectWithSnapshotAsync([
+            Element("hero-section", "#shopify-section-template--hero", "element", 148, 800, width: 1440),
+            Element("hero-root", "#Hero-template--hero", "element", 148, 800, width: 1440),
+            Element("hero-media", "[data-testid=\"hero-media-wrapper\"]", "element", 148, 800, width: 1440),
+            Element("products", "section.featured-products", "section", 980, 420, width: 1440)
+        ]);
+
+        var document = Assert.Single(await new SectionSegmenter(GetRepoRoot()).SegmentAsync(projectRoot, CancellationToken.None));
+
+        var hero = Assert.Single(document.Sections, section => section.SectionType == "hero");
+        Assert.Equal(["hero-section"], hero.EvidenceIds);
+        Assert.DoesNotContain(document.Sections, section => section.EvidenceIds.Contains("hero-root"));
+        Assert.DoesNotContain(document.Sections, section => section.EvidenceIds.Contains("hero-media"));
+        Assert.DoesNotContain(document.Issues, issue => issue.Code == "invalid-peer-overlap");
+    }
+
+    [Fact]
     public async Task Sections_RepeatedProductCardsBecomeProductGrid()
     {
         var projectRoot = await CreateProjectWithSnapshotAsync([
