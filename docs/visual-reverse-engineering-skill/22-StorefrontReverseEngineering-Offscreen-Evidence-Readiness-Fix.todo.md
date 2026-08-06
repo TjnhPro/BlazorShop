@@ -351,37 +351,37 @@ git status --porcelain=v1
 
 Evidence to record:
 
-- [ ] Commit hash for each implementation phase.
-- [ ] Test command output summary.
-- [ ] Production runner report path.
-- [ ] Kindred Coast project root.
-- [ ] Readiness report path.
-- [ ] Final readiness result.
-- [ ] Any remaining non-blocking warnings.
-- [ ] Screenshot paths inspected.
-- [ ] Final `git status --porcelain=v1`.
+- [x] Commit hash for each implementation phase.
+- [x] Test command output summary.
+- [x] Production runner report path.
+- [x] Kindred Coast project root.
+- [x] Readiness report path.
+- [x] Final readiness result.
+- [x] Any remaining non-blocking warnings.
+- [x] Screenshot paths inspected.
+- [x] Final `git status --porcelain=v1`.
 
 DoD:
 
-- [ ] All planned tests pass.
-- [ ] Production Kindred Coast run proves the original false positive is gone.
-- [ ] If `Readiness passed` is still `False`, the remaining blocker is not `invalid-element-box` on offscreen accessibility helper evidence and is documented as a separate follow-up.
-- [ ] No generated production artifacts are committed.
-- [ ] Only intentional source/docs/test files are committed.
+- [x] All planned tests pass.
+- [x] Production Kindred Coast run proves the original false positive is gone.
+- [x] If `Readiness passed` is still `False`, the remaining blocker is not `invalid-element-box` on offscreen accessibility helper evidence and is documented as a separate follow-up.
+- [x] No generated production artifacts are committed.
+- [x] Only intentional source/docs/test files are committed.
 
 ## Release Definition Of Done
 
-- [ ] Baseline root cause is recorded from actual Kindred Coast artifacts.
-- [ ] Regression test covers `a.skip-to-content-link.button-secondary` with `x = -99999`.
-- [ ] Regression test proves real invalid visible boxes still block readiness.
-- [ ] Evidence selection no longer includes offscreen accessibility helpers as visual evidence.
-- [ ] Validator still blocks invalid visible visual evidence.
-- [ ] Kindred Coast production run completes through the runner in `scripts/reverse-engineering`.
-- [ ] No `invalid-element-box` finding remains for skip links, visually hidden accessibility helpers, or offscreen ARIA helper nodes.
-- [ ] Capture quality remains passed for desktop, tablet, and mobile.
-- [ ] Desktop and mobile screenshots are nonblank.
-- [ ] Docs or README mention the capture/evidence policy if behavior changes.
-- [ ] Final workspace contains no accidental generated artifact changes.
+- [x] Baseline root cause is recorded from actual Kindred Coast artifacts.
+- [x] Regression test covers `a.skip-to-content-link.button-secondary` with `x = -99999`.
+- [x] Regression test proves real invalid visible boxes still block readiness.
+- [x] Evidence selection no longer includes offscreen accessibility helpers as visual evidence.
+- [x] Validator still blocks invalid visible visual evidence.
+- [x] Kindred Coast production run completes through the runner in `scripts/reverse-engineering`.
+- [x] No `invalid-element-box` finding remains for skip links, visually hidden accessibility helpers, or offscreen ARIA helper nodes.
+- [x] Capture quality remains passed for desktop, tablet, and mobile.
+- [x] Desktop and mobile screenshots are nonblank.
+- [x] Docs or README mention the capture/evidence policy if behavior changes.
+- [x] Final workspace contains no accidental generated artifact changes.
 
 ## Risk Register
 
@@ -509,6 +509,69 @@ rg -n "offscreen|skip-to-content|skip link|noiseSelectors|KindredCoast|run-store
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Help
+```
+
+### Phase 3A.7 Final Closure Evidence - 2026-08-06
+
+- Phase commits:
+  - Phase 3A.1: `64b6eb9a`
+  - Phase 3A.2: `d13dd5b2`
+  - Phase 3A.3: `affaf709`
+  - Phase 3A.4: `617754f7`
+  - Phase 3A.5: `1ee7925b`
+  - Phase 3A.6: `7b22aa00`
+  - Phase 3A.7: final closure commit containing this evidence.
+- Initial final status:
+
+```text
+?? scripts/reverse-engineering/readme.md
+```
+
+- Build command passed with `0 Warning(s)` and `0 Error(s)`:
+
+```powershell
+dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj
+```
+
+- First final test run found a real regression in source-aware mapping selection: `PageCompositions_SectionCannotTargetProtectedPath` no longer observed the fallback evidence mapping because exact source-section mapping ignored evidence mismatch.
+- Fixed `BlueprintV1Assembler` so exact source page/section mapping must still be evidence-compatible when both mapping and section carry evidence IDs; this preserves source-aware mapping while retaining protected-path detection.
+- Focused regression command passed: `Failed: 0, Passed: 3, Total: 3`.
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~PageCompositions_SectionCannotTargetProtectedPath|FullyQualifiedName~BlueprintV1_AssemblesDraftReviewedAndReadinessArtifacts|FullyQualifiedName~SlotValidation_ReviewedMappingSatisfiesRequiredSlot" --blame-hang --blame-hang-timeout 5m
+```
+
+- Final planned test command passed: `Failed: 0, Passed: 156, Total: 156`, duration `1 m 52 s`.
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~Readiness|FullyQualifiedName~Evidence|FullyQualifiedName~EndToEndCliTests" --blame-hang --blame-hang-timeout 5m
+```
+
+- Final production command passed with process exit `0`:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -CommandTimeoutSeconds 900
+```
+
+- Final production runner report: `artifacts/storefront-reverse-engineering/reports/storefront-reverse-engineering-production-kindredcoast-20260806115007.md`.
+- Final Kindred Coast project root: `artifacts/storefront-reverse-engineering/projects/kindredcoast`.
+- Final run ID: `20260806045010217`.
+- Final readiness report: `artifacts/storefront-reverse-engineering/projects/kindredcoast/reports/readiness-report.json`.
+- Final readiness result: `Readiness passed: True`, `Blocking findings: 0`, `Warnings: 0`.
+- `validate production project readiness` result: `Validation passed: True`, `Findings: 0`.
+- Remaining production workflow status: `completed-with-blockers` because Phase 3B review/handoff prerequisites remain unresolved, not because Phase 3A readiness failed:
+  - `review/review-decisions.json` has zero decisions;
+  - reviewed blueprint is missing;
+  - generation readiness still reports review/slot blockers.
+- Non-blocking capture warnings remained in quality reports: network idle wait timed out, then capture continued after DOMContentLoaded.
+- Screenshot paths inspected:
+  - `artifacts/storefront-reverse-engineering/projects/kindredcoast/captures/home/desktop-1440/full-page.png`
+  - `artifacts/storefront-reverse-engineering/projects/kindredcoast/captures/home/mobile-390/full-page.png`
+- Final status before closure commit:
+
+```text
+ M tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Blueprint/BlueprintV1Assembler.cs
+?? scripts/reverse-engineering/readme.md
 ```
 
 | Risk | Impact | Mitigation |

@@ -769,7 +769,8 @@ public sealed class BlueprintV1Assembler
         {
             var mapping = mappings.FirstOrDefault(candidate =>
                     string.Equals(candidate.SourcePageId, pageId, StringComparison.Ordinal) &&
-                    string.Equals(candidate.SourceSectionId, section.Id, StringComparison.Ordinal))
+                    string.Equals(candidate.SourceSectionId, section.Id, StringComparison.Ordinal) &&
+                    EvidenceCompatible(candidate, section))
                 ?? mappings.FirstOrDefault(candidate =>
                     (string.IsNullOrWhiteSpace(candidate.SourcePageId) || string.Equals(candidate.SourcePageId, pageId, StringComparison.Ordinal)) &&
                     candidate.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any());
@@ -819,6 +820,11 @@ public sealed class BlueprintV1Assembler
             node with { Children = byParent.GetValueOrDefault(node.NodeId, []).Select(Attach).ToArray() };
         return nodes.Where(node => string.IsNullOrWhiteSpace(node.ParentNodeId)).Select(Attach).ToArray();
     }
+
+    private static bool EvidenceCompatible(MappingInfo mapping, PageSectionInfo section) =>
+        mapping.EvidenceIds.Count == 0 ||
+        section.EvidenceIds.Count == 0 ||
+        mapping.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any();
 
     private static IReadOnlyList<PageRepeatedGroup> BuildRepeatedGroups(IReadOnlyList<PageCompositionNode> nodes)
     {
