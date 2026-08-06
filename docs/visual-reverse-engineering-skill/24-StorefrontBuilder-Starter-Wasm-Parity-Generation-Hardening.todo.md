@@ -121,24 +121,24 @@ Use these files as baseline during implementation:
 - [x] Package ID/version/source/hash in restore output matches generated metadata.
 - [x] External ProjectReference remains forbidden.
 - [x] V2, V2.WASM, Starter source, Starter.WASM source, backend/core/API and Web.SharedV2 references remain forbidden in generated output.
-- [ ] Visual plan/implement/QA tools understand server vs WASM ownership.
-- [ ] Regeneration supports server + WASM as one generated artifact.
-- [ ] `-WhatIf` reports both server and WASM changes.
-- [ ] Generated proof runner can create, restore, build, validate and browser-test a fresh multi-project storefront.
-- [ ] Kindredcoast can be freshly generated as pilot proof after foundation gates pass.
-- [ ] Final local closure gate passes without requiring GitHub Actions.
+- [x] Visual plan/implement/QA tools understand server vs WASM ownership.
+- [x] Regeneration supports server + WASM as one generated artifact.
+- [x] `-WhatIf` reports both server and WASM changes.
+- [x] Generated proof runner can create, restore, build, validate and browser-test a fresh multi-project storefront.
+- [x] Kindredcoast can be freshly generated as pilot proof after foundation gates pass.
+- [x] Final local closure gate passes without requiring GitHub Actions.
 
 ## Out Of Scope
 
-- [ ] Do not implement new payment providers.
-- [ ] Do not refactor Commerce Node Storefront APIs.
-- [ ] Do not change cart, checkout, account, pricing, sellability or auth semantics.
-- [ ] Do not introduce a new production deployment topology.
-- [ ] Do not add Aspire or ServiceDefaults as a mandatory generated storefront dependency.
-- [ ] Do not copy Storefront V2 visual markup into Starter or generated stores.
-- [ ] Do not add a new theme system.
-- [ ] Do not add a full SSIM/pixel-perfect visual engine.
-- [ ] Do not make StorefrontBuilder a production service.
+- [x] Do not implement new payment providers.
+- [x] Do not refactor Commerce Node Storefront APIs.
+- [x] Do not change cart, checkout, account, pricing, sellability or auth semantics.
+- [x] Do not introduce a new production deployment topology.
+- [x] Do not add Aspire or ServiceDefaults as a mandatory generated storefront dependency.
+- [x] Do not copy Storefront V2 visual markup into Starter or generated stores.
+- [x] Do not add a new theme system.
+- [x] Do not add a full SSIM/pixel-perfect visual engine.
+- [x] Do not make StorefrontBuilder a production service.
 
 ## Phase 0 - Baseline And Contract Freeze
 
@@ -280,7 +280,7 @@ Ensure generated projects always consume packages built from the current source 
 - [x] Browser package missing from generated server `.csproj` fails.
 - [x] Browser package missing from generated WASM `.csproj` fails.
 - [x] Stale package with same ID but older version is ignored.
-- [ ] Server resolves different version than WASM fails.
+- [x] Server resolves different version than WASM fails.
 - [x] Package hash mismatch fails.
 - [x] Package source outside expected local feed fails when local proof requires local feed.
 - [x] Cache cleanup path outside NuGet package root fails.
@@ -843,66 +843,66 @@ Close the phase with local, repeatable proof. GitHub Actions are not required wh
 
 ### Required Gates
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
-- [ ] StorefrontBuilder generation tests.
-- [ ] StorefrontBuilder static validator tests.
-- [ ] StorefrontBuilder isolation tests.
-- [ ] Package freshness tests.
-- [ ] Metadata/provenance tests.
-- [ ] Regeneration ownership tests.
-- [ ] Visual schema/example validation.
-- [ ] `run-storefront-builder-generated-proof.ps1 -ProofLevel Structure`
-- [ ] `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast`
-- [ ] `run-storefront-builder-regeneration-gate.ps1`
-- [ ] `run-storefront-phase4-mvp-gate.ps1` where visual/handoff artifacts are involved.
-- [ ] Kindredcoast targeted proof if Kindredcoast pilot is part of the same closure.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
+- [x] StorefrontBuilder generation tests.
+- [x] StorefrontBuilder static validator tests.
+- [x] StorefrontBuilder isolation tests.
+- [x] Package freshness tests.
+- [x] Metadata/provenance tests.
+- [x] Regeneration ownership tests.
+- [x] Visual schema/example validation.
+- [x] `run-storefront-builder-generated-proof.ps1 -ProofLevel Structure`
+- [x] `run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast`
+- [x] `run-storefront-builder-regeneration-gate.ps1`
+- [x] `run-storefront-phase4-mvp-gate.ps1` where visual/handoff artifacts are involved.
+- [x] Kindredcoast targeted proof if Kindredcoast pilot is part of the same closure.
 
 ### Final Gate Must Reject
 
-- [ ] Mutable stale package.
-- [ ] Missing Browser package.
-- [ ] Missing WASM project.
-- [ ] Server missing Browser controllers.
-- [ ] WASM missing Browser runtime.
-- [ ] Server missing WASM assembly mapping.
-- [ ] External ProjectReference.
-- [ ] Generated WASM ProjectReference.
-- [ ] Direct Runtime package in generated server or WASM.
-- [ ] Direct Client package in generated server or WASM.
-- [ ] V2/V2.WASM reference.
-- [ ] Starter source reference in generated output.
-- [ ] Backend/core/API reference.
-- [ ] Package hash mismatch.
-- [ ] Package source mismatch.
-- [ ] Stale runtime evidence.
-- [ ] Visual changes outside allowlist.
-- [ ] Protected runtime edit.
-- [ ] Generated `@page` declarations.
-- [ ] Direct Commerce Node browser calls.
-- [ ] Non-deterministic regeneration.
+- [x] Mutable stale package.
+- [x] Missing Browser package.
+- [x] Missing WASM project.
+- [x] Server missing Browser controllers.
+- [x] WASM missing Browser runtime.
+- [x] Server missing WASM assembly mapping.
+- [x] External ProjectReference.
+- [x] Generated WASM ProjectReference.
+- [x] Direct Runtime package in generated server or WASM.
+- [x] Direct Client package in generated server or WASM.
+- [x] V2/V2.WASM reference.
+- [x] Starter source reference in generated output.
+- [x] Backend/core/API reference.
+- [x] Package hash mismatch.
+- [x] Package source mismatch.
+- [x] Stale runtime evidence.
+- [x] Visual changes outside allowlist.
+- [x] Protected runtime edit.
+- [x] Generated `@page` declarations.
+- [x] Direct Commerce Node browser calls.
+- [x] Non-deterministic regeneration.
 
 ### Final Evidence
 
-- [ ] Tested source HEAD.
-- [ ] Final source HEAD.
-- [ ] Package build identity.
-- [ ] Five package versions.
-- [ ] Five package hashes.
-- [ ] Server generated path.
-- [ ] WASM generated path.
-- [ ] Server restore proof.
-- [ ] WASM restore proof.
-- [ ] Static validation report.
-- [ ] Isolation report.
-- [ ] Runtime browser proof report.
-- [ ] Visual QA report when applicable.
-- [ ] Regeneration report.
-- [ ] Final git status.
+- [x] Tested source HEAD.
+- [x] Final source HEAD.
+- [x] Package build identity.
+- [x] Five package versions.
+- [x] Five package hashes.
+- [x] Server generated path.
+- [x] WASM generated path.
+- [x] Server restore proof.
+- [x] WASM restore proof.
+- [x] Static validation report.
+- [x] Isolation report.
+- [x] Runtime browser proof report.
+- [x] Visual QA report when applicable.
+- [x] Regeneration report.
+- [x] Final git status.
 
 ### Done When
 
-- [ ] A clean local run proves Starter parity, multi-project generation, package freshness, visual boundary safety and regeneration behavior.
+- [x] A clean local run proves Starter parity, multi-project generation, package freshness, visual boundary safety and regeneration behavior.
 
 ## Implementation Order
 
@@ -922,18 +922,18 @@ Do not start Phase 6 visual tool changes before Phase 4 and Phase 5 can generate
 
 ## Agent Checklist Before Coding Each Phase
 
-- [ ] Read `AGENTS.md`.
-- [ ] Read `docs/architecture/README.md`.
-- [ ] Read `docs/architecture/11-storefront-builder.md`.
-- [ ] Read `docs/visual-reverse-engineering-skill/README.md`.
-- [ ] Read `docs/agents/storefront-builder.md`.
-- [ ] Read this todo file.
-- [ ] Search existing code with `rg`.
-- [ ] Identify exact files touched.
-- [ ] Keep changes phase-scoped.
-- [ ] Update docs and gates in the same phase as behavior changes.
-- [ ] Run focused verification before committing.
-- [ ] Do not commit generated artifacts unless the phase explicitly asks for tracked evidence.
+- [x] Read `AGENTS.md`.
+- [x] Read `docs/architecture/README.md`.
+- [x] Read `docs/architecture/11-storefront-builder.md`.
+- [x] Read `docs/visual-reverse-engineering-skill/README.md`.
+- [x] Read `docs/agents/storefront-builder.md`.
+- [x] Read this todo file.
+- [x] Search existing code with `rg`.
+- [x] Identify exact files touched.
+- [x] Keep changes phase-scoped.
+- [x] Update docs and gates in the same phase as behavior changes.
+- [x] Run focused verification before committing.
+- [x] Do not commit generated artifacts unless the phase explicitly asks for tracked evidence.
 
 ## Risk Register
 
