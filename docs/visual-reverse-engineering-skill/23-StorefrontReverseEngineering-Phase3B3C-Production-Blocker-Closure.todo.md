@@ -458,21 +458,21 @@ Goal: make inspect/report output explain Phase 3B/3C blockers and prove the fina
 
 Implementation checklist:
 
-- [ ] Update `inspect` output for review decision materialization state.
-- [ ] Show separate statuses for Phase 3A readiness, Phase 3B generation readiness, and Phase 3C handoff readiness.
-- [ ] Add problem/cause/fix guidance for:
-  - [ ] missing safe review materialization flag;
-  - [ ] unsafe unsupported pattern;
-  - [ ] orphan reviewed mapping;
-  - [ ] missing footer slot;
-  - [ ] duplicate non-repeatable home slot;
-  - [ ] stale resume artifacts.
-- [ ] Ensure `assemble-blueprint-v1` fails step status when readiness blockers remain.
-- [ ] Ensure `validate-agent-handoff-readiness` does not run against missing reviewed blueprint as if it were a Phase 3A issue.
-- [ ] Add CLI tests for the improved messages.
-- [ ] Add report assertions for production runner problem/cause/fix sections.
-- [ ] Preserve `completed-with-blockers` for non-`-FailOnBlockers` Phase 3A smoke runs.
-- [ ] Ensure `-FailOnBlockers` exits non-zero when any Phase 3B/3C blocker remains.
+- [x] Update `inspect` output for review decision materialization state.
+- [x] Show separate statuses for Phase 3A readiness, Phase 3B generation readiness, and Phase 3C handoff readiness.
+- [x] Add problem/cause/fix guidance for:
+  - [x] missing safe review materialization flag;
+  - [x] unsafe unsupported pattern;
+  - [x] orphan reviewed mapping;
+  - [x] missing footer slot;
+  - [x] duplicate non-repeatable home slot;
+  - [x] stale resume artifacts.
+- [x] Ensure `assemble-blueprint-v1` fails step status when readiness blockers remain.
+- [x] Ensure `validate-agent-handoff-readiness` does not run against missing reviewed blueprint as if it were a Phase 3A issue.
+- [x] Add CLI tests for the improved messages.
+- [x] Add report assertions for production runner problem/cause/fix sections.
+- [x] Preserve `completed-with-blockers` for non-`-FailOnBlockers` Phase 3A smoke runs.
+- [x] Ensure `-FailOnBlockers` exits non-zero when any Phase 3B/3C blocker remains.
 
 Candidate files:
 
@@ -488,11 +488,20 @@ Checks:
 dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~EndToEndCliTests|FullyQualifiedName~Phase3BCliDxTests|FullyQualifiedName~Phase3CliProofCollectionTests" --blame-hang --blame-hang-timeout 5m
 ```
 
+Phase 5 evidence:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~EndToEndCliTests|FullyQualifiedName~Phase3BCliDxTests" --no-restore
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~Phase3BCliDxTests" --no-restore
+```
+
+Results: passed, 27/27 and 6/6.
+
 Done when:
 
-- [ ] Inspect distinguishes Phase 3A pass from Phase 3B/3C blockers.
-- [ ] Reports say exactly what failed, why, and how to fix it.
-- [ ] `-FailOnBlockers` can be used as the strict production closure gate.
+- [x] Inspect distinguishes Phase 3A pass from Phase 3B/3C blockers.
+- [x] Reports say exactly what failed, why, and how to fix it.
+- [x] `-FailOnBlockers` can be used as the strict production closure gate.
 
 Commit:
 

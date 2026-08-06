@@ -129,7 +129,7 @@ public static class CliHost
                     }
 
                     WriteRunInspection(output, inspection);
-                    WritePhase3BInspection(output, inspection.Phase3B);
+                    WritePhase3BInspection(output, inspection);
 
                     return 0;
                 case "validate-handoff":
@@ -322,8 +322,9 @@ public static class CliHost
         }
     }
 
-    private static void WritePhase3BInspection(TextWriter output, Phase3BInspection phase3B)
+    private static void WritePhase3BInspection(TextWriter output, VisualProjectInspection inspection)
     {
+        var phase3B = inspection.Phase3B;
         output.WriteLine("Phase 3B artifacts:");
         output.WriteLine($"  Evidence snapshot: {FormatArtifact(phase3B.EvidenceSnapshot)}");
         output.WriteLine($"  Tokens: raw={phase3B.RawTokens.Status} ({phase3B.RawTokens.RelativePath}); semantic={phase3B.SemanticTokens.Status} ({phase3B.SemanticTokens.RelativePath})");
@@ -332,10 +333,14 @@ public static class CliHost
         output.WriteLine($"  Mapping: mappings={phase3B.Mappings.Status} ({phase3B.Mappings.RelativePath}); unsupported={phase3B.UnsupportedPatterns.Status} ({phase3B.UnsupportedPatterns.RelativePath})");
         output.WriteLine($"  Review queue count: {phase3B.ReviewQueueCount?.ToString() ?? "unknown"} ({phase3B.ReviewQueue.Status}; {phase3B.ReviewQueue.RelativePath})");
         output.WriteLine($"  Review decision totals: approved={phase3B.ReviewDecisionTotals.Approved}; modified={phase3B.ReviewDecisionTotals.Modified}; rejected={phase3B.ReviewDecisionTotals.Rejected}; deferred={phase3B.ReviewDecisionTotals.Deferred}; stale={phase3B.ReviewDecisionTotals.Stale}");
+        output.WriteLine($"  Review decision summary: {phase3B.ReviewDecisionSummary.Status} ({phase3B.ReviewDecisionSummary.RelativePath})");
         output.WriteLine($"  Resolved artifacts: {phase3B.ReviewResolution.Status} ({phase3B.ReviewResolution.RelativePath}); bundle hash={phase3B.ReviewBundleHash ?? "(none)"}");
         output.WriteLine($"  Reviewed blueprint: {phase3B.ReviewedBlueprint.Status} ({phase3B.ReviewedBlueprint.RelativePath})");
         output.WriteLine($"  Page slot contracts: {phase3B.PageSlotContracts.Status} ({phase3B.PageSlotContracts.RelativePath})");
         output.WriteLine($"  Generation readiness: {FormatGenerationReadiness(phase3B)}");
+        output.WriteLine($"  Phase 3A readiness: {FormatNullableBool(inspection.ReadinessPassed)}");
+        output.WriteLine($"  Phase 3B generation readiness: {FormatNullableBool(phase3B.GenerationReadinessPassed)}");
+        output.WriteLine($"  Phase 3C handoff readiness: {FormatNullableBool(phase3B.AgentHandoffReadinessPassed)}");
         output.WriteLine($"  Slot blockers: missing required={phase3B.MissingRequiredSlotCount}; duplicate={phase3B.DuplicateSlotCount}; unapproved extras={phase3B.UnapprovedExtraSectionCount}");
         output.WriteLine($"  Latest Phase 3B blocking finding: {FormatLatestPhase3BFinding(phase3B.LatestBlockingFinding)}");
         output.WriteLine($"  Handoff manifest: {phase3B.AgentHandoffManifest.Status} ({phase3B.AgentHandoffManifest.RelativePath})");

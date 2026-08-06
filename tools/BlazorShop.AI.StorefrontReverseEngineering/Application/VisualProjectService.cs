@@ -246,6 +246,7 @@ public sealed class VisualProjectService
         var catalogValidation = InspectArtifact(projectRoot, "presentation-catalog/catalog-validation-report.json", "presentation-catalog-validation-report");
         var reviewQueue = InspectArtifact(projectRoot, "review/review-queue.json", "review-queue");
         var reviewDecisions = InspectArtifact(projectRoot, "review/review-decisions.json", "review-decisions");
+        var reviewDecisionSummary = InspectJsonArtifact(projectRoot, "review/review-decision-summary.json");
         var reviewResolution = InspectArtifact(projectRoot, "analysis/resolved/review-resolution-manifest.json", "review-resolution-manifest");
         var reviewedBlueprint = InspectArtifact(projectRoot, "analysis/visual-blueprint.v1.reviewed.json", "visual-blueprint-v1");
         var pageSlotContracts = InspectArtifact(projectRoot, "analysis/storefront-pattern/page-contracts.json", "page-contracts");
@@ -314,6 +315,8 @@ public sealed class VisualProjectService
             catalogValidation,
             reviewQueue,
             blockingReviewCount ?? 0,
+            decisionTotals,
+            reviewDecisionSummary,
             unsupported,
             generationFindings);
 
@@ -328,6 +331,7 @@ public sealed class VisualProjectService
             reviewQueue,
             reviewQueueCount,
             decisionTotals,
+            reviewDecisionSummary,
             reviewResolution,
             reviewResolution.Node?["decisionBundleHash"]?.GetValue<string>(),
             reviewedBlueprint,
@@ -370,6 +374,26 @@ public sealed class VisualProjectService
             return new Phase3BArtifactInspection(relativePath, fullPath, "present", node, null);
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or IOException or UnauthorizedAccessException)
+        {
+            return new Phase3BArtifactInspection(relativePath, fullPath, "invalid", null, exception.Message);
+        }
+    }
+
+    private static Phase3BArtifactInspection InspectJsonArtifact(string projectRoot, string relativePath)
+    {
+        var fullPath = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(fullPath))
+        {
+            return new Phase3BArtifactInspection(relativePath, fullPath, "missing", null, null);
+        }
+
+        try
+        {
+            var node = JsonNode.Parse(File.ReadAllText(fullPath))
+                ?? throw new JsonException("Artifact is empty.");
+            return new Phase3BArtifactInspection(relativePath, fullPath, "present", node, null);
+        }
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
             return new Phase3BArtifactInspection(relativePath, fullPath, "invalid", null, exception.Message);
         }
@@ -485,6 +509,8 @@ public sealed class VisualProjectService
         Phase3BArtifactInspection catalogValidation,
         Phase3BArtifactInspection reviewQueue,
         int blockingReviewCount,
+        ReviewDecisionTotals decisionTotals,
+        Phase3BArtifactInspection reviewDecisionSummary,
         Phase3BArtifactInspection unsupported,
         IReadOnlyList<GenerationReadinessFinding> generationFindings)
     {
@@ -528,9 +554,11 @@ public sealed class VisualProjectService
         if (unresolvedReview && reviewQueue.Status != "missing")
         {
             problems.Add(new Phase3BProblem(
-                "unresolved blocking review item",
+                reviewDecisionSummary.Status == "missing" ? "missing safe review materialization flag" : "unresolved blocking review item",
                 "The review queue still contains blocking items or generation readiness found missing review decisions.",
-                "Write review/review-decisions.json for blocking items, then rerun score-confidence-review and assemble-blueprint-v1."));
+                reviewDecisionSummary.Status == "missing"
+                    ? "Run resolve-safe-review --project <project> or production -ResolveSafeReviewItems, then rerun assemble-blueprint-v1."
+                    : "Write review/review-decisions.json for blocking items, then rerun score-confidence-review and assemble-blueprint-v1."));
         }
 
         var unsupportedCritical = unsupported.Node?["patterns"]?.AsArray()
@@ -542,6 +570,43 @@ public sealed class VisualProjectService
                 "unsupported critical pattern",
                 "At least one ecommerce-critical visual pattern has no supported Presentation mapping.",
                 "Resolve the pattern through review or add supported Presentation capability before generation consumes the blueprint."));
+        }
+
+        if (generationFindings.Any(finding => string.Equals(finding.Code, "reviewed-slot-mapping-orphan", StringComparison.Ordinal)))
+        {
+            problems.Add(new Phase3BProblem(
+                "orphan reviewed mapping",
+                "A reviewed Presentation mapping points to a page section that is not present in the reviewed page composition.",
+                "Regenerate source-aware mappings and rerun assemble-blueprint-v1 so mapping source page/section matches the composition node."));
+        }
+
+        if (generationFindings.Any(finding =>
+                (finding.Code is "missing-required-slot" or "required-slot-unmapped") &&
+                finding.Message.Contains("layout.footer", StringComparison.OrdinalIgnoreCase)))
+        {
+            problems.Add(new Phase3BProblem(
+                "missing footer slot",
+                "The reviewed composition does not have an authoritative source-bound layout.footer slot.",
+                "Regenerate mappings with footer evidence bound to its page section, then rerun assemble-blueprint-v1."));
+        }
+
+        if (generationFindings.Any(finding =>
+                string.Equals(finding.Code, "duplicate-non-repeatable-slot", StringComparison.Ordinal) &&
+                finding.Message.Contains("home.sections", StringComparison.OrdinalIgnoreCase)))
+        {
+            problems.Add(new Phase3BProblem(
+                "duplicate non-repeatable home slot",
+                "Multiple child sections are claiming the page-level home.sections slot as independent authoritative sources.",
+                "Regenerate page compositions so home.sections is the page body container and child sections are visual extensions inside it."));
+        }
+
+        if (decisionTotals.Stale > 0 ||
+            generationFindings.Any(finding => finding.Code is "reviewed-blueprint-hash-stale" or "reviewed-composition-hash-stale" or "reviewed-composition-uses-draft-input"))
+        {
+            problems.Add(new Phase3BProblem(
+                "stale resume artifacts",
+                "Reviewed decisions or reviewed blueprint/composition hashes do not match current upstream artifacts.",
+                "Force rerun downstream Phase 3B steps from score-confidence-review or assemble-blueprint-v1 after regenerating changed artifacts."));
         }
 
         return problems;
@@ -576,6 +641,7 @@ public sealed record Phase3BInspection(
     Phase3BArtifactInspection ReviewQueue,
     int? ReviewQueueCount,
     ReviewDecisionTotals ReviewDecisionTotals,
+    Phase3BArtifactInspection ReviewDecisionSummary,
     Phase3BArtifactInspection ReviewResolution,
     string? ReviewBundleHash,
     Phase3BArtifactInspection ReviewedBlueprint,
