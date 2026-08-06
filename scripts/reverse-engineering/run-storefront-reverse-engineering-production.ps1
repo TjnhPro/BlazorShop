@@ -19,7 +19,7 @@ function Write-Usage {
     Write-Host "StorefrontReverseEngineering production runner"
     Write-Host ""
     Write-Host "Usage:"
-    Write-Host "  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run-storefront-reverse-engineering-production.ps1 [options]"
+    Write-Host "  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 [options]"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Url <url>                    Reference storefront URL. Defaults to https://www.kindredcoast.com/"
@@ -40,7 +40,24 @@ if ($Help) {
     return
 }
 
-$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+function Get-ProductionRepositoryRoot {
+    param([Parameter(Mandatory = $true)][string]$StartPath)
+
+    $candidate = [System.IO.DirectoryInfo]::new([System.IO.Path]::GetFullPath($StartPath))
+    while ($null -ne $candidate) {
+        $toolProjectCandidate = Join-Path $candidate.FullName "tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj"
+        $gitRootCandidate = Join-Path $candidate.FullName ".git"
+        if ((Test-Path -LiteralPath $gitRootCandidate) -and (Test-Path -LiteralPath $toolProjectCandidate)) {
+            return $candidate.FullName
+        }
+
+        $candidate = $candidate.Parent
+    }
+
+    throw "Could not find repository root from '$StartPath'. Expected to find .git and tools\BlazorShop.AI.StorefrontReverseEngineering."
+}
+
+$repoRoot = Get-ProductionRepositoryRoot -StartPath $PSScriptRoot
 $referenceUrl = $Url
 $visualProjectName = $Name
 $toolProject = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\BlazorShop.AI.StorefrontReverseEngineering.csproj"
