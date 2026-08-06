@@ -756,7 +756,7 @@ function selectorForSlot(slotId) {
     "layout.main-navigation": ".sfb-main-nav",
     "layout.mobile-navigation": ".sfb-mobile-nav",
     "layout.cart-badge": ".sfb-cart-badge, [data-storefront-cart-badge]",
-    "home.sections": ".sfb-hero",
+    "home.sections": ".sfb-hero, .sfb-home-hero, [data-storefront-slot*=\"home.sections\"]",
     "catalog.product-card": ".sfb-product-card",
     "catalog.filters": ".sfb-catalog-toolbar",
     "product.gallery": ".sfb-product-gallery, [data-storefront-product-gallery]",
