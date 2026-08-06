@@ -39,6 +39,71 @@ public sealed class StorefrontBuilderHandoffGenerationPlanTests
     }
 
     [Fact]
+    public async Task HandoffPlan_UsesReviewedSharedLayoutMappingWhenFooterSectionIsNotPageLocal()
+    {
+        var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 4 Plan Shared Footer");
+        await PortableHandoffMutationTestHelpers.MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/page-compositions.json", json =>
+        {
+            var home = json["compositions"]!.AsArray().First(item => item!["pageId"]!.GetValue<string>() == "home")!.AsObject();
+            var sections = home["sectionTree"]!.AsArray();
+            foreach (var section in sections.OfType<JsonObject>()
+                         .Where(section => section["role"]?.GetValue<string>().Contains("footer", StringComparison.OrdinalIgnoreCase) == true)
+                         .ToArray())
+            {
+                sections.Remove(section);
+            }
+        });
+        await PortableHandoffMutationTestHelpers.MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/presentation-mappings.json", json =>
+        {
+            var mappings = json["mappings"]!.AsArray();
+            foreach (var mapping in mappings.OfType<JsonObject>()
+                         .Where(mapping =>
+                             mapping["sourcePageId"]?.GetValue<string>() == "home" &&
+                             mapping["starterSlotId"]?.GetValue<string>() == "layout.footer")
+                         .ToArray())
+            {
+                mappings.Remove(mapping);
+            }
+
+            mappings.Add(new JsonObject
+            {
+                ["sourceCandidateId"] = "shared-footer-fallback",
+                ["presentationComponentId"] = "layout.footer",
+                ["starterSlotId"] = "layout.footer",
+                ["variant"] = "default",
+                ["slotAssignments"] = new JsonArray(),
+                ["responsiveProperties"] = new JsonArray(),
+                ["tokenBindings"] = new JsonArray(),
+                ["interactionBindings"] = new JsonArray(),
+                ["dataRequirements"] = new JsonArray(),
+                ["behaviorOwnership"] = "presentation",
+                ["confidence"] = 0.78,
+                ["evidenceIds"] = new JsonArray(),
+                ["mappingReason"] = "reviewed-shared-layout-fallback",
+                ["alternativeMappings"] = new JsonArray(),
+                ["humanReviewRequired"] = false,
+                ["sourcePageId"] = "unknown",
+                ["sourceSectionId"] = "unknown",
+                ["ecommerceRegionId"] = "unknown",
+                ["pageArchetype"] = "unknown",
+                ["targetGeneratedPath"] = "Components/Layout/MainLayout.razor",
+                ["generatedZone"] = "layout-components",
+                ["routeOwnership"] = "Storefront Presentation owns route declarations; generated visuals register view slots only",
+                ["reasonCodes"] = new JsonArray(),
+                ["reviewState"] = "Approved"
+            });
+        });
+
+        var result = await RunPlanAsync(fixture.PortableRoot, CreateOutputRoot(), "BlazorShop.Storefront.Phase4PlanSharedFooter", "shared-footer");
+        var plan = ReadPlan(result);
+
+        AssertPlanHasSlot(plan, "home", "layout.footer", "Components/Layout/MainLayout.razor");
+        Assert.Contains(plan["slots"]!.AsArray(), item =>
+            item!["slotId"]!.GetValue<string>() == "layout.footer" &&
+            item["sourceHandoffArtifacts"]!.AsArray().Any(artifact => artifact!.GetValue<string>() == "analysis/agent-handoff/presentation-mappings.json"));
+    }
+
+    [Fact]
     public async Task HandoffPlan_MapsCartCheckoutAccountToVisualShellOnly()
     {
         var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 4 Plan Shells");

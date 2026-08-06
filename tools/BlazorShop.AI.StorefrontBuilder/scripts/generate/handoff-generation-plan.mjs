@@ -43,6 +43,7 @@ export function buildHandoffGenerationPlan(options) {
   const slotCatalog = buildSlotCatalog(artifacts.storefrontPattern);
   const contractCatalog = artifacts.storefrontPattern.pageContracts ?? [];
   const evidenceCatalog = buildEvidenceCatalog(artifacts.evidenceManifest);
+  const mappingCatalog = buildPresentationMappingCatalog(artifacts.presentationMappings);
   const blockedItems = buildBlockedItems(artifacts.unresolvedRegions, artifacts.interactionModels, artifacts.originalityRestrictions);
   const assetPlan = buildAssetPlan(artifacts.originalityRestrictions);
   const tokenPlan = buildTokenPlan(artifacts.designTokens, artifacts.visualStyle);
@@ -57,9 +58,14 @@ export function buildHandoffGenerationPlan(options) {
     const pageArchetype = composition.pageArchetype ?? composition.archetype ?? pageId;
     const contract = findPageContract(contractCatalog, pageId, pageArchetype);
     const sections = composition.sectionTree ?? composition.compositionTree ?? [];
-    const sectionSlots = new Set(sections.map(section => slotFromSection(section, pageId, evidenceCatalog)).filter(Boolean));
+    const sectionSlots = new Set(sections.map(section => slotFromSection(section, pageId, evidenceCatalog, mappingCatalog)).filter(Boolean));
     if (composition.targetViewSlot) {
       sectionSlots.add(composition.targetViewSlot);
+    }
+
+    const fallbackSections = buildSharedLayoutFallbackSections(artifacts.presentationMappings, contract, pageId, sectionSlots);
+    for (const section of fallbackSections) {
+      sectionSlots.add(section.starterSlotId);
     }
 
     for (const requiredSlot of contract.requiredSlotIds ?? []) {
@@ -74,8 +80,8 @@ export function buildHandoffGenerationPlan(options) {
       }
     }
 
-    for (const section of sortedBy(sections, item => item.nodeId ?? "")) {
-      const slotId = slotFromSection(section, pageId, evidenceCatalog);
+    for (const section of sortedBy([...sections, ...fallbackSections], item => item.nodeId ?? "")) {
+      const slotId = slotFromSection(section, pageId, evidenceCatalog, mappingCatalog);
       if (!slotId) {
         warnings.push({ code: "section-without-slot", pageId, sectionId: section.nodeId ?? "", message: "Reviewed section has no Presentation slot mapping." });
         continue;
@@ -106,6 +112,7 @@ export function buildHandoffGenerationPlan(options) {
         sourceHandoffArtifacts: [
           HANDOFF_ARTIFACTS.pageCompositions,
           HANDOFF_ARTIFACTS.storefrontPattern,
+          ...(section.sourceHandoffArtifacts ?? []),
           HANDOFF_ARTIFACTS.evidenceManifest,
           HANDOFF_ARTIFACTS.designTokens,
           HANDOFF_ARTIFACTS.visualStyle,
@@ -133,7 +140,7 @@ export function buildHandoffGenerationPlan(options) {
         ownership,
         required: (contract.requiredSlotIds ?? []).includes(slotId),
         visualShellOnly: VISUAL_SHELL_SLOTS.has(slotId),
-        sourceHandoffArtifacts: [HANDOFF_ARTIFACTS.pageCompositions, HANDOFF_ARTIFACTS.evidenceManifest],
+        sourceHandoffArtifacts: [HANDOFF_ARTIFACTS.pageCompositions, ...(section.sourceHandoffArtifacts ?? []), HANDOFF_ARTIFACTS.evidenceManifest],
         sourceEvidenceReferences: evidenceRefs,
       });
     }
@@ -208,6 +215,51 @@ function buildSlotCatalog(pattern) {
   }
 
   return slots;
+}
+
+function buildPresentationMappingCatalog(presentationMappings) {
+  const byId = new Map();
+  for (const mapping of presentationMappings.mappings ?? []) {
+    if (mapping.sourceCandidateId) {
+      byId.set(mapping.sourceCandidateId, mapping);
+    }
+  }
+
+  return { byId };
+}
+
+function buildSharedLayoutFallbackSections(presentationMappings, contract, pageId, observedSlots) {
+  const allowedSlots = new Set([
+    ...(contract.requiredSlotIds ?? []),
+    ...(contract.optionalSlotIds ?? []),
+    ...(contract.repeatableSlotIds ?? []),
+    ...(contract.allowedAdditionalSlotIds ?? []),
+  ]);
+
+  const fallbackSections = [];
+  for (const mapping of presentationMappings.mappings ?? []) {
+    const slotId = mapping.starterSlotId ?? mapping.presentationComponentId;
+    if (!isApprovedMapping(mapping) ||
+        !isSharedLayoutFallbackMapping(mapping) ||
+        !allowedSlots.has(slotId) ||
+        observedSlots.has(slotId)) {
+      continue;
+    }
+
+    fallbackSections.push({
+      nodeId: `shared-layout:${slotId}:${mapping.sourceCandidateId ?? "mapping"}`,
+      role: "shared layout",
+      presentationMappingId: mapping.sourceCandidateId ?? null,
+      componentMappingRef: mapping.sourceCandidateId ?? null,
+      starterSlotId: slotId,
+      targetFilePath: mapping.targetGeneratedPath,
+      sourceHandoffArtifacts: [HANDOFF_ARTIFACTS.presentationMappings],
+      sourcePageId: pageId,
+    });
+    observedSlots.add(slotId);
+  }
+
+  return fallbackSections;
 }
 
 function findPageContract(contracts, pageId, pageArchetype) {
@@ -426,7 +478,7 @@ function validationRulesFor(ownership, slotId) {
   return rules;
 }
 
-function slotFromSection(section, pageId, evidenceCatalog) {
+function slotFromSection(section, pageId, evidenceCatalog, mappingCatalog) {
   if (section.starterSlotId) {
     return section.starterSlotId;
   }
@@ -435,14 +487,43 @@ function slotFromSection(section, pageId, evidenceCatalog) {
     return section.suggestedSlotId;
   }
 
+  const mappingId = section.componentMappingRef ?? section.presentationMappingId;
+  const mapping = mappingId ? mappingCatalog?.byId.get(mappingId) : undefined;
+  if (mapping && isApprovedMapping(mapping) && mappingAppliesToSection(mapping, pageId, section.nodeId)) {
+    return mapping.starterSlotId ?? mapping.presentationComponentId;
+  }
+
   const evidenceSlot = evidenceCatalog?.slotFor(pageId, section.nodeId);
   if (evidenceSlot) {
     return evidenceSlot;
   }
 
-  const mapping = section.componentMappingRef ?? section.presentationMappingId ?? "";
+  const mappingText = mappingId ?? "";
   const prefix = `${pageId}-`;
-  return mapping.startsWith(prefix) ? mapping.slice(prefix.length) : mapping.includes("-") ? mapping.slice(mapping.indexOf("-") + 1) : mapping;
+  return mappingText.startsWith(prefix) ? mappingText.slice(prefix.length) : mappingText.includes("-") ? mappingText.slice(mappingText.indexOf("-") + 1) : mappingText;
+}
+
+function mappingAppliesToSection(mapping, pageId, sectionId) {
+  return stringEquals(mapping.sourcePageId, pageId) && stringEquals(mapping.sourceSectionId, sectionId);
+}
+
+function isApprovedMapping(mapping) {
+  return !mapping.reviewState || stringEquals(mapping.reviewState, "Approved");
+}
+
+function isSharedLayoutFallbackMapping(mapping) {
+  const slotId = mapping.starterSlotId ?? mapping.presentationComponentId ?? "";
+  return slotId.startsWith("layout.") &&
+    String(mapping.targetGeneratedPath ?? "").replaceAll("\\", "/").includes("Components/Layout/") &&
+    (isBlank(mapping.sourcePageId) || isBlank(mapping.sourceSectionId) || stringEquals(mapping.sourcePageId, "unknown") || stringEquals(mapping.sourceSectionId, "unknown"));
+}
+
+function isBlank(value) {
+  return value === undefined || value === null || String(value).trim().length === 0;
+}
+
+function stringEquals(left, right) {
+  return String(left ?? "").localeCompare(String(right ?? ""), "en", { sensitivity: "accent" }) === 0;
 }
 
 function buildRationale(pageId, slotId, ownership) {
