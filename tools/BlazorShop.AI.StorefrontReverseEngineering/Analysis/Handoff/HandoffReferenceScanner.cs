@@ -107,6 +107,44 @@ public static class HandoffReferenceRegistry
 
 public sealed class HandoffReferenceScanner
 {
+    private static readonly string[] PortablePathRoots =
+    [
+        "analysis/",
+        "artifacts/",
+        "captures/",
+        "Components/",
+        "Pages/",
+        "wwwroot/",
+        "docs/",
+        "scripts/",
+        "tools/",
+        "schemas/",
+        "obj/"
+    ];
+
+    private static readonly string[] PortablePathExtensions =
+    [
+        ".cs",
+        ".cshtml",
+        ".csproj",
+        ".css",
+        ".gif",
+        ".jpeg",
+        ".jpg",
+        ".js",
+        ".json",
+        ".md",
+        ".png",
+        ".props",
+        ".razor",
+        ".scss",
+        ".svg",
+        ".ts",
+        ".webp",
+        ".yaml",
+        ".yml"
+    ];
+
     private readonly IReadOnlyList<HandoffReferenceRegistryEntry> registry;
 
     public HandoffReferenceScanner(IReadOnlyList<HandoffReferenceRegistryEntry>? registry = null)
@@ -445,12 +483,25 @@ public sealed class HandoffReferenceScanner
             return false;
         }
 
-        return stripped.Contains('/', StringComparison.Ordinal) ||
-            stripped.Contains('\\', StringComparison.Ordinal) ||
-            stripped.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
-            stripped.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ||
-            stripped.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-            IsAbsolutePath(stripped);
+        if (IsAbsolutePath(stripped) ||
+            stripped.StartsWith("./", StringComparison.Ordinal) ||
+            stripped.StartsWith("../", StringComparison.Ordinal) ||
+            stripped.Contains('\\', StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (PortablePathRoots.Any(root => stripped.StartsWith(root, StringComparison.Ordinal)))
+        {
+            return true;
+        }
+
+        if (PortablePathExtensions.Any(extension => stripped.EndsWith(extension, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private static bool IsAbsolutePath(string value) =>

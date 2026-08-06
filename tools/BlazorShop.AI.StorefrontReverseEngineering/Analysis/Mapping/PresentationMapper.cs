@@ -1,8 +1,10 @@
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
+using BlazorShop.AI.StorefrontReverseEngineering.Evidence;
 using BlazorShop.AI.StorefrontReverseEngineering.Provenance;
 using BlazorShop.AI.StorefrontReverseEngineering.Storage;
 using BlazorShop.AI.StorefrontReverseEngineering.Validation;
@@ -28,7 +30,8 @@ public sealed class PresentationMapper
         var catalog = await store.ReadJsonAsync<PresentationComponentCatalog>(ArtifactPath.Create("presentation-catalog/presentation-component-catalog.json"), "presentation-component-catalog", cancellationToken);
         var semantic = await store.ReadJsonAsync<SemanticTokenDocument>(ArtifactPath.Create("analysis/tokens/semantic-tokens.draft.json"), "semantic-tokens", cancellationToken);
         var ecommerce = await ReadRegionsAsync(root, store, cancellationToken);
-        var sections = await ReadSectionsAsync(root, store, cancellationToken);
+        var allSections = await ReadSectionsAsync(root, store, cancellationToken);
+        var evidenceElements = await ReadEvidenceElementsAsync(root, store, cancellationToken);
         var pageArchetypes = await ReadPageArchetypesAsync(root, store, cancellationToken);
         var mappings = new List<PresentationMapping>();
         var unsupported = new List<UnsupportedPattern>();
@@ -39,13 +42,13 @@ public sealed class PresentationMapper
                 .OrderBy(region => region.PageId, StringComparer.Ordinal)
                 .ThenBy(region => region.Region.RegionId, StringComparer.Ordinal)
                 .ToArray();
-            var sectionContexts = sections
+            var sectionContexts = allSections
                 .Where(section => section.Section.EvidenceIds.Any(candidate.EvidenceIds.Contains))
                 .OrderBy(section => section.PageId, StringComparer.Ordinal)
                 .ThenBy(section => section.Section.Order)
                 .ThenBy(section => section.Section.SectionId, StringComparer.Ordinal)
                 .ToArray();
-            var source = SelectSource(candidate, regionContexts, sectionContexts);
+            var source = SelectSource(candidate, regionContexts, sectionContexts, allSections, evidenceElements);
             var roles = source.Region is not null
                 ? [source.Region.Role]
                 : regionContexts.Select(region => region.Region.Role).Distinct(StringComparer.Ordinal).ToArray();
@@ -157,6 +160,22 @@ public sealed class PresentationMapper
         }
 
         return archetypes;
+    }
+
+    private static async Task<IReadOnlyList<EvidenceElementContext>> ReadEvidenceElementsAsync(string root, FileSystemVisualArtifactStore store, CancellationToken cancellationToken)
+    {
+        var path = Path.Combine(root, "analysis", "evidence-snapshot.json");
+        if (!File.Exists(path))
+        {
+            return [];
+        }
+
+        var snapshot = await store.ReadJsonAsync<EvidenceSnapshot>(ArtifactPath.Create("analysis/evidence-snapshot.json"), "evidence-snapshot", cancellationToken);
+        return snapshot.Pages
+            .SelectMany(page => page.Viewports.SelectMany(viewport => viewport.Elements
+                .Where(element => element.Box is not null)
+                .Select(element => new EvidenceElementContext(page.PageId, viewport.ViewportId, element.EvidenceId, element.Box!))))
+            .ToArray();
     }
 
     private static string PreferredCatalogId(string family, string pageArchetype) =>
@@ -283,13 +302,15 @@ public sealed class PresentationMapper
     private static SourceSelection SelectSource(
         VisualComponentCandidate candidate,
         IReadOnlyList<EcommerceRegionContext> regions,
-        IReadOnlyList<PageSectionContext> sections)
+        IReadOnlyList<PageSectionContext> sections,
+        IReadOnlyList<PageSectionContext> allSections,
+        IReadOnlyList<EvidenceElementContext> evidenceElements)
     {
         var bestRegion = regions
             .Select(region => new
             {
                 Context = region,
-                Score = ScoreRegion(candidate, region, sections)
+                Score = ScoreRegion(candidate, region, allSections)
             })
             .OrderByDescending(region => region.Score)
             .ThenBy(region => region.Context.PageId, StringComparer.Ordinal)
@@ -307,10 +328,22 @@ public sealed class PresentationMapper
             .ThenBy(section => section.Context.Section.Order)
             .ThenBy(section => section.Context.Section.SectionId, StringComparer.Ordinal)
             .FirstOrDefault();
+        var bestGeometrySection = allSections
+            .Select(section => new
+            {
+                Context = section,
+                Score = ScoreSectionGeometry(candidate, section, evidenceElements)
+            })
+            .Where(section => section.Score > 0)
+            .OrderByDescending(section => section.Score)
+            .ThenBy(section => section.Context.PageId, StringComparer.Ordinal)
+            .ThenBy(section => section.Context.Section.Order)
+            .ThenBy(section => section.Context.Section.SectionId, StringComparer.Ordinal)
+            .FirstOrDefault();
 
-        if (bestRegion is not null && bestRegion.Score >= (bestSection?.Score ?? 0))
+        if (bestRegion is not null && bestRegion.Score >= (bestSection?.Score ?? 0) && bestRegion.Score >= (bestGeometrySection?.Score ?? 0))
         {
-            var sectionId = BestRegionSectionId(candidate, bestRegion.Context, sections);
+            var sectionId = BestRegionSectionId(candidate, bestRegion.Context, allSections);
             var reasonCodes = new List<string> { "source-region-binding" };
             if (bestRegion.Context.Region.EvidenceIds.Any(candidate.EvidenceIds.Contains))
             {
@@ -325,9 +358,14 @@ public sealed class PresentationMapper
             return new SourceSelection(bestRegion.Context.PageId, sectionId, bestRegion.Context.Region, reasonCodes);
         }
 
-        if (bestSection is not null)
+        if (bestSection is not null && bestSection.Score >= (bestGeometrySection?.Score ?? 0))
         {
             return new SourceSelection(bestSection.Context.PageId, bestSection.Context.Section.SectionId, null, ["source-evidence-overlap", "source-section-binding"]);
+        }
+
+        if (bestGeometrySection is not null)
+        {
+            return new SourceSelection(bestGeometrySection.Context.PageId, bestGeometrySection.Context.Section.SectionId, null, ["source-geometry-binding", "source-section-binding"]);
         }
 
         return new SourceSelection(null, null, null, ["source-unknown"]);
@@ -370,6 +408,46 @@ public sealed class PresentationMapper
         return score;
     }
 
+    private static int ScoreSectionGeometry(
+        VisualComponentCandidate candidate,
+        PageSectionContext section,
+        IReadOnlyList<EvidenceElementContext> evidenceElements)
+    {
+        var score = evidenceElements
+            .Where(element => string.Equals(element.PageId, section.PageId, StringComparison.Ordinal) && candidate.EvidenceIds.Contains(element.EvidenceId, StringComparer.Ordinal))
+            .Select(element => ElementSectionGeometryScore(element, section.Section))
+            .DefaultIfEmpty(0)
+            .Max();
+        if (score > 0 && RoleLooksCompatible(candidate.Family, section.Section.SectionType))
+        {
+            score += 20;
+        }
+
+        return score;
+    }
+
+    private static int ElementSectionGeometryScore(EvidenceElementContext element, SectionDraft section)
+    {
+        var bounds = section.ViewportBoundingBoxes is not null && section.ViewportBoundingBoxes.TryGetValue(element.ViewportId, out var viewportBounds)
+            ? viewportBounds
+            : section.Bounds;
+        var centerX = element.Box.X + element.Box.Width / 2;
+        var centerY = element.Box.Y + element.Box.Height / 2;
+        if (centerX >= bounds.X &&
+            centerX <= bounds.X + bounds.Width &&
+            centerY >= bounds.Y &&
+            centerY <= bounds.Y + bounds.Height)
+        {
+            return 85;
+        }
+
+        var intersects = element.Box.X < bounds.X + bounds.Width &&
+            element.Box.X + element.Box.Width > bounds.X &&
+            element.Box.Y < bounds.Y + bounds.Height &&
+            element.Box.Y + element.Box.Height > bounds.Y;
+        return intersects ? 70 : 0;
+    }
+
     private static string BestRegionSectionId(VisualComponentCandidate candidate, EcommerceRegionContext region, IReadOnlyList<PageSectionContext> sections)
     {
         var matched = region.Region.SourceSectionIds
@@ -397,6 +475,8 @@ public sealed class PresentationMapper
     private sealed record EcommerceRegionContext(string PageId, EcommerceRegion Region);
 
     private sealed record PageSectionContext(string PageId, SectionDraft Section);
+
+    private sealed record EvidenceElementContext(string PageId, string ViewportId, string EvidenceId, ElementBox Box);
 
     private sealed record SourceSelection(
         string? PageId,

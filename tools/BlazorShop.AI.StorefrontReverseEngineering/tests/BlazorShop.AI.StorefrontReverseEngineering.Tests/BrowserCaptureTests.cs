@@ -13,26 +13,28 @@ public sealed class BrowserCaptureTests
     [Fact]
     public async Task BrowserCapture_DesktopFixture_WritesEvidenceFiles()
     {
-        var manifest = await CaptureAsync(ViewportDefinition.Defaults.Single(viewport => viewport.Id == "desktop-1440"));
+        var captured = await CaptureAsync(ViewportDefinition.Defaults.Single(viewport => viewport.Id == "desktop-1440"));
+        var manifest = captured.Manifest;
 
         Assert.Equal("desktop-1440", manifest.ViewportId);
         Assert.Equal("native-full-page", manifest.CaptureMethod);
-        Assert.True(File.Exists(ToRepoPath(manifest.ScreenshotPath)));
-        Assert.True(File.Exists(ToRepoPath(manifest.DomPath)));
-        Assert.True(File.Exists(ToRepoPath(manifest.StylesPath)));
-        Assert.True(File.Exists(ToRepoPath(manifest.BoxesPath)));
-        Assert.True(File.Exists(ToRepoPath(manifest.AssetsPath)));
-        Assert.True(File.Exists(ToRepoPath("captures/home/desktop-1440/capture-quality-report.json")));
+        Assert.True(File.Exists(ToProjectPath(captured.ProjectRoot, manifest.ScreenshotPath)));
+        Assert.True(File.Exists(ToProjectPath(captured.ProjectRoot, manifest.DomPath)));
+        Assert.True(File.Exists(ToProjectPath(captured.ProjectRoot, manifest.StylesPath)));
+        Assert.True(File.Exists(ToProjectPath(captured.ProjectRoot, manifest.BoxesPath)));
+        Assert.True(File.Exists(ToProjectPath(captured.ProjectRoot, manifest.AssetsPath)));
+        Assert.True(File.Exists(ToProjectPath(captured.ProjectRoot, "captures/home/desktop-1440/capture-quality-report.json")));
     }
 
     [Fact]
     public async Task BrowserCapture_MobileFixture_WritesEvidenceFiles()
     {
-        var manifest = await CaptureAsync(ViewportDefinition.Defaults.Single(viewport => viewport.Id == "mobile-390"));
+        var captured = await CaptureAsync(ViewportDefinition.Defaults.Single(viewport => viewport.Id == "mobile-390"));
+        var manifest = captured.Manifest;
 
         Assert.Equal("mobile-390", manifest.ViewportId);
         Assert.Equal(390, manifest.ViewportWidth);
-        Assert.True(File.Exists(ToRepoPath(manifest.ScreenshotPath)));
+        Assert.True(File.Exists(ToProjectPath(captured.ProjectRoot, manifest.ScreenshotPath)));
     }
 
     [Fact]
@@ -87,7 +89,7 @@ public sealed class BrowserCaptureTests
         Assert.IsType<FixtureReferenceBrowser>(browser);
     }
 
-    private static async Task<CaptureViewportManifest> CaptureAsync(ViewportDefinition viewport)
+    private static async Task<CaptureResult> CaptureAsync(ViewportDefinition viewport)
     {
         var repoRoot = GetRepoRoot();
         var projectRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "browser-test-" + Guid.NewGuid().ToString("N"));
@@ -99,17 +101,15 @@ public sealed class BrowserCaptureTests
             viewport,
             new CapturePolicy(),
             CancellationToken.None);
-        return captured.Manifest;
+        return new CaptureResult(captured.Manifest, Path.Combine(repoRoot, projectRoot));
     }
 
-    private static string ToRepoPath(string relativeCapturePath)
+    private static string ToProjectPath(string projectRoot, string relativeCapturePath)
     {
-        var repoRoot = GetRepoRoot();
-        var project = Directory.GetDirectories(Path.Combine(repoRoot, "obj", "storefront-reverse-engineering", "projects"), "browser-test-*")
-            .OrderByDescending(Directory.GetLastWriteTimeUtc)
-            .First();
-        return Path.Combine(project, relativeCapturePath.Replace('/', Path.DirectorySeparatorChar));
+        return Path.Combine(projectRoot, relativeCapturePath.Replace('/', Path.DirectorySeparatorChar));
     }
+
+    private sealed record CaptureResult(CaptureViewportManifest Manifest, string ProjectRoot);
 
     private static string GetRepoRoot()
     {

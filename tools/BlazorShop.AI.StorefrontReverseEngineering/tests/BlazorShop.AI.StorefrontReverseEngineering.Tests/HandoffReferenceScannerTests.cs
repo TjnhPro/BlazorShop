@@ -139,6 +139,27 @@ public sealed class HandoffReferenceScannerTests
         Assert.Contains(result.Findings, finding => finding.Code == "handoff-consumer-reference-unregistered");
     }
 
+    [Fact]
+    public void HandoffReferenceScanner_IdentityLikeSlashValuesAreNotPathReferences()
+    {
+        var root = CreatePackage();
+        Write(root, "analysis/agent-handoff/confidence.json", new JsonObject
+        {
+            ["sectionScores"] = new JsonArray(new JsonObject
+            {
+                ["crossViewportIdentityKey"] = "trust/benefit-strip-01",
+                ["sourceSectionIdentity"] = "home/section-04",
+                ["targetGeneratedPath"] = "Components/Generated/Home.razor"
+            })
+        });
+
+        var result = new HandoffReferenceScanner().Scan(root);
+
+        Assert.DoesNotContain(result.Findings, finding =>
+            finding.Code == "handoff-consumer-reference-unregistered" &&
+            (finding.Value == "trust/benefit-strip-01" || finding.Value == "home/section-04"));
+    }
+
     private static string CreatePackage(string pageCompositionReference = "analysis/agent-handoff/page-compositions.json")
     {
         var root = Path.Combine(Path.GetTempPath(), "sre-reference-scan-" + Guid.NewGuid().ToString("N"));

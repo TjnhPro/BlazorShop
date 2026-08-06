@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Aggregation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Components;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Ecommerce;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Mapping;
@@ -7,6 +8,7 @@ using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Pages;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Presentation;
 using BlazorShop.AI.StorefrontReverseEngineering.Analysis.Tokens;
 using BlazorShop.AI.StorefrontReverseEngineering.Contracts;
+using BlazorShop.AI.StorefrontReverseEngineering.Evidence;
 using Xunit;
 
 namespace BlazorShop.AI.StorefrontReverseEngineering.Tests;
@@ -99,6 +101,41 @@ public sealed class PresentationMappingTests
 
         Assert.DoesNotContain(mappings.Mappings, mapping => mapping.PresentationComponentId == "layout.header" || mapping.StarterSlotId == "layout.header");
         Assert.True(mappings.Mappings.Any(mapping => mapping.StarterSlotId == "home.sections") || unsupported.Patterns.Any(pattern => pattern.SourceCandidateId == candidate.FamilyId && pattern.HumanReviewRequired));
+    }
+
+    [Fact]
+    public async Task PresentationMapping_ProductImageWithoutRegionUsesHomeSectionSource()
+    {
+        var candidate = Candidate("family-product-image", "product image", ["ev-image"]);
+        var projectRoot = await CreateProjectWithSectionsAsync(
+            candidate,
+            "home",
+            "home",
+            [
+                new SectionDraft("section-product-media", "hero", 4, 0.82m, new SectionBounds(0, 180, 1440, 520), null, [], "home-media", ["ev-section"], ["media-evidence"])
+            ]);
+        await WriteEvidenceSnapshotAsync(
+            projectRoot,
+            "home",
+            new EvidenceSnapshotElement(
+                "ev-image",
+                "img.product-media__image",
+                "image",
+                null,
+                new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal),
+                new ElementBox(120, 240, 320, 260),
+                "captures/home/desktop-1440/element-evidence-index.json"));
+        await new PresentationComponentCatalogBuilder(GetRepoRoot()).BuildAsync(projectRoot, CancellationToken.None);
+
+        await new PresentationMapper(GetRepoRoot()).MapAsync(projectRoot, CancellationToken.None);
+        var mappings = await ReadMappingsAsync(projectRoot);
+        var unsupported = await ReadUnsupportedAsync(projectRoot);
+
+        var mapping = Assert.Single(mappings.Mappings);
+        Assert.Equal("home.sections", mapping.PresentationComponentId);
+        Assert.Equal("home", mapping.SourcePageId);
+        Assert.Equal("section-product-media", mapping.SourceSectionId);
+        Assert.Empty(unsupported.Patterns);
     }
 
     [Theory]
@@ -336,6 +373,45 @@ public sealed class PresentationMappingTests
     private static async Task WriteAsync<T>(string root, string path, T artifact)
     {
         await File.WriteAllTextAsync(Path.Combine(root, path.Replace('/', Path.DirectorySeparatorChar)), JsonSerializer.Serialize(artifact, VisualJson.Options) + Environment.NewLine);
+    }
+
+    private static async Task WriteEvidenceSnapshotAsync(string root, string pageId, EvidenceSnapshotElement element)
+    {
+        Directory.CreateDirectory(Path.Combine(root, "analysis"));
+        var snapshot = new EvidenceSnapshot(
+            "1.0",
+            "evidence-snapshot",
+            "evidence-snapshot-mapping",
+            DateTimeOffset.UtcNow,
+            "mapping",
+            LatestRunId: null,
+            "reports/readiness-report.json",
+            ["analysis/evidence-snapshot.json"],
+            [element.EvidenceId],
+            [
+                new EvidenceSnapshotPage(
+                    pageId,
+                    "https://example.test/",
+                    "Home",
+                    [
+                        new EvidenceSnapshotViewport(
+                            "desktop-1440",
+                            1440,
+                            900,
+                            1440,
+                            1600,
+                            "capture",
+                            "native",
+                            true,
+                            [element],
+                            Assets: [],
+                            SourceArtifactPaths: ["captures/home/desktop-1440/element-evidence-index.json"],
+                            Issues: [])
+                    ],
+                    ["captures/home/desktop-1440/element-evidence-index.json"])
+            ],
+            []);
+        await WriteAsync(root, "analysis/evidence-snapshot.json", snapshot);
     }
 
     private static string GetRepoRoot()

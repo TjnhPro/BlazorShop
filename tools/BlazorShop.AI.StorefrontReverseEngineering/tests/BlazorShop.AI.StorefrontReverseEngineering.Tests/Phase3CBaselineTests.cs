@@ -14,7 +14,7 @@ public sealed class Phase3CBaselineTests
 
         Assert.Contains("run Phase 3B baseline gate", script, StringComparison.Ordinal);
         Assert.Contains("analysis/agent-handoff", script, StringComparison.Ordinal);
-        Assert.Contains("agent-handoff-readiness", script, StringComparison.Ordinal);
+        Assert.Contains("approved Phase 4 portable handoff surfaces", script, StringComparison.Ordinal);
         Assert.Contains("visual-blueprint\\.v1", script, StringComparison.Ordinal);
         Assert.Contains("BlazorShop\\.Storefront\\.Starter", script, StringComparison.Ordinal);
         Assert.Contains("--blame-hang-timeout", script, StringComparison.Ordinal);

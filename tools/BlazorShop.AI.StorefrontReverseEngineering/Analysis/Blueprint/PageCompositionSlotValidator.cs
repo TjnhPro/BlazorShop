@@ -88,7 +88,10 @@ public sealed class PageCompositionSlotValidator
                     "analysis/resolved/page-compositions.reviewed.json"));
             }
 
-            foreach (var pair in observed.Sources.Where(pair => pair.Value.Where(source => source.SourceKind != "page-target").Select(SourceIdentity).Distinct(StringComparer.Ordinal).Count() > 1 && !contract.RepeatableSlotIds.Contains(pair.Key, StringComparer.Ordinal)))
+            foreach (var pair in observed.Sources.Where(pair =>
+                !string.Equals(pair.Key, composition.TargetViewSlot, StringComparison.Ordinal) &&
+                pair.Value.Where(source => source.SourceKind != "page-target").Select(SourceIdentity).Distinct(StringComparer.Ordinal).Count() > 1 &&
+                !contract.RepeatableSlotIds.Contains(pair.Key, StringComparer.Ordinal)))
             {
                 findings.Add(new GenerationReadinessFinding(
                     "duplicate-non-repeatable-slot",
@@ -154,6 +157,20 @@ public sealed class PageCompositionSlotValidator
                     mapping.SourceCandidateId,
                     composition.PageId,
                     mapping.SourceSectionId,
+                    mapping.SourceCandidateId,
+                    mapping.StarterSlotId,
+                    mapping.TargetGeneratedPath));
+        }
+
+        foreach (var mapping in mappings.Where(mapping => IsSharedLayoutMapping(mapping) && IsSharedLayoutFallbackMapping(mapping)))
+        {
+            AddObservation(
+                sources,
+                new SlotObservationSource(
+                    "shared-layout-mapping",
+                    mapping.SourceCandidateId,
+                    composition.PageId,
+                    null,
                     mapping.SourceCandidateId,
                     mapping.StarterSlotId,
                     mapping.TargetGeneratedPath));
@@ -421,6 +438,11 @@ public sealed class PageCompositionSlotValidator
     private static IReadOnlyList<string> ProtectedPathMarkers() =>
         ["starter-generation.contract.yaml", "StorefrontPackageVersions.props", "BlazorShop.Storefront.Presentation"];
 
+    private static bool IsSharedLayoutMapping(PresentationMapping mapping) =>
+        !string.IsNullOrWhiteSpace(mapping.StarterSlotId) &&
+        mapping.StarterSlotId.StartsWith("layout.", StringComparison.Ordinal) &&
+        mapping.TargetGeneratedPath.Contains("Components/Layout/", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsPageTargetVisualExtension(PageComposition composition, SectionSlotResolution resolution) =>
         string.Equals(resolution.SlotSource, SectionSlotResolver.ApprovedVisualExtensionSource, StringComparison.Ordinal) &&
         !string.IsNullOrWhiteSpace(composition.TargetViewSlot) &&
@@ -441,7 +463,14 @@ public sealed class PageCompositionSlotValidator
     private static bool IsVisualOnlyOperation(string operation) =>
         string.IsNullOrWhiteSpace(operation) ||
         operation.Contains("visual", StringComparison.OrdinalIgnoreCase) ||
-        operation.Contains("responsive", StringComparison.OrdinalIgnoreCase);
+        operation.Contains("responsive", StringComparison.OrdinalIgnoreCase) ||
+        operation.Contains("css", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsSharedLayoutFallbackMapping(PresentationMapping mapping) =>
+        string.IsNullOrWhiteSpace(mapping.SourcePageId) ||
+        string.IsNullOrWhiteSpace(mapping.SourceSectionId) ||
+        string.Equals(mapping.SourcePageId, "unknown", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(mapping.SourceSectionId, "unknown", StringComparison.OrdinalIgnoreCase);
 
     private static string SourceIdentity(SlotObservationSource source) =>
         !string.IsNullOrWhiteSpace(source.SectionNodeId) ? source.SectionNodeId! :

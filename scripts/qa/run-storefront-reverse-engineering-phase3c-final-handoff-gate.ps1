@@ -175,7 +175,7 @@ function New-ReportLines {
     }
     $lines.Add("")
     $lines.Add("Phase 3C boundary assertions:")
-    $lines.Add("- StorefrontBuilder does not consume Phase 3C agent handoff artifacts.")
+    $lines.Add("- StorefrontBuilder consumes Phase 3C agent handoff artifacts only through approved Phase 4 portable handoff surfaces.")
     $lines.Add("- Production projects do not reference ReverseEngineering.")
     $lines.Add("- ReverseEngineering does not reference production Storefront runtime/API projects.")
     $lines.Add("- ReverseEngineering does not write generated storefront source or Starter source.")
@@ -282,7 +282,7 @@ try {
             -ExtraArgs @("--glob", "*.csproj")
 
         Assert-RgNoMatches `
-            -Pattern "analysis/agent-handoff|agent-handoff-readiness|visual-blueprint\.v1" `
+            -Pattern "visual-blueprint\.v1" `
             -Paths @("tools\BlazorShop.AI.StorefrontBuilder") `
             -ExtraArgs @("--glob", "!bin/**", "--glob", "!obj/**")
 

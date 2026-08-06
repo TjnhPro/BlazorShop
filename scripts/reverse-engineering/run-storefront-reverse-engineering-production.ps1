@@ -420,15 +420,16 @@ try {
 
     Invoke-ProductionStep -Name "validate portable handoff when present" -Script {
         $handoffRoot = Join-Path $projectRoot "analysis\agent-handoff"
-        if (-not (Test-Path $handoffRoot)) {
+        $handoffManifest = Join-Path $handoffRoot "manifest.json"
+        if (-not (Test-Path $handoffManifest)) {
             $script:handoffValidationExitCode = "skipped"
-            $notes.Add("Portable handoff root was not produced yet: $handoffRoot")
+            $notes.Add("Portable handoff manifest was not produced yet: $handoffManifest")
             $script:lastExitCode = 0
             return
         }
 
         $schemaRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas"
-        $result = Invoke-ProductionProcess -FileName "dotnet" -Arguments @($toolDll, "validate-handoff", "--handoff-root", $handoffRoot, "--schema-root", $schemaRoot) -AllowedExitCodes @(0, 3)
+        $result = Invoke-ProductionProcess -FileName "dotnet" -Arguments @($toolDll, "validate-handoff", "--handoff-root", $projectRoot, "--schema-root", $schemaRoot) -AllowedExitCodes @(0, 3)
         $script:handoffValidationExitCode = $result.ExitCode
         if ($result.ExitCode -eq 3) {
             $notes.Add("Portable handoff validation returned blocking findings.")
@@ -437,14 +438,15 @@ try {
 
     Invoke-ProductionStep -Name "dry-run portable handoff when valid enough to load" -Script {
         $handoffRoot = Join-Path $projectRoot "analysis\agent-handoff"
-        if (-not (Test-Path $handoffRoot)) {
+        $handoffManifest = Join-Path $handoffRoot "manifest.json"
+        if (-not (Test-Path $handoffManifest)) {
             $script:handoffDryRunExitCode = "skipped"
             $script:lastExitCode = 0
             return
         }
 
         $schemaRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontReverseEngineering\Schemas"
-        $result = Invoke-ProductionProcess -FileName "dotnet" -Arguments @($toolDll, "dry-run-handoff", "--handoff-root", $handoffRoot, "--schema-root", $schemaRoot) -AllowedExitCodes @(0, 3)
+        $result = Invoke-ProductionProcess -FileName "dotnet" -Arguments @($toolDll, "dry-run-handoff", "--handoff-root", $projectRoot, "--schema-root", $schemaRoot) -AllowedExitCodes @(0, 3)
         $script:handoffDryRunExitCode = $result.ExitCode
     }
 

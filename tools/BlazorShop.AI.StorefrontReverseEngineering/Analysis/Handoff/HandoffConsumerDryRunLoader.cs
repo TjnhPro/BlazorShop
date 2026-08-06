@@ -79,6 +79,7 @@ public sealed class HandoffConsumerDryRunLoader
         var designTokens = ReadJsonNode(root, "analysis/agent-handoff/design-tokens.json");
         var visualStyle = ReadJsonNode(root, "analysis/agent-handoff/visual-style.json");
         var slotResolver = new SectionSlotResolver(mappings.Mappings, catalog.Components);
+        var sharedLayoutMappingSlots = SharedLayoutMappingSlots(mappings.Mappings, catalog.Components);
 
         var pages = pageCompositions.Compositions
             .OrderBy(composition => composition.PageId, StringComparer.Ordinal)
@@ -91,6 +92,7 @@ public sealed class HandoffConsumerDryRunLoader
                     .Select(node => slotResolver.Resolve(composition, node, contract))
                     .Where(resolution => resolution.HasAuthoritativeSlot)
                     .Select(resolution => resolution.StarterSlotId!)
+                    .Concat(sharedLayoutMappingSlots)
                     .Distinct(StringComparer.Ordinal)
                     .Order(StringComparer.Ordinal)
                     .ToArray();
@@ -128,6 +130,29 @@ public sealed class HandoffConsumerDryRunLoader
             evidenceFilePaths,
             unresolvedRegions,
             readiness);
+    }
+
+    private static IReadOnlyList<string> SharedLayoutMappingSlots(
+        IReadOnlyList<PresentationMapping> mappings,
+        IReadOnlyList<PresentationCatalogEntry> catalogEntries)
+    {
+        var catalogByComponent = catalogEntries.ToDictionary(component => component.ComponentId, StringComparer.Ordinal);
+        var slots = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var mapping in mappings)
+        {
+            if (string.IsNullOrWhiteSpace(mapping.StarterSlotId) ||
+                !mapping.StarterSlotId.StartsWith("layout.", StringComparison.Ordinal) ||
+                string.IsNullOrWhiteSpace(mapping.PresentationComponentId) ||
+                !catalogByComponent.TryGetValue(mapping.PresentationComponentId, out var component) ||
+                !component.Slots.Contains(mapping.StarterSlotId, StringComparer.Ordinal))
+            {
+                continue;
+            }
+
+            slots.Add(mapping.StarterSlotId);
+        }
+
+        return slots.ToArray();
     }
 
     private static IReadOnlyList<string> EvidencePaths(AgentHandoffEvidenceManifest evidence, string? pageId = null) =>

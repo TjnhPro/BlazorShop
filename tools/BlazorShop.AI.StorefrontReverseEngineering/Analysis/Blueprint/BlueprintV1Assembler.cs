@@ -776,10 +776,14 @@ public sealed class BlueprintV1Assembler
                 ?? mappings.FirstOrDefault(candidate =>
                     (string.IsNullOrWhiteSpace(candidate.SourcePageId) || string.Equals(candidate.SourcePageId, pageId, StringComparison.Ordinal)) &&
                     candidate.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any());
-            var isHomeBodyVisualExtension = mapping is null &&
+            var mappingSourceMatches = mapping is not null &&
+                string.Equals(mapping.SourcePageId, pageId, StringComparison.Ordinal) &&
+                string.Equals(mapping.SourceSectionId, section.Id, StringComparison.Ordinal);
+            var isHomeBodyVisualExtension = (mapping is null || (!mappingSourceMatches && IsHomePageContentMapping(mapping, pageTargetPath))) &&
                 string.Equals(pageTargetSlot, "home.sections", StringComparison.Ordinal) &&
                 !IsSharedLayoutRole(section.Role);
-            var targetFile = mapping?.TargetGeneratedPath ?? (isHomeBodyVisualExtension ? null : pageTargetPath);
+            var authoritativeMapping = isHomeBodyVisualExtension ? null : mapping;
+            var targetFile = authoritativeMapping?.TargetGeneratedPath ?? (isHomeBodyVisualExtension ? null : pageTargetPath);
             var unresolved = new List<string>();
             if (section.EvidenceIds.Count == 0)
             {
@@ -795,7 +799,7 @@ public sealed class BlueprintV1Assembler
             return new PageCompositionNode(
                 section.Id,
                 section.Role,
-                mapping?.Id,
+                authoritativeMapping?.Id,
                 section.EvidenceIds,
                 [],
                 StableId($"{section.Role}:{section.IdentityKey}:{string.Join(",", section.EvidenceIds)}"),
@@ -804,18 +808,18 @@ public sealed class BlueprintV1Assembler
                 section.ChildIds,
                 SectionBoundsForViewports(section, viewportIds),
                 sharedTokens.Keys.Order(StringComparer.Ordinal).Take(8).ToArray(),
-                mapping?.Id,
+                authoritativeMapping?.Id,
                 targetFile,
-                mapping?.GeneratedZone ?? (isHomeBodyVisualExtension ? pageTargetSlot : GeneratedZoneForPath(targetFile ?? string.Empty)),
+                authoritativeMapping?.GeneratedZone ?? (isHomeBodyVisualExtension ? pageTargetSlot : GeneratedZoneForPath(targetFile ?? string.Empty)),
                 AllowedOperationsFor(section.Role),
-                ProtectedMarkersFor(section.Role, mapping?.Id),
+                ProtectedMarkersFor(section.Role, authoritativeMapping?.Id),
                 captureArtifacts.Where(path => path.Contains("screenshot", StringComparison.OrdinalIgnoreCase) || path.Contains("manifest.json", StringComparison.OrdinalIgnoreCase)).Take(6).ToArray(),
                 [],
                 isHomeBodyVisualExtension ? "home-visual-extension-" + StableId($"{pageId}:{section.Id}") : null,
                 isHomeBodyVisualExtension ? "Visual-only home content section approved inside the page-level home.sections container." : null,
                 groupIds.GetValueOrDefault(section.Role),
                 StateExpectationsFor(section.Role),
-                section.ReasonCodes.Where(code => code.Contains("responsive", StringComparison.OrdinalIgnoreCase)).ToArray(),
+                ResponsiveRulesFor(section, viewportIds),
                 unresolved);
         }).ToArray();
 
@@ -830,6 +834,11 @@ public sealed class BlueprintV1Assembler
         mapping.EvidenceIds.Count == 0 ||
         section.EvidenceIds.Count == 0 ||
         mapping.EvidenceIds.Intersect(section.EvidenceIds, StringComparer.Ordinal).Any();
+
+    private static bool IsHomePageContentMapping(MappingInfo mapping, string? pageTargetPath) =>
+        string.Equals(mapping.GeneratedZone, "pages", StringComparison.Ordinal) &&
+        (string.IsNullOrWhiteSpace(pageTargetPath) ||
+            string.Equals(mapping.TargetGeneratedPath, pageTargetPath, StringComparison.Ordinal));
 
     private static IReadOnlyList<PageRepeatedGroup> BuildRepeatedGroups(IReadOnlyList<PageCompositionNode> nodes)
     {
@@ -897,6 +906,21 @@ public sealed class BlueprintV1Assembler
         }
 
         return new Dictionary<string, string>(section.ViewportBounds, StringComparer.Ordinal);
+    }
+
+    private static IReadOnlyList<string> ResponsiveRulesFor(PageSectionInfo section, IReadOnlyList<string> viewportIds)
+    {
+        var rules = section.ReasonCodes
+            .Where(code => code.Contains("responsive", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        foreach (var viewportId in viewportIds.Where(viewportId =>
+            !section.ViewportBounds.ContainsKey(viewportId) &&
+            !section.ViewportBounds.ContainsKey("base")))
+        {
+            rules.Add("hidden:" + viewportId);
+        }
+
+        return rules.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
     }
 
     private static string ReadBounds(JsonObject section)

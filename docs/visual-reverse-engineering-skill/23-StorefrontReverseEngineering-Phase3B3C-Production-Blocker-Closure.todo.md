@@ -516,22 +516,22 @@ Goal: prove the fix on the real KindredCoast site with strict blocker failure en
 
 Implementation checklist:
 
-- [ ] Build the ReverseEngineering tool.
-- [ ] Run focused tests after all code changes.
-- [ ] Run the Phase 3B gate.
-- [ ] Run the Phase 3C final handoff gate if feasible in the current environment.
-- [ ] Run a fresh KindredCoast production workflow, not only stale `-Resume`.
-- [ ] Use the safe review materialization flag only after mapping/composition fixes are in place.
-- [ ] Run strict production proof with `-FailOnBlockers`.
-- [ ] Inspect final project state.
-- [ ] Verify `reports/readiness-report.json` passed.
-- [ ] Verify `reports/generation-readiness.json` passed.
-- [ ] Verify `analysis/visual-blueprint.v1.reviewed.json` exists.
-- [ ] Verify `analysis/agent-handoff/handoff-readiness.json` exists and passed.
-- [ ] Verify unresolved blocking review count is zero.
-- [ ] Verify no unsupported critical pattern remains unreviewed.
-- [ ] Verify no `reviewed-slot-mapping-orphan`, `missing-required-slot`, `duplicate-non-repeatable-slot`, or `unapproved-extra-section` findings remain.
-- [ ] Record final report path and command output summary in this plan.
+- [x] Build the ReverseEngineering tool.
+- [x] Run focused tests after all code changes.
+- [x] Run the Phase 3B gate.
+- [x] Run the Phase 3C final handoff gate if feasible in the current environment.
+- [x] Run a fresh KindredCoast production workflow, not only stale `-Resume`.
+- [x] Use the safe review materialization flag only after mapping/composition fixes are in place.
+- [x] Run strict production proof with `-FailOnBlockers`.
+- [x] Inspect final project state.
+- [x] Verify `reports/readiness-report.json` passed.
+- [x] Verify `reports/generation-readiness.json` passed.
+- [x] Verify `analysis/visual-blueprint.v1.reviewed.json` exists.
+- [x] Verify `analysis/agent-handoff/handoff-readiness.json` exists and passed.
+- [x] Verify unresolved blocking review count is zero.
+- [x] Verify no unsupported critical pattern remains unreviewed.
+- [x] Verify no `reviewed-slot-mapping-orphan`, `missing-required-slot`, `duplicate-non-repeatable-slot`, or `unapproved-extra-section` findings remain.
+- [x] Record final report path and command output summary in this plan.
 
 Checks:
 
@@ -551,10 +551,24 @@ If the exact production script flag name differs after implementation, update th
 
 Done when:
 
-- [ ] Strict KindredCoast production run exits `0`.
-- [ ] Final status is success, not `completed-with-blockers`.
-- [ ] All Phase 3A, Phase 3B, and Phase 3C readiness gates pass for the final KindredCoast artifact.
-- [ ] The final report path is recorded.
+- [x] Strict KindredCoast production run exits `0`.
+- [x] Final status is success, not `completed-with-blockers`.
+- [x] All Phase 3A, Phase 3B, and Phase 3C readiness gates pass for the final KindredCoast artifact.
+- [x] The final report path is recorded.
+
+Phase 6 evidence:
+
+| Check | Result |
+| --- | --- |
+| Build | Passed, 0 warnings, 0 errors. |
+| Portable/handoff tests | Passed, 74/74: `HandoffConsumerDryRunLoaderTests`, `HandoffReferenceScannerTests`, `AgentHandoffTests`, `Phase3DPositiveEndToEndTests`. |
+| Focused 3B/3C tests | Passed, 96/96: `PresentationMappingTests`, `ConfidenceReviewTests`, `BlueprintV1ReadinessTests`, `EndToEndCliTests`, `Phase3BCliDxTests`, `Phase3DPositiveEndToEndTests`, `Phase3DNegativeMutationTests`. |
+| Phase 3B gate | Passed: `obj/storefront-reverse-engineering/reports/phase3b-gate-20260806145259.md`; rerun inside Phase 3C gate also passed: `obj/storefront-reverse-engineering/reports/phase3b-gate-20260806150743.md`. |
+| Phase 3C final handoff gate | Passed: `obj/storefront-reverse-engineering/reports/phase3c-final-handoff-gate-20260806150743.md`. |
+| Strict KindredCoast production proof | Passed with `-Force -ResolveSafeReviewItems -FailOnBlockers`: `artifacts/storefront-reverse-engineering/reports/storefront-reverse-engineering-production-kindredcoast-20260806151637.md`. |
+| Final readiness | `reports/readiness-report.json` passed `true`; `reports/generation-readiness.json` passed `true`; `analysis/agent-handoff/handoff-readiness.json` passed `true`; `analysis/visual-blueprint.v1.reviewed.json` exists. |
+| Final blocker scan | `review-resolution-manifest.json` has `blockingUnresolvedCount=0`; `rg` found no `reviewed-slot-mapping-orphan`, `missing-required-slot`, `required-slot-unmapped`, `duplicate-non-repeatable-slot`, `unapproved-extra-section`, or `missing-mapping-for-critical-region` under final KindredCoast reports/resolved/handoff artifacts. |
+| Handoff package proof | Portable validation passed with no blocking finding; dry-run handoff loaded `pageCount=1`, `evidenceFileCount=10`, `unresolvedRegionCount=0`. |
 
 Commit:
 
@@ -626,9 +640,9 @@ Fill this during implementation:
 
 | Evidence | Result | Path or command |
 | --- | --- | --- |
-| Baseline report | Pending |  |
-| Focused regression tests | Pending |  |
-| Phase 3B gate | Pending |  |
-| Phase 3C gate | Pending |  |
-| KindredCoast strict production proof | Pending |  |
-| Final report | Pending |  |
+| Baseline report | Recorded | `artifacts/storefront-reverse-engineering/reports/storefront-reverse-engineering-production-kindredcoast-20260806115937.md` |
+| Focused regression tests | Passed, 96/96 | `dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationMappingTests|FullyQualifiedName~ConfidenceReviewTests|FullyQualifiedName~BlueprintV1ReadinessTests|FullyQualifiedName~EndToEndCliTests|FullyQualifiedName~Phase3BCliDxTests|FullyQualifiedName~Phase3DPositiveEndToEndTests|FullyQualifiedName~Phase3DNegativeMutationTests" --blame-hang --blame-hang-timeout 5m` |
+| Phase 3B gate | Passed | `obj/storefront-reverse-engineering/reports/phase3b-gate-20260806150743.md` |
+| Phase 3C gate | Passed | `obj/storefront-reverse-engineering/reports/phase3c-final-handoff-gate-20260806150743.md` |
+| KindredCoast strict production proof | Passed | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\run-storefront-reverse-engineering-production.ps1 -Url "https://www.kindredcoast.com/" -Name "KindredCoast" -Force -ResolveSafeReviewItems -FailOnBlockers -CommandTimeoutSeconds 900` |
+| Final report | Passed | `artifacts/storefront-reverse-engineering/reports/storefront-reverse-engineering-production-kindredcoast-20260806151637.md` |

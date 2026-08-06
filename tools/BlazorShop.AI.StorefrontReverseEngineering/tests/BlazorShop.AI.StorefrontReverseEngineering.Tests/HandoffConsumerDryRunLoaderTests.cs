@@ -53,6 +53,56 @@ public sealed class HandoffConsumerDryRunLoaderTests
     }
 
     [Fact]
+    public async Task LoaderAcceptsSharedLayoutMappingWhenFooterNodeIsAbsent()
+    {
+        var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Dry Run Loader Shared Layout");
+        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/page-compositions.json", json =>
+        {
+            foreach (var composition in json["compositions"]!.AsArray().Select(node => node!.AsObject()))
+            {
+                RemoveRoleNodes(composition["sectionTree"]!.AsArray(), "footer");
+            }
+        });
+        await RehashPortableManifestAsync(fixture.PortableRoot, "analysis/agent-handoff/page-compositions.json");
+
+        var package = await new HandoffConsumerDryRunLoader().LoadAsync(fixture.PortableRoot, fixture.SchemaRoot, CancellationToken.None);
+
+        Assert.Contains(package.Pages, page => page.RequiredSlots.Contains("layout.footer", StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public async Task LoaderStillRequiresHomeSectionsWithoutCompositionOrMapping()
+    {
+        var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Dry Run Loader Home Sections");
+        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/page-compositions.json", json =>
+        {
+            foreach (var composition in json["compositions"]!.AsArray().Select(node => node!.AsObject()))
+            {
+                composition["sectionTree"] = new JsonArray();
+            }
+        });
+        await MutateJsonAsync(fixture.PortableRoot, "analysis/agent-handoff/presentation-mappings.json", json =>
+        {
+            var mappings = json["mappings"]!.AsArray();
+            for (var index = mappings.Count - 1; index >= 0; index--)
+            {
+                var mapping = mappings[index]!.AsObject();
+                if (string.Equals(mapping["starterSlotId"]?.GetValue<string>(), "home.sections", StringComparison.Ordinal))
+                {
+                    mappings.RemoveAt(index);
+                }
+            }
+        });
+        await RehashPortableManifestAsync(fixture.PortableRoot, "analysis/agent-handoff/page-compositions.json");
+        await RehashPortableManifestAsync(fixture.PortableRoot, "analysis/agent-handoff/presentation-mappings.json");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new HandoffConsumerDryRunLoader().LoadAsync(fixture.PortableRoot, fixture.SchemaRoot, CancellationToken.None));
+
+        Assert.Contains("missing required slots", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task LoaderRefusesReadinessFalse()
     {
         var fixture = await PortableHandoffTestFixture.CreateAsync("Phase 3E Dry Run Loader Readiness");
@@ -78,6 +128,24 @@ public sealed class HandoffConsumerDryRunLoaderTests
             new HandoffConsumerDryRunLoader().LoadAsync(fixture.PortableRoot, fixture.SchemaRoot, CancellationToken.None));
 
         Assert.Contains("handoff-consumer-reference-escape", exception.Message, StringComparison.Ordinal);
+    }
+
+    private static void RemoveRoleNodes(JsonArray nodes, string role)
+    {
+        for (var index = nodes.Count - 1; index >= 0; index--)
+        {
+            var node = nodes[index]!.AsObject();
+            if (string.Equals(node["role"]?.GetValue<string>(), role, StringComparison.OrdinalIgnoreCase))
+            {
+                nodes.RemoveAt(index);
+                continue;
+            }
+
+            if (node["children"] is JsonArray children)
+            {
+                RemoveRoleNodes(children, role);
+            }
+        }
     }
 
     private static async Task MutateJsonAsync(string projectRoot, string relativePath, Action<JsonObject> mutate)

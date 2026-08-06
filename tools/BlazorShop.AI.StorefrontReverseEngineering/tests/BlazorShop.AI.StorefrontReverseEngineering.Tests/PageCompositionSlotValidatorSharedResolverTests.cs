@@ -89,7 +89,7 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
     }
 
     [Fact]
-    public async Task UnknownFooterMappingDoesNotSatisfyRequiredFooterSlot()
+    public async Task NodeReferencedUnknownFooterMappingStillBlocksThatNode()
     {
         var projectRoot = CreateProjectRoot();
         await WriteHomeSlotArtifactsAsync(
@@ -100,7 +100,27 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
         var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
 
         Assert.Contains(findings, finding => finding.Code == "reviewed-slot-mapping-orphan" && finding.Message.Contains("unknown", StringComparison.Ordinal));
-        Assert.Contains(findings, finding => (finding.Code == "missing-required-slot" || finding.Code == "required-slot-unmapped") && finding.Message.Contains("layout.footer", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "missing-required-slot" && finding.Message.Contains("layout.footer", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SharedFooterMappingWithoutSectionSatisfiesRequiredFooterSlot()
+    {
+        var projectRoot = CreateProjectRoot();
+        await WriteHomeSlotArtifactsAsync(
+            projectRoot,
+            [Node("section-hero", "hero", mappingId: null, targetPath: null) with
+            {
+                TargetGeneratedZone = "home.sections",
+                ApprovedVisualExtensionId = "home-visual-extension-hero",
+                ApprovedVisualExtensionReason = "Visual-only home hero inside page-level home.sections."
+            }],
+            [Mapping("footer-shared", "unknown", "unknown", "layout.footer", "layout.footer", "Components/Layout/MainLayout.razor")],
+            targetViewSlot: "home.sections");
+
+        var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
+
+        Assert.DoesNotContain(findings, finding => finding.Code == "missing-required-slot" && finding.Message.Contains("layout.footer", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -129,6 +149,64 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
         var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
 
         Assert.DoesNotContain(findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("home.sections", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task RepeatedHomeBodyMappingCanBeApprovedVisualExtension()
+    {
+        var projectRoot = CreateProjectRoot();
+        await WriteHomeSlotArtifactsAsync(
+            projectRoot,
+            [
+                Node("section-source", "hero", mappingId: "home-content", targetPath: "Pages/Ssr/Home/HomePage.razor"),
+                Node("section-repeat", "product card collection", mappingId: null, targetPath: null) with
+                {
+                    AllowedOperations = ["css"],
+                    TargetGeneratedZone = "home.sections",
+                    ApprovedVisualExtensionId = "home-visual-extension-products",
+                    ApprovedVisualExtensionReason = "Visual-only home content section approved inside the page-level home.sections container."
+                }
+            ],
+            [
+                Mapping("home-content", "home", "section-source", "home.sections", "home.sections", "Pages/Ssr/Home/HomePage.razor"),
+                Mapping("footer-shared", "unknown", "unknown", "layout.footer", "layout.footer", "Components/Layout/MainLayout.razor")
+            ],
+            targetViewSlot: "home.sections");
+
+        var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
+
+        Assert.DoesNotContain(findings, finding => finding.Code == "reviewed-slot-mapping-orphan" && finding.Message.Contains("home-content", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "unapproved-extra-section" && finding.Message.Contains("section-repeat", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("home.sections", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SourceBoundSharedLayoutMappingDoesNotDuplicateLayoutSlot()
+    {
+        var projectRoot = CreateProjectRoot();
+        await WriteHomeSlotArtifactsAsync(
+            projectRoot,
+            [
+                Node("section-header", "header navigation", mappingId: "header-layout", targetPath: "Components/Layout/MainLayout.razor"),
+                Node("section-hero", "hero", mappingId: null, targetPath: null) with
+                {
+                    TargetGeneratedZone = "home.sections",
+                    ApprovedVisualExtensionId = "home-visual-extension-hero",
+                    ApprovedVisualExtensionReason = "Visual-only home hero inside page-level home.sections."
+                }
+            ],
+            [
+                Mapping("header-layout", "home", "section-header", "layout.header", "layout.header", "Components/Layout/MainLayout.razor"),
+                Mapping("footer-shared", "unknown", "unknown", "layout.footer", "layout.footer", "Components/Layout/MainLayout.razor")
+            ],
+            targetViewSlot: "home.sections",
+            requiredSlots: ["home.sections", "layout.header", "layout.footer"],
+            catalogSlots: ["home.sections", "layout.header", "layout.footer"]);
+
+        var findings = new PageCompositionSlotValidator(Phase3DNegativeReviewMutationTests.GetRepoRoot()).Validate(projectRoot);
+
+        Assert.DoesNotContain(findings, finding => finding.Code == "duplicate-non-repeatable-slot" && finding.Message.Contains("layout.header", StringComparison.Ordinal));
+        Assert.DoesNotContain(findings, finding => finding.Code == "missing-required-slot" && finding.Message.Contains("layout.header", StringComparison.Ordinal));
     }
 
     private static string CreateProjectRoot()
@@ -184,14 +262,18 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
         string projectRoot,
         IReadOnlyList<PageCompositionNode> nodes,
         IReadOnlyList<PresentationMapping> mappings,
-        string? targetViewSlot = null)
+        string? targetViewSlot = null,
+        IReadOnlyList<string>? requiredSlots = null,
+        IReadOnlyList<string>? catalogSlots = null)
     {
+        requiredSlots ??= ["home.sections", "layout.footer"];
+        catalogSlots ??= ["home.sections", "layout.footer"];
         await WriteJsonAsync(projectRoot, "analysis/storefront-pattern/page-contracts.json", new StorefrontPageContractsDocument(
             "1.0",
             "page-contracts",
             "page-contracts",
             DateTimeOffset.UtcNow,
-            [Contract("home", "home", ["home.sections", "layout.footer"])]));
+            [Contract("home", "home", requiredSlots)]));
         await WriteJsonAsync(projectRoot, "analysis/resolved/page-compositions.reviewed.json", new ReviewedPageCompositionsDocument(
             "1.0",
             "reviewed-page-compositions",
@@ -214,10 +296,7 @@ public sealed class PageCompositionSlotValidatorSharedResolverTests
             "presentation-component-catalog",
             "presentation-component-catalog",
             DateTimeOffset.UtcNow,
-            [
-                Catalog("home.sections", "home.sections", "Pages/Ssr/Home/HomePage.razor"),
-                Catalog("layout.footer", "layout.footer", "Components/Layout/MainLayout.razor")
-            ],
+            catalogSlots.Select(slot => Catalog(slot, slot, slot.StartsWith("layout.", StringComparison.Ordinal) ? "Components/Layout/MainLayout.razor" : "Pages/Ssr/Home/HomePage.razor")).ToArray(),
             []));
     }
 
