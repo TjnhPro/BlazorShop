@@ -5,11 +5,15 @@ import {
   buildManifestEntries,
   buildRegenerationReport,
   readPreviousManifest,
+  scanProjectFiles,
   writeManifestYaml,
 } from "./generated-file-manifest.mjs";
 
 const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
-const intentionalChanges = new Set(readListArg("--intentional-changes"));
+const intentionalChangeItems = readListArg("--intentional-changes");
+const intentionalChanges = intentionalChangeItems.includes("__all__")
+  ? new Set(scanProjectFiles(projectRoot).map((file) => file.filePath))
+  : new Set(intentionalChangeItems);
 const output = `${projectRoot}/docs/storefront-analysis/generated-files.yaml`;
 const report = `${projectRoot}/docs/storefront-analysis/regeneration-report.md`;
 

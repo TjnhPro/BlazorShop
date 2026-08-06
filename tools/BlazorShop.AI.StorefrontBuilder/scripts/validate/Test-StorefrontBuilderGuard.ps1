@@ -17,6 +17,7 @@ function Resolve-RepoPath {
 }
 
 $resolvedProjectRoot = Resolve-RepoPath $ProjectRoot
+$projectName = Split-Path -Leaf $resolvedProjectRoot
 
 if (-not (Test-Path $resolvedProjectRoot)) {
     throw "[SFB-GUARD-000] Project root does not exist: $resolvedProjectRoot"
@@ -52,6 +53,28 @@ function Get-SourceFiles {
         }
 }
 
+function Get-ProjectReferenceIncludes {
+    param([string]$Content)
+
+    return @([regex]::Matches($Content, '<ProjectReference\s+Include="([^"]+)"') |
+        ForEach-Object { $_.Groups[1].Value })
+}
+
+function Test-AllowedGeneratedProjectReference {
+    param(
+        [string]$RelativePath,
+        [string]$Include
+    )
+
+    $normalizedRelative = $RelativePath.Replace("/", "\")
+    $normalizedInclude = $Include.Replace("/", "\")
+    $expectedServerProject = "$projectName\$projectName.csproj"
+    $expectedWasmReference = "$projectName.WASM\$projectName.WASM.csproj"
+
+    return $normalizedRelative.EndsWith($expectedServerProject, [System.StringComparison]::OrdinalIgnoreCase) `
+        -and $normalizedInclude.Equals($expectedWasmReference, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
 foreach ($file in Get-SourceFiles) {
     $relative = Get-RelativePathCompat $repoRoot $file.FullName
     $content = Get-Content -LiteralPath $file.FullName -Raw
@@ -79,8 +102,12 @@ foreach ($file in Get-SourceFiles) {
         Fail-Guard "SFB-GUARD-003" $relative "Browser presentation must not handle credentials or browser token storage."
     }
 
-    if ($file.Extension -eq ".csproj" -and (Test-TextContains $content "ProjectReference" ([System.StringComparison]::OrdinalIgnoreCase))) {
-        Fail-Guard "SFB-GUARD-004" $relative "Generated storefront must not use ProjectReference to backend/core/API/V2 projects."
+    if ($file.Extension -eq ".csproj") {
+        foreach ($projectReference in (Get-ProjectReferenceIncludes -Content $content)) {
+            if (-not (Test-AllowedGeneratedProjectReference -RelativePath $relative -Include $projectReference)) {
+                Fail-Guard "SFB-GUARD-004" $relative "Generated storefront must not use ProjectReference to backend/core/API/V2 projects."
+            }
+        }
     }
 
     foreach ($namespace in @(

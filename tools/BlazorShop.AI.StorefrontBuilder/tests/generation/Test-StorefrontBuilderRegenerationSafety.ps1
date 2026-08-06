@@ -275,6 +275,7 @@ $starterHomePath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Sto
 $starterProductPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\Components\Catalog\ProductSummaryCard.razor"
 $starterLayoutPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\Components\Layout\MainLayout.razor"
 $starterPackagePropsPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\StorefrontPackageVersions.props"
+$starterWasmProjectPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj"
 
 $starterHomeOriginal = Get-Content -LiteralPath $starterHomePath -Raw
 try {
@@ -436,32 +437,85 @@ Remove-Item -LiteralPath $missingProductPath -Force
 Assert-Condition -Condition (Test-Path -LiteralPath $missingProductPath) -Message "Missing ProductSummaryCard was not recreated."
 Set-TextFileContent -Path $missingProductPath -Content $missingProductOriginal
 
-    New-TestProject
-    $starterPackagePropsOriginal = Get-Content -LiteralPath $starterPackagePropsPath -Raw
-    try {
-        Set-TextFileContent -Path $starterPackagePropsPath -Content ($starterPackagePropsOriginal.Replace("1.0.0-local", "9.9.9-test"))
-        $beforeFoundation = Get-TreeHashes -Root $projectRoot
-        $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS = "1"
-        & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope css -WhatIf
-        $cssWhatIfCandidateRoot = (Get-ChildItem -LiteralPath (Join-Path $outputRoot ".regeneration-candidate") -Directory |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1).FullName
-        $cssWhatIfCandidateRoot = Join-Path $cssWhatIfCandidateRoot $projectName
-        $cssReport = Get-Content -LiteralPath (Join-Path $cssWhatIfCandidateRoot "docs\storefront-analysis\regeneration-report.md") -Raw
-        Assert-Condition -Condition (Test-TextContains $cssReport "StorefrontPackageVersions.props: skip out-of-scope") -Message "CSS scope did not keep StorefrontPackageVersions.props out of scope."
-        if ($cssWhatIfCandidateRoot -and (Test-Path -LiteralPath $cssWhatIfCandidateRoot)) {
-            Remove-Item -LiteralPath $cssWhatIfCandidateRoot -Recurse -Force
-        }
-        Remove-Item Env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS -ErrorAction SilentlyContinue
+New-TestProject
+$missingWasmPath = Join-Path $projectRoot "$projectName.WASM\Program.cs"
+$missingWasmOriginal = Get-Content -LiteralPath $missingWasmPath -Raw
+Remove-Item -LiteralPath $missingWasmPath -Force
+& (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope all
+Assert-Condition -Condition (Test-Path -LiteralPath $missingWasmPath) -Message "Missing WASM Program.cs was not recreated."
+Set-TextFileContent -Path $missingWasmPath -Content $missingWasmOriginal
 
-        & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope foundation -ValidateAfterApply
-        $foundationReport = Get-Content -LiteralPath (Join-Path $projectRoot "docs\storefront-analysis\regeneration-report.md") -Raw
-        Assert-Condition -Condition (Test-TextContains $foundationReport "StorefrontPackageVersions.props: platform metadata update") -Message "Foundation update did not plan StorefrontPackageVersions.props."
-        Assert-Condition -Condition (Test-TextContains (Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw) "9.9.9-test") -Message "Foundation update did not apply StorefrontPackageVersions.props."
+New-TestProject
+$manualWasmPath = Join-Path $projectRoot "$projectName.WASM\Program.cs"
+$manualWasmOriginal = Get-Content -LiteralPath $manualWasmPath -Raw
+try {
+    Add-Content -LiteralPath $manualWasmPath -Value "`n// regeneration safety manual edit"
+    & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope conflicts
+    $manualWasmManifest = Get-Content -LiteralPath $manifestPath -Raw
+    Assert-ContainsText -Text $manualWasmManifest -Expected "$projectName.WASM/Program.cs" -Message "WASM manual-edit manifest did not include Program.cs."
+    Assert-ContainsText -Text $manualWasmManifest -Expected "manualEditDetected: true" -Message "WASM manual-edit manifest did not record manualEditDetected."
+    Assert-ContainsText -Text $manualWasmManifest -Expected "conflictStatus: manual-edit" -Message "WASM manual-edit manifest did not record conflict status."
+}
+finally {
+    Set-TextFileContent -Path $manualWasmPath -Content $manualWasmOriginal
+}
+
+New-TestProject
+$userOwnedWasmPath = Join-Path $projectRoot "$projectName.WASM\_Imports.razor"
+$userOwnedWasmOriginal = Get-Content -LiteralPath $userOwnedWasmPath -Raw
+$userOwnedMarker = "@* regeneration safety user-owned marker *@"
+Set-TextFileContent -Path $userOwnedWasmPath -Content ($userOwnedWasmOriginal + "`n$userOwnedMarker")
+& (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope all
+Assert-ContainsText -Text (Get-Content -LiteralPath $userOwnedWasmPath -Raw) -Expected $userOwnedMarker -Message "User-owned WASM file was not preserved."
+Set-TextFileContent -Path $userOwnedWasmPath -Content $userOwnedWasmOriginal
+
+New-TestProject
+$wasmObsoleteResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "all", "-WhatIf") -DropCandidateFilePaths "$projectName.WASM/Program.cs"
+$wasmObsoleteReport = Get-Content -LiteralPath (Get-WhatIfReportPathFromOutput -Output $wasmObsoleteResult.Output) -Raw
+Assert-ContainsText -Text $wasmObsoleteReport -Expected "[$([string]'wasm')] $projectName.WASM/Program.cs: obsolete candidate" -Message "WhatIf report did not include obsolete WASM candidate."
+
+New-TestProject
+$starterPackagePropsOriginal = Get-Content -LiteralPath $starterPackagePropsPath -Raw
+try {
+    Set-TextFileContent -Path $starterPackagePropsPath -Content ($starterPackagePropsOriginal.Replace("1.0.0-local", "9.9.9-test"))
+    Assert-Throws -ExpectedCode "SFB-REGEN-030" -Action {
+        & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope css
     }
-    finally {
-        Set-TextFileContent -Path $starterPackagePropsPath -Content $starterPackagePropsOriginal
+    $beforeFoundation = Get-TreeHashes -Root $projectRoot
+    $env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS = "1"
+    & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope css -WhatIf
+    $cssWhatIfCandidateRoot = (Get-ChildItem -LiteralPath (Join-Path $outputRoot ".regeneration-candidate") -Directory |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1).FullName
+    $cssWhatIfCandidateRoot = Join-Path $cssWhatIfCandidateRoot $projectName
+    $cssReport = Get-Content -LiteralPath (Join-Path $cssWhatIfCandidateRoot "docs\storefront-analysis\regeneration-report.md") -Raw
+    Assert-Condition -Condition (Test-TextContains $cssReport "StorefrontPackageVersions.props: skip out-of-scope") -Message "CSS scope did not keep StorefrontPackageVersions.props out of scope."
+    Assert-ContainsText -Text $cssReport -Expected "Package drift:" -Message "CSS WhatIf report did not include package drift."
+    if ($cssWhatIfCandidateRoot -and (Test-Path -LiteralPath $cssWhatIfCandidateRoot)) {
+        Remove-Item -LiteralPath $cssWhatIfCandidateRoot -Recurse -Force
     }
+    Remove-Item Env:SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS -ErrorAction SilentlyContinue
+
+    & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope foundation -ValidateAfterApply
+    $foundationReport = Get-Content -LiteralPath (Join-Path $projectRoot "docs\storefront-analysis\regeneration-report.md") -Raw
+    Assert-Condition -Condition (Test-TextContains $foundationReport "StorefrontPackageVersions.props: platform metadata update") -Message "Foundation update did not plan StorefrontPackageVersions.props."
+    Assert-Condition -Condition (Test-TextContains (Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw) "9.9.9-test") -Message "Foundation update did not apply StorefrontPackageVersions.props."
+}
+finally {
+    Set-TextFileContent -Path $starterPackagePropsPath -Content $starterPackagePropsOriginal
+}
+
+New-TestProject
+$starterWasmOriginal = Get-Content -LiteralPath $starterWasmProjectPath -Raw
+try {
+    Set-TextFileContent -Path $starterWasmProjectPath -Content ($starterWasmOriginal.Replace("</Project>", "  <!-- regeneration safety wasm drift -->`n</Project>"))
+    Assert-Throws -ExpectedCode "SFB-REGEN-032" -Action {
+        & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope component -Target Program
+    }
+}
+finally {
+    Set-TextFileContent -Path $starterWasmProjectPath -Content $starterWasmOriginal
+}
 
 New-TestProject
 $rollbackHomeOriginal = Get-Content -LiteralPath $starterHomePath -Raw

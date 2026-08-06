@@ -165,7 +165,10 @@ function Get-StorefrontPackageHash {
 }
 
 function Assert-RestoredStorefrontPackages {
-    param([string]$ProjectFile)
+    param(
+        [string]$ProjectFile,
+        [hashtable[]]$ExpectedPackages
+    )
 
     $assetsPath = Join-Path (Join-Path (Split-Path -Parent $ProjectFile) "obj") "project.assets.json"
     if (-not (Test-Path $assetsPath)) {
@@ -174,21 +177,30 @@ function Assert-RestoredStorefrontPackages {
 
     $assets = Get-Content -LiteralPath $assetsPath -Raw | ConvertFrom-Json
     $libraries = @($assets.libraries.PSObject.Properties.Name)
-    $expected = @(
-        @{ Id = "BlazorShop.Storefront.Client"; Version = $StorefrontClientPackageVersion },
-        @{ Id = "BlazorShop.Storefront.Runtime"; Version = $StorefrontRuntimePackageVersion },
-        @{ Id = "BlazorShop.Storefront.Presentation"; Version = $StorefrontPresentationPackageVersion },
-        @{ Id = "BlazorShop.Storefront.Components"; Version = $StorefrontComponentsPackageVersion },
-        @{ Id = "BlazorShop.Storefront.Browser"; Version = $StorefrontBrowserPackageVersion }
-    )
-
-    foreach ($package in $expected) {
+    foreach ($package in $ExpectedPackages) {
         $marker = "$($package.Id)/$($package.Version)"
         $matched = $libraries | Where-Object { $_.Equals($marker, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1
         if ([string]::IsNullOrWhiteSpace($matched)) {
             throw "[SFB-PROOF-RESTORE-002] project.assets.json did not resolve expected package '$marker'. Resolved Storefront packages: $($libraries -match '^BlazorShop\.Storefront\.' -join ', ')"
         }
     }
+}
+
+function Get-ExpectedServerStorefrontPackages {
+    return @(
+        @{ Id = "BlazorShop.Storefront.Client"; Version = $StorefrontClientPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Runtime"; Version = $StorefrontRuntimePackageVersion },
+        @{ Id = "BlazorShop.Storefront.Presentation"; Version = $StorefrontPresentationPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Components"; Version = $StorefrontComponentsPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Browser"; Version = $StorefrontBrowserPackageVersion }
+    )
+}
+
+function Get-ExpectedWasmStorefrontPackages {
+    return @(
+        @{ Id = "BlazorShop.Storefront.Components"; Version = $StorefrontComponentsPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Browser"; Version = $StorefrontBrowserPackageVersion }
+    )
 }
 
 function Assert-PackageProvenanceMetadata {
@@ -416,6 +428,7 @@ function Invoke-GeneratedProofRegenerationLifecycle {
     $regenerator = Join-Path $toolRoot "regenerate-storefront.ps1"
     $manifestPath = Join-Path $projectRoot "docs\storefront-analysis\generated-files.yaml"
     $manualConflictFile = Join-Path $projectRoot "Components\Catalog\PurchasePanelPlaceholder.razor"
+    $manualWasmConflictFile = Join-Path $projectRoot "$Name.WASM\Program.cs"
 
     Invoke-Step "Run post-regeneration build proof" {
         & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
@@ -433,12 +446,15 @@ function Invoke-GeneratedProofRegenerationLifecycle {
 
     Invoke-Step "Run manual-edit conflict fixture proof" {
         $original = Get-Content -LiteralPath $manualConflictFile -Raw
+        $wasmOriginal = Get-Content -LiteralPath $manualWasmConflictFile -Raw
         try {
             Add-Content -LiteralPath $manualConflictFile -Value "`n<!-- StorefrontBuilder manual conflict proof -->"
+            Add-Content -LiteralPath $manualWasmConflictFile -Value "`n// StorefrontBuilder manual WASM conflict proof"
             & $regenerator -ProjectRoot $projectRoot -Scope conflicts
             $manifest = Get-Content -LiteralPath $manifestPath -Raw
             foreach ($marker in @(
                 "Components/Catalog/PurchasePanelPlaceholder.razor",
+                "$Name.WASM/Program.cs",
                 "manualEditDetected: true",
                 "conflictStatus: manual-edit"
             )) {
@@ -449,6 +465,7 @@ function Invoke-GeneratedProofRegenerationLifecycle {
         }
         finally {
             [System.IO.File]::WriteAllText($manualConflictFile, $original, [System.Text.UTF8Encoding]::new($false))
+            [System.IO.File]::WriteAllText($manualWasmConflictFile, $wasmOriginal, [System.Text.UTF8Encoding]::new($false))
         }
 
         & $regenerator -ProjectRoot $projectRoot -Scope all
@@ -458,6 +475,7 @@ function Invoke-GeneratedProofRegenerationLifecycle {
 $generatedRoot = Resolve-RepoPath $OutputRoot
 $projectRoot = Join-Path $generatedRoot $Name
 $projectFile = Join-Path $projectRoot "$Name.csproj"
+$wasmProjectFile = Join-Path $projectRoot "$Name.WASM\$Name.WASM.csproj"
 
 if ($Describe) {
     Write-Host "StorefrontBuilder generated proof workflow"
@@ -528,6 +546,9 @@ $packageHashes = @{
     Browser = Get-StorefrontPackageHash "BlazorShop.Storefront.Browser" $StorefrontBrowserPackageVersion
 }
 Write-Host "Package hashes: Client=$($packageHashes.Client) Runtime=$($packageHashes.Runtime) Presentation=$($packageHashes.Presentation) Components=$($packageHashes.Components) Browser=$($packageHashes.Browser)"
+Write-Host "Server project path: $projectFile"
+Write-Host "WASM project path: $wasmProjectFile"
+Write-Host "Restore sources: $packageRoot"
 
 Invoke-Step "Generate proof storefront" {
     & "$toolRoot\scripts\generate\new-storefront-project.ps1" `
@@ -561,17 +582,25 @@ Invoke-Step "Write StorefrontBuilder artifacts" {
     node "$toolRoot\scripts\generate\build-asset-manifest.mjs" --project-root $projectRoot
     node "$toolRoot\scripts\generate\apply-visual-foundation.mjs" --project-root $projectRoot
     node "$toolRoot\scripts\generate\apply-composition.mjs" --project-root $projectRoot
-    node "$toolRoot\scripts\generate\update-generated-files-manifest.mjs" --project-root $projectRoot
+    node "$toolRoot\scripts\generate\update-generated-files-manifest.mjs" --project-root $projectRoot --intentional-changes "__all__"
 }
 
 Invoke-Step "Restore generated proof" {
     dotnet restore $projectFile --no-cache --force-evaluate
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    Assert-RestoredStorefrontPackages $projectFile
+    Assert-RestoredStorefrontPackages -ProjectFile $projectFile -ExpectedPackages (Get-ExpectedServerStorefrontPackages)
+
+    dotnet restore $wasmProjectFile --no-cache --force-evaluate
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    Assert-RestoredStorefrontPackages -ProjectFile $wasmProjectFile -ExpectedPackages (Get-ExpectedWasmStorefrontPackages)
+    Write-Host "Resolved package versions verified for server and WASM."
 }
 
 Invoke-Step "Build generated proof" {
     dotnet build $projectFile --configuration $Configuration --no-restore
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    dotnet build $wasmProjectFile --configuration $Configuration --no-restore
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 

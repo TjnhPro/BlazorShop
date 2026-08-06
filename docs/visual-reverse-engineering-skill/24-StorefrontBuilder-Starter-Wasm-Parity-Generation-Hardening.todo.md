@@ -688,82 +688,82 @@ Make regeneration and proof runners manage server + WASM as one generated artifa
 
 ### Tasks
 
-- [ ] Update regeneration candidate creation.
-  - [ ] Candidate includes server project.
-  - [ ] Candidate includes WASM project.
-  - [ ] Candidate uses current Starter server.
-  - [ ] Candidate uses current Starter.WASM.
-  - [ ] Candidate uses current package metadata.
-- [ ] Update regeneration plan.
-  - [ ] Track create/update/delete/conflict/obsolete per project.
-  - [ ] Track generated-owned server files.
-  - [ ] Track generated-owned WASM files.
-  - [ ] Track protected files.
-  - [ ] Track user-owned files.
-  - [ ] Track out-of-scope files by project.
-- [ ] Update regeneration scopes.
-  - [ ] `all` includes server + WASM generated files.
-  - [ ] `page` applies only server route/view visual files unless plan marks WASM.
-  - [ ] `component` accepts server or WASM components.
-  - [ ] `css` includes server and WASM CSS only.
-  - [ ] `foundation` can update package metadata and Starter contracts after explicit review.
-  - [ ] `validate` validates both projects.
-  - [ ] `conflicts` reports both projects.
-- [ ] Update `-WhatIf`.
-  - [ ] Report server and WASM file actions.
-  - [ ] Print stable report path.
-  - [ ] Keep report outside target project.
-  - [ ] Include package drift.
-  - [ ] Include Starter contract drift.
-  - [ ] Include Starter.WASM contract drift.
-  - [ ] Include conflict next actions.
-- [ ] Update runner.
-  - [ ] Resolve current HEAD.
-  - [ ] Clean approved package feed.
-  - [ ] Clear exact NuGet cache entries.
-  - [ ] Pack five packages.
-  - [ ] Generate server + WASM.
-  - [ ] Restore server.
-  - [ ] Restore WASM.
-  - [ ] Verify `project.assets.json`.
-  - [ ] Build server.
-  - [ ] Build WASM if needed separately.
-  - [ ] Run static gate.
-  - [ ] Run isolation gate.
-  - [ ] Run visual boundary gate.
-  - [ ] Run fast browser proof.
-  - [ ] Run regeneration no-op proof.
-  - [ ] Run manual-edit conflict proof.
-- [ ] Improve output.
-  - [ ] Print source HEAD.
-  - [ ] Print package build identity.
-  - [ ] Print package versions.
-  - [ ] Print package hashes.
-  - [ ] Print server project path.
-  - [ ] Print WASM project path.
-  - [ ] Print restore sources.
-  - [ ] Print resolved package versions.
-  - [ ] Print runtime proof report paths.
-  - [ ] Print visual QA report paths.
+- [x] Update regeneration candidate creation.
+  - [x] Candidate includes server project.
+  - [x] Candidate includes WASM project.
+  - [x] Candidate uses current Starter server.
+  - [x] Candidate uses current Starter.WASM.
+  - [x] Candidate uses current package metadata.
+- [x] Update regeneration plan.
+  - [x] Track create/update/delete/conflict/obsolete per project.
+  - [x] Track generated-owned server files.
+  - [x] Track generated-owned WASM files.
+  - [x] Track protected files.
+  - [x] Track user-owned files.
+  - [x] Track out-of-scope files by project.
+- [x] Update regeneration scopes.
+  - [x] `all` includes server + WASM generated files.
+  - [x] `page` applies only server route/view visual files unless plan marks WASM.
+  - [x] `component` accepts server or WASM components.
+  - [x] `css` includes server and WASM CSS only.
+  - [x] `foundation` can update package metadata and Starter contracts after explicit review.
+  - [x] `validate` validates both projects.
+  - [x] `conflicts` reports both projects.
+- [x] Update `-WhatIf`.
+  - [x] Report server and WASM file actions.
+  - [x] Print stable report path.
+  - [x] Keep report outside target project.
+  - [x] Include package drift.
+  - [x] Include Starter contract drift.
+  - [x] Include Starter.WASM contract drift.
+  - [x] Include conflict next actions.
+- [x] Update runner.
+  - [x] Resolve current HEAD.
+  - [x] Clean approved package feed.
+  - [x] Clear exact NuGet cache entries.
+  - [x] Pack five packages.
+  - [x] Generate server + WASM.
+  - [x] Restore server.
+  - [x] Restore WASM.
+  - [x] Verify `project.assets.json`.
+  - [x] Build server.
+  - [x] Build WASM if needed separately.
+  - [x] Run static gate.
+  - [x] Run isolation gate.
+  - [x] Run visual boundary gate.
+  - [x] Run fast browser proof.
+  - [x] Run regeneration no-op proof.
+  - [x] Run manual-edit conflict proof.
+- [x] Improve output.
+  - [x] Print source HEAD.
+  - [x] Print package build identity.
+  - [x] Print package versions.
+  - [x] Print package hashes.
+  - [x] Print server project path.
+  - [x] Print WASM project path.
+  - [x] Print restore sources.
+  - [x] Print resolved package versions.
+  - [x] Print runtime proof report paths.
+  - [x] Print visual QA report paths.
 
 ### Negative Tests
 
-- [ ] No-op regeneration changes no files.
-- [ ] Missing server file is recreated if generated-owned.
-- [ ] Missing WASM file is recreated if generated-owned.
-- [ ] Manual edit in generated server file reports conflict.
-- [ ] Manual edit in generated WASM file reports conflict.
-- [ ] User-owned server file is preserved.
-- [ ] User-owned WASM file is preserved.
-- [ ] Protected file is skipped except foundation scope.
-- [ ] Obsolete server file is reported.
-- [ ] Obsolete WASM file is reported.
-- [ ] Stale package foundation drift blocks visual scope.
-- [ ] Starter.WASM contract drift requires foundation update.
+- [x] No-op regeneration changes no files.
+- [x] Missing server file is recreated if generated-owned.
+- [x] Missing WASM file is recreated if generated-owned.
+- [x] Manual edit in generated server file reports conflict.
+- [x] Manual edit in generated WASM file reports conflict.
+- [x] User-owned server file is preserved.
+- [x] User-owned WASM file is preserved.
+- [x] Protected file is skipped except foundation scope.
+- [x] Obsolete server file is reported.
+- [x] Obsolete WASM file is reported.
+- [x] Stale package foundation drift blocks visual scope.
+- [x] Starter.WASM contract drift requires foundation update.
 
 ### Done When
 
-- [ ] Developer can run one proof command and get a reliable multi-project generated storefront plus actionable reports.
+- [x] Developer can run one proof command and get a reliable multi-project generated storefront plus actionable reports.
 
 ## Phase 8 - Generated Proof And Kindredcoast Pilot
 

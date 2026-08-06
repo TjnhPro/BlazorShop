@@ -77,7 +77,7 @@ switch ($Mode) {
             node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
             node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $projectRoot
         }
-        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot --intentional-changes "__all__"
     }
     "update" {
         & "$PSScriptRoot/regenerate-storefront.ps1" -ProjectRoot $projectRoot -Scope all
@@ -106,7 +106,7 @@ switch ($Mode) {
             node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
             node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $projectRoot
         }
-        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot --intentional-changes "__all__"
         if ([string]::IsNullOrWhiteSpace($HandoffRoot)) {
             & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $normalizedStoreKey
         } else {

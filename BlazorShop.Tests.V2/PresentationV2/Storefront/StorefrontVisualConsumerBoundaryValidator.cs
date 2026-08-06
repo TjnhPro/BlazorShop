@@ -310,7 +310,10 @@ internal sealed class StorefrontVisualConsumerBoundaryValidator
             return;
         }
 
-        if (!profile.Name.Contains("WASM", StringComparison.OrdinalIgnoreCase))
+        var isWasmProgram = profile.Name.Contains("WASM", StringComparison.OrdinalIgnoreCase)
+            || relativePath.Contains(".WASM/Program.cs", StringComparison.OrdinalIgnoreCase);
+
+        if (!isWasmProgram)
         {
             ValidateSourceTokens(
                 relativePath,

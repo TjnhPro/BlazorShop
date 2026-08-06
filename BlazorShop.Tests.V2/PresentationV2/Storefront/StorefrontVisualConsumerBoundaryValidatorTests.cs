@@ -50,7 +50,10 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             "GeneratedProof",
             generatedRoot,
             "BlazorShop.Storefront.GeneratedProof.csproj",
-            AllowedProjectReferenceFragments: [],
+            AllowedProjectReferenceFragments:
+            [
+                "BlazorShop.Storefront.GeneratedProof.WASM",
+            ],
             AllowedPackageReferences:
             [
                 "BlazorShop.Storefront.Presentation",

@@ -286,11 +286,11 @@ function classifyFile(filePath) {
     return descriptor("managed", "shell/layout", "project", ["metadata.yaml"]);
   }
 
-  if (filePath.startsWith("wwwroot/css/")) {
+  if (filePath.startsWith("wwwroot/css/") || /\.WASM\/wwwroot\/css\//.test(filePath)) {
     return descriptor("generated", "shell/layout", "css", ["metadata.yaml", "asset-manifest.yaml", "review-summary.md"]);
   }
 
-  if (filePath.startsWith("wwwroot/assets/")) {
+  if (filePath.startsWith("wwwroot/assets/") || /\.WASM\/wwwroot\//.test(filePath)) {
     return descriptor("generated", "SEO/media/consent support", "asset", ["asset-manifest.yaml"]);
   }
 
@@ -322,11 +322,11 @@ function classifyFile(filePath) {
     return descriptor("generated", "catalog", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml", "review-summary.md"]);
   }
 
-  if (filePath.includes("/Commerce/Cart")) {
+  if (filePath.includes("/Commerce/Cart") || /\.WASM\/Components\/Cart\//.test(filePath)) {
     return descriptor("managed", "cart", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
   }
 
-  if (filePath.includes("/Commerce/Checkout") || filePath.includes("/Commerce/Payment")) {
+  if (filePath.includes("/Commerce/Checkout") || filePath.includes("/Commerce/Payment") || /\.WASM\/Components\/Checkout\//.test(filePath)) {
     return descriptor("managed", "checkout", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
   }
 

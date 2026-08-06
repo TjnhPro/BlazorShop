@@ -123,6 +123,59 @@ function Normalize-RecordedHash {
     return $value.Trim().Replace("sha256:", "")
 }
 
+function Read-MetadataPackageProvenance {
+    param([string]$MetadataPath)
+
+    $items = [System.Collections.Generic.List[hashtable]]::new()
+    if (-not (Test-Path -LiteralPath $MetadataPath)) {
+        return $items
+    }
+
+    $text = Get-Content -LiteralPath $MetadataPath -Raw
+    foreach ($match in [regex]::Matches($text, "(?ms)^\s+- id:\s*(?<id>\S+)\s*\r?\n\s+version:\s*(?<version>\S+)\s*\r?\n\s+sha256:\s*(?<sha256>\S+)\s*$")) {
+        $items.Add(@{
+            id = $match.Groups["id"].Value
+            version = $match.Groups["version"].Value
+            sha256 = $match.Groups["sha256"].Value
+        })
+    }
+
+    return $items
+}
+
+function Get-RegenerationDriftLines {
+    param(
+        [hashtable]$Metadata,
+        [string]$MetadataPath
+    )
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $starterContractPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\starter-generation.contract.yaml"
+    $starterWasmContractPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj"
+    $recordedStarterHash = Normalize-RecordedHash -Hash $Metadata["starterContractSha256"]
+    $recordedStarterWasmHash = Normalize-RecordedHash -Hash $Metadata["starterWasmContractSha256"]
+    $currentStarterHash = Get-NormalizedFileSha256 -Path $starterContractPath
+    $currentStarterWasmHash = Get-NormalizedFileSha256 -Path $starterWasmContractPath
+
+    $starterStatus = if ([string]::IsNullOrWhiteSpace($recordedStarterHash)) { "not-recorded" } elseif ($recordedStarterHash -eq $currentStarterHash) { "clean" } else { "drift" }
+    $starterWasmStatus = if ([string]::IsNullOrWhiteSpace($recordedStarterWasmHash)) { "not-recorded" } elseif ($recordedStarterWasmHash -eq $currentStarterWasmHash) { "clean" } else { "drift" }
+    $lines.Add("- Starter contract drift: $starterStatus recorded=$recordedStarterHash current=$currentStarterHash")
+    $lines.Add("- Starter.WASM contract drift: $starterWasmStatus recorded=$recordedStarterWasmHash current=$currentStarterWasmHash")
+
+    $packageItems = @(Read-MetadataPackageProvenance -MetadataPath $MetadataPath)
+    if ($packageItems.Count -eq 0) {
+        $lines.Add("- Package drift: not-recorded")
+        return $lines
+    }
+
+    foreach ($package in $packageItems) {
+        $status = if ([string]::IsNullOrWhiteSpace([string]$package.sha256) -or [string]$package.sha256 -eq "unknown") { "hash-not-recorded" } else { "recorded" }
+        $lines.Add("- Package drift: $($package.id) $($package.version) $status sha256=$($package.sha256)")
+    }
+
+    return $lines
+}
+
 function Test-PlatformMetadataPath {
     param([string]$FilePath)
 
@@ -130,6 +183,25 @@ function Test-PlatformMetadataPath {
     return $normalized -eq "docs/storefront-analysis/metadata.yaml" `
         -or $normalized -eq "StorefrontPackageVersions.props" `
         -or $normalized -eq "starter-generation.contract.yaml"
+}
+
+function Get-EntryProject {
+    param(
+        [hashtable]$Entry,
+        [string]$FilePath,
+        [string]$ProjectName
+    )
+
+    if ($Entry -and -not [string]::IsNullOrWhiteSpace([string]$Entry["project"])) {
+        return [string]$Entry["project"]
+    }
+
+    $normalized = $FilePath.Replace("\", "/")
+    if ($normalized.StartsWith("$ProjectName.WASM/", [System.StringComparison]::OrdinalIgnoreCase) -or $normalized.Contains(".WASM/")) {
+        return "wasm"
+    }
+
+    return "server"
 }
 
 function Test-ScopeMatch {
@@ -160,6 +232,109 @@ function Test-ScopeMatch {
     }
 
     return $false
+}
+
+function Test-VisualRegenerationScope {
+    param([string]$Scope)
+
+    return $Scope -eq "all" -or $Scope -eq "page" -or $Scope -eq "component" -or $Scope -eq "css"
+}
+
+function Read-StorefrontPackageVersionMap {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+
+    [xml]$document = Get-Content -LiteralPath $Path -Raw
+    return @{
+        Client = [string]$document.Project.PropertyGroup.StorefrontClientPackageVersion
+        Runtime = [string]$document.Project.PropertyGroup.StorefrontRuntimePackageVersion
+        Presentation = [string]$document.Project.PropertyGroup.StorefrontPresentationPackageVersion
+        Components = [string]$document.Project.PropertyGroup.StorefrontComponentsPackageVersion
+        Browser = [string]$document.Project.PropertyGroup.StorefrontBrowserPackageVersion
+    }
+}
+
+function Test-StorefrontPackageVersionMapEqual {
+    param(
+        [hashtable]$Left,
+        [hashtable]$Right
+    )
+
+    if ($null -eq $Left -or $null -eq $Right) {
+        return $false
+    }
+
+    foreach ($key in @("Client", "Runtime", "Presentation", "Components", "Browser")) {
+        if ([string]$Left[$key] -ne [string]$Right[$key]) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Read-MetadataPackageVersionMap {
+    param([hashtable]$Metadata)
+
+    $versions = $Metadata["packageVersions"]
+    if ($versions -isnot [hashtable]) {
+        return $null
+    }
+
+    return @{
+        Client = [string]$versions["BlazorShop.Storefront.Client"]
+        Runtime = [string]$versions["BlazorShop.Storefront.Runtime"]
+        Presentation = [string]$versions["BlazorShop.Storefront.Presentation"]
+        Components = [string]$versions["BlazorShop.Storefront.Components"]
+        Browser = [string]$versions["BlazorShop.Storefront.Browser"]
+    }
+}
+
+function Assert-VisualScopeFoundationFresh {
+    param(
+        [string]$Scope,
+        [bool]$WhatIf,
+        [string]$ProjectRoot,
+        [hashtable]$Metadata
+    )
+
+    if (-not (Test-VisualRegenerationScope -Scope $Scope) -or $WhatIf) {
+        return
+    }
+
+    $targetPackageVersionsPath = Join-Path $ProjectRoot "StorefrontPackageVersions.props"
+    $starterPackageVersionsPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\StorefrontPackageVersions.props"
+    $targetPackageVersions = Read-StorefrontPackageVersionMap -Path $targetPackageVersionsPath
+    $metadataPackageVersions = Read-MetadataPackageVersionMap -Metadata $Metadata
+    $packageBuildIdentity = [string]$Metadata["packageBuildIdentity"]
+    $expectedPackageVersions = if (-not [string]::IsNullOrWhiteSpace($packageBuildIdentity) -and $packageBuildIdentity -ne "unknown") {
+        $metadataPackageVersions
+    }
+    else {
+        Read-StorefrontPackageVersionMap -Path $starterPackageVersionsPath
+    }
+
+    if (-not (Test-StorefrontPackageVersionMapEqual -Left $targetPackageVersions -Right $expectedPackageVersions)) {
+        throw "[SFB-REGEN-030] Stale package foundation drift blocks visual regeneration. Problem: generated StorefrontPackageVersions.props is out of date with Starter package metadata. Cause: package foundation changed after this project was generated. Fix: review package changes, run `regenerate-storefront.ps1 -Scope foundation`, then rerun the visual scope."
+    }
+
+    $targetStarterContractPath = Join-Path $ProjectRoot "starter-generation.contract.yaml"
+    $starterContractPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\starter-generation.contract.yaml"
+    $targetStarterContractHash = Get-NormalizedFileSha256 -Path $targetStarterContractPath
+    $currentStarterContractHash = Get-NormalizedFileSha256 -Path $starterContractPath
+    if ([string]::IsNullOrWhiteSpace($targetStarterContractHash) -or $targetStarterContractHash -ne $currentStarterContractHash) {
+        throw "[SFB-REGEN-031] Starter contract drift blocks visual regeneration. Problem: generated starter-generation.contract.yaml is out of date with Starter. Cause: Starter foundation changed after this project was generated. Fix: review Starter contract changes, run `regenerate-storefront.ps1 -Scope foundation`, then rerun the visual scope."
+    }
+
+    $recordedStarterWasmHash = Normalize-RecordedHash -Hash $Metadata["starterWasmContractSha256"]
+    $starterWasmContractPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj"
+    $currentStarterWasmHash = Get-NormalizedFileSha256 -Path $starterWasmContractPath
+    if (-not [string]::IsNullOrWhiteSpace($recordedStarterWasmHash) -and $recordedStarterWasmHash -ne $currentStarterWasmHash) {
+        throw "[SFB-REGEN-032] Starter.WASM contract drift blocks visual regeneration. Problem: metadata records Starter.WASM '$recordedStarterWasmHash' but current Starter.WASM hashes to '$currentStarterWasmHash'. Cause: WASM foundation changed after this project was generated. Fix: review Starter.WASM changes, run `regenerate-storefront.ps1 -Scope foundation`, then rerun the visual scope."
+    }
 }
 
 function New-RegenerationPlan {
@@ -270,6 +445,7 @@ function New-RegenerationPlan {
 
         $actions.Add(@{
             filePath = $filePath
+            project = Get-EntryProject -Entry $entry -FilePath $filePath -ProjectName (Split-Path -Leaf $TargetProjectRoot)
             action = $action
             reason = $reason
             ownership = $ownership
@@ -292,7 +468,9 @@ function Write-RegenerationReport {
         [string]$Target,
         [System.Collections.Generic.List[hashtable]]$Plan,
         [string]$ValidationResult,
-        [string]$BuildResult
+        [string]$BuildResult,
+        [hashtable]$Metadata,
+        [string]$MetadataPath
     )
 
     $changed = @($Plan | Where-Object { $_["changed"] -eq $true })
@@ -300,6 +478,8 @@ function Write-RegenerationReport {
     $skipped = @($Plan | Where-Object { $_["action"].StartsWith("skip", [System.StringComparison]::Ordinal) })
     $conflicts = @($Plan | Where-Object { $_["action"].StartsWith("conflict", [System.StringComparison]::Ordinal) })
     $obsolete = @($Plan | Where-Object { $_["action"] -eq "obsolete candidate" })
+    $serverItems = @($Plan | Where-Object { $_["project"] -eq "server" })
+    $wasmItems = @($Plan | Where-Object { $_["project"] -eq "wasm" })
 
     $lines = [System.Collections.Generic.List[string]]::new()
     $lines.Add("# StorefrontBuilder Regeneration Report")
@@ -320,6 +500,17 @@ function Write-RegenerationReport {
     $lines.Add('- Scope: `' + $Scope + '`')
     $lines.Add('- Target: `' + $Target + '`')
     $lines.Add("- Validation/build result: validation=$ValidationResult; build=$BuildResult")
+    $lines.Add("")
+    $lines.Add("## Project Summary")
+    $lines.Add("")
+    $lines.Add("- Server actions: total=$($serverItems.Count); changed=$(@($serverItems | Where-Object { $_["changed"] -eq $true }).Count); conflicts=$(@($serverItems | Where-Object { ([string]$_["action"]).StartsWith("conflict", [System.StringComparison]::Ordinal) }).Count); obsolete=$(@($serverItems | Where-Object { $_["action"] -eq "obsolete candidate" }).Count)")
+    $lines.Add("- WASM actions: total=$($wasmItems.Count); changed=$(@($wasmItems | Where-Object { $_["changed"] -eq $true }).Count); conflicts=$(@($wasmItems | Where-Object { ([string]$_["action"]).StartsWith("conflict", [System.StringComparison]::Ordinal) }).Count); obsolete=$(@($wasmItems | Where-Object { $_["action"] -eq "obsolete candidate" }).Count)")
+    $lines.Add("")
+    $lines.Add("## Drift")
+    $lines.Add("")
+    foreach ($line in (Get-RegenerationDriftLines -Metadata $Metadata -MetadataPath $MetadataPath)) {
+        $lines.Add($line)
+    }
     $lines.Add("")
     $lines.Add("## Changed Files")
     $lines.Add("")
@@ -378,7 +569,9 @@ function Write-RegenerationPlanSummary {
 
     Write-Host "WhatIf completed without writing generated project files."
     Write-Host "WhatIf report: $StableReportPath"
-    Write-Host "WhatIf summary: create=$($creates.Count); update=$($updates.Count); platformMetadataUpdate=$($platformUpdates.Count); conflict=$($conflicts.Count); obsolete=$($obsolete.Count); protectedOrUserOwnedSkip=$($preservedSkips.Count)"
+    $serverChanged = @($Plan | Where-Object { $_["project"] -eq "server" -and $_["changed"] -eq $true })
+    $wasmChanged = @($Plan | Where-Object { $_["project"] -eq "wasm" -and $_["changed"] -eq $true })
+    Write-Host "WhatIf summary: create=$($creates.Count); update=$($updates.Count); platformMetadataUpdate=$($platformUpdates.Count); conflict=$($conflicts.Count); obsolete=$($obsolete.Count); protectedOrUserOwnedSkip=$($preservedSkips.Count); serverChanged=$($serverChanged.Count); wasmChanged=$($wasmChanged.Count)"
 
     if ($meaningful.Count -eq 0) {
         Write-Host "WhatIf plan: no-op; every file is unchanged, out-of-scope, or already aligned."
@@ -386,7 +579,7 @@ function Write-RegenerationPlanSummary {
     else {
         Write-Host "WhatIf actions:"
         foreach ($item in $meaningful) {
-            Write-Host "- $($item["filePath"]): $($item["action"]) - $($item["reason"])"
+            Write-Host "- [$($item["project"])] $($item["filePath"]): $($item["action"]) - $($item["reason"])"
         }
     }
 
@@ -479,7 +672,8 @@ function Add-PlanLines {
     }
 
     foreach ($item in $Items) {
-        $Lines.Add("- $($item["filePath"]): $($item["action"]) - $($item["reason"])")
+        $project = if ([string]::IsNullOrWhiteSpace([string]$item["project"])) { "unknown" } else { [string]$item["project"] }
+        $Lines.Add("- [$project] $($item["filePath"]): $($item["action"]) - $($item["reason"])")
     }
 }
 
@@ -526,6 +720,17 @@ function Read-SimpleYamlValue {
     return $Default
 }
 
+function Read-MetadataPackageVersions {
+    param([Parameter(Mandatory = $true)][string]$Text)
+
+    $versions = @{}
+    foreach ($match in [regex]::Matches($Text, "(?m)^\s+(BlazorShop\.Storefront\.[A-Za-z]+):\s*(\S+)\s*$")) {
+        $versions[$match.Groups[1].Value] = $match.Groups[2].Value.Trim('"')
+    }
+
+    return $versions
+}
+
 function Read-GeneratedStorefrontMetadata {
     param([Parameter(Mandatory = $true)][string]$MetadataPath)
 
@@ -544,8 +749,11 @@ function Read-GeneratedStorefrontMetadata {
         storeKey = Read-SimpleYamlValue -Text $text -Key "storeKey" -Default "default"
         outputRoot = Read-SimpleYamlValue -Text $text -Key "outputRoot" -Default (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MetadataPath)))
         sourceStarterPath = Read-SimpleYamlValue -Text $text -Key "sourceStarterPath" -Default "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"
+        packageBuildIdentity = Read-SimpleYamlValue -Text $text -Key "packageBuildIdentity" -Default ""
+        packageVersions = Read-MetadataPackageVersions -Text $text
         generationMode = Read-SimpleYamlValue -Text $text -Key "generationMode" -Default ""
         starterContractSha256 = Read-SimpleYamlValue -Text $text -Key "starterContractSha256" -Default ""
+        starterWasmContractSha256 = Read-SimpleYamlValue -Text $text -Key "starterWasmContractSha256" -Default ""
         planSha256 = Read-SimpleYamlValue -Text $text -Key "planSha256" -Default ""
         sourceHandoffPackageHash = Read-SimpleYamlValue -Text $text -Key "sourceHandoffPackageHash" -Default ""
         sourceHandoffReadinessHash = Read-SimpleYamlValue -Text $text -Key "sourceHandoffReadinessHash" -Default ""
@@ -684,6 +892,13 @@ function Assert-HandoffRegenerationState {
         throw "[SFB-REGEN-HANDOFF-011] Starter contract drift requires an explicit foundation upgrade. Problem: current Starter contract hashes to '$currentStarterHash' but the handoff plan records '$planStarterHash'. Cause: the shared Starter foundation changed after this handoff project was generated. Fix: run a reviewed foundation upgrade/re-plan before regenerating visual files."
     }
 
+    $recordedStarterWasmHash = Normalize-RecordedHash -Hash $Metadata["starterWasmContractSha256"]
+    $starterWasmContractPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj"
+    $currentStarterWasmHash = Get-NormalizedFileSha256 -Path $starterWasmContractPath
+    if (-not [string]::IsNullOrWhiteSpace($recordedStarterWasmHash) -and $currentStarterWasmHash -ne $recordedStarterWasmHash) {
+        throw "[SFB-REGEN-HANDOFF-012] Starter.WASM contract drift requires an explicit foundation upgrade. Problem: current Starter.WASM contract hashes to '$currentStarterWasmHash' but metadata records '$recordedStarterWasmHash'. Cause: the shared WASM foundation changed after this handoff project was generated. Fix: run a reviewed foundation upgrade/re-plan before regenerating visual files."
+    }
+
     Assert-HandoffPlanTargetsAreRegeneratable -Plan $plan
     return $planInfo
 }
@@ -765,9 +980,14 @@ function Update-CandidateFoundationMetadata {
         "generatorVersion",
         "storefrontContractSha256",
         "storefrontContractPath",
+        "sourceStarterWasmPath",
         "sourceStarterVersion",
         "starterContractVersion",
+        "starterContractSha256",
+        "starterWasmContractPath",
+        "starterWasmContractSha256",
         "packageVersions",
+        "packageProvenance",
         "updatedUtc"
     )) {
         $merged = Set-YamlTopLevelBlock -BaseText $merged -SourceText $candidateText -Key $key
@@ -912,6 +1132,7 @@ $handoffPlanInfo = Assert-HandoffRegenerationState -Metadata $metadata -ProjectR
 
 Assert-StorefrontBuilderPathUnderRoot -Path $candidateOutputRoot -Root $resolvedOutputRoot
 Assert-StorefrontBuilderPathUnderRoot -Path $backupRoot -Root $resolvedOutputRoot
+Assert-VisualScopeFoundationFresh -Scope $Scope -WhatIf ([bool]$WhatIf) -ProjectRoot $resolvedProjectRoot -Metadata $metadata
 
 if ($Scope -eq "validate") {
     & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $resolvedProjectRoot
@@ -958,7 +1179,7 @@ try {
     $plan = New-RegenerationPlan -TargetProjectRoot $resolvedProjectRoot -CandidateProjectRoot $candidateProjectRoot -TargetEntries $originalEntries -CandidateEntries $candidateEntries -Scope $Scope -Target $Target
 
     $commandLabel = if ($WhatIf) { "regenerate-storefront.ps1 -WhatIf" } else { "regenerate-storefront.ps1" }
-    Write-RegenerationReport -ReportPath $candidateReportPath -Command $commandLabel -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
+    Write-RegenerationReport -ReportPath $candidateReportPath -Command $commandLabel -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult -Metadata $metadata -MetadataPath $metadataPath
 
     if ($WhatIf) {
         Copy-Item -LiteralPath $candidateReportPath -Destination $stableWhatIfReportPath -Force
@@ -985,10 +1206,17 @@ try {
 
     if ($BuildAfterApply) {
         $projectFile = Join-Path $resolvedProjectRoot "$projectName.csproj"
+        $wasmProjectFile = Join-Path $resolvedProjectRoot "$projectName.WASM\$projectName.WASM.csproj"
         dotnet build $projectFile
         if ($LASTEXITCODE -ne 0) {
             $buildResult = "failed"
             throw "[SFB-REGEN-010] Post-regeneration build failed."
+        }
+
+        dotnet build $wasmProjectFile
+        if ($LASTEXITCODE -ne 0) {
+            $buildResult = "failed"
+            throw "[SFB-REGEN-010] Post-regeneration WASM build failed."
         }
 
         $buildResult = "passed"
@@ -1002,7 +1230,7 @@ try {
     & "$PSScriptRoot/scripts/validate/Test-StorefrontBuilderIdempotency.ps1" -ProjectRoot $resolvedProjectRoot
     $hasMeaningfulPlanEntries = @($plan | Where-Object { -not $_["action"].StartsWith("skip", [System.StringComparison]::Ordinal) }).Count -gt 0
     if ($hasMeaningfulPlanEntries) {
-        Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
+        Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult -Metadata $metadata -MetadataPath $metadataPath
     }
 }
 catch {
@@ -1014,7 +1242,7 @@ catch {
     }
 
     if ((@($plan | Where-Object { -not $_["action"].StartsWith("skip", [System.StringComparison]::Ordinal) }).Count -gt 0) -and (Test-Path -LiteralPath $resolvedProjectRoot)) {
-        Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult
+        Write-RegenerationReport -ReportPath $reportPath -Command "regenerate-storefront.ps1" -Scope $Scope -Target $Target -Plan $plan -ValidationResult $validationResult -BuildResult $buildResult -Metadata $metadata -MetadataPath $metadataPath
     }
 
     throw
