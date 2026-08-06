@@ -212,6 +212,9 @@ namespace BlazorShop.Tests.Architecture
                 "starterContractVersion",
                 "StorefrontClientPackageVersion",
                 "StorefrontRuntimePackageVersion",
+                "StorefrontPresentationPackageVersion",
+                "StorefrontComponentsPackageVersion",
+                "StorefrontBrowserPackageVersion",
                 "generatedFileRoot",
                 "assetRoot",
                 "shellComposition",
@@ -280,6 +283,7 @@ namespace BlazorShop.Tests.Architecture
                 "metadata.yaml",
                 "BlazorShop.Storefront.Components",
                 "BlazorShop.Storefront.Presentation",
+                "BlazorShop.Storefront.Browser",
             })
             {
                 Assert.Contains(text, generator, StringComparison.Ordinal);

@@ -97,8 +97,11 @@ namespace BlazorShop.Tests.Architecture
                 "createdUtc:",
                 "updatedUtc:",
                 "sourceStarterVersion:",
+                "sourceHead:",
+                "packageBuildIdentity:",
                 "starterContractVersion:",
                 "packageVersions:",
+                "packageProvenance:",
                 "commandMode:",
                 "normalizedProjectName:",
                 "outputRoot:",
@@ -116,6 +119,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("\"updatedUtc\": \"2026-07-24T00:00:00Z\"", validFixture, StringComparison.Ordinal);
             Assert.Contains("\"starterContractVersion\": \"1\"", validFixture, StringComparison.Ordinal);
             Assert.Contains("\"packageVersions\"", validFixture, StringComparison.Ordinal);
+            Assert.Contains("\"BlazorShop.Storefront.Browser\"", validFixture, StringComparison.Ordinal);
+            Assert.Contains("\"packageProvenance\"", validFixture, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -214,6 +219,7 @@ namespace BlazorShop.Tests.Architecture
                 "StorefrontRuntimePackageVersion",
                 "StorefrontPresentationPackageVersion",
                 "StorefrontComponentsPackageVersion",
+                "StorefrontBrowserPackageVersion",
                 "Describe",
             })
             {

@@ -112,11 +112,11 @@ Use these files as baseline during implementation:
 - [ ] Generated server uses package references for Presentation, Components and Browser.
 - [ ] Generated WASM uses package references for Components and Browser.
 - [ ] Generated WASM does not direct-reference Runtime or Client.
-- [ ] Browser package is included in package version props, metadata, pack scripts, proof scripts, static gates and isolation gates.
-- [ ] Package versions are immutable per build identity.
-- [ ] Local feed cleanup is scoped and deterministic.
-- [ ] NuGet global cache cleanup removes only the Storefront package IDs and exact versions for the current run.
-- [ ] Restore uses `--no-cache --force-evaluate`.
+- [x] Browser package is included in package version props, metadata, pack scripts, proof scripts, static gates and isolation gates.
+- [x] Package versions are immutable per build identity.
+- [x] Local feed cleanup is scoped and deterministic.
+- [x] NuGet global cache cleanup removes only the Storefront package IDs and exact versions for the current run.
+- [x] Restore uses `--no-cache --force-evaluate`.
 - [ ] Server and WASM `project.assets.json` are validated.
 - [ ] Package ID/version/source/hash in restore output matches generated metadata.
 - [ ] External ProjectReference remains forbidden.
@@ -218,76 +218,76 @@ Ensure generated projects always consume packages built from the current source 
 
 ### Tasks
 
-- [ ] Add Browser to package version contract.
-  - [ ] Add `StorefrontBrowserPackageVersion` to `BlazorShop.Storefront.Starter/StorefrontPackageVersions.props`.
-  - [ ] Add `BlazorShop.Storefront.Browser` to `starter-generation.contract.yaml` package dependencies.
-  - [ ] Add Browser to generated metadata package version output.
-  - [ ] Add Browser to metadata schemas and fixtures.
-  - [ ] Add Browser to generated-file manifests where package metadata is recorded.
-- [ ] Pack five packages in every generated proof.
-  - [ ] Client.
-  - [ ] Runtime.
-  - [ ] Presentation.
-  - [ ] Components.
-  - [ ] Browser.
-- [ ] Introduce immutable build identity.
-  - [ ] Resolve current `HEAD`.
-  - [ ] Derive short commit SHA.
-  - [ ] Use version format such as `1.0.0-local.{shortSha}`.
-  - [ ] Ensure all five packages use the same build identity in a run.
-  - [ ] Ensure package identity is printed in proof output.
-  - [ ] Keep existing explicit version parameters for emergency manual override only.
-- [ ] Scope package cleanup.
-  - [ ] Delete old run feed under approved `artifacts/storefront-packages` or `obj/storefront-builder/packages`.
-  - [ ] Delete exact global NuGet package cache folders only for the five package IDs and current versions.
-  - [ ] Do not clear the whole global NuGet cache.
-  - [ ] Fail if a resolved cache path is outside `%USERPROFILE%\.nuget\packages`.
-- [ ] Add package hash provenance.
-  - [ ] Compute SHA-256 for each `.nupkg`.
-  - [ ] Write package ID, version, feed path and hash to generated metadata.
-  - [ ] Write package ID, version, feed path and hash to proof report.
-  - [ ] Include Browser in all reports.
+- [x] Add Browser to package version contract.
+  - [x] Add `StorefrontBrowserPackageVersion` to `BlazorShop.Storefront.Starter/StorefrontPackageVersions.props`.
+  - [x] Add `BlazorShop.Storefront.Browser` to `starter-generation.contract.yaml` package dependencies.
+  - [x] Add Browser to generated metadata package version output.
+  - [x] Add Browser to metadata schemas and fixtures.
+  - [x] Add Browser to generated-file manifests where package metadata is recorded.
+- [x] Pack five packages in every generated proof.
+  - [x] Client.
+  - [x] Runtime.
+  - [x] Presentation.
+  - [x] Components.
+  - [x] Browser.
+- [x] Introduce immutable build identity.
+  - [x] Resolve current `HEAD`.
+  - [x] Derive short commit SHA.
+  - [x] Use version format such as `1.0.0-local.{shortSha}`.
+  - [x] Ensure all five packages use the same build identity in a run.
+  - [x] Ensure package identity is printed in proof output.
+  - [x] Keep existing explicit version parameters for emergency manual override only.
+- [x] Scope package cleanup.
+  - [x] Delete old run feed under approved `artifacts/storefront-packages` or `obj/storefront-builder/packages`.
+  - [x] Delete exact global NuGet package cache folders only for the five package IDs and current versions.
+  - [x] Do not clear the whole global NuGet cache.
+  - [x] Fail if a resolved cache path is outside `%USERPROFILE%\.nuget\packages`.
+- [x] Add package hash provenance.
+  - [x] Compute SHA-256 for each `.nupkg`.
+  - [x] Write package ID, version, feed path and hash to generated metadata.
+  - [x] Write package ID, version, feed path and hash to proof report.
+  - [x] Include Browser in all reports.
 - [ ] Verify restore result.
-  - [ ] Restore server with `dotnet restore --no-cache --force-evaluate`.
+  - [x] Restore server with `dotnet restore --no-cache --force-evaluate`.
   - [ ] Restore WASM with `dotnet restore --no-cache --force-evaluate`.
-  - [ ] Parse server `project.assets.json`.
+  - [x] Parse server `project.assets.json`.
   - [ ] Parse WASM `project.assets.json`.
-  - [ ] Validate package IDs.
-  - [ ] Validate package versions.
-  - [ ] Validate package source/feed when available.
-  - [ ] Validate package hashes against metadata when available.
+  - [x] Validate package IDs.
+  - [x] Validate package versions.
+  - [x] Validate package source/feed when available.
+  - [x] Validate package hashes against metadata when available.
   - [ ] Fail if server and WASM resolve different Storefront package versions.
 
 ### Files To Update
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StorefrontPackageVersions.props`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml`
-- [ ] `scripts/qa/run-storefront-builder-generated-proof.ps1`
-- [ ] `scripts/qa/run-storefront-builder-isolation-gate.ps1`
-- [ ] `scripts/qa/run-storefront-starter-isolation-gate.ps1`
-- [ ] `scripts/qa/run-storefront-sample-release-gate.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/tests/schemas/fixtures/valid/metadata.json`
-- [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] `docs/visual-reverse-engineering-skill/reference.md`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StorefrontPackageVersions.props`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml`
+- [x] `scripts/qa/run-storefront-builder-generated-proof.ps1`
+- [x] `scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- [x] `scripts/qa/run-storefront-starter-isolation-gate.ps1`
+- [x] `scripts/qa/run-storefront-sample-release-gate.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/tests/schemas/fixtures/valid/metadata.json`
+- [x] `docs/architecture/11-storefront-builder.md`
+- [x] `docs/visual-reverse-engineering-skill/reference.md`
 
 ### Negative Tests
 
-- [ ] Browser package missing from feed fails.
-- [ ] Browser package missing from metadata fails.
-- [ ] Browser package missing from generated server `.csproj` fails.
+- [x] Browser package missing from feed fails.
+- [x] Browser package missing from metadata fails.
+- [x] Browser package missing from generated server `.csproj` fails.
 - [ ] Browser package missing from generated WASM `.csproj` fails.
-- [ ] Stale package with same ID but older version is ignored.
+- [x] Stale package with same ID but older version is ignored.
 - [ ] Server resolves different version than WASM fails.
-- [ ] Package hash mismatch fails.
-- [ ] Package source outside expected local feed fails when local proof requires local feed.
-- [ ] Cache cleanup path outside NuGet package root fails.
+- [x] Package hash mismatch fails.
+- [x] Package source outside expected local feed fails when local proof requires local feed.
+- [x] Cache cleanup path outside NuGet package root fails.
 
 ### Done When
 
-- [ ] A generated proof cannot pass while using stale Storefront packages from an earlier source state.
+- [x] A generated proof cannot pass while using stale Storefront packages from an earlier source state.
 
 ## Phase 2 - Create `BlazorShop.Storefront.Starter.WASM`
 

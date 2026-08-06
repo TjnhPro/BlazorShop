@@ -74,7 +74,7 @@ if ($routeDirectives.Count -gt 0) {
 
 $versions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
 $project = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.csproj") -Raw
-foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains $project "PackageReference Include=`"$package`"")) {
         throw "[SFB-STATIC-003] Package version mismatch or missing package reference: $package"
     }
@@ -86,7 +86,7 @@ foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.C
     }
 }
 
-if (-not (Test-TextContains $versions "StorefrontClientPackageVersion") -or -not (Test-TextContains $versions "StorefrontRuntimePackageVersion") -or -not (Test-TextContains $versions "StorefrontComponentsPackageVersion")) {
+if (-not (Test-TextContains $versions "StorefrontClientPackageVersion") -or -not (Test-TextContains $versions "StorefrontRuntimePackageVersion") -or -not (Test-TextContains $versions "StorefrontComponentsPackageVersion") -or -not (Test-TextContains $versions "StorefrontBrowserPackageVersion")) {
     throw "[SFB-STATIC-004] Package compatibility metadata is missing."
 }
 

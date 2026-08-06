@@ -4,6 +4,9 @@ param(
     [string]$ProjectRoot = "",
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
+    [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
+    [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
+    [string]$StorefrontBrowserPackageVersion = "1.0.0-local",
     [string]$SampleUrl = "http://127.0.0.1:18610",
     [int]$RuntimeTimeoutSeconds = 45,
     [switch]$SkipRuntime,
@@ -25,6 +28,9 @@ function Resolve-RepoPath {
 
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
+$presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
+$componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
+$browserProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj"
 $sampleRoot = if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
     Join-Path $repoRoot "artifacts\storefront-builder\generated\$Name"
 } else {
@@ -64,7 +70,7 @@ $forbiddenBrowserPatterns = @(
 
 if ($Describe) {
     Write-Host "Generated storefront release gate"
-    Write-Host "- Pack Storefront.Client and Storefront.Runtime to local feed"
+    Write-Host "- Pack Storefront.Client, Storefront.Runtime, Storefront.Presentation, Storefront.Components, and Storefront.Browser to local feed"
     Write-Host "- Restore/build/publish generated storefront from package references"
     Write-Host "- Verify generated client compatibility and provider callback/webhook exclusion"
     Write-Host "- Verify generated storefront has no backend/core/V2/Web.SharedV2/generated-source copy"
@@ -73,9 +79,27 @@ if ($Describe) {
     exit 0
 }
 
+function Initialize-StorefrontPackageIdentity {
+    $head = (& git -C $repoRoot rev-parse HEAD 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($head)) {
+        throw "Cannot resolve source HEAD for generated storefront release package identity."
+    }
+
+    $identity = ([string]$head).Substring(0, 12)
+    $derivedVersion = "1.0.0-local.$identity"
+    if ($StorefrontClientPackageVersion -eq "1.0.0-local") { $script:StorefrontClientPackageVersion = $derivedVersion }
+    if ($StorefrontRuntimePackageVersion -eq "1.0.0-local") { $script:StorefrontRuntimePackageVersion = $derivedVersion }
+    if ($StorefrontPresentationPackageVersion -eq "1.0.0-local") { $script:StorefrontPresentationPackageVersion = $derivedVersion }
+    if ($StorefrontComponentsPackageVersion -eq "1.0.0-local") { $script:StorefrontComponentsPackageVersion = $derivedVersion }
+    if ($StorefrontBrowserPackageVersion -eq "1.0.0-local") { $script:StorefrontBrowserPackageVersion = $derivedVersion }
+    Write-Host "Storefront package identity: $identity"
+}
+
 if (-not (Test-Path $sampleProject)) {
     throw "Generated storefront project is missing: $sampleProject. Generate it first under the configured artifact root."
 }
+
+Initialize-StorefrontPackageIdentity
 
 function Invoke-Step {
     param(
@@ -229,8 +253,23 @@ Invoke-Step "Pack Storefront.Runtime" {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+Invoke-Step "Pack Storefront.Presentation" {
+    dotnet pack $presentationProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontPresentationPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+Invoke-Step "Pack Storefront.Components" {
+    dotnet pack $componentsProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontComponentsPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+Invoke-Step "Pack Storefront.Browser" {
+    dotnet pack $browserProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontBrowserPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
 Invoke-Step "Restore generated storefront from local packages" {
-    dotnet restore $sampleProject
+    dotnet restore $sampleProject --no-cache --force-evaluate
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
@@ -247,6 +286,7 @@ Invoke-Step "Publish generated storefront" {
 Invoke-Step "Verify contract and source boundaries" {
     Assert-ContainsText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Presentation"'
     Assert-ContainsText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Components"'
+    Assert-ContainsText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Browser"'
     Assert-DoesNotContainText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Client"'
     Assert-DoesNotContainText $sampleProject '<PackageReference Include="BlazorShop.Storefront.Runtime"'
     Assert-SourceDoesNotContain $forbiddenSourcePatterns

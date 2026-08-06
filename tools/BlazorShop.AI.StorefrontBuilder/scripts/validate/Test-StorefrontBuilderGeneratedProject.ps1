@@ -30,7 +30,7 @@ foreach ($path in @($projectFile, $metadata, $featureManifest)) {
 }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
-foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains -Text $project -Needle "PackageReference Include=`"$package`"")) {
         throw "[SFB-PROJECT-004] Generated project is missing package reference '$package'."
     }
@@ -43,13 +43,13 @@ foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.C
 }
 
 $packageVersions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
-if (-not (Test-TextContains -Text $packageVersions -Needle "StorefrontClientPackageVersion")) {
+if (-not (Test-TextContains -Text $packageVersions -Needle "StorefrontClientPackageVersion") -or -not (Test-TextContains -Text $packageVersions -Needle "StorefrontBrowserPackageVersion")) {
     throw "[SFB-PROJECT-004] Generated project is missing Client package compatibility metadata."
 }
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
 $canonicalContractPath = "contracts/storefront/storefront.openapi.json"
-foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterVersion:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components")) {
+foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterVersion:", "sourceHead:", "packageBuildIdentity:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "protectedFiles:", "packageVersions:", "packageProvenance:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains -Text $metadataText -Needle $required)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
@@ -75,7 +75,7 @@ if (-not $updatedUtcMatch.Success) {
     throw "[SFB-PROJECT-009] metadata.yaml must contain an ISO-8601 UTC updatedUtc timestamp."
 }
 
-foreach ($packageVersionMarker in @("BlazorShop.Storefront.Client:", "BlazorShop.Storefront.Runtime:", "BlazorShop.Storefront.Presentation:", "BlazorShop.Storefront.Components:")) {
+foreach ($packageVersionMarker in @("BlazorShop.Storefront.Client:", "BlazorShop.Storefront.Runtime:", "BlazorShop.Storefront.Presentation:", "BlazorShop.Storefront.Components:", "BlazorShop.Storefront.Browser:")) {
     if (-not (Test-TextContains -Text $metadataText -Needle $packageVersionMarker)) {
         throw "[SFB-PROJECT-009] metadata.yaml is missing package version marker '$packageVersionMarker'."
     }

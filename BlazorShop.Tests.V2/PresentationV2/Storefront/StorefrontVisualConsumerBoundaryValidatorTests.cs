@@ -55,6 +55,7 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             [
                 "BlazorShop.Storefront.Presentation",
                 "BlazorShop.Storefront.Components",
+                "BlazorShop.Storefront.Browser",
                 "Microsoft.AspNetCore.Components.WebAssembly.Server",
             ],
             AllowedSourceRelativePaths: []));

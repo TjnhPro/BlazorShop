@@ -22,7 +22,7 @@ if ($manifest -match "starterContractVersion:\s*(unknown|$)") {
     throw "[SFB-COMPOSITION-002] Missing Starter contract version."
 }
 
-foreach ($packageProperty in @("StorefrontClientPackageVersion", "StorefrontRuntimePackageVersion")) {
+foreach ($packageProperty in @("StorefrontClientPackageVersion", "StorefrontRuntimePackageVersion", "StorefrontPresentationPackageVersion", "StorefrontComponentsPackageVersion", "StorefrontBrowserPackageVersion")) {
     if ($manifest -notmatch "$packageProperty\s*:\s*(?!unknown)([^\r\n]+)") {
         throw "[SFB-COMPOSITION-003] Missing package version '$packageProperty'."
     }

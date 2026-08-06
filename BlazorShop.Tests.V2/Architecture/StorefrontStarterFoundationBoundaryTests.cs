@@ -156,6 +156,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("<StorefrontRuntimePackageVersion>1.0.0-local</StorefrontRuntimePackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPresentationPackageVersion>1.0.0-local</StorefrontPresentationPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("<StorefrontComponentsPackageVersion>1.0.0-local</StorefrontComponentsPackageVersion>", versionProps, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontBrowserPackageVersion>1.0.0-local</StorefrontBrowserPackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("local-storefront-packages", nugetConfig, StringComparison.Ordinal);
             Assert.Contains("| v1 | 1.x | compatible |", compatibility, StringComparison.Ordinal);
             Assert.Contains("| 1.x | 1.x |", compatibility, StringComparison.Ordinal);
@@ -595,6 +596,7 @@ namespace BlazorShop.Tests.Architecture
                 "BlazorShop.Storefront.Runtime:",
                 "BlazorShop.Storefront.Presentation:",
                 "BlazorShop.Storefront.Components:",
+                "BlazorShop.Storefront.Browser:",
             })
             {
                 Assert.Contains(metadataMarker, generator, StringComparison.Ordinal);
@@ -862,7 +864,7 @@ namespace BlazorShop.Tests.Architecture
         public void StorefrontAiGeneratorPlan_ConstrictsAiToPresentationAndProtectsContracts()
         {
             var plan = ReadRepositoryFile("docs/storefront-platform/storefront-ai-generator-plan.md");
-            var todo = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/Storefront Starter Foundation.todo.md");
+            var contract = ReadRepositoryFile("docs/visual-reverse-engineering-skill/generated-storefront-foundation-contract.md");
 
             Assert.Contains("Planning only", plan, StringComparison.Ordinal);
             Assert.Contains("scripts/generate-storefront-sample.ps1", plan, StringComparison.Ordinal);
@@ -875,7 +877,9 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("checkout commands", plan, StringComparison.Ordinal);
             Assert.Contains("copies Storefront V2 source", plan, StringComparison.Ordinal);
             Assert.Contains("exposes Commerce Node base URL", plan, StringComparison.Ordinal);
-            Assert.Contains("AI Generator Planning", todo, StringComparison.Ordinal);
+            Assert.Contains("Generated Storefront Foundation Contract", contract, StringComparison.Ordinal);
+            Assert.Contains("same-origin browser actions", contract, StringComparison.Ordinal);
+            Assert.Contains("Forbidden References", contract, StringComparison.Ordinal);
         }
 
         [Fact]

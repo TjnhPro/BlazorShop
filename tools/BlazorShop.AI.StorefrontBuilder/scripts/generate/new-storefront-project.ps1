@@ -10,6 +10,19 @@ param(
     [string]$CommandMode = "generate",
     [string]$HandoffRoot = "",
     [string]$HandoffSchemaRoot = "",
+    [string]$SourceHead = "",
+    [string]$PackageBuildIdentity = "",
+    [string]$StorefrontClientPackageVersion = "",
+    [string]$StorefrontRuntimePackageVersion = "",
+    [string]$StorefrontPresentationPackageVersion = "",
+    [string]$StorefrontComponentsPackageVersion = "",
+    [string]$StorefrontBrowserPackageVersion = "",
+    [string]$StorefrontClientPackageHash = "",
+    [string]$StorefrontRuntimePackageHash = "",
+    [string]$StorefrontPresentationPackageHash = "",
+    [string]$StorefrontComponentsPackageHash = "",
+    [string]$StorefrontBrowserPackageHash = "",
+    [string]$PackageFeedPath = "",
     [switch]$Force
 )
 
@@ -106,6 +119,11 @@ try {
         OutputRoot = $stagingOutputRoot
         CommerceNodeBaseUrl = $CommerceNodeBaseUrl
         PublicBaseUrl = $PublicBaseUrl
+        StorefrontClientPackageVersion = $StorefrontClientPackageVersion
+        StorefrontRuntimePackageVersion = $StorefrontRuntimePackageVersion
+        StorefrontPresentationPackageVersion = $StorefrontPresentationPackageVersion
+        StorefrontComponentsPackageVersion = $StorefrontComponentsPackageVersion
+        StorefrontBrowserPackageVersion = $StorefrontBrowserPackageVersion
     }
 
     & $generator @arguments -Force
@@ -166,6 +184,9 @@ try {
 
     [xml]$packageVersionDocument = Get-Content -LiteralPath $versionPropsPath -Raw
     $packageVersions = $packageVersionDocument.Project.PropertyGroup
+    $metadataSourceHead = if ([string]::IsNullOrWhiteSpace($SourceHead)) { "unknown" } else { $SourceHead }
+    $metadataPackageBuildIdentity = if ([string]::IsNullOrWhiteSpace($PackageBuildIdentity)) { "unknown" } else { $PackageBuildIdentity }
+    $metadataPackageFeedPath = if ([string]::IsNullOrWhiteSpace($PackageFeedPath)) { "unknown" } else { Get-PortableRelativePath -BasePath $repoRoot -TargetPath $PackageFeedPath }
     $metadataTimestampUtc = [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ")
 
     $metadataLines = @(
@@ -183,6 +204,8 @@ try {
         "storefrontContractSha256: $storefrontContractSha256",
         "sourceStarterPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
         "sourceStarterVersion: $($starterVersionMatch.Groups[1].Value)",
+        "sourceHead: $metadataSourceHead",
+        "packageBuildIdentity: $metadataPackageBuildIdentity",
         "starterContractPath: $starterContractPath",
         "starterContractVersion: $($starterContractVersionMatch.Groups[1].Value)",
         "starterContractSha256: $starterContractSha256",
@@ -194,11 +217,31 @@ try {
         "packageReferences:",
         "  - BlazorShop.Storefront.Presentation",
         "  - BlazorShop.Storefront.Components",
+        "  - BlazorShop.Storefront.Browser",
         "packageVersions:",
         "  BlazorShop.Storefront.Client: $($packageVersions.StorefrontClientPackageVersion)",
         "  BlazorShop.Storefront.Runtime: $($packageVersions.StorefrontRuntimePackageVersion)",
         "  BlazorShop.Storefront.Presentation: $($packageVersions.StorefrontPresentationPackageVersion)",
-        "  BlazorShop.Storefront.Components: $($packageVersions.StorefrontComponentsPackageVersion)"
+        "  BlazorShop.Storefront.Components: $($packageVersions.StorefrontComponentsPackageVersion)",
+        "  BlazorShop.Storefront.Browser: $($packageVersions.StorefrontBrowserPackageVersion)",
+        "packageProvenance:",
+        "  feedPath: $metadataPackageFeedPath",
+        "  packages:",
+        "    - id: BlazorShop.Storefront.Client",
+        "      version: $($packageVersions.StorefrontClientPackageVersion)",
+        "      sha256: $(if ([string]::IsNullOrWhiteSpace($StorefrontClientPackageHash)) { "unknown" } else { $StorefrontClientPackageHash })",
+        "    - id: BlazorShop.Storefront.Runtime",
+        "      version: $($packageVersions.StorefrontRuntimePackageVersion)",
+        "      sha256: $(if ([string]::IsNullOrWhiteSpace($StorefrontRuntimePackageHash)) { "unknown" } else { $StorefrontRuntimePackageHash })",
+        "    - id: BlazorShop.Storefront.Presentation",
+        "      version: $($packageVersions.StorefrontPresentationPackageVersion)",
+        "      sha256: $(if ([string]::IsNullOrWhiteSpace($StorefrontPresentationPackageHash)) { "unknown" } else { $StorefrontPresentationPackageHash })",
+        "    - id: BlazorShop.Storefront.Components",
+        "      version: $($packageVersions.StorefrontComponentsPackageVersion)",
+        "      sha256: $(if ([string]::IsNullOrWhiteSpace($StorefrontComponentsPackageHash)) { "unknown" } else { $StorefrontComponentsPackageHash })",
+        "    - id: BlazorShop.Storefront.Browser",
+        "      version: $($packageVersions.StorefrontBrowserPackageVersion)",
+        "      sha256: $(if ([string]::IsNullOrWhiteSpace($StorefrontBrowserPackageHash)) { "unknown" } else { $StorefrontBrowserPackageHash })"
     )
 
     if ($isHandoffGeneration) {

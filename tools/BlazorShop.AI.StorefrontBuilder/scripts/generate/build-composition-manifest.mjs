@@ -23,6 +23,9 @@ const manifest = {
   packageVersions: {
     StorefrontClientPackageVersion: matchValue(packageVersions, /<StorefrontClientPackageVersion>([^<]+)<\/StorefrontClientPackageVersion>/, "unknown"),
     StorefrontRuntimePackageVersion: matchValue(packageVersions, /<StorefrontRuntimePackageVersion>([^<]+)<\/StorefrontRuntimePackageVersion>/, "unknown"),
+    StorefrontPresentationPackageVersion: matchValue(packageVersions, /<StorefrontPresentationPackageVersion>([^<]+)<\/StorefrontPresentationPackageVersion>/, "unknown"),
+    StorefrontComponentsPackageVersion: matchValue(packageVersions, /<StorefrontComponentsPackageVersion>([^<]+)<\/StorefrontComponentsPackageVersion>/, "unknown"),
+    StorefrontBrowserPackageVersion: matchValue(packageVersions, /<StorefrontBrowserPackageVersion>([^<]+)<\/StorefrontBrowserPackageVersion>/, "unknown"),
   },
   generatedFileRoot: `BlazorShop.PresentationV2/${projectName}`,
   assetRoot: `BlazorShop.PresentationV2/${projectName}/wwwroot/assets/generated`,

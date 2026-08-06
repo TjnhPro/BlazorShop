@@ -4,6 +4,7 @@ param(
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
     [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
     [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
+    [string]$StorefrontBrowserPackageVersion = "1.0.0-local",
     [switch]$Describe
 )
 
@@ -14,6 +15,7 @@ $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Store
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
 $presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
 $componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
+$browserProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj"
 $starterSource = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter"
 $isolationRoot = Join-Path $repoRoot "obj\storefront-starter-isolation"
 $feedRoot = Join-Path $isolationRoot "feed"
@@ -42,6 +44,7 @@ if ($Describe) {
     Write-Host "- Pack Storefront.Runtime to local feed"
     Write-Host "- Pack Storefront.Presentation to local feed"
     Write-Host "- Pack Storefront.Components to local feed"
+    Write-Host "- Pack Storefront.Browser to local feed"
     Write-Host "- Copy Starter source to obj/storefront-starter-isolation/Storefront.Sample"
     Write-Host "- Rewrite Starter Presentation ProjectReference to a PackageReference"
     Write-Host "- Restore from local package feed"
@@ -73,17 +76,24 @@ function Invoke-Step {
 
 function Clear-StorefrontLocalPackageCache {
     $globalPackageRoot = Join-Path ([Environment]::GetFolderPath("UserProfile")) ".nuget\packages"
+    $resolvedGlobalPackageRoot = [System.IO.Path]::GetFullPath($globalPackageRoot)
     $packages = @(
         @{ Id = "blazorshop.storefront.client"; Version = $StorefrontClientPackageVersion },
         @{ Id = "blazorshop.storefront.runtime"; Version = $StorefrontRuntimePackageVersion },
         @{ Id = "blazorshop.storefront.presentation"; Version = $StorefrontPresentationPackageVersion },
-        @{ Id = "blazorshop.storefront.components"; Version = $StorefrontComponentsPackageVersion }
+        @{ Id = "blazorshop.storefront.components"; Version = $StorefrontComponentsPackageVersion },
+        @{ Id = "blazorshop.storefront.browser"; Version = $StorefrontBrowserPackageVersion }
     )
 
     foreach ($package in $packages) {
         $versionPath = Join-Path $globalPackageRoot "$($package.Id)\$($package.Version)"
-        if (Test-Path $versionPath) {
-            Remove-Item -LiteralPath $versionPath -Recurse -Force
+        $resolvedVersionPath = [System.IO.Path]::GetFullPath($versionPath)
+        if (-not $resolvedVersionPath.StartsWith($resolvedGlobalPackageRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to clean NuGet cache path outside global package root: $resolvedVersionPath"
+        }
+
+        if (Test-Path $resolvedVersionPath) {
+            Remove-Item -LiteralPath $resolvedVersionPath -Recurse -Force
         }
     }
 }
@@ -121,6 +131,11 @@ Invoke-Step "Pack Storefront.Presentation" {
 
 Invoke-Step "Pack Storefront.Components" {
     dotnet pack $componentsProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontComponentsPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+Invoke-Step "Pack Storefront.Browser" {
+    dotnet pack $browserProject --configuration $Configuration --no-restore --output $feedRoot "/p:PackageVersion=$StorefrontBrowserPackageVersion"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 

@@ -4,6 +4,11 @@ param(
     [string]$OutputRoot = "artifacts/storefront-builder/generated",
     [string]$CommerceNodeBaseUrl = "http://localhost:5180",
     [string]$PublicBaseUrl = "http://localhost:18600",
+    [string]$StorefrontClientPackageVersion = "",
+    [string]$StorefrontRuntimePackageVersion = "",
+    [string]$StorefrontPresentationPackageVersion = "",
+    [string]$StorefrontComponentsPackageVersion = "",
+    [string]$StorefrontBrowserPackageVersion = "",
     [switch]$Force
 )
 
@@ -105,6 +110,18 @@ function Rewrite-GeneratedSource {
         Set-Content -LiteralPath $file.FullName -Value $content -Encoding UTF8
     }
 
+    $versionPropsPath = Join-Path $projectRoot "StorefrontPackageVersions.props"
+    if (Test-Path $versionPropsPath) {
+        [xml]$versionDocument = Get-Content -LiteralPath $versionPropsPath -Raw
+        $properties = $versionDocument.Project.PropertyGroup
+        if (-not [string]::IsNullOrWhiteSpace($StorefrontClientPackageVersion)) { $properties.StorefrontClientPackageVersion = $StorefrontClientPackageVersion }
+        if (-not [string]::IsNullOrWhiteSpace($StorefrontRuntimePackageVersion)) { $properties.StorefrontRuntimePackageVersion = $StorefrontRuntimePackageVersion }
+        if (-not [string]::IsNullOrWhiteSpace($StorefrontPresentationPackageVersion)) { $properties.StorefrontPresentationPackageVersion = $StorefrontPresentationPackageVersion }
+        if (-not [string]::IsNullOrWhiteSpace($StorefrontComponentsPackageVersion)) { $properties.StorefrontComponentsPackageVersion = $StorefrontComponentsPackageVersion }
+        if (-not [string]::IsNullOrWhiteSpace($StorefrontBrowserPackageVersion)) { $properties.StorefrontBrowserPackageVersion = $StorefrontBrowserPackageVersion }
+        $versionDocument.Save($versionPropsPath)
+    }
+
     $nugetConfigPath = Join-Path $projectRoot "nuget.config"
     if (Test-Path $nugetConfigPath) {
         $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
@@ -143,6 +160,11 @@ function Rewrite-GeneratedSource {
     $projectContent = $projectContent.Replace(
         '    <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />',
         '    <PackageReference Include="BlazorShop.Storefront.Presentation" Version="$(StorefrontPresentationPackageVersion)" />')
+    if ($projectContent.IndexOf('PackageReference Include="BlazorShop.Storefront.Browser"', [System.StringComparison]::Ordinal) -lt 0) {
+        $projectContent = $projectContent.Replace(
+            '    <PackageReference Include="BlazorShop.Storefront.Components" Version="$(StorefrontComponentsPackageVersion)" />',
+            "    <PackageReference Include=`"BlazorShop.Storefront.Components`" Version=`"`$(StorefrontComponentsPackageVersion)`" />`r`n    <PackageReference Include=`"BlazorShop.Storefront.Browser`" Version=`"`$(StorefrontBrowserPackageVersion)`" />")
+    }
     Set-Content -LiteralPath $generatedProject -Value $projectContent -Encoding UTF8
 }
 

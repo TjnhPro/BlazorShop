@@ -12,6 +12,7 @@ param(
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
     [string]$StorefrontPresentationPackageVersion = "1.0.0-local",
     [string]$StorefrontComponentsPackageVersion = "1.0.0-local",
+    [string]$StorefrontBrowserPackageVersion = "1.0.0-local",
     [ValidateSet("Structure", "FoundationFunctionalFast", "FoundationFunctionalFull", "FoundationFunctional")]
     [string]$ProofLevel = "Structure",
     [string]$FixtureCategorySlug = "apparel",
@@ -31,6 +32,32 @@ $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Store
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
 $presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
 $componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
+$browserProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj"
+
+function Get-SourceHead {
+    $head = (& git -C $repoRoot rev-parse HEAD 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($head)) {
+        throw "[SFB-PROOF-HEAD-001] Cannot resolve source HEAD for immutable package identity."
+    }
+
+    return [string]$head
+}
+
+function Initialize-StorefrontPackageIdentity {
+    $script:SourceHead = Get-SourceHead
+    $script:PackageBuildIdentity = $script:SourceHead.Substring(0, 12)
+    $derivedVersion = "1.0.0-local.$script:PackageBuildIdentity"
+
+    if ($StorefrontClientPackageVersion -eq "1.0.0-local") { $script:StorefrontClientPackageVersion = $derivedVersion }
+    if ($StorefrontRuntimePackageVersion -eq "1.0.0-local") { $script:StorefrontRuntimePackageVersion = $derivedVersion }
+    if ($StorefrontPresentationPackageVersion -eq "1.0.0-local") { $script:StorefrontPresentationPackageVersion = $derivedVersion }
+    if ($StorefrontComponentsPackageVersion -eq "1.0.0-local") { $script:StorefrontComponentsPackageVersion = $derivedVersion }
+    if ($StorefrontBrowserPackageVersion -eq "1.0.0-local") { $script:StorefrontBrowserPackageVersion = $derivedVersion }
+
+    Write-Host "Source HEAD: $script:SourceHead"
+    Write-Host "Package build identity: $script:PackageBuildIdentity"
+    Write-Host "Storefront package versions: Client=$script:StorefrontClientPackageVersion Runtime=$script:StorefrontRuntimePackageVersion Presentation=$script:StorefrontPresentationPackageVersion Components=$script:StorefrontComponentsPackageVersion Browser=$script:StorefrontBrowserPackageVersion"
+}
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -87,22 +114,119 @@ function Assert-UnderRoot {
     }
 }
 
+function Clear-StorefrontPackageFeed {
+    $resolvedPackageRoot = [System.IO.Path]::GetFullPath($packageRoot)
+    $approvedPackageRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "artifacts\storefront-packages"))
+    if (-not $resolvedPackageRoot.Equals($approvedPackageRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "[SFB-PROOF-002] Refusing to clean unapproved package feed: $resolvedPackageRoot"
+    }
+
+    if (Test-Path $resolvedPackageRoot) {
+        Get-ChildItem -LiteralPath $resolvedPackageRoot -Force | Remove-Item -Recurse -Force
+    }
+}
+
 function Clear-StorefrontLocalPackageCache {
     $globalPackageRoot = Join-Path ([Environment]::GetFolderPath("UserProfile")) ".nuget\packages"
-    foreach ($package in @("blazorshop.storefront.client", "blazorshop.storefront.runtime", "blazorshop.storefront.presentation", "blazorshop.storefront.components")) {
-        $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontClientPackageVersion"
-        if ($package -eq "blazorshop.storefront.runtime") {
-            $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontRuntimePackageVersion"
-        }
-        elseif ($package -eq "blazorshop.storefront.presentation") {
-            $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontPresentationPackageVersion"
-        }
-        elseif ($package -eq "blazorshop.storefront.components") {
-            $versionPath = Join-Path $globalPackageRoot "$package\$StorefrontComponentsPackageVersion"
+    $resolvedGlobalPackageRoot = [System.IO.Path]::GetFullPath($globalPackageRoot)
+    $packages = @(
+        @{ Id = "blazorshop.storefront.client"; Version = $StorefrontClientPackageVersion },
+        @{ Id = "blazorshop.storefront.runtime"; Version = $StorefrontRuntimePackageVersion },
+        @{ Id = "blazorshop.storefront.presentation"; Version = $StorefrontPresentationPackageVersion },
+        @{ Id = "blazorshop.storefront.components"; Version = $StorefrontComponentsPackageVersion },
+        @{ Id = "blazorshop.storefront.browser"; Version = $StorefrontBrowserPackageVersion }
+    )
+
+    foreach ($package in $packages) {
+        $versionPath = Join-Path $globalPackageRoot "$($package.Id)\$($package.Version)"
+        $resolvedVersionPath = [System.IO.Path]::GetFullPath($versionPath)
+        if (-not $resolvedVersionPath.StartsWith($resolvedGlobalPackageRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "[SFB-PROOF-003] Refusing to clean NuGet cache path outside global package root: $resolvedVersionPath"
         }
 
-        if (Test-Path $versionPath) {
-            Remove-Item -LiteralPath $versionPath -Recurse -Force
+        if (Test-Path $resolvedVersionPath) {
+            Remove-Item -LiteralPath $resolvedVersionPath -Recurse -Force
+        }
+    }
+}
+
+function Get-StorefrontPackageHash {
+    param(
+        [string]$PackageId,
+        [string]$Version
+    )
+
+    $packagePath = Join-Path $packageRoot "$PackageId.$Version.nupkg"
+    if (-not (Test-Path $packagePath)) {
+        throw "[SFB-PROOF-PACKAGE-001] Expected package missing from local feed: $packagePath"
+    }
+
+    return (Get-FileHash -LiteralPath $packagePath -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Assert-RestoredStorefrontPackages {
+    param([string]$ProjectFile)
+
+    $assetsPath = Join-Path (Join-Path (Split-Path -Parent $ProjectFile) "obj") "project.assets.json"
+    if (-not (Test-Path $assetsPath)) {
+        throw "[SFB-PROOF-RESTORE-001] Restore assets file is missing: $assetsPath"
+    }
+
+    $assets = Get-Content -LiteralPath $assetsPath -Raw | ConvertFrom-Json
+    $libraries = @($assets.libraries.PSObject.Properties.Name)
+    $expected = @(
+        @{ Id = "BlazorShop.Storefront.Client"; Version = $StorefrontClientPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Runtime"; Version = $StorefrontRuntimePackageVersion },
+        @{ Id = "BlazorShop.Storefront.Presentation"; Version = $StorefrontPresentationPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Components"; Version = $StorefrontComponentsPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Browser"; Version = $StorefrontBrowserPackageVersion }
+    )
+
+    foreach ($package in $expected) {
+        $marker = "$($package.Id)/$($package.Version)"
+        $matched = $libraries | Where-Object { $_.Equals($marker, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1
+        if ([string]::IsNullOrWhiteSpace($matched)) {
+            throw "[SFB-PROOF-RESTORE-002] project.assets.json did not resolve expected package '$marker'. Resolved Storefront packages: $($libraries -match '^BlazorShop\.Storefront\.' -join ', ')"
+        }
+    }
+}
+
+function Assert-PackageProvenanceMetadata {
+    param(
+        [string]$ProjectRoot,
+        [hashtable]$PackageHashes
+    )
+
+    $metadataPath = Join-Path $ProjectRoot "docs\storefront-analysis\metadata.yaml"
+    if (-not (Test-Path $metadataPath)) {
+        throw "[SFB-PROOF-PROVENANCE-001] Generated metadata is missing: $metadataPath"
+    }
+
+    $metadata = Get-Content -LiteralPath $metadataPath -Raw
+    $resolvedRepoRoot = [System.IO.Path]::GetFullPath($repoRoot).TrimEnd('\', '/')
+    $resolvedPackageRoot = [System.IO.Path]::GetFullPath($packageRoot).TrimEnd('\', '/')
+    if (-not $resolvedPackageRoot.StartsWith($resolvedRepoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "[SFB-PROOF-PROVENANCE-002] Package feed path is outside repository root: $resolvedPackageRoot"
+    }
+
+    $relativeFeedPath = $resolvedPackageRoot.Substring($resolvedRepoRoot.Length).TrimStart('\', '/').Replace("\", "/")
+    if ($metadata.IndexOf("feedPath: $relativeFeedPath", [System.StringComparison]::Ordinal) -lt 0) {
+        throw "[SFB-PROOF-PROVENANCE-002] Generated metadata does not record expected package feed path '$relativeFeedPath'."
+    }
+
+    $expected = @(
+        @{ Id = "BlazorShop.Storefront.Client"; Version = $StorefrontClientPackageVersion; Hash = $PackageHashes.Client },
+        @{ Id = "BlazorShop.Storefront.Runtime"; Version = $StorefrontRuntimePackageVersion; Hash = $PackageHashes.Runtime },
+        @{ Id = "BlazorShop.Storefront.Presentation"; Version = $StorefrontPresentationPackageVersion; Hash = $PackageHashes.Presentation },
+        @{ Id = "BlazorShop.Storefront.Components"; Version = $StorefrontComponentsPackageVersion; Hash = $PackageHashes.Components },
+        @{ Id = "BlazorShop.Storefront.Browser"; Version = $StorefrontBrowserPackageVersion; Hash = $PackageHashes.Browser }
+    )
+
+    foreach ($package in $expected) {
+        foreach ($marker in @("id: $($package.Id)", "version: $($package.Version)", "sha256: $($package.Hash)")) {
+            if ($metadata.IndexOf($marker, [System.StringComparison]::Ordinal) -lt 0) {
+                throw "[SFB-PROOF-PROVENANCE-003] Generated metadata does not record package provenance marker '$marker'."
+            }
         }
     }
 }
@@ -339,7 +463,8 @@ if ($Describe) {
     Write-Host "StorefrontBuilder generated proof workflow"
     Write-Host "- Proof levels: Structure, FoundationFunctionalFast, FoundationFunctionalFull"
     Write-Host "- Clean $projectRoot"
-    Write-Host "- Pack Storefront.Client, Storefront.Runtime, Storefront.Presentation, and Storefront.Components"
+    Write-Host "- Resolve source HEAD and package build identity"
+    Write-Host "- Pack Storefront.Client, Storefront.Runtime, Storefront.Presentation, Storefront.Components, and Storefront.Browser"
     Write-Host "- Generate $Name from Storefront.Starter"
     Write-Host "- Write StorefrontBuilder review, asset, CSS, and generated-file artifacts"
     Write-Host "- Restore/build generated proof from local packages"
@@ -355,6 +480,7 @@ if ($Describe) {
     exit 0
 }
 
+Initialize-StorefrontPackageIdentity
 Assert-UnderRoot $projectRoot $generatedRoot
 
 Invoke-Step "Clean generated proof output" {
@@ -364,6 +490,7 @@ Invoke-Step "Clean generated proof output" {
 }
 
 Invoke-Step "Prepare local package feed" {
+    Clear-StorefrontPackageFeed
     New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
     Clear-StorefrontLocalPackageCache
 }
@@ -388,6 +515,20 @@ Invoke-Step "Pack Storefront.Components" {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+Invoke-Step "Pack Storefront.Browser" {
+    dotnet pack $browserProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontBrowserPackageVersion"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+$packageHashes = @{
+    Client = Get-StorefrontPackageHash "BlazorShop.Storefront.Client" $StorefrontClientPackageVersion
+    Runtime = Get-StorefrontPackageHash "BlazorShop.Storefront.Runtime" $StorefrontRuntimePackageVersion
+    Presentation = Get-StorefrontPackageHash "BlazorShop.Storefront.Presentation" $StorefrontPresentationPackageVersion
+    Components = Get-StorefrontPackageHash "BlazorShop.Storefront.Components" $StorefrontComponentsPackageVersion
+    Browser = Get-StorefrontPackageHash "BlazorShop.Storefront.Browser" $StorefrontBrowserPackageVersion
+}
+Write-Host "Package hashes: Client=$($packageHashes.Client) Runtime=$($packageHashes.Runtime) Presentation=$($packageHashes.Presentation) Components=$($packageHashes.Components) Browser=$($packageHashes.Browser)"
+
 Invoke-Step "Generate proof storefront" {
     & "$toolRoot\scripts\generate\new-storefront-project.ps1" `
         -Name $Name `
@@ -395,7 +536,24 @@ Invoke-Step "Generate proof storefront" {
         -OutputRoot $OutputRoot `
         -CommerceNodeBaseUrl $CommerceNodeBaseUrl `
         -PublicBaseUrl $PublicBaseUrl `
+        -SourceHead $SourceHead `
+        -PackageBuildIdentity $PackageBuildIdentity `
+        -StorefrontClientPackageVersion $StorefrontClientPackageVersion `
+        -StorefrontRuntimePackageVersion $StorefrontRuntimePackageVersion `
+        -StorefrontPresentationPackageVersion $StorefrontPresentationPackageVersion `
+        -StorefrontComponentsPackageVersion $StorefrontComponentsPackageVersion `
+        -StorefrontBrowserPackageVersion $StorefrontBrowserPackageVersion `
+        -StorefrontClientPackageHash $packageHashes.Client `
+        -StorefrontRuntimePackageHash $packageHashes.Runtime `
+        -StorefrontPresentationPackageHash $packageHashes.Presentation `
+        -StorefrontComponentsPackageHash $packageHashes.Components `
+        -StorefrontBrowserPackageHash $packageHashes.Browser `
+        -PackageFeedPath $packageRoot `
         -Force
+}
+
+Invoke-Step "Validate package provenance metadata" {
+    Assert-PackageProvenanceMetadata $projectRoot $packageHashes
 }
 
 Invoke-Step "Write StorefrontBuilder artifacts" {
@@ -409,6 +567,7 @@ Invoke-Step "Write StorefrontBuilder artifacts" {
 Invoke-Step "Restore generated proof" {
     dotnet restore $projectFile --no-cache --force-evaluate
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    Assert-RestoredStorefrontPackages $projectFile
 }
 
 Invoke-Step "Build generated proof" {
@@ -428,7 +587,8 @@ Invoke-Step "Run StorefrontBuilder isolation gate" {
         -StorefrontClientPackageVersion $StorefrontClientPackageVersion `
         -StorefrontRuntimePackageVersion $StorefrontRuntimePackageVersion `
         -StorefrontPresentationPackageVersion $StorefrontPresentationPackageVersion `
-        -StorefrontComponentsPackageVersion $StorefrontComponentsPackageVersion
+        -StorefrontComponentsPackageVersion $StorefrontComponentsPackageVersion `
+        -StorefrontBrowserPackageVersion $StorefrontBrowserPackageVersion
 }
 
 Invoke-Step "Run shared visual consumer boundary validator" {
