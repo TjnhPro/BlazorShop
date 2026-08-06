@@ -30,9 +30,9 @@ Before planning, verify these paths exist:
 - `docs/storefront-analysis/agent-task-package/manifest.json`
 - every task package input file referenced by the manifest
 
-Hash `generation-plan.json` and `agent-task-package/manifest.json` with SHA-256. Record those hashes in `visual-plan.json`; if the manifest exposes a source handoff hash, record it as `handoffHash`. Do not infer a handoff hash from raw evidence.
+Hash `generation-plan.json` and `agent-task-package/manifest.json` with SHA-256. Record those hashes in `visual-plan.json`. Record `handoffHash` from `agent-task-package/manifest.json` `handoffHash` or `sourceHandoffPackageHash`; if older packages do not expose it, use `generation-plan.json` `sourceHandoffPackageHash`. Do not infer a handoff hash from raw evidence.
 
-List every allowed output file from the task package. Normalize paths to forward slashes, reject traversal, and sort by normalized relative path.
+List every allowed output file and every protected file from the task package. Read protected files from `agent-task-package/manifest.json` `protectedFiles`, or from `agent-task-package/inputs/file-boundary-manifest.json` `protectedFiles` for older packages. Normalize paths to forward slashes, reject traversal, and sort by normalized relative path.
 
 ## Planning Rules
 

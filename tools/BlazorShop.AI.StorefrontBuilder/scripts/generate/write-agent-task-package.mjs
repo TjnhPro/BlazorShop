@@ -58,6 +58,8 @@ const copiedEvidence = copyApprovedEvidence(packageRoot, evidenceReferences, out
 const warnings = evidenceReferences
   .filter(reference => !copiedEvidence.some(item => item.handoffPath === reference))
   .map(reference => ({ code: "evidence-not-copied", handoffPath: reference, message: "Evidence path was not an approved screenshot/crop or was missing from the portable package." }));
+const handoffHash = normalizeHash(plan.sourceHandoffPackageHash ?? artifacts.storefrontPattern.sourceHandoffPackageHash ?? artifacts.storefrontPattern.handoffHash);
+const protectedFiles = listProtectedFiles(artifacts.protectedFiles);
 
 writeJson(join(outputRoot, "inputs", "generation-plan.json"), plan);
 writeJson(join(outputRoot, "inputs", "handoff-evidence-references.json"), {
@@ -83,7 +85,8 @@ writeJson(join(outputRoot, "inputs", "file-boundary-manifest.json"), {
   artifactKind: "agent-file-boundary-manifest",
   allowedFiles: artifacts.allowedFiles,
   protectedFileManifestHash: `sha256:${sha(stableJson(artifacts.protectedFiles))}`,
-  protectedFileCount: countProtectedFiles(artifacts.protectedFiles),
+  protectedFileCount: protectedFiles.length,
+  protectedFiles,
   allowedOutputFiles: allowedOutputs,
 });
 writeJson(join(outputRoot, "inputs", "originality-restrictions.json"), artifacts.originalityRestrictions);
@@ -95,6 +98,8 @@ const manifest = stableObject({
   artifactId: `agent-visual-task-package.${plan.projectName}`,
   projectName: plan.projectName,
   storeKey: plan.storeKey,
+  handoffHash,
+  sourceHandoffPackageHash: handoffHash,
   generationPlanHash: planHash,
   inputs: [
     "inputs/generation-plan.json",
@@ -107,6 +112,7 @@ const manifest = stableObject({
   ],
   copiedEvidence,
   allowedOutputFiles: allowedOutputs,
+  protectedFiles,
   forbiddenOutputs: [
     "route declarations",
     "BFF endpoints",
@@ -255,8 +261,21 @@ function normalizeProjectPath(path) {
   return String(path ?? "").replaceAll("\\", "/").replace(/^\/+/, "");
 }
 
-function countProtectedFiles(value) {
-  return (value.paths ?? value.protectedFiles ?? value.files ?? []).length;
+function listProtectedFiles(value) {
+  return (value.paths ?? value.protectedFiles ?? value.files ?? [])
+    .map(item => typeof item === "string" ? item : item.path ?? item.targetPath ?? item.file)
+    .map(normalizeProjectPath)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "en"));
+}
+
+function normalizeHash(value) {
+  const text = String(value ?? "").trim();
+  if (!text) {
+    return "";
+  }
+
+  return text.startsWith("sha256:") ? text : `sha256:${text}`;
 }
 
 function readHandoffJson(root, name) {
