@@ -1,0 +1,29 @@
+@inject IStorefrontBrowserAccountController AccountController
+
+<section class="starter-wasm-shell" data-storefront-starter-wasm="account">
+    <header class="starter-wasm-shell__header">
+        <p>Account</p>
+    </header>
+
+    @if (State.ProfileError is { Length: > 0 })
+    {
+        <p class="starter-wasm-shell__alert">@State.ProfileError</p>
+    }
+    else if (State.Profile is null)
+    {
+        <p class="starter-wasm-shell__muted">Account details are not loaded yet.</p>
+    }
+    else
+    {
+        <dl class="starter-wasm-shell__facts">
+            <dt>Name</dt>
+            <dd>@State.Profile.FullName</dd>
+            <dt>Email</dt>
+            <dd>@State.Profile.Email</dd>
+        </dl>
+    }
+</section>
+
+@code {
+    private StorefrontBrowserAccountState State => AccountController.State;
+}

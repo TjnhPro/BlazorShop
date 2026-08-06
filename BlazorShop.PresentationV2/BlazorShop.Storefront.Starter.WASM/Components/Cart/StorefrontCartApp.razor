@@ -1,0 +1,34 @@
+@inject IStorefrontBrowserCartController CartController
+
+<section class="starter-wasm-shell" data-storefront-starter-wasm="cart">
+    <header class="starter-wasm-shell__header">
+        <p>Cart</p>
+        <strong>@State.GrandTotalDisplay</strong>
+    </header>
+
+    @foreach (var alert in State.Alerts)
+    {
+        <p class="starter-wasm-shell__alert" data-alert-level="@alert.Level">@alert.Message</p>
+    }
+
+    @if (State.Lines.Count == 0)
+    {
+        <p class="starter-wasm-shell__muted">Your cart is empty.</p>
+    }
+    else
+    {
+        <ul class="starter-wasm-shell__list">
+            @foreach (var line in State.Lines)
+            {
+                <li>
+                    <span>@line.DisplayName</span>
+                    <span>@line.Quantity x @line.UnitPriceDisplay</span>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private StorefrontBrowserCartState State => CartController.State;
+}

@@ -1,0 +1,33 @@
+@inject IStorefrontBrowserCheckoutController CheckoutController
+
+<section class="starter-wasm-shell" data-storefront-starter-wasm="checkout">
+    <header class="starter-wasm-shell__header">
+        <p>Checkout</p>
+        <strong>@State.Checkout.GrandTotalDisplay</strong>
+    </header>
+
+    @if (State.Error is { Length: > 0 })
+    {
+        <p class="starter-wasm-shell__alert">@State.Error</p>
+    }
+    else if (!State.Checkout.HasCart)
+    {
+        <p class="starter-wasm-shell__muted">Checkout is not available yet.</p>
+    }
+    else
+    {
+        <ul class="starter-wasm-shell__list">
+            @foreach (var line in State.Checkout.Lines)
+            {
+                <li>
+                    <span>@line.LineId</span>
+                    <span>@line.Quantity x @line.UnitPriceDisplay</span>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private StorefrontBrowserCheckoutControllerState State => CheckoutController.State;
+}

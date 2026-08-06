@@ -164,6 +164,39 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterWasmProject_IsNeutralBrowserRuntimeTemplate()
+        {
+            var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj");
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Program.cs");
+            var imports = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/_Imports.razor");
+            var accountHost = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Account/StorefrontAccountApp.razor");
+            var cartHost = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Cart/StorefrontCartApp.razor");
+            var checkoutHost = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Checkout/StorefrontCheckoutApp.razor");
+            var source = string.Concat(project, program, imports, accountHost, cartHost, checkoutHost);
+
+            Assert.Contains("Microsoft.NET.Sdk.BlazorWebAssembly", project, StringComparison.Ordinal);
+            Assert.Contains("<TargetFramework>net10.0</TargetFramework>", project, StringComparison.Ordinal);
+            Assert.Contains("<NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>", project, StringComparison.Ordinal);
+            Assert.Contains("<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>", project, StringComparison.Ordinal);
+            Assert.Contains(@"<RootNamespace>BlazorShop.Storefront.Starter.WASM</RootNamespace>", project, StringComparison.Ordinal);
+            Assert.Contains(@"<PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly""", project, StringComparison.Ordinal);
+            Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj""", project, StringComparison.Ordinal);
+            Assert.Contains(@"<ProjectReference Include=""..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj""", project, StringComparison.Ordinal);
+            Assert.Contains("WebAssemblyHostBuilder.CreateDefault(args)", program, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontBrowserRuntime(builder.HostEnvironment)", program, StringComparison.Ordinal);
+            Assert.Contains("@namespace BlazorShop.Storefront.Starter.WASM", imports, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserAccountController", accountHost, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCartController", cartHost, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontBrowserCheckoutController", checkoutHost, StringComparison.Ordinal);
+            Assert.DoesNotContain("@page", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("CommerceNode", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("ControlPlane", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Runtime", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Client", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StarterProject_RestoresAndBuildsFromLocalStorefrontPackages()
         {
             var repositoryRoot = FindRepositoryRoot();

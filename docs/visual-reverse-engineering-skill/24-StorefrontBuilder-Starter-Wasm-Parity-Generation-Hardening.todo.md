@@ -102,11 +102,11 @@ Use these files as baseline during implementation:
 
 ## Definition Of Done
 
-- [ ] `BlazorShop.Storefront.Starter.WASM` exists and builds.
+- [x] `BlazorShop.Storefront.Starter.WASM` exists and builds.
 - [ ] Starter server references Starter.WASM in monorepo development.
 - [ ] Starter server registers Browser controllers.
 - [ ] Starter server maps the Starter.WASM assembly.
-- [ ] Starter.WASM calls `AddStorefrontBrowserRuntime`.
+- [x] Starter.WASM calls `AddStorefrontBrowserRuntime`.
 - [ ] StorefrontBuilder generates server and sibling WASM projects.
 - [ ] Generated server references only generated sibling WASM by ProjectReference.
 - [ ] Generated server uses package references for Presentation, Components and Browser.
@@ -297,62 +297,62 @@ Add a neutral WASM template that generated storefronts can copy and rename.
 
 ### Tasks
 
-- [ ] Create project folder:
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM`
-- [ ] Create project file:
-  - [ ] SDK: `Microsoft.NET.Sdk.BlazorWebAssembly`.
-  - [ ] Target framework: `net10.0`.
-  - [ ] Nullable enabled.
-  - [ ] Implicit usings enabled.
-  - [ ] `NoDefaultLaunchSettingsFile` set when matching V2.WASM pattern.
-  - [ ] `StaticWebAssetProjectMode` set consistently with V2.WASM if needed.
-  - [ ] Root namespace: `BlazorShop.Storefront.Starter.WASM`.
-  - [ ] Package reference: `Microsoft.AspNetCore.Components.WebAssembly`.
-  - [ ] ProjectReference to `BlazorShop.Storefront.Browser`.
-  - [ ] ProjectReference to `BlazorShop.Storefront.Components`.
-- [ ] Create `Program.cs`.
-  - [ ] Use `WebAssemblyHostBuilder.CreateDefault(args)`.
-  - [ ] Call `builder.Services.AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
-  - [ ] Build and run.
-  - [ ] No V2 namespace.
-  - [ ] No Commerce Node direct URL.
-  - [ ] No Runtime/Client references.
-- [ ] Create `_Imports.razor`.
-  - [ ] Use Starter.WASM namespace.
-  - [ ] Import Components contracts/headless namespaces needed by neutral hosts.
-  - [ ] Avoid V2 imports.
-- [ ] Add neutral interactive host components.
-  - [ ] `Components/Account/StorefrontAccountApp.razor`
-  - [ ] `Components/Cart/StorefrontCartApp.razor` or existing Starter-compatible name.
-  - [ ] `Components/Checkout/StorefrontCheckoutApp.razor` or existing Starter-compatible name.
-  - [ ] Keep host components visually neutral.
-  - [ ] Use Browser controllers and Components contracts/headless state.
-  - [ ] Do not copy V2 CSS/class bags.
-  - [ ] Do not define `@page`.
-  - [ ] Do not call Commerce Node directly.
-- [ ] Add stable assembly marker.
-  - [ ] Prefer existing neutral host component as marker.
-  - [ ] Document marker in contract.
+- [x] Create project folder:
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM`
+- [x] Create project file:
+  - [x] SDK: `Microsoft.NET.Sdk.BlazorWebAssembly`.
+  - [x] Target framework: `net10.0`.
+  - [x] Nullable enabled.
+  - [x] Implicit usings enabled.
+  - [x] `NoDefaultLaunchSettingsFile` set when matching V2.WASM pattern.
+  - [x] `StaticWebAssetProjectMode` set consistently with V2.WASM if needed.
+  - [x] Root namespace: `BlazorShop.Storefront.Starter.WASM`.
+  - [x] Package reference: `Microsoft.AspNetCore.Components.WebAssembly`.
+  - [x] ProjectReference to `BlazorShop.Storefront.Browser`.
+  - [x] ProjectReference to `BlazorShop.Storefront.Components`.
+- [x] Create `Program.cs`.
+  - [x] Use `WebAssemblyHostBuilder.CreateDefault(args)`.
+  - [x] Call `builder.Services.AddStorefrontBrowserRuntime(builder.HostEnvironment)`.
+  - [x] Build and run.
+  - [x] No V2 namespace.
+  - [x] No Commerce Node direct URL.
+  - [x] No Runtime/Client references.
+- [x] Create `_Imports.razor`.
+  - [x] Use Starter.WASM namespace.
+  - [x] Import Components contracts/headless namespaces needed by neutral hosts.
+  - [x] Avoid V2 imports.
+- [x] Add neutral interactive host components.
+  - [x] `Components/Account/StorefrontAccountApp.razor`
+  - [x] `Components/Cart/StorefrontCartApp.razor` or existing Starter-compatible name.
+  - [x] `Components/Checkout/StorefrontCheckoutApp.razor` or existing Starter-compatible name.
+  - [x] Keep host components visually neutral.
+  - [x] Use Browser controllers and Components contracts/headless state.
+  - [x] Do not copy V2 CSS/class bags.
+  - [x] Do not define `@page`.
+  - [x] Do not call Commerce Node directly.
+- [x] Add stable assembly marker.
+  - [x] Prefer existing neutral host component as marker.
+  - [x] Document marker in contract.
 
 ### Files To Add
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Program.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/_Imports.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Account/StorefrontAccountApp.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Cart/*`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Checkout/*`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Program.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/_Imports.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Account/StorefrontAccountApp.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Cart/*`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Components/Checkout/*`
 
 ### Tests And Gates
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
-- [ ] `rg -n "BlazorShop.Storefront.V2|CommerceNode|ControlPlane|BlazorShop.Storefront.Runtime|BlazorShop.Storefront.Client" BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM` returns no forbidden runtime references.
-- [ ] WASM project compiles without server-only dependencies.
-- [ ] Account, cart and checkout host components compile.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj`
+- [x] `rg -n "BlazorShop.Storefront.V2|CommerceNode|ControlPlane|BlazorShop.Storefront.Runtime|BlazorShop.Storefront.Client" BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM` returns no forbidden runtime references.
+- [x] WASM project compiles without server-only dependencies.
+- [x] Account, cart and checkout host components compile.
 
 ### Done When
 
-- [ ] Starter.WASM exists as a neutral, browser-safe template and can be mapped by the Starter server.
+- [x] Starter.WASM exists as a neutral, browser-safe template and can be mapped by the Starter server.
 
 ## Phase 3 - Starter Server Runtime Parity
 
