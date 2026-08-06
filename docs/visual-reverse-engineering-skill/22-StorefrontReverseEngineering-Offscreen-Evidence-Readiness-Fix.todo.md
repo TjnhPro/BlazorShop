@@ -147,22 +147,22 @@ Goal: add tests that fail before the fix and distinguish accessibility/noise hel
 
 Tasks:
 
-- [ ] Add a focused unit or integration test around evidence selection/readiness for a page containing:
-  - [ ] visible header/main/section/product-like visual evidence;
-  - [ ] a skip link positioned with `left: -99999px`;
-  - [ ] a visually hidden accessibility node;
-  - [ ] a real visual element with an impossible invalid box for negative coverage.
-- [ ] Prove offscreen skip links do not appear in `element-evidence-index.json`, or appear as ignored evidence that readiness does not evaluate as visual evidence.
-- [ ] Prove a real visual element with invalid coordinates still produces `invalid-element-box`.
-- [ ] Include selectors/classes commonly used by Shopify themes:
-  - [ ] `.skip-to-content-link`;
-  - [ ] `.visually-hidden`;
-  - [ ] `[aria-live]` helper node if existing code paths support it.
-- [ ] Keep tests under the existing StorefrontReverseEngineering test project.
-- [ ] Use test names that state the problem/cause/fix, for example:
-  - [ ] `Readiness_IgnoresOffscreenSkipLinkEvidence`;
-  - [ ] `Readiness_StillBlocksInvalidVisibleElementBox`.
-- [ ] Avoid live network dependencies in these tests.
+- [x] Add a focused unit or integration test around evidence selection/readiness for a page containing:
+  - [x] visible header/main/section/product-like visual evidence;
+  - [x] a skip link positioned with `left: -99999px`;
+  - [x] a visually hidden accessibility node;
+  - [x] a real visual element with an impossible invalid box for negative coverage.
+- [x] Prove offscreen skip links do not appear in `element-evidence-index.json`, or appear as ignored evidence that readiness does not evaluate as visual evidence.
+- [x] Prove a real visual element with invalid coordinates still produces `invalid-element-box`.
+- [x] Include selectors/classes commonly used by Shopify themes:
+  - [x] `.skip-to-content-link`;
+  - [x] `.visually-hidden`;
+  - [x] `[aria-live]` helper node if existing code paths support it.
+- [x] Keep tests under the existing StorefrontReverseEngineering test project.
+- [x] Use test names that state the problem/cause/fix, for example:
+  - [x] `Playwright_HttpFixture_ExcludesOffscreenAccessibilityHelpersFromRenderedEvidence`;
+  - [x] `Readiness_StillBlocksInvalidVisibleElementBox`.
+- [x] Avoid live network dependencies in these tests.
 
 Suggested commands:
 
@@ -172,9 +172,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 DoD:
 
-- [ ] At least one regression test fails before implementation because the skip link is treated as invalid visual evidence.
-- [ ] At least one safety-net test proves real invalid visible boxes remain blocking.
-- [ ] Tests do not depend on `https://www.kindredcoast.com/`.
+- [x] At least one regression test fails before implementation because the skip link is treated as invalid visual evidence.
+- [x] At least one safety-net test proves real invalid visible boxes remain blocking.
+- [x] Tests do not depend on `https://www.kindredcoast.com/`.
 
 ## Phase 3A.3 - Evidence Selection Fix
 
@@ -415,6 +415,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\reverse-engineering\
   - `Application/VisualProjectWorkflowService.cs`: readiness blocks boxes with `width <= 0`, `height <= 0`, `x < -10`, `y < -10`, or far out-of-range coordinates.
 
 The baseline confirms this is a false positive on a valid offscreen accessibility helper. It is not missing output, blank screenshots, failed Playwright setup, or a production runner path error.
+
+### Phase 3A.2 Regression Tests - 2026-08-06
+
+- Added `Playwright_HttpFixture_ExcludesOffscreenAccessibilityHelpersFromRenderedEvidence` in `PlaywrightIntegrationTests.cs`.
+- Added `Readiness_StillBlocksInvalidVisibleElementBox` in `EndToEndCliTests.cs`.
+- Failing pre-fix command:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --filter "FullyQualifiedName~Playwright_HttpFixture_ExcludesOffscreenAccessibilityHelpersFromRenderedEvidence|FullyQualifiedName~Readiness_StillBlocksInvalidVisibleElementBox" --blame-hang --blame-hang-timeout 5m
+```
+
+- Result before implementation: `Failed: 1, Passed: 1, Total: 2`.
+- Expected failing assertion: captured boxes still include `a.skip-to-content-link.button-secondary` with `x=-99999` and `div.visually-hidden` with `x=-99999`.
+- Safety-net result: `Readiness_StillBlocksInvalidVisibleElementBox` passed, proving a real visual element moved to `x=-99999` remains an `invalid-element-box` blocker.
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |

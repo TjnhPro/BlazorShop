@@ -93,6 +93,54 @@ public sealed class PlaywrightIntegrationTests
 
     [Fact]
     [Trait("Category", "Playwright")]
+    public async Task Playwright_HttpFixture_ExcludesOffscreenAccessibilityHelpersFromRenderedEvidence()
+    {
+        await using var server = await StartServerFromHtmlAsync(
+            """
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Offscreen helper fixture</title>
+              <style>
+                body { margin: 0; font-family: Inter, Arial, sans-serif; }
+                .skip-to-content-link { position: absolute; left: -99999px; top: 0; width: 152px; height: 52px; }
+                .skip-to-content-link:focus { left: 16px; }
+                .visually-hidden { position: absolute; left: -99999px; width: 1px; height: 1px; overflow: hidden; }
+                .site-header { display: flex; height: 72px; align-items: center; }
+                .hero { display: grid; min-height: 360px; background: #eef6f3; }
+                .product-card { width: 320px; min-height: 240px; border-radius: 8px; }
+              </style>
+            </head>
+            <body>
+              <a class="skip-to-content-link button-secondary" href="#main">Skip to content</a>
+              <div class="visually-hidden" role="status" aria-live="polite">Cart updated</div>
+              <header class="site-header"><strong>Fixture Brand</strong><nav><a href="/shop">Shop</a></nav></header>
+              <main id="main">
+                <section class="hero"><h1>Visible hero heading</h1></section>
+                <section class="product-grid" aria-label="Products"><article class="product-card"><h2>Visible Product</h2><button>Add</button></article></section>
+              </main>
+            </body>
+            </html>
+            """);
+        var browser = new PlaywrightReferenceBrowser();
+
+        var capture = await browser.CaptureAsync(
+            new BrowserPageSession("playwright-offscreen", "home", server.BaseUrl),
+            ViewportDefinition.Defaults[0],
+            new CapturePolicy(MaximumEvidenceElements: 20),
+            CancellationToken.None);
+
+        Assert.DoesNotContain(capture.Boxes, box => box.Selector.Contains("skip-to-content-link", StringComparison.Ordinal));
+        Assert.DoesNotContain(capture.Styles, style => style.Selector.Contains("skip-to-content-link", StringComparison.Ordinal));
+        Assert.DoesNotContain(capture.Boxes, box => box.Selector.Contains("visually-hidden", StringComparison.Ordinal));
+        Assert.Contains(capture.Boxes, box => box.Selector.Contains("header.site-header", StringComparison.Ordinal));
+        Assert.Contains(capture.Boxes, box => box.Selector.Contains("section.hero", StringComparison.Ordinal));
+        Assert.Contains(capture.Boxes, box => box.Selector.Contains("article.product-card", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    [Trait("Category", "Playwright")]
     public async Task Playwright_HttpFixture_StitchedFallbackCreatesRealImage()
     {
         await using var server = await StartServerAsync();
@@ -158,6 +206,13 @@ public sealed class PlaywrightIntegrationTests
     {
         var fixturePath = Path.Combine(GetRepoRoot(), "tools", "BlazorShop.AI.StorefrontReverseEngineering", "tests", "BlazorShop.AI.StorefrontReverseEngineering.Tests", "Fixtures", "static-storefront.html");
         return await TestHttpFixtureServer.StartAsync(fixturePath);
+    }
+
+    private static async Task<TestHttpFixtureServer> StartServerFromHtmlAsync(string html)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "sre-offscreen-helper-" + Guid.NewGuid().ToString("N") + ".html");
+        await File.WriteAllTextAsync(path, html);
+        return await TestHttpFixtureServer.StartAsync(path);
     }
 
     private static string GetRepoRoot()

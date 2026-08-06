@@ -255,6 +255,21 @@ public sealed class EndToEndCliTests
     }
 
     [Fact]
+    public async Task Readiness_StillBlocksInvalidVisibleElementBox()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Invalid Visible Box");
+        await MutateFirstElementAsync(projectRoot, element =>
+        {
+            element["box"] = JsonNode.Parse("""{"x":-99999,"y":0,"width":320,"height":120}""");
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "invalid-element-box");
+    }
+
+    [Fact]
     public async Task Readiness_MissingAndMismatchedCorrelationFail()
     {
         var missingProjectRoot = await CreateReadyProjectAsync("Missing Correlation");
