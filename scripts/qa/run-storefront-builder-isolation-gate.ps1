@@ -40,12 +40,16 @@ $projectRoot = if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
     Resolve-RepoPath $ProjectRoot
 }
 $projectFile = Join-Path $projectRoot "$Name.csproj"
+$wasmProjectRoot = Join-Path $projectRoot "$Name.WASM"
+$wasmProjectFile = Join-Path $wasmProjectRoot "$Name.WASM.csproj"
 $packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
 $presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
 $componentsProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj"
 $browserProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj"
+$sourceHead = ""
+$packageBuildIdentity = ""
 
 function Initialize-StorefrontPackageIdentity {
     $head = (& git -C $repoRoot rev-parse HEAD 2>$null)
@@ -54,6 +58,8 @@ function Initialize-StorefrontPackageIdentity {
     }
 
     $identity = ([string]$head).Substring(0, 12)
+    $script:sourceHead = [string]$head
+    $script:packageBuildIdentity = $identity
     $derivedVersion = "1.0.0-local.$identity"
     if ($StorefrontClientPackageVersion -eq "1.0.0-local") { $script:StorefrontClientPackageVersion = $derivedVersion }
     if ($StorefrontRuntimePackageVersion -eq "1.0.0-local") { $script:StorefrontRuntimePackageVersion = $derivedVersion }
@@ -78,6 +84,10 @@ if ($Describe) {
 
 if (-not (Test-Path $projectFile)) {
     throw "[SFB-ISOLATION-000] Generated storefront project is missing: $projectFile"
+}
+
+if (-not (Test-Path $wasmProjectFile)) {
+    throw "[SFB-ISOLATION-000] Generated storefront WASM project is missing: $wasmProjectFile"
 }
 
 Initialize-StorefrontPackageIdentity
@@ -122,6 +132,132 @@ function Write-GeneratedNuGetConfig {
     Set-Content -LiteralPath (Join-Path $projectRoot "nuget.config") -Value $nugetConfig -Encoding UTF8
 }
 
+function Update-GeneratedPackageVersionProps {
+    $propsPath = Join-Path $projectRoot "StorefrontPackageVersions.props"
+    if (-not (Test-Path -LiteralPath $propsPath)) {
+        throw "[SFB-ISOLATION-003] Package compatibility metadata is missing: $propsPath"
+    }
+
+    [xml]$props = Get-Content -LiteralPath $propsPath -Raw
+    $propertyGroup = @($props.Project.PropertyGroup)[0]
+    $propertyGroup.StorefrontClientPackageVersion = $StorefrontClientPackageVersion
+    $propertyGroup.StorefrontRuntimePackageVersion = $StorefrontRuntimePackageVersion
+    $propertyGroup.StorefrontPresentationPackageVersion = $StorefrontPresentationPackageVersion
+    $propertyGroup.StorefrontComponentsPackageVersion = $StorefrontComponentsPackageVersion
+    $propertyGroup.StorefrontBrowserPackageVersion = $StorefrontBrowserPackageVersion
+    $props.Save($propsPath)
+}
+
+function Get-ExpectedStorefrontPackages {
+    return @(
+        @{ Id = "BlazorShop.Storefront.Client"; Version = $StorefrontClientPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Runtime"; Version = $StorefrontRuntimePackageVersion },
+        @{ Id = "BlazorShop.Storefront.Presentation"; Version = $StorefrontPresentationPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Components"; Version = $StorefrontComponentsPackageVersion },
+        @{ Id = "BlazorShop.Storefront.Browser"; Version = $StorefrontBrowserPackageVersion }
+    )
+}
+
+function Get-LocalPackageHash {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Package
+    )
+
+    $packagePath = Join-Path $packageRoot "$($Package.Id).$($Package.Version).nupkg"
+    if (-not (Test-Path -LiteralPath $packagePath)) {
+        throw "[SFB-ISOLATION-006] Packed Storefront package is missing from local feed: $packagePath"
+    }
+
+    return (Get-FileHash -LiteralPath $packagePath -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Update-GeneratedMetadataPackageProvenance {
+    $metadataPath = Join-Path $projectRoot "docs\storefront-analysis\metadata.yaml"
+    if (-not (Test-Path -LiteralPath $metadataPath)) {
+        throw "[SFB-ISOLATION-006] Generated metadata is missing: $metadataPath"
+    }
+
+    $metadata = Get-Content -LiteralPath $metadataPath -Raw
+    $relativePackageFeed = (Get-RelativePathCompat $projectRoot $packageRoot).Replace('\', '/')
+    $metadata = [regex]::Replace($metadata, "(?m)^sourceHead:\s*.*$", "sourceHead: $sourceHead")
+    $metadata = [regex]::Replace($metadata, "(?m)^packageBuildIdentity:\s*.*$", "packageBuildIdentity: $packageBuildIdentity")
+    $metadata = [regex]::Replace($metadata, "(?m)^  feedPath:\s*.*$", "  feedPath: $relativePackageFeed")
+
+    foreach ($package in Get-ExpectedStorefrontPackages) {
+        $packageId = $package.Id
+        $version = $package.Version
+        $hash = Get-LocalPackageHash -Package $package
+        $escapedId = [regex]::Escape($packageId)
+        $metadata = [regex]::Replace($metadata, "(?m)^  ${escapedId}:\s*.*$", "  ${packageId}: $version")
+        $metadata = [regex]::Replace(
+            $metadata,
+            "(?ms)(\s+- id:\s*$escapedId\s*\r?\n\s+version:\s*)\S+(\s*\r?\n\s+sha256:\s*)\S+",
+            "`${1}$version`${2}$hash")
+    }
+
+    Set-Content -LiteralPath $metadataPath -Value $metadata -Encoding UTF8
+}
+
+function Read-GeneratedMetadataPackageProvenance {
+    $metadataPath = Join-Path $projectRoot "docs\storefront-analysis\metadata.yaml"
+    $metadata = Get-Content -LiteralPath $metadataPath -Raw
+    $relativePackageFeed = (Get-RelativePathCompat $projectRoot $packageRoot).Replace('\', '/')
+
+    foreach ($requiredMarker in @("sourceHead: $sourceHead", "packageBuildIdentity: $packageBuildIdentity", "feedPath: $relativePackageFeed")) {
+        if (-not (Test-TextContains $metadata $requiredMarker)) {
+            throw "[SFB-ISOLATION-006] Generated metadata package provenance is missing '$requiredMarker'."
+        }
+    }
+
+    $packagesById = @{}
+    foreach ($package in Get-ExpectedStorefrontPackages) {
+        $packageId = $package.Id
+        $version = $package.Version
+        $hash = Get-LocalPackageHash -Package $package
+        if (-not (Test-TextContains $metadata "  ${packageId}: $version")) {
+            throw "[SFB-ISOLATION-006] Generated metadata packageVersions does not match restore package '$packageId/$version'."
+        }
+
+        $escapedId = [regex]::Escape($packageId)
+        $blockPattern = "(?ms)\s+- id:\s*${escapedId}\s*\r?\n\s+version:\s*(?<version>\S+)\s*\r?\n\s+sha256:\s*(?<hash>\S+)"
+        $blockMatch = [regex]::Match($metadata, $blockPattern)
+        if (-not $blockMatch.Success) {
+            throw "[SFB-ISOLATION-006] Generated metadata packageProvenance is missing '$packageId'."
+        }
+
+        if ($blockMatch.Groups["version"].Value -ne $version -or $blockMatch.Groups["hash"].Value -ne $hash) {
+            throw "[SFB-ISOLATION-006] Generated metadata packageProvenance does not match local package '$packageId/$version'."
+        }
+
+        $packagesById[$packageId] = @{
+            Id = $packageId
+            Version = $version
+            Sha256 = $hash
+        }
+    }
+
+    return $packagesById
+}
+
+function Assert-RestoredProjectAssets {
+    param(
+        [Parameter(Mandatory = $true)][string]$AssetsPath,
+        [Parameter(Mandatory = $true)][array]$ExpectedPackages
+    )
+
+    if (-not (Test-Path -LiteralPath $AssetsPath)) {
+        throw "[SFB-ISOLATION-005] Restore did not create project.assets.json: $AssetsPath"
+    }
+
+    $assets = Get-Content -LiteralPath $AssetsPath -Raw
+    foreach ($package in $ExpectedPackages) {
+        $marker = "$($package.Id)/$($package.Version)"
+        if (-not (Test-TextContains $assets $marker ([System.StringComparison]::OrdinalIgnoreCase))) {
+            throw "[SFB-ISOLATION-005] project.assets.json is missing restored package '$marker': $AssetsPath"
+        }
+    }
+}
+
 New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
 Clear-StorefrontLocalPackageCache
 dotnet pack $clientProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontClientPackageVersion"
@@ -134,29 +270,89 @@ dotnet pack $componentsProject --configuration $Configuration --output $packageR
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet pack $browserProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontBrowserPackageVersion"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Update-GeneratedPackageVersionProps
+Update-GeneratedMetadataPackageProvenance
+$metadataPackagesById = Read-GeneratedMetadataPackageProvenance
 Write-GeneratedNuGetConfig
 dotnet restore $projectFile --no-cache --force-evaluate
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+dotnet restore $wasmProjectFile --no-cache --force-evaluate
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Assert-RestoredProjectAssets -AssetsPath (Join-Path $projectRoot "obj\project.assets.json") -ExpectedPackages @(
+    $metadataPackagesById["BlazorShop.Storefront.Presentation"],
+    $metadataPackagesById["BlazorShop.Storefront.Components"],
+    $metadataPackagesById["BlazorShop.Storefront.Browser"]
+)
+Assert-RestoredProjectAssets -AssetsPath (Join-Path $wasmProjectRoot "obj\project.assets.json") -ExpectedPackages @(
+    $metadataPackagesById["BlazorShop.Storefront.Components"],
+    $metadataPackagesById["BlazorShop.Storefront.Browser"]
+)
 dotnet build $projectFile --configuration $Configuration --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
-foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+$wasmProject = Get-Content -LiteralPath $wasmProjectFile -Raw
+foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly.Server", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains $project "PackageReference Include=`"$package`"")) {
-        throw "[SFB-ISOLATION-001] Generated storefront must consume '$package' as a package reference."
+        throw "[SFB-ISOLATION-001] Generated storefront server must consume '$package' as a package reference."
+    }
+}
+
+foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+    if (-not (Test-TextContains $wasmProject "PackageReference Include=`"$package`"")) {
+        throw "[SFB-ISOLATION-001] Generated storefront WASM must consume '$package' as a package reference."
     }
 }
 
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
     if (Test-TextContains $project "PackageReference Include=`"$package`"") {
-        throw "[SFB-ISOLATION-001] Generated storefront must not direct-reference '$package'."
+        throw "[SFB-ISOLATION-001] Generated storefront server must not direct-reference '$package'."
+    }
+
+    if (Test-TextContains $wasmProject "PackageReference Include=`"$package`"") {
+        throw "[SFB-ISOLATION-001] Generated storefront WASM must not direct-reference '$package'."
     }
 }
 
-$forbidden = @("ProjectReference", "BlazorShop.Storefront.V2", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "PackageReference Include=`"BlazorShop.Storefront.Runtime`"", "PackageReference Include=`"BlazorShop.Storefront.Client`"")
+[xml]$serverProjectDocument = Get-Content -LiteralPath $projectFile -Raw
+[xml]$wasmProjectDocument = Get-Content -LiteralPath $wasmProjectFile -Raw
+$serverProjectReferences = @(@($serverProjectDocument.Project.ItemGroup.ProjectReference) |
+    ForEach-Object { [string]$_.Include } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$wasmProjectReferences = @(@($wasmProjectDocument.Project.ItemGroup.ProjectReference) |
+    ForEach-Object { [string]$_.Include } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$expectedWasmReference = "$Name.WASM\$Name.WASM.csproj"
+$expectedWasmReferenceFullPath = [System.IO.Path]::GetFullPath($wasmProjectFile)
+if ($serverProjectReferences.Count -ne 1 -or -not ([string]$serverProjectReferences[0]).Equals($expectedWasmReference, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "[SFB-ISOLATION-002] Generated server must reference only sibling WASM '$expectedWasmReference'. Actual: $($serverProjectReferences -join ', ')"
+}
+
+$resolvedProjectRoot = [System.IO.Path]::GetFullPath($projectRoot).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+$resolvedProjectRootWithSeparator = "$resolvedProjectRoot$([System.IO.Path]::DirectorySeparatorChar)"
+foreach ($reference in $serverProjectReferences) {
+    $resolvedReference = [System.IO.Path]::GetFullPath((Join-Path $projectRoot $reference))
+    if (-not $resolvedReference.StartsWith($resolvedProjectRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "[SFB-ISOLATION-002] Generated server ProjectReference leaves generated root: $reference"
+    }
+
+    if (-not $resolvedReference.Equals($expectedWasmReferenceFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "[SFB-ISOLATION-002] Generated server ProjectReference must resolve to generated sibling WASM: $reference"
+    }
+}
+
+if ($wasmProjectReferences.Count -ne 0) {
+    throw "[SFB-ISOLATION-002] Generated WASM project must not contain ProjectReference entries. Actual: $($wasmProjectReferences -join ', ')"
+}
+
+$forbidden = @("BlazorShop.Storefront.V2", "BlazorShop.Storefront.V2.WASM", "BlazorShop.Storefront.Starter", "BlazorShop.Storefront.Starter.WASM", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "PackageReference Include=`"BlazorShop.Storefront.Runtime`"", "PackageReference Include=`"BlazorShop.Storefront.Client`"")
 Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
-    Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
     ForEach-Object {
+        $relativeToProject = (Get-RelativePathCompat $projectRoot $_.FullName).Replace("\", "/")
+        if ($relativeToProject -match "(^|/)(bin|obj)/" -or $relativeToProject -eq "docs/storefront-analysis/metadata.yaml" -or $relativeToProject -eq "docs/storefront-analysis/generated-files.yaml" -or $relativeToProject -eq "README.md") {
+            return
+        }
+
         $content = Get-Content -LiteralPath $_.FullName -Raw
         foreach ($pattern in $forbidden) {
             if (Test-TextContains $content $pattern ([System.StringComparison]::OrdinalIgnoreCase)) {

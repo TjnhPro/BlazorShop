@@ -942,11 +942,16 @@ namespace BlazorShop.Tests.Architecture
             var taskPackage = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-agent-task-package.mjs");
             var skeleton = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-handoff-project-skeleton.mjs");
             var manifest = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1");
+            var staticGate = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderStaticGate.ps1");
+            var isolationGate = ReadRepositoryFile("scripts/qa/run-storefront-builder-isolation-gate.ps1");
+            var negativeTests = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/Test-StorefrontBuilderMultiProjectValidation.ps1");
 
             Assert.Contains("Copy-StarterTemplate", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Starter", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Starter.WASM", script, StringComparison.Ordinal);
             Assert.Contains("$Name.WASM", script, StringComparison.Ordinal);
+            Assert.Contains("<Compile Remove=`\"$Name.WASM\\**`\" />", script, StringComparison.Ordinal);
             Assert.Contains("Assert-GeneratedProjectReferences", script, StringComparison.Ordinal);
             Assert.Contains("Generated server must reference only generated sibling WASM project", script, StringComparison.Ordinal);
             Assert.Contains("sourceStarterWasmPath:", generator, StringComparison.Ordinal);
@@ -962,6 +967,19 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("targetProject", skeleton, StringComparison.Ordinal);
             Assert.Contains("projectRelativePath", skeleton, StringComparison.Ordinal);
             Assert.Contains("project: inferProject(file.filePath)", manifest, StringComparison.Ordinal);
+            Assert.Contains("starterWasmContractSha256", generator, StringComparison.Ordinal);
+            Assert.Contains("Validate-PackageProvenanceHashes", validator, StringComparison.Ordinal);
+            Assert.Contains("generated-files.yaml entry", validator, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontBrowserControllers", validator, StringComparison.Ordinal);
+            Assert.Contains("AddStorefrontBrowserRuntime(builder.HostEnvironment)", validator, StringComparison.Ordinal);
+            Assert.Contains("relativeToProject -match", validator, StringComparison.Ordinal);
+            Assert.Contains("Generated server must reference only sibling WASM", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("Generated WASM project must not contain ProjectReference", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("ProjectReference leaves generated root", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("Update-GeneratedPackageVersionProps", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("Assert-RestoredProjectAssets", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("Test-StorefrontBuilderCss.ps1", staticGate, StringComparison.Ordinal);
+            Assert.Contains("generated-page-route", negativeTests, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
             Assert.Contains("Generated\\StorefrontClient.g.cs", script, StringComparison.Ordinal);
             Assert.Contains("ProjectReference", script, StringComparison.Ordinal);

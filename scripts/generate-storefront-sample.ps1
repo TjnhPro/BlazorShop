@@ -215,6 +215,11 @@ function Rewrite-GeneratedSource {
     $projectContent = $projectContent.Replace(
         "..\$Name.WASM\$Name.WASM.csproj",
         "$Name.WASM\$Name.WASM.csproj")
+    if (-not $projectContent.Contains("<Compile Remove=`"$Name.WASM\**`" />")) {
+        $projectContent = $projectContent.Replace(
+            "</Project>",
+            "  <ItemGroup>`r`n    <Compile Remove=`"$Name.WASM\**`" />`r`n    <Content Remove=`"$Name.WASM\**`" />`r`n    <EmbeddedResource Remove=`"$Name.WASM\**`" />`r`n    <None Remove=`"$Name.WASM\**`" />`r`n  </ItemGroup>`r`n</Project>")
+    }
     Set-Content -LiteralPath $generatedProject -Value $projectContent -Encoding UTF8
 
     if (Test-Path $generatedWasmProject) {

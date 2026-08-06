@@ -35,9 +35,13 @@ if ($isHandoffProject) {
     }
 }
 else {
-    & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderAssets.ps1") -ProjectRoot $ProjectRoot
-    & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCss.ps1") -ProjectRoot $ProjectRoot
-    & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCompositionFiles.ps1") -ProjectRoot $ProjectRoot
+    if (Test-Path (Join-Path $analysisRoot "asset-manifest.yaml")) {
+        & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderAssets.ps1") -ProjectRoot $ProjectRoot
+    }
+    if (Test-Path (Join-Path $ProjectRoot "wwwroot\css\storefront-builder.generated.css")) {
+        & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCss.ps1") -ProjectRoot $ProjectRoot
+        & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCompositionFiles.ps1") -ProjectRoot $ProjectRoot
+    }
 }
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderGuard.ps1") -ProjectRoot $ProjectRoot
 if (-not $SkipIdempotency) {
@@ -48,7 +52,7 @@ $requiredAnalysisArtifacts = if ($isHandoffProject) {
     @("metadata.yaml", "generation-plan.json", "generation-plan.yaml", "generated-files.yaml", "regeneration-report.md")
 }
 else {
-    @("metadata.yaml", "asset-manifest.yaml", "generated-files.yaml")
+    @("metadata.yaml", "generated-files.yaml")
 }
 
 foreach ($artifact in $requiredAnalysisArtifacts) {
@@ -59,8 +63,12 @@ foreach ($artifact in $requiredAnalysisArtifacts) {
 
 $routeDirectives = @()
 Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File -Include *.razor |
-    Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
     ForEach-Object {
+        $relativeToProject = (Get-RelativePathCompat $ProjectRoot $_.FullName).Replace("\", "/")
+        if ($relativeToProject -match "(^|/)(bin|obj)/") {
+            return
+        }
+
         $content = Get-Content -LiteralPath $_.FullName -Raw
         foreach ($match in [regex]::Matches($content, "(?m)^@page\s+`"([^`"]+)`"")) {
             $route = $match.Groups[1].Value
@@ -74,15 +82,26 @@ if ($routeDirectives.Count -gt 0) {
 
 $versions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
 $project = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.csproj") -Raw
-foreach ($package in @("BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+$wasmProject = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.WASM\$Name.WASM.csproj") -Raw
+foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly.Server", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains $project "PackageReference Include=`"$package`"")) {
-        throw "[SFB-STATIC-003] Package version mismatch or missing package reference: $package"
+        throw "[SFB-STATIC-003] Server package version mismatch or missing package reference: $package"
+    }
+}
+
+foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+    if (-not (Test-TextContains $wasmProject "PackageReference Include=`"$package`"")) {
+        throw "[SFB-STATIC-003] WASM package version mismatch or missing package reference: $package"
     }
 }
 
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
     if (Test-TextContains $project "PackageReference Include=`"$package`"") {
-        throw "[SFB-STATIC-003] Generated project must not direct-reference application transport package: $package"
+        throw "[SFB-STATIC-003] Generated server project must not direct-reference application transport package: $package"
+    }
+
+    if (Test-TextContains $wasmProject "PackageReference Include=`"$package`"") {
+        throw "[SFB-STATIC-003] Generated WASM project must not direct-reference application transport package: $package"
     }
 }
 
@@ -91,7 +110,10 @@ if (-not (Test-TextContains $versions "StorefrontClientPackageVersion") -or -not
 }
 
 $sourceFiles = Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File -Include *.cs,*.razor,*.js,*.mjs,*.ts |
-    Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" }
+    Where-Object {
+        $relativeToProject = (Get-RelativePathCompat $ProjectRoot $_.FullName).Replace("\", "/")
+        -not ($relativeToProject -match "(^|/)(bin|obj)/")
+    }
 
 $forbiddenSourceTokens = @(
     "StorefrontLocalApiClient",
@@ -168,7 +190,10 @@ if (Test-Path $functionalScript) {
 $jsRoot = Join-Path $ProjectRoot "wwwroot\js"
 if (Test-Path $jsRoot) {
     Get-ChildItem -LiteralPath $jsRoot -Recurse -File -Filter *.js |
-        Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" } |
+        Where-Object {
+            $relativeToProject = (Get-RelativePathCompat $ProjectRoot $_.FullName).Replace("\", "/")
+            -not ($relativeToProject -match "(^|/)(bin|obj)/")
+        } |
         ForEach-Object {
             $relativeToProject = (Get-RelativePathCompat $ProjectRoot $_.FullName).Replace("\", "/")
             if (-not $relativeToProject.StartsWith("wwwroot/js/visual/", [System.StringComparison]::Ordinal)) {

@@ -117,10 +117,10 @@ Use these files as baseline during implementation:
 - [x] Local feed cleanup is scoped and deterministic.
 - [x] NuGet global cache cleanup removes only the Storefront package IDs and exact versions for the current run.
 - [x] Restore uses `--no-cache --force-evaluate`.
-- [ ] Server and WASM `project.assets.json` are validated.
-- [ ] Package ID/version/source/hash in restore output matches generated metadata.
-- [ ] External ProjectReference remains forbidden.
-- [ ] V2, V2.WASM, Starter source, Starter.WASM source, backend/core/API and Web.SharedV2 references remain forbidden in generated output.
+- [x] Server and WASM `project.assets.json` are validated.
+- [x] Package ID/version/source/hash in restore output matches generated metadata.
+- [x] External ProjectReference remains forbidden.
+- [x] V2, V2.WASM, Starter source, Starter.WASM source, backend/core/API and Web.SharedV2 references remain forbidden in generated output.
 - [ ] Visual plan/implement/QA tools understand server vs WASM ownership.
 - [ ] Regeneration supports server + WASM as one generated artifact.
 - [ ] `-WhatIf` reports both server and WASM changes.
@@ -247,11 +247,11 @@ Ensure generated projects always consume packages built from the current source 
   - [x] Write package ID, version, feed path and hash to generated metadata.
   - [x] Write package ID, version, feed path and hash to proof report.
   - [x] Include Browser in all reports.
-- [ ] Verify restore result.
+- [x] Verify restore result.
   - [x] Restore server with `dotnet restore --no-cache --force-evaluate`.
-  - [ ] Restore WASM with `dotnet restore --no-cache --force-evaluate`.
+  - [x] Restore WASM with `dotnet restore --no-cache --force-evaluate`.
   - [x] Parse server `project.assets.json`.
-  - [ ] Parse WASM `project.assets.json`.
+  - [x] Parse WASM `project.assets.json`.
   - [x] Validate package IDs.
   - [x] Validate package versions.
   - [x] Validate package source/feed when available.
@@ -278,7 +278,7 @@ Ensure generated projects always consume packages built from the current source 
 - [x] Browser package missing from feed fails.
 - [x] Browser package missing from metadata fails.
 - [x] Browser package missing from generated server `.csproj` fails.
-- [ ] Browser package missing from generated WASM `.csproj` fails.
+- [x] Browser package missing from generated WASM `.csproj` fails.
 - [x] Stale package with same ID but older version is ignored.
 - [ ] Server resolves different version than WASM fails.
 - [x] Package hash mismatch fails.
@@ -519,71 +519,71 @@ Update validators from single-project assumptions to precise multi-project gener
 
 ### Tasks
 
-- [ ] Update generated project validator.
-  - [ ] Validate server `.csproj`.
-  - [ ] Validate WASM `.csproj`.
-  - [ ] Validate server `Program.cs`.
-  - [ ] Validate WASM `Program.cs`.
-  - [ ] Validate server metadata.
-  - [ ] Validate WASM metadata.
-  - [ ] Validate generated file manifest project ownership.
-- [ ] Update static gate.
-  - [ ] Require Browser package.
-  - [ ] Require server/WASM paths.
-  - [ ] Require no generated visual `@page`.
-  - [ ] Require no direct Commerce Node browser calls.
-  - [ ] Require no generated functional JavaScript outside approved visual zone.
-- [ ] Update isolation gate.
-  - [ ] Allow generated server ProjectReference to `BlazorShop.Storefront.{Name}.WASM`.
-  - [ ] Reject every ProjectReference whose resolved path leaves generated root.
-  - [ ] Reject ProjectReference to V2.
-  - [ ] Reject ProjectReference to V2.WASM.
-  - [ ] Reject ProjectReference to Starter.
-  - [ ] Reject ProjectReference to Starter.WASM.
-  - [ ] Reject ProjectReference to backend/core/API/Web.SharedV2.
-  - [ ] Reject generated WASM ProjectReference.
-  - [ ] Reject Runtime/Client direct package references in generated server and WASM.
-  - [ ] Keep Runtime/Client version metadata validation.
-- [ ] Update metadata.
-  - [ ] Add `projects.server.path`.
-  - [ ] Add `projects.wasm.path`.
-  - [ ] Add server package references.
-  - [ ] Add WASM package references.
-  - [ ] Add Browser package version/hash/source.
-  - [ ] Add source HEAD.
-  - [ ] Add package build identity.
-  - [ ] Add Starter contract hash.
-  - [ ] Add Starter.WASM contract hash.
-  - [ ] Add handoff/generation plan hash when applicable.
-- [ ] Update generated files manifest.
-  - [ ] Add `project: server|wasm`.
-  - [ ] Add `owner: generated|managed|protected|user`.
-  - [ ] Add protected runtime files.
-  - [ ] Add visual allowed files.
-  - [ ] Add obsolete reporting across both projects.
+- [x] Update generated project validator.
+  - [x] Validate server `.csproj`.
+  - [x] Validate WASM `.csproj`.
+  - [x] Validate server `Program.cs`.
+  - [x] Validate WASM `Program.cs`.
+  - [x] Validate server metadata.
+  - [x] Validate WASM metadata.
+  - [x] Validate generated file manifest project ownership.
+- [x] Update static gate.
+  - [x] Require Browser package.
+  - [x] Require server/WASM paths.
+  - [x] Require no generated visual `@page`.
+  - [x] Require no direct Commerce Node browser calls.
+  - [x] Require no generated functional JavaScript outside approved visual zone.
+- [x] Update isolation gate.
+  - [x] Allow generated server ProjectReference to `BlazorShop.Storefront.{Name}.WASM`.
+  - [x] Reject every ProjectReference whose resolved path leaves generated root.
+  - [x] Reject ProjectReference to V2.
+  - [x] Reject ProjectReference to V2.WASM.
+  - [x] Reject ProjectReference to Starter.
+  - [x] Reject ProjectReference to Starter.WASM.
+  - [x] Reject ProjectReference to backend/core/API/Web.SharedV2.
+  - [x] Reject generated WASM ProjectReference.
+  - [x] Reject Runtime/Client direct package references in generated server and WASM.
+  - [x] Keep Runtime/Client version metadata validation.
+- [x] Update metadata.
+  - [x] Add `projects.server.path`.
+  - [x] Add `projects.wasm.path`.
+  - [x] Add server package references.
+  - [x] Add WASM package references.
+  - [x] Add Browser package version/hash/source.
+  - [x] Add source HEAD.
+  - [x] Add package build identity.
+  - [x] Add Starter contract hash.
+  - [x] Add Starter.WASM contract hash.
+  - [x] Add handoff/generation plan hash when applicable.
+- [x] Update generated files manifest.
+  - [x] Add `project: server|wasm`.
+  - [x] Add `owner: generated|managed|protected|user`.
+  - [x] Add protected runtime files.
+  - [x] Add visual allowed files.
+  - [x] Add obsolete reporting across both projects.
 
 ### Negative Tests
 
-- [ ] Missing WASM project fails.
-- [ ] Missing server project fails.
-- [ ] Server missing Browser package fails.
-- [ ] WASM missing Browser package fails.
-- [ ] Server missing Browser controller registration fails.
-- [ ] WASM missing Browser runtime registration fails.
-- [ ] Server missing WASM assembly mapping fails.
-- [ ] Generated server ProjectReference points outside root fails.
-- [ ] Generated WASM ProjectReference exists fails.
-- [ ] Direct Runtime package reference fails.
-- [ ] Direct Client package reference fails.
-- [ ] V2 namespace fails.
-- [ ] Starter namespace after rewrite fails.
-- [ ] Browser package hash mismatch fails.
-- [ ] Missing project ownership in generated file manifest fails.
-- [ ] Generated `@page` route declaration fails.
+- [x] Missing WASM project fails.
+- [x] Missing server project fails.
+- [x] Server missing Browser package fails.
+- [x] WASM missing Browser package fails.
+- [x] Server missing Browser controller registration fails.
+- [x] WASM missing Browser runtime registration fails.
+- [x] Server missing WASM assembly mapping fails.
+- [x] Generated server ProjectReference points outside root fails.
+- [x] Generated WASM ProjectReference exists fails.
+- [x] Direct Runtime package reference fails.
+- [x] Direct Client package reference fails.
+- [x] V2 namespace fails.
+- [x] Starter namespace after rewrite fails.
+- [x] Browser package hash mismatch fails.
+- [x] Missing project ownership in generated file manifest fails.
+- [x] Generated `@page` route declaration fails.
 
 ### Done When
 
-- [ ] Validators distinguish allowed generated sibling reference from forbidden monorepo source reference.
+- [x] Validators distinguish allowed generated sibling reference from forbidden monorepo source reference.
 
 ## Phase 6 - Visual Plan, Implement And QA Multi-Project Support
 

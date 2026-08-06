@@ -41,6 +41,8 @@ $storefrontContractPath = "contracts/storefront/storefront.openapi.json"
 $storefrontContractFullPath = Resolve-StorefrontBuilderRepoPath -RepoRoot $repoRoot -Path $storefrontContractPath
 $starterContractPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml"
 $starterContractFullPath = Resolve-StorefrontBuilderRepoPath -RepoRoot $repoRoot -Path $starterContractPath
+$starterWasmContractPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj"
+$starterWasmContractFullPath = Resolve-StorefrontBuilderRepoPath -RepoRoot $repoRoot -Path $starterWasmContractPath
 $projectValidator = Join-Path $PSScriptRoot "..\validate\Test-StorefrontBuilderGeneratedProject.ps1"
 $isHandoffGeneration = -not [string]::IsNullOrWhiteSpace($HandoffRoot)
 
@@ -50,6 +52,10 @@ if (-not (Test-Path -LiteralPath $storefrontContractFullPath)) {
 
 if (-not (Test-Path -LiteralPath $starterContractFullPath)) {
     throw "[SFB-PROJECT-008] Starter generation contract is missing: $starterContractPath"
+}
+
+if (-not (Test-Path -LiteralPath $starterWasmContractFullPath)) {
+    throw "[SFB-PROJECT-008] Starter.WASM generation contract is missing: $starterWasmContractPath"
 }
 
 Assert-StorefrontBuilderPathUnderRoot -Path $projectRoot -Root $outputRootPath
@@ -145,6 +151,7 @@ try {
     New-Item -ItemType Directory -Force -Path $analysisRoot | Out-Null
     $storefrontContractSha256 = (Get-FileHash -LiteralPath $storefrontContractFullPath -Algorithm SHA256).Hash.ToLowerInvariant()
     $starterContractSha256 = (Get-FileHash -LiteralPath $starterContractFullPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $starterWasmContractSha256 = (Get-FileHash -LiteralPath $starterWasmContractFullPath -Algorithm SHA256).Hash.ToLowerInvariant()
     $handoffPlanJsonPath = Join-Path $analysisRoot "generation-plan.json"
     $handoffPlanYamlPath = Join-Path $analysisRoot "generation-plan.yaml"
     $handoffSummaryPath = Join-Path $analysisRoot "handoff-generation-summary.md"
@@ -223,6 +230,8 @@ try {
         "starterContractPath: $starterContractPath",
         "starterContractVersion: $($starterContractVersionMatch.Groups[1].Value)",
         "starterContractSha256: $starterContractSha256",
+        "starterWasmContractPath: $starterWasmContractPath",
+        "starterWasmContractSha256: $starterWasmContractSha256",
         "generationMode: $(if ($isHandoffGeneration) { "handoff-project-skeleton" } else { "starter-copy-before-visual-generation" })",
         "projects:",
         "  server:",
@@ -236,9 +245,15 @@ try {
         "  - StorefrontPackageVersions.props",
         "featureManifest: Features\feature-manifest.json",
         "packageReferences:",
-        "  - BlazorShop.Storefront.Presentation",
-        "  - BlazorShop.Storefront.Components",
-        "  - BlazorShop.Storefront.Browser",
+        "  server:",
+        "    - Microsoft.AspNetCore.Components.WebAssembly.Server",
+        "    - BlazorShop.Storefront.Presentation",
+        "    - BlazorShop.Storefront.Components",
+        "    - BlazorShop.Storefront.Browser",
+        "  wasm:",
+        "    - Microsoft.AspNetCore.Components.WebAssembly",
+        "    - BlazorShop.Storefront.Components",
+        "    - BlazorShop.Storefront.Browser",
         "packageVersions:",
         "  BlazorShop.Storefront.Client: $($packageVersions.StorefrontClientPackageVersion)",
         "  BlazorShop.Storefront.Runtime: $($packageVersions.StorefrontRuntimePackageVersion)",
@@ -284,11 +299,9 @@ try {
 
     Set-Content -LiteralPath (Join-Path $analysisRoot "metadata.yaml") -Value $metadata -Encoding UTF8
 
-    if ($isHandoffGeneration) {
-        & node (Join-Path $PSScriptRoot "update-generated-files-manifest.mjs") --project-root $stagedProjectRoot
-        if ($LASTEXITCODE -ne 0) {
-            throw "[SFB-HANDOFF-GEN-012] Handoff generated file manifest update failed with exit code $LASTEXITCODE."
-        }
+    & node (Join-Path $PSScriptRoot "update-generated-files-manifest.mjs") --project-root $stagedProjectRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "[SFB-HANDOFF-GEN-012] Generated file manifest update failed with exit code $LASTEXITCODE."
     }
 
     & $projectValidator -ProjectRoot $stagedProjectRoot -Name $projectName -StoreKey $normalizedStoreKey
