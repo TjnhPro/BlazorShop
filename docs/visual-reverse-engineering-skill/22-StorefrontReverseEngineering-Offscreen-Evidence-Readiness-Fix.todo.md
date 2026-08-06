@@ -224,22 +224,22 @@ Goal: harden the validator/test coverage so this fix does not become a broad byp
 
 Tasks:
 
-- [ ] Review `VisualProjectWorkflowService.ValidateViewportArtifactsAsync`.
-- [ ] Keep these readiness blockers intact:
-  - [ ] width <= 0;
-  - [ ] height <= 0;
-  - [ ] unexpected `x < -10` on visible visual evidence;
-  - [ ] unexpected `y < -10` on visible visual evidence;
-  - [ ] coordinates beyond `FinalWidth * 2`;
-  - [ ] coordinates beyond `FinalHeight * 2`.
-- [ ] Add focused test coverage if Phase 3A.2 did not already prove all relevant rules.
-- [ ] Confirm `missing-useful-bounding-box` still fails when no useful visual boxes exist.
-- [ ] Confirm major visible evidence categories remain present:
-  - [ ] `semantic-landmark`;
-  - [ ] `section`;
-  - [ ] `heading`;
-  - [ ] `product-card-candidate`.
-- [ ] If the fix adds ignored evidence diagnostics, ensure diagnostics are informational and do not pollute `readiness-report.json` with false blockers.
+- [x] Review `VisualProjectWorkflowService.ValidateViewportArtifactsAsync`.
+- [x] Keep these readiness blockers intact:
+  - [x] width <= 0;
+  - [x] height <= 0;
+  - [x] unexpected `x < -10` on visible visual evidence;
+  - [x] unexpected `y < -10` on visible visual evidence;
+  - [x] coordinates beyond `FinalWidth * 2`;
+  - [x] coordinates beyond `FinalHeight * 2`.
+- [x] Add focused test coverage if Phase 3A.2 did not already prove all relevant rules.
+- [x] Confirm `missing-useful-bounding-box` still fails when no useful visual boxes exist.
+- [x] Confirm major visible evidence categories remain present:
+  - [x] `semantic-landmark`;
+  - [x] `section`;
+  - [x] `heading`;
+  - [x] `product-card-candidate`.
+- [x] If the fix adds ignored evidence diagnostics, ensure diagnostics are informational and do not pollute `readiness-report.json` with false blockers.
 
 Checks:
 
@@ -249,9 +249,9 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 DoD:
 
-- [ ] Validator remains strict for real visual evidence.
-- [ ] False positive accessibility/noise helpers are handled before or during validation in a documented, test-proven way.
-- [ ] No broad `invalid-element-box` downgrade is introduced.
+- [x] Validator remains strict for real visual evidence.
+- [x] False positive accessibility/noise helpers are handled before or during validation in a documented, test-proven way.
+- [x] No broad `invalid-element-box` downgrade is introduced.
 
 ## Phase 3A.5 - Kindred Coast Production Re-run
 
@@ -448,6 +448,20 @@ dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.A
 - Focused regression command passed: `Failed: 0, Passed: 2, Total: 2`.
 - Wider phase command passed: `Failed: 0, Passed: 143, Total: 143`, duration `1 m 55 s`.
 - One attempted parallel build/test produced compiler file lock `CS2012` from simultaneous writes to the same project output; reran sequentially and passed.
+
+### Phase 3A.4 Readiness Validation Safety Net - 2026-08-06
+
+- Added `Readiness_BlocksInvalidVisibleElementBoxBoundaryRules` to cover width/height zero, negative x/y, and coordinates beyond the quality report final dimensions.
+- Added `Readiness_MissingUsefulBoundingBoxesStillFails` to prove all-zero boxes still trigger `missing-useful-bounding-box` and `invalid-element-box`.
+- Added `Evidence_ClassifiesMajorVisibleEvidenceCategories` to lock evidence categories for `semantic-landmark`, `section`, `heading`, and `product-card-candidate`.
+- No readiness validator downgrade or warning conversion was introduced.
+- Validation command passed:
+
+```powershell
+dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj --no-build --filter "FullyQualifiedName~EndToEndCliTests|FullyQualifiedName~Readiness|FullyQualifiedName~Evidence" --blame-hang --blame-hang-timeout 5m
+```
+
+- Result: `Failed: 0, Passed: 154, Total: 154`, duration `2 m`.
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |

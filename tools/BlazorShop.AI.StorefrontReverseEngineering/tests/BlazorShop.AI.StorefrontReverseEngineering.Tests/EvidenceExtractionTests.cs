@@ -91,6 +91,47 @@ public sealed class EvidenceExtractionTests
     }
 
     [Fact]
+    public async Task Evidence_ClassifiesMajorVisibleEvidenceCategories()
+    {
+        var repoRoot = GetRepoRoot();
+        var projectRoot = Path.Combine("obj", "storefront-reverse-engineering", "projects", "evidence-categories-" + Guid.NewGuid().ToString("N"));
+        var session = new BrowserPageSession("evidence-categories", "home", "https://example.test");
+        var capture = new BrowserCaptureResult(
+            "fixture",
+            "native",
+            1440,
+            900,
+            1440,
+            1200,
+            "<html></html>",
+            [],
+            [
+                new ComputedStyleSample("header.site-header", MajorStyle("block"), "ev-001"),
+                new ComputedStyleSample("section.hero", MajorStyle("grid"), "ev-002"),
+                new ComputedStyleSample("h1.hero-title", MajorStyle("block"), "ev-003"),
+                new ComputedStyleSample(".product-card", MajorStyle("block"), "ev-004")
+            ],
+            [
+                new ElementBoxSample("header.site-header", 0, 0, 1440, 72, "ev-001"),
+                new ElementBoxSample("section.hero", 0, 72, 1440, 420, "ev-002"),
+                new ElementBoxSample("h1.hero-title", 40, 120, 520, 64, "ev-003"),
+                new ElementBoxSample(".product-card", 40, 560, 320, 420, "ev-004")
+            ],
+            [],
+            [],
+            "capture-categories");
+
+        var index = await new VisualEvidenceExtractor(repoRoot)
+            .WriteViewportEvidenceAsync(projectRoot, session, "desktop-1440", capture, "run-categories", new EvidenceExtractionOptions(), CancellationToken.None);
+        var categories = index.Elements.Select(element => element.Category).ToArray();
+
+        Assert.Contains("semantic-landmark", categories);
+        Assert.Contains("section", categories);
+        Assert.Contains("heading", categories);
+        Assert.Contains("product-card-candidate", categories);
+    }
+
+    [Fact]
     public async Task Consistency_ValidatorFailsCorrelationMismatch()
     {
         var (projectRoot, _, _) = await CaptureAndExtractViewportAsync(ViewportDefinition.Defaults[0]);
@@ -131,6 +172,15 @@ public sealed class EvidenceExtractionTests
             .WriteViewportEvidenceAsync(projectRoot, session, viewport.Id, captured, new EvidenceExtractionOptions(), CancellationToken.None);
         return (projectRoot, captured, index);
     }
+
+    private static IReadOnlyDictionary<string, string> MajorStyle(string display) =>
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["display"] = display,
+            ["font-family"] = "Inter",
+            ["font-size"] = "16px",
+            ["color"] = "rgb(0, 0, 0)"
+        };
 
     private static TArtifact ReadJson<TArtifact>(string projectRoot, string relativePath)
     {

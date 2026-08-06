@@ -255,6 +255,56 @@ public sealed class EndToEndCliTests
     }
 
     [Fact]
+    public async Task Readiness_BlocksInvalidVisibleElementBoxBoundaryRules()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Invalid Box Boundaries");
+        var elementPath = Path.Combine(projectRoot, "captures", "home", "desktop-1440", "element-evidence-index.json");
+        var originalJson = await File.ReadAllTextAsync(elementPath);
+        var invalidBoxes = new[]
+        {
+            """{"x":0,"y":0,"width":0,"height":120}""",
+            """{"x":0,"y":0,"width":320,"height":0}""",
+            """{"x":-99999,"y":0,"width":320,"height":120}""",
+            """{"x":0,"y":-99999,"width":320,"height":120}""",
+            """{"x":999999,"y":0,"width":320,"height":120}""",
+            """{"x":0,"y":999999,"width":320,"height":120}"""
+        };
+
+        foreach (var invalidBox in invalidBoxes)
+        {
+            await File.WriteAllTextAsync(elementPath, originalJson);
+            await MutateFirstElementAsync(projectRoot, element =>
+            {
+                element["box"] = JsonNode.Parse(invalidBox);
+            });
+
+            var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+            Assert.False(report.Passed);
+            Assert.Contains(report.Findings, finding => finding.Code == "invalid-element-box");
+        }
+    }
+
+    [Fact]
+    public async Task Readiness_MissingUsefulBoundingBoxesStillFails()
+    {
+        var projectRoot = await CreateReadyProjectAsync("Missing Useful Boxes");
+        await MutateJsonAsync(projectRoot, "captures/home/desktop-1440/element-evidence-index.json", json =>
+        {
+            foreach (var element in json["elements"]!.AsArray())
+            {
+                element!.AsObject()["box"] = JsonNode.Parse("""{"x":0,"y":0,"width":0,"height":0}""");
+            }
+        });
+
+        var report = await new VisualProjectWorkflowService(GetRepoRoot()).ValidateAsync(projectRoot, CancellationToken.None);
+
+        Assert.False(report.Passed);
+        Assert.Contains(report.Findings, finding => finding.Code == "missing-useful-bounding-box");
+        Assert.Contains(report.Findings, finding => finding.Code == "invalid-element-box");
+    }
+
+    [Fact]
     public async Task Readiness_StillBlocksInvalidVisibleElementBox()
     {
         var projectRoot = await CreateReadyProjectAsync("Invalid Visible Box");
