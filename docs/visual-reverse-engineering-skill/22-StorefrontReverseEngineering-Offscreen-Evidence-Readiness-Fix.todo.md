@@ -188,21 +188,21 @@ Preferred implementation direction:
 
 Tasks:
 
-- [ ] Inspect existing `CapturePolicyDefaults.ResolveNoiseSelectors(policy)` behavior.
-- [ ] Decide whether the fix belongs in:
-  - [ ] browser `interesting` predicate;
-  - [ ] default capture noise selectors;
-  - [ ] evidence extractor filtering;
-  - [ ] readiness validator exception path.
-- [ ] Prefer the least surprising rule:
-  - [ ] exclude elements whose bounding rect is fully offscreen left or top and whose selector/class/attributes identify accessibility helpers;
-  - [ ] exclude common helper selectors such as `.skip-to-content-link`, `.visually-hidden`, `[aria-live]` status nodes only when they are not visible visual UI;
-  - [ ] do not exclude visible focused skip links if a future capture intentionally focuses them.
-- [ ] Ensure the rule does not remove meaningful sticky banners, announcement bars, nav links, product cards, buttons, images, hero sections, or footer content.
-- [ ] Ensure evidence IDs remain stable enough for downstream blueprint references after filtering.
-- [ ] If filtering changes evidence ID ordering, verify blueprint evidence references still match available evidence IDs.
-- [ ] Keep changes narrowly scoped to StorefrontReverseEngineering tooling.
-- [ ] Do not add site-specific Kindred Coast selectors unless no generic safe rule is possible.
+- [x] Inspect existing `CapturePolicyDefaults.ResolveNoiseSelectors(policy)` behavior.
+- [x] Decide whether the fix belongs in:
+  - [x] browser `interesting` predicate;
+  - [x] default capture noise selectors;
+  - [x] evidence extractor filtering;
+  - [x] readiness validator exception path.
+- [x] Prefer the least surprising rule:
+  - [x] exclude elements whose bounding rect is fully offscreen left or top and whose selector/class/attributes identify accessibility helpers;
+  - [x] exclude common helper selectors such as `.skip-to-content-link`, `.visually-hidden`, `[aria-live]` status nodes only when they are not visible visual UI;
+  - [x] do not exclude visible focused skip links if a future capture intentionally focuses them.
+- [x] Ensure the rule does not remove meaningful sticky banners, announcement bars, nav links, product cards, buttons, images, hero sections, or footer content.
+- [x] Ensure evidence IDs remain stable enough for downstream blueprint references after filtering.
+- [x] If filtering changes evidence ID ordering, verify blueprint evidence references still match available evidence IDs.
+- [x] Keep changes narrowly scoped to StorefrontReverseEngineering tooling.
+- [x] Do not add site-specific Kindred Coast selectors unless no generic safe rule is possible.
 
 Checks:
 
@@ -213,10 +213,10 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 
 DoD:
 
-- [ ] Offscreen accessibility helper evidence no longer triggers `invalid-element-box`.
-- [ ] Real invalid visible boxes still trigger `invalid-element-box`.
-- [ ] Capture quality artifacts remain unchanged in purpose and schema.
-- [ ] No StorefrontBuilder, Storefront V2, Runtime, API, or Commerce behavior changes are required.
+- [x] Offscreen accessibility helper evidence no longer triggers `invalid-element-box`.
+- [x] Real invalid visible boxes still trigger `invalid-element-box`.
+- [x] Capture quality artifacts remain unchanged in purpose and schema.
+- [x] No StorefrontBuilder, Storefront V2, Runtime, API, or Commerce behavior changes are required.
 
 ## Phase 3A.4 - Readiness Validation Safety Net
 
@@ -429,6 +429,25 @@ dotnet test tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI
 - Result before implementation: `Failed: 1, Passed: 1, Total: 2`.
 - Expected failing assertion: captured boxes still include `a.skip-to-content-link.button-secondary` with `x=-99999` and `div.visually-hidden` with `x=-99999`.
 - Safety-net result: `Readiness_StillBlocksInvalidVisibleElementBox` passed, proving a real visual element moved to `x=-99999` remains an `invalid-element-box` blocker.
+
+### Phase 3A.3 Evidence Selection Fix - 2026-08-06
+
+- Implemented `isNonVisualAccessibilityHelper` inside `Browser/PlaywrightReferenceBrowser.cs`.
+- Kept `CapturePolicyDefaults.ResolveNoiseSelectors(policy)` unchanged: default noise selectors remain `.cookie-banner` and `[data-capture-noise]`.
+- Decision: filter in the browser `interesting` predicate, before styles/boxes/assets become rendered evidence. This keeps readiness strict and avoids site-specific Kindred Coast rules.
+- Excluded only helper-like elements when they are fully offscreen or clipped to assistive-only dimensions:
+  - helper selectors/classes such as `skip-to-content`, `skip-link`, `visually-hidden`, `sr-only`, `screen-reader`;
+  - `aria-live` helper nodes with status-like roles;
+  - offscreen/clipped layout state.
+- Build command passed:
+
+```powershell
+dotnet build tools\BlazorShop.AI.StorefrontReverseEngineering\tests\BlazorShop.AI.StorefrontReverseEngineering.Tests\BlazorShop.AI.StorefrontReverseEngineering.Tests.csproj
+```
+
+- Focused regression command passed: `Failed: 0, Passed: 2, Total: 2`.
+- Wider phase command passed: `Failed: 0, Passed: 143, Total: 143`, duration `1 m 55 s`.
+- One attempted parallel build/test produced compiler file lock `CS2012` from simultaneous writes to the same project output; reran sequentially and passed.
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |

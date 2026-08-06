@@ -470,6 +470,28 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             }
             return domPath(element) || tag;
           };
+          const isNonVisualAccessibilityHelper = (element, style, rect) => {
+            const helperText = [
+              element.id,
+              element.getAttribute('class'),
+              element.getAttribute('role'),
+              element.getAttribute('aria-live'),
+              element.getAttribute('aria-label'),
+              element.getAttribute('data-testid'),
+              element.getAttribute('data-test'),
+              element.getAttribute('data-role')
+            ].filter(Boolean).join(' ');
+            const isKnownHelper = /(^|\b|-|_)(skip-to-content|skip-link|visually-hidden|visuallyhidden|sr-only|screen-reader|screenreader)(\b|-|_|$)/i.test(helperText);
+            const role = (element.getAttribute('role') || '').toLowerCase();
+            const isLiveHelper = element.hasAttribute('aria-live') && ['status','alert','log'].includes(role);
+            const fullyOffscreen = rect.right < -10 || rect.bottom < -10 || rect.left < -1000 || rect.top < -1000;
+            const clippedToAssistiveOnly = rect.width <= 1 && rect.height <= 1 && (
+              style.overflow === 'hidden' ||
+              style.clip !== 'auto' ||
+              (style.clipPath && style.clipPath !== 'none')
+            );
+            return (isKnownHelper || isLiveHelper) && (fullyOffscreen || clippedToAssistiveOnly);
+          };
           const interesting = element => {
             const tag = element.tagName.toLowerCase();
             if (['script','style','template','noscript'].includes(tag)) {
@@ -478,6 +500,9 @@ public sealed class PlaywrightReferenceBrowser : ReferenceBrowserBase
             const style = getComputedStyle(element);
             const rect = element.getBoundingClientRect();
             if (style.display === 'none' || style.visibility === 'hidden' || rect.width <= 0 || rect.height <= 0) {
+              return false;
+            }
+            if (isNonVisualAccessibilityHelper(element, style, rect)) {
               return false;
             }
             if (['header','main','footer','section','article','nav','aside','h1','h2','h3','h4','h5','h6','a','button','input','select','textarea','img','video','svg'].includes(tag)) {
