@@ -39,8 +39,10 @@ function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
 $workspacePaths = Resolve-StorefrontBuilderWorkspacePaths -RepoRoot $repoRoot -ProjectName $Name -WorkspaceRoot $WorkspaceRoot -ProjectRoot $ProjectRoot -OutputRoot "artifacts/storefront-builder/generated" -WarnOnProjectRootAlias
 $Name = $workspacePaths.ProjectName
 $projectRoot = $workspacePaths.WorkspaceRoot
-$projectFile = Join-Path $projectRoot "$Name.csproj"
-$wasmProjectRoot = Join-Path $projectRoot "$Name.WASM"
+$serverProjectRoot = $workspacePaths.ServerProjectRoot
+$wasmProjectRoot = $workspacePaths.WasmProjectRoot
+$solutionFile = $workspacePaths.SolutionPath
+$projectFile = Join-Path $serverProjectRoot "$Name.csproj"
 $wasmProjectFile = Join-Path $wasmProjectRoot "$Name.WASM.csproj"
 $packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
@@ -89,6 +91,10 @@ if (-not (Test-Path $projectFile)) {
 
 if (-not (Test-Path $wasmProjectFile)) {
     throw "[SFB-ISOLATION-000] Generated storefront WASM project is missing: $wasmProjectFile"
+}
+
+if (-not (Test-Path $solutionFile)) {
+    throw "[SFB-ISOLATION-000] Generated storefront solution is missing: $solutionFile"
 }
 
 Initialize-StorefrontPackageIdentity
@@ -273,13 +279,13 @@ dotnet pack $browserProject --configuration $Configuration --output $packageRoot
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Update-GeneratedPackageVersionProps
 Update-GeneratedMetadataPackageProvenance
+node (Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\update-generated-files-manifest.mjs") --project-root $projectRoot --intentional-changes "__all__"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $metadataPackagesById = Read-GeneratedMetadataPackageProvenance
 Write-GeneratedNuGetConfig
-dotnet restore $projectFile --no-cache --force-evaluate
+dotnet restore $solutionFile --no-cache --force-evaluate
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-dotnet restore $wasmProjectFile --no-cache --force-evaluate
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-Assert-RestoredProjectAssets -AssetsPath (Join-Path $projectRoot "obj\project.assets.json") -ExpectedPackages @(
+Assert-RestoredProjectAssets -AssetsPath (Join-Path $serverProjectRoot "obj\project.assets.json") -ExpectedPackages @(
     $metadataPackagesById["BlazorShop.Storefront.Presentation"],
     $metadataPackagesById["BlazorShop.Storefront.Components"],
     $metadataPackagesById["BlazorShop.Storefront.Browser"]
@@ -288,7 +294,7 @@ Assert-RestoredProjectAssets -AssetsPath (Join-Path $wasmProjectRoot "obj\projec
     $metadataPackagesById["BlazorShop.Storefront.Components"],
     $metadataPackagesById["BlazorShop.Storefront.Browser"]
 )
-dotnet build $projectFile --configuration $Configuration --no-restore
+dotnet build $solutionFile --configuration $Configuration --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
@@ -323,7 +329,7 @@ $serverProjectReferences = @(@($serverProjectDocument.Project.ItemGroup.ProjectR
 $wasmProjectReferences = @(@($wasmProjectDocument.Project.ItemGroup.ProjectReference) |
     ForEach-Object { [string]$_.Include } |
     Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-$expectedWasmReference = "$Name.WASM\$Name.WASM.csproj"
+$expectedWasmReference = "..\$Name.WASM\$Name.WASM.csproj"
 $expectedWasmReferenceFullPath = [System.IO.Path]::GetFullPath($wasmProjectFile)
 if ($serverProjectReferences.Count -ne 1 -or -not ([string]$serverProjectReferences[0]).Equals($expectedWasmReference, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "[SFB-ISOLATION-002] Generated server must reference only sibling WASM '$expectedWasmReference'. Actual: $($serverProjectReferences -join ', ')"
@@ -332,7 +338,7 @@ if ($serverProjectReferences.Count -ne 1 -or -not ([string]$serverProjectReferen
 $resolvedProjectRoot = [System.IO.Path]::GetFullPath($projectRoot).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
 $resolvedProjectRootWithSeparator = "$resolvedProjectRoot$([System.IO.Path]::DirectorySeparatorChar)"
 foreach ($reference in $serverProjectReferences) {
-    $resolvedReference = [System.IO.Path]::GetFullPath((Join-Path $projectRoot $reference))
+    $resolvedReference = [System.IO.Path]::GetFullPath((Join-Path $serverProjectRoot $reference))
     if (-not $resolvedReference.StartsWith($resolvedProjectRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "[SFB-ISOLATION-002] Generated server ProjectReference leaves generated root: $reference"
     }
@@ -350,7 +356,7 @@ $forbidden = @("BlazorShop.Storefront.V2", "BlazorShop.Storefront.V2.WASM", "Bla
 Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
     ForEach-Object {
         $relativeToProject = (Get-RelativePathCompat $projectRoot $_.FullName).Replace("\", "/")
-        if ($relativeToProject -match "(^|/)(bin|obj)/" -or $relativeToProject -eq "docs/storefront-analysis/metadata.yaml" -or $relativeToProject -eq "docs/storefront-analysis/generated-files.yaml" -or $relativeToProject -eq "README.md") {
+        if ($relativeToProject -match "(^|/)(bin|obj)/" -or $relativeToProject.StartsWith("docs/storefront-analysis/", [System.StringComparison]::OrdinalIgnoreCase) -or $relativeToProject -eq "README.md") {
             return
         }
 

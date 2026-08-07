@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { generatorVersion } from "./storefront-builder-version.mjs";
 
 const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
 const url = readArg("--url") ?? "https://reference.example";
@@ -9,6 +10,7 @@ const output = `${projectRoot}/docs/storefront-analysis/review-summary.md`;
 const content = `# StorefrontBuilder Review Summary
 
 Reference URL: ${url}
+Generator version: ${generatorVersion}
 
 ## Visual Decision Summary
 

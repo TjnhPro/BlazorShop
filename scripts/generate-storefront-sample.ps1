@@ -125,6 +125,11 @@ function Copy-StarterTemplate {
     }
 
     New-Item -ItemType Directory -Force -Path $analysisRoot | Out-Null
+    $serverContractPath = Join-Path $serverProjectRoot "starter-generation.contract.yaml"
+    if (Test-Path -LiteralPath $serverContractPath) {
+        Copy-Item -LiteralPath $serverContractPath -Destination (Join-Path $analysisRoot "starter-generation.contract.yaml") -Force
+        Remove-Item -LiteralPath $serverContractPath -Force
+    }
 }
 
 function Get-PortableRelativePath {

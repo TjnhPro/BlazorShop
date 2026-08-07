@@ -5,6 +5,7 @@ $toolRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
 $outputRoot = Join-Path $repoRoot "obj\storefront-builder\generated\regeneration-safety-tests"
 $projectName = "BlazorShop.Storefront.RegenSafety"
 $projectRoot = Join-Path $outputRoot $projectName
+$expectedGeneratorVersion = (Get-Content -LiteralPath (Join-Path $toolRoot "version.json") -Raw | ConvertFrom-Json).generatorVersion
 
 function Assert-Condition {
     param(
@@ -257,7 +258,7 @@ $manifestPath = Join-Path $projectRoot "docs\storefront-analysis\generated-files
 $manifestText = Get-Content -LiteralPath $manifestPath -Raw
 $metadataGeneratorVersion = Get-YamlScalarValue -Text $metadataText -Key "generatorVersion"
 $generatedFileManifestVersions = @(Get-ManifestGeneratorVersions -Manifest $manifestText)
-Assert-Condition -Condition ($metadataGeneratorVersion -eq "2.5.0") -Message "Generated metadata did not use the shared StorefrontBuilder generatorVersion."
+Assert-Condition -Condition ($metadataGeneratorVersion -eq $expectedGeneratorVersion) -Message "Generated metadata did not use the shared StorefrontBuilder generatorVersion."
 Assert-Condition -Condition ($generatedFileManifestVersions.Count -gt 0) -Message "Generated file manifest did not include generatorVersion entries."
 Assert-Condition -Condition ($generatedFileManifestVersions.Count -eq 1 -and $generatedFileManifestVersions[0] -eq $metadataGeneratorVersion) -Message "Generated metadata and manifest generatorVersion values did not match."
 

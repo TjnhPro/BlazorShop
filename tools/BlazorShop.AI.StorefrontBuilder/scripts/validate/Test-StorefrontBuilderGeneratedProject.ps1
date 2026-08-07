@@ -18,6 +18,7 @@ $wasmProgram = Join-Path $wasmProjectRoot "Program.cs"
 $solutionFile = Join-Path $ProjectRoot "$Name.sln"
 $metadata = Join-Path $ProjectRoot "docs\storefront-analysis\metadata.yaml"
 $generatedFilesManifest = Join-Path $ProjectRoot "docs\storefront-analysis\generated-files.yaml"
+$generatedStarterContract = Join-Path $ProjectRoot "docs\storefront-analysis\starter-generation.contract.yaml"
 $featureManifest = Join-Path $serverProjectRoot "Features\feature-manifest.json"
 
 function Test-TextContains {
@@ -89,10 +90,14 @@ function Validate-PackageProvenanceHashes {
     }
 }
 
-foreach ($path in @($solutionFile, $projectFile, $wasmProjectFile, $serverProgram, $wasmProgram, $metadata, $generatedFilesManifest, $featureManifest)) {
+foreach ($path in @($solutionFile, $projectFile, $wasmProjectFile, $serverProgram, $wasmProgram, $metadata, $generatedFilesManifest, $generatedStarterContract, $featureManifest)) {
     if (-not (Test-Path $path)) {
         throw "[SFB-PROJECT-003] Generated project required file is missing: $path"
     }
+}
+
+if (Test-Path -LiteralPath (Join-Path $serverProjectRoot "starter-generation.contract.yaml")) {
+    throw "[SFB-PROJECT-003] Starter generation contract must be a workspace analysis artifact, not a server source file."
 }
 
 $project = Get-Content -LiteralPath $projectFile -Raw

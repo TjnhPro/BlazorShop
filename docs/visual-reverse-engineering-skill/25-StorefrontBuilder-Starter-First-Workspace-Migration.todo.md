@@ -402,37 +402,46 @@ Goal: keep generated proof package consumption deterministic across both sibling
 
 Tasks:
 
-- [ ] Ensure the generated workspace imports one shared `StorefrontPackageVersions.props`.
-- [ ] Ensure both generated server and generated WASM import the workspace props via a correct relative path.
-- [ ] Keep one generator version source:
-  - [ ] `tools/BlazorShop.AI.StorefrontBuilder/version.json`.
-  - [ ] `metadata.yaml` reads the same version.
-  - [ ] generated-file manifest reads the same version.
-  - [ ] reports read the same version.
-- [ ] Pack local packages for proof:
-  - [ ] `BlazorShop.Storefront.Client`
-  - [ ] `BlazorShop.Storefront.Runtime`
-  - [ ] `BlazorShop.Storefront.Presentation`
-  - [ ] `BlazorShop.Storefront.Components`
-  - [ ] `BlazorShop.Storefront.Browser`
-- [ ] Verify generated server package closure:
-  - [ ] Presentation package present.
-  - [ ] Components package present if server visual templates compile against shared contracts.
-  - [ ] Browser package present only if server-side controller registration needs compile-time Browser extension types.
-  - [ ] Runtime and Client present transitively or as metadata according to current contract.
-- [ ] Verify generated WASM package closure:
-  - [ ] Browser package present.
-  - [ ] Components package present.
-  - [ ] Runtime package absent from direct references.
-  - [ ] Client package absent from direct references.
-- [ ] Record package version and hash evidence in generated metadata.
-- [ ] Verify package version evidence is workspace-wide, not duplicated differently in server and WASM metadata.
+- [x] Ensure the generated workspace imports one shared `StorefrontPackageVersions.props`.
+- [x] Ensure both generated server and generated WASM import the workspace props via a correct relative path.
+- [x] Keep one generator version source:
+  - [x] `tools/BlazorShop.AI.StorefrontBuilder/version.json`.
+  - [x] `metadata.yaml` reads the same version.
+  - [x] generated-file manifest reads the same version.
+  - [x] reports read the same version.
+- [x] Pack local packages for proof:
+  - [x] `BlazorShop.Storefront.Client`
+  - [x] `BlazorShop.Storefront.Runtime`
+  - [x] `BlazorShop.Storefront.Presentation`
+  - [x] `BlazorShop.Storefront.Components`
+  - [x] `BlazorShop.Storefront.Browser`
+- [x] Verify generated server package closure:
+  - [x] Presentation package present.
+  - [x] Components package present if server visual templates compile against shared contracts.
+  - [x] Browser package present only if server-side controller registration needs compile-time Browser extension types.
+  - [x] Runtime and Client present transitively or as metadata according to current contract.
+- [x] Verify generated WASM package closure:
+  - [x] Browser package present.
+  - [x] Components package present.
+  - [x] Runtime package absent from direct references.
+  - [x] Client package absent from direct references.
+- [x] Record package version and hash evidence in generated metadata.
+- [x] Verify package version evidence is workspace-wide, not duplicated differently in server and WASM metadata.
 
 Exit criteria:
 
-- [ ] Server and WASM restore from the same package version source.
-- [ ] No generator version drift remains.
-- [ ] Package proof reflects the actual workspace shape.
+- [x] Server and WASM restore from the same package version source.
+- [x] No generator version drift remains.
+- [x] Package proof reflects the actual workspace shape.
+
+Phase 5 evidence:
+
+- Generated server and WASM projects both import `..\StorefrontPackageVersions.props`; no project-local duplicate props file is used.
+- `write-review-artifacts.mjs`, `metadata.yaml`, and `generated-files.yaml` all read/report generator version `2.5.0` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`; regeneration safety test now reads the expected version from that file instead of hardcoding it.
+- `run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot obj/storefront-builder/generated/BlazorShop.Storefront.Phase5PackageProof -Name Phase5PackageProof` passed after packing Client, Runtime, Presentation, Components, and Browser as `1.0.0-local.0c9a8e1ec071`.
+- Generated metadata records package versions and SHA-256 hashes for all five Storefront packages, with feed path `../../../../artifacts/storefront-packages`.
+- Isolation gate restores/builds the generated solution from the workspace, verifies server package closure for Presentation/Components/Browser, verifies WASM closure for Components/Browser, and rejects direct Runtime/Client package references.
+- `build-storefront.ps1 -Mode validate-only -Name Phase5PackageProof -StoreKey sample -OutputRoot obj/storefront-builder/generated` passed after the gate refreshed `generated-files.yaml`.
 
 ## Phase 6 - Static Validator And Isolation Gate Rewrite
 
