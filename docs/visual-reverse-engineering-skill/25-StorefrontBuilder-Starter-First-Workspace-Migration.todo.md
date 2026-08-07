@@ -182,42 +182,48 @@ Goal: make `starter-generation.contract.yaml` describe the workspace output and 
 
 Tasks:
 
-- [ ] Update `starter-generation.contract.yaml` to declare a `workspace` model:
-  - [ ] `workspaceRootPattern: "{OutputRoot}/{ProjectName}"`
-  - [ ] `solutionFile: "{ProjectName}.sln"`
-  - [ ] `analysisRoot: "docs/storefront-analysis"`
-  - [ ] `sharedFiles: ["StorefrontPackageVersions.props", "nuget.config"]`
-- [ ] Add explicit project entries:
-  - [ ] `server.namePattern: "{ProjectName}"`
-  - [ ] `server.rootPath: "{ProjectName}"`
-  - [ ] `server.projectPath: "{ProjectName}/{ProjectName}.csproj"`
-  - [ ] `wasm.namePattern: "{ProjectName}.WASM"`
-  - [ ] `wasm.rootPath: "{ProjectName}.WASM"`
-  - [ ] `wasm.projectPath: "{ProjectName}.WASM/{ProjectName}.WASM.csproj"`
-- [ ] Declare source template entries:
-  - [ ] `server.sourceProject: "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"`
-  - [ ] `wasm.sourceProject: "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM"`
-- [ ] Declare generated package/reference rules:
-  - [ ] Server may reference sibling generated WASM project.
-  - [ ] Server consumes Presentation, Components, and Browser through package boundaries in independent generated proof.
-  - [ ] Runtime and Client remain package metadata/provenance unless explicitly needed through Presentation.
-  - [ ] WASM consumes Browser and Components only.
-- [ ] Declare forbidden output:
-  - [ ] No nested `{ProjectName}.WASM` folder under server project root.
-  - [ ] No generated exclusion ItemGroups for nested WASM.
-  - [ ] No direct V2/backend/core/API project references.
-  - [ ] No generated `@page` directives in visual slot files.
-- [ ] Update contract build commands:
-  - [ ] `dotnet restore {WorkspaceRoot}/{ProjectName}.sln --no-cache --force-evaluate`
-  - [ ] `dotnet build {WorkspaceRoot}/{ProjectName}.sln --no-restore`
-  - [ ] `dotnet run --project {WorkspaceRoot}/{ProjectName}/{ProjectName}.csproj`
-- [ ] Keep route metadata aligned with Presentation route truth.
-- [ ] If contract schema validation exists, update schema and tests in the same phase.
+- [x] Update `starter-generation.contract.yaml` to declare a `workspace` model:
+  - [x] `workspaceRootPattern: "{OutputRoot}/{ProjectName}"`
+  - [x] `solutionFile: "{ProjectName}.sln"`
+  - [x] `analysisRoot: "docs/storefront-analysis"`
+  - [x] `sharedFiles: ["StorefrontPackageVersions.props", "nuget.config"]`
+- [x] Add explicit project entries:
+  - [x] `server.namePattern: "{ProjectName}"`
+  - [x] `server.rootPath: "{ProjectName}"`
+  - [x] `server.projectPath: "{ProjectName}/{ProjectName}.csproj"`
+  - [x] `wasm.namePattern: "{ProjectName}.WASM"`
+  - [x] `wasm.rootPath: "{ProjectName}.WASM"`
+  - [x] `wasm.projectPath: "{ProjectName}.WASM/{ProjectName}.WASM.csproj"`
+- [x] Declare source template entries:
+  - [x] `server.sourceProject: "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"`
+  - [x] `wasm.sourceProject: "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM"`
+- [x] Declare generated package/reference rules:
+  - [x] Server may reference sibling generated WASM project.
+  - [x] Server consumes Presentation, Components, and Browser through package boundaries in independent generated proof.
+  - [x] Runtime and Client remain package metadata/provenance unless explicitly needed through Presentation.
+  - [x] WASM consumes Browser and Components only.
+- [x] Declare forbidden output:
+  - [x] No nested `{ProjectName}.WASM` folder under server project root.
+  - [x] No generated exclusion ItemGroups for nested WASM.
+  - [x] No direct V2/backend/core/API project references.
+  - [x] No generated `@page` directives in visual slot files.
+- [x] Update contract build commands:
+  - [x] `dotnet restore {WorkspaceRoot}/{ProjectName}.sln --no-cache --force-evaluate`
+  - [x] `dotnet build {WorkspaceRoot}/{ProjectName}.sln --no-restore`
+  - [x] `dotnet run --project {WorkspaceRoot}/{ProjectName}/{ProjectName}.csproj`
+- [x] Keep route metadata aligned with Presentation route truth.
+- [x] If contract schema validation exists, update schema and tests in the same phase.
 
 Exit criteria:
 
-- [ ] Contract describes the target workspace without referring to nested output.
-- [ ] Contract can be used by scripts and validators without path inference.
+- [x] Contract describes the target workspace without referring to nested output.
+- [x] Contract can be used by scripts and validators without path inference.
+
+Phase 1 evidence:
+
+- `starter-generation.contract.yaml` now declares workspace root, solution, analysis root, shared files, explicit server/WASM sibling project paths, source template projects, generated reference rules, and forbidden output.
+- Existing contract preflight passed with `Test-StorefrontBuilderPreflight.ps1 -ReferenceUrls https://www.kindredcoast.com/ -Name Kindredcoast -StoreKey kindredcoast -OutputRoot BlazorShop.PresentationV2 -Mode validate-only`.
+- `Test-StorefrontBuilderCapabilities.ps1` and `Test-StorefrontBuilderTopology.ps1` require generated artifact path parameters and were not applicable to this contract-only phase.
 
 ## Phase 2 - Starter Source Hardening
 

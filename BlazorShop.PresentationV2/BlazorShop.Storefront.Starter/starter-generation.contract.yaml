@@ -3,8 +3,45 @@ starterVersion: 1.0.0-local
 targetFramework: net10.0
 generatedProject:
   namingConvention: BlazorShop.Storefront.{Name}
-  outputRoot: BlazorShop.PresentationV2
   safeNamePattern: ^[A-Z][A-Za-z0-9]*$
+  workspace:
+    workspaceRootPattern: "{OutputRoot}/{ProjectName}"
+    solutionFile: "{ProjectName}.sln"
+    analysisRoot: docs/storefront-analysis
+    sharedFiles:
+      - StorefrontPackageVersions.props
+      - nuget.config
+  projects:
+    server:
+      namePattern: "{ProjectName}"
+      rootPath: "{ProjectName}"
+      projectPath: "{ProjectName}/{ProjectName}.csproj"
+      sourceProject: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter
+    wasm:
+      namePattern: "{ProjectName}.WASM"
+      rootPath: "{ProjectName}.WASM"
+      projectPath: "{ProjectName}.WASM/{ProjectName}.WASM.csproj"
+      sourceProject: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM
+  referenceRules:
+    server:
+      allowedProjectReferences:
+        - "{ProjectName}.WASM/{ProjectName}.WASM.csproj"
+      independentPackageReferences:
+        - BlazorShop.Storefront.Presentation
+        - BlazorShop.Storefront.Components
+        - BlazorShop.Storefront.Browser
+      packageMetadataOnly:
+        - BlazorShop.Storefront.Runtime
+        - BlazorShop.Storefront.Client
+    wasm:
+      allowedPackageReferences:
+        - BlazorShop.Storefront.Browser
+        - BlazorShop.Storefront.Components
+  forbiddenOutput:
+    nestedWasmUnderServerRoot: forbidden
+    nestedWasmExclusionItemGroups: forbidden
+    directV2BackendCoreApiProjectReferences: forbidden
+    generatedPageDirectivesInVisualSlots: forbidden
 packageDependencies:
   - id: BlazorShop.Storefront.Presentation
     versionProperty: StorefrontPresentationPackageVersion
@@ -121,8 +158,9 @@ actionDescriptors:
     descriptor: data-storefront-consent-revoke-url
     routeSource: StorefrontConsentActionContext.RevokeUrl
 buildCommands:
-  - dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj
-  - dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj --no-restore
+  - dotnet restore {WorkspaceRoot}/{ProjectName}.sln --no-cache --force-evaluate
+  - dotnet build {WorkspaceRoot}/{ProjectName}.sln --no-restore
+  - dotnet run --project {WorkspaceRoot}/{ProjectName}/{ProjectName}.csproj
 gateCommands:
   - ./scripts/qa/run-storefront-starter-isolation-gate.ps1
   - ./scripts/qa/run-storefront-sample-release-gate.ps1
