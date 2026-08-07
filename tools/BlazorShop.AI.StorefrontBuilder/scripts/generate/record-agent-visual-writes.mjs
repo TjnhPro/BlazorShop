@@ -18,7 +18,13 @@ Options:
   process.exit(0);
 }
 
-const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const workspaceRootArg = readArg("--workspace-root");
+const projectRootAliasArg = readArg("--project-root");
+if (!workspaceRootArg && projectRootAliasArg) {
+  console.warn("[SFB-AGENT-WRITE-WARN] --project-root is a compatibility alias for --workspace-root and will be removed after the workspace migration.");
+}
+
+const projectRoot = resolve(workspaceRootArg ?? projectRootAliasArg ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const taskPackageRoot = resolve(readArg("--task-package") ?? join(projectRoot, "docs/storefront-analysis/agent-task-package"));
 const checkpointPath = readArg("--from-checkpoint") ? resolve(projectRoot, readArg("--from-checkpoint")) : null;
 const implementationReportPath = readArg("--implementation-report")
@@ -63,7 +69,10 @@ for (const targetPath of targetFiles) {
   validateVisualContent(targetPath, content, allowed);
   records.push({
     filePath: targetPath,
+    workspaceRelativePath: targetPath,
     project: allowed.targetProject ?? inferTargetProject(packageManifest.projectName, targetPath),
+    projectKind: allowed.projectKind ?? allowed.targetProject ?? inferTargetProject(packageManifest.projectName, targetPath),
+    projectName: allowed.projectName ?? projectNameForTarget(packageManifest.projectName, targetPath),
     projectRelativePath: allowed.projectRelativePath ?? inferProjectRelativePath(packageManifest.projectName, targetPath),
     artifactRootRelativePath: allowed.artifactRootRelativePath ?? `${packageManifest.projectName}/${targetPath}`,
     detectionSource: describeDetectionSource(targetPath, detection, writtenFiles),
@@ -279,6 +288,14 @@ function assertAllowedPath(targetPath, allowedByPath) {
     fail("SFB-AGENT-WRITE-003", `Agent write targets a protected package or Starter zone: ${targetPath}`);
   }
 
+  if (isWorkspaceSharedPath(targetPath)) {
+    fail("SFB-AGENT-WRITE-005", `Agent write targets a workspace shared file outside visual scope: ${targetPath}`);
+  }
+
+  if (isGeneratedRuntimeProtectedPath(packageManifest.projectName, targetPath)) {
+    fail("SFB-AGENT-WRITE-005", `Agent write targets generated runtime/bootstrap protected file: ${targetPath}`);
+  }
+
   const allowed = allowedByPath.get(targetPath);
   if (!allowed) {
     fail("SFB-AGENT-WRITE-004", `Agent write is outside allowed generated-owned outputs: ${targetPath}`);
@@ -286,7 +303,12 @@ function assertAllowedPath(targetPath, allowedByPath) {
 
   const inferredProject = inferTargetProject(packageManifest.projectName, targetPath);
   const inferredProjectRelativePath = inferProjectRelativePath(packageManifest.projectName, targetPath);
+  if (inferredProject === "workspace") {
+    fail("SFB-AGENT-WRITE-004", `Agent visual write is not scoped to a server or WASM project: ${targetPath}`);
+  }
+
   if ((allowed.targetProject && allowed.targetProject !== inferredProject) ||
+      (allowed.projectKind && allowed.projectKind !== inferredProject) ||
       (allowed.projectRelativePath && allowed.projectRelativePath !== inferredProjectRelativePath)) {
     fail("SFB-AGENT-WRITE-007", `Agent write crosses planned project boundary: ${targetPath}`);
   }
@@ -365,7 +387,10 @@ function appendAgentManifestSection(projectRoot, records) {
     "agentWrittenFiles:",
     ...records.flatMap(record => [
       `  - agentFilePath: ${record.filePath}`,
+      `    workspaceRelativePath: ${record.workspaceRelativePath}`,
       `    project: ${record.project}`,
+      `    projectKind: ${record.projectKind}`,
+      `    projectName: ${record.projectName}`,
       `    projectRelativePath: ${record.projectRelativePath}`,
       `    artifactRootRelativePath: ${record.artifactRootRelativePath}`,
       `    sourcePlanEntryId: ${record.sourcePlanEntryId}`,
@@ -430,12 +455,65 @@ function normalizeTargetPath(path) {
 }
 
 function inferTargetProject(projectName, targetPath) {
-  return normalizeTargetPath(targetPath).startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+  const normalized = normalizeTargetPath(targetPath);
+  if (normalized.startsWith(`${projectName}/`)) {
+    return "server";
+  }
+
+  if (normalized.startsWith(`${projectName}.WASM/`)) {
+    return "wasm";
+  }
+
+  return "workspace";
 }
 
 function inferProjectRelativePath(projectName, targetPath) {
   const normalized = normalizeTargetPath(targetPath);
-  return normalized.startsWith(`${projectName}.WASM/`) ? normalized.slice(`${projectName}.WASM/`.length) : normalized;
+  if (normalized.startsWith(`${projectName}/`)) {
+    return normalized.slice(projectName.length + 1);
+  }
+
+  if (normalized.startsWith(`${projectName}.WASM/`)) {
+    return normalized.slice(`${projectName}.WASM/`.length);
+  }
+
+  return normalized;
+}
+
+function projectNameForTarget(projectName, targetPath) {
+  const projectKind = inferTargetProject(projectName, targetPath);
+  return projectKind === "wasm" ? `${projectName}.WASM` : projectName;
+}
+
+function isWorkspaceSharedPath(path) {
+  const normalized = normalizeTargetPath(path);
+  return normalized === "StorefrontPackageVersions.props" ||
+    normalized === "nuget.config" ||
+    normalized === "README.md" ||
+    normalized.endsWith(".sln") ||
+    normalized.startsWith("docs/");
+}
+
+function isGeneratedRuntimeProtectedPath(projectName, path) {
+  const normalized = normalizeTargetPath(path);
+  const projectRelativePath = inferProjectRelativePath(projectName, normalized);
+  if (normalized.startsWith(`${projectName}/`)) {
+    return projectRelativePath === "Program.cs" ||
+      projectRelativePath === "App.razor" ||
+      projectRelativePath === "Routes.razor" ||
+      projectRelativePath.startsWith("Endpoints/") ||
+      projectRelativePath.includes("Bff") ||
+      projectRelativePath.endsWith(".csproj") ||
+      projectRelativePath === "appsettings.json";
+  }
+
+  if (normalized.startsWith(`${projectName}.WASM/`)) {
+    return projectRelativePath === "Program.cs" ||
+      projectRelativePath.endsWith(".csproj") ||
+      projectRelativePath.startsWith("wwwroot/_framework/");
+  }
+
+  return false;
 }
 
 function isProtectedPackagePath(path) {

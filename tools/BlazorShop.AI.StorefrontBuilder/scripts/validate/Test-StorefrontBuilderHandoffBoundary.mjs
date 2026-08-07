@@ -25,6 +25,8 @@ if (plan.generationMode !== "handoff") {
   process.exit(0);
 }
 const metadata = readFile(metadataPath);
+const projectName = name ?? metadataScalar("projectName");
+const projectPaths = resolveProjectPaths(projectName, plan.projects);
 const generatedManifest = readFile(generatedManifestPath);
 const manifestEntries = parseManifestEntries(generatedManifest);
 const manifestByPath = new Map(manifestEntries.map(entry => [normalizePath(entry.filePath), entry]));
@@ -86,9 +88,7 @@ function validateMetadataHashes() {
 }
 
 function validatePackageReferences() {
-  const projectName = name ?? metadataScalar("projectName");
-  const projectPath = join(projectRoot, `${projectName}.csproj`);
-  const project = readFile(projectPath);
+  const project = readFile(projectPaths.serverProjectFile);
 
   for (const required of ["BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components"]) {
     if (!project.includes(`PackageReference Include="${required}"`)) {
@@ -278,7 +278,23 @@ function textFiles(root) {
 }
 
 function isBrowserSource(relativePath) {
-  return /\.(razor|js|mjs|ts)$/i.test(relativePath) && !relativePath.startsWith("docs/storefront-analysis/");
+  return /\.(razor|js|mjs|ts)$/i.test(relativePath) &&
+    !relativePath.startsWith("docs/storefront-analysis/") &&
+    (relativePath.startsWith(`${projectPaths.serverRootRelative}/`) || relativePath.startsWith(`${projectPaths.wasmRootRelative}/`));
+}
+
+function resolveProjectPaths(projectName, projects) {
+  const serverRootRelative = normalizePath(projects?.server?.rootPath ?? projectName);
+  const wasmRootRelative = normalizePath(projects?.wasm?.rootPath ?? `${projectName}.WASM`);
+  const serverProjectRelative = normalizePath(projects?.server?.projectPath ?? `${projectName}/${projectName}.csproj`);
+  const wasmProjectRelative = normalizePath(projects?.wasm?.projectPath ?? `${projectName}.WASM/${projectName}.WASM.csproj`);
+
+  return {
+    serverRootRelative,
+    wasmRootRelative,
+    serverProjectFile: join(projectRoot, serverProjectRelative),
+    wasmProjectFile: join(projectRoot, wasmProjectRelative),
+  };
 }
 
 function metadataScalar(key) {

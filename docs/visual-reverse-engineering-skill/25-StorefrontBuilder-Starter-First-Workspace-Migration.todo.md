@@ -514,52 +514,61 @@ Goal: make all file ownership and visual task artifacts workspace-aware.
 
 Tasks:
 
-- [ ] Update `plan-generation-files.mjs`:
-  - [ ] Model workspace root explicitly.
-  - [ ] Model server project explicitly.
-  - [ ] Model WASM project explicitly.
-  - [ ] Emit workspace-relative paths.
-  - [ ] Emit project ownership metadata, not substring-derived ownership.
-- [ ] Update `generated-file-manifest.mjs`:
-  - [ ] Stop using `.WASM/` substring detection as the source of truth.
-  - [ ] Add fields such as `workspaceRelativePath`, `projectKind`, `projectName`, and `projectRelativePath`.
-  - [ ] Preserve generated-owned, user-owned, protected, and artifact-only categories.
-  - [ ] Treat workspace shared files as workspace-owned, not server-owned.
-- [ ] Update handoff generation plan compiler:
-  - [ ] Allowed visual files may target server project or WASM project explicitly.
-  - [ ] Protected files may target workspace, server, or WASM explicitly.
-  - [ ] Agent task package records workspace-relative target paths.
-- [ ] Update `write-agent-task-package` logic:
-  - [ ] Include both project roots.
-  - [ ] Include allowed target project kind.
-  - [ ] Reject ambiguous target paths.
-- [ ] Update `record-agent-visual-writes.mjs`:
-  - [ ] Accept `--workspace-root`.
-  - [ ] Keep `--project-root` alias with deprecation guidance.
-  - [ ] Validate writes against workspace-relative manifest paths.
-  - [ ] Reject writes into workspace shared files unless explicitly allowed by a foundation task.
-  - [ ] Reject writes into generated server app/route/BFF protected files.
-  - [ ] Reject writes into generated WASM transport/bootstrap protected files.
-- [ ] Update visual repair scripts:
-  - [ ] Read project roots from manifest/metadata.
-  - [ ] Preserve workspace-relative path reporting.
-  - [ ] Avoid applying repair patches to the wrong sibling project.
-- [ ] Update visual QA scripts:
-  - [ ] Resolve generated CSS/asset paths against server project root.
-  - [ ] Resolve analysis artifacts against workspace root.
-  - [ ] Resolve browser/WASM artifact expectations against WASM project root where needed.
-- [ ] Update metadata schema:
-  - [ ] Store `workspaceLayoutVersion`.
-  - [ ] Store `serverProjectRoot`.
-  - [ ] Store `wasmProjectRoot`.
-  - [ ] Store `solutionPath`.
-  - [ ] Store `analysisRoot`.
+- [x] Update `plan-generation-files.mjs`:
+  - [x] Model workspace root explicitly.
+  - [x] Model server project explicitly.
+  - [x] Model WASM project explicitly.
+  - [x] Emit workspace-relative paths.
+  - [x] Emit project ownership metadata, not substring-derived ownership.
+- [x] Update `generated-file-manifest.mjs`:
+  - [x] Stop using `.WASM/` substring detection as the source of truth.
+  - [x] Add fields such as `workspaceRelativePath`, `projectKind`, `projectName`, and `projectRelativePath`.
+  - [x] Preserve generated-owned, user-owned, protected, and artifact-only categories.
+  - [x] Treat workspace shared files as workspace-owned, not server-owned.
+- [x] Update handoff generation plan compiler:
+  - [x] Allowed visual files may target server project or WASM project explicitly.
+  - [x] Protected files may target workspace, server, or WASM explicitly.
+  - [x] Agent task package records workspace-relative target paths.
+- [x] Update `write-agent-task-package` logic:
+  - [x] Include both project roots.
+  - [x] Include allowed target project kind.
+  - [x] Reject ambiguous target paths.
+- [x] Update `record-agent-visual-writes.mjs`:
+  - [x] Accept `--workspace-root`.
+  - [x] Keep `--project-root` alias with deprecation guidance.
+  - [x] Validate writes against workspace-relative manifest paths.
+  - [x] Reject writes into workspace shared files unless explicitly allowed by a foundation task.
+  - [x] Reject writes into generated server app/route/BFF protected files.
+  - [x] Reject writes into generated WASM transport/bootstrap protected files.
+- [x] Update visual repair scripts:
+  - [x] Read project roots from manifest/metadata.
+  - [x] Preserve workspace-relative path reporting.
+  - [x] Avoid applying repair patches to the wrong sibling project.
+- [x] Update visual QA scripts:
+  - [x] Resolve generated CSS/asset paths against server project root.
+  - [x] Resolve analysis artifacts against workspace root.
+  - [x] Resolve browser/WASM artifact expectations against WASM project root where needed.
+- [x] Update metadata schema:
+  - [x] Store `workspaceLayoutVersion`.
+  - [x] Store `serverProjectRoot`.
+  - [x] Store `wasmProjectRoot`.
+  - [x] Store `solutionPath`.
+  - [x] Store `analysisRoot`.
 
 Exit criteria:
 
-- [ ] Every generated file can be traced to workspace, server, or WASM ownership.
-- [ ] Visual agent tasks cannot write to the wrong sibling project.
-- [ ] Manifest and generation plan can validate without path substring guesses.
+- [x] Every generated file can be traced to workspace, server, or WASM ownership.
+- [x] Visual agent tasks cannot write to the wrong sibling project.
+- [x] Manifest and generation plan can validate without path substring guesses.
+
+Evidence:
+
+- `build-storefront.ps1 -Mode generate -Name Phase7ManifestProof -StoreKey sample -OutputRoot obj/storefront-builder/generated -Force` passed with workspace/server/WASM manifest fields.
+- `build-storefront.ps1 -Mode plan-only -Name Phase7ManifestProof -StoreKey sample -OutputRoot obj/storefront-builder/generated` emitted workspace-relative default plan paths.
+- `validate-storefront.ps1 -WorkspaceRoot obj/storefront-builder/generated/BlazorShop.Storefront.Phase7ManifestProof -SkipIdempotency` passed.
+- `Test-StorefrontBuilderMultiProjectValidation.ps1` passed.
+- `build-storefront.ps1 -Mode generate -Name Phase7HandoffProof -StoreKey sample -OutputRoot obj/storefront-builder/generated -HandoffRoot tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/phase4-11-closure/portable-handoff -Force` passed.
+- `Test-StorefrontBuilderHandoffBoundary.mjs --project-root obj/storefront-builder/generated/BlazorShop.Storefront.Phase7HandoffProof` passed after `record-agent-visual-writes.mjs --workspace-root ... --written-files BlazorShop.Storefront.Phase7HandoffProof/wwwroot/css/storefront-builder.generated.css`.
 
 ## Phase 8 - Regeneration Workspace Migration
 

@@ -205,7 +205,7 @@ if (-not (Test-TextContains -Text $packageVersions -Needle "StorefrontClientPack
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
 $canonicalContractPath = "contracts/storefront/storefront.openapi.json"
-foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterWasmPath:", "sourceStarterVersion:", "sourceHead:", "packageBuildIdentity:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "starterContractSha256:", "starterWasmContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj", "starterWasmContractSha256:", "projects:", "server:", "path: $Name/$Name.csproj", "wasm:", "path: $Name.WASM/$Name.WASM.csproj", "protectedFiles:", "packageReferences:", "Microsoft.AspNetCore.Components.WebAssembly.Server", "Microsoft.AspNetCore.Components.WebAssembly", "packageVersions:", "packageProvenance:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "workspaceLayoutVersion: starter-first-sibling-wasm-1", "workspaceRoot:", "serverProjectRoot: $Name", "wasmProjectRoot: $Name.WASM", "solutionPath: $Name.sln", "analysisRoot: docs/storefront-analysis", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterWasmPath:", "sourceStarterVersion:", "sourceHead:", "packageBuildIdentity:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "starterContractSha256:", "starterWasmContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj", "starterWasmContractSha256:", "projects:", "server:", "path: $Name/$Name.csproj", "wasm:", "path: $Name.WASM/$Name.WASM.csproj", "protectedFiles:", "packageReferences:", "Microsoft.AspNetCore.Components.WebAssembly.Server", "Microsoft.AspNetCore.Components.WebAssembly", "packageVersions:", "packageProvenance:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains -Text $metadataText -Needle $required)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
@@ -253,29 +253,40 @@ if ($manifestEntries.Count -eq 0) {
 
 $hasServerManifestEntry = $false
 $hasWasmManifestEntry = $false
+$hasWorkspaceManifestEntry = $false
 $manifestBodiesByPath = @{}
 foreach ($entry in $manifestEntries) {
     $filePath = $entry.Groups["file"].Value.Trim()
     $body = $entry.Groups["body"].Value
     $manifestBodiesByPath[$filePath] = $body
-    $projectMatch = [regex]::Match($body, "(?m)^\s+project:\s*(server|wasm)\s*$")
+    $projectMatch = [regex]::Match($body, "(?m)^\s+project:\s*(workspace|server|wasm)\s*$")
     if (-not $projectMatch.Success) {
         throw "[SFB-PROJECT-011] generated-files.yaml entry '$filePath' is missing project ownership."
+    }
+
+    foreach ($field in @("workspaceRelativePath", "projectKind", "projectName", "projectRelativePath")) {
+        if (-not [regex]::IsMatch($body, "(?m)^\s+$($field):\s*\S+")) {
+            throw "[SFB-PROJECT-011] generated-files.yaml entry '$filePath' is missing '$field'."
+        }
     }
 
     if (-not [regex]::IsMatch($body, "(?m)^\s+ownership:\s*(generated|managed|user-owned|protected|artifact-only)\s*$")) {
         throw "[SFB-PROJECT-011] generated-files.yaml entry '$filePath' is missing ownership."
     }
 
+    if ($projectMatch.Groups[1].Value -eq "workspace") { $hasWorkspaceManifestEntry = $true }
     if ($projectMatch.Groups[1].Value -eq "server") { $hasServerManifestEntry = $true }
     if ($projectMatch.Groups[1].Value -eq "wasm") { $hasWasmManifestEntry = $true }
 }
 
 foreach ($requiredManifestMarker in @(
     "filePath: StorefrontPackageVersions.props",
+    "project: workspace",
+    "projectKind: workspace",
     "ownership: protected",
     "filePath: $Name.WASM/Program.cs",
-    "project: wasm"
+    "project: wasm",
+    "projectKind: wasm"
 )) {
     if (-not (Test-TextContains -Text $generatedFilesText -Needle $requiredManifestMarker)) {
         throw "[SFB-PROJECT-011] generated-files.yaml is missing '$requiredManifestMarker'."
@@ -287,8 +298,8 @@ if ($null -ne $cssManifestBody -and -not [regex]::IsMatch($cssManifestBody, "(?m
     throw "[SFB-PROJECT-011] generated-files.yaml must mark generated visual CSS ownership as generated."
 }
 
-if (-not $hasServerManifestEntry -or -not $hasWasmManifestEntry) {
-    throw "[SFB-PROJECT-011] generated-files.yaml must include both server and WASM project entries."
+if (-not $hasWorkspaceManifestEntry -or -not $hasServerManifestEntry -or -not $hasWasmManifestEntry) {
+    throw "[SFB-PROJECT-011] generated-files.yaml must include workspace, server, and WASM project entries."
 }
 
 $forbiddenDirectories = @("Security", "Services", "Middleware")

@@ -31,7 +31,13 @@ Options:
   process.exit(0);
 }
 
-const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const workspaceRootArg = readArg("--workspace-root");
+const projectRootAliasArg = readArg("--project-root");
+if (!workspaceRootArg && projectRootAliasArg) {
+  console.warn("[SFB-AGENT-PACKAGE-WARN] --project-root is a compatibility alias for --workspace-root and will be removed after the workspace migration.");
+}
+
+const projectRoot = resolve(workspaceRootArg ?? projectRootAliasArg ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const handoffRoot = readArg("--handoff-root");
 const planPath = resolve(readArg("--plan-json") ?? join(projectRoot, "docs/storefront-analysis/generation-plan.json"));
 const outputRoot = resolve(readArg("--output") ?? join(projectRoot, "docs/storefront-analysis/agent-task-package"));
@@ -162,27 +168,43 @@ function buildAllowedOutputs(plan) {
   return (plan.files ?? [])
     .filter(file => ["create", "replace", "patch"].includes(file.allowedOperation ?? file.action))
     .filter(file => file.ownership === "generated" || file.visualShellOnly === true)
-    .map(file => stableObject({
-      targetPath: normalizeProjectPath(file.targetPath),
-      targetProject: file.targetProject ?? inferTargetProject(plan.projectName, file.targetPath),
-      projectRelativePath: file.projectRelativePath ?? inferProjectRelativePath(plan.projectName, file.targetPath),
-      artifactRootRelativePath: file.artifactRootRelativePath ?? `${plan.projectName}/${normalizeProjectPath(file.targetPath)}`,
-      planEntryId: file.id,
-      ownership: file.ownership,
-      allowedOperation: file.allowedOperation ?? file.action,
-      visualShellOnly: file.visualShellOnly === true,
-      slots: file.slots ?? [],
-      sourceEvidenceReferences: (file.sourceEvidenceReferences ?? []).map(assertHandoffReference),
-    }))
+    .map(file => {
+      const target = normalizePlannedWorkspaceTarget(plan.projectName, file);
+      if (target.projectKind === "workspace") {
+        fail("SFB-AGENT-PACKAGE-005", `Allowed visual output has ambiguous workspace target '${target.targetPath}'. Use '${plan.projectName}/...' for server files or '${plan.projectName}.WASM/...' for WASM files.`);
+      }
+
+      return stableObject({
+        targetPath: target.targetPath,
+        workspaceRelativePath: target.targetPath,
+        targetProject: target.projectKind,
+        projectKind: target.projectKind,
+        projectName: target.projectName,
+        projectRelativePath: target.projectRelativePath,
+        artifactRootRelativePath: file.artifactRootRelativePath ?? `${plan.projectName}/${target.targetPath}`,
+        planEntryId: file.id,
+        ownership: file.ownership,
+        allowedOperation: file.allowedOperation ?? file.action,
+        visualShellOnly: file.visualShellOnly === true,
+        slots: file.slots ?? [],
+        sourceEvidenceReferences: (file.sourceEvidenceReferences ?? []).map(assertHandoffReference),
+      });
+    })
     .sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
 }
 
 function buildProjects(projectName) {
   return {
-    server: {
+    workspace: {
       name: projectName,
       rootPath: ".",
-      projectPath: `${projectName}.csproj`,
+      solutionPath: `${projectName}.sln`,
+      analysisRoot: "docs/storefront-analysis",
+    },
+    server: {
+      name: projectName,
+      rootPath: projectName,
+      projectPath: `${projectName}/${projectName}.csproj`,
     },
     wasm: {
       name: `${projectName}.WASM`,
@@ -207,20 +229,21 @@ function normalizeProjects(projectName, value) {
 }
 
 function inferTargetProject(projectName, targetPath) {
-  const normalized = normalizeProjectPath(targetPath);
-  return normalized.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+  return describeWorkspaceTarget(projectName, targetPath).projectKind;
 }
 
 function groupPathsByProject(projectName, items) {
-  const grouped = { server: [], wasm: [] };
+  const grouped = { workspace: [], server: [], wasm: [] };
   for (const item of items) {
-    const targetPath = normalizeProjectPath(item.targetPath ?? item);
-    const targetProject = item.targetProject ?? inferTargetProject(projectName, targetPath);
-    grouped[targetProject].push(stableObject({
-      targetPath,
-      targetProject,
-      projectRelativePath: item.projectRelativePath ?? inferProjectRelativePath(projectName, targetPath),
-      artifactRootRelativePath: item.artifactRootRelativePath ?? `${projectName}/${targetPath}`,
+    const target = normalizePlannedWorkspaceTarget(projectName, typeof item === "string" ? { targetPath: item } : item);
+    grouped[target.projectKind].push(stableObject({
+      targetPath: target.targetPath,
+      workspaceRelativePath: target.targetPath,
+      targetProject: target.projectKind,
+      projectKind: target.projectKind,
+      projectName: target.projectName,
+      projectRelativePath: target.projectRelativePath,
+      artifactRootRelativePath: item.artifactRootRelativePath ?? `${projectName}/${target.targetPath}`,
       ownership: item.ownership,
       allowedOperation: item.allowedOperation,
       visualShellOnly: item.visualShellOnly === true,
@@ -228,6 +251,7 @@ function groupPathsByProject(projectName, items) {
     }));
   }
 
+  grouped.workspace.sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
   grouped.server.sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
   grouped.wasm.sort((a, b) => a.targetPath.localeCompare(b.targetPath, "en"));
   return grouped;
@@ -254,8 +278,7 @@ function readGeneratedPackageProvenance(projectRoot) {
 
 
 function inferProjectRelativePath(projectName, targetPath) {
-  const normalized = normalizeProjectPath(targetPath);
-  return normalized.startsWith(`${projectName}.WASM/`) ? normalized.slice(`${projectName}.WASM/`.length) : normalized;
+  return describeWorkspaceTarget(projectName, targetPath).projectRelativePath;
 }
 
 function collectEvidenceReferences(plan) {
@@ -371,6 +394,50 @@ function assertHandoffReference(reference) {
 
 function normalizeProjectPath(path) {
   return String(path ?? "").replaceAll("\\", "/").replace(/^\/+/, "");
+}
+
+function normalizePlannedWorkspaceTarget(projectName, file) {
+  const targetPath = normalizeProjectPath(file.targetPath ?? file.path ?? file);
+  const described = describeWorkspaceTarget(projectName, targetPath);
+  const declaredProject = file.projectKind ?? file.targetProject;
+  if (declaredProject && declaredProject !== described.projectKind) {
+    fail("SFB-AGENT-PACKAGE-006", `Planned target '${targetPath}' declares project '${declaredProject}' but resolves to '${described.projectKind}'.`);
+  }
+
+  const declaredRelativePath = file.projectRelativePath ? normalizeProjectPath(file.projectRelativePath) : "";
+  if (declaredRelativePath && declaredRelativePath !== described.projectRelativePath) {
+    fail("SFB-AGENT-PACKAGE-006", `Planned target '${targetPath}' declares projectRelativePath '${declaredRelativePath}' but resolves to '${described.projectRelativePath}'.`);
+  }
+
+  return {
+    targetPath,
+    ...described,
+  };
+}
+
+function describeWorkspaceTarget(projectName, targetPath) {
+  const normalized = normalizeProjectPath(targetPath);
+  if (normalized.startsWith(`${projectName}/`)) {
+    return {
+      projectKind: "server",
+      projectName,
+      projectRelativePath: normalized.slice(projectName.length + 1),
+    };
+  }
+
+  if (normalized.startsWith(`${projectName}.WASM/`)) {
+    return {
+      projectKind: "wasm",
+      projectName: `${projectName}.WASM`,
+      projectRelativePath: normalized.slice(`${projectName}.WASM/`.length),
+    };
+  }
+
+  return {
+    projectKind: "workspace",
+    projectName,
+    projectRelativePath: normalized,
+  };
 }
 
 function listProtectedFiles(value) {

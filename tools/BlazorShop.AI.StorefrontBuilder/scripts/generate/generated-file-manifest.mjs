@@ -30,13 +30,15 @@ export function readPreviousManifest(manifestPath) {
 export function buildManifestEntries(projectRoot, previousEntries, intentionalUpdatePaths = new Set()) {
   const now = new Date().toISOString();
   const scanned = scanProjectFiles(projectRoot);
+  const workspaceName = resolve(projectRoot).split(/[\\/]/).pop();
   const handoffPlan = readHandoffGenerationPlan(projectRoot);
   const sourceSpecHash = `sha256:${sha(scanned.map((file) => `${file.filePath}:${file.hash}`).join("|") || sourceSpecSeed)}`;
   const entries = [];
   const seen = new Set();
 
   for (const file of scanned) {
-    const descriptor = classifyFile(file.filePath);
+    const pathInfo = describeWorkspacePath(workspaceName, file.filePath);
+    const descriptor = classifyFile(file.filePath, pathInfo);
     const sourceArtifactIds = buildSourceArtifactIds(descriptor, file.filePath, handoffPlan);
     const previous = previousEntries.get(file.filePath);
     const previousGeneratedHash = previous?.generatedHash && previous.generatedHash !== "none"
@@ -49,7 +51,11 @@ export function buildManifestEntries(projectRoot, previousEntries, intentionalUp
 
     entries.push({
       filePath: file.filePath,
-      project: inferProject(file.filePath),
+      workspaceRelativePath: file.filePath,
+      project: pathInfo.projectKind,
+      projectKind: pathInfo.projectKind,
+      projectName: pathInfo.projectName,
+      projectRelativePath: pathInfo.projectRelativePath,
       ownership: descriptor.ownership,
       capability: descriptor.capability,
       scope: descriptor.scope,
@@ -77,9 +83,14 @@ export function buildManifestEntries(projectRoot, previousEntries, intentionalUp
     }
 
     if (previous.ownership === "generated" || previous.ownership === "managed") {
+      const pathInfo = describeWorkspacePath(workspaceName, previous.filePath);
       entries.push({
         filePath: previous.filePath,
-        project: previous.project ?? inferProject(previous.filePath),
+        workspaceRelativePath: previous.workspaceRelativePath ?? previous.filePath,
+        project: previous.projectKind ?? previous.project ?? pathInfo.projectKind,
+        projectKind: previous.projectKind ?? previous.project ?? pathInfo.projectKind,
+        projectName: previous.projectName ?? pathInfo.projectName,
+        projectRelativePath: previous.projectRelativePath ?? pathInfo.projectRelativePath,
         ownership: previous.ownership,
         capability: previous.capability ?? "unknown",
         scope: previous.scope ?? "unknown",
@@ -111,7 +122,11 @@ export function writeManifestYaml(entries) {
     "files:",
     ...entries.flatMap((entry) => [
       `  - filePath: ${entry.filePath}`,
+      `    workspaceRelativePath: ${entry.workspaceRelativePath ?? entry.filePath}`,
       `    project: ${entry.project}`,
+      `    projectKind: ${entry.projectKind ?? entry.project}`,
+      `    projectName: ${entry.projectName ?? "unknown"}`,
+      `    projectRelativePath: ${entry.projectRelativePath ?? entry.filePath}`,
       `    ownership: ${entry.ownership}`,
       `    capability: ${quote(entry.capability)}`,
       `    scope: ${entry.scope}`,
@@ -131,10 +146,6 @@ export function writeManifestYaml(entries) {
     ]),
     "",
   ].join("\n");
-}
-
-function inferProject(filePath) {
-  return filePath.includes(".WASM/") ? "wasm" : "server";
 }
 
 export function buildRegenerationReport(entries) {
@@ -265,72 +276,102 @@ function sha(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function classifyFile(filePath) {
-  if (filePath === "StorefrontPackageVersions.props" || filePath === "starter-generation.contract.yaml") {
-    return descriptor("protected", "SEO/media/consent support", "project", ["metadata.yaml"]);
+function describeWorkspacePath(workspaceName, filePath) {
+  if (filePath.startsWith(`${workspaceName}/`)) {
+    return {
+      projectKind: "server",
+      projectName: workspaceName,
+      projectRelativePath: filePath.slice(workspaceName.length + 1),
+    };
+  }
+
+  if (filePath.startsWith(`${workspaceName}.WASM/`)) {
+    return {
+      projectKind: "wasm",
+      projectName: `${workspaceName}.WASM`,
+      projectRelativePath: filePath.slice(`${workspaceName}.WASM/`.length),
+    };
+  }
+
+  return {
+    projectKind: "workspace",
+    projectName: workspaceName,
+    projectRelativePath: filePath,
+  };
+}
+
+function classifyFile(filePath, pathInfo) {
+  const projectPath = pathInfo.projectRelativePath;
+
+  if (filePath === "StorefrontPackageVersions.props") {
+    return descriptor("protected", "SEO/media/consent support", "workspace", ["metadata.yaml"]);
   }
 
   if (filePath === "docs/storefront-analysis/metadata.yaml") {
-    return descriptor("managed", "platform metadata", "project", ["metadata.yaml"]);
+    return descriptor("managed", "platform metadata", "workspace", ["metadata.yaml"]);
   }
 
   if (filePath.startsWith("docs/storefront-analysis/")) {
     return descriptor("artifact-only", "SEO/media/consent support", "artifact", ["metadata.yaml"]);
   }
 
-  if (filePath === "README.md" || filePath === "appsettings.json" || filePath === "nuget.config") {
+  if (pathInfo.projectKind === "workspace" && (filePath === "README.md" || filePath === "nuget.config")) {
+    return descriptor("user-owned", "shell/layout", "workspace", ["none"]);
+  }
+
+  if (pathInfo.projectKind !== "workspace" && projectPath === "appsettings.json") {
     return descriptor("user-owned", "shell/layout", "project", ["none"]);
   }
 
-  if (filePath.endsWith(".csproj") || filePath === "Program.cs" || filePath.endsWith("/Program.cs") || filePath === "StarterFoundationViewRegistration.cs") {
+  if (pathInfo.projectKind !== "workspace" && (projectPath.endsWith(".csproj") || projectPath === "Program.cs" || projectPath === "StarterFoundationViewRegistration.cs")) {
     return descriptor("managed", "shell/layout", "project", ["metadata.yaml"]);
   }
 
-  if (filePath.startsWith("wwwroot/css/") || filePath.includes("/wwwroot/css/")) {
+  if (pathInfo.projectKind !== "workspace" && projectPath.startsWith("wwwroot/css/")) {
     return descriptor("generated", "shell/layout", "css", ["metadata.yaml", "asset-manifest.yaml", "review-summary.md"]);
   }
 
-  if (filePath.startsWith("wwwroot/assets/") || filePath.includes("/wwwroot/assets/") || /\.WASM\/wwwroot\//.test(filePath)) {
+  if (pathInfo.projectKind !== "workspace" && (projectPath.startsWith("wwwroot/assets/") || (pathInfo.projectKind === "wasm" && projectPath.startsWith("wwwroot/")))) {
     return descriptor("generated", "SEO/media/consent support", "asset", ["asset-manifest.yaml"]);
   }
 
-  if (filePath.includes("/Layout/")) {
+  if (projectPath.includes("/Layout/")) {
     return descriptor("generated", "shell/layout", "component", ["metadata.yaml", "review-summary.md"]);
   }
 
-  if (filePath.includes("/Account/")) {
-    return descriptor("managed", "account", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
+  if (projectPath.includes("/Account/")) {
+    return descriptor("managed", "account", projectPath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
   }
 
-  if (filePath.includes("/Auth/")) {
+  if (projectPath.includes("/Auth/")) {
     return descriptor("managed", "auth/recovery", "page", ["metadata.yaml"]);
   }
 
-  if (filePath.includes("/Content/")) {
+  if (projectPath.includes("/Content/")) {
     return descriptor("generated", "content", "page", ["metadata.yaml", "review-summary.md"]);
   }
 
-  if (filePath.includes("/Home/")) {
+  if (projectPath.includes("/Home/")) {
     return descriptor("generated", "home", "page", ["metadata.yaml", "review-summary.md"]);
   }
 
-  if (filePath.includes("/Catalog/Product") || filePath.includes("PurchasePanel") || filePath.includes("ProductGallery")) {
-    return descriptor("generated", "product", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml", "review-summary.md"]);
+  if (projectPath.includes("/Catalog/Product") || projectPath.includes("PurchasePanel") || projectPath.includes("ProductGallery")) {
+    return descriptor("generated", "product", projectPath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml", "review-summary.md"]);
   }
 
-  if (filePath.includes("/Catalog/")) {
-    return descriptor("generated", "catalog", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml", "review-summary.md"]);
+  if (projectPath.includes("/Catalog/")) {
+    return descriptor("generated", "catalog", projectPath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml", "review-summary.md"]);
   }
 
-  if (filePath.includes("/Commerce/Cart") || /\.WASM\/Components\/Cart\//.test(filePath)) {
-    return descriptor("managed", "cart", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
+  if (projectPath.includes("/Commerce/Cart") || (pathInfo.projectKind === "wasm" && projectPath.startsWith("Components/Cart/"))) {
+    return descriptor("managed", "cart", projectPath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
   }
 
-  if (filePath.includes("/Commerce/Checkout") || filePath.includes("/Commerce/Payment") || /\.WASM\/Components\/Checkout\//.test(filePath)) {
-    return descriptor("managed", "checkout", filePath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
+  if (projectPath.includes("/Commerce/Checkout") || projectPath.includes("/Commerce/Payment") || (pathInfo.projectKind === "wasm" && projectPath.startsWith("Components/Checkout/"))) {
+    return descriptor("managed", "checkout", projectPath.startsWith("Pages/") ? "page" : "component", ["metadata.yaml"]);
   }
 
-  if (filePath.includes("/States/")) {
+  if (projectPath.includes("/States/")) {
     return descriptor("managed", "SEO/media/consent support", "component", ["metadata.yaml"]);
   }
 

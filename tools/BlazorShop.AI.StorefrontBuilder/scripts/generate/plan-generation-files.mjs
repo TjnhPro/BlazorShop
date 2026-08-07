@@ -12,7 +12,7 @@ const storeKey = readArg("--store-key") ?? "sample";
 const outputRoot = readArg("--output-root") ?? "artifacts/storefront-builder/generated";
 const handoffRoot = readArg("--handoff-root");
 const repoRoot = readArg("--repo-root") ?? process.cwd();
-const root = `${outputRoot.replaceAll("\\", "/").replace(/\/$/, "")}/${projectName}`;
+const workspaceRoot = `${outputRoot.replaceAll("\\", "/").replace(/\/$/, "")}/${projectName}`;
 const projects = buildProjects(projectName);
 const specHash = sha("composition-manifest.default");
 
@@ -43,14 +43,14 @@ if (handoffRoot) {
 }
 
 const files = [
-  entry(`${root}/wwwroot/css/storefront-builder.generated.css`, "generated", "replace", ["design-tokens.yaml", "ui-patterns.yaml"], "theme.foundation", ["SFB-CSS-001"], "replace only when generated hash matches"),
-  entry(`${root}/Components/Layout/MainLayout.razor`, "generated", "patch", ["composition-manifest.yaml", "ui-patterns.yaml"], "layout.header", ["SFB-COMP-001"], "patch generated zones only"),
-  entry(`${root}/Components/Catalog/ProductSummaryCard.razor`, "generated", "replace", ["ui-patterns.yaml", "capability-decisions.yaml"], "catalog.product-card", ["SFB-COMP-002"], "replace only if previously generated"),
-  entry(`${root}/Components/Catalog/ProductGalleryPlaceholder.razor`, "generated", "replace", ["ui-patterns.yaml"], "product.gallery", ["SFB-COMP-003"], "replace only if previously generated"),
-  entry(`${root}/Components/Catalog/PurchasePanelPlaceholder.razor`, "generated", "patch", ["behaviors.yaml", "capability-decisions.yaml"], "product.purchase", ["SFB-COMMERCE-001"], "preserve Starter action binding"),
-  entry(`${root}/Pages/Hybrid/Commerce/CartPage.razor`, "managed", "patch", ["design-tokens.yaml"], "cart.page", ["SFB-FALLBACK-001"], "theme fallback only"),
-  entry(`${root}/Endpoints/StarterBffEndpoints.cs`, "protected", "skip", ["starter-generation.contract.yaml"], "none", ["SFB-PROTECTED-001"], "never edit"),
-  entry(`${root}/StorefrontPackageVersions.props`, "protected", "skip", ["starter-generation.contract.yaml"], "none", ["SFB-PROTECTED-001"], "never edit"),
+  entry(`${projectName}/wwwroot/css/storefront-builder.generated.css`, "generated", "replace", ["design-tokens.yaml", "ui-patterns.yaml"], "theme.foundation", ["SFB-CSS-001"], "replace only when generated hash matches"),
+  entry(`${projectName}/Components/Layout/MainLayout.razor`, "generated", "patch", ["composition-manifest.yaml", "ui-patterns.yaml"], "layout.header", ["SFB-COMP-001"], "patch generated zones only"),
+  entry(`${projectName}/Components/Catalog/ProductSummaryCard.razor`, "generated", "replace", ["ui-patterns.yaml", "capability-decisions.yaml"], "catalog.product-card", ["SFB-COMP-002"], "replace only if previously generated"),
+  entry(`${projectName}/Components/Catalog/ProductGalleryPlaceholder.razor`, "generated", "replace", ["ui-patterns.yaml"], "product.gallery", ["SFB-COMP-003"], "replace only if previously generated"),
+  entry(`${projectName}/Components/Catalog/PurchasePanelPlaceholder.razor`, "generated", "patch", ["behaviors.yaml", "capability-decisions.yaml"], "product.purchase", ["SFB-COMMERCE-001"], "preserve Starter action binding"),
+  entry(`${projectName}.WASM/Components/Cart/StorefrontCartApp.razor`, "managed", "patch", ["design-tokens.yaml"], "cart.page", ["SFB-FALLBACK-001"], "theme fallback only"),
+  entry(`${projectName}/Endpoints/StarterBffEndpoints.cs`, "protected", "skip", ["starter-generation.contract.yaml"], "none", ["SFB-PROTECTED-001"], "never edit"),
+  entry("StorefrontPackageVersions.props", "protected", "skip", ["starter-generation.contract.yaml"], "none", ["SFB-PROTECTED-001"], "never edit"),
 ];
 
 const plan = {
@@ -88,13 +88,17 @@ mkdirSync(dirname(jsonOutput), { recursive: true });
 writeFileSync(jsonOutput, stableJson(plan), "utf8");
 
 function entry(filePath, ownership, action, sourceArtifactIds, expectedSlot, validationRuleIds, conflictBehavior) {
-  const targetPath = filePath.startsWith(`${root}/`) ? filePath.slice(root.length + 1) : filePath;
-  const targetProject = targetPath.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
+  const targetPath = normalizePath(filePath.startsWith(`${workspaceRoot}/`) ? filePath.slice(workspaceRoot.length + 1) : filePath);
+  const pathInfo = describeWorkspacePath(projectName, targetPath);
   return {
-    filePath,
+    filePath: `${workspaceRoot}/${targetPath}`,
     targetPath,
-    targetProject,
-    projectRelativePath: targetProject === "wasm" ? targetPath.slice(`${projectName}.WASM/`.length) : targetPath,
+    targetProject: pathInfo.projectKind,
+    projectKind: pathInfo.projectKind,
+    projectName: pathInfo.projectName,
+    projectRelativePath: pathInfo.projectRelativePath,
+    workspaceRelativePath: targetPath,
+    artifactRootRelativePath: `${projectName}/${targetPath}`,
     ownership,
     action,
     allowedOperation: action,
@@ -112,10 +116,16 @@ function entry(filePath, ownership, action, sourceArtifactIds, expectedSlot, val
 
 function buildProjects(name) {
   return {
-    server: {
+    workspace: {
       name,
       rootPath: ".",
-      projectPath: `${name}.csproj`,
+      solutionPath: `${name}.sln`,
+      analysisRoot: "docs/storefront-analysis",
+    },
+    server: {
+      name,
+      rootPath: name,
+      projectPath: `${name}/${name}.csproj`,
     },
     wasm: {
       name: `${name}.WASM`,
@@ -123,6 +133,34 @@ function buildProjects(name) {
       projectPath: `${name}.WASM/${name}.WASM.csproj`,
     },
   };
+}
+
+function describeWorkspacePath(name, targetPath) {
+  if (targetPath.startsWith(`${name}/`)) {
+    return {
+      projectKind: "server",
+      projectName: name,
+      projectRelativePath: targetPath.slice(name.length + 1),
+    };
+  }
+
+  if (targetPath.startsWith(`${name}.WASM/`)) {
+    return {
+      projectKind: "wasm",
+      projectName: `${name}.WASM`,
+      projectRelativePath: targetPath.slice(`${name}.WASM/`.length),
+    };
+  }
+
+  return {
+    projectKind: "workspace",
+    projectName: name,
+    projectRelativePath: targetPath,
+  };
+}
+
+function normalizePath(value) {
+  return String(value ?? "").replaceAll("\\", "/").replace(/^\/+/, "");
 }
 
 function readArg(name) {

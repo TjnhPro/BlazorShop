@@ -107,7 +107,7 @@ const recorder = spawnSync(
   "node",
   [
     join(scriptDir, "..", "generate", "record-agent-visual-writes.mjs"),
-    "--project-root",
+    "--workspace-root",
     projectRoot,
     "--written-files",
     repair.targetPath,
@@ -207,7 +207,10 @@ function appendSlotMarkup(content, slotId, file) {
 
 function findPlannedFileByPath(targetPath) {
   const normalized = normalizePath(targetPath);
-  const file = (plan.files ?? []).find(item => normalizePath(item.targetPath) === normalized);
+  const file = (plan.files ?? []).find(item => {
+    const plannedPath = normalizePath(item.targetPath);
+    return plannedPath === normalized || plannedPath.endsWith(`/${normalized}`);
+  });
   if (!file) {
     fail("SFB-REPAIR-022", `No planned generated file found for ${targetPath}.`);
   }
@@ -253,8 +256,23 @@ function assertAllowedRepair(targetPath) {
 }
 
 function isRepairable(file) {
+  const projectRelativePath = normalizePath(file.projectRelativePath ?? inferProjectRelativePath(taskPackage.projectName ?? plan.projectName, file.targetPath));
   return (file.ownership === "generated" || file.visualShellOnly === true)
-    && !/StorefrontPackageVersions\.props|\.csproj$|^Program\.cs$|appsettings\.json$/i.test(normalizePath(file.targetPath));
+    && !/StorefrontPackageVersions\.props|\.csproj$|^Program\.cs$|appsettings\.json$/i.test(projectRelativePath)
+    && !/^(Endpoints\/|Routes\.razor$|App\.razor$)/i.test(projectRelativePath);
+}
+
+function inferProjectRelativePath(projectName, targetPath) {
+  const normalized = normalizePath(targetPath);
+  if (normalized.startsWith(`${projectName}/`)) {
+    return normalized.slice(projectName.length + 1);
+  }
+
+  if (normalized.startsWith(`${projectName}.WASM/`)) {
+    return normalized.slice(`${projectName}.WASM/`.length);
+  }
+
+  return normalized;
 }
 
 function appendHistory(entry) {

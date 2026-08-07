@@ -98,11 +98,11 @@ export function buildHandoffGenerationPlan(options) {
       }
 
       if (section.targetFilePath) {
-        validateTargetPath(normalizeTargetPath(section.targetFilePath), artifacts.storefrontPattern, artifacts.protectedFiles);
+        validateTargetPath(toWorkspaceTargetPath(projectName, section.targetFilePath), artifacts.storefrontPattern, artifacts.protectedFiles, false, projectName);
       }
 
       const targetPath = resolveVisualTargetPath(projectName, slotId, slotContract.path);
-      validateTargetPath(targetPath, artifacts.storefrontPattern, artifacts.protectedFiles);
+      validateTargetPath(targetPath, artifacts.storefrontPattern, artifacts.protectedFiles, false, projectName);
       const ownership = slotContract.owner ?? (VISUAL_SHELL_SLOTS.has(slotId) ? "managed" : "generated");
       const evidenceRefs = evidenceCatalog.refsFor(pageId, slotId);
       validateHandoffEvidenceReferences(evidenceRefs);
@@ -302,9 +302,10 @@ function buildEvidenceCatalog(evidenceManifest) {
 }
 
 function addTokenFile(filesByPath, projectRoot, sourceSpecHash, tokenPlan) {
+  const projectName = normalizePath(projectRoot).split("/").pop();
   const file = ensureFilePlan(filesByPath, {
     projectRoot,
-    targetPath: DEFAULT_TOKEN_TARGET,
+    targetPath: toWorkspaceTargetPath(projectName, DEFAULT_TOKEN_TARGET),
     ownership: "generated",
     action: "replace",
     slotId: "theme.foundation",
@@ -326,12 +327,17 @@ function ensureFilePlan(filesByPath, input) {
     return existing;
   }
 
+  const projectName = normalizePath(input.projectRoot).split("/").pop();
+  const pathInfo = describeWorkspacePath(projectName, input.targetPath);
   const file = {
     id: `file.${slug(input.targetPath)}`,
     filePath: `${input.projectRoot}/${input.targetPath}`,
     targetPath: input.targetPath,
-    targetProject: inferTargetProject(input.projectRoot, input.targetPath),
-    projectRelativePath: inferProjectRelativePath(input.projectRoot, input.targetPath),
+    workspaceRelativePath: input.targetPath,
+    targetProject: pathInfo.projectKind,
+    projectKind: pathInfo.projectKind,
+    projectName: pathInfo.projectName,
+    projectRelativePath: pathInfo.projectRelativePath,
     artifactRootRelativePath: `${normalizePath(input.projectRoot).split("/").pop()}/${input.targetPath}`,
     ownership: input.ownership,
     action: input.action,
@@ -361,10 +367,16 @@ function ensureFilePlan(filesByPath, input) {
 
 function buildProjects(projectName) {
   return {
-    server: {
+    workspace: {
       name: projectName,
       rootPath: ".",
-      projectPath: `${projectName}.csproj`,
+      solutionPath: `${projectName}.sln`,
+      analysisRoot: "docs/storefront-analysis",
+    },
+    server: {
+      name: projectName,
+      rootPath: projectName,
+      projectPath: `${projectName}/${projectName}.csproj`,
     },
     wasm: {
       name: `${projectName}.WASM`,
@@ -372,16 +384,6 @@ function buildProjects(projectName) {
       projectPath: `${projectName}.WASM/${projectName}.WASM.csproj`,
     },
   };
-}
-
-function inferTargetProject(projectRoot, targetPath) {
-  const projectName = normalizePath(projectRoot).split("/").pop();
-  return targetPath.startsWith(`${projectName}.WASM/`) ? "wasm" : "server";
-}
-
-function inferProjectRelativePath(projectRoot, targetPath) {
-  const projectName = normalizePath(projectRoot).split("/").pop();
-  return targetPath.startsWith(`${projectName}.WASM/`) ? targetPath.slice(`${projectName}.WASM/`.length) : targetPath;
 }
 
 function finalizeFilePlan(file) {
@@ -397,7 +399,7 @@ function finalizeFilePlan(file) {
 
 function validateCompiledPlan(plan, storefrontPattern) {
   for (const file of plan.files) {
-    validateTargetPath(file.targetPath, storefrontPattern, { paths: [] }, file.ownership === "protected");
+    validateTargetPath(file.targetPath, storefrontPattern, { paths: [] }, file.ownership === "protected", plan.projectName);
     validateHandoffEvidenceReferences(file.sourceEvidenceReferences ?? []);
     if (file.declaresRoute === true) {
       throw planError("SFB-HANDOFF-PLAN-009", `Planned file '${file.targetPath}' declares route ownership.`, "Generated visual files must not declare @page routes.", "Remove route ownership from the generated visual plan.");
@@ -405,11 +407,13 @@ function validateCompiledPlan(plan, storefrontPattern) {
   }
 }
 
-function validateTargetPath(targetPath, pattern, protectedFiles, allowProtected = false) {
+function validateTargetPath(targetPath, pattern, protectedFiles, allowProtected = false, projectName = "") {
   if (isAbsolute(targetPath) || targetPath.includes(":") || targetPath.startsWith("../") || targetPath.includes("/../")) {
-    throw planError("SFB-HANDOFF-PLAN-006", `Target path '${targetPath}' is not a normalized generated-project relative path.`, "Generation plans cannot write absolute paths or escape the generated project.", "Use a path under an allowed generated zone.");
+    throw planError("SFB-HANDOFF-PLAN-006", `Target path '${targetPath}' is not a normalized workspace-relative path.`, "Generation plans cannot write absolute paths or escape the generated workspace.", "Use a path under an allowed generated zone.");
   }
 
+  const pathInfo = describeWorkspacePath(projectName, targetPath);
+  const projectRelativePath = pathInfo.projectRelativePath;
   const protectedZones = sortedUnique([
     ...(pattern.generationZones?.protectedZones ?? []),
     ...(protectedFiles.paths ?? []),
@@ -421,14 +425,14 @@ function validateTargetPath(targetPath, pattern, protectedFiles, allowProtected 
     "StorefrontPackageVersions.props",
     "starter-generation.contract.yaml",
   ]).map(normalizePath);
-  const isProtected = protectedZones.some(zone => targetPath === zone || targetPath.startsWith(`${zone}/`) || targetPath.includes(zone));
+  const isProtected = protectedZones.some(zone => targetPath === zone || projectRelativePath === zone || targetPath.startsWith(`${zone}/`) || projectRelativePath.startsWith(`${zone}/`) || targetPath.includes(zone));
   if (isProtected && !allowProtected) {
     throw planError("SFB-HANDOFF-PLAN-007", `Target path '${targetPath}' is protected.`, "Handoff generation cannot plan edits to Starter, package metadata, Presentation, Runtime, Client, V2, or protected docs.", "Map the slot to a generated-owned visual file instead.");
   }
 
   const zones = sortedUnique([...(pattern.generationZones?.generatedZones ?? []), ...(pattern.generationZones?.managedZones ?? [])]).map(normalizePath);
-  const inAllowedZone = zones.some(zone => targetPath === zone || targetPath.startsWith(`${zone}/`));
-  const inGeneratedWasmVisualZone = isGeneratedWasmVisualPath(targetPath);
+  const inAllowedZone = pathInfo.projectKind === "server" && zones.some(zone => projectRelativePath === zone || projectRelativePath.startsWith(`${zone}/`));
+  const inGeneratedWasmVisualZone = pathInfo.projectKind === "wasm" && isGeneratedWasmVisualPath(projectRelativePath);
   if (!allowProtected && !inAllowedZone) {
     if (inGeneratedWasmVisualZone) {
       return;
@@ -444,11 +448,56 @@ function resolveVisualTargetPath(projectName, slotId, contractPath) {
     return `${projectName}.WASM/${wasmTarget}`;
   }
 
-  return normalizeTargetPath(contractPath);
+  return toWorkspaceTargetPath(projectName, contractPath);
 }
 
 function isGeneratedWasmVisualPath(targetPath) {
-  return /^[A-Za-z0-9_.-]+\.WASM\/(Components\/(Account|Cart|Checkout)\/|wwwroot\/)/.test(targetPath);
+  return /^(Components\/(Account|Cart|Checkout)\/|wwwroot\/)/.test(targetPath);
+}
+
+function toWorkspaceTargetPath(projectName, targetPath) {
+  const normalized = normalizeTargetPath(targetPath);
+  if (normalized.startsWith(`${projectName}/`) || normalized.startsWith(`${projectName}.WASM/`) || normalized.startsWith("docs/")) {
+    return normalized;
+  }
+
+  if (isWorkspaceSharedPath(normalized)) {
+    return normalized;
+  }
+
+  return `${projectName}/${normalized}`;
+}
+
+function describeWorkspacePath(projectName, targetPath) {
+  const normalized = normalizeTargetPath(targetPath);
+  if (projectName && normalized.startsWith(`${projectName}/`)) {
+    return {
+      projectKind: "server",
+      projectName,
+      projectRelativePath: normalized.slice(projectName.length + 1),
+    };
+  }
+
+  if (projectName && normalized.startsWith(`${projectName}.WASM/`)) {
+    return {
+      projectKind: "wasm",
+      projectName: `${projectName}.WASM`,
+      projectRelativePath: normalized.slice(`${projectName}.WASM/`.length),
+    };
+  }
+
+  return {
+    projectKind: "workspace",
+    projectName,
+    projectRelativePath: normalized,
+  };
+}
+
+function isWorkspaceSharedPath(targetPath) {
+  return targetPath === "StorefrontPackageVersions.props" ||
+    targetPath === "nuget.config" ||
+    targetPath === "README.md" ||
+    targetPath.endsWith(".sln");
 }
 
 function validateHandoffEvidenceReferences(refs) {

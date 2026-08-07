@@ -23,7 +23,13 @@ Options:
 }
 
 const baseUrlArg = readArg("--base-url");
-const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const workspaceRootArg = readArg("--workspace-root");
+const projectRootAliasArg = readArg("--project-root");
+if (!workspaceRootArg && projectRootAliasArg) {
+  console.warn("[SFB-VISUAL-QA-WARN] --project-root is a compatibility alias for --workspace-root and will be removed after the workspace migration.");
+}
+
+const projectRoot = resolve(workspaceRootArg ?? projectRootAliasArg ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const screenshotRoot = readArg("--screenshot-root") ?? "output/playwright/storefront-builder-visual-qa";
 const categorySlug = readArg("--category-slug") ?? "apparel";
 const productSlug = readArg("--product-slug") ?? "qa-simple-product-100";
