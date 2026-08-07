@@ -785,40 +785,50 @@ Goal: prove the new workspace output with both canonical proof and a real named 
 
 Tasks:
 
-- [ ] Recreate canonical generated proof under ignored output:
-  - [ ] Delete only the exact proof workspace after path safety validation.
-  - [ ] Generate fresh `BlazorShop.Storefront.GeneratedProof`.
-  - [ ] Verify solution file exists.
-  - [ ] Verify sibling server and WASM projects exist.
-  - [ ] Verify no nested WASM under server root.
-- [ ] Run structure proof:
-  - [ ] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel Structure`
-- [ ] Run fast browser proof:
-  - [ ] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast`
-- [ ] Run regeneration proof:
-  - [ ] No-op regeneration.
-  - [ ] Manual edit conflict.
-  - [ ] Foundation scope.
-  - [ ] WhatIf report outside target.
-- [ ] Run isolation gate:
-  - [ ] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof`
-- [ ] Run `-Describe` on full fixture proof:
-  - [ ] Verify paths show workspace shape.
-  - [ ] Verify generated host port and project path are correct.
-- [ ] If fixture runtime is available, run full fixture proof.
-- [ ] Generate a real named storefront proof such as `BlazorShop.Storefront.Kindredcoast`:
-  - [ ] Fresh generation.
-  - [ ] Solution restore/build.
-  - [ ] Static validation.
-  - [ ] Visual QA if handoff/fixture package is available.
-  - [ ] Confirm not added to `BlazorShop.sln`.
-- [ ] Record local evidence in generated reports only, unless a tracked closure summary is explicitly required.
+- [x] Recreate canonical generated proof under ignored output:
+  - [x] Delete only the exact proof workspace after path safety validation.
+  - [x] Generate fresh `BlazorShop.Storefront.GeneratedProof`.
+  - [x] Verify solution file exists.
+  - [x] Verify sibling server and WASM projects exist.
+  - [x] Verify no nested WASM under server root.
+- [x] Run structure proof:
+  - [x] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel Structure`
+- [x] Run fast browser proof:
+  - [x] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast`
+- [x] Run regeneration proof:
+  - [x] No-op regeneration.
+  - [x] Manual edit conflict.
+  - [x] Foundation scope.
+  - [x] WhatIf report outside target.
+- [x] Run isolation gate:
+  - [x] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof`
+- [x] Run `-Describe` on full fixture proof:
+  - [x] Verify paths show workspace shape.
+  - [x] Verify generated host port and project path are correct.
+- [x] If fixture runtime is available, run full fixture proof. Not run because `http://localhost:5180/health` refused the connection, so the fixture runtime was not available.
+- [x] Generate a real named storefront proof such as `BlazorShop.Storefront.Kindredcoast`:
+  - [x] Fresh generation.
+  - [x] Solution restore/build.
+  - [x] Static validation.
+  - [x] Visual QA if handoff/fixture package is available. No Kindredcoast fixture/handoff package was available; canonical browser fast proof covered runtime browser behavior.
+  - [x] Confirm not added to `BlazorShop.sln`.
+- [x] Record local evidence in generated reports only, unless a tracked closure summary is explicitly required.
 
 Exit criteria:
 
-- [ ] Canonical generated proof passes.
-- [ ] Real named generated output proves the path is not hardcoded to `GeneratedProof`.
-- [ ] Browser behavior remains tested with Playwright, not only smoke tests.
+- [x] Canonical generated proof passes.
+- [x] Real named generated output proves the path is not hardcoded to `GeneratedProof`.
+- [x] Browser behavior remains tested with Playwright, not only smoke tests.
+
+Validation passed:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample -OutputRoot artifacts/storefront-builder/generated -ProofLevel Structure -RuntimeTimeoutSeconds 45`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample -OutputRoot artifacts/storefront-builder/generated -ProofLevel FoundationFunctionalFast -RuntimeTimeoutSeconds 45`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1 -Describe`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Name BlazorShop.Storefront.Kindredcoast -StoreKey kindredcoast -Url https://www.kindredcoast.com/ -OutputRoot artifacts/storefront-builder/generated -ProofLevel Structure -RuntimeTimeoutSeconds 45`
+- Workspace checks found solutions and sibling server/WASM projects for `GeneratedProof` and `Kindredcoast`, and no nested WASM folder under either server project.
+- `Select-String` found no `GeneratedProof`, `Kindredcoast`, or generated artifact path entries in `BlazorShop.sln`.
 
 ## Phase 13 - Final Closure Review
 
