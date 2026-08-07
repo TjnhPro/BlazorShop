@@ -231,38 +231,45 @@ Goal: make Starter and Starter.WASM a clean template source pair before copying 
 
 Tasks:
 
-- [ ] Review Starter server `Program.cs` for current app composition:
-  - [ ] `AddStorefrontApplication(...)`
-  - [ ] `AddStorefrontBrowserControllers()`
-  - [ ] `UseStorefrontApplication()`
-  - [ ] `MapStorefrontApplication(...)`
-- [ ] Replace direct WASM component type usage with a stable marker if needed:
-  - [ ] Add `StarterWasmAssemblyMarker` under Starter.WASM.
-  - [ ] Map `typeof(StarterWasmAssemblyMarker).Assembly`.
-  - [ ] Ensure generator can rename this marker namespace safely.
-- [ ] Ensure Starter server project contains no nested-WASM exclusion ItemGroups.
-- [ ] Ensure Starter server ProjectReferences remain monorepo-only:
-  - [ ] Presentation
-  - [ ] Components
-  - [ ] Browser
-  - [ ] Starter.WASM
-- [ ] Ensure Starter.WASM ProjectReferences remain browser-safe:
-  - [ ] Browser
-  - [ ] Components
-- [ ] Ensure Starter.WASM has no Runtime or Client dependency.
-- [ ] Decide generated props import rewrite:
-  - [ ] Source Starter may keep its monorepo-local import.
-  - [ ] Generated server project imports `..\StorefrontPackageVersions.props`.
-  - [ ] Generated WASM project imports `..\StorefrontPackageVersions.props`.
-- [ ] Add or update Starter-specific tests if current test coverage is missing:
-  - [ ] Starter server builds in monorepo.
-  - [ ] Starter.WASM builds in monorepo.
-  - [ ] Starter.WASM does not reference Runtime or Client.
+- [x] Review Starter server `Program.cs` for current app composition:
+  - [x] `AddStorefrontApplication(...)`
+  - [x] `AddStorefrontBrowserControllers()`
+  - [x] `UseStorefrontApplication()`
+  - [x] `MapStorefrontApplication(...)`
+- [x] Replace direct WASM component type usage with a stable marker if needed:
+  - [x] Add `StarterWasmAssemblyMarker` under Starter.WASM.
+  - [x] Map `typeof(StarterWasmAssemblyMarker).Assembly`.
+  - [x] Ensure generator can rename this marker namespace safely.
+- [x] Ensure Starter server project contains no nested-WASM exclusion ItemGroups.
+- [x] Ensure Starter server ProjectReferences remain monorepo-only:
+  - [x] Presentation
+  - [x] Components
+  - [x] Browser
+  - [x] Starter.WASM
+- [x] Ensure Starter.WASM ProjectReferences remain browser-safe:
+  - [x] Browser
+  - [x] Components
+- [x] Ensure Starter.WASM has no Runtime or Client dependency.
+- [x] Decide generated props import rewrite:
+  - [x] Source Starter may keep its monorepo-local import.
+  - [x] Generated server project imports `..\StorefrontPackageVersions.props`.
+  - [x] Generated WASM project imports `..\StorefrontPackageVersions.props`.
+- [x] Add or update Starter-specific tests if current test coverage is missing:
+  - [x] Starter server builds in monorepo.
+  - [x] Starter.WASM builds in monorepo.
+  - [x] Starter.WASM does not reference Runtime or Client.
 
 Exit criteria:
 
-- [ ] Starter source is valid independently from generated output rules.
-- [ ] The generated rewrite target is deterministic.
+- [x] Starter source is valid independently from generated output rules.
+- [x] The generated rewrite target is deterministic.
+
+Phase 2 evidence:
+
+- Added `StarterWasmAssemblyMarker` in Starter.WASM and mapped `MapStorefrontApplication(...)` to the marker assembly instead of a specific account component.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj --no-restore` passed after rerunning sequentially; the first parallel run hit a compiler file lock on shared Components output.
+- `rg` scan over Starter/Starter.WASM `.csproj` and `.cs` files found no Runtime, Client, V2, Commerce Node, Control Plane, backend/core references, or nested-WASM exclusion ItemGroups.
 
 ## Phase 3 - Workspace Path Model In StorefrontBuilder
 

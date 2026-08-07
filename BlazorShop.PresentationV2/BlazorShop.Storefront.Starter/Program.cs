@@ -13,7 +13,7 @@ var app = builder.Build();
 app.UseStorefrontApplication();
 app.MapStorefrontApplication(
     typeof(StarterFoundationViewRegistration),
-    typeof(BlazorShop.Storefront.Starter.WASM.Components.Account.StorefrontAccountApp).Assembly);
+    typeof(BlazorShop.Storefront.Starter.WASM.StarterWasmAssemblyMarker).Assembly);
 
 app.Run();
 
