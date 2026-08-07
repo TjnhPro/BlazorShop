@@ -31,9 +31,23 @@ artifacts/storefront-builder/generated/{ProjectName}
 obj/storefront-builder/generated/{ProjectName}
 ```
 
+Each `{ProjectName}` path is the generated workspace root:
+
+```text
+{WorkspaceRoot}/
+  {ProjectName}.sln
+  StorefrontPackageVersions.props
+  nuget.config
+  docs/storefront-analysis/
+  {ProjectName}/
+    {ProjectName}.csproj
+  {ProjectName}.WASM/
+    {ProjectName}.WASM.csproj
+```
+
 `artifacts/storefront-builder/generated` remains the default proof output. `artifacts/storefront-builder` is also an approved manual output root when an operator wants the generated project directly under the StorefrontBuilder artifact folder.
 
-The storefront name must be normalized before it is used as a folder, project name, namespace segment, or file prefix. Unsafe names must fail before files are created. Generated proof output must not be added to `BlazorShop.sln` by default.
+The storefront name must be normalized before it is used as a folder, project name, namespace segment, or file prefix. Unsafe names must fail before files are created. Generated proof output must not be added to `BlazorShop.sln` by default. Scripts use `-WorkspaceRoot` for generated workspace input; `-ProjectRoot` is only a temporary compatibility alias and must not mean the server project folder.
 
 Reverse-engineering project artifacts are separate from generated storefront source and live under:
 
@@ -241,7 +255,7 @@ Handoff generation writes a Starter-based `BlazorShop.Storefront.{Name}` project
 Regeneration command:
 
 ```powershell
-.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all
 ```
 
 Supported scopes are `all`, `page`, `component`, `css`, `foundation`, `validate`, and `conflicts`. Non-handoff regeneration creates a fresh candidate from the current Starter/template source, writes a shared action plan, and applies only safe generated/managed changes from that candidate into the target. Handoff regeneration preserves stored handoff metadata, copies the target into a candidate, reapplies the stored `generation-plan.json`, rejects package/readiness/Starter contract drift, and applies only safe generated/managed visual changes. Manual edits to generated/managed files are reported as conflicts, user-owned/artifact-only files are preserved, protected files are skipped unless an explicit reviewed foundation path is used, and obsolete candidates are reported instead of deleted.
@@ -249,7 +263,7 @@ Supported scopes are `all`, `page`, `component`, `css`, `foundation`, `validate`
 Use `-WhatIf` with any update scope to run the same candidate generation and planning pipeline without copying changed files into the generated target:
 
 ```powershell
-.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -WhatIf
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope all -WhatIf
 ```
 
 `-WhatIf` keeps candidate cleanup enabled and writes a stable report outside the generated target. By default the report is `{OutputRoot}/.regeneration-reports/{ProjectName}-{operationId}.md`. The console prints `WhatIf report: <path>`, summary counts for create/update/platform metadata/conflict/obsolete/protected-or-user-owned skips, meaningful `filePath: action - reason` lines, and conflict next-action guidance when conflicts exist. Use `-WhatIfReportPath <path>` only for approved report locations under the output report folder, repo `obj`, or `artifacts/storefront-builder`; target-project paths are rejected.
@@ -257,7 +271,7 @@ Use `-WhatIf` with any update scope to run the same candidate generation and pla
 Use `-Scope foundation` only for explicit platform metadata updates such as `StorefrontPackageVersions.props`, `starter-generation.contract.yaml`, and generated metadata/package contract fields:
 
 ```powershell
-.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope foundation -ValidateAfterApply -BuildAfterApply
+.\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Scope foundation -ValidateAfterApply -BuildAfterApply
 ```
 
 CI-friendly regeneration ownership gate:
@@ -269,34 +283,40 @@ CI-friendly regeneration ownership gate:
 Constrained agent writes are recorded after an agent updates generated visual files:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --workspace-root <generated-workspace-root> --written-files <comma-separated-generated-visual-paths>
 ```
 
 The recorder validates that writes are planned generated-owned visual outputs, reject route declarations, direct Commerce Node/Admin/Control Plane calls, protected package paths, business/auth/SEO ownership leaks, and unplanned JavaScript. Bounded visual repair uses only failure output, the generation plan, and the generated agent task package:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --workspace-root <generated-workspace-root> --failure-report <report.md> --max-attempts 2
 ```
 
 Phase 4 visual skills run only after StorefrontBuilder creates a handoff-generated project and its `agent-task-package/manifest.json` exists. Use the skills in this order: `storefront-visual-plan`, `storefront-visual-implement`, then `storefront-visual-qa`. StorefrontBuilder remains the only project generator and recorder:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens
-.\scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --workspace-root <generated-workspace-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --workspace-root <generated-workspace-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens
+.\scripts\qa\run-storefront-phase4-mvp-gate.ps1 -WorkspaceRoot <generated-workspace-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-final-closure-gate.ps1 -CommandTimeoutSeconds 900
 ```
 
 Static validation command:
 
 ```powershell
-.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
+dotnet restore artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.sln --no-cache --force-evaluate
+dotnet build artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.sln --no-restore
+dotnet run --project artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.csproj
+```
+
+```powershell
+.\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 ```
 
 Isolation gate:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
 
 Canonical structure proof workflow:
@@ -350,7 +370,7 @@ For handoff-generated projects, `run-visual-qa.mjs` auto-detects `docs/storefron
 Before closing Phase 4 visual-skill work, the MVP gate must prove the generated visual plan/implementation/QA path against a handoff project, and the final closure gate must pass from a clean unchanged `HEAD`. The final closure gate regenerates its pilot from tracked portable handoff fixture input and ignored fresh output, so it must not rely on a pre-existing `obj` project, marker-only handoff folder, seeded task package, seeded generation plan, or copied `visual-qa-report.json`. Runtime closure evidence is bound by operation ID, base URL, screenshot paths, and timestamps from the current-run `visual-qa-runtime-summary.json`. GitHub Actions are not required for this local closure.
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --workspace-root <generated-workspace-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
 ```
 
 ## Deferred Scope

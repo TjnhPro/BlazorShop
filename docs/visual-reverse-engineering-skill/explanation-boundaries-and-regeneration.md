@@ -39,6 +39,8 @@ Generated storefronts keep review artifacts under `docs/storefront-analysis/` be
 
 Without these files, regeneration becomes hard to review and manual changes are harder to distinguish from generated output. Canonical generated proof output under `artifacts/` and `obj/` is ignored and disposable; commit generated artifacts only when a phase explicitly promotes a specific generated storefront or report into tracked evidence.
 
+The generated root is a workspace, not the server project folder. The workspace owns `{Name}.sln`, `StorefrontPackageVersions.props`, `nuget.config`, `docs/storefront-analysis/`, a server project at `{Name}/{Name}.csproj`, and a sibling WASM project at `{Name}.WASM/{Name}.WASM.csproj`. Validation, regeneration, visual QA, and MVP gates should receive `-WorkspaceRoot` or `--workspace-root`; only `dotnet run` points at the server project path.
+
 ## Why Phase 3C Handoff Is Separate
 
 `BlazorShop.AI.StorefrontReverseEngineering` writes Phase 3C artifacts under `analysis/agent-handoff/` so future generation can start from reviewed, constrained evidence instead of rereading raw screenshots or DOM snapshots. The handoff package names allowed files, protected files, page compositions, Storefront pattern contracts, unresolved regions, and final readiness.

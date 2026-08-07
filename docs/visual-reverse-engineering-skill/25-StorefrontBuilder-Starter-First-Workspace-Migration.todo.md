@@ -697,36 +697,42 @@ Goal: make docs, examples, and agent guidance match the new behavior.
 
 Tasks:
 
-- [ ] Update `docs/architecture/11-storefront-builder.md`:
-  - [ ] Generated artifact tree shows workspace with solution, sibling server, sibling WASM, and workspace docs.
-  - [ ] Entrypoints use `-WorkspaceRoot` where applicable.
-  - [ ] `-ProjectRoot` is documented only as temporary alias.
-  - [ ] Regeneration examples use workspace root.
-  - [ ] Validation examples use workspace root.
-  - [ ] Isolation examples use workspace root.
-- [ ] Update `docs/agents/storefront-builder.md`:
-  - [ ] Generated storefront requirements mention workspace shape.
-  - [ ] Validation commands use workspace root.
-  - [ ] Browser QA commands use workspace root.
-  - [ ] Old nested-WASM wording removed.
-- [ ] Update `docs/visual-reverse-engineering-skill/README.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/reference.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/tutorial-generated-proof.md`.
-- [ ] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`.
-- [ ] Add a factual note to plan 24 or related historical summary:
-  - [ ] Plan 24 was superseded by workspace migration.
-  - [ ] Historical checked items must not be used as current closure evidence.
-- [ ] Update any README snippets emitted into generated output.
-- [ ] Ensure all examples use:
-  - [ ] `dotnet restore <workspace>/<name>.sln`
-  - [ ] `dotnet build <workspace>/<name>.sln --no-restore`
-  - [ ] `dotnet run --project <workspace>/<name>/<name>.csproj`
+- [x] Update `docs/architecture/11-storefront-builder.md`:
+  - [x] Generated artifact tree shows workspace with solution, sibling server, sibling WASM, and workspace docs.
+  - [x] Entrypoints use `-WorkspaceRoot` where applicable.
+  - [x] `-ProjectRoot` is documented only as temporary alias.
+  - [x] Regeneration examples use workspace root.
+  - [x] Validation examples use workspace root.
+  - [x] Isolation examples use workspace root.
+- [x] Update `docs/agents/storefront-builder.md`:
+  - [x] Generated storefront requirements mention workspace shape.
+  - [x] Validation commands use workspace root.
+  - [x] Browser QA commands use workspace root.
+  - [x] Old nested-WASM wording removed.
+- [x] Update `docs/visual-reverse-engineering-skill/README.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/reference.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/tutorial-generated-proof.md`.
+- [x] Update `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`.
+- [x] Add a factual note to plan 24 or related historical summary:
+  - [x] Plan 24 was superseded by workspace migration.
+  - [x] Historical checked items must not be used as current closure evidence.
+- [x] Update any README snippets emitted into generated output.
+- [x] Ensure all examples use:
+  - [x] `dotnet restore <workspace>/<name>.sln`
+  - [x] `dotnet build <workspace>/<name>.sln --no-restore`
+  - [x] `dotnet run --project <workspace>/<name>/<name>.csproj`
 
 Exit criteria:
 
-- [ ] A developer following docs does not create or validate the old nested shape.
-- [ ] An agent can identify workspace, server, WASM, and analysis paths from docs alone.
+- [x] A developer following docs does not create or validate the old nested shape.
+- [x] An agent can identify workspace, server, WASM, and analysis paths from docs alone.
+
+Validation passed:
+
+- `powershell -NoProfile -Command "$tokens=$null;$errors=$null;[System.Management.Automation.Language.Parser]::ParseFile('scripts/generate-storefront-sample.ps1',[ref]$tokens,[ref]$errors) | Out-Null; if ($errors.Count) { $errors | Format-List; exit 1 }; 'scripts\generate-storefront-sample.ps1 syntax ok'"`
+- Current-doc scan for `ProjectRoot`, `GeneratedProjectRoot`, `generated-project-root`, and `--project-root` found only the documented temporary `-ProjectRoot` alias note.
+- Current-doc scan confirms examples use workspace roots, solution restore/build, and server-project `dotnet run` paths.
 
 ## Phase 11 - Compatibility Cleanup And Guardrails
 

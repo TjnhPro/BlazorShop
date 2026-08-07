@@ -32,6 +32,7 @@ Phase 4.12 final closure cannot rely on pre-existing `obj` artifacts. The final 
 Generated storefronts must:
 
 - Live as disposable artifacts under `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs.
+- Use that artifact path as the workspace root, with `{ProjectName}.sln`, workspace `docs/storefront-analysis/`, sibling server `{ProjectName}/{ProjectName}.csproj`, and sibling WASM `{ProjectName}.WASM/{ProjectName}.WASM.csproj`.
 - Consume `BlazorShop.Storefront.Presentation` and `BlazorShop.Storefront.Components` through package boundaries when they need the full storefront application surface. Presentation composes Runtime internally, Runtime owns direct `BlazorShop.Storefront.Client` transport usage, and generated projects keep Client/Runtime package metadata for compatibility proof only.
 - Use Storefront Presentation for shared App/Routes/page services/BFF/SEO/media composition. Generated projects provide views, assets, copy, feature manifests, host configuration, and Starter-derived semantic descriptors instead of recreating application logic.
 - Treat `BlazorShop.Storefront.Starter` plus `BlazorShop.Storefront.Starter.WASM` as the canonical server/browser template pair. Starter server registers Browser controllers and maps the sibling WASM assembly; generated servers must map only their generated sibling WASM assembly.
@@ -131,15 +132,15 @@ When generated page behavior changes, run browser QA against the generated store
 
 ```powershell
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --workspace-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --workspace-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
 ```
 
 For handoff skeleton or agent visual proof with seeded/mock fixture pages:
 
 ```powershell
 node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --workspace-root <generated-workspace-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --workspace-root <generated-workspace-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --workspace-root <generated-workspace-root> --failure-report <report.md> --max-attempts 2
 ```
 
 For runtime visual proof, run against a generated host and do not pass `--fixture-root`:

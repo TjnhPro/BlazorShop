@@ -6,6 +6,7 @@
 - Scope: StorefrontBuilder foundation, Starter server/WASM parity, package freshness, generated multi-project output, visual ownership, regeneration and proof gates.
 - Non-goal: Fixing only `BlazorShop.Storefront.Kindredcoast`.
 - Target: Generated storefronts and `BlazorShop.Storefront.V2` differ mainly by markup, CSS, layout, assets, view registrations and store configuration, not by browser runtime foundation.
+- Historical note: superseded as current closure evidence by `25-StorefrontBuilder-Starter-First-Workspace-Migration.todo.md`. Use plan 25 and current workspace-root validation output for closure; checked items in this plan are historical context only.
 
 ## Autoplan Review Summary
 

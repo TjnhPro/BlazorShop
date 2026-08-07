@@ -319,7 +319,7 @@ Modes:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
   -Scope all
 ```
 
@@ -347,7 +347,7 @@ Refresh platform metadata intentionally:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
   -Scope foundation `
   -ValidateAfterApply `
   -BuildAfterApply
@@ -355,11 +355,19 @@ Refresh platform metadata intentionally:
 
 ## Validation Commands
 
+Generated workspace build/run:
+
+```powershell
+dotnet restore artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.sln --no-cache --force-evaluate
+dotnet build artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.sln --no-restore
+dotnet run --project artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.csproj
+```
+
 Static gate:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof `
   -Name BlazorShop.Storefront.GeneratedProof `
   -StoreKey sample
 ```
@@ -367,7 +375,7 @@ Static gate:
 Isolation gate:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
 ```
 
 Canonical structure proof:
@@ -404,13 +412,13 @@ CI-friendly regeneration ownership gate:
 Phase 4 visual MVP gate:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -WorkspaceRoot <generated-workspace-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 ```
 
 Runtime visual MVP proof:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -ProofMode Runtime -BaseUrl http://127.0.0.1:18620 -StartRuntimeHost -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -WorkspaceRoot <generated-workspace-root> -ProofMode Runtime -BaseUrl http://127.0.0.1:18620 -StartRuntimeHost -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 ```
 
 Phase 4 final closure gate:
@@ -442,14 +450,14 @@ Pop-Location
 Run the generated storefront before browser QA:
 
 ```powershell
-dotnet run --no-build --project artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.csproj --urls http://127.0.0.1:18991
+dotnet run --no-build --project artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.csproj --urls http://127.0.0.1:18991
 ```
 
 Then run:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof --category-slug apparel --product-slug qa-simple-product-100
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof --category-slug apparel --product-slug qa-simple-product-100 --page-slug customer-service
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --workspace-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof --category-slug apparel --product-slug qa-simple-product-100
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --workspace-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof --category-slug apparel --product-slug qa-simple-product-100 --page-slug customer-service
 ```
 
 Browser QA writes `visual-qa-report.md` and `functional-commerce-report.md` under the generated artifact. Do not commit generated proof output by default.
@@ -457,7 +465,7 @@ Browser QA writes `visual-qa-report.md` and `functional-commerce-report.md` unde
 Runtime visual QA uses a running generated host:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --workspace-root artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof
 ```
 
 Do not pass `--fixture-root` in runtime visual proof. File-based `--fixture-root` proof is for skeleton/static validation and early feedback only; it is not final release closure.

@@ -94,13 +94,13 @@ Use the visual skills only after StorefrontBuilder has created a handoff-generat
 Record visual writes:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --workspace-root <generated-workspace-root> --written-files <comma-separated-generated-visual-paths>
 ```
 
 Run visual QA:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --workspace-root <generated-workspace-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens
 ```
 
 This fixture-root command is skeleton/static proof for fast feedback. It can prove generated shell coverage, planned placeholders, required slots, and artifact wiring before a generated host is running, but it is not final release closure.
@@ -108,13 +108,13 @@ This fixture-root command is skeleton/static proof for fast feedback. It can pro
 Run target MVP closure after plan, implementation, recorder, build, QA, and optional repair evidence exist:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -WorkspaceRoot <generated-workspace-root> -FixtureRoot <fixture-root> -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 ```
 
 Run runtime MVP closure when the generated host should be started and proved end to end:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <generated-project-root> -ProofMode Runtime -BaseUrl http://127.0.0.1:18620 -StartRuntimeHost -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -WorkspaceRoot <generated-workspace-root> -ProofMode Runtime -BaseUrl http://127.0.0.1:18620 -StartRuntimeHost -HandoffRoot <portable-handoff-root> -CommandTimeoutSeconds 600
 ```
 
 Run final closure only after the candidate commit is complete and the working tree is clean. Do not seed `obj` manually for this gate; it validates the tracked portable handoff fixture, removes stale pilot output, regenerates fresh disposable output through `build-storefront.ps1 -Mode generate -HandoffRoot ... -HandoffSchemaRoot ...`, records changed-file evidence, runs runtime visual QA, materializes the Reference QA JSON from the current `visual-qa-runtime-summary.json`, runs the MVP gate, runs `FoundationFunctionalFast`, runs regeneration ownership proof, and verifies the same clean `HEAD` at the end.
@@ -131,7 +131,7 @@ Regenerate all generated visual/composition output:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope all
 ```
 
@@ -139,7 +139,7 @@ Regenerate a narrower target:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope page `
   -Target Home
 ```
@@ -150,7 +150,7 @@ Preview before applying:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope all `
   -WhatIf
 ```
@@ -163,7 +163,7 @@ Require validation and build after applying:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope all `
   -ValidateAfterApply `
   -BuildAfterApply
@@ -173,7 +173,7 @@ Refresh platform metadata, package compatibility versions, and the copied Starte
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\regenerate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Scope foundation `
   -ValidateAfterApply `
   -BuildAfterApply
@@ -184,13 +184,13 @@ Manual edits to generated/managed files are not overwritten automatically. They 
 After constrained agent visual edits in a handoff-generated project, record the files:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --project-root <generated-project-root> --written-files <comma-separated-generated-visual-paths>
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs --workspace-root <generated-workspace-root> --written-files <comma-separated-generated-visual-paths>
 ```
 
 If visual proof fails in generated-owned CSS/markup, run bounded repair:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --project-root <generated-project-root> --failure-report <report.md> --max-attempts 2
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\repair-visual-generation.mjs --workspace-root <generated-workspace-root> --failure-report <report.md> --max-attempts 2
 ```
 
 Generated `metadata.yaml` and `generated-files.yaml` share the StorefrontBuilder `generatorVersion` from `tools/BlazorShop.AI.StorefrontBuilder/version.json`. Validation fails if those artifact versions drift.
@@ -265,11 +265,19 @@ Phase 4 may read only `analysis/agent-handoff/*` and schemas as input. Use `buil
 
 ## Validate
 
+Generated storefront workspaces build from the solution at the workspace root:
+
+```powershell
+dotnet restore artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo.sln --no-cache --force-evaluate
+dotnet build artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo.sln --no-restore
+dotnet run --project artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo.csproj
+```
+
 Run the static gate:
 
 ```powershell
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 `
-  -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
+  -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo `
   -Name BlazorShop.Storefront.Demo `
   -StoreKey sample
 ```
@@ -283,7 +291,7 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 Run isolation:
 
 ```powershell
-.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo -Name BlazorShop.Storefront.Demo
+.\scripts\qa\run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo -Name BlazorShop.Storefront.Demo
 ```
 
 Run the CI-friendly regeneration ownership gate:
@@ -333,26 +341,26 @@ Run the self-contained full fixture proof before release closure:
 Start the generated storefront:
 
 ```powershell
-dotnet run --no-build --project artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo.csproj --urls http://127.0.0.1:18991
+dotnet run --no-build --project artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo/BlazorShop.Storefront.Demo.csproj --urls http://127.0.0.1:18991
 ```
 
 Run visual and commerce checks from another PowerShell session:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --project-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --workspace-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-commerce-regression.mjs --base-url http://127.0.0.1:18991 --workspace-root artifacts/storefront-builder/generated/BlazorShop.Storefront.Demo
 ```
 
 For handoff skeleton proof with seeded/mock fixture pages:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --project-root <generated-project-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --workspace-root <generated-workspace-root> --fixture-root <fixture-root> --screenshot-root obj/storefront-builder/visual-qa-screens --allow-planned-placeholders
 ```
 
 For runtime visual proof against a generated host:
 
 ```powershell
-node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --project-root <generated-project-root> --screenshot-root obj/storefront-builder/visual-qa-screens
+node tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs --base-url http://127.0.0.1:18991 --workspace-root <generated-workspace-root> --screenshot-root obj/storefront-builder/visual-qa-screens
 ```
 
 Do not mix `--fixture-root` with runtime visual proof. Runtime proof is the closure path; skeleton proof is early feedback only.
