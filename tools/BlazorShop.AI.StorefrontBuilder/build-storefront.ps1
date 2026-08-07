@@ -31,10 +31,12 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 
 $projectName = Normalize-StorefrontProjectName -Name $Name
 $normalizedStoreKey = Normalize-StorefrontStoreKey -StoreKey $StoreKey
-$resolvedOutputRoot = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot $OutputRoot
-$projectRoot = Join-Path $resolvedOutputRoot $projectName
+$workspacePaths = Resolve-StorefrontBuilderWorkspacePaths -RepoRoot $repoRoot -ProjectName $projectName -OutputRoot $OutputRoot
+$resolvedOutputRoot = $workspacePaths.OutputRoot
+$projectRoot = $workspacePaths.WorkspaceRoot
 
 Write-Host "StorefrontBuilder mode=$Mode url=$Url name=$projectName storeKey=$normalizedStoreKey output=$projectRoot"
+Write-StorefrontBuilderWorkspacePaths -Paths $workspacePaths
 
 if ($Mode -eq "preflight-only" -or -not [string]::IsNullOrWhiteSpace($HandoffRoot)) {
     & "$PSScriptRoot/scripts/generate/Test-HandoffPreflight.ps1" `

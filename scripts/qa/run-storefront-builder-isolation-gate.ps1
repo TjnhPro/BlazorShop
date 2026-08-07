@@ -1,5 +1,6 @@
 param(
     [string]$Name = "BlazorShop.Storefront.GeneratedProof",
+    [string]$WorkspaceRoot = "",
     [string]$ProjectRoot = "",
     [string]$Configuration = "Debug",
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
@@ -12,6 +13,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+. (Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\StorefrontBuilderProjectSafety.ps1")
 function Resolve-RepoPath {
     param([string]$Path)
 
@@ -34,11 +36,9 @@ function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
     return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
 }
 
-$projectRoot = if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
-    Join-Path $repoRoot "artifacts\storefront-builder\generated\$Name"
-} else {
-    Resolve-RepoPath $ProjectRoot
-}
+$workspacePaths = Resolve-StorefrontBuilderWorkspacePaths -RepoRoot $repoRoot -ProjectName $Name -WorkspaceRoot $WorkspaceRoot -ProjectRoot $ProjectRoot -OutputRoot "artifacts/storefront-builder/generated" -WarnOnProjectRootAlias
+$Name = $workspacePaths.ProjectName
+$projectRoot = $workspacePaths.WorkspaceRoot
 $projectFile = Join-Path $projectRoot "$Name.csproj"
 $wasmProjectRoot = Join-Path $projectRoot "$Name.WASM"
 $wasmProjectFile = Join-Path $wasmProjectRoot "$Name.WASM.csproj"
@@ -71,6 +71,7 @@ function Initialize-StorefrontPackageIdentity {
 
 if ($Describe) {
     Write-Host "StorefrontBuilder isolation gate:"
+    Write-StorefrontBuilderWorkspacePaths -Paths $workspacePaths
     Write-Host "- restore generated storefront"
     Write-Host "- build generated storefront"
     Write-Host "- pack BlazorShop.Storefront.Client"

@@ -277,40 +277,49 @@ Goal: replace ambiguous "project root" assumptions with explicit workspace/serve
 
 Tasks:
 
-- [ ] Introduce a shared path model in PowerShell helper code or a small script module:
-  - [ ] `ProjectName`
-  - [ ] `OutputRoot`
-  - [ ] `WorkspaceRoot`
-  - [ ] `ServerProjectRoot`
-  - [ ] `WasmProjectRoot`
-  - [ ] `SolutionPath`
-  - [ ] `AnalysisRoot`
-  - [ ] `MetadataPath`
-  - [ ] `ContractPath`
-- [ ] Normalize and validate `ProjectName` before any path is created.
-- [ ] Verify resolved paths stay under approved output roots.
-- [ ] Add `-WorkspaceRoot` to relevant scripts:
-  - [ ] `validate-storefront.ps1`
-  - [ ] `regenerate-storefront.ps1`
-  - [ ] isolation gate
-  - [ ] visual QA wrappers if they parse project structure
-  - [ ] phase4 MVP gate if it reads generated analysis/source
-- [ ] Keep `-ProjectRoot` as a compatibility alias for `-WorkspaceRoot` for this migration:
-  - [ ] If both are supplied and differ, fail with problem/cause/fix.
-  - [ ] If only `-ProjectRoot` is supplied, print deprecation guidance.
-  - [ ] Do not interpret `-ProjectRoot` as server project root.
-- [ ] Update log output to print all derived paths at high-signal entrypoints.
-- [ ] Add tests for path derivation:
-  - [ ] Normal project name.
-  - [ ] Unsafe project name rejected before writes.
-  - [ ] Workspace under `artifacts/storefront-builder/generated`.
-  - [ ] Workspace under `obj/storefront-builder/generated`.
-  - [ ] Conflict between `-ProjectRoot` and `-WorkspaceRoot`.
+- [x] Introduce a shared path model in PowerShell helper code or a small script module:
+  - [x] `ProjectName`
+  - [x] `OutputRoot`
+  - [x] `WorkspaceRoot`
+  - [x] `ServerProjectRoot`
+  - [x] `WasmProjectRoot`
+  - [x] `SolutionPath`
+  - [x] `AnalysisRoot`
+  - [x] `MetadataPath`
+  - [x] `ContractPath`
+- [x] Normalize and validate `ProjectName` before any path is created.
+- [x] Verify resolved paths stay under approved output roots.
+- [x] Add `-WorkspaceRoot` to relevant scripts:
+  - [x] `validate-storefront.ps1`
+  - [x] `regenerate-storefront.ps1`
+  - [x] isolation gate
+  - [x] visual QA wrappers if they parse project structure
+  - [x] phase4 MVP gate if it reads generated analysis/source
+- [x] Keep `-ProjectRoot` as a compatibility alias for `-WorkspaceRoot` for this migration:
+  - [x] If both are supplied and differ, fail with problem/cause/fix.
+  - [x] If only `-ProjectRoot` is supplied, print deprecation guidance.
+  - [x] Do not interpret `-ProjectRoot` as server project root.
+- [x] Update log output to print all derived paths at high-signal entrypoints.
+- [x] Add tests for path derivation:
+  - [x] Normal project name.
+  - [x] Unsafe project name rejected before writes.
+  - [x] Workspace under `artifacts/storefront-builder/generated`.
+  - [x] Workspace under `obj/storefront-builder/generated`.
+  - [x] Conflict between `-ProjectRoot` and `-WorkspaceRoot`.
 
 Exit criteria:
 
-- [ ] Scripts can identify workspace, server, WASM, solution, and analysis roots without guessing.
-- [ ] Existing operators get a clear migration message instead of a silent behavior change.
+- [x] Scripts can identify workspace, server, WASM, solution, and analysis roots without guessing.
+- [x] Existing operators get a clear migration message instead of a silent behavior change.
+
+Phase 3 evidence:
+
+- Added `Resolve-StorefrontBuilderWorkspacePaths` and `Write-StorefrontBuilderWorkspacePaths` to `StorefrontBuilderProjectSafety.ps1`.
+- Added `-WorkspaceRoot` to `validate-storefront.ps1`, `regenerate-storefront.ps1`, and `run-storefront-builder-isolation-gate.ps1`; `-ProjectRoot` now warns as a temporary alias and conflicts with `-WorkspaceRoot` fail with `SFB-PROJECT-014`.
+- Added `--workspace-root` to `run-visual-qa.mjs`, `repair-visual-generation.mjs`, `record-agent-visual-writes.mjs`, and `write-agent-task-package.mjs`; `--project-root` remains an alias.
+- Added `-WorkspaceRoot` to `run-storefront-phase4-mvp-gate.ps1` and updated internal calls to workspace arguments.
+- `Test-StorefrontBuilderWorkspacePaths.ps1` passed.
+- `run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot ... -Describe`, Phase 4 MVP `-Help`, Node helper `--help`, and `build-storefront.ps1 -Mode plan-only` passed.
 
 ## Phase 4 - Generator Rewrite
 

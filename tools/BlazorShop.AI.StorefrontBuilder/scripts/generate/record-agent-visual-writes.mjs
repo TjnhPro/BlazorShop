@@ -4,10 +4,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
-  console.log(`Usage: node record-agent-visual-writes.mjs --project-root <generated-project-root> [--from-checkpoint <path>] [--written-files <file[,file...]>]
+  console.log(`Usage: node record-agent-visual-writes.mjs --workspace-root <generated-workspace-root> [--from-checkpoint <path>] [--written-files <file[,file...]>]
 
 Options:
-  --project-root <path>             Generated storefront project root.
+  --workspace-root <path>           Generated storefront workspace root.
+  --project-root <path>             Compatibility alias for --workspace-root.
   --task-package <path>             Agent task package root. Defaults under project docs/storefront-analysis.
   --from-checkpoint <path>          Visual checkpoint JSON with pre/post source snapshots for auto-detection.
   --implementation-report <path>    Optional implementation report used to verify claimed changed files.
@@ -17,7 +18,7 @@ Options:
   process.exit(0);
 }
 
-const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const taskPackageRoot = resolve(readArg("--task-package") ?? join(projectRoot, "docs/storefront-analysis/agent-task-package"));
 const checkpointPath = readArg("--from-checkpoint") ? resolve(projectRoot, readArg("--from-checkpoint")) : null;
 const implementationReportPath = readArg("--implementation-report")

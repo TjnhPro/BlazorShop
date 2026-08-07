@@ -9,7 +9,8 @@ if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(`Usage: node repair-visual-generation.mjs [options]
 
 Options:
-  --project-root <path>       Generated storefront project root.
+  --workspace-root <path>     Generated storefront workspace root.
+  --project-root <path>       Compatibility alias for --workspace-root.
   --failure-report <path>     Browser/build/boundary failure report to classify.
   --max-attempts <number>     Maximum bounded repair attempts, default 2.
   --help, -h                  Show this help text.
@@ -22,7 +23,7 @@ Scope:
 }
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const failureReportPath = resolve(readArg("--failure-report") ?? join(projectRoot, "docs/storefront-analysis/visual-qa-report.md"));
 const maxAttempts = Number.parseInt(readArg("--max-attempts") ?? "2", 10);
 const historyPath = join(projectRoot, "docs/storefront-analysis/repair-history.md");

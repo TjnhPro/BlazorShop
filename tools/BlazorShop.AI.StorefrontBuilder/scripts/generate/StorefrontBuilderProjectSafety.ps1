@@ -156,6 +156,118 @@ function Resolve-ApprovedStorefrontBuilderOutputRoot {
     return $resolvedOutputRoot
 }
 
+function Assert-StorefrontBuilderPathUnderApprovedOutputRoots {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [string]$ErrorCode = "SFB-PROJECT-002"
+    )
+
+    $approvedRoots = @(
+        (Join-Path $RepoRoot "artifacts\storefront-builder"),
+        (Join-Path $RepoRoot "artifacts\storefront-builder\generated"),
+        (Join-Path $RepoRoot "obj\storefront-builder\generated")
+    ) | ForEach-Object { [System.IO.Path]::GetFullPath($_) }
+
+    foreach ($approvedRoot in $approvedRoots) {
+        try {
+            Assert-StorefrontBuilderPathUnderRoot -Path $Path -Root $approvedRoot -ErrorCode $ErrorCode
+            return
+        }
+        catch {
+        }
+    }
+
+    throw "[$ErrorCode] Path must be under artifacts/storefront-builder, artifacts/storefront-builder/generated, or obj/storefront-builder/generated: $Path"
+}
+
+function Resolve-StorefrontBuilderWorkspacePaths {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [string]$ProjectName = "",
+        [string]$OutputRoot = "",
+        [string]$WorkspaceRoot = "",
+        [string]$ProjectRoot = "",
+        [switch]$WarnOnProjectRootAlias
+    )
+
+    $resolvedWorkspaceRoot = ""
+    $resolvedProjectRootAlias = ""
+
+    if (-not [string]::IsNullOrWhiteSpace($WorkspaceRoot)) {
+        $resolvedWorkspaceRoot = Resolve-StorefrontBuilderRepoPath -RepoRoot $RepoRoot -Path $WorkspaceRoot
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($ProjectRoot)) {
+        $resolvedProjectRootAlias = Resolve-StorefrontBuilderRepoPath -RepoRoot $RepoRoot -Path $ProjectRoot
+        if ($WarnOnProjectRootAlias) {
+            Write-Warning "-ProjectRoot is a temporary compatibility alias for -WorkspaceRoot. Pass -WorkspaceRoot to avoid ambiguity."
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($resolvedWorkspaceRoot) -and -not [string]::IsNullOrWhiteSpace($resolvedProjectRootAlias)) {
+        if (-not $resolvedWorkspaceRoot.Equals($resolvedProjectRootAlias, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "[SFB-PROJECT-014] ProjectRoot and WorkspaceRoot differ. Problem: ProjectRoot '$resolvedProjectRootAlias' does not equal WorkspaceRoot '$resolvedWorkspaceRoot'. Cause: ProjectRoot is now only a compatibility alias for WorkspaceRoot. Fix: pass only -WorkspaceRoot, or pass matching values."
+        }
+    }
+    elseif ([string]::IsNullOrWhiteSpace($resolvedWorkspaceRoot) -and -not [string]::IsNullOrWhiteSpace($resolvedProjectRootAlias)) {
+        $resolvedWorkspaceRoot = $resolvedProjectRootAlias
+    }
+
+    $normalizedProjectName = ""
+    if (-not [string]::IsNullOrWhiteSpace($ProjectName)) {
+        $normalizedProjectName = Normalize-StorefrontProjectName -Name $ProjectName
+    }
+
+    if ([string]::IsNullOrWhiteSpace($resolvedWorkspaceRoot)) {
+        if ([string]::IsNullOrWhiteSpace($normalizedProjectName)) {
+            throw "[SFB-PROJECT-015] ProjectName is required when WorkspaceRoot is not supplied."
+        }
+
+        $resolvedOutputRoot = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $RepoRoot -OutputRoot $OutputRoot
+        $resolvedWorkspaceRoot = Join-Path $resolvedOutputRoot $normalizedProjectName
+    }
+    else {
+        Assert-StorefrontBuilderPathUnderApprovedOutputRoots -RepoRoot $RepoRoot -Path $resolvedWorkspaceRoot
+        if ([string]::IsNullOrWhiteSpace($normalizedProjectName)) {
+            $normalizedProjectName = Normalize-StorefrontProjectName -Name (Split-Path -Leaf $resolvedWorkspaceRoot)
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($normalizedProjectName)) {
+        throw "[SFB-PROJECT-015] ProjectName could not be resolved for workspace '$resolvedWorkspaceRoot'."
+    }
+
+    $serverProjectRoot = Join-Path $resolvedWorkspaceRoot $normalizedProjectName
+    $wasmProjectRoot = Join-Path $resolvedWorkspaceRoot "$normalizedProjectName.WASM"
+    $solutionPath = Join-Path $resolvedWorkspaceRoot "$normalizedProjectName.sln"
+    $analysisRoot = Join-Path $resolvedWorkspaceRoot "docs\storefront-analysis"
+
+    [pscustomobject]@{
+        ProjectName = $normalizedProjectName
+        OutputRoot = if ([string]::IsNullOrWhiteSpace($OutputRoot)) { Split-Path -Parent $resolvedWorkspaceRoot } else { Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $RepoRoot -OutputRoot $OutputRoot }
+        WorkspaceRoot = [System.IO.Path]::GetFullPath($resolvedWorkspaceRoot)
+        ProjectRoot = [System.IO.Path]::GetFullPath($resolvedWorkspaceRoot)
+        ServerProjectRoot = [System.IO.Path]::GetFullPath($serverProjectRoot)
+        WasmProjectRoot = [System.IO.Path]::GetFullPath($wasmProjectRoot)
+        SolutionPath = [System.IO.Path]::GetFullPath($solutionPath)
+        AnalysisRoot = [System.IO.Path]::GetFullPath($analysisRoot)
+        MetadataPath = [System.IO.Path]::GetFullPath((Join-Path $analysisRoot "metadata.yaml"))
+        ContractPath = [System.IO.Path]::GetFullPath((Join-Path $analysisRoot "starter-generation.contract.yaml"))
+    }
+}
+
+function Write-StorefrontBuilderWorkspacePaths {
+    param([Parameter(Mandatory = $true)]$Paths)
+
+    Write-Host "StorefrontBuilder paths:"
+    Write-Host "- workspace: $($Paths.WorkspaceRoot)"
+    Write-Host "- server: $($Paths.ServerProjectRoot)"
+    Write-Host "- wasm: $($Paths.WasmProjectRoot)"
+    Write-Host "- solution: $($Paths.SolutionPath)"
+    Write-Host "- analysis: $($Paths.AnalysisRoot)"
+}
+
 function Remove-StorefrontBuilderPath {
     param(
         [Parameter(Mandatory = $true)][string]$Path,

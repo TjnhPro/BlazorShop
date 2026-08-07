@@ -19,10 +19,11 @@ const FORBIDDEN_PACKAGE_TEXT_MARKERS = [
 ];
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
-  console.log(`Usage: node write-agent-task-package.mjs --project-root <generated-project-root> [options]
+  console.log(`Usage: node write-agent-task-package.mjs --workspace-root <generated-workspace-root> [options]
 
 Options:
-  --project-root <path>  Generated storefront project root.
+  --workspace-root <path>  Generated storefront workspace root.
+  --project-root <path>    Compatibility alias for --workspace-root.
   --handoff-root <path>  Portable handoff package root or analysis/agent-handoff folder.
   --plan-json <path>     Generation plan JSON path. Defaults under project docs/storefront-analysis.
   --output <path>        Agent task package output folder. Defaults under project docs/storefront-analysis.
@@ -30,7 +31,7 @@ Options:
   process.exit(0);
 }
 
-const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const handoffRoot = readArg("--handoff-root");
 const planPath = resolve(readArg("--plan-json") ?? join(projectRoot, "docs/storefront-analysis/generation-plan.json"));
 const outputRoot = resolve(readArg("--output") ?? join(projectRoot, "docs/storefront-analysis/agent-task-package"));

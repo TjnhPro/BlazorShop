@@ -10,7 +10,8 @@ if (process.argv.includes("--help") || process.argv.includes("-h")) {
 Options:
   --proof-mode <mode>             Proof mode: skeleton or runtime. Defaults to skeleton when --fixture-root is present, otherwise runtime.
   --base-url <url>                 Running generated storefront base URL.
-  --project-root <path>            Generated storefront project root.
+  --workspace-root <path>          Generated storefront workspace root.
+  --project-root <path>            Compatibility alias for --workspace-root.
   --screenshot-root <path>         Screenshot/evidence output root.
   --operation-id <id>              Visual QA operation ID. Defaults to visual-plan.json operationId or runtime-visual-qa.
   --fixture-root <path>            File-based fixture root for handoff skeleton proof.
@@ -22,7 +23,7 @@ Options:
 }
 
 const baseUrlArg = readArg("--base-url");
-const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
 const screenshotRoot = readArg("--screenshot-root") ?? "output/playwright/storefront-builder-visual-qa";
 const categorySlug = readArg("--category-slug") ?? "apparel";
 const productSlug = readArg("--product-slug") ?? "qa-simple-product-100";

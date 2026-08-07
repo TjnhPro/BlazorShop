@@ -1,6 +1,6 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [string]$ProjectRoot,
+    [string]$WorkspaceRoot = "",
+    [string]$ProjectRoot = "",
     [ValidateSet("all", "page", "component", "css", "foundation", "validate", "conflicts")]
     [string]$Scope = "all",
     [string]$Target = "",
@@ -1099,10 +1099,12 @@ function Remove-CandidateManifestEntries {
     [System.IO.File]::WriteAllLines($ManifestPath, $lines, [System.Text.Encoding]::UTF8)
 }
 
-$resolvedProjectRoot = Resolve-InputPath $ProjectRoot
+$workspacePaths = Resolve-StorefrontBuilderWorkspacePaths -RepoRoot $repoRoot -WorkspaceRoot $WorkspaceRoot -ProjectRoot $ProjectRoot -WarnOnProjectRootAlias
+$resolvedProjectRoot = $workspacePaths.WorkspaceRoot
 if (-not (Test-Path -LiteralPath $resolvedProjectRoot)) {
-    throw "[SFB-REGEN-000] Project root does not exist: $resolvedProjectRoot"
+    throw "[SFB-REGEN-000] Workspace root does not exist: $resolvedProjectRoot"
 }
+Write-StorefrontBuilderWorkspacePaths -Paths $workspacePaths
 
 $metadataPath = Join-Path $resolvedProjectRoot "docs\storefront-analysis\metadata.yaml"
 $metadata = Read-GeneratedStorefrontMetadata -MetadataPath $metadataPath

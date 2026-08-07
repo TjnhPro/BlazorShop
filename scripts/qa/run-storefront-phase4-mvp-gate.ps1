@@ -1,4 +1,5 @@
 param(
+    [string]$WorkspaceRoot = "",
     [string]$GeneratedProjectRoot = "",
     [string]$FixtureRoot = "",
     [string]$HandoffRoot = "",
@@ -21,10 +22,11 @@ function Show-Help {
     Write-Host "Storefront Phase 4 MVP gate"
     Write-Host ""
     Write-Host "Usage:"
-    Write-Host "  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot <path> [options]"
+    Write-Host "  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -WorkspaceRoot <path> [options]"
     Write-Host ""
     Write-Host "Options:"
-    Write-Host "  -GeneratedProjectRoot <path>   Generated storefront project root."
+    Write-Host "  -WorkspaceRoot <path>          Generated storefront workspace root."
+    Write-Host "  -GeneratedProjectRoot <path>   Compatibility alias for -WorkspaceRoot."
     Write-Host "  -FixtureRoot <path>            Optional file fixture root for visual QA."
     Write-Host "  -HandoffRoot <path>            Optional portable handoff root used for metadata hashing."
     Write-Host "  -ScreenshotRoot <path>         Optional screenshot/evidence root. Defaults under generated project docs."
@@ -178,10 +180,11 @@ function Read-SimpleYamlValue {
 $steps = [System.Collections.Generic.List[object]]::new()
 $artifactPaths = [System.Collections.Generic.List[string]]::new()
 $startedUtc = [DateTimeOffset]::UtcNow.ToString("o")
-$resolvedProjectRoot = Resolve-RepoPath $GeneratedProjectRoot
+$workspaceRootInput = if (-not [string]::IsNullOrWhiteSpace($WorkspaceRoot)) { $WorkspaceRoot } else { $GeneratedProjectRoot }
+$resolvedProjectRoot = Resolve-RepoPath $workspaceRootInput
 
 if ([string]::IsNullOrWhiteSpace($resolvedProjectRoot)) {
-    throw "GeneratedProjectRoot is required. Rerun with -Help for usage."
+    throw "WorkspaceRoot is required. Rerun with -Help for usage."
 }
 
 $analysisRoot = Join-Path $resolvedProjectRoot "docs\storefront-analysis"
@@ -248,7 +251,7 @@ if ($effectiveProofMode -eq "Skeleton" -and [string]::IsNullOrWhiteSpace($resolv
 }
 
 function New-RerunCommand {
-    return "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -GeneratedProjectRoot `"$GeneratedProjectRoot`""
+    return "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa\run-storefront-phase4-mvp-gate.ps1 -WorkspaceRoot `"$workspaceRootInput`""
 }
 
 function Get-FreeTcpPort {
@@ -882,6 +885,7 @@ function Save-GateReports {
             startedUtc = $startedUtc
             finishedUtc = [DateTimeOffset]::UtcNow.ToString("o")
         }
+        workspaceRoot = (Convert-ToRepoRelativePath $resolvedProjectRoot)
         generatedProjectRoot = (Convert-ToRepoRelativePath $resolvedProjectRoot)
         inputHandoffMetadata = [ordered]@{
             handoffRoot = if ([string]::IsNullOrWhiteSpace($resolvedHandoffRoot)) { "not-specified" } else { Convert-ToRepoRelativePath $resolvedHandoffRoot }
@@ -901,7 +905,7 @@ function Save-GateReports {
     $lines.Add("# Storefront Phase 4 MVP Gate Report")
     $lines.Add("")
     $lines.Add("- Decision: $Status")
-    $lines.Add("- Generated project root: $(Convert-ToRepoRelativePath $resolvedProjectRoot)")
+    $lines.Add("- Workspace root: $(Convert-ToRepoRelativePath $resolvedProjectRoot)")
     $lines.Add("- Report JSON: $(Convert-ToRepoRelativePath $reportJsonPath)")
     $lines.Add("- Evidence root: $(Convert-ToRepoRelativePath $resolvedScreenshotRoot)")
     $lines.Add("")
@@ -995,7 +999,7 @@ try {
 
     $null = Invoke-GateCommand -Name "run StorefrontBuilder handoff boundary validation" -FileName "node" -Arguments @(
         (Join-Path $builderRoot "scripts\validate\Test-StorefrontBuilderHandoffBoundary.mjs"),
-        "--project-root", $resolvedProjectRoot,
+        "--workspace-root", $resolvedProjectRoot,
         "--name", $projectName
     ) -LikelyCause "Generated handoff artifacts, allowed outputs, or protected boundary metadata drifted."
 
@@ -1030,7 +1034,7 @@ try {
         $qaOperationId = [string]((Get-Content -LiteralPath $visualPlanPath -Raw | ConvertFrom-Json).operationId)
     }
 
-    $qaArguments = @((Join-Path $builderRoot "scripts\qa\run-visual-qa.mjs"), "--proof-mode", $effectiveProofMode.ToLowerInvariant(), "--project-root", $resolvedProjectRoot, "--screenshot-root", $resolvedScreenshotRoot)
+    $qaArguments = @((Join-Path $builderRoot "scripts\qa\run-visual-qa.mjs"), "--proof-mode", $effectiveProofMode.ToLowerInvariant(), "--workspace-root", $resolvedProjectRoot, "--screenshot-root", $resolvedScreenshotRoot)
     if (-not [string]::IsNullOrWhiteSpace($qaOperationId)) {
         $qaArguments += @("--operation-id", $qaOperationId)
     }
@@ -1047,7 +1051,7 @@ try {
         for ($attempt = 1; $attempt -le $MaxRepairAttempts -and -not $qaPassed; $attempt++) {
             $repairPassed = Invoke-GateCommand -Name "run bounded repair attempt $attempt" -FileName "node" -Arguments @(
                 (Join-Path $builderRoot "scripts\qa\repair-visual-generation.mjs"),
-                "--project-root", $resolvedProjectRoot,
+                "--workspace-root", $resolvedProjectRoot,
                 "--failure-report", $visualQaReportPath,
                 "--max-attempts", $MaxRepairAttempts
             ) -LikelyCause "The visual failure is outside bounded generated-owned repair patterns." -AllowFailure
@@ -1075,7 +1079,7 @@ try {
         $packagedReferenceEvidenceRoot = Join-Path $analysisRoot "agent-task-package\evidence"
         $materializerArguments = @(
             $materializerScript,
-            "--project-root", $resolvedProjectRoot,
+            "--workspace-root", $resolvedProjectRoot,
             "--base-url", $BaseUrl
         )
         if (Test-Path -LiteralPath $packagedReferenceEvidenceRoot) {
@@ -1097,7 +1101,7 @@ try {
         $null = Invoke-GateCommand -Name "run regeneration WhatIf" -FileName (Get-PreferredPowerShell) -Arguments @(
             "-NoProfile", "-ExecutionPolicy", "Bypass",
             "-File", (Join-Path $builderRoot "regenerate-storefront.ps1"),
-            "-ProjectRoot", $resolvedProjectRoot,
+            "-WorkspaceRoot", $resolvedProjectRoot,
             "-Scope", "all",
             "-WhatIf"
         ) -LikelyCause "Generated ownership, regeneration metadata, or handoff plan identity drifted."
