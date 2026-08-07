@@ -55,7 +55,7 @@ $wasmProjectRoot = $workspacePaths.WasmProjectRoot
 $solutionFile = $workspacePaths.SolutionPath
 $projectFile = Join-Path $serverProjectRoot "$Name.csproj"
 $wasmProjectFile = Join-Path $wasmProjectRoot "$Name.WASM.csproj"
-$packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
+$packageRoot = Join-Path (Join-Path $repoRoot "artifacts\storefront-packages") $Name
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
 $presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
@@ -135,7 +135,7 @@ function Clear-StorefrontLocalPackageCache {
 }
 
 function Write-GeneratedNuGetConfig {
-    $packageFeed = Join-Path $repoRoot "artifacts\storefront-packages"
+    $packageFeed = $packageRoot
     $relativePackageFeed = (Get-RelativePathCompat $projectRoot $packageFeed).Replace('\', '/')
     $nugetConfig = @(
         '<?xml version="1.0" encoding="utf-8"?>',

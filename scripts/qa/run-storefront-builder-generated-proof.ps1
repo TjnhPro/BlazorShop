@@ -27,7 +27,8 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $toolRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
-$packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
+$packageBaseRoot = Join-Path $repoRoot "artifacts\storefront-packages"
+$packageRoot = Join-Path $packageBaseRoot $Name
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
 $presentationProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj"
@@ -116,8 +117,9 @@ function Assert-UnderRoot {
 
 function Clear-StorefrontPackageFeed {
     $resolvedPackageRoot = [System.IO.Path]::GetFullPath($packageRoot)
-    $approvedPackageRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "artifacts\storefront-packages"))
-    if (-not $resolvedPackageRoot.Equals($approvedPackageRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    $approvedPackageRoot = [System.IO.Path]::GetFullPath($packageBaseRoot).TrimEnd('\', '/')
+    $approvedPackageRootWithSeparator = "$approvedPackageRoot$([System.IO.Path]::DirectorySeparatorChar)"
+    if (-not $resolvedPackageRoot.StartsWith($approvedPackageRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "[SFB-PROOF-002] Refusing to clean unapproved package feed: $resolvedPackageRoot"
     }
 

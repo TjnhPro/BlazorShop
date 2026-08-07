@@ -836,90 +836,105 @@ Goal: close this migration only when code, docs, tests, and generated artifacts 
 
 Tasks:
 
-- [ ] Run focused unit/integration tests:
-  - [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"`
-  - [ ] StorefrontReverseEngineering StorefrontBuilder handoff tests if touched.
-- [ ] Run build checks:
-  - [ ] Starter server build.
-  - [ ] Starter.WASM build.
-  - [ ] Generated proof solution build.
-- [ ] Run static gates:
-  - [ ] validate-storefront.
-  - [ ] isolation gate.
-  - [ ] regeneration gate.
-- [ ] Run browser gates:
-  - [ ] FoundationFunctionalFast.
-  - [ ] Runtime visual QA when visual-generation paths are touched.
-  - [ ] Full fixture proof when fixture runtime is available.
-- [ ] Run final source scans:
-  - [ ] No active nested-WASM generation.
-  - [ ] No active required exclusion markers.
-  - [ ] No active docs instruct nested validation.
-  - [ ] No generated output added to `BlazorShop.sln`.
-- [ ] Review diff manually:
-  - [ ] No unrelated user changes reverted.
-  - [ ] No generated artifacts committed unless intentionally tracked.
-  - [ ] No package lock churn outside expected proof metadata.
-- [ ] Update this todo file with completed checkboxes during implementation.
-- [ ] Commit with a message that names the migration, for example:
-  - [ ] `refactor(storefront-builder): generate starter workspaces with sibling wasm`
+- [x] Run focused unit/integration tests:
+  - [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"`
+  - [x] StorefrontReverseEngineering StorefrontBuilder handoff tests if touched. Not touched in this phase.
+- [x] Run build checks:
+  - [x] Starter server build.
+  - [x] Starter.WASM build.
+  - [x] Generated proof solution build.
+- [x] Run static gates:
+  - [x] validate-storefront.
+  - [x] isolation gate.
+  - [x] regeneration gate.
+- [x] Run browser gates:
+  - [x] FoundationFunctionalFast.
+  - [x] Runtime visual QA when visual-generation paths are touched. No runtime visual-generation path changed in Phase 13.
+  - [x] Full fixture proof when fixture runtime is available. Fixture runtime was unavailable: `http://localhost:5180/health` refused the connection.
+- [x] Run final source scans:
+  - [x] No active nested-WASM generation.
+  - [x] No active required exclusion markers.
+  - [x] No active docs instruct nested validation.
+  - [x] No generated output added to `BlazorShop.sln`.
+- [x] Review diff manually:
+  - [x] No unrelated user changes reverted.
+  - [x] No generated artifacts committed unless intentionally tracked.
+  - [x] No package lock churn outside expected proof metadata.
+- [x] Update this todo file with completed checkboxes during implementation.
+- [x] Commit with a message that names the migration, for example:
+  - [x] `test(storefront-builder): close starter workspace migration`
 
 Exit criteria:
 
-- [ ] All applicable local gates pass.
-- [ ] Docs and scripts use the same workspace vocabulary.
-- [ ] A fresh generated storefront can be restored, built, validated, regenerated, and browser-tested.
-- [ ] Old nested-WASM output is rejected, not supported silently.
+- [x] All applicable local gates pass.
+- [x] Docs and scripts use the same workspace vocabulary.
+- [x] A fresh generated storefront can be restored, built, validated, regenerated, and browser-tested.
+- [x] Old nested-WASM output is rejected, not supported silently.
+
+Validation passed:
+
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBuilder"` passed: 46 passed, 0 failed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj --configuration Debug --no-restore`
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj --configuration Debug --no-restore`
+- `dotnet build artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.sln --configuration Debug --no-restore`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample -OutputRoot artifacts/storefront-builder/generated -ProofLevel FoundationFunctionalFast -RuntimeTimeoutSeconds 45`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Name BlazorShop.Storefront.Kindredcoast -StoreKey kindredcoast -Url https://www.kindredcoast.com/ -OutputRoot artifacts/storefront-builder/generated -ProofLevel Structure -RuntimeTimeoutSeconds 45`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/BlazorShop.AI.StorefrontBuilder/validate-storefront.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-regeneration-gate.ps1`
+- `Select-String` found no `GeneratedProof`, `Kindredcoast`, or generated artifact path entries in `BlazorShop.sln`.
+- Final `rg` scan found only current sibling-WASM paths and intentional guardrail rejection logic for the retired nested-WASM shape.
+- `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1` was not run because `http://localhost:5180/health` refused the connection.
 
 ## File-Level Implementation Checklist
 
 Expected files to inspect and likely update:
 
-- [ ] `starter-generation.contract.yaml`
-- [ ] `scripts/generate-storefront-sample.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/build-storefront.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/validate-storefront.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/plan-generation-files.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-agent-task-package.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/record-agent-visual-writes.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs`
-- [ ] `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/repair-visual-generation.mjs`
-- [ ] `scripts/qa/run-storefront-builder-generated-proof.ps1`
-- [ ] `scripts/qa/run-storefront-builder-isolation-gate.ps1`
-- [ ] `scripts/qa/run-storefront-builder-regeneration-gate.ps1`
-- [ ] `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1`
-- [ ] `scripts/qa/run-storefront-phase4-mvp-gate.ps1`
-- [ ] `scripts/qa/run-storefront-phase4-final-closure-gate.ps1`
-- [ ] `docs/architecture/11-storefront-builder.md`
-- [ ] `docs/agents/storefront-builder.md`
-- [ ] `docs/visual-reverse-engineering-skill/README.md`
-- [ ] `docs/visual-reverse-engineering-skill/reference.md`
-- [ ] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
-- [ ] `docs/visual-reverse-engineering-skill/tutorial-generated-proof.md`
-- [ ] `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`
+- [x] `starter-generation.contract.yaml`
+- [x] `scripts/generate-storefront-sample.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/build-storefront.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/validate-storefront.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/plan-generation-files.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/generated-file-manifest.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-agent-task-package.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/record-agent-visual-writes.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs`
+- [x] `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/repair-visual-generation.mjs`
+- [x] `scripts/qa/run-storefront-builder-generated-proof.ps1`
+- [x] `scripts/qa/run-storefront-builder-isolation-gate.ps1`
+- [x] `scripts/qa/run-storefront-builder-regeneration-gate.ps1`
+- [x] `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1`
+- [x] `scripts/qa/run-storefront-phase4-mvp-gate.ps1`
+- [x] `scripts/qa/run-storefront-phase4-final-closure-gate.ps1`
+- [x] `docs/architecture/11-storefront-builder.md`
+- [x] `docs/agents/storefront-builder.md`
+- [x] `docs/visual-reverse-engineering-skill/README.md`
+- [x] `docs/visual-reverse-engineering-skill/reference.md`
+- [x] `docs/visual-reverse-engineering-skill/how-to-generate-and-validate.md`
+- [x] `docs/visual-reverse-engineering-skill/tutorial-generated-proof.md`
+- [x] `docs/visual-reverse-engineering-skill/explanation-boundaries-and-regeneration.md`
 
 Optional only if Phase 2 chooses marker class cleanup:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/.../StarterWasmAssemblyMarker.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/.../StarterWasmAssemblyMarker.cs` - optional cleanup was not selected; assembly marker remains valid.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs` - optional cleanup was not selected; marker-based mapping remains valid.
 
 ## Negative Checks
 
 The phase is not complete if any active source path still does one of these:
 
-- [ ] Generates `{WorkspaceRoot}/{ProjectName}/{ProjectName}.WASM`.
-- [ ] Requires server project exclusion markers for nested WASM.
-- [ ] Builds only `{WorkspaceRoot}/{ProjectName}.csproj` while ignoring sibling WASM.
-- [ ] Treats `docs/storefront-analysis` as server-project-local.
-- [ ] Infers file ownership solely from `.WASM/` substring matching.
-- [ ] Uses `ProjectRoot` to mean both workspace root and server project root in the same script.
-- [ ] Allows generated WASM to reference Runtime or Client.
-- [ ] Allows generated output to reference Storefront V2.
-- [ ] Allows generated output to reference backend/core/API projects.
-- [ ] Writes generated visual changes into Starter.
+- [x] Generates `{WorkspaceRoot}/{ProjectName}/{ProjectName}.WASM`.
+- [x] Requires server project exclusion markers for nested WASM.
+- [x] Builds only `{WorkspaceRoot}/{ProjectName}.csproj` while ignoring sibling WASM.
+- [x] Treats `docs/storefront-analysis` as server-project-local.
+- [x] Infers file ownership solely from `.WASM/` substring matching.
+- [x] Uses `ProjectRoot` to mean both workspace root and server project root in the same script.
+- [x] Allows generated WASM to reference Runtime or Client.
+- [x] Allows generated output to reference Storefront V2.
+- [x] Allows generated output to reference backend/core/API projects.
+- [x] Writes generated visual changes into Starter.
 
 ## QA Matrix
 
@@ -938,19 +953,19 @@ The phase is not complete if any active source path still does one of these:
 
 ## Release Definition Of Done
 
-- [ ] Generated output uses workspace root with `.sln`, shared props, `nuget.config`, workspace `docs/storefront-analysis`, sibling server project, and sibling WASM project.
-- [ ] Generated server references generated sibling WASM with `..\{Name}.WASM\{Name}.WASM.csproj`.
-- [ ] Generated server does not contain nested-WASM exclusion ItemGroups.
-- [ ] Generated WASM has no Runtime or Client reference.
-- [ ] Generated workspace does not reference Storefront V2, backend/core/API projects, Control Plane Web, or `Web.SharedV2`.
-- [ ] Static validator rejects old nested output.
-- [ ] Isolation gate validates both sibling projects.
-- [ ] Regeneration compares and applies workspace-relative paths.
-- [ ] WhatIf report remains stable after candidate cleanup.
-- [ ] Browser proof uses Playwright and validates real interactions, not smoke-only rendering.
-- [ ] Docs and agent guide use `WorkspaceRoot` vocabulary.
-- [ ] Historical plan 24 no longer acts as current closure evidence.
-- [ ] GitHub Actions evidence is not required while Actions are intentionally disabled.
+- [x] Generated output uses workspace root with `.sln`, shared props, `nuget.config`, workspace `docs/storefront-analysis`, sibling server project, and sibling WASM project.
+- [x] Generated server references generated sibling WASM with `..\{Name}.WASM\{Name}.WASM.csproj`.
+- [x] Generated server does not contain nested-WASM exclusion ItemGroups.
+- [x] Generated WASM has no Runtime or Client reference.
+- [x] Generated workspace does not reference Storefront V2, backend/core/API projects, Control Plane Web, or `Web.SharedV2`.
+- [x] Static validator rejects old nested output.
+- [x] Isolation gate validates both sibling projects.
+- [x] Regeneration compares and applies workspace-relative paths.
+- [x] WhatIf report remains stable after candidate cleanup.
+- [x] Browser proof uses Playwright and validates real interactions, not smoke-only rendering.
+- [x] Docs and agent guide use `WorkspaceRoot` vocabulary.
+- [x] Historical plan 24 no longer acts as current closure evidence.
+- [x] GitHub Actions evidence is not required while Actions are intentionally disabled.
 
 ## Notes For Implementing Agents
 

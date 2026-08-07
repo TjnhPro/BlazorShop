@@ -327,7 +327,9 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains(cssSurface, validator, StringComparison.Ordinal);
             }
 
-            Assert.Contains("wwwroot/css/storefront-builder.generated.css", generator, StringComparison.Ordinal);
+            Assert.Contains("--workspace-root", generator, StringComparison.Ordinal);
+            Assert.Contains("serverRoot", generator, StringComparison.Ordinal);
+            Assert.Contains("storefront-builder.generated.css", generator, StringComparison.Ordinal);
             Assert.Contains("css/storefront-builder.generated.css", composition, StringComparison.Ordinal);
             Assert.Contains("SFB-CSS-002", validator, StringComparison.Ordinal);
         }
