@@ -182,7 +182,7 @@ function Test-PlatformMetadataPath {
     $normalized = $FilePath.Replace("\", "/")
     return $normalized -eq "docs/storefront-analysis/metadata.yaml" `
         -or $normalized -eq "StorefrontPackageVersions.props" `
-        -or $normalized -eq "starter-generation.contract.yaml"
+        -or $normalized -eq "docs/storefront-analysis/starter-generation.contract.yaml"
 }
 
 function Get-EntryProject {
@@ -192,16 +192,24 @@ function Get-EntryProject {
         [string]$ProjectName
     )
 
+    if ($Entry -and -not [string]::IsNullOrWhiteSpace([string]$Entry["projectKind"])) {
+        return [string]$Entry["projectKind"]
+    }
+
     if ($Entry -and -not [string]::IsNullOrWhiteSpace([string]$Entry["project"])) {
         return [string]$Entry["project"]
     }
 
     $normalized = $FilePath.Replace("\", "/")
-    if ($normalized.StartsWith("$ProjectName.WASM/", [System.StringComparison]::OrdinalIgnoreCase) -or $normalized.Contains(".WASM/")) {
+    if ($normalized.StartsWith("$ProjectName/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return "server"
+    }
+
+    if ($normalized.StartsWith("$ProjectName.WASM/", [System.StringComparison]::OrdinalIgnoreCase)) {
         return "wasm"
     }
 
-    return "server"
+    return "workspace"
 }
 
 function Test-ScopeMatch {
@@ -321,7 +329,7 @@ function Assert-VisualScopeFoundationFresh {
         throw "[SFB-REGEN-030] Stale package foundation drift blocks visual regeneration. Problem: generated StorefrontPackageVersions.props is out of date with Starter package metadata. Cause: package foundation changed after this project was generated. Fix: review package changes, run `regenerate-storefront.ps1 -Scope foundation`, then rerun the visual scope."
     }
 
-    $targetStarterContractPath = Join-Path $ProjectRoot "starter-generation.contract.yaml"
+    $targetStarterContractPath = Join-Path $ProjectRoot "docs\storefront-analysis\starter-generation.contract.yaml"
     $starterContractPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\starter-generation.contract.yaml"
     $targetStarterContractHash = Get-NormalizedFileSha256 -Path $targetStarterContractPath
     $currentStarterContractHash = Get-NormalizedFileSha256 -Path $starterContractPath
@@ -443,9 +451,14 @@ function New-RegenerationPlan {
             }
         }
 
+        $projectKind = Get-EntryProject -Entry $entry -FilePath $filePath -ProjectName (Split-Path -Leaf $TargetProjectRoot)
+        $projectRelativePath = if ($entry.ContainsKey("projectRelativePath")) { [string]$entry["projectRelativePath"] } else { $filePath }
+
         $actions.Add(@{
             filePath = $filePath
-            project = Get-EntryProject -Entry $entry -FilePath $filePath -ProjectName (Split-Path -Leaf $TargetProjectRoot)
+            project = $projectKind
+            projectKind = $projectKind
+            projectRelativePath = $projectRelativePath
             action = $action
             reason = $reason
             ownership = $ownership
@@ -480,6 +493,7 @@ function Write-RegenerationReport {
     $obsolete = @($Plan | Where-Object { $_["action"] -eq "obsolete candidate" })
     $serverItems = @($Plan | Where-Object { $_["project"] -eq "server" })
     $wasmItems = @($Plan | Where-Object { $_["project"] -eq "wasm" })
+    $workspaceItems = @($Plan | Where-Object { $_["project"] -eq "workspace" })
 
     $lines = [System.Collections.Generic.List[string]]::new()
     $lines.Add("# StorefrontBuilder Regeneration Report")
@@ -505,6 +519,7 @@ function Write-RegenerationReport {
     $lines.Add("")
     $lines.Add("- Server actions: total=$($serverItems.Count); changed=$(@($serverItems | Where-Object { $_["changed"] -eq $true }).Count); conflicts=$(@($serverItems | Where-Object { ([string]$_["action"]).StartsWith("conflict", [System.StringComparison]::Ordinal) }).Count); obsolete=$(@($serverItems | Where-Object { $_["action"] -eq "obsolete candidate" }).Count)")
     $lines.Add("- WASM actions: total=$($wasmItems.Count); changed=$(@($wasmItems | Where-Object { $_["changed"] -eq $true }).Count); conflicts=$(@($wasmItems | Where-Object { ([string]$_["action"]).StartsWith("conflict", [System.StringComparison]::Ordinal) }).Count); obsolete=$(@($wasmItems | Where-Object { $_["action"] -eq "obsolete candidate" }).Count)")
+    $lines.Add("- Workspace actions: total=$($workspaceItems.Count); changed=$(@($workspaceItems | Where-Object { $_["changed"] -eq $true }).Count); conflicts=$(@($workspaceItems | Where-Object { ([string]$_["action"]).StartsWith("conflict", [System.StringComparison]::Ordinal) }).Count); obsolete=$(@($workspaceItems | Where-Object { $_["action"] -eq "obsolete candidate" }).Count)")
     $lines.Add("")
     $lines.Add("## Drift")
     $lines.Add("")
@@ -534,7 +549,7 @@ function Write-RegenerationReport {
     $lines.Add("")
     $lines.Add("## Next Recommended Action")
     $lines.Add("")
-    $nextAction = if ($conflicts.Count -gt 0) { 'Resolve conflicts manually, then rerun `-Scope conflicts`.' } else { "No conflicts; rerun validation or build proof as needed." }
+    $nextAction = if ($conflicts.Count -gt 0) { 'Keep the user edit or rerun scoped generation after resolving conflicts; use `-Scope conflicts` to refresh manifest state, and use `-Scope foundation` only for reviewed foundation upgrades.' } else { "No conflicts; rerun validation or build proof as needed." }
     $lines.Add($nextAction)
 
     Set-Content -LiteralPath $ReportPath -Value ($lines -join [Environment]::NewLine) -Encoding UTF8
@@ -584,7 +599,7 @@ function Write-RegenerationPlanSummary {
     }
 
     if ($conflicts.Count -gt 0) {
-        Write-Host "WhatIf next action: resolve conflicts manually, rerun -Scope conflicts, then rerun the desired update scope."
+        Write-Host "WhatIf next action: keep the user edit or rerun scoped generation after resolving conflicts; use -Scope conflicts to refresh manifest state, or -Scope foundation for reviewed foundation upgrades."
     }
 }
 
@@ -686,6 +701,8 @@ function Copy-ChangedFile {
 
     $source = Join-Path $SourceRoot $FilePath
     $target = Join-Path $TargetRoot $FilePath
+    Assert-StorefrontBuilderPathUnderRoot -Path $source -Root $SourceRoot
+    Assert-StorefrontBuilderPathUnderRoot -Path $target -Root $TargetRoot
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
     Copy-Item -LiteralPath $source -Destination $target -Force
 }
@@ -740,6 +757,12 @@ function Read-GeneratedStorefrontMetadata {
             storeKey = "default"
             outputRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MetadataPath))
             sourceStarterPath = "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"
+            workspaceLayoutVersion = ""
+            workspaceRoot = ""
+            serverProjectRoot = ""
+            wasmProjectRoot = ""
+            solutionPath = ""
+            analysisRoot = ""
         }
     }
 
@@ -749,6 +772,12 @@ function Read-GeneratedStorefrontMetadata {
         storeKey = Read-SimpleYamlValue -Text $text -Key "storeKey" -Default "default"
         outputRoot = Read-SimpleYamlValue -Text $text -Key "outputRoot" -Default (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MetadataPath)))
         sourceStarterPath = Read-SimpleYamlValue -Text $text -Key "sourceStarterPath" -Default "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"
+        workspaceLayoutVersion = Read-SimpleYamlValue -Text $text -Key "workspaceLayoutVersion" -Default ""
+        workspaceRoot = Read-SimpleYamlValue -Text $text -Key "workspaceRoot" -Default ""
+        serverProjectRoot = Read-SimpleYamlValue -Text $text -Key "serverProjectRoot" -Default ""
+        wasmProjectRoot = Read-SimpleYamlValue -Text $text -Key "wasmProjectRoot" -Default ""
+        solutionPath = Read-SimpleYamlValue -Text $text -Key "solutionPath" -Default ""
+        analysisRoot = Read-SimpleYamlValue -Text $text -Key "analysisRoot" -Default ""
         packageBuildIdentity = Read-SimpleYamlValue -Text $text -Key "packageBuildIdentity" -Default ""
         packageVersions = Read-MetadataPackageVersions -Text $text
         generationMode = Read-SimpleYamlValue -Text $text -Key "generationMode" -Default ""
@@ -812,7 +841,10 @@ function Get-HandoffPlannedIntentionalChanges {
         $paths.Add($targetPath.Replace("\", "/").TrimStart("/"))
     }
 
-    $paths.Add("Components/Layout/ApplicationHead.razor")
+    $projectName = [string]$Plan.projectName
+    if (-not [string]::IsNullOrWhiteSpace($projectName)) {
+        $paths.Add("$projectName/Components/Layout/ApplicationHead.razor")
+    }
     return @($paths | Sort-Object -Unique)
 }
 
@@ -834,7 +866,12 @@ function Assert-HandoffPlanTargetsAreRegeneratable {
 
         $action = [string]$actionValue
         $protectedTarget = $normalized -eq "StorefrontPackageVersions.props" `
-            -or $normalized -eq "starter-generation.contract.yaml" `
+            -or $normalized -eq "docs/storefront-analysis/starter-generation.contract.yaml" `
+            -or $normalized.EndsWith(".csproj", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or $normalized.EndsWith("/Program.cs", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or $normalized.EndsWith("/App.razor", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or $normalized.EndsWith("/Routes.razor", [System.StringComparison]::OrdinalIgnoreCase) `
+            -or (Test-TextContains $normalized "/Endpoints/" ([System.StringComparison]::OrdinalIgnoreCase)) `
             -or (Test-TextContains $normalized "BlazorShop.Storefront.Starter" ([System.StringComparison]::OrdinalIgnoreCase)) `
             -or (Test-TextContains $normalized "BlazorShop.Storefront.Presentation" ([System.StringComparison]::OrdinalIgnoreCase)) `
             -or (Test-TextContains $normalized "BlazorShop.Storefront.Runtime" ([System.StringComparison]::OrdinalIgnoreCase)) `
@@ -1114,6 +1151,30 @@ $outputRootValue = if ([string]::IsNullOrWhiteSpace($metadata["outputRoot"])) { 
 $resolvedOutputRoot = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot (Resolve-StorefrontBuilderRepoPath -RepoRoot $repoRoot -Path $outputRootValue)
 Assert-StorefrontBuilderPathUnderRoot -Path $resolvedProjectRoot -Root $resolvedOutputRoot
 
+$serverProjectRoot = Join-Path $resolvedProjectRoot $projectName
+$wasmProjectRoot = Join-Path $resolvedProjectRoot "$projectName.WASM"
+$solutionPath = Join-Path $resolvedProjectRoot "$projectName.sln"
+$analysisRoot = Join-Path $resolvedProjectRoot "docs\storefront-analysis"
+$serverProjectPath = Join-Path $serverProjectRoot "$projectName.csproj"
+$wasmProjectPath = Join-Path $wasmProjectRoot "$projectName.WASM.csproj"
+$nestedWasmPath = Join-Path $serverProjectRoot "$projectName.WASM"
+if (Test-Path -LiteralPath $nestedWasmPath) {
+    throw "[SFB-REGEN-033] Regeneration requires a starter-first workspace. Problem: nested WASM folder '$nestedWasmPath' was found under the server project. Cause: this target was generated with the old nested shape. Fix: regenerate fresh into artifacts/storefront-builder/generated or obj/storefront-builder/generated, then rerun regeneration with -WorkspaceRoot."
+}
+
+foreach ($requiredPath in @(
+    $solutionPath,
+    $serverProjectPath,
+    $wasmProjectPath,
+    (Join-Path $resolvedProjectRoot "StorefrontPackageVersions.props"),
+    (Join-Path $resolvedProjectRoot "nuget.config"),
+    $analysisRoot
+)) {
+    if (-not (Test-Path -LiteralPath $requiredPath)) {
+        throw "[SFB-REGEN-033] Regeneration requires a starter-first workspace. Problem: required workspace path '$requiredPath' is missing. Cause: this target is an old or incomplete generated output. Fix: regenerate fresh into artifacts/storefront-builder/generated or obj/storefront-builder/generated, then rerun regeneration with -WorkspaceRoot."
+    }
+}
+
 $manifestPath = Join-Path $resolvedProjectRoot "docs\storefront-analysis\generated-files.yaml"
 $reportPath = Join-Path $resolvedProjectRoot "docs\storefront-analysis\regeneration-report.md"
 $operationId = [System.Guid]::NewGuid().ToString("N")
@@ -1137,7 +1198,7 @@ Assert-StorefrontBuilderPathUnderRoot -Path $backupRoot -Root $resolvedOutputRoo
 Assert-VisualScopeFoundationFresh -Scope $Scope -WhatIf ([bool]$WhatIf) -ProjectRoot $resolvedProjectRoot -Metadata $metadata
 
 if ($Scope -eq "validate") {
-    & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $resolvedProjectRoot
+    & "$PSScriptRoot/validate-storefront.ps1" -WorkspaceRoot $resolvedProjectRoot
     exit 0
 }
 
@@ -1197,7 +1258,7 @@ try {
     }
 
     if ($ValidateAfterApply) {
-        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $resolvedProjectRoot -SkipIdempotency
+        & "$PSScriptRoot/validate-storefront.ps1" -WorkspaceRoot $resolvedProjectRoot -SkipIdempotency
         if ($LASTEXITCODE -ne 0) {
             $validationResult = "failed"
             throw "[SFB-REGEN-011] Post-regeneration validation failed."
@@ -1207,18 +1268,10 @@ try {
     }
 
     if ($BuildAfterApply) {
-        $projectFile = Join-Path $resolvedProjectRoot "$projectName.csproj"
-        $wasmProjectFile = Join-Path $resolvedProjectRoot "$projectName.WASM\$projectName.WASM.csproj"
-        dotnet build $projectFile
+        dotnet build $solutionPath
         if ($LASTEXITCODE -ne 0) {
             $buildResult = "failed"
             throw "[SFB-REGEN-010] Post-regeneration build failed."
-        }
-
-        dotnet build $wasmProjectFile
-        if ($LASTEXITCODE -ne 0) {
-            $buildResult = "failed"
-            throw "[SFB-REGEN-010] Post-regeneration WASM build failed."
         }
 
         $buildResult = "passed"

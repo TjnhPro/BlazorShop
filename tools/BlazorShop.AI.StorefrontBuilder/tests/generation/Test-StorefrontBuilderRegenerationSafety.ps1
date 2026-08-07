@@ -2,9 +2,11 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")
 $toolRoot = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder"
-$outputRoot = Join-Path $repoRoot "obj\storefront-builder\generated\regeneration-safety-tests"
+$outputRoot = Join-Path $repoRoot "obj\storefront-builder\generated\rg"
 $projectName = "BlazorShop.Storefront.RegenSafety"
 $projectRoot = Join-Path $outputRoot $projectName
+$serverProjectRoot = Join-Path $projectRoot $projectName
+$wasmProjectRoot = Join-Path $projectRoot "$projectName.WASM"
 $expectedGeneratorVersion = (Get-Content -LiteralPath (Join-Path $toolRoot "version.json") -Raw | ConvertFrom-Json).generatorVersion
 
 function Assert-Condition {
@@ -281,11 +283,11 @@ $starterWasmProjectPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorS
 $starterHomeOriginal = Get-Content -LiteralPath $starterHomePath -Raw
 try {
     Set-TextFileContent -Path $starterHomePath -Content ($starterHomeOriginal.Replace("Featured products", "Featured products updated"))
-    $beforeHomePage = Get-Content -LiteralPath (Join-Path $projectRoot "Pages\Ssr\Home\HomePage.razor") -Raw
-    $beforeProductPage = Get-Content -LiteralPath (Join-Path $projectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
+    $beforeHomePage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Pages\Ssr\Home\HomePage.razor") -Raw
+    $beforeProductPage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
     & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope page -Target HomePage
-    $afterHomePage = Get-Content -LiteralPath (Join-Path $projectRoot "Pages\Ssr\Home\HomePage.razor") -Raw
-    $afterProductPage = Get-Content -LiteralPath (Join-Path $projectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
+    $afterHomePage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Pages\Ssr\Home\HomePage.razor") -Raw
+    $afterProductPage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
     Assert-Condition -Condition ($beforeHomePage -ne $afterHomePage) -Message "HomePage was not updated by page-scope regeneration."
     Assert-Condition -Condition ($beforeProductPage -eq $afterProductPage) -Message "Page-scope regeneration touched ProductPage."
 }
@@ -296,11 +298,11 @@ finally {
 $starterProductOriginal = Get-Content -LiteralPath $starterProductPath -Raw
 try {
     Set-TextFileContent -Path $starterProductPath -Content ($starterProductOriginal.Replace(">View</a>", ">View details</a>"))
-    $beforeComponentPage = Get-Content -LiteralPath (Join-Path $projectRoot "Components\Catalog\ProductSummaryCard.razor") -Raw
-    $beforeComponentProductPage = Get-Content -LiteralPath (Join-Path $projectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
+    $beforeComponentPage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Components\Catalog\ProductSummaryCard.razor") -Raw
+    $beforeComponentProductPage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
     & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope component -Target ProductSummaryCard
-    $afterComponentPage = Get-Content -LiteralPath (Join-Path $projectRoot "Components\Catalog\ProductSummaryCard.razor") -Raw
-    $afterComponentProductPage = Get-Content -LiteralPath (Join-Path $projectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
+    $afterComponentPage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Components\Catalog\ProductSummaryCard.razor") -Raw
+    $afterComponentProductPage = Get-Content -LiteralPath (Join-Path $serverProjectRoot "Pages\Hybrid\Catalog\ProductPage.razor") -Raw
     Assert-Condition -Condition ($beforeComponentPage -ne $afterComponentPage) -Message "ProductSummaryCard was not updated by component-scope regeneration."
     Assert-Condition -Condition ($beforeComponentProductPage -eq $afterComponentProductPage) -Message "Component-scope regeneration touched ProductPage."
 }
@@ -313,18 +315,18 @@ $beforeNoop = Get-TreeHashes -Root $projectRoot
 $afterNoop = Get-TreeHashes -Root $projectRoot
 Assert-Condition -Condition ((Compare-Hashes -Before $beforeNoop -After $afterNoop).Count -eq 0) -Message "No-op regeneration produced file diffs."
 
-Remove-Item -LiteralPath (Join-Path $projectRoot "wwwroot\css\storefront-builder.generated.css") -Force
+Remove-Item -LiteralPath (Join-Path $serverProjectRoot "wwwroot\css\storefront-builder.generated.css") -Force
 $beforeCss = Get-TreeHashes -Root $projectRoot
 & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope css
 $afterCss = Get-TreeHashes -Root $projectRoot
 $cssChanged = Compare-Hashes -Before $beforeCss -After $afterCss
-Assert-Condition -Condition (((@($cssChanged | Where-Object { $_ -notin @("wwwroot/css/storefront-builder.generated.css", "docs/storefront-analysis/generated-files.yaml", "docs/storefront-analysis/regeneration-report.md") })).Count) -eq 0) -Message "CSS scope touched unrelated files."
+Assert-Condition -Condition (((@($cssChanged | Where-Object { $_ -notin @("$projectName/wwwroot/css/storefront-builder.generated.css", "docs/storefront-analysis/generated-files.yaml", "docs/storefront-analysis/regeneration-report.md") })).Count) -eq 0) -Message "CSS scope touched unrelated files."
 
 New-TestProject
 $starterHomeOriginal = Get-Content -LiteralPath $starterHomePath -Raw
 $starterLayoutOriginal = Get-Content -LiteralPath $starterLayoutPath -Raw
 $starterPackagePropsOriginal = Get-Content -LiteralPath $starterPackagePropsPath -Raw
-$projectLayoutPath = Join-Path $projectRoot "Components\Layout\MainLayout.razor"
+$projectLayoutPath = Join-Path $serverProjectRoot "Components\Layout\MainLayout.razor"
 $projectReadmePath = Join-Path $projectRoot "README.md"
 $starterCreatedPath = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\Pages\Ssr\Home\WhatIfCreated.razor"
 $starterCreatedContent = @"
@@ -344,7 +346,7 @@ try {
     & (Join-Path $toolRoot "scripts\generate\update-generated-files-manifest.mjs") --project-root $projectRoot
 
     $baselineHashes = Get-TreeHashes -Root $projectRoot
-    $whatIfResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "all", "-WhatIf") -DropCandidateFilePaths "Pages/Hybrid/Catalog/SearchPage.razor"
+    $whatIfResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "all", "-WhatIf") -DropCandidateFilePaths "$projectName/Pages/Hybrid/Catalog/SearchPage.razor"
     $whatIfConsole = $whatIfResult.Output -join [System.Environment]::NewLine
     $stableReportPath = Get-WhatIfReportPathFromOutput -Output $whatIfResult.Output
     Assert-Condition -Condition (Test-Path -LiteralPath $stableReportPath) -Message "Normal WhatIf did not leave a stable report."
@@ -352,25 +354,25 @@ try {
     Assert-Condition -Condition ((Compare-Hashes -Before $baselineHashes -After (Get-TreeHashes -Root $projectRoot)).Count -eq 0) -Message "Normal WhatIf modified the target tree."
 
     $report = Get-Content -LiteralPath $stableReportPath -Raw
-    Assert-ContainsText -Text $report -Expected "Pages/Ssr/Home/WhatIfCreated.razor: create" -Message "Stable WhatIf report did not include created candidate."
-    Assert-ContainsText -Text $report -Expected "Pages/Ssr/Home/HomePage.razor: update" -Message "Stable WhatIf report did not include updated HomePage."
-    Assert-ContainsText -Text $report -Expected "Components/Layout/MainLayout.razor: conflict manual edit" -Message "Stable WhatIf report did not include manual-edit conflict."
-    Assert-ContainsText -Text $report -Expected "Pages/Hybrid/Catalog/SearchPage.razor" -Message "Stable WhatIf report did not include obsolete candidate path."
+    Assert-ContainsText -Text $report -Expected "$projectName/Pages/Ssr/Home/WhatIfCreated.razor: create" -Message "Stable WhatIf report did not include created candidate."
+    Assert-ContainsText -Text $report -Expected "$projectName/Pages/Ssr/Home/HomePage.razor: update" -Message "Stable WhatIf report did not include updated HomePage."
+    Assert-ContainsText -Text $report -Expected "$projectName/Components/Layout/MainLayout.razor: conflict manual edit" -Message "Stable WhatIf report did not include manual-edit conflict."
+    Assert-ContainsText -Text $report -Expected "$projectName/Pages/Hybrid/Catalog/SearchPage.razor" -Message "Stable WhatIf report did not include obsolete candidate path."
     Assert-ContainsText -Text $report -Expected "obsolete candidate" -Message "Stable WhatIf report did not include obsolete candidate action."
     Assert-Condition -Condition ((Test-TextContains $report "README.md: skip user-owned") -or (Test-TextContains $report "README.md: skip protected")) -Message "Stable WhatIf report did not preserve user-owned or protected README."
 
     Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf report: $stableReportPath" -Message "WhatIf console did not print the stable report path."
     Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf summary: create=" -Message "WhatIf console did not print summary counts."
-    Assert-ContainsText -Text $whatIfConsole -Expected "Pages/Ssr/Home/HomePage.razor: update - " -Message "WhatIf console did not print a meaningful action line."
-    Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf next action: resolve conflicts manually, rerun -Scope conflicts, then rerun the desired update scope." -Message "WhatIf console did not print conflict next-action guidance."
+    Assert-ContainsText -Text $whatIfConsole -Expected "$projectName/Pages/Ssr/Home/HomePage.razor: update - " -Message "WhatIf console did not print a meaningful action line."
+    Assert-ContainsText -Text $whatIfConsole -Expected "WhatIf next action: keep the user edit or rerun scoped generation after resolving conflicts;" -Message "WhatIf console did not print conflict next-action guidance."
 
-    $internalPlannerResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "all", "-WhatIf") -PreserveCandidateArtifacts -DropCandidateFilePaths "Pages/Hybrid/Catalog/SearchPage.razor"
+    $internalPlannerResult = Invoke-StorefrontRegeneration -ProjectRoot $projectRoot -RegeneratorArguments @("-Scope", "all", "-WhatIf") -PreserveCandidateArtifacts -DropCandidateFilePaths "$projectName/Pages/Hybrid/Catalog/SearchPage.razor"
     $whatIfCandidateRoot = $internalPlannerResult.CandidateRoot
     $candidateReportPath = Join-Path $whatIfCandidateRoot "docs\storefront-analysis\regeneration-report.md"
     Assert-Condition -Condition (Test-Path -LiteralPath $candidateReportPath) -Message "Internal preserved WhatIf candidate report was not available for planner inspection."
     $candidateReport = Get-Content -LiteralPath $candidateReportPath -Raw
-    Assert-ContainsText -Text $candidateReport -Expected "Pages/Ssr/Home/WhatIfCreated.razor: create" -Message "Internal WhatIf planner report did not include created candidate."
-    Assert-ContainsText -Text $candidateReport -Expected "Pages/Ssr/Home/HomePage.razor: update" -Message "Internal WhatIf planner report did not include updated HomePage."
+    Assert-ContainsText -Text $candidateReport -Expected "$projectName/Pages/Ssr/Home/WhatIfCreated.razor: create" -Message "Internal WhatIf planner report did not include created candidate."
+    Assert-ContainsText -Text $candidateReport -Expected "$projectName/Pages/Ssr/Home/HomePage.razor: update" -Message "Internal WhatIf planner report did not include updated HomePage."
     Assert-Condition -Condition ((Compare-Hashes -Before $baselineHashes -After (Get-TreeHashes -Root $projectRoot)).Count -eq 0) -Message "WhatIf modified the target tree."
 }
 finally {
@@ -421,17 +423,35 @@ Assert-Throws -ExpectedCode "SFB-REGEN-021" -Action {
 Assert-Condition -Condition (-not (Test-Path -LiteralPath $unsafeWhatIfReportPath)) -Message "Rejected unsafe WhatIf report path was written."
 Assert-Condition -Condition (Test-CandidateArtifactsCleaned -OutputRoot $outputRoot) -Message "Rejected unsafe WhatIf report path generated a candidate before failing."
 
+$oldNestedProjectName = "BlazorShop.Storefront.OldNested"
+$oldNestedRoot = Join-Path $outputRoot $oldNestedProjectName
+if (Test-Path -LiteralPath $oldNestedRoot) {
+    Remove-Item -LiteralPath $oldNestedRoot -Recurse -Force
+}
+
+New-Item -ItemType Directory -Force -Path (Join-Path $oldNestedRoot "docs\storefront-analysis") | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $oldNestedRoot "$oldNestedProjectName.WASM") | Out-Null
+Set-TextFileContent -Path (Join-Path $oldNestedRoot "docs\storefront-analysis\metadata.yaml") -Content @"
+projectName: $oldNestedProjectName
+storeKey: sample
+outputRoot: obj/storefront-builder/generated/rg
+"@
+Assert-Throws -ExpectedCode "SFB-REGEN-033" -Action {
+    & (Join-Path $toolRoot "regenerate-storefront.ps1") -WorkspaceRoot $oldNestedRoot -Scope css
+}
+Remove-Item -LiteralPath $oldNestedRoot -Recurse -Force
+
 New-TestProject
-$missingHomePath = Join-Path $projectRoot "Pages\Ssr\Home\HomePage.razor"
+$missingHomePath = Join-Path $serverProjectRoot "Pages\Ssr\Home\HomePage.razor"
 $missingHomeOriginal = Get-Content -LiteralPath $missingHomePath -Raw
 Remove-Item -LiteralPath $missingHomePath -Force
 & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope page -Target HomePage
 Assert-Condition -Condition (Test-Path -LiteralPath $missingHomePath) -Message "Missing HomePage was not recreated."
-Assert-Condition -Condition ((Compare-Hashes -Before @{ "Pages/Ssr/Home/HomePage.razor" = "missing" } -After (Get-TreeHashes -Root $projectRoot)).Contains("Pages/Ssr/Home/HomePage.razor")) -Message "Missing HomePage regeneration did not register as a change."
+Assert-Condition -Condition ((Compare-Hashes -Before @{ "$projectName/Pages/Ssr/Home/HomePage.razor" = "missing" } -After (Get-TreeHashes -Root $projectRoot)).Contains("$projectName/Pages/Ssr/Home/HomePage.razor")) -Message "Missing HomePage regeneration did not register as a change."
 Set-TextFileContent -Path $missingHomePath -Content $missingHomeOriginal
 
 New-TestProject
-$missingProductPath = Join-Path $projectRoot "Components\Catalog\ProductSummaryCard.razor"
+$missingProductPath = Join-Path $serverProjectRoot "Components\Catalog\ProductSummaryCard.razor"
 $missingProductOriginal = Get-Content -LiteralPath $missingProductPath -Raw
 Remove-Item -LiteralPath $missingProductPath -Force
 & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope component -Target ProductSummaryCard
@@ -439,7 +459,7 @@ Assert-Condition -Condition (Test-Path -LiteralPath $missingProductPath) -Messag
 Set-TextFileContent -Path $missingProductPath -Content $missingProductOriginal
 
 New-TestProject
-$missingWasmPath = Join-Path $projectRoot "$projectName.WASM\Program.cs"
+$missingWasmPath = Join-Path $wasmProjectRoot "Program.cs"
 $missingWasmOriginal = Get-Content -LiteralPath $missingWasmPath -Raw
 Remove-Item -LiteralPath $missingWasmPath -Force
 & (Join-Path $toolRoot "regenerate-storefront.ps1") -ProjectRoot $projectRoot -Scope all
@@ -447,7 +467,7 @@ Assert-Condition -Condition (Test-Path -LiteralPath $missingWasmPath) -Message "
 Set-TextFileContent -Path $missingWasmPath -Content $missingWasmOriginal
 
 New-TestProject
-$manualWasmPath = Join-Path $projectRoot "$projectName.WASM\Program.cs"
+$manualWasmPath = Join-Path $wasmProjectRoot "Program.cs"
 $manualWasmOriginal = Get-Content -LiteralPath $manualWasmPath -Raw
 try {
     Add-Content -LiteralPath $manualWasmPath -Value "`n// regeneration safety manual edit"
@@ -462,7 +482,7 @@ finally {
 }
 
 New-TestProject
-$userOwnedWasmPath = Join-Path $projectRoot "$projectName.WASM\_Imports.razor"
+$userOwnedWasmPath = Join-Path $wasmProjectRoot "_Imports.razor"
 $userOwnedWasmOriginal = Get-Content -LiteralPath $userOwnedWasmPath -Raw
 $userOwnedMarker = "@* regeneration safety user-owned marker *@"
 Set-TextFileContent -Path $userOwnedWasmPath -Content ($userOwnedWasmOriginal + "`n$userOwnedMarker")

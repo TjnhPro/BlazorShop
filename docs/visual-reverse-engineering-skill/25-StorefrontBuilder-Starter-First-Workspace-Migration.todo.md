@@ -576,52 +576,63 @@ Goal: make regeneration create, compare, report, and apply changes against the w
 
 Tasks:
 
-- [ ] Update `regenerate-storefront.ps1` parameters:
-  - [ ] Add `-WorkspaceRoot`.
-  - [ ] Keep `-ProjectRoot` alias for one cycle.
-  - [ ] Validate old nested shape and fail with "regenerate fresh" guidance unless an explicit upgrade path is approved.
-- [ ] Update candidate generation:
-  - [ ] Candidate root is a generated workspace.
-  - [ ] Candidate contains solution, server, WASM, shared props, nuget config, and analysis docs.
-  - [ ] Candidate cleanup does not delete stable WhatIf reports.
-- [ ] Update comparison logic:
-  - [ ] Compare workspace-relative paths.
-  - [ ] Compare server files under `{Name}/`.
-  - [ ] Compare WASM files under `{Name}.WASM/`.
-  - [ ] Compare shared metadata under workspace root.
-  - [ ] Preserve user-owned files in either sibling project.
-  - [ ] Report obsolete files in either sibling project.
-- [ ] Update protected-file logic:
-  - [ ] Workspace shared files protected unless `-Scope foundation`.
-  - [ ] Server bootstrapping files protected unless approved.
-  - [ ] WASM bootstrapping files protected unless approved.
-  - [ ] Visual files may be updated only when generated-owned.
-- [ ] Update conflict logic:
-  - [ ] Manual edit conflicts include workspace-relative path.
-  - [ ] Conflict report includes project kind.
-  - [ ] Conflict guidance says whether to keep user edit, rerun scoped generation, or run foundation upgrade.
-- [ ] Preserve WhatIf behavior from prior closure:
-  - [ ] Print plan lines to console.
-  - [ ] Write stable report outside target workspace.
-  - [ ] Do not require `SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS` for normal report access.
-- [ ] Update `-ValidateAfterApply` to run static validation against workspace root.
-- [ ] Update `-BuildAfterApply` to build solution.
-- [ ] Update regeneration ownership tests:
-  - [ ] No-op regeneration stays deterministic.
-  - [ ] Server visual scoped update works.
-  - [ ] WASM visual scoped update works if such files are generated-owned.
-  - [ ] Foundation scoped update can update shared props/contract metadata.
-  - [ ] Manual edit conflict works in server project.
-  - [ ] Manual edit conflict works in WASM project.
-  - [ ] Obsolete file reported in server project.
-  - [ ] Obsolete file reported in WASM project.
-  - [ ] Old nested artifact fails with clear guidance.
+- [x] Update `regenerate-storefront.ps1` parameters:
+  - [x] Add `-WorkspaceRoot`.
+  - [x] Keep `-ProjectRoot` alias for one cycle.
+  - [x] Validate old nested shape and fail with "regenerate fresh" guidance unless an explicit upgrade path is approved.
+- [x] Update candidate generation:
+  - [x] Candidate root is a generated workspace.
+  - [x] Candidate contains solution, server, WASM, shared props, nuget config, and analysis docs.
+  - [x] Candidate cleanup does not delete stable WhatIf reports.
+- [x] Update comparison logic:
+  - [x] Compare workspace-relative paths.
+  - [x] Compare server files under `{Name}/`.
+  - [x] Compare WASM files under `{Name}.WASM/`.
+  - [x] Compare shared metadata under workspace root.
+  - [x] Preserve user-owned files in either sibling project.
+  - [x] Report obsolete files in either sibling project.
+- [x] Update protected-file logic:
+  - [x] Workspace shared files protected unless `-Scope foundation`.
+  - [x] Server bootstrapping files protected unless approved.
+  - [x] WASM bootstrapping files protected unless approved.
+  - [x] Visual files may be updated only when generated-owned.
+- [x] Update conflict logic:
+  - [x] Manual edit conflicts include workspace-relative path.
+  - [x] Conflict report includes project kind.
+  - [x] Conflict guidance says whether to keep user edit, rerun scoped generation, or run foundation upgrade.
+- [x] Preserve WhatIf behavior from prior closure:
+  - [x] Print plan lines to console.
+  - [x] Write stable report outside target workspace.
+  - [x] Do not require `SFB_KEEP_REGENERATION_CANDIDATE_ARTIFACTS` for normal report access.
+- [x] Update `-ValidateAfterApply` to run static validation against workspace root.
+- [x] Update `-BuildAfterApply` to build solution.
+- [x] Update regeneration ownership tests:
+  - [x] No-op regeneration stays deterministic.
+  - [x] Server visual scoped update works.
+  - [x] WASM visual scoped update works if such files are generated-owned.
+  - [x] Foundation scoped update can update shared props/contract metadata.
+  - [x] Manual edit conflict works in server project.
+  - [x] Manual edit conflict works in WASM project.
+  - [x] Obsolete file reported in server project.
+  - [x] Obsolete file reported in WASM project.
+  - [x] Old nested artifact fails with clear guidance.
 
 Exit criteria:
 
-- [ ] Regeneration can update a fresh workspace output.
-- [ ] Regeneration does not apply files outside the target workspace.
-- [ ] WhatIf remains useful after candidate cleanup.
+- [x] Regeneration can update a fresh workspace output.
+- [x] Regeneration does not apply files outside the target workspace.
+- [x] WhatIf remains useful after candidate cleanup.
+
+Phase 8 evidence:
+
+- `regenerate-storefront.ps1` now accepts `-WorkspaceRoot`, keeps `-ProjectRoot` as a warning alias, rejects old/incomplete workspace shapes with `SFB-REGEN-033`, validates via workspace root, and builds the generated solution for `-BuildAfterApply`.
+- Regeneration planning now compares workspace-relative manifest paths, uses explicit `projectKind`/project metadata instead of `.WASM/` substring inference, reports workspace/server/WASM summaries, and path-checks copy source/target roots before applying changed files.
+- Handoff/regeneration guards now treat workspace shared files and server/WASM bootstrap files as protected unless a reviewed foundation path is used.
+- Validation passed:
+  - `build-storefront.ps1 -Url https://example.test -Name Phase8RegenProof -StoreKey sample -OutputRoot obj/storefront-builder/generated -Mode generate -Force`
+  - `validate-storefront.ps1 -WorkspaceRoot obj/storefront-builder/generated/BlazorShop.Storefront.Phase8RegenProof -SkipIdempotency`
+  - `regenerate-storefront.ps1 -WorkspaceRoot obj/storefront-builder/generated/BlazorShop.Storefront.Phase8RegenProof -Scope css -WhatIf`
+  - `Test-StorefrontBuilderRegenerationSafety.ps1`
 
 ## Phase 9 - QA Runner And Browser Proof Update
 
