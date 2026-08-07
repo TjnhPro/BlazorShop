@@ -28,6 +28,17 @@ function Test-TextContains([string]$Text, [string]$Value, [System.StringComparis
     return $Text.IndexOf($Value, $Comparison) -ge 0
 }
 
+function New-IsolationGateError {
+    param(
+        [Parameter(Mandatory = $true)][string]$Code,
+        [Parameter(Mandatory = $true)][string]$Problem,
+        [Parameter(Mandatory = $true)][string]$Cause,
+        [Parameter(Mandatory = $true)][string]$Fix
+    )
+
+    return "[$Code] Problem: $Problem Cause: $Cause Fix: $Fix"
+}
+
 function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
     $baseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
     $targetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
@@ -56,7 +67,7 @@ $packageBuildIdentity = ""
 function Initialize-StorefrontPackageIdentity {
     $head = (& git -C $repoRoot rev-parse HEAD 2>$null)
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($head)) {
-        throw "[SFB-ISOLATION-HEAD-001] Cannot resolve source HEAD for package identity."
+        throw (New-IsolationGateError "SFB-ISOLATION-HEAD-001" "Cannot resolve source HEAD for package identity." "git rev-parse HEAD failed or returned empty output." "Run the gate from a git worktree with a valid HEAD.")
     }
 
     $identity = ([string]$head).Substring(0, 12)
@@ -86,15 +97,15 @@ if ($Describe) {
 }
 
 if (-not (Test-Path $projectFile)) {
-    throw "[SFB-ISOLATION-000] Generated storefront project is missing: $projectFile"
+    throw (New-IsolationGateError "SFB-ISOLATION-000" "Generated storefront server project is missing: $projectFile" "The workspace does not match the starter-first sibling layout." "Regenerate the storefront workspace or pass the correct -WorkspaceRoot and -Name.")
 }
 
 if (-not (Test-Path $wasmProjectFile)) {
-    throw "[SFB-ISOLATION-000] Generated storefront WASM project is missing: $wasmProjectFile"
+    throw (New-IsolationGateError "SFB-ISOLATION-000" "Generated storefront WASM project is missing: $wasmProjectFile" "The workspace does not contain the sibling WASM project." "Regenerate the storefront workspace or pass the correct -WorkspaceRoot and -Name.")
 }
 
 if (-not (Test-Path $solutionFile)) {
-    throw "[SFB-ISOLATION-000] Generated storefront solution is missing: $solutionFile"
+    throw (New-IsolationGateError "SFB-ISOLATION-000" "Generated storefront solution is missing: $solutionFile" "The workspace was generated with an old shape or the solution was deleted." "Regenerate the storefront workspace so the solution exists at the workspace root.")
 }
 
 Initialize-StorefrontPackageIdentity
@@ -114,7 +125,7 @@ function Clear-StorefrontLocalPackageCache {
         $versionPath = Join-Path $globalPackageRoot "$($package.Id)\$($package.Version)"
         $resolvedVersionPath = [System.IO.Path]::GetFullPath($versionPath)
         if (-not $resolvedVersionPath.StartsWith($resolvedGlobalPackageRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-            throw "[SFB-ISOLATION-004] Refusing to clean NuGet cache path outside global package root: $resolvedVersionPath"
+            throw (New-IsolationGateError "SFB-ISOLATION-004" "Refusing to clean NuGet cache path outside global package root: $resolvedVersionPath" "The computed package cache path escaped the NuGet global package root." "Check package id/version inputs before rerunning the gate.")
         }
 
         if (Test-Path $resolvedVersionPath) {
@@ -142,7 +153,7 @@ function Write-GeneratedNuGetConfig {
 function Update-GeneratedPackageVersionProps {
     $propsPath = Join-Path $projectRoot "StorefrontPackageVersions.props"
     if (-not (Test-Path -LiteralPath $propsPath)) {
-        throw "[SFB-ISOLATION-003] Package compatibility metadata is missing: $propsPath"
+        throw (New-IsolationGateError "SFB-ISOLATION-003" "Package compatibility metadata is missing: $propsPath" "The workspace does not have shared StorefrontPackageVersions.props at its root." "Regenerate the storefront workspace with the starter-first generator.")
     }
 
     [xml]$props = Get-Content -LiteralPath $propsPath -Raw
@@ -172,7 +183,7 @@ function Get-LocalPackageHash {
 
     $packagePath = Join-Path $packageRoot "$($Package.Id).$($Package.Version).nupkg"
     if (-not (Test-Path -LiteralPath $packagePath)) {
-        throw "[SFB-ISOLATION-006] Packed Storefront package is missing from local feed: $packagePath"
+        throw (New-IsolationGateError "SFB-ISOLATION-006" "Packed Storefront package is missing from local feed: $packagePath" "The pack step did not produce the package expected by metadata validation." "Review the preceding dotnet pack output and rerun the gate after the package builds.")
     }
 
     return (Get-FileHash -LiteralPath $packagePath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -181,7 +192,7 @@ function Get-LocalPackageHash {
 function Update-GeneratedMetadataPackageProvenance {
     $metadataPath = Join-Path $projectRoot "docs\storefront-analysis\metadata.yaml"
     if (-not (Test-Path -LiteralPath $metadataPath)) {
-        throw "[SFB-ISOLATION-006] Generated metadata is missing: $metadataPath"
+        throw (New-IsolationGateError "SFB-ISOLATION-006" "Generated metadata is missing: $metadataPath" "The generated workspace does not contain analysis metadata." "Regenerate the storefront workspace before running package isolation.")
     }
 
     $metadata = Get-Content -LiteralPath $metadataPath -Raw
@@ -212,7 +223,7 @@ function Read-GeneratedMetadataPackageProvenance {
 
     foreach ($requiredMarker in @("sourceHead: $sourceHead", "packageBuildIdentity: $packageBuildIdentity", "feedPath: $relativePackageFeed")) {
         if (-not (Test-TextContains $metadata $requiredMarker)) {
-            throw "[SFB-ISOLATION-006] Generated metadata package provenance is missing '$requiredMarker'."
+            throw (New-IsolationGateError "SFB-ISOLATION-006" "Generated metadata package provenance is missing '$requiredMarker'." "Package provenance was not written or was overwritten after packing." "Rerun the isolation gate so metadata and generated-files.yaml are refreshed together.")
         }
     }
 
@@ -222,18 +233,18 @@ function Read-GeneratedMetadataPackageProvenance {
         $version = $package.Version
         $hash = Get-LocalPackageHash -Package $package
         if (-not (Test-TextContains $metadata "  ${packageId}: $version")) {
-            throw "[SFB-ISOLATION-006] Generated metadata packageVersions does not match restore package '$packageId/$version'."
+            throw (New-IsolationGateError "SFB-ISOLATION-006" "Generated metadata packageVersions does not match restore package '$packageId/$version'." "StorefrontPackageVersions.props and metadata packageVersions are out of sync." "Rerun the isolation gate or regenerate the workspace with matching package version arguments.")
         }
 
         $escapedId = [regex]::Escape($packageId)
         $blockPattern = "(?ms)\s+- id:\s*${escapedId}\s*\r?\n\s+version:\s*(?<version>\S+)\s*\r?\n\s+sha256:\s*(?<hash>\S+)"
         $blockMatch = [regex]::Match($metadata, $blockPattern)
         if (-not $blockMatch.Success) {
-            throw "[SFB-ISOLATION-006] Generated metadata packageProvenance is missing '$packageId'."
+            throw (New-IsolationGateError "SFB-ISOLATION-006" "Generated metadata packageProvenance is missing '$packageId'." "The package provenance block is incomplete." "Rerun the isolation gate so all package hashes are recorded.")
         }
 
         if ($blockMatch.Groups["version"].Value -ne $version -or $blockMatch.Groups["hash"].Value -ne $hash) {
-            throw "[SFB-ISOLATION-006] Generated metadata packageProvenance does not match local package '$packageId/$version'."
+            throw (New-IsolationGateError "SFB-ISOLATION-006" "Generated metadata packageProvenance does not match local package '$packageId/$version'." "The local package hash/version differs from metadata." "Rerun the isolation gate after rebuilding packages, or regenerate the workspace with the intended package feed.")
         }
 
         $packagesById[$packageId] = @{
@@ -253,14 +264,14 @@ function Assert-RestoredProjectAssets {
     )
 
     if (-not (Test-Path -LiteralPath $AssetsPath)) {
-        throw "[SFB-ISOLATION-005] Restore did not create project.assets.json: $AssetsPath"
+        throw (New-IsolationGateError "SFB-ISOLATION-005" "Restore did not create project.assets.json: $AssetsPath" "dotnet restore did not complete for the generated project." "Review restore output and rerun after package source or project errors are fixed.")
     }
 
     $assets = Get-Content -LiteralPath $AssetsPath -Raw
     foreach ($package in $ExpectedPackages) {
         $marker = "$($package.Id)/$($package.Version)"
         if (-not (Test-TextContains $assets $marker ([System.StringComparison]::OrdinalIgnoreCase))) {
-            throw "[SFB-ISOLATION-005] project.assets.json is missing restored package '$marker': $AssetsPath"
+            throw (New-IsolationGateError "SFB-ISOLATION-005" "project.assets.json is missing restored package '$marker': $AssetsPath" "The generated project did not restore the expected Storefront package from the shared version source." "Check StorefrontPackageVersions.props, nuget.config, and package feed contents, then rerun the gate.")
         }
     }
 }
@@ -301,23 +312,23 @@ $project = Get-Content -LiteralPath $projectFile -Raw
 $wasmProject = Get-Content -LiteralPath $wasmProjectFile -Raw
 foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly.Server", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains $project "PackageReference Include=`"$package`"")) {
-        throw "[SFB-ISOLATION-001] Generated storefront server must consume '$package' as a package reference."
+        throw (New-IsolationGateError "SFB-ISOLATION-001" "Generated storefront server must consume '$package' as a package reference." "The server project does not match the package-boundary contract." "Regenerate the workspace or restore the required server PackageReference.")
     }
 }
 
 foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains $wasmProject "PackageReference Include=`"$package`"")) {
-        throw "[SFB-ISOLATION-001] Generated storefront WASM must consume '$package' as a package reference."
+        throw (New-IsolationGateError "SFB-ISOLATION-001" "Generated storefront WASM must consume '$package' as a package reference." "The WASM project does not match the package-boundary contract." "Regenerate the workspace or restore the required WASM PackageReference.")
     }
 }
 
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
     if (Test-TextContains $project "PackageReference Include=`"$package`"") {
-        throw "[SFB-ISOLATION-001] Generated storefront server must not direct-reference '$package'."
+        throw (New-IsolationGateError "SFB-ISOLATION-001" "Generated storefront server must not direct-reference '$package'." "The generated server is bypassing Presentation/Runtime transport ownership." "Remove the direct package reference and regenerate from the starter-first workspace contract.")
     }
 
     if (Test-TextContains $wasmProject "PackageReference Include=`"$package`"") {
-        throw "[SFB-ISOLATION-001] Generated storefront WASM must not direct-reference '$package'."
+        throw (New-IsolationGateError "SFB-ISOLATION-001" "Generated storefront WASM must not direct-reference '$package'." "The generated WASM project is bypassing Browser/Presentation transport ownership." "Remove the direct package reference and regenerate from the starter-first workspace contract.")
     }
 }
 
@@ -332,7 +343,7 @@ $wasmProjectReferences = @(@($wasmProjectDocument.Project.ItemGroup.ProjectRefer
 $expectedWasmReference = "..\$Name.WASM\$Name.WASM.csproj"
 $expectedWasmReferenceFullPath = [System.IO.Path]::GetFullPath($wasmProjectFile)
 if ($serverProjectReferences.Count -ne 1 -or -not ([string]$serverProjectReferences[0]).Equals($expectedWasmReference, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw "[SFB-ISOLATION-002] Generated server must reference only sibling WASM '$expectedWasmReference'. Actual: $($serverProjectReferences -join ', ')"
+    throw (New-IsolationGateError "SFB-ISOLATION-002" "Generated server must reference only sibling WASM '$expectedWasmReference'. Actual: $($serverProjectReferences -join ', ')" "The server project reference is missing, external, or still uses the retired nested shape." "Regenerate the workspace so the server references only the sibling WASM project.")
 }
 
 $resolvedProjectRoot = [System.IO.Path]::GetFullPath($projectRoot).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
@@ -340,16 +351,16 @@ $resolvedProjectRootWithSeparator = "$resolvedProjectRoot$([System.IO.Path]::Dir
 foreach ($reference in $serverProjectReferences) {
     $resolvedReference = [System.IO.Path]::GetFullPath((Join-Path $serverProjectRoot $reference))
     if (-not $resolvedReference.StartsWith($resolvedProjectRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "[SFB-ISOLATION-002] Generated server ProjectReference leaves generated root: $reference"
+        throw (New-IsolationGateError "SFB-ISOLATION-002" "Generated server ProjectReference leaves generated root: $reference" "The generated project references monorepo or external source instead of generated sibling source." "Replace the ProjectReference with the generated sibling WASM reference or regenerate the workspace.")
     }
 
     if (-not $resolvedReference.Equals($expectedWasmReferenceFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "[SFB-ISOLATION-002] Generated server ProjectReference must resolve to generated sibling WASM: $reference"
+        throw (New-IsolationGateError "SFB-ISOLATION-002" "Generated server ProjectReference must resolve to generated sibling WASM: $reference" "The ProjectReference path resolves to the wrong target." "Regenerate the workspace or fix the ProjectReference to '$expectedWasmReference'.")
     }
 }
 
 if ($wasmProjectReferences.Count -ne 0) {
-    throw "[SFB-ISOLATION-002] Generated WASM project must not contain ProjectReference entries. Actual: $($wasmProjectReferences -join ', ')"
+    throw (New-IsolationGateError "SFB-ISOLATION-002" "Generated WASM project must not contain ProjectReference entries. Actual: $($wasmProjectReferences -join ', ')" "WASM must consume Browser/Components through packages and must not reference server or monorepo projects." "Remove WASM ProjectReference entries and regenerate if needed.")
 }
 
 $forbidden = @("BlazorShop.Storefront.V2", "BlazorShop.Storefront.V2.WASM", "BlazorShop.Storefront.Starter", "BlazorShop.Storefront.Starter.WASM", "BlazorShop.Web.SharedV2", "Web.SharedV2", "BlazorShop.Application", "BlazorShop.Domain", "BlazorShop.Infrastructure", "BlazorShop.CommerceNode.API", "BlazorShop.ControlPlane.API", "PackageReference Include=`"BlazorShop.Storefront.Runtime`"", "PackageReference Include=`"BlazorShop.Storefront.Client`"")
@@ -363,14 +374,14 @@ Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
         $content = Get-Content -LiteralPath $_.FullName -Raw
         foreach ($pattern in $forbidden) {
             if (Test-TextContains $content $pattern ([System.StringComparison]::OrdinalIgnoreCase)) {
-                throw "[SFB-ISOLATION-002] Forbidden dependency '$pattern' found in $($_.FullName)."
+                throw (New-IsolationGateError "SFB-ISOLATION-002" "Forbidden dependency '$pattern' found in $($_.FullName)." "Generated source/project files crossed StorefrontBuilder package boundaries." "Remove the forbidden reference and regenerate from the starter-first workspace contract.")
             }
         }
     }
 
 $metadata = Get-Content -LiteralPath (Join-Path $projectRoot "StorefrontPackageVersions.props") -Raw
 if (-not (Test-TextContains $metadata "StorefrontClientPackageVersion") -or -not (Test-TextContains $metadata "StorefrontRuntimePackageVersion") -or -not (Test-TextContains $metadata "StorefrontPresentationPackageVersion") -or -not (Test-TextContains $metadata "StorefrontComponentsPackageVersion") -or -not (Test-TextContains $metadata "StorefrontBrowserPackageVersion")) {
-    throw "[SFB-ISOLATION-003] Package compatibility metadata is missing."
+    throw (New-IsolationGateError "SFB-ISOLATION-003" "Package compatibility metadata is missing." "StorefrontPackageVersions.props does not contain all required Storefront package version properties." "Restore the shared props file from Starter or regenerate the workspace.")
 }
 
 Write-Host "StorefrontBuilder isolation gate passed for $Name."

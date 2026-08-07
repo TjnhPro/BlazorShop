@@ -21,18 +21,18 @@ if ([string]::IsNullOrWhiteSpace($Name)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($Name)) {
-    $projectFile = Get-ChildItem -LiteralPath $resolvedProjectRoot -Filter "*.csproj" -File | Select-Object -First 1
+    $projectFile = Get-ChildItem -LiteralPath (Join-Path $resolvedProjectRoot $workspacePaths.ProjectName) -Filter "*.csproj" -File | Select-Object -First 1
     if (-not $projectFile) {
-        throw "[SFB-VALIDATE-001] Could not derive project name because no .csproj exists under $resolvedProjectRoot."
+        throw "[SFB-VALIDATE-001] Could not derive project name because no server .csproj exists under $($workspacePaths.ServerProjectRoot)."
     }
 
     $Name = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
 }
 
 if ([string]::IsNullOrWhiteSpace($StoreKey)) {
-    $appSettingsPath = Join-Path $resolvedProjectRoot "appsettings.json"
+    $appSettingsPath = Join-Path $workspacePaths.ServerProjectRoot "appsettings.json"
     if (-not (Test-Path $appSettingsPath)) {
-        throw "[SFB-VALIDATE-002] StoreKey was not supplied and appsettings.json is missing under $resolvedProjectRoot."
+        throw "[SFB-VALIDATE-002] StoreKey was not supplied and appsettings.json is missing under $($workspacePaths.ServerProjectRoot)."
     }
 
     $appSettings = Get-Content -LiteralPath $appSettingsPath -Raw | ConvertFrom-Json

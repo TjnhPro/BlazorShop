@@ -100,6 +100,26 @@ if (Test-Path -LiteralPath (Join-Path $serverProjectRoot "starter-generation.con
     throw "[SFB-PROJECT-003] Starter generation contract must be a workspace analysis artifact, not a server source file."
 }
 
+if (Test-Path -LiteralPath (Join-Path $serverProjectRoot "$Name.WASM")) {
+    throw "[SFB-PROJECT-003] Generated server project must not contain nested WASM folder '$Name.WASM'. Problem: this is the retired nested output shape. Cause: the storefront was generated before the starter-first workspace migration. Fix: regenerate the storefront into a fresh workspace."
+}
+
+$solutionText = Get-Content -LiteralPath $solutionFile -Raw
+$expectedSolutionProjects = @("$Name\$Name.csproj", "$Name.WASM\$Name.WASM.csproj")
+foreach ($expectedSolutionProject in $expectedSolutionProjects) {
+    if (-not (Test-TextContains -Text $solutionText -Needle "`"$expectedSolutionProject`"")) {
+        throw "[SFB-PROJECT-004] Generated solution is missing expected project '$expectedSolutionProject'. Problem: solution must contain only the generated server and WASM sibling projects. Fix: regenerate the storefront workspace."
+    }
+}
+
+$solutionProjectMatches = [regex]::Matches($solutionText, "(?m)^Project\([^)]+\)\s*=\s*`"[^`"]+`",\s*`"(?<path>[^`"]+\.csproj)`"")
+foreach ($solutionProjectMatch in $solutionProjectMatches) {
+    $projectPath = $solutionProjectMatch.Groups["path"].Value
+    if ($expectedSolutionProjects -notcontains $projectPath) {
+        throw "[SFB-PROJECT-004] Generated solution contains unexpected project '$projectPath'. Problem: generated workspace solutions must not include V2, Starter, backend, Control Plane, Commerce Node, or other generated outputs. Fix: regenerate the storefront workspace or remove the unexpected solution entry."
+    }
+}
+
 $project = Get-Content -LiteralPath $projectFile -Raw
 $wasmProject = Get-Content -LiteralPath $wasmProjectFile -Raw
 foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly.Server", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
@@ -273,7 +293,7 @@ if (-not $hasServerManifestEntry -or -not $hasWasmManifestEntry) {
 
 $forbiddenDirectories = @("Security", "Services", "Middleware")
 foreach ($directory in $forbiddenDirectories) {
-    if (Test-Path (Join-Path $ProjectRoot $directory)) {
+    if (Test-Path (Join-Path $serverProjectRoot $directory)) {
         throw "[SFB-PROJECT-006] Generated project must not contain application/security folder '$directory'."
     }
 }

@@ -449,55 +449,64 @@ Goal: make validation prove the new shape and fail the old nested shape.
 
 Tasks:
 
-- [ ] Update `validate-storefront.ps1` to call validation with workspace semantics.
-- [ ] Update `Test-StorefrontBuilderGeneratedProject.ps1` path assumptions:
-  - [ ] Project root parameter means workspace root.
-  - [ ] Server project path is `{WorkspaceRoot}/{Name}/{Name}.csproj`.
-  - [ ] WASM project path is `{WorkspaceRoot}/{Name}.WASM/{Name}.WASM.csproj`.
-  - [ ] Analysis root is `{WorkspaceRoot}/docs/storefront-analysis`.
-- [ ] Replace required exclusion-marker checks:
-  - [ ] Remove checks that require `Compile Remove="{Name}.WASM\**"`.
-  - [ ] Remove checks that require `Content Remove="{Name}.WASM\**"`.
-  - [ ] Remove checks that require `EmbeddedResource Remove="{Name}.WASM\**"`.
-  - [ ] Remove checks that require `None Remove="{Name}.WASM\**"`.
-  - [ ] Add negative checks that fail if those exclusions exist.
-- [ ] Add structure checks:
-  - [ ] Workspace root exists.
-  - [ ] Solution file exists.
-  - [ ] Server project exists in sibling server folder.
-  - [ ] WASM project exists in sibling WASM folder.
-  - [ ] No nested WASM folder exists under server project root.
-  - [ ] `docs/storefront-analysis` exists at workspace root.
-- [ ] Add solution checks:
-  - [ ] Solution contains server project.
-  - [ ] Solution contains WASM project.
-  - [ ] Solution does not contain forbidden monorepo projects.
-  - [ ] Solution does not contain generated projects from another output root.
-- [ ] Add reference checks:
-  - [ ] Server ProjectReference to sibling WASM uses `..\{Name}.WASM\{Name}.WASM.csproj`.
-  - [ ] Server does not reference Starter.WASM.
-  - [ ] Server does not reference Storefront.V2.
-  - [ ] Server does not reference backend/core/API projects.
-  - [ ] WASM does not reference server project.
-  - [ ] WASM does not reference Runtime or Client.
-- [ ] Update isolation gate:
-  - [ ] Restore/build solution instead of individual nested project first.
-  - [ ] Scan both server and WASM project trees.
-  - [ ] Scan workspace shared files.
-  - [ ] Preserve package boundary proof.
-  - [ ] Fail with problem/cause/fix messages.
-- [ ] Update architecture tests or add focused tests for:
-  - [ ] Old nested shape fails.
-  - [ ] New workspace shape passes.
-  - [ ] Old exclusion ItemGroups fail.
-  - [ ] Forbidden reference in server fails.
-  - [ ] Forbidden reference in WASM fails.
+- [x] Update `validate-storefront.ps1` to call validation with workspace semantics.
+- [x] Update `Test-StorefrontBuilderGeneratedProject.ps1` path assumptions:
+  - [x] Project root parameter means workspace root.
+  - [x] Server project path is `{WorkspaceRoot}/{Name}/{Name}.csproj`.
+  - [x] WASM project path is `{WorkspaceRoot}/{Name}.WASM/{Name}.WASM.csproj`.
+  - [x] Analysis root is `{WorkspaceRoot}/docs/storefront-analysis`.
+- [x] Replace required exclusion-marker checks:
+  - [x] Remove checks that require `Compile Remove="{Name}.WASM\**"`.
+  - [x] Remove checks that require `Content Remove="{Name}.WASM\**"`.
+  - [x] Remove checks that require `EmbeddedResource Remove="{Name}.WASM\**"`.
+  - [x] Remove checks that require `None Remove="{Name}.WASM\**"`.
+  - [x] Add negative checks that fail if those exclusions exist.
+- [x] Add structure checks:
+  - [x] Workspace root exists.
+  - [x] Solution file exists.
+  - [x] Server project exists in sibling server folder.
+  - [x] WASM project exists in sibling WASM folder.
+  - [x] No nested WASM folder exists under server project root.
+  - [x] `docs/storefront-analysis` exists at workspace root.
+- [x] Add solution checks:
+  - [x] Solution contains server project.
+  - [x] Solution contains WASM project.
+  - [x] Solution does not contain forbidden monorepo projects.
+  - [x] Solution does not contain generated projects from another output root.
+- [x] Add reference checks:
+  - [x] Server ProjectReference to sibling WASM uses `..\{Name}.WASM\{Name}.WASM.csproj`.
+  - [x] Server does not reference Starter.WASM.
+  - [x] Server does not reference Storefront.V2.
+  - [x] Server does not reference backend/core/API projects.
+  - [x] WASM does not reference server project.
+  - [x] WASM does not reference Runtime or Client.
+- [x] Update isolation gate:
+  - [x] Restore/build solution instead of individual nested project first.
+  - [x] Scan both server and WASM project trees.
+  - [x] Scan workspace shared files.
+  - [x] Preserve package boundary proof.
+  - [x] Fail with problem/cause/fix messages.
+- [x] Update architecture tests or add focused tests for:
+  - [x] Old nested shape fails.
+  - [x] New workspace shape passes.
+  - [x] Old exclusion ItemGroups fail.
+  - [x] Forbidden reference in server fails.
+  - [x] Forbidden reference in WASM fails.
 
 Exit criteria:
 
-- [ ] Static validation passes on fresh workspace output.
-- [ ] Static validation fails on old nested output with actionable guidance.
-- [ ] Isolation gate passes on fresh workspace output.
+- [x] Static validation passes on fresh workspace output.
+- [x] Static validation fails on old nested output with actionable guidance.
+- [x] Isolation gate passes on fresh workspace output.
+
+Phase 6 evidence:
+
+- `validate-storefront.ps1 -WorkspaceRoot obj/storefront-builder/generated/BlazorShop.Storefront.Phase5PackageProof -SkipIdempotency` passed while deriving project name and store key from the workspace/server sibling shape.
+- `Test-StorefrontBuilderGeneratedProject.ps1` now validates server/WASM sibling paths, workspace analysis artifacts, solution membership, no nested WASM folder, no exclusion ItemGroups, and forbidden references.
+- `run-storefront-builder-isolation-gate.ps1` now restores/builds the generated solution, scans workspace/source boundaries, preserves package proof, refreshes generated-files after package provenance updates, and emits Problem/Cause/Fix errors.
+- `Test-StorefrontBuilderMultiProjectValidation.ps1` passed and covers old nested shape failure, missing/unexpected solution entries, new workspace pass, old exclusion/faulty project-reference failures, direct Runtime/Client rejection, server forbidden namespace rejection, and WASM ProjectReference rejection.
+- `run-storefront-builder-isolation-gate.ps1 -WorkspaceRoot obj/storefront-builder/generated/BlazorShop.Storefront.Phase5PackageProof -Name Phase5PackageProof` passed after the Phase 6 changes.
+- `build-storefront.ps1 -Mode validate-only -Name Phase5PackageProof -StoreKey sample -OutputRoot obj/storefront-builder/generated` passed with idempotency after the isolation gate refreshed metadata and manifest.
 
 ## Phase 7 - Manifest, Generation Plan, And Ownership Rewrite
 

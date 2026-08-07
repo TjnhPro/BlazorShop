@@ -50,6 +50,14 @@ function Invoke-StaticGate([string]$ProjectRoot) {
     & $staticGate -ProjectRoot $ProjectRoot -Name $baselineName -StoreKey "multi-project-validation" -SkipIdempotency
 }
 
+function Get-ServerRoot([string]$ProjectRoot) {
+    return Join-Path $ProjectRoot $baselineName
+}
+
+function Get-WasmRoot([string]$ProjectRoot) {
+    return Join-Path $ProjectRoot "$baselineName.WASM"
+}
+
 function Replace-Text {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -77,11 +85,38 @@ New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
     -OutputRoot $outputRoot `
     -Force
 
-$serverProject = Join-Path $baselineRoot "$baselineName.csproj"
-$wasmProject = Join-Path $baselineRoot "$baselineName.WASM\$baselineName.WASM.csproj"
-$serverProgram = Join-Path $baselineRoot "Program.cs"
-$wasmProgram = Join-Path $baselineRoot "$baselineName.WASM\Program.cs"
+$baselineServerRoot = Get-ServerRoot $baselineRoot
+$baselineWasmRoot = Get-WasmRoot $baselineRoot
+$serverProject = Join-Path $baselineServerRoot "$baselineName.csproj"
+$wasmProject = Join-Path $baselineWasmRoot "$baselineName.WASM.csproj"
+$serverProgram = Join-Path $baselineServerRoot "Program.cs"
+$wasmProgram = Join-Path $baselineWasmRoot "Program.cs"
 $manifestPath = Join-Path $baselineRoot "docs\storefront-analysis\generated-files.yaml"
+
+Assert-Throws -ExpectedCode "SFB-PROJECT-003" -Action {
+    $case = New-CaseRoot "old-nested-shape"
+    $caseServerRoot = Get-ServerRoot $case
+    Get-ChildItem -LiteralPath $caseServerRoot -Force |
+        ForEach-Object {
+            Move-Item -LiteralPath $_.FullName -Destination $case -Force
+        }
+    Remove-Item -LiteralPath $caseServerRoot -Force
+    New-Item -ItemType Directory -Force -Path (Join-Path $case "$baselineName.WASM") | Out-Null
+    Invoke-Validator $case
+}
+
+Assert-Throws -ExpectedCode "SFB-PROJECT-003" -Action {
+    $case = New-CaseRoot "missing-solution"
+    Remove-Item -LiteralPath (Join-Path $case "$baselineName.sln") -Force
+    Invoke-Validator $case
+}
+
+Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
+    $case = New-CaseRoot "unexpected-solution-project"
+    Add-Content -LiteralPath (Join-Path $case "$baselineName.sln") -Value 'Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorShop.Storefront.Starter", "..\..\..\BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj", "{11111111-1111-1111-1111-111111111111}"'
+    Add-Content -LiteralPath (Join-Path $case "$baselineName.sln") -Value "EndProject"
+    Invoke-Validator $case
+}
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-003" -Action {
     $case = New-CaseRoot "missing-wasm"
@@ -91,49 +126,49 @@ Assert-Throws -ExpectedCode "SFB-PROJECT-003" -Action {
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-003" -Action {
     $case = New-CaseRoot "missing-server"
-    Remove-Item -LiteralPath (Join-Path $case "$baselineName.csproj") -Force
+    Remove-Item -LiteralPath (Join-Path (Get-ServerRoot $case) "$baselineName.csproj") -Force
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
     $case = New-CaseRoot "server-missing-browser"
-    Replace-Text -Path (Join-Path $case "$baselineName.csproj") -Old '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />' -New ''
+    Replace-Text -Path (Join-Path (Get-ServerRoot $case) "$baselineName.csproj") -Old '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />' -New ''
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
     $case = New-CaseRoot "wasm-missing-browser"
-    Replace-Text -Path (Join-Path $case "$baselineName.WASM\$baselineName.WASM.csproj") -Old '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />' -New ''
+    Replace-Text -Path (Join-Path (Get-WasmRoot $case) "$baselineName.WASM.csproj") -Old '    <PackageReference Include="BlazorShop.Storefront.Browser" Version="$(StorefrontBrowserPackageVersion)" />' -New ''
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
     $case = New-CaseRoot "server-missing-browser-controllers"
-    Replace-Text -Path (Join-Path $case "Program.cs") -Old "builder.Services.AddStorefrontBrowserControllers();" -New ""
+    Replace-Text -Path (Join-Path (Get-ServerRoot $case) "Program.cs") -Old "builder.Services.AddStorefrontBrowserControllers();" -New ""
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
     $case = New-CaseRoot "wasm-missing-browser-runtime"
-    Replace-Text -Path (Join-Path $case "$baselineName.WASM\Program.cs") -Old "builder.Services.AddStorefrontBrowserRuntime(builder.HostEnvironment);" -New ""
+    Replace-Text -Path (Join-Path (Get-WasmRoot $case) "Program.cs") -Old "builder.Services.AddStorefrontBrowserRuntime(builder.HostEnvironment);" -New ""
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
     $case = New-CaseRoot "server-missing-wasm-assembly"
-    Replace-Text -Path (Join-Path $case "Program.cs") -Old "typeof($baselineName.WASM.Components.Account.StorefrontAccountApp).Assembly" -New "typeof(Program).Assembly"
+    Replace-Text -Path (Join-Path (Get-ServerRoot $case) "Program.cs") -Old "typeof($baselineName.WASM.StarterWasmAssemblyMarker).Assembly" -New "typeof(Program).Assembly"
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
     $case = New-CaseRoot "server-external-project-reference"
-    Replace-Text -Path (Join-Path $case "$baselineName.csproj") -Old "$baselineName.WASM\$baselineName.WASM.csproj" -New "..\..\..\BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj"
+    Replace-Text -Path (Join-Path (Get-ServerRoot $case) "$baselineName.csproj") -Old "..\$baselineName.WASM\$baselineName.WASM.csproj" -New "..\..\..\BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj"
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
     $case = New-CaseRoot "wasm-project-reference"
-    $path = Join-Path $case "$baselineName.WASM\$baselineName.WASM.csproj"
+    $path = Join-Path (Get-WasmRoot $case) "$baselineName.WASM.csproj"
     $content = Get-Content -LiteralPath $path -Raw
     Set-Content -LiteralPath $path -Value ($content.Replace("</Project>", "  <ItemGroup>`n    <ProjectReference Include=`"..\External\External.csproj`" />`n  </ItemGroup>`n</Project>")) -Encoding UTF8
     Invoke-Validator $case
@@ -142,7 +177,7 @@ Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
 foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client")) {
     Assert-Throws -ExpectedCode "SFB-PROJECT-004" -Action {
         $case = New-CaseRoot "direct-$($package.Split('.')[-1].ToLowerInvariant())"
-        $path = Join-Path $case "$baselineName.csproj"
+        $path = Join-Path (Get-ServerRoot $case) "$baselineName.csproj"
         $content = Get-Content -LiteralPath $path -Raw
         Set-Content -LiteralPath $path -Value ($content.Replace("</Project>", "  <ItemGroup>`n    <PackageReference Include=`"$package`" Version=`"1.0.0-local`" />`n  </ItemGroup>`n</Project>")) -Encoding UTF8
         Invoke-Validator $case
@@ -151,13 +186,13 @@ foreach ($package in @("BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.C
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-006" -Action {
     $case = New-CaseRoot "v2-namespace"
-    Add-Content -LiteralPath (Join-Path $case "Program.cs") -Value "// BlazorShop.Storefront.V2"
+    Add-Content -LiteralPath (Join-Path (Get-ServerRoot $case) "Program.cs") -Value "// BlazorShop.Storefront.V2"
     Invoke-Validator $case
 }
 
 Assert-Throws -ExpectedCode "SFB-PROJECT-006" -Action {
     $case = New-CaseRoot "starter-namespace"
-    Add-Content -LiteralPath (Join-Path $case "Program.cs") -Value "// BlazorShop.Storefront.Starter"
+    Add-Content -LiteralPath (Join-Path (Get-ServerRoot $case) "Program.cs") -Value "// BlazorShop.Storefront.Starter"
     Invoke-Validator $case
 }
 
@@ -187,7 +222,7 @@ Assert-Throws -ExpectedCode "SFB-PROJECT-011" -Action {
 
 Assert-Throws -ExpectedCode "SFB-STATIC-002" -Action {
     $case = New-CaseRoot "generated-page-route"
-    Add-Content -LiteralPath (Join-Path $case "Components\Layout\MainLayout.razor") -Value '@page "/generated-route"'
+    Add-Content -LiteralPath (Join-Path (Get-ServerRoot $case) "Components\Layout\MainLayout.razor") -Value '@page "/generated-route"'
     Invoke-StaticGate $case
 }
 
