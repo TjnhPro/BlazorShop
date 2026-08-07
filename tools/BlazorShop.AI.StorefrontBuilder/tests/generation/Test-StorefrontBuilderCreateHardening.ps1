@@ -78,6 +78,11 @@ Assert-Throws -ExpectedCode "SFB-PROJECT-002" -Action {
     Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot (Join-Path $repoRoot "artifacts\outside") | Out-Null
 }
 
+$manualArtifactOutputRoot = Join-Path $repoRoot "artifacts\storefront-builder"
+Assert-Condition `
+    -Condition ((Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot $manualArtifactOutputRoot) -eq [System.IO.Path]::GetFullPath($manualArtifactOutputRoot)) `
+    -Message "Manual artifact output root should be allowed under artifacts/storefront-builder."
+
 $existingOutputRoot = Join-Path $testOutputRoot "existing"
 $existingProjectRoot = Join-Path $existingOutputRoot "BlazorShop.Storefront.DemoExisting"
 New-Item -ItemType Directory -Force -Path $existingProjectRoot | Out-Null

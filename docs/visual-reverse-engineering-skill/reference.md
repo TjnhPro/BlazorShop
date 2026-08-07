@@ -295,7 +295,7 @@ Parameters:
 | `Url` | `https://reference.example` | Reference storefront URL used for analysis artifacts. |
 | `Name` | `Demo` | Normalized to `BlazorShop.Storefront.{Name}` unless the full project name is already supplied. |
 | `StoreKey` | `sample` | Storefront API route scope for generated configuration. |
-| `OutputRoot` | `artifacts/storefront-builder/generated` | Generated artifact root. |
+| `OutputRoot` | `artifacts/storefront-builder/generated` | Generated artifact root. Manual runs may also use `artifacts/storefront-builder` to place the generated project directly under the StorefrontBuilder artifact folder. |
 | `Mode` | `validate-only` | One of `analyze-only`, `plan-only`, `generate`, `update`, `validate-only`, `full`. |
 | `HandoffRoot` | empty | Portable handoff package root or its `analysis/agent-handoff` folder for Phase 4 preflight/planning/generation. |
 | `HandoffSchemaRoot` | `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas` | Registered schema root for handoff validation. |

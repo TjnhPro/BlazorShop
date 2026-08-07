@@ -30,6 +30,8 @@ Create a generated storefront:
   -Mode generate
 ```
 
+For manual project output, `-OutputRoot artifacts/storefront-builder` is also approved. That writes the project as `artifacts/storefront-builder/BlazorShop.Storefront.{Name}` instead of under the default `generated` subfolder.
+
 Use a full project name only when the folder must already include the `BlazorShop.Storefront.` prefix:
 
 ```powershell

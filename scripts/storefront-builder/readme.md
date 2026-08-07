@@ -9,31 +9,31 @@ Luôn bắt đầu command bằng `powershell` hoặc `pwsh`. Không chạy `-No
 In command StorefrontBuilder thật sự sẽ được gọi, nhưng không chạy:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Describe
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Describe
 ```
 
 Chạy lập kế hoạch khô, không tạo project thật:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode plan-only -Name Demo -StoreKey sample
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode plan-only -Name Demo -StoreKey sample
 ```
 
-Tạo storefront dùng thử dưới `obj/storefront-builder/generated`:
+Tạo storefront dùng thử dưới `artifacts/storefront-builder`:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode generate -Name Demo -StoreKey sample -Force
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode generate -Name Demo -StoreKey sample -Force
 ```
 
 Chạy đầy đủ bước tạo storefront và validation:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode full -Name Demo -StoreKey sample -Force
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode full -Name Demo -StoreKey sample -Force
 ```
 
 Validate một generated project đã có sẵn:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode validate-only -Name Demo -StoreKey sample -OutputRoot obj/storefront-builder/generated
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode validate-only -Name Demo -StoreKey sample -OutputRoot obj/storefront-builder/generated
 ```
 
 ## Command Portable Handoff
@@ -41,19 +41,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\ru
 Chạy preflight cho portable handoff Phase 4:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode preflight-only -HandoffRoot <portable-handoff-root>
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode preflight-only -HandoffRoot <portable-handoff-root>
 ```
 
 Tạo generation plan từ portable handoff package:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode plan-only -Name Demo -StoreKey sample -HandoffRoot <portable-handoff-root>
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode plan-only -Name Demo -StoreKey sample -HandoffRoot <portable-handoff-root>
 ```
 
 Generate storefront từ portable handoff package:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode generate -Name Demo -StoreKey sample -HandoffRoot <portable-handoff-root> -Force
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode generate -Name Demo -StoreKey sample -HandoffRoot <portable-handoff-root> -Force
 ```
 
 ## Tham Số
@@ -62,7 +62,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\ru
 - `-Url`: URL tham chiếu dùng cho các mode phân tích/generate không chạy qua handoff. Mặc định: `https://reference.example`.
 - `-Name`: tên project storefront được generate. Có thể truyền dạng thân thiện như `kindredcoast`, `kindred-coast`, hoặc full name `BlazorShop.Storefront.KindredCoast`; wrapper sẽ chuẩn hóa thành project name hợp lệ trước khi gọi StorefrontBuilder gốc. Mặc định: `BlazorShop.Storefront.GeneratedProof`.
 - `-StoreKey`: store key của storefront được generate. Mặc định: `sample`.
-- `-OutputRoot`: thư mục output của generated project, tính từ repo root nếu truyền relative path. Mặc định: `obj/storefront-builder/generated`.
+- `-OutputRoot`: thư mục output của generated project, tính từ repo root nếu truyền relative path. Mặc định: `artifacts/storefront-builder`.
 - `-HandoffRoot`: thư mục portable `analysis/agent-handoff` package cho các mode Phase 4 handoff.
 - `-HandoffSchemaRoot`: thư mục schema dùng để validate handoff. Mặc định: `tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas`.
 - `-Force`: cho phép ghi đè output generated cũ để chạy lại deterministic.
@@ -83,12 +83,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\ru
 
 ## Gợi Ý Sử Dụng
 
-Generated output là artifact dùng thử, không phải source chính. Dùng `obj/storefront-builder/generated` cho các proof run local. Chỉ dùng `artifacts/storefront-builder/generated` khi workflow yêu cầu giữ artifact thủ công lâu hơn.
+Generated output là artifact dùng thử, không phải source chính. Dùng `artifacts/storefront-builder` cho artifact thủ công cần giữ lại, và dùng `obj/storefront-builder/generated` cho proof run tự động hoặc output tạm.
 
 Nếu chỉ muốn kiểm tra command trước khi chạy thật, dùng `-Describe`. Nếu muốn kiểm tra tác động trước khi ghi file, dùng `-Mode plan-only`. Nếu muốn chạy proof đầy đủ, dùng `-Mode full -Force`.
 
 Ví dụ chạy full cho KindredCoast:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\StorefrontBuilder\run-storefront-builder.ps1 -Mode full -Name kindredcoast -StoreKey kindredcoast -Url "https://www.kindredcoast.com/" -Force
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\storefront-builder\run-storefront-builder.ps1 -Mode full -Name kindredcoast -StoreKey kindredcoast -Url "https://www.kindredcoast.com/" -Force
 ```

@@ -13,7 +13,7 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 | Portable component package | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Browser-safe Storefront contracts, headless interaction state, and temporary compatibility component primitives that stay independent of Storefront V2 host, backend projects, and server-only APIs. |
 | Neutral skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Template source for generated storefronts. It stays reusable and store-neutral. |
 | Neutral browser skeleton | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM` | Template source for generated interactive account, cart, and checkout WASM roots. It uses Browser runtime/controllers and browser-safe Components contracts without Runtime/Client direct references. |
-| Generated proof artifacts | `artifacts/storefront-builder/generated/{ProjectName}` or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
+| Generated proof artifacts | `artifacts/storefront-builder/{ProjectName}`, `artifacts/storefront-builder/generated/{ProjectName}`, or `obj/storefront-builder/generated/{ProjectName}` | Disposable generated storefront proofs created on demand from Starter and StorefrontBuilder. |
 | Builder tooling | `tools/BlazorShop.AI.StorefrontBuilder` | Capture, analysis, generation, regeneration, validation, and browser QA scripts. |
 | Reverse-engineering evidence tooling | `tools/BlazorShop.AI.StorefrontReverseEngineering` | Development-time executable that creates reference-site evidence, workflow state, validation reports, originality notes, visual-blueprint drafts, reviewed mappings, and Phase 3C/3D/3E-hardened portable `analysis/agent-handoff/*` packages for Phase 4 StorefrontBuilder consumption. |
 | Visual skill/report workspace | `tools/BlazorShop.AI.Visual` | Development-time agent instruction, schema, reference, adapter, and example workspace for Phase 4 visual plan/implementation/QA reports. It is not a generator, runtime package, production service, or project reference target. |
@@ -26,9 +26,12 @@ StorefrontBuilder is development-time tooling for visual reverse engineering and
 Generated storefront artifacts live under ignored output roots:
 
 ```text
+artifacts/storefront-builder/{ProjectName}
 artifacts/storefront-builder/generated/{ProjectName}
 obj/storefront-builder/generated/{ProjectName}
 ```
+
+`artifacts/storefront-builder/generated` remains the default proof output. `artifacts/storefront-builder` is also an approved manual output root when an operator wants the generated project directly under the StorefrontBuilder artifact folder.
 
 The storefront name must be normalized before it is used as a folder, project name, namespace segment, or file prefix. Unsafe names must fail before files are created. Generated proof output must not be added to `BlazorShop.sln` by default.
 

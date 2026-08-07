@@ -132,6 +132,7 @@ function Resolve-ApprovedStorefrontBuilderOutputRoot {
 
     $resolvedOutputRoot = Resolve-StorefrontBuilderRepoPath -RepoRoot $RepoRoot -Path $OutputRoot
     $approvedRoots = @(
+        (Join-Path $RepoRoot "artifacts\storefront-builder"),
         (Join-Path $RepoRoot "artifacts\storefront-builder\generated"),
         (Join-Path $RepoRoot "obj\storefront-builder\generated")
     ) | ForEach-Object { [System.IO.Path]::GetFullPath($_) }
@@ -149,7 +150,7 @@ function Resolve-ApprovedStorefrontBuilderOutputRoot {
     }
 
     if (-not $isApproved) {
-        throw "[SFB-PROJECT-002] OutputRoot must be under artifacts/storefront-builder/generated or obj/storefront-builder/generated."
+        throw "[SFB-PROJECT-002] OutputRoot must be under artifacts/storefront-builder, artifacts/storefront-builder/generated, or obj/storefront-builder/generated."
     }
 
     return $resolvedOutputRoot

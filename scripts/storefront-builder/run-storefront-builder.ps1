@@ -6,7 +6,7 @@ param(
     [string]$Url = "https://reference.example",
     [string]$Name = "BlazorShop.Storefront.GeneratedProof",
     [string]$StoreKey = "sample",
-    [string]$OutputRoot = "obj/storefront-builder/generated",
+    [string]$OutputRoot = "artifacts/storefront-builder",
     [string]$HandoffRoot = "",
     [string]$HandoffSchemaRoot = "tools/BlazorShop.AI.StorefrontReverseEngineering/Schemas",
     [string]$Configuration = "Debug",
