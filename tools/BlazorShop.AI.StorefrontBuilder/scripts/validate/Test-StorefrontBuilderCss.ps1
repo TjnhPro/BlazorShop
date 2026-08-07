@@ -5,11 +5,15 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$workspaceLeaf = Split-Path -Leaf ([System.IO.Path]::GetFullPath($ProjectRoot))
+$serverProjectRoot = Join-Path $ProjectRoot $workspaceLeaf
+$sourceRoot = if (Test-Path -LiteralPath (Join-Path $serverProjectRoot "$workspaceLeaf.csproj")) { $serverProjectRoot } else { $ProjectRoot }
+
 function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
     return $Text.IndexOf($Value, $Comparison) -ge 0
 }
 
-$cssPath = Join-Path $ProjectRoot "wwwroot\css\storefront-builder.generated.css"
+$cssPath = Join-Path $sourceRoot "wwwroot\css\storefront-builder.generated.css"
 if (-not (Test-Path $cssPath)) {
     throw "[SFB-CSS-000] Generated CSS is missing under generated storefront wwwroot: $cssPath"
 }

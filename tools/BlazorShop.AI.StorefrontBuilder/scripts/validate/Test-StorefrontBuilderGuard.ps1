@@ -69,7 +69,7 @@ function Test-AllowedGeneratedProjectReference {
     $normalizedRelative = $RelativePath.Replace("/", "\")
     $normalizedInclude = $Include.Replace("/", "\")
     $expectedServerProject = "$projectName\$projectName.csproj"
-    $expectedWasmReference = "$projectName.WASM\$projectName.WASM.csproj"
+    $expectedWasmReference = "..\$projectName.WASM\$projectName.WASM.csproj"
 
     return $normalizedRelative.EndsWith($expectedServerProject, [System.StringComparison]::OrdinalIgnoreCase) `
         -and $normalizedInclude.Equals($expectedWasmReference, [System.StringComparison]::OrdinalIgnoreCase)

@@ -27,6 +27,8 @@ function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderSchemas.ps1")
 & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderGeneratedProject.ps1") -ProjectRoot $ProjectRoot -Name $Name -StoreKey $StoreKey
 $analysisRoot = Join-Path $ProjectRoot "docs\storefront-analysis"
+$serverProjectRoot = Join-Path $ProjectRoot $Name
+$wasmProjectRoot = Join-Path $ProjectRoot "$Name.WASM"
 $isHandoffProject = Test-Path (Join-Path $analysisRoot "generation-plan.json")
 if ($isHandoffProject) {
     node (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderHandoffBoundary.mjs") --project-root $ProjectRoot --name $Name
@@ -38,7 +40,7 @@ else {
     if (Test-Path (Join-Path $analysisRoot "asset-manifest.yaml")) {
         & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderAssets.ps1") -ProjectRoot $ProjectRoot
     }
-    if (Test-Path (Join-Path $ProjectRoot "wwwroot\css\storefront-builder.generated.css")) {
+    if (Test-Path (Join-Path $serverProjectRoot "wwwroot\css\storefront-builder.generated.css")) {
         & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCss.ps1") -ProjectRoot $ProjectRoot
         & (Join-Path $toolRoot "scripts\validate\Test-StorefrontBuilderCompositionFiles.ps1") -ProjectRoot $ProjectRoot
     }
@@ -81,8 +83,8 @@ if ($routeDirectives.Count -gt 0) {
 }
 
 $versions = Get-Content -LiteralPath (Join-Path $ProjectRoot "StorefrontPackageVersions.props") -Raw
-$project = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.csproj") -Raw
-$wasmProject = Get-Content -LiteralPath (Join-Path $ProjectRoot "$Name.WASM\$Name.WASM.csproj") -Raw
+$project = Get-Content -LiteralPath (Join-Path $serverProjectRoot "$Name.csproj") -Raw
+$wasmProject = Get-Content -LiteralPath (Join-Path $wasmProjectRoot "$Name.WASM.csproj") -Raw
 foreach ($package in @("Microsoft.AspNetCore.Components.WebAssembly.Server", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains $project "PackageReference Include=`"$package`"")) {
         throw "[SFB-STATIC-003] Server package version mismatch or missing package reference: $package"
@@ -182,12 +184,12 @@ foreach ($sourceFile in $sourceFiles | Where-Object { $_.Name -eq "Program.cs" -
     }
 }
 
-$functionalScript = Join-Path $ProjectRoot "wwwroot\js\storefront-builder.functional.js"
+$functionalScript = Join-Path $serverProjectRoot "wwwroot\js\storefront-builder.functional.js"
 if (Test-Path $functionalScript) {
     throw "[SFB-STATIC-005] Generated storefront must not emit copied browser application controller JS: wwwroot/js/storefront-builder.functional.js"
 }
 
-$jsRoot = Join-Path $ProjectRoot "wwwroot\js"
+$jsRoot = Join-Path $serverProjectRoot "wwwroot\js"
 if (Test-Path $jsRoot) {
     Get-ChildItem -LiteralPath $jsRoot -Recurse -File -Filter *.js |
         Where-Object {

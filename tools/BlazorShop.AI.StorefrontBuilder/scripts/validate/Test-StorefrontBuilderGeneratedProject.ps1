@@ -9,14 +9,16 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$projectFile = Join-Path $ProjectRoot "$Name.csproj"
+$serverProjectRoot = Join-Path $ProjectRoot $Name
+$projectFile = Join-Path $serverProjectRoot "$Name.csproj"
 $wasmProjectRoot = Join-Path $ProjectRoot "$Name.WASM"
 $wasmProjectFile = Join-Path $wasmProjectRoot "$Name.WASM.csproj"
-$serverProgram = Join-Path $ProjectRoot "Program.cs"
+$serverProgram = Join-Path $serverProjectRoot "Program.cs"
 $wasmProgram = Join-Path $wasmProjectRoot "Program.cs"
+$solutionFile = Join-Path $ProjectRoot "$Name.sln"
 $metadata = Join-Path $ProjectRoot "docs\storefront-analysis\metadata.yaml"
 $generatedFilesManifest = Join-Path $ProjectRoot "docs\storefront-analysis\generated-files.yaml"
-$featureManifest = Join-Path $ProjectRoot "Features\feature-manifest.json"
+$featureManifest = Join-Path $serverProjectRoot "Features\feature-manifest.json"
 
 function Test-TextContains {
     param(
@@ -87,7 +89,7 @@ function Validate-PackageProvenanceHashes {
     }
 }
 
-foreach ($path in @($projectFile, $wasmProjectFile, $serverProgram, $wasmProgram, $metadata, $generatedFilesManifest, $featureManifest)) {
+foreach ($path in @($solutionFile, $projectFile, $wasmProjectFile, $serverProgram, $wasmProgram, $metadata, $generatedFilesManifest, $featureManifest)) {
     if (-not (Test-Path $path)) {
         throw "[SFB-PROJECT-003] Generated project required file is missing: $path"
     }
@@ -123,8 +125,8 @@ foreach ($excludeMarker in @(
     "<EmbeddedResource Remove=`"$Name.WASM\**`" />",
     "<None Remove=`"$Name.WASM\**`" />"
 )) {
-    if (-not (Test-TextContains -Text $project -Needle $excludeMarker)) {
-        throw "[SFB-PROJECT-004] Generated server project must exclude nested WASM subtree from default SDK items: $excludeMarker"
+    if (Test-TextContains -Text $project -Needle $excludeMarker) {
+        throw "[SFB-PROJECT-004] Generated server project must not include nested WASM exclusion marker: $excludeMarker"
     }
 }
 
@@ -136,10 +138,10 @@ $serverProjectReferences = @(@($serverProjectDocument.Project.ItemGroup.ProjectR
 $wasmProjectReferences = @(@($wasmProjectDocument.Project.ItemGroup.ProjectReference) |
     ForEach-Object { [string]$_.Include } |
     Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-$expectedWasmReference = "$Name.WASM\$Name.WASM.csproj"
+$expectedWasmReference = "..\$Name.WASM\$Name.WASM.csproj"
 $expectedWasmReferenceFullPath = [System.IO.Path]::GetFullPath($wasmProjectFile)
 $serverReferenceFullPaths = @($serverProjectReferences |
-    ForEach-Object { [System.IO.Path]::GetFullPath((Join-Path $ProjectRoot $_)) })
+    ForEach-Object { [System.IO.Path]::GetFullPath((Join-Path $serverProjectRoot $_)) })
 if ($serverProjectReferences.Count -ne 1 -or -not ([string]$serverProjectReferences[0]).Equals($expectedWasmReference, [System.StringComparison]::OrdinalIgnoreCase) -or -not ([string]$serverReferenceFullPaths[0]).Equals($expectedWasmReferenceFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "[SFB-PROJECT-004] Generated server must reference only generated sibling WASM '$expectedWasmReference'. Actual: $($serverProjectReferences -join ', ')"
 }
@@ -154,7 +156,7 @@ foreach ($requiredServerProgramMarker in @(
     "AddStorefrontBrowserControllers",
     "UseStorefrontApplication",
     "MapStorefrontApplication",
-    "typeof($Name.WASM.Components.Account.StorefrontAccountApp).Assembly"
+    "typeof($Name.WASM.StarterWasmAssemblyMarker).Assembly"
 )) {
     if (-not (Test-TextContains -Text $serverProgramText -Needle $requiredServerProgramMarker)) {
         throw "[SFB-PROJECT-004] Generated server Program.cs is missing '$requiredServerProgramMarker'."
@@ -178,7 +180,7 @@ if (-not (Test-TextContains -Text $packageVersions -Needle "StorefrontClientPack
 
 $metadataText = Get-Content -LiteralPath $metadata -Raw
 $canonicalContractPath = "contracts/storefront/storefront.openapi.json"
-foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterWasmPath:", "sourceStarterVersion:", "sourceHead:", "packageBuildIdentity:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "starterContractSha256:", "starterWasmContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj", "starterWasmContractSha256:", "projects:", "server:", "path: $Name.csproj", "wasm:", "path: $Name.WASM/$Name.WASM.csproj", "protectedFiles:", "packageReferences:", "Microsoft.AspNetCore.Components.WebAssembly.Server", "Microsoft.AspNetCore.Components.WebAssembly", "packageVersions:", "packageProvenance:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
+foreach ($required in @("generatorVersion:", "createdUtc:", "updatedUtc:", "commandMode:", "projectName: $Name", "normalizedProjectName: $Name", "storeKey: $StoreKey", "outputRoot:", "storefrontContractPath: $canonicalContractPath", "storefrontContractSha256:", "sourceStarterPath:", "sourceStarterWasmPath:", "sourceStarterVersion:", "sourceHead:", "packageBuildIdentity:", "starterContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contract.yaml", "starterContractVersion:", "starterContractSha256:", "starterWasmContractPath: BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj", "starterWasmContractSha256:", "projects:", "server:", "path: $Name/$Name.csproj", "wasm:", "path: $Name.WASM/$Name.WASM.csproj", "protectedFiles:", "packageReferences:", "Microsoft.AspNetCore.Components.WebAssembly.Server", "Microsoft.AspNetCore.Components.WebAssembly", "packageVersions:", "packageProvenance:", "BlazorShop.Storefront.Presentation", "BlazorShop.Storefront.Components", "BlazorShop.Storefront.Browser")) {
     if (-not (Test-TextContains -Text $metadataText -Needle $required)) {
         throw "[SFB-PROJECT-005] metadata.yaml is missing '$required'."
     }
@@ -255,7 +257,7 @@ foreach ($requiredManifestMarker in @(
     }
 }
 
-$cssManifestBody = $manifestBodiesByPath["wwwroot/css/storefront-builder.generated.css"]
+$cssManifestBody = $manifestBodiesByPath["$Name/wwwroot/css/storefront-builder.generated.css"]
 if ($null -ne $cssManifestBody -and -not [regex]::IsMatch($cssManifestBody, "(?m)^\s+ownership:\s*generated\s*$")) {
     throw "[SFB-PROJECT-011] generated-files.yaml must mark generated visual CSS ownership as generated."
 }

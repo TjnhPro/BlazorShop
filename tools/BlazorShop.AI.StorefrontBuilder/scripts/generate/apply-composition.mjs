@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, join, resolve } from "node:path";
 
-const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
+const workspaceRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const serverRoot = resolveServerRoot(workspaceRoot);
 const target = readArg("--target") ?? "";
 
 const transforms = [
@@ -24,7 +25,7 @@ for (const [relativePath, transform] of transforms) {
     continue;
   }
 
-  const path = join(projectRoot, relativePath);
+  const path = join(serverRoot, relativePath);
   const original = readFileSync(path, "utf8");
   const updated = transform(original);
   if (updated !== original) {
@@ -114,4 +115,12 @@ function transformFallbackPage(content) {
 function readArg(name) {
   const index = process.argv.indexOf(name);
   return index === -1 ? undefined : process.argv[index + 1];
+}
+
+function resolveServerRoot(root) {
+  const projectName = basename(root);
+  const starterFirstRoot = join(root, projectName);
+  return existsSync(join(starterFirstRoot, `${projectName}.csproj`))
+    ? starterFirstRoot
+    : root;
 }

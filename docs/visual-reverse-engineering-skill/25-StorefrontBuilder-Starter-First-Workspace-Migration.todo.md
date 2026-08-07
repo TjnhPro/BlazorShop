@@ -327,64 +327,74 @@ Goal: generate a sibling server/WASM workspace and solution from Starter sources
 
 Tasks:
 
-- [ ] Update `scripts/generate-storefront-sample.ps1` to create:
-  - [ ] `WorkspaceRoot`
-  - [ ] `WorkspaceRoot/{ProjectName}`
-  - [ ] `WorkspaceRoot/{ProjectName}.WASM`
-  - [ ] `WorkspaceRoot/docs/storefront-analysis`
-- [ ] Copy Starter server into `ServerProjectRoot`.
-- [ ] Copy Starter.WASM into `WasmProjectRoot`.
-- [ ] Copy or create workspace-level shared files:
-  - [ ] `StorefrontPackageVersions.props`
-  - [ ] `nuget.config`
-  - [ ] `docs/storefront-analysis/metadata.yaml`
-  - [ ] `docs/storefront-analysis/generated-files.yaml`
-  - [ ] `docs/storefront-analysis/asset-manifest.yaml`
-  - [ ] `docs/storefront-analysis/starter-generation.contract.yaml`
-- [ ] Rename server project:
-  - [ ] File name to `{ProjectName}.csproj`.
-  - [ ] Assembly/root namespace to `{ProjectName}`.
-  - [ ] Razor/component namespaces.
-  - [ ] Static asset base path if present.
-- [ ] Rename WASM project:
-  - [ ] File name to `{ProjectName}.WASM.csproj`.
-  - [ ] Assembly/root namespace to `{ProjectName}.WASM`.
-  - [ ] Razor/component namespaces.
-  - [ ] Browser runtime namespace imports.
-- [ ] Rewrite generated server references:
-  - [ ] Presentation, Components, Browser to PackageReferences when independent proof mode requires package consumption.
-  - [ ] Sibling WASM as `<ProjectReference Include="..\{ProjectName}.WASM\{ProjectName}.WASM.csproj" />`.
-  - [ ] No Runtime/Client direct source references unless explicitly approved in contract.
-- [ ] Rewrite generated WASM references:
-  - [ ] Browser and Components to package references.
-  - [ ] No Runtime/Client references.
-  - [ ] No server project reference.
-- [ ] Remove the old nested-WASM exclusion ItemGroup generation completely.
-- [ ] Add a generated `.sln` at workspace root:
-  - [ ] Contains server project.
-  - [ ] Contains WASM project.
-  - [ ] Does not include V2, Starter, backend, Control Plane, Commerce Node, or generated proof outputs from other stores.
-  - [ ] Uses deterministic project order.
-  - [ ] Uses standard `.sln` output rather than `.slnx` unless repo intentionally moves to `.slnx`.
-- [ ] Update generated README or operator notes:
-  - [ ] Restore/build solution from workspace root.
-  - [ ] Run server project from sibling folder.
-  - [ ] Explain analysis artifacts under workspace `docs/storefront-analysis`.
-- [ ] Update `build-storefront.ps1`:
-  - [ ] `OutputRoot/ProjectName` means workspace root.
-  - [ ] `-Mode generate` creates workspace.
-  - [ ] `-Mode full` validates workspace after generation.
-  - [ ] `-Mode validate-only` accepts workspace root.
-- [ ] Ensure `-Force` deletes/replaces only the target workspace root after path safety checks.
-- [ ] Ensure generated output is not added to `BlazorShop.sln`.
+- [x] Update `scripts/generate-storefront-sample.ps1` to create:
+  - [x] `WorkspaceRoot`
+  - [x] `WorkspaceRoot/{ProjectName}`
+  - [x] `WorkspaceRoot/{ProjectName}.WASM`
+  - [x] `WorkspaceRoot/docs/storefront-analysis`
+- [x] Copy Starter server into `ServerProjectRoot`.
+- [x] Copy Starter.WASM into `WasmProjectRoot`.
+- [x] Copy or create workspace-level shared files:
+  - [x] `StorefrontPackageVersions.props`
+  - [x] `nuget.config`
+  - [x] `docs/storefront-analysis/metadata.yaml`
+  - [x] `docs/storefront-analysis/generated-files.yaml`
+  - [x] `docs/storefront-analysis/asset-manifest.yaml`
+  - [x] `docs/storefront-analysis/starter-generation.contract.yaml`
+- [x] Rename server project:
+  - [x] File name to `{ProjectName}.csproj`.
+  - [x] Assembly/root namespace to `{ProjectName}`.
+  - [x] Razor/component namespaces.
+  - [x] Static asset base path if present.
+- [x] Rename WASM project:
+  - [x] File name to `{ProjectName}.WASM.csproj`.
+  - [x] Assembly/root namespace to `{ProjectName}.WASM`.
+  - [x] Razor/component namespaces.
+  - [x] Browser runtime namespace imports.
+- [x] Rewrite generated server references:
+  - [x] Presentation, Components, Browser to PackageReferences when independent proof mode requires package consumption.
+  - [x] Sibling WASM as `<ProjectReference Include="..\{ProjectName}.WASM\{ProjectName}.WASM.csproj" />`.
+  - [x] No Runtime/Client direct source references unless explicitly approved in contract.
+- [x] Rewrite generated WASM references:
+  - [x] Browser and Components to package references.
+  - [x] No Runtime/Client references.
+  - [x] No server project reference.
+- [x] Remove the old nested-WASM exclusion ItemGroup generation completely.
+- [x] Add a generated `.sln` at workspace root:
+  - [x] Contains server project.
+  - [x] Contains WASM project.
+  - [x] Does not include V2, Starter, backend, Control Plane, Commerce Node, or generated proof outputs from other stores.
+  - [x] Uses deterministic project order.
+  - [x] Uses standard `.sln` output rather than `.slnx` unless repo intentionally moves to `.slnx`.
+- [x] Update generated README or operator notes:
+  - [x] Restore/build solution from workspace root.
+  - [x] Run server project from sibling folder.
+  - [x] Explain analysis artifacts under workspace `docs/storefront-analysis`.
+- [x] Update `build-storefront.ps1`:
+  - [x] `OutputRoot/ProjectName` means workspace root.
+  - [x] `-Mode generate` creates workspace.
+  - [x] `-Mode full` validates workspace after generation.
+  - [x] `-Mode validate-only` accepts workspace root.
+- [x] Ensure `-Force` deletes/replaces only the target workspace root after path safety checks.
+- [x] Ensure generated output is not added to `BlazorShop.sln`.
 
 Exit criteria:
 
-- [ ] Fresh generation produces the canonical workspace tree.
-- [ ] Fresh generation has no nested `{ProjectName}.WASM` folder under server root.
-- [ ] Fresh generation has no generated WASM exclusion ItemGroups.
-- [ ] `dotnet restore {WorkspaceRoot}/{ProjectName}.sln` succeeds.
-- [ ] `dotnet build {WorkspaceRoot}/{ProjectName}.sln --no-restore` succeeds.
+- [x] Fresh generation produces the canonical workspace tree.
+- [x] Fresh generation has no nested `{ProjectName}.WASM` folder under server root.
+- [x] Fresh generation has no generated WASM exclusion ItemGroups.
+- [x] `dotnet restore {WorkspaceRoot}/{ProjectName}.sln` succeeds.
+- [x] `dotnet build {WorkspaceRoot}/{ProjectName}.sln --no-restore` succeeds.
+
+Phase 4 evidence:
+
+- `scripts/generate-storefront-sample.ps1` now writes the canonical workspace with sibling server and WASM projects, workspace-level shared files, workspace-level analysis artifacts, and a standard `.sln`.
+- `build-storefront.ps1 -Mode generate -Name Phase4WrapperProof -StoreKey sample -OutputRoot obj/storefront-builder/generated -Force` passed and wrote visual CSS/assets under the generated server project while keeping analysis under workspace `docs/storefront-analysis`.
+- `build-storefront.ps1 -Mode validate-only -Name Phase4WrapperProof -StoreKey sample -OutputRoot obj/storefront-builder/generated` passed schema, generated project, asset, CSS, composition, guard, idempotency, and static validation.
+- `build-storefront.ps1 -Mode full -Name Phase4FullProof -StoreKey sample -OutputRoot obj/storefront-builder/generated -Force -SkipVisualQa -SkipCommerceRegression` passed generation and validation in one command.
+- `dotnet restore obj/storefront-builder/generated/BlazorShop.Storefront.Phase4WrapperProof/BlazorShop.Storefront.Phase4WrapperProof.sln --no-cache --force-evaluate` passed.
+- `dotnet build obj/storefront-builder/generated/BlazorShop.Storefront.Phase4WrapperProof/BlazorShop.Storefront.Phase4WrapperProof.sln --no-restore` passed with 0 warnings and 0 errors.
+- Scan of `Phase4FullProof` found no nested server `{ProjectName}.WASM` folder, no generated WASM exclusion ItemGroups, and no forbidden V2, Starter, backend, Control Plane, or Commerce Node references.
 
 ## Phase 5 - Package Version And Provenance Alignment
 

@@ -101,9 +101,9 @@ switch ($Mode) {
         & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" @generationArgs
         if ([string]::IsNullOrWhiteSpace($HandoffRoot)) {
             node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
-            node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --project-root $projectRoot
-            node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
-            node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $projectRoot
+            node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --workspace-root $projectRoot
+            node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --workspace-root $projectRoot
+            node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --workspace-root $projectRoot
         }
         node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot --intentional-changes "__all__"
     }
@@ -143,9 +143,9 @@ switch ($Mode) {
         & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" @generationArgs
         if ([string]::IsNullOrWhiteSpace($HandoffRoot)) {
             node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
-            node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --project-root $projectRoot
-            node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
-            node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $projectRoot
+            node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --workspace-root $projectRoot
+            node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --workspace-root $projectRoot
+            node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --workspace-root $projectRoot
         }
         node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot --intentional-changes "__all__"
         if ([string]::IsNullOrWhiteSpace($HandoffRoot)) {

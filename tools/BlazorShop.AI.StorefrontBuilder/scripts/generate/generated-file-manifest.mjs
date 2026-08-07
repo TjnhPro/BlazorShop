@@ -286,11 +286,11 @@ function classifyFile(filePath) {
     return descriptor("managed", "shell/layout", "project", ["metadata.yaml"]);
   }
 
-  if (filePath.startsWith("wwwroot/css/") || /\.WASM\/wwwroot\/css\//.test(filePath)) {
+  if (filePath.startsWith("wwwroot/css/") || filePath.includes("/wwwroot/css/")) {
     return descriptor("generated", "shell/layout", "css", ["metadata.yaml", "asset-manifest.yaml", "review-summary.md"]);
   }
 
-  if (filePath.startsWith("wwwroot/assets/") || /\.WASM\/wwwroot\//.test(filePath)) {
+  if (filePath.startsWith("wwwroot/assets/") || filePath.includes("/wwwroot/assets/") || /\.WASM\/wwwroot\//.test(filePath)) {
     return descriptor("generated", "SEO/media/consent support", "asset", ["asset-manifest.yaml"]);
   }
 

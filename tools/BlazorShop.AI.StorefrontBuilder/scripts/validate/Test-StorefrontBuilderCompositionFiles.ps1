@@ -2,12 +2,16 @@ param([Parameter(Mandatory = $true)][string]$ProjectRoot)
 
 $ErrorActionPreference = "Stop"
 
+$workspaceLeaf = Split-Path -Leaf ([System.IO.Path]::GetFullPath($ProjectRoot))
+$serverProjectRoot = Join-Path $ProjectRoot $workspaceLeaf
+$sourceRoot = if (Test-Path -LiteralPath (Join-Path $serverProjectRoot "$workspaceLeaf.csproj")) { $serverProjectRoot } else { $ProjectRoot }
+
 function Test-TextContains([string]$Text, [string]$Value, [System.StringComparison]$Comparison = [System.StringComparison]::Ordinal) {
     return $Text.IndexOf($Value, $Comparison) -ge 0
 }
 
 function Assert-ContainsText([string]$RelativePath, [string]$Text, [string]$RuleId) {
-    $path = Join-Path $ProjectRoot $RelativePath
+    $path = Join-Path $sourceRoot $RelativePath
     if (-not (Test-Path $path)) {
         throw "[$RuleId] Missing generated composition file: $RelativePath"
     }
@@ -19,7 +23,7 @@ function Assert-ContainsText([string]$RelativePath, [string]$Text, [string]$Rule
 }
 
 function Assert-DoesNotContainText([string]$RelativePath, [string]$Text, [string]$RuleId) {
-    $path = Join-Path $ProjectRoot $RelativePath
+    $path = Join-Path $sourceRoot $RelativePath
     if (-not (Test-Path $path)) {
         throw "[$RuleId] Missing generated composition file: $RelativePath"
     }
@@ -55,7 +59,7 @@ foreach ($check in @(
     Assert-ContainsText -RelativePath $check[0] -Text $check[1] -RuleId $check[2]
 }
 
-$purchasePanel = Get-Content -LiteralPath (Join-Path $ProjectRoot "Components\Catalog\PurchasePanelPlaceholder.razor") -Raw
+$purchasePanel = Get-Content -LiteralPath (Join-Path $sourceRoot "Components\Catalog\PurchasePanelPlaceholder.razor") -Raw
 if ((Test-TextContains $purchasePanel "HttpClient") -or (Test-TextContains $purchasePanel "fetch(")) {
     throw "[SFB-COMMERCE-007] Product purchase must not call direct HTTP or JS."
 }

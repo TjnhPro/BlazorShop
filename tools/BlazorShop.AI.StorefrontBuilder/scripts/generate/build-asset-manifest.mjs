@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 
-const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
-const output = `${projectRoot}/docs/storefront-analysis/asset-manifest.yaml`;
-const placeholder = `${projectRoot}/wwwroot/assets/generated/asset-placeholder.svg`;
+const workspaceRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const serverRoot = resolveServerRoot(workspaceRoot);
+const projectName = basename(workspaceRoot);
+const output = join(workspaceRoot, "docs", "storefront-analysis", "asset-manifest.yaml");
+const placeholder = join(serverRoot, "wwwroot", "assets", "generated", "asset-placeholder.svg");
+const replacementPath = serverRoot === workspaceRoot
+  ? "wwwroot/assets/generated/asset-placeholder.svg"
+  : `${projectName}/wwwroot/assets/generated/asset-placeholder.svg`;
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="Replacement asset needed"><rect width="640" height="640" fill="#d9dfd8"/><path d="M96 448l128-128 96 96 96-128 128 160H96z" fill="#0b6b57"/><circle cx="438" cy="202" r="48" fill="#c94c2f"/></svg>\n`;
 const checksum = createHash("sha256").update(svg).digest("hex");
 
@@ -26,7 +31,7 @@ assets:
     duplicateOf: none
     allowedToCopy: true
     replacementNeeded: true
-    replacementPath: wwwroot/assets/generated/asset-placeholder.svg
+    replacementPath: ${replacementPath}
 replacementList:
   - placeholder-product-media
 rules:
@@ -41,4 +46,12 @@ console.log(`Generated asset manifest at ${output}`);
 function readArg(name) {
   const index = process.argv.indexOf(name);
   return index === -1 ? undefined : process.argv[index + 1];
+}
+
+function resolveServerRoot(root) {
+  const candidateProjectName = basename(root);
+  const starterFirstRoot = join(root, candidateProjectName);
+  return existsSync(join(starterFirstRoot, `${candidateProjectName}.csproj`))
+    ? starterFirstRoot
+    : root;
 }

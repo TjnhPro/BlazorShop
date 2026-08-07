@@ -34,8 +34,9 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")
 # Accept a friendly {Name} suffix and emit BlazorShop.Storefront.{Name}; Copy Starter through scripts\generate-storefront-sample.ps1 before StorefrontBuilder metadata is layered.
 $projectName = Normalize-StorefrontProjectName -Name $Name
 $normalizedStoreKey = Normalize-StorefrontStoreKey -StoreKey $StoreKey
-$outputRootPath = Resolve-ApprovedStorefrontBuilderOutputRoot -RepoRoot $repoRoot -OutputRoot $OutputRoot
-$projectRoot = Join-Path $outputRootPath $projectName
+$workspacePaths = Resolve-StorefrontBuilderWorkspacePaths -RepoRoot $repoRoot -ProjectName $projectName -OutputRoot $OutputRoot
+$outputRootPath = $workspacePaths.OutputRoot
+$projectRoot = $workspacePaths.WorkspaceRoot
 $generator = Join-Path $repoRoot "scripts\generate-storefront-sample.ps1"
 $storefrontContractPath = "contracts/storefront/storefront.openapi.json"
 $storefrontContractFullPath = Resolve-StorefrontBuilderRepoPath -RepoRoot $repoRoot -Path $storefrontContractPath
@@ -228,14 +229,14 @@ try {
         "projects:",
         "  server:",
         "    name: $projectName",
-        "    path: $projectName.csproj",
+        "    path: $projectName/$projectName.csproj",
         "  wasm:",
         "    name: $projectName.WASM",
         "    path: $projectName.WASM/$projectName.WASM.csproj",
         "protectedFiles:",
         "  - BlazorShop.Storefront.Presentation",
         "  - StorefrontPackageVersions.props",
-        "featureManifest: Features\feature-manifest.json",
+        "featureManifest: $projectName\Features\feature-manifest.json",
         "packageReferences:",
         "  server:",
         "    - Microsoft.AspNetCore.Components.WebAssembly.Server",
@@ -298,7 +299,7 @@ try {
 
     if ($isHandoffGeneration) {
         & node (Join-Path $PSScriptRoot "write-agent-task-package.mjs") `
-            --project-root $stagedProjectRoot `
+            --workspace-root $stagedProjectRoot `
             --handoff-root $HandoffRoot `
             --plan-json $handoffPlanJsonPath
         if ($LASTEXITCODE -ne 0) {
