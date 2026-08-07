@@ -266,6 +266,7 @@ if ($Describe) {
     Write-Host "- Waits for Commerce Node health: $healthUrl."
     Write-Host "- Verifies Storefront fixture endpoints for store '$StoreKey': configuration, categories, category '$FixtureCategorySlug', product '$FixtureProductSlug', page '$FixturePageSlug', and payment '$RequiredPaymentMethodKey'."
     Write-Host "- Runs scripts/qa/run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFull."
+    Write-Host "- Generates workspace output at $OutputRoot/$Name with sibling server/WASM projects and runs the generated host from $OutputRoot/$Name/$Name/$Name.csproj."
     Write-Host "- Writes reports under $OutputRoot/$Name/docs/storefront-analysis and keeps V2 process logs under .gstack/run-v2-local."
     Write-Host "- Fixture runtime ports from scripts/env/v2-local.env: Control Plane API 5280, Control Plane Web 5281, Commerce Node API 5180, Storefront V2 18598."
     Write-Host "- Generated proof host uses $ProofUrl / $PublicBaseUrl, normally port 18620, so it does not conflict with Storefront V2."

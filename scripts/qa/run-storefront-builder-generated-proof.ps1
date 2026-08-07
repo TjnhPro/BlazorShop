@@ -427,16 +427,16 @@ function Compare-ProofFileHashes {
 function Invoke-GeneratedProofRegenerationLifecycle {
     $regenerator = Join-Path $toolRoot "regenerate-storefront.ps1"
     $manifestPath = Join-Path $projectRoot "docs\storefront-analysis\generated-files.yaml"
-    $manualConflictFile = Join-Path $projectRoot "Components\Catalog\PurchasePanelPlaceholder.razor"
-    $manualWasmConflictFile = Join-Path $projectRoot "$Name.WASM\Program.cs"
+    $manualConflictFile = Join-Path $serverProjectRoot "Components\Catalog\PurchasePanelPlaceholder.razor"
+    $manualWasmConflictFile = Join-Path $wasmProjectRoot "Program.cs"
 
     Invoke-Step "Run post-regeneration build proof" {
-        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
+        & $regenerator -WorkspaceRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
     }
 
     Invoke-Step "Run regenerate no-op proof" {
         $before = Get-ProofFileHashes -Root $projectRoot
-        & $regenerator -ProjectRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
+        & $regenerator -WorkspaceRoot $projectRoot -Scope all -ValidateAfterApply -BuildAfterApply
         $after = Get-ProofFileHashes -Root $projectRoot
         $diff = Compare-ProofFileHashes -Before $before -After $after
         if ($diff.Count -gt 0) {
@@ -450,10 +450,10 @@ function Invoke-GeneratedProofRegenerationLifecycle {
         try {
             Add-Content -LiteralPath $manualConflictFile -Value "`n<!-- StorefrontBuilder manual conflict proof -->"
             Add-Content -LiteralPath $manualWasmConflictFile -Value "`n// StorefrontBuilder manual WASM conflict proof"
-            & $regenerator -ProjectRoot $projectRoot -Scope conflicts
+            & $regenerator -WorkspaceRoot $projectRoot -Scope conflicts
             $manifest = Get-Content -LiteralPath $manifestPath -Raw
             foreach ($marker in @(
-                "Components/Catalog/PurchasePanelPlaceholder.razor",
+                "$Name/Components/Catalog/PurchasePanelPlaceholder.razor",
                 "$Name.WASM/Program.cs",
                 "manualEditDetected: true",
                 "conflictStatus: manual-edit"
@@ -468,14 +468,17 @@ function Invoke-GeneratedProofRegenerationLifecycle {
             [System.IO.File]::WriteAllText($manualWasmConflictFile, $wasmOriginal, [System.Text.UTF8Encoding]::new($false))
         }
 
-        & $regenerator -ProjectRoot $projectRoot -Scope all
+        & $regenerator -WorkspaceRoot $projectRoot -Scope all
     }
 }
 
 $generatedRoot = Resolve-RepoPath $OutputRoot
 $projectRoot = Join-Path $generatedRoot $Name
-$projectFile = Join-Path $projectRoot "$Name.csproj"
-$wasmProjectFile = Join-Path $projectRoot "$Name.WASM\$Name.WASM.csproj"
+$serverProjectRoot = Join-Path $projectRoot $Name
+$wasmProjectRoot = Join-Path $projectRoot "$Name.WASM"
+$solutionFile = Join-Path $projectRoot "$Name.sln"
+$projectFile = Join-Path $serverProjectRoot "$Name.csproj"
+$wasmProjectFile = Join-Path $wasmProjectRoot "$Name.WASM.csproj"
 
 if ($Describe) {
     Write-Host "StorefrontBuilder generated proof workflow"
@@ -483,9 +486,9 @@ if ($Describe) {
     Write-Host "- Clean $projectRoot"
     Write-Host "- Resolve source HEAD and package build identity"
     Write-Host "- Pack Storefront.Client, Storefront.Runtime, Storefront.Presentation, Storefront.Components, and Storefront.Browser"
-    Write-Host "- Generate $Name from Storefront.Starter"
+    Write-Host "- Generate $Name from Storefront.Starter into a workspace with sibling server/WASM projects"
     Write-Host "- Write StorefrontBuilder review, asset, CSS, and generated-file artifacts"
-    Write-Host "- Restore/build generated proof from local packages"
+    Write-Host "- Restore/build generated proof solution from local packages"
     Write-Host "- Run static validation, isolation, and shared visual boundary gates"
     Write-Host "- Run post-regeneration validate/build proof"
     Write-Host "- Run deterministic no-op regeneration proof"
@@ -546,6 +549,8 @@ $packageHashes = @{
     Browser = Get-StorefrontPackageHash "BlazorShop.Storefront.Browser" $StorefrontBrowserPackageVersion
 }
 Write-Host "Package hashes: Client=$($packageHashes.Client) Runtime=$($packageHashes.Runtime) Presentation=$($packageHashes.Presentation) Components=$($packageHashes.Components) Browser=$($packageHashes.Browser)"
+Write-Host "Workspace path: $projectRoot"
+Write-Host "Solution path: $solutionFile"
 Write-Host "Server project path: $projectFile"
 Write-Host "WASM project path: $wasmProjectFile"
 Write-Host "Restore sources: $packageRoot"
@@ -578,39 +583,33 @@ Invoke-Step "Validate package provenance metadata" {
 }
 
 Invoke-Step "Write StorefrontBuilder artifacts" {
-    node "$toolRoot\scripts\generate\write-review-artifacts.mjs" --project-root $projectRoot --url $Url
-    node "$toolRoot\scripts\generate\build-asset-manifest.mjs" --project-root $projectRoot
-    node "$toolRoot\scripts\generate\apply-visual-foundation.mjs" --project-root $projectRoot
-    node "$toolRoot\scripts\generate\apply-composition.mjs" --project-root $projectRoot
-    node "$toolRoot\scripts\generate\update-generated-files-manifest.mjs" --project-root $projectRoot --intentional-changes "__all__"
+    node "$toolRoot\scripts\generate\write-review-artifacts.mjs" --workspace-root $projectRoot --url $Url
+    node "$toolRoot\scripts\generate\build-asset-manifest.mjs" --workspace-root $projectRoot
+    node "$toolRoot\scripts\generate\apply-visual-foundation.mjs" --workspace-root $projectRoot
+    node "$toolRoot\scripts\generate\apply-composition.mjs" --workspace-root $projectRoot
+    node "$toolRoot\scripts\generate\update-generated-files-manifest.mjs" --workspace-root $projectRoot --intentional-changes "__all__"
 }
 
 Invoke-Step "Restore generated proof" {
-    dotnet restore $projectFile --no-cache --force-evaluate
+    dotnet restore $solutionFile --no-cache --force-evaluate
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     Assert-RestoredStorefrontPackages -ProjectFile $projectFile -ExpectedPackages (Get-ExpectedServerStorefrontPackages)
-
-    dotnet restore $wasmProjectFile --no-cache --force-evaluate
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     Assert-RestoredStorefrontPackages -ProjectFile $wasmProjectFile -ExpectedPackages (Get-ExpectedWasmStorefrontPackages)
     Write-Host "Resolved package versions verified for server and WASM."
 }
 
 Invoke-Step "Build generated proof" {
-    dotnet build $projectFile --configuration $Configuration --no-restore
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-    dotnet build $wasmProjectFile --configuration $Configuration --no-restore
+    dotnet build $solutionFile --configuration $Configuration --no-restore
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
 Invoke-Step "Run static StorefrontBuilder validation" {
-    & "$toolRoot\validate-storefront.ps1" -ProjectRoot $projectRoot -Name $Name -StoreKey $StoreKey
+    & "$toolRoot\validate-storefront.ps1" -WorkspaceRoot $projectRoot -Name $Name -StoreKey $StoreKey
 }
 
 Invoke-Step "Run StorefrontBuilder isolation gate" {
     & "$PSScriptRoot\run-storefront-builder-isolation-gate.ps1" `
-        -ProjectRoot $projectRoot `
+        -WorkspaceRoot $projectRoot `
         -Name $Name `
         -Configuration $Configuration `
         -StorefrontClientPackageVersion $StorefrontClientPackageVersion `
@@ -631,7 +630,7 @@ $runFastFunctionalProof = $ProofLevel -eq "FoundationFunctionalFast"
 $runLiveFunctionalProof = $RunBrowserQa -or $ProofLevel -in @("FoundationFunctionalFull", "FoundationFunctional")
 if ($runFastFunctionalProof) {
     Invoke-Step "Run fast foundation functional browser proof" {
-        node "$toolRoot\scripts\qa\run-fast-foundation-functional.mjs" --project-root $projectRoot
+        node "$toolRoot\scripts\qa\run-fast-foundation-functional.mjs" --workspace-root $projectRoot --project-file $projectFile
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 }
@@ -646,11 +645,11 @@ if ($runLiveFunctionalProof) {
         try {
             Wait-ForProofStorefront $process
             if ($runLiveFunctionalProof) {
-                node "$toolRoot\scripts\qa\run-visual-qa.mjs" --base-url $ProofUrl --project-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug
+                node "$toolRoot\scripts\qa\run-visual-qa.mjs" --base-url $ProofUrl --workspace-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug
                 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             }
 
-            node "$toolRoot\scripts\qa\run-commerce-regression.mjs" --base-url $ProofUrl --project-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug --page-slug $FixturePageSlug
+            node "$toolRoot\scripts\qa\run-commerce-regression.mjs" --base-url $ProofUrl --workspace-root $projectRoot --category-slug $FixtureCategorySlug --product-slug $FixtureProductSlug --page-slug $FixturePageSlug
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
         finally {

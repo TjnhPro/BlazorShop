@@ -8,8 +8,10 @@ import { setTimeout as delay } from "node:timers/promises";
 import { chromium } from "@playwright/test";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
-const projectFile = resolve(readArg("--project-file") ?? `${projectRoot}/${basename(projectRoot)}.csproj`);
+const projectRoot = resolve(readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof");
+const projectName = basename(projectRoot);
+const serverProjectRoot = resolve(`${projectRoot}/${projectName}`);
+const projectFile = resolve(readArg("--project-file") ?? `${serverProjectRoot}/${projectName}.csproj`);
 const reportPath = `${projectRoot}/docs/storefront-analysis/fast-foundation-functional-report.md`;
 const proofProductPath = "/product/proof-product";
 const directCommerceCalls = [];
@@ -402,8 +404,8 @@ if (missing.length > 0 || failures.length > 0) {
 }
 
 function assertGeneratedContract() {
-  const purchasePanel = readFileSync(`${projectRoot}/Components/Catalog/PurchasePanelPlaceholder.razor`, "utf8");
-  const layout = readFileSync(`${projectRoot}/Components/Layout/MainLayout.razor`, "utf8");
+  const purchasePanel = readFileSync(`${serverProjectRoot}/Components/Catalog/PurchasePanelPlaceholder.razor`, "utf8");
+  const layout = readFileSync(`${serverProjectRoot}/Components/Layout/MainLayout.razor`, "utf8");
   for (const token of [
     "data-storefront-product-purchase",
     "data-selection-preview-route",

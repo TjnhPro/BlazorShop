@@ -10,9 +10,9 @@ $regenerationSafetyTests = Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBu
 if ($Describe) {
     Write-Host "StorefrontBuilder regeneration ownership gate"
     Write-Host "- Runs under obj/storefront-builder/generated so generated artifacts stay disposable."
-    Write-Host "- Generates a fresh proof project from Storefront.Starter."
-    Write-Host "- Verifies no-op regeneration is deterministic."
-    Write-Host "- Verifies css/page/component scopes only touch declared generated files plus manifest/report files."
+    Write-Host "- Generates a fresh starter-first workspace with a solution plus sibling server and WASM projects."
+    Write-Host "- Verifies no-op regeneration is deterministic using the workspace root."
+    Write-Host "- Verifies css/page/component scopes only touch workspace-relative declared generated files plus manifest/report files."
     Write-Host "- Verifies manual generated-file edits become conflicts."
     Write-Host "- Verifies user-owned custom files are preserved."
     Write-Host "- Verifies protected file modification fails idempotency validation."

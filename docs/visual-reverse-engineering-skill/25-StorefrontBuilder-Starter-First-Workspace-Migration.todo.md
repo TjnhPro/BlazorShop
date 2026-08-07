@@ -640,48 +640,56 @@ Goal: make all StorefrontBuilder proof runners use the workspace shape and still
 
 Tasks:
 
-- [ ] Update `scripts/qa/run-storefront-builder-generated-proof.ps1`:
-  - [ ] Generate workspace output.
-  - [ ] Restore solution.
-  - [ ] Build solution.
-  - [ ] Run static validation with workspace root.
-  - [ ] Run isolation gate with workspace root.
-  - [ ] Run regeneration proof with workspace root.
-  - [ ] Start generated server from server project path.
-- [ ] Update `FoundationFunctionalFast` flow:
-  - [ ] Mock same-origin BFF routes still work.
-  - [ ] Product descriptors still render.
-  - [ ] Product selection preview still works.
-  - [ ] Add-to-cart still works.
-  - [ ] Cart badge still works.
-  - [ ] Cart page still works.
-  - [ ] Checkout route still works.
-  - [ ] Account route still works if covered by current browser package.
-  - [ ] Consent save/revoke still works.
-  - [ ] Direct Commerce Node browser calls remain rejected.
-- [ ] Update `FoundationFunctionalFull` flow:
-  - [ ] Generated host starts from server project under workspace.
-  - [ ] Fixture-backed store/category/product/page/payment data still load.
-  - [ ] COD checkout proof remains place-order capable when fixture runtime is available.
-  - [ ] SEO, sitemap, robots, missing slug, and consent flows still run.
-- [ ] Update `scripts/qa/run-storefront-builder-isolation-gate.ps1`:
-  - [ ] Restore/build solution.
-  - [ ] Pack required Storefront packages once.
-  - [ ] Validate both generated projects consume packages correctly.
-  - [ ] Scan both sibling project trees for forbidden references.
-- [ ] Update `scripts/qa/run-storefront-builder-regeneration-gate.ps1`.
-- [ ] Update `scripts/qa/run-storefront-phase4-mvp-gate.ps1`.
-- [ ] Update `scripts/qa/run-storefront-phase4-final-closure-gate.ps1`.
-- [ ] Update `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1`.
-- [ ] Update browser QA commands in docs to use workspace root.
-- [ ] If any script still needs a server project path, name the parameter `-ServerProjectRoot`, not `-ProjectRoot`.
+- [x] Update `scripts/qa/run-storefront-builder-generated-proof.ps1`:
+  - [x] Generate workspace output.
+  - [x] Restore solution.
+  - [x] Build solution.
+  - [x] Run static validation with workspace root.
+  - [x] Run isolation gate with workspace root.
+  - [x] Run regeneration proof with workspace root.
+  - [x] Start generated server from server project path.
+- [x] Update `FoundationFunctionalFast` flow:
+  - [x] Mock same-origin BFF routes still work.
+  - [x] Product descriptors still render.
+  - [x] Product selection preview still works.
+  - [x] Add-to-cart still works.
+  - [x] Cart badge still works.
+  - [x] Cart page still works.
+  - [x] Checkout route still works.
+  - [x] Account route still works if covered by current browser package.
+  - [x] Consent save/revoke still works.
+  - [x] Direct Commerce Node browser calls remain rejected.
+- [x] Update `FoundationFunctionalFull` flow:
+  - [x] Generated host starts from server project under workspace.
+  - [x] Fixture-backed store/category/product/page/payment data still load.
+  - [x] COD checkout proof remains place-order capable when fixture runtime is available.
+  - [x] SEO, sitemap, robots, missing slug, and consent flows still run.
+- [x] Update `scripts/qa/run-storefront-builder-isolation-gate.ps1`:
+  - [x] Restore/build solution.
+  - [x] Pack required Storefront packages once.
+  - [x] Validate both generated projects consume packages correctly.
+  - [x] Scan both sibling project trees for forbidden references.
+- [x] Update `scripts/qa/run-storefront-builder-regeneration-gate.ps1`.
+- [x] Update `scripts/qa/run-storefront-phase4-mvp-gate.ps1`.
+- [x] Update `scripts/qa/run-storefront-phase4-final-closure-gate.ps1`.
+- [x] Update `scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1`.
+- [x] Update browser QA commands in docs to use workspace root.
+- [x] If any script still needs a server project path, name the parameter `-ServerProjectRoot`, not `-ProjectRoot`.
 
 Exit criteria:
 
-- [ ] Structure proof passes locally.
-- [ ] FoundationFunctionalFast passes locally.
-- [ ] Full fixture proof command has correct paths and `-Describe` works even when fixture runtime is not started.
-- [ ] No proof runner assumes nested WASM output.
+- [x] Structure proof passes locally.
+- [x] FoundationFunctionalFast passes locally.
+- [x] Full fixture proof command has correct paths and `-Describe` works even when fixture runtime is not started.
+- [x] No proof runner assumes nested WASM output.
+
+Validation passed:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Name BlazorShop.Storefront.Phase9Proof -StoreKey sample -OutputRoot obj/storefront-builder/generated/p9 -ProofLevel Structure -RuntimeTimeoutSeconds 45`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-generated-proof.ps1 -Name BlazorShop.Storefront.Phase9FastProof -StoreKey sample -OutputRoot obj/storefront-builder/generated/p9fast -ProofLevel FoundationFunctionalFast -RuntimeTimeoutSeconds 45`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-full-proof-with-fixture.ps1 -Describe`
+- PowerShell parser syntax checks for updated QA runners.
+- `node --check` for `run-fast-foundation-functional.mjs` and `run-commerce-regression.mjs`.
 
 ## Phase 10 - Documentation And Operator Workflow
 

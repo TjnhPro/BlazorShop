@@ -9,7 +9,7 @@ import {
   writeManifestYaml,
 } from "./generated-file-manifest.mjs";
 
-const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
+const projectRoot = readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
 const intentionalChangeItems = readListArg("--intentional-changes");
 const intentionalChanges = intentionalChangeItems.includes("__all__")
   ? new Set(scanProjectFiles(projectRoot).map((file) => file.filePath))

@@ -669,7 +669,10 @@ $resolvedPilotHandoffSchemaRoot = if ([string]::IsNullOrWhiteSpace($PilotHandoff
     Resolve-RepoPath $PilotHandoffSchemaRoot
 }
 $pilotAnalysisRoot = Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis"
-$pilotProjectFile = Join-Path $resolvedPilotGeneratedProjectRoot "$PilotProjectName.csproj"
+$pilotServerProjectRoot = Join-Path $resolvedPilotGeneratedProjectRoot $PilotProjectName
+$pilotWasmProjectRoot = Join-Path $resolvedPilotGeneratedProjectRoot "$PilotProjectName.WASM"
+$pilotSolutionFile = Join-Path $resolvedPilotGeneratedProjectRoot "$PilotProjectName.sln"
+$pilotProjectFile = Join-Path $pilotServerProjectRoot "$PilotProjectName.csproj"
 $pilotScreenshotRoot = Join-Path $pilotAnalysisRoot "visual-qa"
 $runtimeHostOutputPath = Join-Path $pilotAnalysisRoot "phase4-final-runtime-host.out.log"
 $runtimeHostErrorPath = Join-Path $pilotAnalysisRoot "phase4-final-runtime-host.err.log"
@@ -837,19 +840,19 @@ try {
 
     Invoke-GateCommand -Name "run automatic pilot changed-file detection" -FileName "node" -Arguments @(
         "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\record-agent-visual-writes.mjs",
-        "--project-root", $resolvedPilotGeneratedProjectRoot,
+        "--workspace-root", $resolvedPilotGeneratedProjectRoot,
         "--from-checkpoint", "docs\storefront-analysis\visual-checkpoints\phase4-12-final-closure-pilot\visual-checkpoint.json",
         "--implementation-report", "docs\storefront-analysis\visual-implementation-report.json",
         "--closure-mode"
     ) -LikelyCause "Automatic changed-file detection failed for the fresh pilot visual checkpoint."
     Add-EvidencePath (Join-Path $resolvedPilotGeneratedProjectRoot "docs\storefront-analysis\agent-written-files.json")
 
-    Invoke-GateCommand -Name "restore generated pilot before runtime visual QA" -FileName "dotnet" -Arguments @(
-        "restore", $pilotProjectFile, "--no-cache", "--force-evaluate"
+    Invoke-GateCommand -Name "restore generated pilot solution before runtime visual QA" -FileName "dotnet" -Arguments @(
+        "restore", $pilotSolutionFile, "--no-cache", "--force-evaluate"
     ) -LikelyCause "Generated pilot package references could not be restored before runtime visual QA."
 
-    Invoke-GateCommand -Name "build generated pilot before runtime visual QA" -FileName "dotnet" -Arguments @(
-        "build", $pilotProjectFile, "--configuration", "Debug", "--no-restore"
+    Invoke-GateCommand -Name "build generated pilot solution before runtime visual QA" -FileName "dotnet" -Arguments @(
+        "build", $pilotSolutionFile, "--configuration", "Debug", "--no-restore"
     ) -LikelyCause "Generated pilot visual files do not compile before runtime visual QA."
 
     Invoke-AssertionStep -Name "start runtime Commerce fixture if needed" -Command "node start-fast-commerce-fixture.mjs" -LikelyCause "The local fast Commerce fixture could not start for generated runtime visual QA." -Assertion {
@@ -866,7 +869,7 @@ try {
     Invoke-GateCommand -Name "run runtime visual QA for current closure operation" -FileName "node" -Arguments @(
         "tools\BlazorShop.AI.StorefrontBuilder\scripts\qa\run-visual-qa.mjs",
         "--proof-mode", "runtime",
-        "--project-root", $resolvedPilotGeneratedProjectRoot,
+        "--workspace-root", $resolvedPilotGeneratedProjectRoot,
         "--screenshot-root", $pilotScreenshotRoot,
         "--base-url", $PilotBaseUrl,
         "--operation-id", "phase4-12-final-closure-pilot"
@@ -886,7 +889,7 @@ try {
     Invoke-GateCommand -Name "run Phase 4 MVP pilot gate" -FileName (Get-PreferredPowerShell) -Arguments @(
         "-NoProfile", "-ExecutionPolicy", "Bypass",
         "-File", "scripts\qa\run-storefront-phase4-mvp-gate.ps1",
-        "-GeneratedProjectRoot", $resolvedPilotGeneratedProjectRoot,
+        "-WorkspaceRoot", $resolvedPilotGeneratedProjectRoot,
         "-ProofMode", "Runtime",
         "-BaseUrl", $PilotBaseUrl,
         "-HandoffRoot", $resolvedPilotHandoffRoot,

@@ -290,7 +290,7 @@ dotnet pack $browserProject --configuration $Configuration --output $packageRoot
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Update-GeneratedPackageVersionProps
 Update-GeneratedMetadataPackageProvenance
-node (Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\update-generated-files-manifest.mjs") --project-root $projectRoot --intentional-changes "__all__"
+node (Join-Path $repoRoot "tools\BlazorShop.AI.StorefrontBuilder\scripts\generate\update-generated-files-manifest.mjs") --workspace-root $projectRoot --intentional-changes "__all__"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $metadataPackagesById = Read-GeneratedMetadataPackageProvenance
 Write-GeneratedNuGetConfig

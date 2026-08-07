@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 import { chromium } from "@playwright/test";
 
 const baseUrl = trimEnd(readArg("--base-url") ?? "http://127.0.0.1:18991", "/");
-const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
+const projectRoot = readArg("--workspace-root") ?? readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
 const categorySlug = readArg("--category-slug") ?? "apparel";
 const productSlug = readArg("--product-slug") ?? "qa-simple-product-100";
 const pageSlug = readArg("--page-slug") ?? "customer-service";

@@ -930,10 +930,13 @@ try {
         $storeKey = Read-SimpleYamlValue -Text $metadata -Key "storeKey" -Default $storeKey
     }
 
-    $projectFile = Join-Path $resolvedProjectRoot "$projectName.csproj"
+    $serverProjectRoot = Join-Path $resolvedProjectRoot $projectName
+    $wasmProjectRoot = Join-Path $resolvedProjectRoot "$projectName.WASM"
+    $solutionFile = Join-Path $resolvedProjectRoot "$projectName.sln"
+    $projectFile = Join-Path $serverProjectRoot "$projectName.csproj"
 
     Invoke-AssertionStep -Name "validate generated project metadata" -Command "metadata/csproj/feature manifest checks" -LikelyCause "The generated project is incomplete or metadata.yaml is stale." -Assertion {
-        foreach ($path in @($resolvedProjectRoot, $projectFile, $metadataPath, (Join-Path $resolvedProjectRoot "Features\feature-manifest.json"))) {
+        foreach ($path in @($resolvedProjectRoot, $solutionFile, $serverProjectRoot, $wasmProjectRoot, $projectFile, $metadataPath, (Join-Path $serverProjectRoot "Features\feature-manifest.json"))) {
             if (-not (Test-Path -LiteralPath $path)) {
                 throw "Required generated project artifact is missing: $path"
             }
@@ -1003,12 +1006,12 @@ try {
         "--name", $projectName
     ) -LikelyCause "Generated handoff artifacts, allowed outputs, or protected boundary metadata drifted."
 
-    $null = Invoke-GateCommand -Name "restore generated project" -FileName "dotnet" -Arguments @(
-        "restore", $projectFile, "--no-cache", "--force-evaluate"
+    $null = Invoke-GateCommand -Name "restore generated workspace solution" -FileName "dotnet" -Arguments @(
+        "restore", $solutionFile, "--no-cache", "--force-evaluate"
     ) -LikelyCause "Generated package references or local NuGet package availability are invalid."
 
-    $null = Invoke-GateCommand -Name "build generated project" -FileName "dotnet" -Arguments @(
-        "build", $projectFile, "--configuration", $Configuration, "--no-restore"
+    $null = Invoke-GateCommand -Name "build generated workspace solution" -FileName "dotnet" -Arguments @(
+        "build", $solutionFile, "--configuration", $Configuration, "--no-restore"
     ) -LikelyCause "Generated visual files do not compile against Storefront Presentation packages."
 
     if ($effectiveProofMode -eq "Runtime" -and $StartRuntimeHost) {
