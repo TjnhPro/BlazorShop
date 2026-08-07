@@ -740,37 +740,44 @@ Goal: remove old assumptions and prevent regression.
 
 Tasks:
 
-- [ ] Search and eliminate active old-shape assumptions:
-  - [ ] `Compile Remove=.*WASM`
-  - [ ] `Content Remove=.*WASM`
-  - [ ] `EmbeddedResource Remove=.*WASM`
-  - [ ] `None Remove=.*WASM`
-  - [ ] `{Name}.WASM/{Name}.WASM.csproj` as nested path
-  - [ ] `{Name}.WASM\\{Name}.WASM.csproj` as nested path
-  - [ ] `Join-Path $projectRoot "$Name.WASM"`
-  - [ ] `rootPath: "."` for generated server project ownership
-  - [ ] `.WASM/` substring as project ownership truth
-- [ ] Keep historical docs only if they are clearly marked as historical and not current instructions.
-- [ ] Add guardrail tests:
-  - [ ] Validator fails if nested WASM folder exists under server root.
-  - [ ] Validator fails if exclusion ItemGroups are present.
-  - [ ] Validator fails if solution is missing.
-  - [ ] Validator fails if solution contains unexpected projects.
-  - [ ] Regeneration fails old nested workspace with clear guidance.
-- [ ] Add static source scan in QA:
-  - [ ] StorefrontBuilder scripts do not create nested WASM output.
-  - [ ] StorefrontBuilder scripts do not generate WASM exclusion ItemGroups.
-  - [ ] Manifest code does not infer ownership only from `.WASM/`.
-- [ ] Update failure messages:
-  - [ ] Problem: what failed.
-  - [ ] Cause: old nested shape or missing workspace file.
-  - [ ] Fix: regenerate fresh or pass workspace root.
+- [x] Search and eliminate active old-shape assumptions:
+  - [x] `Compile Remove=.*WASM`
+  - [x] `Content Remove=.*WASM`
+  - [x] `EmbeddedResource Remove=.*WASM`
+  - [x] `None Remove=.*WASM`
+  - [x] `{Name}.WASM/{Name}.WASM.csproj` as nested path
+  - [x] `{Name}.WASM\\{Name}.WASM.csproj` as nested path
+  - [x] `Join-Path $projectRoot "$Name.WASM"`
+  - [x] `rootPath: "."` for generated server project ownership
+  - [x] `.WASM/` substring as project ownership truth
+- [x] Keep historical docs only if they are clearly marked as historical and not current instructions.
+- [x] Add guardrail tests:
+  - [x] Validator fails if nested WASM folder exists under server root.
+  - [x] Validator fails if exclusion ItemGroups are present.
+  - [x] Validator fails if solution is missing.
+  - [x] Validator fails if solution contains unexpected projects.
+  - [x] Regeneration fails old nested workspace with clear guidance.
+- [x] Add static source scan in QA:
+  - [x] StorefrontBuilder scripts do not create nested WASM output.
+  - [x] StorefrontBuilder scripts do not generate WASM exclusion ItemGroups.
+  - [x] Manifest code does not infer ownership only from `.WASM/`.
+- [x] Update failure messages:
+  - [x] Problem: what failed.
+  - [x] Cause: old nested shape or missing workspace file.
+  - [x] Fix: regenerate fresh or pass workspace root.
 
 Exit criteria:
 
-- [ ] Old nested shape cannot silently pass validation.
-- [ ] Old nested generation code is removed from active scripts.
-- [ ] Guardrails explain exactly how to fix failed output.
+- [x] Old nested shape cannot silently pass validation.
+- [x] Old nested generation code is removed from active scripts.
+- [x] Guardrails explain exactly how to fix failed output.
+
+Validation passed:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/BlazorShop.AI.StorefrontBuilder/tests/generation/Test-StorefrontBuilderWorkspaceGuardrails.ps1`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-regeneration-gate.ps1 -Describe`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-builder-regeneration-gate.ps1`
+- PowerShell parser syntax checks for `run-storefront-builder-regeneration-gate.ps1`, `Test-StorefrontBuilderGeneratedProject.ps1`, and `Test-StorefrontBuilderWorkspaceGuardrails.ps1`.
 
 ## Phase 12 - Fresh GeneratedProof And Kindredcoast Proof
 
