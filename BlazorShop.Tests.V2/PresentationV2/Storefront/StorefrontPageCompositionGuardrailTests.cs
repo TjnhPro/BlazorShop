@@ -193,6 +193,52 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void DeletedCollectionRoutes_DoNotRemainInActiveRuntimeOrToolingSources()
+        {
+            var activeRoots = new[]
+            {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
+                "BlazorShop.Application/CommerceNode/Navigation",
+                "tools/BlazorShop.AI.StorefrontBuilder/scripts",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/phase4-11-closure",
+                "tools/BlazorShop.AI.StorefrontReverseEngineering/Analysis/Presentation",
+            };
+            var activeFiles = activeRoots
+                .Select(RepositoryPath)
+                .SelectMany(EnumerateActiveSourceFiles)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+            var forbiddenTokens = new[]
+            {
+                "DealsPage",
+                "NewReleasesPage",
+                "StorefrontDealsPage",
+                "StorefrontNewReleasesPage",
+                "StorefrontDealsPageContext",
+                "StorefrontNewReleasesPageContext",
+                "TodaysDeals",
+                "NewReleases",
+                "todays-deals",
+                "new-releases",
+                "foundation.deals-page",
+                "foundation.new-releases-page",
+                "DealsPlacement.DedicatedPage",
+            };
+
+            foreach (var file in activeFiles)
+            {
+                var content = File.ReadAllText(file);
+                foreach (var token in forbiddenTokens)
+                {
+                    Assert.DoesNotContain(token, content, StringComparison.Ordinal);
+                }
+            }
+        }
+
+        [Fact]
         public void StarterPageInventory_RecordsCurrentSecondConsumerBaseline()
         {
             var expected = Array.Empty<PageInventoryItem>();
@@ -378,6 +424,26 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .Select(path => Path.GetRelativePath(FindRepositoryRoot(), path).Replace('\\', '/'))
                 .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+        }
+
+        private static IEnumerable<string> EnumerateActiveSourceFiles(string path)
+        {
+            if (File.Exists(path))
+            {
+                yield return path;
+                yield break;
+            }
+
+            foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                .Where(file => file.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)))
+            {
+                yield return file;
+            }
         }
 
         private static bool IsForbiddenStorefrontBrowserReference(string reference)

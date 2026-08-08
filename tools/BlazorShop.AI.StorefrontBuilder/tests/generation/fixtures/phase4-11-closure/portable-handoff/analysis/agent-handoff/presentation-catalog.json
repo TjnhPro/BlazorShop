@@ -2442,50 +2442,6 @@
       "fallbackBehavior": "required host visual registration"
     },
     {
-      "componentId": "foundation.deals-page",
-      "category": "foundation view slot",
-      "supportedPageArchetypes": [],
-      "supportedRegionRoles": [],
-      "slots": [
-        "DealsPage"
-      ],
-      "variants": [],
-      "visualProperties": [
-        "visual-component-type"
-      ],
-      "responsiveCapabilities": [
-        "host-specific"
-      ],
-      "interactionCapabilities": [],
-      "dataContract": "StorefrontDealsPageContext",
-      "behaviorOwnedByPresentation": true,
-      "behaviorOwnedByRuntime": false,
-      "visualOverrideAllowed": true,
-      "behaviorOverrideAllowed": false,
-      "requiredChildren": [],
-      "optionalChildren": [],
-      "unsupportedPatterns": [],
-      "sourceFiles": [
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
-      ],
-      "contractVersion": "2",
-      "intentCategory": "foundation view slot",
-      "capabilityOwnership": [
-        "Presentation-owned routing/SEO/media behavior"
-      ],
-      "allowedFilePatterns": [],
-      "protectedFilePatterns": [
-        "BlazorShop.Storefront.Presentation/**"
-      ],
-      "requiredEvidenceTypes": [
-        "foundation slot",
-        "component type",
-        "context parameter"
-      ],
-      "fallbackBehavior": "required host visual registration"
-    },
-    {
       "componentId": "foundation.error-state",
       "category": "foundation view slot",
       "supportedPageArchetypes": [],
@@ -2668,50 +2624,6 @@
         "context parameter"
       ],
       "fallbackBehavior": "required system-state fallback visual"
-    },
-    {
-      "componentId": "foundation.new-releases-page",
-      "category": "foundation view slot",
-      "supportedPageArchetypes": [],
-      "supportedRegionRoles": [],
-      "slots": [
-        "NewReleasesPage"
-      ],
-      "variants": [],
-      "visualProperties": [
-        "visual-component-type"
-      ],
-      "responsiveCapabilities": [
-        "host-specific"
-      ],
-      "interactionCapabilities": [],
-      "dataContract": "StorefrontNewReleasesPageContext",
-      "behaviorOwnedByPresentation": true,
-      "behaviorOwnedByRuntime": false,
-      "visualOverrideAllowed": true,
-      "behaviorOverrideAllowed": false,
-      "requiredChildren": [],
-      "optionalChildren": [],
-      "unsupportedPatterns": [],
-      "sourceFiles": [
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs"
-      ],
-      "contractVersion": "2",
-      "intentCategory": "foundation view slot",
-      "capabilityOwnership": [
-        "Presentation-owned routing/SEO/media behavior"
-      ],
-      "allowedFilePatterns": [],
-      "protectedFilePatterns": [
-        "BlazorShop.Storefront.Presentation/**"
-      ],
-      "requiredEvidenceTypes": [
-        "foundation slot",
-        "component type",
-        "context parameter"
-      ],
-      "fallbackBehavior": "required host visual registration"
     },
     {
       "componentId": "foundation.not-found-state",

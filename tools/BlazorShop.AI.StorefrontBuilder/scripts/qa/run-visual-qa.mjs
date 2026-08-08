@@ -476,10 +476,6 @@ function buildPages(plan, currentVisualPlan) {
 
     if (pageId === "search") {
       baseline.push(pageSpec("search", "/search", pageId, [...slots]));
-    } else if (pageId === "deals") {
-      baseline.push(pageSpec("deals", "/deals", pageId, [...slots]));
-    } else if (pageId === "new-releases") {
-      baseline.push(pageSpec("new-releases", "/new-releases", pageId, [...slots]));
     } else if (["system", "maintenance", "not-found", "error"].includes(pageId)) {
       baseline.push(pageSpec("state-pages", "/not-found", pageId, [...slots]));
     }
@@ -609,8 +605,6 @@ function pageNameForPageId(pageId) {
     auth: "sign-in",
     account: "sign-in",
     search: "search",
-    deals: "deals",
-    "new-releases": "new-releases",
     system: "state-pages",
     maintenance: "state-pages",
     "not-found": "state-pages",
@@ -629,8 +623,6 @@ function routeForPageId(pageId) {
     auth: "/signin",
     account: "/signin",
     search: "/search",
-    deals: "/deals",
-    "new-releases": "/new-releases",
     system: "/not-found",
     maintenance: "/not-found",
     "not-found": "/not-found",

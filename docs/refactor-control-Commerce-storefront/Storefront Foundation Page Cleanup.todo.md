@@ -484,32 +484,36 @@ Implementation notes:
 
 ## Phase 10 - Static Ghost Audit
 
-- [ ] Run repo-wide source scan:
+- [x] Run repo-wide source scan:
 
 ```powershell
 rg -n "DealsPage|NewReleasesPage|StorefrontDealsPage|StorefrontNewReleasesPage|StorefrontDealsPageContext|StorefrontNewReleasesPageContext|DealsPlacement\\.DedicatedPage|TodaysDeals|NewReleases|todays-deals|new-releases" BlazorShop.PresentationV2 BlazorShop.Application BlazorShop.Infrastructure BlazorShop.Tests.V2 docs
 ```
 
-- [ ] Classify every remaining hit:
-  - [ ] Valid historical completed plan entry.
-  - [ ] Valid unrelated SEO redirect fixture only if path was intentionally kept as arbitrary test data.
-  - [ ] Invalid active source reference.
-  - [ ] Invalid active test reference.
-  - [ ] Invalid active docs/reference expectation.
-- [ ] Remove all invalid active source/test/docs references.
-- [ ] Add explicit guardrail tests:
-  - [ ] V2 source must not contain `StorefrontApiClient`-style manual transport is already covered; add a route cleanup guard specific to `/todays-deals` and `/new-releases`.
-  - [ ] Storefront Presentation source must not declare deleted routes.
-  - [ ] Starter `starter-generation.contract.yaml` must not list deleted routes.
-  - [ ] StorefrontBuilder active route inventory must not list deleted routes.
-  - [ ] V2 visible shell components must not link to deleted routes.
-- [ ] Ensure tests do not simply scan all historical docs and fail on completed plan history unless those docs are current guidance.
+- [x] Classify every remaining hit:
+  - [x] Valid historical completed plan entry.
+  - [x] Valid unrelated SEO redirect fixture only if path was intentionally kept as arbitrary test data.
+  - [x] Invalid active source reference.
+  - [x] Invalid active test reference.
+  - [x] Invalid active docs/reference expectation.
+- [x] Remove all invalid active source/test/docs references.
+- [x] Add explicit guardrail tests:
+  - [x] V2 source must not contain `StorefrontApiClient`-style manual transport is already covered; add a route cleanup guard specific to `/todays-deals` and `/new-releases`.
+  - [x] Storefront Presentation source must not declare deleted routes.
+  - [x] Starter `starter-generation.contract.yaml` must not list deleted routes.
+  - [x] StorefrontBuilder active route inventory must not list deleted routes.
+  - [x] V2 visible shell components must not link to deleted routes.
+- [x] Ensure tests do not simply scan all historical docs and fail on completed plan history unless those docs are current guidance.
 
 Definition of done:
 
-- [ ] Active code has zero invalid hits for deleted page slots/routes.
-- [ ] Active tests prevent accidental reintroduction.
-- [ ] Remaining historical references are documented as historical only or left in completed plans that are not current source of truth.
+- [x] Active code has zero invalid hits for deleted page slots/routes.
+- [x] Active tests prevent accidental reintroduction.
+- [x] Remaining historical references are documented as historical only or left in completed plans that are not current source of truth.
+
+Implementation notes:
+
+- 2026-08-08: expanded the ghost audit to active StorefrontBuilder/ReverseEngineering tooling and Phase 4 portable handoff fixtures. Removed deleted page IDs/routes from visual QA page inventory, reference report materialization, composition fallback, ReverseEngineering required foundation slots, and tracked portable handoff catalog/pattern fixtures. Added `DeletedCollectionRoutes_DoNotRemainInActiveRuntimeOrToolingSources` so active runtime/tooling source folders fail on deleted route/slot tokens while completed historical docs are not scanned.
 
 ## Phase 11 - Focused Build And Test Gate
 

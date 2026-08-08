@@ -229,7 +229,6 @@ function pageIdFromName(pageName) {
     "sign-in": "auth",
     search: "search",
     deals: "deals",
-    "new-releases": "new-releases",
     "state-pages": "system",
   }[String(pageName)] ?? String(pageName ?? "");
 }

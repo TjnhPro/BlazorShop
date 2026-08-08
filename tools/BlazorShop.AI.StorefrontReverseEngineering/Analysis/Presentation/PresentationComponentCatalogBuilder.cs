@@ -215,7 +215,7 @@ public sealed partial class PresentationComponentCatalogBuilder
         {
             "foundation.application-head", "foundation.visual-scripts", "foundation.main-layout", "foundation.consent-banner",
             "foundation.home-page", "foundation.category-page", "foundation.product-page", "foundation.search-page",
-            "foundation.deals-page", "foundation.new-releases-page", "foundation.content-page", "foundation.cart-page",
+            "foundation.content-page", "foundation.cart-page",
             "foundation.checkout-page", "foundation.payment-result-page", "foundation.auth-page", "foundation.account-page",
             "foundation.maintenance-state", "foundation.not-found-state", "foundation.service-unavailable-state", "foundation.error-state"
         };

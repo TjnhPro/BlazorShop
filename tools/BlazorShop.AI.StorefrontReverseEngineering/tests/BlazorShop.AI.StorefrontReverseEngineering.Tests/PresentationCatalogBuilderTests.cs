@@ -39,8 +39,6 @@ public sealed class PresentationCatalogBuilderTests
             "foundation.category-page",
             "foundation.product-page",
             "foundation.search-page",
-            "foundation.deals-page",
-            "foundation.new-releases-page",
             "foundation.content-page",
             "foundation.cart-page",
             "foundation.checkout-page",

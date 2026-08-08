@@ -510,9 +510,7 @@
       "stablePageArchetype": "content-page",
       "routeOwnership": "Storefront Presentation owns route declarations; generated visuals register view slots only",
       "routes": [
-        "/pages/{Slug}",
-        "/todays-deals",
-        "/new-releases"
+        "/pages/{Slug}"
       ],
       "allowedVisualSlots": [
         "layout.header",
@@ -1045,20 +1043,6 @@
       "renderOwner": "Hybrid",
       "hydrationMode": "RefreshAfterHydration",
       "pageId": "checkout-shell"
-    },
-    {
-      "route": "/todays-deals",
-      "path": "Pages/Hybrid/Commerce/DealsPage.razor",
-      "renderOwner": "Hybrid",
-      "hydrationMode": "BrowserFetch",
-      "pageId": "content-page"
-    },
-    {
-      "route": "/new-releases",
-      "path": "Pages/Hybrid/Catalog/NewReleasesPage.razor",
-      "renderOwner": "Hybrid",
-      "hydrationMode": "BrowserFetch",
-      "pageId": "content-page"
     },
     {
       "route": "/account",

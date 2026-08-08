@@ -45,8 +45,8 @@ function transformLayout(content) {
     .replace('<header class="starter-header">', '<header class="starter-header sfb-shell-header">')
     .replace('<nav aria-label="Main navigation">', '<nav class="sfb-main-nav" aria-label="Main navigation">')
     .replace(
-      '<a href="@Context.Links.TodaysDeals.Href">Deals</a>',
-      '<a href="@Context.Links.TodaysDeals.Href">Deals</a>\n        @foreach (var category in Context.Search.Categories)\n        {\n            <a href="@Context.Links.Category(category.Href)">@category.Label</a>\n        }'
+      '<a href="@Context.Links.Search.Href">@Context.Links.Search.Label</a>',
+      '<a href="@Context.Links.Search.Href">@Context.Links.Search.Label</a>\n        @foreach (var category in Context.Search.Categories)\n        {\n            <a href="@Context.Links.Category(category.Href)">@category.Label</a>\n        }'
     )
     .replace('<a href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span data-storefront-cart-badge hidden>0</span></a>', '<a class="sfb-cart-badge" href="@Context.Links.Cart.Href" aria-label="Cart">@Context.Links.Cart.Label <span data-storefront-cart-badge hidden>0</span></a>')
     .replace(
