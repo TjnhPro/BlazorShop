@@ -74,12 +74,12 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 SystemItem("Shop", StoreNavigationSystemTargets.Home));
             var child = await service.CreateItemAsync(
                 menu.Payload.PublicId,
-                SystemItem("Deals", StoreNavigationSystemTargets.TodaysDeals, parent.Payload!.Items.Single().PublicId));
+                SystemItem("Search", StoreNavigationSystemTargets.Search, parent.Payload!.Items.Single().PublicId));
 
             var cycle = await service.UpdateItemAsync(
                 parent.Payload!.Items.Single().PublicId,
                 new UpdateStoreNavigationMenuItemRequest(
-                    Flatten(child.Payload!.Items).Single(item => item.Label == "Deals").PublicId,
+                    Flatten(child.Payload!.Items).Single(item => item.Label == "Search").PublicId,
                     "Shop",
                     StoreNavigationTargetTypes.System,
                     StoreNavigationSystemTargets.Home,
@@ -88,6 +88,33 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
             Assert.False(cycle.Success);
             Assert.Equal(ServiceResponseType.ValidationError, cycle.ResponseType);
+        }
+
+        [Theory]
+        [InlineData(StoreNavigationTargetTypes.System, "new_releases", "Navigation menu item system target is not supported.")]
+        [InlineData(StoreNavigationTargetTypes.System, "todays_deals", "Navigation menu item system target is not supported.")]
+        [InlineData(StoreNavigationTargetTypes.InternalRoute, "new_releases", "Navigation menu item internal route is not supported.")]
+        [InlineData(StoreNavigationTargetTypes.InternalRoute, "todays_deals", "Navigation menu item internal route is not supported.")]
+        public async Task CreateItemAsync_RejectsDeletedCollectionTargets(string targetType, string targetKey, string expectedMessage)
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            var service = CreateService(context, storeId);
+            var menu = await service.CreateMenuAsync(new CreateStoreNavigationMenuRequest(StoreNavigationMenuNames.Main, "Main"));
+
+            var result = await service.CreateItemAsync(
+                menu.Payload!.PublicId,
+                new CreateStoreNavigationMenuItemRequest(
+                    null,
+                    "Deleted collection",
+                    targetType,
+                    targetKey,
+                    null,
+                    null));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal(expectedMessage, result.Message);
         }
 
         [Fact]

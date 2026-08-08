@@ -41,9 +41,18 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains(StoreNavigationSystemTargets.Account, StoreNavigationSystemTargets.All);
             Assert.Contains(StoreNavigationSystemTargets.Login, StoreNavigationSystemTargets.All);
             Assert.Contains(StoreNavigationSystemTargets.Register, StoreNavigationSystemTargets.All);
-            Assert.Contains(StoreNavigationSystemTargets.NewReleases, StoreNavigationSystemTargets.All);
-            Assert.Contains(StoreNavigationSystemTargets.TodaysDeals, StoreNavigationSystemTargets.All);
             Assert.False(StoreNavigationSystemTargets.IsKnown("contact"));
+            Assert.False(StoreNavigationSystemTargets.IsKnown("new_releases"));
+            Assert.False(StoreNavigationSystemTargets.IsKnown("todays_deals"));
+        }
+
+        [Fact]
+        public void InternalRoutes_ReserveOnlyActiveSharedRoutes()
+        {
+            Assert.Contains(StoreNavigationInternalRoutes.Home, StoreNavigationInternalRoutes.All);
+            Assert.Contains(StoreNavigationInternalRoutes.Search, StoreNavigationInternalRoutes.All);
+            Assert.False(StoreNavigationInternalRoutes.IsKnown("new_releases"));
+            Assert.False(StoreNavigationInternalRoutes.IsKnown("todays_deals"));
         }
     }
 }

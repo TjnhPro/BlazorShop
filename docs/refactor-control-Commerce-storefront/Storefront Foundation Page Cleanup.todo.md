@@ -343,7 +343,7 @@ Implementation notes:
   - [x] Remove `TodaysDealsUrl`.
   - [x] Replace two empty-state CTAs with one or two valid same-origin links.
   - [x] Do not hardcode `/new-releases` or `/todays-deals`.
-- [ ] Confirm no shell/cart/source contract keeps deleted link names:
+- [x] Confirm no shell/cart/source contract keeps deleted link names:
 
 ```powershell
 rg -n "NewReleases|TodaysDeals|new-releases|todays-deals" BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM
@@ -367,37 +367,41 @@ Implementation notes:
 
 ## Phase 6 - Remove Or Reclassify Navigation System Targets
 
-- [ ] Update `StoreNavigationRules`.
-  - [ ] Remove `StoreNavigationSystemTargets.NewReleases`.
-  - [ ] Remove `StoreNavigationSystemTargets.TodaysDeals`.
-  - [ ] Remove corresponding entries from `All`.
-  - [ ] Remove corresponding `StoreNavigationInternalRoutes` entries if they only map these deleted routes.
-- [ ] Update `StoreNavigationService`.
-  - [ ] Remove `StaticRouteMap` entries for `new_releases` and `todays_deals`.
-  - [ ] Ensure invalid/deleted system targets are rejected clearly instead of resolving to stale URLs.
-- [ ] Check Development seeding or fixture setup for persisted menu items targeting deleted system names.
-  - [ ] If seed data creates either target, update it to Home/Search/category.
-  - [ ] If no seed data creates them, note that no migration is needed for dev-mode cleanup.
-- [ ] Decide whether database cleanup is needed.
-  - [ ] For current dev-mode local DB, manual cleanup or fixture re-seed is acceptable.
-  - [ ] Do not add a production migration solely for deleted dev-only route aliases unless existing production data must be preserved.
-- [ ] Keep product/category/page/external URL menu item behavior unchanged.
+- [x] Update `StoreNavigationRules`.
+  - [x] Remove `StoreNavigationSystemTargets.NewReleases`.
+  - [x] Remove `StoreNavigationSystemTargets.TodaysDeals`.
+  - [x] Remove corresponding entries from `All`.
+  - [x] Remove corresponding `StoreNavigationInternalRoutes` entries if they only map these deleted routes.
+- [x] Update `StoreNavigationService`.
+  - [x] Remove `StaticRouteMap` entries for `new_releases` and `todays_deals`.
+  - [x] Ensure invalid/deleted system targets are rejected clearly instead of resolving to stale URLs.
+- [x] Check Development seeding or fixture setup for persisted menu items targeting deleted system names.
+  - [x] If seed data creates either target, update it to Home/Search/category.
+  - [x] If no seed data creates them, note that no migration is needed for dev-mode cleanup.
+- [x] Decide whether database cleanup is needed.
+  - [x] For current dev-mode local DB, manual cleanup or fixture re-seed is acceptable.
+  - [x] Do not add a production migration solely for deleted dev-only route aliases unless existing production data must be preserved.
+- [x] Keep product/category/page/external URL menu item behavior unchanged.
 
 Tests to update:
 
-- [ ] `StoreNavigationRulesTests`
-  - [ ] Remove assertions that deleted system targets exist.
-  - [ ] Add assertions that deleted system targets are not in `All`.
-- [ ] `StoreNavigationServiceTests`
-  - [ ] Remove fixture menu item resolving `TodaysDeals`.
-  - [ ] Replace with an existing target such as Home/Search or a real category/page target.
-  - [ ] Add negative coverage for unsupported/deleted system target if service behavior supports it.
+- [x] `StoreNavigationRulesTests`
+  - [x] Remove assertions that deleted system targets exist.
+  - [x] Add assertions that deleted system targets are not in `All`.
+- [x] `StoreNavigationServiceTests`
+  - [x] Remove fixture menu item resolving `TodaysDeals`.
+  - [x] Replace with an existing target such as Home/Search or a real category/page target.
+  - [x] Add negative coverage for unsupported/deleted system target if service behavior supports it.
 
 Definition of done:
 
-- [ ] Control/admin navigation cannot create new menu items that resolve to deleted routes.
-- [ ] Runtime navigation output contains no `/todays-deals` or `/new-releases`.
-- [ ] Existing product/category/page/external menu behavior is not broken.
+- [x] Control/admin navigation cannot create new menu items that resolve to deleted routes.
+- [x] Runtime navigation output contains no `/todays-deals` or `/new-releases`.
+- [x] Existing product/category/page/external menu behavior is not broken.
+
+Implementation notes:
+
+- 2026-08-08: removed deleted system/internal route targets and static route map entries. Existing normalization now rejects `new_releases` and `todays_deals` for both system and internal-route items with validation errors. Focused scan found no active development seeding or migration entries for these target keys, so no database migration is needed for this cleanup phase.
 
 ## Phase 7 - Clean Component Contract Placement Leak
 

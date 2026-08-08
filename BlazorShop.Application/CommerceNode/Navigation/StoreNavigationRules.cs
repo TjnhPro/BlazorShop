@@ -61,8 +61,6 @@ namespace BlazorShop.Application.CommerceNode.Navigation
         public const string Account = "account";
         public const string Login = "login";
         public const string Register = "register";
-        public const string NewReleases = "new_releases";
-        public const string TodaysDeals = "todays_deals";
 
         public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -73,8 +71,6 @@ namespace BlazorShop.Application.CommerceNode.Navigation
             Account,
             Login,
             Register,
-            NewReleases,
-            TodaysDeals,
         };
 
         public static bool IsKnown(string value)
@@ -87,15 +83,11 @@ namespace BlazorShop.Application.CommerceNode.Navigation
     {
         public const string Home = "home";
         public const string Search = "search";
-        public const string NewReleases = "new_releases";
-        public const string TodaysDeals = "todays_deals";
 
         public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             Home,
             Search,
-            NewReleases,
-            TodaysDeals,
         };
 
         public static bool IsKnown(string value)

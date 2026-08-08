@@ -27,8 +27,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 [StoreNavigationSystemTargets.Account] = "/signin",
                 [StoreNavigationSystemTargets.Login] = "/signin",
                 [StoreNavigationSystemTargets.Register] = "/register",
-                [StoreNavigationSystemTargets.NewReleases] = "/new-releases",
-                [StoreNavigationSystemTargets.TodaysDeals] = "/todays-deals",
             };
 
         private readonly CommerceNodeDbContext context;
