@@ -105,6 +105,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] V2F8 registration-disabled policy Playwright passed. 2026-07-25: `scripts/qa/run-storefront-registration-policy-e2e.ps1 -Headless` passed and wrote `.gstack/qa-reports/registration-policy-e2e/result.json`, `storefront-register-disabled.png`, and `storefront-register-enabled.png`.
 - [x] V2F8 browser network guard passed. 2026-07-25: Playwright request capture found zero browser requests to `http://localhost:5180`, no 5xx responses, and no unexpected console/page errors.
 - [x] HPR16 Storefront Components Headless Presentation final QA passed. 2026-07-26: `dotnet build BlazorShop.sln` passed with known MessagePack/Browserslist warnings; `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~Storefront"` passed `731/733` with `2` existing skipped tests. Playwright route probe covered `/`, `/category/apparel`, search results/empty state, `/new-releases`, `/todays-deals`, `/product/qa-simple-product-100`, and account redirects with no direct CommerceNode/ControlPlane browser calls: `output/playwright/hpr16-storefront-route-probe.json`.
+- [x] FPC Storefront Foundation Page Cleanup static QA: `/new-releases` and `/todays-deals` are intentionally removed from foundation slots, V2/Starter visual pages, shell links, sitemap static pages, navigation system targets, and StorefrontBuilder route contract. Browser closure for this cleanup must verify no visible links to these deleted routes and normal not-found behavior for direct navigation.
 - [x] HPR16 cart/account/order browser QA passed. 2026-07-26: `output/playwright/hpr16-storefront-cart-mutation-probe.json` verified product add-to-cart, cart load, quantity update, remove, and clear through same-origin BFF routes; `output/playwright/hpr16-storefront-account-probe.json` verified authenticated profile, password, addresses, and orders pages with zero real console/page errors, zero 5xx responses, and zero forbidden browser requests. `scripts/qa/run-storefront-order-email-e2e.ps1 -Headless` passed after fixing account navigation WASM hydration, proving checkout COD and account order list/detail/receipt.
 - [x] Investigate checkout/product/account regression QA passed. 2026-07-26: focused regression tests passed `23/23`; `dotnet build BlazorShop.sln` passed with known MessagePack/Browserslist warnings; Playwright probe `output/playwright/investigate-storefront-checkout-product-account.json` verified `qa-unmanaged-stock-product` adds to cart without the false `This product is out of stock.` browser guard, `/checkout` no longer renders the technical `Checkout state` panel, and authenticated `/account/profile` receives the updated Storefront V2 card/spacing classes with zero forbidden browser requests, zero 5xx responses, and zero real console/page errors.
 - [x] SRH8 Storefront Runtime boundary adoption passed. 2026-07-26: Storefront V2 and Starter use the preferred `AddStorefrontPlatformRuntime` path; focused Runtime guardrails cover DI capability registration, caller cancellation propagation, typed envelope mapping without reflection/JSON projection, and the browser/WASM boundary that prevents Runtime/generated Commerce Node clients from entering browser projects.
@@ -257,10 +258,12 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
   - [x] Shows add-to-cart button.
   - [x] Shows related products/recommendations block.
   - [x] Missing slug returns noindex 404 state.
-- [x] `/new-releases`
-  - [x] Shows latest published products.
-- [x] `/todays-deals`
-  - [x] Shows discount/deal products when available.
+- [x] `/new-releases` intentionally removed from Storefront V2 route ownership.
+  - [x] V2 visible UI must not link to this route.
+  - [x] Direct navigation follows the normal not-found path.
+- [x] `/todays-deals` intentionally removed from Storefront V2 route ownership.
+  - [x] V2 visible UI must not link to this route.
+  - [x] Direct navigation follows the normal not-found path.
 
 ## Catalog Product Search
 

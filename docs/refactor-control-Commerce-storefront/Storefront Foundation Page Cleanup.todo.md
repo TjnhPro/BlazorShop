@@ -456,27 +456,31 @@ Implementation notes:
 
 ## Phase 9 - Documentation And QA Checklist Update
 
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md` only if it lists the deleted pages as foundation route examples.
-- [ ] Update `docs/architecture/11-storefront-builder.md`.
-  - [ ] Remove `/todays-deals` and `/new-releases` from required Starter/generated route examples.
-  - [ ] Ensure it still states Presentation owns route truth and visual hosts register view slots only.
-- [ ] Update `docs/agents/storefront-builder.md` if it lists these routes as required route proof.
-- [ ] Update `docs/visual-reverse-engineering-skill/*` references that freeze `/todays-deals` or `/new-releases` as current expected Starter/generated routes.
-  - [ ] Prefer adding a note in the new phase evidence rather than rewriting completed historical plans, unless a current source-of-truth doc is wrong.
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
-  - [ ] Add a new checklist entry for Foundation Page Cleanup.
-  - [ ] Record that `/todays-deals` and `/new-releases` are intentionally removed.
-  - [ ] Require browser QA to verify V2 has no visible links to deleted routes.
-  - [ ] Require browser QA to verify deleted routes return the standard not-found route behavior, not a broken exception.
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontStarter.todo.md` if Starter route proof changes.
-  - [ ] Record that Starter no longer declares dedicated deals/new-release routes.
-  - [ ] Record the remaining required route list.
+- [x] Update `docs/architecture/05-project-and-folder-guide.md` only if it lists the deleted pages as foundation route examples.
+- [x] Update `docs/architecture/11-storefront-builder.md`.
+  - [x] Remove `/todays-deals` and `/new-releases` from required Starter/generated route examples.
+  - [x] Ensure it still states Presentation owns route truth and visual hosts register view slots only.
+- [x] Update `docs/agents/storefront-builder.md` if it lists these routes as required route proof.
+- [x] Update `docs/visual-reverse-engineering-skill/*` references that freeze `/todays-deals` or `/new-releases` as current expected Starter/generated routes.
+  - [x] Prefer adding a note in the new phase evidence rather than rewriting completed historical plans, unless a current source-of-truth doc is wrong.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+  - [x] Add a new checklist entry for Foundation Page Cleanup.
+  - [x] Record that `/todays-deals` and `/new-releases` are intentionally removed.
+  - [x] Require browser QA to verify V2 has no visible links to deleted routes.
+  - [x] Require browser QA to verify deleted routes return the standard not-found route behavior, not a broken exception.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontStarter.todo.md` if Starter route proof changes.
+  - [x] Record that Starter no longer declares dedicated deals/new-release routes.
+  - [x] Record the remaining required route list.
 
 Definition of done:
 
-- [ ] Current architecture docs no longer describe deleted collection pages as required routes.
-- [ ] QA checklists tell future agents how to verify the cleanup.
-- [ ] Historical docs are not rewritten unless they are active guidance.
+- [x] Current architecture docs no longer describe deleted collection pages as required routes.
+- [x] QA checklists tell future agents how to verify the cleanup.
+- [x] Historical docs are not rewritten unless they are active guidance.
+
+Implementation notes:
+
+- 2026-08-08: active architecture and StorefrontBuilder agent docs were scanned and do not list the deleted routes as current required generated routes. Historical completed visual-reverse-engineering plan references were left intact. `QA-StorefrontV2.todo.md` now records the Foundation Page Cleanup rule and direct browser closure expectations; `QA-StorefrontStarter.todo.md` records the Starter route contract reduction and remaining smoke route list.
 
 ## Phase 10 - Static Ghost Audit
 
