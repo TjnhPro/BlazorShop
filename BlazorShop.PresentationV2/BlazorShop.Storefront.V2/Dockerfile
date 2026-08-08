@@ -19,6 +19,8 @@ RUN dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop
 
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package-lock.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package-lock.json
 
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/ BlazorShop.PresentationV2/BlazorShop.Storefront.V2/
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Client/ BlazorShop.PresentationV2/BlazorShop.Storefront.Client/
@@ -28,6 +30,12 @@ COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/ BlazorShop.Present
 COPY BlazorShop.ServiceDefaults/ BlazorShop.ServiceDefaults/
 
 WORKDIR /src/BlazorShop.PresentationV2/BlazorShop.Storefront.V2
+
+RUN rm -rf node_modules \
+    && npm ci \
+    && npm run tailwind:build
+
+WORKDIR /src/BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM
 
 RUN rm -rf node_modules \
     && npm ci \

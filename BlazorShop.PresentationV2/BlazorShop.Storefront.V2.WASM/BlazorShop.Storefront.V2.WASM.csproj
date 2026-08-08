@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="package.json" />
+    <Content Remove="package-lock.json" />
+    <Content Remove="tailwind.config.js" />
     <Content Remove="wwwroot\css\input.css" />
     <None Include="wwwroot\css\input.css" />
   </ItemGroup>

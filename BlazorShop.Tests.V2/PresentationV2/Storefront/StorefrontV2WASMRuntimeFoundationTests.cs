@@ -123,8 +123,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var v2Package = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json");
             var v2PackageLock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json");
+            var v2Project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj");
             var wasmPackage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json");
             var wasmPackageLock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package-lock.json");
+            var wasmProject = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
 
             Assert.Contains("\"tailwind:build\": \"tailwindcss -c tailwind.config.js -i ./wwwroot/css/input.css -o ./wwwroot/css/site.css --minify\"", v2Package, StringComparison.Ordinal);
             Assert.Contains("\"tailwind:build\": \"tailwindcss -c tailwind.config.js -i ./wwwroot/css/input.css -o ./wwwroot/css/wasm-site.css --minify\"", wasmPackage, StringComparison.Ordinal);
@@ -134,6 +136,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("../", wasmPackage, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2.WASM", v2Package, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.V2", wasmPackage, StringComparison.Ordinal);
+
+            foreach (var project in new[] { v2Project, wasmProject })
+            {
+                Assert.Contains("<Content Remove=\"package.json\" />", project, StringComparison.Ordinal);
+                Assert.Contains("<Content Remove=\"package-lock.json\" />", project, StringComparison.Ordinal);
+                Assert.Contains("<Content Remove=\"tailwind.config.js\" />", project, StringComparison.Ordinal);
+                Assert.Contains("<Content Remove=\"wwwroot\\css\\input.css\" />", project, StringComparison.Ordinal);
+            }
         }
 
         [Fact]

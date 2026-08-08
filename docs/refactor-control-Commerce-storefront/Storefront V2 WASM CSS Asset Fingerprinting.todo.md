@@ -213,32 +213,33 @@ Definition of done:
 
 ## Phase 4 - Docker And Publish Path
 
-- [ ] Update `BlazorShop.Storefront.V2/Dockerfile`.
-  - [ ] Copy V2.WASM `package.json` before restore/build if Docker layer caching should preserve Node dependency restore.
-  - [ ] Copy V2.WASM `package-lock.json`.
-  - [ ] Run `npm ci` in V2.WASM.
-  - [ ] Run `npm run tailwind:build` in V2.WASM before `dotnet publish`.
-  - [ ] Keep existing V2 Tailwind build behavior.
-  - [ ] Avoid installing global Node packages.
-  - [ ] Avoid using `npm install` in Docker.
-- [ ] Ensure Docker copy order still allows `dotnet restore` before full source copy where possible.
-- [ ] Ensure the final published app includes:
-  - [ ] V2 generated CSS.
-  - [ ] V2.WASM generated CSS.
-  - [ ] V2 handwritten `storefront.css`.
-  - [ ] V2 `storefrontCommerce.js`.
-- [ ] Do not change Commerce Node deployment behavior in this phase.
+- [x] Update `BlazorShop.Storefront.V2/Dockerfile`.
+  - [x] Copy V2.WASM `package.json` before restore/build if Docker layer caching should preserve Node dependency restore.
+  - [x] Copy V2.WASM `package-lock.json`.
+  - [x] Run `npm ci` in V2.WASM.
+  - [x] Run `npm run tailwind:build` in V2.WASM before `dotnet publish`.
+  - [x] Keep existing V2 Tailwind build behavior.
+  - [x] Avoid installing global Node packages.
+  - [x] Avoid using `npm install` in Docker.
+- [x] Ensure Docker copy order still allows `dotnet restore` before full source copy where possible.
+- [x] Ensure the final published app includes:
+  - [x] V2 generated CSS.
+  - [x] V2.WASM generated CSS.
+  - [x] V2 handwritten `storefront.css`.
+  - [x] V2 `storefrontCommerce.js`.
+- [x] Do not change Commerce Node deployment behavior in this phase.
+- [x] Exclude V2/V2.WASM Node toolchain metadata from publish content so `package.json` and `package-lock.json` do not collide at publish root.
 
 Tests to add or update:
 
-- [ ] Update `V2ProductionReadinessTests` or another focused architecture test to assert Docker builds V2.WASM Tailwind CSS.
-- [ ] Add publish/static web asset test if existing tests do not prove V2.WASM CSS is in the publish/static asset manifest.
-- [ ] Keep existing assertion that Docker references `BlazorShop.Storefront.V2.WASM.csproj`.
+- [x] Update `V2ProductionReadinessTests` or another focused architecture test to assert Docker builds V2.WASM Tailwind CSS.
+- [x] Add publish/static web asset test if existing tests do not prove V2.WASM CSS is in the publish/static asset manifest. Covered by focused `dotnet publish` proof and csproj guard excluding only toolchain metadata, not CSS runtime assets.
+- [x] Keep existing assertion that Docker references `BlazorShop.Storefront.V2.WASM.csproj`.
 
 Definition of done:
 
-- [ ] Local verification and Docker publish path generate the same V2/V2.WASM CSS ownership shape.
-- [ ] Container image cannot accidentally ship stale or missing V2.WASM CSS.
+- [x] Local verification and Docker publish path generate the same V2/V2.WASM CSS ownership shape.
+- [x] Container image cannot accidentally ship stale or missing V2.WASM CSS.
 
 ## Phase 5 - Browser QA For Real Layout, Not Just Asset 200
 

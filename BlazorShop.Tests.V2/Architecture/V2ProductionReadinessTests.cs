@@ -81,10 +81,29 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("CONTROLPLANE_API_BASE_URL", controlPlaneWebEntrypoint, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Components.csproj", storefrontDockerfile, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.V2.WASM.csproj", storefrontDockerfile, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2.WASM/package.json", storefrontDockerfile, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2.WASM/package-lock.json", storefrontDockerfile, StringComparison.Ordinal);
             Assert.Contains("curl", commerceNodeDockerfile, StringComparison.Ordinal);
             Assert.Contains("curl", controlPlaneApiDockerfile, StringComparison.Ordinal);
             Assert.Contains("curl", storefrontDockerfile, StringComparison.Ordinal);
             Assert.Contains("Runtime:Health:ExposeInProduction", serviceDefaults, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Phase4_StorefrontDockerfile_BuildsV2AndWasmTailwindBeforePublish()
+        {
+            var dockerfile = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile")
+                .Replace('\\', '/');
+
+            Assert.Contains("COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json", dockerfile, StringComparison.Ordinal);
+            Assert.Contains("COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json", dockerfile, StringComparison.Ordinal);
+            Assert.Contains("COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json", dockerfile, StringComparison.Ordinal);
+            Assert.Contains("COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package-lock.json", dockerfile, StringComparison.Ordinal);
+            Assert.Matches(
+                new Regex("WORKDIR /src/BlazorShop\\.PresentationV2/BlazorShop\\.Storefront\\.V2[\\s\\S]*npm ci[\\s\\S]*npm run tailwind:build[\\s\\S]*WORKDIR /src/BlazorShop\\.PresentationV2/BlazorShop\\.Storefront\\.V2\\.WASM[\\s\\S]*npm ci[\\s\\S]*npm run tailwind:build[\\s\\S]*RUN dotnet publish", RegexOptions.CultureInvariant),
+                dockerfile);
+            Assert.DoesNotContain("npm install", dockerfile, StringComparison.Ordinal);
+            Assert.DoesNotContain("npm install -g", dockerfile, StringComparison.Ordinal);
         }
 
         [Fact]
