@@ -211,20 +211,20 @@ Da xac nhan trong codebase:
 
 ### Implementation checklist
 
-- [ ] Keep `/favicon.ico` redirect mapping as compatibility/browser fallback.
-- [ ] Do not make `/favicon.ico` store-dynamic in this phase.
-- [ ] Do not remove `FaviconRedirectPath` unless every host/test has been migrated and an explicit follow-up decision approves removal.
-- [ ] Ensure the HTML head uses store-specific runtime icon fields, while `/favicon.ico` remains a fallback route.
+- [x] Keep `/favicon.ico` redirect mapping as compatibility/browser fallback.
+- [x] Do not make `/favicon.ico` store-dynamic in this phase.
+- [x] Do not remove `FaviconRedirectPath` unless every host/test has been migrated and an explicit follow-up decision approves removal.
+- [x] Ensure the HTML head uses store-specific runtime icon fields, while `/favicon.ico` remains a fallback route.
 
 ### Phase 4 tests
 
-- [ ] Keep or update existing test assertion proving:
+- [x] Keep or update existing test assertion proving:
 
 ```csharp
 app.MapGet("/favicon.ico", () => Results.Redirect(applicationOptions.FaviconRedirectPath, permanent: false));
 ```
 
-- [ ] Add note in test name/comment if needed:
+- [x] Add note in test name/comment if needed:
   - `/favicon.ico` redirect is compatibility fallback.
   - `StorefrontIconHead` is canonical HTML head rendering path.
 

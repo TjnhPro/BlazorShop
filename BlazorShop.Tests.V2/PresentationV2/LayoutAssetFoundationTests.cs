@@ -185,14 +185,17 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Fact]
-        public void StorefrontProgram_KeepsStaticAssetMiddleware()
+        public void StorefrontProgram_KeepsStaticAssetsAndFaviconFallback()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
             var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationBuilderExtensions.cs");
+            var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Options/StorefrontApplicationOptions.cs");
 
             Assert.Contains("app.UseStorefrontApplication();", program);
             Assert.Contains("app.UseStaticFiles();", pipeline);
             Assert.Contains("app.MapStaticAssets();", pipeline);
+            Assert.Contains("public string FaviconRedirectPath { get; set; }", options);
+            Assert.Contains("applicationOptions.FaviconRedirectPath", pipeline);
             Assert.Contains("app.MapGet(\"/favicon.ico\", () => Results.Redirect(applicationOptions.FaviconRedirectPath, permanent: false));", pipeline);
         }
 
