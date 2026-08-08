@@ -246,7 +246,7 @@ Implementation notes:
   - [x] `Pages/Hybrid/Commerce/CartPage.razor`
     - [x] Remove parameters that pass deleted route URLs into the WASM cart component.
     - [x] Pass Home/Search URLs or a single `ContinueShoppingUrl` if the context is simplified in Phase 5.
-- [ ] Confirm no V2 visual source contains the deleted route strings:
+- [x] Confirm no V2 visual source contains the deleted route strings:
 
 ```powershell
 rg -n "todays-deals|new-releases|TodaysDeals|NewReleases|DealsPage|NewReleasesPage" BlazorShop.PresentationV2/BlazorShop.Storefront.V2
