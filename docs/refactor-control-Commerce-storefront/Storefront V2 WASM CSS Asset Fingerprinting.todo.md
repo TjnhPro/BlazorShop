@@ -243,38 +243,38 @@ Definition of done:
 
 ## Phase 5 - Browser QA For Real Layout, Not Just Asset 200
 
-- [ ] Run V2 locally through the standard V2 local runner if possible:
+- [x] Run V2 locally through the standard V2 local runner if possible:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Use Playwright browser QA against Storefront V2.
-- [ ] Verify asset behavior:
-  - [ ] V2 CSS returns HTTP 200.
-  - [ ] V2.WASM CSS returns HTTP 200.
-  - [ ] V2 `storefront.css` returns HTTP 200.
-  - [ ] V2 `storefrontCommerce.js` returns HTTP 200.
-  - [ ] No duplicate root stylesheet links.
-  - [ ] No missing static asset requests.
-  - [ ] No browser console errors from static asset resolution or WASM hydration.
-- [ ] Verify layout behavior using computed style or measured dimensions, not only string checks:
-  - [ ] Cart page/container uses expected max width and card styling from V2.WASM CSS.
-  - [ ] Cart line image frame keeps stable dimensions.
-  - [ ] Checkout shell keeps expected grid/step styling.
-  - [ ] Account app/navigation/profile sections keep expected responsive layout.
-  - [ ] Mobile viewport still loads V2.WASM CSS before visual checks.
-- [ ] Verify no direct browser calls to Commerce Node are introduced.
-- [ ] Capture evidence:
-  - [ ] JSON evidence under `output/playwright`.
-  - [ ] at least one desktop screenshot for cart/account or checkout.
-  - [ ] at least one mobile screenshot for account/cart or checkout.
+- [x] Use Playwright browser QA against Storefront V2.
+- [x] Verify asset behavior:
+  - [x] V2 CSS returns HTTP 200.
+  - [x] V2.WASM CSS returns HTTP 200.
+  - [x] V2 `storefront.css` returns HTTP 200.
+  - [x] V2 `storefrontCommerce.js` returns HTTP 200.
+  - [x] No duplicate root stylesheet links.
+  - [x] No missing static asset requests.
+  - [x] No browser console errors from static asset resolution or WASM hydration. Route evidence records one expected unauthenticated `/account` 401 console entry separately from static/hydration errors.
+- [x] Verify layout behavior using computed style or measured dimensions, not only string checks:
+  - [x] Cart page/container uses expected max width and card styling from V2.WASM CSS. Route evidence measured the real `/cart` empty cart panel with `24px` radius and Tailwind shadow.
+  - [x] Cart line image frame keeps stable dimensions. Same-origin CSS fixture measured V2.WASM cart line image frame at `96px`.
+  - [x] Checkout shell keeps expected grid/step styling. Real `/checkout` rendered the empty-cart state because the QA cart was empty; same-origin CSS fixture measured checkout grid at two desktop columns and one mobile column.
+  - [x] Account app/navigation/profile sections keep expected responsive layout. Real `/account` correctly returned unauthenticated 401; same-origin CSS fixture measured account layout at `240px 984px` desktop and single-column mobile.
+  - [x] Mobile viewport still loads V2.WASM CSS before visual checks.
+- [x] Verify no direct browser calls to Commerce Node are introduced.
+- [x] Capture evidence:
+  - [x] JSON evidence under `output/playwright`.
+  - [x] at least one desktop screenshot for cart/account or checkout.
+  - [x] at least one mobile screenshot for account/cart or checkout.
 
 Definition of done:
 
-- [ ] QA proves CSS affected real browser layout.
-- [ ] QA would catch missing Tailwind utilities in V2.WASM components.
-- [ ] QA evidence is referenced in `QA-StorefrontV2.todo.md`.
+- [x] QA proves CSS affected real browser layout.
+- [x] QA would catch missing Tailwind utilities in V2.WASM components.
+- [x] QA evidence is referenced in `QA-StorefrontV2.todo.md`.
 
 ## Phase 6 - Documentation And QA Checklist Update
 
