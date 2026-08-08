@@ -24,17 +24,21 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void StorefrontBrandHead_RendersStoreSpecificIconsAndLanguage()
+        public void StorefrontBrandHead_RendersNonIconStorefrontMetadataOnly()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/StorefrontBrandHead.razor");
+            var iconHead = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Components/Head/StorefrontIconHead.razor");
 
             Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
             Assert.Contains("public StorefrontDisplayContext DisplayContext", markup);
-            Assert.Contains("<link rel=\"icon\" href=\"@DisplayContext.FaviconUrl\" />", markup);
-            Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"@DisplayContext.PngIconUrl\" />", markup);
-            Assert.Contains("<link rel=\"apple-touch-icon\" href=\"@DisplayContext.AppleTouchIconUrl\" />", markup);
-            Assert.Contains("msapplication-TileImage", markup);
             Assert.Contains("<meta name=\"bs-storefront-language\" content=\"@DisplayContext.LanguageCode\" />", markup);
+            Assert.DoesNotContain("rel=\"icon\"", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("apple-touch-icon", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("msapplication-TileImage", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("msapplication-TileColor", markup, StringComparison.Ordinal);
+            Assert.Contains("<link rel=\"icon\" href=\"@DisplayContext.FaviconUrl\" />", iconHead, StringComparison.Ordinal);
+            Assert.Contains("<link rel=\"apple-touch-icon\" href=\"@DisplayContext.AppleTouchIconUrl\" />", iconHead, StringComparison.Ordinal);
+            Assert.Contains("msapplication-TileImage", iconHead, StringComparison.Ordinal);
             Assert.DoesNotContain("document.documentElement.lang", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("<HeadContent>", markup, StringComparison.Ordinal);
         }
@@ -47,6 +51,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var layoutMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
 
             Assert.Contains("<StorefrontBrandHead DisplayContext=\"Context.Display\" />", applicationHead);
+            Assert.Contains("<StorefrontIconHead DisplayContext=\"Context.Display\" />", applicationHead);
             Assert.Contains("<HeadOutlet />", appMarkup);
             Assert.True(
                 appMarkup.IndexOf("<StorefrontFoundationApplicationHead />", StringComparison.Ordinal) <
@@ -54,6 +59,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("<StorefrontBrandHead", layoutMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontHeader Context=\"Context.Header\" />", layoutMarkup);
             Assert.Contains("<StorefrontFooter Context=\"Context.Footer\" />", layoutMarkup);
+        }
+
+        [Fact]
+        public void StorefrontV2_DoesNotOwnHardCodedOrBrandIconLinks()
+        {
+            var applicationHead = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationHead.razor");
+            var brandHead = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/StorefrontBrandHead.razor");
+
+            Assert.DoesNotContain("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", applicationHead, StringComparison.Ordinal);
+            Assert.DoesNotContain("rel=\"icon\"", brandHead, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontIconHead DisplayContext=\"Context.Display\" />", applicationHead, StringComparison.Ordinal);
         }
 
         [Fact]

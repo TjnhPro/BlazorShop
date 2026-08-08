@@ -23,7 +23,8 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Equal(StorefrontRootStylesheetAllowlist, ExtractStylesheetHrefs(headMarkup));
             Assert.Equal(StorefrontCoreScriptAllowlist, ExtractScriptSources(coreScriptMarkup));
             Assert.Equal(StorefrontVisualScriptAllowlist, ExtractScriptSources(scriptMarkup));
-            Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", headMarkup);
+            Assert.DoesNotContain("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", headMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontIconHead DisplayContext=\"Context.Display\" />", headMarkup);
             Assert.True(
                 appMarkup.IndexOf("<StorefrontAntiforgeryHead />", StringComparison.Ordinal) <
                 appMarkup.IndexOf("<StorefrontFoundationApplicationHead />", StringComparison.Ordinal));
@@ -37,6 +38,9 @@ namespace BlazorShop.Tests.PresentationV2
                 coreScriptMarkup.IndexOf("_framework/blazor.web.js", StringComparison.Ordinal) <
                 coreScriptMarkup.IndexOf("_content/BlazorShop.Storefront.Presentation/js/storefront.application.js", StringComparison.Ordinal));
             Assert.Contains("<StorefrontBrandHead DisplayContext=\"Context.Display\" />", headMarkup);
+            Assert.True(
+                headMarkup.IndexOf("<StorefrontIconHead DisplayContext=\"Context.Display\" />", StringComparison.Ordinal) <
+                headMarkup.IndexOf("<StorefrontBrandHead DisplayContext=\"Context.Display\" />", StringComparison.Ordinal));
             Assert.DoesNotContain("<StorefrontAntiforgeryHead />", headMarkup, StringComparison.Ordinal);
             Assert.Contains("<html lang=\"@DocumentLanguage\" dir=\"@DocumentDirection\">", appMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<html lang=\"en\">", appMarkup, StringComparison.Ordinal);

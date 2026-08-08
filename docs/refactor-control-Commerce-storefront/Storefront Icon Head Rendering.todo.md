@@ -141,40 +141,40 @@ Da xac nhan trong codebase:
 
 ### Implementation checklist
 
-- [ ] Remove hard-coded V2 favicon:
+- [x] Remove hard-coded V2 favicon:
 
 ```razor
 <link rel="icon" type="image/png" href="icon-192.png" />
 ```
 
-- [ ] Add shared icon primitive before `StorefrontBrandHead`.
-- [ ] Keep stylesheet order unchanged:
+- [x] Add shared icon primitive before `StorefrontBrandHead`.
+- [x] Keep stylesheet order unchanged:
   - `css/site.css`
   - `css/storefront.css`
-- [ ] Keep `StorefrontBrandHead` before `HeadOutlet` through the existing `ApplicationHead` slot.
-- [ ] Refactor `StorefrontBrandHead` so it no longer renders:
+- [x] Keep `StorefrontBrandHead` before `HeadOutlet` through the existing `ApplicationHead` slot.
+- [x] Refactor `StorefrontBrandHead` so it no longer renders:
   - `<link rel="icon"...>`
   - `<link rel="apple-touch-icon"...>`
   - `msapplication-TileImage`
   - `msapplication-TileColor`
-- [ ] Keep `StorefrontBrandHead` for `bs-storefront-language` or rename only if tests/docs are updated in same phase. Prefer no rename in this phase to reduce churn.
-- [ ] Do not move full V2 `ApplicationHead` into Presentation because V2 still owns visual/static CSS assets.
+- [x] Keep `StorefrontBrandHead` for `bs-storefront-language` or rename only if tests/docs are updated in same phase. Prefer no rename in this phase to reduce churn.
+- [x] Do not move full V2 `ApplicationHead` into Presentation because V2 still owns visual/static CSS assets.
 
 ### Phase 2 tests
 
-- [ ] Update `BlazorShop.Tests.V2/PresentationV2/LayoutAssetFoundationTests.cs`.
+- [x] Update `BlazorShop.Tests.V2/PresentationV2/LayoutAssetFoundationTests.cs`.
   - Replace assertion for hard-coded `icon-192.png`.
   - Assert V2 `ApplicationHead` contains shared `StorefrontIconHead`.
   - Assert V2 `ApplicationHead` still contains the two expected stylesheets.
   - Assert V2 `ApplicationHead` still contains `StorefrontBrandHead`.
-- [ ] Update `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontBrandingMarkupTests.cs`.
+- [x] Update `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontBrandingMarkupTests.cs`.
   - Stop expecting icon tags inside V2 `StorefrontBrandHead`.
   - Assert `StorefrontBrandHead` keeps `bs-storefront-language`.
   - Assert icon tags are owned by Presentation shared component or V2 `ApplicationHead` calls it.
-- [ ] Add guardrail test:
+- [x] Add guardrail test:
   - V2 source must not contain `<link rel="icon" type="image/png" href="icon-192.png" />`.
   - V2 `StorefrontBrandHead.razor` must not contain `rel="icon"`.
-- [ ] Check architecture tests that currently expect `StorefrontBrandHead.razor` as the only V2 SEO file.
+- [x] Check architecture tests that currently expect `StorefrontBrandHead.razor` as the only V2 SEO file.
   - If adding no new V2 SEO file, keep expectation unchanged.
   - If moving/renaming, update with explicit rationale.
 
