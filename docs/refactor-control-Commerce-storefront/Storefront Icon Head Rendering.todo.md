@@ -239,13 +239,13 @@ app.MapGet("/favicon.ico", () => Results.Redirect(applicationOptions.FaviconRedi
 
 ### Documentation checklist
 
-- [ ] Update Storefront V2 QA line that currently says head icon metadata uses store favicon/png/apple/MS tile values.
+- [x] Update Storefront V2 QA line that currently says head icon metadata uses store favicon/png/apple/MS tile values.
   - Keep it true, but mention the new shared Presentation `StorefrontIconHead` owner.
-- [ ] Update Starter QA with a small entry that Starter renders store-specific favicon/icon through Presentation primitive.
-- [ ] If architecture docs mention `StorefrontBrandHead` as brand/runtime metadata owner, adjust wording:
+- [x] Update Starter QA with a small entry that Starter renders store-specific favicon/icon through Presentation primitive.
+- [x] If architecture docs mention `StorefrontBrandHead` as brand/runtime metadata owner, adjust wording:
   - `StorefrontIconHead` owns icon tags.
   - `StorefrontBrandHead` owns non-icon storefront metadata such as language marker.
-- [ ] Do not add large architecture essay. Keep docs scoped to ownership and guardrail.
+- [x] Do not add large architecture essay. Keep docs scoped to ownership and guardrail.
 
 ## Phase 6 - Verification commands
 

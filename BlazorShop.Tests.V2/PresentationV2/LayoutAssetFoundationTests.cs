@@ -324,6 +324,7 @@ namespace BlazorShop.Tests.PresentationV2
             var decisionRules = ReadRepositoryFile("docs/architecture/08-agent-decision-rules.md");
 
             Assert.Contains("Root Storefront CSS and scripts must stay explicit in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` through host-provided head/script slots.", projectGuide);
+            Assert.Contains("`StorefrontIconHead` owns store favicon/png/apple/MS tile tags; `StorefrontBrandHead` owns non-icon storefront metadata such as the language marker.", projectGuide);
             Assert.Contains("Page-specific JavaScript should prefer `IJSRuntime` module imports.", projectGuide);
             Assert.Contains("Store configuration must not accept arbitrary public script or stylesheet injection.", projectGuide);
             Assert.Contains("Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` allowlisted by tests.", decisionRules);
