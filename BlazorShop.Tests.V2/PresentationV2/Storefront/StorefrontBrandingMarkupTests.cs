@@ -368,6 +368,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontProductSummaryMapper.ToProductSummary", catalogServices, StringComparison.Ordinal);
 
             Assert.Contains("data-storefront-deals-block", dealsBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("DedicatedPage", dealsPlacement, StringComparison.Ordinal);
+            Assert.DoesNotContain("DedicatedPage", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-grid", productGrid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-card", productCard, StringComparison.Ordinal);

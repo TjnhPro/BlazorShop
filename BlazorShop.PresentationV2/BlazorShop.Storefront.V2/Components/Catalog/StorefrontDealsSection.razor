@@ -18,7 +18,7 @@
 
 @code {
     [Parameter]
-    public DealsPlacement Placement { get; set; } = DealsPlacement.DedicatedPage;
+    public DealsPlacement Placement { get; set; } = DealsPlacement.Home;
 
     [Parameter]
     public IReadOnlyList<ProductSummaryItem> Items { get; set; } = [];
@@ -41,7 +41,5 @@
     [Parameter]
     public bool ShowHeader { get; set; } = true;
 
-    private string SectionClass => Placement == DealsPlacement.DedicatedPage
-        ? string.Empty
-        : "mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8";
+    private const string SectionClass = "mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8";
 }

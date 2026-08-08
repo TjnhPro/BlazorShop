@@ -283,6 +283,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsBlock.razor")));
             var v2Deals = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontDealsSection.razor");
+            var dealsPlacement = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Deals/DealsPlacement.cs");
             var home = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor");
 
@@ -290,6 +292,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Items\"", v2Deals, StringComparison.Ordinal);
             Assert.Contains("mx-auto max-w-7xl", v2Deals, StringComparison.Ordinal);
             Assert.Contains("bg-amber-500", v2Deals, StringComparison.Ordinal);
+            Assert.DoesNotContain("DedicatedPage", dealsPlacement, StringComparison.Ordinal);
+            Assert.DoesNotContain("DedicatedPage", v2Deals, StringComparison.Ordinal);
 
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
             Assert.DoesNotContain("<DealsBlock", home, StringComparison.Ordinal);

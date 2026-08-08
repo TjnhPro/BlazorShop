@@ -405,24 +405,28 @@ Implementation notes:
 
 ## Phase 7 - Clean Component Contract Placement Leak
 
-- [ ] Update `BlazorShop.Storefront.Components/Contracts/Deals/DealsPlacement.cs`.
-  - [ ] Remove `DedicatedPage`.
-  - [ ] Keep only placements that are still valid after cleanup, for example `Home` and `ProductDetailFooter`.
-  - [ ] Add no new placement unless V2 currently needs it and it maps to a real component placement.
-- [ ] Update V2 `StorefrontDealsSection`.
-  - [ ] Change the default placement away from `DedicatedPage`.
-  - [ ] Remove layout/style branching that assumes a dedicated page.
-  - [ ] Keep inline Home/Product placement behavior if currently used.
-- [ ] Update tests/docs that still use `DealsPlacement.DedicatedPage`.
-  - [ ] Replace with `Home` or `ProductDetailFooter` only when the component is still rendered in those locations.
-  - [ ] Delete tests that only existed to prove dedicated page composition.
-- [ ] Confirm `BlazorShop.Storefront.Components` still does not own visual wrappers or V2 route defaults.
+- [x] Update `BlazorShop.Storefront.Components/Contracts/Deals/DealsPlacement.cs`.
+  - [x] Remove `DedicatedPage`.
+  - [x] Keep only placements that are still valid after cleanup, for example `Home` and `ProductDetailFooter`.
+  - [x] Add no new placement unless V2 currently needs it and it maps to a real component placement.
+- [x] Update V2 `StorefrontDealsSection`.
+  - [x] Change the default placement away from `DedicatedPage`.
+  - [x] Remove layout/style branching that assumes a dedicated page.
+  - [x] Keep inline Home/Product placement behavior if currently used.
+- [x] Update tests/docs that still use `DealsPlacement.DedicatedPage`.
+  - [x] Replace with `Home` or `ProductDetailFooter` only when the component is still rendered in those locations.
+  - [x] Delete tests that only existed to prove dedicated page composition.
+- [x] Confirm `BlazorShop.Storefront.Components` still does not own visual wrappers or V2 route defaults.
 
 Definition of done:
 
-- [ ] Components contracts no longer imply a deleted dedicated deals page.
-- [ ] V2 deals section, if retained, is clearly an inline/placement component.
-- [ ] No shared component contract references `/todays-deals` or a dedicated deals route.
+- [x] Components contracts no longer imply a deleted dedicated deals page.
+- [x] V2 deals section, if retained, is clearly an inline/placement component.
+- [x] No shared component contract references `/todays-deals` or a dedicated deals route.
+
+Implementation notes:
+
+- 2026-08-08: removed `DealsPlacement.DedicatedPage`; `StorefrontDealsSection` now defaults to `DealsPlacement.Home` and uses a single inline layout class. Component guardrail tests assert neither the shared contract nor V2 component can reintroduce the dedicated page placement.
 
 ## Phase 8 - Reserved Slug, SEO Redirect, And Generic Test Fixture Audit
 
