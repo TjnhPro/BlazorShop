@@ -96,45 +96,45 @@ Definition of done:
 
 ## Phase 1 - Add V2.WASM Tailwind Pipeline
 
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json`.
-  - [ ] Use the same Tailwind major/minor baseline as V2 unless there is a documented reason to differ.
-  - [ ] Add `tailwind:build`.
-  - [ ] Add `tailwind:dev` only if useful for local WASM visual iteration.
-- [ ] Add `package-lock.json` by running `npm install` once in the V2.WASM project directory.
-- [ ] Add `tailwind.config.js`.
-  - [ ] Include `./**/*.razor`.
-  - [ ] Include `./**/*.cs`.
-  - [ ] Include `./**/*.html` if static fragments are possible.
-  - [ ] Do not scan `../BlazorShop.Storefront.V2`.
-  - [ ] Do not scan Starter or generated storefront folders.
-- [ ] Add `wwwroot/css/input.css`.
-  - [ ] Use the standard Tailwind directives.
-  - [ ] Keep V2.WASM-specific custom CSS minimal.
-  - [ ] Do not duplicate V2 `storefront.css`.
-- [ ] Generate `wwwroot/css/site.css` from the new V2.WASM pipeline.
-- [ ] Build V2.WASM after adding static assets:
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json`.
+  - [x] Use the same Tailwind major/minor baseline as V2 unless there is a documented reason to differ.
+  - [x] Add `tailwind:build`.
+  - [x] Add `tailwind:dev` only if useful for local WASM visual iteration.
+- [x] Add `package-lock.json` by running `npm install` once in the V2.WASM project directory.
+- [x] Add `tailwind.config.js`.
+  - [x] Include `./**/*.razor`.
+  - [x] Include `./**/*.cs`.
+  - [x] Include `./**/*.html` if static fragments are possible.
+  - [x] Do not scan `../BlazorShop.Storefront.V2`.
+  - [x] Do not scan Starter or generated storefront folders.
+- [x] Add `wwwroot/css/input.css`.
+  - [x] Use the standard Tailwind directives.
+  - [x] Keep V2.WASM-specific custom CSS minimal.
+  - [x] Do not duplicate V2 `storefront.css`.
+- [x] Generate `wwwroot/css/wasm-site.css` from the new V2.WASM pipeline. `wwwroot/css/site.css` was rejected after host build proved hosted WASM static assets merge at root and collide with V2 `css/site.css`.
+- [x] Build V2.WASM after adding static assets:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore
 ```
 
-- [ ] Inspect static web asset build output for the exact logical path of V2.WASM `site.css`.
-  - [ ] Check `obj/**/staticwebassets*.json` or endpoint manifest.
-  - [ ] Record whether the logical path is `_content/BlazorShop.Storefront.V2.WASM/css/site.css` or another value.
-  - [ ] Use the verified value in V2 host head composition.
+- [x] Inspect static web asset build output for the exact logical path of V2.WASM CSS.
+  - [x] Check `obj/**/staticwebassets*.json` or endpoint manifest.
+  - [x] Record whether the logical path is `_content/BlazorShop.Storefront.V2.WASM/css/site.css` or another value.
+  - [x] Use the verified value in V2 host head composition.
 
 Tests to add or update:
 
-- [ ] Add a test that V2.WASM has its own Tailwind pipeline files.
-- [ ] Add a test that V2.WASM Tailwind config scans `.cs` files.
-- [ ] Add a test that V2.WASM Tailwind config does not scan V2, Starter, generated storefronts, Control Plane, Commerce Node, or backend/core projects.
-- [ ] Add a test that V2.WASM `wwwroot/css/site.css` exists and is non-empty after build.
+- [x] Add a test that V2.WASM has its own Tailwind pipeline files.
+- [x] Add a test that V2.WASM Tailwind config scans `.cs` files.
+- [x] Add a test that V2.WASM Tailwind config does not scan V2, Starter, generated storefronts, Control Plane, Commerce Node, or backend/core projects.
+- [x] Add a test that V2.WASM `wwwroot/css/wasm-site.css` exists and is non-empty after build.
 
 Definition of done:
 
-- [ ] V2.WASM owns a buildable CSS artifact.
-- [ ] V2.WASM visual classes no longer depend on accidental inclusion in V2 `site.css`.
-- [ ] Static web asset logical path is verified before being used by V2 host.
+- [x] V2.WASM owns a buildable CSS artifact.
+- [x] V2.WASM visual classes no longer depend on accidental inclusion in V2 `site.css`.
+- [x] Static web asset logical path is verified before being used by V2 host.
 
 ## Phase 2 - Convert V2 Host Assets To Fingerprint-Resolved Static Assets
 

@@ -65,6 +65,41 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void WasmTailwindPipeline_OwnsInteractiveCssWithoutScanningOtherProjects()
+        {
+            var package = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json");
+            var packageLock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package-lock.json");
+            var tailwindConfig = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/tailwind.config.js");
+            var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
+            var css = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/wwwroot/css/wasm-site.css");
+
+            Assert.Contains("\"name\": \"blazorshop-storefront-v2-wasm\"", package, StringComparison.Ordinal);
+            Assert.Contains("\"tailwind:build\": \"tailwindcss -c tailwind.config.js -i ./wwwroot/css/input.css -o ./wwwroot/css/wasm-site.css --minify\"", package, StringComparison.Ordinal);
+            Assert.Contains("\"tailwind:dev\": \"tailwindcss -c tailwind.config.js -i ./wwwroot/css/input.css -o ./wwwroot/css/wasm-site.css --watch\"", package, StringComparison.Ordinal);
+            Assert.Contains("\"tailwindcss\": \"^3.4.11\"", package, StringComparison.Ordinal);
+            Assert.Contains("\"autoprefixer\": \"^10.4.20\"", package, StringComparison.Ordinal);
+            Assert.Contains("\"postcss\": \"^8.4.47\"", package, StringComparison.Ordinal);
+            Assert.Contains("\"name\": \"blazorshop-storefront-v2-wasm\"", packageLock, StringComparison.Ordinal);
+
+            Assert.Contains("\"./**/*.razor\"", tailwindConfig, StringComparison.Ordinal);
+            Assert.Contains("\"./**/*.html\"", tailwindConfig, StringComparison.Ordinal);
+            Assert.Contains("\"./**/*.cs\"", tailwindConfig, StringComparison.Ordinal);
+            Assert.DoesNotContain("../BlazorShop.Storefront.V2", tailwindConfig, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.Starter", tailwindConfig, StringComparison.Ordinal);
+            Assert.DoesNotContain("artifacts/storefront-builder", tailwindConfig, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.ControlPlane", tailwindConfig, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.CommerceNode", tailwindConfig, StringComparison.Ordinal);
+
+            Assert.Contains("<Content Remove=\"wwwroot\\css\\input.css\" />", project, StringComparison.Ordinal);
+            Assert.False(File.Exists(ResolveRepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/wwwroot/css/site.css")));
+            Assert.True(new FileInfo(ResolveRepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/wwwroot/css/wasm-site.css")).Length > 1024);
+            Assert.Contains(".rounded-3xl", css, StringComparison.Ordinal);
+            Assert.Contains(".bg-amber-500", css, StringComparison.Ordinal);
+            Assert.Contains(".text-rose-800", css, StringComparison.Ordinal);
+            Assert.Contains(".lg\\:grid-cols-\\[240px_minmax\\(0\\2c 1fr\\)\\]", css, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void WasmProject_OwnsInteractiveRootComponentsUsedByStorefrontV2()
         {
             var imports = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/_Imports.razor");
