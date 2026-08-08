@@ -563,81 +563,88 @@ Implementation notes:
 
 ## Phase 12 - Browser QA And StorefrontBuilder Proof
 
-- [ ] Start local V2 stack:
+- [x] Start local V2 stack:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser
 ```
 
-- [ ] Run Playwright browser QA against Storefront V2.
-  - [ ] Home page loads.
-  - [ ] Category page loads.
-  - [ ] Search page loads.
-  - [ ] Product detail loads.
-  - [ ] Cart page empty state loads and links only to valid destinations.
-  - [ ] Checkout empty/invalid state loads and links only to valid destinations.
-  - [ ] Header has no `/new-releases` or `/todays-deals` links.
-  - [ ] Footer has no `/new-releases` or `/todays-deals` links.
-  - [ ] Hero/home/product CTAs do not point to deleted routes.
-  - [ ] Visiting `/new-releases` returns standard not-found behavior.
-  - [ ] Visiting `/todays-deals` returns standard not-found behavior.
-  - [ ] Sitemap does not include `/new-releases` or `/todays-deals`.
-  - [ ] Browser network has zero direct Commerce Node, Control Plane, Commerce Admin, or `api/internal/*` calls.
-  - [ ] Browser console has no unexpected JS/.NET/WASM errors.
-- [ ] Capture evidence under `output/playwright` or `.gstack/qa-reports`.
-- [ ] If Starter/Builder contract changed, run at least Structure proof:
+- [x] Run Playwright browser QA against Storefront V2.
+  - [x] Home page loads.
+  - [x] Category page loads.
+  - [x] Search page loads.
+  - [x] Product detail loads.
+  - [x] Cart page empty state loads and links only to valid destinations.
+  - [x] Checkout empty/invalid state loads and links only to valid destinations.
+  - [x] Header has no `/new-releases` or `/todays-deals` links.
+  - [x] Footer has no `/new-releases` or `/todays-deals` links.
+  - [x] Hero/home/product CTAs do not point to deleted routes.
+  - [x] Visiting `/new-releases` returns standard not-found behavior.
+  - [x] Visiting `/todays-deals` returns standard not-found behavior.
+  - [x] Sitemap does not include `/new-releases` or `/todays-deals`.
+  - [x] Browser network has zero direct Commerce Node, Control Plane, Commerce Admin, or `api/internal/*` calls.
+  - [x] Browser console has no unexpected JS/.NET/WASM errors.
+- [x] Capture evidence under `output/playwright` or `.gstack/qa-reports`.
+- [x] If Starter/Builder contract changed, run at least Structure proof:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure
 ```
 
-- [ ] If generated functional route inventory changed, run the fast foundation functional proof:
+- [x] If generated functional route inventory changed, run the fast foundation functional proof:
 
 ```powershell
 .\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast
 ```
 
-- [ ] If the proof reveals generated route assumptions for deleted pages, update StorefrontBuilder validation/tests in the same phase.
+- [x] If the proof reveals generated route assumptions for deleted pages, update StorefrontBuilder validation/tests in the same phase.
 
 Definition of done:
 
-- [ ] Real browser QA proves no visible V2 link points to deleted routes.
-- [ ] Real browser QA proves deleted routes do not throw unexpected errors.
-- [ ] Generated storefront proof no longer expects deleted routes.
-- [ ] QA evidence paths are recorded in the QA checklist.
+- [x] Real browser QA proves no visible V2 link points to deleted routes.
+- [x] Real browser QA proves deleted routes do not throw unexpected errors.
+- [x] Generated storefront proof no longer expects deleted routes.
+- [x] QA evidence paths are recorded in the QA checklist.
+
+Implementation notes:
+
+- 2026-08-08: `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser` started the local V2 stack. Storefront V2 health and home returned HTTP 200 at `http://localhost:18598`.
+- 2026-08-08: Playwright browser QA passed. Evidence: `output/playwright/storefront-foundation-page-cleanup-phase12/report.json` plus screenshots in the same folder. Verified `/`, `/search?q=starter`, `/category/apparel`, `/product/qa-simple-product-100`, `/my-cart`, and `/checkout` load; visible links exclude `/new-releases` and `/todays-deals`; both deleted routes return HTTP 404; `/sitemap.xml` excludes both deleted routes; browser network has zero direct Commerce Node, Control Plane, Commerce Admin, or `api/internal/*` calls; no unexpected console/page errors were recorded. Chromium emitted two expected 404 resource console messages for the deleted-route probes only.
+- 2026-08-08: `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel Structure` passed.
+- 2026-08-08: `.\scripts\qa\run-storefront-builder-generated-proof.ps1 -ProofLevel FoundationFunctionalFast` passed. Evidence: `artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/docs/storefront-analysis/fast-foundation-functional-report.md`. The report shows home/catalog/product/detail/cart/checkout/account/consent checks passing, no browser request directly to Commerce Node, and no blocking console errors. No additional generated route assumptions required code changes in Phase 12.
 
 ## Final Acceptance Checklist
 
-- [ ] `DealsPage` removed from `StorefrontFoundationViewSet`.
-- [ ] `NewReleasesPage` removed from `StorefrontFoundationViewSet`.
-- [ ] `StorefrontFoundationViewOptionsValidator` has no deals/new-release context mapping.
-- [ ] Presentation has no `/todays-deals` route page.
-- [ ] Presentation has no `/new-releases` route page.
-- [ ] Presentation has no `StorefrontDealsPageService`.
-- [ ] Presentation has no `StorefrontNewReleasesPageService`.
-- [ ] Presentation has no `StorefrontDealsPageContext`.
-- [ ] Presentation has no `StorefrontNewReleasesPageContext`.
-- [ ] V2 registration has no deals/new-release foundation slots.
-- [ ] V2 has no dedicated deals/new-release visual pages.
-- [ ] Starter registration has no deals/new-release foundation slots.
-- [ ] Starter has no dedicated deals/new-release visual pages.
-- [ ] `starter-generation.contract.yaml` has no `/todays-deals` route.
-- [ ] `starter-generation.contract.yaml` has no `/new-releases` route.
-- [ ] `StorefrontRoutes` has no deleted route constants or sitemap entries.
-- [ ] Shell link context has no `NewReleases` or `TodaysDeals` properties.
-- [ ] Cart page context/WASM cart no longer defaults to deleted route URLs.
-- [ ] Navigation system targets no longer resolve to deleted routes.
-- [ ] `DealsPlacement.DedicatedPage` is removed or replaced with a valid non-route placement.
-- [ ] Reserved slug policy is aligned with active routes.
-- [ ] SEO redirect tests use neutral active route examples.
-- [ ] V2 visible UI has no link to `/todays-deals` or `/new-releases`.
-- [ ] Sitemap does not include `/todays-deals` or `/new-releases`.
-- [ ] Deleted routes use the normal not-found path.
-- [ ] StorefrontBuilder/Starter docs no longer treat deleted routes as required generated pages.
-- [ ] Focused builds pass.
-- [ ] Focused tests pass.
-- [ ] Storefront browser QA passes.
-- [ ] StorefrontBuilder Structure proof passes if Starter route metadata changed.
+- [x] `DealsPage` removed from `StorefrontFoundationViewSet`.
+- [x] `NewReleasesPage` removed from `StorefrontFoundationViewSet`.
+- [x] `StorefrontFoundationViewOptionsValidator` has no deals/new-release context mapping.
+- [x] Presentation has no `/todays-deals` route page.
+- [x] Presentation has no `/new-releases` route page.
+- [x] Presentation has no `StorefrontDealsPageService`.
+- [x] Presentation has no `StorefrontNewReleasesPageService`.
+- [x] Presentation has no `StorefrontDealsPageContext`.
+- [x] Presentation has no `StorefrontNewReleasesPageContext`.
+- [x] V2 registration has no deals/new-release foundation slots.
+- [x] V2 has no dedicated deals/new-release visual pages.
+- [x] Starter registration has no deals/new-release foundation slots.
+- [x] Starter has no dedicated deals/new-release visual pages.
+- [x] `starter-generation.contract.yaml` has no `/todays-deals` route.
+- [x] `starter-generation.contract.yaml` has no `/new-releases` route.
+- [x] `StorefrontRoutes` has no deleted route constants or sitemap entries.
+- [x] Shell link context has no `NewReleases` or `TodaysDeals` properties.
+- [x] Cart page context/WASM cart no longer defaults to deleted route URLs.
+- [x] Navigation system targets no longer resolve to deleted routes.
+- [x] `DealsPlacement.DedicatedPage` is removed or replaced with a valid non-route placement.
+- [x] Reserved slug policy is aligned with active routes.
+- [x] SEO redirect tests use neutral active route examples.
+- [x] V2 visible UI has no link to `/todays-deals` or `/new-releases`.
+- [x] Sitemap does not include `/todays-deals` or `/new-releases`.
+- [x] Deleted routes use the normal not-found path.
+- [x] StorefrontBuilder/Starter docs no longer treat deleted routes as required generated pages.
+- [x] Focused builds pass.
+- [x] Focused tests pass.
+- [x] Storefront browser QA passes.
+- [x] StorefrontBuilder Structure proof passes if Starter route metadata changed.
 
 ## Decision Audit Trail
 
