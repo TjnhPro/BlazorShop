@@ -187,19 +187,19 @@ Da xac nhan trong codebase:
 
 ### Implementation checklist
 
-- [ ] Keep `css/starter.css`.
-- [ ] Add shared `StorefrontIconHead` using `Context.Display`.
-- [ ] Do not add V2 `StorefrontBrandHead` dependency to Starter.
-- [ ] Do not copy V2-specific icon markup into Starter.
-- [ ] Ensure Starter remains visual-host-only and consumes Presentation contracts.
+- [x] Keep `css/starter.css`.
+- [x] Add shared `StorefrontIconHead` using `Context.Display`.
+- [x] Do not add V2 `StorefrontBrandHead` dependency to Starter.
+- [x] Do not copy V2-specific icon markup into Starter.
+- [x] Ensure Starter remains visual-host-only and consumes Presentation contracts.
 
 ### Phase 3 tests
 
-- [ ] Update `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontStarterHostSmokeTests.cs` or a focused Starter markup test.
-- [ ] Assert Starter root HTML still includes `href="css/starter.css"`.
-- [ ] Assert Starter root HTML renders configured favicon when the test fixture provides `FaviconUrl`.
-- [ ] Assert Starter root HTML does not render V2-only `StorefrontBrandHead`.
-- [ ] Assert no duplicate primary `rel="icon"` in Starter HTML.
+- [x] Update `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontStarterHostSmokeTests.cs` or a focused Starter markup test.
+- [x] Assert Starter root HTML still includes `href="css/starter.css"`.
+- [x] Assert Starter root HTML renders configured favicon when the test fixture provides `FaviconUrl`.
+- [x] Assert Starter root HTML does not render V2-only `StorefrontBrandHead`.
+- [x] Assert no duplicate primary `rel="icon"` in Starter HTML.
 
 ## Phase 4 - Preserve Presentation redirect behavior
 

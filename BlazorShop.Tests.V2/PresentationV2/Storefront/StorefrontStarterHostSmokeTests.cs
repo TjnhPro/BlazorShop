@@ -83,6 +83,11 @@ public sealed class StorefrontStarterHostSmokeTests : IClassFixture<WebApplicati
         Assert.Contains("src=\"_framework/blazor.web.js\"", content, StringComparison.Ordinal);
         Assert.Contains("src=\"_content/BlazorShop.Storefront.Presentation/js/storefront.application.js\"", content, StringComparison.Ordinal);
         Assert.Contains("href=\"css/starter.css\"", content, StringComparison.Ordinal);
+        Assert.Contains("rel=\"icon\"", content, StringComparison.Ordinal);
+        Assert.Contains("href=\"/media/assets/starter-favicon.ico\"", content, StringComparison.Ordinal);
+        Assert.DoesNotContain("starter-icon.png", content, StringComparison.Ordinal);
+        Assert.DoesNotContain("bs-storefront-language", content, StringComparison.Ordinal);
+        Assert.Equal(1, CountOccurrences(content, "rel=\"icon\""));
         Assert.Contains("data-storefront-consent-banner", content, StringComparison.Ordinal);
         Assert.Contains("data-storefront-consent-accept-url=\"/api/consent\"", content, StringComparison.Ordinal);
         Assert.Contains("starter-consent-banner", content, StringComparison.Ordinal);
@@ -189,6 +194,8 @@ public sealed class StorefrontStarterHostSmokeTests : IClassFixture<WebApplicati
             CurrencyCode = "USD",
             DefaultCurrencyCode = "USD",
             SupportedCurrencyCodes = ["USD"],
+            FaviconUrl = "/media/assets/starter-favicon.ico",
+            PngIconUrl = "/media/assets/starter-icon.png",
         };
     }
 
@@ -671,5 +678,18 @@ public sealed class StorefrontStarterHostSmokeTests : IClassFixture<WebApplicati
         {
             return Task.FromResult(StorefrontSitemapGenerationResult.Success("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" />"));
         }
+    }
+
+    private static int CountOccurrences(string source, string value)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
     }
 }
