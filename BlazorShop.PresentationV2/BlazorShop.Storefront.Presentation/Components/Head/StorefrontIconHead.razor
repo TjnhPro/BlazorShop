@@ -1,0 +1,27 @@
+@using BlazorShop.Storefront.Presentation.Contracts
+
+@if (!string.IsNullOrWhiteSpace(DisplayContext.FaviconUrl))
+{
+    <link rel="icon" href="@DisplayContext.FaviconUrl" />
+}
+else if (!string.IsNullOrWhiteSpace(DisplayContext.PngIconUrl))
+{
+    <link rel="icon" type="image/png" href="@DisplayContext.PngIconUrl" />
+}
+@if (!string.IsNullOrWhiteSpace(DisplayContext.AppleTouchIconUrl))
+{
+    <link rel="apple-touch-icon" href="@DisplayContext.AppleTouchIconUrl" />
+}
+@if (!string.IsNullOrWhiteSpace(DisplayContext.MsTileImageUrl))
+{
+    <meta name="msapplication-TileImage" content="@DisplayContext.MsTileImageUrl" />
+}
+@if (!string.IsNullOrWhiteSpace(DisplayContext.MsTileColor))
+{
+    <meta name="msapplication-TileColor" content="@DisplayContext.MsTileColor" />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontDisplayContext DisplayContext { get; set; } = StorefrontDisplayContext.Fallback;
+}
