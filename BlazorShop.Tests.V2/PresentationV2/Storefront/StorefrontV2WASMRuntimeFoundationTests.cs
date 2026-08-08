@@ -100,6 +100,43 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontV2CssReproducibilityGate_TargetsBothTailwindProjectsWithoutPersistentWrites()
+        {
+            var script = ReadRepositoryFile("scripts/qa/run-storefront-v2-css-reproducibility.ps1");
+
+            Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.V2.WASM", script, StringComparison.Ordinal);
+            Assert.Contains("npm", script, StringComparison.Ordinal);
+            Assert.Contains("\"ci\"", script, StringComparison.Ordinal);
+            Assert.Contains("\"run\", \"tailwind:build\"", script, StringComparison.Ordinal);
+            Assert.Contains("obj\\storefront-css-proof\\v2\\site.css", script, StringComparison.Ordinal);
+            Assert.Contains("obj\\storefront-css-proof\\v2-wasm\\wasm-site.css", script, StringComparison.Ordinal);
+            Assert.Contains("wwwroot\\css\\site.css", script, StringComparison.Ordinal);
+            Assert.Contains("wwwroot\\css\\wasm-site.css", script, StringComparison.Ordinal);
+            Assert.Contains("package-lock.json", script, StringComparison.Ordinal);
+            Assert.Contains("WriteAllBytes($trackedCssPath, $originalBytes)", script, StringComparison.Ordinal);
+            Assert.Contains("CSS drift detected", script, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StorefrontV2TailwindPackages_LockCssOutputsToProjectLocalArtifacts()
+        {
+            var v2Package = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json");
+            var v2PackageLock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json");
+            var wasmPackage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json");
+            var wasmPackageLock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package-lock.json");
+
+            Assert.Contains("\"tailwind:build\": \"tailwindcss -c tailwind.config.js -i ./wwwroot/css/input.css -o ./wwwroot/css/site.css --minify\"", v2Package, StringComparison.Ordinal);
+            Assert.Contains("\"tailwind:build\": \"tailwindcss -c tailwind.config.js -i ./wwwroot/css/input.css -o ./wwwroot/css/wasm-site.css --minify\"", wasmPackage, StringComparison.Ordinal);
+            Assert.Contains("\"name\": \"blazorshop-storefront-v2\"", v2PackageLock, StringComparison.Ordinal);
+            Assert.Contains("\"name\": \"blazorshop-storefront-v2-wasm\"", wasmPackageLock, StringComparison.Ordinal);
+            Assert.DoesNotContain("../", v2Package, StringComparison.Ordinal);
+            Assert.DoesNotContain("../", wasmPackage, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2.WASM", v2Package, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2", wasmPackage, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void WasmProject_OwnsInteractiveRootComponentsUsedByStorefrontV2()
         {
             var imports = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/_Imports.razor");

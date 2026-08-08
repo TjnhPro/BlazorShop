@@ -175,39 +175,41 @@ Definition of done:
 
 ## Phase 3 - CSS Reproducibility Gate
 
-- [ ] Create a focused reproducibility script only if existing test infrastructure cannot cover byte-for-byte CSS regeneration.
+- [x] Create a focused reproducibility script only if existing test infrastructure cannot cover byte-for-byte CSS regeneration.
   - Preferred path: `scripts/qa/run-storefront-v2-css-reproducibility.ps1`.
-- [ ] The gate must run from repository root and verify both projects:
-  - [ ] `BlazorShop.Storefront.V2`
-  - [ ] `BlazorShop.Storefront.V2.WASM`
-- [ ] For each project:
-  - [ ] Run `npm ci`.
-  - [ ] Run the project-local `tailwind:build`.
-  - [ ] Compare generated `wwwroot/css/site.css` against tracked file content.
-  - [ ] Fail if regenerated CSS differs.
-  - [ ] Print the exact project and file that drifted.
-- [ ] Avoid writing candidate output over tracked CSS unless the script is explicitly intended to refresh CSS.
-- [ ] Use deterministic temp output under `obj/storefront-css-proof/...` if comparing without overwriting tracked files.
-- [ ] Ensure temp paths are unique per project:
-  - [ ] `obj/storefront-css-proof/v2/site.css`
-  - [ ] `obj/storefront-css-proof/v2-wasm/site.css`
-- [ ] Clean temp output after success unless a failure needs evidence.
-- [ ] Add documentation in the script header explaining:
-  - [ ] why `dotnet build` alone is not treated as CSS generation;
-  - [ ] why V2 and V2.WASM have separate CSS ownership;
-  - [ ] how to intentionally refresh CSS.
+- [x] The gate must run from repository root and verify both projects:
+  - [x] `BlazorShop.Storefront.V2`
+  - [x] `BlazorShop.Storefront.V2.WASM`
+- [x] For each project:
+  - [x] Run `npm ci`.
+  - [x] Run the project-local `tailwind:build`.
+  - [x] Compare generated CSS against tracked file content:
+    - [x] V2 `wwwroot/css/site.css`
+    - [x] V2.WASM `wwwroot/css/wasm-site.css`
+  - [x] Fail if regenerated CSS differs.
+  - [x] Print the exact project and file that drifted.
+- [x] Avoid writing candidate output over tracked CSS unless the script is explicitly intended to refresh CSS.
+- [x] Use deterministic temp output under `obj/storefront-css-proof/...` if comparing without overwriting tracked files.
+- [x] Ensure temp paths are unique per project:
+  - [x] `obj/storefront-css-proof/v2/site.css`
+  - [x] `obj/storefront-css-proof/v2-wasm/wasm-site.css`
+- [x] Clean temp output after success unless a failure needs evidence.
+- [x] Add documentation in the script header explaining:
+  - [x] why `dotnet build` alone is not treated as CSS generation;
+  - [x] why V2 and V2.WASM have separate CSS ownership;
+  - [x] how to intentionally refresh CSS.
 
 Tests to add or update:
 
-- [ ] Add test coverage that the reproducibility script exists and targets both V2 and V2.WASM.
-- [ ] Add test coverage that V2 and V2.WASM package-lock files are present.
-- [ ] Add test coverage that `tailwind:build` commands write only each project's own `wwwroot/css/site.css`.
+- [x] Add test coverage that the reproducibility script exists and targets both V2 and V2.WASM.
+- [x] Add test coverage that V2 and V2.WASM package-lock files are present.
+- [x] Add test coverage that `tailwind:build` commands write only each project's own CSS output.
 
 Definition of done:
 
-- [ ] A developer or agent can prove CSS is current without guessing.
-- [ ] Stale `site.css` becomes a deterministic failing gate.
-- [ ] The gate does not silently rewrite project files during normal verification.
+- [x] A developer or agent can prove CSS is current without guessing.
+- [x] Stale `site.css`/`wasm-site.css` becomes a deterministic failing gate.
+- [x] The gate does not silently rewrite project files during normal verification.
 
 ## Phase 4 - Docker And Publish Path
 
