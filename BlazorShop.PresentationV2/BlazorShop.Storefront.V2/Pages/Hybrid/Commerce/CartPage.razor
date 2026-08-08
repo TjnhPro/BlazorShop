@@ -7,8 +7,8 @@
                     Actions="@Context.CartActions"
                     Classes="StorefrontCartViewOptions.Classes"
                     CheckoutUrl="@Context.CheckoutUrl"
-                    NewReleasesUrl="@Context.NewReleasesUrl"
-                    TodaysDealsUrl="@Context.TodaysDealsUrl"
+                    ContinueShoppingUrl="@Context.Links.Search.Href"
+                    SecondaryShoppingUrl="@Context.Links.Home.Href"
                     @rendermode="InteractiveWebAssembly" />
 
 @code {
@@ -17,7 +17,7 @@
         null,
         [],
         StorefrontLinkContext.Default.Checkout.Href,
-        StorefrontLinkContext.Default.NewReleases.Href,
-        StorefrontLinkContext.Default.TodaysDeals.Href,
+        StorefrontLinkContext.Default.Search.Href,
+        StorefrontLinkContext.Default.Home.Href,
         StorefrontLinkContext.Default);
 }

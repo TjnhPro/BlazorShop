@@ -38,8 +38,7 @@
                 else
                 {
                     <NavLink href="@Context.Links.Home.Href" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.Home.Label</NavLink>
-                    <NavLink href="@Context.Links.NewReleases.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.NewReleases.Label</NavLink>
-                    <NavLink href="@Context.Links.TodaysDeals.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.TodaysDeals.Label</NavLink>
+                    <NavLink href="@Context.Links.Search.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.Search.Label</NavLink>
                     @foreach (var link in Context.Navigation.HeaderLinks)
                     {
                         <NavLink href="@link.Href" target="@link.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Label</NavLink>
@@ -72,8 +71,7 @@
                     <span data-storefront-cart-badge hidden class="bs-storefront-cart-badge">0</span>
                 </a>
                 <StorefrontAccountMenu Context="Context.AccountMenu" />
-                <a href="@Context.Links.NewReleases.Href" class="bs-storefront-pill-button">@Context.Links.NewReleases.Label</a>
-                <a href="@Context.Links.TodaysDeals.Href" class="bs-storefront-deal-button">@Context.Links.TodaysDeals.Label</a>
+                <a href="@Context.Links.Search.Href" class="bs-storefront-pill-button">@Context.Links.Search.Label</a>
             </div>
         </div>
 
@@ -138,8 +136,7 @@
                         else
                         {
                             <NavLink href="@Context.Links.Home.Href" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.Home.Label</NavLink>
-                            <NavLink href="@Context.Links.NewReleases.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.NewReleases.Label</NavLink>
-                            <NavLink href="@Context.Links.TodaysDeals.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.TodaysDeals.Label</NavLink>
+                            <NavLink href="@Context.Links.Search.Href" class="bs-storefront-nav-link" ActiveClass="is-active">@Context.Links.Search.Label</NavLink>
                             @foreach (var link in Context.Navigation.HeaderLinks)
                             {
                                 <NavLink href="@link.Href" target="@link.Target" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Label</NavLink>
@@ -159,8 +156,7 @@
                                 </SubmitContent>
                             </StorefrontCurrencyPreferenceForm>
                         }
-                        <a href="@Context.Links.NewReleases.Href" class="bs-storefront-pill-button">@Context.Links.NewReleases.Label</a>
-                        <a href="@Context.Links.TodaysDeals.Href" class="bs-storefront-deal-button">@Context.Links.TodaysDeals.Label</a>
+                        <a href="@Context.Links.Search.Href" class="bs-storefront-pill-button">@Context.Links.Search.Label</a>
                     </div>
                 </div>
             </details>

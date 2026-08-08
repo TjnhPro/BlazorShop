@@ -33,8 +33,8 @@
                     <h2 class="@Classes.EmptyTitle">Your cart is empty</h2>
                     <p class="@Classes.BodyText">Add products from the storefront and they will appear here for review before checkout.</p>
                     <div class="@Classes.EmptyActions">
-                        <a href="@NewReleasesUrl" class="@Classes.PrimaryLink">Shop New Releases</a>
-                        <a href="@TodaysDealsUrl" class="@Classes.SecondaryLink">See Today's Deals</a>
+                        <a href="@ContinueShoppingUrl" class="@Classes.PrimaryLink">Browse Products</a>
+                        <a href="@SecondaryShoppingUrl" class="@Classes.SecondaryLink">Back to Home</a>
                     </div>
                 </div>
             }
@@ -175,7 +175,7 @@
                         </button>
                     }
 
-                    <a href="@NewReleasesUrl" class="@Classes.PrimaryLink">Keep Shopping</a>
+                    <a href="@ContinueShoppingUrl" class="@Classes.PrimaryLink">Keep Shopping</a>
                 </div>
             </div>
         </aside>
@@ -202,10 +202,10 @@
     public string CheckoutUrl { get; set; } = "/checkout";
 
     [Parameter]
-    public string NewReleasesUrl { get; set; } = "/new-releases";
+    public string ContinueShoppingUrl { get; set; } = "/search";
 
     [Parameter]
-    public string TodaysDealsUrl { get; set; } = "/todays-deals";
+    public string SecondaryShoppingUrl { get; set; } = "/";
 
     private IReadOnlyList<StorefrontBrowserCartAlert> Alerts => CartController.State.Alerts;
 

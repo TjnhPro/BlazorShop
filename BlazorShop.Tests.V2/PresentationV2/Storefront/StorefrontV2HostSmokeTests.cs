@@ -97,7 +97,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("Your cart is empty", content, StringComparison.Ordinal);
-            Assert.Contains("Shop New Releases", content, StringComparison.Ordinal);
+            Assert.Contains("Browse Products", content, StringComparison.Ordinal);
         }
 
         [Fact]

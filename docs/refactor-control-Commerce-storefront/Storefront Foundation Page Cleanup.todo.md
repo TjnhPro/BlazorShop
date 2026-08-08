@@ -221,31 +221,31 @@ Implementation notes:
 
 ## Phase 3 - Remove V2 Dedicated Visual Pages And Replace V2 Links
 
-- [ ] Update `V2FoundationViewRegistration`.
-  - [ ] Remove `DealsPage = typeof(TodaysDeals)`.
-  - [ ] Remove `NewReleasesPage = typeof(NewReleases)`.
-- [ ] Delete V2 dedicated visual pages:
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor`
-- [ ] Replace V2 links that point to deleted shell links.
-  - [ ] `Components/Layout/StorefrontHeader.razor`
-    - [ ] Remove hardcoded navigation entries for new releases/deals.
-    - [ ] Prefer menu-driven entries or Home/Search links.
-  - [ ] `Components/Layout/StorefrontFooter.razor`
-    - [ ] Remove footer links to deleted routes.
-    - [ ] Replace with Home/Search/Content links that actually exist.
-  - [ ] `Components/Public/HeroBanner.razor`
-    - [ ] Replace `Links.NewReleases` and `Links.TodaysDeals` CTAs with valid Home/Search/category links.
-  - [ ] `Pages/Hybrid/Catalog/Home.razor`
-    - [ ] Remove page CTA to `/new-releases`.
-    - [ ] Keep any inline deals section only if it does not depend on `DealsPlacement.DedicatedPage` or deleted routes.
-  - [ ] `Pages/Product/V2ProductPageView.razor`
-    - [ ] Replace fallback links to new releases/deals with valid Home/Search/category links.
-  - [ ] `Pages/Hybrid/Commerce/CheckoutPage.razor`
-    - [ ] Replace empty/invalid checkout CTA with Home/Search.
-  - [ ] `Pages/Hybrid/Commerce/CartPage.razor`
-    - [ ] Remove parameters that pass deleted route URLs into the WASM cart component.
-    - [ ] Pass Home/Search URLs or a single `ContinueShoppingUrl` if the context is simplified in Phase 5.
+- [x] Update `V2FoundationViewRegistration`.
+  - [x] Remove `DealsPage = typeof(TodaysDeals)`.
+  - [x] Remove `NewReleasesPage = typeof(NewReleases)`.
+- [x] Delete V2 dedicated visual pages:
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor`
+- [x] Replace V2 links that point to deleted shell links.
+  - [x] `Components/Layout/StorefrontHeader.razor`
+    - [x] Remove hardcoded navigation entries for new releases/deals.
+    - [x] Prefer menu-driven entries or Home/Search links.
+  - [x] `Components/Layout/StorefrontFooter.razor`
+    - [x] Remove footer links to deleted routes.
+    - [x] Replace with Home/Search/Content links that actually exist.
+  - [x] `Components/Public/HeroBanner.razor`
+    - [x] Replace `Links.NewReleases` and `Links.TodaysDeals` CTAs with valid Home/Search/category links.
+  - [x] `Pages/Hybrid/Catalog/Home.razor`
+    - [x] Remove page CTA to `/new-releases`.
+    - [x] Keep any inline deals section only if it does not depend on `DealsPlacement.DedicatedPage` or deleted routes.
+  - [x] `Pages/Product/V2ProductPageView.razor`
+    - [x] Replace fallback links to new releases/deals with valid Home/Search/category links.
+  - [x] `Pages/Hybrid/Commerce/CheckoutPage.razor`
+    - [x] Replace empty/invalid checkout CTA with Home/Search.
+  - [x] `Pages/Hybrid/Commerce/CartPage.razor`
+    - [x] Remove parameters that pass deleted route URLs into the WASM cart component.
+    - [x] Pass Home/Search URLs or a single `ContinueShoppingUrl` if the context is simplified in Phase 5.
 - [ ] Confirm no V2 visual source contains the deleted route strings:
 
 ```powershell
@@ -254,9 +254,13 @@ rg -n "todays-deals|new-releases|TodaysDeals|NewReleases|DealsPage|NewReleasesPa
 
 Definition of done:
 
-- [ ] V2 owns no dedicated visual page for deals/new releases.
-- [ ] V2 UI renders no links to deleted routes.
-- [ ] V2 still has valid shopping CTAs for empty states and hero/product fallbacks.
+- [x] V2 owns no dedicated visual page for deals/new releases.
+- [x] V2 UI renders no links to deleted routes.
+- [x] V2 still has valid shopping CTAs for empty states and hero/product fallbacks.
+
+Implementation notes:
+
+- 2026-08-08: V2 dedicated visual pages were deleted. Header/footer/hero/home/product/checkout now point fallback CTAs to existing Home/Search/CustomerService links. Cart still uses the old WASM parameter names until Phase 5, but V2 now passes Search/Home URLs instead of deleted route URLs.
 
 ## Phase 4 - Remove Starter Pages And Generation Route Contract
 
