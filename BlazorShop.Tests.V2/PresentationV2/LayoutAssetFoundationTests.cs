@@ -6,9 +6,9 @@ namespace BlazorShop.Tests.PresentationV2
 
     public sealed partial class LayoutAssetFoundationTests
     {
-        private static readonly string[] StorefrontRootStylesheetAllowlist = ["css/site.css", "css/storefront.css"];
+        private static readonly string[] StorefrontRootStylesheetAssetKeys = ["css/site.css", "css/wasm-site.css", "css/storefront.css"];
         private static readonly string[] StorefrontCoreScriptAllowlist = ["_framework/blazor.web.js", "_content/BlazorShop.Storefront.Presentation/js/storefront.application.js"];
-        private static readonly string[] StorefrontVisualScriptAllowlist = ["js/storefrontCommerce.js"];
+        private static readonly string[] StorefrontVisualScriptAssetKeys = ["js/storefrontCommerce.js"];
         private static readonly string[] ControlPlaneRootStylesheetAllowlist = ["vendor/fontawesome/css/all.min.css", "css/site.css", "css/app.css"];
         private static readonly string[] ControlPlaneRootScriptAllowlist = ["_framework/blazor.webassembly.js", "js/downloads.js"];
 
@@ -20,9 +20,12 @@ namespace BlazorShop.Tests.PresentationV2
             var coreScriptMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationCoreScripts.razor");
             var scriptMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationScripts.razor");
 
-            Assert.Equal(StorefrontRootStylesheetAllowlist, ExtractStylesheetHrefs(headMarkup));
+            Assert.Equal(StorefrontRootStylesheetAssetKeys, ExtractAssetKeys(headMarkup));
             Assert.Equal(StorefrontCoreScriptAllowlist, ExtractScriptSources(coreScriptMarkup));
-            Assert.Equal(StorefrontVisualScriptAllowlist, ExtractScriptSources(scriptMarkup));
+            Assert.Equal(StorefrontVisualScriptAssetKeys, ExtractAssetKeys(scriptMarkup));
+            AssertAssetOrder(headMarkup, StorefrontRootStylesheetAssetKeys);
+            Assert.DoesNotContain("href=\"css/", headMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("src=\"js/", scriptMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", headMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontIconHead DisplayContext=\"Context.Display\" />", headMarkup);
             Assert.True(
@@ -355,6 +358,27 @@ namespace BlazorShop.Tests.PresentationV2
                 .ToArray();
         }
 
+        private static IReadOnlyList<string> ExtractAssetKeys(string markup)
+        {
+            return AssetKeyRegex()
+                .Matches(markup)
+                .Select(match => match.Groups["asset"].Value)
+                .Pipe(AssertNoDuplicates)
+                .ToArray();
+        }
+
+        private static void AssertAssetOrder(string markup, IReadOnlyList<string> assetKeys)
+        {
+            var previousIndex = -1;
+            foreach (var assetKey in assetKeys)
+            {
+                var token = $"@Assets[\"{assetKey}\"]";
+                var index = markup.IndexOf(token, StringComparison.Ordinal);
+                Assert.True(index > previousIndex, $"{token} must appear after the previous asset.");
+                previousIndex = index;
+            }
+        }
+
         private static IEnumerable<string> AssertNoDuplicates(IEnumerable<string> values)
         {
             var items = values.ToArray();
@@ -414,6 +438,9 @@ namespace BlazorShop.Tests.PresentationV2
 
         [GeneratedRegex("<script\\s+[^>]*src=\"(?<src>[^\"]+)\"", RegexOptions.IgnoreCase)]
         private static partial Regex ScriptRegex();
+
+        [GeneratedRegex("@Assets\\[\"(?<asset>[^\"]+)\"\\]")]
+        private static partial Regex AssetKeyRegex();
     }
 
     internal static class LayoutAssetFoundationEnumerableExtensions

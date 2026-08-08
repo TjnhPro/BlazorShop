@@ -56,8 +56,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("name=\"blazorshop-antiforgery-token\"", content, StringComparison.Ordinal);
             Assert.Contains("src=\"_framework/blazor.web.js\"", content, StringComparison.Ordinal);
             Assert.Contains("src=\"_content/BlazorShop.Storefront.Presentation/js/storefront.application.js\"", content, StringComparison.Ordinal);
-            Assert.Contains("src=\"js/storefrontCommerce.js\"", content, StringComparison.Ordinal);
-            Assert.Contains("href=\"css/storefront.css\"", content, StringComparison.Ordinal);
+            AssertResolvedAsset(content, "src", "js/storefrontCommerce", ".js");
+            AssertResolvedAsset(content, "href", "css/site", ".css");
+            AssertResolvedAsset(content, "href", "css/wasm-site", ".css");
+            AssertResolvedAsset(content, "href", "css/storefront", ".css");
             Assert.Contains("href=\"/media/assets/default-favicon.ico\"", content, StringComparison.Ordinal);
             Assert.Contains("href=\"/media/assets/default-apple-touch-icon.png\"", content, StringComparison.Ordinal);
             Assert.Contains("name=\"msapplication-TileImage\" content=\"/media/assets/default-ms-tile.png\"", content, StringComparison.Ordinal);
@@ -1586,6 +1588,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             return count;
+        }
+
+        private static void AssertResolvedAsset(string content, string attribute, string pathWithoutExtension, string extension)
+        {
+            var pattern = $"{Regex.Escape(attribute)}=\"{Regex.Escape(pathWithoutExtension)}(?:\\.[a-z0-9]+)?{Regex.Escape(extension)}\"";
+            Assert.Matches(pattern, content);
         }
 
         private sealed class StubCurrentStoreProvider : IStorefrontCurrentStoreProvider

@@ -138,40 +138,40 @@ Definition of done:
 
 ## Phase 2 - Convert V2 Host Assets To Fingerprint-Resolved Static Assets
 
-- [ ] Update `StorefrontApplicationHead.razor`.
-  - [ ] Replace raw V2 CSS link with `@Assets[...]`.
-  - [ ] Add the verified V2.WASM CSS asset via `@Assets[...]`.
-  - [ ] Keep `StorefrontIconHead` and `StorefrontBrandHead` before `HeadOutlet` behavior intact.
-  - [ ] Preserve final load order:
-    - [ ] V2 `site.css`
-    - [ ] V2.WASM `site.css`
-    - [ ] V2 `storefront.css`
-- [ ] Update `StorefrontApplicationScripts.razor`.
-  - [ ] Replace raw `js/storefrontCommerce.js` with `@Assets[...]`.
-  - [ ] Do not change the broader script ordering controlled by Storefront Presentation.
-  - [ ] Keep V2 `storefrontCommerce.js` visual-only.
-- [ ] Do not add custom `?v=` query strings.
-- [ ] Do not add a custom version provider.
-- [ ] Do not move root asset composition into layout-level `HeadContent`.
-- [ ] Do not make asset paths store-configurable.
+- [x] Update `StorefrontApplicationHead.razor`.
+  - [x] Replace raw V2 CSS link with `@Assets[...]`.
+  - [x] Add the verified V2.WASM CSS asset via `@Assets[...]`.
+  - [x] Keep `StorefrontIconHead` and `StorefrontBrandHead` before `HeadOutlet` behavior intact.
+  - [x] Preserve final load order:
+    - [x] V2 `site.css`
+    - [x] V2.WASM `wasm-site.css`
+    - [x] V2 `storefront.css`
+- [x] Update `StorefrontApplicationScripts.razor`.
+  - [x] Replace raw `js/storefrontCommerce.js` with `@Assets[...]`.
+  - [x] Do not change the broader script ordering controlled by Storefront Presentation.
+  - [x] Keep V2 `storefrontCommerce.js` visual-only.
+- [x] Do not add custom `?v=` query strings.
+- [x] Do not add a custom version provider.
+- [x] Do not move root asset composition into layout-level `HeadContent`.
+- [x] Do not make asset paths store-configurable.
 
 Tests to update:
 
-- [ ] Update `LayoutAssetFoundationTests.StorefrontRoot_DefinesExpectedAssetsWithoutDuplicates`.
-  - [ ] It should no longer require raw `href="css/site.css"` style values if source now uses `@Assets[...]`.
-  - [ ] It should assert the three intended stylesheet entries exactly once.
-  - [ ] It should assert script entry for V2 `storefrontCommerce.js` exactly once.
-  - [ ] It should preserve existing framework and Presentation script ordering expectations.
-- [ ] Update `StorefrontV2HostSmokeTests`.
-  - [ ] Replace raw asset string expectations with fingerprint/static-asset-compatible expectations.
-  - [ ] Ensure host HTML still includes required V2/V2.WASM CSS and V2 script.
-- [ ] Update any branding/head tests that read `StorefrontApplicationHead.razor` directly.
+- [x] Update `LayoutAssetFoundationTests.StorefrontRoot_DefinesExpectedAssetsWithoutDuplicates`.
+  - [x] It should no longer require raw `href="css/site.css"` style values if source now uses `@Assets[...]`.
+  - [x] It should assert the three intended stylesheet entries exactly once.
+  - [x] It should assert script entry for V2 `storefrontCommerce.js` exactly once.
+  - [x] It should preserve existing framework and Presentation script ordering expectations.
+- [x] Update `StorefrontV2HostSmokeTests`.
+  - [x] Replace raw asset string expectations with fingerprint/static-asset-compatible expectations.
+  - [x] Ensure host HTML still includes required V2/V2.WASM CSS and V2 script.
+- [x] Update any branding/head tests that read `StorefrontApplicationHead.razor` directly.
 
 Definition of done:
 
-- [ ] V2 host no longer relies on raw static asset URLs for root V2 assets.
-- [ ] Browser receives framework-resolved/fingerprint-capable URLs.
-- [ ] Root asset inventory remains explicit and allowlisted by tests.
+- [x] V2 host no longer relies on raw static asset URLs for root V2 assets.
+- [x] Browser receives framework-resolved/fingerprint-capable URLs.
+- [x] Root asset inventory remains explicit and allowlisted by tests.
 
 ## Phase 3 - CSS Reproducibility Gate
 
