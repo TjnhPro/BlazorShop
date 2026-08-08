@@ -31,8 +31,6 @@ namespace BlazorShop.Application.Services
             "cart",
             "checkout",
             "search",
-            "new-releases",
-            "todays-deals",
             "payment-success",
             "payment-cancel",
             "maintenance",

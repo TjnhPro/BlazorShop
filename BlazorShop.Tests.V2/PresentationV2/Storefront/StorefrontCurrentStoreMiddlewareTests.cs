@@ -29,7 +29,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 return Task.CompletedTask;
             });
             var provider = new StubCurrentStoreProvider(() => throw new InvalidOperationException("Provider should not be called."));
-            var context = CreateContext("/new-releases");
+            var context = CreateContext("/search");
 
             await middleware.InvokeAsync(
                 context,
@@ -52,7 +52,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 return Task.CompletedTask;
             });
             var provider = new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.NotFound);
-            var context = CreateContext("/new-releases");
+            var context = CreateContext("/search");
             context.Request.Headers.Accept = "application/json";
 
             await middleware.InvokeAsync(

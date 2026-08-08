@@ -29,14 +29,14 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 .Setup(service => service.ResolvePublicPathAsync("/legacy-sale"))
                 .ReturnsAsync(new SeoRedirectResolutionDto
                 {
-                    NewPath = "/todays-deals",
+                    NewPath = "/search",
                     StatusCode = 301,
                 });
 
             var result = await controller.ResolveRedirect("/legacy-sale", CancellationToken.None);
 
             var response = AssertSuccess(result);
-            Assert.Equal("/todays-deals", response.Data!.NewPath);
+            Assert.Equal("/search", response.Data!.NewPath);
             Assert.Equal(301, response.Data.StatusCode);
             urlResolver.Verify(
                 service => service.ResolvePublicPathAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()),

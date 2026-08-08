@@ -45,6 +45,19 @@ namespace BlazorShop.Tests.Application.Services
             Assert.Equal(expectedMessage, result.Message);
         }
 
+        [Theory]
+        [InlineData("new-releases")]
+        [InlineData("todays-deals")]
+        public async Task ValidateSlugAsync_AllowsDeletedCollectionRouteSlugs(string slug)
+        {
+            var service = CreateService();
+
+            var result = await service.ValidateSlugAsync(SeoSlugEntityTypes.Page, slug, this.storeId);
+
+            Assert.True(result.Success);
+            Assert.Equal(slug, result.Slug);
+        }
+
         [Fact]
         public async Task ValidateSlugAsync_WhenDuplicateExists_ReturnsFailure()
         {

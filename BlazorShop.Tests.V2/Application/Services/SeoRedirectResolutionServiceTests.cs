@@ -73,18 +73,18 @@ namespace BlazorShop.Tests.Application.Services
                 .ReturnsAsync(new SeoRedirect
                 {
                     OldPath = "/sale",
-                    NewPath = "/todays-deals",
+                    NewPath = "/search",
                     StatusCode = 301,
                     IsActive = true,
                 });
             _seoRedirectRepository
-                .Setup(repository => repository.GetActiveByOldPathAsync("/todays-deals"))
+                .Setup(repository => repository.GetActiveByOldPathAsync("/search"))
                 .ReturnsAsync((SeoRedirect?)null);
 
             var result = await _service.ResolvePublicPathAsync("/legacy-sale");
 
             Assert.NotNull(result);
-            Assert.Equal("/todays-deals", result!.NewPath);
+            Assert.Equal("/search", result!.NewPath);
             Assert.Equal(302, result.StatusCode);
         }
 

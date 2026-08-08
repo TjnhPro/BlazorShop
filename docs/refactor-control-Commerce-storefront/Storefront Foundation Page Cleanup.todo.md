@@ -430,25 +430,29 @@ Implementation notes:
 
 ## Phase 8 - Reserved Slug, SEO Redirect, And Generic Test Fixture Audit
 
-- [ ] Review `StoreSeoSlugPolicyService`.
-  - [ ] Decide whether `new-releases` and `todays-deals` should remain reserved path slugs.
-  - [ ] Recommended for this phase: remove them from reserved paths if the routes are deleted and no future route is approved.
-  - [ ] If kept reserved, document the reason explicitly as future compatibility, not active route ownership.
-- [ ] Review SEO redirect tests that use `/todays-deals` as sample redirect target.
-  - [ ] If the test is generic redirect behavior, replace the sample path with an existing neutral route such as `/search` or `/pages/some-page`.
-  - [ ] Do not remove SEO redirect capability.
-- [ ] Review `StorefrontScopedSeoControllerTests`.
-  - [ ] Replace deleted route examples with neutral existing route examples.
-- [ ] Confirm robots/sitemap/indexing behavior.
-  - [ ] Sitemap must not include deleted pages.
-  - [ ] Robots/indexing rules must not mention deleted pages.
-  - [ ] Missing deleted route should follow normal not-found behavior.
+- [x] Review `StoreSeoSlugPolicyService`.
+  - [x] Decide whether `new-releases` and `todays-deals` should remain reserved path slugs.
+  - [x] Recommended for this phase: remove them from reserved paths if the routes are deleted and no future route is approved.
+  - [x] If kept reserved, document the reason explicitly as future compatibility, not active route ownership.
+- [x] Review SEO redirect tests that use `/todays-deals` as sample redirect target.
+  - [x] If the test is generic redirect behavior, replace the sample path with an existing neutral route such as `/search` or `/pages/some-page`.
+  - [x] Do not remove SEO redirect capability.
+- [x] Review `StorefrontScopedSeoControllerTests`.
+  - [x] Replace deleted route examples with neutral existing route examples.
+- [x] Confirm robots/sitemap/indexing behavior.
+  - [x] Sitemap must not include deleted pages.
+  - [x] Robots/indexing rules must not mention deleted pages.
+  - [x] Missing deleted route should follow normal not-found behavior.
 
 Definition of done:
 
-- [ ] SEO redirect tests no longer depend on deleted route names as fixture data.
-- [ ] Slug policy accurately reflects active reserved paths.
-- [ ] SEO/discovery behavior remains intact for real routes.
+- [x] SEO redirect tests no longer depend on deleted route names as fixture data.
+- [x] Slug policy accurately reflects active reserved paths.
+- [x] SEO/discovery behavior remains intact for real routes.
+
+Implementation notes:
+
+- 2026-08-08: removed `new-releases` and `todays-deals` from reserved slug segments because the active routes are deleted. Redirect and middleware tests now use `/search` as the neutral existing route fixture; SEO redirect capability remains unchanged. Sitemap static pages were already reduced in Phase 5, and active robots/sitemap code has no deleted route references.
 
 ## Phase 9 - Documentation And QA Checklist Update
 
