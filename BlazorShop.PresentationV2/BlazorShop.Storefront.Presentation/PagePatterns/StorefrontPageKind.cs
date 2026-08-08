@@ -6,8 +6,6 @@ public enum StorefrontPageKind
     Category,
     Product,
     Search,
-    Deals,
-    NewReleases,
     Content,
     Cart,
     Checkout,

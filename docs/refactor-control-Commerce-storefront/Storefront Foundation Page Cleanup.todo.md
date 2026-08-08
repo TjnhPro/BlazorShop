@@ -177,43 +177,47 @@ Implementation notes:
 
 ## Phase 2 - Remove Presentation Route Pages, Services, And Page Kinds
 
-- [ ] Delete Presentation route pages:
-  - [ ] `Pages/Hybrid/Catalog/TodaysDealsRoutePage.razor`
-  - [ ] `Pages/Hybrid/Catalog/NewReleasesRoutePage.razor`
-- [ ] Delete Presentation page services:
-  - [ ] `Services/Catalog/StorefrontDealsPageService.cs`
-  - [ ] `Services/Catalog/StorefrontNewReleasesPageService.cs`
-- [ ] Update `StorefrontPresentationServiceCollectionExtensions`.
-  - [ ] Remove `AddScoped<StorefrontDealsPageService>()`.
-  - [ ] Remove `AddScoped<StorefrontNewReleasesPageService>()`.
-- [ ] Update `StorefrontCatalogProductsPageContext.cs`.
-  - [ ] Remove `StorefrontDealsPageContext`.
-  - [ ] Remove `StorefrontNewReleasesPageContext`.
-  - [ ] Remove `StorefrontCatalogProductsPageContext` if no other source uses it after the cleanup.
-  - [ ] Keep any generic catalog/search/category contexts that are still used.
-- [ ] Update `StorefrontPageKind`.
-  - [ ] Remove `Deals`.
-  - [ ] Remove `NewReleases`.
-  - [ ] Keep enum values for real route/state kinds unchanged where possible.
-- [ ] Confirm `StorefrontPageResultMapper` does not require any changes beyond compile fixes.
+- [x] Delete Presentation route pages:
+  - [x] `Pages/Hybrid/Catalog/TodaysDealsRoutePage.razor`
+  - [x] `Pages/Hybrid/Catalog/NewReleasesRoutePage.razor`
+- [x] Delete Presentation page services:
+  - [x] `Services/Catalog/StorefrontDealsPageService.cs`
+  - [x] `Services/Catalog/StorefrontNewReleasesPageService.cs`
+- [x] Update `StorefrontPresentationServiceCollectionExtensions`.
+  - [x] Remove `AddScoped<StorefrontDealsPageService>()`.
+  - [x] Remove `AddScoped<StorefrontNewReleasesPageService>()`.
+- [x] Update `StorefrontCatalogProductsPageContext.cs`.
+  - [x] Remove `StorefrontDealsPageContext`.
+  - [x] Remove `StorefrontNewReleasesPageContext`.
+  - [x] Remove `StorefrontCatalogProductsPageContext` if no other source uses it after the cleanup.
+  - [x] Keep any generic catalog/search/category contexts that are still used.
+- [x] Update `StorefrontPageKind`.
+  - [x] Remove `Deals`.
+  - [x] Remove `NewReleases`.
+  - [x] Keep enum values for real route/state kinds unchanged where possible.
+- [x] Confirm `StorefrontPageResultMapper` does not require any changes beyond compile fixes.
 
 Tests to update:
 
-- [ ] `StorefrontPageCompositionGuardrailTests`
-  - [ ] Remove expectations for `TodaysDealsRoutePage.razor`.
-  - [ ] Remove expectations for `NewReleasesRoutePage.razor`.
-  - [ ] Add assertions that Presentation route pages do not declare `/todays-deals` or `/new-releases`.
-- [ ] `StorefrontBrandingMarkupTests`
-  - [ ] Remove `DealsAndNewReleases_ComposePortableFeatureComponents` or rewrite it as a Home/product-section component composition check if still relevant.
-- [ ] `StorefrontComponentsHeadlessPresentationRefactorTests`
-  - [ ] Remove tests that require dedicated deals/new-release pages.
-  - [ ] Keep tests that guard reusable component/headless boundaries if they are still valid.
+- [x] `StorefrontPageCompositionGuardrailTests`
+  - [x] Remove expectations for `TodaysDealsRoutePage.razor`.
+  - [x] Remove expectations for `NewReleasesRoutePage.razor`.
+  - [x] Add assertions that Presentation route pages do not declare `/todays-deals` or `/new-releases`.
+- [x] `StorefrontBrandingMarkupTests`
+  - [x] Remove `DealsAndNewReleases_ComposePortableFeatureComponents` or rewrite it as a Home/product-section component composition check if still relevant.
+- [x] `StorefrontComponentsHeadlessPresentationRefactorTests`
+  - [x] Remove tests that require dedicated deals/new-release pages.
+  - [x] Keep tests that guard reusable component/headless boundaries if they are still valid.
 
 Definition of done:
 
-- [ ] No Presentation `@page` route exists for `/todays-deals`.
-- [ ] No Presentation `@page` route exists for `/new-releases`.
-- [ ] No Presentation service or page state depends on `StorefrontDealsPageContext` or `StorefrontNewReleasesPageContext`.
+- [x] No Presentation `@page` route exists for `/todays-deals`.
+- [x] No Presentation `@page` route exists for `/new-releases`.
+- [x] No Presentation service or page state depends on `StorefrontDealsPageContext` or `StorefrontNewReleasesPageContext`.
+
+Implementation notes:
+
+- 2026-08-08: removed the Presentation-owned ghost route pages, page services, deleted collection contexts, and page-kind enum values. `StorefrontPageResultMapper` did not require changes after the enum cleanup. V2/Starter visual pages still reference the removed contexts until Phase 3/4 delete those host templates.
 
 ## Phase 3 - Remove V2 Dedicated Visual Pages And Replace V2 Links
 

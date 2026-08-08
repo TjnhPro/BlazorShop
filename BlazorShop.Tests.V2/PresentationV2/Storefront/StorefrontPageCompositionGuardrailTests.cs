@@ -133,8 +133,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 ["HomeRoutePage.razor"] = "@page \"/\"",
                 ["CategoryRoutePage.razor"] = "@page \"/category/{Slug}\"",
                 ["SearchRoutePage.razor"] = "@page \"/search\"",
-                ["TodaysDealsRoutePage.razor"] = "@page \"/todays-deals\"",
-                ["NewReleasesRoutePage.razor"] = "@page \"/new-releases\"",
             };
             var presentationCatalogRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Hybrid/Catalog");
             var registration = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs"));
@@ -155,8 +153,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor",
             };
 
             foreach (var viewPath in viewPaths)
@@ -171,8 +167,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("HomePage = typeof(Home)", registration, StringComparison.Ordinal);
             Assert.Contains("CategoryPage = typeof(CategoryPage)", registration, StringComparison.Ordinal);
             Assert.Contains("SearchPage = typeof(SearchPage)", registration, StringComparison.Ordinal);
-            Assert.Contains("DealsPage = typeof(TodaysDeals)", registration, StringComparison.Ordinal);
-            Assert.Contains("NewReleasesPage = typeof(NewReleases)", registration, StringComparison.Ordinal);
+            Assert.False(File.Exists(Path.Combine(presentationCatalogRoot, "TodaysDealsRoutePage.razor")));
+            Assert.False(File.Exists(Path.Combine(presentationCatalogRoot, "NewReleasesRoutePage.razor")));
+            var presentationRouteSource = string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(presentationCatalogRoot, "*.razor", SearchOption.AllDirectories)
+                    .Select(File.ReadAllText));
+            Assert.DoesNotContain("@page \"/todays-deals\"", presentationRouteSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("@page \"/new-releases\"", presentationRouteSource, StringComparison.Ordinal);
         }
 
         [Fact]

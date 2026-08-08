@@ -266,8 +266,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
             var searchPage = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
-            var newReleasesPage = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
 
             Assert.Contains("data-storefront-product-summary-grid", v2Grid, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryCard Item=\"item\" />", v2Grid, StringComparison.Ordinal);
@@ -276,7 +274,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", categoryPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", searchPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", newReleasesPage, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -288,8 +285,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontDealsSection.razor");
             var home = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor");
-            var todaysDeals = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor");
 
             Assert.Contains("data-storefront-deals-block", v2Deals, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Items\"", v2Deals, StringComparison.Ordinal);
@@ -297,8 +292,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("bg-amber-500", v2Deals, StringComparison.Ordinal);
 
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.DedicatedPage\"", todaysDeals, StringComparison.Ordinal);
-            Assert.DoesNotContain("<DealsBlock", home + todaysDeals, StringComparison.Ordinal);
+            Assert.DoesNotContain("<DealsBlock", home, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -923,16 +917,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 Assert.Contains(expected, combinedDocs, StringComparison.Ordinal);
             }
-        }
-
-        [Fact]
-        public void NewReleases_UsesNewestSortUntilRecentWindowPolicyIsChosen()
-        {
-            var newReleases = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontNewReleasesPageService.cs");
-
-            Assert.Contains("SortBy = ProductCatalogSortBy.Newest", newReleases, StringComparison.Ordinal);
-            Assert.Contains("New Releases", newReleases, StringComparison.Ordinal);
         }
 
         private static string[] EnumerateComponentContractFiles(string searchPattern)
