@@ -95,8 +95,9 @@ Home page metadata uses the reserved published StorefrontPage slug `home`. The `
 
 Storefront root assets are intentionally explicit:
 
-- Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` allowlisted by tests.
-- Keep `_framework/blazor.web.js`, then Presentation `_content/BlazorShop.Storefront.Presentation/js/storefront.application.js`, then host visual scripts such as `storefrontCommerce.js` unless a focused test and browser QA justify changing the order.
+- Keep root CSS and script entries in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` fingerprint-resolved through Razor `@Assets[...]` and allowlisted by tests.
+- Keep Storefront V2 host CSS `css/site.css`, Storefront V2.WASM interactive CSS `css/wasm-site.css`, then handwritten host CSS `css/storefront.css` unless a focused test and browser QA justify changing the order.
+- Keep `_framework/blazor.web.js`, then Presentation `_content/BlazorShop.Storefront.Presentation/js/storefront.application.js`, then host visual scripts such as `storefrontCommerce.js`; host visual scripts must also use `@Assets[...]` for static asset resolution.
 - Keep browser action orchestration in Presentation-owned binders. Storefront V2, Starter, and generated visual JavaScript may subscribe to `storefront:*` semantic events and update visuals, but must not invoke `window.blazorShopStorefront.application.cart.*`, `.consent.*`, or `.productSelection.*`, construct command payloads, or interpret product purchase business fields such as stock, availability, SKU, GTIN, or price.
 - Use `SeoHead` and page-level `HeadContent` for metadata; do not move brand/runtime metadata into layout-level `HeadContent`.
 - Prefer JS module imports through `IJSRuntime` for page-specific behavior.

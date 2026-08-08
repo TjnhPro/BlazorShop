@@ -190,7 +190,8 @@ Use for:
 
 Asset and layout rules:
 
-- Root Storefront CSS and scripts must stay explicit in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` through host-provided head/script slots.
+- Root Storefront CSS and scripts must stay explicit in `BlazorShop.Storefront.Presentation/App/StorefrontApp.razor` through host-provided head/script slots, and host-provided asset entries must resolve static web assets through Razor `@Assets[...]` so published/fingerprinted URLs are used instead of raw root paths.
+- Storefront V2 host CSS owns `css/site.css`, Storefront V2.WASM interactive CSS owns `css/wasm-site.css`, and handwritten V2 structural overrides own `css/storefront.css`; the root document must load them in that order.
 - `StorefrontIconHead` owns store favicon/png/apple/MS tile tags; `StorefrontBrandHead` owns non-icon storefront metadata such as the language marker. Host application head components must render them before `HeadOutlet`, and brand/runtime metadata must not use layout-level `HeadContent`.
 - Page SEO metadata belongs in page/SEO components such as `SeoHead`.
 - Page-specific CSS should prefer scoped CSS or controlled app-owned classes in `wwwroot/css`.

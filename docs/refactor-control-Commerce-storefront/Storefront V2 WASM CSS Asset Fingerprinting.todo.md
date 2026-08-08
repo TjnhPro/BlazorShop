@@ -52,7 +52,7 @@ Use ASP.NET Core static web assets and Razor `@Assets[...]` resolution for V2/V2
 CSS ownership:
 
 - V2 owns V2 layout/global visual CSS in `BlazorShop.Storefront.V2/wwwroot/css/site.css`.
-- V2.WASM owns interactive WASM visual CSS in `BlazorShop.Storefront.V2.WASM/wwwroot/css/site.css`.
+- V2.WASM owns interactive WASM visual CSS in `BlazorShop.Storefront.V2.WASM/wwwroot/css/wasm-site.css`.
 - V2 `wwwroot/css/storefront.css` remains a handwritten V2 host override/structural stylesheet and loads after generated Tailwind CSS.
 
 Final intended root load order:
@@ -61,7 +61,7 @@ Final intended root load order:
 2. V2.WASM generated Tailwind CSS.
 3. V2 handwritten `storefront.css`.
 
-Do not hard-code the V2.WASM CSS logical asset path until the static web asset manifest confirms it after adding `wwwroot/css/site.css`.
+The V2.WASM CSS logical asset path is `css/wasm-site.css`; using `site.css` in both host and WASM would collide when static web assets merge at the hosted root.
 
 ## Phase 0 - Baseline And Guardrail Snapshot
 
@@ -278,27 +278,27 @@ Definition of done:
 
 ## Phase 6 - Documentation And QA Checklist Update
 
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
-  - [ ] Add a new checklist item for V2.WASM CSS static asset presence.
-  - [ ] Add a new checklist item for fingerprint/static-asset-resolved root links.
-  - [ ] Add a new checklist item for CSS reproducibility gate.
-  - [ ] Add a new checklist item for Docker V2.WASM Tailwind build.
-  - [ ] Add browser QA evidence paths when completed.
-- [ ] Update architecture docs only if implementation changes an architecture rule.
-  - [ ] If root asset policy changes, update `docs/architecture/08-agent-decision-rules.md`.
-  - [ ] If project ownership wording changes, update `docs/architecture/05-project-and-folder-guide.md`.
-  - [ ] Do not update architecture docs just to restate this implementation plan.
-- [ ] Add a short implementation note to the PR/commit message:
-  - [ ] V2/V2.WASM CSS ownership split.
-  - [ ] Asset fingerprint resolution source.
-  - [ ] Reproducibility gate command.
-  - [ ] Browser QA evidence.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+  - [x] Add a new checklist item for V2.WASM CSS static asset presence.
+  - [x] Add a new checklist item for fingerprint/static-asset-resolved root links.
+  - [x] Add a new checklist item for CSS reproducibility gate.
+  - [x] Add a new checklist item for Docker V2.WASM Tailwind build.
+  - [x] Add browser QA evidence paths when completed.
+- [x] Update architecture docs only if implementation changes an architecture rule.
+  - [x] If root asset policy changes, update `docs/architecture/08-agent-decision-rules.md`.
+  - [x] If project ownership wording changes, update `docs/architecture/05-project-and-folder-guide.md`.
+  - [x] Do not update architecture docs just to restate this implementation plan.
+- [x] Add a short implementation note to the PR/commit message:
+  - [x] V2/V2.WASM CSS ownership split.
+  - [x] Asset fingerprint resolution source.
+  - [x] Reproducibility gate command.
+  - [x] Browser QA evidence.
 
 Definition of done:
 
-- [ ] QA checklist tells future agents how to verify the asset behavior.
-- [ ] Docs do not imply raw asset URLs are still the intended V2 host behavior.
-- [ ] The phase can be audited without re-investigating the whole codebase.
+- [x] QA checklist tells future agents how to verify the asset behavior.
+- [x] Docs do not imply raw asset URLs are still the intended V2 host behavior.
+- [x] The phase can be audited without re-investigating the whole codebase.
 
 ## Phase 7 - Focused Verification Gate
 
