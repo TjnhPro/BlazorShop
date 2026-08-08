@@ -455,8 +455,6 @@ namespace BlazorShop.Tests.Architecture
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = "StorefrontCartPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"] = "StorefrontCheckoutPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/PaymentResultPage.razor"] = "StorefrontPaymentResultPageContext",
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = "StorefrontDealsPageContext",
-                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor"] = "StorefrontNewReleasesPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = "StorefrontContentPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor"] = "StorefrontAuthPageContext",
                 ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"] = "StorefrontAccountPageContext",
@@ -470,6 +468,9 @@ namespace BlazorShop.Tests.Architecture
                 Assert.DoesNotContain("@page", source, StringComparison.Ordinal);
                 Assert.Contains(contextType, source, StringComparison.Ordinal);
             }
+
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor")));
 
             var productPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor");
             var productShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Catalog/ProductDetailShell.razor");
@@ -558,8 +559,6 @@ namespace BlazorShop.Tests.Architecture
                 "/payment/result",
                 "/payment-success",
                 "/payment-cancel",
-                "/todays-deals",
-                "/new-releases",
                 "/maintenance",
                 "/{*Path:nonfile}",
             })
@@ -576,6 +575,13 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.DoesNotContain("route: /payment/success", contract, StringComparison.Ordinal);
             Assert.DoesNotContain("route: /payment/cancel", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("route: /todays-deals", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("route: /new-releases", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("DealsPage.razor", contract, StringComparison.Ordinal);
+            Assert.DoesNotContain("NewReleasesPage.razor", contract, StringComparison.Ordinal);
+            var starterRegistration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StarterFoundationViewRegistration.cs");
+            Assert.DoesNotContain("DealsPage", starterRegistration, StringComparison.Ordinal);
+            Assert.DoesNotContain("NewReleasesPage", starterRegistration, StringComparison.Ordinal);
             Assert.Contains("path: Components/States/ErrorState.razor", contract, StringComparison.Ordinal);
 
             foreach (var slot in new[]

@@ -264,49 +264,53 @@ Implementation notes:
 
 ## Phase 4 - Remove Starter Pages And Generation Route Contract
 
-- [ ] Update `StarterFoundationViewRegistration`.
-  - [ ] Remove `DealsPage = typeof(DealsPage)`.
-  - [ ] Remove `NewReleasesPage = typeof(NewReleasesPage)`.
-- [ ] Delete Starter visual pages:
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor`
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor`
-- [ ] Update Starter layout/navigation source.
-  - [ ] Remove `Context.Links.TodaysDeals` and `Context.Links.NewReleases` usage.
-  - [ ] Replace with valid Home/Search/Content links.
-- [ ] Update `starter-generation.contract.yaml`.
-  - [ ] Remove route entry for `/todays-deals`.
-  - [ ] Remove route entry for `/new-releases`.
-  - [ ] Ensure the remaining route list still includes the real route truth:
-    - [ ] `/`
-    - [ ] `/pages/{Slug}`
-    - [ ] auth/recovery routes
-    - [ ] `/maintenance`
-    - [ ] `/{*Path:nonfile}`
-    - [ ] `/category/{Slug}`
-    - [ ] `/product/{Slug}`
-    - [ ] `/search`
-    - [ ] `/cart`
-    - [ ] `/my-cart`
-    - [ ] `/checkout`
-    - [ ] `/payment/result`
-    - [ ] `/payment-success`
-    - [ ] `/payment-cancel`
-    - [ ] `/account`
-- [ ] Confirm generated visual files are still not route owners and do not use `@page`.
+- [x] Update `StarterFoundationViewRegistration`.
+  - [x] Remove `DealsPage = typeof(DealsPage)`.
+  - [x] Remove `NewReleasesPage = typeof(NewReleasesPage)`.
+- [x] Delete Starter visual pages:
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor`
+  - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/NewReleasesPage.razor`
+- [x] Update Starter layout/navigation source.
+  - [x] Remove `Context.Links.TodaysDeals` and `Context.Links.NewReleases` usage.
+  - [x] Replace with valid Home/Search/Content links.
+- [x] Update `starter-generation.contract.yaml`.
+  - [x] Remove route entry for `/todays-deals`.
+  - [x] Remove route entry for `/new-releases`.
+  - [x] Ensure the remaining route list still includes the real route truth:
+    - [x] `/`
+    - [x] `/pages/{Slug}`
+    - [x] auth/recovery routes
+    - [x] `/maintenance`
+    - [x] `/{*Path:nonfile}`
+    - [x] `/category/{Slug}`
+    - [x] `/product/{Slug}`
+    - [x] `/search`
+    - [x] `/cart`
+    - [x] `/my-cart`
+    - [x] `/checkout`
+    - [x] `/payment/result`
+    - [x] `/payment-success`
+    - [x] `/payment-cancel`
+    - [x] `/account`
+- [x] Confirm generated visual files are still not route owners and do not use `@page`.
 
 Tests to update:
 
-- [ ] `StorefrontStarterFoundationBoundaryTests`
-  - [ ] Remove expected Starter page files for deals/new releases.
-  - [ ] Remove expected Starter route entries `/todays-deals` and `/new-releases`.
-  - [ ] Add assertions that Starter registration does not mention `DealsPage` or `NewReleasesPage`.
-  - [ ] Add assertions that `starter-generation.contract.yaml` does not list deleted routes.
+- [x] `StorefrontStarterFoundationBoundaryTests`
+  - [x] Remove expected Starter page files for deals/new releases.
+  - [x] Remove expected Starter route entries `/todays-deals` and `/new-releases`.
+  - [x] Add assertions that Starter registration does not mention `DealsPage` or `NewReleasesPage`.
+  - [x] Add assertions that `starter-generation.contract.yaml` does not list deleted routes.
 
 Definition of done:
 
-- [ ] Starter is still a valid second consumer of the reduced foundation contract.
-- [ ] StorefrontBuilder will not generate storefront route expectations for deleted pages.
-- [ ] Generated storefronts cannot inherit ghost deals/new-release route metadata from Starter.
+- [x] Starter is still a valid second consumer of the reduced foundation contract.
+- [x] StorefrontBuilder will not generate storefront route expectations for deleted pages.
+- [x] Generated storefronts cannot inherit ghost deals/new-release route metadata from Starter.
+
+Implementation notes:
+
+- 2026-08-08: removed Starter's dedicated collection page templates, deleted the two route metadata entries from `starter-generation.contract.yaml`, and removed the Starter layout link to the deleted deals route. Starter registration cleanup was completed as Phase 1 compile fallout and is guarded here.
 
 ## Phase 5 - Simplify Shell Link And Cart Context Contracts
 

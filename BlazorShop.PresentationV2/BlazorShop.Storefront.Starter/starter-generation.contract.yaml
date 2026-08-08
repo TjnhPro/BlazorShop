@@ -305,14 +305,6 @@ routes:
     path: Pages/Hybrid/Commerce/PaymentResultPage.razor
     renderOwner: Hybrid
     hydrationMode: RefreshAfterHydration
-  - route: /todays-deals
-    path: Pages/Hybrid/Commerce/DealsPage.razor
-    renderOwner: Hybrid
-    hydrationMode: BrowserFetch
-  - route: /new-releases
-    path: Pages/Hybrid/Catalog/NewReleasesPage.razor
-    renderOwner: Hybrid
-    hydrationMode: BrowserFetch
   - route: /account
     path: Pages/WasmHost/Account/AccountHostPage.razor
     renderOwner: WASM-host
