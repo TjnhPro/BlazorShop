@@ -31,8 +31,6 @@ public static class V2FoundationViewRegistration
                 CategoryPage = typeof(CategoryPage),
                 ProductPage = typeof(V2ProductPageView),
                 SearchPage = typeof(SearchPage),
-                DealsPage = typeof(TodaysDeals),
-                NewReleasesPage = typeof(NewReleases),
                 ContentPage = typeof(StorefrontPage),
                 CartPage = typeof(CartPage),
                 CheckoutPage = typeof(CheckoutPage),

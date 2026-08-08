@@ -29,8 +29,6 @@ public static class StarterFoundationViewRegistration
                 CategoryPage = typeof(CategoryPage),
                 ProductPage = typeof(ProductPage),
                 SearchPage = typeof(SearchPage),
-                DealsPage = typeof(DealsPage),
-                NewReleasesPage = typeof(NewReleasesPage),
                 ContentPage = typeof(ContentPage),
                 CartPage = typeof(CartPage),
                 CheckoutPage = typeof(CheckoutPage),

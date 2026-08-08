@@ -113,8 +113,6 @@ namespace BlazorShop.Tests.Architecture
                 CategoryPage = viewSet.CategoryPage,
                 ProductPage = null!,
                 SearchPage = viewSet.SearchPage,
-                DealsPage = viewSet.DealsPage,
-                NewReleasesPage = viewSet.NewReleasesPage,
                 ContentPage = viewSet.ContentPage,
                 CartPage = viewSet.CartPage,
                 CheckoutPage = viewSet.CheckoutPage,
@@ -377,6 +375,18 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("public static StorefrontFoundationViewSet CreateMinimal", viewSet, StringComparison.Ordinal);
             Assert.DoesNotContain("public Type ApplicationScripts", viewSet, StringComparison.Ordinal);
             Assert.Empty(productionCallers);
+        }
+
+        [Fact]
+        public void FoundationViewSet_DoesNotExposeDeletedCollectionPageSlots()
+        {
+            var viewSet = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs");
+            var validator = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs");
+
+            Assert.DoesNotContain("DealsPage", viewSet, StringComparison.Ordinal);
+            Assert.DoesNotContain("NewReleasesPage", viewSet, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontDealsPageContext", validator, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontNewReleasesPageContext", validator, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -645,8 +655,6 @@ namespace BlazorShop.Tests.Architecture
                 CategoryPage = typeof(ValidLayoutFoundationView),
                 ProductPage = typeof(ValidLayoutFoundationView),
                 SearchPage = typeof(ValidLayoutFoundationView),
-                DealsPage = typeof(ValidLayoutFoundationView),
-                NewReleasesPage = typeof(ValidLayoutFoundationView),
                 ContentPage = typeof(ValidLayoutFoundationView),
                 CartPage = typeof(ValidLayoutFoundationView),
                 CheckoutPage = typeof(ValidLayoutFoundationView),
@@ -683,8 +691,6 @@ namespace BlazorShop.Tests.Architecture
                 CategoryPage = source.CategoryPage,
                 ProductPage = productPage ?? source.ProductPage,
                 SearchPage = source.SearchPage,
-                DealsPage = source.DealsPage,
-                NewReleasesPage = source.NewReleasesPage,
                 ContentPage = source.ContentPage,
                 CartPage = source.CartPage,
                 CheckoutPage = omitCheckoutPage ? null! : checkoutPage ?? source.CheckoutPage,

@@ -25,8 +25,6 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
         [nameof(StorefrontFoundationViewSet.CategoryPage)] = typeof(StorefrontCategoryPageContext),
         [nameof(StorefrontFoundationViewSet.ProductPage)] = typeof(StorefrontProductPageContext),
         [nameof(StorefrontFoundationViewSet.SearchPage)] = typeof(StorefrontSearchPageContext),
-        [nameof(StorefrontFoundationViewSet.DealsPage)] = typeof(StorefrontDealsPageContext),
-        [nameof(StorefrontFoundationViewSet.NewReleasesPage)] = typeof(StorefrontNewReleasesPageContext),
         [nameof(StorefrontFoundationViewSet.ContentPage)] = typeof(StorefrontContentPageContext),
         [nameof(StorefrontFoundationViewSet.CartPage)] = typeof(StorefrontCartPageContext),
         [nameof(StorefrontFoundationViewSet.CheckoutPage)] = typeof(StorefrontCheckoutPageContext),

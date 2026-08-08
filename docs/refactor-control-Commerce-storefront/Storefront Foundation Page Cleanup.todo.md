@@ -143,33 +143,37 @@ Implementation notes:
 
 ## Phase 1 - Remove Foundation Slots And Required Context Mapping
 
-- [ ] Update `StorefrontFoundationViewSet`.
-  - [ ] Remove required property `DealsPage`.
-  - [ ] Remove required property `NewReleasesPage`.
-  - [ ] Remove both entries from `GetRequiredSlots()`.
-  - [ ] Keep all remaining foundation page/state slots unchanged.
-- [ ] Update `StorefrontFoundationViewOptionsValidator`.
-  - [ ] Remove the `DealsPage` context mapping.
-  - [ ] Remove the `NewReleasesPage` context mapping.
-  - [ ] Keep validation behavior unchanged for remaining slots.
-- [ ] Update any helper/test factory that constructs `StorefrontFoundationViewSet`.
-  - [ ] Remove assignments for `DealsPage`.
-  - [ ] Remove assignments for `NewReleasesPage`.
-  - [ ] Do not replace them with another slot.
+- [x] Update `StorefrontFoundationViewSet`.
+  - [x] Remove required property `DealsPage`.
+  - [x] Remove required property `NewReleasesPage`.
+  - [x] Remove both entries from `GetRequiredSlots()`.
+  - [x] Keep all remaining foundation page/state slots unchanged.
+- [x] Update `StorefrontFoundationViewOptionsValidator`.
+  - [x] Remove the `DealsPage` context mapping.
+  - [x] Remove the `NewReleasesPage` context mapping.
+  - [x] Keep validation behavior unchanged for remaining slots.
+- [x] Update any helper/test factory that constructs `StorefrontFoundationViewSet`.
+  - [x] Remove assignments for `DealsPage`.
+  - [x] Remove assignments for `NewReleasesPage`.
+  - [x] Do not replace them with another slot.
 
 Tests to update:
 
-- [ ] `StorefrontPresentationFoundationBoundaryTests`
-  - [ ] Remove expectations that `DealsPage` is required.
-  - [ ] Remove expectations that `NewReleasesPage` is required.
-  - [ ] Keep coverage proving all real foundation slots are still required.
-  - [ ] Add a negative assertion that `StorefrontFoundationViewSet` no longer contains `DealsPage` or `NewReleasesPage`.
+- [x] `StorefrontPresentationFoundationBoundaryTests`
+  - [x] Remove expectations that `DealsPage` is required.
+  - [x] Remove expectations that `NewReleasesPage` is required.
+  - [x] Keep coverage proving all real foundation slots are still required.
+  - [x] Add a negative assertion that `StorefrontFoundationViewSet` no longer contains `DealsPage` or `NewReleasesPage`.
 
 Definition of done:
 
-- [ ] Foundation view set no longer makes deals/new releases mandatory.
-- [ ] Existing hosts can only register real foundation slots.
-- [ ] Tests fail if the deleted slots are reintroduced.
+- [x] Foundation view set no longer makes deals/new releases mandatory.
+- [x] Existing hosts can only register real foundation slots.
+- [x] Tests fail if the deleted slots are reintroduced.
+
+Implementation notes:
+
+- 2026-08-08: removed the deleted slots from the foundation contract and validator. V2/Starter registration assignments were also removed in Phase 1 as direct compile fallout of the reduced `StorefrontFoundationViewSet`; the dedicated visual pages and route metadata remain for the later ordered cleanup phases.
 
 ## Phase 2 - Remove Presentation Route Pages, Services, And Page Kinds
 

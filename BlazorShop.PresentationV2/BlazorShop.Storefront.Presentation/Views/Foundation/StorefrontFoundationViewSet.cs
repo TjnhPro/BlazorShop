@@ -26,10 +26,6 @@ public sealed class StorefrontFoundationViewSet
 
     public required Type SearchPage { get; init; }
 
-    public required Type DealsPage { get; init; }
-
-    public required Type NewReleasesPage { get; init; }
-
     public required Type ContentPage { get; init; }
 
     public required Type CartPage { get; init; }
@@ -62,8 +58,6 @@ public sealed class StorefrontFoundationViewSet
             new(nameof(this.CategoryPage), this.CategoryPage),
             new(nameof(this.ProductPage), this.ProductPage),
             new(nameof(this.SearchPage), this.SearchPage),
-            new(nameof(this.DealsPage), this.DealsPage),
-            new(nameof(this.NewReleasesPage), this.NewReleasesPage),
             new(nameof(this.ContentPage), this.ContentPage),
             new(nameof(this.CartPage), this.CartPage),
             new(nameof(this.CheckoutPage), this.CheckoutPage),
