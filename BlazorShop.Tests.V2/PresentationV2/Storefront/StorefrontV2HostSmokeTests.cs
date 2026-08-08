@@ -58,6 +58,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("src=\"_content/BlazorShop.Storefront.Presentation/js/storefront.application.js\"", content, StringComparison.Ordinal);
             Assert.Contains("src=\"js/storefrontCommerce.js\"", content, StringComparison.Ordinal);
             Assert.Contains("href=\"css/storefront.css\"", content, StringComparison.Ordinal);
+            Assert.Contains("href=\"/media/assets/default-favicon.ico\"", content, StringComparison.Ordinal);
+            Assert.Contains("href=\"/media/assets/default-apple-touch-icon.png\"", content, StringComparison.Ordinal);
+            Assert.Contains("name=\"msapplication-TileImage\" content=\"/media/assets/default-ms-tile.png\"", content, StringComparison.Ordinal);
+            Assert.Contains("name=\"msapplication-TileColor\" content=\"#123456\"", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("default-png-icon.png", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("icon-192.png", content, StringComparison.Ordinal);
+            Assert.Equal(1, CountOccurrences(content, "rel=\"icon\""));
+        }
+
+        [Fact]
+        public async Task FaviconFallback_RedirectsToConfiguredStaticAsset()
+        {
+            using var client = CreateClient(_ => { }, allowAutoRedirect: false);
+
+            using var response = await client.GetAsync("/favicon.ico");
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/icon-192.png", response.Headers.Location?.ToString());
         }
 
         [Fact]
@@ -1543,11 +1561,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "company@example.test",
                 "5550100",
                 "1 Test Street",
-                null,
-                null,
-                null,
-                null,
-                null,
+                "/media/assets/default-favicon.ico",
+                "/media/assets/default-png-icon.png",
+                "/media/assets/default-apple-touch-icon.png",
+                "/media/assets/default-ms-tile.png",
+                "#123456",
                 "USD",
                 "en-US",
                 "support@example.test",
@@ -1555,6 +1573,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 maintenanceModeEnabled,
                 maintenanceMessage,
                 null);
+        }
+
+        private static int CountOccurrences(string source, string value)
+        {
+            var count = 0;
+            var index = 0;
+            while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                index += value.Length;
+            }
+
+            return count;
         }
 
         private sealed class StubCurrentStoreProvider : IStorefrontCurrentStoreProvider

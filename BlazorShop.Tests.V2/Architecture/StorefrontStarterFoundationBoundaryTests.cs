@@ -348,7 +348,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("AddStarterFoundationViews()", program, StringComparison.Ordinal);
             Assert.Contains("UseStorefrontApplication", program, StringComparison.Ordinal);
             Assert.Contains("MapStorefrontApplication", program, StringComparison.Ordinal);
-            Assert.Contains("typeof(BlazorShop.Storefront.Starter.WASM.Components.Account.StorefrontAccountApp).Assembly", program, StringComparison.Ordinal);
+            Assert.Contains("typeof(BlazorShop.Storefront.Starter.WASM.StarterWasmAssemblyMarker).Assembly", program, StringComparison.Ordinal);
             Assert.DoesNotContain("MapStarterBffEndpoints", program, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs")));
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs")));
@@ -951,12 +951,13 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("BlazorShop.Storefront.Starter", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Starter.WASM", script, StringComparison.Ordinal);
             Assert.Contains("$Name.WASM", script, StringComparison.Ordinal);
-            Assert.Contains("<Compile Remove=`\"$Name.WASM\\**`\" />", script, StringComparison.Ordinal);
+            Assert.Contains("$wasmProjectRoot = Join-Path $workspaceRoot \"$Name.WASM\"", script, StringComparison.Ordinal);
+            Assert.Contains("Generated server project must not contain a nested WASM project folder.", script, StringComparison.Ordinal);
             Assert.Contains("Assert-GeneratedProjectReferences", script, StringComparison.Ordinal);
             Assert.Contains("Generated server must reference only generated sibling WASM project", script, StringComparison.Ordinal);
             Assert.Contains("sourceStarterWasmPath:", generator, StringComparison.Ordinal);
             Assert.Contains("projects:", generator, StringComparison.Ordinal);
-            Assert.Contains("path: $projectName.csproj", generator, StringComparison.Ordinal);
+            Assert.Contains("path: $projectName/$projectName.csproj", generator, StringComparison.Ordinal);
             Assert.Contains("path: $projectName.WASM/$projectName.WASM.csproj", generator, StringComparison.Ordinal);
             Assert.Contains("targetProject", plan, StringComparison.Ordinal);
             Assert.Contains("projectRelativePath", plan, StringComparison.Ordinal);
@@ -966,7 +967,9 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("projectRelativePath", taskPackage, StringComparison.Ordinal);
             Assert.Contains("targetProject", skeleton, StringComparison.Ordinal);
             Assert.Contains("projectRelativePath", skeleton, StringComparison.Ordinal);
-            Assert.Contains("project: inferProject(file.filePath)", manifest, StringComparison.Ordinal);
+            Assert.Contains("const pathInfo = describeWorkspacePath(workspaceName, file.filePath);", manifest, StringComparison.Ordinal);
+            Assert.Contains("projectKind: pathInfo.projectKind", manifest, StringComparison.Ordinal);
+            Assert.Contains("projectRelativePath: pathInfo.projectRelativePath", manifest, StringComparison.Ordinal);
             Assert.Contains("starterWasmContractSha256", generator, StringComparison.Ordinal);
             Assert.Contains("Validate-PackageProvenanceHashes", validator, StringComparison.Ordinal);
             Assert.Contains("generated-files.yaml entry", validator, StringComparison.Ordinal);

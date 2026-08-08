@@ -311,7 +311,9 @@ public sealed class StorefrontVisualOnlyBoundaryTests
         Assert.Contains("AddStorefrontApplication(builder.Configuration)", program, StringComparison.Ordinal);
         Assert.Contains("AddStarterFoundationViews()", program, StringComparison.Ordinal);
         Assert.Contains("UseStorefrontApplication()", program, StringComparison.Ordinal);
-        Assert.Contains("MapStorefrontApplication(typeof(StarterFoundationViewRegistration))", program, StringComparison.Ordinal);
+        Assert.Contains("MapStorefrontApplication(", program, StringComparison.Ordinal);
+        Assert.Contains("typeof(StarterFoundationViewRegistration)", program, StringComparison.Ordinal);
+        Assert.Contains("typeof(BlazorShop.Storefront.Starter.WASM.StarterWasmAssemblyMarker).Assembly", program, StringComparison.Ordinal);
 
         foreach (var forbiddenToken in forbiddenTokens)
         {

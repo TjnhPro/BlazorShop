@@ -65,13 +65,13 @@ Da xac nhan trong codebase:
 - [x] Component must be browser/server safe Razor only.
 - [x] Component must not inject services.
 - [x] Component must accept icon data from caller.
-- [ ] Recommended API:
+- [x] Recommended API:
 
 ```razor
 <StorefrontIconHead DisplayContext="Context.Display" />
 ```
 
-- [ ] Alternative acceptable API if implementation prefers explicit primitive inputs:
+- [x] Alternative acceptable API not used because implementation kept the recommended `DisplayContext` API:
 
 ```razor
 <StorefrontIconHead
@@ -277,40 +277,40 @@ Optional browser QA if this lands with visible storefront changes:
 
 Manual/browser assertions:
 
-- [ ] V2 home page head includes one primary favicon from configured store.
-- [ ] V2 home page head includes Apple/MS icon metadata when configured.
-- [ ] V2 home page head no longer includes hard-coded `icon-192.png` unless store config itself points to that asset.
-- [ ] Starter home page head includes one primary favicon when configured.
-- [ ] `/favicon.ico` still returns redirect/fallback behavior.
+- [x] V2 home page head includes one primary favicon from configured store. Evidence: `StorefrontV2HostSmokeTests` rendered configured `FaviconUrl` and asserted one primary `rel="icon"`.
+- [x] V2 home page head includes Apple/MS icon metadata when configured. Evidence: `StorefrontV2HostSmokeTests` asserted apple touch icon, MS tile image, and MS tile color from current-store fixture.
+- [x] V2 home page head no longer includes hard-coded `icon-192.png` unless store config itself points to that asset. Evidence: `StorefrontV2HostSmokeTests` and source guardrails assert no hard-coded `icon-192.png` in rendered head/application head.
+- [x] Starter home page head includes one primary favicon when configured. Evidence: `StorefrontStarterHostSmokeTests` asserted configured Starter `FaviconUrl` and one primary `rel="icon"`.
+- [x] `/favicon.ico` still returns redirect/fallback behavior. Evidence: `StorefrontV2HostSmokeTests.FaviconFallback_RedirectsToConfiguredStaticAsset`.
 
 ## Regression checklist
 
-- [ ] No new API contract drift.
-- [ ] No generated client regeneration required.
-- [ ] No Commerce Node migration generated.
-- [ ] No Control Plane UI regression.
-- [ ] No duplicate primary favicon link in V2.
-- [ ] No duplicate primary favicon link in Starter.
-- [ ] No `@inject` in shared icon component.
-- [ ] No V2-only component used by Starter.
-- [ ] `StorefrontBrandHead` no longer owns icon tags.
-- [ ] `StorefrontIconHead` lives in Presentation.
-- [ ] `StorefrontApplicationHead` still renders before `HeadOutlet`.
-- [ ] `StorefrontAntiforgeryHead` order remains before application head.
+- [x] No new API contract drift.
+- [x] No generated client regeneration required.
+- [x] No Commerce Node migration generated.
+- [x] No Control Plane UI regression.
+- [x] No duplicate primary favicon link in V2.
+- [x] No duplicate primary favicon link in Starter.
+- [x] No `@inject` in shared icon component.
+- [x] No V2-only component used by Starter.
+- [x] `StorefrontBrandHead` no longer owns icon tags.
+- [x] `StorefrontIconHead` lives in Presentation.
+- [x] `StorefrontApplicationHead` still renders before `HeadOutlet`.
+- [x] `StorefrontAntiforgeryHead` order remains before application head.
 
 ## Definition of Done
 
-- [ ] Shared Presentation icon head component exists and is covered by tests.
-- [ ] V2 removes hard-coded `icon-192.png` from HTML head.
-- [ ] V2 uses shared icon head primitive.
-- [ ] Starter uses shared icon head primitive.
-- [ ] `StorefrontBrandHead` is reduced to non-icon metadata.
-- [ ] Existing current-store/display-context favicon fields are reused.
-- [ ] `/favicon.ico` fallback route remains intact.
-- [ ] Focused tests pass.
-- [ ] Architecture/foundation guardrail tests pass.
-- [ ] `dotnet build BlazorShop.sln` passes.
-- [ ] QA checklist entries are updated with evidence.
+- [x] Shared Presentation icon head component exists and is covered by tests.
+- [x] V2 removes hard-coded `icon-192.png` from HTML head.
+- [x] V2 uses shared icon head primitive.
+- [x] Starter uses shared icon head primitive.
+- [x] `StorefrontBrandHead` is reduced to non-icon metadata.
+- [x] Existing current-store/display-context favicon fields are reused.
+- [x] `/favicon.ico` fallback route remains intact.
+- [x] Focused tests pass.
+- [x] Architecture/foundation guardrail tests pass.
+- [x] `dotnet build BlazorShop.sln` passes.
+- [x] QA checklist entries are updated with evidence.
 
 ## Agent notes
 
