@@ -34,8 +34,6 @@ namespace BlazorShop.Storefront.Presentation.Services
         public const string Privacy = "/pages/privacy";
         public const string Terms = "/pages/terms";
         public const string CustomerService = "/pages/customer-service";
-        public const string NewReleases = "/new-releases";
-        public const string TodaysDeals = "/todays-deals";
         public const string Search = "/search";
         public const string PagesBase = "/pages";
         public const string ProductSelectionPreview = "/api/product-selection-preview";
@@ -43,8 +41,6 @@ namespace BlazorShop.Storefront.Presentation.Services
         public static IReadOnlyList<StorefrontSitemapStaticRoute> SitemapStaticPages { get; } =
         [
             new(Home, UseCatalogLastModified: true),
-            new(NewReleases, UseCatalogLastModified: true),
-            new(TodaysDeals, UseCatalogLastModified: true),
         ];
 
         public static string Category(string? slug)

@@ -6,8 +6,6 @@ public static class StorefrontRouteNames
     public const string Category = nameof(Category);
     public const string Product = nameof(Product);
     public const string Search = nameof(Search);
-    public const string Deals = nameof(Deals);
-    public const string NewReleases = nameof(NewReleases);
     public const string Content = nameof(Content);
     public const string Cart = nameof(Cart);
     public const string Checkout = nameof(Checkout);

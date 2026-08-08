@@ -314,35 +314,35 @@ Implementation notes:
 
 ## Phase 5 - Simplify Shell Link And Cart Context Contracts
 
-- [ ] Update `StorefrontRoutes`.
-  - [ ] Remove `NewReleases`.
-  - [ ] Remove `TodaysDeals`.
-  - [ ] Remove both from `SitemapStaticPages`.
-  - [ ] Keep Home/Search/Cart/Checkout/Account/Content/System routes intact.
-- [ ] Update `StorefrontRoutePatterns`.
-  - [ ] Remove `Deals`.
-  - [ ] Remove `NewReleases`.
-- [ ] Update `StorefrontRouteNames`.
-  - [ ] Remove `Deals`.
-  - [ ] Remove `NewReleases`.
-- [ ] Update `IStorefrontShellContextService` / `StorefrontLinkContext`.
-  - [ ] Remove `NewReleases`.
-  - [ ] Remove `TodaysDeals`.
-  - [ ] Add no replacement unless there is already a neutral, existing route link.
-  - [ ] If a replacement is needed for CTA ergonomics, prefer existing links such as `Home`, `Search`, `Cart`, `Checkout`, `Account`, or content links.
-- [ ] Update `StorefrontCartPageContext`.
-  - [ ] Remove `NewReleasesUrl`.
-  - [ ] Remove `TodaysDealsUrl`.
-  - [ ] Add `ContinueShoppingUrl` only if cart/empty state still needs a route value.
-  - [ ] Prefer `StorefrontRoutes.Home` or `StorefrontRoutes.Search` for `ContinueShoppingUrl`.
-- [ ] Update `StorefrontCartPageService`.
-  - [ ] Stop reading deleted route constants.
-  - [ ] Populate the simplified cart context.
-- [ ] Update V2.WASM `StorefrontCartView`.
-  - [ ] Remove `NewReleasesUrl`.
-  - [ ] Remove `TodaysDealsUrl`.
-  - [ ] Replace two empty-state CTAs with one or two valid same-origin links.
-  - [ ] Do not hardcode `/new-releases` or `/todays-deals`.
+- [x] Update `StorefrontRoutes`.
+  - [x] Remove `NewReleases`.
+  - [x] Remove `TodaysDeals`.
+  - [x] Remove both from `SitemapStaticPages`.
+  - [x] Keep Home/Search/Cart/Checkout/Account/Content/System routes intact.
+- [x] Update `StorefrontRoutePatterns`.
+  - [x] Remove `Deals`.
+  - [x] Remove `NewReleases`.
+- [x] Update `StorefrontRouteNames`.
+  - [x] Remove `Deals`.
+  - [x] Remove `NewReleases`.
+- [x] Update `IStorefrontShellContextService` / `StorefrontLinkContext`.
+  - [x] Remove `NewReleases`.
+  - [x] Remove `TodaysDeals`.
+  - [x] Add no replacement unless there is already a neutral, existing route link.
+  - [x] If a replacement is needed for CTA ergonomics, prefer existing links such as `Home`, `Search`, `Cart`, `Checkout`, `Account`, or content links.
+- [x] Update `StorefrontCartPageContext`.
+  - [x] Remove `NewReleasesUrl`.
+  - [x] Remove `TodaysDealsUrl`.
+  - [x] Add `ContinueShoppingUrl` only if cart/empty state still needs a route value.
+  - [x] Prefer `StorefrontRoutes.Home` or `StorefrontRoutes.Search` for `ContinueShoppingUrl`.
+- [x] Update `StorefrontCartPageService`.
+  - [x] Stop reading deleted route constants.
+  - [x] Populate the simplified cart context.
+- [x] Update V2.WASM `StorefrontCartView`.
+  - [x] Remove `NewReleasesUrl`.
+  - [x] Remove `TodaysDealsUrl`.
+  - [x] Replace two empty-state CTAs with one or two valid same-origin links.
+  - [x] Do not hardcode `/new-releases` or `/todays-deals`.
 - [ ] Confirm no shell/cart/source contract keeps deleted link names:
 
 ```powershell
@@ -351,15 +351,19 @@ rg -n "NewReleases|TodaysDeals|new-releases|todays-deals" BlazorShop.Presentatio
 
 Tests to update:
 
-- [ ] Host smoke tests that post currency preference using `StorefrontRoutes.NewReleases` should use an existing route such as `/search` or `/cart`.
-- [ ] Cart/WASM runtime tests should expect the new empty-state link contract.
-- [ ] Sitemap tests should not expect deleted static URLs.
+- [x] Host smoke tests that post currency preference using `StorefrontRoutes.NewReleases` should use an existing route such as `/search` or `/cart`.
+- [x] Cart/WASM runtime tests should expect the new empty-state link contract.
+- [x] Sitemap tests should not expect deleted static URLs.
 
 Definition of done:
 
-- [ ] Shell link context contains only real shared storefront links.
-- [ ] Cart context no longer leaks deleted collection routes.
-- [ ] Sitemap no longer advertises deleted pages.
+- [x] Shell link context contains only real shared storefront links.
+- [x] Cart context no longer leaks deleted collection routes.
+- [x] Sitemap no longer advertises deleted pages.
+
+Implementation notes:
+
+- 2026-08-08: removed deleted route constants/patterns/names and shell links. Cart page context now exposes `ContinueShoppingUrl` only; V2.WASM cart parameter rename was completed in Phase 3 as a required V2 ghost-token cleanup, and Phase 5 wired the Presentation context/service to it.
 
 ## Phase 6 - Remove Or Reclassify Navigation System Targets
 

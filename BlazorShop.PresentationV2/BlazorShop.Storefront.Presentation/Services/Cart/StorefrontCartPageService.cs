@@ -59,8 +59,7 @@ public sealed class StorefrontCartPageService
             cart,
             alerts,
             StorefrontRoutes.Checkout,
-            StorefrontRoutes.NewReleases,
-            StorefrontRoutes.TodaysDeals,
+            StorefrontRoutes.Search,
             StorefrontLinkContext.Default)
         {
             CartActions = actionDescriptorProvider.CreateCartActions(),

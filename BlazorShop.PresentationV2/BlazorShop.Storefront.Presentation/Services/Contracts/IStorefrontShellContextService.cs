@@ -89,8 +89,6 @@ namespace BlazorShop.Storefront.Presentation.Contracts
         StorefrontShellLink SignIn,
         StorefrontShellLink Register,
         StorefrontShellLink LogoutFormTarget,
-        StorefrontShellLink NewReleases,
-        StorefrontShellLink TodaysDeals,
         StorefrontShellLink CustomerService,
         StorefrontShellLink Privacy,
         StorefrontShellLink Terms)
@@ -143,8 +141,6 @@ namespace BlazorShop.Storefront.Presentation.Contracts
                 new("Sign in", StorefrontRoutes.SignIn),
                 new("Register", StorefrontRoutes.Register),
                 new("Logout", StorefrontRoutes.Logout),
-                new("New Releases", StorefrontRoutes.NewReleases),
-                new("Today's Deals", StorefrontRoutes.TodaysDeals),
                 new("Customer Service", StorefrontRoutes.CustomerService),
                 new("Privacy", StorefrontRoutes.Privacy),
                 new("Terms", StorefrontRoutes.Terms));

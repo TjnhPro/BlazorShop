@@ -7,7 +7,7 @@
                     Actions="@Context.CartActions"
                     Classes="StorefrontCartViewOptions.Classes"
                     CheckoutUrl="@Context.CheckoutUrl"
-                    ContinueShoppingUrl="@Context.Links.Search.Href"
+                    ContinueShoppingUrl="@Context.ContinueShoppingUrl"
                     SecondaryShoppingUrl="@Context.Links.Home.Href"
                     @rendermode="InteractiveWebAssembly" />
 
@@ -18,6 +18,5 @@
         [],
         StorefrontLinkContext.Default.Checkout.Href,
         StorefrontLinkContext.Default.Search.Href,
-        StorefrontLinkContext.Default.Home.Href,
         StorefrontLinkContext.Default);
 }

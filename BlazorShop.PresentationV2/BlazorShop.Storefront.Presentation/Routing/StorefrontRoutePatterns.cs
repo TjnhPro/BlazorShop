@@ -6,8 +6,6 @@ public static class StorefrontRoutePatterns
     public const string Category = "/category/{Slug}";
     public const string Product = "/product/{Slug}";
     public const string Search = "/search";
-    public const string Deals = "/todays-deals";
-    public const string NewReleases = "/new-releases";
     public const string Content = "/pages/{Slug}";
     public const string Cart = "/my-cart";
     public const string Checkout = "/checkout";

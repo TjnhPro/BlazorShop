@@ -8,8 +8,7 @@ public sealed record StorefrontCartPageContext(
     StorefrontBrowserCart? Cart,
     IReadOnlyList<StorefrontBrowserCartAlert> Alerts,
     string CheckoutUrl,
-    string NewReleasesUrl,
-    string TodaysDealsUrl,
+    string ContinueShoppingUrl,
     StorefrontLinkContext Links)
 {
     public StorefrontCartActionDescriptor CartActions { get; init; } = StorefrontCartActionDescriptor.Empty;

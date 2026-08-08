@@ -738,11 +738,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 allowAutoRedirect: false);
 
             var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
-            using var request = CreateCurrencyPreferencePost(token, cookieHeader, "EUR", StorefrontRoutes.NewReleases);
+            using var request = CreateCurrencyPreferencePost(token, cookieHeader, "EUR", StorefrontRoutes.Search);
             using var response = await client.SendAsync(request);
 
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal(StorefrontRoutes.NewReleases, response.Headers.Location?.ToString());
+            Assert.Equal(StorefrontRoutes.Search, response.Headers.Location?.ToString());
             Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("bs-currency=EUR", StringComparison.Ordinal));
         }
 
