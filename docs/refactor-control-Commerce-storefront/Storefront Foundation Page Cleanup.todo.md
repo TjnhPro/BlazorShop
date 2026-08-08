@@ -548,12 +548,18 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Definition of done:
 
-- [ ] Presentation build passes.
-- [ ] V2 build passes.
-- [ ] V2.WASM build passes.
-- [ ] Starter build passes.
-- [ ] Focused foundation/page/navigation/SEO tests pass.
-- [ ] Broader Storefront test slice passes or any unrelated existing skip/failure is documented precisely.
+- [x] Presentation build passes.
+- [x] V2 build passes.
+- [x] V2.WASM build passes.
+- [x] Starter build passes.
+- [x] Focused foundation/page/navigation/SEO tests pass.
+- [x] Broader Storefront test slice passes or any unrelated existing skip/failure is documented precisely.
+
+Implementation notes:
+
+- 2026-08-08: `dotnet build --no-restore` passed for `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.V2.WASM`, and `BlazorShop.Storefront.Starter`; all reported 0 warnings.
+- 2026-08-08: focused Storefront foundation/page/navigation/SEO gate passed 135/135 tests in `BlazorShop.Tests.V2`.
+- 2026-08-08: broader `FullyQualifiedName~Storefront` slice was run with an explicit 20 minute command timeout. Result: 915 passed, 2 skipped, 17 failed. The failures are pre-existing broader Starter/package-boundary/doc-drift issues outside the deleted route cleanup: Starter package-reference parity tests, missing historical completion/todo docs, shared bootstrap/endpoint extension drift, Browser boundary assertions, a local package cache delete lock, and cascading Starter host smoke failures from the locked `_framework` package proof cache. No failure indicated `/todays-deals` or `/new-releases` still exists in the active cleanup surface.
 
 ## Phase 12 - Browser QA And StorefrontBuilder Proof
 
