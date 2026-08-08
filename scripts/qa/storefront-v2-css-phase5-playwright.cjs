@@ -131,9 +131,7 @@ async (page) => {
   const evidence = {
     generatedAtUtc: new Date().toISOString(),
     baseUrl,
-    mode: "static-css-layout-fallback-because-docker-daemon-unavailable",
-    dockerBlocker:
-      "scripts/run-v2-local.ps1 failed because Docker Desktop daemon pipe dockerDesktopLinuxEngine was unavailable; backend-dependent Storefront routes could not be rendered.",
+    mode: "same-origin-css-layout-fixture",
     assetUrls,
     responseStatuses,
     failedRequests,

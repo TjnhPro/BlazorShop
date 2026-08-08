@@ -336,23 +336,23 @@ Then run the Playwright scenario created or updated for this phase.
 
 Definition of done:
 
-- [ ] Focused static tests pass.
-- [ ] V2.WASM build passes.
-- [ ] V2 host build passes.
-- [ ] CSS reproducibility gate passes.
-- [ ] Browser QA passes or the blocker is documented with exact failure evidence.
+- [x] Focused static tests pass. 2026-08-08: exact plan filter ran 111 tests with 110 passed and 1 pre-existing unrelated failure in `V2ProductionReadinessTests.Phase7_ReleaseSmokeScript_CoversProductionReadinessEndpoints` because `docs/refactor-control-Commerce-storefront/Storefront Playwright E2E Release.todo.md` is missing. Scoped CSS/asset production filter passed 102/102 for `LayoutAssetFoundationTests`, `StorefrontV2HostSmokeTests`, `StorefrontV2WASMRuntimeFoundationTests`, `Phase4_V2ProductionDockerfiles_ExistForActiveRuntime`, and `Phase4_StorefrontDockerfile_BuildsV2AndWasmTailwindBeforePublish`.
+- [x] V2.WASM build passes. 2026-08-08: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore` passed.
+- [x] V2 host build passes. 2026-08-08: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [x] CSS reproducibility gate passes. 2026-08-08: `.\scripts\qa\run-storefront-v2-css-reproducibility.ps1` passed for `site.css` and `wasm-site.css`.
+- [x] Browser QA passes or the blocker is documented with exact failure evidence. 2026-08-08: `run-v2-local.ps1 -StopExisting -NoOpenBrowser` started the full V2 stack; Playwright route evidence `output/playwright/storefront-v2-css-phase7-routes-evidence.json` validated 662 static asset responses, 0 static asset failures, 0 static/hydration console errors, 0 direct Commerce Node browser calls, and one expected unauthenticated `/account` 401. Fixture evidence `output/playwright/storefront-v2-css-phase7-evidence.json` validated cart image `96px`, checkout desktop/mobile grids, account desktop/mobile grids, 0 failed requests, 0 console messages, and 0 duplicate stylesheets.
 
 ## Final Acceptance Checklist
 
-- [ ] V2.WASM has its own Tailwind pipeline.
-- [ ] V2.WASM generated CSS is tracked and reproducible.
-- [ ] V2 does not scan V2.WASM source to generate V2 CSS.
-- [ ] V2 host loads V2 CSS, V2.WASM CSS, and `storefront.css` in deterministic order.
-- [ ] V2 host uses static asset resolver/fingerprint-capable URLs for root V2 assets.
-- [ ] V2 visual script uses static asset resolver/fingerprint-capable URL.
-- [ ] Docker builds Tailwind for both V2 and V2.WASM.
-- [ ] Static tests guard asset inventory and no duplicate root assets.
-- [ ] Browser QA validates computed layout for cart/checkout/account WASM surfaces.
-- [ ] `QA-StorefrontV2.todo.md` records verification and evidence.
-- [ ] No Starter/generated storefront scope was changed.
-- [ ] No Control Plane, Commerce Node, Runtime, Client, Browser, or Components package boundaries were widened.
+- [x] V2.WASM has its own Tailwind pipeline.
+- [x] V2.WASM generated CSS is tracked and reproducible.
+- [x] V2 does not scan V2.WASM source to generate V2 CSS.
+- [x] V2 host loads V2 CSS, V2.WASM CSS, and `storefront.css` in deterministic order.
+- [x] V2 host uses static asset resolver/fingerprint-capable URLs for root V2 assets.
+- [x] V2 visual script uses static asset resolver/fingerprint-capable URL.
+- [x] Docker builds Tailwind for both V2 and V2.WASM.
+- [x] Static tests guard asset inventory and no duplicate root assets.
+- [x] Browser QA validates computed layout for cart/checkout/account WASM surfaces.
+- [x] `QA-StorefrontV2.todo.md` records verification and evidence.
+- [x] No Starter/generated storefront scope was changed.
+- [x] No Control Plane, Commerce Node, Runtime, Client, Browser, or Components package boundaries were widened.
