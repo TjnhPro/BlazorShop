@@ -7,23 +7,28 @@
 @inject StorefrontFoundationViewSet ViewSet
 @inject NavigationManager NavigationManager
 
-<StorefrontPage TContext="StorefrontAccountPageContext" CurrentState="_state">
-    <Body>
-        @if (_result is StorefrontAccountPageResult.ReadyState ready)
-        {
-            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AccountPage" Context="ready.Context" />
-        }
-    </Body>
-    <UnauthorizedContent>
-        <section data-storefront-account-redirect>
-            <h1>Account</h1>
-            <p>Redirecting to sign in...</p>
-        </section>
-    </UnauthorizedContent>
-</StorefrontPage>
+@if (_redirectIssued)
+{
+    <section data-storefront-account-redirect hidden aria-hidden="true"></section>
+}
+else
+{
+    <StorefrontPage TContext="StorefrontAccountPageContext" CurrentState="_state">
+        <Body>
+            @if (_result is StorefrontAccountPageResult.ReadyState ready)
+            {
+                <StorefrontFoundationViewOutlet ComponentType="@ViewSet.AccountPage" Context="ready.Context" />
+            }
+        </Body>
+        <UnauthorizedContent>
+            <section data-storefront-account-redirect hidden aria-hidden="true"></section>
+        </UnauthorizedContent>
+    </StorefrontPage>
+}
 
 @code {
     private StorefrontAccountPageResult? _result;
+    private bool _redirectIssued;
     private StorefrontPageState _state = new StorefrontPageState.LoadingState();
 
     [Parameter]
@@ -46,7 +51,8 @@
         _result = await PageService.GetAsync(HttpContext, Path, Page, Error, Saved);
         if (_result is StorefrontAccountPageResult.RedirectState redirect)
         {
-            _state = new StorefrontPageState.UnauthorizedState(StorefrontPageKind.Account, "Redirecting to sign in.");
+            _redirectIssued = true;
+            _state = new StorefrontPageState.LoadingState();
             if (HttpContext is not null && !HttpContext.Response.HasStarted)
             {
                 HttpContext.Response.Redirect(redirect.Url);

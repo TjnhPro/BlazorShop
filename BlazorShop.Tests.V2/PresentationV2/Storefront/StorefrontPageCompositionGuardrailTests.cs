@@ -396,6 +396,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("data-storefront-page-template", viewMarkup, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void ContentPageInitialState_DoesNotSetServiceUnavailableBeforeAsyncLoadCompletes()
+        {
+            var result = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Content/StorefrontContentPageResult.cs"));
+            var emptyFactory = ExtractEmptyFactory(result);
+
+            Assert.Contains("new StorefrontPageState.LoadingState()", emptyFactory, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontPageResultMapper.ServiceUnavailable", emptyFactory, StringComparison.Ordinal);
+            Assert.DoesNotContain("new StorefrontPageState.ServiceUnavailableState", emptyFactory, StringComparison.Ordinal);
+        }
+
         private static string? FindStorefrontPageFile(string fileName)
         {
             return EnumerateStorefrontPageFiles()
@@ -444,6 +455,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 yield return file;
             }
+        }
+
+        private static string ExtractEmptyFactory(string source)
+        {
+            const string marker = "public static StorefrontContentPageResult Empty { get; } = new(";
+            var start = source.IndexOf(marker, StringComparison.Ordinal);
+            if (start < 0)
+            {
+                throw new InvalidOperationException("StorefrontContentPageResult.Empty factory was not found.");
+            }
+
+            var end = source.IndexOf(");", start, StringComparison.Ordinal);
+            if (end < 0)
+            {
+                throw new InvalidOperationException("StorefrontContentPageResult.Empty factory end was not found.");
+            }
+
+            return source[start..(end + 2)];
         }
 
         private static bool IsForbiddenStorefrontBrowserReference(string reference)

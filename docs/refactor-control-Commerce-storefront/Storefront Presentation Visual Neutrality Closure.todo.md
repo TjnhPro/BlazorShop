@@ -591,33 +591,42 @@ Start local V2 runtime:
 
 Playwright checks:
 
-- [ ] Content page route renders with V2 styling:
+- [x] Content page route renders with V2 styling:
   - load at least one known content/page route from seeded data;
   - verify article exists with `data-storefront-page-template`;
   - verify body container has V2-owned styling;
   - verify no console/page errors.
-- [ ] Payment result page renders with V2 styling:
+- [x] Payment result page renders with V2 styling:
   - load a success/pending/failure/cancel route if fixture data exists;
   - if no payment fixture is available, load a missing/invalid attempt route to verify unavailable/failure state;
   - verify panel exists and has V2-owned visual class;
   - verify retry link visibility for non-success;
   - verify no 5xx response.
-- [ ] Account unauthorized route still redirects:
+- [x] Account unauthorized route still redirects:
   - open `/account` as anonymous;
   - verify redirect or sign-in destination behavior remains unchanged;
   - verify there is no persistent unstyled technical state;
   - verify no console/page errors.
-- [ ] Browser network guard remains unchanged:
+- [x] Browser network guard remains unchanged:
   - no direct browser calls to Commerce Node Storefront APIs;
   - no direct calls to Control Plane or Commerce Admin routes;
   - no legacy `api/internal/*` calls.
 
 Acceptance:
 
-- [ ] Browser QA is a real Playwright flow, not a smoke-only page load.
-- [ ] Content page and payment result visual output remain usable.
-- [ ] Account redirect behavior remains intact.
-- [ ] Same-origin browser boundary remains intact.
+- [x] Browser QA is a real Playwright flow, not a smoke-only page load.
+- [x] Content page and payment result visual output remain usable.
+- [x] Account redirect behavior remains intact.
+- [x] Same-origin browser boundary remains intact.
+
+Implementation notes:
+
+- 2026-08-09: started local V2 runtime with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`; health probes for Storefront V2 and Commerce Node were reachable.
+- 2026-08-09: browser preflight exposed a content route regression where `/pages/faq` rendered ready DOM but returned HTTP 503 because `StorefrontContentPageResult.Empty` initialized to `ServiceUnavailableState` before async data load completed. Changed the initial content state to `LoadingState` and added `ContentPageInitialState_DoesNotSetServiceUnavailableBeforeAsyncLoadCompletes`.
+- 2026-08-09: browser preflight also showed `/account` could persist the classless redirect placeholder as a 401 body. Updated `AccountRoutePage` so redirect state does not render through `StorefrontPage` and host smoke now asserts anonymous account profile produces a sign-in redirect.
+- 2026-08-09: focused test filter `FullyQualifiedName~StorefrontV2HostSmokeTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontPresentationVisualNeutralityTests` passed 107/107. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
+- 2026-08-09: Playwright browser flow passed for `http://localhost:18598/pages/faq`, invalid `payment/result`, and anonymous `/account`; evidence saved under `output/playwright/storefront-presentation-visual-neutrality-phase9/` with screenshots and `evidence.json`.
+- 2026-08-09: Playwright network guard observed 31 browser requests and 0 forbidden direct calls to `localhost:5180`, `api/internal`, `api/commerce`, `api/control-plane`, or direct `api/storefront/stores` routes. Console/page error lists were empty.
 
 ## Phase 10 - Final Closure Scan And Diff Review
 

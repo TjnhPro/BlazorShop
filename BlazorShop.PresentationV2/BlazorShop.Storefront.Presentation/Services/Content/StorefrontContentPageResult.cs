@@ -12,7 +12,7 @@ public sealed record StorefrontContentPageResult(
     StorefrontStructuredDataDocument StructuredData)
 {
     public static StorefrontContentPageResult Empty { get; } = new(
-        StorefrontPageResultMapper.ServiceUnavailable(StorefrontPageKind.Content),
+        new StorefrontPageState.LoadingState(),
         null,
         new SeoMetadataDto(),
         StorefrontStructuredDataDocument.Empty);

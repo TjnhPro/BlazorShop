@@ -528,7 +528,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public async Task AccountProfile_WhenAnonymous_RendersUnauthorizedRedirectState()
+        public async Task AccountProfile_WhenAnonymous_RedirectsToSignIn()
         {
             using var client = CreateClient(
                 services =>
@@ -541,8 +541,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             using var response = await client.GetAsync(StorefrontRoutes.AccountProfile);
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            Assert.Contains("Redirecting to sign in", content, StringComparison.Ordinal);
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/signin?returnUrl=%2Faccount%2Fprofile", response.Headers.Location?.ToString());
+            Assert.DoesNotContain("Redirecting to sign in", content, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontAccountApp", content, StringComparison.Ordinal);
         }
 
