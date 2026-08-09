@@ -127,31 +127,37 @@ Implementation notes:
 
 Update `MainLayout.razor`.
 
-- [ ] Add a stable class to the toast root, for example `bs-storefront-toast`.
-- [ ] Remove inline `style="opacity: 0; transform: ...; transition: ..."` from the toast root.
-- [ ] Add default semantic state on the template root:
+- [x] Add a stable class to the toast root, for example `bs-storefront-toast`.
+- [x] Remove inline `style="opacity: 0; transform: ...; transition: ..."` from the toast root.
+- [x] Add default semantic state on the template root:
   - `data-level="info"`
   - `data-state="entering"`
-- [ ] Keep existing toast data hooks:
+- [x] Keep existing toast data hooks:
   - `data-storefront-toast`
   - `data-storefront-toast-accent`
   - `data-storefront-toast-heading`
   - `data-storefront-toast-message`
   - `data-storefront-toast-close`
-- [ ] Replace the empty toast accent region with explicit inline SVG icon elements owned by Razor:
+- [x] Replace the empty toast accent region with explicit inline SVG icon elements owned by Razor:
   - `data-storefront-toast-icon="info"`
   - `data-storefront-toast-icon="success"`
   - `data-storefront-toast-icon="warning"`
   - `data-storefront-toast-icon="error"`
-- [ ] Each icon must use `aria-hidden="true"` and currentColor.
-- [ ] Do not create icons through `MarkupString`.
-- [ ] Keep the close button SVG as explicit Razor markup.
+- [x] Each icon must use `aria-hidden="true"` and currentColor.
+- [x] Do not create icons through `MarkupString`.
+- [x] Keep the close button SVG as explicit Razor markup.
 
 Acceptance:
 
-- [ ] Toast template contains all four icon variants.
-- [ ] Toast template contains no inline opacity/transform/transition style.
-- [ ] Toast template remains accessible through `aria-live="polite"` and the close button keeps an accessible label.
+- [x] Toast template contains all four icon variants.
+- [x] Toast template contains no inline opacity/transform/transition style.
+- [x] Toast template remains accessible through `aria-live="polite"` and the close button keeps an accessible label.
+
+Implementation notes:
+
+- 2026-08-09: `MainLayout.razor` now renders `bs-storefront-toast` with default `data-level="info"` and `data-state="entering"`.
+- 2026-08-09: Razor owns explicit currentColor SVG variants for `info`, `success`, `warning`, and `error`; no `MarkupString` or JS-provided icon markup is used.
+- 2026-08-09: toast root no longer contains inline opacity, transform, or transition style; existing `aria-live="polite"` region and dismiss button label remain unchanged.
 
 ## Phase 2 - Move Toast Visual State Into CSS
 
