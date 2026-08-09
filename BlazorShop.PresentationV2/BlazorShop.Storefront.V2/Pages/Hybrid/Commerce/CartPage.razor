@@ -12,11 +12,11 @@
                     @rendermode="InteractiveWebAssembly" />
 
 @code {
-    [Parameter]
-    public StorefrontCartPageContext Context { get; set; } = new(
-        null,
-        [],
-        StorefrontLinkContext.Default.Checkout.Href,
-        StorefrontLinkContext.Default.Search.Href,
-        StorefrontLinkContext.Default);
+    [Parameter, EditorRequired]
+    public StorefrontCartPageContext Context { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Context);
+    }
 }

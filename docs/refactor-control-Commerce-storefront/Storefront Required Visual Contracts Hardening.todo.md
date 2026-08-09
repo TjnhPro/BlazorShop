@@ -117,39 +117,44 @@ Target:
 
 Tasks:
 
-- [ ] Replace the fallback `new StorefrontCartPageContext(...)` with `default!`.
-- [ ] Change the parameter declaration to:
+- [x] Replace the fallback `new StorefrontCartPageContext(...)` with `default!`.
+- [x] Change the parameter declaration to:
 
 ```csharp
 [Parameter, EditorRequired]
 public StorefrontCartPageContext Context { get; set; } = default!;
 ```
 
-- [ ] Add `OnParametersSet` with `ArgumentNullException.ThrowIfNull(Context);`.
-- [ ] Keep all current explicit `<StorefrontCartView ...>` attribute bindings:
-  - [ ] `InitialCart="Context.Cart"`
-  - [ ] `InitialAlerts="Context.Alerts"`
-  - [ ] `DataMode="StorefrontFeatureDataMode.InitialSnapshot"`
-  - [ ] `Actions="@Context.CartActions"`
-  - [ ] `Classes="StorefrontCartViewOptions.Classes"`
-  - [ ] `CheckoutUrl="@Context.CheckoutUrl"`
-  - [ ] `ContinueShoppingUrl="@Context.ContinueShoppingUrl"`
-  - [ ] `SecondaryShoppingUrl="@Context.Links.Home.Href"`
-- [ ] Do not introduce fallback to `StorefrontLinkContext.Default`.
-- [ ] Do not default to `/checkout`, `/search`, or `/`.
+- [x] Add `OnParametersSet` with `ArgumentNullException.ThrowIfNull(Context);`.
+- [x] Keep all current explicit `<StorefrontCartView ...>` attribute bindings:
+  - [x] `InitialCart="Context.Cart"`
+  - [x] `InitialAlerts="Context.Alerts"`
+  - [x] `DataMode="StorefrontFeatureDataMode.InitialSnapshot"`
+  - [x] `Actions="@Context.CartActions"`
+  - [x] `Classes="StorefrontCartViewOptions.Classes"`
+  - [x] `CheckoutUrl="@Context.CheckoutUrl"`
+  - [x] `ContinueShoppingUrl="@Context.ContinueShoppingUrl"`
+  - [x] `SecondaryShoppingUrl="@Context.Links.Home.Href"`
+- [x] Do not introduce fallback to `StorefrontLinkContext.Default`.
+- [x] Do not default to `/checkout`, `/search`, or `/`.
 
 Tests:
 
-- [ ] Add/adjust source test proving `CartPage.razor` contains `[Parameter, EditorRequired]` for `Context`.
-- [ ] Add/adjust source test proving `CartPage.razor` no longer contains `new(` fallback context construction.
-- [ ] Add/adjust source test proving `CartPage.razor` no longer contains `StorefrontLinkContext.Default`.
-- [ ] Add/adjust source test proving every required `StorefrontCartView` root parameter is explicitly passed by `CartPage`.
+- [x] Add/adjust source test proving `CartPage.razor` contains `[Parameter, EditorRequired]` for `Context`.
+- [x] Add/adjust source test proving `CartPage.razor` no longer contains `new(` fallback context construction.
+- [x] Add/adjust source test proving `CartPage.razor` no longer contains `StorefrontLinkContext.Default`.
+- [x] Add/adjust source test proving every required `StorefrontCartView` root parameter is explicitly passed by `CartPage`.
 
 Definition of done:
 
-- [ ] Missing cart page context fails clearly.
-- [ ] Cart route no longer renders with fake checkout/search/home links.
-- [ ] Existing cart page visual output remains behaviorally equivalent when a valid context is supplied.
+- [x] Missing cart page context fails clearly.
+- [x] Cart route no longer renders with fake checkout/search/home links.
+- [x] Existing cart page visual output remains behaviorally equivalent when a valid context is supplied.
+
+Implementation notes:
+
+- 2026-08-09: `CartPage.razor` now requires `StorefrontCartPageContext` with `[Parameter, EditorRequired]`, initializes it with `default!`, and throws clearly in `OnParametersSet` when the route context is missing. Existing explicit `StorefrontCartView` bindings are unchanged.
+- 2026-08-09: added `StorefrontRequiredVisualContractsHardeningTests.CartPage_RequiresPresentationOwnedContextAndPassesCartRootContracts`. Focused test command passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRequiredVisualContractsHardeningTests"` with 1/1 tests passing. Known existing warnings: MessagePack NU1902/NU1903 and Browserslist.
 
 ## Phase 2 - Harden `StorefrontCartView` Root Parameters
 
