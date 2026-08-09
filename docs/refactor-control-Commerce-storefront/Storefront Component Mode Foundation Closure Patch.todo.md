@@ -127,54 +127,54 @@ Exit criteria:
 
 Implementation target:
 
-- [ ] Prefer placing the scanner in `StorefrontComponentVisualNeutralityTests.cs` unless the file becomes hard to read.
-- [ ] If extracted, create a focused test helper under `BlazorShop.Tests.V2/PresentationV2/Storefront/`.
+- [x] Prefer placing the scanner in `StorefrontComponentVisualNeutralityTests.cs` unless the file becomes hard to read.
+- [x] If extracted, create a focused test helper under `BlazorShop.Tests.V2/PresentationV2/Storefront/`.
 
 Scanner behavior:
 
-- [ ] Scan only reusable mode project source trees:
+- [x] Scan only reusable mode project source trees:
   - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr`
   - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid`
   - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
-- [ ] Scan `*.razor` and `*.cshtml`.
-- [ ] Exclude generated and build folders:
+- [x] Scan `*.razor` and `*.cshtml`.
+- [x] Exclude generated and build folders:
   - `bin`
   - `obj`
   - `.regeneration-candidate`
   - generated artifacts
   - temporary fixture folders, if any are created by tests.
-- [ ] Detect Razor `class` attributes with literal strings.
-- [ ] Include support for normal double-quoted attributes.
-- [ ] Include single-quoted attributes if the scanner can do so without adding parsing complexity.
-- [ ] Ignore `data-storefront-*` attributes.
-- [ ] Treat an attribute as allowed only when the complete class value is a dynamic expression.
-- [ ] Treat mixed literal plus dynamic class values as violations.
-- [ ] Return an actionable violation object with at least:
+- [x] Detect Razor `class` attributes with literal strings.
+- [x] Include support for normal double-quoted attributes.
+- [x] Include single-quoted attributes if the scanner can do so without adding parsing complexity.
+- [x] Ignore `data-storefront-*` attributes.
+- [x] Treat an attribute as allowed only when the complete class value is a dynamic expression.
+- [x] Treat mixed literal plus dynamic class values as violations.
+- [x] Return an actionable violation object with at least:
   - relative path
   - attribute value
   - remediation message
-- [ ] Do not use brittle Tailwind-prefix-only matching as the primary rule.
-- [ ] Keep old prefix list only if it helps produce a clearer regression message, not as the source of truth.
+- [x] Do not use brittle Tailwind-prefix-only matching as the primary rule.
+- [x] Keep old prefix list only if it helps produce a clearer regression message, not as the source of truth.
 
 Allowed dynamic examples:
 
-- [ ] `@CssClass`
-- [ ] `@Classes.Container`
-- [ ] `@GetCssClass()`
-- [ ] `@(BuildCssClass())`
+- [x] `@CssClass`
+- [x] `@Classes.Container`
+- [x] `@GetCssClass()`
+- [x] `@(BuildCssClass())`
 
 Forbidden mixed examples:
 
-- [ ] `flex @CssClass`
-- [ ] `@CssClass selected`
-- [ ] `@(BuildCssClass()) selected`
+- [x] `flex @CssClass`
+- [x] `@CssClass selected`
+- [x] `@(BuildCssClass()) selected`
 
 Exit criteria:
 
-- [ ] Literal class detection is generic.
-- [ ] The scanner reports path, value, and remediation.
-- [ ] Existing mode projects pass the scanner.
-- [ ] No production files changed.
+- [x] Literal class detection is generic.
+- [x] The scanner reports path, value, and remediation.
+- [x] Existing mode projects pass the scanner.
+- [x] No production files changed.
 
 ## Phase 2 - Add Literal Class Regression Tests
 
@@ -418,6 +418,11 @@ Exit criteria:
   - 2026-08-09: read `AGENTS.md`, ASP.NET Core skill guidance, `references/ui-blazor.md`, `docs/architecture/README.md`, `docs/architecture/05-project-and-folder-guide.md`, `docs/architecture/08-agent-decision-rules.md`, `docs/architecture/10-v2-contract-ownership.md`, `BlazorShop.PresentationV2/COMPONENT-MODES.md`, `Storefront Component Mode Foundation.todo.md`, and `QA-StorefrontV2.todo.md`.
   - 2026-08-09: `git status --short` showed pre-existing `M BlazorShop.sln` plus this untracked closure patch plan. The `BlazorShop.sln` hunk is unrelated and must remain untouched unless a later phase explicitly needs it, which this patch does not.
   - 2026-08-09: patch scope confirmed as test-only/docs-only; no production project paths listed in the hard scope lock will be edited.
+- [x] Phase 1 generic literal class scanner:
+  - 2026-08-09: replaced selected class-prefix matching in `StorefrontComponentVisualNeutralityTests.cs` with a generic Razor `class` attribute scanner for reusable SSR, Hybrid, and WasmHost mode project markup.
+  - 2026-08-09: scanner reads only `.razor` and `.cshtml`, skips `bin`, `obj`, `.regeneration-candidate`, `artifacts`, `generated`, `tmp`, and `temp`, and reports relative path, class value, and remediation.
+  - 2026-08-09: scanner allows only empty or fully dynamic class values such as `@CssClass`, `@Classes.Container`, `@GetCssClass()`, and `@(BuildCssClass())`; mixed literal/dynamic values are violations.
+  - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`: 4 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
 
 ## Decision Audit Trail
 
