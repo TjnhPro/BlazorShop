@@ -559,20 +559,25 @@ Target QA file:
 
 Tasks:
 
-- [ ] Add or update QA checklist items for root visual contract hardening:
-  - [ ] Cart page must receive `StorefrontCartPageContext` from Presentation route context.
-  - [ ] Cart view must receive explicit data mode, action descriptor, classes, and URLs.
-  - [ ] Checkout shell must receive explicit initial state, data mode, actions, classes, and panel mode.
-  - [ ] Account app must receive explicit route/navigation/action/class descriptors and page number.
-  - [ ] Missing root contracts must fail clearly during development.
-- [ ] Add note that `.Empty` descriptors may be intentionally passed by callers and are not validation failures.
-- [ ] Add browser QA cases for cart/checkout/account after hardening.
-- [ ] Do not update architecture docs unless implementation discovers a boundary rule not already captured by `docs/architecture/05-project-and-folder-guide.md`.
+- [x] Add or update QA checklist items for root visual contract hardening:
+  - [x] Cart page must receive `StorefrontCartPageContext` from Presentation route context.
+  - [x] Cart view must receive explicit data mode, action descriptor, classes, and URLs.
+  - [x] Checkout shell must receive explicit initial state, data mode, actions, classes, and panel mode.
+  - [x] Account app must receive explicit route/navigation/action/class descriptors and page number.
+  - [x] Missing root contracts must fail clearly during development.
+- [x] Add note that `.Empty` descriptors may be intentionally passed by callers and are not validation failures.
+- [x] Add browser QA cases for cart/checkout/account after hardening.
+- [x] Do not update architecture docs unless implementation discovers a boundary rule not already captured by `docs/architecture/05-project-and-folder-guide.md`.
 
 Definition of done:
 
-- [ ] QA checklist reflects this hardening so future release checks cover it.
-- [ ] Documentation does not imply leaf components must be swept in this phase.
+- [x] QA checklist reflects this hardening so future release checks cover it.
+- [x] Documentation does not imply leaf components must be swept in this phase.
+
+Implementation notes:
+
+- 2026-08-09: updated `QA-StorefrontV2.todo.md` with root visual contract static/build expectations and browser QA evidence for cart, checkout, and account.
+- 2026-08-09: no architecture docs were updated because no new boundary rule was discovered; the change applies existing Presentation-owned route context and V2-owned visual root boundaries.
 
 ## Phase 10 - Final Closure Checklist
 
