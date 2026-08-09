@@ -509,8 +509,8 @@ Files:
 
 Tasks:
 
-- [ ] Add a `Storefront Presentation Visual Neutrality` section to `QA-StorefrontV2.todo.md`.
-- [ ] Checklist must include:
+- [x] Add a `Storefront Presentation Visual Neutrality` section to `QA-StorefrontV2.todo.md`.
+- [x] Checklist must include:
   - Presentation has no concrete V2/Tailwind theme class strings;
   - Presentation has no theme CSS/assets;
   - account redirect fallback is classless or semantic-only;
@@ -518,18 +518,24 @@ Tasks:
   - payment result tone mapping is V2-owned;
   - focused guardrail tests pass;
   - browser checks confirm content page, payment result page, and account redirect behavior.
-- [ ] Do not add Control Plane or StorefrontBuilder checklist items for this phase.
-- [ ] Review `docs/architecture/05-project-and-folder-guide.md`.
-- [ ] Update architecture docs only if the current Presentation/V2 ownership language is not explicit enough after implementation.
-- [ ] If docs are updated, keep the wording narrow:
+- [x] Do not add Control Plane or StorefrontBuilder checklist items for this phase.
+- [x] Review `docs/architecture/05-project-and-folder-guide.md`.
+- [x] Update architecture docs only if the current Presentation/V2 ownership language is not explicit enough after implementation.
+- [x] If docs are updated, keep the wording narrow:
   - Presentation may expose semantic variants and state;
   - host visual projects own class strings and styling;
   - generated/custom storefronts are not required to reuse V2 class mappings.
 
 Acceptance:
 
-- [ ] Release checklist describes how to verify the closure.
-- [ ] Docs do not imply Starter/generated storefronts must adopt V2 styling.
+- [x] Release checklist describes how to verify the closure.
+- [x] Docs do not imply Starter/generated storefronts must adopt V2 styling.
+
+Implementation notes:
+
+- 2026-08-09: added `Storefront Presentation Visual Neutrality` to `QA-StorefrontV2.todo.md` with checks for Presentation class neutrality, no theme assets, account redirect fallback, V2-owned content/payment mappings, focused guardrails, browser checks, and same-origin network boundary.
+- 2026-08-09: no Control Plane or StorefrontBuilder checklist items were added.
+- 2026-08-09: reviewed `docs/architecture/05-project-and-folder-guide.md`; existing wording already says Presentation must not add Storefront V2-specific visual markup/CSS/copy and Storefront V2 owns layout/CSS/assets/design, so no architecture doc edit was needed.
 
 ## Phase 8 - Focused Build And Test Gate
 

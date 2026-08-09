@@ -819,6 +819,16 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Source ownership guardrails must scan curated Storefront V2 source and exclude generated CSS output so Tailwind utility output does not create false failures.
 - [x] 2026-08-09 visual source consolidation QA passed: focused ownership/search/script/layout tests passed, Storefront V2 and V2.WASM builds passed, and browser evidence was recorded at `output/playwright/storefront-visual-source-consolidation-phase10/evidence.json`.
 
+## Storefront Presentation Visual Neutrality
+
+- [x] Storefront Presentation must not own concrete Storefront V2/Tailwind theme class strings in route fallback markup, content page presentation contracts, or payment result state contracts.
+- [x] Storefront Presentation must not own theme CSS, Tailwind/PostCSS config, font files, or theme image assets.
+- [x] Account unauthorized redirect fallback must remain classless or semantic-only while preserving anonymous redirect behavior.
+- [x] Content page article/body visual class mapping must remain Storefront V2-owned from Presentation semantic fields such as `StorefrontPageLayoutKind`.
+- [x] Payment result panel/tone visual class mapping must remain Storefront V2-owned from Presentation semantic outcome state.
+- [x] Focused guardrails must include `StorefrontPresentationVisualNeutralityTests`, `StorefrontVisualSourceOwnershipTests`, content presentation resolver tests, and payment result page service tests.
+- [x] Browser checks must cover a seeded content page, a payment result unavailable/failure route when no payment fixture exists, account anonymous redirect behavior, and the same-origin network boundary.
+
 ## V2 Production Readiness Release Gate
 
 - [x] Storefront V2 compose/runtime boot is part of the release smoke. 2026-07-22 Production Readiness Phase 7: `scripts/qa/run-v2-production-release-smoke.ps1` checks Storefront `/health`.
