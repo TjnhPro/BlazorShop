@@ -264,22 +264,28 @@ Implementation notes:
 
 Update `StorefrontHeader.razor`.
 
-- [ ] Replace both desktop and mobile search `<i class="fa-solid fa-magnifying-glass">` elements with explicit inline SVG markup.
-- [ ] Replace both currency submit `<i class="fa-solid fa-check">` elements with explicit inline SVG markup.
-- [ ] Use the same icon conventions already present in the header:
+- [x] Replace both desktop and mobile search `<i class="fa-solid fa-magnifying-glass">` elements with explicit inline SVG markup.
+- [x] Replace both currency submit `<i class="fa-solid fa-check">` elements with explicit inline SVG markup.
+- [x] Use the same icon conventions already present in the header:
   - `aria-hidden="true"`
   - `viewBox="0 0 24 24"`
   - `fill="none"`
   - `stroke="currentColor"`
   - `stroke-width="2"`
-- [ ] Keep visible labels and accessible labels unchanged.
-- [ ] Keep cart/menu/account markup unchanged unless required by formatting.
+- [x] Keep visible labels and accessible labels unchanged.
+- [x] Keep cart/menu/account markup unchanged unless required by formatting.
 
 Acceptance:
 
-- [ ] No `fa-solid`, `fa-magnifying-glass`, or `fa-check` remains in `StorefrontHeader.razor`.
-- [ ] Desktop and mobile header still show search/currency actions.
-- [ ] No Font Awesome CSS, script, font, or CDN is added.
+- [x] No `fa-solid`, `fa-magnifying-glass`, or `fa-check` remains in `StorefrontHeader.razor`.
+- [x] Desktop and mobile header still show search/currency actions.
+- [x] No Font Awesome CSS, script, font, or CDN is added.
+
+Implementation notes:
+
+- 2026-08-09: desktop and mobile search buttons now render explicit currentColor search SVG markup.
+- 2026-08-09: desktop and mobile currency preference submit content now renders explicit currentColor check SVG markup.
+- 2026-08-09: no Font Awesome package, CSS, script, font, or CDN dependency was added; `fa-*` source scan for the header/package files returned no forbidden matches.
 
 ## Phase 6 - Replace Catalog Filter Icon Class API
 
