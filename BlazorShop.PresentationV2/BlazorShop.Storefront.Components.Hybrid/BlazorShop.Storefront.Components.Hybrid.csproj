@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BlazorShop.Storefront.Components.Hybrid</RootNamespace>
+    <PackageId>BlazorShop.Storefront.Components.Hybrid</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>BlazorShop</Authors>
+    <Description>Reusable hybrid Storefront component shell mode library.</Description>
+    <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.Components.WasmHost\BlazorShop.Storefront.Components.WasmHost.csproj" />
+  </ItemGroup>
+
+</Project>

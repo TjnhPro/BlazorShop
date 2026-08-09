@@ -247,7 +247,7 @@ Exit criteria:
 - [x] Document first future reference components as next phase examples only.
 - [x] Update `docs/architecture/05-project-and-folder-guide.md` with the new mode project ownership rules.
 - [x] Update `docs/architecture/10-v2-contract-ownership.md` with the descriptor and mode boundary rule.
-- [ ] Update `AGENTS.md` active V2 presentation/runtime list after projects are created.
+- [x] Update `AGENTS.md` active V2 presentation/runtime list after projects are created.
 
 Exit criteria:
 
@@ -288,39 +288,39 @@ Exit criteria:
 
 ## Phase 3 - Create Mode RCL Projects
 
-- [ ] Create `BlazorShop.Storefront.Components.Ssr`.
-- [ ] Create `BlazorShop.Storefront.Components.Hybrid`.
-- [ ] Create `BlazorShop.Storefront.Components.WasmHost`.
-- [ ] Use `Microsoft.NET.Sdk.Razor` for all three mode libraries.
-- [ ] Target `net10.0`.
-- [ ] Enable nullable reference types.
-- [ ] Enable implicit usings.
-- [ ] Set `PackageId`, `Version`, `Authors`, `Description`, and `RepositoryUrl` consistent with existing Storefront packages.
-- [ ] Add ownership `README.md` to each mode project.
-- [ ] Add `_Imports.razor` only if needed for future Razor components, and keep imports mode-safe.
-- [ ] Do not create production dummy components.
-- [ ] Do not create `SsrTestComponent`, `HybridTestComponent`, or `WasmHostTestComponent` in production projects.
-- [ ] Use test fixtures for validator negative/positive examples instead of production dummy components.
-- [ ] Add all three projects to `BlazorShop.sln`.
-- [ ] Do not add the new projects to V2, Starter, generated storefronts, or Presentation references in this phase.
+- [x] Create `BlazorShop.Storefront.Components.Ssr`.
+- [x] Create `BlazorShop.Storefront.Components.Hybrid`.
+- [x] Create `BlazorShop.Storefront.Components.WasmHost`.
+- [x] Use `Microsoft.NET.Sdk.Razor` for all three mode libraries.
+- [x] Target `net10.0`.
+- [x] Enable nullable reference types.
+- [x] Enable implicit usings.
+- [x] Set `PackageId`, `Version`, `Authors`, `Description`, and `RepositoryUrl` consistent with existing Storefront packages.
+- [x] Add ownership `README.md` to each mode project.
+- [x] Add `_Imports.razor` only if needed for future Razor components, and keep imports mode-safe.
+- [x] Do not create production dummy components.
+- [x] Do not create `SsrTestComponent`, `HybridTestComponent`, or `WasmHostTestComponent` in production projects.
+- [x] Use test fixtures for validator negative/positive examples instead of production dummy components.
+- [x] Add all three projects to `BlazorShop.sln`.
+- [x] Do not add the new projects to V2, Starter, generated storefronts, or Presentation references in this phase.
 
 Project references:
 
-- [ ] `Components.Ssr` references only:
+- [x] `Components.Ssr` references only:
   - `../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`
   - `../BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj`
-- [ ] `Components.Hybrid` references only:
+- [x] `Components.Hybrid` references only:
   - `../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`
   - `../BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj`
   - `../BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj`
-- [ ] `Components.WasmHost` references only:
+- [x] `Components.WasmHost` references only:
   - `../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`
   - `../BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj`
 
 Exit criteria:
 
-- [ ] All three projects build empty/minimal.
-- [ ] No new project references point from base `Components`, `Presentation`, `Browser`, V2, Starter, or generated storefronts back to these mode projects.
+- [x] All three projects build empty/minimal.
+- [x] No new project references point from base `Components`, `Presentation`, `Browser`, V2, Starter, or generated storefronts back to these mode projects.
 
 ## Phase 4 - Mode Boundary Validator
 
@@ -649,7 +649,15 @@ The next phase must include Playwright only after these components are rendered 
   - 2026-08-09 no descriptor assembly scanning, DI registration, runtime registry, or JSON manifest code was added.
   - 2026-08-09 `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj --no-restore` passed with 0 warnings/errors.
   - 2026-08-09 scan confirmed base Components still has no `.razor`, CSS, JS, theme assets, or `Features` folder.
-- [ ] Projects added:
+- [x] Projects added:
+  - 2026-08-09: created `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.Hybrid`, and `BlazorShop.Storefront.Components.WasmHost` as empty/minimal `Microsoft.NET.Sdk.Razor` projects targeting `net10.0` with nullable and implicit usings enabled.
+  - 2026-08-09: each mode project has Storefront package metadata (`PackageId`, `Version`, `Authors`, `Description`, `RepositoryUrl`) and an ownership `README.md`.
+  - 2026-08-09: no `_Imports.razor` was added because there are no Razor components yet; no production dummy/test components or future feature components were added.
+  - 2026-08-09: `dotnet sln BlazorShop.sln list` includes all three mode projects. Existing unrelated solution-folder change in `BlazorShop.sln` is preserved in the working tree but excluded from phase commits.
+  - 2026-08-09: updated `AGENTS.md` active V2 presentation/runtime list with the three mode projects after they were created.
+  - 2026-08-09: `Components.Ssr` references exactly base Components and Presentation; `Components.Hybrid` references exactly base Components, Presentation, and Components.WasmHost; `Components.WasmHost` references exactly base Components and Browser.
+  - 2026-08-09: an initial parallel build hit shared `obj/bin` file locks; sequential builds for Ssr, WasmHost, and Hybrid then passed with 0 warnings/errors.
+  - 2026-08-09: source scan confirmed no `.razor` files or production dummy/future feature component names exist in the mode projects.
 - [ ] Tests added:
 - [ ] Build evidence:
 - [ ] Focused test evidence:

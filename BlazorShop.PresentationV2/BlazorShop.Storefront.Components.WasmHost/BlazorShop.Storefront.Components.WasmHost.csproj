@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BlazorShop.Storefront.Components.WasmHost</RootNamespace>
+    <PackageId>BlazorShop.Storefront.Components.WasmHost</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>BlazorShop</Authors>
+    <Description>Reusable browser-interactive Storefront WASM host component mode library.</Description>
+    <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />
+  </ItemGroup>
+
+</Project>
