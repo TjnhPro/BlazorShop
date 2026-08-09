@@ -42,6 +42,8 @@ The base `BlazorShop.Storefront.Components` project remains the lowest browser-s
 
 `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, and generated storefronts must not reference the mode projects until a later phase implements and adopts real components.
 
+Descriptor mode ownership is a repository architecture test rule. A descriptor from `BlazorShop.Storefront.Components.Ssr` must declare `StorefrontComponentMode.Ssr`; a descriptor from `BlazorShop.Storefront.Components.Hybrid` must declare `StorefrontComponentMode.Hybrid`; a descriptor from `BlazorShop.Storefront.Components.WasmHost` must declare `StorefrontComponentMode.WasmHost`. The production descriptor validator stays generic and does not encode project layout knowledge.
+
 ## Package References
 
 The base `BlazorShop.Storefront.Components` project may use minimal framework abstractions needed for component descriptors while staying on `Microsoft.NET.Sdk`.
@@ -171,10 +173,14 @@ Reusable component libraries must not own:
 
 - theme CSS;
 - Tailwind config;
+- literal `class` attribute values in Razor markup;
+- mixed literal/dynamic class values such as `class="@CssClass selected"`;
 - V2 layout classes;
 - store-specific copy;
 - generated storefront output;
 - final visual assets.
+
+Allowed class slots must be fully dynamic, for example `class="@CssClass"`, `class="@Classes.Container"`, `class="@GetCssClass()"`, or `class="@(BuildCssClass())"`. Semantic `data-storefront-*` attributes are allowed because they are stable behavior hooks rather than visual ownership.
 
 ## Naming
 

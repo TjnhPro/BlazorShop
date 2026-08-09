@@ -616,6 +616,14 @@ chore: add storefront component mode foundation
 - [x] Focused build/test gates pass.
 - [x] No real feature implementation is included.
 
+## Closure Patch - 2026-08-09
+
+- [x] Visual neutrality guard was strengthened from selected Tailwind/V2 prefix checks to a generic Razor `class` attribute scanner for reusable SSR, Hybrid, and WasmHost mode project markup.
+- [x] Reusable mode projects may expose semantic `data-storefront-*` hooks and fully dynamic class slots such as `class="@CssClass"`, `class="@Classes.Container"`, `class="@GetCssClass()"`, and `class="@(BuildCssClass())"`.
+- [x] Reusable mode projects must reject literal class ownership, including non-Tailwind names such as `storefront-logo`, and mixed dynamic/literal values such as `class="@CssClass selected"`.
+- [x] Descriptor mode/project consistency is enforced by repository architecture tests through a test-side assembly resolver; `StorefrontComponentDescriptorValidator` remains generic and unchanged.
+- [x] No production Storefront project behavior, DI, runtime code, or real component implementation was changed by the closure patch.
+
 ## Next Phase Preview
 
 After this foundation is green, the next phase should implement exactly three reference components to prove the modes:

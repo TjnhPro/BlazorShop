@@ -128,8 +128,13 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Three empty/minimal reusable mode projects exist: `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.Hybrid`, and `BlazorShop.Storefront.Components.WasmHost`.
 - [x] Exact dependency allowlists are guarded: SSR references only Components + Presentation, Hybrid references only Components + Presentation + WasmHost, and WasmHost references only Components + Browser.
 - [x] Descriptor validation is guarded for component key format, defined mode/category enum values, null component type, and `IComponent` implementation.
-- [x] Visual neutrality is guarded: reusable mode projects contain no theme CSS/assets, literal Tailwind/V2 visual class tokens, final storefront copy strings, or V2 CSS asset paths.
+- [x] Descriptor mode must match the owning mode project when a descriptor comes from `Components.Ssr`, `Components.Hybrid`, or `Components.WasmHost`; this is enforced by architecture tests, not by the production descriptor validator.
+- [x] Visual neutrality is guarded: reusable mode projects contain no theme CSS/assets, literal class attributes, final storefront copy strings, or V2 CSS asset paths.
+- [x] Fully dynamic class attributes remain allowed in reusable mode project markup: `class="@CssClass"`, `class="@Classes.Container"`, `class="@GetCssClass()"`, and `class="@(BuildCssClass())"`.
+- [x] Mixed literal/dynamic class attributes are rejected, including `class="flex @CssClass"`, `class="@CssClass selected"`, and `class="@(BuildCssClass()) selected"`.
+- [x] `data-storefront-*` semantic hooks remain allowed because they are neutral contracts, not visual styling ownership.
 - [x] No real feature components were added in this foundation phase; future example components remain documentation-only.
+- [x] Production Storefront project files were not changed by the closure patch; changes were limited to architecture tests and documentation.
 - [x] Playwright is not required for this phase because no browser-visible route, component markup, CSS, JS behavior, or runtime rendering changed.
 - [x] 2026-08-09 focused static QA passed: component mode foundation tests passed `48/48`, existing headless component tests passed `26/26`, and the focused closure gate passed after sequential mode-project builds.
 

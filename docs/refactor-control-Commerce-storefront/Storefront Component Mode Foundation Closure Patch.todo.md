@@ -285,35 +285,35 @@ Exit criteria:
 
 Update this plan:
 
-- [ ] Mark phases complete only after implementation and verification pass.
-- [ ] Add exact verification commands and results.
-- [ ] Add notes for any skipped optional item with reason.
+- [x] Mark phases complete only after implementation and verification pass.
+- [x] Add exact verification commands and results.
+- [x] Add notes for any skipped optional item with reason.
 
 Update `Storefront Component Mode Foundation.todo.md`:
 
-- [ ] Add a closure patch section instead of reopening completed Phase 1 work.
-- [ ] Record that the original prefix-based visual neutrality guard has been replaced or strengthened by a generic literal class scanner.
-- [ ] Record that descriptor mode/project consistency is enforced by tests, not production contracts.
+- [x] Add a closure patch section instead of reopening completed Phase 1 work.
+- [x] Record that the original prefix-based visual neutrality guard has been replaced or strengthened by a generic literal class scanner.
+- [x] Record that descriptor mode/project consistency is enforced by tests, not production contracts.
 
 Update `QA-StorefrontV2.todo.md`:
 
-- [ ] Add QA item for generic literal class rejection in reusable mode projects.
-- [ ] Add QA item for allowing fully dynamic class attributes.
-- [ ] Add QA item for rejecting mixed literal/dynamic class attributes.
-- [ ] Add QA item for descriptor mode matching owning mode project.
-- [ ] Add QA item proving production projects were not changed in this closure patch.
+- [x] Add QA item for generic literal class rejection in reusable mode projects.
+- [x] Add QA item for allowing fully dynamic class attributes.
+- [x] Add QA item for rejecting mixed literal/dynamic class attributes.
+- [x] Add QA item for descriptor mode matching owning mode project.
+- [x] Add QA item proving production projects were not changed in this closure patch.
 
 Optional update to `COMPONENT-MODES.md`:
 
-- [ ] Clarify that reusable mode projects may expose semantic `data-storefront-*` hooks.
-- [ ] Clarify that reusable mode projects must not own literal class values.
-- [ ] Clarify that mode/project consistency is a repository architecture test rule.
+- [x] Clarify that reusable mode projects may expose semantic `data-storefront-*` hooks.
+- [x] Clarify that reusable mode projects must not own literal class values.
+- [x] Clarify that mode/project consistency is a repository architecture test rule.
 
 Exit criteria:
 
-- [ ] Documentation matches the actual guardrails.
-- [ ] QA checklist can be followed by another agent without reading the whole discussion.
-- [ ] No completed checkbox is marked before evidence exists.
+- [x] Documentation matches the actual guardrails.
+- [x] QA checklist can be followed by another agent without reading the whole discussion.
+- [x] No completed checkbox is marked before evidence exists.
 
 ## Phase 6 - Verification Gates
 
@@ -441,6 +441,11 @@ Exit criteria:
   - 2026-08-09: `rg -n "StorefrontComponentDescriptor|new\\s*\\(" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost -S` returned no matches, so no real mode-project descriptors exist yet.
   - 2026-08-09: added repository guard `RepositoryModeProjectsCurrentlyHaveNoRealDescriptorsSoFixtureProofIsAuthoritative`; it will fail with file paths if real descriptors are introduced before repository descriptor scanning is implemented.
   - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"`: 28 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
+- [x] Phase 5 documentation and checklist updates:
+  - 2026-08-09: added a closure patch section to `Storefront Component Mode Foundation.todo.md` instead of reopening the completed foundation phases.
+  - 2026-08-09: updated `QA-StorefrontV2.todo.md` with generic literal class rejection, fully dynamic class allowance, mixed literal/dynamic rejection, `data-storefront-*` allowance, descriptor mode/project consistency, and proof that production projects were not changed by this closure patch.
+  - 2026-08-09: updated `BlazorShop.PresentationV2/COMPONENT-MODES.md` to clarify literal class ownership, semantic hook allowance, and test-side descriptor mode ownership.
+  - 2026-08-09: optional `COMPONENT-MODES.md` update was completed; no optional Phase 5 item was skipped.
 
 ## Decision Audit Trail
 
