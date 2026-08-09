@@ -42,46 +42,46 @@ This phase is intentionally narrow. It must not change backend APIs, cart/checko
 
 ## Non-Goals
 
-- [ ] Do not add Font Awesome, lucide, or another icon framework.
-- [ ] Do not redesign the component library.
-- [ ] Do not rewrite Tailwind or the CSS build system.
-- [ ] Do not move CSS asset ownership or root asset load order.
-- [ ] Do not change Storefront Presentation slots, routes, BFF endpoints, or generated-client contracts.
-- [ ] Do not refactor product gallery behavior beyond preserving existing fallback behavior.
-- [ ] Do not ban all inline Razor styles. Dynamic product-data styles such as color swatches remain valid.
-- [ ] Do not touch Control Plane Font Awesome usage. Control Plane has its own asset rule and is outside this Storefront V2 phase.
+- [x] Do not add Font Awesome, lucide, or another icon framework.
+- [x] Do not redesign the component library.
+- [x] Do not rewrite Tailwind or the CSS build system.
+- [x] Do not move CSS asset ownership or root asset load order.
+- [x] Do not change Storefront Presentation slots, routes, BFF endpoints, or generated-client contracts.
+- [x] Do not refactor product gallery behavior beyond preserving existing fallback behavior.
+- [x] Do not ban all inline Razor styles. Dynamic product-data styles such as color swatches remain valid.
+- [x] Do not touch Control Plane Font Awesome usage. Control Plane has its own asset rule and is outside this Storefront V2 phase.
 
 ## Ownership Rules To Enforce
 
 Allowed in Storefront V2 JavaScript:
 
-- [ ] Set text from event payloads with `textContent`.
-- [ ] Toggle structural/semantic classes such as `hidden`.
-- [ ] Set `dataset` state such as `data-level`, `data-state`, `data-selected`, and `data-dismissed`.
-- [ ] Set `disabled`, `aria-*`, `hidden`, `src`, and `alt` when those values are runtime content or behavior state.
-- [ ] Use timers, `requestAnimationFrame`, `sessionStorage`, and event listeners.
-- [ ] Keep the known gallery transparent fallback `data:image/svg+xml` only as a documented allowlist entry.
+- [x] Set text from event payloads with `textContent`.
+- [x] Toggle structural/semantic classes such as `hidden`.
+- [x] Set `dataset` state such as `data-level`, `data-state`, `data-selected`, and `data-dismissed`.
+- [x] Set `disabled`, `aria-*`, `hidden`, `src`, and `alt` when those values are runtime content or behavior state.
+- [x] Use timers, `requestAnimationFrame`, `sessionStorage`, and event listeners.
+- [x] Keep the known gallery transparent fallback `data:image/svg+xml` only as a documented allowlist entry.
 
 Forbidden in Storefront V2 JavaScript after this phase:
 
-- [ ] Toast theme color maps.
-- [ ] SVG icon strings.
-- [ ] `innerHTML` for icon rendering.
-- [ ] Inline visual styling for toast color, opacity, transform, or transition.
-- [ ] Tailwind color utility selection such as `text-emerald-700` and `text-red-700`.
+- [x] Toast theme color maps.
+- [x] SVG icon strings.
+- [x] `innerHTML` for icon rendering.
+- [x] Inline visual styling for toast color, opacity, transform, or transition.
+- [x] Tailwind color utility selection such as `text-emerald-700` and `text-red-700`.
 
 Allowed in Razor:
 
-- [ ] Explicit inline SVG icons with `aria-hidden="true"`, `viewBox`, and currentColor.
-- [ ] Semantic hooks such as `data-storefront-toast`, `data-storefront-toast-icon`, `data-level`, and `data-state`.
-- [ ] Product-data inline style only where the value comes from trusted product display data, for example a color swatch.
+- [x] Explicit inline SVG icons with `aria-hidden="true"`, `viewBox`, and currentColor.
+- [x] Semantic hooks such as `data-storefront-toast`, `data-storefront-toast-icon`, `data-level`, and `data-state`.
+- [x] Product-data inline style only where the value comes from trusted product display data, for example a color swatch.
 
 CSS must own:
 
-- [ ] Toast background/accent/icon colors by `[data-level]`.
-- [ ] Toast enter/open/closing visual states by `[data-state]`.
-- [ ] Purchase feedback success/error colors by data attributes.
-- [ ] Icon sizing and display polish where not already obvious from existing component classes.
+- [x] Toast background/accent/icon colors by `[data-level]`.
+- [x] Toast enter/open/closing visual states by `[data-state]`.
+- [x] Purchase feedback success/error colors by data attributes.
+- [x] Icon sizing and display polish where not already obvious from existing component classes.
 
 ## Phase 0 - Baseline Inventory And Test Target
 
@@ -539,11 +539,11 @@ rg -n "resolveToastTheme|resolveToastIcon|style\.backgroundColor|style\.color|st
 
 Expected notes:
 
-- [ ] Any remaining `text-emerald-700` in static Razor badges may be acceptable only if the implementation explicitly keeps them outside JS feedback ownership. Prefer source ownership tests over broad grep for static Tailwind utility classes.
-- [ ] Any remaining `data:image/svg+xml` must be the known product image fallback only.
-- [ ] There must be no remaining Font Awesome class-based icons in Storefront V2/V2.WASM source.
-- [ ] There must be no remaining `SubmitIconCssClass`.
-- [ ] `storefrontCommerce.js` must contain no visual theme/icon ownership.
+- [x] Any remaining `text-emerald-700` in static Razor badges may be acceptable only if the implementation explicitly keeps them outside JS feedback ownership. Prefer source ownership tests over broad grep for static Tailwind utility classes.
+- [x] Any remaining `data:image/svg+xml` must be the known product image fallback only.
+- [x] There must be no remaining Font Awesome class-based icons in Storefront V2/V2.WASM source.
+- [x] There must be no remaining `SubmitIconCssClass`.
+- [x] `storefrontCommerce.js` must contain no visual theme/icon ownership.
 
 Run final diff review:
 
@@ -553,20 +553,28 @@ git diff -- BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.Presen
 
 Acceptance:
 
-- [ ] Diff is limited to the files in this plan or an implementation note explains any extra file.
-- [ ] No backend, API contract, Runtime, Client, Starter, StorefrontBuilder, or Control Plane files changed.
-- [ ] All focused build/test/browser gates have a recorded result.
+- [x] Diff is limited to the files in this plan or an implementation note explains any extra file.
+- [x] No backend, API contract, Runtime, Client, Starter, StorefrontBuilder, or Control Plane files changed.
+- [x] All focused build/test/browser gates have a recorded result.
+
+Implementation notes:
+
+- 2026-08-09: final ownership search with generated CSS exclusions found only static `text-emerald-700` display classes in Razor/WASM option strings: free shipping, order placed, product stock badges, and account shipping badge. These are outside JavaScript feedback ownership.
+- 2026-08-09: final `data:image/svg+xml` search found only the known broken product image fallback paths in `storefrontCommerce.js`, `StorefrontProductSummaryCard.razor`, and `StorefrontProductGallery.razor`.
+- 2026-08-09: final source search found no `resolveToastTheme`, `resolveToastIcon`, forbidden toast visual style writes, `innerHTML`, Font Awesome class tokens, or `SubmitIconCssClass` in curated Storefront V2/V2.WASM source.
+- 2026-08-09: final scoped `git diff` review for V2/V2.WASM/tests/QA docs had no uncommitted diff after phase commits. `BlazorShop.sln` remains an unrelated pre-existing working-tree change and was not staged or modified.
+- 2026-08-09: local V2 runtime stop command terminated the known listening PIDs for ports `5280`, `5281`, `5180`, and `18598`; the stop script then returned a null-method error, and a follow-up port check found no listeners on those ports.
 
 ## Definition Of Done
 
-- [ ] Toast visual colors, icons, and animation state are owned by Razor/CSS, not JavaScript.
-- [ ] Purchase feedback success/error color is owned by CSS state selectors, not JavaScript Tailwind class toggles.
-- [ ] Storefront V2 no longer uses Font Awesome class-based icons in header or catalog filter controls.
-- [ ] `CatalogFilterPanel` uses an explicit `RenderFragment` icon slot instead of a CSS-class icon string.
-- [ ] Source ownership tests prevent regression while avoiding generated CSS false positives.
-- [ ] `QA-StorefrontV2.todo.md` contains browser QA cases for this visual ownership rule.
-- [ ] Focused builds and tests pass.
-- [ ] Playwright verifies real desktop/mobile browser behavior and no Font Awesome network dependency.
+- [x] Toast visual colors, icons, and animation state are owned by Razor/CSS, not JavaScript.
+- [x] Purchase feedback success/error color is owned by CSS state selectors, not JavaScript Tailwind class toggles.
+- [x] Storefront V2 no longer uses Font Awesome class-based icons in header or catalog filter controls.
+- [x] `CatalogFilterPanel` uses an explicit `RenderFragment` icon slot instead of a CSS-class icon string.
+- [x] Source ownership tests prevent regression while avoiding generated CSS false positives.
+- [x] `QA-StorefrontV2.todo.md` contains browser QA cases for this visual ownership rule.
+- [x] Focused builds and tests pass.
+- [x] Playwright verifies real desktop/mobile browser behavior and no Font Awesome network dependency.
 
 ## Decision Audit Trail
 
