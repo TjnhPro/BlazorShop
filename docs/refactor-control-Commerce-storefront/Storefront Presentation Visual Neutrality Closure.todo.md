@@ -348,7 +348,7 @@ Purpose: record and fix direct compile fallout only.
 
 Tasks:
 
-- [ ] Run source search for removed members:
+- [x] Run source search for removed members:
 
 ```powershell
 rg -n "ArticleClass|BodyContainerClass|PanelClass|EyebrowClass|HeadingClass|BodyClass|MutedClass" `
@@ -360,18 +360,26 @@ rg -n "ArticleClass|BodyContainerClass|PanelClass|EyebrowClass|HeadingClass|Body
   --glob "!obj/**"
 ```
 
-- [ ] Update only valid consumers:
+- [x] Update only valid consumers:
   - V2 visual pages map semantic fields to local classes;
   - tests assert semantic fields;
   - Starter only gets compile-only adaptation if it references removed context fields.
-- [ ] Do not add compatibility aliases unless a public package compatibility issue is documented. This repo is still in dev mode, so removal is preferred over obsolete visual class properties.
-- [ ] Do not add `string.Empty` compatibility class fields to Presentation just to reduce compile churn.
+- [x] Do not add compatibility aliases unless a public package compatibility issue is documented. This repo is still in dev mode, so removal is preferred over obsolete visual class properties.
+- [x] Do not add `string.Empty` compatibility class fields to Presentation just to reduce compile churn.
 
 Acceptance:
 
-- [ ] Removed visual class property names no longer exist in active Presentation contracts.
-- [ ] Any remaining references are V2-local helper names, not Presentation-owned contract fields.
-- [ ] Compile fallout is fixed without touching unrelated commerce behavior.
+- [x] Removed visual class property names no longer exist in active Presentation contracts.
+- [x] Any remaining references are V2-local helper names, not Presentation-owned contract fields.
+- [x] Compile fallout is fixed without touching unrelated commerce behavior.
+
+Implementation notes:
+
+- 2026-08-09: removed-member source search found only V2-local helper names in content/payment pages, V2/Starter host-provided checkout `HeadingClass` usage, and existing Presentation checkout field component `HeadingClass` parameters defaulted to `string.Empty`.
+- 2026-08-09: no compatibility aliases or replacement class fields were added to Presentation contracts.
+- 2026-08-09: `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-09: `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-09: `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.Storefront.Starter.csproj --no-restore` passed with 0 warnings/errors, confirming no Starter compile-only adaptation was needed.
 
 ## Phase 5 - Add Presentation Visual Neutrality Guardrail Tests
 
