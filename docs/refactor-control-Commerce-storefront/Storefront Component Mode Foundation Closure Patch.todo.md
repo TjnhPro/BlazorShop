@@ -249,37 +249,37 @@ Exit criteria:
 
 Resolver tests:
 
-- [ ] Ssr assembly name resolves to `StorefrontComponentMode.Ssr`.
-- [ ] Hybrid assembly name resolves to `StorefrontComponentMode.Hybrid`.
-- [ ] WasmHost assembly name resolves to `StorefrontComponentMode.WasmHost`.
-- [ ] Unknown assembly resolves to null.
-- [ ] Null or empty assembly resolves to null.
+- [x] Ssr assembly name resolves to `StorefrontComponentMode.Ssr`.
+- [x] Hybrid assembly name resolves to `StorefrontComponentMode.Hybrid`.
+- [x] WasmHost assembly name resolves to `StorefrontComponentMode.WasmHost`.
+- [x] Unknown assembly resolves to null.
+- [x] Null or empty assembly resolves to null.
 
 Descriptor consistency positive tests:
 
-- [ ] Descriptor mode `Ssr` with owner mode `Ssr` passes.
-- [ ] Descriptor mode `Hybrid` with owner mode `Hybrid` passes.
-- [ ] Descriptor mode `WasmHost` with owner mode `WasmHost` passes.
-- [ ] Descriptor from unknown owner mode is skipped or treated as not applicable.
+- [x] Descriptor mode `Ssr` with owner mode `Ssr` passes.
+- [x] Descriptor mode `Hybrid` with owner mode `Hybrid` passes.
+- [x] Descriptor mode `WasmHost` with owner mode `WasmHost` passes.
+- [x] Descriptor from unknown owner mode is skipped or treated as not applicable.
 
 Descriptor consistency negative tests:
 
-- [ ] Descriptor mode `Ssr` with owner mode `Hybrid` fails.
-- [ ] Descriptor mode `Hybrid` with owner mode `WasmHost` fails.
-- [ ] Descriptor mode `WasmHost` with owner mode `Ssr` fails.
-- [ ] Failure message identifies expected mode and actual descriptor mode.
+- [x] Descriptor mode `Ssr` with owner mode `Hybrid` fails.
+- [x] Descriptor mode `Hybrid` with owner mode `WasmHost` fails.
+- [x] Descriptor mode `WasmHost` with owner mode `Ssr` fails.
+- [x] Failure message identifies expected mode and actual descriptor mode.
 
 Repository guard:
 
-- [ ] If real descriptors exist in mode projects, add a scan that validates all discovered descriptors.
-- [ ] If real descriptors do not yet exist, keep fixture-level proof and document that repository scanning becomes mandatory when real descriptors are introduced.
-- [ ] Do not create dummy production components just to test this rule.
+- [x] If real descriptors exist in mode projects, add a scan that validates all discovered descriptors.
+- [x] If real descriptors do not yet exist, keep fixture-level proof and document that repository scanning becomes mandatory when real descriptors are introduced.
+- [x] Do not create dummy production components just to test this rule.
 
 Exit criteria:
 
-- [ ] Descriptor mode mismatch cannot be introduced silently once descriptors exist.
-- [ ] Current repository remains green without production dummy components.
-- [ ] Test names clearly communicate the architecture rule.
+- [x] Descriptor mode mismatch cannot be introduced silently once descriptors exist.
+- [x] Current repository remains green without production dummy components.
+- [x] Test names clearly communicate the architecture rule.
 
 ## Phase 5 - Documentation And Checklist Updates
 
@@ -434,6 +434,13 @@ Exit criteria:
   - 2026-08-09: consistency helper reports not-applicable for unknown owners, valid for matching owner mode, and mismatch errors including descriptor key, descriptor mode, owner mode, component type, and assembly.
   - 2026-08-09: `StorefrontComponentDescriptorValidator` remained unchanged.
   - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"`: 13 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
+- [x] Phase 4 descriptor mode consistency tests:
+  - 2026-08-09: added resolver tests for SSR, Hybrid, WasmHost, unknown, empty, null, and non-mode component assemblies.
+  - 2026-08-09: added consistency positive tests for matching descriptor/owner modes and not-applicable behavior for unknown owner mode.
+  - 2026-08-09: added consistency negative tests for `Ssr` vs `Hybrid`, `Hybrid` vs `WasmHost`, and `WasmHost` vs `Ssr`; failure messages include descriptor key, descriptor mode, owner mode, component type, and assembly.
+  - 2026-08-09: `rg -n "StorefrontComponentDescriptor|new\\s*\\(" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost -S` returned no matches, so no real mode-project descriptors exist yet.
+  - 2026-08-09: added repository guard `RepositoryModeProjectsCurrentlyHaveNoRealDescriptorsSoFixtureProofIsAuthoritative`; it will fail with file paths if real descriptors are introduced before repository descriptor scanning is implemented.
+  - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"`: 28 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
 
 ## Decision Audit Trail
 

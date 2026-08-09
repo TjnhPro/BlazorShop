@@ -8,6 +8,13 @@ using Xunit;
 
 public sealed class StorefrontComponentDescriptorTests
 {
+    private static readonly string[] ModeProjectDirectories =
+    [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
+    ];
+
     [Fact]
     public void ValidDescriptorPasses()
     {
@@ -119,6 +126,107 @@ public sealed class StorefrontComponentDescriptorTests
         Assert.True(result.IsValid);
     }
 
+    [Theory]
+    [InlineData("BlazorShop.Storefront.Components.Ssr", StorefrontComponentMode.Ssr)]
+    [InlineData("BlazorShop.Storefront.Components.Hybrid", StorefrontComponentMode.Hybrid)]
+    [InlineData("BlazorShop.Storefront.Components.WasmHost", StorefrontComponentMode.WasmHost)]
+    public void OwnerModeResolverMapsKnownModeAssemblies(
+        string assemblyName,
+        StorefrontComponentMode expectedMode)
+    {
+        var mode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(assemblyName);
+
+        Assert.Equal(expectedMode, mode);
+    }
+
+    [Theory]
+    [InlineData("BlazorShop.Storefront.Components")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void OwnerModeResolverTreatsUnknownEmptyOrNullAssembliesAsNotApplicable(string? assemblyName)
+    {
+        var mode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(assemblyName);
+
+        Assert.Null(mode);
+    }
+
+    [Fact]
+    public void OwnerModeResolverTreatsNonModeComponentAssembliesAsNotApplicable()
+    {
+        var mode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(typeof(ComponentFixture));
+
+        Assert.Null(mode);
+    }
+
+    [Theory]
+    [InlineData(StorefrontComponentMode.Ssr)]
+    [InlineData(StorefrontComponentMode.Hybrid)]
+    [InlineData(StorefrontComponentMode.WasmHost)]
+    public void DescriptorModeConsistencyPassesWhenDescriptorModeMatchesOwnerMode(StorefrontComponentMode mode)
+    {
+        var result = StorefrontComponentDescriptorModeOwnership.Validate(
+            CreateDescriptor(mode),
+            mode);
+
+        Assert.True(result.IsApplicable);
+        Assert.True(result.IsValid);
+        Assert.Null(result.Error);
+    }
+
+    [Fact]
+    public void DescriptorModeConsistencySkipsUnknownOwnerMode()
+    {
+        var result = StorefrontComponentDescriptorModeOwnership.Validate(
+            CreateDescriptor(StorefrontComponentMode.Ssr),
+            null);
+
+        Assert.False(result.IsApplicable);
+        Assert.True(result.IsValid);
+        Assert.Null(result.Error);
+    }
+
+    [Theory]
+    [InlineData(StorefrontComponentMode.Ssr, StorefrontComponentMode.Hybrid)]
+    [InlineData(StorefrontComponentMode.Hybrid, StorefrontComponentMode.WasmHost)]
+    [InlineData(StorefrontComponentMode.WasmHost, StorefrontComponentMode.Ssr)]
+    public void DescriptorModeConsistencyFailsWhenDescriptorModeDiffersFromOwnerMode(
+        StorefrontComponentMode descriptorMode,
+        StorefrontComponentMode ownerMode)
+    {
+        var result = StorefrontComponentDescriptorModeOwnership.Validate(
+            CreateDescriptor(descriptorMode),
+            ownerMode);
+
+        Assert.True(result.IsApplicable);
+        Assert.False(result.IsValid);
+        Assert.NotNull(result.Error);
+        Assert.Contains($"declares mode '{descriptorMode}'", result.Error, StringComparison.Ordinal);
+        Assert.Contains($"owning assembly mode is '{ownerMode}'", result.Error, StringComparison.Ordinal);
+        Assert.Contains("brand-logo", result.Error, StringComparison.Ordinal);
+        Assert.Contains(typeof(ComponentFixture).FullName!, result.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RepositoryModeProjectsCurrentlyHaveNoRealDescriptorsSoFixtureProofIsAuthoritative()
+    {
+        var descriptorCandidates = ModeProjectDirectories
+            .Select(RepositoryPath)
+            .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+            .Where(file => !file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(part => part.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+                    part.Equals("obj", StringComparison.OrdinalIgnoreCase)))
+            .Where(file => Path.GetExtension(file) is ".cs" or ".razor")
+            .Where(file => File.ReadAllText(file).Contains("StorefrontComponentDescriptor", StringComparison.Ordinal))
+            .Select(file => Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/'))
+            .ToArray();
+
+        Assert.True(
+            descriptorCandidates.Length == 0,
+            "Real mode-project descriptors now exist. Replace this fixture-only guard with repository scanning that validates every descriptor against its owning mode project:" +
+            Environment.NewLine +
+            string.Join(Environment.NewLine, descriptorCandidates));
+    }
+
     private sealed class ComponentFixture : IComponent
     {
         public void Attach(RenderHandle renderHandle)
@@ -133,6 +241,22 @@ public sealed class StorefrontComponentDescriptorTests
 
     private sealed class NotAComponent
     {
+    }
+
+    private static StorefrontComponentDescriptor CreateDescriptor(StorefrontComponentMode mode)
+    {
+        return new StorefrontComponentDescriptor(
+            "brand-logo",
+            mode,
+            StorefrontComponentCategory.Brand,
+            typeof(ComponentFixture));
+    }
+
+    private static string RepositoryRoot => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
+
+    private static string RepositoryPath(string relativePath)
+    {
+        return Path.Combine(RepositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
 
     private static class StorefrontComponentDescriptorModeOwnership
