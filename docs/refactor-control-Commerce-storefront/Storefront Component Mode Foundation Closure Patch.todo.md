@@ -356,20 +356,20 @@ git diff --name-only -- `
 
 Expected production diff audit:
 
-- [ ] No output for forbidden production paths.
-- [ ] Existing unrelated changes, if any, are documented and left untouched.
+- [x] No output for forbidden production paths.
+- [x] Existing unrelated changes, if any, are documented and left untouched.
 
 No Playwright:
 
-- [ ] This patch is test-only and does not change browser behavior.
-- [ ] Playwright is not required for closure.
+- [x] This patch is test-only and does not change browser behavior.
+- [x] Playwright is not required for closure.
 
 Exit criteria:
 
-- [ ] Focused tests pass.
-- [ ] Broader architecture tests pass.
-- [ ] Sequential builds pass.
-- [ ] Production diff audit is clean for forbidden paths.
+- [x] Focused tests pass.
+- [x] Broader architecture tests pass.
+- [x] Sequential builds pass.
+- [x] Production diff audit is clean for forbidden paths.
 
 ## Phase 7 - Final Closure And Commit
 
@@ -446,6 +446,13 @@ Exit criteria:
   - 2026-08-09: updated `QA-StorefrontV2.todo.md` with generic literal class rejection, fully dynamic class allowance, mixed literal/dynamic rejection, `data-storefront-*` allowance, descriptor mode/project consistency, and proof that production projects were not changed by this closure patch.
   - 2026-08-09: updated `BlazorShop.PresentationV2/COMPONENT-MODES.md` to clarify literal class ownership, semantic hook allowance, and test-side descriptor mode ownership.
   - 2026-08-09: optional `COMPONENT-MODES.md` update was completed; no optional Phase 5 item was skipped.
+- [x] Phase 6 verification gates:
+  - 2026-08-09: focused test gate passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests"`: 78 passed, 0 failed.
+  - 2026-08-09: broader architecture test gate passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests"`: 159 passed, 0 failed.
+  - 2026-08-09: sequential builds passed for `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Browser`, `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.WasmHost`, and `BlazorShop.Storefront.Components.Hybrid`; each reported 0 warnings and 0 errors.
+  - 2026-08-09: production diff audit over forbidden Storefront production paths produced no output.
+  - 2026-08-09: Playwright was intentionally not run because this patch changes tests/docs only and adds no browser-visible behavior.
+  - 2026-08-09: existing unrelated `BlazorShop.sln` working-tree modification remains documented and untouched.
 
 ## Decision Audit Trail
 
