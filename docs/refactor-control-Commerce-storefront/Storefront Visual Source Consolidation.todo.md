@@ -408,32 +408,40 @@ Implementation notes:
 
 Run focused verification before browser QA.
 
-- [ ] Build Storefront V2:
+- [x] Build Storefront V2:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore
 ```
 
-- [ ] Build Storefront V2 WASM:
+- [x] Build Storefront V2 WASM:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj --no-restore
 ```
 
-- [ ] Run focused tests:
+- [x] Run focused tests:
 
 ```powershell
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontVisualSourceOwnershipTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~LayoutAssetFoundationTests|FullyQualifiedName~StorefrontSearch"
 ```
 
-- [ ] If test names differ, use the closest exact V2 Storefront test filters found by `rg`, and record the executed filter in the implementation notes.
-- [ ] Do not require Tailwind rebuild unless `input.css`, Tailwind config, or generated CSS sources are changed. This plan expects authored CSS changes in `storefront.css`.
+- [x] If test names differ, use the closest exact V2 Storefront test filters found by `rg`, and record the executed filter in the implementation notes.
+- [x] Do not require Tailwind rebuild unless `input.css`, Tailwind config, or generated CSS sources are changed. This plan expects authored CSS changes in `storefront.css`.
 
 Acceptance:
 
-- [ ] Both projects build.
-- [ ] Focused tests pass.
-- [ ] No unrelated test failures are hidden; if a failure is pre-existing, document the exact failing test and reason.
+- [x] Both projects build.
+- [x] Focused tests pass.
+- [x] No unrelated test failures are hidden; if a failure is pre-existing, document the exact failing test and reason.
+
+Implementation notes:
+
+- 2026-08-09: initial parallel Phase 9 run produced a transient `CS2012` file lock for `BlazorShop.Storefront.Presentation.dll` while build/test processes overlapped; `Storefront.V2.WASM` build and focused tests still passed in that run.
+- 2026-08-09: reran `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore` separately; it passed with 0 warnings and 0 errors.
+- 2026-08-09: `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontVisualSourceOwnershipTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests|FullyQualifiedName~LayoutAssetFoundationTests|FullyQualifiedName~StorefrontSearch"` passed 33/33. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
+- 2026-08-09: no Tailwind rebuild was required for Storefront V2 because only authored `storefront.css` changed; Control Plane Tailwind still ran as an existing test-project build side effect.
 
 ## Phase 10 - Browser QA With Playwright
 
