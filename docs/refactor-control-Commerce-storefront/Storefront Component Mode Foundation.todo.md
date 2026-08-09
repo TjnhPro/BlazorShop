@@ -461,78 +461,78 @@ Add focused tests under `BlazorShop.Tests.V2/PresentationV2/Storefront/`.
 
 ### StorefrontComponentModeFoundationTests
 
-- [ ] Assert all three project directories exist.
-- [ ] Assert all three `.csproj` files exist.
-- [ ] Assert all three projects use `Microsoft.NET.Sdk.Razor`.
-- [ ] Assert all three projects target `net10.0`.
-- [ ] Assert package metadata exists and matches Storefront package conventions.
-- [ ] Assert all three projects are included in `BlazorShop.sln`.
-- [ ] Assert base `Components` still uses `Microsoft.NET.Sdk`.
-- [ ] Assert base `Components` still has no `.razor` files.
-- [ ] Assert base `Components/Features` still does not exist.
-- [ ] Assert `Presentation`, V2, V2.WASM, Starter, and Starter.WASM do not reference the new mode projects in Phase 1.
+- [x] Assert all three project directories exist.
+- [x] Assert all three `.csproj` files exist.
+- [x] Assert all three projects use `Microsoft.NET.Sdk.Razor`.
+- [x] Assert all three projects target `net10.0`.
+- [x] Assert package metadata exists and matches Storefront package conventions.
+- [x] Assert all three projects are included in `BlazorShop.sln`.
+- [x] Assert base `Components` still uses `Microsoft.NET.Sdk`.
+- [x] Assert base `Components` still has no `.razor` files.
+- [x] Assert base `Components/Features` still does not exist.
+- [x] Assert `Presentation`, V2, V2.WASM, Starter, and Starter.WASM do not reference the new mode projects in Phase 1.
 
 ### StorefrontComponentModeDependencyTests
 
-- [ ] Assert `Components.Ssr` references exactly Components and Presentation.
-- [ ] Assert `Components.Hybrid` references exactly Components, Presentation, and Components.WasmHost.
-- [ ] Assert `Components.WasmHost` references exactly Components and Browser.
-- [ ] Assert `Components.WasmHost` does not reference Presentation.
-- [ ] Assert no mode project references Runtime or Client.
-- [ ] Assert no mode project references V2 or Starter consumer projects.
-- [ ] Assert no mode project references backend/core/API projects.
-- [ ] Assert no project-reference cycle exists among Storefront packages.
+- [x] Assert `Components.Ssr` references exactly Components and Presentation.
+- [x] Assert `Components.Hybrid` references exactly Components, Presentation, and Components.WasmHost.
+- [x] Assert `Components.WasmHost` references exactly Components and Browser.
+- [x] Assert `Components.WasmHost` does not reference Presentation.
+- [x] Assert no mode project references Runtime or Client.
+- [x] Assert no mode project references V2 or Starter consumer projects.
+- [x] Assert no mode project references backend/core/API projects.
+- [x] Assert no project-reference cycle exists among Storefront packages.
 
 ### StorefrontComponentModeBoundaryValidatorTests
 
-- [ ] Positive fixture: SSR profile with allowed refs/source passes.
-- [ ] Positive fixture: Hybrid profile with allowed WasmHost reference and `@rendermode` bridge passes.
-- [ ] Positive fixture: WasmHost profile with Browser controller dependency and `IJSRuntime` passes.
-- [ ] Negative fixture: SSR with `IJSRuntime` fails.
-- [ ] Negative fixture: SSR referencing Browser fails.
-- [ ] Negative fixture: SSR using `@rendermode` fails.
-- [ ] Negative fixture: Hybrid referencing Browser directly fails.
-- [ ] Negative fixture: Hybrid injecting `HttpClient` fails.
-- [ ] Negative fixture: Hybrid injecting browser controller directly fails.
-- [ ] Negative fixture: WasmHost referencing Presentation fails.
-- [ ] Negative fixture: WasmHost injecting `HttpClient` fails.
-- [ ] Negative fixture: WasmHost calling `/api/storefront` fails.
-- [ ] Negative fixture: any mode referencing V2 fails.
-- [ ] Negative fixture: any mode referencing backend/core/API projects fails.
+- [x] Positive fixture: SSR profile with allowed refs/source passes.
+- [x] Positive fixture: Hybrid profile with allowed WasmHost reference and `@rendermode` bridge passes.
+- [x] Positive fixture: WasmHost profile with Browser controller dependency and `IJSRuntime` passes.
+- [x] Negative fixture: SSR with `IJSRuntime` fails.
+- [x] Negative fixture: SSR referencing Browser fails.
+- [x] Negative fixture: SSR using `@rendermode` fails.
+- [x] Negative fixture: Hybrid referencing Browser directly fails.
+- [x] Negative fixture: Hybrid injecting `HttpClient` fails.
+- [x] Negative fixture: Hybrid injecting browser controller directly fails.
+- [x] Negative fixture: WasmHost referencing Presentation fails.
+- [x] Negative fixture: WasmHost injecting `HttpClient` fails.
+- [x] Negative fixture: WasmHost calling `/api/storefront` fails.
+- [x] Negative fixture: any mode referencing V2 fails.
+- [x] Negative fixture: any mode referencing backend/core/API projects fails.
 
 ### StorefrontComponentDescriptorTests
 
-- [ ] Valid descriptor passes.
-- [ ] Empty key fails.
-- [ ] Whitespace key fails.
-- [ ] Uppercase key fails.
-- [ ] Snake case key fails.
-- [ ] Key with slash fails.
-- [ ] Key with dot fails.
-- [ ] Key with double dash fails.
-- [ ] Invalid mode enum value fails.
-- [ ] Invalid category enum value fails.
-- [ ] Null component type fails.
-- [ ] Type not implementing `IComponent` fails.
-- [ ] Razor component fixture implementing `IComponent` passes.
+- [x] Valid descriptor passes.
+- [x] Empty key fails.
+- [x] Whitespace key fails.
+- [x] Uppercase key fails.
+- [x] Snake case key fails.
+- [x] Key with slash fails.
+- [x] Key with dot fails.
+- [x] Key with double dash fails.
+- [x] Invalid mode enum value fails.
+- [x] Invalid category enum value fails.
+- [x] Null component type fails.
+- [x] Type not implementing `IComponent` fails.
+- [x] Razor component fixture implementing `IComponent` passes.
 
 ### StorefrontComponentVisualNeutralityTests
 
-- [ ] Assert no `.css`, `.scss`, `.sass`, `.less` files exist in the three mode projects.
-- [ ] Assert no `tailwind.config.*` exists in the three mode projects.
-- [ ] Assert no `postcss.config.*` exists in the three mode projects.
-- [ ] Assert no `wwwroot/css` or theme asset folder exists in the three mode projects.
-- [ ] Assert no literal `class="rounded`, `class="bg-`, `class="text-`, `class="shadow`, `class="grid`, `class="flex`, `class="px-`, `class="mx-`, or responsive Tailwind prefixes exist.
-- [ ] Allow `class="@..."`
-- [ ] Allow `data-storefront-*`
-- [ ] Assert no final storefront copy strings are introduced.
-- [ ] Assert no V2 CSS classes or V2 asset paths are referenced.
+- [x] Assert no `.css`, `.scss`, `.sass`, `.less` files exist in the three mode projects.
+- [x] Assert no `tailwind.config.*` exists in the three mode projects.
+- [x] Assert no `postcss.config.*` exists in the three mode projects.
+- [x] Assert no `wwwroot/css` or theme asset folder exists in the three mode projects.
+- [x] Assert no literal `class="rounded`, `class="bg-`, `class="text-`, `class="shadow`, `class="grid`, `class="flex`, `class="px-`, `class="mx-`, or responsive Tailwind prefixes exist.
+- [x] Allow `class="@..."`
+- [x] Allow `data-storefront-*`
+- [x] Assert no final storefront copy strings are introduced.
+- [x] Assert no V2 CSS classes or V2 asset paths are referenced.
 
 Exit criteria:
 
-- [ ] New tests fail before implementation where appropriate.
-- [ ] New tests pass after implementation.
-- [ ] Existing Components headless tests still pass.
+- [x] New tests fail before implementation where appropriate.
+- [x] New tests pass after implementation.
+- [x] Existing Components headless tests still pass.
 
 ## Phase 6 - QA Checklist And Closure Gates
 
@@ -664,9 +664,13 @@ The next phase must include Playwright only after these components are rendered 
   - 2026-08-09: profile factory defines separate SSR, Hybrid, and WasmHost required/allowed project refs, forbidden tokens, and mode-specific allowed source tokens. `StorefrontVisualConsumerBoundaryValidator` was not modified.
   - 2026-08-09: `dotnet build BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore` initially exposed that base Components `FrameworkReference Include="Microsoft.AspNetCore.App"` breaks WASM consumers with `NETSDK1082`; changed it to `PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.9"` to keep `IComponent` validation browser-wasm compatible.
   - 2026-08-09: after the package reference fix, `dotnet restore BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj` reported up-to-date and `dotnet build BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore` passed. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
-- [ ] Tests added:
+- [x] Tests added:
+  - 2026-08-09: added `StorefrontComponentModeFoundationTests`, `StorefrontComponentModeDependencyTests`, `StorefrontComponentModeBoundaryValidatorTests`, `StorefrontComponentDescriptorTests`, and `StorefrontComponentVisualNeutralityTests`.
+  - 2026-08-09: updated `StorefrontComponentsHeadlessPresentationRefactorTests` contract inventory to include descriptor contracts and moved its neutrality documentation assertion to this active component-mode plan.
 - [ ] Build evidence:
-- [ ] Focused test evidence:
+- [x] Focused test evidence:
+  - 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests"` passed: 48 passed, 0 failed.
+  - 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` passed: 26 passed, 0 failed.
 - [ ] QA checklist evidence:
 - [ ] Commit:
 

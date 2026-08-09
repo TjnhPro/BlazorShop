@@ -13,6 +13,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Catalog/ProductSummaryItem.cs",
             "Catalog/ProductSummaryLabels.cs",
             "Checkout/CheckoutLabels.cs",
+            "Components/StorefrontComponentCategory.cs",
+            "Components/StorefrontComponentDescriptor.cs",
+            "Components/StorefrontComponentDescriptorValidationResult.cs",
+            "Components/StorefrontComponentDescriptorValidator.cs",
+            "Components/StorefrontComponentMode.cs",
             "Deals/DealsPlacement.cs",
             "Product/ProductGalleryItem.cs",
             "Product/ProductGalleryLabels.cs",
@@ -108,7 +113,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(15, actual.Length);
+            Assert.Equal(20, actual.Length);
         }
 
         [Fact]
@@ -129,31 +134,27 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void NeutralityGuardDesign_IsDocumentedButNotStrictBeforeMigration()
         {
             var plan = ReadRepositoryFile(
-                "docs/refactor-control-Commerce-storefront/Storefront Components Headless Presentation Refactor.todo.md");
+                "docs/refactor-control-Commerce-storefront/Storefront Component Mode Foundation.todo.md");
 
             foreach (var token in new[]
             {
-                "bg-*",
-                "text-neutral-*",
-                "text-rose-*",
-                "text-amber-*",
-                "text-emerald-*",
-                "rounded-*",
-                "shadow-*",
-                "max-w-*",
-                "grid-cols-*",
-                "sm:*",
-                "md:*",
-                "lg:*",
-                "hover:*"
+                "class=\"rounded",
+                "class=\"bg-",
+                "class=\"text-",
+                "class=\"shadow",
+                "class=\"grid",
+                "class=\"flex",
+                "class=\"px-",
+                "class=\"mx-",
+                "responsive Tailwind prefixes"
             })
             {
                 Assert.Contains(token, plan, StringComparison.Ordinal);
             }
 
-            Assert.Contains("Allowed: `sr-only`, `hidden`, ARIA attributes, `data-storefront-*`, semantic `bs-*`", plan, StringComparison.Ordinal);
-            Assert.Contains("Route strings such as `/api/*`, `#purchase`, `#product-cart-feedback` must be parameterized or host-owned.", plan, StringComparison.Ordinal);
-            Assert.Contains("Do not enable strict failure until a component group has been migrated", plan, StringComparison.Ordinal);
+            Assert.Contains("Allow `class=\"@...\"", plan, StringComparison.Ordinal);
+            Assert.Contains("Allow `data-storefront-*`", plan, StringComparison.Ordinal);
+            Assert.Contains("Assert no V2 CSS classes or V2 asset paths are referenced", plan, StringComparison.Ordinal);
         }
 
         [Fact]
