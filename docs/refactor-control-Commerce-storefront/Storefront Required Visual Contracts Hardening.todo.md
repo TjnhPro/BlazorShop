@@ -583,20 +583,28 @@ Implementation notes:
 
 Before closing the implementation commit:
 
-- [ ] `rg -n "StorefrontLinkContext.Default" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` returns no result.
-- [ ] `rg -n "new\\(" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` does not show fallback context construction.
-- [ ] `rg -n "StorefrontFeatureDataMode.BrowserFetch|ActionDescriptor.Empty|Classes.Empty|= \"/checkout\"|= \"/search\"|= \"/\"" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor` returns no root parameter default.
-- [ ] `rg -n "EmptyState\\(|StorefrontFeatureDataMode.BrowserFetch|ActionDescriptor.Empty|Classes.Empty" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor` returns no root parameter default.
-- [ ] `rg -n "PageNumber .* = 1|AccountRouteDescriptor.Empty|ActionDescriptor.Empty|Classes.Empty|NavigationItems .* = \\[\\]" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor` returns no root parameter default.
-- [ ] Focused Storefront tests pass.
-- [ ] V2 and V2.WASM build pass.
-- [ ] Browser cart/checkout/account regression is captured.
-- [ ] `QA-StorefrontV2.todo.md` updated.
-- [ ] `git diff` shows only V2/V2.WASM/tests/QA docs changes expected by this plan.
+- [x] `rg -n "StorefrontLinkContext.Default" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` returns no result.
+- [x] `rg -n "new\\(" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` does not show fallback context construction.
+- [x] `rg -n "StorefrontFeatureDataMode.BrowserFetch|ActionDescriptor.Empty|Classes.Empty|= \"/checkout\"|= \"/search\"|= \"/\"" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor` returns no root parameter default.
+- [x] `rg -n "EmptyState\\(|StorefrontFeatureDataMode.BrowserFetch|ActionDescriptor.Empty|Classes.Empty" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor` returns no root parameter default.
+- [x] `rg -n "PageNumber .* = 1|AccountRouteDescriptor.Empty|ActionDescriptor.Empty|Classes.Empty|NavigationItems .* = \\[\\]" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor` returns no root parameter default.
+- [x] Focused Storefront tests pass.
+- [x] V2 and V2.WASM build pass.
+- [x] Browser cart/checkout/account regression is captured.
+- [x] `QA-StorefrontV2.todo.md` updated.
+- [x] `git diff` shows only V2/V2.WASM/tests/QA docs changes expected by this plan.
 
 Completion criteria:
 
-- [ ] Root visual components no longer silently own application wiring defaults.
-- [ ] Valid host-provided wiring still renders cart, checkout, and account flows.
-- [ ] Guardrail tests prevent regression.
-- [ ] No unrelated StorefrontBuilder, Commerce Node, Control Plane, Runtime, Client, or Browser controller behavior changed.
+- [x] Root visual components no longer silently own application wiring defaults.
+- [x] Valid host-provided wiring still renders cart, checkout, and account flows.
+- [x] Guardrail tests prevent regression.
+- [x] No unrelated StorefrontBuilder, Commerce Node, Control Plane, Runtime, Client, or Browser controller behavior changed.
+
+Implementation notes:
+
+- 2026-08-09: final source scans returned no CartPage fallback link/default context construction, no CheckoutShell root defaults, and no AccountApp root defaults. The broad CartView scan only matched legitimate CSS class member usages such as `Classes.EmptyState`; a targeted root parameter default scan returned no result.
+- 2026-08-09: focused verification passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRequiredVisualContractsHardeningTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"` reported 27/27 passing tests.
+- 2026-08-09: final builds passed with 0 warnings and 0 errors for `BlazorShop.Storefront.V2.csproj` and `BlazorShop.Storefront.V2.WASM.csproj`.
+- 2026-08-09: browser regression evidence remains captured at `output/playwright/storefront-required-visual-contracts-hardening-phase8/evidence.json`.
+- 2026-08-09: `QA-StorefrontV2.todo.md` was updated in Phase 9. Before this Phase 10 checklist edit, `git diff --stat` showed only the pre-existing unrelated `BlazorShop.sln` modification; no unrelated StorefrontBuilder, Commerce Node, Control Plane, Runtime, Client, or Browser controller files were changed by this plan.
