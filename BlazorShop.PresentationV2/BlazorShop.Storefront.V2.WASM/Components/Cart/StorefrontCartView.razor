@@ -183,29 +183,29 @@
 </section>
 
 @code {
-    [Parameter]
+    [Parameter, EditorRequired]
     public StorefrontBrowserCart? InitialCart { get; set; }
 
-    [Parameter]
-    public IReadOnlyList<StorefrontBrowserCartAlert> InitialAlerts { get; set; } = [];
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorefrontBrowserCartAlert> InitialAlerts { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+    [Parameter, EditorRequired]
+    public StorefrontFeatureDataMode DataMode { get; set; }
 
-    [Parameter]
-    public StorefrontCartActionDescriptor Actions { get; set; } = StorefrontCartActionDescriptor.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontCartActionDescriptor Actions { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontCartViewClasses Classes { get; set; } = StorefrontCartViewClasses.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontCartViewClasses Classes { get; set; } = default!;
 
-    [Parameter]
-    public string CheckoutUrl { get; set; } = "/checkout";
+    [Parameter, EditorRequired]
+    public string CheckoutUrl { get; set; } = default!;
 
-    [Parameter]
-    public string ContinueShoppingUrl { get; set; } = "/search";
+    [Parameter, EditorRequired]
+    public string ContinueShoppingUrl { get; set; } = default!;
 
-    [Parameter]
-    public string SecondaryShoppingUrl { get; set; } = "/";
+    [Parameter, EditorRequired]
+    public string SecondaryShoppingUrl { get; set; } = default!;
 
     private IReadOnlyList<StorefrontBrowserCartAlert> Alerts => CartController.State.Alerts;
 
@@ -217,6 +217,13 @@
 
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(InitialAlerts);
+        ArgumentNullException.ThrowIfNull(Actions);
+        ArgumentNullException.ThrowIfNull(Classes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(CheckoutUrl);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ContinueShoppingUrl);
+        ArgumentException.ThrowIfNullOrWhiteSpace(SecondaryShoppingUrl);
+
         CartController.Initialize(InitialCart, InitialAlerts, DataMode, Actions);
     }
 

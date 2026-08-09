@@ -175,43 +175,48 @@ Required parameters:
 
 Tasks:
 
-- [ ] Add `[EditorRequired]` to every required parameter.
-- [ ] Remove default assignment from `InitialAlerts`.
-- [ ] Remove default assignment from `DataMode`.
-- [ ] Remove default assignment from `Actions`.
-- [ ] Remove default assignment from `Classes`.
-- [ ] Remove hard-coded URL defaults:
-  - [ ] `/checkout`
-  - [ ] `/search`
-  - [ ] `/`
-- [ ] Keep `InitialCart` nullable but `[EditorRequired]`.
-- [ ] Add runtime validation in `OnParametersSet` before controller initialization:
-  - [ ] `ArgumentNullException.ThrowIfNull(InitialAlerts);`
-  - [ ] `ArgumentNullException.ThrowIfNull(Actions);`
-  - [ ] `ArgumentNullException.ThrowIfNull(Classes);`
-  - [ ] `ArgumentException.ThrowIfNullOrWhiteSpace(CheckoutUrl);`
-  - [ ] `ArgumentException.ThrowIfNullOrWhiteSpace(ContinueShoppingUrl);`
-  - [ ] `ArgumentException.ThrowIfNullOrWhiteSpace(SecondaryShoppingUrl);`
-- [ ] Do not throw when `InitialCart` is `null`.
-- [ ] Do not throw when `Actions == StorefrontCartActionDescriptor.Empty`.
-- [ ] Do not throw when `Classes == StorefrontCartViewClasses.Empty`.
-- [ ] Keep `CartController.Initialize(InitialCart, InitialAlerts, DataMode, Actions);`.
-- [ ] Do not move browser fetch/hydration behavior into the component.
+- [x] Add `[EditorRequired]` to every required parameter.
+- [x] Remove default assignment from `InitialAlerts`.
+- [x] Remove default assignment from `DataMode`.
+- [x] Remove default assignment from `Actions`.
+- [x] Remove default assignment from `Classes`.
+- [x] Remove hard-coded URL defaults:
+  - [x] `/checkout`
+  - [x] `/search`
+  - [x] `/`
+- [x] Keep `InitialCart` nullable but `[EditorRequired]`.
+- [x] Add runtime validation in `OnParametersSet` before controller initialization:
+  - [x] `ArgumentNullException.ThrowIfNull(InitialAlerts);`
+  - [x] `ArgumentNullException.ThrowIfNull(Actions);`
+  - [x] `ArgumentNullException.ThrowIfNull(Classes);`
+  - [x] `ArgumentException.ThrowIfNullOrWhiteSpace(CheckoutUrl);`
+  - [x] `ArgumentException.ThrowIfNullOrWhiteSpace(ContinueShoppingUrl);`
+  - [x] `ArgumentException.ThrowIfNullOrWhiteSpace(SecondaryShoppingUrl);`
+- [x] Do not throw when `InitialCart` is `null`.
+- [x] Do not throw when `Actions == StorefrontCartActionDescriptor.Empty`.
+- [x] Do not throw when `Classes == StorefrontCartViewClasses.Empty`.
+- [x] Keep `CartController.Initialize(InitialCart, InitialAlerts, DataMode, Actions);`.
+- [x] Do not move browser fetch/hydration behavior into the component.
 
 Tests:
 
-- [ ] Add source test proving each required cart view parameter has `[EditorRequired]`.
-- [ ] Add source test proving cart view no longer declares URL fallbacks.
-- [ ] Add source test proving cart view no longer defaults to `StorefrontFeatureDataMode.BrowserFetch`.
-- [ ] Add source test proving cart view no longer defaults action/classes to `.Empty`.
-- [ ] Add source test proving runtime null/whitespace validation exists for required references and URLs.
-- [ ] Add source test proving `.Empty` is not rejected by validation logic.
+- [x] Add source test proving each required cart view parameter has `[EditorRequired]`.
+- [x] Add source test proving cart view no longer declares URL fallbacks.
+- [x] Add source test proving cart view no longer defaults to `StorefrontFeatureDataMode.BrowserFetch`.
+- [x] Add source test proving cart view no longer defaults action/classes to `.Empty`.
+- [x] Add source test proving runtime null/whitespace validation exists for required references and URLs.
+- [x] Add source test proving `.Empty` is not rejected by validation logic.
 
 Definition of done:
 
-- [ ] Cart root callers must explicitly choose data mode, action descriptor, classes, and URLs.
-- [ ] Component still supports `InitialCart = null` as an intentional empty/unknown cart state.
-- [ ] Component does not own fallback navigation routes.
+- [x] Cart root callers must explicitly choose data mode, action descriptor, classes, and URLs.
+- [x] Component still supports `InitialCart = null` as an intentional empty/unknown cart state.
+- [x] Component does not own fallback navigation routes.
+
+Implementation notes:
+
+- 2026-08-09: `StorefrontCartView.razor` now marks all root wiring parameters `[EditorRequired]`, removes browser-fetch/action/class/URL defaults, keeps nullable `InitialCart`, and validates required reference/URL inputs before `CartController.Initialize(...)`.
+- 2026-08-09: expanded `StorefrontRequiredVisualContractsHardeningTests` with cart view guardrails. Focused test command passed 2/2 with the same known MessagePack and Browserslist warnings.
 
 ## Phase 3 - Harden `StorefrontCheckoutShell` Root Parameters
 

@@ -32,6 +32,59 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
         }
 
+        [Fact]
+        public void CartView_RequiresRootWiringWithoutOwningFallbackRoutesOrDescriptors()
+        {
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
+
+            foreach (var requiredParameter in new[]
+            {
+                "StorefrontBrowserCart? InitialCart",
+                "IReadOnlyList<StorefrontBrowserCartAlert> InitialAlerts",
+                "StorefrontFeatureDataMode DataMode",
+                "StorefrontCartActionDescriptor Actions",
+                "StorefrontCartViewClasses Classes",
+                "string CheckoutUrl",
+                "string ContinueShoppingUrl",
+                "string SecondaryShoppingUrl"
+            })
+            {
+                AssertParameterIsEditorRequired(component, requiredParameter);
+            }
+
+            Assert.DoesNotContain("InitialAlerts { get; set; } = []", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("Actions { get; set; } = StorefrontCartActionDescriptor.Empty", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("Classes { get; set; } = StorefrontCartViewClasses.Empty", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("CheckoutUrl { get; set; } = \"/checkout\"", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("ContinueShoppingUrl { get; set; } = \"/search\"", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("SecondaryShoppingUrl { get; set; } = \"/\"", component, StringComparison.Ordinal);
+
+            foreach (var validation in new[]
+            {
+                "ArgumentNullException.ThrowIfNull(InitialAlerts);",
+                "ArgumentNullException.ThrowIfNull(Actions);",
+                "ArgumentNullException.ThrowIfNull(Classes);",
+                "ArgumentException.ThrowIfNullOrWhiteSpace(CheckoutUrl);",
+                "ArgumentException.ThrowIfNullOrWhiteSpace(ContinueShoppingUrl);",
+                "ArgumentException.ThrowIfNullOrWhiteSpace(SecondaryShoppingUrl);"
+            })
+            {
+                Assert.Contains(validation, component, StringComparison.Ordinal);
+            }
+
+            Assert.DoesNotContain("ArgumentNullException.ThrowIfNull(InitialCart)", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("Actions == StorefrontCartActionDescriptor.Empty", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("Classes == StorefrontCartViewClasses.Empty", component, StringComparison.Ordinal);
+            Assert.Contains("CartController.Initialize(InitialCart, InitialAlerts, DataMode, Actions);", component, StringComparison.Ordinal);
+        }
+
+        private static void AssertParameterIsEditorRequired(string source, string declaration)
+        {
+            Assert.Contains("[Parameter, EditorRequired]", source, StringComparison.Ordinal);
+            Assert.Contains($"public {declaration}", source, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(
