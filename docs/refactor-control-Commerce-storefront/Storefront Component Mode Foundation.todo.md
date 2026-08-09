@@ -1,6 +1,6 @@
 # Storefront Component Mode Foundation
 
-Status: in-progress
+Status: complete
 Owner: Storefront V2 architecture
 Scope: Phase 1 foundation only
 
@@ -576,16 +576,16 @@ Exit criteria:
 
 ## Phase 7 - Final Audit Before Commit
 
-- [ ] Run `git status --short`.
-- [ ] Verify no unrelated user changes were modified.
-- [ ] Verify no production dummy components exist.
-- [ ] Verify no `Components/Features` folder exists.
-- [ ] Verify no V2/Starter/generated project references the new mode projects.
-- [ ] Verify no Runtime/Client/backend reference exists in any mode project.
-- [ ] Verify base Components still has no `.razor` files.
-- [ ] Verify docs mention future components only as next phase.
-- [ ] Verify this todo has implementation evidence filled in.
-- [ ] Commit with a focused message after tests pass.
+- [x] Run `git status --short`.
+- [x] Verify no unrelated user changes were modified.
+- [x] Verify no production dummy components exist.
+- [x] Verify no `Components/Features` folder exists.
+- [x] Verify no V2/Starter/generated project references the new mode projects.
+- [x] Verify no Runtime/Client/backend reference exists in any mode project.
+- [x] Verify base Components still has no `.razor` files.
+- [x] Verify docs mention future components only as next phase.
+- [x] Verify this todo has implementation evidence filled in.
+- [x] Commit with a focused message after tests pass.
 
 Suggested commit message:
 
@@ -595,26 +595,26 @@ chore: add storefront component mode foundation
 
 ## Definition Of Done
 
-- [ ] `BlazorShop.Storefront.Components` remains the lowest browser-safe contracts/headless layer.
-- [ ] `BlazorShop.Storefront.Components` still has no Razor components.
-- [ ] `BlazorShop.Storefront.Components/Features` remains absent.
-- [ ] `StorefrontComponentMode` exists.
-- [ ] `StorefrontComponentCategory` exists.
-- [ ] `StorefrontComponentDescriptor` exists.
-- [ ] Descriptor validation is tested.
-- [ ] `Components.Ssr` exists and has strict dependency rules.
-- [ ] `Components.Hybrid` exists and has strict dependency rules.
-- [ ] `Components.WasmHost` exists and has strict dependency rules.
-- [ ] SSR cannot use Browser, Runtime, Client, JS interop, or render mode.
-- [ ] Hybrid can bridge to WasmHost but cannot own browser transport.
-- [ ] WasmHost can use Browser controllers but cannot call backend APIs directly.
-- [ ] No new mode project references V2, Starter, Commerce Node, Control Plane, Application, Domain, Infrastructure, Runtime, Client, or Web.SharedV2.
-- [ ] No theme CSS/assets are introduced in reusable mode libraries.
-- [ ] Literal visual classes are rejected in the new mode libraries.
-- [ ] Documentation explains mode ownership and examples.
-- [ ] QA checklist is updated.
-- [ ] Focused build/test gates pass.
-- [ ] No real feature implementation is included.
+- [x] `BlazorShop.Storefront.Components` remains the lowest browser-safe contracts/headless layer.
+- [x] `BlazorShop.Storefront.Components` still has no Razor components.
+- [x] `BlazorShop.Storefront.Components/Features` remains absent.
+- [x] `StorefrontComponentMode` exists.
+- [x] `StorefrontComponentCategory` exists.
+- [x] `StorefrontComponentDescriptor` exists.
+- [x] Descriptor validation is tested.
+- [x] `Components.Ssr` exists and has strict dependency rules.
+- [x] `Components.Hybrid` exists and has strict dependency rules.
+- [x] `Components.WasmHost` exists and has strict dependency rules.
+- [x] SSR cannot use Browser, Runtime, Client, JS interop, or render mode.
+- [x] Hybrid can bridge to WasmHost but cannot own browser transport.
+- [x] WasmHost can use Browser controllers but cannot call backend APIs directly.
+- [x] No new mode project references V2, Starter, Commerce Node, Control Plane, Application, Domain, Infrastructure, Runtime, Client, or Web.SharedV2.
+- [x] No theme CSS/assets are introduced in reusable mode libraries.
+- [x] Literal visual classes are rejected in the new mode libraries.
+- [x] Documentation explains mode ownership and examples.
+- [x] QA checklist is updated.
+- [x] Focused build/test gates pass.
+- [x] No real feature implementation is included.
 
 ## Next Phase Preview
 
@@ -676,7 +676,8 @@ The next phase must include Playwright only after these components are rendered 
   - 2026-08-09: added `Storefront Component Mode Foundation` section to `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` covering base Components preservation, mode projects, dependency allowlists, descriptor validation, visual neutrality, no real feature components, and no Playwright requirement.
   - 2026-08-09: focused closure gate passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests"` passed: 129 passed, 0 failed.
   - 2026-08-09: Playwright was intentionally not run because this foundation adds no browser-visible routes, component markup, CSS, JS behavior, or runtime rendering.
-- [ ] Commit:
+- [x] Commit:
+  - 2026-08-09: phase commits created: `039ea147`, `f6dd5d73`, `9907ce4c`, `b55687c8`, `b72d0330`, `c53f3e07`, and `712cb878`; final audit closure is committed separately in Phase 7.
 
 ## Decision Audit Trail
 
