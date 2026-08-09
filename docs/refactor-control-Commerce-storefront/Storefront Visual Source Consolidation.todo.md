@@ -332,15 +332,15 @@ Add or extend tests under `BlazorShop.Tests.V2`. Suggested new file:
 
 Guardrail design:
 
-- [ ] Use a curated source file list instead of scanning all generated CSS output.
-- [ ] Exclude:
+- [x] Use a curated source file list instead of scanning all generated CSS output.
+- [x] Exclude:
   - `node_modules`
   - `bin`
   - `obj`
   - generated CSS files `wwwroot/css/site.css` and `wwwroot/css/wasm-site.css`
   - docs
   - fixtures
-- [ ] Assert `storefrontCommerce.js` does not contain:
+- [x] Assert `storefrontCommerce.js` does not contain:
   - `resolveToastTheme`
   - `resolveToastIcon`
   - `style.backgroundColor`
@@ -350,27 +350,33 @@ Guardrail design:
   - `innerHTML`
   - `text-emerald-700`
   - `text-red-700`
-- [ ] If `data:image/svg+xml` remains in `storefrontCommerce.js`, assert it appears only in the known gallery fallback block and not in toast/icon code.
-- [ ] Assert V2 active Razor sources do not contain Font Awesome tokens:
+- [x] If `data:image/svg+xml` remains in `storefrontCommerce.js`, assert it appears only in the known gallery fallback block and not in toast/icon code.
+- [x] Assert V2 active Razor sources do not contain Font Awesome tokens:
   - `fa-solid`
   - `fa-regular`
   - `fa-brands`
   - `fa-magnifying-glass`
   - `fa-check`
-- [ ] Assert `SubmitIconCssClass` no longer exists in active V2 source.
-- [ ] Assert `MainLayout.razor` contains:
+- [x] Assert `SubmitIconCssClass` no longer exists in active V2 source.
+- [x] Assert `MainLayout.razor` contains:
   - `data-storefront-toast-icon="info"`
   - `data-storefront-toast-icon="success"`
   - `data-storefront-toast-icon="warning"`
   - `data-storefront-toast-icon="error"`
   - no inline toast `style=` visual state
-- [ ] Assert `storefront.css` contains toast level/state selectors and purchase feedback selectors.
+- [x] Assert `storefront.css` contains toast level/state selectors and purchase feedback selectors.
 
 Acceptance:
 
-- [ ] Tests fail if JavaScript reclaims toast visual color/icon/animation ownership.
-- [ ] Tests fail if Storefront V2 reintroduces Font Awesome class-based icon usage.
-- [ ] Tests do not fail because Tailwind generated CSS contains expected utility classes.
+- [x] Tests fail if JavaScript reclaims toast visual color/icon/animation ownership.
+- [x] Tests fail if Storefront V2 reintroduces Font Awesome class-based icon usage.
+- [x] Tests do not fail because Tailwind generated CSS contains expected utility classes.
+
+Implementation notes:
+
+- 2026-08-09: added `StorefrontVisualSourceOwnershipTests` with curated active V2 source files and explicit generated CSS/build-output/docs/fixtures exclusions.
+- 2026-08-09: guardrails cover toast JS visual ownership, known gallery `data:image/svg+xml` allowlist, Font Awesome tokens, removed `SubmitIconCssClass`, Razor toast icon markup, and `storefront.css` visual selectors.
+- 2026-08-09: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontVisualSourceOwnershipTests"` passed 7/7. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
 
 ## Phase 8 - Preserve Existing Regression Tests
 
