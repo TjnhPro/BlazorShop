@@ -146,8 +146,8 @@ Files:
 
 Tasks:
 
-- [ ] Replace the unauthorized fallback wrapper with neutral markup.
-- [ ] Remove all Tailwind/layout/text classes from the fallback:
+- [x] Replace the unauthorized fallback wrapper with neutral markup.
+- [x] Remove all Tailwind/layout/text classes from the fallback:
   - `mx-auto`
   - `max-w-7xl`
   - `px-*`
@@ -156,7 +156,7 @@ Tasks:
   - `lg:*`
   - `text-sm`
   - `text-neutral-*`
-- [ ] Keep a semantic hook if useful, for example:
+- [x] Keep a semantic hook if useful, for example:
 
 ```razor
 <section data-storefront-account-redirect>
@@ -165,18 +165,24 @@ Tasks:
 </section>
 ```
 
-- [ ] Preserve existing redirect behavior:
+- [x] Preserve existing redirect behavior:
   - server-side redirect through `HttpContext.Response.Redirect(redirect.Url)` when possible;
   - browser fallback through `NavigationManager.NavigateTo(redirect.Url, replace: true)`;
   - `_state` remains `StorefrontPageState.UnauthorizedState`.
-- [ ] Do not introduce V2-specific account unauthorized view in Presentation.
-- [ ] Only add a V2 view if the redirect fallback is proven visibly persistent in browser QA. If added, V2 owns its classes and is wired through an existing foundation view slot.
+- [x] Do not introduce V2-specific account unauthorized view in Presentation.
+- [x] Only add a V2 view if the redirect fallback is proven visibly persistent in browser QA. If added, V2 owns its classes and is wired through an existing foundation view slot.
 
 Acceptance:
 
-- [ ] `AccountRoutePage.razor` contains no Tailwind or theme class tokens.
-- [ ] `/account` still redirects unauthorized users to sign-in.
-- [ ] Authorized account route still renders the host-provided `ViewSet.AccountPage`.
+- [x] `AccountRoutePage.razor` contains no Tailwind or theme class tokens.
+- [x] `/account` still redirects unauthorized users to sign-in.
+- [x] Authorized account route still renders the host-provided `ViewSet.AccountPage`.
+
+Implementation notes:
+
+- 2026-08-09: replaced the unauthorized fallback with classless semantic markup using `data-storefront-account-redirect`.
+- 2026-08-09: removed the `mx-auto`, `max-w-7xl`, `px-*`, `py-*`, `sm:*`, `lg:*`, `text-sm`, and `text-neutral-*` classes from `AccountRoutePage.razor`.
+- 2026-08-09: source scan confirmed no `class=` or Tailwind/layout tokens remain in `AccountRoutePage.razor`; `HttpContext.Response.Redirect`, `NavigationManager.NavigateTo(..., replace: true)`, `_state = UnauthorizedState`, and `StorefrontFoundationViewOutlet` for `ViewSet.AccountPage` remain unchanged.
 
 ## Phase 2 - Move Content Page Visual Classes Out Of Presentation
 
