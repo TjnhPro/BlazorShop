@@ -158,6 +158,83 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/Fixtures/", StringComparison.OrdinalIgnoreCase));
         }
 
+        [Fact]
+        public void StorefrontV2ContentPage_OwnsSemanticLayoutToVisualClassMapping()
+        {
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor");
+
+            Assert.Contains("@GetArticleClass(Context.Presentation.LayoutKind)", page, StringComparison.Ordinal);
+            Assert.Contains("@GetBodyContainerClass(Context.Presentation.LayoutKind)", page, StringComparison.Ordinal);
+            Assert.Contains("private static string GetArticleClass(StorefrontPageLayoutKind layoutKind)", page, StringComparison.Ordinal);
+            Assert.Contains("private static string GetBodyContainerClass(StorefrontPageLayoutKind layoutKind)", page, StringComparison.Ordinal);
+
+            foreach (var expectedVisualVariant in new[]
+            {
+                "bs-storefront-content-page bs-storefront-content-page--standard",
+                "bs-storefront-content-page bs-storefront-content-page--policy",
+                "bs-storefront-content-page bs-storefront-content-page--faq",
+                "bs-storefront-content-page bs-storefront-content-page--support",
+                "rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg sm:p-8",
+                "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8",
+            })
+            {
+                Assert.Contains(expectedVisualVariant, page, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("StorefrontPageLayoutKind.Policy", page, StringComparison.Ordinal);
+            Assert.Contains("StorefrontPageLayoutKind.Faq", page, StringComparison.Ordinal);
+            Assert.Contains("StorefrontPageLayoutKind.Support", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("Context.Presentation.ArticleClass", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("Context.Presentation.BodyContainerClass", page, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StorefrontV2PaymentResultPage_OwnsOutcomeToVisualToneMapping()
+        {
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/PaymentResultPage.razor");
+
+            Assert.Contains("@GetPanelClass(Context.Outcome)", page, StringComparison.Ordinal);
+            Assert.Contains("@GetEyebrowClass(Context.Outcome)", page, StringComparison.Ordinal);
+            Assert.Contains("@GetHeadingClass(Context.Outcome)", page, StringComparison.Ordinal);
+            Assert.Contains("@GetBodyClass(Context.Outcome)", page, StringComparison.Ordinal);
+            Assert.Contains("@GetMutedClass(Context.Outcome)", page, StringComparison.Ordinal);
+
+            foreach (var expectedVisualTone in new[]
+            {
+                "rounded-3xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center shadow-sm",
+                "rounded-3xl border border-amber-200 bg-amber-50 px-6 py-10 text-center shadow-sm",
+                "rounded-3xl border border-rose-200 bg-rose-50 px-6 py-10 text-center shadow-sm",
+                "text-emerald-700",
+                "text-emerald-950",
+                "text-emerald-900",
+                "text-amber-700",
+                "text-amber-950",
+                "text-amber-900",
+                "text-rose-700",
+                "text-rose-950",
+                "text-rose-900",
+            })
+            {
+                Assert.Contains(expectedVisualTone, page, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("StorefrontPaymentResultOutcome.Success", page, StringComparison.Ordinal);
+            Assert.Contains("StorefrontPaymentResultOutcome.Pending or StorefrontPaymentResultOutcome.Cancelled", page, StringComparison.Ordinal);
+            Assert.Contains("_ => \"rounded-3xl border border-rose-200 bg-rose-50 px-6 py-10 text-center shadow-sm\"", page, StringComparison.Ordinal);
+
+            foreach (var removedContextField in new[]
+            {
+                "Context.PanelClass",
+                "Context.EyebrowClass",
+                "Context.HeadingClass",
+                "Context.BodyClass",
+                "Context.MutedClass",
+            })
+            {
+                Assert.DoesNotContain(removedContextField, page, StringComparison.Ordinal);
+            }
+        }
+
         private static IReadOnlyList<SourceFile> EnumerateCuratedOwnershipSources()
         {
             var repositoryRoot = FindRepositoryRoot();

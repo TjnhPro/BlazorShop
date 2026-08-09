@@ -476,20 +476,27 @@ Purpose: prove visual mapping moved to the correct host, not just disappeared.
 
 Tasks:
 
-- [ ] Extend existing V2 tests or add focused assertions that V2 owns content visual mapping:
+- [x] Extend existing V2 tests or add focused assertions that V2 owns content visual mapping:
   - `StorefrontPage.razor` maps `StorefrontPageLayoutKind` or semantic equivalent to article/body classes locally;
   - V2 keeps the previous standard/policy/faq/support visual variants.
-- [ ] Extend existing V2 tests or add focused assertions that V2 owns payment visual mapping:
+- [x] Extend existing V2 tests or add focused assertions that V2 owns payment visual mapping:
   - `PaymentResultPage.razor` maps `StorefrontPaymentResultOutcome` to panel and tone classes locally;
   - success, pending, failed/cancelled/unavailable outcomes have distinct V2 visual classes.
-- [ ] Keep tests source-level and focused unless existing component-render tests already exist.
-- [ ] Do not require Starter to match V2 visual output.
+- [x] Keep tests source-level and focused unless existing component-render tests already exist.
+- [x] Do not require Starter to match V2 visual output.
 
 Acceptance:
 
-- [ ] V2 tests prove the moved visual mappings exist in V2.
-- [ ] Presentation tests prove those mappings do not exist in Presentation.
-- [ ] The tests make ownership readable for future agents.
+- [x] V2 tests prove the moved visual mappings exist in V2.
+- [x] Presentation tests prove those mappings do not exist in Presentation.
+- [x] The tests make ownership readable for future agents.
+
+Implementation notes:
+
+- 2026-08-09: extended `StorefrontVisualSourceOwnershipTests` with source-level assertions proving V2 `StorefrontPage.razor` maps `StorefrontPageLayoutKind` locally to the previous standard/policy/faq/support article and body classes.
+- 2026-08-09: extended `StorefrontVisualSourceOwnershipTests` with source-level assertions proving V2 `PaymentResultPage.razor` maps `StorefrontPaymentResultOutcome` locally to success, pending/cancelled, and failed/unavailable panel and tone classes.
+- 2026-08-09: assertions also prove V2 no longer consumes removed Presentation context fields such as `Context.Presentation.ArticleClass`, `Context.PanelClass`, or `Context.MutedClass`.
+- 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontVisualSourceOwnershipTests"` passed 9/9. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
 
 ## Phase 7 - QA Checklist And Architecture Notes
 
