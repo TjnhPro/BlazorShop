@@ -257,34 +257,34 @@ Exit criteria:
 
 ## Phase 2 - Descriptor Contracts In Base Components
 
-- [ ] Add descriptor contracts under `BlazorShop.Storefront.Components/Contracts/Components/`.
-- [ ] Add `StorefrontComponentMode`.
-- [ ] Add `StorefrontComponentCategory`.
-- [ ] Add `StorefrontComponentDescriptor`.
-- [ ] Add a minimal `StorefrontComponentDescriptorValidator` or equivalent pure helper.
-- [ ] Validate `Key` is required.
-- [ ] Validate `Key` matches lowercase kebab-case:
+- [x] Add descriptor contracts under `BlazorShop.Storefront.Components/Contracts/Components/`.
+- [x] Add `StorefrontComponentMode`.
+- [x] Add `StorefrontComponentCategory`.
+- [x] Add `StorefrontComponentDescriptor`.
+- [x] Add a minimal `StorefrontComponentDescriptorValidator` or equivalent pure helper.
+- [x] Validate `Key` is required.
+- [x] Validate `Key` matches lowercase kebab-case:
 
 ```text
 ^[a-z0-9]+(?:-[a-z0-9]+)*$
 ```
 
-- [ ] Validate `Mode` is a defined enum value.
-- [ ] Validate `Category` is a defined enum value.
-- [ ] Validate `ComponentType` is not null.
-- [ ] Validate `ComponentType` implements `Microsoft.AspNetCore.Components.IComponent`.
-- [ ] Verify base `Components` can reference the required Blazor component abstraction without switching to `Microsoft.NET.Sdk.Razor`.
-- [ ] If a package/framework reference is required for `IComponent`, keep it minimal and document why.
-- [ ] Do not add descriptor assembly scanning.
-- [ ] Do not add DI registration.
-- [ ] Do not add runtime component registry.
-- [ ] Do not add JSON manifests.
+- [x] Validate `Mode` is a defined enum value.
+- [x] Validate `Category` is a defined enum value.
+- [x] Validate `ComponentType` is not null.
+- [x] Validate `ComponentType` implements `Microsoft.AspNetCore.Components.IComponent`.
+- [x] Verify base `Components` can reference the required Blazor component abstraction without switching to `Microsoft.NET.Sdk.Razor`.
+- [x] If a package/framework reference is required for `IComponent`, keep it minimal and document why.
+- [x] Do not add descriptor assembly scanning.
+- [x] Do not add DI registration.
+- [x] Do not add runtime component registry.
+- [x] Do not add JSON manifests.
 
 Exit criteria:
 
-- [ ] Base `Components` still builds.
-- [ ] Base `Components` still uses `Microsoft.NET.Sdk`.
-- [ ] Base `Components` still has no `.razor`, CSS, JS, theme assets, or `Features` folder.
+- [x] Base `Components` still builds.
+- [x] Base `Components` still uses `Microsoft.NET.Sdk`.
+- [x] Base `Components` still has no `.razor`, CSS, JS, theme assets, or `Features` folder.
 
 ## Phase 3 - Create Mode RCL Projects
 
@@ -641,6 +641,14 @@ The next phase must include Playwright only after these components are rendered 
   - 2026-08-09: updated `docs/architecture/05-project-and-folder-guide.md` with ownership rules and direct reference allowlists for `Components.Ssr`, `Components.Hybrid`, and `Components.WasmHost`.
   - 2026-08-09: updated `docs/architecture/10-v2-contract-ownership.md` with descriptor contract ownership and mode boundary rules.
   - 2026-08-09: deferred the `AGENTS.md` active project list update until Phase 3 because that checklist explicitly says to update it after projects are created.
+- [x] Descriptor contracts evidence:
+  - 2026-08-09 Phase 2 added only base descriptor contract files under `BlazorShop.Storefront.Components/Contracts/Components/`; no mode projects yet.
+  - 2026-08-09 added `StorefrontComponentMode`, `StorefrontComponentCategory`, `StorefrontComponentDescriptor`, `StorefrontComponentDescriptorValidationResult`, and `StorefrontComponentDescriptorValidator`.
+  - 2026-08-09 `StorefrontComponentDescriptorValidator` validates required key, lowercase kebab-case key pattern, defined mode/category enum values, non-null component type, and `IComponent` implementation.
+  - 2026-08-09 base Components remains `Microsoft.NET.Sdk`; added minimal `FrameworkReference Include="Microsoft.AspNetCore.App"` so the logic-only project can reference `Microsoft.AspNetCore.Components.IComponent` without becoming an RCL.
+  - 2026-08-09 no descriptor assembly scanning, DI registration, runtime registry, or JSON manifest code was added.
+  - 2026-08-09 `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj --no-restore` passed with 0 warnings/errors.
+  - 2026-08-09 scan confirmed base Components still has no `.razor`, CSS, JS, theme assets, or `Features` folder.
 - [ ] Projects added:
 - [ ] Tests added:
 - [ ] Build evidence:

@@ -12,4 +12,8 @@
     <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
   </PropertyGroup>
 
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>
