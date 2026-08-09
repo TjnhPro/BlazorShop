@@ -224,36 +224,36 @@ Exit criteria:
 
 ## Phase 1 - Documentation Source Of Truth
 
-- [ ] Add `BlazorShop.PresentationV2/COMPONENT-MODES.md`.
-- [ ] Document `Ssr`, `Hybrid`, and `WasmHost` definitions.
-- [ ] Document the exact dependency graph.
-- [ ] Document the project-reference allowlist per mode.
-- [ ] Document the package-reference allowlist per mode.
-- [ ] Document render-mode ownership:
+- [x] Add `BlazorShop.PresentationV2/COMPONENT-MODES.md`.
+- [x] Document `Ssr`, `Hybrid`, and `WasmHost` definitions.
+- [x] Document the exact dependency graph.
+- [x] Document the project-reference allowlist per mode.
+- [x] Document the package-reference allowlist per mode.
+- [x] Document render-mode ownership:
   - `Ssr` must not use `@rendermode`.
   - `Hybrid` may host a WasmHost child with `@rendermode`.
   - `WasmHost` must not self-own `@rendermode`.
-- [ ] Document data ownership:
+- [x] Document data ownership:
   - Presentation prepares server context.
   - Browser owns same-origin browser controllers.
   - Runtime remains server/BFF only.
   - Component libraries do not call Commerce Node directly.
-- [ ] Document visual ownership:
+- [x] Document visual ownership:
   - reusable component libraries may expose semantic hooks and class slots.
   - reusable component libraries do not own theme CSS, V2 layout, store copy, or generated output.
-- [ ] Document naming conventions:
+- [x] Document naming conventions:
   - no mode prefix in component names.
   - namespaces grouped by mode and category.
-- [ ] Document first future reference components as next phase examples only.
-- [ ] Update `docs/architecture/05-project-and-folder-guide.md` with the new mode project ownership rules.
-- [ ] Update `docs/architecture/10-v2-contract-ownership.md` with the descriptor and mode boundary rule.
+- [x] Document first future reference components as next phase examples only.
+- [x] Update `docs/architecture/05-project-and-folder-guide.md` with the new mode project ownership rules.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md` with the descriptor and mode boundary rule.
 - [ ] Update `AGENTS.md` active V2 presentation/runtime list after projects are created.
 
 Exit criteria:
 
-- [ ] Architecture docs explain where each mode belongs.
-- [ ] Docs explicitly state that `Components/Features` remains retired.
-- [ ] Docs explicitly state that Phase 1 does not add real components.
+- [x] Architecture docs explain where each mode belongs.
+- [x] Docs explicitly state that `Components/Features` remains retired.
+- [x] Docs explicitly state that Phase 1 does not add real components.
 
 ## Phase 2 - Descriptor Contracts In Base Components
 
@@ -636,7 +636,11 @@ The next phase must include Playwright only after these components are rendered 
   - 2026-08-09: `BlazorShop.Storefront.Browser` uses `Microsoft.NET.Sdk.Razor`, references only `BlazorShop.Storefront.Components` by project reference plus `Microsoft.AspNetCore.Components.WebAssembly`.
   - 2026-08-09: Presentation owns `Pages`, `Endpoints`, `Services`, `Views/Foundation`, and `MapStorefrontPresentation`; V2 and Starter register `StorefrontFoundationViewSet` through `V2FoundationViewRegistration` and `StarterFoundationViewRegistration` and remain visual hosts.
   - 2026-08-09: scope locked as foundation-only; no `StorefrontBrandLogo`, contact form, discounted rail, production dummy component, registry, scanner, Playwright, or generator adoption is in scope.
-- [ ] Docs updated:
+- [x] Docs updated:
+  - 2026-08-09: added `BlazorShop.PresentationV2/COMPONENT-MODES.md` with SSR, Hybrid, and WasmHost definitions, dependency graph, project/package allowlists, render-mode/data/visual ownership, naming conventions, and future examples only.
+  - 2026-08-09: updated `docs/architecture/05-project-and-folder-guide.md` with ownership rules and direct reference allowlists for `Components.Ssr`, `Components.Hybrid`, and `Components.WasmHost`.
+  - 2026-08-09: updated `docs/architecture/10-v2-contract-ownership.md` with descriptor contract ownership and mode boundary rules.
+  - 2026-08-09: deferred the `AGENTS.md` active project list update until Phase 3 because that checklist explicitly says to update it after projects are created.
 - [ ] Projects added:
 - [ ] Tests added:
 - [ ] Build evidence:

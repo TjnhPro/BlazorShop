@@ -213,6 +213,7 @@ Use for:
 
 - Headless Storefront presentation contracts under `Contracts/{Capability}`.
 - Browser-safe behavior/state primitives under `Headless/{Capability}`.
+- Reusable component descriptor contracts under `Contracts/Components`.
 - Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
 
 Do not:
@@ -223,6 +224,77 @@ Do not:
 - Use this as a general design system for Control Plane.
 - Add Razor components, static web assets, V2 layout/theme implementations, visual class bags, final copy, or generated visual output.
 - Reintroduce `Features/*` compatibility wrappers without a new architecture decision; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
+
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr`
+
+Status:
+
+- Reusable Storefront SSR component mode library.
+- Foundation-only until a later phase adds real shared components.
+
+Use for:
+
+- Server-rendered reusable components that consume prepared Presentation contexts or component contracts.
+- Semantic hooks, accessibility markup, forms, links, `RenderFragment`, and host-supplied class slots.
+
+Do not:
+
+- Reference `BlazorShop.Storefront.Browser`, `Runtime`, `Client`, V2, V2.WASM, Starter, Starter.WASM, generated storefront projects, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
+- Use `HttpClient`, `IJSRuntime`, `@rendermode`, `InteractiveWebAssembly`, direct `/api/*`, Commerce Node URLs, or localhost backend URLs.
+- Own theme CSS, V2 layout classes, store-specific copy, or generated output.
+
+Allowed direct project references:
+
+- `BlazorShop.Storefront.Components`
+- `BlazorShop.Storefront.Presentation`
+
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid`
+
+Status:
+
+- Reusable Storefront Hybrid component mode library.
+- Foundation-only until a later phase adds real shared components.
+
+Use for:
+
+- Server-owned shells that prepare SSR structure, initial browser state, antiforgery/form contracts, action descriptors, and optional WasmHost child placement.
+- `@rendermode` bridges only when hosting a WasmHost child.
+
+Do not:
+
+- Reference `BlazorShop.Storefront.Browser` directly.
+- Reference `Runtime`, `Client`, V2, V2.WASM, Starter, Starter.WASM, generated storefront projects, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
+- Inject browser controllers, use direct `HttpClient` or `IJSRuntime` behavior, call backend/API routes, or own theme CSS/store copy/V2 layout.
+
+Allowed direct project references:
+
+- `BlazorShop.Storefront.Components`
+- `BlazorShop.Storefront.Presentation`
+- `BlazorShop.Storefront.Components.WasmHost`
+
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
+
+Status:
+
+- Reusable Storefront browser-interactive component mode library.
+- Foundation-only until a later phase adds real shared components.
+
+Use for:
+
+- WASM feature roots that consume `BlazorShop.Storefront.Browser` controllers.
+- Browser-safe state/action contracts, `EventCallback`, lifecycle interaction, and `IJSRuntime` only for real browser behavior.
+
+Do not:
+
+- Reference `BlazorShop.Storefront.Presentation`, `Runtime`, `Client`, V2, V2.WASM, Starter, Starter.WASM, generated storefront projects, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
+- Use `HttpContext`, `IHttpContextAccessor`, `HttpClient`, direct `/api/*`, direct `api/storefront/*`, localhost/backend URLs, or Presentation service injection.
+- Use `@rendermode`; the host or Hybrid shell owns render-mode placement.
+- Own theme CSS, V2 layout classes, store-specific copy, or generated output.
+
+Allowed direct project references:
+
+- `BlazorShop.Storefront.Components`
+- `BlazorShop.Storefront.Browser`
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.Browser`
 
