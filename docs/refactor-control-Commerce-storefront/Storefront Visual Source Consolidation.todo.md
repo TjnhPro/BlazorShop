@@ -163,28 +163,33 @@ Implementation notes:
 
 Update `wwwroot/css/storefront.css`, not generated `site.css` or `wasm-site.css`.
 
-- [ ] Define toast base styling for `.bs-storefront-toast`.
-- [ ] Define toast visual states:
+- [x] Define toast base styling for `.bs-storefront-toast`.
+- [x] Define toast visual states:
   - `[data-state="entering"]`
   - `[data-state="open"]`
   - `[data-state="closing"]`
-- [ ] Move transition, opacity, and transform into CSS.
-- [ ] Define toast level colors through selectors:
+- [x] Move transition, opacity, and transform into CSS.
+- [x] Define toast level colors through selectors:
   - `.bs-storefront-toast[data-level="info"]`
   - `.bs-storefront-toast[data-level="success"]`
   - `.bs-storefront-toast[data-level="warning"]`
   - `.bs-storefront-toast[data-level="error"]`
-- [ ] Use CSS custom properties for toast background, accent background, and accent color if that matches existing `storefront.css` style.
-- [ ] Hide inactive icon variants through CSS:
+- [x] Use CSS custom properties for toast background, accent background, and accent color if that matches existing `storefront.css` style.
+- [x] Hide inactive icon variants through CSS:
   - default hidden for `[data-storefront-toast-icon]`
   - display only the matching icon for the current `[data-level]`
-- [ ] Keep the existing V2 visual identity; do not restyle the whole header/shell.
+- [x] Keep the existing V2 visual identity; do not restyle the whole header/shell.
 
 Acceptance:
 
-- [ ] Toast looks the same or materially equivalent in info/success/warning/error states.
-- [ ] CSS owns the color and animation values.
-- [ ] No root asset order changes are needed.
+- [x] Toast looks the same or materially equivalent in info/success/warning/error states.
+- [x] CSS owns the color and animation values.
+- [x] No root asset order changes are needed.
+
+Implementation notes:
+
+- 2026-08-09: `storefront.css` now defines `.bs-storefront-toast` base animation, `[data-state]` enter/open/closing states, and `[data-level]` info/success/warning/error color custom properties.
+- 2026-08-09: toast accent colors and visible icon variant are selected by CSS selectors; generated CSS and root asset order were not changed.
 
 ## Phase 3 - Make Toast JavaScript Semantic Only
 

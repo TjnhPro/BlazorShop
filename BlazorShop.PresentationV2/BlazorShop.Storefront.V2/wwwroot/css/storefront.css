@@ -20,6 +20,70 @@
     background: var(--bs-storefront-page-background);
 }
 
+.bs-storefront-toast {
+    --bs-toast-background: rgba(3, 105, 161, 0.96);
+    --bs-toast-accent-background: rgba(186, 230, 253, 0.18);
+    --bs-toast-accent-color: #e0f2fe;
+
+    background-color: var(--bs-toast-background);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.bs-storefront-toast[data-state="entering"],
+.bs-storefront-toast[data-state="closing"] {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.bs-storefront-toast[data-state="open"] {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.bs-storefront-toast[data-level="info"] {
+    --bs-toast-background: rgba(3, 105, 161, 0.96);
+    --bs-toast-accent-background: rgba(186, 230, 253, 0.18);
+    --bs-toast-accent-color: #e0f2fe;
+}
+
+.bs-storefront-toast[data-level="success"] {
+    --bs-toast-background: rgba(20, 83, 45, 0.96);
+    --bs-toast-accent-background: rgba(187, 247, 208, 0.18);
+    --bs-toast-accent-color: #dcfce7;
+}
+
+.bs-storefront-toast[data-level="warning"] {
+    --bs-toast-background: rgba(180, 83, 9, 0.96);
+    --bs-toast-accent-background: rgba(253, 230, 138, 0.18);
+    --bs-toast-accent-color: #fef3c7;
+}
+
+.bs-storefront-toast[data-level="error"] {
+    --bs-toast-background: rgba(153, 27, 27, 0.96);
+    --bs-toast-accent-background: rgba(254, 202, 202, 0.18);
+    --bs-toast-accent-color: #fee2e2;
+}
+
+.bs-storefront-toast [data-storefront-toast-accent] {
+    background-color: var(--bs-toast-accent-background);
+    color: var(--bs-toast-accent-color);
+}
+
+.bs-storefront-toast [data-storefront-toast-icon] {
+    display: none;
+}
+
+.bs-storefront-toast[data-level="info"] [data-storefront-toast-icon="info"],
+.bs-storefront-toast[data-level="success"] [data-storefront-toast-icon="success"],
+.bs-storefront-toast[data-level="warning"] [data-storefront-toast-icon="warning"],
+.bs-storefront-toast[data-level="error"] [data-storefront-toast-icon="error"] {
+    display: block;
+}
+
 .bs-storefront-page-shell {
     width: 100%;
 }
