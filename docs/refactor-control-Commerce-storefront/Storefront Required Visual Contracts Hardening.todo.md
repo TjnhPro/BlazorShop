@@ -514,33 +514,42 @@ Use the preferred local V2 runner if browser behavior is changed:
 
 Required Playwright browser checks:
 
-- [ ] Cart route:
-  - [ ] Navigate to cart route.
-  - [ ] Confirm cart root renders from provided server context.
-  - [ ] Confirm continue-shopping link is present and uses host-provided URL.
-  - [ ] Confirm checkout link/button uses host-provided URL.
-  - [ ] Confirm no console error from missing root parameters.
-- [ ] Checkout route:
-  - [ ] Navigate to checkout route with valid cart/session fixture.
-  - [ ] Confirm checkout shell renders from provided `InitialState`.
-  - [ ] Confirm `ShowPanel=false` route mode still renders expected page layout.
-  - [ ] Confirm no fake "Checkout is not available yet." fallback appears for a valid context.
-  - [ ] Confirm no console error from missing root parameters.
-- [ ] Account route:
-  - [ ] Navigate to account profile route.
-  - [ ] Confirm account navigation renders from host-provided `NavigationItems`.
-  - [ ] Confirm active route resolves from host-provided `RouteDescriptor`.
-  - [ ] Confirm page number behavior is host/context-owned.
-  - [ ] Confirm no console error from missing root parameters.
-- [ ] Negative/development evidence:
-  - [ ] Confirm removing a required root attribute in a temporary local test produces compile/analyzer failure or a clear runtime null guard failure.
-  - [ ] Revert the temporary negative change before committing.
+- [x] Cart route:
+  - [x] Navigate to cart route.
+  - [x] Confirm cart root renders from provided server context.
+  - [x] Confirm continue-shopping link is present and uses host-provided URL.
+  - [x] Confirm checkout link/button uses host-provided URL.
+  - [x] Confirm no console error from missing root parameters.
+- [x] Checkout route:
+  - [x] Navigate to checkout route with valid cart/session fixture.
+  - [x] Confirm checkout shell renders from provided `InitialState`.
+  - [x] Confirm `ShowPanel=false` route mode still renders expected page layout.
+  - [x] Confirm no fake "Checkout is not available yet." fallback appears for a valid context.
+  - [x] Confirm no console error from missing root parameters.
+- [x] Account route:
+  - [x] Navigate to account profile route.
+  - [x] Confirm account navigation renders from host-provided `NavigationItems`.
+  - [x] Confirm active route resolves from host-provided `RouteDescriptor`.
+  - [x] Confirm page number behavior is host/context-owned.
+  - [x] Confirm no console error from missing root parameters.
+- [x] Negative/development evidence:
+  - [x] Confirm removing a required root attribute in a temporary local test produces compile/analyzer failure or a clear runtime null guard failure.
+  - [x] Revert the temporary negative change before committing.
 
 Definition of done:
 
-- [ ] Cart, checkout, and account browser flows render with real host wiring.
-- [ ] No route falls back to fake context/state.
-- [ ] No hydration/runtime console error is introduced.
+- [x] Cart, checkout, and account browser flows render with real host wiring.
+- [x] No route falls back to fake context/state.
+- [x] No hydration/runtime console error is introduced.
+
+Implementation notes:
+
+- 2026-08-09: `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser` started the local V2 stack at `http://localhost:18598`.
+- 2026-08-09: Playwright evidence passed at `output/playwright/storefront-required-visual-contracts-hardening-phase8/evidence.json`; screenshots were captured for `cart-empty.png`, `cart-with-item.png`, `checkout.png`, and `account-profile.png`.
+- 2026-08-09: cart browser checks verified `/my-cart` empty state receives host-provided `ContinueShoppingUrl=/search` and `Links.Home.Href=/`, then after adding `qa-simple-product-100`, checkout navigation receives `CheckoutUrl=/checkout`.
+- 2026-08-09: checkout browser check used a valid cart fixture and verified SSR checkout layout, form, address inputs, `/api/checkout` state with checkout/session versions, and no fake `Checkout is not available yet.` fallback. The visible checkout shell panel is intentionally hidden because `CheckoutPage.razor` passes `ShowPanel=false`; source guardrails prove `InitialState` is still supplied.
+- 2026-08-09: account browser check signed in and verified `/account/profile` renders `[data-storefront-account-app]` with navigation items `Profile`, `Orders`, `Addresses`, and `Password`.
+- 2026-08-09: negative development check temporarily removed `CheckoutUrl` from `CartPage.razor`; `dotnet build` emitted `RZ2012` for missing required `StorefrontCartView.CheckoutUrl`. The temporary edit was reverted before committing. The same build also failed to copy the running Storefront exe because local QA was active, which is unrelated to the analyzer evidence.
 
 ## Phase 9 - QA Checklist And Documentation Update
 
