@@ -182,36 +182,36 @@ Add focused tests that prove the scanner behavior independently from current rep
 
 Positive fixtures:
 
-- [ ] Dynamic `class="@CssClass"` passes.
-- [ ] Dynamic `class="@Classes.Container"` passes.
-- [ ] Dynamic `class="@GetCssClass()"` passes.
-- [ ] Dynamic `class="@(BuildCssClass())"` passes.
-- [ ] `data-storefront-region="..."` passes.
-- [ ] Markup with no class attribute passes.
+- [x] Dynamic `class="@CssClass"` passes.
+- [x] Dynamic `class="@Classes.Container"` passes.
+- [x] Dynamic `class="@GetCssClass()"` passes.
+- [x] Dynamic `class="@(BuildCssClass())"` passes.
+- [x] `data-storefront-region="..."` passes.
+- [x] Markup with no class attribute passes.
 
 Negative fixtures:
 
-- [ ] `class="flex"` fails.
-- [ ] `class="p-6"` fails.
-- [ ] `class="gap-4"` fails.
-- [ ] `class="items-center"` fails.
-- [ ] `class="storefront-logo"` fails.
-- [ ] `class="rounded-xl bg-white"` fails.
-- [ ] `class="flex @CssClass"` fails.
-- [ ] `class="@CssClass selected"` fails.
-- [ ] `class="@(BuildCssClass()) selected"` fails.
+- [x] `class="flex"` fails.
+- [x] `class="p-6"` fails.
+- [x] `class="gap-4"` fails.
+- [x] `class="items-center"` fails.
+- [x] `class="storefront-logo"` fails.
+- [x] `class="rounded-xl bg-white"` fails.
+- [x] `class="flex @CssClass"` fails.
+- [x] `class="@CssClass selected"` fails.
+- [x] `class="@(BuildCssClass()) selected"` fails.
 
 Repository scan:
 
-- [ ] Replace or augment the current selected-prefix scan with a generic literal class scan.
-- [ ] Assert that every reusable mode project has zero literal class violations.
-- [ ] Failure output must list every violating file and class value so the next agent can fix without re-investigation.
+- [x] Replace or augment the current selected-prefix scan with a generic literal class scan.
+- [x] Assert that every reusable mode project has zero literal class violations.
+- [x] Failure output must list every violating file and class value so the next agent can fix without re-investigation.
 
 Exit criteria:
 
-- [ ] Positive tests prove legitimate dynamic class usage remains allowed.
-- [ ] Negative tests prove literal and mixed class usage cannot slip through.
-- [ ] Repository scan proves all current reusable mode projects are visually neutral.
+- [x] Positive tests prove legitimate dynamic class usage remains allowed.
+- [x] Negative tests prove literal and mixed class usage cannot slip through.
+- [x] Repository scan proves all current reusable mode projects are visually neutral.
 
 ## Phase 3 - Add Test-Side Assembly Mode Resolver
 
@@ -423,6 +423,11 @@ Exit criteria:
   - 2026-08-09: scanner reads only `.razor` and `.cshtml`, skips `bin`, `obj`, `.regeneration-candidate`, `artifacts`, `generated`, `tmp`, and `temp`, and reports relative path, class value, and remediation.
   - 2026-08-09: scanner allows only empty or fully dynamic class values such as `@CssClass`, `@Classes.Container`, `@GetCssClass()`, and `@(BuildCssClass())`; mixed literal/dynamic values are violations.
   - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`: 4 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
+- [x] Phase 2 literal class regression fixtures:
+  - 2026-08-09: added positive fixtures for fully dynamic class attributes, `data-storefront-region`, and markup without `class`.
+  - 2026-08-09: added negative fixtures for literal visual classes and mixed literal/dynamic values including `flex @CssClass`, `@CssClass selected`, and `@(BuildCssClass()) selected`.
+  - 2026-08-09: repository scan now emits a full joined violation list through assertion failure output.
+  - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`: 19 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
 
 ## Decision Audit Trail
 

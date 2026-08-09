@@ -63,7 +63,7 @@ public sealed class StorefrontComponentVisualNeutralityTests
             RepositoryRoot,
             ModeProjectDirectories);
 
-        Assert.Empty(literalClassViolations);
+        AssertNoLiteralClassViolations(literalClassViolations);
 
         foreach (var file in EnumerateSourceFiles())
         {
@@ -74,6 +74,41 @@ public sealed class StorefrontComponentVisualNeutralityTests
                 Assert.DoesNotContain(token, source, StringComparison.OrdinalIgnoreCase);
             }
         }
+    }
+
+    [Theory]
+    [InlineData("<div class=\"@CssClass\"></div>")]
+    [InlineData("<div class=\"@Classes.Container\"></div>")]
+    [InlineData("<div class=\"@GetCssClass()\"></div>")]
+    [InlineData("<div class=\"@(BuildCssClass())\"></div>")]
+    [InlineData("<section data-storefront-region=\"hero\"></section>")]
+    [InlineData("<section><h2>Heading</h2></section>")]
+    public void LiteralClassScannerAllowsDynamicClassesAndSemanticHooks(string markup)
+    {
+        AssertNoLiteralClassViolations(StorefrontClassAttributeScanner.FindLiteralClassAttributes(
+            "Component.razor",
+            markup));
+    }
+
+    [Theory]
+    [InlineData("<div class=\"flex\"></div>", "flex")]
+    [InlineData("<div class=\"p-6\"></div>", "p-6")]
+    [InlineData("<div class=\"gap-4\"></div>", "gap-4")]
+    [InlineData("<div class=\"items-center\"></div>", "items-center")]
+    [InlineData("<div class=\"storefront-logo\"></div>", "storefront-logo")]
+    [InlineData("<div class=\"rounded-xl bg-white\"></div>", "rounded-xl bg-white")]
+    [InlineData("<div class=\"flex @CssClass\"></div>", "flex @CssClass")]
+    [InlineData("<div class=\"@CssClass selected\"></div>", "@CssClass selected")]
+    [InlineData("<div class=\"@(BuildCssClass()) selected\"></div>", "@(BuildCssClass()) selected")]
+    public void LiteralClassScannerRejectsLiteralAndMixedClassValues(string markup, string expectedClassValue)
+    {
+        var violation = Assert.Single(StorefrontClassAttributeScanner.FindLiteralClassAttributes(
+            "Component.razor",
+            markup));
+
+        Assert.Equal("Component.razor", violation.RelativePath);
+        Assert.Equal(expectedClassValue, violation.AttributeValue);
+        Assert.Contains("host projects own literal visual classes", violation.Remediation, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -119,6 +154,11 @@ public sealed class StorefrontComponentVisualNeutralityTests
     private static string RepositoryPath(string relativePath)
     {
         return Path.Combine(RepositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+    }
+
+    private static void AssertNoLiteralClassViolations(IReadOnlyCollection<StorefrontLiteralClassViolation> violations)
+    {
+        Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
     }
 
     private sealed record StorefrontLiteralClassViolation(
