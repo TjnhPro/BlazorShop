@@ -809,6 +809,16 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront Browser Runtime Cutover F1.72 QA passed. 2026-07-29: Browser runtime now owns cart, checkout, and account local API orchestration while V2.WASM renders controller state only. Focused `StorefrontBrowser*`, visual-consumer, bootstrap, script-regression, and StorefrontBuilder tests passed; browser proof scripts covered product projection, add-to-cart, canonical cart events, enhanced navigation rebinding, and no duplicate add-to-cart after repeated initialization.
 - [x] Storefront test runtime performance closure passed. 2026-07-29: `StorefrontV2HostSmokeTests` dropped from baseline `756.2s` in `storefront-f172-release-final-pass.trx` to `15.2s` in final full-suite TRX, with 0 host smoke tests `>=10s`. Full `BlazorShop.Tests.V2` Release run passed `1643` with `2` existing skips and `0` failed in `1m57s` using `--blame-hang --blame-hang-timeout 20m`; evidence: `BlazorShop.Tests.V2/TestResults/storefront-test-runtime-f178-final.trx`.
 
+## Storefront Visual Source Ownership
+
+- [x] Storefront V2 JavaScript must not own toast colors, toast SVG icons, toast animation values, or purchase feedback Tailwind color utility selection.
+- [x] Storefront V2 authored CSS must own toast `[data-level]` colors, toast `[data-state]` animation, and purchase feedback success/error visual states.
+- [x] Storefront V2 Razor must own explicit inline SVG icons for header actions, catalog filter submit actions, and toast level variants.
+- [x] Storefront V2 source and browser runtime must have no Font Awesome dependency, class-based icon usage, CDN request, CSS request, JS request, or font request.
+- [x] Playwright browser QA must cover desktop and mobile header icons, search filter icon rendering, success/error toast behavior, product purchase feedback success/error colors, product gallery fallback behavior, and no Font Awesome network requests.
+- [x] Source ownership guardrails must scan curated Storefront V2 source and exclude generated CSS output so Tailwind utility output does not create false failures.
+- [x] 2026-08-09 visual source consolidation QA passed: focused ownership/search/script/layout tests passed, Storefront V2 and V2.WASM builds passed, and browser evidence was recorded at `output/playwright/storefront-visual-source-consolidation-phase10/evidence.json`.
+
 ## V2 Production Readiness Release Gate
 
 - [x] Storefront V2 compose/runtime boot is part of the release smoke. 2026-07-22 Production Readiness Phase 7: `scripts/qa/run-v2-production-release-smoke.ps1` checks Storefront `/health`.

@@ -498,23 +498,29 @@ Implementation notes:
 
 Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
 
-- [ ] Add a checklist item for Storefront visual source ownership:
+- [x] Add a checklist item for Storefront visual source ownership:
   - JS does not own toast colors/icons/animation.
   - CSS owns toast and purchase feedback visual states.
   - Razor owns explicit SVG icons.
   - Storefront V2 has no Font Awesome dependency.
-- [ ] Add Playwright browser checks for:
+- [x] Add Playwright browser checks for:
   - desktop/mobile header icons
   - search filter icon
   - toast success/error
   - product purchase feedback success/error
   - no Font Awesome network requests
-- [ ] Do not add Control Plane checks to Storefront V2 QA.
+- [x] Do not add Control Plane checks to Storefront V2 QA.
 
 Acceptance:
 
-- [ ] Future release QA can catch regressions without rereading this plan.
-- [ ] Checklist names the affected V2 surfaces explicitly.
+- [x] Future release QA can catch regressions without rereading this plan.
+- [x] Checklist names the affected V2 surfaces explicitly.
+
+Implementation notes:
+
+- 2026-08-09: added `Storefront Visual Source Ownership` to `QA-StorefrontV2.todo.md`.
+- 2026-08-09: checklist now names JavaScript, authored CSS, Razor inline SVG ownership, Storefront V2 Font Awesome absence, Playwright browser checks, and curated source guardrail expectations.
+- 2026-08-09: no Control Plane QA item was added.
 
 ## Phase 12 - Final Closure Gate
 
