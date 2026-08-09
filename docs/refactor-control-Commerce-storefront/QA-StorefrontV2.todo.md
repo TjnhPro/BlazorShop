@@ -122,6 +122,17 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Required visual root contracts hardening QA passed. 2026-08-09: cart page now requires `StorefrontCartPageContext` from Presentation route context; cart view requires explicit data mode, action descriptor, classes, and checkout/continue/secondary URLs; checkout shell requires explicit initial state, panel mode, data mode, actions, and classes; account app requires explicit route/navigation/action/class descriptors and page number. Missing root contracts produce development-time feedback through `[EditorRequired]` analyzer warnings and runtime null guards for required reference contracts.
 - [x] Required visual root browser QA passed. 2026-08-09: Playwright evidence `output/playwright/storefront-required-visual-contracts-hardening-phase8/evidence.json` verified `/my-cart` empty and item states, host-provided cart URLs, `/checkout` with a valid cart/session fixture, authenticated `/account/profile` navigation from host-provided items, and no unexpected HTTP/failed requests or hydration/runtime console errors. `.Empty` descriptors/classes may still be intentionally passed by callers and are not validation failures; leaf account component compatibility defaults remain out of scope for this root hardening.
 
+## Storefront Component Mode Foundation
+
+- [x] Base `BlazorShop.Storefront.Components` role is preserved as the lowest browser-safe contracts/headless layer; it still uses `Microsoft.NET.Sdk`, has no Razor components, and has no `Features` folder.
+- [x] Three empty/minimal reusable mode projects exist: `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.Hybrid`, and `BlazorShop.Storefront.Components.WasmHost`.
+- [x] Exact dependency allowlists are guarded: SSR references only Components + Presentation, Hybrid references only Components + Presentation + WasmHost, and WasmHost references only Components + Browser.
+- [x] Descriptor validation is guarded for component key format, defined mode/category enum values, null component type, and `IComponent` implementation.
+- [x] Visual neutrality is guarded: reusable mode projects contain no theme CSS/assets, literal Tailwind/V2 visual class tokens, final storefront copy strings, or V2 CSS asset paths.
+- [x] No real feature components were added in this foundation phase; future example components remain documentation-only.
+- [x] Playwright is not required for this phase because no browser-visible route, component markup, CSS, JS behavior, or runtime rendering changed.
+- [x] 2026-08-09 focused static QA passed: component mode foundation tests passed `48/48`, existing headless component tests passed `26/26`, and the focused closure gate passed after sequential mode-project builds.
+
 ## WASM Foundation
 
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`. 2026-07-13: passed.

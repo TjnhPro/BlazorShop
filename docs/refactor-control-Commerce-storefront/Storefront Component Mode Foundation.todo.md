@@ -536,14 +536,14 @@ Exit criteria:
 
 ## Phase 6 - QA Checklist And Closure Gates
 
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` with a new section for Component Mode Foundation.
-- [ ] Add checklist item for base Components role preserved.
-- [ ] Add checklist item for three mode projects created.
-- [ ] Add checklist item for exact dependency allowlists.
-- [ ] Add checklist item for descriptor validation.
-- [ ] Add checklist item for visual neutrality.
-- [ ] Add checklist item for no real feature components in Phase 1.
-- [ ] Add checklist item explaining why Playwright is not required for this phase.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` with a new section for Component Mode Foundation.
+- [x] Add checklist item for base Components role preserved.
+- [x] Add checklist item for three mode projects created.
+- [x] Add checklist item for exact dependency allowlists.
+- [x] Add checklist item for descriptor validation.
+- [x] Add checklist item for visual neutrality.
+- [x] Add checklist item for no real feature components in Phase 1.
+- [x] Add checklist item explaining why Playwright is not required for this phase.
 
 Build gate:
 
@@ -564,15 +564,15 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 No Playwright gate:
 
-- [ ] Do not run Playwright for Phase 1 unless a real browser-visible component is accidentally added.
-- [ ] If a browser-visible component is added, stop and split it into the next phase.
+- [x] Do not run Playwright for Phase 1 unless a real browser-visible component is accidentally added.
+- [x] If a browser-visible component is added, stop and split it into the next phase.
 
 Exit criteria:
 
-- [ ] All build gates pass.
-- [ ] Focused architecture tests pass.
-- [ ] QA checklist is updated with evidence.
-- [ ] No browser QA is required because no real browser behavior changed.
+- [x] All build gates pass.
+- [x] Focused architecture tests pass.
+- [x] QA checklist is updated with evidence.
+- [x] No browser QA is required because no real browser behavior changed.
 
 ## Phase 7 - Final Audit Before Commit
 
@@ -667,11 +667,15 @@ The next phase must include Playwright only after these components are rendered 
 - [x] Tests added:
   - 2026-08-09: added `StorefrontComponentModeFoundationTests`, `StorefrontComponentModeDependencyTests`, `StorefrontComponentModeBoundaryValidatorTests`, `StorefrontComponentDescriptorTests`, and `StorefrontComponentVisualNeutralityTests`.
   - 2026-08-09: updated `StorefrontComponentsHeadlessPresentationRefactorTests` contract inventory to include descriptor contracts and moved its neutrality documentation assertion to this active component-mode plan.
-- [ ] Build evidence:
+- [x] Build evidence:
+  - 2026-08-09: sequential build gate passed for `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Browser`, `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.WasmHost`, and `BlazorShop.Storefront.Components.Hybrid`; each build reported 0 warnings and 0 errors.
 - [x] Focused test evidence:
   - 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests"` passed: 48 passed, 0 failed.
   - 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"` passed: 26 passed, 0 failed.
-- [ ] QA checklist evidence:
+- [x] QA checklist evidence:
+  - 2026-08-09: added `Storefront Component Mode Foundation` section to `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` covering base Components preservation, mode projects, dependency allowlists, descriptor validation, visual neutrality, no real feature components, and no Playwright requirement.
+  - 2026-08-09: focused closure gate passed: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests"` passed: 129 passed, 0 failed.
+  - 2026-08-09: Playwright was intentionally not run because this foundation adds no browser-visible routes, component markup, CSS, JS behavior, or runtime rendering.
 - [ ] Commit:
 
 ## Decision Audit Trail

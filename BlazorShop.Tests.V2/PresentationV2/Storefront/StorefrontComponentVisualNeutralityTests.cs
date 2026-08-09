@@ -61,8 +61,9 @@ public sealed class StorefrontComponentVisualNeutralityTests
     {
         foreach (var directory in ModeProjectDirectories.Select(RepositoryPath))
         {
-            Assert.Empty(Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-                .Where(file => VisualAssetExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase)));
+            Assert.DoesNotContain(
+                Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories),
+                file => VisualAssetExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase));
             Assert.Empty(Directory.EnumerateFiles(directory, "tailwind.config.*", SearchOption.AllDirectories));
             Assert.Empty(Directory.EnumerateFiles(directory, "postcss.config.*", SearchOption.AllDirectories));
             Assert.False(Directory.Exists(Path.Combine(directory, "wwwroot", "css")));

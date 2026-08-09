@@ -274,7 +274,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("api/storefront/stores", browserSource, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNodeBaseUrl", browserSource, StringComparison.Ordinal);
             Assert.Contains("AddStorefrontPlatformRuntime", presentationRegistration, StringComparison.Ordinal);
-            Assert.Contains("MapStorefrontApplication", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontApplicationEndpointRouteBuilderExtensions.cs"), StringComparison.Ordinal);
+            Assert.Contains("MapStorefrontPresentation", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Hosting/StorefrontPresentationApplicationBuilderExtensions.cs"), StringComparison.Ordinal);
         }
 
         private static IReadOnlyList<string> ReadProjectReferences(string projectPath)
