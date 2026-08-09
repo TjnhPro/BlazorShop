@@ -24,4 +24,9 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontAccountPageContext Context { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Context);
+    }
 }

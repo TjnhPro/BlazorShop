@@ -23,11 +23,11 @@
 </section>
 
 @code {
-    [Parameter]
+    [Parameter, EditorRequired]
     public string? Path { get; set; }
 
-    [Parameter]
-    public int PageNumber { get; set; } = 1;
+    [Parameter, EditorRequired]
+    public int PageNumber { get; set; }
 
     [Parameter]
     public string? Error { get; set; }
@@ -35,47 +35,47 @@
     [Parameter]
     public string? Saved { get; set; }
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public string? AntiforgeryFieldName { get; set; }
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public string? AntiforgeryRequestToken { get; set; }
 
-    [Parameter]
-    public IReadOnlyList<AccountNavigationItem> NavigationItems { get; set; } = [];
+    [Parameter, EditorRequired]
+    public IReadOnlyList<AccountNavigationItem> NavigationItems { get; set; } = default!;
 
-    [Parameter]
-    public AccountRouteDescriptor RouteDescriptor { get; set; } = AccountRouteDescriptor.Empty;
+    [Parameter, EditorRequired]
+    public AccountRouteDescriptor RouteDescriptor { get; set; } = default!;
 
-    [Parameter]
-    public AccountNavigationClasses NavigationClasses { get; set; } = AccountNavigationClasses.Empty;
+    [Parameter, EditorRequired]
+    public AccountNavigationClasses NavigationClasses { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountProfileActionDescriptor ProfileActions { get; set; } = StorefrontAccountProfileActionDescriptor.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountProfileActionDescriptor ProfileActions { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountPasswordActionDescriptor PasswordActions { get; set; } = StorefrontAccountPasswordActionDescriptor.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountPasswordActionDescriptor PasswordActions { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountFormClasses AccountFormClasses { get; set; } = StorefrontAccountFormClasses.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountFormClasses AccountFormClasses { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountAddressActionDescriptor AddressActions { get; set; } = StorefrontAccountAddressActionDescriptor.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountAddressActionDescriptor AddressActions { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountAddressBookClasses AddressClasses { get; set; } = StorefrontAccountAddressBookClasses.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountAddressBookClasses AddressClasses { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountOrderActionDescriptor OrderActions { get; set; } = StorefrontAccountOrderActionDescriptor.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountOrderActionDescriptor OrderActions { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountOrderListClasses OrderListClasses { get; set; } = StorefrontAccountOrderListClasses.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountOrderListClasses OrderListClasses { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountOrderDetailClasses OrderDetailClasses { get; set; } = StorefrontAccountOrderDetailClasses.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountOrderDetailClasses OrderDetailClasses { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontAccountShellClasses ShellClasses { get; set; } = StorefrontAccountShellClasses.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontAccountShellClasses ShellClasses { get; set; } = default!;
 
     private AccountRouteMatch ActiveRoute => AccountRouteParser.Resolve(Path, RouteDescriptor);
 
@@ -120,7 +120,7 @@
             case AccountRouteKind.Orders:
                 builder.OpenComponent<StorefrontAccountOrderList>(20);
                 builder.AddAttribute(21, nameof(StorefrontAccountOrderList.InitialError), Error);
-                builder.AddAttribute(22, nameof(StorefrontAccountOrderList.PageNumber), Math.Max(1, PageNumber));
+                builder.AddAttribute(22, nameof(StorefrontAccountOrderList.PageNumber), PageNumber);
                 builder.AddAttribute(23, nameof(StorefrontAccountOrderList.DataMode), StorefrontFeatureDataMode.BrowserFetch);
                 builder.AddAttribute(24, nameof(StorefrontAccountOrderList.Actions), OrderActions);
                 builder.AddAttribute(25, nameof(StorefrontAccountOrderList.Classes), OrderListClasses);
@@ -159,5 +159,21 @@
                 break;
         }
     };
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(NavigationItems);
+        ArgumentNullException.ThrowIfNull(RouteDescriptor);
+        ArgumentNullException.ThrowIfNull(NavigationClasses);
+        ArgumentNullException.ThrowIfNull(ProfileActions);
+        ArgumentNullException.ThrowIfNull(PasswordActions);
+        ArgumentNullException.ThrowIfNull(AccountFormClasses);
+        ArgumentNullException.ThrowIfNull(AddressActions);
+        ArgumentNullException.ThrowIfNull(AddressClasses);
+        ArgumentNullException.ThrowIfNull(OrderActions);
+        ArgumentNullException.ThrowIfNull(OrderListClasses);
+        ArgumentNullException.ThrowIfNull(OrderDetailClasses);
+        ArgumentNullException.ThrowIfNull(ShellClasses);
+    }
 
 }

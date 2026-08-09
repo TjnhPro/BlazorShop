@@ -310,60 +310,67 @@ Optional parameters:
 
 Tasks:
 
-- [ ] Add `[EditorRequired]` to every required account root parameter.
-- [ ] Keep `Path` nullable but required by presence.
-- [ ] Keep `AntiforgeryFieldName` nullable but required by presence.
-- [ ] Keep `AntiforgeryRequestToken` nullable but required by presence.
-- [ ] Remove `PageNumber = 1` default from `StorefrontAccountApp`.
-- [ ] Move the page-number default upstream if needed:
-  - [ ] Confirm `AccountHostPage.razor` currently passes `Context.PageNumber`.
-  - [ ] Confirm the Presentation/page context already normalizes or supplies `PageNumber`.
-  - [ ] If upstream does not normalize, add normalization in the route/page context creation layer, not in `StorefrontAccountApp`.
-- [ ] Remove default `NavigationItems = []`.
-- [ ] Remove default `RouteDescriptor = AccountRouteDescriptor.Empty`.
-- [ ] Remove default visual/action `.Empty` assignments for required root contracts.
-- [ ] Add runtime validation in `OnParametersSet`:
-  - [ ] `ArgumentNullException.ThrowIfNull(NavigationItems);`
-  - [ ] `ArgumentNullException.ThrowIfNull(RouteDescriptor);`
-  - [ ] `ArgumentNullException.ThrowIfNull(NavigationClasses);`
-  - [ ] `ArgumentNullException.ThrowIfNull(ProfileActions);`
-  - [ ] `ArgumentNullException.ThrowIfNull(PasswordActions);`
-  - [ ] `ArgumentNullException.ThrowIfNull(AccountFormClasses);`
-  - [ ] `ArgumentNullException.ThrowIfNull(AddressActions);`
-  - [ ] `ArgumentNullException.ThrowIfNull(AddressClasses);`
-  - [ ] `ArgumentNullException.ThrowIfNull(OrderActions);`
-  - [ ] `ArgumentNullException.ThrowIfNull(OrderListClasses);`
-  - [ ] `ArgumentNullException.ThrowIfNull(OrderDetailClasses);`
-  - [ ] `ArgumentNullException.ThrowIfNull(ShellClasses);`
-- [ ] Do not throw when `Path` is `null`.
-- [ ] Do not throw when antiforgery values are `null`.
-- [ ] Do not throw when descriptors/classes are `.Empty`.
-- [ ] Keep `Error` and `Saved` optional.
-- [ ] Keep child component `StorefrontFeatureDataMode.BrowserFetch` behavior unless a separate phase explicitly makes child data modes host-configurable.
+- [x] Add `[EditorRequired]` to every required account root parameter.
+- [x] Keep `Path` nullable but required by presence.
+- [x] Keep `AntiforgeryFieldName` nullable but required by presence.
+- [x] Keep `AntiforgeryRequestToken` nullable but required by presence.
+- [x] Remove `PageNumber = 1` default from `StorefrontAccountApp`.
+- [x] Move the page-number default upstream if needed:
+  - [x] Confirm `AccountHostPage.razor` currently passes `Context.PageNumber`.
+  - [x] Confirm the Presentation/page context already normalizes or supplies `PageNumber`.
+  - [x] If upstream does not normalize, add normalization in the route/page context creation layer, not in `StorefrontAccountApp`.
+- [x] Remove default `NavigationItems = []`.
+- [x] Remove default `RouteDescriptor = AccountRouteDescriptor.Empty`.
+- [x] Remove default visual/action `.Empty` assignments for required root contracts.
+- [x] Add runtime validation in `OnParametersSet`:
+  - [x] `ArgumentNullException.ThrowIfNull(NavigationItems);`
+  - [x] `ArgumentNullException.ThrowIfNull(RouteDescriptor);`
+  - [x] `ArgumentNullException.ThrowIfNull(NavigationClasses);`
+  - [x] `ArgumentNullException.ThrowIfNull(ProfileActions);`
+  - [x] `ArgumentNullException.ThrowIfNull(PasswordActions);`
+  - [x] `ArgumentNullException.ThrowIfNull(AccountFormClasses);`
+  - [x] `ArgumentNullException.ThrowIfNull(AddressActions);`
+  - [x] `ArgumentNullException.ThrowIfNull(AddressClasses);`
+  - [x] `ArgumentNullException.ThrowIfNull(OrderActions);`
+  - [x] `ArgumentNullException.ThrowIfNull(OrderListClasses);`
+  - [x] `ArgumentNullException.ThrowIfNull(OrderDetailClasses);`
+  - [x] `ArgumentNullException.ThrowIfNull(ShellClasses);`
+- [x] Do not throw when `Path` is `null`.
+- [x] Do not throw when antiforgery values are `null`.
+- [x] Do not throw when descriptors/classes are `.Empty`.
+- [x] Keep `Error` and `Saved` optional.
+- [x] Keep child component `StorefrontFeatureDataMode.BrowserFetch` behavior unless a separate phase explicitly makes child data modes host-configurable.
 
 Callsite checks:
 
-- [ ] Verify `AccountHostPage.razor` passes `Path`.
-- [ ] Verify `AccountHostPage.razor` passes `PageNumber`.
-- [ ] Verify `AccountHostPage.razor` passes antiforgery field/token values.
-- [ ] Verify `AccountHostPage.razor` passes navigation items and route descriptor.
-- [ ] Verify `AccountHostPage.razor` passes all account class/action descriptors.
-- [ ] Add `ArgumentNullException.ThrowIfNull(Context);` to `AccountHostPage.razor` for consistency if not already present.
+- [x] Verify `AccountHostPage.razor` passes `Path`.
+- [x] Verify `AccountHostPage.razor` passes `PageNumber`.
+- [x] Verify `AccountHostPage.razor` passes antiforgery field/token values.
+- [x] Verify `AccountHostPage.razor` passes navigation items and route descriptor.
+- [x] Verify `AccountHostPage.razor` passes all account class/action descriptors.
+- [x] Add `ArgumentNullException.ThrowIfNull(Context);` to `AccountHostPage.razor` for consistency if not already present.
 
 Tests:
 
-- [ ] Add source test proving each required account app parameter has `[EditorRequired]`.
-- [ ] Add source test proving `Error` and `Saved` are not marked required.
-- [ ] Add source test proving account app no longer defaults `PageNumber = 1`.
-- [ ] Add source test proving account app no longer defaults route/navigation/action/class contracts.
-- [ ] Add source test proving nullable required-presence parameters are not runtime rejected.
-- [ ] Add source test proving `AccountHostPage.razor` passes every required root parameter.
+- [x] Add source test proving each required account app parameter has `[EditorRequired]`.
+- [x] Add source test proving `Error` and `Saved` are not marked required.
+- [x] Add source test proving account app no longer defaults `PageNumber = 1`.
+- [x] Add source test proving account app no longer defaults route/navigation/action/class contracts.
+- [x] Add source test proving nullable required-presence parameters are not runtime rejected.
+- [x] Add source test proving `AccountHostPage.razor` passes every required root parameter.
 
 Definition of done:
 
-- [ ] Account root caller owns route and form wiring explicitly.
-- [ ] Account root no longer silently turns missing page number into page 1.
-- [ ] Account route parsing still receives the host-provided route descriptor.
+- [x] Account root caller owns route and form wiring explicitly.
+- [x] Account root no longer silently turns missing page number into page 1.
+- [x] Account route parsing still receives the host-provided route descriptor.
+
+Implementation notes:
+
+- 2026-08-09: `StorefrontAccountApp.razor` now requires every root route/form/navigation/action/class contract by presence, while leaving `Error` and `Saved` optional.
+- 2026-08-09: nullable presence parameters (`Path`, `AntiforgeryFieldName`, `AntiforgeryRequestToken`) remain nullable and are not runtime-rejected; required reference contracts are guarded before account route resolution.
+- 2026-08-09: page number normalization already lives upstream in `StorefrontAccountPageService`, so `StorefrontAccountApp` now consumes the host-provided page number directly.
+- 2026-08-09: expanded required visual contract tests for account root and host page wiring. Focused command passed 25/25 for `StorefrontRequiredVisualContractsHardeningTests|StorefrontV2WASMRuntimeFoundationTests`.
 
 ## Phase 5 - Foundation Root Audit
 

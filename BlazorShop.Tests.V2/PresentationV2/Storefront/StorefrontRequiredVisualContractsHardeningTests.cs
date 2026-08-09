@@ -141,6 +141,117 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
         }
 
+        [Fact]
+        public void AccountApp_RequiresRootWiringWhileKeepingOptionalMessagesAndNullablePresenceValues()
+        {
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
+
+            foreach (var requiredParameter in new[]
+            {
+                "string? Path",
+                "int PageNumber",
+                "string? AntiforgeryFieldName",
+                "string? AntiforgeryRequestToken",
+                "IReadOnlyList<AccountNavigationItem> NavigationItems",
+                "AccountRouteDescriptor RouteDescriptor",
+                "AccountNavigationClasses NavigationClasses",
+                "StorefrontAccountProfileActionDescriptor ProfileActions",
+                "StorefrontAccountPasswordActionDescriptor PasswordActions",
+                "StorefrontAccountFormClasses AccountFormClasses",
+                "StorefrontAccountAddressActionDescriptor AddressActions",
+                "StorefrontAccountAddressBookClasses AddressClasses",
+                "StorefrontAccountOrderActionDescriptor OrderActions",
+                "StorefrontAccountOrderListClasses OrderListClasses",
+                "StorefrontAccountOrderDetailClasses OrderDetailClasses",
+                "StorefrontAccountShellClasses ShellClasses"
+            })
+            {
+                AssertParameterIsEditorRequired(app, requiredParameter);
+            }
+
+            Assert.Contains("public string? Error { get; set; }", app, StringComparison.Ordinal);
+            Assert.Contains("public string? Saved { get; set; }", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("[Parameter, EditorRequired]\r\n    public string? Error", NormalizeNewLines(app), StringComparison.Ordinal);
+            Assert.DoesNotContain("[Parameter, EditorRequired]\r\n    public string? Saved", NormalizeNewLines(app), StringComparison.Ordinal);
+
+            Assert.DoesNotContain("PageNumber { get; set; } = 1", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("NavigationItems { get; set; } = []", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("RouteDescriptor { get; set; } = AccountRouteDescriptor.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("NavigationClasses { get; set; } = AccountNavigationClasses.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("ProfileActions { get; set; } = StorefrontAccountProfileActionDescriptor.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("PasswordActions { get; set; } = StorefrontAccountPasswordActionDescriptor.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("AccountFormClasses { get; set; } = StorefrontAccountFormClasses.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddressActions { get; set; } = StorefrontAccountAddressActionDescriptor.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddressClasses { get; set; } = StorefrontAccountAddressBookClasses.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("OrderActions { get; set; } = StorefrontAccountOrderActionDescriptor.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("OrderListClasses { get; set; } = StorefrontAccountOrderListClasses.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("OrderDetailClasses { get; set; } = StorefrontAccountOrderDetailClasses.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("ShellClasses { get; set; } = StorefrontAccountShellClasses.Empty", app, StringComparison.Ordinal);
+
+            foreach (var validation in new[]
+            {
+                "ArgumentNullException.ThrowIfNull(NavigationItems);",
+                "ArgumentNullException.ThrowIfNull(RouteDescriptor);",
+                "ArgumentNullException.ThrowIfNull(NavigationClasses);",
+                "ArgumentNullException.ThrowIfNull(ProfileActions);",
+                "ArgumentNullException.ThrowIfNull(PasswordActions);",
+                "ArgumentNullException.ThrowIfNull(AccountFormClasses);",
+                "ArgumentNullException.ThrowIfNull(AddressActions);",
+                "ArgumentNullException.ThrowIfNull(AddressClasses);",
+                "ArgumentNullException.ThrowIfNull(OrderActions);",
+                "ArgumentNullException.ThrowIfNull(OrderListClasses);",
+                "ArgumentNullException.ThrowIfNull(OrderDetailClasses);",
+                "ArgumentNullException.ThrowIfNull(ShellClasses);"
+            })
+            {
+                Assert.Contains(validation, app, StringComparison.Ordinal);
+            }
+
+            Assert.DoesNotContain("ArgumentNullException.ThrowIfNull(Path)", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("ArgumentNullException.ThrowIfNull(AntiforgeryFieldName)", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("ArgumentNullException.ThrowIfNull(AntiforgeryRequestToken)", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("== AccountRouteDescriptor.Empty", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("== StorefrontAccount", app, StringComparison.Ordinal);
+            Assert.Contains("AccountRouteParser.Resolve(Path, RouteDescriptor)", app, StringComparison.Ordinal);
+            Assert.Contains("nameof(StorefrontAccountOrderList.PageNumber), PageNumber", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("Math.Max(1, PageNumber)", app, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void AccountHostPage_RequiresContextAndPassesAccountAppRootContracts()
+        {
+            var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var pageService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Account/StorefrontAccountPageService.cs");
+
+            Assert.Contains("[Parameter, EditorRequired]", host, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontAccountPageContext Context { get; set; } = default!;", host, StringComparison.Ordinal);
+            Assert.Contains("ArgumentNullException.ThrowIfNull(Context);", host, StringComparison.Ordinal);
+            Assert.Contains("Math.Max(1, page)", pageService, StringComparison.Ordinal);
+
+            foreach (var requiredAttribute in new[]
+            {
+                "Path=\"@Context.Path\"",
+                "PageNumber=\"@Context.Page\"",
+                "AntiforgeryFieldName=\"@Context.AntiforgeryFieldName\"",
+                "AntiforgeryRequestToken=\"@Context.AntiforgeryRequestToken\"",
+                "NavigationItems=\"@Context.NavigationItems\"",
+                "RouteDescriptor=\"@Context.RouteDescriptor\"",
+                "NavigationClasses=\"StorefrontAccountViewOptions.NavigationClasses\"",
+                "ProfileActions=\"@Context.ProfileActions\"",
+                "PasswordActions=\"@Context.PasswordActions\"",
+                "AccountFormClasses=\"StorefrontAccountViewOptions.FormClasses\"",
+                "AddressActions=\"@Context.AddressActions\"",
+                "AddressClasses=\"StorefrontAccountViewOptions.AddressClasses\"",
+                "OrderActions=\"@Context.OrderActions\"",
+                "OrderListClasses=\"StorefrontAccountViewOptions.OrderListClasses\"",
+                "OrderDetailClasses=\"StorefrontAccountViewOptions.OrderDetailClasses\"",
+                "ShellClasses=\"StorefrontAccountViewOptions.ShellClasses\""
+            })
+            {
+                Assert.Contains(requiredAttribute, host, StringComparison.Ordinal);
+            }
+        }
+
         private static void AssertParameterIsEditorRequired(string source, string declaration)
         {
             Assert.Contains("[Parameter, EditorRequired]", source, StringComparison.Ordinal);
@@ -159,6 +270,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             return count;
         }
+
+        private static string NormalizeNewLines(string source) => source.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\n", "\r\n", StringComparison.Ordinal);
 
         private static string ReadRepositoryFile(string relativePath)
         {
