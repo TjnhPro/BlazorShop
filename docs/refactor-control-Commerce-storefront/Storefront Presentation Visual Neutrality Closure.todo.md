@@ -270,7 +270,7 @@ Files:
 
 Tasks:
 
-- [ ] Add a semantic result enum in Presentation, for example:
+- [x] Add a semantic result enum in Presentation, for example:
 
 ```csharp
 public enum StorefrontPaymentResultOutcome
@@ -283,14 +283,14 @@ public enum StorefrontPaymentResultOutcome
 }
 ```
 
-- [ ] Replace visual class fields in `StorefrontPaymentResultPageContext` with the semantic outcome:
+- [x] Replace visual class fields in `StorefrontPaymentResultPageContext` with the semantic outcome:
   - remove `PanelClass`;
   - remove `EyebrowClass`;
   - remove `HeadingClass`;
   - remove `BodyClass`;
   - remove `MutedClass`;
   - add `StorefrontPaymentResultOutcome Outcome`.
-- [ ] Keep existing non-visual fields:
+- [x] Keep existing non-visual fields:
   - `IsCancelRoute`;
   - `PaymentAttemptId`;
   - `Provider`;
@@ -304,33 +304,43 @@ public enum StorefrontPaymentResultOutcome
   - `ShowRetry`;
   - `Links`;
   - `HasAttempt`.
-- [ ] Update `StorefrontPaymentResultPageService.CreateContext` to compute `Outcome` only:
+- [x] Update `StorefrontPaymentResultPageService.CreateContext` to compute `Outcome` only:
   - cancel route with no attempt: `Cancelled` or `Unavailable`, depending on the chosen semantic;
   - cancel route with failed attempt: `Cancelled` or `Failed`;
   - successful attempt: `Success`;
   - pending attempt or pending load state: `Pending`;
   - failed/not-found/load-error state: `Failed` or `Unavailable`.
-- [ ] Preserve current text and behavioral decisions:
+- [x] Preserve current text and behavioral decisions:
   - retry visible for non-success;
   - success and pending detection rules;
   - load error messages;
   - provider/attempt display;
   - links.
-- [ ] Update V2 `PaymentResultPage.razor` to map `Context.Outcome` to V2-local classes:
+- [x] Update V2 `PaymentResultPage.razor` to map `Context.Outcome` to V2-local classes:
   - panel class;
   - eyebrow tone class;
   - heading tone class;
   - body tone class;
   - muted tone class.
-- [ ] Keep the visible markup and route behavior materially equivalent.
-- [ ] Do not touch payment provider registry, payment attempt state machine, checkout place-order, return/cancel endpoints, or order placement.
+- [x] Keep the visible markup and route behavior materially equivalent.
+- [x] Do not touch payment provider registry, payment attempt state machine, checkout place-order, return/cancel endpoints, or order placement.
 
 Acceptance:
 
-- [ ] Presentation payment result service contains no Tailwind panel/tone class strings.
-- [ ] `StorefrontPaymentResultPageContext` contains no visual class properties.
-- [ ] V2 payment result page still renders success/pending/failure/cancel visual states.
-- [ ] Payment result tests prove semantic outcome selection.
+- [x] Presentation payment result service contains no Tailwind panel/tone class strings.
+- [x] `StorefrontPaymentResultPageContext` contains no visual class properties.
+- [x] V2 payment result page still renders success/pending/failure/cancel visual states.
+- [x] Payment result tests prove semantic outcome selection.
+
+Implementation notes:
+
+- 2026-08-09: added `StorefrontPaymentResultOutcome` with `Success`, `Pending`, `Failed`, `Cancelled`, and `Unavailable`.
+- 2026-08-09: removed `PanelClass`, `EyebrowClass`, `HeadingClass`, `BodyClass`, and `MutedClass` from `StorefrontPaymentResultPageContext`; existing text, state booleans, retry, provider/attempt, load-error, and link fields remain.
+- 2026-08-09: `StorefrontPaymentResultPageService` now computes only semantic `Outcome`. Cancel routes keep `Cancelled` to preserve the previous amber cancel visual state; non-cancel success/pending/failed/unavailable states map by attempt/load result.
+- 2026-08-09: V2 `PaymentResultPage.razor` maps `Context.Outcome` through V2-local panel and tone helpers while keeping visible markup materially equivalent.
+- 2026-08-09: added `StorefrontPaymentResultPageServiceTests` covering cancelled missing attempt, unavailable missing attempt, success states, pending states, failed state, cancel route with failed attempt, and unavailable load failure.
+- 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPaymentResultPageServiceTests"` passed 9/9. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
+- 2026-08-09: source scan confirmed Presentation payment result service contains no Tailwind panel/tone class strings; remaining `HeadingClass` tokens are allowed host-provided checkout field component parameters defaulted to `string.Empty`, not removed payment result context properties.
 
 ## Phase 4 - Compile Impact Repair Without Scope Expansion
 

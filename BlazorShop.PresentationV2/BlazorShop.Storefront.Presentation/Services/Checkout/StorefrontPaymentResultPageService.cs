@@ -80,22 +80,20 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                     !string.IsNullOrWhiteSpace(loadError)
                         ? loadError
                         : attempt?.FailureMessage ?? "Your cart and checkout can be reviewed before trying payment again.",
-                    "rounded-3xl border border-amber-200 bg-amber-50 px-6 py-10 text-center shadow-sm",
-                    "text-amber-700",
-                    "text-amber-950",
-                    "text-amber-900",
-                    "text-amber-700",
+                    StorefrontPaymentResultOutcome.Cancelled,
                     isPending,
                     isSuccess,
                     true,
                     StorefrontLinkContext.Default);
             }
 
-            var panelClass = isSuccess
-                ? "rounded-3xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center shadow-sm"
+            var outcome = isSuccess
+                ? StorefrontPaymentResultOutcome.Success
                 : isPending
-                    ? "rounded-3xl border border-amber-200 bg-amber-50 px-6 py-10 text-center shadow-sm"
-                    : "rounded-3xl border border-rose-200 bg-rose-50 px-6 py-10 text-center shadow-sm";
+                    ? StorefrontPaymentResultOutcome.Pending
+                    : attempt is null && !string.IsNullOrWhiteSpace(loadError)
+                        ? StorefrontPaymentResultOutcome.Unavailable
+                        : StorefrontPaymentResultOutcome.Failed;
 
             return new StorefrontPaymentResultPageContext(
                 false,
@@ -120,27 +118,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
                         : string.IsNullOrWhiteSpace(loadError)
                             ? attempt?.FailureMessage ?? "Review the checkout and try another payment method."
                             : loadError,
-                panelClass,
-                isSuccess
-                    ? "text-emerald-700"
-                    : isPending
-                        ? "text-amber-700"
-                        : "text-rose-700",
-                isSuccess
-                    ? "text-emerald-950"
-                    : isPending
-                        ? "text-amber-950"
-                        : "text-rose-950",
-                isSuccess
-                    ? "text-emerald-900"
-                    : isPending
-                        ? "text-amber-900"
-                        : "text-rose-900",
-                isSuccess
-                    ? "text-emerald-700"
-                    : isPending
-                        ? "text-amber-700"
-                        : "text-rose-700",
+                outcome,
                 isPending,
                 isSuccess,
                 showRetry,

@@ -1,21 +1,21 @@
 @using BlazorShop.Storefront.Presentation.Services.Checkout
 
 <section class="mx-auto max-w-3xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-    <article class="@Context.PanelClass">
-        <p class="text-sm font-semibold uppercase tracking-[0.2em] @Context.EyebrowClass">@Context.Eyebrow</p>
-        <h1 class="mt-2 text-4xl font-extrabold tracking-tight @Context.HeadingClass">@Context.Heading</h1>
-        <p class="mx-auto mt-3 max-w-xl text-base leading-7 @Context.BodyClass">@Context.Body</p>
+    <article class="@GetPanelClass(Context.Outcome)">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] @GetEyebrowClass(Context.Outcome)">@Context.Eyebrow</p>
+        <h1 class="mt-2 text-4xl font-extrabold tracking-tight @GetHeadingClass(Context.Outcome)">@Context.Heading</h1>
+        <p class="mx-auto mt-3 max-w-xl text-base leading-7 @GetBodyClass(Context.Outcome)">@Context.Body</p>
 
         @if (Context.Attempt is not null)
         {
             <dl class="mx-auto mt-6 grid max-w-md gap-3 text-left text-sm sm:grid-cols-2">
                 <div>
-                    <dt class="font-semibold @Context.MutedClass">Payment</dt>
-                    <dd class="mt-1 font-mono @Context.HeadingClass">@Context.Attempt.Id</dd>
+                    <dt class="font-semibold @GetMutedClass(Context.Outcome)">Payment</dt>
+                    <dd class="mt-1 font-mono @GetHeadingClass(Context.Outcome)">@Context.Attempt.Id</dd>
                 </div>
                 <div>
-                    <dt class="font-semibold @Context.MutedClass">Status</dt>
-                    <dd class="mt-1 font-bold @Context.HeadingClass">@Context.Attempt.State</dd>
+                    <dt class="font-semibold @GetMutedClass(Context.Outcome)">Status</dt>
+                    <dd class="mt-1 font-bold @GetHeadingClass(Context.Outcome)">@Context.Attempt.State</dd>
                 </div>
             </dl>
         }
@@ -33,4 +33,54 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontPaymentResultPageContext Context { get; set; } = default!;
+
+    private static string GetPanelClass(StorefrontPaymentResultOutcome outcome)
+    {
+        return outcome switch
+        {
+            StorefrontPaymentResultOutcome.Success => "rounded-3xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center shadow-sm",
+            StorefrontPaymentResultOutcome.Pending or StorefrontPaymentResultOutcome.Cancelled => "rounded-3xl border border-amber-200 bg-amber-50 px-6 py-10 text-center shadow-sm",
+            _ => "rounded-3xl border border-rose-200 bg-rose-50 px-6 py-10 text-center shadow-sm",
+        };
+    }
+
+    private static string GetEyebrowClass(StorefrontPaymentResultOutcome outcome)
+    {
+        return outcome switch
+        {
+            StorefrontPaymentResultOutcome.Success => "text-emerald-700",
+            StorefrontPaymentResultOutcome.Pending or StorefrontPaymentResultOutcome.Cancelled => "text-amber-700",
+            _ => "text-rose-700",
+        };
+    }
+
+    private static string GetHeadingClass(StorefrontPaymentResultOutcome outcome)
+    {
+        return outcome switch
+        {
+            StorefrontPaymentResultOutcome.Success => "text-emerald-950",
+            StorefrontPaymentResultOutcome.Pending or StorefrontPaymentResultOutcome.Cancelled => "text-amber-950",
+            _ => "text-rose-950",
+        };
+    }
+
+    private static string GetBodyClass(StorefrontPaymentResultOutcome outcome)
+    {
+        return outcome switch
+        {
+            StorefrontPaymentResultOutcome.Success => "text-emerald-900",
+            StorefrontPaymentResultOutcome.Pending or StorefrontPaymentResultOutcome.Cancelled => "text-amber-900",
+            _ => "text-rose-900",
+        };
+    }
+
+    private static string GetMutedClass(StorefrontPaymentResultOutcome outcome)
+    {
+        return outcome switch
+        {
+            StorefrontPaymentResultOutcome.Success => "text-emerald-700",
+            StorefrontPaymentResultOutcome.Pending or StorefrontPaymentResultOutcome.Cancelled => "text-amber-700",
+            _ => "text-rose-700",
+        };
+    }
 }

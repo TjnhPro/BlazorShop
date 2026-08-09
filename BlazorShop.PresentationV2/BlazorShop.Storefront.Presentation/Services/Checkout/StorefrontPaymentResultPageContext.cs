@@ -11,11 +11,7 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
         string Eyebrow,
         string Heading,
         string Body,
-        string PanelClass,
-        string EyebrowClass,
-        string HeadingClass,
-        string BodyClass,
-        string MutedClass,
+        StorefrontPaymentResultOutcome Outcome,
         bool IsPending,
         bool IsSuccess,
         bool ShowRetry,
@@ -28,4 +24,13 @@ namespace BlazorShop.Storefront.Presentation.Services.Checkout
         Guid Id,
         string State,
         string? FailureMessage);
+
+    public enum StorefrontPaymentResultOutcome
+    {
+        Success,
+        Pending,
+        Failed,
+        Cancelled,
+        Unavailable,
+    }
 }
