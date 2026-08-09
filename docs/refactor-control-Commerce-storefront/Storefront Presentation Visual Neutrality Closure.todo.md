@@ -557,17 +557,27 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 If the filter misses renamed tests:
 
-- [ ] use `rg -n "PresentationVisual|VisualSource|PagePresentation|PaymentResult|HostSmoke|LayoutAsset" BlazorShop.Tests.V2`;
-- [ ] rerun the closest exact Storefront V2 filters;
-- [ ] record the actual executed filters in implementation notes.
+- [x] use `rg -n "PresentationVisual|VisualSource|PagePresentation|PaymentResult|HostSmoke|LayoutAsset" BlazorShop.Tests.V2`;
+- [x] rerun the closest exact Storefront V2 filters;
+- [x] record the actual executed filters in implementation notes.
 
 Acceptance:
 
-- [ ] Presentation build passes.
-- [ ] V2 build passes.
-- [ ] V2.WASM build passes.
-- [ ] Focused tests pass.
-- [ ] Known unrelated warnings are documented, not hidden.
+- [x] Presentation build passes.
+- [x] V2 build passes.
+- [x] V2.WASM build passes.
+- [x] Focused tests pass.
+- [x] Known unrelated warnings are documented, not hidden.
+
+Implementation notes:
+
+- 2026-08-09: first attempt ran the three builds in parallel and hit a transient shared `obj/bin` DLL file lock in `BlazorShop.Storefront.Components`; this was command concurrency, not source failure, so the build gate was rerun sequentially.
+- 2026-08-09: sequential `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-09: sequential `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-09: sequential `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-09: discovery command `rg -n "PresentationVisual|VisualSource|PagePresentation|PaymentResult|HostSmoke|LayoutAsset" BlazorShop.Tests.V2` found the expected relevant classes, including `StorefrontPresentationVisualNeutralityTests`, `StorefrontVisualSourceOwnershipTests`, `StorefrontPagePresentationResolverTests`, `StorefrontPaymentResultPageServiceTests`, `LayoutAssetFoundationTests`, and `StorefrontV2HostSmokeTests`.
+- 2026-08-09: focused test filter executed as `FullyQualifiedName~StorefrontPresentationVisualNeutralityTests|FullyQualifiedName~StorefrontVisualSourceOwnershipTests|FullyQualifiedName~StorefrontPagePresentationResolverTests|FullyQualifiedName~StorefrontPaymentResultPageServiceTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontPresentationCutoverGuardrailTests|FullyQualifiedName~LayoutAssetFoundationTests|FullyQualifiedName~StorefrontV2HostSmokeTests` and passed 161/161.
+- 2026-08-09: known unrelated warnings during test build remain existing MessagePack NU1902/NU1903 advisories and Browserslist `caniuse-lite` warning.
 
 ## Phase 9 - Browser Regression Gate
 
