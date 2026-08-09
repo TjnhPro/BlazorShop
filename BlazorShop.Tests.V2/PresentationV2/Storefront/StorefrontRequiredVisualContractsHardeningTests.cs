@@ -252,10 +252,73 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
         }
 
+        [Fact]
+        public void V2RootPages_DoNotCreateFallbackStorefrontPageContexts()
+        {
+            var pagesDirectory = Path.Combine(
+                RepositoryRoot(),
+                "BlazorShop.PresentationV2",
+                "BlazorShop.Storefront.V2",
+                "Pages");
+
+            foreach (var pagePath in Directory.EnumerateFiles(pagesDirectory, "*.razor", SearchOption.AllDirectories))
+            {
+                var page = File.ReadAllText(pagePath);
+                Assert.DoesNotMatch(@"public\s+Storefront\w*PageContext\s+Context\s*\{\s*get;\s*set;\s*\}\s*=\s*new\s*\(", page);
+                Assert.DoesNotMatch(@"new\s+Storefront\w*PageContext\s*\(", page);
+            }
+        }
+
+        [Fact]
+        public void V2WasmRootComponents_DoNotOwnRouteActionOrClassDefaults()
+        {
+            var rootComponents = new[]
+            {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor"
+            };
+
+            foreach (var relativePath in rootComponents)
+            {
+                var component = ReadRepositoryFile(relativePath);
+
+                foreach (var forbiddenRootDefault in new[]
+                {
+                    "Actions { get; set; } = StorefrontCartActionDescriptor.Empty",
+                    "Classes { get; set; } = StorefrontCartViewClasses.Empty",
+                    "CheckoutUrl { get; set; } = \"/checkout\"",
+                    "ContinueShoppingUrl { get; set; } = \"/search\"",
+                    "SecondaryShoppingUrl { get; set; } = \"/\"",
+                    "InitialState { get; set; } = StorefrontBrowserCheckoutDefaults.EmptyState",
+                    "ShowPanel { get; set; } = true",
+                    "Actions { get; set; } = StorefrontCheckoutActionDescriptor.Empty",
+                    "Classes { get; set; } = StorefrontCheckoutViewClasses.Empty",
+                    "PageNumber { get; set; } = 1",
+                    "NavigationItems { get; set; } = []",
+                    "RouteDescriptor { get; set; } = AccountRouteDescriptor.Empty",
+                    "NavigationClasses { get; set; } = AccountNavigationClasses.Empty",
+                    "ProfileActions { get; set; } = StorefrontAccountProfileActionDescriptor.Empty",
+                    "PasswordActions { get; set; } = StorefrontAccountPasswordActionDescriptor.Empty",
+                    "AccountFormClasses { get; set; } = StorefrontAccountFormClasses.Empty",
+                    "AddressActions { get; set; } = StorefrontAccountAddressActionDescriptor.Empty",
+                    "AddressClasses { get; set; } = StorefrontAccountAddressBookClasses.Empty",
+                    "OrderActions { get; set; } = StorefrontAccountOrderActionDescriptor.Empty",
+                    "OrderListClasses { get; set; } = StorefrontAccountOrderListClasses.Empty",
+                    "OrderDetailClasses { get; set; } = StorefrontAccountOrderDetailClasses.Empty",
+                    "ShellClasses { get; set; } = StorefrontAccountShellClasses.Empty"
+                })
+                {
+                    Assert.DoesNotContain(forbiddenRootDefault, component, StringComparison.Ordinal);
+                }
+            }
+        }
+
         private static void AssertParameterIsEditorRequired(string source, string declaration)
         {
-            Assert.Contains("[Parameter, EditorRequired]", source, StringComparison.Ordinal);
-            Assert.Contains($"public {declaration}", source, StringComparison.Ordinal);
+            Assert.Matches(
+                @"\[Parameter,\s*EditorRequired\]\r\n\s*public\s+" + System.Text.RegularExpressions.Regex.Escape(declaration),
+                NormalizeNewLines(source));
         }
 
         private static int CountOccurrences(string source, string value)

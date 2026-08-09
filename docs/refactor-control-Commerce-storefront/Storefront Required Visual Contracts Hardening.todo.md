@@ -412,47 +412,53 @@ Preferred location:
 
 Required assertions:
 
-- [ ] `CartPage.razor`:
-  - [ ] `Context` has `[Parameter, EditorRequired]`.
-  - [ ] `Context` is initialized with `default!`.
-  - [ ] `ArgumentNullException.ThrowIfNull(Context)` exists.
-  - [ ] No fallback `new StorefrontCartPageContext(...)` exists.
-  - [ ] No `StorefrontLinkContext.Default` fallback exists.
-  - [ ] Required `StorefrontCartView` attributes are passed explicitly.
-- [ ] `StorefrontCartView.razor`:
-  - [ ] Required parameters have `[EditorRequired]`.
-  - [ ] URL defaults are absent.
-  - [ ] Browser fetch default is absent.
-  - [ ] action/classes `.Empty` defaults are absent.
-  - [ ] Required reference and URL validation exists.
-  - [ ] `.Empty` values are not rejected.
-- [ ] `StorefrontCheckoutShell.razor`:
-  - [ ] Required parameters have `[EditorRequired]`.
-  - [ ] fake empty checkout state default is absent.
-  - [ ] `ShowPanel`, `DataMode`, `Actions`, and `Classes` defaults are absent.
-  - [ ] Required reference validation exists.
-  - [ ] `.Empty` values are not rejected.
-- [ ] `CheckoutPage.razor`:
-  - [ ] Required shell attributes are passed explicitly in every shell render branch.
-  - [ ] Context is required and guarded.
-- [ ] `StorefrontAccountApp.razor`:
-  - [ ] Required parameters have `[EditorRequired]`.
-  - [ ] `Error` and `Saved` remain optional.
-  - [ ] `PageNumber = 1` default is absent.
-  - [ ] route/navigation/action/class defaults are absent.
-  - [ ] required reference validation exists.
-  - [ ] nullable required-presence parameters are not runtime rejected.
-- [ ] `AccountHostPage.razor`:
-  - [ ] Required account app attributes are passed explicitly.
-  - [ ] Context is required and guarded.
-- [ ] Broad guardrail:
-  - [ ] V2 root pages do not create fallback `Storefront*PageContext` instances.
-  - [ ] V2.WASM root components do not hard-code cart/checkout/account route/action/class defaults.
+- [x] `CartPage.razor`:
+  - [x] `Context` has `[Parameter, EditorRequired]`.
+  - [x] `Context` is initialized with `default!`.
+  - [x] `ArgumentNullException.ThrowIfNull(Context)` exists.
+  - [x] No fallback `new StorefrontCartPageContext(...)` exists.
+  - [x] No `StorefrontLinkContext.Default` fallback exists.
+  - [x] Required `StorefrontCartView` attributes are passed explicitly.
+- [x] `StorefrontCartView.razor`:
+  - [x] Required parameters have `[EditorRequired]`.
+  - [x] URL defaults are absent.
+  - [x] Browser fetch default is absent.
+  - [x] action/classes `.Empty` defaults are absent.
+  - [x] Required reference and URL validation exists.
+  - [x] `.Empty` values are not rejected.
+- [x] `StorefrontCheckoutShell.razor`:
+  - [x] Required parameters have `[EditorRequired]`.
+  - [x] fake empty checkout state default is absent.
+  - [x] `ShowPanel`, `DataMode`, `Actions`, and `Classes` defaults are absent.
+  - [x] Required reference validation exists.
+  - [x] `.Empty` values are not rejected.
+- [x] `CheckoutPage.razor`:
+  - [x] Required shell attributes are passed explicitly in every shell render branch.
+  - [x] Context is required and guarded.
+- [x] `StorefrontAccountApp.razor`:
+  - [x] Required parameters have `[EditorRequired]`.
+  - [x] `Error` and `Saved` remain optional.
+  - [x] `PageNumber = 1` default is absent.
+  - [x] route/navigation/action/class defaults are absent.
+  - [x] required reference validation exists.
+  - [x] nullable required-presence parameters are not runtime rejected.
+- [x] `AccountHostPage.razor`:
+  - [x] Required account app attributes are passed explicitly.
+  - [x] Context is required and guarded.
+- [x] Broad guardrail:
+  - [x] V2 root pages do not create fallback `Storefront*PageContext` instances.
+  - [x] V2.WASM root components do not hard-code cart/checkout/account route/action/class defaults.
 
 Definition of done:
 
-- [ ] Tests fail if a future agent reintroduces silent root application wiring defaults.
-- [ ] Tests distinguish root wiring defaults from acceptable optional/leaf UI defaults.
+- [x] Tests fail if a future agent reintroduces silent root application wiring defaults.
+- [x] Tests distinguish root wiring defaults from acceptable optional/leaf UI defaults.
+
+Implementation notes:
+
+- 2026-08-09: `StorefrontRequiredVisualContractsHardeningTests` now covers cart, checkout, and account root required parameters, explicit host callsites, runtime guards, and removed root defaults.
+- 2026-08-09: added broad source guardrails for all V2 page `.razor` files and the three V2.WASM root components while leaving leaf compatibility defaults out of scope.
+- 2026-08-09: focused command passed 27/27 for `StorefrontRequiredVisualContractsHardeningTests|StorefrontV2WASMRuntimeFoundationTests`.
 
 ## Phase 7 - Compile And Focused Test Verification
 
