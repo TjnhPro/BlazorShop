@@ -31,29 +31,16 @@
     }
   }
 
-  function resolveToastTheme(level) {
+  function normalizeToastLevel(level) {
     switch ((level || "info").toLowerCase()) {
       case "success":
-        return { background: "rgba(20, 83, 45, 0.96)", accentBackground: "rgba(187, 247, 208, 0.18)", accentColor: "#dcfce7" };
+        return "success";
       case "warning":
-        return { background: "rgba(180, 83, 9, 0.96)", accentBackground: "rgba(253, 230, 138, 0.18)", accentColor: "#fef3c7" };
+        return "warning";
       case "error":
-        return { background: "rgba(153, 27, 27, 0.96)", accentBackground: "rgba(254, 202, 202, 0.18)", accentColor: "#fee2e2" };
+        return "error";
       default:
-        return { background: "rgba(3, 105, 161, 0.96)", accentBackground: "rgba(186, 230, 253, 0.18)", accentColor: "#e0f2fe" };
-    }
-  }
-
-  function resolveToastIcon(level) {
-    switch ((level || "info").toLowerCase()) {
-      case "success":
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5"><path d="m5 13 4 4L19 7" /></svg>';
-      case "warning":
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>';
-      case "error":
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>';
-      default:
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>';
+        return "info";
     }
   }
 
@@ -66,20 +53,16 @@
 
     const fragment = template.content.cloneNode(true);
     const toast = fragment.querySelector("[data-storefront-toast]");
-    const accent = fragment.querySelector("[data-storefront-toast-accent]");
     const headingElement = fragment.querySelector("[data-storefront-toast-heading]");
     const messageElement = fragment.querySelector("[data-storefront-toast-message]");
     const closeButton = fragment.querySelector("[data-storefront-toast-close]");
 
-    if (!(toast instanceof HTMLElement) || !(accent instanceof HTMLElement) || !(headingElement instanceof HTMLElement) || !(messageElement instanceof HTMLElement)) {
+    if (!(toast instanceof HTMLElement) || !(headingElement instanceof HTMLElement) || !(messageElement instanceof HTMLElement)) {
       return;
     }
 
-    const theme = resolveToastTheme(level);
-    toast.style.backgroundColor = theme.background;
-    accent.style.backgroundColor = theme.accentBackground;
-    accent.style.color = theme.accentColor;
-    accent.innerHTML = resolveToastIcon(level);
+    toast.dataset.level = normalizeToastLevel(level);
+    toast.dataset.state = "entering";
     headingElement.textContent = heading || "Info";
     messageElement.textContent = message || "An event occurred.";
 
@@ -89,8 +72,7 @@
       }
 
       toast.dataset.dismissed = "true";
-      toast.style.opacity = "0";
-      toast.style.transform = "translateY(-8px)";
+      toast.dataset.state = "closing";
       window.setTimeout(() => toast.remove(), 180);
     };
 
@@ -100,8 +82,7 @@
 
     region.appendChild(fragment);
     window.requestAnimationFrame(() => {
-      toast.style.opacity = "1";
-      toast.style.transform = "translateY(0)";
+      toast.dataset.state = "open";
     });
 
     window.setTimeout(dismiss, Math.max(1500, parseInteger(duration, toastDurationMs)));

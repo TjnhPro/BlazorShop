@@ -195,30 +195,35 @@ Implementation notes:
 
 Update `storefrontCommerce.js`.
 
-- [ ] Delete `resolveToastTheme(level)`.
-- [ ] Delete `resolveToastIcon(level)`.
-- [ ] Add a small semantic normalizer such as `normalizeToastLevel(level)` that returns one of:
+- [x] Delete `resolveToastTheme(level)`.
+- [x] Delete `resolveToastIcon(level)`.
+- [x] Add a small semantic normalizer such as `normalizeToastLevel(level)` that returns one of:
   - `info`
   - `success`
   - `warning`
   - `error`
-- [ ] In `showToast`, set only semantic state:
+- [x] In `showToast`, set only semantic state:
   - `toast.dataset.level = normalizeToastLevel(level)`
   - `toast.dataset.state = "entering"` before append if needed
   - `toast.dataset.state = "open"` inside `requestAnimationFrame`
   - `toast.dataset.state = "closing"` during dismiss
   - keep `toast.dataset.dismissed = "true"`
-- [ ] Keep heading and message assignment via `textContent`.
-- [ ] Keep close-button event listener and duration behavior.
-- [ ] Keep pending toast session storage behavior.
-- [ ] Do not write `backgroundColor`, `color`, `opacity`, `transform`, or transition styles.
-- [ ] Do not write SVG strings or `innerHTML`.
+- [x] Keep heading and message assignment via `textContent`.
+- [x] Keep close-button event listener and duration behavior.
+- [x] Keep pending toast session storage behavior.
+- [x] Do not write `backgroundColor`, `color`, `opacity`, `transform`, or transition styles.
+- [x] Do not write SVG strings or `innerHTML`.
 
 Acceptance:
 
-- [ ] Toast still displays from queued session toast and direct `showToast`.
-- [ ] Dismiss works by close button and timeout.
-- [ ] JS owns no toast visual values beyond semantic `data-level` and `data-state`.
+- [x] Toast still displays from queued session toast and direct `showToast`.
+- [x] Dismiss works by close button and timeout.
+- [x] JS owns no toast visual values beyond semantic `data-level` and `data-state`.
+
+Implementation notes:
+
+- 2026-08-09: `storefrontCommerce.js` now uses `normalizeToastLevel` and sets only `toast.dataset.level`, `toast.dataset.state`, `toast.dataset.dismissed`, text, event listeners, and timers for toast behavior.
+- 2026-08-09: source scan found no remaining `resolveToastTheme`, `resolveToastIcon`, toast visual style writes, SVG string injection, or `innerHTML` in the toast path.
 
 ## Phase 4 - Move Purchase Feedback Color State Out Of JavaScript
 
