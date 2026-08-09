@@ -447,45 +447,52 @@ Implementation notes:
 
 Because this changes real browser visual behavior, run Playwright against V2.
 
-- [ ] Start the local V2 stack:
+- [x] Start the local V2 stack:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Verify desktop header:
+- [x] Verify desktop header:
   - search icon visible
   - currency submit check icon visible when currency selector is enabled
   - cart icon and account menu unchanged
   - no console error
-- [ ] Verify mobile header:
+- [x] Verify mobile header:
   - search icon visible
   - menu opens
   - currency check icon visible in mobile panel when currency selector is enabled
   - no layout overlap
-- [ ] Verify search page:
+- [x] Verify search page:
   - search/filter submit icon visible
   - submitting `q` and filters preserves expected query string behavior
   - results page loads without JavaScript error
-- [ ] Verify product page:
+- [x] Verify product page:
   - initial purchase feedback color is correct
   - invalid selection or failed add-to-cart shows error color
   - successful add-to-cart shows success feedback and success toast
   - product gallery fallback still works for a broken image
-- [ ] Verify toast levels:
+- [x] Verify toast levels:
   - success
   - error
   - warning, if an existing browser flow can trigger it
   - info, if an existing browser flow can trigger it
-- [ ] Verify browser network does not load Font Awesome CSS, JS, font files, or CDN URLs from Storefront V2.
-- [ ] Capture screenshots only if a visual regression needs evidence.
+- [x] Verify browser network does not load Font Awesome CSS, JS, font files, or CDN URLs from Storefront V2.
+- [x] Capture screenshots only if a visual regression needs evidence.
 
 Acceptance:
 
-- [ ] Browser QA exercises real DOM behavior, not only smoke-load.
-- [ ] No Font Awesome network dependency exists.
-- [ ] Toast enter/dismiss animation still works through CSS state.
-- [ ] Purchase feedback still responds to browser events.
+- [x] Browser QA exercises real DOM behavior, not only smoke-load.
+- [x] No Font Awesome network dependency exists.
+- [x] Toast enter/dismiss animation still works through CSS state.
+- [x] Purchase feedback still responds to browser events.
+
+Implementation notes:
+
+- 2026-08-09: started local V2 runtime with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`; Storefront V2 was available at `http://localhost:18598`.
+- 2026-08-09: first Playwright probe attempt failed because the QA script selected the header search form instead of the catalog filter form; the script selector was corrected and rerun.
+- 2026-08-09: corrected Playwright probe passed and wrote `output/playwright/storefront-visual-source-consolidation-phase10/evidence.json`.
+- 2026-08-09: browser evidence verified desktop header search/currency/cart icons, mobile search/menu/currency icon visibility with no panel overlap, search filter query preservation, product purchase success/error feedback colors, success/error/warning/info toast level icons, CSS-state toast visibility, gallery transparent fallback behavior, and zero Font Awesome network requests.
 
 ## Phase 11 - QA Checklist Update
 
