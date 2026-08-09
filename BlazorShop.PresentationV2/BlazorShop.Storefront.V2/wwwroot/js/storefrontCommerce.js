@@ -117,8 +117,7 @@
     }
 
     feedbackElement.textContent = message || "";
-    feedbackElement.classList.remove("text-emerald-700", "text-red-700");
-    feedbackElement.classList.add(isError ? "text-red-700" : "text-emerald-700");
+    feedbackElement.dataset.level = isError ? "error" : "success";
   }
 
   function flashButton(button) {

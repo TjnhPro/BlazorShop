@@ -84,6 +84,16 @@
     display: block;
 }
 
+[data-storefront-purchase-feedback][data-level="success"],
+[data-storefront-selection-message][data-level="success"] {
+    color: #047857;
+}
+
+[data-storefront-purchase-feedback][data-level="error"],
+[data-storefront-selection-message][data-level="error"] {
+    color: #b91c1c;
+}
+
 .bs-storefront-page-shell {
     width: 100%;
 }

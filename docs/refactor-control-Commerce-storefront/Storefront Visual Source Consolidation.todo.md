@@ -229,29 +229,36 @@ Implementation notes:
 
 Update `StorefrontProductPurchasePanel.razor`, `storefrontCommerce.js`, and `storefront.css`.
 
-- [ ] Change the purchase feedback element from hardcoded success text color to a semantic data state:
+- [x] Change the purchase feedback element from hardcoded success text color to a semantic data state:
   - keep `data-storefront-purchase-feedback`
   - add `data-level="success"` or an equivalent semantic attribute for initial ready state
   - remove `text-emerald-700` from the feedback element's base class
-- [ ] In `setFeedback`, set:
+- [x] In `setFeedback`, set:
   - `feedbackElement.textContent = message || ""`
   - `feedbackElement.dataset.level = isError ? "error" : "success"`
-- [ ] If the message is empty, either keep the last level or reset to a neutral state, but document the chosen behavior in the test name.
-- [ ] Remove JS class toggling for:
+- [x] If the message is empty, either keep the last level or reset to a neutral state, but document the chosen behavior in the test name.
+- [x] Remove JS class toggling for:
   - `text-emerald-700`
   - `text-red-700`
-- [ ] Add CSS selectors for feedback:
+- [x] Add CSS selectors for feedback:
   - `[data-storefront-purchase-feedback][data-level="success"]`
   - `[data-storefront-purchase-feedback][data-level="error"]`
   - include `[data-storefront-selection-message]` only if the same JS path can target it in current source.
-- [ ] Do not alter product stock badge colors in `V2ProductPageView.razor`; those are static Razor display classes, not JS ownership leakage.
-- [ ] Do not alter `ColorSwatchStyle`; dynamic product swatch colors remain allowed.
+- [x] Do not alter product stock badge colors in `V2ProductPageView.razor`; those are static Razor display classes, not JS ownership leakage.
+- [x] Do not alter `ColorSwatchStyle`; dynamic product swatch colors remain allowed.
 
 Acceptance:
 
-- [ ] Product selection ready/unready feedback still changes text and visual color.
-- [ ] Add-to-cart success and failure feedback still appears.
-- [ ] JS no longer imports visual Tailwind color utilities.
+- [x] Product selection ready/unready feedback still changes text and visual color.
+- [x] Add-to-cart success and failure feedback still appears.
+- [x] JS no longer imports visual Tailwind color utilities.
+
+Implementation notes:
+
+- 2026-08-09: purchase feedback root keeps `data-storefront-purchase-feedback`, starts at `data-level="success"`, and no longer carries the hardcoded `text-emerald-700` feedback class.
+- 2026-08-09: `setFeedback` now assigns `textContent` and `dataset.level` only. Empty messages still set the semantic level from the current success/error result so the next visible message has deterministic styling.
+- 2026-08-09: `storefront.css` owns success/error colors for `[data-storefront-purchase-feedback]` and `[data-storefront-selection-message]` because the same JS path can target both selectors.
+- 2026-08-09: static product badges and `ColorSwatchStyle` were intentionally unchanged; source scan shows remaining `text-emerald-700` only in static Razor display classes outside JS feedback ownership.
 
 ## Phase 5 - Remove Font Awesome From Storefront Header
 
