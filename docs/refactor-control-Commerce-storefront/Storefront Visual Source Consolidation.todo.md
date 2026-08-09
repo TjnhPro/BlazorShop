@@ -291,17 +291,17 @@ Implementation notes:
 
 Update `CatalogFilterPanel.razor` and `SearchPage.razor`.
 
-- [ ] Replace `SubmitIconCssClass` with a render-slot API:
+- [x] Replace `SubmitIconCssClass` with a render-slot API:
 
 ```csharp
 [Parameter]
 public RenderFragment? SubmitIcon { get; set; }
 ```
 
-- [ ] Render `@SubmitIcon` before `@SubmitLabel` when present.
-- [ ] Remove the `<i class="@SubmitIconCssClass">` branch.
-- [ ] Update `SearchPage.razor` to pass explicit inline search SVG through the `SubmitIcon` slot.
-- [ ] Keep search form query semantics unchanged:
+- [x] Render `@SubmitIcon` before `@SubmitLabel` when present.
+- [x] Remove the `<i class="@SubmitIconCssClass">` branch.
+- [x] Update `SearchPage.razor` to pass explicit inline search SVG through the `SubmitIcon` slot.
+- [x] Keep search form query semantics unchanged:
   - `q`
   - `category`
   - `minPrice`
@@ -309,14 +309,20 @@ public RenderFragment? SubmitIcon { get; set; }
   - `sortBy`
   - `pageSize`
   - `inStock`
-- [ ] Confirm `CategoryPage` does not require an icon slot update.
-- [ ] Do not introduce a global icon component in this phase.
+- [x] Confirm `CategoryPage` does not require an icon slot update.
+- [x] Do not introduce a global icon component in this phase.
 
 Acceptance:
 
-- [ ] `SubmitIconCssClass` no longer exists.
-- [ ] Search page filter button still renders a search icon.
-- [ ] Search/category filter submit behavior is unchanged.
+- [x] `SubmitIconCssClass` no longer exists.
+- [x] Search page filter button still renders a search icon.
+- [x] Search/category filter submit behavior is unchanged.
+
+Implementation notes:
+
+- 2026-08-09: `CatalogFilterPanel.razor` now exposes `RenderFragment? SubmitIcon` and renders it before `SubmitLabel`; the old `<i class="@SubmitIconCssClass">` branch was removed.
+- 2026-08-09: `SearchPage.razor` passes an explicit inline search SVG through `<SubmitIcon>` while keeping the existing GET fields (`q`, `category`, `minPrice`, `maxPrice`, `sortBy`, `pageSize`, and `inStock`) unchanged.
+- 2026-08-09: `CategoryPage.razor` still calls `CatalogFilterPanel` without an icon slot and needs no update; no global icon component was introduced.
 
 ## Phase 7 - Add Source Ownership Guardrail Tests
 
