@@ -645,10 +645,10 @@ rg -n "bg-|text-neutral-|text-zinc-|text-slate-|text-red-|text-green-|text-emera
 
 Expected:
 
-- [ ] no V2/Tailwind visual class strings in Presentation;
-- [ ] no removed visual class contract fields in Presentation;
-- [ ] no concrete payment tone classes in Presentation;
-- [ ] no content body/article class strings in Presentation.
+- [x] no V2/Tailwind visual class strings in Presentation;
+- [x] no removed visual class contract fields in Presentation;
+- [x] no concrete payment tone classes in Presentation;
+- [x] no content body/article class strings in Presentation.
 
 Run final theme asset scan:
 
@@ -660,8 +660,8 @@ Get-ChildItem -Recurse BlazorShop.PresentationV2\BlazorShop.Storefront.Presentat
 
 Expected:
 
-- [ ] no Presentation-owned theme CSS, Tailwind config, font, or image assets;
-- [ ] existing behavior script files remain allowed if they do not own visual theme values.
+- [x] no Presentation-owned theme CSS, Tailwind config, font, or image assets;
+- [x] existing behavior script files remain allowed if they do not own visual theme values.
 
 Run scoped diff review:
 
@@ -677,23 +677,29 @@ git diff -- `
 
 Acceptance:
 
-- [ ] Diff is limited to this plan's source, tests, and QA docs.
-- [ ] Any extra file has a recorded reason.
-- [ ] No backend, API, Runtime, Client, Browser, Components, Starter, StorefrontBuilder, Control Plane, or database files changed.
+- [x] Diff is limited to this plan's source, tests, and QA docs.
+- [x] Any extra file has a recorded reason.
+- [x] No backend, API, Runtime, Client, Browser, Components, Starter, StorefrontBuilder, Control Plane, or database files changed.
+
+Implementation notes:
+
+- 2026-08-09: final Presentation scan found only allowed non-visual false positives: `my-cart` route/cookie constants and checkout field `HeadingClass` parameters that default to `string.Empty` for host-provided styling. No removed `ArticleClass`, `BodyContainerClass`, payment tone class fields, concrete payment tone strings, or content body/article Tailwind strings remain in Presentation.
+- 2026-08-09: final theme asset scan returned no Presentation-owned CSS, Tailwind/PostCSS config, SCSS/Sass/Less, font, image, or SVG files.
+- 2026-08-09: scoped diff review after Phase 9 commit returned no remaining source/test/doc diff in the plan scope. The pre-existing `BlazorShop.sln` worktree change remains unrelated and was not staged or modified for this closure.
 
 ## Definition Of Done
 
-- [ ] `Storefront.Presentation` no longer contains V2/Tailwind visual class strings for account redirect fallback, content page presentation, or payment result state.
-- [ ] `StorefrontPagePresentation` exposes semantic presentation data only and has no `ArticleClass` or `BodyContainerClass`.
-- [ ] `StorefrontPaymentResultPageContext` exposes semantic outcome/state only and has no visual class properties.
-- [ ] V2 owns content page class mapping locally.
-- [ ] V2 owns payment result outcome-to-class mapping locally.
-- [ ] Account unauthorized fallback in Presentation is classless or semantic-only.
-- [ ] Presentation visual neutrality guardrail tests exist and pass.
-- [ ] Existing V2 visual source ownership guardrails still pass.
-- [ ] `QA-StorefrontV2.todo.md` includes this closure check.
-- [ ] Focused builds and tests pass.
-- [ ] Playwright verifies content page, payment result page, account redirect, and network boundary behavior.
+- [x] `Storefront.Presentation` no longer contains V2/Tailwind visual class strings for account redirect fallback, content page presentation, or payment result state.
+- [x] `StorefrontPagePresentation` exposes semantic presentation data only and has no `ArticleClass` or `BodyContainerClass`.
+- [x] `StorefrontPaymentResultPageContext` exposes semantic outcome/state only and has no visual class properties.
+- [x] V2 owns content page class mapping locally.
+- [x] V2 owns payment result outcome-to-class mapping locally.
+- [x] Account unauthorized fallback in Presentation is classless or semantic-only.
+- [x] Presentation visual neutrality guardrail tests exist and pass.
+- [x] Existing V2 visual source ownership guardrails still pass.
+- [x] `QA-StorefrontV2.todo.md` includes this closure check.
+- [x] Focused builds and tests pass.
+- [x] Playwright verifies content page, payment result page, account redirect, and network boundary behavior.
 
 ## Decision Audit Trail
 
