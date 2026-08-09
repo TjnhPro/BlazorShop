@@ -382,21 +382,27 @@ Implementation notes:
 
 Run or update focused tests that already cover adjacent behavior.
 
-- [ ] Locate current tests with:
+- [x] Locate current tests with:
 
 ```powershell
 rg -n "StorefrontCommerce|CatalogFilterPanel|SearchPage|LayoutAsset|toast|purchase-feedback|Font Awesome|fa-solid|SubmitIconCssClass" BlazorShop.Tests.V2
 ```
 
-- [ ] Keep existing `LayoutAssetFoundationTests` expectations for asset ownership/order unless the test name proves an update is required.
-- [ ] If any existing script regression test expects inline toast style or icon strings, update it to expect semantic `data-level`/`data-state` behavior.
-- [ ] If search page snapshot/string tests exist, update them for the `SubmitIcon` slot and explicit SVG.
-- [ ] Do not weaken tests by replacing exact ownership checks with broad smoke assertions.
+- [x] Keep existing `LayoutAssetFoundationTests` expectations for asset ownership/order unless the test name proves an update is required.
+- [x] If any existing script regression test expects inline toast style or icon strings, update it to expect semantic `data-level`/`data-state` behavior.
+- [x] If search page snapshot/string tests exist, update them for the `SubmitIcon` slot and explicit SVG.
+- [x] Do not weaken tests by replacing exact ownership checks with broad smoke assertions.
 
 Acceptance:
 
-- [ ] Existing V2 script, layout, and search tests still prove behavior, not just compilation.
-- [ ] New tests are focused on ownership and do not duplicate browser QA.
+- [x] Existing V2 script, layout, and search tests still prove behavior, not just compilation.
+- [x] New tests are focused on ownership and do not duplicate browser QA.
+
+Implementation notes:
+
+- 2026-08-09: located related tests with the requested `rg` command. No existing test expected old inline toast style or JS icon strings.
+- 2026-08-09: strengthened `LayoutAssetFoundationTests.StorefrontCategoryAndSearchPages_UseCatalogFilterPanelWithoutRouteChanges` to assert `SearchPage.razor` uses `<SubmitIcon>` and no longer uses `SubmitIconCssClass`.
+- 2026-08-09: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~LayoutAssetFoundationTests|FullyQualifiedName~StorefrontSearchPageRegressionTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests"` passed 26/26. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
 
 ## Phase 9 - Focused Build And Test Gate
 

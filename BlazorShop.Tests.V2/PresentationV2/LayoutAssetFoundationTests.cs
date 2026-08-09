@@ -182,6 +182,8 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("ShowCategory=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowSearch=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("SearchTerm=\"@Context.Q\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("<SubmitIcon>", searchMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("SubmitIconCssClass", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPageSize=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("Context.Links.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("CatalogSearchPolicy.MinimumSearchTermLength", searchMarkup, StringComparison.Ordinal);
