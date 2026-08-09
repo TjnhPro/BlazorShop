@@ -391,20 +391,20 @@ Suggested new test file:
 
 Tasks:
 
-- [ ] Add a curated source scanner for `BlazorShop.Storefront.Presentation`.
-- [ ] Include active source extensions:
+- [x] Add a curated source scanner for `BlazorShop.Storefront.Presentation`.
+- [x] Include active source extensions:
   - `.razor`;
   - `.cs`;
   - `.js`;
   - `.css`;
   - `.csproj`.
-- [ ] Exclude:
+- [x] Exclude:
   - `bin`;
   - `obj`;
   - docs;
   - test fixtures;
   - generated output.
-- [ ] Assert Presentation `.razor` and `.cs` files do not contain hardcoded Tailwind/theme class tokens such as:
+- [x] Assert Presentation `.razor` and `.cs` files do not contain hardcoded Tailwind/theme class tokens such as:
   - `bg-`;
   - `rounded-`;
   - `shadow-`;
@@ -427,12 +427,12 @@ Tasks:
   - `lg:`;
   - `xl:`;
   - `2xl:`.
-- [ ] Avoid false positives:
+- [x] Avoid false positives:
   - do not ban route strings such as `/my-cart`;
   - do not ban cookie names, endpoint names, or `data-*` hooks;
   - do not ban host-provided class parameter names when defaults are `string.Empty`;
   - do not ban behavior-only `.classList` usage such as toggling `hidden` if current source needs it.
-- [ ] Add inline style guard for Presentation Razor:
+- [x] Add inline style guard for Presentation Razor:
   - reject `style="background`;
   - reject `style="color`;
   - reject `style="font`;
@@ -440,7 +440,7 @@ Tasks:
   - reject `style="margin`;
   - reject `style="box-shadow`;
   - allow no current inline visual style exceptions unless the implementation records one.
-- [ ] Add CSS/theme asset ownership guard:
+- [x] Add CSS/theme asset ownership guard:
   - no `wwwroot/css/site.css`;
   - no `wwwroot/css/theme.css`;
   - no `wwwroot/css/storefront.css`;
@@ -448,19 +448,27 @@ Tasks:
   - no `postcss.config.*`;
   - no font files;
   - no theme image assets.
-- [ ] Add positive assertions:
+- [x] Add positive assertions:
   - `StorefrontPagePresentationResolver.cs` does not contain `Class` properties or Tailwind strings;
   - `StorefrontPaymentResultPageService.cs` does not contain Tailwind tone/panel strings;
   - account route unauthorized fallback is classless or semantic-only;
   - existing Presentation form class parameters default to `string.Empty`.
-- [ ] Keep `StorefrontVisualSourceOwnershipTests` for V2/V2.WASM source ownership. Do not merge the new Presentation guard into that test if it makes ownership unclear.
+- [x] Keep `StorefrontVisualSourceOwnershipTests` for V2/V2.WASM source ownership. Do not merge the new Presentation guard into that test if it makes ownership unclear.
 
 Acceptance:
 
-- [ ] Guardrail fails if Presentation reintroduces Tailwind visual class strings.
-- [ ] Guardrail fails if Presentation owns theme CSS/assets.
-- [ ] Guardrail does not fail on valid route/cookie/endpoint strings.
-- [ ] Guardrail names the exact offending file and token in failure output.
+- [x] Guardrail fails if Presentation reintroduces Tailwind visual class strings.
+- [x] Guardrail fails if Presentation owns theme CSS/assets.
+- [x] Guardrail does not fail on valid route/cookie/endpoint strings.
+- [x] Guardrail names the exact offending file and token in failure output.
+
+Implementation notes:
+
+- 2026-08-09: added `StorefrontPresentationVisualNeutralityTests` with curated Presentation source enumeration for `.razor`, `.cs`, `.js`, `.css`, and `.csproj`, excluding `bin`, `obj`, docs, fixtures, and generated output.
+- 2026-08-09: guardrails reject Tailwind/theme visual tokens in Presentation `.razor`/`.cs`, inline visual styles in Presentation Razor, and Presentation-owned CSS/Tailwind config/font/image assets.
+- 2026-08-09: guardrails include positive assertions for semantic content page presentation, semantic payment result outcome, classless account unauthorized fallback, and neutral form class parameters defaulted to `string.Empty`.
+- 2026-08-09: kept V2/V2.WASM ownership checks in `StorefrontVisualSourceOwnershipTests` and did not merge Presentation guardrails into that test class.
+- 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPresentationVisualNeutralityTests"` passed 8/8. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
 
 ## Phase 6 - Strengthen V2 Ownership Tests For Relocated Mapping
 
