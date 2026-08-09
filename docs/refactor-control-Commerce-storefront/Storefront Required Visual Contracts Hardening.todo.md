@@ -380,23 +380,29 @@ Confirm no other V2 foundation root has the same anti-pattern before closing the
 
 Tasks:
 
-- [ ] Search V2 root pages and host components for fallback page contexts:
-  - [ ] `rg -n "public .*Context .* = new\\(" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages`
-  - [ ] `rg -n "StorefrontLinkContext.Default|AccountRouteDescriptor.Empty|ActionDescriptor.Empty|Classes.Empty" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages`
-- [ ] Search V2.WASM root components for hard-coded root wiring defaults:
-  - [ ] `rg -n "DataMode .* = StorefrontFeatureDataMode.BrowserFetch" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components`
-  - [ ] `rg -n "ActionDescriptor.Empty|Classes.Empty|= \"/checkout\"|= \"/search\"|= \"/\"" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components`
-- [ ] Classify each hit:
-  - [ ] Root application wiring fallback: fix in this phase.
-  - [ ] Leaf visual compatibility default: leave unchanged unless it blocks root hardening.
-  - [ ] Test fixture or options class: leave unchanged unless it masks root behavior.
-- [ ] If another root application wiring fallback is found, add it to this file before implementing it.
-- [ ] Do not expand to all leaf components.
+- [x] Search V2 root pages and host components for fallback page contexts:
+  - [x] `rg -n "public .*Context .* = new\\(" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages`
+  - [x] `rg -n "StorefrontLinkContext.Default|AccountRouteDescriptor.Empty|ActionDescriptor.Empty|Classes.Empty" BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages`
+- [x] Search V2.WASM root components for hard-coded root wiring defaults:
+  - [x] `rg -n "DataMode .* = StorefrontFeatureDataMode.BrowserFetch" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components`
+  - [x] `rg -n "ActionDescriptor.Empty|Classes.Empty|= \"/checkout\"|= \"/search\"|= \"/\"" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components`
+- [x] Classify each hit:
+  - [x] Root application wiring fallback: fix in this phase.
+  - [x] Leaf visual compatibility default: leave unchanged unless it blocks root hardening.
+  - [x] Test fixture or options class: leave unchanged unless it masks root behavior.
+- [x] If another root application wiring fallback is found, add it to this file before implementing it.
+- [x] Do not expand to all leaf components.
 
 Definition of done:
 
-- [ ] The plan closes all root-level application wiring defaults found in V2/V2.WASM.
-- [ ] Any remaining defaults are deliberately classified as leaf/UI optional defaults or out of scope.
+- [x] The plan closes all root-level application wiring defaults found in V2/V2.WASM.
+- [x] Any remaining defaults are deliberately classified as leaf/UI optional defaults or out of scope.
+
+Implementation notes:
+
+- 2026-08-09: V2 Pages scans returned no fallback page-context construction and no root `StorefrontLinkContext.Default`/`.Empty` hits.
+- 2026-08-09: V2.WASM `DataMode = StorefrontFeatureDataMode.BrowserFetch` hits remain only in account leaf components (`StorefrontAccountChangePasswordForm`, `StorefrontAccountAddressBook`, `StorefrontAccountOrderList`, `StorefrontAccountProfileEditor`, `StorefrontAccountOrderDetail`).
+- 2026-08-09: remaining `.Empty` hits are static factory/property definitions, CSS-class property references such as `Classes.EmptyState`, or account leaf component compatibility defaults. No additional root application wiring fallback was found.
 
 ## Phase 6 - Source Guardrail Tests
 
