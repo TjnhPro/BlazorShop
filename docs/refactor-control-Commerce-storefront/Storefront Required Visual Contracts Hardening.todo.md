@@ -234,43 +234,49 @@ Required parameters:
 
 Tasks:
 
-- [ ] Add `[EditorRequired]` to every required parameter.
-- [ ] Remove default `StorefrontBrowserCheckoutDefaults.EmptyState("Checkout is not available yet.")`.
-- [ ] Remove default `ShowPanel = true`.
-- [ ] Remove default `DataMode = StorefrontFeatureDataMode.BrowserFetch`.
-- [ ] Remove default `Actions = StorefrontCheckoutActionDescriptor.Empty`.
-- [ ] Remove default `Classes = StorefrontCheckoutViewClasses.Empty`.
-- [ ] Add runtime validation in `OnParametersSet` before controller initialization:
-  - [ ] `ArgumentNullException.ThrowIfNull(InitialState);`
-  - [ ] `ArgumentNullException.ThrowIfNull(Actions);`
-  - [ ] `ArgumentNullException.ThrowIfNull(Classes);`
-- [ ] Do not reject `StorefrontCheckoutActionDescriptor.Empty`.
-- [ ] Do not reject `StorefrontCheckoutViewClasses.Empty`.
-- [ ] Keep `CheckoutController.Initialize(InitialState, ShowPanel, DataMode, Actions);`.
-- [ ] Keep existing `OnAfterRenderAsync` hydration condition behavior unless tests prove it depends on removed defaults.
+- [x] Add `[EditorRequired]` to every required parameter.
+- [x] Remove default `StorefrontBrowserCheckoutDefaults.EmptyState("Checkout is not available yet.")`.
+- [x] Remove default `ShowPanel = true`.
+- [x] Remove default `DataMode = StorefrontFeatureDataMode.BrowserFetch`.
+- [x] Remove default `Actions = StorefrontCheckoutActionDescriptor.Empty`.
+- [x] Remove default `Classes = StorefrontCheckoutViewClasses.Empty`.
+- [x] Add runtime validation in `OnParametersSet` before controller initialization:
+  - [x] `ArgumentNullException.ThrowIfNull(InitialState);`
+  - [x] `ArgumentNullException.ThrowIfNull(Actions);`
+  - [x] `ArgumentNullException.ThrowIfNull(Classes);`
+- [x] Do not reject `StorefrontCheckoutActionDescriptor.Empty`.
+- [x] Do not reject `StorefrontCheckoutViewClasses.Empty`.
+- [x] Keep `CheckoutController.Initialize(InitialState, ShowPanel, DataMode, Actions);`.
+- [x] Keep existing `OnAfterRenderAsync` hydration condition behavior unless tests prove it depends on removed defaults.
 
 Callsite checks:
 
-- [ ] Verify `CheckoutPage.razor` passes `InitialState`.
-- [ ] Verify `CheckoutPage.razor` passes `ShowPanel`.
-- [ ] Verify `CheckoutPage.razor` passes `DataMode`.
-- [ ] Verify `CheckoutPage.razor` passes `Actions`.
-- [ ] Verify `CheckoutPage.razor` passes `Classes`.
-- [ ] Add `ArgumentNullException.ThrowIfNull(Context);` to `CheckoutPage.razor` for consistency if not already present.
+- [x] Verify `CheckoutPage.razor` passes `InitialState`.
+- [x] Verify `CheckoutPage.razor` passes `ShowPanel`.
+- [x] Verify `CheckoutPage.razor` passes `DataMode`.
+- [x] Verify `CheckoutPage.razor` passes `Actions`.
+- [x] Verify `CheckoutPage.razor` passes `Classes`.
+- [x] Add `ArgumentNullException.ThrowIfNull(Context);` to `CheckoutPage.razor` for consistency if not already present.
 
 Tests:
 
-- [ ] Add source test proving each checkout shell parameter has `[EditorRequired]`.
-- [ ] Add source test proving the fake empty checkout state default is removed.
-- [ ] Add source test proving checkout shell no longer defaults to browser fetch or `.Empty`.
-- [ ] Add source test proving `CheckoutPage.razor` explicitly passes all required shell parameters.
-- [ ] Add source test proving `CheckoutPage.razor` has required context and null guard.
+- [x] Add source test proving each checkout shell parameter has `[EditorRequired]`.
+- [x] Add source test proving the fake empty checkout state default is removed.
+- [x] Add source test proving checkout shell no longer defaults to browser fetch or `.Empty`.
+- [x] Add source test proving `CheckoutPage.razor` explicitly passes all required shell parameters.
+- [x] Add source test proving `CheckoutPage.razor` has required context and null guard.
 
 Definition of done:
 
-- [ ] Checkout shell can no longer hide missing route-owned checkout state.
-- [ ] Checkout page continues to choose `InitialSnapshot` and `ShowPanel=false` explicitly.
-- [ ] Checkout hydration behavior remains unchanged for valid root wiring.
+- [x] Checkout shell can no longer hide missing route-owned checkout state.
+- [x] Checkout page continues to choose `InitialSnapshot` and `ShowPanel=false` explicitly.
+- [x] Checkout hydration behavior remains unchanged for valid root wiring.
+
+Implementation notes:
+
+- 2026-08-09: `StorefrontCheckoutShell.razor` now requires `InitialState`, `ShowPanel`, `DataMode`, `Actions`, and `Classes` from the host and validates required references before controller initialization. The hydration condition remains based on `ShowPanel`, first render, browser runtime, and non-`InitialSnapshot` mode.
+- 2026-08-09: `CheckoutPage.razor` already passed every checkout shell contract in both render branches and now also guards missing `Context` in `OnParametersSet`.
+- 2026-08-09: expanded required visual contract tests for checkout and updated the existing foundation assertion that previously expected `ShowPanel=true`. Focused command passed 23/23 for `StorefrontRequiredVisualContractsHardeningTests|StorefrontV2WASMRuntimeFoundationTests`.
 
 ## Phase 4 - Harden `StorefrontAccountApp` Root Parameters
 

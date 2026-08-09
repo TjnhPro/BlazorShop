@@ -79,10 +79,85 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("CartController.Initialize(InitialCart, InitialAlerts, DataMode, Actions);", component, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CheckoutShell_RequiresRootWiringWithoutOwningFallbackStateOrDescriptors()
+        {
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+
+            foreach (var requiredParameter in new[]
+            {
+                "StorefrontBrowserCheckoutState InitialState",
+                "bool ShowPanel",
+                "StorefrontFeatureDataMode DataMode",
+                "StorefrontCheckoutActionDescriptor Actions",
+                "StorefrontCheckoutViewClasses Classes"
+            })
+            {
+                AssertParameterIsEditorRequired(component, requiredParameter);
+            }
+
+            Assert.DoesNotContain("StorefrontBrowserCheckoutDefaults.EmptyState(\"Checkout is not available yet.\")", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("ShowPanel { get; set; } = true", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("Actions { get; set; } = StorefrontCheckoutActionDescriptor.Empty", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("Classes { get; set; } = StorefrontCheckoutViewClasses.Empty", component, StringComparison.Ordinal);
+
+            foreach (var validation in new[]
+            {
+                "ArgumentNullException.ThrowIfNull(InitialState);",
+                "ArgumentNullException.ThrowIfNull(Actions);",
+                "ArgumentNullException.ThrowIfNull(Classes);"
+            })
+            {
+                Assert.Contains(validation, component, StringComparison.Ordinal);
+            }
+
+            Assert.DoesNotContain("Actions == StorefrontCheckoutActionDescriptor.Empty", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("Classes == StorefrontCheckoutViewClasses.Empty", component, StringComparison.Ordinal);
+            Assert.Contains("CheckoutController.Initialize(InitialState, ShowPanel, DataMode, Actions);", component, StringComparison.Ordinal);
+            Assert.Contains("DataMode != StorefrontFeatureDataMode.InitialSnapshot", component, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CheckoutPage_RequiresContextAndPassesCheckoutShellContractsInEveryBranch()
+        {
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor");
+
+            Assert.Contains("[Parameter, EditorRequired]", page, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontCheckoutPageContext Context { get; set; } = default!;", page, StringComparison.Ordinal);
+            Assert.Contains("ArgumentNullException.ThrowIfNull(Context);", page, StringComparison.Ordinal);
+            Assert.Equal(2, CountOccurrences(page, "<StorefrontCheckoutShell"));
+
+            foreach (var requiredAttribute in new[]
+            {
+                "InitialState=\"Context.CheckoutState\"",
+                "DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"",
+                "Actions=\"@Context.CheckoutActions\"",
+                "Classes=\"StorefrontCheckoutShellOptions.Classes\"",
+                "ShowPanel=\"false\""
+            })
+            {
+                Assert.Equal(2, CountOccurrences(page, requiredAttribute));
+            }
+        }
+
         private static void AssertParameterIsEditorRequired(string source, string declaration)
         {
             Assert.Contains("[Parameter, EditorRequired]", source, StringComparison.Ordinal);
             Assert.Contains($"public {declaration}", source, StringComparison.Ordinal);
+        }
+
+        private static int CountOccurrences(string source, string value)
+        {
+            var count = 0;
+            var index = 0;
+            while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                index += value.Length;
+            }
+
+            return count;
         }
 
         private static string ReadRepositoryFile(string relativePath)

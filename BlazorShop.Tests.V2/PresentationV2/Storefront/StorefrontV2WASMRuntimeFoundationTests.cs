@@ -455,7 +455,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("var outcomeTask = CheckoutController.PlaceOrderAsync();", component, StringComparison.Ordinal);
             Assert.Contains("StateHasChanged();", component, StringComparison.Ordinal);
             Assert.DoesNotContain("\"/api/checkout", options, StringComparison.Ordinal);
-            Assert.Contains("public bool ShowPanel { get; set; } = true;", component, StringComparison.Ordinal);
+            Assert.Contains("public bool ShowPanel { get; set; }", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("public bool ShowPanel { get; set; } = true;", component, StringComparison.Ordinal);
             Assert.Contains("DataMode != StorefrontFeatureDataMode.InitialSnapshot", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-shell", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-cart-version", component, StringComparison.Ordinal);

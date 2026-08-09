@@ -135,4 +135,9 @@
 
     private const string InputClass = "mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100";
     private const string UppercaseInputClass = "mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm uppercase text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Context);
+    }
 }

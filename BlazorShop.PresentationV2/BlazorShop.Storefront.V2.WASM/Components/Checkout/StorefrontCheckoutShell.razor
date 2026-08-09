@@ -118,20 +118,20 @@
 }
 
 @code {
-    [Parameter]
-    public StorefrontBrowserCheckoutState InitialState { get; set; } = StorefrontBrowserCheckoutDefaults.EmptyState("Checkout is not available yet.");
+    [Parameter, EditorRequired]
+    public StorefrontBrowserCheckoutState InitialState { get; set; } = default!;
 
-    [Parameter]
-    public bool ShowPanel { get; set; } = true;
+    [Parameter, EditorRequired]
+    public bool ShowPanel { get; set; }
 
-    [Parameter]
-    public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+    [Parameter, EditorRequired]
+    public StorefrontFeatureDataMode DataMode { get; set; }
 
-    [Parameter]
-    public StorefrontCheckoutActionDescriptor Actions { get; set; } = StorefrontCheckoutActionDescriptor.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutActionDescriptor Actions { get; set; } = default!;
 
-    [Parameter]
-    public StorefrontCheckoutViewClasses Classes { get; set; } = StorefrontCheckoutViewClasses.Empty;
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutViewClasses Classes { get; set; } = default!;
 
     private StorefrontBrowserCheckoutControllerState ControllerState => CheckoutController.State;
 
@@ -143,6 +143,10 @@
 
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(InitialState);
+        ArgumentNullException.ThrowIfNull(Actions);
+        ArgumentNullException.ThrowIfNull(Classes);
+
         CheckoutController.Initialize(InitialState, ShowPanel, DataMode, Actions);
     }
 
