@@ -217,33 +217,33 @@ Exit criteria:
 
 Implementation target:
 
-- [ ] Prefer placing the resolver in `StorefrontComponentDescriptorTests.cs` or a focused test helper file.
-- [ ] Do not add this resolver to production projects.
-- [ ] Do not modify `StorefrontComponentDescriptorValidator`.
+- [x] Prefer placing the resolver in `StorefrontComponentDescriptorTests.cs` or a focused test helper file.
+- [x] Do not add this resolver to production projects.
+- [x] Do not modify `StorefrontComponentDescriptorValidator`.
 
 Resolver contract:
 
-- [ ] Input: assembly name or component type assembly.
-- [ ] Output: nullable `StorefrontComponentMode`.
-- [ ] Exact known mappings:
+- [x] Input: assembly name or component type assembly.
+- [x] Output: nullable `StorefrontComponentMode`.
+- [x] Exact known mappings:
   - `BlazorShop.Storefront.Components.Ssr` -> `Ssr`
   - `BlazorShop.Storefront.Components.Hybrid` -> `Hybrid`
   - `BlazorShop.Storefront.Components.WasmHost` -> `WasmHost`
-- [ ] Unknown assembly returns null.
-- [ ] Null or empty assembly name returns null.
+- [x] Unknown assembly returns null.
+- [x] Null or empty assembly name returns null.
 
 Descriptor consistency helper:
 
-- [ ] Accept a descriptor and the resolved owner mode.
-- [ ] If owner mode is null, mark as not applicable.
-- [ ] If owner mode has a value and differs from descriptor mode, return a mismatch.
-- [ ] Include component key, descriptor mode, owner mode, and component type/assembly in the error message.
+- [x] Accept a descriptor and the resolved owner mode.
+- [x] If owner mode is null, mark as not applicable.
+- [x] If owner mode has a value and differs from descriptor mode, return a mismatch.
+- [x] Include component key, descriptor mode, owner mode, and component type/assembly in the error message.
 
 Exit criteria:
 
-- [ ] Mode/project ownership is enforced in tests.
-- [ ] Production validator stays generic.
-- [ ] Unknown assemblies do not cause false failures.
+- [x] Mode/project ownership is enforced in tests.
+- [x] Production validator stays generic.
+- [x] Unknown assemblies do not cause false failures.
 
 ## Phase 4 - Add Descriptor Mode Consistency Tests
 
@@ -428,6 +428,12 @@ Exit criteria:
   - 2026-08-09: added negative fixtures for literal visual classes and mixed literal/dynamic values including `flex @CssClass`, `@CssClass selected`, and `@(BuildCssClass()) selected`.
   - 2026-08-09: repository scan now emits a full joined violation list through assertion failure output.
   - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`: 19 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
+- [x] Phase 3 test-side assembly mode resolver:
+  - 2026-08-09: added `StorefrontComponentDescriptorModeOwnership` and `StorefrontComponentDescriptorModeConsistencyResult` inside `StorefrontComponentDescriptorTests.cs`.
+  - 2026-08-09: resolver maps exact SSR, Hybrid, and WasmHost assembly names to `StorefrontComponentMode`, and returns null for unknown, null, or empty assembly names.
+  - 2026-08-09: consistency helper reports not-applicable for unknown owners, valid for matching owner mode, and mismatch errors including descriptor key, descriptor mode, owner mode, component type, and assembly.
+  - 2026-08-09: `StorefrontComponentDescriptorValidator` remained unchanged.
+  - 2026-08-09: verification passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"`: 13 passed, 0 failed. Existing MessagePack NU1902/NU1903 warnings were observed.
 
 ## Decision Audit Trail
 

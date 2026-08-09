@@ -134,4 +134,60 @@ public sealed class StorefrontComponentDescriptorTests
     private sealed class NotAComponent
     {
     }
+
+    private static class StorefrontComponentDescriptorModeOwnership
+    {
+        public static StorefrontComponentMode? ResolveOwnerMode(Type componentType)
+        {
+            return ResolveOwnerMode(componentType.Assembly.GetName().Name);
+        }
+
+        public static StorefrontComponentMode? ResolveOwnerMode(string? assemblyName)
+        {
+            return assemblyName switch
+            {
+                "BlazorShop.Storefront.Components.Ssr" => StorefrontComponentMode.Ssr,
+                "BlazorShop.Storefront.Components.Hybrid" => StorefrontComponentMode.Hybrid,
+                "BlazorShop.Storefront.Components.WasmHost" => StorefrontComponentMode.WasmHost,
+                _ => null,
+            };
+        }
+
+        public static StorefrontComponentDescriptorModeConsistencyResult Validate(
+            StorefrontComponentDescriptor descriptor,
+            StorefrontComponentMode? ownerMode)
+        {
+            if (ownerMode is null)
+            {
+                return StorefrontComponentDescriptorModeConsistencyResult.NotApplicable;
+            }
+
+            if (descriptor.Mode == ownerMode.Value)
+            {
+                return StorefrontComponentDescriptorModeConsistencyResult.Valid;
+            }
+
+            var componentType = descriptor.ComponentType;
+            var componentTypeName = componentType?.FullName ?? "<null>";
+            var assemblyName = componentType?.Assembly.GetName().Name ?? "<null>";
+
+            return StorefrontComponentDescriptorModeConsistencyResult.Invalid(
+                $"Component descriptor '{descriptor.Key}' declares mode '{descriptor.Mode}', but owning assembly mode is '{ownerMode.Value}'. Component type: '{componentTypeName}'. Assembly: '{assemblyName}'.");
+        }
+    }
+
+    private sealed record StorefrontComponentDescriptorModeConsistencyResult(
+        bool IsApplicable,
+        bool IsValid,
+        string? Error)
+    {
+        public static StorefrontComponentDescriptorModeConsistencyResult Valid { get; } = new(true, true, null);
+
+        public static StorefrontComponentDescriptorModeConsistencyResult NotApplicable { get; } = new(false, true, null);
+
+        public static StorefrontComponentDescriptorModeConsistencyResult Invalid(string error)
+        {
+            return new StorefrontComponentDescriptorModeConsistencyResult(true, false, error);
+        }
+    }
 }
