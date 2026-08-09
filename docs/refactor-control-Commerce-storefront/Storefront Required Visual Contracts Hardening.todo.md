@@ -491,10 +491,18 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/Blazor
 
 Definition of done:
 
-- [ ] V2 builds.
-- [ ] V2.WASM builds.
-- [ ] Focused Storefront tests pass.
-- [ ] No unintended Starter breakage if shared contracts/tests were touched.
+- [x] V2 builds.
+- [x] V2.WASM builds.
+- [x] Focused Storefront tests pass.
+- [x] No unintended Starter breakage if shared contracts/tests were touched.
+
+Implementation notes:
+
+- 2026-08-09: focused command passed 27/27 for `StorefrontRequiredVisualContractsHardeningTests|StorefrontV2WASMRuntimeFoundationTests`.
+- 2026-08-09: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-09: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-09: broad `FullyQualifiedName~Storefront` slice ran 942 tests: 933 passed, 2 skipped, 7 failed from existing out-of-scope historical doc/Starter/package-boundary assertions. The failures do not reference the required visual contract changes.
+- 2026-08-09: Starter and Starter.WASM builds passed with 0 warnings/errors, confirming no compile breakage from this hardening.
 
 ## Phase 8 - Browser Regression QA
 
