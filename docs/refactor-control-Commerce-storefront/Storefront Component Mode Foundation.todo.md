@@ -324,14 +324,14 @@ Exit criteria:
 
 ## Phase 4 - Mode Boundary Validator
 
-- [ ] Add `StorefrontComponentModeBoundaryValidator` under `BlazorShop.Tests.V2/PresentationV2/Storefront/`.
-- [ ] Do not overload `StorefrontVisualConsumerBoundaryValidator`.
-- [ ] Add `StorefrontComponentModeProfile`.
-- [ ] Add `StorefrontComponentModeBoundaryViolation`.
-- [ ] Validate `.csproj` project references through strict allowlists.
-- [ ] Validate package references through strict allowlists.
-- [ ] Validate source tokens by mode.
-- [ ] Enumerate source extensions:
+- [x] Add `StorefrontComponentModeBoundaryValidator` under `BlazorShop.Tests.V2/PresentationV2/Storefront/`.
+- [x] Do not overload `StorefrontVisualConsumerBoundaryValidator`.
+- [x] Add `StorefrontComponentModeProfile`.
+- [x] Add `StorefrontComponentModeBoundaryViolation`.
+- [x] Validate `.csproj` project references through strict allowlists.
+- [x] Validate package references through strict allowlists.
+- [x] Validate source tokens by mode.
+- [x] Enumerate source extensions:
   - `.cs`
   - `.razor`
   - `.cshtml`
@@ -345,115 +345,115 @@ Exit criteria:
   - `.scss`
   - `.sass`
   - `.less`
-- [ ] Ignore `bin`, `obj`, `node_modules`, generated build output, and package output.
-- [ ] Report violation path, forbidden token/reference, owner, and remediation message.
-- [ ] Keep validator deterministic with sorted output.
+- [x] Ignore `bin`, `obj`, `node_modules`, generated build output, and package output.
+- [x] Report violation path, forbidden token/reference, owner, and remediation message.
+- [x] Keep validator deterministic with sorted output.
 
 SSR forbidden references:
 
-- [ ] `BlazorShop.Storefront.Browser`
-- [ ] `BlazorShop.Storefront.Runtime`
-- [ ] `BlazorShop.Storefront.Client`
-- [ ] `BlazorShop.Storefront.V2`
-- [ ] `BlazorShop.Storefront.V2.WASM`
-- [ ] `BlazorShop.Storefront.Starter`
-- [ ] `BlazorShop.Storefront.Starter.WASM`
-- [ ] `BlazorShop.CommerceNode.API`
-- [ ] `BlazorShop.ControlPlane`
-- [ ] `BlazorShop.Application`
-- [ ] `BlazorShop.Domain`
-- [ ] `BlazorShop.Infrastructure`
-- [ ] `BlazorShop.Web.SharedV2`
+- [x] `BlazorShop.Storefront.Browser`
+- [x] `BlazorShop.Storefront.Runtime`
+- [x] `BlazorShop.Storefront.Client`
+- [x] `BlazorShop.Storefront.V2`
+- [x] `BlazorShop.Storefront.V2.WASM`
+- [x] `BlazorShop.Storefront.Starter`
+- [x] `BlazorShop.Storefront.Starter.WASM`
+- [x] `BlazorShop.CommerceNode.API`
+- [x] `BlazorShop.ControlPlane`
+- [x] `BlazorShop.Application`
+- [x] `BlazorShop.Domain`
+- [x] `BlazorShop.Infrastructure`
+- [x] `BlazorShop.Web.SharedV2`
 
 Hybrid forbidden direct references:
 
-- [ ] `BlazorShop.Storefront.Browser`
-- [ ] `BlazorShop.Storefront.Runtime`
-- [ ] `BlazorShop.Storefront.Client`
-- [ ] `BlazorShop.Storefront.V2`
-- [ ] `BlazorShop.Storefront.V2.WASM`
-- [ ] `BlazorShop.Storefront.Starter`
-- [ ] `BlazorShop.Storefront.Starter.WASM`
-- [ ] backend/core/API projects
-- [ ] `BlazorShop.Web.SharedV2`
+- [x] `BlazorShop.Storefront.Browser`
+- [x] `BlazorShop.Storefront.Runtime`
+- [x] `BlazorShop.Storefront.Client`
+- [x] `BlazorShop.Storefront.V2`
+- [x] `BlazorShop.Storefront.V2.WASM`
+- [x] `BlazorShop.Storefront.Starter`
+- [x] `BlazorShop.Storefront.Starter.WASM`
+- [x] backend/core/API projects
+- [x] `BlazorShop.Web.SharedV2`
 
 WasmHost forbidden references:
 
-- [ ] `BlazorShop.Storefront.Presentation`
-- [ ] `BlazorShop.Storefront.Runtime`
-- [ ] `BlazorShop.Storefront.Client`
-- [ ] `BlazorShop.Storefront.V2`
-- [ ] `BlazorShop.Storefront.V2.WASM`
-- [ ] `BlazorShop.Storefront.Starter`
-- [ ] `BlazorShop.Storefront.Starter.WASM`
-- [ ] backend/core/API projects
-- [ ] `BlazorShop.Web.SharedV2`
+- [x] `BlazorShop.Storefront.Presentation`
+- [x] `BlazorShop.Storefront.Runtime`
+- [x] `BlazorShop.Storefront.Client`
+- [x] `BlazorShop.Storefront.V2`
+- [x] `BlazorShop.Storefront.V2.WASM`
+- [x] `BlazorShop.Storefront.Starter`
+- [x] `BlazorShop.Storefront.Starter.WASM`
+- [x] backend/core/API projects
+- [x] `BlazorShop.Web.SharedV2`
 
 SSR forbidden source tokens:
 
-- [ ] `HttpClient`
-- [ ] `IHttpClientFactory`
-- [ ] `IJSRuntime`
-- [ ] `JSImport`
-- [ ] `@rendermode`
-- [ ] `InteractiveWebAssembly`
-- [ ] `InteractiveServer`
-- [ ] `"/api/`
-- [ ] `'/api/`
-- [ ] `api/storefront`
-- [ ] `localhost:`
-- [ ] `CommerceNodeBaseUrl`
-- [ ] `StorefrontLocalApiClient`
+- [x] `HttpClient`
+- [x] `IHttpClientFactory`
+- [x] `IJSRuntime`
+- [x] `JSImport`
+- [x] `@rendermode`
+- [x] `InteractiveWebAssembly`
+- [x] `InteractiveServer`
+- [x] `"/api/`
+- [x] `'/api/`
+- [x] `api/storefront`
+- [x] `localhost:`
+- [x] `CommerceNodeBaseUrl`
+- [x] `StorefrontLocalApiClient`
 
 Hybrid forbidden source tokens:
 
-- [ ] `HttpClient`
-- [ ] `IHttpClientFactory`
-- [ ] `IJSRuntime`
-- [ ] `JSImport`
-- [ ] `"/api/`
-- [ ] `'/api/`
-- [ ] `api/storefront`
-- [ ] `localhost:`
-- [ ] `CommerceNodeBaseUrl`
-- [ ] `StorefrontLocalApiClient`
-- [ ] `IStorefrontBrowser`
+- [x] `HttpClient`
+- [x] `IHttpClientFactory`
+- [x] `IJSRuntime`
+- [x] `JSImport`
+- [x] `"/api/`
+- [x] `'/api/`
+- [x] `api/storefront`
+- [x] `localhost:`
+- [x] `CommerceNodeBaseUrl`
+- [x] `StorefrontLocalApiClient`
+- [x] `IStorefrontBrowser`
 
 Hybrid allowed source tokens:
 
-- [ ] `@rendermode`
-- [ ] `InteractiveWebAssembly`
-- [ ] `BlazorShop.Storefront.Components.WasmHost`
+- [x] `@rendermode`
+- [x] `InteractiveWebAssembly`
+- [x] `BlazorShop.Storefront.Components.WasmHost`
 
 WasmHost forbidden source tokens:
 
-- [ ] `HttpClient`
-- [ ] `IHttpClientFactory`
-- [ ] `HttpContext`
-- [ ] `IHttpContextAccessor`
-- [ ] `"/api/`
-- [ ] `'/api/`
-- [ ] `api/storefront`
-- [ ] `localhost:`
-- [ ] `CommerceNodeBaseUrl`
-- [ ] `BlazorShop.Storefront.Presentation`
-- [ ] `IStorefrontRuntime`
-- [ ] `IStorefrontCatalogClient`
-- [ ] `IStorefrontCartClient`
-- [ ] `IStorefrontCheckoutClient`
-- [ ] `IStorefrontCustomerClient`
+- [x] `HttpClient`
+- [x] `IHttpClientFactory`
+- [x] `HttpContext`
+- [x] `IHttpContextAccessor`
+- [x] `"/api/`
+- [x] `'/api/`
+- [x] `api/storefront`
+- [x] `localhost:`
+- [x] `CommerceNodeBaseUrl`
+- [x] `BlazorShop.Storefront.Presentation`
+- [x] `IStorefrontRuntime`
+- [x] `IStorefrontCatalogClient`
+- [x] `IStorefrontCartClient`
+- [x] `IStorefrontCheckoutClient`
+- [x] `IStorefrontCustomerClient`
 
 WasmHost allowed source tokens:
 
-- [ ] `IJSRuntime`
-- [ ] `EventCallback`
-- [ ] browser controller interfaces from `BlazorShop.Storefront.Browser`
+- [x] `IJSRuntime`
+- [x] `EventCallback`
+- [x] browser controller interfaces from `BlazorShop.Storefront.Browser`
 
 Exit criteria:
 
-- [ ] Validator can pass clean source.
-- [ ] Validator gives actionable violation messages.
-- [ ] Validator has profile-specific allowlists, not a global forbidden-only scan.
+- [x] Validator can pass clean source.
+- [x] Validator gives actionable violation messages.
+- [x] Validator has profile-specific allowlists, not a global forbidden-only scan.
 
 ## Phase 5 - Architecture Tests
 
@@ -645,7 +645,7 @@ The next phase must include Playwright only after these components are rendered 
   - 2026-08-09 Phase 2 added only base descriptor contract files under `BlazorShop.Storefront.Components/Contracts/Components/`; no mode projects yet.
   - 2026-08-09 added `StorefrontComponentMode`, `StorefrontComponentCategory`, `StorefrontComponentDescriptor`, `StorefrontComponentDescriptorValidationResult`, and `StorefrontComponentDescriptorValidator`.
   - 2026-08-09 `StorefrontComponentDescriptorValidator` validates required key, lowercase kebab-case key pattern, defined mode/category enum values, non-null component type, and `IComponent` implementation.
-  - 2026-08-09 base Components remains `Microsoft.NET.Sdk`; added minimal `FrameworkReference Include="Microsoft.AspNetCore.App"` so the logic-only project can reference `Microsoft.AspNetCore.Components.IComponent` without becoming an RCL.
+  - 2026-08-09 base Components remains `Microsoft.NET.Sdk`; added minimal `PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.9"` so the logic-only project can reference `Microsoft.AspNetCore.Components.IComponent` without becoming an RCL or adding an ASP.NET shared-framework reference to WASM consumers.
   - 2026-08-09 no descriptor assembly scanning, DI registration, runtime registry, or JSON manifest code was added.
   - 2026-08-09 `dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj --no-restore` passed with 0 warnings/errors.
   - 2026-08-09 scan confirmed base Components still has no `.razor`, CSS, JS, theme assets, or `Features` folder.
@@ -658,6 +658,12 @@ The next phase must include Playwright only after these components are rendered 
   - 2026-08-09: `Components.Ssr` references exactly base Components and Presentation; `Components.Hybrid` references exactly base Components, Presentation, and Components.WasmHost; `Components.WasmHost` references exactly base Components and Browser.
   - 2026-08-09: an initial parallel build hit shared `obj/bin` file locks; sequential builds for Ssr, WasmHost, and Hybrid then passed with 0 warnings/errors.
   - 2026-08-09: source scan confirmed no `.razor` files or production dummy/future feature component names exist in the mode projects.
+- [x] Tests/validator evidence:
+  - 2026-08-09: added `StorefrontComponentModeBoundaryValidator`, `StorefrontComponentModeProfiles`, `StorefrontComponentModeProfile`, and `StorefrontComponentModeBoundaryViolation` under `BlazorShop.Tests.V2/PresentationV2/Storefront/`.
+  - 2026-08-09: validator parses `.csproj` project/package references with strict profile allowlists, scans mode source extensions including `.cs`, `.razor`, `.cshtml`, `.js`, `.mjs`, `.ts`, `.json`, `.yaml`, `.yml`, `.css`, `.scss`, `.sass`, and `.less`, ignores `bin`, `obj`, `node_modules`, generated/package output folders, and returns sorted violations with path, forbidden token/reference, owner, remediation, and kind.
+  - 2026-08-09: profile factory defines separate SSR, Hybrid, and WasmHost required/allowed project refs, forbidden tokens, and mode-specific allowed source tokens. `StorefrontVisualConsumerBoundaryValidator` was not modified.
+  - 2026-08-09: `dotnet build BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore` initially exposed that base Components `FrameworkReference Include="Microsoft.AspNetCore.App"` breaks WASM consumers with `NETSDK1082`; changed it to `PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.9"` to keep `IComponent` validation browser-wasm compatible.
+  - 2026-08-09: after the package reference fix, `dotnet restore BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj` reported up-to-date and `dotnet build BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore` passed. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
 - [ ] Tests added:
 - [ ] Build evidence:
 - [ ] Focused test evidence:
