@@ -196,29 +196,29 @@ Files:
 
 Tasks:
 
-- [ ] Change `StorefrontPagePresentation` so it no longer exposes concrete visual classes:
+- [x] Change `StorefrontPagePresentation` so it no longer exposes concrete visual classes:
   - remove `ArticleClass`;
   - remove `BodyContainerClass`.
-- [ ] Keep semantic fields:
+- [x] Keep semantic fields:
   - `TemplateKey`;
   - `LayoutKind`;
   - `StructuredDataKind`;
   - `FaqEntries`;
   - `Eyebrow`.
-- [ ] If V2 needs more than `LayoutKind` for mapping, add a semantic field only, for example:
+- [x] If V2 needs more than `LayoutKind` for mapping, add a semantic field only, for example:
   - `ContentContainerKind`;
   - `PresentationVariant`;
   - or reuse `TemplateKey`.
-- [ ] Do not add `Class`, `CssClass`, `Tailwind`, `Style`, or host-specific naming to the Presentation contract.
-- [ ] Update `StorefrontPagePresentation.Standard`, `Policy`, `Faq`, and `Support` factories to return semantic data only.
-- [ ] Update resolver tests so they assert semantic mapping:
+- [x] Do not add `Class`, `CssClass`, `Tailwind`, `Style`, or host-specific naming to the Presentation contract.
+- [x] Update `StorefrontPagePresentation.Standard`, `Policy`, `Faq`, and `Support` factories to return semantic data only.
+- [x] Update resolver tests so they assert semantic mapping:
   - page key normalization;
   - known policy keys map to `StorefrontPageLayoutKind.Policy`;
   - `faq` maps to `StorefrontPageLayoutKind.Faq`;
   - `customer_service` maps to `StorefrontPageLayoutKind.Support`;
   - unknown keys map to standard;
   - no expectation on CSS class strings remains.
-- [ ] Update V2 `StorefrontPage.razor` to map semantic fields to V2-local classes:
+- [x] Update V2 `StorefrontPage.razor` to map semantic fields to V2-local classes:
 
 ```csharp
 private static string GetArticleClass(StorefrontPageLayoutKind layoutKind)
@@ -233,20 +233,29 @@ private static string GetArticleClass(StorefrontPageLayoutKind layoutKind)
 }
 ```
 
-- [ ] Put `BodyContainerClass` equivalent mapping in V2-local code:
+- [x] Put `BodyContainerClass` equivalent mapping in V2-local code:
   - standard keeps the previous standard V2 class;
   - policy/faq/support keep the previous compact V2 class.
-- [ ] Preserve existing V2 data hooks:
+- [x] Preserve existing V2 data hooks:
   - `data-storefront-page-template`;
   - `data-storefront-page-layout`.
-- [ ] Do not change content route resolution, page body rendering, breadcrumb behavior, SEO, structured data, or page publish/store visibility behavior.
+- [x] Do not change content route resolution, page body rendering, breadcrumb behavior, SEO, structured data, or page publish/store visibility behavior.
 
 Acceptance:
 
-- [ ] `StorefrontPagePresentationResolver.cs` contains no Tailwind utility strings.
-- [ ] `StorefrontPagePresentation` has no `*Class` property.
-- [ ] V2 content page still renders the same standard/policy/faq/support visual variants.
-- [ ] Existing content page resolver/composition tests pass after expectation updates.
+- [x] `StorefrontPagePresentationResolver.cs` contains no Tailwind utility strings.
+- [x] `StorefrontPagePresentation` has no `*Class` property.
+- [x] V2 content page still renders the same standard/policy/faq/support visual variants.
+- [x] Existing content page resolver/composition tests pass after expectation updates.
+
+Implementation notes:
+
+- 2026-08-09: removed `ArticleClass` and `BodyContainerClass` from `StorefrontPagePresentation`; `Standard`, `Policy`, `Faq`, and `Support` now return semantic values only.
+- 2026-08-09: V2 `Pages/Ssr/Content/StorefrontPage.razor` now maps `StorefrontPageLayoutKind` through local `GetArticleClass` and `GetBodyContainerClass` helpers while preserving previous standard/policy/faq/support visual class strings and existing `data-storefront-page-template` / `data-storefront-page-layout` hooks.
+- 2026-08-09: resolver tests now assert semantic `TemplateKey`, `LayoutKind`, `StructuredDataKind`, `FaqEntries`, and `Eyebrow` values instead of CSS classes.
+- 2026-08-09: first focused resolver test run caught a compile import issue for `StorefrontPageLayoutKind`; adding the correct Presentation services using in V2 fixed it.
+- 2026-08-09: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPagePresentationResolverTests"` passed 12/12. Existing warnings: MessagePack NU1902/NU1903 and Browserslist.
+- 2026-08-09: source scan confirmed `ArticleClass` and `BodyContainerClass` no longer exist in Presentation contracts; remaining matching names are V2-local helper names only.
 
 ## Phase 3 - Move Payment Result Visual Tone Out Of Presentation
 

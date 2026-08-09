@@ -1,4 +1,5 @@
 @namespace BlazorShop.Storefront.V2.Pages.Content
+@using BlazorShop.Storefront.Presentation.Services
 @using BlazorShop.Storefront.Presentation.Services.Content
 
 <StorefrontPageShell Class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -7,7 +8,7 @@
     </Breadcrumb>
 
     <ChildContent>
-        <article class="@Context.Presentation.ArticleClass" data-storefront-page-template="@Context.Presentation.TemplateKey" data-storefront-page-layout="@Context.Presentation.LayoutKind.ToString().ToLowerInvariant()">
+        <article class="@GetArticleClass(Context.Presentation.LayoutKind)" data-storefront-page-template="@Context.Presentation.TemplateKey" data-storefront-page-layout="@Context.Presentation.LayoutKind.ToString().ToLowerInvariant()">
             <header class="mb-8">
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">@Context.Presentation.Eyebrow</p>
                 <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">@Context.Page.Title</h1>
@@ -17,7 +18,7 @@
                 }
             </header>
 
-            <div class="@Context.Presentation.BodyContainerClass">
+            <div class="@GetBodyContainerClass(Context.Presentation.LayoutKind)">
                 <div class="prose max-w-none prose-neutral">
                     @((MarkupString)Context.Page.BodyHtml)
                 </div>
@@ -29,4 +30,27 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontContentPageContext Context { get; set; } = default!;
+
+    private static string GetArticleClass(StorefrontPageLayoutKind layoutKind)
+    {
+        return layoutKind switch
+        {
+            StorefrontPageLayoutKind.Policy => "bs-storefront-content-page bs-storefront-content-page--policy",
+            StorefrontPageLayoutKind.Faq => "bs-storefront-content-page bs-storefront-content-page--faq",
+            StorefrontPageLayoutKind.Support => "bs-storefront-content-page bs-storefront-content-page--support",
+            _ => "bs-storefront-content-page bs-storefront-content-page--standard",
+        };
+    }
+
+    private static string GetBodyContainerClass(StorefrontPageLayoutKind layoutKind)
+    {
+        return layoutKind switch
+        {
+            StorefrontPageLayoutKind.Policy
+                or StorefrontPageLayoutKind.Faq
+                or StorefrontPageLayoutKind.Support
+                => "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8",
+            _ => "rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg sm:p-8",
+        };
+    }
 }

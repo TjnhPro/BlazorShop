@@ -2,7 +2,7 @@ namespace BlazorShop.Storefront.Presentation.Services
 {
 
     using BlazorShop.Storefront.Presentation.Models;
-using BlazorShop.Storefront.Presentation.Contracts;
+    using BlazorShop.Storefront.Presentation.Contracts;
 
     public interface IStorefrontPagePresentationResolver
     {
@@ -43,9 +43,7 @@ using BlazorShop.Storefront.Presentation.Contracts;
         StorefrontPageLayoutKind LayoutKind,
         StorefrontPageStructuredDataKind StructuredDataKind,
         IReadOnlyList<StorefrontFaqStructuredDataItem> FaqEntries,
-        string Eyebrow,
-        string ArticleClass,
-        string BodyContainerClass)
+        string Eyebrow)
     {
         public static StorefrontPagePresentation Standard(string templateKey)
         {
@@ -54,9 +52,7 @@ using BlazorShop.Storefront.Presentation.Contracts;
                 StorefrontPageLayoutKind.Standard,
                 StorefrontPageStructuredDataKind.WebPage,
                 [],
-                "Store page",
-                "bs-storefront-content-page bs-storefront-content-page--standard",
-                "rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg sm:p-8");
+                "Store page");
         }
 
         public static StorefrontPagePresentation Policy(string templateKey)
@@ -66,9 +62,7 @@ using BlazorShop.Storefront.Presentation.Contracts;
                 StorefrontPageLayoutKind.Policy,
                 StorefrontPageStructuredDataKind.WebPage,
                 [],
-                "Policy",
-                "bs-storefront-content-page bs-storefront-content-page--policy",
-                "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8");
+                "Policy");
         }
 
         public static StorefrontPagePresentation Faq(string templateKey, IReadOnlyList<StorefrontFaqStructuredDataItem> entries)
@@ -80,9 +74,7 @@ using BlazorShop.Storefront.Presentation.Contracts;
                 StorefrontPageLayoutKind.Faq,
                 entries.Count > 0 ? StorefrontPageStructuredDataKind.FaqPage : StorefrontPageStructuredDataKind.WebPage,
                 entries,
-                "Help",
-                "bs-storefront-content-page bs-storefront-content-page--faq",
-                "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8");
+                "Help");
         }
 
         public static StorefrontPagePresentation Support(string templateKey)
@@ -92,9 +84,7 @@ using BlazorShop.Storefront.Presentation.Contracts;
                 StorefrontPageLayoutKind.Support,
                 StorefrontPageStructuredDataKind.WebPage,
                 [],
-                "Support",
-                "bs-storefront-content-page bs-storefront-content-page--support",
-                "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8");
+                "Support");
         }
     }
 

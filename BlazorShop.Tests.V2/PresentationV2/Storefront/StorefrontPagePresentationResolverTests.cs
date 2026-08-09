@@ -18,9 +18,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var presentation = Resolve(pageKey);
 
+            Assert.Equal(pageKey == "about" ? "about" : "standard", presentation.TemplateKey);
             Assert.Equal(StorefrontPageLayoutKind.Standard, presentation.LayoutKind);
             Assert.Equal(StorefrontPageStructuredDataKind.WebPage, presentation.StructuredDataKind);
             Assert.Empty(presentation.FaqEntries);
+            Assert.Equal("Store page", presentation.Eyebrow);
         }
 
         [Theory]
@@ -37,6 +39,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(pageKey, presentation.TemplateKey);
             Assert.Equal(StorefrontPageLayoutKind.Policy, presentation.LayoutKind);
             Assert.Equal(StorefrontPageStructuredDataKind.WebPage, presentation.StructuredDataKind);
+            Assert.Equal("Policy", presentation.Eyebrow);
         }
 
         [Fact]
@@ -47,6 +50,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(StorefrontPageLayoutKind.Faq, presentation.LayoutKind);
             Assert.Equal(StorefrontPageStructuredDataKind.WebPage, presentation.StructuredDataKind);
             Assert.Empty(presentation.FaqEntries);
+            Assert.Equal("Help", presentation.Eyebrow);
         }
 
         [Fact]
@@ -56,7 +60,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(StorefrontPageLayoutKind.Support, presentation.LayoutKind);
             Assert.Equal(StorefrontPageStructuredDataKind.WebPage, presentation.StructuredDataKind);
-            Assert.DoesNotContain("contact", presentation.ArticleClass, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("Support", presentation.Eyebrow);
         }
 
         private static StorefrontPagePresentation Resolve(string? pageKey)
