@@ -929,9 +929,19 @@ rg -n "BlazorShop.Storefront.Presentation|BlazorShop.Storefront.Components.Ssr|B
 
 Exit criteria:
 
-- [ ] Focused builds pass.
-- [ ] `Components.Primitives` direct dependency is still only `Components`.
-- [ ] `V2.WASM` remains browser-safe.
+- [x] Focused builds pass.
+- [x] `Components.Primitives` direct dependency is still only `Components`.
+- [x] `V2.WASM` remains browser-safe.
+
+Implementation notes:
+
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj" --no-restore`.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj" --no-restore`.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj" --no-restore`.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj" --no-restore`.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj" --no-restore`.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj" --no-restore`.
+- 2026-08-10: Reference inspection passed with no matches for forbidden Presentation/Ssr/Runtime/Client tokens in `V2.WASM` and `Components.Primitives` source/project files.
 
 ## Phase 3.1.13 - Focused Test Gate
 
