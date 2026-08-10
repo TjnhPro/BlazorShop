@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Hybrid.Content;
+namespace BlazorShop.Storefront.Components.WasmHost.Content;
 
 using BlazorShop.Storefront.Components.Contracts.Components;
 
@@ -8,5 +8,5 @@ public static class StorefrontContactFormDescriptor
         "contact-form",
         StorefrontComponentMode.Hybrid,
         StorefrontComponentCategory.Content,
-        typeof(StorefrontContactForm));
+        typeof(StorefrontContactFormApp));
 }

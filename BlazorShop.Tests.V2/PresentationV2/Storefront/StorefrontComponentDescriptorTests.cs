@@ -3,10 +3,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront;
 using System.Reflection;
 
 using BlazorShop.Storefront.Components.Contracts.Components;
-using BlazorShop.Storefront.Components.Hybrid.Content;
 using BlazorShop.Storefront.Components.Ssr.Brand;
 using BlazorShop.Storefront.Components.WasmHost.Catalog;
+using BlazorShop.Storefront.Components.WasmHost.Content;
 using BlazorShop.Storefront.Components.WasmHost.System;
+using BlazorShop.Storefront.V2.WASM.Components.Content;
 
 using Microsoft.AspNetCore.Components;
 
@@ -142,9 +143,9 @@ public sealed class StorefrontComponentDescriptorTests
 
         Assert.Equal(
             [
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactFormDescriptor.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Brand/StorefrontBrandLogoDescriptor.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Catalog/StorefrontDiscountedProductRailDescriptor.cs",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormDescriptor.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/System/StorefrontHybridRuntimeProbeDescriptor.cs",
             ],
             descriptorCandidates);
@@ -234,7 +235,7 @@ public sealed class StorefrontComponentDescriptorTests
         Assert.Equal("contact-form", descriptor.Key);
         Assert.Equal(StorefrontComponentMode.Hybrid, descriptor.Mode);
         Assert.Equal(StorefrontComponentCategory.Content, descriptor.Category);
-        Assert.Equal(typeof(StorefrontContactForm), descriptor.ComponentType);
+        Assert.Equal(typeof(StorefrontContactFormApp), descriptor.ComponentType);
     }
 
     [Fact]
@@ -269,23 +270,35 @@ public sealed class StorefrontComponentDescriptorTests
     }
 
     [Fact]
-    public void ContactFormAppDoesNotPublishPublicDescriptor()
+    public void ContactFormDescriptorTargetsWasmHostAppAndNotV2WasmWrapper()
     {
-        var wasmHostDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost");
-        var descriptorCandidates = Directory.EnumerateFiles(wasmHostDirectory, "*", SearchOption.AllDirectories)
-            .Where(file => !file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                .Any(part => part.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
-                    part.Equals("obj", StringComparison.OrdinalIgnoreCase)))
-            .Where(file => Path.GetExtension(file) is ".cs" or ".razor")
-            .Where(file =>
-            {
-                var source = File.ReadAllText(file);
-                return source.Contains("StorefrontComponentDescriptor", StringComparison.Ordinal) &&
-                    source.Contains("StorefrontContactFormApp", StringComparison.Ordinal);
-            })
-            .ToArray();
+        var descriptor = StorefrontContactFormDescriptor.Descriptor;
 
-        Assert.Empty(descriptorCandidates);
+        Assert.Equal(typeof(StorefrontContactFormApp), descriptor.ComponentType);
+        Assert.NotEqual(typeof(StorefrontContactFormSection), descriptor.ComponentType);
+        Assert.Equal("BlazorShop.Storefront.Components.WasmHost", descriptor.ComponentType.Assembly.GetName().Name);
+    }
+
+    [Fact]
+    public void PublicDescriptorsDoNotPointAtComponentsHybridTypes()
+    {
+        var descriptors = DiscoverRepositoryDescriptors();
+
+        Assert.DoesNotContain(
+            descriptors,
+            candidate => candidate.Descriptor.ComponentType.Namespace?.StartsWith(
+                "BlazorShop.Storefront.Components.Hybrid",
+                StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
+    public void PublicDescriptorsDoNotPointAtV2WasmWrappers()
+    {
+        var descriptors = DiscoverRepositoryDescriptors();
+
+        Assert.DoesNotContain(
+            descriptors,
+            candidate => candidate.Descriptor.ComponentType == typeof(StorefrontContactFormSection));
     }
 
     private sealed class ComponentFixture : IComponent

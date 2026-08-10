@@ -210,18 +210,18 @@ Decision:
 
 Tasks:
 
-- [ ] Create or move `StorefrontContactFormDescriptor` into `BlazorShop.Storefront.Components.WasmHost/Content`.
-- [ ] Set descriptor key to `contact-form`.
-- [ ] Set descriptor mode to `StorefrontComponentMode.Hybrid`.
-- [ ] Set descriptor category to `StorefrontComponentCategory.Content`.
-- [ ] Set descriptor component type to `typeof(StorefrontContactFormApp)`.
-- [ ] Remove `using BlazorShop.Storefront.Components.Hybrid.Content` from descriptor tests.
-- [ ] Update descriptor inventory expected path from `Components.Hybrid/Content/StorefrontContactFormDescriptor.cs` to `Components.WasmHost/Content/StorefrontContactFormDescriptor.cs`.
-- [ ] Update descriptor tests that currently expect `typeof(StorefrontContactForm)` to expect `typeof(StorefrontContactFormApp)`.
-- [ ] Re-evaluate and rename `StorefrontContactFormAppDoesNotPublishPublicDescriptor`; after this phase, the app is the public descriptor target, so the old assertion is obsolete.
-- [ ] Add a new assertion that no descriptor points at V2.WASM `StorefrontContactFormSection`.
-- [ ] Add a new assertion that no descriptor points at deleted/compatibility `Components.Hybrid` types.
-- [ ] Keep existing Browser controller and same-origin `/api/contact` behavior unchanged.
+- [x] Create or move `StorefrontContactFormDescriptor` into `BlazorShop.Storefront.Components.WasmHost/Content`.
+- [x] Set descriptor key to `contact-form`.
+- [x] Set descriptor mode to `StorefrontComponentMode.Hybrid`.
+- [x] Set descriptor category to `StorefrontComponentCategory.Content`.
+- [x] Set descriptor component type to `typeof(StorefrontContactFormApp)`.
+- [x] Remove `using BlazorShop.Storefront.Components.Hybrid.Content` from descriptor tests.
+- [x] Update descriptor inventory expected path from `Components.Hybrid/Content/StorefrontContactFormDescriptor.cs` to `Components.WasmHost/Content/StorefrontContactFormDescriptor.cs`.
+- [x] Update descriptor tests that currently expect `typeof(StorefrontContactForm)` to expect `typeof(StorefrontContactFormApp)`.
+- [x] Re-evaluate and rename `StorefrontContactFormAppDoesNotPublishPublicDescriptor`; after this phase, the app is the public descriptor target, so the old assertion is obsolete.
+- [x] Add a new assertion that no descriptor points at V2.WASM `StorefrontContactFormSection`.
+- [x] Add a new assertion that no descriptor points at deleted/compatibility `Components.Hybrid` types.
+- [x] Keep existing Browser controller and same-origin `/api/contact` behavior unchanged.
 
 Files expected to change:
 
@@ -232,10 +232,19 @@ Files expected to change:
 
 Exit criteria:
 
-- [ ] `rg -n "StorefrontContactFormDescriptor" BlazorShop.PresentationV2 BlazorShop.Tests.V2` shows the descriptor under WasmHost, not Hybrid.
-- [ ] Public descriptor inventory has no dependency on `Components.Hybrid`.
-- [ ] Contact descriptor still validates as semantic `Hybrid`.
-- [ ] Visible V2 contact route remains unchanged.
+- [x] `rg -n "StorefrontContactFormDescriptor" BlazorShop.PresentationV2 BlazorShop.Tests.V2` shows the descriptor under WasmHost, not Hybrid.
+- [x] Public descriptor inventory has no dependency on `Components.Hybrid`.
+- [x] Contact descriptor still validates as semantic `Hybrid`.
+- [x] Visible V2 contact route remains unchanged.
+
+Implementation notes:
+
+- 2026-08-10: `StorefrontContactFormDescriptor` moved to `BlazorShop.Storefront.Components.WasmHost/Content` and the old Hybrid descriptor source was deleted.
+- 2026-08-10: descriptor remains key `contact-form`, semantic mode `Hybrid`, category `Content`, target `StorefrontContactFormApp`.
+- 2026-08-10: descriptor tests no longer import `BlazorShop.Storefront.Components.Hybrid.Content`; the obsolete "app does not publish descriptor" assertion was replaced with positive WasmHost target coverage and negative V2.WASM wrapper/retired Hybrid type coverage.
+- 2026-08-10: visible V2 contact route remains V2 `StorefrontPage.razor` -> V2.WASM `StorefrontContactFormSection` -> WasmHost `StorefrontContactFormApp`; Browser controller and `/api/contact` behavior were not changed.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"` passed 24/24. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
+- 2026-08-10: `rg -n "StorefrontContactFormDescriptor" BlazorShop.PresentationV2 BlazorShop.Tests.V2 -g "!bin/**" -g "!obj/**"` shows active descriptor ownership under WasmHost; the only remaining Hybrid mention is historical README text scheduled for project retirement/docs cleanup.
 
 ## Phase H3.2 - Remove Historical Contact Shell
 
@@ -813,7 +822,7 @@ Before marking H3 complete:
 ## Implementation Task Summary
 
 - [ ] H3.0 baseline and evidence lock.
-- [ ] H3.1 move `contact-form` descriptor to WasmHost.
+- [x] H3.1 move `contact-form` descriptor to WasmHost.
 - [ ] H3.2 remove historical contact shell.
 - [ ] H3.3 remove `Components.Hybrid` project and references.
 - [ ] H3.4 decouple descriptor discovery from project topology.
