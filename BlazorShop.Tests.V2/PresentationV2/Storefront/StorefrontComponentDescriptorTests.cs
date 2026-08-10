@@ -3,6 +3,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront;
 using BlazorShop.Storefront.Components.Contracts.Components;
 using BlazorShop.Storefront.Components.Hybrid.Content;
 using BlazorShop.Storefront.Components.Ssr.Brand;
+using BlazorShop.Storefront.Components.WasmHost.Catalog;
 
 using Microsoft.AspNetCore.Components;
 
@@ -227,6 +228,7 @@ public sealed class StorefrontComponentDescriptorTests
             [
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactFormDescriptor.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Brand/StorefrontBrandLogoDescriptor.cs",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Catalog/StorefrontDiscountedProductRailDescriptor.cs",
             ],
             descriptorCandidates);
     }
@@ -270,6 +272,25 @@ public sealed class StorefrontComponentDescriptorTests
     }
 
     [Fact]
+    public void DiscountedProductRailDescriptorIsValidAndMatchesWasmHostMode()
+    {
+        var descriptor = StorefrontDiscountedProductRailDescriptor.Descriptor;
+
+        var validation = StorefrontComponentDescriptorValidator.Validate(descriptor);
+        var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
+            descriptor,
+            StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(descriptor.ComponentType));
+
+        Assert.True(validation.IsValid);
+        Assert.Empty(validation.Errors);
+        Assert.True(ownership.IsValid, ownership.Error);
+        Assert.Equal("discounted-product-rail", descriptor.Key);
+        Assert.Equal(StorefrontComponentMode.WasmHost, descriptor.Mode);
+        Assert.Equal(StorefrontComponentCategory.Catalog, descriptor.Category);
+        Assert.Equal(typeof(StorefrontDiscountedProductRail), descriptor.ComponentType);
+    }
+
+    [Fact]
     public void ContactFormAppDoesNotPublishPublicDescriptor()
     {
         var wasmHostDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost");
@@ -278,7 +299,12 @@ public sealed class StorefrontComponentDescriptorTests
                 .Any(part => part.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
                     part.Equals("obj", StringComparison.OrdinalIgnoreCase)))
             .Where(file => Path.GetExtension(file) is ".cs" or ".razor")
-            .Where(file => File.ReadAllText(file).Contains("StorefrontComponentDescriptor", StringComparison.Ordinal))
+            .Where(file =>
+            {
+                var source = File.ReadAllText(file);
+                return source.Contains("StorefrontComponentDescriptor", StringComparison.Ordinal) &&
+                    source.Contains("StorefrontContactFormApp", StringComparison.Ordinal);
+            })
             .ToArray();
 
         Assert.Empty(descriptorCandidates);

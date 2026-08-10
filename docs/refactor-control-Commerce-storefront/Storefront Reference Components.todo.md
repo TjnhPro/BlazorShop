@@ -609,43 +609,43 @@ Implement in `BlazorShop.Storefront.Components.WasmHost`.
 
 Files:
 
-- [ ] `Catalog/StorefrontDiscountedProductRail.razor`
-- [ ] `Catalog/StorefrontDiscountedProductRailDescriptor.cs`
+- [x] `Catalog/StorefrontDiscountedProductRail.razor`
+- [x] `Catalog/StorefrontDiscountedProductRailDescriptor.cs`
 
 Behavior:
 
-- [ ] Accept labels, classes, action descriptor, and `Limit`.
-- [ ] Load data on initialization.
-- [ ] Render loading state.
-- [ ] Render success state.
-- [ ] Render empty state.
-- [ ] Render error state.
-- [ ] Render retry action.
-- [ ] Render product summaries through semantic slots or minimal markup that does not own final visual classes.
-- [ ] Prefer `RenderFragment<ProductSummaryItem>` for item template if this avoids shared visual ownership.
-- [ ] Use only dynamic class slots.
-- [ ] Do not inject `HttpClient`.
-- [ ] Do not call direct routes.
-- [ ] Do not self-declare `@rendermode`.
+- [x] Accept labels, classes, action descriptor, and `Limit`.
+- [x] Load data on initialization.
+- [x] Render loading state.
+- [x] Render success state.
+- [x] Render empty state.
+- [x] Render error state.
+- [x] Render retry action.
+- [x] Render product summaries through semantic slots or minimal markup that does not own final visual classes.
+- [x] Prefer `RenderFragment<ProductSummaryItem>` for item template if this avoids shared visual ownership.
+- [x] Use only dynamic class slots.
+- [x] Do not inject `HttpClient`.
+- [x] Do not call direct routes.
+- [x] Do not self-declare `@rendermode`.
 
 Descriptor:
 
-- [ ] Add `discounted-product-rail`.
-- [ ] Mode is `WasmHost`.
-- [ ] Category is `Catalog`.
+- [x] Add `discounted-product-rail`.
+- [x] Mode is `WasmHost`.
+- [x] Category is `Catalog`.
 
 Tests:
 
-- [ ] Component state test for loading/success.
-- [ ] Component state test for empty.
-- [ ] Component state test for error/retry.
-- [ ] Descriptor mode/project consistency test.
-- [ ] Visual neutrality test.
-- [ ] WasmHost boundary test.
+- [x] Component state test for loading/success.
+- [x] Component state test for empty.
+- [x] Component state test for error/retry.
+- [x] Descriptor mode/project consistency test.
+- [x] Visual neutrality test.
+- [x] WasmHost boundary test.
 
 Exit criteria:
 
-- [ ] Rail proves a browser-interactive reference component through Browser controller and BFF.
+- [x] Rail proves a browser-interactive reference component through Browser controller and BFF.
 
 ## Phase 9 - V2 And V2.WASM Adoption
 
@@ -1012,4 +1012,14 @@ Phase 7 build/test:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj --no-restore`: passed, 0 warnings, 0 errors.
 - Browser catalog guard scan for Presentation, Runtime, Client, V2, CommerceNode, ControlPlane, Web.SharedV2, generated catalog client, direct `HttpClient`, and direct Storefront API route references: no matches.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrowserProductRailControllerTests|FullyQualifiedName~StorefrontBrowserContactControllerTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"`: passed 34/34.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 8 build/test:
+
+- Added `StorefrontDiscountedProductRail` and `StorefrontDiscountedProductRailDescriptor` under Components.WasmHost `Catalog`.
+- The component accepts host labels/classes/action/limit, loads through `IStorefrontBrowserProductRailController` on initialization, renders loading/success/empty/error/retry states, and exposes `RenderFragment<ProductSummaryItem>` for host-owned item markup.
+- Default product markup is semantic only with data hooks and dynamic class slots; the component has no direct routes, `HttpClient`, or `@rendermode`.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- WasmHost Catalog guard scan for direct API strings, `HttpClient`, render mode, Presentation/Runtime/Client/V2/backend references, and literal class attributes: no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`: passed 76/76.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

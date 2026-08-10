@@ -1,0 +1,115 @@
+@inject IStorefrontBrowserProductRailController ProductRailController
+
+<section class="@Classes.Root" data-storefront-component="discounted-product-rail" data-storefront-discounted-product-rail>
+    <header class="@Classes.Header" data-storefront-product-rail-header>
+        <h2 class="@Classes.Heading">@Labels.Heading</h2>
+    </header>
+
+    <div class="@Classes.Body" data-storefront-product-rail-body>
+        @if (State.IsLoading)
+        {
+            <p class="@Classes.Loading" role="status" data-storefront-product-rail-loading>@Labels.LoadingMessage</p>
+        }
+        else if (!string.IsNullOrWhiteSpace(State.ErrorCode))
+        {
+            <div class="@Classes.Error" role="alert" data-storefront-product-rail-error data-storefront-error-code="@State.ErrorCode">
+                <p>@(State.DefaultMessage ?? Labels.ErrorMessage)</p>
+                @if (State.Retryable)
+                {
+                    <button type="button" class="@Classes.RetryButton" @onclick="LoadAsync" data-storefront-product-rail-retry>
+                        @Labels.RetryLabel
+                    </button>
+                }
+            </div>
+        }
+        else if (State.Products.Count == 0)
+        {
+            <p class="@Classes.Empty" data-storefront-product-rail-empty>@Labels.EmptyMessage</p>
+        }
+        else
+        {
+            <ul class="@Classes.List" data-storefront-product-rail-list>
+                @foreach (var product in State.Products)
+                {
+                    <li class="@Classes.Item" data-storefront-product-rail-item data-product-id="@product.Id">
+                        @if (ItemTemplate is not null)
+                        {
+                            @ItemTemplate(product)
+                        }
+                        else
+                        {
+                            <article data-storefront-product-summary>
+                                @if (!string.IsNullOrWhiteSpace(product.ProductUrl))
+                                {
+                                    <a href="@product.ProductUrl" data-storefront-product-link>@product.Name</a>
+                                }
+                                else
+                                {
+                                    <span data-storefront-product-name>@product.Name</span>
+                                }
+                                <span data-storefront-product-price>@product.PriceDisplay</span>
+                                @if (!string.IsNullOrWhiteSpace(product.ComparePriceDisplay))
+                                {
+                                    <span data-storefront-product-compare-price>@product.ComparePriceDisplay</span>
+                                }
+                            </article>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public StorefrontDiscountedProductRailLabels Labels { get; set; } = EmptyLabels;
+
+    [Parameter]
+    public StorefrontDiscountedProductRailClasses Classes { get; set; } = new();
+
+    [Parameter]
+    public StorefrontDiscountedProductRailActionDescriptor Action { get; set; } = new(string.Empty);
+
+    [Parameter]
+    public int Limit { get; set; } = 6;
+
+    [Parameter]
+    public RenderFragment<ProductSummaryItem>? ItemTemplate { get; set; }
+
+    private StorefrontDiscountedProductRailState State { get; set; } = StorefrontDiscountedProductRailState.Loading;
+
+    protected override Task OnInitializedAsync()
+    {
+        return this.LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        this.State = StorefrontDiscountedProductRailState.Loading;
+
+        var response = await this.ProductRailController.GetDiscountedProductRailAsync(this.Limit, this.Action);
+        this.State = response.Success
+            ? new StorefrontDiscountedProductRailState(
+                response.Products,
+                IsLoading: false,
+                ErrorCode: null,
+                DefaultMessage: response.DefaultMessage,
+                TraceId: response.TraceId,
+                Retryable: false)
+            : new StorefrontDiscountedProductRailState(
+                Array.Empty<ProductSummaryItem>(),
+                IsLoading: false,
+                ErrorCode: response.Code ?? "product_rail_unavailable",
+                DefaultMessage: response.DefaultMessage,
+                TraceId: response.TraceId,
+                Retryable: response.Retryable);
+    }
+
+    private static readonly StorefrontDiscountedProductRailLabels EmptyLabels = new(
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty);
+}
