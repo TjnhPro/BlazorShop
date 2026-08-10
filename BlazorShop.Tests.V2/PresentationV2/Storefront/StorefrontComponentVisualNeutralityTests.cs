@@ -5,7 +5,7 @@ using Xunit;
 
 public sealed class StorefrontComponentVisualNeutralityTests
 {
-    private static readonly string[] ModeProjectDirectories =
+    private static readonly string[] ReusableComponentDirectories =
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
@@ -42,7 +42,7 @@ public sealed class StorefrontComponentVisualNeutralityTests
     [Fact]
     public void ModeProjectsDoNotContainStylesheetsOrThemeAssets()
     {
-        foreach (var directory in ModeProjectDirectories.Select(RepositoryPath))
+        foreach (var directory in ReusableComponentDirectories.Select(RepositoryPath))
         {
             Assert.DoesNotContain(
                 Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories),
@@ -60,7 +60,7 @@ public sealed class StorefrontComponentVisualNeutralityTests
     {
         var literalClassViolations = StorefrontClassAttributeScanner.FindLiteralClassAttributesInModeProjects(
             RepositoryRoot,
-            ModeProjectDirectories);
+            ReusableComponentDirectories);
 
         AssertNoLiteralClassViolations(literalClassViolations);
 
@@ -137,9 +137,24 @@ public sealed class StorefrontComponentVisualNeutralityTests
         }
     }
 
+    [Fact]
+    public void VisualNeutralityScanIncludesCurrentWasmHostHybridAndContactComponents()
+    {
+        var scannedFiles = EnumerateSourceFiles()
+            .Select(file => Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/'))
+            .ToArray();
+
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/System/StorefrontHybridRuntimeProbe.razor",
+            scannedFiles);
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor",
+            scannedFiles);
+    }
+
     private static IEnumerable<string> EnumerateSourceFiles()
     {
-        return ModeProjectDirectories
+        return ReusableComponentDirectories
             .Select(RepositoryPath)
             .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
             .Where(file => !file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)

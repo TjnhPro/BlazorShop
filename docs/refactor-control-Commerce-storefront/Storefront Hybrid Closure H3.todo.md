@@ -566,21 +566,29 @@ Goal: ensure H3 cleanup does not move visual ownership into reusable packages.
 
 Tasks:
 
-- [ ] Run current visual neutrality tests.
-- [ ] Update scan roots to remove `Components.Hybrid`.
-- [ ] Include `Components.WasmHost/System/StorefrontHybridRuntimeProbe.razor`.
-- [ ] Include `Components.WasmHost/Content/StorefrontContactFormApp.razor`.
-- [ ] Confirm reusable components use host-supplied class slots only.
-- [ ] Confirm V2/V2.WASM own final class strings.
-- [ ] Confirm reusable packages do not own theme CSS.
-- [ ] Confirm V2-specific labels/copy remain in V2/V2.WASM wrappers.
-- [ ] Confirm shared contracts expose label fields, not final storefront copy as business truth.
+- [x] Run current visual neutrality tests.
+- [x] Update scan roots to remove `Components.Hybrid`.
+- [x] Include `Components.WasmHost/System/StorefrontHybridRuntimeProbe.razor`.
+- [x] Include `Components.WasmHost/Content/StorefrontContactFormApp.razor`.
+- [x] Confirm reusable components use host-supplied class slots only.
+- [x] Confirm V2/V2.WASM own final class strings.
+- [x] Confirm reusable packages do not own theme CSS.
+- [x] Confirm V2-specific labels/copy remain in V2/V2.WASM wrappers.
+- [x] Confirm shared contracts expose label fields, not final storefront copy as business truth.
 
 Exit criteria:
 
-- [ ] Visual neutrality tests pass.
-- [ ] `Components.WasmHost` remains reusable and browser-safe.
-- [ ] No V2 visual class string appears in base shared/reusable component implementation except tests or V2 wrappers.
+- [x] Visual neutrality tests pass.
+- [x] `Components.WasmHost` remains reusable and browser-safe.
+- [x] No V2 visual class string appears in base shared/reusable component implementation except tests or V2 wrappers.
+
+Implementation notes:
+
+- 2026-08-10: renamed visual neutrality scan roots to `ReusableComponentDirectories` and kept active roots at `Components.Ssr` and `Components.WasmHost`.
+- 2026-08-10: added explicit coverage that the scan includes `Components.WasmHost/System/StorefrontHybridRuntimeProbe.razor` and `Components.WasmHost/Content/StorefrontContactFormApp.razor`.
+- 2026-08-10: reusable components continue to use dynamic class slots/contracts; V2/V2.WASM wrappers own final classes, labels, and action descriptors.
+- 2026-08-10: `rg -n "ModeProjectDirectories|Components.Hybrid|class=\"(?!@)|Shop now|Add to cart|Checkout|Sale|Free shipping|bs-storefront-|storefront.css|css/site.css|css/wasm-site.css|wwwroot/|/_content/BlazorShop.Storefront.V2" BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentVisualNeutralityTests.cs BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost -g "*.razor" -g "*.cs" -g "*.md" -g "!bin/**" -g "!obj/**"` returned no matches.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontHybridRuntimeProbeComponentTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests"` passed 43/43. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.10 - QA Route Policy Closure
 
@@ -893,7 +901,7 @@ Before marking H3 complete:
 - [x] H3.6 harden render mode ownership.
 - [x] H3.7 harden server-interactive/browser transport guardrails.
 - [x] H3.8 rename `Contracts.System` namespace.
-- [ ] H3.9 recheck visual neutrality and copy ownership.
+- [x] H3.9 recheck visual neutrality and copy ownership.
 - [ ] H3.10 close `/__qa` route policy.
 - [ ] H3.11 update active docs and QA checklist.
 - [ ] H3.12 run focused build gate.
