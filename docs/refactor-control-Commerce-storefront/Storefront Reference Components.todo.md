@@ -1,6 +1,6 @@
 # Storefront Reference Components
 
-Status: in progress
+Status: complete
 Owner: Storefront V2 architecture
 Scope: Phase 2 reference components only
 
@@ -100,24 +100,24 @@ Descriptor:
 
 Behavior:
 
-- [ ] Render a normal anchor to `HomeUrl`.
-- [ ] Use `aria-label` from `HomeLabel` when present; otherwise use `BrandName`.
-- [ ] Render an image only when `LogoUrl` is not blank.
-- [ ] Render brand name fallback text.
-- [ ] Render optional brand label when supplied.
-- [ ] Add stable semantic hooks such as `data-storefront-component="brand-logo"` and `data-storefront-brand`.
-- [ ] Use only dynamic class slots, for example `class="@Classes.Root"`.
-- [ ] Do not use literal `class` values.
-- [ ] Do not use V2 CSS class names inside the reusable component.
-- [ ] Do not use JS interop, Browser controllers, `HttpClient`, `@rendermode`, or direct route constants.
+- [x] Render a normal anchor to `HomeUrl`.
+- [x] Use `aria-label` from `HomeLabel` when present; otherwise use `BrandName`.
+- [x] Render an image only when `LogoUrl` is not blank.
+- [x] Render brand name fallback text.
+- [x] Render optional brand label when supplied.
+- [x] Add stable semantic hooks such as `data-storefront-component="brand-logo"` and `data-storefront-brand`.
+- [x] Use only dynamic class slots, for example `class="@Classes.Root"`.
+- [x] Do not use literal `class` values.
+- [x] Do not use V2 CSS class names inside the reusable component.
+- [x] Do not use JS interop, Browser controllers, `HttpClient`, `@rendermode`, or direct route constants.
 
 V2 adoption:
 
-- [ ] Replace the duplicated desktop brand block in `StorefrontHeader.razor`.
-- [ ] Replace the duplicated mobile brand block in `StorefrontHeader.razor`.
-- [ ] Keep existing V2 class names in V2 by passing `StorefrontBrandLogoClasses`.
-- [ ] Preserve current header accessibility and visual output.
-- [ ] Do not change footer brand markup in this phase unless there is a direct duplication bug caused by the header adoption.
+- [x] Replace the duplicated desktop brand block in `StorefrontHeader.razor`.
+- [x] Replace the duplicated mobile brand block in `StorefrontHeader.razor`.
+- [x] Keep existing V2 class names in V2 by passing `StorefrontBrandLogoClasses`.
+- [x] Preserve current header accessibility and visual output.
+- [x] Do not change footer brand markup in this phase unless there is a direct duplication bug caused by the header adoption.
 
 ### Hybrid - `StorefrontContactForm`
 
@@ -157,31 +157,31 @@ Base contracts:
 
 Important contract adjustment:
 
-- [ ] Include `Subject` in the component contract because the current Commerce Node contact request requires it.
-- [ ] Do not silently omit `Subject` unless the Presentation endpoint deliberately supplies a documented default subject.
-- [ ] Preferred direction: render a subject input in the reference form so UI and backend contract remain honest.
+- [x] Include `Subject` in the component contract because the current Commerce Node contact request requires it.
+- [x] Do not silently omit `Subject` unless the Presentation endpoint deliberately supplies a documented default subject.
+- [x] Preferred direction: render a subject input in the reference form so UI and backend contract remain honest.
 
 Hybrid shell behavior:
 
-- [ ] Render SSR-first semantic form markup that remains visible before WASM is ready.
-- [ ] Host the WasmHost child `StorefrontContactFormApp`.
-- [ ] Own `@rendermode` only at the bridge point.
-- [ ] Pass initial state, labels, classes, and action descriptor into the child.
-- [ ] Do not reference `BlazorShop.Storefront.Browser` directly.
-- [ ] Do not inject browser controllers.
-- [ ] Do not use `HttpClient`.
-- [ ] Do not include final V2 copy or V2/Tailwind classes.
+- [x] Render SSR-first semantic form markup that remains visible before WASM is ready.
+- [x] Host the WasmHost child `StorefrontContactFormApp`.
+- [x] Own `@rendermode` only at the bridge point.
+- [x] Pass initial state, labels, classes, and action descriptor into the child.
+- [x] Do not reference `BlazorShop.Storefront.Browser` directly.
+- [x] Do not inject browser controllers.
+- [x] Do not use `HttpClient`.
+- [x] Do not include final V2 copy or V2/Tailwind classes.
 
 WasmHost child behavior:
 
-- [ ] Implement `StorefrontContactFormApp`.
-- [ ] Inject only Browser controller abstractions from `BlazorShop.Storefront.Browser`.
-- [ ] Submit through Browser controller to a same-origin Presentation endpoint.
-- [ ] Show loading, success, field validation, error, and retry states through state contracts.
-- [ ] Do not use `HttpClient`.
-- [ ] Do not reference Presentation, Runtime, Client, V2, backend/core/API projects, or direct `/api/storefront/*`.
-- [ ] Do not self-declare `@rendermode`.
-- [ ] Use dynamic class slots only.
+- [x] Implement `StorefrontContactFormApp`.
+- [x] Inject only Browser controller abstractions from `BlazorShop.Storefront.Browser`.
+- [x] Submit through Browser controller to a same-origin Presentation endpoint.
+- [x] Show loading, success, field validation, error, and retry states through state contracts.
+- [x] Do not use `HttpClient`.
+- [x] Do not reference Presentation, Runtime, Client, V2, backend/core/API projects, or direct `/api/storefront/*`.
+- [x] Do not self-declare `@rendermode`.
+- [x] Use dynamic class slots only.
 
 Descriptor:
 
@@ -189,35 +189,35 @@ Descriptor:
 - Mode: `StorefrontComponentMode.Hybrid`
 - Category: `StorefrontComponentCategory.Content`
 - Component type: `StorefrontContactForm`
-- [ ] Do not publish a separate public descriptor for internal child `StorefrontContactFormApp`.
+- [x] Do not publish a separate public descriptor for internal child `StorefrontContactFormApp`.
 
 Presentation endpoint:
 
-- [ ] Add a same-origin local contact endpoint, for example `POST /api/contact`.
-- [ ] Validate antiforgery through the existing Presentation antiforgery pipeline.
-- [ ] Use existing Runtime/generated contact client path; do not call Commerce Node directly from Browser/WasmHost.
-- [ ] Resolve current store through the existing Presentation/runtime store context pattern.
-- [ ] Map local request to generated `StorefrontContactRequest`.
-- [ ] Map Commerce Node response to a browser-safe result with `Success`, `Code`, `DefaultMessage`, `TraceId`, and field errors where available.
-- [ ] Keep user-facing final copy owned by V2/host labels, not by Runtime or Browser.
+- [x] Add a same-origin local contact endpoint, for example `POST /api/contact`.
+- [x] Validate antiforgery through the existing Presentation antiforgery pipeline.
+- [x] Use existing Runtime/generated contact client path; do not call Commerce Node directly from Browser/WasmHost.
+- [x] Resolve current store through the existing Presentation/runtime store context pattern.
+- [x] Map local request to generated `StorefrontContactRequest`.
+- [x] Map Commerce Node response to a browser-safe result with `Success`, `Code`, `DefaultMessage`, `TraceId`, and field errors where available.
+- [x] Keep user-facing final copy owned by V2/host labels, not by Runtime or Browser.
 
 Browser controller:
 
-- [ ] Add `IStorefrontBrowserContactController`.
-- [ ] Add `StorefrontBrowserContactController`.
-- [ ] Register it through `AddStorefrontBrowserControllers()`.
-- [ ] Use `StorefrontLocalApiClient`.
-- [ ] Use same-origin relative endpoint path only.
-- [ ] Preserve cancellation behavior.
-- [ ] Return semantic error data instead of hardcoding final UI copy.
+- [x] Add `IStorefrontBrowserContactController`.
+- [x] Add `StorefrontBrowserContactController`.
+- [x] Register it through `AddStorefrontBrowserControllers()`.
+- [x] Use `StorefrontLocalApiClient`.
+- [x] Use same-origin relative endpoint path only.
+- [x] Preserve cancellation behavior.
+- [x] Return semantic error data instead of hardcoding final UI copy.
 
 V2 adoption:
 
-- [ ] Add or update one V2 contact page/region that uses `StorefrontContactForm`.
-- [ ] Provide V2-owned labels, copy, and class slots.
-- [ ] Ensure the current contact route still renders before WASM hydration.
-- [ ] Ensure submit works after WASM loads.
-- [ ] Do not map contact/account/cart/checkout as page-template types in this phase.
+- [x] Add or update one V2 contact page/region that uses `StorefrontContactForm`.
+- [x] Provide V2-owned labels, copy, and class slots.
+- [x] Ensure the current contact route still renders before WASM hydration.
+- [x] Ensure submit works after WASM loads.
+- [x] Do not map contact/account/cart/checkout as page-template types in this phase.
 
 ### WasmHost - `StorefrontDiscountedProductRail`
 
@@ -248,29 +248,29 @@ Base contracts:
 
 Data strategy for this phase:
 
-- [ ] Do not add new discount core behavior.
-- [ ] Do not add a Storefront API `discountedOnly` query.
-- [ ] Use existing catalog query/read model path.
-- [ ] In Presentation, request a capped product page using existing catalog services.
-- [ ] Filter candidate products where compare/regular price evidence is present, preferably `ComparePriceDisplay` not blank.
-- [ ] Return at most `Limit`.
-- [ ] Document that this is a reference component strategy, not the final discount engine.
-- [ ] If no discounted products exist, return an empty state instead of falling back to unrelated latest products.
+- [x] Do not add new discount core behavior.
+- [x] Do not add a Storefront API `discountedOnly` query.
+- [x] Use existing catalog query/read model path.
+- [x] In Presentation, request a capped product page using existing catalog services.
+- [x] Filter candidate products where compare/regular price evidence is present, preferably `ComparePriceDisplay` not blank.
+- [x] Return at most `Limit`.
+- [x] Document that this is a reference component strategy, not the final discount engine.
+- [x] If no discounted products exist, return an empty state instead of falling back to unrelated latest products.
 
 WasmHost behavior:
 
-- [ ] Load on component initialization.
-- [ ] Support `Limit`.
-- [ ] Show loading state.
-- [ ] Show success state with product summaries.
-- [ ] Show empty state.
-- [ ] Show error state.
-- [ ] Support retry.
-- [ ] Use Browser controller only.
-- [ ] Do not inject `HttpClient`.
-- [ ] Do not call direct `/api/*` or `api/storefront/*`.
-- [ ] Do not self-declare `@rendermode`.
-- [ ] Do not own final V2 visual classes.
+- [x] Load on component initialization.
+- [x] Support `Limit`.
+- [x] Show loading state.
+- [x] Show success state with product summaries.
+- [x] Show empty state.
+- [x] Show error state.
+- [x] Support retry.
+- [x] Use Browser controller only.
+- [x] Do not inject `HttpClient`.
+- [x] Do not call direct `/api/*` or `api/storefront/*`.
+- [x] Do not self-declare `@rendermode`.
+- [x] Do not own final V2 visual classes.
 
 Descriptor:
 
@@ -281,27 +281,27 @@ Descriptor:
 
 Presentation endpoint:
 
-- [ ] Add a same-origin local endpoint, for example `GET /api/catalog/discounted-products?limit=...`.
-- [ ] No antiforgery required for GET because it is read-only.
-- [ ] Validate `limit` with a safe min/max, for example 1 to 24.
-- [ ] Use existing Presentation catalog services and `StorefrontProductSummaryMapper`.
-- [ ] Do not expose raw generated API DTOs directly to the browser component.
-- [ ] Return browser-safe rail response with product summaries and semantic error data.
+- [x] Add a same-origin local endpoint, for example `GET /api/catalog/discounted-products?limit=...`.
+- [x] No antiforgery required for GET because it is read-only.
+- [x] Validate `limit` with a safe min/max, for example 1 to 24.
+- [x] Use existing Presentation catalog services and `StorefrontProductSummaryMapper`.
+- [x] Do not expose raw generated API DTOs directly to the browser component.
+- [x] Return browser-safe rail response with product summaries and semantic error data.
 
 Browser controller:
 
-- [ ] Add `IStorefrontBrowserCatalogController` or a narrower `IStorefrontBrowserProductRailController`.
-- [ ] Prefer a narrow method such as `GetDiscountedProductRailAsync(limit, cancellationToken)` to avoid creating a browser-side catalog god controller.
-- [ ] Register the controller through `AddStorefrontBrowserControllers()`.
-- [ ] Use `StorefrontLocalApiClient`.
-- [ ] Preserve cancellation behavior and same-origin URL protection.
+- [x] Add `IStorefrontBrowserCatalogController` or a narrower `IStorefrontBrowserProductRailController`.
+- [x] Prefer a narrow method such as `GetDiscountedProductRailAsync(limit, cancellationToken)` to avoid creating a browser-side catalog god controller.
+- [x] Register the controller through `AddStorefrontBrowserControllers()`.
+- [x] Use `StorefrontLocalApiClient`.
+- [x] Preserve cancellation behavior and same-origin URL protection.
 
 V2 adoption:
 
-- [ ] Add the rail to V2 Home only as a small proof region.
-- [ ] Do not replace the existing latest-products section unless the UX becomes duplicative and the change is explicitly kept small.
-- [ ] V2 owns all class values, headings, empty/error copy, and product card visual composition.
-- [ ] If a V2 wrapper is needed around `ProductSummaryItem`, keep that wrapper in V2.
+- [x] Add the rail to V2 Home only as a small proof region.
+- [x] Do not replace the existing latest-products section unless the UX becomes duplicative and the change is explicitly kept small.
+- [x] V2 owns all class values, headings, empty/error copy, and product card visual composition.
+- [x] If a V2 wrapper is needed around `ProductSummaryItem`, keep that wrapper in V2.
 
 ## Phase 0 - Baseline And Scope Confirmation
 
@@ -870,17 +870,17 @@ Phase 14 browser QA:
 
 Final audit:
 
-- [ ] Run `git status --short`.
-- [ ] Verify unrelated user changes were not modified.
-- [ ] Verify `Components/Features` does not exist.
-- [ ] Verify no reusable mode project contains literal visual classes.
-- [ ] Verify no reusable mode project contains CSS/theme assets.
-- [ ] Verify no reusable mode project references Runtime, Client, V2, Starter, backend/core/API, Control Plane, or Web.SharedV2 outside documented mode allowlists.
-- [ ] Verify V2 references mode projects only for these adopted reference components.
-- [ ] Verify Starter and StorefrontBuilder were not changed.
-- [ ] Verify `StorefrontContactFormApp` has no public descriptor.
-- [ ] Verify no discount core or Commerce Node API expansion was introduced.
-- [ ] Verify docs and QA checklist include implementation evidence.
+- [x] Run `git status --short`.
+- [x] Verify unrelated user changes were not modified.
+- [x] Verify `Components/Features` does not exist.
+- [x] Verify no reusable mode project contains literal visual classes.
+- [x] Verify no reusable mode project contains CSS/theme assets.
+- [x] Verify no reusable mode project references Runtime, Client, V2, Starter, backend/core/API, Control Plane, or Web.SharedV2 outside documented mode allowlists.
+- [x] Verify V2 references mode projects only for these adopted reference components.
+- [x] Verify Starter and StorefrontBuilder were not changed.
+- [x] Verify `StorefrontContactFormApp` has no public descriptor.
+- [x] Verify no discount core or Commerce Node API expansion was introduced.
+- [x] Verify docs and QA checklist include implementation evidence.
 
 Suggested commit message:
 
@@ -890,35 +890,46 @@ feat(storefront): add reference component mode implementations
 
 Exit criteria:
 
-- [ ] Commit includes only scoped implementation, tests, docs, and QA evidence.
-- [ ] Final response lists changed files, verification results, Playwright evidence, and any skipped optional item.
+- [x] Commit includes only scoped implementation, tests, docs, and QA evidence.
+- [x] Final response lists changed files, verification results, Playwright evidence, and any skipped optional item.
+
+Phase 15 final audit:
+
+- `git status --short` after the Phase 14 commit shows only the pre-existing out-of-scope `BlazorShop.sln` modification.
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features` does not exist.
+- Reusable mode project scan found no literal visual classes, CSS/theme assets, direct API route strings, `HttpClient`, `@rendermode` in SSR/WasmHost, Runtime/Client/V2/Starter/backend/ControlPlane/Web.SharedV2 forbidden references outside documented allowlists.
+- Starter and StorefrontBuilder scans found no reference to the new mode projects or reference components.
+- `StorefrontContactFormApp` has no public descriptor; only the component marker and descriptor guard test mention `contact-form-app`.
+- Commerce Node/core scan found no `discountedOnly`, `discounted-products`, or `StorefrontDiscountedProductRail` expansion.
+- Docs and `QA-StorefrontV2.todo.md` include Playwright evidence path and browser results.
+- The only intentional deviation from the original V2 adoption wording is the visible V2 contact host: V2 now uses `StorefrontContactFormSection` in `BlazorShop.Storefront.V2.WASM` because browser QA proved the previous nested Hybrid bridge rendered but did not hydrate submit events. The public Hybrid `StorefrontContactForm` descriptor and component remain implemented and covered by focused tests.
 
 ## Definition Of Done
 
-- [ ] `StorefrontBrandLogo` exists in `Components.Ssr`.
-- [ ] `StorefrontBrandLogo` has descriptor `brand-logo`, mode `Ssr`, category `Brand`.
-- [ ] V2 header uses `StorefrontBrandLogo` in both desktop and mobile brand locations.
-- [ ] `StorefrontContactForm` exists in `Components.Hybrid`.
-- [ ] `StorefrontContactFormApp` exists in `Components.WasmHost`.
-- [ ] Contact form descriptor is `contact-form`, mode `Hybrid`, category `Content`.
-- [ ] `StorefrontContactFormApp` is internal child behavior, not a public descriptor.
-- [ ] Contact form submits through Browser controller and same-origin Presentation endpoint.
-- [ ] Contact form includes or explicitly handles `Subject`.
-- [ ] `StorefrontDiscountedProductRail` exists in `Components.WasmHost`.
-- [ ] Discounted rail descriptor is `discounted-product-rail`, mode `WasmHost`, category `Catalog`.
-- [ ] Discounted rail uses Browser controller and same-origin Presentation endpoint.
-- [ ] Discounted rail does not add discount core or a public backend `discountedOnly` query.
-- [ ] Base `Components` remains `Microsoft.NET.Sdk`.
-- [ ] Base `Components` still has no `.razor`, CSS, JS, theme assets, or `Features` folder.
-- [ ] Reusable mode libraries have no literal visual classes.
-- [ ] Reusable mode libraries have no theme CSS/assets.
-- [ ] Reusable mode libraries have no forbidden dependencies.
-- [ ] V2 owns all final classes, layout, copy, and visual templates.
-- [ ] Starter, StorefrontBuilder, and generated storefronts are unchanged.
-- [ ] Focused builds pass.
-- [ ] Focused architecture and feature tests pass.
-- [ ] Playwright V2 browser QA passes.
-- [ ] QA checklist is updated with evidence.
+- [x] `StorefrontBrandLogo` exists in `Components.Ssr`.
+- [x] `StorefrontBrandLogo` has descriptor `brand-logo`, mode `Ssr`, category `Brand`.
+- [x] V2 header uses `StorefrontBrandLogo` in both desktop and mobile brand locations.
+- [x] `StorefrontContactForm` exists in `Components.Hybrid`.
+- [x] `StorefrontContactFormApp` exists in `Components.WasmHost`.
+- [x] Contact form descriptor is `contact-form`, mode `Hybrid`, category `Content`.
+- [x] `StorefrontContactFormApp` is internal child behavior, not a public descriptor.
+- [x] Contact form submits through Browser controller and same-origin Presentation endpoint.
+- [x] Contact form includes or explicitly handles `Subject`.
+- [x] `StorefrontDiscountedProductRail` exists in `Components.WasmHost`.
+- [x] Discounted rail descriptor is `discounted-product-rail`, mode `WasmHost`, category `Catalog`.
+- [x] Discounted rail uses Browser controller and same-origin Presentation endpoint.
+- [x] Discounted rail does not add discount core or a public backend `discountedOnly` query.
+- [x] Base `Components` remains `Microsoft.NET.Sdk`.
+- [x] Base `Components` still has no `.razor`, CSS, JS, theme assets, or `Features` folder.
+- [x] Reusable mode libraries have no literal visual classes.
+- [x] Reusable mode libraries have no theme CSS/assets.
+- [x] Reusable mode libraries have no forbidden dependencies.
+- [x] V2 owns all final classes, layout, copy, and visual templates.
+- [x] Starter, StorefrontBuilder, and generated storefronts are unchanged.
+- [x] Focused builds pass.
+- [x] Focused architecture and feature tests pass.
+- [x] Playwright V2 browser QA passes.
+- [x] QA checklist is updated with evidence.
 
 ## Decision Audit Trail
 
@@ -931,13 +942,14 @@ Exit criteria:
 | 5 | Use existing product summary compare-price evidence for the discounted rail. | Minimality | Current catalog query has no discount-only flag; adding discount core is out of scope for a reference component proof. | Add new discount query/core behavior now. |
 | 6 | Let V2 reference mode projects only after real components exist. | Phase progression | Phase 1 forbade host references before adoption; Phase 2 adoption needs a narrow V2 exception. | Keep V2 unaware and leave components unused. |
 | 7 | Keep Starter and StorefrontBuilder out of scope. | Risk control | This phase proves real component modes in V2 first. | Update every consumer at once. |
+| 8 | Use V2.WASM wrappers for visible V2 interactive adoption where browser QA found render-mode/hydration boundaries. | Runtime correctness | `RenderFragment<T>` cannot cross the WebAssembly render-mode boundary, and the nested Hybrid contact bridge did not hydrate submit events in the visible V2 flow. V2.WASM wrappers keep final visual ownership in V2 while reusable WasmHost components still use Browser controllers and same-origin BFF endpoints. | Keep the browser-visible V2 flow on a broken nested render-mode bridge. |
 
 ## Implementation Notes
 
 - [x] Record baseline command outputs here during implementation.
 - [x] Record build/test command outputs here during implementation.
-- [ ] Record Playwright evidence here during implementation.
-- [ ] Record any deviation from this plan with reason and file references.
+- [x] Record Playwright evidence here during implementation.
+- [x] Record any deviation from this plan with reason and file references.
 
 Phase 0 baseline:
 
