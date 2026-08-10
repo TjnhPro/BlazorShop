@@ -547,8 +547,8 @@ Implementation notes:
 
 Exit criteria:
 
-- [ ] `V2ProductPageView.razor` no longer owns pricing markup.
-- [ ] selection-preview JS can still update price and compare-price hooks.
+- [x] `V2ProductPageView.razor` no longer owns pricing markup.
+- [x] selection-preview JS can still update price and compare-price hooks.
 
 ## Phase 3.2.6 - Extract StorefrontProductAvailability
 
@@ -1246,118 +1246,132 @@ Implementation notes:
 
 Answer before marking complete:
 
-- [ ] Did `StorefrontProductGallery` move to `Components.Primitives/Product`?
-- [ ] Did gallery stay `Components`-only?
-- [ ] Did gallery avoid Presentation/Browser/Runtime/Client/backend references?
-- [ ] Did gallery avoid final V2 class/copy ownership?
-- [ ] Did V2 keep gallery final labels/classes?
-- [ ] Did V2 keep gallery JS progressive enhancement?
-- [ ] Did `StorefrontProductPricing` move to `Components.Ssr/Product`?
-- [ ] Did `StorefrontProductAvailability` move to `Components.Ssr/Product`?
-- [ ] Did `StorefrontProductVariantList` move to `Components.Ssr/Product`?
-- [ ] Did SSR display components consume prepared Presentation views only?
-- [ ] Did ProductPurchasePanel remain untouched except import/call-site compatibility if needed?
-- [ ] Did V2ProductPageView remain the page composition owner?
-- [ ] Did semantic hooks remain stable?
-- [ ] Did selection-preview still update price/compare/SKU/GTIN/stock?
-- [ ] Did add-to-cart still work?
-- [ ] Did browser network guardrails pass?
-- [ ] Did no new component mode/project/registry appear?
+- [x] Did `StorefrontProductGallery` move to `Components.Primitives/Product`?
+- [x] Did gallery stay `Components`-only?
+- [x] Did gallery avoid Presentation/Browser/Runtime/Client/backend references?
+- [x] Did gallery avoid final V2 class/copy ownership?
+- [x] Did V2 keep gallery final labels/classes?
+- [x] Did V2 keep gallery JS progressive enhancement?
+- [x] Did `StorefrontProductPricing` move to `Components.Ssr/Product`?
+- [x] Did `StorefrontProductAvailability` move to `Components.Ssr/Product`?
+- [x] Did `StorefrontProductVariantList` move to `Components.Ssr/Product`?
+- [x] Did SSR display components consume prepared Presentation views only?
+- [x] Did ProductPurchasePanel remain untouched except import/call-site compatibility if needed?
+- [x] Did V2ProductPageView remain the page composition owner?
+- [x] Did semantic hooks remain stable?
+- [x] Did selection-preview still update price/compare/SKU/GTIN/stock?
+- [x] Did add-to-cart still work?
+- [x] Did browser network guardrails pass?
+- [x] Did no new component mode/project/registry appear?
 
 Record in closure notes:
 
-- [ ] final project graph;
-- [ ] new files;
-- [ ] moved/deleted files;
-- [ ] changed tests;
-- [ ] changed docs;
-- [ ] focused build/test command results;
-- [ ] full build/test command results;
-- [ ] browser QA evidence;
-- [ ] remaining Product Detail inline markup;
-- [ ] known visual debt;
-- [ ] next candidate phase only after fresh review.
+- [x] final project graph;
+- [x] new files;
+- [x] moved/deleted files;
+- [x] changed tests;
+- [x] changed docs;
+- [x] focused build/test command results;
+- [x] full build/test command results;
+- [x] browser QA evidence;
+- [x] remaining Product Detail inline markup;
+- [x] known visual debt;
+- [x] next candidate phase only after fresh review.
 
 Exit criteria:
 
-- [ ] Phase 3.2 can be marked closed.
-- [ ] Phase 3.3 is not selected until closure review is complete.
+- [x] Phase 3.2 can be marked closed.
+- [x] Phase 3.3 is not selected until closure review is complete.
+
+Closure notes:
+
+- 2026-08-10: Final graph is `Components -> Components.Primitives/Product/StorefrontProductGallery -> Storefront.V2` for render-only gallery, and `Presentation product views -> Components.Ssr/Product display components -> Storefront.V2` for pricing, availability, and informational variant list. V2 keeps Product Detail page composition, final visual config, ProductPurchasePanel, and `storefrontCommerce.js` progressive enhancement.
+- 2026-08-10: New files: `ProductGalleryClasses.cs`, `ProductPricingClasses.cs`, `ProductAvailabilityClasses.cs`, `ProductVariantListClasses.cs`, `ProductVariantListLabels.cs`, `ProductDetailDisplayVisuals.cs`, `ProductGalleryVisuals.cs`, `StorefrontProductPricing.razor`, `StorefrontProductAvailability.razor`, `StorefrontProductVariantList.razor`, `StorefrontProductDetailDisplayComponentTests.cs`, and `StorefrontProductGalleryPrimitiveTests.cs`.
+- 2026-08-10: Moved/deleted files: old V2 `Components/Product/StorefrontProductGallery.razor` was moved to `Components.Primitives/Product/StorefrontProductGallery.razor`; no replacement V2 gallery implementation remains.
+- 2026-08-10: Changed tests: updated Product Detail ownership, branding markup, foundation boundary, visual neutrality, render-mode/dependency, and commerce script regression guardrails; added focused Product Detail display component and gallery primitive tests.
+- 2026-08-10: Changed docs: `COMPONENT-MODES.md`, `docs/architecture/05-project-and-folder-guide.md`, `docs/architecture/10-v2-contract-ownership.md`, `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`, and this plan file.
+- 2026-08-10: Focused builds passed for Components, Components.Primitives, Components.Ssr, Storefront V2, and V2.WASM. Focused tests passed component contracts/ownership, primitive dependency, component mode dependency, visual neutrality, render-mode ownership, Product Detail display components, Product Detail JS hooks, and related Storefront guardrails.
+- 2026-08-10: Full verification passed: `dotnet build BlazorShop.sln --no-restore` and `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed. Full test result was 1924 passed, 2 skipped, 0 failed.
+- 2026-08-10: Browser QA evidence is `output/playwright/storefront-product-detail-display-components/evidence.json`, with screenshots under the same folder. Browser QA verified gallery behavior, selection-preview, add-to-cart, blocked purchase, cart badge update, and network guardrails.
+- 2026-08-10: Remaining Product Detail inline markup in `V2ProductPageView.razor` is host-owned page shell/layout, category/new badge, description, navigation, support/SEO/related composition, and ProductPurchasePanel call-site. Extracted display markup is no longer duplicated inline.
+- 2026-08-10: Known visual debt is deferred only to the final V2 visual sweep: spacing normalization, class naming cleanup, responsive tuning, pixel parity, product page visual redesign, and broad CSS consolidation.
+- 2026-08-10: No Phase 3.3 candidate is selected in this closure. A fresh V2/V2.WASM review is required before selecting the next extraction batch.
 
 ## Definition Of Done
 
 Gallery:
 
-- [ ] `StorefrontProductGallery` lives in `Components.Primitives/Product`.
-- [ ] It depends only on `BlazorShop.Storefront.Components`.
-- [ ] It uses `ProductGalleryItem`, `ProductGalleryLabels`, `ProductGalleryClasses`, and `ProductGalleryState`.
-- [ ] It has no Presentation/Browser/Runtime/Client/backend dependency.
-- [ ] It has no `@rendermode`.
-- [ ] It has no `IJSRuntime`.
-- [ ] It has no `HttpClient`.
-- [ ] It has no final V2 class literals.
-- [ ] It has no hardcoded V2 copy.
-- [ ] V2 supplies labels/classes.
-- [ ] V2 JS still enhances gallery through stable hooks.
-- [ ] Old V2 gallery implementation is removed.
+- [x] `StorefrontProductGallery` lives in `Components.Primitives/Product`.
+- [x] It depends only on `BlazorShop.Storefront.Components`.
+- [x] It uses `ProductGalleryItem`, `ProductGalleryLabels`, `ProductGalleryClasses`, and `ProductGalleryState`.
+- [x] It has no Presentation/Browser/Runtime/Client/backend dependency.
+- [x] It has no `@rendermode`.
+- [x] It has no `IJSRuntime`.
+- [x] It has no `HttpClient`.
+- [x] It has no final V2 class literals.
+- [x] It has no hardcoded V2 copy.
+- [x] V2 supplies labels/classes.
+- [x] V2 JS still enhances gallery through stable hooks.
+- [x] Old V2 gallery implementation is removed.
 
 Pricing:
 
-- [ ] `StorefrontProductPricing` lives in `Components.Ssr/Product`.
-- [ ] It consumes `StorefrontProductPricingView`.
-- [ ] It preserves price/compare semantic hooks.
-- [ ] It has no Browser/Runtime/Client/V2/backend dependency.
-- [ ] V2 supplies final classes.
+- [x] `StorefrontProductPricing` lives in `Components.Ssr/Product`.
+- [x] It consumes `StorefrontProductPricingView`.
+- [x] It preserves price/compare semantic hooks.
+- [x] It has no Browser/Runtime/Client/V2/backend dependency.
+- [x] V2 supplies final classes.
 
 Availability:
 
-- [ ] `StorefrontProductAvailability` lives in `Components.Ssr/Product`.
-- [ ] It consumes prepared Presentation views.
-- [ ] It preserves SKU/GTIN/stock semantic hooks.
-- [ ] It does not own purchase selection.
-- [ ] V2 supplies final classes.
+- [x] `StorefrontProductAvailability` lives in `Components.Ssr/Product`.
+- [x] It consumes prepared Presentation views.
+- [x] It preserves SKU/GTIN/stock semantic hooks.
+- [x] It does not own purchase selection.
+- [x] V2 supplies final classes.
 
 Variant list:
 
-- [ ] `StorefrontProductVariantList` lives in `Components.Ssr/Product`.
-- [ ] It is informational only.
-- [ ] It does not render selection inputs.
-- [ ] It does not affect purchase payload.
-- [ ] V2 supplies final classes/copy.
+- [x] `StorefrontProductVariantList` lives in `Components.Ssr/Product`.
+- [x] It is informational only.
+- [x] It does not render selection inputs.
+- [x] It does not affect purchase payload.
+- [x] V2 supplies final classes/copy.
 
 V2 page:
 
-- [ ] `V2ProductPageView` consumes all four extracted components.
-- [ ] `V2ProductPageView` still owns outer layout and section order.
-- [ ] `StorefrontProductPurchasePanel` remains V2-owned.
-- [ ] navigation/support/SEO/related products remain V2-owned.
+- [x] `V2ProductPageView` consumes all four extracted components.
+- [x] `V2ProductPageView` still owns outer layout and section order.
+- [x] `StorefrontProductPurchasePanel` remains V2-owned.
+- [x] navigation/support/SEO/related products remain V2-owned.
 
 Architecture:
 
-- [ ] `Components.Primitives` remains `Components`-only.
-- [ ] `Components.Ssr` remains Browser-free.
-- [ ] no extracted component owns render mode.
-- [ ] no reusable component owns final V2 CSS/copy/layout.
-- [ ] no new component mode/project/registry is introduced.
+- [x] `Components.Primitives` remains `Components`-only.
+- [x] `Components.Ssr` remains Browser-free.
+- [x] no extracted component owns render mode.
+- [x] no reusable component owns final V2 CSS/copy/layout.
+- [x] no new component mode/project/registry is introduced.
 
 Tests and QA:
 
-- [ ] primitive dependency tests pass.
-- [ ] component mode dependency tests pass.
-- [ ] visual neutrality tests pass.
-- [ ] render-mode ownership tests pass.
-- [ ] Product Detail display component tests pass.
-- [ ] old contradictory gallery ownership tests are updated.
-- [ ] focused browser QA passes.
-- [ ] add-to-cart regression passes.
-- [ ] no direct Commerce browser request appears.
+- [x] primitive dependency tests pass.
+- [x] component mode dependency tests pass.
+- [x] visual neutrality tests pass.
+- [x] render-mode ownership tests pass.
+- [x] Product Detail display component tests pass.
+- [x] old contradictory gallery ownership tests are updated.
+- [x] focused browser QA passes.
+- [x] add-to-cart regression passes.
+- [x] no direct Commerce browser request appears.
 
 Scope:
 
-- [ ] no ProductPurchasePanel extraction.
-- [ ] no cart/checkout/account work.
-- [ ] no backend/API change.
-- [ ] no database/migration change.
-- [ ] no StorefrontBuilder/Starter/generated-storefront change.
+- [x] no ProductPurchasePanel extraction.
+- [x] no cart/checkout/account work.
+- [x] no backend/API change.
+- [x] no database/migration change.
+- [x] no StorefrontBuilder/Starter/generated-storefront change.
 
 ## Expected Final Graph
 
@@ -1447,11 +1461,15 @@ Phase 3 remains extraction-first.
 
 Before selecting Phase 3.3:
 
-- [ ] close Phase 3.2 completely;
-- [ ] review V2 and V2.WASM fresh;
-- [ ] identify remaining meaningful reuse boundaries;
-- [ ] avoid visual polish until extraction batches are complete;
-- [ ] keep each batch small enough for one implementation/review/QA loop.
+- [x] close Phase 3.2 completely;
+- [x] review V2 and V2.WASM fresh;
+- [x] identify remaining meaningful reuse boundaries;
+- [x] avoid visual polish until extraction batches are complete;
+- [x] keep each batch small enough for one implementation/review/QA loop.
+
+Continuation notes:
+
+- 2026-08-10: Phase 3.2 is closed by this review. Phase 3.3 is not selected in this plan; the next candidate must start from a fresh V2/V2.WASM review and a new phase-specific plan.
 
 Deferred until final V2 visual sweep:
 
