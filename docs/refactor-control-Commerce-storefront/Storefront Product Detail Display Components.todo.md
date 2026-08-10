@@ -1002,67 +1002,67 @@ Start local runtime:
 
 Primary product route:
 
-- [ ] choose a fixture product with multiple gallery images and variants;
-- [ ] choose a fixture product with compare price when available;
-- [ ] choose an out-of-stock or purchase-disabled product if fixture exists.
+- [x] choose a fixture product with multiple gallery images and variants;
+- [x] choose a fixture product with compare price when available;
+- [x] choose an out-of-stock or purchase-disabled product if fixture exists.
 
 Product Detail visual/semantic assertions:
 
-- [ ] route returns HTTP 200;
-- [ ] product name visible;
-- [ ] category label/link visible when available;
-- [ ] main gallery frame is 1:1;
-- [ ] thumbnail cells are 1:1;
-- [ ] gallery has no visible counter regression;
-- [ ] gallery placeholder remains hidden when image loads;
-- [ ] price visible;
-- [ ] compare price visible where applicable;
-- [ ] SKU/GTIN/stock visible where applicable;
-- [ ] variant list renders when variants exist;
-- [ ] ProductPurchasePanel still renders;
-- [ ] related products still render or empty state remains acceptable.
+- [x] route returns HTTP 200;
+- [x] product name visible;
+- [x] category label/link visible when available;
+- [x] main gallery frame is 1:1;
+- [x] thumbnail cells are 1:1;
+- [x] gallery has no visible counter regression;
+- [x] gallery placeholder remains hidden when image loads;
+- [x] price visible;
+- [x] compare price visible where applicable;
+- [x] SKU/GTIN/stock visible where applicable;
+- [x] variant list renders when variants exist;
+- [x] ProductPurchasePanel still renders;
+- [x] related products still render or empty state remains acceptable.
 
 Gallery interaction assertions:
 
-- [ ] next button changes main image;
-- [ ] previous button changes main image;
-- [ ] boundary disabled states are correct;
-- [ ] thumbnail click changes main image;
-- [ ] selected thumbnail stays in viewport;
-- [ ] ArrowRight/ArrowLeft work on thumbnails;
-- [ ] broken main image fallback can still appear;
-- [ ] broken thumbnail fallback can still appear.
+- [x] next button changes main image;
+- [x] previous button changes main image;
+- [x] boundary disabled states are correct;
+- [x] thumbnail click changes main image;
+- [x] selected thumbnail stays in viewport;
+- [x] ArrowRight/ArrowLeft work on thumbnails;
+- [x] broken main image fallback can still appear;
+- [x] broken thumbnail fallback can still appear.
 
 Selection-preview assertions:
 
-- [ ] changing variant/attribute triggers same-origin selection preview request;
-- [ ] `data-storefront-selection-price` updates;
-- [ ] `data-storefront-selection-compare` updates/hides correctly;
-- [ ] `data-storefront-selection-sku` updates/hides correctly;
-- [ ] `data-storefront-selection-gtin` updates/hides correctly;
-- [ ] `data-storefront-selection-stock` updates;
-- [ ] main gallery image updates when preview returns a new image URL.
+- [x] changing variant/attribute triggers same-origin selection preview request;
+- [x] `data-storefront-selection-price` updates;
+- [x] `data-storefront-selection-compare` updates/hides correctly;
+- [x] `data-storefront-selection-sku` updates/hides correctly;
+- [x] `data-storefront-selection-gtin` updates/hides correctly;
+- [x] `data-storefront-selection-stock` updates;
+- [x] main gallery image updates when preview returns a new image URL.
 
 Add-to-cart assertions:
 
-- [ ] selected variant/attributes are posted;
-- [ ] quantity is posted;
-- [ ] add-to-cart succeeds for valid item;
-- [ ] disabled/purchase-blocked item cannot be submitted;
-- [ ] exactly one cart mutation is sent per click;
-- [ ] no duplicate event handling;
-- [ ] button/feedback state still updates;
-- [ ] cart badge/summary behavior remains unchanged if visible.
+- [x] selected variant/attributes are posted;
+- [x] quantity is posted;
+- [x] add-to-cart succeeds for valid item;
+- [x] disabled/purchase-blocked item cannot be submitted;
+- [x] exactly one cart mutation is sent per click;
+- [x] no duplicate event handling;
+- [x] button/feedback state still updates;
+- [x] cart badge/summary behavior remains unchanged if visible.
 
 Browser security/network assertions:
 
-- [ ] no console errors;
-- [ ] no page errors;
-- [ ] no direct browser request to `api/storefront/stores`;
-- [ ] no direct browser request to `api/commerce`;
-- [ ] no direct browser request to `api/control-plane`;
-- [ ] no node credentials/access tokens in browser traffic;
-- [ ] no public `/_blazor` server circuit request.
+- [x] no console errors;
+- [x] no page errors;
+- [x] no direct browser request to `api/storefront/stores`;
+- [x] no direct browser request to `api/commerce`;
+- [x] no direct browser request to `api/control-plane`;
+- [x] no node credentials/access tokens in browser traffic;
+- [x] no public `/_blazor` server circuit request.
 
 Stop runtime:
 
@@ -1072,9 +1072,19 @@ Stop runtime:
 
 Exit criteria:
 
-- [ ] Product Detail remains functionally usable.
-- [ ] Gallery and purchase enhancement still work.
-- [ ] Browser evidence path is recorded in closure notes.
+- [x] Product Detail remains functionally usable.
+- [x] Gallery and purchase enhancement still work.
+- [x] Browser evidence path is recorded in closure notes.
+
+Implementation notes:
+
+- 2026-08-10: Browser QA ran against local V2 runtime started with `.\scripts\run-v2-local.ps1 -StopExisting` and stopped with `.\scripts\stop-v2-local.ps1`.
+- 2026-08-10: Fixture coverage was split because no single current fixture combines multiple gallery images and variants. Used `qa-seo-media-product` for multiple gallery images and compare price, `catalog-qa-t-shirt` for variants/selection-preview/add-to-cart, and `qa-out-of-stock-product` for blocked purchase.
+- 2026-08-10: Playwright evidence passed and was written to `output/playwright/storefront-product-detail-display-components/evidence.json`; screenshots were written under the same evidence folder.
+- 2026-08-10: Product Detail Browser QA verified route 200, product/category visibility, square gallery and thumbnail frames, no visible gallery counter regression, hidden placeholder on loaded image, price/compare/SKU/GTIN/stock hooks, variant list, purchase panel, and acceptable page composition when related products are absent.
+- 2026-08-10: Gallery interaction QA verified next/previous, boundary disabled states, thumbnail click, selected thumbnail state, ArrowRight/ArrowLeft behavior, broken main image fallback, and broken thumbnail fallback.
+- 2026-08-10: Selection-preview/add-to-cart QA verified same-origin `/api/product-selection-preview`, price update from `EUR 19.99` to `EUR 21.99`, SKU update from `SKU QA-TSHIRT-RED-M` to `SKU QA-TSHIRT-RED-XL`, stock update, compare/GTIN update-or-hide behavior, quantity `2`, a single `/api/cart/lines` mutation, successful feedback state, disabled blocked submit, and cart badge update from `0` to `1`.
+- 2026-08-10: Browser network guardrails passed: no console errors, no page errors, no direct browser request to `api/storefront/stores`, `api/commerce`, or `api/control-plane`, no browser credential/token leakage, and no public `/_blazor` server circuit request.
 
 ## Phase 3.2.16 - Duplication And Markup Reduction Audit
 
