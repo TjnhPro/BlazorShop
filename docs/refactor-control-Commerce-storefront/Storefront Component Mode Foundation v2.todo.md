@@ -1,6 +1,6 @@
 # Storefront Component Mode Foundation v2
 
-Status: planned
+Status: complete
 Owner: Storefront V2 architecture
 Branch: `Hybrid-Architecture`
 Predecessor: `Storefront Hybrid Architecture Clarification.todo.md`

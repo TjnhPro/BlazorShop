@@ -218,9 +218,9 @@ Implemented reference examples:
 
 The contact reference proved the Browser/BFF/WASM behavior, but visible V2 browser QA moved away from the nested Hybrid bridge because the nested bridge rendered but did not hydrate submit events in the visible route flow.
 
-## H1 Re-evaluation Required
+## H2 Runtime Proof Required
 
-The next code/test phase must re-evaluate:
+The next code/test phase must use browser-visible runtime evidence to decide:
 
 - project-reference graph;
 - `Components.Hybrid` role;
@@ -229,4 +229,4 @@ The next code/test phase must re-evaluate:
 - V2/V2.WASM wrapper pattern;
 - Starter and generated storefront implications.
 
-Until H1 is complete, do not infer new code movement from historical Hybrid shell wording.
+H1 completed the semantic decoupling. H2 owns the concrete runtime proof before any permanent `Components.Hybrid` cleanup or broader component packaging rule is adopted.
