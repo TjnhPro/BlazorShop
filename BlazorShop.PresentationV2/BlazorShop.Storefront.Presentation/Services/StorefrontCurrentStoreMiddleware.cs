@@ -19,6 +19,7 @@ namespace BlazorShop.Storefront.Presentation.Services
         [
             "/api",
             "/_",
+            "/__qa",
             "/css",
             "/js",
             "/images",

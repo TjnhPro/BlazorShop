@@ -623,8 +623,8 @@ Use Playwright `request.get(...)`, an HTTP client, or browser route blocking for
 
 ### Required Assertions
 
-- [ ] `GET /__qa/component-mvp` returns HTTP 200.
-- [ ] Response HTML contains:
+- [x] `GET /__qa/component-mvp` returns HTTP 200.
+- [x] Response HTML contains:
 
 ```html
 data-storefront-component-mvp
@@ -634,15 +634,25 @@ data-storefront-runtime-state="prerender"
 data-storefront-hybrid-value
 ```
 
-- [ ] Response HTML contains useful initial Hybrid content.
-- [ ] Response HTML contains SSR proof markup.
-- [ ] Response HTML does not require a completed WASM startup to satisfy State A.
-- [ ] Route returns noindex metadata or is gated from production indexing.
+- [x] Response HTML contains useful initial Hybrid content.
+- [x] Response HTML contains SSR proof markup.
+- [x] Response HTML does not require a completed WASM startup to satisfy State A.
+- [x] Route returns noindex metadata or is gated from production indexing.
 
 ### Exit Criteria
 
-- [ ] State A is proven independently from hydration.
-- [ ] Evidence block is added to this file or QA checklist.
+- [x] State A is proven independently from hydration.
+- [x] Evidence block is added to this file or QA checklist.
+
+Implementation notes:
+
+- 2026-08-10: added `scripts/qa/run-storefront-component-mvp-proof.ps1` and `scripts/qa/storefront-component-mvp-proof.js` with `RawHtml` proof mode. The proof starts Storefront V2 on `http://127.0.0.1:18640`, requests `/__qa/component-mvp` through Playwright request API, and asserts raw document HTML before browser page navigation or WASM startup.
+- 2026-08-10: `/__qa/*` is skipped by `StorefrontCurrentStoreMiddleware` because the Component MVP page is internal deterministic architecture QA and must not require a Commerce Node/store lookup.
+- 2026-08-10: `/health`, `/alive`, `/maintenance`, and `/__qa/*` are skipped by `StorefrontPublicRedirectMiddleware`; the first browser wrapper attempt showed `/health` and `/__qa/component-mvp` could otherwise wait on the redirect API when the backend is not running.
+- 2026-08-10: added middleware regression tests for the current-store and public-redirect skips.
+- 2026-08-10: first wrapper run failed from a parallel build file lock while `dotnet test` was building. A second run exposed a Windows PowerShell compatibility issue with `ProcessStartInfo.ArgumentList`. The wrapper now runs the built DLL directly, sets `ASPNETCORE_ENVIRONMENT`/`DOTNET_ENVIRONMENT` and minimal Storefront config explicitly, and uses a kill fallback.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontCurrentStoreMiddlewareTests|FullyQualifiedName~StorefrontPublicRedirectMiddlewareTests|FullyQualifiedName~StorefrontComponentMvpArchitectureTests"` passed: 22 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase RawHtml -RuntimeTimeoutSeconds 90 -NoBuild` passed. Evidence written to `output/playwright/storefront-component-mvp/raw-html.evidence.json`.
 
 ## Phase H2.9 - Playwright Hydrated Hybrid Proof
 

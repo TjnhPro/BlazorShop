@@ -123,6 +123,28 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Null(client.LastRedirectPath);
         }
 
+        [Theory]
+        [InlineData("/health")]
+        [InlineData("/alive")]
+        [InlineData("/maintenance")]
+        [InlineData("/__qa/component-mvp")]
+        public async Task InvokeAsync_WhenPathIsInfrastructureOrQaRoute_SkipsRedirectResolution(string path)
+        {
+            var nextCalled = false;
+            var middleware = CreateMiddleware(_ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+            var client = new StubContentClient(() => throw new InvalidOperationException("Redirect API should not be called."));
+            var context = CreateContext(path);
+
+            await middleware.InvokeAsync(context, client);
+
+            Assert.True(nextCalled);
+            Assert.Null(client.LastRedirectPath);
+        }
+
         private static StorefrontPublicRedirectMiddleware CreateMiddleware(RequestDelegate next)
         {
             return new StorefrontPublicRedirectMiddleware(

@@ -118,6 +118,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task InvokeAsync_WhenComponentMvpQaPath_SkipsCurrentStoreGuard()
+        {
+            var nextCalled = false;
+            var middleware = CreateMiddleware(_ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+            var provider = new StubCurrentStoreProvider(() => throw new InvalidOperationException("Provider should not be called."));
+            var context = CreateContext("/__qa/component-mvp");
+
+            await middleware.InvokeAsync(
+                context,
+                provider,
+                Options.Create(new StorefrontStoreResolutionOptions { RequireCurrentStore = true }),
+                CreateEnvironment("Production"),
+                CreateConfiguration());
+
+            Assert.True(nextCalled);
+            Assert.Equal(0, provider.CallCount);
+        }
+
+        [Fact]
         public async Task InvokeAsync_WhenStoreInMaintenance_Returns503()
         {
             var middleware = CreateMiddleware(_ => Task.CompletedTask);

@@ -13,12 +13,16 @@ namespace BlazorShop.Storefront.Presentation.Services
         [
             "/api",
             "/_",
+            "/__qa",
             "/css",
             "/js",
             "/images",
             "/uploads",
             "/favicon",
             "/icon-",
+            "/lib",
+            "/assets",
+            "/manifest",
         ];
 
         private static readonly HashSet<int> RedirectStatusCodes = [301, 302, 307, 308];
@@ -114,6 +118,9 @@ namespace BlazorShop.Storefront.Presentation.Services
             var path = request.Path.Value;
             if (string.IsNullOrWhiteSpace(path)
                 || string.Equals(path, "/", StringComparison.Ordinal)
+                || string.Equals(path, "/health", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(path, "/alive", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(path, StorefrontRoutes.Maintenance, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(path, StorefrontRoutes.Robots, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(path, StorefrontRoutes.Sitemap, StringComparison.OrdinalIgnoreCase))
             {
