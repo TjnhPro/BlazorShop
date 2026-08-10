@@ -6,130 +6,10 @@
                                  Action="Action"
                                  Limit="6">
     <ItemTemplate Context="product">
-        <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/70 bg-white/95 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl" data-storefront-product-summary-card>
-            <div class="p-6">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        @if (!string.IsNullOrWhiteSpace(product.CategoryName))
-                        {
-                            if (!string.IsNullOrWhiteSpace(product.CategoryUrl))
-                            {
-                                <a href="@product.CategoryUrl" class="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500 hover:text-neutral-900">@product.CategoryName</a>
-                            }
-                            else
-                            {
-                                <span class="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">@product.CategoryName</span>
-                            }
-                        }
-
-                        @if (!string.IsNullOrWhiteSpace(product.ProductUrl))
-                        {
-                            <a href="@product.ProductUrl" class="block">
-                                <h2 class="mt-2 text-lg font-extrabold text-neutral-900 transition-colors group-hover:text-neutral-950">@product.Name</h2>
-                            </a>
-                        }
-                        else
-                        {
-                            <h2 class="mt-2 text-lg font-extrabold text-neutral-900">@product.Name</h2>
-                        }
-                    </div>
-
-                    <div class="flex flex-wrap justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]">
-                        @if (product.IsNewArrival)
-                        {
-                            <span class="inline-block rounded bg-green-600/90 px-2 py-0.5 text-white">New</span>
-                        }
-                        @if (product.HasVariants)
-                        {
-                            <span class="inline-block rounded bg-amber-100 px-2 py-0.5 text-amber-800">Variants</span>
-                        }
-                        @if (!product.InStock)
-                        {
-                            <span class="inline-block rounded bg-rose-100 px-2 py-0.5 text-rose-800">Out</span>
-                        }
-                    </div>
-                </div>
-
-                <p class="mt-2 text-[15px]">
-                    <span class="font-semibold text-rose-600">@(product.HasVariants ? "From" : "Price")</span>
-                    <span class="font-semibold">@product.PriceDisplay</span>
-                    @if (!string.IsNullOrWhiteSpace(product.ComparePriceDisplay))
-                    {
-                        <span class="ml-2 text-sm font-semibold text-neutral-400 line-through">@product.ComparePriceDisplay</span>
-                    }
-                </p>
-
-                @if (!string.IsNullOrWhiteSpace(product.ProductUrl))
-                {
-                    <a href="@product.ProductUrl" aria-label="View @product.Name" class="mt-4 block">
-                        <div class="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50">
-                            <ProductImage Item="product" />
-                        </div>
-                    </a>
-                }
-                else
-                {
-                    <div class="mt-4 relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50">
-                        <ProductImage Item="product" />
-                    </div>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(product.Description))
-                {
-                    <p class="mt-4 text-sm leading-6 text-neutral-700">@product.Description</p>
-                }
-            </div>
-
-            <div class="mt-auto border-t border-neutral-100 px-6 py-4 text-sm">
-                <div class="flex flex-wrap gap-2">
-                    @if (product.CanAddDirectly)
-                    {
-                        <button type="button"
-                                class="inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600"
-                                data-storefront-product-purchase
-                                data-storefront-command="cart.add-line"
-                                data-storefront-product-purchase-submit
-                                data-default-label="Add to Cart"
-                                data-success-label="Added"
-                                data-product-id="@product.Id"
-                                data-product-name="@product.Name"
-                                data-currency-code="@product.CurrencyCode">
-                            Add to Cart
-                        </button>
-                    }
-                    else if (product.HasVariants && !string.IsNullOrWhiteSpace(product.PurchaseUrl))
-                    {
-                        <a href="@product.PurchaseUrl" class="inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600">
-                            Add to Cart
-                        </a>
-                    }
-
-                    @if (!string.IsNullOrWhiteSpace(product.ProductUrl))
-                    {
-                        <a href="@product.ProductUrl" class="inline-flex items-center justify-center rounded-md bg-neutral-900 px-4 py-2 font-medium text-white hover:bg-neutral-800">
-                            View Product
-                        </a>
-                    }
-                </div>
-
-                @if (product.HasVariants)
-                {
-                    <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">Select variant on the product page before adding.</p>
-                }
-                else if (product.PurchasePaused)
-                {
-                    <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-600">@product.PurchaseBlockMessage</p>
-                }
-                else if (!product.InStock)
-                {
-                    <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-rose-600">Currently out of stock.</p>
-                }
-                else if (!product.Purchasable)
-                {
-                    <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-600">@(product.PurchaseBlockMessage ?? "Currently unavailable.")</p>
-                }
-            </div>
-        </article>
+        <StorefrontProductSummaryCard
+            Item="product"
+            Labels="ProductLabels"
+            Classes="ProductClasses" />
     </ItemTemplate>
 </StorefrontDiscountedProductRail>
 
@@ -152,6 +32,46 @@
         Empty: "rounded-md bg-neutral-100 px-4 py-3 text-sm text-neutral-700",
         Error: "rounded-md bg-red-50 px-4 py-3 text-sm text-red-800",
         RetryButton: "mt-3 inline-flex items-center rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800");
+
+    private static ProductSummaryLabels ProductLabels { get; } = new(
+        FromPrefix: "From",
+        PricePrefix: "Price",
+        ImageUnavailableText: "Image unavailable",
+        ImageUnavailableAltFormat: "Image unavailable for {0}",
+        NewBadge: "New",
+        VariantsBadge: "Variants",
+        OutOfStockBadge: "Out",
+        AddToCart: "Add to Cart",
+        AddedToCart: "Added",
+        ViewProduct: "View Product",
+        SelectVariant: "Select variant on the product page before adding.",
+        CurrentlyOutOfStock: "Currently out of stock.",
+        CurrentlyUnavailable: "Currently unavailable.");
+
+    private static ProductSummaryCardClasses ProductClasses { get; } = new(
+        Root: "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/70 bg-white/95 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl",
+        Body: "p-6",
+        Header: "flex items-start justify-between gap-3",
+        Category: "text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500 hover:text-neutral-900",
+        Title: "mt-2 block text-lg font-extrabold text-neutral-900 transition-colors group-hover:text-neutral-950",
+        BadgeGroup: "flex flex-wrap justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]",
+        Badge: "inline-block rounded px-2 py-0.5",
+        NewBadge: "bg-green-600/90 text-white",
+        VariantsBadge: "bg-amber-100 text-amber-800",
+        OutOfStockBadge: "bg-rose-100 text-rose-800",
+        Price: "mt-2 text-[15px]",
+        ComparePrice: "ml-2 text-sm font-semibold text-neutral-400 line-through",
+        ImageLink: "mt-4 block",
+        ImageFrame: "relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50",
+        Image: "absolute inset-0 h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105",
+        ImageFallback: "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-500",
+        Description: "mt-4 text-sm leading-6 text-neutral-700",
+        Footer: "mt-auto border-t border-neutral-100 px-6 py-4 text-sm",
+        ActionGroup: "flex flex-wrap gap-2",
+        PrimaryAction: "inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600",
+        SecondaryAction: "inline-flex items-center justify-center rounded-md bg-neutral-900 px-4 py-2 font-medium text-white hover:bg-neutral-800",
+        Status: "mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-600",
+        WarningStatus: "text-rose-600");
 
     private static StorefrontDiscountedProductRailActionDescriptor Action { get; } = new("/api/catalog/discounted-products");
 }

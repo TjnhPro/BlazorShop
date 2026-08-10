@@ -773,9 +773,9 @@ V2.WASM
 
 Tasks:
 
-- [ ] Add project reference from `V2.WASM` to `Components.Primitives`.
-- [ ] Add required namespace import to `V2.WASM` `_Imports.razor` or local wrapper.
-- [ ] Replace `StorefrontDiscountedProductRailSection` `ItemTemplate` duplicated card markup with:
+- [x] Add project reference from `V2.WASM` to `Components.Primitives`.
+- [x] Add required namespace import to `V2.WASM` `_Imports.razor` or local wrapper.
+- [x] Replace `StorefrontDiscountedProductRailSection` `ItemTemplate` duplicated card markup with:
 
 ```razor
 <StorefrontProductSummaryCard
@@ -784,19 +784,28 @@ Tasks:
     Labels="..." />
 ```
 
-- [ ] Keep rail labels/classes/action descriptor in `V2.WASM`.
-- [ ] Keep `StorefrontDiscountedProductRail` in `Components.WasmHost`.
-- [ ] Delete `V2.WASM/Components/Catalog/ProductImage.razor` if unused.
-- [ ] Remove duplicate Product Summary image fallback script from `V2.WASM`.
-- [ ] Remove duplicate Product Summary purchase-state branching from `V2.WASM`.
+- [x] Keep rail labels/classes/action descriptor in `V2.WASM`.
+- [x] Keep `StorefrontDiscountedProductRail` in `Components.WasmHost`.
+- [x] Delete `V2.WASM/Components/Catalog/ProductImage.razor` if unused.
+- [x] Remove duplicate Product Summary image fallback script from `V2.WASM`.
+- [x] Remove duplicate Product Summary purchase-state branching from `V2.WASM`.
 
 Exit criteria:
 
-- [ ] Rail still owns loading/success/empty/error/retry behavior.
-- [ ] Rail item rendering uses primitive card.
-- [ ] `V2.WASM` does not reference `Presentation`.
-- [ ] `V2.WASM` does not reference `Components.Ssr`.
-- [ ] Add-to-cart semantic hooks remain present in rendered rail items.
+- [x] Rail still owns loading/success/empty/error/retry behavior.
+- [x] Rail item rendering uses primitive card.
+- [x] `V2.WASM` does not reference `Presentation`.
+- [x] `V2.WASM` does not reference `Components.Ssr`.
+- [x] Add-to-cart semantic hooks remain present in rendered rail items.
+
+Implementation notes:
+
+- 2026-08-10: Added `V2.WASM -> Components.Primitives` project reference and imported `BlazorShop.Storefront.Components.Primitives.Catalog`.
+- 2026-08-10: Replaced the duplicated `StorefrontDiscountedProductRailSection` item card markup with `StorefrontProductSummaryCard`.
+- 2026-08-10: Kept discounted rail labels, classes, action descriptor, and loading/success/empty/error/retry ownership in the V2.WASM wrapper and `Components.WasmHost` rail.
+- 2026-08-10: Moved rail product-card classes/copy into V2.WASM-owned `ProductLabels` and `ProductClasses` values.
+- 2026-08-10: Deleted unused `V2.WASM/Components/Catalog/ProductImage.razor`, removing duplicate image fallback script and duplicate purchase-state branching from V2.WASM.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj"` and `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontPrimitiveDependencyTests"`.
 
 ## Phase 3.1.10 - Update Existing Architecture Tests
 
