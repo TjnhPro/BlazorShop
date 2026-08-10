@@ -1,6 +1,6 @@
 # Storefront Reference Component MVP
 
-Status: planned
+Status: complete
 Owner: Storefront V2 architecture
 Branch: `Hybrid-Architecture`
 Predecessor: `Storefront Component Mode Foundation v2.todo.md`
@@ -239,7 +239,7 @@ Provide a deterministic QA route without moving route ownership into V2.
 ### Tasks
 
 - [x] Add a new Presentation route page under the appropriate Presentation page folder.
-- [ ] Preferred route:
+- [x] Preferred route:
 
 ```razor
 @page "/__qa/component-mvp"
@@ -403,7 +403,7 @@ Do not place new reusable probe implementation in `Components.Hybrid`.
 ### Component Requirements
 
 - [x] Name: `StorefrontHybridRuntimeProbe`.
-- [ ] Component root:
+- [x] Component root:
 
 ```html
 <section
@@ -424,7 +424,7 @@ Do not place new reusable probe implementation in `Components.Hybrid`.
 - [x] Button click increments value:
   - [x] `0 -> 1`;
   - [x] exactly once per click.
-- [ ] Stable selectors:
+- [x] Stable selectors:
 
 ```html
 data-storefront-hybrid-value
@@ -787,7 +787,7 @@ Make H2 browser checks discoverable in production QA tracking.
 
 - [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
 - [x] Add a section for Component MVP runtime proof.
-- [ ] Include checkboxes for:
+- [x] Include checkboxes for:
   - [x] raw HTML SSR proof;
   - [x] raw HTML Hybrid prerender proof;
   - [x] hydrated Hybrid interactive proof;
@@ -964,33 +964,44 @@ Implementation notes:
 
 ### Closure Checklist
 
-- [ ] Presentation owns `/__qa/component-mvp` route.
-- [ ] V2 owns visual lab markup/classes/copy.
-- [ ] V2/V2.WASM contain no new `@page` route directives.
-- [ ] SSR proof is visible in raw initial HTML.
-- [ ] Hybrid proof is visible in raw initial HTML with `prerender` marker.
-- [ ] Hybrid proof hydrates to `interactive` marker.
-- [ ] Hybrid C# click changes state exactly once per click.
-- [ ] WasmHost rail loads through Browser controller and same-origin BFF.
-- [ ] WasmHost rail loading/success/empty/error/retry are proven.
-- [ ] Browser network does not call Commerce Node directly.
-- [ ] Browser network does not require public Blazor Server UI circuit.
-- [ ] Route is noindex or QA-only and not public-discovery linked.
-- [ ] Documentation updated.
-- [ ] QA checklist updated.
-- [ ] Future of `Components.Hybrid` recorded for H3.
-- [ ] No backend, Control Plane, Starter, StorefrontBuilder, or generated storefront changes entered H2.
+- [x] Presentation owns `/__qa/component-mvp` route.
+- [x] V2 owns visual lab markup/classes/copy.
+- [x] V2/V2.WASM contain no new `@page` route directives.
+- [x] SSR proof is visible in raw initial HTML.
+- [x] Hybrid proof is visible in raw initial HTML with `prerender` marker.
+- [x] Hybrid proof hydrates to `interactive` marker.
+- [x] Hybrid C# click changes state exactly once per click.
+- [x] WasmHost rail loads through Browser controller and same-origin BFF.
+- [x] WasmHost rail loading/success/empty/error/retry are proven.
+- [x] Browser network does not call Commerce Node directly.
+- [x] Browser network does not require public Blazor Server UI circuit.
+- [x] Route is noindex or QA-only and not public-discovery linked.
+- [x] Documentation updated.
+- [x] QA checklist updated.
+- [x] Future of `Components.Hybrid` recorded for H3.
+- [x] No backend, Control Plane, Starter, StorefrontBuilder, or generated storefront changes entered H2.
 
 ### H3 Handoff Questions
 
 Answer after H2 evidence:
 
-- [ ] Should `Components.Hybrid` remain as a compatibility package?
-- [ ] Should `Components.Hybrid` be retired after historical contact bridge migration?
-- [ ] Should future reusable packages be capability-based instead of mode-based?
-- [ ] Which render-mode placements should H3 guard with repository-wide scanners?
-- [ ] Which network assertions are stable enough for H3 static/browser guardrails?
-- [ ] Should `/__qa/component-mvp` remain as long-term QA evidence or be removed after H3?
+- [x] Should `Components.Hybrid` remain as a compatibility package?
+  Answer: yes, short-term only. Keep it narrowed to the historical contact bridge while visible contact behavior still depends on the current compatibility surface.
+- [x] Should `Components.Hybrid` be retired after historical contact bridge migration?
+  Answer: yes, if H3 migrates the historical contact bridge to the V2.WASM/WasmHost pattern and browser evidence stays stable.
+- [x] Should future reusable packages be capability-based instead of mode-based?
+  Answer: yes. Future packages should prefer capability and contract ownership; `Ssr`, `Hybrid`, and `WasmHost` remain semantic descriptors and guardrail language rather than permanent physical package names.
+- [x] Which render-mode placements should H3 guard with repository-wide scanners?
+  Answer: guard against public Storefront `InteractiveServer` and `InteractiveAuto`, guard against reusable components owning `@rendermode`, and keep `@page` route directives out of V2 and V2.WASM visual projects.
+- [x] Which network assertions are stable enough for H3 static/browser guardrails?
+  Answer: no direct browser requests to Commerce Node Storefront/Admin routes, no Commerce Node host/port calls, no node credentials in headers/storage, same-origin BFF for protected browser actions, and no public `/_blazor` Storefront UI circuit.
+- [x] Should `/__qa/component-mvp` remain as long-term QA evidence or be removed after H3?
+  Answer: keep it as hidden/noindex architecture QA evidence until H3 has a replacement guardrail suite or decides the proof route is no longer needed.
+
+Closure notes:
+
+- 2026-08-10: final audit `git diff --name-only df1ce02^..HEAD` showed H2 changes limited to Storefront component libraries, Storefront Presentation/V2/V2.WASM runtime proof files, tests, QA scripts, and docs. No backend, Control Plane, Starter, StorefrontBuilder, or generated storefront source entered H2.
+- 2026-08-10: final source scan confirmed `/__qa/component-mvp` is a Presentation route and the H2 `@rendermode="InteractiveWebAssembly"` placement is in V2 visual composition, not in reusable component implementations.
 
 ### Suggested Commit Breakdown
 
@@ -1011,17 +1022,17 @@ docs(storefront): hand off component hardening decisions
 
 H2 is complete only when all are true:
 
-- [ ] `StorefrontBrandLogo` proves SSR in raw initial HTML.
-- [ ] `StorefrontHybridRuntimeProbe` proves prerender -> WASM interactive -> C# state change.
-- [ ] `StorefrontDiscountedProductRail` proves WasmHost Browser/BFF dynamic flow.
-- [ ] Route ownership remains in Presentation.
-- [ ] Visual ownership remains in V2/V2.WASM.
-- [ ] Reusable components do not own V2 classes/copy/routes/render mode.
-- [ ] Browser/WASM code does not call Commerce Node directly.
-- [ ] No `InteractiveServer` or `InteractiveAuto` path is introduced.
-- [ ] Playwright covers real browser behavior, not only smoke checks.
-- [ ] QA checklist and architecture docs are synchronized.
-- [ ] H3 cleanup decisions are grounded in H2 evidence.
+- [x] `StorefrontBrandLogo` proves SSR in raw initial HTML.
+- [x] `StorefrontHybridRuntimeProbe` proves prerender -> WASM interactive -> C# state change.
+- [x] `StorefrontDiscountedProductRail` proves WasmHost Browser/BFF dynamic flow.
+- [x] Route ownership remains in Presentation.
+- [x] Visual ownership remains in V2/V2.WASM.
+- [x] Reusable components do not own V2 classes/copy/routes/render mode.
+- [x] Browser/WASM code does not call Commerce Node directly.
+- [x] No `InteractiveServer` or `InteractiveAuto` path is introduced.
+- [x] Playwright covers real browser behavior, not only smoke checks.
+- [x] QA checklist and architecture docs are synchronized.
+- [x] H3 cleanup decisions are grounded in H2 evidence.
 
 ## Autoplan Review Report
 
