@@ -492,22 +492,31 @@ do not fail solely on:
 
 Tasks:
 
-- [ ] Keep `scripts/qa/run-storefront-component-mvp-proof.ps1`.
-- [ ] Keep `scripts/qa/storefront-component-mvp-proof.js`.
-- [ ] Review the Network phase classification.
-- [ ] Ensure Network phase fails on `/_blazor`.
-- [ ] Ensure Network phase fails on direct Commerce host/path.
-- [ ] Ensure Network phase fails on credential leak.
-- [ ] Ensure Network phase records WebSocket/EventSource counts for evidence.
-- [ ] Do not require WebSocket count to be zero unless the recorded URL is Storefront UI/circuit related.
-- [ ] Add source-level guard for `HubConnection`, `AddSignalR`, `MapHub`, `ClientWebSocket`, and `WebSocket.CreateFromStream` in public Storefront UI source.
-- [ ] Scope this guard to Storefront UI packages, not the entire solution.
+- [x] Keep `scripts/qa/run-storefront-component-mvp-proof.ps1`.
+- [x] Keep `scripts/qa/storefront-component-mvp-proof.js`.
+- [x] Review the Network phase classification.
+- [x] Ensure Network phase fails on `/_blazor`.
+- [x] Ensure Network phase fails on direct Commerce host/path.
+- [x] Ensure Network phase fails on credential leak.
+- [x] Ensure Network phase records WebSocket/EventSource counts for evidence.
+- [x] Do not require WebSocket count to be zero unless the recorded URL is Storefront UI/circuit related.
+- [x] Add source-level guard for `HubConnection`, `AddSignalR`, `MapHub`, `ClientWebSocket`, and `WebSocket.CreateFromStream` in public Storefront UI source.
+- [x] Scope this guard to Storefront UI packages, not the entire solution.
 
 Exit criteria:
 
-- [ ] H2 Network proof remains reproducible.
-- [ ] Guardrail catches actual Storefront server-interactive drift.
-- [ ] Guardrail does not fail on unrelated dev-tooling sockets.
+- [x] H2 Network proof remains reproducible.
+- [x] Guardrail catches actual Storefront server-interactive drift.
+- [x] Guardrail does not fail on unrelated dev-tooling sockets.
+
+Implementation notes:
+
+- 2026-08-10: reviewed `scripts/qa/storefront-component-mvp-proof.js`; Network phase classifies document/static/_framework/same-origin BFF/EventSource/WebSocket/server UI circuit/direct Commerce requests, fails on `/_blazor`, direct Commerce, credential leaks, console errors, and page errors.
+- 2026-08-10: added `StorefrontServerInteractiveTransportGuardrailTests` scoped to Storefront UI packages (`Browser`, `Components`, `Components.Ssr`, `Components.WasmHost`, `Presentation`, `V2`, `V2.WASM`), not the whole solution.
+- 2026-08-10: static guard rejects `HubConnection`, `AddSignalR`, `MapHub`, `ClientWebSocket`, and `WebSocket.CreateFromStream`; negative fixtures prove every token is caught.
+- 2026-08-10: `rg -n "HubConnection|AddSignalR|MapHub|ClientWebSocket|WebSocket\\.CreateFromStream" BlazorShop.PresentationV2/BlazorShop.Storefront.Browser BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM -g "*.cs" -g "*.razor" -g "*.js" -g "!bin/**" -g "!obj/**"` returned no matches.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontServerInteractiveTransportGuardrailTests|FullyQualifiedName~StorefrontRenderModeOwnershipTests"` passed 6/6. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Network -StorefrontBaseUrl http://127.0.0.1:18640 -RuntimeTimeoutSeconds 120` passed. Evidence summary: `serverUiCircuit=0`, `directCommerce=0`, `credentialLeaks=[]`, `consoleErrors=[]`, `pageErrors=[]`, `webSockets=0`, `sameOriginBff=3`.
 
 ## Phase H3.8 - Rename Contracts.System Namespace
 
@@ -872,7 +881,7 @@ Before marking H3 complete:
 - [x] H3.4 decouple descriptor discovery from project topology.
 - [x] H3.5 harden component dependency matrix.
 - [x] H3.6 harden render mode ownership.
-- [ ] H3.7 harden server-interactive/browser transport guardrails.
+- [x] H3.7 harden server-interactive/browser transport guardrails.
 - [ ] H3.8 rename `Contracts.System` namespace.
 - [ ] H3.9 recheck visual neutrality and copy ownership.
 - [ ] H3.10 close `/__qa` route policy.
