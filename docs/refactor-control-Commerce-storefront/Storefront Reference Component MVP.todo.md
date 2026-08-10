@@ -820,37 +820,46 @@ Align architecture docs with observed runtime behavior after implementation.
 
 ### Files
 
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/03-runtime-boundaries.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`
-- [ ] This H2 file
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/03-runtime-boundaries.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`
+- [x] This H2 file
 
 ### Tasks
 
-- [ ] Document actual physical location of `StorefrontHybridRuntimeProbe`.
-- [ ] Document actual route ownership:
+- [x] Document actual physical location of `StorefrontHybridRuntimeProbe`.
+- [x] Document actual route ownership:
 
 ```text
 Presentation route shell + V2 visual view + V2.WASM/WasmHost interactive roots
 ```
 
-- [ ] Document actual two-state Hybrid evidence:
-  - [ ] prerender;
-  - [ ] interactive;
-  - [ ] C# click state.
-- [ ] Document actual network findings.
-- [ ] Decide and record future of `Components.Hybrid`:
-  - [ ] keep;
-  - [ ] narrow;
-  - [ ] retire in H3.
-- [ ] Do not delete `Components.Hybrid` in H2 unless deletion is isolated, tests are updated, and V2 visible behavior is unaffected.
+- [x] Document actual two-state Hybrid evidence:
+  - [x] prerender;
+  - [x] interactive;
+  - [x] C# click state.
+- [x] Document actual network findings.
+- [x] Decide and record future of `Components.Hybrid`:
+  - [x] keep as transitional compatibility;
+  - [x] narrow to the historical contact bridge;
+  - [x] retire in H3 if the contact bridge can be migrated safely.
+- [x] Do not delete `Components.Hybrid` in H2 unless deletion is isolated, tests are updated, and V2 visible behavior is unaffected.
 
 ### Exit Criteria
 
-- [ ] Docs match implemented behavior.
-- [ ] H3 receives a concrete cleanup decision, not speculation.
+- [x] Docs match implemented behavior.
+- [x] H3 receives a concrete cleanup decision, not speculation.
+
+Implementation notes:
+
+- 2026-08-10: `COMPONENT-MODES.md` now records H2 runtime evidence instead of future-required proof wording.
+- 2026-08-10: `docs/architecture/03-runtime-boundaries.md` documents `/__qa/component-mvp` as a hidden/noindex Presentation route with V2 visual lab, V2.WASM render-mode wrapper, and WasmHost implementations.
+- 2026-08-10: `docs/architecture/05-project-and-folder-guide.md` documents `StorefrontHybridRuntimeProbe` at `BlazorShop.Storefront.Components.WasmHost/System` with semantic mode `Hybrid`.
+- 2026-08-10: `docs/architecture/10-v2-contract-ownership.md` records that descriptor mode is semantic and not physically coupled to `Components.Hybrid`.
+- 2026-08-10: `BlazorShop.Storefront.Components.Hybrid/README.md` records the H3 cleanup decision: keep only as transitional compatibility, narrow to the historical contact bridge, and retire after migration if visible V2 behavior remains stable.
+- 2026-08-10: `Components.Hybrid` was not deleted in H2.
 
 ## Phase H2.14 - Build Gates
 

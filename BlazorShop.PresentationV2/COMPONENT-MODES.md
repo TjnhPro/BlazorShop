@@ -21,7 +21,7 @@ Do not add replacement shared-component projects without an approved follow-up p
 - `BlazorShop.Storefront.ComponentRuntime`
 - `BlazorShop.Storefront.ComponentRegistry`
 
-The physical role of `BlazorShop.Storefront.Components.Hybrid` is transitional after H1. Current code and tests may still depend on its historical contact bridge, so H1 does not delete, rename, or repurpose the project. H2 must prove whether it stays, narrows, moves, or is retired.
+The physical role of `BlazorShop.Storefront.Components.Hybrid` is transitional after H2. Current code and tests may still depend on its historical contact bridge, so H2 does not delete, rename, or repurpose the project. H2 runtime evidence narrows the project to compatibility only until H3 can migrate or retire the historical contact bridge safely.
 
 ## Current Project Graph
 
@@ -42,7 +42,7 @@ BlazorShop.Storefront.Components.WasmHost
   -> BlazorShop.Storefront.Browser
 ```
 
-The graph above describes the current repository state. H1 keeps the `Components.Hybrid` graph as transitional compatibility state, not as the semantic definition of Hybrid mode. H2 owns the permanent proof now that browser-visible V2 adoption proved the V2.WASM wrapper pattern for interactive roots.
+The graph above describes the current repository state. H1 kept the `Components.Hybrid` graph as transitional compatibility state, not as the semantic definition of Hybrid mode. H2 proved the browser-visible V2.WASM wrapper pattern for interactive roots and placed the canonical Hybrid runtime probe in the downloadable WasmHost graph.
 
 The base `BlazorShop.Storefront.Components` project remains the lowest browser-safe contracts and headless layer. It must not reference `Presentation`, `Browser`, `Runtime`, `Client`, V2 hosts, Starter hosts, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
 
@@ -120,7 +120,7 @@ Hybrid route or component surfaces may use server-prepared state, semantic actio
 
 `@rendermode InteractiveWebAssembly` placement is host/composition ownership. It is not a guarantee that a reusable component library owns render-mode directives, and it is not proof that `Components.Hybrid` must be the composition layer.
 
-The current `Components.Hybrid` project is a transitional compatibility project. It must not directly reference Browser, inject Browser controllers, call APIs directly, own theme CSS, own V2 layout/copy, or receive new reusable components until H2 decides its permanent role.
+The current `Components.Hybrid` project is a transitional compatibility project. It must not directly reference Browser, inject Browser controllers, call APIs directly, own theme CSS, own V2 layout/copy, or receive new reusable components. H2 evidence keeps it narrowed to the historical contact bridge until H3 decides whether to migrate that bridge and retire the project.
 
 ## WasmHost Mode
 
@@ -213,20 +213,37 @@ Implemented reference examples:
 - `StorefrontBrandLogo` in `Components.Ssr`;
 - `StorefrontContactForm` descriptor/component in `Components.Hybrid`;
 - `StorefrontContactFormApp` in `Components.WasmHost`;
+- `StorefrontHybridRuntimeProbe` in `Components.WasmHost` with semantic descriptor mode `Hybrid`;
 - `StorefrontDiscountedProductRail` in `Components.WasmHost`;
 - V2.WASM wrapper components for browser-visible contact and discounted rail adoption.
 
 The contact reference proved the Browser/BFF/WASM behavior, but visible V2 browser QA moved away from the nested Hybrid bridge because the nested bridge rendered but did not hydrate submit events in the visible route flow.
 
-## H2 Runtime Proof Required
+## H2 Runtime Proof Evidence
 
-The next code/test phase must use browser-visible runtime evidence to decide:
+H2 completed browser-visible runtime evidence for the hidden/noindex Presentation route `/__qa/component-mvp`:
 
-- project-reference graph;
-- `Components.Hybrid` role;
-- descriptor mode ownership;
-- boundary validator allowlists;
-- V2/V2.WASM wrapper pattern;
-- Starter and generated storefront implications.
+- raw server HTML contains SSR `StorefrontBrandLogo`;
+- raw server HTML contains Hybrid prerender state for `StorefrontHybridRuntimeProbe`;
+- browser hydration changes the Hybrid probe to `data-storefront-runtime-state="interactive"`;
+- C# browser-side clicks change the probe value `0 -> 1 -> 2`;
+- `StorefrontDiscountedProductRail` proves WasmHost loading, success, empty, error, and retry states through Browser controllers and same-origin BFF;
+- network evidence records no direct Commerce browser calls, no `/_blazor` public server UI circuit, and no credential leaks.
 
-H1 completed the semantic decoupling. H2 owns the concrete runtime proof before any permanent `Components.Hybrid` cleanup or broader component packaging rule is adopted.
+H2 route ownership is:
+
+```text
+BlazorShop.Storefront.Presentation
+  owns /__qa/component-mvp route shell and page context
+
+BlazorShop.Storefront.V2
+  owns visual lab markup, classes, labels, and copy
+
+BlazorShop.Storefront.V2.WASM
+  owns InteractiveWebAssembly wrapper/root placement
+
+BlazorShop.Storefront.Components.WasmHost
+  owns browser-executed reusable probe and rail implementations
+```
+
+H2 did not change Starter or generated storefronts. H3 should keep future reusable packages capability-based where possible, guard render-mode placement repository-wide, and decide whether the transitional `Components.Hybrid` compatibility project can be retired after the historical contact bridge is migrated.

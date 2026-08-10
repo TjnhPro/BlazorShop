@@ -254,14 +254,14 @@ Status:
 
 - Reusable Storefront Hybrid component mode library.
 - Historical reusable Hybrid shell library from the completed foundation/reference work.
-- Physical role is transitional after H1; H2 must prove whether it stays, narrows, moves, or is retired.
+- Physical role is transitional after H2; H2 runtime evidence narrowed it to compatibility for the historical contact bridge until H3 decides whether to migrate or retire it.
 
 Use for:
 
 - Hybrid-classified surfaces: server-produced or prerendered HTML/page snapshots plus client-side WebAssembly interactivity after hydration.
 - Existing server shell components only where current tests/code require them; nested WasmHost child placement is not the canonical meaning of Hybrid.
 - Host/composition-owned `@rendermode InteractiveWebAssembly` placement where browser interactivity is needed.
-- Historical compatibility descriptors/components only during H1; do not add new reusable components here before H2 runtime proof.
+- Historical compatibility descriptors/components only during H2/H3 transition; do not add new reusable components here without a new architecture decision.
 
 Do not:
 
@@ -281,6 +281,7 @@ Status:
 
 - Reusable Storefront browser-interactive component mode library.
 - Real reference components now exist; see `BlazorShop.PresentationV2/COMPONENT-MODES.md` for current mode semantics.
+- H2 canonical Hybrid runtime proof lives here as `System/StorefrontHybridRuntimeProbe.razor`; its descriptor mode is semantic `Hybrid` even though the physical project is WasmHost.
 
 Use for:
 

@@ -162,6 +162,17 @@ Public interactive storefront behavior should use `InteractiveWebAssembly` with 
 
 Browser/WASM code still uses same-origin BFF endpoints and must not call Commerce Node directly.
 
+H2 Component MVP runtime evidence proves the current pattern through `/__qa/component-mvp`, a hidden/noindex Presentation-owned QA route:
+
+```text
+Presentation route shell and page context
+  -> V2 visual lab view
+      -> V2.WASM InteractiveWebAssembly wrapper/root
+          -> Components.WasmHost reusable implementations
+```
+
+The H2 Hybrid proof is physically implemented as `StorefrontHybridRuntimeProbe` in `BlazorShop.Storefront.Components.WasmHost` with semantic mode `Hybrid`. Browser evidence recorded prerender HTML, WebAssembly interactive state, C# click state changes, no `/_blazor` public server UI circuit, and no direct Commerce Node browser requests. `BlazorShop.Storefront.Components.Hybrid` remains a narrowed transitional compatibility project for the historical contact bridge until H3 decides migration or retirement.
+
 Do not:
 
 - Put Storefront V2-specific design, CSS, copy, or generated visual output here.
