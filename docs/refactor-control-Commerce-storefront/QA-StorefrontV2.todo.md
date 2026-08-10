@@ -861,6 +861,7 @@ Current status: complete. Evidence was recorded on 2026-08-10 from the hidden/no
 - [x] Component MVP route is not exposed through menu or sitemap. Evidence: H2 route/source scans and architecture tests keep `/__qa/component-mvp` out of navigation, footer, sitemap, page template catalog, and public content catalog.
 - [x] Component MVP route is noindex or QA-only. Evidence: Presentation route emits `RobotsIndex = false` and `RobotsFollow = false`; Storefront current-store and public-redirect middleware skip `/__qa/*` so the QA route remains deterministic.
 - [x] Result counts are recorded for release review. Evidence: RawHtml, Hybrid, Rail, and Network Playwright phases passed on 2026-08-10 with zero console errors, zero page errors, zero direct Commerce browser calls, and zero credential leaks.
+- [x] Final H2.15 rerun passed on 2026-08-10. Focused tests passed `65/65`, `11/11`, and `18/18`; `node --check scripts/qa/storefront-component-mvp-proof.js` passed; RawHtml, Hybrid, Rail, and Network Playwright wrapper phases all returned `"ok": true`.
 
 ## Storefront Visual Source Ownership
 

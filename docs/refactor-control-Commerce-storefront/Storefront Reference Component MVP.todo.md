@@ -944,9 +944,21 @@ ComponentMvp_NoConsoleOrPageErrors
 
 ### Exit Criteria
 
-- [ ] Focused unit/architecture tests pass.
-- [ ] Browser Playwright tests pass.
-- [ ] Exact commands and results are recorded in this file and QA checklist.
+- [x] Focused unit/architecture tests pass.
+- [x] Browser Playwright tests pass.
+- [x] Exact commands and results are recorded in this file and QA checklist.
+
+Implementation notes:
+
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests"` passed: 65 passed, 0 failed, 0 skipped.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontHybridRuntimeProbe|FullyQualifiedName~ComponentMvp|FullyQualifiedName~StorefrontComponentMvp"` passed: 11 passed, 0 failed, 0 skipped.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrowserProductRailControllerTests|FullyQualifiedName~StorefrontDiscountedProductRailPresentationTests"` passed: 18 passed, 0 failed, 0 skipped.
+- 2026-08-10: `node --check scripts/qa/storefront-component-mvp-proof.js` passed.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase RawHtml -RuntimeTimeoutSeconds 90 -NoBuild` passed with `"ok": true`; evidence `output/playwright/storefront-component-mvp/raw-html.evidence.json`.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Hybrid -RuntimeTimeoutSeconds 90 -NoBuild` passed with `"ok": true`; evidence `output/playwright/storefront-component-mvp/hybrid.evidence.json`; same-origin BFF calls were `/api/consent/current`, `/api/cart`, and `/api/catalog/discounted-products`; direct Commerce, console errors, page errors, and credential leaks were all zero.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Rail -RuntimeTimeoutSeconds 90 -NoBuild` passed with `"ok": true`; evidence `output/playwright/storefront-component-mvp/rail.evidence.json`; loading, success with 2 items, empty, error, and retry with 2 attempts all passed.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Network -RuntimeTimeoutSeconds 90 -NoBuild` passed with `"ok": true`; evidence `output/playwright/storefront-component-mvp/network.evidence.json`; transport summary was document 1, static assets 5, `_framework` 215, same-origin BFF 3, websocket 0, eventsource 0, server UI circuit 0, direct Commerce 0, other 0.
+- 2026-08-10: test/build warnings remain the existing known MessagePack NU1902/NU1903 advisories and Browserslist `caniuse-lite` notice.
 
 ## Phase H2.16 - H2 Closure And H3 Handoff
 
