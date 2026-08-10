@@ -695,27 +695,27 @@ Upgrade existing descriptor guard from fixture-only to real descriptor validatio
 
 Tasks:
 
-- [ ] Locate current descriptor mode ownership tests.
-- [ ] Add repository scan for descriptor declarations in mode projects.
-- [ ] Discover descriptors deterministically without requiring production registry behavior.
-- [ ] Validate:
+- [x] Locate current descriptor mode ownership tests.
+- [x] Add repository scan for descriptor declarations in mode projects.
+- [x] Discover descriptors deterministically without requiring production registry behavior.
+- [x] Validate:
   - descriptor key is valid kebab-case.
   - descriptor mode matches owning project.
   - descriptor category is valid.
   - descriptor component type implements `IComponent`.
   - descriptor component type belongs to the same owning mode project or an explicitly allowed internal child exception.
-- [ ] Assert expected real descriptors exist:
+- [x] Assert expected real descriptors exist:
   - `brand-logo`
   - `contact-form`
   - `discounted-product-rail`
-- [ ] Assert `StorefrontContactFormApp` does not have a public descriptor.
-- [ ] Keep `StorefrontComponentDescriptorValidator` generic.
-- [ ] Do not add production registry/scanning.
+- [x] Assert `StorefrontContactFormApp` does not have a public descriptor.
+- [x] Keep `StorefrontComponentDescriptorValidator` generic.
+- [x] Do not add production registry/scanning.
 
 Exit criteria:
 
-- [ ] Real descriptors cannot drift from mode/project ownership.
-- [ ] Future mode components must be explicitly validated by repository tests.
+- [x] Real descriptors cannot drift from mode/project ownership.
+- [x] Future mode components must be explicitly validated by repository tests.
 
 ## Phase 11 - Architecture Guardrails And Test Updates
 
@@ -1035,4 +1035,13 @@ Phase 9 build/test:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`: passed, 0 warnings, 0 errors.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontContactFormComponentTests"`: passed 88/88.
 - Scope scan confirmed `Components/Features` does not exist, Starter/StorefrontBuilder/generated outputs were not changed, and V2/V2.WASM do not call `api/storefront/stores` directly.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 10 build/test:
+
+- Upgraded `StorefrontComponentDescriptorTests` with repository descriptor discovery over `Components.Ssr`, `Components.Hybrid`, and `Components.WasmHost` source files.
+- The test resolves descriptor holder types by file namespace/project owner through reflection and validates their static `Descriptor` values without adding a production registry/scanner.
+- Repository validation now proves descriptor keys, defined modes/categories, `IComponent` component types, owning mode/project consistency, and expected real descriptor keys.
+- `StorefrontContactFormAppDoesNotPublishPublicDescriptor` remains in place to keep the WasmHost child internal to the Hybrid public descriptor.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"`: passed 33/33.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

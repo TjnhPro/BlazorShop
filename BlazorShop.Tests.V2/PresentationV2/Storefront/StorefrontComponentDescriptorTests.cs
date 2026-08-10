@@ -1,5 +1,7 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
+using System.Reflection;
+
 using BlazorShop.Storefront.Components.Contracts.Components;
 using BlazorShop.Storefront.Components.Hybrid.Content;
 using BlazorShop.Storefront.Components.Ssr.Brand;
@@ -212,15 +214,8 @@ public sealed class StorefrontComponentDescriptorTests
     [Fact]
     public void RepositoryModeProjectsExposeExpectedReferenceDescriptorsOnly()
     {
-        var descriptorCandidates = ModeProjectDirectories
-            .Select(RepositoryPath)
-            .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
-            .Where(file => !file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                .Any(part => part.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
-                    part.Equals("obj", StringComparison.OrdinalIgnoreCase)))
-            .Where(file => Path.GetExtension(file) is ".cs" or ".razor")
-            .Where(file => File.ReadAllText(file).Contains("StorefrontComponentDescriptor", StringComparison.Ordinal))
-            .Select(file => Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/'))
+        var descriptorCandidates = DiscoverRepositoryDescriptors()
+            .Select(candidate => candidate.RelativePath)
             .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();
 
@@ -231,6 +226,36 @@ public sealed class StorefrontComponentDescriptorTests
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Catalog/StorefrontDiscountedProductRailDescriptor.cs",
             ],
             descriptorCandidates);
+    }
+
+    [Fact]
+    public void RepositoryModeProjectDescriptorsAreValidAndOwnedByTheirModeProjects()
+    {
+        var descriptors = DiscoverRepositoryDescriptors();
+
+        Assert.Equal(
+            [
+                "brand-logo",
+                "contact-form",
+                "discounted-product-rail",
+            ],
+            descriptors.Select(candidate => candidate.Descriptor.Key).OrderBy(key => key, StringComparer.Ordinal).ToArray());
+
+        foreach (var candidate in descriptors)
+        {
+            var validation = StorefrontComponentDescriptorValidator.Validate(candidate.Descriptor);
+            var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
+                candidate.Descriptor,
+                candidate.OwnerMode);
+            var componentOwnerMode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(candidate.Descriptor.ComponentType);
+
+            Assert.True(validation.IsValid, $"{candidate.RelativePath}: {string.Join("; ", validation.Errors)}");
+            Assert.True(ownership.IsValid, $"{candidate.RelativePath}: {ownership.Error}");
+            Assert.Equal(candidate.OwnerMode, candidate.Descriptor.Mode);
+            Assert.Equal(candidate.OwnerMode, componentOwnerMode);
+            Assert.True(Enum.IsDefined(candidate.Descriptor.Category));
+            Assert.True(typeof(IComponent).IsAssignableFrom(candidate.Descriptor.ComponentType));
+        }
     }
 
     [Fact]
@@ -337,10 +362,91 @@ public sealed class StorefrontComponentDescriptorTests
 
     private static string RepositoryRoot => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
 
+    private static IReadOnlyList<RepositoryDescriptorCandidate> DiscoverRepositoryDescriptors()
+    {
+        return ModeProjectDirectories
+            .Select(RepositoryPath)
+            .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+            .Where(IsActiveSourceFile)
+            .Where(file => File.ReadAllText(file).Contains("StorefrontComponentDescriptor", StringComparison.Ordinal))
+            .Select(CreateDescriptorCandidate)
+            .OrderBy(candidate => candidate.RelativePath, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static RepositoryDescriptorCandidate CreateDescriptorCandidate(string file)
+    {
+        var relativePath = Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/');
+        var ownerMode = ResolveOwnerModeFromPath(relativePath);
+        var descriptorHolderType = ResolveDescriptorHolderType(file, ownerMode);
+        var property = descriptorHolderType.GetProperty("Descriptor", BindingFlags.Public | BindingFlags.Static)
+            ?? throw new InvalidOperationException($"{descriptorHolderType.FullName} must expose a public static Descriptor property.");
+        var descriptor = property.GetValue(null) as StorefrontComponentDescriptor
+            ?? throw new InvalidOperationException($"{descriptorHolderType.FullName}.Descriptor must return StorefrontComponentDescriptor.");
+
+        return new RepositoryDescriptorCandidate(relativePath, ownerMode, descriptor);
+    }
+
+    private static Type ResolveDescriptorHolderType(string file, StorefrontComponentMode ownerMode)
+    {
+        var source = File.ReadAllText(file);
+        var namespaceName = source
+            .Split(["\r\n", "\n"], StringSplitOptions.None)
+            .Select(line => line.Trim())
+            .Where(line => line.StartsWith("namespace ", StringComparison.Ordinal))
+            .Select(line => line["namespace ".Length..].Trim().TrimEnd(';'))
+            .FirstOrDefault()
+            ?? throw new InvalidOperationException($"{file} must declare a file-scoped namespace.");
+        var typeName = Path.GetFileNameWithoutExtension(file);
+        var assemblyName = ownerMode switch
+        {
+            StorefrontComponentMode.Ssr => "BlazorShop.Storefront.Components.Ssr",
+            StorefrontComponentMode.Hybrid => "BlazorShop.Storefront.Components.Hybrid",
+            StorefrontComponentMode.WasmHost => "BlazorShop.Storefront.Components.WasmHost",
+            _ => throw new ArgumentOutOfRangeException(nameof(ownerMode), ownerMode, null),
+        };
+
+        return Type.GetType($"{namespaceName}.{typeName}, {assemblyName}", throwOnError: true)!
+            ?? throw new InvalidOperationException($"{namespaceName}.{typeName} could not be loaded from {assemblyName}.");
+    }
+
+    private static StorefrontComponentMode ResolveOwnerModeFromPath(string relativePath)
+    {
+        if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/", StringComparison.Ordinal))
+        {
+            return StorefrontComponentMode.Ssr;
+        }
+
+        if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/", StringComparison.Ordinal))
+        {
+            return StorefrontComponentMode.Hybrid;
+        }
+
+        if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/", StringComparison.Ordinal))
+        {
+            return StorefrontComponentMode.WasmHost;
+        }
+
+        throw new InvalidOperationException($"Descriptor file is outside a known mode project: {relativePath}");
+    }
+
+    private static bool IsActiveSourceFile(string file)
+    {
+        return Path.GetExtension(file) is ".cs" or ".razor"
+            && !file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(part => part.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+                    part.Equals("obj", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string RepositoryPath(string relativePath)
     {
         return Path.Combine(RepositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
+
+    private sealed record RepositoryDescriptorCandidate(
+        string RelativePath,
+        StorefrontComponentMode OwnerMode,
+        StorefrontComponentDescriptor Descriptor);
 
     private static class StorefrontComponentDescriptorModeOwnership
     {
