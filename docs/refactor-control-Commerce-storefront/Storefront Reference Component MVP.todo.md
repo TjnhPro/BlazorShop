@@ -752,23 +752,30 @@ Record real runtime transport behavior for future H3 guardrails.
 
 ### Tasks
 
-- [ ] Capture network activity while loading `/__qa/component-mvp`.
-- [ ] Classify requests:
-  - [ ] document;
-  - [ ] static assets;
-  - [ ] `_framework` WASM assets;
-  - [ ] same-origin BFF requests;
-  - [ ] WebSocket connections;
-  - [ ] EventSource connections.
-- [ ] Assert no public Storefront Blazor Server UI circuit is required.
-- [ ] Do not fail solely because dev tooling/hot reload opens a development websocket.
-- [ ] Specifically inspect for app UI circuit endpoints such as `/_blazor`.
-- [ ] Confirm Hybrid button interaction does not depend on a persistent server UI connection.
+- [x] Capture network activity while loading `/__qa/component-mvp`.
+- [x] Classify requests:
+  - [x] document;
+  - [x] static assets;
+  - [x] `_framework` WASM assets;
+  - [x] same-origin BFF requests;
+  - [x] WebSocket connections;
+  - [x] EventSource connections.
+- [x] Assert no public Storefront Blazor Server UI circuit is required.
+- [x] Do not fail solely because dev tooling/hot reload opens a development websocket.
+- [x] Specifically inspect for app UI circuit endpoints such as `/_blazor`.
+- [x] Confirm Hybrid button interaction does not depend on a persistent server UI connection.
 
 ### Exit Criteria
 
-- [ ] Transport evidence is recorded.
-- [ ] H3 can harden only rules proven by runtime evidence.
+- [x] Transport evidence is recorded.
+- [x] H3 can harden only rules proven by runtime evidence.
+
+Implementation notes:
+
+- 2026-08-10: extended `scripts/qa/run-storefront-component-mvp-proof.ps1` with `-Phase Network` and extended `scripts/qa/storefront-component-mvp-proof.js` with runtime transport classification.
+- 2026-08-10: Network proof loads `/__qa/component-mvp`, mocks rail BFF, waits for Hybrid interactive state, clicks the Hybrid C# action, records browser request categories, records websocket URLs, checks storage/header credential leaks, and rejects `/_blazor`, direct Commerce, console errors, and page errors.
+- 2026-08-10: `node --check scripts/qa/storefront-component-mvp-proof.js` passed.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Network -RuntimeTimeoutSeconds 90 -NoBuild` passed. Evidence written to `output/playwright/storefront-component-mvp/network.evidence.json`; summary: document 1, static assets 5, `_framework` assets 215, same-origin BFF 3, websockets 0, eventsource 0, server UI circuit 0, direct Commerce 0, other 0.
 
 ## Phase H2.12 - QA Checklist Update
 

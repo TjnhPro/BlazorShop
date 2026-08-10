@@ -11,6 +11,8 @@ const sameOriginCalls = [];
 const consoleErrors = [];
 const pageErrors = [];
 const credentialLeaks = [];
+const transportEvents = [];
+const websocketEvents = [];
 
 async function main() {
   fs.mkdirSync(artifactRoot, { recursive: true });
@@ -19,7 +21,7 @@ async function main() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 
   try {
-    if (!["raw-html", "hybrid", "rail"].includes(phase)) {
+    if (!["raw-html", "hybrid", "rail", "network"].includes(phase)) {
       throw new Error(`Unsupported Component MVP proof phase '${phase}'.`);
     }
 
@@ -29,6 +31,8 @@ async function main() {
       await assertHydratedHybrid(context);
     } else if (phase === "rail") {
       await assertWasmHostRail(context);
+    } else if (phase === "network") {
+      await assertRuntimeTransport(context);
     }
 
     const evidence = {
@@ -42,6 +46,8 @@ async function main() {
       consoleErrors,
       pageErrors,
       credentialLeaks,
+      transportSummary: summarizeTransport(),
+      websocketEvents,
     };
 
     fs.writeFileSync(path.join(artifactRoot, `${phase}.evidence.json`), JSON.stringify(evidence, null, 2));
@@ -50,6 +56,32 @@ async function main() {
     await context.close();
     await browser.close();
   }
+}
+
+async function assertRuntimeTransport(context) {
+  const page = await context.newPage();
+  attachRuntimeGuards(page);
+  await mockRailSuccess(page);
+
+  await gotoComponentMvp(page);
+  await page.waitForFunction(() => {
+    const element = document.querySelector('[data-storefront-component="hybrid-runtime-probe"]');
+    return element?.getAttribute("data-storefront-runtime-state") === "interactive";
+  }, null, { timeout: 60000 });
+  await page.waitForSelector("[data-storefront-product-rail-item]", { timeout: 60000 });
+  await page.locator("[data-storefront-hybrid-action]").first().click();
+  await expectText(page, page.locator("[data-storefront-hybrid-value]").first(), "1", "hybrid counter during network audit");
+  await recordStorageCredentialLeaks(page);
+
+  const summary = summarizeTransport();
+  assert(summary.document > 0, "network audit did not record document request");
+  assert(summary.framework > 0, "network audit did not record _framework WASM assets");
+  assert(summary.sameOriginBff > 0, "network audit did not record same-origin BFF requests");
+  assert(summary.serverUiCircuit === 0, `public Blazor Server UI circuit detected: ${summary.serverUiCircuit}`);
+  assert(summary.directCommerce === 0, `direct Commerce calls detected: ${directCommerceCalls.join(", ")}`);
+  assertNoRuntimeFailures();
+  steps.push({ step: "component-mvp.network-transport-audit", ok: true, summary });
+  await page.close();
 }
 
 async function assertWasmHostRail(context) {
@@ -287,6 +319,13 @@ function hashCode(value) {
 function attachRuntimeGuards(page) {
   page.on("request", (request) => {
     const url = new URL(request.url());
+    transportEvents.push({
+      method: request.method(),
+      url: request.url(),
+      path: url.pathname,
+      resourceType: request.resourceType(),
+      category: classifyRequest(url, request),
+    });
     recordHeaderCredentialLeaks(request);
     if (url.origin === baseUrl && url.pathname.startsWith("/api/")) {
       sameOriginCalls.push(`${request.method()} ${url.pathname}`);
@@ -306,6 +345,97 @@ function attachRuntimeGuards(page) {
   page.on("pageerror", (error) => {
     pageErrors.push(error.message);
   });
+
+  page.on("websocket", (websocket) => {
+    websocketEvents.push(websocket.url());
+    const url = new URL(websocket.url());
+    if (url.pathname.startsWith("/_blazor")) {
+      directCommerceCalls.push(`WS ${websocket.url()}`);
+    }
+  });
+}
+
+function classifyRequest(url, request) {
+  if (url.pathname.startsWith("/_blazor")) {
+    return "server-ui-circuit";
+  }
+
+  if (url.pathname.startsWith("/_framework")) {
+    return "framework";
+  }
+
+  if (url.origin === baseUrl && url.pathname.startsWith("/api/")) {
+    return "same-origin-bff";
+  }
+
+  if (url.href.includes("/api/storefront/") || url.href.includes("/api/commerce/") || url.origin === "http://localhost:5180") {
+    return "direct-commerce";
+  }
+
+  if (request.resourceType() === "document") {
+    return "document";
+  }
+
+  if (request.headers().accept?.includes("text/event-stream")) {
+    return "eventsource";
+  }
+
+  if (url.pathname.startsWith("/_content") ||
+      url.pathname.startsWith("/css") ||
+      url.pathname.startsWith("/js") ||
+      url.pathname.startsWith("/images") ||
+      url.pathname.startsWith("/assets") ||
+      /\.[a-z0-9]{2,8}$/i.test(url.pathname)) {
+    return "static-asset";
+  }
+
+  return "other";
+}
+
+function summarizeTransport() {
+  const summary = {
+    document: 0,
+    staticAssets: 0,
+    framework: 0,
+    sameOriginBff: 0,
+    webSockets: websocketEvents.length,
+    eventSource: 0,
+    serverUiCircuit: 0,
+    directCommerce: directCommerceCalls.length,
+    other: 0,
+  };
+
+  for (const event of transportEvents) {
+    switch (event.category) {
+      case "document":
+        summary.document += 1;
+        break;
+      case "static-asset":
+        summary.staticAssets += 1;
+        break;
+      case "framework":
+        summary.framework += 1;
+        break;
+      case "same-origin-bff":
+        summary.sameOriginBff += 1;
+        break;
+      case "eventsource":
+        summary.eventSource += 1;
+        break;
+      case "server-ui-circuit":
+        summary.serverUiCircuit += 1;
+        break;
+      case "direct-commerce":
+        summary.directCommerce += 1;
+        break;
+      default:
+        summary.other += 1;
+        break;
+    }
+  }
+
+  summary.serverUiCircuit += websocketEvents.filter((url) => new URL(url).pathname.startsWith("/_blazor")).length;
+  return summary;
 }
 
 function recordHeaderCredentialLeaks(request) {
@@ -377,6 +507,8 @@ main().catch((error) => {
     consoleErrors,
     pageErrors,
     credentialLeaks,
+    transportSummary: summarizeTransport(),
+    websocketEvents,
   };
   fs.mkdirSync(artifactRoot, { recursive: true });
   fs.writeFileSync(path.join(artifactRoot, `${phase}.evidence.failed.json`), JSON.stringify(failure, null, 2));
