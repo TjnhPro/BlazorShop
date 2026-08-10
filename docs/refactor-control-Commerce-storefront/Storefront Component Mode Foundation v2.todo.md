@@ -513,29 +513,29 @@ Align `StorefrontComponentModeBoundaryValidator` with H0/H1 semantics without ov
 
 ### Tasks
 
-- [ ] Review `StorefrontComponentModeProfiles.Ssr`.
-- [ ] Review `StorefrontComponentModeProfiles.Hybrid`.
-- [ ] Review `StorefrontComponentModeProfiles.WasmHost`.
-- [ ] Keep SSR source-token restrictions:
-  - [ ] no `HttpClient`;
-  - [ ] no `IHttpClientFactory`;
-  - [ ] no `IJSRuntime`;
-  - [ ] no `@rendermode`;
-  - [ ] no `InteractiveWebAssembly`;
-  - [ ] no direct `/api/*`;
-  - [ ] no Commerce Node URL/base URL.
-- [ ] Keep WasmHost restrictions:
-  - [ ] no Presentation reference;
-  - [ ] no Runtime/Client references;
-  - [ ] no direct Commerce Node URLs;
-  - [ ] no `HttpClient`;
-  - [ ] no `HttpContext`/`IHttpContextAccessor`;
-  - [ ] no `@rendermode`.
-- [ ] For Hybrid, split rule wording into:
-  - [ ] current transitional project profile;
-  - [ ] semantic Hybrid lifecycle notes.
-- [ ] Do not add a broad anti-SignalR/WebSocket repository scanner in H1.
-- [ ] Do not block valid H2 progressive enhancement experiments unless they violate the current files being protected.
+- [x] Review `StorefrontComponentModeProfiles.Ssr`.
+- [x] Review `StorefrontComponentModeProfiles.Hybrid`.
+- [x] Review `StorefrontComponentModeProfiles.WasmHost`.
+- [x] Keep SSR source-token restrictions:
+  - [x] no `HttpClient`;
+  - [x] no `IHttpClientFactory`;
+  - [x] no `IJSRuntime`;
+  - [x] no `@rendermode`;
+  - [x] no `InteractiveWebAssembly`;
+  - [x] no direct `/api/*`;
+  - [x] no Commerce Node URL/base URL.
+- [x] Keep WasmHost restrictions:
+  - [x] no Presentation reference;
+  - [x] no Runtime/Client references;
+  - [x] no direct Commerce Node URLs;
+  - [x] no `HttpClient`;
+  - [x] no `HttpContext`/`IHttpContextAccessor`;
+  - [x] no `@rendermode`.
+- [x] For Hybrid, split rule wording into:
+  - [x] current transitional project profile;
+  - [x] semantic Hybrid lifecycle notes.
+- [x] Do not add a broad anti-SignalR/WebSocket repository scanner in H1.
+- [x] Do not block valid H2 progressive enhancement experiments unless they violate the current files being protected.
 
 ### Recommended Hybrid Profile Change
 
@@ -561,9 +561,17 @@ The transitional Components.Hybrid project may reference only base Components, P
 
 ### Exit Criteria
 
-- [ ] Validator profiles distinguish current physical project from semantic mode.
-- [ ] SSR and WasmHost remain strict.
-- [ ] Hybrid does not become a permanent nested-shell rule by accident.
+- [x] Validator profiles distinguish current physical project from semantic mode.
+- [x] SSR and WasmHost remain strict.
+- [x] Hybrid does not become a permanent nested-shell rule by accident.
+
+Implementation notes:
+
+- 2026-08-10: reviewed SSR, Hybrid, and WasmHost profiles in `StorefrontComponentModeBoundaryValidator`.
+- 2026-08-10: SSR source-token restrictions and WasmHost project/source restrictions remain unchanged.
+- 2026-08-10: Hybrid still enforces the current transitional direct references to Components, Presentation, and Components.WasmHost, but project/source remediation now says this applies to transitional `Components.Hybrid` until H2 decides its permanent role and is not the semantic definition of Hybrid mode.
+- 2026-08-10: no broad SignalR/WebSocket scanner was added in H1.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests"` passed: 21 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H1.6 - Render-Mode Ownership Review
 

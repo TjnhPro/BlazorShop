@@ -300,8 +300,8 @@ internal static class StorefrontComponentModeProfiles
             ],
             forbiddenSourceTokens: HybridForbiddenSourceTokens,
             allowedSourceTokens: HybridAllowedSourceTokens,
-            projectReferenceRemediation: "Hybrid components may reference only base Components, Presentation, and Components.WasmHost.",
-            sourceTokenRemediation: "Move direct browser transport, API calls, HttpClient, and JS interop behavior out of Hybrid components.");
+            projectReferenceRemediation: "The transitional Components.Hybrid project may reference only base Components, Presentation, and Components.WasmHost until H2 decides its permanent role. This is not the semantic definition of Hybrid mode.",
+            sourceTokenRemediation: "Keep the transitional Components.Hybrid project free of direct browser transport, API calls, HttpClient, and JS interop behavior; H2 owns any permanent Hybrid runtime pattern changes.");
     }
 
     public static StorefrontComponentModeProfile WasmHost(string repositoryRoot)
