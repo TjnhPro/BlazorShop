@@ -45,6 +45,8 @@ public sealed class StorefrontComponentModeDependencyTests
 
     private static readonly string[] ForbiddenV2WasmReferenceFragments =
     [
+        "BlazorShop.Storefront.Presentation",
+        "BlazorShop.Storefront.Components.Ssr",
         "BlazorShop.Storefront.Runtime",
         "BlazorShop.Storefront.Client",
         "BlazorShop.Storefront.Starter",
@@ -126,6 +128,20 @@ public sealed class StorefrontComponentModeDependencyTests
     }
 
     [Fact]
+    public void V2WasmCannotTransitivelyReachPresentationSsrRuntimeClientConsumersBackendCoreOrApiProjects()
+    {
+        var reachableProjects = ResolveTransitiveProjectReferences(
+            RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj"));
+        var offenders = reachableProjects
+            .Where(reference => ForbiddenV2WasmReferenceFragments.Any(fragment =>
+                reference.Contains(fragment, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(reference => reference, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        Assert.True(offenders.Length == 0, $"V2.WASM reached forbidden project references:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [Fact]
     public void V2DoesNotReferenceRetiredHybridProject()
     {
         var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj");
@@ -189,6 +205,39 @@ public sealed class StorefrontComponentModeDependencyTests
             .Where(storefrontProjectSet.Contains)
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    private static IReadOnlyList<string> ResolveTransitiveProjectReferences(string rootProjectPath)
+    {
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var reachable = new List<string>();
+
+        Visit(NormalizeAbsolutePath(rootProjectPath));
+
+        return reachable;
+
+        void Visit(string projectPath)
+        {
+            if (!visited.Add(projectPath) || !File.Exists(projectPath))
+            {
+                return;
+            }
+
+            var directory = Path.GetDirectoryName(projectPath) ?? RepositoryRoot;
+            var references = XDocument.Load(projectPath)
+                .Descendants("ProjectReference")
+                .Select(element => element.Attribute("Include")?.Value ?? string.Empty)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Select(value => NormalizeAbsolutePath(Path.GetFullPath(Path.Combine(directory, value))))
+                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            foreach (var reference in references)
+            {
+                reachable.Add(reference);
+                Visit(reference);
+            }
+        }
     }
 
     private static IReadOnlyList<string> ReadProjectReferences(string relativeProjectPath)

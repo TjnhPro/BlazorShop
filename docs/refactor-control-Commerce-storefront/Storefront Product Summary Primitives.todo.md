@@ -344,50 +344,57 @@ StorefrontPrimitiveDependencyTests
 
 Required assertions:
 
-- [ ] `Components.Primitives` references exactly `Components`.
-- [ ] `Components.Primitives` does not reference forbidden Storefront packages.
-- [ ] `Components.Primitives` does not reference backend/core/API projects.
-- [ ] `Components.Primitives` does not reference `Web.SharedV2`.
-- [ ] `Components.Primitives` source does not contain:
-  - [ ] `@rendermode`
-  - [ ] `InteractiveServer`
-  - [ ] `InteractiveAuto`
-  - [ ] `InteractiveWebAssembly`
-  - [ ] `HttpClient`
-  - [ ] `HttpContext`
-  - [ ] `IHttpContextAccessor`
-  - [ ] `IJSRuntime`
-  - [ ] `HubConnection`
-  - [ ] `ClientWebSocket`
-  - [ ] `api/storefront/stores`
-  - [ ] `api/commerce`
-  - [ ] `api/control-plane`
-  - [ ] `CommerceNode`
-  - [ ] `ControlPlane`
-  - [ ] localhost backend URLs
-- [ ] Add or extend graph traversal test proving `V2.WASM` cannot reach:
-  - [ ] `BlazorShop.Storefront.Presentation`
-  - [ ] `BlazorShop.Storefront.Components.Ssr`
-  - [ ] `BlazorShop.Storefront.Runtime`
-  - [ ] `BlazorShop.Storefront.Client`
-  - [ ] backend/core/API projects
-- [ ] Add negative fixture checks proving scanners reject at least:
-  - [ ] `Presentation` reference
-  - [ ] `Browser` reference
-  - [ ] `@rendermode`
-  - [ ] `HttpClient`
-  - [ ] `IJSRuntime`
-  - [ ] literal V2 classes
+- [x] `Components.Primitives` references exactly `Components`.
+- [x] `Components.Primitives` does not reference forbidden Storefront packages.
+- [x] `Components.Primitives` does not reference backend/core/API projects.
+- [x] `Components.Primitives` does not reference `Web.SharedV2`.
+- [x] `Components.Primitives` source does not contain:
+  - [x] `@rendermode`
+  - [x] `InteractiveServer`
+  - [x] `InteractiveAuto`
+  - [x] `InteractiveWebAssembly`
+  - [x] `HttpClient`
+  - [x] `HttpContext`
+  - [x] `IHttpContextAccessor`
+  - [x] `IJSRuntime`
+  - [x] `HubConnection`
+  - [x] `ClientWebSocket`
+  - [x] `api/storefront/stores`
+  - [x] `api/commerce`
+  - [x] `api/control-plane`
+  - [x] `CommerceNode`
+  - [x] `ControlPlane`
+  - [x] localhost backend URLs
+- [x] Add or extend graph traversal test proving `V2.WASM` cannot reach:
+  - [x] `BlazorShop.Storefront.Presentation`
+  - [x] `BlazorShop.Storefront.Components.Ssr`
+  - [x] `BlazorShop.Storefront.Runtime`
+  - [x] `BlazorShop.Storefront.Client`
+  - [x] backend/core/API projects
+- [x] Add negative fixture checks proving scanners reject at least:
+  - [x] `Presentation` reference
+  - [x] `Browser` reference
+  - [x] `@rendermode`
+  - [x] `HttpClient`
+  - [x] `IJSRuntime`
+  - [x] literal V2 classes
 
 Important correction from review:
 
-- [ ] Existing `V2WasmDoesNotReferenceRuntimeClientConsumersBackendCoreOrApiProjects` is not enough; it must also block `Presentation` and `Components.Ssr`, directly and transitively.
+- [x] Existing `V2WasmDoesNotReferenceRuntimeClientConsumersBackendCoreOrApiProjects` is not enough; it must also block `Presentation` and `Components.Ssr`, directly and transitively.
 
 Exit criteria:
 
-- [ ] Positive repository scan passes.
-- [ ] Negative fixture checks pass.
-- [ ] A future accidental `V2.WASM -> Components.Ssr -> Presentation` path fails tests.
+- [x] Positive repository scan passes.
+- [x] Negative fixture checks pass.
+- [x] A future accidental `V2.WASM -> Components.Ssr -> Presentation` path fails tests.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontPrimitiveDependencyTests` to assert exact `Components.Primitives -> Components` references, forbid Storefront host/runtime/backend/core/API/Web.SharedV2 references, and scan primitive source for render-mode/API/runtime/browser tokens.
+- 2026-08-10: Added negative fixtures for forbidden `Presentation`, `Browser`, `@rendermode`, `HttpClient`, `IJSRuntime`, and literal V2 class usage.
+- 2026-08-10: Extended `StorefrontComponentModeDependencyTests` so V2.WASM blocks `Presentation` and `Components.Ssr` directly and through transitive project-reference traversal.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontPrimitiveDependencyTests|FullyQualifiedName~StorefrontComponentModeDependencyTests"`.
 
 ## Phase 3.1.3 - Extend Visual Neutrality To Primitives
 
