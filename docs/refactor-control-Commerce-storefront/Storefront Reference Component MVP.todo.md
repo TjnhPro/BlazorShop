@@ -886,8 +886,22 @@ dotnet build BlazorShop.sln --no-restore
 
 ### Exit Criteria
 
-- [ ] All affected focused projects build.
-- [ ] Any skipped broader build has a concrete reason.
+- [x] All affected focused projects build.
+- [x] Any skipped broader build has a concrete reason.
+
+Implementation notes:
+
+- 2026-08-10: focused build gate passed in required order with 0 warnings and 0 errors for:
+  - `BlazorShop.Storefront.Components`
+  - `BlazorShop.Storefront.Components.Ssr`
+  - `BlazorShop.Storefront.Components.WasmHost`
+  - `BlazorShop.Storefront.Components.Hybrid`
+  - `BlazorShop.Storefront.Browser`
+  - `BlazorShop.Storefront.Presentation`
+  - `BlazorShop.Storefront.V2.WASM`
+  - `BlazorShop.Storefront.V2`
+- 2026-08-10: broad build was attempted because the environment was healthy: `dotnet build BlazorShop.sln --no-restore` passed with 0 errors.
+- 2026-08-10: broad build warnings were existing known warnings: MessagePack NU1902/NU1903 advisories in `BlazorShop.Tests.V2` and Browserslist `caniuse-lite` notice from Control Plane Tailwind.
 
 ## Phase H2.15 - Test Gates
 
