@@ -1,10 +1,12 @@
 # Storefront Component Modes
 
-This document defines the reusable Storefront component library modes. The mode projects are foundation-only in this phase. They make boundaries explicit, but they do not contain real storefront feature components yet.
+This document is the current source of truth for BlazorShop Storefront component mode language. The original component mode foundation is complete and real reference components now exist. This document supersedes older plan wording that described mode projects as foundation-only or treated Hybrid as a mandatory nested shell pattern.
+
+BlazorShop component modes are architecture classifications. They are not a one-to-one copy of ASP.NET Core render mode names, and they do not by themselves decide the final physical project graph.
 
 ## Projects
 
-The mode projects live beside the active Storefront packages under `BlazorShop.PresentationV2`:
+The current mode projects live beside the active Storefront packages under `BlazorShop.PresentationV2`:
 
 - `BlazorShop.Storefront.Components.Ssr`
 - `BlazorShop.Storefront.Components.Hybrid`
@@ -12,16 +14,18 @@ The mode projects live beside the active Storefront packages under `BlazorShop.P
 
 Do not recreate `BlazorShop.Storefront.Components/Features`. The retired `Features` folder must remain absent unless a later architecture decision reopens it.
 
-Do not add these projects for this foundation:
+Do not add replacement shared-component projects without an approved follow-up phase:
 
 - `BlazorShop.Storefront.Components.Common`
 - `BlazorShop.Storefront.Features.Contracts`
 - `BlazorShop.Storefront.ComponentRuntime`
 - `BlazorShop.Storefront.ComponentRegistry`
 
-## Dependency Graph
+The physical role of `BlazorShop.Storefront.Components.Hybrid` is pending H1 re-evaluation. Current code and tests may still depend on it, so H0 documentation clarification does not delete, rename, or repurpose the project.
 
-Direct project references are fixed by mode:
+## Current Project Graph
+
+The current direct project references are historical guardrails from the completed foundation/reference work:
 
 ```text
 BlazorShop.Storefront.Components.Ssr
@@ -38,34 +42,43 @@ BlazorShop.Storefront.Components.WasmHost
   -> BlazorShop.Storefront.Browser
 ```
 
+The graph above describes the current repository state. It must be re-evaluated in H1 now that browser-visible V2 adoption proved the V2.WASM wrapper pattern for interactive roots.
+
 The base `BlazorShop.Storefront.Components` project remains the lowest browser-safe contracts and headless layer. It must not reference `Presentation`, `Browser`, `Runtime`, `Client`, V2 hosts, Starter hosts, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
 
-`BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, and generated storefronts must not reference the mode projects until a later phase implements and adopts real components.
+Descriptor mode ownership is currently enforced by repository architecture tests. This is also an H1 review item because descriptor mode is semantic architecture metadata, while physical project ownership may change.
 
-Descriptor mode ownership is a repository architecture test rule. A descriptor from `BlazorShop.Storefront.Components.Ssr` must declare `StorefrontComponentMode.Ssr`; a descriptor from `BlazorShop.Storefront.Components.Hybrid` must declare `StorefrontComponentMode.Hybrid`; a descriptor from `BlazorShop.Storefront.Components.WasmHost` must declare `StorefrontComponentMode.WasmHost`. The production descriptor validator stays generic and does not encode project layout knowledge.
+## ASP.NET Render Mode Facts
 
-## Package References
+ASP.NET Core render modes are framework runtime choices:
 
-The base `BlazorShop.Storefront.Components` project may use minimal framework abstractions needed for component descriptors while staying on `Microsoft.NET.Sdk`.
+- `Static`: static server-side rendering with no interactivity.
+- `InteractiveWebAssembly`: interactive client-side Blazor WebAssembly rendering.
+- `InteractiveServer`: interactive server rendering over a server circuit/real-time connection.
+- `InteractiveAuto`: starts with server interactivity and later uses WebAssembly on subsequent visits after the app bundle is available.
 
-Mode project package references are intentionally narrow:
+BlazorShop public Storefront interactive behavior targets `InteractiveWebAssembly` with prerendering where needed. It does not target `InteractiveServer`, SignalR/circuit-based public storefront interactivity, or `InteractiveAuto`.
 
-- `Components.Ssr`: no Storefront transport, browser, runtime, client, V2, Starter, backend, or Control Plane packages.
-- `Components.Hybrid`: no direct Browser package dependency beyond its project reference to `Components.WasmHost`; no Runtime, Client, V2, Starter, backend, or Control Plane packages.
-- `Components.WasmHost`: browser-safe dependencies only; Browser controller access comes through `BlazorShop.Storefront.Browser`.
+Important framework constraints for Storefront design:
 
-If a future component requires a new package, the owning phase must update this document and the mode boundary tests with a specific reason.
+- Prerendering is enabled by default for interactive components.
+- `InteractiveWebAssembly` components must be built from a separate client-side project so they are included in the downloaded app bundle.
+- Parameters crossing from a static parent to an interactive child must be JSON serializable.
+- `RenderFragment` and child content cannot be freely passed across a static-to-interactive render-mode boundary.
+- Components should avoid hard-coupling implementation assumptions to a specific render mode and should degrade gracefully where possible.
+- `RendererInfo.IsInteractive` and `AssignedRenderMode` exist for future phases that need explicit runtime awareness.
+- JavaScript initializers such as `beforeWebAssemblyStart` and `afterWebAssemblyStarted` are WASM startup hooks, not a reason to introduce server interactivity.
 
 ## SSR Mode
 
-SSR components render completely on the server and do not require browser runtime for their primary function.
+`Ssr` means a component or route surface can render its primary function from server-prepared state without requiring browser runtime.
 
 Allowed:
 
 - prepared Presentation contexts;
 - semantic render/input contracts;
 - normal Razor forms and links;
-- `RenderFragment`;
+- `RenderFragment` when it stays inside SSR ownership;
 - accessibility markup;
 - `data-storefront-*` semantic hooks;
 - class parameters or class descriptor parameters supplied by the host.
@@ -87,34 +100,31 @@ SSR components must not use `@rendermode`.
 
 ## Hybrid Mode
 
-Hybrid components are server-owned shells that can prepare SSR structure, initial browser state, antiforgery/form contracts, and host a `WasmHost` child.
+`Hybrid` is a BlazorShop architectural classification for:
 
-Allowed:
+```text
+server-produced/prerendered HTML or page snapshot
+  + client-side WebAssembly interactivity after hydration
+  + optional progressive enhancement
+```
 
-- `BlazorShop.Storefront.Components`;
-- `BlazorShop.Storefront.Presentation`;
-- `BlazorShop.Storefront.Components.WasmHost`;
-- server-side initial state;
-- semantic action descriptors;
-- form/action descriptors supplied by Presentation;
-- `@rendermode` only as a bridge when hosting a WasmHost child.
+Hybrid does not mean:
 
-Forbidden:
+- `.NET InteractiveAuto`;
+- `InteractiveServer`;
+- SignalR/circuit-based public storefront interactivity;
+- mandatory `Components.Hybrid -> WasmHost child` nesting;
+- mandatory server shell to nested interactive child implementation.
 
-- direct `BlazorShop.Storefront.Browser` reference;
-- `BlazorShop.Storefront.Runtime`;
-- `BlazorShop.Storefront.Client`;
-- V2, V2.WASM, Starter, Starter.WASM, generated storefront projects;
-- Commerce Node, Control Plane, Application, Domain, Infrastructure, or `Web.SharedV2`;
-- direct `HttpClient`;
-- direct backend/API routes;
-- browser controller injection;
-- direct `IJSRuntime` behavior;
-- theme CSS, store-specific copy, or V2 layout ownership.
+Hybrid route or component surfaces may use server-prepared state, semantic action descriptors, same-origin BFF routes, and client-side WASM interactivity. The browser-visible V2 contact and discounted rail proofs currently use V2.WASM wrapper components rendered with `@rendermode InteractiveWebAssembly`, then delegate behavior to reusable WasmHost components.
+
+`@rendermode InteractiveWebAssembly` placement is host/composition ownership. It is not a guarantee that a reusable component library owns render-mode directives, and it is not proof that `Components.Hybrid` must be the composition layer.
+
+The current `Components.Hybrid` project remains guarded by its existing tests until H1 changes them. It must not directly reference Browser, inject Browser controllers, call APIs directly, own theme CSS, or own V2 layout/copy.
 
 ## WasmHost Mode
 
-WasmHost components are browser-interactive feature roots that run in WASM and call Browser controllers. They do not own routes or self-host render modes.
+`WasmHost` means browser-side WebAssembly interactive roots that must be included in a downloadable WASM app graph. WasmHost components use Browser controllers and browser-safe contracts. They do not call backend APIs directly and do not self-own routes.
 
 Allowed:
 
@@ -141,12 +151,12 @@ Forbidden:
 - localhost/backend URLs;
 - Presentation service injection.
 
-WasmHost components must not use `@rendermode`. The host or Hybrid shell owns render-mode placement.
+WasmHost components must not use `@rendermode`. A host or composition root owns render-mode placement.
 
 Required browser data path:
 
 ```text
-WasmHost component
+WASM/browser component
   -> Browser controller
   -> same-origin Presentation/BFF endpoint
   -> Runtime
@@ -156,7 +166,7 @@ WasmHost component
 Forbidden data path:
 
 ```text
-WasmHost component
+WASM/browser component
   -> HttpClient
   -> Commerce Node Storefront API
 ```
@@ -186,7 +196,7 @@ Allowed class slots must be fully dynamic, for example `class="@CssClass"`, `cla
 
 Component names should not repeat the mode name. Use capability names that remain stable if the render strategy changes later.
 
-Namespaces are grouped by mode and category:
+Namespaces are grouped by current physical mode project and category:
 
 ```text
 BlazorShop.Storefront.Components.Ssr.{Category}
@@ -194,13 +204,29 @@ BlazorShop.Storefront.Components.Hybrid.{Category}
 BlazorShop.Storefront.Components.WasmHost.{Category}
 ```
 
-## Future Examples
+This namespace convention is current repository structure, not a permanent claim that every future Hybrid implementation must live in `Components.Hybrid`.
 
-The first real component phase may use these examples to prove the modes:
+## Current Reference Examples
+
+Implemented reference examples:
 
 - `StorefrontBrandLogo` in `Components.Ssr`;
-- `StorefrontContactForm` in `Components.Hybrid`;
+- `StorefrontContactForm` descriptor/component in `Components.Hybrid`;
 - `StorefrontContactFormApp` in `Components.WasmHost`;
-- `StorefrontDiscountedProductRail` in `Components.WasmHost`.
+- `StorefrontDiscountedProductRail` in `Components.WasmHost`;
+- V2.WASM wrapper components for browser-visible contact and discounted rail adoption.
 
-Those components are not part of this foundation phase. Browser QA starts only when a later phase renders real browser-visible component behavior through a host.
+The contact reference proved the Browser/BFF/WASM behavior, but visible V2 browser QA moved away from the nested Hybrid bridge because the nested bridge rendered but did not hydrate submit events in the visible route flow.
+
+## H1 Re-evaluation Required
+
+The next code/test phase must re-evaluate:
+
+- project-reference graph;
+- `Components.Hybrid` role;
+- descriptor mode ownership;
+- boundary validator allowlists;
+- V2/V2.WASM wrapper pattern;
+- Starter and generated storefront implications.
+
+Until H1 is complete, do not infer new code movement from historical Hybrid shell wording.

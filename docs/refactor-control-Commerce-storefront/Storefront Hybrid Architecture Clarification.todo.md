@@ -147,22 +147,22 @@ Rewrite `BlazorShop.PresentationV2/COMPONENT-MODES.md` as the source of truth.
 
 Required updates:
 
-- [ ] Remove or replace the stale statement that mode projects are foundation-only and contain no real storefront feature components.
-- [ ] State that the original foundation has completed and reference components now exist.
-- [ ] State that the physical `Components.Hybrid` project is under H1 re-evaluation.
-- [ ] Define `Ssr` as server/static/prerender-capable rendering with no browser runtime required for primary function.
-- [ ] Define `WasmHost` as browser-side WebAssembly interactive roots that must be part of a downloadable WASM app graph and use Browser controllers/local BFF routes.
-- [ ] Define `Hybrid` as BlazorShop's architectural classification for server-produced/prerendered HTML plus client-side WASM interactivity.
-- [ ] Explicitly say `Hybrid` is not `.NET InteractiveAuto`.
-- [ ] Explicitly say `Hybrid` is not `InteractiveServer`.
-- [ ] Explicitly say public Storefront Hybrid must not depend on SignalR/server circuit interactivity.
-- [ ] Explicitly say `Hybrid` does not require a nested `Components.Hybrid -> WasmHost child` implementation.
-- [ ] Record that `@rendermode InteractiveWebAssembly` placement is host/composition ownership, not a guarantee that reusable component libraries own render-mode directives.
-- [ ] Record that static-to-interactive parameters must remain JSON serializable.
-- [ ] Record that `RenderFragment`/child content cannot be passed freely across static-to-interactive render-mode boundaries.
-- [ ] Record that interactive components should avoid hard-coupling implementation assumptions to a specific render mode and should degrade gracefully where possible.
-- [ ] Preserve the base `Storefront.Components` rule: contracts/headless/browser-safe primitives only, no visual ownership.
-- [ ] Preserve the data path rule:
+- [x] Remove or replace the stale statement that mode projects are foundation-only and contain no real storefront feature components.
+- [x] State that the original foundation has completed and reference components now exist.
+- [x] State that the physical `Components.Hybrid` project is under H1 re-evaluation.
+- [x] Define `Ssr` as server/static/prerender-capable rendering with no browser runtime required for primary function.
+- [x] Define `WasmHost` as browser-side WebAssembly interactive roots that must be part of a downloadable WASM app graph and use Browser controllers/local BFF routes.
+- [x] Define `Hybrid` as BlazorShop's architectural classification for server-produced/prerendered HTML plus client-side WASM interactivity.
+- [x] Explicitly say `Hybrid` is not `.NET InteractiveAuto`.
+- [x] Explicitly say `Hybrid` is not `InteractiveServer`.
+- [x] Explicitly say public Storefront Hybrid must not depend on SignalR/server circuit interactivity.
+- [x] Explicitly say `Hybrid` does not require a nested `Components.Hybrid -> WasmHost child` implementation.
+- [x] Record that `@rendermode InteractiveWebAssembly` placement is host/composition ownership, not a guarantee that reusable component libraries own render-mode directives.
+- [x] Record that static-to-interactive parameters must remain JSON serializable.
+- [x] Record that `RenderFragment`/child content cannot be passed freely across static-to-interactive render-mode boundaries.
+- [x] Record that interactive components should avoid hard-coupling implementation assumptions to a specific render mode and should degrade gracefully where possible.
+- [x] Preserve the base `Storefront.Components` rule: contracts/headless/browser-safe primitives only, no visual ownership.
+- [x] Preserve the data path rule:
 
 ```text
 WASM/browser component
@@ -172,7 +172,7 @@ WASM/browser component
   -> Commerce Node Storefront API
 ```
 
-- [ ] Add an explicit "H1 Re-evaluation Required" section listing:
+- [x] Add an explicit "H1 Re-evaluation Required" section listing:
   - project-reference graph;
   - `Components.Hybrid` role;
   - descriptor mode ownership;
@@ -182,9 +182,9 @@ WASM/browser component
 
 Exit criteria:
 
-- [ ] A future agent can read `COMPONENT-MODES.md` and understand that `Hybrid` is a runtime/classification concept, not a fixed package nesting rule.
-- [ ] The document no longer suggests `InteractiveAuto` is needed or acceptable for public storefront Hybrid.
-- [ ] The document does not instruct an agent to implement nested Hybrid bridges as the default pattern.
+- [x] A future agent can read `COMPONENT-MODES.md` and understand that `Hybrid` is a runtime/classification concept, not a fixed package nesting rule.
+- [x] The document no longer suggests `InteractiveAuto` is needed or acceptable for public storefront Hybrid.
+- [x] The document does not instruct an agent to implement nested Hybrid bridges as the default pattern.
 
 ## Phase H0.2 - Update Architecture Boundary Docs
 
