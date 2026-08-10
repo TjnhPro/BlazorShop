@@ -570,8 +570,13 @@ namespace BlazorShop.Tests.Architecture
             Assert.DoesNotContain("IStorefrontStructuredDataComposer", view, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontResponseHeaders", view, StringComparison.Ordinal);
             Assert.Contains("StorefrontProductPageContext", view, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductGallery Items=\"_galleryItems\" ProductName=\"@_product.Name\" />", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductGallery", view, StringComparison.Ordinal);
+            Assert.Contains("Labels=\"ProductGalleryVisuals.Labels\"", view, StringComparison.Ordinal);
+            Assert.Contains("Classes=\"ProductGalleryVisuals.Classes\"", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductPricing", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductAvailability", view, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" Actions=\"Context.PurchaseActions\" />", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductVariantList", view, StringComparison.Ordinal);
         }
 
         private static bool IsPresentationRuntimeOrClientReference(string reference)

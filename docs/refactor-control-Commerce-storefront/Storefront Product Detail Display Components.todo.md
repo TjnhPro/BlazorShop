@@ -719,29 +719,37 @@ BlazorShop.Storefront.V2/Components/Product/StorefrontProductGallery.razor
 
 Expected changes:
 
-- [ ] `StorefrontBrandingMarkupTests.ProductPage_RendersProductImageGalleryComponent`
-  - [ ] read primitive gallery file instead of V2 gallery file;
-  - [ ] assert V2 page consumes primitive gallery with labels/classes;
-  - [ ] assert V2 visual config contains V2 class/copy values;
-  - [ ] keep CSS/1:1 expectations against V2 stylesheet/config where appropriate.
-- [ ] `StorefrontComponentsHeadlessPresentationRefactorTests.ProductGallery_UsesHeadlessStateAndV2VisualTemplateAfterHpr5Migration`
-  - [ ] rename test to reflect new primitive ownership;
-  - [ ] keep assertion that old `Components/Features/Product/ProductGallery.razor` is absent;
-  - [ ] assert `ProductGalleryState` remains in `Components.Headless.Product`;
-  - [ ] assert primitive consumes `ProductGalleryState`;
-  - [ ] assert V2 owns visual config, not gallery implementation.
-- [ ] `StorefrontPresentationFoundationBoundaryTests.ProductPageVerticalSlice_IsPresentationRouteWithV2ViewOnly`
-  - [ ] keep route/service/mapper assertions;
-  - [ ] keep V2 page as view-only composition;
-  - [ ] allow V2 page to consume reusable primitive/SSR display components.
-- [ ] Update tests expecting selection hooks directly in V2 page:
-  - [ ] new expectation: hooks appear in extracted SSR component files;
-  - [ ] V2 page composes those components.
+- [x] `StorefrontBrandingMarkupTests.ProductPage_RendersProductImageGalleryComponent`
+  - [x] read primitive gallery file instead of V2 gallery file;
+  - [x] assert V2 page consumes primitive gallery with labels/classes;
+  - [x] assert V2 visual config contains V2 class/copy values;
+  - [x] keep CSS/1:1 expectations against V2 stylesheet/config where appropriate.
+- [x] `StorefrontComponentsHeadlessPresentationRefactorTests.ProductGallery_UsesHeadlessStateAndV2VisualTemplateAfterHpr5Migration`
+  - [x] rename test to reflect new primitive ownership;
+  - [x] keep assertion that old `Components/Features/Product/ProductGallery.razor` is absent;
+  - [x] assert `ProductGalleryState` remains in `Components.Headless.Product`;
+  - [x] assert primitive consumes `ProductGalleryState`;
+  - [x] assert V2 owns visual config, not gallery implementation.
+- [x] `StorefrontPresentationFoundationBoundaryTests.ProductPageVerticalSlice_IsPresentationRouteWithV2ViewOnly`
+  - [x] keep route/service/mapper assertions;
+  - [x] keep V2 page as view-only composition;
+  - [x] allow V2 page to consume reusable primitive/SSR display components.
+- [x] Update tests expecting selection hooks directly in V2 page:
+  - [x] new expectation: hooks appear in extracted SSR component files;
+  - [x] V2 page composes those components.
 
 Exit criteria:
 
-- [ ] No test still requires Product Detail gallery implementation to live in V2.
-- [ ] Tests still prove Product Detail remains a Presentation route with V2 visual composition.
+- [x] No test still requires Product Detail gallery implementation to live in V2.
+- [x] Tests still prove Product Detail remains a Presentation route with V2 visual composition.
+
+Implementation notes:
+
+- 2026-08-10: Updated gallery guardrails to read `Components.Primitives/Product/StorefrontProductGallery.razor` and `ProductGalleryVisuals.cs`.
+- 2026-08-10: Renamed the HPR5 gallery guardrail to reflect primitive ownership and V2 visual config ownership.
+- 2026-08-10: Updated Product route boundary assertions to allow reusable primitive/SSR display components while preserving Presentation route/service ownership.
+- 2026-08-10: Updated selection hook assertions so hooks are expected in extracted SSR display components while V2 page composes those components.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests"`; 71 tests passed, with existing MessagePack/Browserslist warnings only.
 
 ## Phase 3.2.10 - Add Product Detail Component Tests
 

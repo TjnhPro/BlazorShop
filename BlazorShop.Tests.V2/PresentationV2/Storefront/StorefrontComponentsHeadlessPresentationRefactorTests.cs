@@ -344,14 +344,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void ProductGallery_UsesHeadlessStateAndV2VisualTemplateAfterHpr5Migration()
+        public void ProductGallery_UsesPrimitiveStateAndV2VisualConfigAfterHpr5Migration()
         {
             Assert.False(File.Exists(RepositoryPath(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor")));
             var galleryState = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductGalleryState.cs");
-            var v2Gallery = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductGallery.razor");
+            var primitiveGallery = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductGallery.razor");
+            var v2GalleryVisuals = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/ProductGalleryVisuals.cs");
             var productPage = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
 
@@ -370,12 +372,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(expected, galleryState, StringComparison.Ordinal);
             }
 
-            Assert.Contains("ProductGalleryState.Create(Items, ProductName)", v2Gallery, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-product-gallery", v2Gallery, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-gallery-main-image", v2Gallery, StringComparison.Ordinal);
-            Assert.Contains("aspect-square", v2Gallery, StringComparison.Ordinal);
-            Assert.Contains("bs-product-gallery__main", v2Gallery, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductGallery Items=\"_galleryItems\" ProductName=\"@_product.Name\" />", productPage, StringComparison.Ordinal);
+            Assert.Contains("ProductGalleryState.Create(Items, ProductName)", primitiveGallery, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-gallery", primitiveGallery, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-gallery-main-image", primitiveGallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("aspect-square", primitiveGallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("bs-product-gallery__main", primitiveGallery, StringComparison.Ordinal);
+            Assert.Contains("aspect-square", v2GalleryVisuals, StringComparison.Ordinal);
+            Assert.Contains("bs-product-gallery__main", v2GalleryVisuals, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductGallery", productPage, StringComparison.Ordinal);
+            Assert.Contains("Labels=\"ProductGalleryVisuals.Labels\"", productPage, StringComparison.Ordinal);
+            Assert.Contains("Classes=\"ProductGalleryVisuals.Classes\"", productPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductGallery Items=\"_galleryItems\"", productPage, StringComparison.Ordinal);
         }
 
