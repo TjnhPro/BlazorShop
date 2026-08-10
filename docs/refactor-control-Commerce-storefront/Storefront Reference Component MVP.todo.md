@@ -675,18 +675,25 @@ assert value = 2
 
 ### Required Assertions
 
-- [ ] Browser eventually sees `data-storefront-runtime-state="interactive"`.
-- [ ] The test waits on the component marker, not arbitrary fixed timeout.
-- [ ] One click increments exactly once.
-- [ ] No hydration console error.
-- [ ] No page error.
-- [ ] No direct Commerce Node request during probe-only interaction.
-- [ ] No `InteractiveServer` or `InteractiveAuto` path is needed.
+- [x] Browser eventually sees `data-storefront-runtime-state="interactive"`.
+- [x] The test waits on the component marker, not arbitrary fixed timeout.
+- [x] One click increments exactly once.
+- [x] No hydration console error.
+- [x] No page error.
+- [x] No direct Commerce Node request during probe-only interaction.
+- [x] No `InteractiveServer` or `InteractiveAuto` path is needed.
 
 ### Exit Criteria
 
-- [ ] State B is proven.
-- [ ] C# event handling after WASM hydration is proven.
+- [x] State B is proven.
+- [x] C# event handling after WASM hydration is proven.
+
+Implementation notes:
+
+- 2026-08-10: extended `scripts/qa/run-storefront-component-mvp-proof.ps1` with `-Phase Hybrid` and extended `scripts/qa/storefront-component-mvp-proof.js` with browser hydration assertions.
+- 2026-08-10: Hybrid proof navigates to `/__qa/component-mvp`, waits for `[data-storefront-component="hybrid-runtime-probe"]`, waits for `data-storefront-runtime-state="interactive"`, asserts value `0`, clicks `[data-storefront-hybrid-action]`, asserts `1`, clicks again, and asserts `2`.
+- 2026-08-10: rail BFF is mocked during the Hybrid proof so hydration is deterministic and does not depend on Commerce Node catalog data.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Hybrid -RuntimeTimeoutSeconds 90 -NoBuild` passed. Evidence written to `output/playwright/storefront-component-mvp/hybrid.evidence.json`; same-origin calls observed: `/api/consent/current`, `/api/cart`, `/api/catalog/discounted-products`; direct Commerce calls: none; console errors: none; page errors: none.
 
 ## Phase H2.10 - Playwright WasmHost Rail Proof
 

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("RawHtml")]
+    [ValidateSet("RawHtml", "Hybrid")]
     [string] $Phase = "RawHtml",
     [string] $StorefrontBaseUrl = "http://127.0.0.1:18640",
     [string] $Configuration = "Debug",
@@ -19,6 +19,7 @@ if ($Describe) {
     Write-Host "Storefront Component MVP proof"
     Write-Host "- Starts BlazorShop.Storefront.V2 on $StorefrontBaseUrl"
     Write-Host "- Phase RawHtml: request /__qa/component-mvp and assert SSR/prerender/noindex markers before WASM startup"
+    Write-Host "- Phase Hybrid: hydrate /__qa/component-mvp in Chromium, assert WebAssembly interactive marker and C# click state"
     Write-Host "- Evidence: output/playwright/storefront-component-mvp"
     exit 0
 }
@@ -96,6 +97,16 @@ function ConvertTo-ProcessArgument {
     return '"' + $Value.Replace('"', '\"') + '"'
 }
 
+function ConvertTo-NodePhase {
+    param([string] $Value)
+
+    switch ($Value) {
+        "RawHtml" { return "raw-html" }
+        "Hybrid" { return "hybrid" }
+        default { return $Value.ToLowerInvariant() }
+    }
+}
+
 if (-not (Test-Path $nodeScript)) {
     throw "Component MVP Playwright script not found: $nodeScript"
 }
@@ -117,7 +128,7 @@ Invoke-ComponentMvpStep "Start Storefront V2" {
         Wait-ForStorefront $storefrontProcess
         Invoke-ComponentMvpStep "Run Component MVP $Phase proof" {
             $env:STOREFRONT_BASE_URL = $StorefrontBaseUrl
-            $env:STOREFRONT_COMPONENT_MVP_PHASE = $Phase.ToLowerInvariant().Replace("rawhtml", "raw-html")
+            $env:STOREFRONT_COMPONENT_MVP_PHASE = ConvertTo-NodePhase $Phase
             node $nodeScript
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
