@@ -861,46 +861,52 @@ Goal: cover semantic behavior without brittle full markup snapshots.
 
 Image tests:
 
-- [ ] image URL renders `<img>`
-- [ ] missing image renders fallback
-- [ ] fallback uses `role="img"`
-- [ ] fallback aria label uses product name
-- [ ] fallback text uses labels
-- [ ] broken-image inline fallback is emitted
-- [ ] image class slot is dynamic
+- [x] image URL renders `<img>`
+- [x] missing image renders fallback
+- [x] fallback uses `role="img"`
+- [x] fallback aria label uses product name
+- [x] fallback text uses labels
+- [x] broken-image inline fallback is emitted
+- [x] image class slot is dynamic
 
 Purchase action tests:
 
-- [ ] direct-add item renders button
-- [ ] direct-add item emits `data-storefront-product-purchase`
-- [ ] direct-add item emits `data-storefront-command="cart.add-line"`
-- [ ] direct-add item emits `data-storefront-product-purchase-submit`
-- [ ] direct-add item emits product id/name/currency attributes
-- [ ] variant item renders purchase link
-- [ ] non-direct item does not emit command submit hook
-- [ ] purchase paused message wins before out-of-stock
-- [ ] out-of-stock message renders when appropriate
-- [ ] not-purchasable fallback renders when appropriate
-- [ ] view product link renders when available
+- [x] direct-add item renders button
+- [x] direct-add item emits `data-storefront-product-purchase`
+- [x] direct-add item emits `data-storefront-command="cart.add-line"`
+- [x] direct-add item emits `data-storefront-product-purchase-submit`
+- [x] direct-add item emits product id/name/currency attributes
+- [x] variant item renders purchase link
+- [x] non-direct item does not emit command submit hook
+- [x] purchase paused message wins before out-of-stock
+- [x] out-of-stock message renders when appropriate
+- [x] not-purchasable fallback renders when appropriate
+- [x] view product link renders when available
 
 Card tests:
 
-- [ ] category text/link
-- [ ] product title/link
-- [ ] badges
-- [ ] from/price label behavior
-- [ ] price and compare price
-- [ ] description
-- [ ] image component composition
-- [ ] purchase component composition
-- [ ] root `data-storefront-product-summary-card`
-- [ ] dynamic class slots
-- [ ] no hardcoded V2 class tokens
+- [x] category text/link
+- [x] product title/link
+- [x] badges
+- [x] from/price label behavior
+- [x] price and compare price
+- [x] description
+- [x] image component composition
+- [x] purchase component composition
+- [x] root `data-storefront-product-summary-card`
+- [x] dynamic class slots
+- [x] no hardcoded V2 class tokens
 
 Exit criteria:
 
-- [ ] Focused tests protect behavior without full whitespace snapshots.
-- [ ] Tests run without server, browser, or Commerce Node setup.
+- [x] Focused tests protect behavior without full whitespace snapshots.
+- [x] Tests run without server, browser, or Commerce Node setup.
+
+Implementation notes:
+
+- 2026-08-10: Added focused `StorefrontProductSummaryPrimitiveComponentTests` for image fallback, purchase actions, and composed Product Summary card semantics.
+- 2026-08-10: Added a direct test project reference to `BlazorShop.Storefront.Components.Primitives` so primitive components are tested without rendering through V2 host projects.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontProductSummaryPrimitiveComponentTests"`.
 
 ## Phase 3.1.12 - Focused Build Gate
 
