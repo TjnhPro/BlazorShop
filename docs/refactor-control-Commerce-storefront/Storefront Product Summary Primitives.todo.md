@@ -725,22 +725,30 @@ BlazorShop.Storefront.V2
 
 Tasks:
 
-- [ ] Add project reference from `V2` to `Components.Primitives`.
-- [ ] Add required namespace import to V2 `_Imports.razor` or local component files.
-- [ ] Replace `V2/Components/Catalog/StorefrontProductSummaryCard.razor` with direct primitive usage.
-- [ ] Update `V2/Components/Catalog/StorefrontProductSummaryGrid.razor` to render primitive card.
-- [ ] Update `V2/Components/Catalog/ProductCard.razor` if it still wraps the old local card.
-- [ ] Move V2 final class values into a V2-owned static property/helper/component-local config.
-- [ ] Move V2 final label/copy values into V2-owned config, reusing `ProductSummaryLabels`.
-- [ ] Delete the old V2 `StorefrontProductSummaryCard.razor` if it is a pure pass-through.
-- [ ] Do not keep a wrapper unless it has a real V2-specific composition responsibility.
+- [x] Add project reference from `V2` to `Components.Primitives`.
+- [x] Add required namespace import to V2 `_Imports.razor` or local component files.
+- [x] Replace `V2/Components/Catalog/StorefrontProductSummaryCard.razor` with direct primitive usage.
+- [x] Update `V2/Components/Catalog/StorefrontProductSummaryGrid.razor` to render primitive card.
+- [x] Update `V2/Components/Catalog/ProductCard.razor` if it still wraps the old local card.
+- [x] Move V2 final class values into a V2-owned static property/helper/component-local config.
+- [x] Move V2 final label/copy values into V2-owned config, reusing `ProductSummaryLabels`.
+- [x] Delete the old V2 `StorefrontProductSummaryCard.razor` if it is a pure pass-through.
+- [x] Do not keep a wrapper unless it has a real V2-specific composition responsibility.
 
 Exit criteria:
 
-- [ ] V2 renders primitive card.
-- [ ] V2 owns final classes and labels.
-- [ ] V2 pages remain SSR/prerender-capable.
-- [ ] No V2-specific classes moved into the primitive project.
+- [x] V2 renders primitive card.
+- [x] V2 owns final classes and labels.
+- [x] V2 pages remain SSR/prerender-capable.
+- [x] No V2-specific classes moved into the primitive project.
+
+Implementation notes:
+
+- 2026-08-10: Added `V2 -> Components.Primitives` project reference and imported `BlazorShop.Storefront.Components.Primitives.Catalog` in V2.
+- 2026-08-10: Added V2-owned `ProductSummaryCardVisuals` containing final class values and final copy through existing `ProductSummaryLabels`.
+- 2026-08-10: Updated `StorefrontProductSummaryGrid` and `ProductCard` to render the primitive card with V2-owned labels/classes.
+- 2026-08-10: Deleted the old local V2 `StorefrontProductSummaryCard.razor` duplicated markup.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj"`.
 
 ## Phase 3.1.9 - V2.WASM Adoption
 

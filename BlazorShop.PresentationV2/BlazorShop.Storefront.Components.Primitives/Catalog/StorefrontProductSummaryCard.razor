@@ -1,7 +1,9 @@
 <article class="@Classes.Root" data-storefront-product-summary-card>
     @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
     {
-        <a class="@Classes.ImageLink" href="@Item.ProductUrl">
+        <a class="@Classes.ImageLink"
+           href="@Item.ProductUrl"
+           aria-label="@($"{Labels.ViewProduct} {Item.Name}")">
             <div class="@Classes.ImageFrame">
                 <StorefrontProductSummaryImage Item="Item" Labels="Labels" Classes="Classes" />
             </div>

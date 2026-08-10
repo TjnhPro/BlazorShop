@@ -4,7 +4,10 @@
         @foreach (var item in Items)
         {
             <li class="h-full" @key="item.Id">
-                <StorefrontProductSummaryCard Item="item" />
+                <StorefrontProductSummaryCard
+                    Item="item"
+                    Labels="ProductSummaryCardVisuals.Labels"
+                    Classes="ProductSummaryCardVisuals.Classes" />
             </li>
         }
     </ul>
