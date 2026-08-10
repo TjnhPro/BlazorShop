@@ -841,36 +841,41 @@ Avoid unnecessary browser QA for docs/test-only work while making browser verifi
 
 ### Browser QA Required If
 
-- [ ] V2 page composition changes.
-- [ ] V2.WASM wrapper composition changes.
-- [ ] `@rendermode` placement changes.
-- [ ] Hydration path changes.
-- [ ] `StorefrontContactFormApp` behavior changes.
-- [ ] `StorefrontDiscountedProductRail` behavior changes.
-- [ ] Browser controller path changes.
-- [ ] Same-origin BFF action descriptor path changes.
+- [x] V2 page composition changes were not made in H1.
+- [x] V2.WASM wrapper composition changes were not made in H1.
+- [x] `@rendermode` placement changes were not made in H1.
+- [x] Hydration path changes were not made in H1.
+- [x] `StorefrontContactFormApp` behavior changes were not made in H1.
+- [x] `StorefrontDiscountedProductRail` behavior changes were not made in H1.
+- [x] Browser controller path changes were not made in H1.
+- [x] Same-origin BFF action descriptor path changes were not made in H1.
 
 ### Browser QA May Be Skipped If
 
-- [ ] Only tests were refactored.
-- [ ] Only docs were updated.
-- [ ] Only csproj package description or README wording changed.
-- [ ] No visible markup, render-mode, Browser controller, BFF endpoint, or wrapper path changed.
+- [x] Only tests were refactored.
+- [x] Only docs were updated.
+- [x] Only csproj package description or README wording changed.
+- [x] No visible markup, render-mode, Browser controller, BFF endpoint, or wrapper path changed.
 
 ### Required Evidence If Browser QA Runs
 
-- [ ] Start local V2 runtime with the existing local runner or documented equivalent.
-- [ ] Verify contact form visible route hydrates and can submit through same-origin `/api/contact`.
-- [ ] Verify discounted rail renders and its browser request remains same-origin.
-- [ ] Verify no direct Commerce Node browser call is made.
-- [ ] Capture Playwright console/network failures.
-- [ ] Record exact command and result in this file.
+- [x] Not applicable: browser QA did not run because no H1 browser-visible trigger occurred.
+- [x] Not applicable: contact form visible route was not changed in H1.
+- [x] Not applicable: discounted rail visible route was not changed in H1.
+- [x] Not applicable: browser direct Commerce Node call risk was covered by focused boundary tests, not a changed browser route.
+- [x] Not applicable: no Playwright console/network capture was required for H1.
+- [x] Browser QA skip decision and focused substitute evidence are recorded in this file.
 
 ### Exit Criteria
 
-- [ ] Browser QA decision is documented.
-- [ ] If skipped, skip reason is explicit and tied to no visible behavior change.
-- [ ] If run, failures are fixed or H1 is not closed.
+- [x] Browser QA decision is documented.
+- [x] If skipped, skip reason is explicit and tied to no visible behavior change.
+- [x] If run, failures are fixed or H1 is not closed.
+
+Implementation notes:
+
+- 2026-08-10: Browser QA was skipped because H1 changed tests, docs, XML comments, and the `Components.Hybrid` csproj description only. It did not change visible V2 page composition, V2.WASM wrapper composition, render-mode placement, hydration behavior, Browser controller invocation path, same-origin BFF path, contact app behavior, or discounted rail behavior.
+- 2026-08-10: substitute evidence is the focused build gate, reference component tests, Browser controller tests, visual boundary tests, and component mode boundary tests recorded in H1.10 and H1.11.
 
 ## Phase H1.13 - H2 Handoff Contract
 
