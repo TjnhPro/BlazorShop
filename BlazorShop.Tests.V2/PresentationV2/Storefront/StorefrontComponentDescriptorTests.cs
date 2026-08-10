@@ -275,9 +275,25 @@ public sealed class StorefrontComponentDescriptorTests
     {
         var descriptor = StorefrontContactFormDescriptor.Descriptor;
 
+        Assert.Equal(StorefrontComponentMode.Hybrid, descriptor.Mode);
         Assert.Equal(typeof(StorefrontContactFormApp), descriptor.ComponentType);
         Assert.NotEqual(typeof(StorefrontContactFormSection), descriptor.ComponentType);
         Assert.Equal("BlazorShop.Storefront.Components.WasmHost", descriptor.ComponentType.Assembly.GetName().Name);
+    }
+
+    [Fact]
+    public void DescriptorDiscoveryUsesReusableSourceDirectoriesOnly()
+    {
+        var source = File.ReadAllText(RepositoryPath(
+            "BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentDescriptorTests.cs"));
+
+        Assert.Equal(
+            [
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
+            ],
+            ReusableDescriptorSourceDirectories);
+        Assert.DoesNotContain("ModeProject" + "Directories", source, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -344,7 +360,7 @@ public sealed class StorefrontComponentDescriptorTests
     private static RepositoryDescriptorCandidate CreateDescriptorCandidate(string file)
     {
         var relativePath = Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/');
-        var descriptorHolderType = ResolveDescriptorHolderType(file, ResolveAssemblyNameFromPath(relativePath));
+        var descriptorHolderType = ResolveDescriptorHolderType(file, ResolveDescriptorAssemblyNameFromPath(relativePath));
         var property = descriptorHolderType.GetProperty("Descriptor", BindingFlags.Public | BindingFlags.Static)
             ?? throw new InvalidOperationException($"{descriptorHolderType.FullName} must expose a public static Descriptor property.");
         var descriptor = property.GetValue(null) as StorefrontComponentDescriptor
@@ -369,7 +385,7 @@ public sealed class StorefrontComponentDescriptorTests
             ?? throw new InvalidOperationException($"{namespaceName}.{typeName} could not be loaded from {assemblyName}.");
     }
 
-    private static string ResolveAssemblyNameFromPath(string relativePath)
+    private static string ResolveDescriptorAssemblyNameFromPath(string relativePath)
     {
         if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/", StringComparison.Ordinal))
         {
@@ -381,7 +397,7 @@ public sealed class StorefrontComponentDescriptorTests
             return "BlazorShop.Storefront.Components.WasmHost";
         }
 
-        throw new InvalidOperationException($"Descriptor file is outside a known mode project: {relativePath}");
+        throw new InvalidOperationException($"Descriptor file is outside a known reusable descriptor source: {relativePath}");
     }
 
     private static bool IsActiveSourceFile(string file)

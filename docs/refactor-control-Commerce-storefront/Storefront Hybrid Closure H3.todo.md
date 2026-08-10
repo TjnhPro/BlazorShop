@@ -302,10 +302,10 @@ Tasks:
 
 Fallback if removal is blocked:
 
-- [ ] Keep the project only if a real consumer remains and cannot be migrated in H3.
-- [ ] Document the blocker in this plan with exact file/line and required future removal step.
-- [ ] Add an architecture test that the project contains no `.razor` component except the explicitly blocked compatibility file.
-- [ ] Add an architecture test that the project publishes no new descriptors.
+- [x] Not applicable: no real consumer remains, so the project was not kept.
+- [x] Not applicable: no blocker exists after descriptor/contact migration.
+- [x] Not applicable: compatibility-file guard is unnecessary because the project was removed from tracked source.
+- [x] Not applicable: descriptor guard is unnecessary because the project was removed from tracked source.
 
 Preferred exit criteria:
 
@@ -335,26 +335,35 @@ Current problem:
 
 Tasks:
 
-- [ ] Replace `ModeProjectDirectories` with `ReusableDescriptorSourceDirectories` or equivalent.
-- [ ] Include active reusable component source directories explicitly:
-  - [ ] `BlazorShop.Storefront.Components.Ssr`
-  - [ ] `BlazorShop.Storefront.Components.WasmHost`
-  - [ ] Future capability directories only when added by a later phase.
-- [ ] Remove special path mapping for `Components.Hybrid`.
-- [ ] Keep deterministic source discovery.
-- [ ] Keep duplicate key validation.
-- [ ] Keep descriptor semantic validation.
-- [ ] Add a positive assertion that `StorefrontHybridRuntimeProbeDescriptor` is semantic `Hybrid` while physically in WasmHost.
-- [ ] Add a positive assertion that `StorefrontContactFormDescriptor` is semantic `Hybrid` while physically in WasmHost.
-- [ ] Add a negative fixture or source-level assertion that no test derives mode from project name.
-- [ ] Do not create runtime descriptor discovery.
-- [ ] Do not add DI registry for descriptors in H3.
+- [x] Replace `ModeProjectDirectories` with `ReusableDescriptorSourceDirectories` or equivalent.
+- [x] Include active reusable component source directories explicitly:
+  - [x] `BlazorShop.Storefront.Components.Ssr`
+  - [x] `BlazorShop.Storefront.Components.WasmHost`
+  - [x] Future capability directories only when added by a later phase.
+- [x] Remove special path mapping for `Components.Hybrid`.
+- [x] Keep deterministic source discovery.
+- [x] Keep duplicate key validation.
+- [x] Keep descriptor semantic validation.
+- [x] Add a positive assertion that `StorefrontHybridRuntimeProbeDescriptor` is semantic `Hybrid` while physically in WasmHost.
+- [x] Add a positive assertion that `StorefrontContactFormDescriptor` is semantic `Hybrid` while physically in WasmHost.
+- [x] Add a negative fixture or source-level assertion that no test derives mode from project name.
+- [x] Do not create runtime descriptor discovery.
+- [x] Do not add DI registry for descriptors in H3.
 
 Exit criteria:
 
-- [ ] Descriptor tests pass without `Components.Hybrid`.
-- [ ] Semantic mode and physical project are visibly decoupled.
-- [ ] Future capability packaging remains possible.
+- [x] Descriptor tests pass without `Components.Hybrid`.
+- [x] Semantic mode and physical project are visibly decoupled.
+- [x] Future capability packaging remains possible.
+
+Implementation notes:
+
+- 2026-08-10: `StorefrontComponentDescriptorTests` now scans `ReusableDescriptorSourceDirectories`: `Components.Ssr` and `Components.WasmHost`.
+- 2026-08-10: removed the old physical Hybrid path-to-assembly mapping; descriptor assembly resolution remains deterministic for the active reusable descriptor source directories.
+- 2026-08-10: contact and runtime-probe descriptor assertions both prove semantic `Hybrid` while the component type physically lives in `BlazorShop.Storefront.Components.WasmHost`.
+- 2026-08-10: added a source-level guard that the descriptor test does not reintroduce `ModeProjectDirectories`.
+- 2026-08-10: `rg -n "ModeProjectDirectories|BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid|ResolveAssemblyNameFromPath" BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentDescriptorTests.cs` returned no matches.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"` passed 25/25. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.5 - Component Dependency Matrix Hardening
 
@@ -842,7 +851,7 @@ Before marking H3 complete:
 - [x] H3.1 move `contact-form` descriptor to WasmHost.
 - [x] H3.2 remove historical contact shell.
 - [x] H3.3 remove `Components.Hybrid` project and references.
-- [ ] H3.4 decouple descriptor discovery from project topology.
+- [x] H3.4 decouple descriptor discovery from project topology.
 - [ ] H3.5 harden component dependency matrix.
 - [ ] H3.6 harden render mode ownership.
 - [ ] H3.7 harden server-interactive/browser transport guardrails.
