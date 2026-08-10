@@ -9,12 +9,9 @@
              alt="@Context.BrandName"
              class="@Classes.Image" />
     }
-
-    <span class="@Classes.Mark">@Context.BrandName</span>
-
-    @if (!string.IsNullOrWhiteSpace(Context.BrandLabel))
+    else
     {
-        <span class="@Classes.Label">@Context.BrandLabel</span>
+        <span class="@Classes.Mark">@Context.BrandName</span>
     }
 </a>
 

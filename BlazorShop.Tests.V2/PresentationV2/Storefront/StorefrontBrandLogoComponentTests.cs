@@ -13,7 +13,7 @@ using Xunit;
 public sealed class StorefrontBrandLogoComponentTests
 {
     [Fact]
-    public async Task RendersImageWhenLogoUrlIsPresent()
+    public async Task RendersOnlyImageWhenLogoUrlIsPresent()
     {
         var html = await RenderAsync(
             new StorefrontBrandLogoContext(
@@ -36,8 +36,9 @@ public sealed class StorefrontBrandLogoComponentTests
         Assert.Contains("alt=\"Kindred Coast\"", html, StringComparison.Ordinal);
         Assert.Contains("class=\"brand-root\"", html, StringComparison.Ordinal);
         Assert.Contains("class=\"brand-image\"", html, StringComparison.Ordinal);
-        Assert.Contains("Kindred Coast", html, StringComparison.Ordinal);
-        Assert.Contains("Beach goods", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"brand-mark\"", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"brand-label\"", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("Beach goods", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -54,6 +55,7 @@ public sealed class StorefrontBrandLogoComponentTests
         Assert.Contains("aria-label=\"Kindred Coast\"", html, StringComparison.Ordinal);
         Assert.Contains("class=\"brand-mark\"", html, StringComparison.Ordinal);
         Assert.Contains("Kindred Coast", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"brand-label\"", html, StringComparison.Ordinal);
     }
 
     private static async Task<string> RenderAsync(
