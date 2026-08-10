@@ -237,6 +237,7 @@ Use for:
 - Small reusable semantic Razor primitives that consume `BlazorShop.Storefront.Components` contracts.
 - Stable `data-storefront-*` hooks, accessibility markup, links/buttons, and fully host-supplied class slots.
 - Product Summary primitive rendering shared by Storefront V2 SSR surfaces and V2.WASM rail item rendering.
+- Product Detail gallery render markup through `StorefrontProductGallery`, using `ProductGalleryItem`, `ProductGalleryLabels`, `ProductGalleryClasses`, and `ProductGalleryState` while V2 owns final labels/classes and JavaScript progressive enhancement.
 
 Do not:
 
@@ -259,6 +260,7 @@ Use for:
 
 - Server-rendered reusable components that consume prepared Presentation contexts or component contracts.
 - Semantic hooks, accessibility markup, forms, links, `RenderFragment`, and host-supplied class slots.
+- Product Detail display components such as `StorefrontProductPricing`, `StorefrontProductAvailability`, and informational `StorefrontProductVariantList` over prepared Presentation product views.
 
 Do not:
 

@@ -44,7 +44,7 @@ The graph above describes the current repository state. H2 proved the browser-vi
 
 The base `BlazorShop.Storefront.Components` project remains the lowest browser-safe contracts and headless layer. It must not reference `Presentation`, `Browser`, `Runtime`, `Client`, V2 hosts, Starter hosts, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
 
-`BlazorShop.Storefront.Components.Primitives` is a browser-safe render-only Razor package for small reusable semantic primitives such as Product Summary cards. It is not a component mode and must not declare descriptors. It references only `BlazorShop.Storefront.Components`, consumes contracts/class slots/labels supplied by hosts, and must not own final CSS classes, store-specific copy, static assets, `@rendermode`, JS interop, HTTP/API calls, Browser controllers, Presentation services, Runtime, Client, backend/core/API projects, V2 hosts, Starter hosts, generated storefront projects, Control Plane projects, or `Web.SharedV2`.
+`BlazorShop.Storefront.Components.Primitives` is a browser-safe render-only Razor package for small reusable semantic primitives such as Product Summary cards and Product Detail gallery rendering. It is not a component mode and must not declare descriptors. It references only `BlazorShop.Storefront.Components`, consumes contracts/class slots/labels supplied by hosts, and must not own final CSS classes, store-specific copy, static assets, `@rendermode`, JS interop, HTTP/API calls, Browser controllers, Presentation services, Runtime, Client, backend/core/API projects, V2 hosts, Starter hosts, generated storefront projects, Control Plane projects, or `Web.SharedV2`.
 
 Descriptor mode is semantic architecture metadata. Repository architecture tests validate descriptor shape, current public descriptor inventory, duplicate keys, and small contract surface, but they must not require descriptor mode to match a physical assembly or project name.
 
@@ -214,7 +214,8 @@ Implemented reference examples:
 - `StorefrontContactFormDescriptor` and `StorefrontContactFormApp` in `Components.WasmHost`, with descriptor mode `Hybrid`;
 - `StorefrontHybridRuntimeProbe` in `Components.WasmHost` with semantic descriptor mode `Hybrid`;
 - `StorefrontDiscountedProductRail` in `Components.WasmHost`;
-- `StorefrontProductSummaryCard`, `StorefrontProductSummaryImage`, and `StorefrontProductSummaryPurchaseActions` in `Components.Primitives`;
+- `StorefrontProductSummaryCard`, `StorefrontProductSummaryImage`, `StorefrontProductSummaryPurchaseActions`, and render-only `StorefrontProductGallery` in `Components.Primitives`;
+- `StorefrontProductPricing`, `StorefrontProductAvailability`, and informational `StorefrontProductVariantList` in `Components.Ssr`;
 - V2.WASM wrapper components for browser-visible contact and discounted rail adoption.
 
 The contact reference proves Browser/BFF/WASM behavior through V2 page composition, V2.WASM wrapper ownership, and a reusable WasmHost app.

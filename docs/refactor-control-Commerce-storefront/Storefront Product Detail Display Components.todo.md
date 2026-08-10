@@ -1178,32 +1178,40 @@ Goal: keep source-of-truth docs aligned with the new component locations.
 
 Review and update as needed:
 
-- [ ] `AGENTS.md`
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
-- [ ] this plan file
+- [x] `AGENTS.md`
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
+- [x] this plan file
 
 Document:
 
-- [ ] `StorefrontProductGallery` is now a `Components.Primitives/Product` render-only primitive.
-- [ ] V2 owns Product Gallery final classes/copy and JS progressive enhancement.
-- [ ] `StorefrontProductPricing`, `StorefrontProductAvailability`, and `StorefrontProductVariantList` are `Components.Ssr/Product` display components over prepared Presentation views.
-- [ ] ProductPurchasePanel remains V2-owned and out of Phase 3.2.
-- [ ] Existing historical note that gallery returned to V2 after `Features` removal is superseded only because `Components.Primitives` now exists and is render-only, not a shared visual wrapper.
+- [x] `StorefrontProductGallery` is now a `Components.Primitives/Product` render-only primitive.
+- [x] V2 owns Product Gallery final classes/copy and JS progressive enhancement.
+- [x] `StorefrontProductPricing`, `StorefrontProductAvailability`, and `StorefrontProductVariantList` are `Components.Ssr/Product` display components over prepared Presentation views.
+- [x] ProductPurchasePanel remains V2-owned and out of Phase 3.2.
+- [x] Existing historical note that gallery returned to V2 after `Features` removal is superseded only because `Components.Primitives` now exists and is render-only, not a shared visual wrapper.
 
 QA checklist update:
 
-- [ ] add Product Detail display component extraction item;
-- [ ] record Product Detail browser QA expectations;
-- [ ] record gallery primitive dependency/visual-neutrality expectations;
-- [ ] record selection-preview and add-to-cart regression expectations.
+- [x] add Product Detail display component extraction item;
+- [x] record Product Detail browser QA expectations;
+- [x] record gallery primitive dependency/visual-neutrality expectations;
+- [x] record selection-preview and add-to-cart regression expectations.
 
 Exit criteria:
 
-- [ ] docs and code graph agree;
-- [ ] future agents know why this does not reintroduce retired `Features` visual wrappers.
+- [x] docs and code graph agree;
+- [x] future agents know why this does not reintroduce retired `Features` visual wrappers.
+
+Implementation notes:
+
+- 2026-08-10: Reviewed `AGENTS.md`; no change needed because its existing Storefront Components.Primitives and Components.Ssr boundary rules already prohibit final V2 classes/copy, render modes, Browser/Presentation/Runtime/Client/backend references, CSS/assets, and generated output in the relevant reusable component packages.
+- 2026-08-10: Updated `BlazorShop.PresentationV2/COMPONENT-MODES.md` to list Product Detail gallery as a render-only primitive and Product Detail pricing/availability/variant list as SSR display examples.
+- 2026-08-10: Updated `docs/architecture/05-project-and-folder-guide.md` with Product Detail gallery primitive usage and SSR display component usage.
+- 2026-08-10: Updated `docs/architecture/10-v2-contract-ownership.md` to document Product Detail display class/label contracts, `StorefrontProductGallery` primitive ownership, V2 gallery final label/class/JS ownership, and SSR display component boundaries over prepared Presentation product views.
+- 2026-08-10: Updated `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` to supersede the historical `Features/Product/ProductGallery` and temporary V2-owned gallery markup notes, add Product Detail display component extraction QA coverage, and record managed out-of-stock blocked submit browser QA.
 
 ## Phase 3.2.19 - Full Verification Gate
 

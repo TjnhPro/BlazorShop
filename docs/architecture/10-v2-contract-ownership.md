@@ -66,11 +66,13 @@ Generated storefronts must not infer Storefront API envelopes or field names fro
 
 ## Portable Component Models And Headless Contracts
 
-`BlazorShop.Storefront.Components/Contracts/*` is the preferred home for small render-facing models such as product summary cards, product gallery items, and purchase panel snapshots after the headless presentation refactor.
+`BlazorShop.Storefront.Components/Contracts/*` is the preferred home for small render-facing models such as product summary cards, product gallery items/classes/labels, Product Detail display class/label contracts, and purchase panel snapshots after the headless presentation refactor.
 
 `BlazorShop.Storefront.Components/Headless/*` is the preferred home for browser-safe presentation state and action/event contracts that can be reused without Storefront V2 visual markup. `BlazorShop.Storefront.Browser` is the preferred home for browser-side controllers that execute same-origin local API calls, own request DTO creation, normalize network/timeout/invalid-response failures, and provide Browser static web assets required by those controllers.
 
-`BlazorShop.Storefront.Components.Primitives/*` is the approved location for narrow render-only Razor primitives when there is evidence of real reuse across host contexts. Product Summary primitives live there and consume `ProductSummaryItem`, `ProductSummaryLabels`, and `ProductSummaryCardClasses`; V2 and V2.WASM still own the final labels/classes.
+`BlazorShop.Storefront.Components.Primitives/*` is the approved location for narrow render-only Razor primitives when there is evidence of real reuse across host contexts. Product Summary primitives live there and consume `ProductSummaryItem`, `ProductSummaryLabels`, and `ProductSummaryCardClasses`; Product Detail gallery rendering lives there as `StorefrontProductGallery` and consumes `ProductGalleryItem`, `ProductGalleryLabels`, `ProductGalleryClasses`, and `ProductGalleryState`. V2 and V2.WASM still own final labels/classes, and V2 owns the Product Detail gallery progressive-enhancement JavaScript.
+
+`BlazorShop.Storefront.Components.Ssr/*` is the approved location for reusable SSR display components over prepared Presentation views. Product Detail display components such as `StorefrontProductPricing`, `StorefrontProductAvailability`, and `StorefrontProductVariantList` consume `StorefrontProductPricingView`, `StorefrontProductAvailabilityView`, `StorefrontProductPurchaseView`, and `StorefrontProductVariantView` without owning browser controllers, render modes, final V2 classes/copy, route descriptors, or purchase payload behavior.
 
 `BlazorShop.Storefront.Components/Features/*` was a temporary compatibility surface and is retired. Reintroducing shared visual Razor wrappers requires a new architecture decision; normal storefront implementation must keep route composition in Storefront Presentation and keep markup, CSS, layout, copy, and visual templates in V2 host/WASM client, Starter, or generated/custom storefronts.
 
