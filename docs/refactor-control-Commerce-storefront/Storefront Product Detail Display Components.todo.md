@@ -770,55 +770,62 @@ StorefrontProductDetailDisplayComponentTests
 
 Gallery tests:
 
-- [ ] no images renders fallback;
-- [ ] one image renders main image and no controls/thumbnails;
-- [ ] multiple images render controls and thumbnails;
-- [ ] selected thumbnail state is present on index 0 initially;
-- [ ] labels are host supplied;
-- [ ] classes are host supplied;
-- [ ] all semantic hooks are present;
-- [ ] no V2 class literal is required;
-- [ ] broken-image fallback marker exists according to approved primitive policy.
+- [x] no images renders fallback;
+- [x] one image renders main image and no controls/thumbnails;
+- [x] multiple images render controls and thumbnails;
+- [x] selected thumbnail state is present on index 0 initially;
+- [x] labels are host supplied;
+- [x] classes are host supplied;
+- [x] all semantic hooks are present;
+- [x] no V2 class literal is required;
+- [x] broken-image fallback marker exists according to approved primitive policy.
 
 Pricing tests:
 
-- [ ] label and price render;
-- [ ] compare price renders when present;
-- [ ] compare price is hidden/empty when absent;
-- [ ] price/compare semantic hooks are present.
+- [x] label and price render;
+- [x] compare price renders when present;
+- [x] compare price is hidden/empty when absent;
+- [x] price/compare semantic hooks are present.
 
 Availability tests:
 
-- [ ] variant summary renders;
-- [ ] SKU hidden when blank;
-- [ ] SKU shown when present;
-- [ ] GTIN hidden when blank;
-- [ ] GTIN shown when present;
-- [ ] stock label renders;
-- [ ] stock hook is present;
-- [ ] availability state only affects host class selection.
+- [x] variant summary renders;
+- [x] SKU hidden when blank;
+- [x] SKU shown when present;
+- [x] GTIN hidden when blank;
+- [x] GTIN shown when present;
+- [x] stock label renders;
+- [x] stock hook is present;
+- [x] availability state only affects host class selection.
 
 Variant list tests:
 
-- [ ] empty list renders no section;
-- [ ] one variant renders;
-- [ ] multiple variants render;
-- [ ] attribute text renders;
-- [ ] price display renders;
-- [ ] stock label renders;
-- [ ] host-supplied section label renders.
+- [x] empty list renders no section;
+- [x] one variant renders;
+- [x] multiple variants render;
+- [x] attribute text renders;
+- [x] price display renders;
+- [x] stock label renders;
+- [x] host-supplied section label renders.
 
 Avoid:
 
-- [ ] pixel snapshots;
-- [ ] whitespace snapshots;
-- [ ] tests that enforce exact Tailwind order;
-- [ ] tests that require purchase behavior setup.
+- [x] pixel snapshots;
+- [x] whitespace snapshots;
+- [x] tests that enforce exact Tailwind order;
+- [x] tests that require purchase behavior setup.
 
 Exit criteria:
 
-- [ ] component render semantics are covered.
-- [ ] purchase runtime behavior is not coupled to component tests.
+- [x] component render semantics are covered.
+- [x] purchase runtime behavior is not coupled to component tests.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontProductGalleryPrimitiveTests` for fallback, one-image, multi-image controls/thumbnails, host labels/classes, semantic hooks, and approved broken-image fallback behavior.
+- 2026-08-10: Added `StorefrontProductDetailDisplayComponentTests` for pricing, availability, and informational variant list render semantics.
+- 2026-08-10: Tests use `HtmlRenderer` component rendering and avoid pixel, whitespace, Tailwind-order, and purchase runtime setup coupling.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontProductGalleryPrimitiveTests|FullyQualifiedName~StorefrontProductDetailDisplayComponentTests"`; 10 tests passed, with existing MessagePack/Browserslist warnings only.
 
 ## Phase 3.2.11 - Architecture Guardrail Updates
 
