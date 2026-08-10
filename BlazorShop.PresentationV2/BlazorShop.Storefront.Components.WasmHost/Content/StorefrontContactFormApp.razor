@@ -1,0 +1,268 @@
+@inject IStorefrontBrowserContactController ContactController
+
+<form action="@Action.SubmitPath"
+      method="post"
+      class="@Classes.Form"
+      data-storefront-component="contact-form-app"
+      data-storefront-contact-form
+      @onsubmit="SubmitAsync"
+      @onsubmit:preventDefault>
+    @if (HasFieldErrors)
+    {
+        <div class="@Classes.ErrorSummary"
+             role="alert"
+             aria-labelledby="@SummaryId"
+             data-storefront-contact-error-summary>
+            <p id="@SummaryId">@Labels.ValidationSummaryLabel</p>
+            <ul>
+                @foreach (var error in fieldErrors.SelectMany(pair => pair.Value))
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <label class="@Classes.Field" for="@NameInputId" data-storefront-contact-field="name">
+        <span class="@Classes.Label">@Labels.NameLabel</span>
+        <input id="@NameInputId"
+               name="Name"
+               value="@name"
+               @oninput="OnNameInput"
+               autocomplete="name"
+               required
+               aria-invalid="@HasFieldError("Name")"
+               aria-describedby="@NameErrorId"
+               class="@Classes.Input" />
+        @foreach (var error in GetFieldErrors("Name"))
+        {
+            <span id="@NameErrorId" class="@Classes.FieldError" data-storefront-contact-field-error>@error</span>
+        }
+    </label>
+
+    <label class="@Classes.Field" for="@EmailInputId" data-storefront-contact-field="email">
+        <span class="@Classes.Label">@Labels.EmailLabel</span>
+        <input id="@EmailInputId"
+               name="Email"
+               type="email"
+               value="@email"
+               @oninput="OnEmailInput"
+               autocomplete="email"
+               required
+               aria-invalid="@HasFieldError("Email")"
+               aria-describedby="@EmailErrorId"
+               class="@Classes.Input" />
+        @foreach (var error in GetFieldErrors("Email"))
+        {
+            <span id="@EmailErrorId" class="@Classes.FieldError" data-storefront-contact-field-error>@error</span>
+        }
+    </label>
+
+    <label class="@Classes.Field" for="@SubjectInputId" data-storefront-contact-field="subject">
+        <span class="@Classes.Label">@Labels.SubjectLabel</span>
+        <input id="@SubjectInputId"
+               name="Subject"
+               value="@subject"
+               @oninput="OnSubjectInput"
+               required
+               aria-invalid="@HasFieldError("Subject")"
+               aria-describedby="@SubjectErrorId"
+               class="@Classes.Input" />
+        @foreach (var error in GetFieldErrors("Subject"))
+        {
+            <span id="@SubjectErrorId" class="@Classes.FieldError" data-storefront-contact-field-error>@error</span>
+        }
+    </label>
+
+    <label class="@Classes.Field" for="@MessageInputId" data-storefront-contact-field="message">
+        <span class="@Classes.Label">@Labels.MessageLabel</span>
+        <textarea id="@MessageInputId"
+                  name="Message"
+                  @oninput="OnMessageInput"
+                  required
+                  aria-invalid="@HasFieldError("Message")"
+                  aria-describedby="@MessageErrorId"
+                  class="@Classes.Textarea">@message</textarea>
+        @foreach (var error in GetFieldErrors("Message"))
+        {
+            <span id="@MessageErrorId" class="@Classes.FieldError" data-storefront-contact-field-error>@error</span>
+        }
+    </label>
+
+    <button type="submit" class="@Classes.Submit" disabled="@isSubmitting" data-storefront-contact-submit>
+        @(isSubmitting ? Labels.SubmittingLabel : Labels.SubmitLabel)
+    </button>
+
+    @if (!string.IsNullOrWhiteSpace(StatusMessage))
+    {
+        <p class="@StatusClass" role="@StatusRole" data-storefront-contact-status>@StatusMessage</p>
+    }
+
+    @if (lastResult?.Retryable == true && !lastResult.Success && !isSubmitting)
+    {
+        <button type="button" class="@Classes.Submit" @onclick="SubmitAsync" data-storefront-contact-retry>
+            @Labels.RetryLabel
+        </button>
+    }
+</form>
+
+@code {
+    private readonly string idPrefix = "storefront-contact-" + Guid.NewGuid().ToString("N");
+    private string name = string.Empty;
+    private string email = string.Empty;
+    private string subject = string.Empty;
+    private string message = string.Empty;
+    private bool initialized;
+    private bool isSubmitting;
+    private StorefrontContactFormSubmitResult? lastResult;
+    private IReadOnlyDictionary<string, IReadOnlyList<string>> fieldErrors =
+        new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+
+    [Parameter]
+    public StorefrontContactFormState InitialState { get; set; } = StorefrontContactFormState.Empty;
+
+    [Parameter]
+    public StorefrontContactFormLabels Labels { get; set; } = EmptyLabels;
+
+    [Parameter]
+    public StorefrontContactFormClasses Classes { get; set; } = new();
+
+    [Parameter]
+    public StorefrontContactFormActionDescriptor Action { get; set; } = new(string.Empty);
+
+    private string NameInputId => this.idPrefix + "-name";
+
+    private string EmailInputId => this.idPrefix + "-email";
+
+    private string SubjectInputId => this.idPrefix + "-subject";
+
+    private string MessageInputId => this.idPrefix + "-message";
+
+    private string NameErrorId => this.NameInputId + "-error";
+
+    private string EmailErrorId => this.EmailInputId + "-error";
+
+    private string SubjectErrorId => this.SubjectInputId + "-error";
+
+    private string MessageErrorId => this.MessageInputId + "-error";
+
+    private string SummaryId => this.idPrefix + "-summary";
+
+    private bool HasFieldErrors => this.fieldErrors.Count > 0;
+
+    private string? StatusMessage => this.lastResult switch
+    {
+        { Success: true, DefaultMessage: { Length: > 0 } message } => message,
+        { Success: true } => this.Labels.SuccessMessage,
+        { Success: false, DefaultMessage: { Length: > 0 } message } => message,
+        { Success: false, Code: { Length: > 0 } code } => code,
+        _ => null,
+    };
+
+    private string? StatusClass => this.lastResult?.Success == true
+        ? this.Classes.SuccessMessage
+        : this.Classes.Status;
+
+    private string StatusRole => this.lastResult?.Success == true ? "status" : "alert";
+
+    protected override void OnParametersSet()
+    {
+        if (this.initialized)
+        {
+            return;
+        }
+
+        this.name = this.InitialState.Name;
+        this.email = this.InitialState.Email;
+        this.subject = this.InitialState.Subject;
+        this.message = this.InitialState.Message;
+        this.isSubmitting = this.InitialState.IsSubmitting;
+        this.fieldErrors = NormalizeFieldErrors(this.InitialState.FieldErrors);
+
+        if (this.InitialState.Submitted || !string.IsNullOrWhiteSpace(this.InitialState.ErrorCode) ||
+            !string.IsNullOrWhiteSpace(this.InitialState.DefaultMessage))
+        {
+            this.lastResult = new StorefrontContactFormSubmitResult(
+                this.InitialState.Submitted,
+                this.InitialState.ErrorCode,
+                this.InitialState.DefaultMessage,
+                FieldErrors: this.fieldErrors);
+        }
+
+        this.initialized = true;
+    }
+
+    private async Task SubmitAsync()
+    {
+        this.isSubmitting = true;
+        this.lastResult = null;
+        this.fieldErrors = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+
+        try
+        {
+            var request = new StorefrontContactFormSubmitRequest(
+                this.name,
+                this.email,
+                this.subject,
+                this.message);
+
+            this.lastResult = await this.ContactController.SubmitAsync(request, this.Action);
+            this.fieldErrors = NormalizeFieldErrors(this.lastResult.FieldErrors);
+        }
+        finally
+        {
+            this.isSubmitting = false;
+        }
+    }
+
+    private void OnNameInput(ChangeEventArgs args)
+    {
+        this.name = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void OnEmailInput(ChangeEventArgs args)
+    {
+        this.email = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void OnSubjectInput(ChangeEventArgs args)
+    {
+        this.subject = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void OnMessageInput(ChangeEventArgs args)
+    {
+        this.message = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private bool HasFieldError(string fieldName)
+    {
+        return this.GetFieldErrors(fieldName).Count > 0;
+    }
+
+    private IReadOnlyList<string> GetFieldErrors(string fieldName)
+    {
+        return this.fieldErrors.TryGetValue(fieldName, out var errors)
+            ? errors
+            : Array.Empty<string>();
+    }
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> NormalizeFieldErrors(
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? errors)
+    {
+        return errors is null
+            ? new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, IReadOnlyList<string>>(errors, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static readonly StorefrontContactFormLabels EmptyLabels = new(
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty);
+}

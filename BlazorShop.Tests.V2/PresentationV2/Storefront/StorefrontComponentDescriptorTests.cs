@@ -1,6 +1,7 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
 using BlazorShop.Storefront.Components.Contracts.Components;
+using BlazorShop.Storefront.Components.Hybrid.Content;
 using BlazorShop.Storefront.Components.Ssr.Brand;
 
 using Microsoft.AspNetCore.Components;
@@ -208,7 +209,7 @@ public sealed class StorefrontComponentDescriptorTests
     }
 
     [Fact]
-    public void RepositoryModeProjectsExposeExpectedPhaseTwoBrandDescriptorOnly()
+    public void RepositoryModeProjectsExposeExpectedReferenceDescriptorsOnly()
     {
         var descriptorCandidates = ModeProjectDirectories
             .Select(RepositoryPath)
@@ -223,7 +224,10 @@ public sealed class StorefrontComponentDescriptorTests
             .ToArray();
 
         Assert.Equal(
-            ["BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Brand/StorefrontBrandLogoDescriptor.cs"],
+            [
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactFormDescriptor.cs",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Brand/StorefrontBrandLogoDescriptor.cs",
+            ],
             descriptorCandidates);
     }
 
@@ -244,6 +248,40 @@ public sealed class StorefrontComponentDescriptorTests
         Assert.Equal(StorefrontComponentMode.Ssr, descriptor.Mode);
         Assert.Equal(StorefrontComponentCategory.Brand, descriptor.Category);
         Assert.Equal(typeof(StorefrontBrandLogo), descriptor.ComponentType);
+    }
+
+    [Fact]
+    public void ContactFormDescriptorIsValidAndMatchesHybridMode()
+    {
+        var descriptor = StorefrontContactFormDescriptor.Descriptor;
+
+        var validation = StorefrontComponentDescriptorValidator.Validate(descriptor);
+        var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
+            descriptor,
+            StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(descriptor.ComponentType));
+
+        Assert.True(validation.IsValid);
+        Assert.Empty(validation.Errors);
+        Assert.True(ownership.IsValid, ownership.Error);
+        Assert.Equal("contact-form", descriptor.Key);
+        Assert.Equal(StorefrontComponentMode.Hybrid, descriptor.Mode);
+        Assert.Equal(StorefrontComponentCategory.Content, descriptor.Category);
+        Assert.Equal(typeof(StorefrontContactForm), descriptor.ComponentType);
+    }
+
+    [Fact]
+    public void ContactFormAppDoesNotPublishPublicDescriptor()
+    {
+        var wasmHostDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost");
+        var descriptorCandidates = Directory.EnumerateFiles(wasmHostDirectory, "*", SearchOption.AllDirectories)
+            .Where(file => !file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(part => part.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+                    part.Equals("obj", StringComparison.OrdinalIgnoreCase)))
+            .Where(file => Path.GetExtension(file) is ".cs" or ".razor")
+            .Where(file => File.ReadAllText(file).Contains("StorefrontComponentDescriptor", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Empty(descriptorCandidates);
     }
 
     private sealed class ComponentFixture : IComponent

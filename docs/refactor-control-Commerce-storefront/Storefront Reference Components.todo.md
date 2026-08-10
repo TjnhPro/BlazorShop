@@ -487,53 +487,53 @@ Exit criteria:
 
 Implement Hybrid shell:
 
-- [ ] `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactForm.razor`
-- [ ] `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactFormDescriptor.cs`
+- [x] `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactForm.razor`
+- [x] `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactFormDescriptor.cs`
 
 Implement WasmHost child:
 
-- [ ] `BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor`
+- [x] `BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor`
 
 Hybrid requirements:
 
-- [ ] Accept state, labels, classes, and action descriptor.
-- [ ] Render SSR-first form structure.
-- [ ] Host `StorefrontContactFormApp`.
-- [ ] Use `@rendermode` only on the child bridge.
-- [ ] Do not inject Browser controllers.
-- [ ] Do not include literal visual classes.
+- [x] Accept state, labels, classes, and action descriptor.
+- [x] Render SSR-first form structure.
+- [x] Host `StorefrontContactFormApp`.
+- [x] Use `@rendermode` only on the child bridge.
+- [x] Do not inject Browser controllers.
+- [x] Do not include literal visual classes.
 
 WasmHost requirements:
 
-- [ ] Inject `IStorefrontBrowserContactController`.
-- [ ] Manage submit/loading/success/error state.
-- [ ] Respect required field state and server field errors.
-- [ ] Do not inject `HttpClient`.
-- [ ] Do not call `/api/*` directly.
-- [ ] Do not reference Presentation, Runtime, Client, V2, or backend projects.
-- [ ] Do not use `@rendermode`.
-- [ ] Use only dynamic class slots and semantic data hooks.
+- [x] Inject `IStorefrontBrowserContactController`.
+- [x] Manage submit/loading/success/error state.
+- [x] Respect required field state and server field errors.
+- [x] Do not inject `HttpClient`.
+- [x] Do not call `/api/*` directly.
+- [x] Do not reference Presentation, Runtime, Client, V2, or backend projects.
+- [x] Do not use `@rendermode`.
+- [x] Use only dynamic class slots and semantic data hooks.
 
 Descriptor:
 
-- [ ] Add `contact-form`.
-- [ ] Mode is `Hybrid`.
-- [ ] Category is `Content`.
-- [ ] Do not add a public descriptor for `StorefrontContactFormApp`.
+- [x] Add `contact-form`.
+- [x] Mode is `Hybrid`.
+- [x] Category is `Content`.
+- [x] Do not add a public descriptor for `StorefrontContactFormApp`.
 
 Tests:
 
-- [ ] Hybrid boundary tests pass.
-- [ ] WasmHost boundary tests pass.
-- [ ] Descriptor mode/project consistency detects `contact-form` as Hybrid.
-- [ ] Visual neutrality tests pass.
-- [ ] Render test proves the SSR-first form contains the expected fields.
-- [ ] Component behavior test proves submit invokes the Browser controller.
+- [x] Hybrid boundary tests pass.
+- [x] WasmHost boundary tests pass.
+- [x] Descriptor mode/project consistency detects `contact-form` as Hybrid.
+- [x] Visual neutrality tests pass.
+- [x] Render test proves the SSR-first form contains the expected fields.
+- [x] Component behavior test proves submit invokes the Browser controller.
 
 Exit criteria:
 
-- [ ] Contact form proves Hybrid shell plus WasmHost child without leaking Browser into Hybrid.
-- [ ] Required `Subject` behavior is visible and test-covered.
+- [x] Contact form proves Hybrid shell plus WasmHost child without leaking Browser into Hybrid.
+- [x] Required `Subject` behavior is visible and test-covered.
 
 ## Phase 6 - Discounted Product Rail Presentation BFF Endpoint
 
@@ -978,4 +978,16 @@ Phase 4 build/test:
 - Contact controller guard scan for Presentation, Runtime, Client, V2, backend/core/API, Web.SharedV2, direct Storefront API route, and direct `HttpClient`: no matches.
 - Wider bootstrap/contact filter found unrelated existing failure in `StorefrontApplicationBootstrapTests.StorefrontStarterProgram_UsesSharedApplicationBootstrap`; not caused by contact Browser controller changes.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrowserContactControllerTests"`: passed 7/7.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 5 build/test:
+
+- Added `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactForm.razor`, `_Imports.razor`, and `Content/StorefrontContactFormDescriptor.cs`.
+- Added `BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor` and `_Imports.razor`.
+- The Hybrid shell owns only the `InteractiveWebAssembly` bridge and passes host-supplied state, labels, classes, and action descriptor to the child.
+- The WasmHost child prerenders the semantic form markup, includes the required `Subject` field, manages submit/loading/success/error/retry state, and submits only through `IStorefrontBrowserContactController`.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- Hybrid/WasmHost guard scans for direct API strings, `HttpClient`, forbidden Presentation/Runtime/Client/V2/backend references, Browser leakage into Hybrid, and literal class attributes: no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentModeDependencyTests"`: passed 79/79.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
