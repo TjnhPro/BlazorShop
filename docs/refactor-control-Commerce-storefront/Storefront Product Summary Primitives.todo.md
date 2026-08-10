@@ -1196,127 +1196,139 @@ Implementation notes:
 
 Answer before marking complete:
 
-- [ ] Did `Components.Primitives` stay narrow?
-- [ ] Does it reference only `Components`?
-- [ ] Did `V2.WASM` avoid `Presentation`?
-- [ ] Did `V2.WASM` avoid `Components.Ssr`?
-- [ ] Did Product Summary duplication disappear?
-- [ ] Did V2 keep final visual/copy ownership?
-- [ ] Did V2.WASM keep final visual/copy ownership for rail context?
-- [ ] Did WasmHost keep rail runtime/loading/error/retry ownership?
-- [ ] Did Presentation keep add-to-cart command execution ownership?
-- [ ] Did Hybrid semantics remain unchanged?
-- [ ] Did any primitive gain runtime behavior?
-- [ ] Did any new component mode or registry appear accidentally?
-- [ ] Did Product Summary labels reuse/extend `ProductSummaryLabels` instead of creating duplicate contracts?
+- [x] Did `Components.Primitives` stay narrow?
+- [x] Does it reference only `Components`?
+- [x] Did `V2.WASM` avoid `Presentation`?
+- [x] Did `V2.WASM` avoid `Components.Ssr`?
+- [x] Did Product Summary duplication disappear?
+- [x] Did V2 keep final visual/copy ownership?
+- [x] Did V2.WASM keep final visual/copy ownership for rail context?
+- [x] Did WasmHost keep rail runtime/loading/error/retry ownership?
+- [x] Did Presentation keep add-to-cart command execution ownership?
+- [x] Did Hybrid semantics remain unchanged?
+- [x] Did any primitive gain runtime behavior?
+- [x] Did any new component mode or registry appear accidentally?
+- [x] Did Product Summary labels reuse/extend `ProductSummaryLabels` instead of creating duplicate contracts?
 
 Record in closure notes:
 
-- [ ] final project graph
-- [ ] new files
-- [ ] deleted files
-- [ ] changed tests
-- [ ] changed docs
-- [ ] browser QA evidence
-- [ ] focused build/test command results
-- [ ] remaining Product Summary duplication if any
-- [ ] known debt
-- [ ] next candidate phase only after review
+- [x] final project graph
+- [x] new files
+- [x] deleted files
+- [x] changed tests
+- [x] changed docs
+- [x] browser QA evidence
+- [x] focused build/test command results
+- [x] remaining Product Summary duplication if any
+- [x] known debt
+- [x] next candidate phase only after review
 
 Exit criteria:
 
-- [ ] Phase 3.1 can be marked closed.
-- [ ] Phase 3.2 is not selected until this review is complete.
+- [x] Phase 3.1 can be marked closed.
+- [x] Phase 3.2 is not selected until this review is complete.
+
+Closure notes:
+
+- Final project graph: `Components.Primitives -> Components`; `V2 -> Components.Primitives`; `V2.WASM -> Components.Primitives + Components.WasmHost + Browser`; `Components.Ssr -> Components + Presentation`; V2.WASM does not traverse to Presentation or Components.Ssr.
+- New files: `BlazorShop.Storefront.Components.Primitives` project, `_Imports.razor`, README, Product Summary image/purchase/card primitives, `ProductSummaryCardClasses`, V2 `ProductSummaryCardVisuals`, `StorefrontPrimitiveDependencyTests`, and `StorefrontProductSummaryPrimitiveComponentTests`.
+- Deleted files: old V2 `Components/Catalog/StorefrontProductSummaryCard.razor` and V2.WASM `Components/Catalog/ProductImage.razor`.
+- Changed tests: dependency graph, visual neutrality, render-mode ownership, headless presentation, branding markup, visual-only boundary, independence boundary, and Product Summary primitive component coverage.
+- Changed docs: `AGENTS.md`, `COMPONENT-MODES.md`, architecture boundary/folder/decision/contract docs, `QA-StorefrontV2.todo.md`, and this plan.
+- Browser QA evidence: Playwright covered home, category, search, V2.WASM rail loading/success/empty/error/retry, primitive rail items, and add-to-cart same-origin regression; screenshot saved at `output/playwright/storefront-product-summary-primitives-home.png`.
+- Focused build/test results: Phase 3.1.12 focused builds passed; Phase 3.1.13 focused tests passed 143 tests plus 71 affected catalog/home/search tests; Phase 3.1.18 full solution build passed and full V2 tests passed 1913/1915 with 2 existing skips.
+- Remaining Product Summary duplication: none found for full card, image fallback component, rail ItemTemplate card markup, or purchase-state branching. Unrelated product detail gallery fallback and purchase panel hooks remain intentionally separate.
+- Known debt: existing MessagePack NU1902/NU1903 warnings and Browserslist outdated notice remain unrelated; no Phase 3.2 target is selected in this phase.
 
 ## Definition Of Done
 
 Boundary:
 
-- [ ] `BlazorShop.Storefront.Components.Primitives` exists.
-- [ ] It uses Razor SDK.
-- [ ] It directly references only `BlazorShop.Storefront.Components`.
-- [ ] Dependency guardrails enforce this.
-- [ ] It is documented as render-only browser-safe primitives.
-- [ ] It is not documented as a runtime/component mode.
+- [x] `BlazorShop.Storefront.Components.Primitives` exists.
+- [x] It uses Razor SDK.
+- [x] It directly references only `BlazorShop.Storefront.Components`.
+- [x] Dependency guardrails enforce this.
+- [x] It is documented as render-only browser-safe primitives.
+- [x] It is not documented as a runtime/component mode.
 
 Product Summary primitives:
 
-- [ ] `StorefrontProductSummaryImage` exists.
-- [ ] `StorefrontProductSummaryPurchaseActions` exists.
-- [ ] `StorefrontProductSummaryCard` exists.
-- [ ] `ProductSummaryItem` remains the single Product Summary item model.
-- [ ] Existing `ProductSummaryLabels` is reused or explicitly extended.
-- [ ] No duplicate Product Summary label contract is created without evidence.
-- [ ] No descriptor is added without a real public inventory use case.
+- [x] `StorefrontProductSummaryImage` exists.
+- [x] `StorefrontProductSummaryPurchaseActions` exists.
+- [x] `StorefrontProductSummaryCard` exists.
+- [x] `ProductSummaryItem` remains the single Product Summary item model.
+- [x] Existing `ProductSummaryLabels` is reused or explicitly extended.
+- [x] No duplicate Product Summary label contract is created without evidence.
+- [x] No descriptor is added without a real public inventory use case.
 
 V2:
 
-- [ ] V2 references `Components.Primitives`.
-- [ ] V2 Product Summary consumers use primitive card.
-- [ ] V2 owns final Product Summary classes.
-- [ ] V2 owns final Product Summary copy values.
-- [ ] Old V2 Product Summary card implementation is removed if redundant.
+- [x] V2 references `Components.Primitives`.
+- [x] V2 Product Summary consumers use primitive card.
+- [x] V2 owns final Product Summary classes.
+- [x] V2 owns final Product Summary copy values.
+- [x] Old V2 Product Summary card implementation is removed if redundant.
 
 V2.WASM:
 
-- [ ] V2.WASM references `Components.Primitives`.
-- [ ] V2.WASM does not directly or transitively reference `Presentation`.
-- [ ] V2.WASM does not directly or transitively reference `Components.Ssr`.
-- [ ] Discounted rail uses primitive Product Summary card.
-- [ ] Old `ProductImage.razor` is removed if unused.
-- [ ] Duplicate rail ItemTemplate card markup is removed.
+- [x] V2.WASM references `Components.Primitives`.
+- [x] V2.WASM does not directly or transitively reference `Presentation`.
+- [x] V2.WASM does not directly or transitively reference `Components.Ssr`.
+- [x] Discounted rail uses primitive Product Summary card.
+- [x] Old `ProductImage.razor` is removed if unused.
+- [x] Duplicate rail ItemTemplate card markup is removed.
 
 WasmHost:
 
-- [ ] Discounted rail remains in `Components.WasmHost`.
-- [ ] Browser controller remains in the WasmHost/browser path.
-- [ ] Loading/success/empty/error/retry ownership remains unchanged.
+- [x] Discounted rail remains in `Components.WasmHost`.
+- [x] Browser controller remains in the WasmHost/browser path.
+- [x] Loading/success/empty/error/retry ownership remains unchanged.
 
 Hybrid:
 
-- [ ] Hybrid remains server/prerendered HTML plus InteractiveWebAssembly hydration.
-- [ ] No `InteractiveServer` or `InteractiveAuto` is introduced.
-- [ ] No server UI circuit is introduced.
-- [ ] No physical `Components.Hybrid` project is recreated.
+- [x] Hybrid remains server/prerendered HTML plus InteractiveWebAssembly hydration.
+- [x] No `InteractiveServer` or `InteractiveAuto` is introduced.
+- [x] No server UI circuit is introduced.
+- [x] No physical `Components.Hybrid` project is recreated.
 
 Visual ownership:
 
-- [ ] Primitives contain no final V2 class literals.
-- [ ] Primitives contain no CSS/static assets.
-- [ ] Class slots are fully dynamic.
-- [ ] No oversized visual schema is introduced without evidence.
-- [ ] V2/V2.WASM own final visual values.
+- [x] Primitives contain no final V2 class literals.
+- [x] Primitives contain no CSS/static assets.
+- [x] Class slots are fully dynamic.
+- [x] No oversized visual schema is introduced without evidence.
+- [x] V2/V2.WASM own final visual values.
 
 Browser boundary:
 
-- [ ] Primitives do not call API/BFF.
-- [ ] Primitives do not use Browser controller.
-- [ ] Primitives do not use `HttpClient`.
-- [ ] Primitives do not use `IJSRuntime` in Phase 3.1.
-- [ ] Semantic command hooks are preserved.
-- [ ] Add-to-cart executes exactly once in browser QA.
-- [ ] No direct Commerce browser request appears.
-- [ ] No credential leak appears.
+- [x] Primitives do not call API/BFF.
+- [x] Primitives do not use Browser controller.
+- [x] Primitives do not use `HttpClient`.
+- [x] Primitives do not use `IJSRuntime` in Phase 3.1.
+- [x] Semantic command hooks are preserved.
+- [x] Add-to-cart executes exactly once in browser QA.
+- [x] No direct Commerce browser request appears.
+- [x] No credential leak appears.
 
 Tests and QA:
 
-- [ ] Primitive dependency tests pass.
-- [ ] Product Summary component tests pass.
-- [ ] Visual neutrality tests pass.
-- [ ] Render mode ownership tests pass.
-- [ ] V2/V2.WASM dependency graph tests pass.
-- [ ] Browser QA passes for SSR Product Summary.
-- [ ] Browser QA passes for V2.WASM discounted rail.
-- [ ] Browser QA passes for add-to-cart regression.
+- [x] Primitive dependency tests pass.
+- [x] Product Summary component tests pass.
+- [x] Visual neutrality tests pass.
+- [x] Render mode ownership tests pass.
+- [x] V2/V2.WASM dependency graph tests pass.
+- [x] Browser QA passes for SSR Product Summary.
+- [x] Browser QA passes for V2.WASM discounted rail.
+- [x] Browser QA passes for add-to-cart regression.
 
 Scope:
 
-- [ ] No product detail extraction.
-- [ ] No cart/checkout/account refactor.
-- [ ] No backend/API change.
-- [ ] No StorefrontBuilder change.
-- [ ] No Starter/generated storefront change.
-- [ ] No database/migration change.
+- [x] No product detail extraction.
+- [x] No cart/checkout/account refactor.
+- [x] No backend/API change.
+- [x] No StorefrontBuilder change.
+- [x] No Starter/generated storefront change.
+- [x] No database/migration change.
 
 ## Expected Final Graph
 
@@ -1356,13 +1368,19 @@ Components.Primitives -> Components only
 
 After Phase 3.1:
 
-- [ ] Review V2.
-- [ ] Review V2.WASM.
-- [ ] Review `Components.Primitives`.
-- [ ] Identify remaining meaningful reuse boundaries.
-- [ ] Select the next batch only after evidence.
-- [ ] Prefer 3-5 small components, or 1-3 components if runtime-heavy.
-- [ ] Stop Phase 3 when no meaningful reusable boundary remains.
+- [x] Review V2.
+- [x] Review V2.WASM.
+- [x] Review `Components.Primitives`.
+- [x] Identify remaining meaningful reuse boundaries.
+- [x] Select the next batch only after evidence.
+- [x] Prefer 3-5 small components, or 1-3 components if runtime-heavy.
+- [x] Stop Phase 3 when no meaningful reusable boundary remains.
+
+Phase 3 iteration notes:
+
+- 2026-08-10: Reviewed V2 and V2.WASM after Product Summary extraction; both remain responsible for final visual values, layout context, and host composition.
+- 2026-08-10: Reviewed `Components.Primitives`; it remains narrow and Product Summary-only.
+- 2026-08-10: No next Phase 3 batch is selected here. A future batch must start from fresh evidence and must stay small.
 
 V2 is expected to retain:
 
