@@ -981,9 +981,14 @@ If filter syntax is too long for the shell, split by test class.
 
 Exit criteria:
 
-- [ ] focused tests pass;
-- [ ] updated old guardrails no longer contradict new ownership;
-- [ ] no purchase behavior regression is hidden.
+- [x] focused tests pass;
+- [x] updated old guardrails no longer contradict new ownership;
+- [x] no purchase behavior regression is hidden.
+
+Implementation notes:
+
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontProductGalleryPrimitiveTests|FullyQualifiedName~StorefrontProductDetailDisplayComponentTests|FullyQualifiedName~StorefrontPrimitiveDependencyTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontRenderModeOwnershipTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontCommerceScriptRegressionTests"`; 133 tests passed.
+- 2026-08-10: Existing warnings only: MessagePack NU1902/NU1903 advisories and Control Plane Browserslist `caniuse-lite is outdated`.
 
 ## Phase 3.2.15 - Browser QA
 
