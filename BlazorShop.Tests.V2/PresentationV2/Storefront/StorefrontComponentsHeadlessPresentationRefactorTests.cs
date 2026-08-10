@@ -12,6 +12,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Brand/StorefrontBrandLogoContext.cs",
             "Cart/CartLabels.cs",
             "Catalog/CatalogFilterCategoryOption.cs",
+            "Catalog/ProductSummaryCardClasses.cs",
             "Catalog/ProductSummaryItem.cs",
             "Catalog/ProductSummaryLabels.cs",
             "Catalog/StorefrontDiscountedProductRailActionDescriptor.cs",
@@ -129,7 +130,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(36, actual.Length);
+            Assert.Equal(37, actual.Length);
         }
 
         [Fact]
@@ -258,10 +259,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor")));
             var productSummaryContract = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryItem.cs");
+            var productSummaryLabels = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryLabels.cs");
+            var productSummaryClasses = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryCardClasses.cs");
             var v2Card = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
 
             Assert.Contains("public sealed record ProductSummaryItem", productSummaryContract, StringComparison.Ordinal);
+            Assert.Contains("SelectVariant", productSummaryLabels, StringComparison.Ordinal);
+            Assert.Contains("CurrentlyOutOfStock", productSummaryLabels, StringComparison.Ordinal);
+            Assert.Contains("CurrentlyUnavailable", productSummaryLabels, StringComparison.Ordinal);
+            Assert.Contains("public sealed record ProductSummaryCardClasses", productSummaryClasses, StringComparison.Ordinal);
+            Assert.False(File.Exists(RepositoryPath(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryCardLabels.cs")));
             Assert.Contains("data-storefront-product-summary-card", v2Card, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-purchase", v2Card, StringComparison.Ordinal);
             Assert.Contains("data-storefront-command=\"cart.add-line\"", v2Card, StringComparison.Ordinal);

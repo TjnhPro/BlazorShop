@@ -10,13 +10,19 @@ public sealed record ProductSummaryLabels(
     string OutOfStockBadge,
     string AddToCart,
     string AddedToCart,
-    string ViewProduct)
+    string ViewProduct,
+    string SelectVariant,
+    string CurrentlyOutOfStock,
+    string CurrentlyUnavailable)
 {
     public static ProductSummaryLabels Empty { get; } = new(
         string.Empty,
         string.Empty,
         string.Empty,
         "{0}",
+        string.Empty,
+        string.Empty,
+        string.Empty,
         string.Empty,
         string.Empty,
         string.Empty,

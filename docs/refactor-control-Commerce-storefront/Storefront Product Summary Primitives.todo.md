@@ -458,62 +458,70 @@ BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryLabels.cs
 
 Rules:
 
-- [ ] Do not create another Product Summary item model.
-- [ ] Prefer reuse/extension of `ProductSummaryLabels`.
-- [ ] Do not create `ProductSummaryCardLabels` unless implementation proves `ProductSummaryLabels` cannot cleanly cover status messages.
-- [ ] If extending `ProductSummaryLabels`, keep it browser-safe and presentation-only.
-- [ ] If a new label record is unavoidable, document why `ProductSummaryLabels` was insufficient and keep it in `Components/Contracts/Catalog`.
-- [ ] Do not put labels in `Components.Primitives` unless they are primitive-specific and cannot be shared as component contracts.
+- [x] Do not create another Product Summary item model.
+- [x] Prefer reuse/extension of `ProductSummaryLabels`.
+- [x] Do not create `ProductSummaryCardLabels` unless implementation proves `ProductSummaryLabels` cannot cleanly cover status messages.
+- [x] If extending `ProductSummaryLabels`, keep it browser-safe and presentation-only.
+- [x] If a new label record is unavoidable, document why `ProductSummaryLabels` was insufficient and keep it in `Components/Contracts/Catalog`.
+- [x] Do not put labels in `Components.Primitives` unless they are primitive-specific and cannot be shared as component contracts.
 
 Minimum labels/copy to support:
 
-- [ ] `FromPrefix`
-- [ ] `PricePrefix`
-- [ ] `ImageUnavailableText`
-- [ ] `ImageUnavailableAltFormat`
-- [ ] `NewBadge`
-- [ ] `VariantsBadge`
-- [ ] `OutOfStockBadge`
-- [ ] `AddToCart`
-- [ ] `AddedToCart`
-- [ ] `ViewProduct`
-- [ ] `SelectVariant`
-- [ ] `CurrentlyOutOfStock`
-- [ ] `CurrentlyUnavailable`
+- [x] `FromPrefix`
+- [x] `PricePrefix`
+- [x] `ImageUnavailableText`
+- [x] `ImageUnavailableAltFormat`
+- [x] `NewBadge`
+- [x] `VariantsBadge`
+- [x] `OutOfStockBadge`
+- [x] `AddToCart`
+- [x] `AddedToCart`
+- [x] `ViewProduct`
+- [x] `SelectVariant`
+- [x] `CurrentlyOutOfStock`
+- [x] `CurrentlyUnavailable`
 
 Class contract:
 
-- [ ] Create `ProductSummaryCardClasses` only if needed.
-- [ ] Keep it small.
-- [ ] Candidate slots:
-  - [ ] `Root`
-  - [ ] `Body`
-  - [ ] `Header`
-  - [ ] `Category`
-  - [ ] `Title`
-  - [ ] `BadgeGroup`
-  - [ ] `Badge`
-  - [ ] `Price`
-  - [ ] `ComparePrice`
-  - [ ] `ImageLink`
-  - [ ] `ImageFrame`
-  - [ ] `Image`
-  - [ ] `ImageFallback`
-  - [ ] `Description`
-  - [ ] `Footer`
-  - [ ] `ActionGroup`
-  - [ ] `PrimaryAction`
-  - [ ] `SecondaryAction`
-  - [ ] `Status`
-- [ ] Reduce slots if a region does not need independent host styling.
-- [ ] Do not create one class property for every nested span without evidence.
+- [x] Create `ProductSummaryCardClasses` only if needed.
+- [x] Keep it small.
+- [x] Candidate slots:
+  - [x] `Root`
+  - [x] `Body`
+  - [x] `Header`
+  - [x] `Category`
+  - [x] `Title`
+  - [x] `BadgeGroup`
+  - [x] `Badge`
+  - [x] `Price`
+  - [x] `ComparePrice`
+  - [x] `ImageLink`
+  - [x] `ImageFrame`
+  - [x] `Image`
+  - [x] `ImageFallback`
+  - [x] `Description`
+  - [x] `Footer`
+  - [x] `ActionGroup`
+  - [x] `PrimaryAction`
+  - [x] `SecondaryAction`
+  - [x] `Status`
+- [x] Reduce slots if a region does not need independent host styling.
+- [x] Do not create one class property for every nested span without evidence.
 
 Exit criteria:
 
-- [ ] `ProductSummaryItem` remains the only Product Summary data item.
-- [ ] Existing `ProductSummaryLabels` is reused or deliberately extended.
-- [ ] No duplicate label contract is introduced by default.
-- [ ] Class slots remain minimal and semantic.
+- [x] `ProductSummaryItem` remains the only Product Summary data item.
+- [x] Existing `ProductSummaryLabels` is reused or deliberately extended.
+- [x] No duplicate label contract is introduced by default.
+- [x] Class slots remain minimal and semantic.
+
+Implementation notes:
+
+- 2026-08-10: Extended existing `ProductSummaryLabels` with `SelectVariant`, `CurrentlyOutOfStock`, and `CurrentlyUnavailable`; no `ProductSummaryCardLabels` contract was introduced.
+- 2026-08-10: Added `ProductSummaryCardClasses` in `Components/Contracts/Catalog` because upcoming render primitives need host-supplied class slots while staying visually neutral.
+- 2026-08-10: `ProductSummaryCardClasses` uses semantic region slots for card, image, body, status, and actions; it does not add nested span-level slots without current markup evidence.
+- 2026-08-10: Updated contract inventory tests to include `ProductSummaryCardClasses` and assert no duplicate `ProductSummaryCardLabels` exists.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj"` and `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests"`.
 
 ## Phase 3.1.5 - Extract StorefrontProductSummaryImage
 
