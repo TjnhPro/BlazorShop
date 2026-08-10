@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Components.Contracts.System;
+namespace BlazorShop.Storefront.Components.Contracts.Diagnostics;
 
 public sealed record StorefrontHybridRuntimeProbeClasses(
     string? Root = null,

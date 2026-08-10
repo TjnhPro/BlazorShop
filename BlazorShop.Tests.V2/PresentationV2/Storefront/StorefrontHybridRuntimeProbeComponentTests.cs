@@ -1,6 +1,6 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
-using BlazorShop.Storefront.Components.Contracts.System;
+using BlazorShop.Storefront.Components.Contracts.Diagnostics;
 using BlazorShop.Storefront.Components.WasmHost.System;
 
 using Microsoft.AspNetCore.Components;

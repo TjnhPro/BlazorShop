@@ -33,15 +33,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Contact/StorefrontContactFormSubmitRequest.cs",
             "Contact/StorefrontContactFormSubmitResult.cs",
             "Deals/DealsPlacement.cs",
+            "Diagnostics/StorefrontHybridRuntimeProbeClasses.cs",
+            "Diagnostics/StorefrontHybridRuntimeProbeLabels.cs",
             "Product/ProductGalleryItem.cs",
             "Product/ProductGalleryLabels.cs",
             "Product/ProductPurchaseLabels.cs",
             "Product/ProductPurchaseOptionItem.cs",
             "Product/ProductPurchaseOptionValueItem.cs",
             "Product/ProductPurchasePanelModel.cs",
-            "Product/ProductPurchaseVariantItem.cs",
-            "System/StorefrontHybridRuntimeProbeClasses.cs",
-            "System/StorefrontHybridRuntimeProbeLabels.cs"
+            "Product/ProductPurchaseVariantItem.cs"
         ];
 
         private static readonly string[] ExpectedBrowserContractFiles =

@@ -535,20 +535,30 @@ BlazorShop.Storefront.Components.Contracts.Diagnostics
 
 Tasks:
 
-- [ ] Move `StorefrontHybridRuntimeProbeLabels.cs` from `Contracts/System` to `Contracts/Diagnostics`.
-- [ ] Move `StorefrontHybridRuntimeProbeClasses.cs` from `Contracts/System` to `Contracts/Diagnostics`.
-- [ ] Rename namespace to `BlazorShop.Storefront.Components.Contracts.Diagnostics`.
-- [ ] Update WasmHost `_Imports.razor`.
-- [ ] Update V2.WASM `_Imports.razor`.
-- [ ] Update `StorefrontHybridRuntimeProbeComponentTests`.
-- [ ] Update any source-reference tests that list `System/StorefrontHybridRuntimeProbe*.cs`.
-- [ ] Remove unnecessary `global::System` workaround only if it becomes unnecessary and tests prove no regression.
-- [ ] If keeping `global::System` improves clarity with no downside, document why it remains.
+- [x] Move `StorefrontHybridRuntimeProbeLabels.cs` from `Contracts/System` to `Contracts/Diagnostics`.
+- [x] Move `StorefrontHybridRuntimeProbeClasses.cs` from `Contracts/System` to `Contracts/Diagnostics`.
+- [x] Rename namespace to `BlazorShop.Storefront.Components.Contracts.Diagnostics`.
+- [x] Update WasmHost `_Imports.razor`.
+- [x] Update V2.WASM `_Imports.razor`.
+- [x] Update `StorefrontHybridRuntimeProbeComponentTests`.
+- [x] Update any source-reference tests that list `System/StorefrontHybridRuntimeProbe*.cs`.
+- [x] Remove unnecessary `global::System` workaround only if it becomes unnecessary and tests prove no regression.
+- [x] If keeping `global::System` improves clarity with no downside, document why it remains.
 
 Exit criteria:
 
-- [ ] `rg -n "Contracts.System|namespace BlazorShop.Storefront.Components.Contracts.System" BlazorShop.PresentationV2 BlazorShop.Tests.V2` returns no active source/test matches.
-- [ ] H2 probe continues to build and render.
+- [x] `rg -n "Contracts.System|namespace BlazorShop.Storefront.Components.Contracts.System" BlazorShop.PresentationV2 BlazorShop.Tests.V2` returns no active source/test matches.
+- [x] H2 probe continues to build and render.
+
+Implementation notes:
+
+- 2026-08-10: moved probe labels/classes and README from `Contracts/System` to `Contracts/Diagnostics`; namespaces now use `BlazorShop.Storefront.Components.Contracts.Diagnostics`.
+- 2026-08-10: updated WasmHost and V2.WASM imports plus `StorefrontHybridRuntimeProbeComponentTests`.
+- 2026-08-10: updated contract inventory test from `System/StorefrontHybridRuntimeProbe*.cs` to `Diagnostics/StorefrontHybridRuntimeProbe*.cs`.
+- 2026-08-10: removed `global::System.Text.RegularExpressions` from `StorefrontComponentDescriptorValidator`; focused tests/build proved no regression.
+- 2026-08-10: `rg -n "Contracts\\.System|namespace BlazorShop\\.Storefront\\.Components\\.Contracts\\.System|Contracts/System|global::System.Text.RegularExpressions" BlazorShop.PresentationV2 BlazorShop.Tests.V2 -g "!*bin*" -g "!*obj*"` returned no matches.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj --no-restore` passed with 0 warnings/errors.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontHybridRuntimeProbeComponentTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontRenderModeOwnershipTests"` passed 57/57. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.9 - Visual Neutrality And Copy Ownership Recheck
 
@@ -882,7 +892,7 @@ Before marking H3 complete:
 - [x] H3.5 harden component dependency matrix.
 - [x] H3.6 harden render mode ownership.
 - [x] H3.7 harden server-interactive/browser transport guardrails.
-- [ ] H3.8 rename `Contracts.System` namespace.
+- [x] H3.8 rename `Contracts.System` namespace.
 - [ ] H3.9 recheck visual neutrality and copy ownership.
 - [ ] H3.10 close `/__qa` route policy.
 - [ ] H3.11 update active docs and QA checklist.
