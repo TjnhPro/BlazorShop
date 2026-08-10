@@ -473,21 +473,29 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/Pro
 
 Preferred simplification:
 
-- [ ] If one small record is enough, use `ProductDetailDisplayClasses`.
-- [ ] If separate records reduce confusion, keep each record small.
-- [ ] Do not add a single giant class bag for the full Product Detail page.
-- [ ] Do not create one class slot for every nested span without real styling need.
+- [x] If one small record is enough, use `ProductDetailDisplayClasses`.
+- [x] If separate records reduce confusion, keep each record small.
+- [x] Do not add a single giant class bag for the full Product Detail page.
+- [x] Do not create one class slot for every nested span without real styling need.
 
 Required copy handling:
 
-- [ ] `Available Variants` must be host supplied.
-- [ ] No broad localization framework.
-- [ ] No Storefront V2 copy in reusable component projects.
+- [x] `Available Variants` must be host supplied.
+- [x] No broad localization framework.
+- [x] No Storefront V2 copy in reusable component projects.
 
 Exit criteria:
 
-- [ ] SSR components have enough class/label input to avoid literal class/copy ownership.
-- [ ] Contracts remain small and render-facing only.
+- [x] SSR components have enough class/label input to avoid literal class/copy ownership.
+- [x] Contracts remain small and render-facing only.
+
+Implementation notes:
+
+- 2026-08-10: Added separate small render-facing contracts for pricing, availability, and informational variant list display; separate records were clearer than one mixed class bag.
+- 2026-08-10: Added host-supplied `ProductVariantListLabels` for the `Available Variants` copy while keeping reusable component projects free of V2 copy/localization ownership.
+- 2026-08-10: Updated the contract inventory guardrail to include the four new Product detail display contract files.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj" --no-restore` with 0 warnings.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests.ContractModelInventory|FullyQualifiedName~StorefrontContractOwnershipTests"`; 6 tests passed, with existing MessagePack/Browserslist warnings only.
 
 ## Phase 3.2.5 - Extract StorefrontProductPricing
 

@@ -36,14 +36,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Deals/DealsPlacement.cs",
             "Diagnostics/StorefrontHybridRuntimeProbeClasses.cs",
             "Diagnostics/StorefrontHybridRuntimeProbeLabels.cs",
+            "Product/ProductAvailabilityClasses.cs",
             "Product/ProductGalleryClasses.cs",
             "Product/ProductGalleryItem.cs",
             "Product/ProductGalleryLabels.cs",
+            "Product/ProductPricingClasses.cs",
             "Product/ProductPurchaseLabels.cs",
             "Product/ProductPurchaseOptionItem.cs",
             "Product/ProductPurchaseOptionValueItem.cs",
             "Product/ProductPurchasePanelModel.cs",
-            "Product/ProductPurchaseVariantItem.cs"
+            "Product/ProductPurchaseVariantItem.cs",
+            "Product/ProductVariantListClasses.cs",
+            "Product/ProductVariantListLabels.cs",
         ];
 
         private static readonly string[] ExpectedBrowserContractFiles =
@@ -131,7 +135,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(38, actual.Length);
+            Assert.Equal(42, actual.Length);
         }
 
         [Fact]
