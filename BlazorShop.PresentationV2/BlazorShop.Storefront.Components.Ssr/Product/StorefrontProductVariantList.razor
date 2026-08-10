@@ -1,0 +1,39 @@
+@namespace BlazorShop.Storefront.Components.Ssr.Product
+
+@if (Items.Count > 0)
+{
+    <div class="@Classes.Root">
+        <h2 class="@Classes.Heading">@Labels.SectionHeading</h2>
+        <ul class="@Classes.List">
+            @foreach (var variant in Items)
+            {
+                <li class="@Classes.Item">
+                    <div class="@Classes.Name">@variant.DisplayName</div>
+                    <div class="@Classes.Attribute">@variant.AttributeText</div>
+                    <div class="@Classes.Details">
+                        <span class="@Classes.Price">@variant.PriceDisplay</span>
+                        <span class="@StockClass(variant.AvailabilityState)">@variant.StockLabel</span>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IReadOnlyList<StorefrontProductVariantView> Items { get; set; } = [];
+
+    [Parameter]
+    public ProductVariantListLabels Labels { get; set; } = ProductVariantListLabels.Empty;
+
+    [Parameter]
+    public ProductVariantListClasses Classes { get; set; } = new();
+
+    private string StockClass(string state)
+    {
+        return string.Equals(state, "out-of-stock", StringComparison.Ordinal)
+            ? Classes.StockUnavailable
+            : Classes.StockAvailable;
+    }
+}

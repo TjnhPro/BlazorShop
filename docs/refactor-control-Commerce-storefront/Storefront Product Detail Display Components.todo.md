@@ -617,26 +617,34 @@ IReadOnlyList<StorefrontProductVariantView> Items
 
 Responsibilities:
 
-- [ ] render nothing or an empty fragment when no variants exist;
-- [ ] render section heading from host-supplied labels;
-- [ ] render variant display name;
-- [ ] render attribute text;
-- [ ] render price display;
-- [ ] render stock label;
-- [ ] use semantic state only to choose host-supplied class slots.
+- [x] render nothing or an empty fragment when no variants exist;
+- [x] render section heading from host-supplied labels;
+- [x] render variant display name;
+- [x] render attribute text;
+- [x] render price display;
+- [x] render stock label;
+- [x] use semantic state only to choose host-supplied class slots.
 
 Must not become:
 
-- [ ] variant selector;
-- [ ] radio/select/color input owner;
-- [ ] selected variant state owner;
-- [ ] purchase validation owner;
-- [ ] add-to-cart eligibility owner.
+- [x] variant selector;
+- [x] radio/select/color input owner;
+- [x] selected variant state owner;
+- [x] purchase validation owner;
+- [x] add-to-cart eligibility owner.
 
 Exit criteria:
 
-- [ ] `V2ProductPageView.razor` no longer owns informational variant-list markup.
-- [ ] `StorefrontProductPurchasePanel` remains the only Product Detail purchase input surface in this phase.
+- [x] `V2ProductPageView.razor` no longer owns informational variant-list markup.
+- [x] `StorefrontProductPurchasePanel` remains the only Product Detail purchase input surface in this phase.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontProductVariantList` in `BlazorShop.Storefront.Components.Ssr.Product`.
+- 2026-08-10: The component renders no output for an empty item list and uses host-supplied `ProductVariantListLabels`/`ProductVariantListClasses`.
+- 2026-08-10: Added V2-owned variant list labels/classes to `ProductDetailDisplayVisuals` and replaced the inline informational variant list in `V2ProductPageView.razor`.
+- 2026-08-10: `StorefrontProductPurchasePanel` remains the only Product Detail purchase input surface.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj" --no-restore` with 0 warnings.
 
 ## Phase 3.2.8 - Adopt Display Components In V2ProductPageView
 

@@ -55,25 +55,10 @@
 
                 <StorefrontProductPurchasePanel Model="_purchasePanel" Actions="Context.PurchaseActions" />
 
-                @if (_variants.Count > 0)
-                {
-                    <div class="mt-8">
-                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Available Variants</h2>
-                        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
-                            @foreach (var variant in _variants)
-                            {
-                                <li class="rounded-2xl border border-neutral-200 bg-neutral-50/80 px-4 py-3 text-sm text-neutral-700">
-                                    <div class="font-semibold text-neutral-900">@variant.DisplayName</div>
-                                    <div class="mt-1">@variant.AttributeText</div>
-                                    <div class="mt-2 flex items-center justify-between gap-2">
-                                        <span class="font-semibold text-neutral-900">@variant.PriceDisplay</span>
-                                        <span class="@VariantStockClass(variant.AvailabilityState)">@variant.StockLabel</span>
-                                    </div>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                }
+                <StorefrontProductVariantList
+                    Items="_variants"
+                    Labels="ProductDetailDisplayVisuals.VariantListLabels"
+                    Classes="ProductDetailDisplayVisuals.VariantListClasses" />
 
                 <div class="mt-8 flex flex-wrap gap-3">
                     @if (!string.IsNullOrWhiteSpace(_navigation.CategoryUrl) && !string.IsNullOrWhiteSpace(_navigation.CategoryName))
@@ -166,10 +151,4 @@
 
     private string ProductSeoContentTitle => _navigation.ProductSeoContentTitle;
 
-    private static string VariantStockClass(string state)
-    {
-        return string.Equals(state, "out-of-stock", StringComparison.Ordinal)
-            ? "text-rose-700"
-            : "text-emerald-700";
-    }
 }
