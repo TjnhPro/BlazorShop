@@ -43,10 +43,11 @@ public sealed class StorefrontComponentModeDependencyTests
     }
 
     [Fact]
-    public void HybridReferencesExactlyComponentsPresentationAndWasmHost()
+    public void HybridProject_RemainsTransitionalCompatibilityGraphUntilH2()
     {
         var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj");
 
+        // This is the current compatibility project graph, not the semantic definition of Hybrid mode.
         Assert.Equal(
             [
                 "../BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj",

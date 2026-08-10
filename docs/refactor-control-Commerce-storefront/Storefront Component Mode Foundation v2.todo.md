@@ -411,11 +411,11 @@ Keep SSR and WasmHost strict while changing Hybrid from a permanent exact graph 
 
 In `StorefrontComponentModeDependencyTests`:
 
-- [ ] Keep `SsrReferencesExactlyComponentsAndPresentation` unless H1 discovers a concrete blocker.
-- [ ] Keep `WasmHostReferencesExactlyComponentsAndBrowser`.
-- [ ] Keep `ModeProjectsDoNotReferenceRuntimeClientConsumersOrBackendProjects`.
-- [ ] Keep `StorefrontPackagesHaveNoProjectReferenceCycles`.
-- [ ] Replace or rename `HybridReferencesExactlyComponentsPresentationAndWasmHost`.
+- [x] Keep `SsrReferencesExactlyComponentsAndPresentation` unless H1 discovers a concrete blocker.
+- [x] Keep `WasmHostReferencesExactlyComponentsAndBrowser`.
+- [x] Keep `ModeProjectsDoNotReferenceRuntimeClientConsumersOrBackendProjects`.
+- [x] Keep `StorefrontPackagesHaveNoProjectReferenceCycles`.
+- [x] Replace or rename `HybridReferencesExactlyComponentsPresentationAndWasmHost`.
 
 Recommended replacement:
 
@@ -425,78 +425,85 @@ HybridProject_RemainsTransitionalCompatibilityGraphUntilH2
 
 The replacement should:
 
-- [ ] prove current `Components.Hybrid` references only its temporary allowlist;
-- [ ] explain this graph is compatibility status, not semantic Hybrid law;
-- [ ] keep forbidden dependencies blocked;
-- [ ] avoid claiming all future Hybrid components require Presentation + WasmHost.
+- [x] prove current `Components.Hybrid` references only its temporary allowlist;
+- [x] explain this graph is compatibility status, not semantic Hybrid law;
+- [x] keep forbidden dependencies blocked;
+- [x] avoid claiming all future Hybrid components require Presentation + WasmHost.
 
 ### Dependency Matrix
 
 Base `Components`:
 
 - Allowed:
-  - [ ] framework abstractions needed for contracts/headless primitives.
+  - [x] framework abstractions needed for contracts/headless primitives.
 - Forbidden:
-  - [ ] Presentation
-  - [ ] Browser
-  - [ ] Runtime
-  - [ ] Client
-  - [ ] V2
-  - [ ] V2.WASM
-  - [ ] Starter
-  - [ ] backend/core/API projects
-  - [ ] `Web.SharedV2`
+  - [x] Presentation
+  - [x] Browser
+  - [x] Runtime
+  - [x] Client
+  - [x] V2
+  - [x] V2.WASM
+  - [x] Starter
+  - [x] backend/core/API projects
+  - [x] `Web.SharedV2`
 
 `Components.Ssr`:
 
 - Current allowed:
-  - [ ] `Components`
-  - [ ] `Presentation`
+  - [x] `Components`
+  - [x] `Presentation`
 - Forbidden:
-  - [ ] Browser
-  - [ ] Runtime
-  - [ ] Client
-  - [ ] V2/V2.WASM
-  - [ ] Starter/Starter.WASM
-  - [ ] backend/core/API projects
-  - [ ] `Web.SharedV2`
+  - [x] Browser
+  - [x] Runtime
+  - [x] Client
+  - [x] V2/V2.WASM
+  - [x] Starter/Starter.WASM
+  - [x] backend/core/API projects
+  - [x] `Web.SharedV2`
 
 `Components.WasmHost`:
 
 - Current allowed:
-  - [ ] `Components`
-  - [ ] `Browser`
+  - [x] `Components`
+  - [x] `Browser`
 - Forbidden:
-  - [ ] Presentation
-  - [ ] Runtime
-  - [ ] Client
-  - [ ] V2/V2.WASM
-  - [ ] Starter/Starter.WASM
-  - [ ] backend/core/API projects
-  - [ ] `Web.SharedV2`
+  - [x] Presentation
+  - [x] Runtime
+  - [x] Client
+  - [x] V2/V2.WASM
+  - [x] Starter/Starter.WASM
+  - [x] backend/core/API projects
+  - [x] `Web.SharedV2`
 
 `Components.Hybrid` during H1:
 
 - Status:
-  - [ ] transitional compatibility project.
+  - [x] transitional compatibility project.
 - Current allowed while transitional:
-  - [ ] `Components`
-  - [ ] `Presentation`
-  - [ ] `Components.WasmHost`
+  - [x] `Components`
+  - [x] `Presentation`
+  - [x] `Components.WasmHost`
 - Forbidden:
-  - [ ] Browser direct reference
-  - [ ] Runtime
-  - [ ] Client
-  - [ ] V2/V2.WASM
-  - [ ] Starter/Starter.WASM
-  - [ ] backend/core/API projects
-  - [ ] `Web.SharedV2`
+  - [x] Browser direct reference
+  - [x] Runtime
+  - [x] Client
+  - [x] V2/V2.WASM
+  - [x] Starter/Starter.WASM
+  - [x] backend/core/API projects
+  - [x] `Web.SharedV2`
 
 ### Exit Criteria
 
-- [ ] Tests protect real dependency safety.
-- [ ] Tests no longer encode old Hybrid physical shell as semantic truth.
-- [ ] Future capability packaging remains possible.
+- [x] Tests protect real dependency safety.
+- [x] Tests no longer encode old Hybrid physical shell as semantic truth.
+- [x] Future capability packaging remains possible.
+
+Implementation notes:
+
+- 2026-08-10: renamed `HybridReferencesExactlyComponentsPresentationAndWasmHost` to `HybridProject_RemainsTransitionalCompatibilityGraphUntilH2`.
+- 2026-08-10: the test still proves current `Components.Hybrid` references only Components, Presentation, and Components.WasmHost, but now explicitly comments that this is compatibility project state, not the semantic definition of Hybrid mode.
+- 2026-08-10: SSR exact graph, WasmHost exact graph, no Runtime/Client/backend consumer references, and no Storefront project-reference cycles remain unchanged.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeDependencyTests"` passed: 5 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H1.5 - Rework Boundary Validator Profiles
 
