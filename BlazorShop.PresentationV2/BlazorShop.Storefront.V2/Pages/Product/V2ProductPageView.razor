@@ -2,7 +2,6 @@
 @using BlazorShop.Storefront.Presentation.Models
 @using BlazorShop.Storefront.Presentation.Services.Product
 @using BlazorShop.Storefront.Presentation.Services
-@using BlazorShop.Storefront.Components.Primitives.Product
 
 <StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-8 pt-10 sm:px-6 lg:px-8">
         <Breadcrumb>
@@ -12,7 +11,11 @@
         <ChildContent>
             <div class="grid gap-8 lg:grid-cols-[1fr_1fr]">
                 <div class="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg">
-                    <StorefrontProductGallery Items="_galleryItems" ProductName="@_product.Name" />
+                    <StorefrontProductGallery
+                        Items="_galleryItems"
+                        ProductName="@_product.Name"
+                        Labels="ProductGalleryVisuals.Labels"
+                        Classes="ProductGalleryVisuals.Classes" />
                 </div>
 
                 <div class="rounded-3xl border border-neutral-200/70 bg-white/90 p-8 shadow-lg">

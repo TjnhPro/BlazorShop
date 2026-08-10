@@ -423,19 +423,19 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/ProductGal
 
 Tasks:
 
-- [ ] Provide `ProductGalleryLabels`.
-- [ ] Provide `ProductGalleryClasses`.
-- [ ] Preserve current 1:1 visual intent:
-  - [ ] main image aspect square;
-  - [ ] thumbnail square cells;
-  - [ ] no-image placeholder square frame.
-- [ ] Preserve current gallery class semantics required by CSS/JS:
-  - [ ] if `storefront.css` targets `bs-product-gallery*`, keep those values in V2 class config;
-  - [ ] do not bake those values into the primitive.
-- [ ] Update V2 `_Imports.razor`:
-  - [ ] add `BlazorShop.Storefront.Components.Primitives.Product`;
-  - [ ] keep `BlazorShop.Storefront.V2.Components.Product` only for V2-owned Product components.
-- [ ] Update `V2ProductPageView.razor` gallery call:
+- [x] Provide `ProductGalleryLabels`.
+- [x] Provide `ProductGalleryClasses`.
+- [x] Preserve current 1:1 visual intent:
+  - [x] main image aspect square;
+  - [x] thumbnail square cells;
+  - [x] no-image placeholder square frame.
+- [x] Preserve current gallery class semantics required by CSS/JS:
+  - [x] if `storefront.css` targets `bs-product-gallery*`, keep those values in V2 class config;
+  - [x] do not bake those values into the primitive.
+- [x] Update V2 `_Imports.razor`:
+  - [x] add `BlazorShop.Storefront.Components.Primitives.Product`;
+  - [x] keep `BlazorShop.Storefront.V2.Components.Product` only for V2-owned Product components.
+- [x] Update `V2ProductPageView.razor` gallery call:
 
 ```razor
 <StorefrontProductGallery
@@ -447,9 +447,16 @@ Tasks:
 
 Exit criteria:
 
-- [ ] V2 owns final gallery labels/classes.
-- [ ] Primitive owns only semantic render markup.
-- [ ] Product gallery visual behavior remains unchanged.
+- [x] V2 owns final gallery labels/classes.
+- [x] Primitive owns only semantic render markup.
+- [x] Product gallery visual behavior remains unchanged.
+
+Implementation notes:
+
+- 2026-08-10: Added V2-owned `ProductGalleryVisuals` with `ProductGalleryLabels` and `ProductGalleryClasses`.
+- 2026-08-10: Moved all `bs-product-gallery*`, aspect-square, thumbnail sizing, placeholder, nav, and focus/selected class values into V2 visual config.
+- 2026-08-10: Updated V2 `_Imports.razor` to import `BlazorShop.Storefront.Components.Primitives.Product` and updated `V2ProductPageView.razor` to pass `ProductGalleryVisuals.Labels` and `ProductGalleryVisuals.Classes`.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj" --no-restore` with 0 warnings.
 
 ## Phase 3.2.4 - Add Product Detail Display Visual Contracts
 
