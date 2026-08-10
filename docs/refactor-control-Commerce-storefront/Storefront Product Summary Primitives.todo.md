@@ -981,50 +981,62 @@ Preferred local runner:
 
 SSR/V2 surfaces to verify:
 
-- [ ] home latest products
-- [ ] category listing
-- [ ] search result
-- [ ] one alternate Product Summary context if present, such as deals/new releases/related products
+- [x] home latest products
+- [x] category listing
+- [x] search result
+- [x] one alternate Product Summary context if present, such as deals/new releases/related products
 
 V2 visual assertions:
 
-- [ ] product title visible
-- [ ] category visible when data exists
-- [ ] image visible
-- [ ] fallback visible for missing/broken image fixture if available
-- [ ] badges visible when data exists
-- [ ] price visible
-- [ ] compare price visible when data exists
-- [ ] description visible when data exists
-- [ ] direct add/purchase action visible when applicable
-- [ ] unavailable state visible when applicable
+- [x] product title visible
+- [x] category visible when data exists
+- [x] image visible
+- [x] fallback visible for missing/broken image fixture if available
+- [x] badges visible when data exists
+- [x] price visible
+- [x] compare price visible when data exists
+- [x] description visible when data exists
+- [x] direct add/purchase action visible when applicable
+- [x] unavailable state visible when applicable
 
 V2.WASM discounted rail assertions:
 
-- [ ] loading state
-- [ ] success state
-- [ ] empty state where fixture supports it
-- [ ] error/retry state where controllable
-- [ ] product rail items render through primitive Product Summary card
+- [x] loading state
+- [x] success state
+- [x] empty state where fixture supports it
+- [x] error/retry state where controllable
+- [x] product rail items render through primitive Product Summary card
 
 Add-to-cart regression:
 
-- [ ] Find a direct-add item.
-- [ ] Click `Add to Cart`.
-- [ ] Assert exactly one command execution.
-- [ ] Assert success UI/label/event still occurs.
-- [ ] Assert no duplicate cart line mutation.
-- [ ] Assert no console errors.
-- [ ] Assert no page errors.
-- [ ] Assert no direct Commerce browser request.
-- [ ] Assert no node credentials/access tokens appear in browser traffic.
-- [ ] Assert no `/_blazor` server UI circuit is used.
+- [x] Find a direct-add item.
+- [x] Click `Add to Cart`.
+- [x] Assert exactly one command execution.
+- [x] Assert success UI/label/event still occurs.
+- [x] Assert no duplicate cart line mutation.
+- [x] Assert no console errors.
+- [x] Assert no page errors.
+- [x] Assert no direct Commerce browser request.
+- [x] Assert no node credentials/access tokens appear in browser traffic.
+- [x] Assert no `/_blazor` server UI circuit is used.
 
 Exit criteria:
 
-- [ ] Same primitive works in SSR and WASM contexts.
-- [ ] Add-to-cart behavior is unchanged.
-- [ ] Browser evidence is recorded in the phase closure notes.
+- [x] Same primitive works in SSR and WASM contexts.
+- [x] Add-to-cart behavior is unchanged.
+- [x] Browser evidence is recorded in the phase closure notes.
+
+Implementation notes:
+
+- 2026-08-10: Started local V2 runtime with `.\scripts\run-v2-local.ps1 -StopExisting`; `/health` and `/` returned HTTP 200 at `http://localhost:18598`.
+- 2026-08-10: Playwright home QA showed 8 Product Summary primitive cards, missing-image fallback, 6 direct-add hooks, discounted rail success state, variant state, and purchasing-disabled state.
+- 2026-08-10: Playwright category QA for `/category/apparel` showed 1 Product Summary primitive card with title/category/image/price/direct-add.
+- 2026-08-10: Playwright search QA for `/search?q=qa` showed 12 Product Summary primitive cards with fallback, compare price, descriptions, and 8 direct-add hooks.
+- 2026-08-10: Playwright rail QA verified success state with 2 primitive cards; route mocks verified loading, empty, and retryable error/retry states for `/api/catalog/discounted-products?limit=6`.
+- 2026-08-10: Add-to-cart browser regression verified `QA Digital No Shipping Product` produced exactly 1 `storefront:product-purchase:add-line-succeeded` event, button label `Added`, exactly 1 POST to same-origin `/api/cart/lines`, no duplicate cart mutation, no direct `api/commerce`, `api/control-plane`, or `api/storefront/stores` browser request, no credential-like URL, and no `/_blazor` server UI circuit request.
+- 2026-08-10: Normal add-to-cart console check had 0 errors and 0 warnings. The later mocked 503 rail check intentionally produced an expected console error while validating retry UI.
+- 2026-08-10: Screenshot evidence saved to `output/playwright/storefront-product-summary-primitives-home.png`.
+- 2026-08-10: Closed Playwright browser and stopped local V2 runtime with `.\scripts\stop-v2-local.ps1`.
 
 ## Phase 3.1.15 - Duplication Removal Audit
 
