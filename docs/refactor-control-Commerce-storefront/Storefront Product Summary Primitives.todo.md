@@ -402,30 +402,30 @@ Goal: ensure `Components.Primitives` does not become a shared V2 visual template
 
 Tasks:
 
-- [ ] Extend `StorefrontComponentVisualNeutralityTests` reusable scan roots to include:
+- [x] Extend `StorefrontComponentVisualNeutralityTests` reusable scan roots to include:
 
 ```text
 BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives
 ```
 
-- [ ] Keep literal class scanner active for `.razor` and `.cshtml`.
-- [ ] Allow dynamic class slots:
-  - [ ] `class="@Classes.Root"`
-  - [ ] `class="@Classes.Image"`
-  - [ ] `class="@(BuildClass(...))"`
-- [ ] Keep forbidden mixed class values:
-  - [ ] `class="@Classes.Root mt-4"`
-  - [ ] `class="rounded-xl @Classes.Root"`
-  - [ ] `class="group relative ..."`
-- [ ] Keep forbidden final visual tokens:
-  - [ ] `bs-storefront-`
-  - [ ] `storefront.css`
-  - [ ] `css/site.css`
-  - [ ] `css/wasm-site.css`
-  - [ ] `wwwroot/`
-  - [ ] V2 `_content` paths
-- [ ] Update scan naming from only "ModeProjects" if needed, because primitives are not a component mode.
-- [ ] Add explicit test text/remediation:
+- [x] Keep literal class scanner active for `.razor` and `.cshtml`.
+- [x] Allow dynamic class slots:
+  - [x] `class="@Classes.Root"`
+  - [x] `class="@Classes.Image"`
+  - [x] `class="@(BuildClass(...))"`
+- [x] Keep forbidden mixed class values:
+  - [x] `class="@Classes.Root mt-4"`
+  - [x] `class="rounded-xl @Classes.Root"`
+  - [x] `class="group relative ..."`
+- [x] Keep forbidden final visual tokens:
+  - [x] `bs-storefront-`
+  - [x] `storefront.css`
+  - [x] `css/site.css`
+  - [x] `css/wasm-site.css`
+  - [x] `wwwroot/`
+  - [x] V2 `_content` paths
+- [x] Update scan naming from only "ModeProjects" if needed, because primitives are not a component mode.
+- [x] Add explicit test text/remediation:
 
 ```text
 Reusable render primitives must expose semantic hooks and fully dynamic host class slots; host projects own final visual classes.
@@ -433,9 +433,17 @@ Reusable render primitives must expose semantic hooks and fully dynamic host cla
 
 Exit criteria:
 
-- [ ] `Components.Primitives` has no final Tailwind/V2 class literals.
-- [ ] Existing `Components.Ssr` and `Components.WasmHost` neutrality tests still pass.
-- [ ] Test naming no longer incorrectly implies primitives are runtime mode projects.
+- [x] `Components.Primitives` has no final Tailwind/V2 class literals.
+- [x] Existing `Components.Ssr` and `Components.WasmHost` neutrality tests still pass.
+- [x] Test naming no longer incorrectly implies primitives are runtime mode projects.
+
+Implementation notes:
+
+- 2026-08-10: Extended `StorefrontComponentVisualNeutralityTests` scan roots to include `BlazorShop.Storefront.Components.Primitives`.
+- 2026-08-10: Renamed test/helper language from mode-only wording to reusable render project wording where primitives are included.
+- 2026-08-10: Added dynamic class slot fixtures for `Classes.Root`, `Classes.Image`, and `BuildClass(...)`; added mixed/literal class rejections for `@Classes.Root mt-4`, `rounded-xl @Classes.Root`, and `group relative`.
+- 2026-08-10: Updated remediation text to: `Reusable render primitives must expose semantic hooks and fully dynamic host class slots; host projects own final visual classes.`
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`.
 
 ## Phase 3.1.4 - Reuse Existing Product Summary Contracts
 

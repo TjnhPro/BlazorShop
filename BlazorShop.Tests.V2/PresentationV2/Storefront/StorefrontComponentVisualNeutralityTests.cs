@@ -5,8 +5,9 @@ using Xunit;
 
 public sealed class StorefrontComponentVisualNeutralityTests
 {
-    private static readonly string[] ReusableComponentDirectories =
+    private static readonly string[] ReusableRenderProjectDirectories =
     [
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
     ];
@@ -40,9 +41,9 @@ public sealed class StorefrontComponentVisualNeutralityTests
     ];
 
     [Fact]
-    public void ModeProjectsDoNotContainStylesheetsOrThemeAssets()
+    public void ReusableRenderProjectsDoNotContainStylesheetsOrThemeAssets()
     {
-        foreach (var directory in ReusableComponentDirectories.Select(RepositoryPath))
+        foreach (var directory in ReusableRenderProjectDirectories.Select(RepositoryPath))
         {
             Assert.DoesNotContain(
                 Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories),
@@ -56,11 +57,11 @@ public sealed class StorefrontComponentVisualNeutralityTests
     }
 
     [Fact]
-    public void ModeProjectsDoNotContainLiteralClassesOrV2VisualTokens()
+    public void ReusableRenderProjectsDoNotContainLiteralClassesOrV2VisualTokens()
     {
-        var literalClassViolations = StorefrontClassAttributeScanner.FindLiteralClassAttributesInModeProjects(
+        var literalClassViolations = StorefrontClassAttributeScanner.FindLiteralClassAttributesInReusableRenderProjects(
             RepositoryRoot,
-            ReusableComponentDirectories);
+            ReusableRenderProjectDirectories);
 
         AssertNoLiteralClassViolations(literalClassViolations);
 
@@ -78,8 +79,11 @@ public sealed class StorefrontComponentVisualNeutralityTests
     [Theory]
     [InlineData("<div class=\"@CssClass\"></div>")]
     [InlineData("<div class=\"@Classes.Container\"></div>")]
+    [InlineData("<div class=\"@Classes.Root\"></div>")]
+    [InlineData("<img class=\"@Classes.Image\" />")]
     [InlineData("<div class=\"@GetCssClass()\"></div>")]
     [InlineData("<div class=\"@(BuildCssClass())\"></div>")]
+    [InlineData("<div class=\"@(BuildClass(Classes.Root, Classes.Image))\"></div>")]
     [InlineData("<section data-storefront-region=\"hero\"></section>")]
     [InlineData("<section><h2>Heading</h2></section>")]
     public void LiteralClassScannerAllowsDynamicClassesAndSemanticHooks(string markup)
@@ -98,6 +102,9 @@ public sealed class StorefrontComponentVisualNeutralityTests
     [InlineData("<div class=\"rounded-xl bg-white\"></div>", "rounded-xl bg-white")]
     [InlineData("<div class=\"flex @CssClass\"></div>", "flex @CssClass")]
     [InlineData("<div class=\"@CssClass selected\"></div>", "@CssClass selected")]
+    [InlineData("<div class=\"@Classes.Root mt-4\"></div>", "@Classes.Root mt-4")]
+    [InlineData("<div class=\"rounded-xl @Classes.Root\"></div>", "rounded-xl @Classes.Root")]
+    [InlineData("<div class=\"group relative\"></div>", "group relative")]
     [InlineData("<div class=\"@(BuildCssClass()) selected\"></div>", "@(BuildCssClass()) selected")]
     public void LiteralClassScannerRejectsLiteralAndMixedClassValues(string markup, string expectedClassValue)
     {
@@ -107,11 +114,11 @@ public sealed class StorefrontComponentVisualNeutralityTests
 
         Assert.Equal("Component.razor", violation.RelativePath);
         Assert.Equal(expectedClassValue, violation.AttributeValue);
-        Assert.Contains("host projects own literal visual classes", violation.Remediation, StringComparison.Ordinal);
+        Assert.Contains("host projects own final visual classes", violation.Remediation, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void ModeProjectsAllowDynamicClassAndDataStorefrontAttributesOnlyAsNeutralHooks()
+    public void ReusableRenderProjectsAllowDynamicClassAndDataStorefrontAttributesOnlyAsNeutralHooks()
     {
         var dynamicClass = "class=\"@CssClass\"";
         var dataStorefrontHook = "data-storefront-cart";
@@ -124,7 +131,7 @@ public sealed class StorefrontComponentVisualNeutralityTests
     }
 
     [Fact]
-    public void ModeProjectsDoNotIntroduceFinalStorefrontCopyStrings()
+    public void ReusableRenderProjectsDoNotIntroduceFinalStorefrontCopyStrings()
     {
         foreach (var file in EnumerateSourceFiles())
         {
@@ -138,14 +145,14 @@ public sealed class StorefrontComponentVisualNeutralityTests
     }
 
     [Fact]
-    public void VisualNeutralityScanIncludesCurrentWasmHostHybridAndContactComponents()
+    public void VisualNeutralityScanIncludesCurrentPrimitiveWasmHostAndContactComponents()
     {
         var scannedFiles = EnumerateSourceFiles()
             .Select(file => Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/'))
             .ToArray();
 
         Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/System/StorefrontHybridRuntimeProbe.razor",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/_Imports.razor",
             scannedFiles);
         Assert.Contains(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor",
@@ -154,7 +161,7 @@ public sealed class StorefrontComponentVisualNeutralityTests
 
     private static IEnumerable<string> EnumerateSourceFiles()
     {
-        return ReusableComponentDirectories
+        return ReusableRenderProjectDirectories
             .Select(RepositoryPath)
             .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
             .Where(file => !file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
@@ -189,7 +196,7 @@ public sealed class StorefrontComponentVisualNeutralityTests
     private static class StorefrontClassAttributeScanner
     {
         private const string RemediationMessage =
-            "Reusable mode projects must expose fully dynamic class slots or data-storefront-* semantic hooks; host projects own literal visual classes.";
+            "Reusable render primitives must expose semantic hooks and fully dynamic host class slots; host projects own final visual classes.";
 
         private static readonly Regex ClassAttributePattern = new(
             "(?<![\\w:-])class\\s*=\\s*(?:\"(?<double>[^\"]*)\"|'(?<single>[^']*)')",
@@ -216,11 +223,11 @@ public sealed class StorefrontComponentVisualNeutralityTests
             "temp",
         ];
 
-        public static IReadOnlyList<StorefrontLiteralClassViolation> FindLiteralClassAttributesInModeProjects(
+        public static IReadOnlyList<StorefrontLiteralClassViolation> FindLiteralClassAttributesInReusableRenderProjects(
             string repositoryRoot,
-            IReadOnlyList<string> modeProjectDirectories)
+            IReadOnlyList<string> reusableRenderProjectDirectories)
         {
-            return modeProjectDirectories
+            return reusableRenderProjectDirectories
                 .Select(relativeDirectory => Path.Combine(
                     repositoryRoot,
                     relativeDirectory.Replace('/', Path.DirectorySeparatorChar)))
