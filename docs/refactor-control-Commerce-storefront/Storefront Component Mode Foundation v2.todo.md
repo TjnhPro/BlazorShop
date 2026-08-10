@@ -581,28 +581,37 @@ Ensure reusable component libraries do not own host render-mode placement.
 
 ### Tasks
 
-- [ ] Inventory all `@rendermode` directives in:
-  - [ ] `BlazorShop.Storefront.V2`
-  - [ ] `BlazorShop.Storefront.V2.WASM`
-  - [ ] `BlazorShop.Storefront.Components.Ssr`
-  - [ ] `BlazorShop.Storefront.Components.Hybrid`
-  - [ ] `BlazorShop.Storefront.Components.WasmHost`
-- [ ] Classify each directive as:
-  - [ ] route/page host placement;
-  - [ ] V2 composition wrapper placement;
-  - [ ] reusable component self-placement;
-  - [ ] historical bridge.
-- [ ] Preserve host/composition-owned `InteractiveWebAssembly` placement in V2/V2.WASM where it is already proven.
-- [ ] SSR reusable components must not contain `@rendermode`.
-- [ ] WasmHost reusable components must not contain `@rendermode`.
-- [ ] The current Hybrid contact shell may temporarily contain `@rendermode` only if documented as historical bridge compatibility.
-- [ ] Do not introduce `InteractiveServer` or `InteractiveAuto`.
+- [x] Inventory all `@rendermode` directives in:
+  - [x] `BlazorShop.Storefront.V2`
+  - [x] `BlazorShop.Storefront.V2.WASM`
+  - [x] `BlazorShop.Storefront.Components.Ssr`
+  - [x] `BlazorShop.Storefront.Components.Hybrid`
+  - [x] `BlazorShop.Storefront.Components.WasmHost`
+- [x] Classify each directive as:
+  - [x] route/page host placement;
+  - [x] V2 composition wrapper placement;
+  - [x] reusable component self-placement;
+  - [x] historical bridge.
+- [x] Preserve host/composition-owned `InteractiveWebAssembly` placement in V2/V2.WASM where it is already proven.
+- [x] SSR reusable components must not contain `@rendermode`.
+- [x] WasmHost reusable components must not contain `@rendermode`.
+- [x] The current Hybrid contact shell may temporarily contain `@rendermode` only if documented as historical bridge compatibility.
+- [x] Do not introduce `InteractiveServer` or `InteractiveAuto`.
 
 ### Exit Criteria
 
-- [ ] One render-mode ownership rule is documented.
-- [ ] V2/V2.WASM wrappers remain free to own render-mode placement.
-- [ ] Reusable components stay composition-neutral where they are intended to be reused.
+- [x] One render-mode ownership rule is documented.
+- [x] V2/V2.WASM wrappers remain free to own render-mode placement.
+- [x] Reusable components stay composition-neutral where they are intended to be reused.
+
+Implementation notes:
+
+- 2026-08-10: render-mode scan command: `rg -n "@rendermode|InteractiveWebAssembly|InteractiveServer|InteractiveAuto" "BlazorShop.PresentationV2/BlazorShop.Storefront.V2" "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM" "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr" "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid" "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost"`.
+- 2026-08-10: V2 route/page host placements remain `AccountHostPage`, `Home`, `CartPage`, `CheckoutPage`, and content `StorefrontPage`.
+- 2026-08-10: V2 composition wrapper placements remain `StorefrontContactFormSection` and `StorefrontDiscountedProductRailSection` through the existing V2 route usage.
+- 2026-08-10: `Components.Ssr` and `Components.WasmHost` have no `@rendermode`.
+- 2026-08-10: `Components.Hybrid/Content/StorefrontContactForm.razor` keeps `@rendermode="InteractiveWebAssembly"` only as a documented historical bridge compatibility path.
+- 2026-08-10: no `InteractiveServer` or `InteractiveAuto` placement was found or introduced.
 
 ## Phase H1.7 - Preserve Current Reference Components
 
