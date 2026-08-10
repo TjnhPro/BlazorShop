@@ -148,6 +148,20 @@ Responsibilities:
 - Browser action descriptors for cart, checkout, and account. Page services place those descriptors on Presentation page contexts such as `StorefrontCartPageContext`, `StorefrontCheckoutPageContext`, and `StorefrontAccountPageContext`; V2.WASM visual options must not create fallback `/api/*` route descriptors.
 - View-slot contracts that let each host provide visual templates without Presentation referencing V2, Starter, or generated projects.
 
+### Storefront Component Render/Runtime Classification
+
+Storefront `Ssr`, `Hybrid`, and `WasmHost` are BlazorShop architecture classifications, not direct ASP.NET Core render mode names.
+
+- `Ssr` means server/static/prerender-capable page or component surfaces whose primary function does not require browser runtime.
+- `Hybrid` means server-produced or prerendered HTML/page snapshots plus client-side WebAssembly interactivity after hydration, with optional progressive enhancement.
+- `WasmHost` means browser-side WebAssembly interactive roots included in a downloadable WASM app graph and using Browser controllers for protected actions.
+
+Storefront V2, Starter, and generated hosts may group route/page files under `Pages/Ssr`, `Pages/Hybrid`, and `Pages/WasmHost` as BlazorShop ownership folders. These folder names do not imply `.NET InteractiveAuto`, do not imply `InteractiveServer`, and do not require `Components.Hybrid` to be the physical implementation layer.
+
+Public interactive storefront behavior should use `InteractiveWebAssembly` with prerendering where needed. Public storefront routes must not use `InteractiveServer`, `InteractiveAuto`, or SignalR/circuit-based storefront interactivity unless a later architecture decision explicitly reopens the tradeoff.
+
+Browser/WASM code still uses same-origin BFF endpoints and must not call Commerce Node directly.
+
 Do not:
 
 - Put Storefront V2-specific design, CSS, copy, or generated visual output here.

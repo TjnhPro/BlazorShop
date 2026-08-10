@@ -190,33 +190,33 @@ Exit criteria:
 
 ### `docs/architecture/03-runtime-boundaries.md`
 
-- [ ] Add a Storefront component render/runtime subsection under the Storefront Presentation or Browser/BFF boundary.
-- [ ] Define Storefront `Ssr`, `Hybrid`, and `WasmHost` in architecture terms.
-- [ ] State that Storefront V2/Starter/generated hosts may group route/page files under `Pages/Ssr`, `Pages/Hybrid`, and `Pages/WasmHost` as ownership folders, not as direct ASP.NET render mode names.
-- [ ] State that public interactive storefront behavior should use `InteractiveWebAssembly` with prerender where needed.
-- [ ] State that public storefront routes must not use `InteractiveServer` or `InteractiveAuto` unless a later architecture decision explicitly reopens the tradeoff.
-- [ ] State that Browser/WASM code still uses same-origin BFF endpoints and must not call Commerce Node directly.
+- [x] Add a Storefront component render/runtime subsection under the Storefront Presentation or Browser/BFF boundary.
+- [x] Define Storefront `Ssr`, `Hybrid`, and `WasmHost` in architecture terms.
+- [x] State that Storefront V2/Starter/generated hosts may group route/page files under `Pages/Ssr`, `Pages/Hybrid`, and `Pages/WasmHost` as ownership folders, not as direct ASP.NET render mode names.
+- [x] State that public interactive storefront behavior should use `InteractiveWebAssembly` with prerender where needed.
+- [x] State that public storefront routes must not use `InteractiveServer` or `InteractiveAuto` unless a later architecture decision explicitly reopens the tradeoff.
+- [x] State that Browser/WASM code still uses same-origin BFF endpoints and must not call Commerce Node directly.
 
 ### `docs/architecture/05-project-and-folder-guide.md`
 
-- [ ] Update the `Components.Hybrid` section so it no longer presents `server-owned shell -> WasmHost child` as the canonical meaning.
-- [ ] Mark the current physical project as a historical reusable Hybrid shell library pending H1 re-evaluation.
-- [ ] Update `Components.WasmHost` wording so render-mode placement belongs to the host/composition root, not specifically "host or Hybrid shell".
-- [ ] Keep route folder descriptions for `Pages/Hybrid` but clarify they are BlazorShop render ownership folders, not `.NET InteractiveAuto` and not necessarily `Components.Hybrid`.
-- [ ] Keep V2, Starter, and generated storefront ownership rules unchanged.
+- [x] Update the `Components.Hybrid` section so it no longer presents `server-owned shell -> WasmHost child` as the canonical meaning.
+- [x] Mark the current physical project as a historical reusable Hybrid shell library pending H1 re-evaluation.
+- [x] Update `Components.WasmHost` wording so render-mode placement belongs to the host/composition root, not specifically "host or Hybrid shell".
+- [x] Keep route folder descriptions for `Pages/Hybrid` but clarify they are BlazorShop render ownership folders, not `.NET InteractiveAuto` and not necessarily `Components.Hybrid`.
+- [x] Keep V2, Starter, and generated storefront ownership rules unchanged.
 
 ### `docs/architecture/10-v2-contract-ownership.md`
 
-- [ ] Replace the old sentence "Hybrid may bridge server-prepared state to a WasmHost child" with the clarified model.
-- [ ] State that component contracts/descriptors describe semantic render/runtime classification only.
-- [ ] State that physical project ownership and descriptor/project consistency tests must be revisited in H1.
-- [ ] Preserve that reusable components must not own V2 theme classes, store copy, generated output, or direct Commerce Node routes.
+- [x] Replace the old sentence "Hybrid may bridge server-prepared state to a WasmHost child" with the clarified model.
+- [x] State that component contracts/descriptors describe semantic render/runtime classification only.
+- [x] State that physical project ownership and descriptor/project consistency tests must be revisited in H1.
+- [x] Preserve that reusable components must not own V2 theme classes, store copy, generated output, or direct Commerce Node routes.
 
 Exit criteria:
 
-- [ ] All current architecture docs agree on the clarified Hybrid definition.
-- [ ] No architecture doc still presents `Components.Hybrid -> WasmHost child` as the required implementation model.
-- [ ] No architecture doc suggests public storefront should use `InteractiveAuto` or `InteractiveServer`.
+- [x] All current architecture docs agree on the clarified Hybrid definition.
+- [x] No architecture doc still presents `Components.Hybrid -> WasmHost child` as the required implementation model.
+- [x] No architecture doc suggests public storefront should use `InteractiveAuto` or `InteractiveServer`.
 
 ## Phase H0.3 - Update Local Project README And Historical Plans
 

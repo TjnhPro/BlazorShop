@@ -148,7 +148,7 @@ Do not:
 Important folders:
 
 - `App/` - shared Storefront root App/Routes and head/script slots.
-- `Pages/` - shared SSR, Hybrid, and WASM-host route shells.
+- `Pages/` - shared SSR, Hybrid, and WASM-host route shells. These are BlazorShop ownership folders, not direct ASP.NET render mode names.
 - `Endpoints/` - same-origin browser/BFF/local endpoint groups.
 - `Services/` - page services, route contexts, API adapter contracts, and generated Runtime-backed adapters.
 - `Seo/` - SEO metadata, canonical, robots, sitemap, and structured-data composition.
@@ -174,7 +174,7 @@ Do not:
 Important folders:
 
 - `Components/` - Razor components.
-- `Pages/` - host-provided view templates grouped by render ownership. These are view components registered into Storefront Presentation, not route owners.
+- `Pages/` - host-provided view templates grouped by BlazorShop render ownership. These are view components registered into Storefront Presentation, not route owners; `Pages/Hybrid` does not mean `.NET InteractiveAuto` and does not require `Components.Hybrid`.
 - `Services/` - host-specific service registration and any remaining host-local adapters.
 - `Options/` - Storefront API/public URL options.
 - `Configuration/` - options validators.
@@ -230,7 +230,7 @@ Do not:
 Status:
 
 - Reusable Storefront SSR component mode library.
-- Foundation-only until a later phase adds real shared components.
+- Real reference components now exist; see `BlazorShop.PresentationV2/COMPONENT-MODES.md` for the current source of truth.
 
 Use for:
 
@@ -253,12 +253,14 @@ Allowed direct project references:
 Status:
 
 - Reusable Storefront Hybrid component mode library.
-- Foundation-only until a later phase adds real shared components.
+- Historical reusable Hybrid shell library from the completed foundation/reference work.
+- Physical role is pending H1 re-evaluation; current guardrails remain until code/tests are deliberately changed.
 
 Use for:
 
-- Server-owned shells that prepare SSR structure, initial browser state, antiforgery/form contracts, action descriptors, and optional WasmHost child placement.
-- `@rendermode` bridges only when hosting a WasmHost child.
+- Hybrid-classified surfaces: server-produced or prerendered HTML/page snapshots plus client-side WebAssembly interactivity after hydration.
+- Existing server shell components only where current tests/code require them; nested WasmHost child placement is not the canonical meaning of Hybrid.
+- Host/composition-owned `@rendermode InteractiveWebAssembly` placement where browser interactivity is needed.
 
 Do not:
 
@@ -277,7 +279,7 @@ Allowed direct project references:
 Status:
 
 - Reusable Storefront browser-interactive component mode library.
-- Foundation-only until a later phase adds real shared components.
+- Real reference components now exist; see `BlazorShop.PresentationV2/COMPONENT-MODES.md` for current mode semantics.
 
 Use for:
 
@@ -288,7 +290,7 @@ Do not:
 
 - Reference `BlazorShop.Storefront.Presentation`, `Runtime`, `Client`, V2, V2.WASM, Starter, Starter.WASM, generated storefront projects, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
 - Use `HttpContext`, `IHttpContextAccessor`, `HttpClient`, direct `/api/*`, direct `api/storefront/*`, localhost/backend URLs, or Presentation service injection.
-- Use `@rendermode`; the host or Hybrid shell owns render-mode placement.
+- Use `@rendermode`; the host or composition root owns render-mode placement.
 - Own theme CSS, V2 layout classes, store-specific copy, or generated output.
 
 Allowed direct project references:
@@ -396,7 +398,7 @@ Status:
 
 Use for:
 
-- Neutral visual templates for Presentation SSR, Hybrid, and WASM-host route shells.
+- Neutral visual templates for Presentation SSR, Hybrid, and WASM-host route shells. `Hybrid` here is a BlazorShop route ownership term, not `.NET InteractiveAuto` and not a requirement to use `Components.Hybrid`.
 - Examples of generated Storefront API consumption through Runtime-backed Presentation contexts instead of direct generated-client use in visual source.
 - Examples of `BlazorShop.Storefront.Presentation` consumption for shared App/Routes/page services/BFF/SEO/media composition; monorepo development may use a ProjectReference, while independent proof and generated storefronts use a PackageReference.
 - Browser/WASM host parity with Storefront V2 through `AddStorefrontBrowserControllers()` and `MapStorefrontApplication(..., Starter.WASM assembly)`.
