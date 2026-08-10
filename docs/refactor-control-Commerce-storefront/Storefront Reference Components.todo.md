@@ -419,37 +419,37 @@ Implement in `BlazorShop.Storefront.Presentation`.
 
 Endpoint:
 
-- [ ] Add `Endpoints/StorefrontPresentationContactEndpoints.cs`.
-- [ ] Map endpoint from `MapStorefrontPresentation`.
-- [ ] Use a same-origin path such as `POST /api/contact`.
-- [ ] Keep the endpoint name/route local to Presentation, not Commerce Node direct route.
-- [ ] Require antiforgery through existing `UseAntiforgery` and endpoint metadata pattern.
-- [ ] Bind an explicit local request DTO.
-- [ ] Validate required fields:
+- [x] Add `Endpoints/StorefrontPresentationContactEndpoints.cs`.
+- [x] Map endpoint from `MapStorefrontPresentation`.
+- [x] Use a same-origin path such as `POST /api/contact`.
+- [x] Keep the endpoint name/route local to Presentation, not Commerce Node direct route.
+- [x] Require antiforgery through existing `UseAntiforgery` and endpoint metadata pattern.
+- [x] Bind an explicit local request DTO.
+- [x] Validate required fields:
   - Name
   - Email
   - Subject
   - Message
-- [ ] Map field validation failures into a browser-safe error result.
-- [ ] Resolve store context using existing Presentation/runtime context pattern.
-- [ ] Use the existing Runtime/generated contact client path.
-- [ ] Map to generated `StorefrontContactRequest`.
-- [ ] Map generated envelope response to local `StorefrontContactFormSubmitResult`.
-- [ ] Preserve `TraceId` if available in the existing error model.
+- [x] Map field validation failures into a browser-safe error result.
+- [x] Resolve store context using existing Presentation/runtime context pattern.
+- [x] Use the existing Runtime/generated contact client path.
+- [x] Map to generated `StorefrontContactRequest`.
+- [x] Map generated envelope response to local `StorefrontContactFormSubmitResult`.
+- [x] Preserve `TraceId` if available in the existing error model.
 
 Tests:
 
-- [ ] Add focused endpoint mapping test proving `MapStorefrontPresentation` includes contact endpoints.
-- [ ] Add test proving the endpoint does not inject concrete V2 client or use direct Commerce Node URL.
-- [ ] Add validation test for missing required fields.
-- [ ] Add success mapping test using mocked/fake contact client or Presentation service.
-- [ ] Add failure mapping test for backend rejected/invalid response.
+- [x] Add focused endpoint mapping test proving `MapStorefrontPresentation` includes contact endpoints.
+- [x] Add test proving the endpoint does not inject concrete V2 client or use direct Commerce Node URL.
+- [x] Add validation test for missing required fields.
+- [x] Add success mapping test using mocked/fake contact client or Presentation service.
+- [x] Add failure mapping test for backend rejected/invalid response.
 
 Exit criteria:
 
-- [ ] Browser clients can submit through same-origin Presentation endpoint.
-- [ ] No Browser/WasmHost component needs to know Commerce Node route shape.
-- [ ] API contract remains truthful about `Subject`.
+- [x] Browser clients can submit through same-origin Presentation endpoint.
+- [x] No Browser/WasmHost component needs to know Commerce Node route shape.
+- [x] API contract remains truthful about `Subject`.
 
 ## Phase 4 - Contact Browser Controller
 
@@ -956,4 +956,15 @@ Phase 2 build/test:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj --no-restore`: passed, 0 warnings, 0 errors.
 - SSR Brand guard scan for `@rendermode`, JS, Browser, Runtime, Client, V2, direct API routes, `HttpClient`, and literal non-dynamic class attributes: no matches.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentModeDependencyTests"`: passed 55/55.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 3 build/test:
+
+- Added Presentation local contact contract `StorefrontLocalContactRequest`.
+- Added `StorefrontPresentationContactEndpoints` with same-origin `POST /api/contact`, antiforgery validation, current-store resolution, generated `IStorefrontContactClient` submission, and browser-safe `StorefrontContactFormSubmitResult` mapping.
+- Added `MapStorefrontPresentationContactEndpoints()` to `MapStorefrontPresentation`.
+- Focused tests are source/guard mapping tests in this phase; live browser submission is reserved for Browser/WasmHost/V2 phases.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- Contact endpoint guard scan for direct `HttpClient`, Commerce Node base URL, direct `api/storefront/stores`, V2, CommerceNode, and ControlPlane references: no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPresentationContactEndpointTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"`: passed 24/24.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

@@ -30,6 +30,7 @@ public static class StorefrontPresentationApplicationBuilderExtensions
         endpoints.MapStorefrontPresentationAccountEndpoints();
         endpoints.MapStorefrontPresentationCheckoutEndpoints();
         endpoints.MapStorefrontPresentationConsentEndpoints();
+        endpoints.MapStorefrontPresentationContactEndpoints();
         endpoints.MapStorefrontPresentationSeoEndpoints();
         endpoints.MapStorefrontPresentationMediaEndpoints();
 
