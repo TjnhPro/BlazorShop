@@ -618,25 +618,33 @@ PurchasePaused
 
 Navigation to preserve:
 
-- [ ] Direct-add button when `Item.CanAddDirectly`.
-- [ ] Variant/purchase link when `Item.HasVariants` and `Item.PurchaseUrl` exists.
-- [ ] View Product link when `Item.ProductUrl` exists.
+- [x] Direct-add button when `Item.CanAddDirectly`.
+- [x] Variant/purchase link when `Item.HasVariants` and `Item.PurchaseUrl` exists.
+- [x] View Product link when `Item.ProductUrl` exists.
 
 Forbidden:
 
-- [ ] `HttpClient`
-- [ ] `StorefrontLocalApiClient`
-- [ ] Browser controller injection
-- [ ] direct BFF/API calls
-- [ ] constructing cart request DTOs
-- [ ] reading raw product-selection preview business fields
-- [ ] `IJSRuntime`
+- [x] `HttpClient`
+- [x] `StorefrontLocalApiClient`
+- [x] Browser controller injection
+- [x] direct BFF/API calls
+- [x] constructing cart request DTOs
+- [x] reading raw product-selection preview business fields
+- [x] `IJSRuntime`
 
 Exit criteria:
 
-- [ ] Purchase branching exists once for Product Summary.
-- [ ] Semantic attributes remain byte-for-byte equivalent where browser binders depend on them.
-- [ ] Command execution remains Presentation/browser binder owned.
+- [x] Purchase branching exists once for Product Summary.
+- [x] Semantic attributes remain byte-for-byte equivalent where browser binders depend on them.
+- [x] Command execution remains Presentation/browser binder owned.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontProductSummaryPurchaseActions` under `Components.Primitives/Catalog`.
+- 2026-08-10: Preserved direct-add button descriptors: `data-storefront-product-purchase`, `data-storefront-command="cart.add-line"`, `data-storefront-product-purchase-submit`, `data-default-label`, `data-success-label`, `data-product-id`, `data-product-name`, and `data-currency-code`.
+- 2026-08-10: Preserved status priority: variants first, then paused purchase block message, then out-of-stock label, then unavailable fallback or block message.
+- 2026-08-10: Component does not inject Browser/JS/runtime services, construct cart request DTOs, call BFF/API endpoints, or execute commands.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj"`.
 
 ## Phase 3.1.7 - Extract StorefrontProductSummaryCard
 

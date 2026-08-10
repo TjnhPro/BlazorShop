@@ -1,0 +1,81 @@
+<footer class="@Classes.Footer">
+    <div class="@Classes.ActionGroup">
+        @if (Item.CanAddDirectly)
+        {
+            <button type="button"
+                    class="@Classes.PrimaryAction"
+                    data-storefront-product-purchase
+                    data-storefront-command="cart.add-line"
+                    data-storefront-product-purchase-submit
+                    data-default-label="@Labels.AddToCart"
+                    data-success-label="@Labels.AddedToCart"
+                    data-product-id="@Item.Id"
+                    data-product-name="@Item.Name"
+                    data-currency-code="@Item.CurrencyCode">
+                @Labels.AddToCart
+            </button>
+        }
+        else if (Item.HasVariants && !string.IsNullOrWhiteSpace(Item.PurchaseUrl))
+        {
+            <a class="@Classes.PrimaryAction" href="@Item.PurchaseUrl">@Labels.AddToCart</a>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
+        {
+            <a class="@Classes.SecondaryAction" href="@Item.ProductUrl">@Labels.ViewProduct</a>
+        }
+    </div>
+
+    @if (PurchaseStatusMessage is not null)
+    {
+        <p class="@Classes.Status">@PurchaseStatusMessage</p>
+    }
+</footer>
+
+@code {
+    [Parameter, EditorRequired]
+    public ProductSummaryItem Item { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public ProductSummaryLabels Labels { get; set; } = ProductSummaryLabels.Empty;
+
+    [Parameter, EditorRequired]
+    public ProductSummaryCardClasses Classes { get; set; } = new();
+
+    private string? PurchaseStatusMessage
+    {
+        get
+        {
+            if (Item.HasVariants)
+            {
+                return Labels.SelectVariant;
+            }
+
+            if (Item.PurchasePaused)
+            {
+                return Item.PurchaseBlockMessage;
+            }
+
+            if (!Item.InStock)
+            {
+                return Labels.CurrentlyOutOfStock;
+            }
+
+            if (!Item.Purchasable)
+            {
+                return string.IsNullOrWhiteSpace(Item.PurchaseBlockMessage)
+                    ? Labels.CurrentlyUnavailable
+                    : Item.PurchaseBlockMessage;
+            }
+
+            return null;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Item);
+        ArgumentNullException.ThrowIfNull(Labels);
+        ArgumentNullException.ThrowIfNull(Classes);
+    }
+}
