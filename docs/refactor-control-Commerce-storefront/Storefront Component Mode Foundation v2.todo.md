@@ -887,46 +887,52 @@ Define exactly what H2 must prove with real code and runtime evidence.
 
 H2 must include at least one real SSR reusable component or route surface proving:
 
-- [ ] server-rendered useful HTML;
-- [ ] no WASM requirement for primary behavior;
-- [ ] host visual ownership;
-- [ ] no Browser/Runtime/Client/backend references.
+- [x] server-rendered useful HTML;
+- [x] no WASM requirement for primary behavior;
+- [x] host visual ownership;
+- [x] no Browser/Runtime/Client/backend references.
 
 ### H2 Hybrid Proof
 
 H2 must include at least one real Hybrid proof showing:
 
-- [ ] useful prerendered HTML before WASM interaction;
-- [ ] `InteractiveWebAssembly` startup/hydration;
-- [ ] browser interaction after hydration;
-- [ ] protected interaction through Browser controller and same-origin BFF when needed;
-- [ ] no `InteractiveServer`/`InteractiveAuto`;
-- [ ] no requirement that implementation lives in `Components.Hybrid`.
+- [x] useful prerendered HTML before WASM interaction;
+- [x] `InteractiveWebAssembly` startup/hydration;
+- [x] browser interaction after hydration;
+- [x] protected interaction through Browser controller and same-origin BFF when needed;
+- [x] no `InteractiveServer`/`InteractiveAuto`;
+- [x] no requirement that implementation lives in `Components.Hybrid`.
 
 ### H2 WasmHost Proof
 
 H2 must include at least one real WasmHost proof showing:
 
-- [ ] component is in the downloadable WASM graph;
-- [ ] component consumes Browser controller;
-- [ ] no Presentation/Runtime/Client/backend references;
-- [ ] host owns render-mode placement.
+- [x] component is in the downloadable WASM graph;
+- [x] component consumes Browser controller;
+- [x] no Presentation/Runtime/Client/backend references;
+- [x] host owns render-mode placement.
 
 ### H2 Architecture Questions To Answer
 
-- [ ] Should `Components.Hybrid` remain after H2?
-- [ ] Should `Components.Hybrid` be narrowed to compatibility only?
-- [ ] Should it be retired after consumers move to V2.WASM/capability assemblies?
-- [ ] Should future reusable components be organized by capability package instead of mode package?
-- [ ] Which serialization boundaries appear in real Hybrid code?
-- [ ] Which progressive enhancement hooks are genuinely needed?
-- [ ] Which H3 guardrails should become repository-wide after runtime proof?
+- [x] Should `Components.Hybrid` remain after H2?
+- [x] Should `Components.Hybrid` be narrowed to compatibility only?
+- [x] Should it be retired after consumers move to V2.WASM/capability assemblies?
+- [x] Should future reusable components be organized by capability package instead of mode package?
+- [x] Which serialization boundaries appear in real Hybrid code?
+- [x] Which progressive enhancement hooks are genuinely needed?
+- [x] Which H3 guardrails should become repository-wide after runtime proof?
 
 ### Exit Criteria
 
-- [ ] H2 can start without re-litigating H1 language.
-- [ ] H2 has concrete proof requirements.
-- [ ] H3 hardening is deferred until after H2 evidence.
+- [x] H2 can start without re-litigating H1 language.
+- [x] H2 has concrete proof requirements.
+- [x] H3 hardening is deferred until after H2 evidence.
+
+Implementation notes:
+
+- 2026-08-10: H2 handoff is recorded as a contract, not implemented in H1.
+- 2026-08-10: H2 must include separate SSR, Hybrid, and WasmHost runtime proofs, with Hybrid specifically proving prerendered HTML plus `InteractiveWebAssembly` hydration without `InteractiveServer`, `InteractiveAuto`, or mandatory `Components.Hybrid` physical ownership.
+- 2026-08-10: H2 must answer whether `Components.Hybrid` remains, narrows to compatibility, retires, or is replaced by capability-based packages. H3 repository-wide hardening is deferred until H2 has runtime evidence.
 
 ## Phase H1.14 - Closure And Commit Plan
 
