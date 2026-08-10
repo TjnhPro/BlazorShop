@@ -378,40 +378,40 @@ Implement in `BlazorShop.Storefront.Components.Ssr`.
 
 Files:
 
-- [ ] `Brand/StorefrontBrandLogo.razor`
-- [ ] `Brand/StorefrontBrandLogoDescriptor.cs` or equivalent descriptor holder.
-- [ ] Update `_Imports.razor` only if required.
+- [x] `Brand/StorefrontBrandLogo.razor`
+- [x] `Brand/StorefrontBrandLogoDescriptor.cs` or equivalent descriptor holder.
+- [x] Update `_Imports.razor` only if required.
 
 Component behavior:
 
-- [ ] Accept `StorefrontBrandLogoContext`.
-- [ ] Accept `StorefrontBrandLogoClasses`.
-- [ ] Render anchor, optional logo image, brand mark, optional label.
-- [ ] Use stable `data-storefront-*` hooks.
-- [ ] Use only fully dynamic class attributes.
-- [ ] Do not include literal visual classes.
-- [ ] Do not use `@rendermode`.
-- [ ] Do not use JS, Browser, Runtime, Client, `HttpClient`, or direct routes.
+- [x] Accept `StorefrontBrandLogoContext`.
+- [x] Accept `StorefrontBrandLogoClasses`.
+- [x] Render anchor, optional logo image, brand mark, optional label.
+- [x] Use stable `data-storefront-*` hooks.
+- [x] Use only fully dynamic class attributes.
+- [x] Do not include literal visual classes.
+- [x] Do not use `@rendermode`.
+- [x] Do not use JS, Browser, Runtime, Client, `HttpClient`, or direct routes.
 
 Descriptor:
 
-- [ ] Add descriptor key `brand-logo`.
-- [ ] Use mode `Ssr`.
-- [ ] Use category `Brand`.
-- [ ] Ensure descriptor type points at `StorefrontBrandLogo`.
+- [x] Add descriptor key `brand-logo`.
+- [x] Use mode `Ssr`.
+- [x] Use category `Brand`.
+- [x] Ensure descriptor type points at `StorefrontBrandLogo`.
 
 Tests:
 
-- [ ] Add component render/unit test for image present.
-- [ ] Add component render/unit test for text fallback when `LogoUrl` is blank.
-- [ ] Add descriptor test coverage if existing repository descriptor guard does not discover it automatically.
-- [ ] Ensure visual neutrality tests reject any accidental literal classes.
+- [x] Add component render/unit test for image present.
+- [x] Add component render/unit test for text fallback when `LogoUrl` is blank.
+- [x] Add descriptor test coverage if existing repository descriptor guard does not discover it automatically.
+- [x] Ensure visual neutrality tests reject any accidental literal classes.
 
 Exit criteria:
 
-- [ ] SSR mode boundary tests pass.
-- [ ] Descriptor mode/project consistency tests pass.
-- [ ] `StorefrontBrandLogo` can render without browser runtime.
+- [x] SSR mode boundary tests pass.
+- [x] Descriptor mode/project consistency tests pass.
+- [x] `StorefrontBrandLogo` can render without browser runtime.
 
 ## Phase 3 - Contact Presentation BFF Endpoint
 
@@ -947,4 +947,13 @@ Phase 1 build/test:
 - New-contract guard scan for forbidden dependencies, `HttpClient`, `class=`, and `Features`: no matches.
 - Base Components asset scan for `.razor`, CSS, SCSS, and JS files: no files.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests"`: passed 39/39.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 2 build/test:
+
+- Added `BlazorShop.Storefront.Components.Ssr/Brand/StorefrontBrandLogo.razor`, `_Imports.razor`, and `Brand/StorefrontBrandLogoDescriptor.cs`.
+- Added SSR project reference to `BlazorShop.Tests.V2` for descriptor and render tests only.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- SSR Brand guard scan for `@rendermode`, JS, Browser, Runtime, Client, V2, direct API routes, `HttpClient`, and literal non-dynamic class attributes: no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentModeDependencyTests"`: passed 55/55.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

@@ -1,6 +1,7 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
 using BlazorShop.Storefront.Components.Contracts.Components;
+using BlazorShop.Storefront.Components.Ssr.Brand;
 
 using Microsoft.AspNetCore.Components;
 
@@ -207,7 +208,7 @@ public sealed class StorefrontComponentDescriptorTests
     }
 
     [Fact]
-    public void RepositoryModeProjectsCurrentlyHaveNoRealDescriptorsSoFixtureProofIsAuthoritative()
+    public void RepositoryModeProjectsExposeExpectedPhaseTwoBrandDescriptorOnly()
     {
         var descriptorCandidates = ModeProjectDirectories
             .Select(RepositoryPath)
@@ -218,13 +219,31 @@ public sealed class StorefrontComponentDescriptorTests
             .Where(file => Path.GetExtension(file) is ".cs" or ".razor")
             .Where(file => File.ReadAllText(file).Contains("StorefrontComponentDescriptor", StringComparison.Ordinal))
             .Select(file => Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/'))
+            .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.True(
-            descriptorCandidates.Length == 0,
-            "Real mode-project descriptors now exist. Replace this fixture-only guard with repository scanning that validates every descriptor against its owning mode project:" +
-            Environment.NewLine +
-            string.Join(Environment.NewLine, descriptorCandidates));
+        Assert.Equal(
+            ["BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Brand/StorefrontBrandLogoDescriptor.cs"],
+            descriptorCandidates);
+    }
+
+    [Fact]
+    public void BrandLogoDescriptorIsValidAndMatchesSsrMode()
+    {
+        var descriptor = StorefrontBrandLogoDescriptor.Descriptor;
+
+        var validation = StorefrontComponentDescriptorValidator.Validate(descriptor);
+        var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
+            descriptor,
+            StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(descriptor.ComponentType));
+
+        Assert.True(validation.IsValid);
+        Assert.Empty(validation.Errors);
+        Assert.True(ownership.IsValid, ownership.Error);
+        Assert.Equal("brand-logo", descriptor.Key);
+        Assert.Equal(StorefrontComponentMode.Ssr, descriptor.Mode);
+        Assert.Equal(StorefrontComponentCategory.Brand, descriptor.Category);
+        Assert.Equal(typeof(StorefrontBrandLogo), descriptor.ComponentType);
     }
 
     private sealed class ComponentFixture : IComponent

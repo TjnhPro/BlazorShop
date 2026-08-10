@@ -1,0 +1,32 @@
+<a href="@Context.HomeUrl"
+   aria-label="@ResolvedHomeLabel"
+   class="@Classes.Root"
+   data-storefront-component="brand-logo"
+   data-storefront-brand="@Context.BrandName">
+    @if (!string.IsNullOrWhiteSpace(Context.LogoUrl))
+    {
+        <img src="@Context.LogoUrl"
+             alt="@Context.BrandName"
+             class="@Classes.Image" />
+    }
+
+    <span class="@Classes.Mark">@Context.BrandName</span>
+
+    @if (!string.IsNullOrWhiteSpace(Context.BrandLabel))
+    {
+        <span class="@Classes.Label">@Context.BrandLabel</span>
+    }
+</a>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public StorefrontBrandLogoContext Context { get; set; } = new("/", string.Empty);
+
+    [Parameter]
+    public StorefrontBrandLogoClasses Classes { get; set; } = new();
+
+    private string ResolvedHomeLabel => string.IsNullOrWhiteSpace(Context.HomeLabel)
+        ? Context.BrandName
+        : Context.HomeLabel;
+}
