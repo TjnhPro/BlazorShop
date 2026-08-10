@@ -673,25 +673,33 @@ Keep H1 aligned with the visual-host architecture already established for V2, St
 
 ### Tasks
 
-- [ ] Review `StorefrontComponentVisualNeutralityTests`.
-- [ ] Review `StorefrontVisualOnlyBoundaryTests`.
-- [ ] Review `StorefrontVisualConsumerBoundaryValidator`.
-- [ ] Confirm reusable component mode libraries still do not own:
-  - [ ] literal V2 class values;
-  - [ ] theme CSS;
-  - [ ] Tailwind config;
-  - [ ] store-specific copy;
-  - [ ] generated storefront output;
-  - [ ] V2 route/page layout.
-- [ ] Confirm semantic `data-storefront-*` hooks remain allowed.
-- [ ] Confirm host-supplied class slots remain allowed.
-- [ ] Re-evaluate `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2` if it assumes the old physical mode graph.
+- [x] Review `StorefrontComponentVisualNeutralityTests`.
+- [x] Review `StorefrontVisualOnlyBoundaryTests`.
+- [x] Review `StorefrontVisualConsumerBoundaryValidator`.
+- [x] Confirm reusable component mode libraries still do not own:
+  - [x] literal V2 class values;
+  - [x] theme CSS;
+  - [x] Tailwind config;
+  - [x] store-specific copy;
+  - [x] generated storefront output;
+  - [x] V2 route/page layout.
+- [x] Confirm semantic `data-storefront-*` hooks remain allowed.
+- [x] Confirm host-supplied class slots remain allowed.
+- [x] Re-evaluate `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2` if it assumes the old physical mode graph.
 
 ### Exit Criteria
 
-- [ ] H1 does not weaken V2 visual-only ownership.
-- [ ] H1 does not move visual CSS/copy/layout into shared components.
-- [ ] Any changed visual boundary test describes architecture intent, not historical implementation shape.
+- [x] H1 does not weaken V2 visual-only ownership.
+- [x] H1 does not move visual CSS/copy/layout into shared components.
+- [x] Any changed visual boundary test describes architecture intent, not historical implementation shape.
+
+Implementation notes:
+
+- 2026-08-10: reviewed `StorefrontComponentVisualNeutralityTests`, `StorefrontVisualOnlyBoundaryTests`, and `StorefrontVisualConsumerBoundaryValidator`.
+- 2026-08-10: first visual guardrail gate found stale Starter profile allowlist in `StorefrontVisualConsumerBoundaryValidatorTests.F1_51_SharedValidator_PassesStarter`; Starter currently references Browser, Components, Presentation, and Starter.WASM.
+- 2026-08-10: updated only the Starter visual consumer test profile allowlist to match the current shared bootstrap + Browser controller + Starter.WASM marker shape; Runtime, Client, backend/core/API, Control Plane, and Web.SharedV2 remain forbidden.
+- 2026-08-10: `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2` already matches the current V2/V2.WASM wrapper adoption: V2 references Components.Ssr but not Components.Hybrid or Components.WasmHost directly; V2.WASM references Components.WasmHost; Starter/generated projects must not reference mode projects.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontVisualConsumerBoundaryValidatorTests"` passed after the profile fix: 40 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H1.9 - Documentation Synchronization
 

@@ -462,11 +462,13 @@ public sealed class StorefrontVisualConsumerBoundaryValidatorTests
             "BlazorShop.Storefront.Starter.csproj",
             AllowedProjectReferenceFragments:
             [
+                "BlazorShop.Storefront.Browser",
+                "BlazorShop.Storefront.Components",
                 "BlazorShop.Storefront.Presentation",
+                "BlazorShop.Storefront.Starter.WASM",
             ],
             AllowedPackageReferences:
             [
-                "BlazorShop.Storefront.Components",
                 "Microsoft.AspNetCore.Components.WebAssembly.Server",
             ],
             AllowedSourceRelativePaths: []);
