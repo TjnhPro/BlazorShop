@@ -1173,16 +1173,24 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 If existing unrelated warnings/failures appear:
 
-- [ ] record exact command
-- [ ] record exact failing test/build output summary
-- [ ] prove no Phase 3.1 regression caused it
-- [ ] do not hide it behind broad exclusions
+- [x] record exact command
+- [x] record exact failing test/build output summary
+- [x] prove no Phase 3.1 regression caused it
+- [x] do not hide it behind broad exclusions
 
 Exit criteria:
 
-- [ ] Solution build passes, or unrelated known failure is documented with evidence.
-- [ ] Relevant/full tests pass, or unrelated known failure is documented with evidence.
-- [ ] Focused browser QA has evidence.
+- [x] Solution build passes, or unrelated known failure is documented with evidence.
+- [x] Relevant/full tests pass, or unrelated known failure is documented with evidence.
+- [x] Focused browser QA has evidence.
+
+Implementation notes:
+
+- 2026-08-10: Full solution build passed with `dotnet build BlazorShop.sln --no-restore` in 23.60s.
+- 2026-08-10: Build emitted known unrelated warnings only: existing MessagePack NU1902/NU1903 advisories on `BlazorShop.Tests.V2` and existing Browserslist `caniuse-lite is outdated` notice from Control Plane Tailwind.
+- 2026-08-10: Full V2 test gate passed with `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --blame-hang --blame-hang-timeout 5m`.
+- 2026-08-10: Test result: Passed 1913, skipped 2, failed 0, total 1915, duration 3m41s. The 2 skipped tests are existing `CartServiceTests` future/server-cart-validation idempotency cases.
+- 2026-08-10: Focused browser QA evidence was recorded in Phase 3.1.14, including screenshot `output/playwright/storefront-product-summary-primitives-home.png`.
 
 ## Phase 3.1.19 - Closure Review
 
