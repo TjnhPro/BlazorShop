@@ -39,7 +39,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Product/ProductPurchaseOptionItem.cs",
             "Product/ProductPurchaseOptionValueItem.cs",
             "Product/ProductPurchasePanelModel.cs",
-            "Product/ProductPurchaseVariantItem.cs"
+            "Product/ProductPurchaseVariantItem.cs",
+            "System/StorefrontHybridRuntimeProbeClasses.cs",
+            "System/StorefrontHybridRuntimeProbeLabels.cs"
         ];
 
         private static readonly string[] ExpectedBrowserContractFiles =
@@ -127,7 +129,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(34, actual.Length);
+            Assert.Equal(36, actual.Length);
         }
 
         [Fact]

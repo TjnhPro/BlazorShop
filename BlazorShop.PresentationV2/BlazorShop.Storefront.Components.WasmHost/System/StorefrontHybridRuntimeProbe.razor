@@ -1,0 +1,49 @@
+@namespace BlazorShop.Storefront.Components.WasmHost.System
+
+<section class="@Classes.Root"
+         data-storefront-component="hybrid-runtime-probe"
+         data-storefront-hybrid-probe
+         data-storefront-runtime-state="@RuntimeState">
+    @if (!string.IsNullOrWhiteSpace(Labels.Heading))
+    {
+        <h2 class="@Classes.Heading">@Labels.Heading</h2>
+    }
+
+    <p class="@Classes.State" data-storefront-hybrid-state>@RuntimeStateLabel</p>
+
+    <p class="@Classes.ValueGroup">
+        @if (!string.IsNullOrWhiteSpace(Labels.ValueLabel))
+        {
+            <span class="@Classes.ValueLabel">@Labels.ValueLabel</span>
+        }
+        <output class="@Classes.Value" data-storefront-hybrid-value>@_value</output>
+    </p>
+
+    <button type="button"
+            class="@Classes.Action"
+            data-storefront-hybrid-action
+            @onclick="Increment">
+        @Labels.ActionLabel
+    </button>
+</section>
+
+@code {
+    private int _value;
+
+    [Parameter]
+    public StorefrontHybridRuntimeProbeLabels Labels { get; set; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+
+    [Parameter]
+    public StorefrontHybridRuntimeProbeClasses Classes { get; set; } = new();
+
+    private string RuntimeState => RendererInfo.IsInteractive ? "interactive" : "prerender";
+
+    private string RuntimeStateLabel => RendererInfo.IsInteractive
+        ? Labels.InteractiveStateLabel
+        : Labels.PrerenderStateLabel;
+
+    private void Increment()
+    {
+        _value++;
+    }
+}

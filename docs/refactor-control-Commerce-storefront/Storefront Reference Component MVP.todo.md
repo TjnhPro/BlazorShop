@@ -402,7 +402,7 @@ Do not place new reusable probe implementation in `Components.Hybrid`.
 
 ### Component Requirements
 
-- [ ] Name: `StorefrontHybridRuntimeProbe`.
+- [x] Name: `StorefrontHybridRuntimeProbe`.
 - [ ] Component root:
 
 ```html
@@ -412,18 +412,18 @@ Do not place new reusable probe implementation in `Components.Hybrid`.
   data-storefront-runtime-state="prerender|interactive">
 ```
 
-- [ ] Use `RendererInfo.IsInteractive` as the source of runtime state.
-- [ ] Initial counter value is `0`.
-- [ ] Prerender output shows:
-  - [ ] runtime state = `prerender`;
-  - [ ] value = `0`;
-  - [ ] useful static HTML.
-- [ ] Hydrated output shows:
-  - [ ] runtime state = `interactive`;
-  - [ ] value = `0`.
-- [ ] Button click increments value:
-  - [ ] `0 -> 1`;
-  - [ ] exactly once per click.
+- [x] Use `RendererInfo.IsInteractive` as the source of runtime state.
+- [x] Initial counter value is `0`.
+- [x] Prerender output shows:
+  - [x] runtime state = `prerender`;
+  - [x] value = `0`;
+  - [x] useful static HTML.
+- [x] Hydrated output shows:
+  - [x] runtime state = `interactive`;
+  - [x] value = `0`.
+- [x] Button click increments value:
+  - [x] `0 -> 1`;
+  - [x] exactly once per click.
 - [ ] Stable selectors:
 
 ```html
@@ -431,13 +431,13 @@ data-storefront-hybrid-value
 data-storefront-hybrid-action
 ```
 
-- [ ] No API call.
-- [ ] No database.
-- [ ] No cart/checkout/auth/order dependency.
-- [ ] No `HttpClient`.
-- [ ] No server-only service injection.
-- [ ] No V2 theme classes.
-- [ ] No hardcoded final storefront copy unless supplied by V2/V2.WASM wrapper parameters.
+- [x] No API call.
+- [x] No database.
+- [x] No cart/checkout/auth/order dependency.
+- [x] No `HttpClient`.
+- [x] No server-only service injection.
+- [x] No V2 theme classes.
+- [x] No hardcoded final storefront copy unless supplied by V2/V2.WASM wrapper parameters.
 
 ### Descriptor
 
@@ -456,16 +456,26 @@ Do not add a new enum category just for the probe.
 
 ### Tests
 
-- [ ] Descriptor validates if descriptor is added.
-- [ ] Descriptor tests prove `Mode = Hybrid` can live outside `Components.Hybrid`.
-- [ ] Component unit test covers initial semantic markup where practical.
-- [ ] Runtime transition is browser-tested, not faked only in unit tests.
+- [x] Descriptor validates if descriptor is added.
+- [x] Descriptor tests prove `Mode = Hybrid` can live outside `Components.Hybrid`.
+- [x] Component unit test covers initial semantic markup where practical.
+- [x] Runtime transition is browser-tested, not faked only in unit tests.
 
 ### Exit Criteria
 
-- [ ] Probe builds in the downloadable WASM graph.
-- [ ] Probe exposes actual runtime state.
-- [ ] Probe is small and has no business/BFF dependency.
+- [x] Probe builds in the downloadable WASM graph.
+- [x] Probe exposes actual runtime state.
+- [x] Probe is small and has no business/BFF dependency.
+
+Implementation notes:
+
+- 2026-08-10: added browser-safe `StorefrontHybridRuntimeProbeLabels` and `StorefrontHybridRuntimeProbeClasses` contracts under `BlazorShop.Storefront.Components/Contracts/System`.
+- 2026-08-10: added `StorefrontHybridRuntimeProbe` under `BlazorShop.Storefront.Components.WasmHost/System`; it uses `RendererInfo.IsInteractive`, renders `data-storefront-runtime-state="prerender"` before interactivity, starts at value `0`, and increments a local C# counter through `@onclick`.
+- 2026-08-10: added `StorefrontHybridRuntimeProbeDescriptor` with key `hybrid-runtime-probe`, `Mode = Hybrid`, `Category = System`, and component type in the WasmHost assembly.
+- 2026-08-10: fixed direct namespace shadowing caused by adding `BlazorShop.Storefront.Components.Contracts.System`; `StorefrontComponentDescriptorValidator` now imports `global::System.Text.RegularExpressions`.
+- 2026-08-10: first H2.4 build attempt failed because `Contracts.System` shadowed `System.Text.RegularExpressions`; after the `global::System` fix, `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontHybridRuntimeProbeComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~ContractModelInventory_RecordsReusableProductAndCatalogContracts"` passed: 25 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
+- 2026-08-10: unit tests cover prerender/static markup and descriptor semantics; real hydrated transition/click evidence remains mandatory and is scheduled for H2.9.
 
 ## Phase H2.5 - Integrate Hybrid Probe Through V2.WASM Composition
 

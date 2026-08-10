@@ -6,6 +6,7 @@ using BlazorShop.Storefront.Components.Contracts.Components;
 using BlazorShop.Storefront.Components.Hybrid.Content;
 using BlazorShop.Storefront.Components.Ssr.Brand;
 using BlazorShop.Storefront.Components.WasmHost.Catalog;
+using BlazorShop.Storefront.Components.WasmHost.System;
 
 using Microsoft.AspNetCore.Components;
 
@@ -144,6 +145,7 @@ public sealed class StorefrontComponentDescriptorTests
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactFormDescriptor.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Brand/StorefrontBrandLogoDescriptor.cs",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Catalog/StorefrontDiscountedProductRailDescriptor.cs",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/System/StorefrontHybridRuntimeProbeDescriptor.cs",
             ],
             descriptorCandidates);
     }
@@ -158,6 +160,7 @@ public sealed class StorefrontComponentDescriptorTests
                 "brand-logo",
                 "contact-form",
                 "discounted-product-rail",
+                "hybrid-runtime-probe",
             ],
             descriptors.Select(candidate => candidate.Descriptor.Key).OrderBy(key => key, StringComparer.Ordinal).ToArray());
 
@@ -247,6 +250,22 @@ public sealed class StorefrontComponentDescriptorTests
         Assert.Equal(StorefrontComponentMode.WasmHost, descriptor.Mode);
         Assert.Equal(StorefrontComponentCategory.Catalog, descriptor.Category);
         Assert.Equal(typeof(StorefrontDiscountedProductRail), descriptor.ComponentType);
+    }
+
+    [Fact]
+    public void HybridRuntimeProbeDescriptorIsValidAndCanLiveInWasmHostProject()
+    {
+        var descriptor = StorefrontHybridRuntimeProbeDescriptor.Descriptor;
+
+        var validation = StorefrontComponentDescriptorValidator.Validate(descriptor);
+
+        Assert.True(validation.IsValid);
+        Assert.Empty(validation.Errors);
+        Assert.Equal("hybrid-runtime-probe", descriptor.Key);
+        Assert.Equal(StorefrontComponentMode.Hybrid, descriptor.Mode);
+        Assert.Equal(StorefrontComponentCategory.System, descriptor.Category);
+        Assert.Equal(typeof(StorefrontHybridRuntimeProbe), descriptor.ComponentType);
+        Assert.Equal("BlazorShop.Storefront.Components.WasmHost", descriptor.ComponentType.Assembly.GetName().Name);
     }
 
     [Fact]
