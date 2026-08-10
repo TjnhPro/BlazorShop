@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorShop.Storefront.Brows
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorShop.Storefront.Starter.WASM", "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter.WASM\BlazorShop.Storefront.Starter.WASM.csproj", "{BD6FA6A9-37E1-64D4-E58A-A7F0A656FA4C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorShop.Storefront.Generator", "BlazorShop.Storefront.Generator", "{978D8AED-D878-44B1-8F21-AEFC6904DB88}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorShop.Storefront.Components.Ssr", "BlazorShop.PresentationV2\BlazorShop.Storefront.Components.Ssr\BlazorShop.Storefront.Components.Ssr.csproj", "{166DF0B6-C13B-4B2B-AF00-963D96D9C30F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorShop.Storefront.Components.WasmHost", "BlazorShop.PresentationV2\BlazorShop.Storefront.Components.WasmHost\BlazorShop.Storefront.Components.WasmHost.csproj", "{D371196A-B7DF-4013-B74A-6E69CCAF3466}"
