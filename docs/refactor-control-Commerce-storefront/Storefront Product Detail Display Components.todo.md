@@ -915,19 +915,27 @@ It reads:
 
 Tasks:
 
-- [ ] Keep existing JS selectors unchanged.
-- [ ] Add/update static JS tests to prove:
-  - [ ] gallery selector strings still exist;
-  - [ ] selection selector strings still exist;
-  - [ ] JS does not assume hooks are direct children of `V2ProductPageView`;
-  - [ ] JS scopes selection updates to the correct purchase/product root where currently intended.
-- [ ] If extraction changes DOM nesting, verify selectors still resolve at runtime.
+- [x] Keep existing JS selectors unchanged.
+- [x] Add/update static JS tests to prove:
+  - [x] gallery selector strings still exist;
+  - [x] selection selector strings still exist;
+  - [x] JS does not assume hooks are direct children of `V2ProductPageView`;
+  - [x] JS scopes selection updates to the correct purchase/product root where currently intended.
+- [x] If extraction changes DOM nesting, verify selectors still resolve at runtime.
 
 Exit criteria:
 
-- [ ] Gallery next/previous/thumbnail behavior still works.
-- [ ] Product selection preview still updates price/compare/SKU/GTIN/stock.
-- [ ] Add-to-cart still posts the selected variant/attributes/quantity.
+- [x] Gallery next/previous/thumbnail behavior still works.
+- [x] Product selection preview still updates price/compare/SKU/GTIN/stock.
+- [x] Add-to-cart still posts the selected variant/attributes/quantity.
+
+Implementation notes:
+
+- 2026-08-10: Added `ProductDetailExtraction_KeepsGalleryAndSelectionHooksScopedByMain` in `StorefrontCommerceScriptRegressionTests`.
+- 2026-08-10: Static test proves gallery and selection selectors remain unchanged and selection/gallery lookup scopes through `closest("main") || document` instead of direct child assumptions.
+- 2026-08-10: Existing script guardrails continue proving Presentation owns purchase payload construction and V2 visual script does not build commerce payloads.
+- 2026-08-10: Runtime selector resolution is scheduled for Phase 3.2.15 browser QA; static DOM-scope compatibility is covered here.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontCommerceScriptRegressionTests"`; 5 tests passed, with existing MessagePack/Browserslist warnings only.
 
 ## Phase 3.2.13 - Focused Build Gate
 

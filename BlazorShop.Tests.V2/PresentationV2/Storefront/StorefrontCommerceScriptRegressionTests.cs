@@ -187,6 +187,44 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void ProductDetailExtraction_KeepsGalleryAndSelectionHooksScopedByMain()
+        {
+            var visualScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+
+            foreach (var selector in new[]
+            {
+                "const productGallerySelector = \"[data-storefront-product-gallery]\"",
+                "const galleryThumbnailSelector = \"[data-storefront-gallery-thumbnail]\"",
+                "const galleryMainImageSelector = \"[data-storefront-gallery-main-image]\"",
+                "const galleryPlaceholderSelector = \"[data-storefront-gallery-placeholder]\"",
+                "const galleryPreviousSelector = \"[data-storefront-gallery-prev]\"",
+                "const galleryNextSelector = \"[data-storefront-gallery-next]\"",
+                "scope.querySelector(\"[data-storefront-selection-price]\")",
+                "scope.querySelector(\"[data-storefront-selection-compare]\")",
+                "scope.querySelector(\"[data-storefront-selection-stock]\")",
+                "scope.querySelector(\"[data-storefront-selection-sku]\")",
+                "scope.querySelector(\"[data-storefront-selection-gtin]\")",
+            })
+            {
+                Assert.Contains(selector, visualScript, StringComparison.Ordinal);
+            }
+
+            var gallerySync = ExtractFunction(visualScript, "syncGalleryMainImage");
+            Assert.Contains("const scope = container.closest(\"main\") || document", gallerySync, StringComparison.Ordinal);
+            Assert.Contains("const gallery = scope.querySelector(productGallerySelector)", gallerySync, StringComparison.Ordinal);
+            Assert.DoesNotContain("container.querySelector(productGallerySelector)", gallerySync, StringComparison.Ordinal);
+
+            var selectionVisual = ExtractFunction(visualScript, "applySelectionVisual");
+            Assert.Contains("const scope = rootElement?.closest(\"main\") || document", selectionVisual, StringComparison.Ordinal);
+            Assert.Contains("const price = scope.querySelector(\"[data-storefront-selection-price]\")", selectionVisual, StringComparison.Ordinal);
+            Assert.Contains("const compare = scope.querySelector(\"[data-storefront-selection-compare]\")", selectionVisual, StringComparison.Ordinal);
+            Assert.Contains("const stock = scope.querySelector(\"[data-storefront-selection-stock]\")", selectionVisual, StringComparison.Ordinal);
+            Assert.Contains("const sku = scope.querySelector(\"[data-storefront-selection-sku]\")", selectionVisual, StringComparison.Ordinal);
+            Assert.Contains("const gtin = scope.querySelector(\"[data-storefront-selection-gtin]\")", selectionVisual, StringComparison.Ordinal);
+            Assert.DoesNotContain("rootElement?.querySelector(\"[data-storefront-selection-price]\")", selectionVisual, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void F1_63_LegacySelectorAliases_AreAbsentFromBrowserSourcesAndGeneratedTransforms()
         {
             var sourceRoots = new[]
