@@ -434,18 +434,18 @@ Rules:
 
 Tasks:
 
-- [ ] Add or update source scanner tests for reusable packages.
-- [ ] Scan `BlazorShop.Storefront.Components`.
-- [ ] Scan `BlazorShop.Storefront.Components.Ssr`.
-- [ ] Scan `BlazorShop.Storefront.Components.WasmHost`.
-- [ ] Scan `BlazorShop.Storefront.V2`.
-- [ ] Scan `BlazorShop.Storefront.V2.WASM`.
-- [ ] Fail if any active source contains `InteractiveServer`.
-- [ ] Fail if any active source contains `InteractiveAuto`.
-- [ ] Fail if reusable component files contain `@rendermode`.
-- [ ] Allow `@rendermode="InteractiveWebAssembly"` only in approved V2 composition files.
-- [ ] Add negative fixtures in tests so the scanner proves violations are caught.
-- [ ] Exclude docs and historical plan files from production-source checks.
+- [x] Add or update source scanner tests for reusable packages.
+- [x] Scan `BlazorShop.Storefront.Components`.
+- [x] Scan `BlazorShop.Storefront.Components.Ssr`.
+- [x] Scan `BlazorShop.Storefront.Components.WasmHost`.
+- [x] Scan `BlazorShop.Storefront.V2`.
+- [x] Scan `BlazorShop.Storefront.V2.WASM`.
+- [x] Fail if any active source contains `InteractiveServer`.
+- [x] Fail if any active source contains `InteractiveAuto`.
+- [x] Fail if reusable component files contain `@rendermode`.
+- [x] Allow `@rendermode="InteractiveWebAssembly"` only in approved V2 composition files.
+- [x] Add negative fixtures in tests so the scanner proves violations are caught.
+- [x] Exclude docs and historical plan files from production-source checks.
 
 Approved current render-mode owners:
 
@@ -458,9 +458,19 @@ Approved current render-mode owners:
 
 Exit criteria:
 
-- [ ] Render mode ownership is mechanically enforced.
-- [ ] No reusable component owns `@rendermode`.
-- [ ] No public Storefront source uses `InteractiveServer` or `InteractiveAuto`.
+- [x] Render mode ownership is mechanically enforced.
+- [x] No reusable component owns `@rendermode`.
+- [x] No public Storefront source uses `InteractiveServer` or `InteractiveAuto`.
+
+Implementation notes:
+
+- 2026-08-10: added `StorefrontRenderModeOwnershipTests` with source scanners for reusable roots (`Components`, `Components.Ssr`, `Components.WasmHost`) and public Storefront roots (`Components`, `Components.Ssr`, `Components.WasmHost`, `V2`, `V2.WASM`).
+- 2026-08-10: reusable package scanner rejects `@rendermode`; public Storefront scanner rejects `InteractiveServer` and `InteractiveAuto`.
+- 2026-08-10: `InteractiveWebAssembly` placement is allowed only in the approved V2 composition files listed above; V2.WASM wrappers do not own render-mode directives.
+- 2026-08-10: negative fixtures prove the scanner catches reusable render-mode ownership, server interactivity, auto interactivity, and unapproved WASM placement.
+- 2026-08-10: `rg -n "@rendermode" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost -g "*.razor" -g "*.cs" -g "!bin/**" -g "!obj/**"` returned no matches.
+- 2026-08-10: `rg -n "InteractiveServer|InteractiveAuto" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM -g "*.razor" -g "*.cs" -g "!bin/**" -g "!obj/**"` returned no matches.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontRenderModeOwnershipTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontComponentMvpArchitectureTests|FullyQualifiedName~StorefrontComponentMvpLabTests"` passed 36/36. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.7 - Server-Interactive And Browser Transport Guardrails
 
@@ -861,7 +871,7 @@ Before marking H3 complete:
 - [x] H3.3 remove `Components.Hybrid` project and references.
 - [x] H3.4 decouple descriptor discovery from project topology.
 - [x] H3.5 harden component dependency matrix.
-- [ ] H3.6 harden render mode ownership.
+- [x] H3.6 harden render mode ownership.
 - [ ] H3.7 harden server-interactive/browser transport guardrails.
 - [ ] H3.8 rename `Contracts.System` namespace.
 - [ ] H3.9 recheck visual neutrality and copy ownership.
