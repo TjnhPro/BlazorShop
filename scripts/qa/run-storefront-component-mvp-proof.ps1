@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("RawHtml", "Hybrid")]
+    [ValidateSet("RawHtml", "Hybrid", "Rail")]
     [string] $Phase = "RawHtml",
     [string] $StorefrontBaseUrl = "http://127.0.0.1:18640",
     [string] $Configuration = "Debug",
@@ -20,6 +20,7 @@ if ($Describe) {
     Write-Host "- Starts BlazorShop.Storefront.V2 on $StorefrontBaseUrl"
     Write-Host "- Phase RawHtml: request /__qa/component-mvp and assert SSR/prerender/noindex markers before WASM startup"
     Write-Host "- Phase Hybrid: hydrate /__qa/component-mvp in Chromium, assert WebAssembly interactive marker and C# click state"
+    Write-Host "- Phase Rail: mock same-origin BFF and assert WasmHost rail loading/success/empty/error/retry states"
     Write-Host "- Evidence: output/playwright/storefront-component-mvp"
     exit 0
 }
@@ -103,6 +104,7 @@ function ConvertTo-NodePhase {
     switch ($Value) {
         "RawHtml" { return "raw-html" }
         "Hybrid" { return "hybrid" }
+        "Rail" { return "rail" }
         default { return $Value.ToLowerInvariant() }
     }
 }

@@ -703,38 +703,46 @@ Prove rail behavior through Browser controller and same-origin BFF.
 
 ### Test Cases
 
-- [ ] Loading state:
-  - [ ] route fulfills or delays `/api/catalog/discounted-products`;
-  - [ ] `data-storefront-product-rail-loading` appears.
-- [ ] Success state:
-  - [ ] BFF returns deterministic product list;
-  - [ ] `data-storefront-product-rail-list` appears;
-  - [ ] `data-storefront-product-rail-item` count matches fixture.
-- [ ] Empty state:
-  - [ ] BFF returns empty product list;
-  - [ ] `data-storefront-product-rail-empty` appears;
-  - [ ] stale products are not shown.
-- [ ] Error state:
-  - [ ] BFF returns retryable failure or transport error;
-  - [ ] `data-storefront-product-rail-error` appears;
-  - [ ] safe code/default message is exposed.
-- [ ] Retry state:
-  - [ ] first request fails;
-  - [ ] retry button is clicked;
-  - [ ] second request succeeds;
-  - [ ] request count proves retry invoked Browser controller again.
+- [x] Loading state:
+  - [x] route fulfills or delays `/api/catalog/discounted-products`;
+  - [x] `data-storefront-product-rail-loading` appears.
+- [x] Success state:
+  - [x] BFF returns deterministic product list;
+  - [x] `data-storefront-product-rail-list` appears;
+  - [x] `data-storefront-product-rail-item` count matches fixture.
+- [x] Empty state:
+  - [x] BFF returns empty product list;
+  - [x] `data-storefront-product-rail-empty` appears;
+  - [x] stale products are not shown.
+- [x] Error state:
+  - [x] BFF returns retryable failure or transport error;
+  - [x] `data-storefront-product-rail-error` appears;
+  - [x] safe code/default message is exposed.
+- [x] Retry state:
+  - [x] first request fails;
+  - [x] retry button is clicked;
+  - [x] second request succeeds;
+  - [x] request count proves retry invoked Browser controller again.
 
 ### Network Assertions
 
-- [ ] Browser calls same-origin `/api/catalog/discounted-products`.
-- [ ] Browser does not call `api/storefront/stores/{storeKey}/*` directly.
-- [ ] Browser does not call Commerce Node host/port directly.
-- [ ] Node credentials never appear in request headers or browser storage.
+- [x] Browser calls same-origin `/api/catalog/discounted-products`.
+- [x] Browser does not call `api/storefront/stores/{storeKey}/*` directly.
+- [x] Browser does not call Commerce Node host/port directly.
+- [x] Node credentials never appear in request headers or browser storage.
 
 ### Exit Criteria
 
-- [ ] WasmHost proof covers loading/success/empty/error/retry.
-- [ ] Browser/BFF boundary is proven from network evidence.
+- [x] WasmHost proof covers loading/success/empty/error/retry.
+- [x] Browser/BFF boundary is proven from network evidence.
+
+Implementation notes:
+
+- 2026-08-10: extended `scripts/qa/run-storefront-component-mvp-proof.ps1` with `-Phase Rail` and extended `scripts/qa/storefront-component-mvp-proof.js` with deterministic Playwright rail tests.
+- 2026-08-10: Rail proof covers delayed BFF loading, deterministic success with two products, empty response with no stale products, retryable error with safe code `component_mvp_rail_outage`, retry button click, and second successful request.
+- 2026-08-10: first rail proof run failed because the test read the server-prerender fallback error `service_unavailable` before WebAssembly hydration called the mocked BFF route. The test now waits for the browser-side mocked error code before asserting retry behavior.
+- 2026-08-10: `node --check scripts/qa/storefront-component-mvp-proof.js` passed.
+- 2026-08-10: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Rail -RuntimeTimeoutSeconds 90 -NoBuild` passed. Evidence written to `output/playwright/storefront-component-mvp/rail.evidence.json`; same-origin calls observed: `/api/consent/current`, `/api/cart`, `/api/catalog/discounted-products`; direct Commerce calls: none; console errors: none; page errors: none; credential leaks: none.
 
 ## Phase H2.11 - Runtime Transport Audit
 
