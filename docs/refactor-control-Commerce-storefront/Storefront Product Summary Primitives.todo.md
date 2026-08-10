@@ -1083,35 +1083,42 @@ Implementation notes:
 
 Expected changed areas:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/**`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/**` only if minimal label/class contract change is needed
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/**`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Catalog/**`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/*.csproj`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/*.csproj`
-- [ ] `BlazorShop.sln`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/**`
-- [ ] architecture docs
-- [ ] Storefront V2 QA docs
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/**`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/**` only if minimal label/class contract change is needed
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/**`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Catalog/**`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/*.csproj`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/*.csproj`
+- [x] `BlazorShop.sln`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/**`
+- [x] architecture docs
+- [x] Storefront V2 QA docs
 
 Unexpected unless separately justified:
 
-- [ ] `BlazorShop.Storefront.Presentation`
-- [ ] `BlazorShop.Storefront.Runtime`
-- [ ] `BlazorShop.Storefront.Client`
-- [ ] `BlazorShop.Storefront.Browser`
-- [ ] `BlazorShop.Storefront.Starter`
-- [ ] StorefrontBuilder tooling
-- [ ] Commerce Node
-- [ ] Control Plane
-- [ ] Application/Domain/Infrastructure
-- [ ] database/migrations
-- [ ] cart/checkout/account/product detail surfaces
+- [x] `BlazorShop.Storefront.Presentation`
+- [x] `BlazorShop.Storefront.Runtime`
+- [x] `BlazorShop.Storefront.Client`
+- [x] `BlazorShop.Storefront.Browser`
+- [x] `BlazorShop.Storefront.Starter`
+- [x] StorefrontBuilder tooling
+- [x] Commerce Node
+- [x] Control Plane
+- [x] Application/Domain/Infrastructure
+- [x] database/migrations
+- [x] cart/checkout/account/product detail surfaces
 
 Exit criteria:
 
-- [ ] Any unexpected file is explained or removed from the phase.
-- [ ] No Phase 3.2 work enters Phase 3.1.
+- [x] Any unexpected file is explained or removed from the phase.
+- [x] No Phase 3.2 work enters Phase 3.1.
+
+Implementation notes:
+
+- 2026-08-10: Scope audit used `git diff --name-status 47af722197534f1a42d552e60100a5e65f509a6a..HEAD`.
+- 2026-08-10: Actual changes are limited to `Components.Primitives`, Product Summary catalog contracts, V2/V2.WASM catalog wrappers/imports/project references, `BlazorShop.sln`, Storefront tests, and the phase plan document.
+- 2026-08-10: Architecture and QA docs had not been edited yet at this audit checkpoint; they are explicitly scheduled for Phase 3.1.17.
+- 2026-08-10: No changes entered Presentation, Runtime, Client, Browser, Starter, StorefrontBuilder tooling, Commerce Node, Control Plane, Application/Domain/Infrastructure, database/migrations, cart/checkout/account, or product detail source areas.
 
 ## Phase 3.1.17 - Documentation Update
 
