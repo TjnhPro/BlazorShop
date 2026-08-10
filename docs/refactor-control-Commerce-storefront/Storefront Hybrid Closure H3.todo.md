@@ -707,23 +707,28 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Required test coverage:
 
-- [ ] Descriptor inventory has no `Components.Hybrid` source path.
-- [ ] Contact descriptor remains semantic `Hybrid`.
-- [ ] Contact descriptor target is in `Components.WasmHost`.
-- [ ] `StorefrontContactFormSection` remains V2.WASM host wrapper.
-- [ ] Reusable components do not own `@rendermode`.
-- [ ] V2 composition owns approved `InteractiveWebAssembly` placements.
-- [ ] `InteractiveServer` is forbidden in public Storefront UI source.
-- [ ] `InteractiveAuto` is forbidden in public Storefront UI source.
-- [ ] `Components.Hybrid` project is absent from active project references.
-- [ ] `Contracts.System` namespace is absent if renamed.
-- [ ] Browser controller path remains same-origin.
-- [ ] `/__qa/component-mvp` route ownership remains Presentation-only.
+- [x] Descriptor inventory has no `Components.Hybrid` source path.
+- [x] Contact descriptor remains semantic `Hybrid`.
+- [x] Contact descriptor target is in `Components.WasmHost`.
+- [x] `StorefrontContactFormSection` remains V2.WASM host wrapper.
+- [x] Reusable components do not own `@rendermode`.
+- [x] V2 composition owns approved `InteractiveWebAssembly` placements.
+- [x] `InteractiveServer` is forbidden in public Storefront UI source.
+- [x] `InteractiveAuto` is forbidden in public Storefront UI source.
+- [x] `Components.Hybrid` project is absent from active project references.
+- [x] `Contracts.System` namespace is absent if renamed.
+- [x] Browser controller path remains same-origin.
+- [x] `/__qa/component-mvp` route ownership remains Presentation-only.
 
 Exit criteria:
 
-- [ ] Focused tests pass.
-- [ ] Tests fail clearly if a future agent reintroduces `Components.Hybrid` as active architecture.
+- [x] Focused tests pass.
+- [x] Tests fail clearly if a future agent reintroduces `Components.Hybrid` as active architecture.
+
+Implementation notes:
+
+- 2026-08-10: focused H3.13 test gate passed 186/186 with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontBrowserContactControllerTests|FullyQualifiedName~StorefrontHybridRuntimeProbeComponentTests|FullyQualifiedName~StorefrontComponentMvpArchitectureTests|FullyQualifiedName~StorefrontComponentMvpLabTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontCurrentStoreMiddlewareTests|FullyQualifiedName~StorefrontPublicRedirectMiddlewareTests"`.
+- 2026-08-10: existing unrelated warnings remain MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.14 - Mandatory Browser Regression Gate
 
@@ -925,7 +930,7 @@ Before marking H3 complete:
 - [x] H3.10 close `/__qa` route policy.
 - [x] H3.11 update active docs and QA checklist.
 - [x] H3.12 run focused build gate.
-- [ ] H3.13 run focused test gate.
+- [x] H3.13 run focused test gate.
 - [ ] H3.14 run mandatory Playwright browser regression.
 - [ ] H3.15 run full solution gate.
 - [ ] H3.16 audit scope drift.
