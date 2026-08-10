@@ -686,8 +686,14 @@ Do not run a `Components.Hybrid` build if the project is removed.
 
 Exit criteria:
 
-- [ ] All focused builds pass with 0 new errors.
-- [ ] Any existing unrelated warnings are recorded, not hidden.
+- [x] All focused builds pass with 0 new errors.
+- [x] Any existing unrelated warnings are recorded, not hidden.
+
+Implementation notes:
+
+- 2026-08-10: focused build gate passed for `Components`, `Components.Ssr`, `Components.WasmHost`, `Browser`, `Presentation`, `V2.WASM`, and `V2` with `--no-restore`.
+- 2026-08-10: each focused project build reported `0 Warning(s)` and `0 Error(s)`.
+- 2026-08-10: no `Components.Hybrid` build was run because the physical project has been retired from the active solution.
 
 ## Phase H3.13 - Focused Test Gate
 
@@ -918,7 +924,7 @@ Before marking H3 complete:
 - [x] H3.9 recheck visual neutrality and copy ownership.
 - [x] H3.10 close `/__qa` route policy.
 - [x] H3.11 update active docs and QA checklist.
-- [ ] H3.12 run focused build gate.
+- [x] H3.12 run focused build gate.
 - [ ] H3.13 run focused test gate.
 - [ ] H3.14 run mandatory Playwright browser regression.
 - [ ] H3.15 run full solution gate.
