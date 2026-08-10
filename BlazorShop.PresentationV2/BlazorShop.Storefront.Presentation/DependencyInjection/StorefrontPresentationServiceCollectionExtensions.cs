@@ -86,6 +86,7 @@ public static class StorefrontPresentationServiceCollectionExtensions
         services.AddScoped<StorefrontCheckoutPageService>();
         services.AddScoped<StorefrontContentPageService>();
         services.AddScoped<StorefrontCategoryPageService>();
+        services.AddScoped<StorefrontDiscountedProductRailService>();
         services.AddScoped<StorefrontHomePageService>();
         services.AddScoped<StorefrontPaymentResultPageService>();
         services.AddScoped<StorefrontProductPageService>();

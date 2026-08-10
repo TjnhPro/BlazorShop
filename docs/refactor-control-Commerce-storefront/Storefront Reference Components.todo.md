@@ -541,31 +541,31 @@ Implement in `BlazorShop.Storefront.Presentation`.
 
 Endpoint/service:
 
-- [ ] Add a local read endpoint, for example `GET /api/catalog/discounted-products`.
-- [ ] Map endpoint from `MapStorefrontPresentation`.
-- [ ] Accept `limit`.
-- [ ] Validate `limit`, with a safe default and max cap.
-- [ ] Use existing catalog query services and product summary mapper.
-- [ ] Fetch enough candidates to fill the requested rail without unbounded queries.
-- [ ] Filter to products with compare-price evidence, preferably non-empty `ComparePriceDisplay`.
-- [ ] Return empty list when no discounted products are found.
-- [ ] Do not use latest products fallback in the discounted endpoint.
-- [ ] Return browser-safe response contract.
-- [ ] Do not expose raw generated client DTOs.
+- [x] Add a local read endpoint, for example `GET /api/catalog/discounted-products`.
+- [x] Map endpoint from `MapStorefrontPresentation`.
+- [x] Accept `limit`.
+- [x] Validate `limit`, with a safe default and max cap.
+- [x] Use existing catalog query services and product summary mapper.
+- [x] Fetch enough candidates to fill the requested rail without unbounded queries.
+- [x] Filter to products with compare-price evidence, preferably non-empty `ComparePriceDisplay`.
+- [x] Return empty list when no discounted products are found.
+- [x] Do not use latest products fallback in the discounted endpoint.
+- [x] Return browser-safe response contract.
+- [x] Do not expose raw generated client DTOs.
 
 Tests:
 
-- [ ] Endpoint mapping test.
-- [ ] Limit validation test.
-- [ ] Success test with discounted products.
-- [ ] Empty-state test when no compare-price products exist.
-- [ ] Error mapping test.
-- [ ] Test proving no new Commerce Node API route or discount core query was introduced.
+- [x] Endpoint mapping test.
+- [x] Limit validation test.
+- [x] Success test with discounted products.
+- [x] Empty-state test when no compare-price products exist.
+- [x] Error mapping test.
+- [x] Test proving no new Commerce Node API route or discount core query was introduced.
 
 Exit criteria:
 
-- [ ] The rail has a same-origin data source.
-- [ ] No backend discount/core scope is added.
+- [x] The rail has a same-origin data source.
+- [x] No backend discount/core scope is added.
 
 ## Phase 7 - Discounted Product Rail Browser Controller
 
@@ -990,4 +990,16 @@ Phase 5 build/test:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj --no-restore`: passed, 0 warnings, 0 errors.
 - Hybrid/WasmHost guard scans for direct API strings, `HttpClient`, forbidden Presentation/Runtime/Client/V2/backend references, Browser leakage into Hybrid, and literal class attributes: no matches.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentModeDependencyTests"`: passed 79/79.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 6 build/test:
+
+- Added `StorefrontDiscountedProductRailService` using existing `IStorefrontCatalogClient.GetPublishedCatalogPageAsync(...)`, `IStorefrontDisplayContextProvider`, and `StorefrontProductSummaryMapper`.
+- Added same-origin `GET /api/catalog/discounted-products` in `StorefrontPresentationCatalogEndpoints` and mapped it from `MapStorefrontPresentation`.
+- Limit validation accepts omitted/default, 1..24, and rejects out-of-range values with browser-safe `StorefrontDiscountedProductRailResponse`.
+- Candidate fetch is capped at 48 products and filters mapped summaries where `ComparePriceDisplay` is present; empty discount evidence returns an empty success response with no latest-products fallback.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- Guard scan for `discountedOnly`/`discounted-products` in Commerce Node/core projects: no matches.
+- Guard scan for direct `HttpClient`, Commerce Node base URL, direct `api/storefront/stores`, V2, and ControlPlane references in the local catalog endpoint/service: no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontDiscountedProductRailPresentationTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests"`: passed 39/39.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

@@ -27,6 +27,7 @@ public static class StorefrontPresentationApplicationBuilderExtensions
         endpoints.MapStorefrontPresentationAuthEndpoints();
         endpoints.MapStorefrontPresentationPreferenceEndpoints();
         endpoints.MapStorefrontPresentationCartEndpoints();
+        endpoints.MapStorefrontPresentationCatalogEndpoints();
         endpoints.MapStorefrontPresentationAccountEndpoints();
         endpoints.MapStorefrontPresentationCheckoutEndpoints();
         endpoints.MapStorefrontPresentationConsentEndpoints();
