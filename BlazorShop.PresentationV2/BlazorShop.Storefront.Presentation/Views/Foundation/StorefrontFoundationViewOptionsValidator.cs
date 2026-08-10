@@ -31,6 +31,7 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
         [nameof(StorefrontFoundationViewSet.PaymentResultPage)] = typeof(StorefrontPaymentResultPageContext),
         [nameof(StorefrontFoundationViewSet.AuthPage)] = typeof(StorefrontAuthPageContext),
         [nameof(StorefrontFoundationViewSet.AccountPage)] = typeof(StorefrontAccountPageContext),
+        [nameof(StorefrontFoundationViewSet.ComponentMvpLab)] = typeof(StorefrontComponentMvpPageContext),
         [nameof(StorefrontFoundationViewSet.MaintenanceState)] = typeof(StorefrontSystemStateContext),
         [nameof(StorefrontFoundationViewSet.NotFoundState)] = typeof(StorefrontSystemStateContext),
         [nameof(StorefrontFoundationViewSet.ServiceUnavailableState)] = typeof(StorefrontSystemStateContext),
@@ -49,44 +50,54 @@ public sealed class StorefrontFoundationViewOptionsValidator : IValidateOptions<
         var failures = new List<string>();
         foreach (var slot in options.ViewSet.GetRequiredSlots())
         {
-            if (slot.ComponentType is null || !typeof(IComponent).IsAssignableFrom(slot.ComponentType))
-            {
-                failures.Add($"Foundation view slot '{slot.Name}' must be a Blazor component type.");
-                continue;
-            }
+            ValidateSlot(slot, failures);
+        }
 
-            var componentType = slot.ComponentType;
-
-            if (componentType == typeof(StorefrontFoundationEmptyView))
-            {
-                failures.Add($"Foundation view slot '{slot.Name}' must not use StorefrontFoundationEmptyView.");
-            }
-
-            if (slot.Name == nameof(StorefrontFoundationViewSet.VisualScripts)
-                && componentType == typeof(StorefrontFoundationCoreScripts))
-            {
-                failures.Add("Foundation view slot 'VisualScripts' must be host visual script markup and cannot replace Presentation-owned core scripts.");
-            }
-
-            if (componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: true).Length > 0)
-            {
-                failures.Add($"Foundation view slot '{slot.Name}' must be a visual component, not a route component.");
-            }
-
-            if (ExpectedContextTypes.TryGetValue(slot.Name, out var expectedContextType))
-            {
-                ValidateContextParameter(slot.Name, componentType, expectedContextType, failures);
-            }
-
-            if (slot.Name == nameof(StorefrontFoundationViewSet.MainLayout))
-            {
-                ValidateBodyParameter(slot.Name, componentType, failures);
-            }
+        foreach (var slot in options.ViewSet.GetOptionalSlots())
+        {
+            ValidateSlot(slot, failures);
         }
 
         return failures.Count == 0
             ? ValidateOptionsResult.Success
             : ValidateOptionsResult.Fail(failures);
+    }
+
+    private static void ValidateSlot(StorefrontFoundationViewSlot slot, List<string> failures)
+    {
+        if (slot.ComponentType is null || !typeof(IComponent).IsAssignableFrom(slot.ComponentType))
+        {
+            failures.Add($"Foundation view slot '{slot.Name}' must be a Blazor component type.");
+            return;
+        }
+
+        var componentType = slot.ComponentType;
+
+        if (componentType == typeof(StorefrontFoundationEmptyView))
+        {
+            failures.Add($"Foundation view slot '{slot.Name}' must not use StorefrontFoundationEmptyView.");
+        }
+
+        if (slot.Name == nameof(StorefrontFoundationViewSet.VisualScripts)
+            && componentType == typeof(StorefrontFoundationCoreScripts))
+        {
+            failures.Add("Foundation view slot 'VisualScripts' must be host visual script markup and cannot replace Presentation-owned core scripts.");
+        }
+
+        if (componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: true).Length > 0)
+        {
+            failures.Add($"Foundation view slot '{slot.Name}' must be a visual component, not a route component.");
+        }
+
+        if (ExpectedContextTypes.TryGetValue(slot.Name, out var expectedContextType))
+        {
+            ValidateContextParameter(slot.Name, componentType, expectedContextType, failures);
+        }
+
+        if (slot.Name == nameof(StorefrontFoundationViewSet.MainLayout))
+        {
+            ValidateBodyParameter(slot.Name, componentType, failures);
+        }
     }
 
     private static void ValidateContextParameter(

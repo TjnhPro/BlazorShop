@@ -38,6 +38,8 @@ public sealed class StorefrontFoundationViewSet
 
     public required Type AccountPage { get; init; }
 
+    public Type? ComponentMvpLab { get; init; }
+
     public required Type MaintenanceState { get; init; }
 
     public required Type NotFoundState { get; init; }
@@ -69,5 +71,12 @@ public sealed class StorefrontFoundationViewSet
             new(nameof(this.ServiceUnavailableState), this.ServiceUnavailableState),
             new(nameof(this.ErrorState), this.ErrorState),
         ];
+    }
+
+    public IReadOnlyList<StorefrontFoundationViewSlot> GetOptionalSlots()
+    {
+        return this.ComponentMvpLab is null
+            ? []
+            : [new(nameof(this.ComponentMvpLab), this.ComponentMvpLab)];
     }
 }

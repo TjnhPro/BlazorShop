@@ -12,6 +12,7 @@ public enum StorefrontPageKind
     PaymentResult,
     Auth,
     Account,
+    ComponentMvp,
     Maintenance,
     NotFound,
     ServiceUnavailable,

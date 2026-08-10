@@ -1,0 +1,64 @@
+@page "/__qa/component-mvp"
+@namespace BlazorShop.Storefront.Presentation.Pages.Ssr.System
+@using BlazorShop.Storefront.Components.Contracts.Brand
+@using BlazorShop.Storefront.Presentation.PagePatterns
+@using BlazorShop.Storefront.Presentation.Services.SystemPages
+@using BlazorShop.Storefront.Presentation.Views.Foundation
+@inject StorefrontFoundationViewSet ViewSet
+
+@if (ViewSet.ComponentMvpLab is { } componentMvpLab)
+{
+    <StorefrontPage TContext="StorefrontComponentMvpPageContext"
+        CurrentState="_state">
+        <Body>
+            <StorefrontFoundationViewOutlet ComponentType="@componentMvpLab" Context="_context" />
+        </Body>
+    </StorefrontPage>
+}
+else
+{
+    <StorefrontPage TContext="StorefrontSystemStateContext"
+        CurrentState="_missingState"
+        Metadata="_privateMetadata">
+        <Body>
+            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" Context="_missingContext" />
+        </Body>
+        <NotFoundContent>
+            <StorefrontFoundationViewOutlet ComponentType="@ViewSet.NotFoundState" Context="_missingContext" />
+        </NotFoundContent>
+    </StorefrontPage>
+}
+
+@code {
+    private static readonly StorefrontComponentMvpPageContext _context = new(
+        new StorefrontBrandLogoContext(
+            "/",
+            "Storefront Component MVP",
+            "Architecture QA",
+            HomeLabel: "Storefront Component MVP home"));
+
+    private static readonly StorefrontPageState _state = new StorefrontPageState.Ready<StorefrontComponentMvpPageContext>(
+        StorefrontPageKind.ComponentMvp,
+        _context,
+        new StorefrontPageDocument(
+            "Storefront Component MVP",
+            "Architecture QA runtime proof for Storefront component modes.",
+            "/__qa/component-mvp",
+            RobotsIndex: false,
+            RobotsFollow: false));
+
+    private static readonly StorefrontSystemStateContext _missingContext = StorefrontSystemStateContext.NotFound(
+        "Component MVP unavailable",
+        "The host has not registered a component MVP lab view.");
+
+    private static readonly StorefrontPageState _missingState = new StorefrontPageState.NotFoundState(
+        StorefrontPageKind.ComponentMvp,
+        "Component MVP lab view is not registered.");
+
+    private static readonly SeoMetadataDto _privateMetadata = new()
+    {
+        Title = "Component MVP unavailable",
+        RobotsIndex = false,
+        RobotsFollow = false,
+    };
+}

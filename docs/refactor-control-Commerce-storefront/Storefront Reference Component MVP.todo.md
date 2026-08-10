@@ -238,44 +238,54 @@ Provide a deterministic QA route without moving route ownership into V2.
 
 ### Tasks
 
-- [ ] Add a new Presentation route page under the appropriate Presentation page folder.
+- [x] Add a new Presentation route page under the appropriate Presentation page folder.
 - [ ] Preferred route:
 
 ```razor
 @page "/__qa/component-mvp"
 ```
 
-- [ ] The route page should use the existing Storefront page shell pattern.
-- [ ] The route page should render a new view slot or narrowly scoped outlet that V2 can supply.
-- [ ] If the route requires a context object, define it in Presentation, not V2.
-- [ ] The context should contain only browser-safe, deterministic proof data:
-  - [ ] brand/logo context or enough data to build it;
-  - [ ] no secrets;
-  - [ ] no customer identity;
-  - [ ] no cart token;
-  - [ ] no order/payment data.
-- [ ] Ensure the route is not included in:
-  - [ ] main navigation;
-  - [ ] footer navigation;
-  - [ ] sitemap;
-  - [ ] page template catalog;
-  - [ ] public content page catalog.
-- [ ] Add `noindex` metadata for this route, or guard it behind Development/QA configuration.
-- [ ] Do not add `@page` directives in V2 or V2.WASM.
+- [x] The route page should use the existing Storefront page shell pattern.
+- [x] The route page should render a new view slot or narrowly scoped outlet that V2 can supply.
+- [x] If the route requires a context object, define it in Presentation, not V2.
+- [x] The context should contain only browser-safe, deterministic proof data:
+  - [x] brand/logo context or enough data to build it;
+  - [x] no secrets;
+  - [x] no customer identity;
+  - [x] no cart token;
+  - [x] no order/payment data.
+- [x] Ensure the route is not included in:
+  - [x] main navigation;
+  - [x] footer navigation;
+  - [x] sitemap;
+  - [x] page template catalog;
+  - [x] public content page catalog.
+- [x] Add `noindex` metadata for this route, or guard it behind Development/QA configuration.
+- [x] Do not add `@page` directives in V2 or V2.WASM.
 
 ### Candidate Files
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/.../ComponentMvpRoutePage.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/.../StorefrontComponentMvpPageContext.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/.../ComponentMvpRoutePage.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/.../StorefrontComponentMvpPageContext.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewSet.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Views/Foundation/StorefrontFoundationViewOptionsValidator.cs`
 
 ### Exit Criteria
 
-- [ ] Route is owned by Presentation.
-- [ ] V2 can provide the visual implementation through the existing foundation view model.
-- [ ] V2/V2.WASM still have no visual `@page` route directives.
-- [ ] Route is hidden from public navigation/discovery.
+- [x] Route is owned by Presentation.
+- [x] V2 can provide the visual implementation through the existing foundation view model.
+- [x] V2/V2.WASM still have no visual `@page` route directives.
+- [x] Route is hidden from public navigation/discovery.
+
+Implementation notes:
+
+- 2026-08-10: added Presentation route `Pages/Ssr/System/ComponentMvpRoutePage.razor` with `@page "/__qa/component-mvp"`.
+- 2026-08-10: added Presentation-owned `StorefrontComponentMvpPageContext` containing only `StorefrontBrandLogoContext`; no secrets, identity, cart token, order, payment, or API data is included.
+- 2026-08-10: added optional Foundation view slot `ComponentMvpLab`; it validates the expected Presentation context when registered and does not force Starter migration.
+- 2026-08-10: route uses `StorefrontPage` and `StorefrontPageDocument` with `RobotsIndex = false` and `RobotsFollow = false`.
+- 2026-08-10: the route is not referenced by navigation, footer, sitemap, template catalog, or content catalog source.
+- 2026-08-10: no `@page` directive was added to V2 or V2.WASM.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore` passed with 0 warnings and 0 errors.
 
 ## Phase H2.2 - Add V2 Visual Lab View
 
