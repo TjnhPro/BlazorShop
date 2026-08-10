@@ -300,44 +300,54 @@ Remove stale architecture-test coupling where descriptor mode must match physica
 
 In `StorefrontComponentDescriptorTests`:
 
-- [ ] Remove or replace `OwnerModeResolverMapsKnownModeAssemblies`.
-- [ ] Remove or replace `OwnerModeResolverTreatsUnknownEmptyOrNullAssembliesAsNotApplicable`.
-- [ ] Remove or replace `OwnerModeResolverTreatsNonModeComponentAssembliesAsNotApplicable`.
-- [ ] Remove or replace `DescriptorModeConsistencyPassesWhenDescriptorModeMatchesOwnerMode`.
-- [ ] Remove or replace `DescriptorModeConsistencySkipsUnknownOwnerMode`.
-- [ ] Remove or replace `DescriptorModeConsistencyFailsWhenDescriptorModeDiffersFromOwnerMode`.
-- [ ] Replace `RepositoryModeProjectDescriptorsAreValidAndOwnedByTheirModeProjects` with a semantic descriptor validity test.
-- [ ] Keep `RepositoryModeProjectsExposeExpectedReferenceDescriptorsOnly` only if the intention is to freeze the current reference descriptor inventory. If kept, rename/comment it as current reference inventory, not mode ownership rule.
+- [x] Remove or replace `OwnerModeResolverMapsKnownModeAssemblies`.
+- [x] Remove or replace `OwnerModeResolverTreatsUnknownEmptyOrNullAssembliesAsNotApplicable`.
+- [x] Remove or replace `OwnerModeResolverTreatsNonModeComponentAssembliesAsNotApplicable`.
+- [x] Remove or replace `DescriptorModeConsistencyPassesWhenDescriptorModeMatchesOwnerMode`.
+- [x] Remove or replace `DescriptorModeConsistencySkipsUnknownOwnerMode`.
+- [x] Remove or replace `DescriptorModeConsistencyFailsWhenDescriptorModeDiffersFromOwnerMode`.
+- [x] Replace `RepositoryModeProjectDescriptorsAreValidAndOwnedByTheirModeProjects` with a semantic descriptor validity test.
+- [x] Keep `RepositoryModeProjectsExposeExpectedReferenceDescriptorsOnly` only if the intention is to freeze the current reference descriptor inventory. If kept, rename/comment it as current reference inventory, not mode ownership rule.
 - [ ] Keep direct descriptor tests for existing reference components:
-  - [ ] `BrandLogoDescriptorIsValidAndMatchesSsrMode`
-  - [ ] `ContactFormDescriptorIsValidAndMatchesHybridMode`
-  - [ ] `DiscountedProductRailDescriptorIsValidAndMatchesWasmHostMode`
-- [ ] Update those direct tests so they assert descriptor semantics and component type, but do not require physical owner assembly equality.
-- [ ] Keep `ContactFormAppDoesNotPublishPublicDescriptor` if still needed to prevent duplicate public descriptor for the nested app implementation.
+  - [x] `BrandLogoDescriptorIsValidAndMatchesSsrMode`
+  - [x] `ContactFormDescriptorIsValidAndMatchesHybridMode`
+  - [x] `DiscountedProductRailDescriptorIsValidAndMatchesWasmHostMode`
+- [x] Update those direct tests so they assert descriptor semantics and component type, but do not require physical owner assembly equality.
+- [x] Keep `ContactFormAppDoesNotPublishPublicDescriptor` if still needed to prevent duplicate public descriptor for the nested app implementation.
 
 ### New Test Direction
 
 Descriptor tests should prove:
 
-- [ ] invalid keys fail;
-- [ ] invalid enum values fail;
-- [ ] null or non-component type fails;
-- [ ] current public descriptors are valid;
-- [ ] duplicate public descriptor keys are not present if duplicate-key guard already exists or is easy to keep;
-- [ ] descriptors do not own route, render mode, theme, or registry responsibilities.
+- [x] invalid keys fail;
+- [x] invalid enum values fail;
+- [x] null or non-component type fails;
+- [x] current public descriptors are valid;
+- [x] duplicate public descriptor keys are not present if duplicate-key guard already exists or is easy to keep;
+- [x] descriptors do not own route, render mode, theme, or registry responsibilities.
 
 Descriptor tests should not prove:
 
-- [ ] `Components.Ssr` assembly can only publish `Ssr` descriptors;
-- [ ] `Components.Hybrid` assembly can only publish `Hybrid` descriptors;
-- [ ] `Components.WasmHost` assembly can only publish `WasmHost` descriptors;
-- [ ] future capability package physical location determines component mode.
+- [x] `Components.Ssr` assembly can only publish `Ssr` descriptors;
+- [x] `Components.Hybrid` assembly can only publish `Hybrid` descriptors;
+- [x] `Components.WasmHost` assembly can only publish `WasmHost` descriptors;
+- [x] future capability package physical location determines component mode.
 
 ### Exit Criteria
 
-- [ ] A component in a future `Components.Product` package could legally declare `Ssr`, `Hybrid`, or `WasmHost` mode without changing descriptor architecture.
-- [ ] Existing reference descriptors still validate.
-- [ ] Tests no longer preserve the historical assembly-mode equation.
+- [x] A component in a future `Components.Product` package could legally declare `Ssr`, `Hybrid`, or `WasmHost` mode without changing descriptor architecture.
+- [x] Existing reference descriptors still validate.
+- [x] Tests no longer preserve the historical assembly-mode equation.
+
+Implementation notes:
+
+- 2026-08-10: removed `OwnerModeResolver*`, `DescriptorModeConsistency*`, `StorefrontComponentDescriptorModeOwnership`, and owner-mode path inference from `StorefrontComponentDescriptorTests`.
+- 2026-08-10: replaced `RepositoryModeProjectDescriptorsAreValidAndOwnedByTheirModeProjects` with `RepositoryPublicDescriptorsAreSemanticallyValid`, which validates descriptor shape, enum values, `IComponent`, and current descriptor keys without asserting descriptor mode equals assembly/project owner.
+- 2026-08-10: renamed the exact descriptor inventory test to `RepositoryReferenceDescriptorInventoryMatchesCurrentMvp` so it documents current MVP descriptor inventory, not an assembly-mode law.
+- 2026-08-10: added `RepositoryPublicDescriptorKeysAreUnique` and `DescriptorContractDoesNotOwnRouteRenderModeThemeOrRegistryMetadata`.
+- 2026-08-10: direct descriptor tests still assert `brand-logo`/`Ssr`, `contact-form`/`Hybrid`, and `discounted-product-rail`/`WasmHost` semantics and component type, but no longer resolve owner assembly mode.
+- 2026-08-10: `rg -n "OwnerMode|ResolveOwnerMode|DescriptorModeConsistency|OwnedByTheirModeProjects|StorefrontComponentDescriptorModeOwnership" BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentDescriptorTests.cs` returned no matches.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"` passed: 21 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H1.3 - Reclassify Components.Hybrid As Transitional
 

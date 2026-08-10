@@ -131,88 +131,8 @@ public sealed class StorefrontComponentDescriptorTests
         Assert.True(result.IsValid);
     }
 
-    [Theory]
-    [InlineData("BlazorShop.Storefront.Components.Ssr", StorefrontComponentMode.Ssr)]
-    [InlineData("BlazorShop.Storefront.Components.Hybrid", StorefrontComponentMode.Hybrid)]
-    [InlineData("BlazorShop.Storefront.Components.WasmHost", StorefrontComponentMode.WasmHost)]
-    public void OwnerModeResolverMapsKnownModeAssemblies(
-        string assemblyName,
-        StorefrontComponentMode expectedMode)
-    {
-        var mode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(assemblyName);
-
-        Assert.Equal(expectedMode, mode);
-    }
-
-    [Theory]
-    [InlineData("BlazorShop.Storefront.Components")]
-    [InlineData("")]
-    [InlineData(null)]
-    public void OwnerModeResolverTreatsUnknownEmptyOrNullAssembliesAsNotApplicable(string? assemblyName)
-    {
-        var mode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(assemblyName);
-
-        Assert.Null(mode);
-    }
-
     [Fact]
-    public void OwnerModeResolverTreatsNonModeComponentAssembliesAsNotApplicable()
-    {
-        var mode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(typeof(ComponentFixture));
-
-        Assert.Null(mode);
-    }
-
-    [Theory]
-    [InlineData(StorefrontComponentMode.Ssr)]
-    [InlineData(StorefrontComponentMode.Hybrid)]
-    [InlineData(StorefrontComponentMode.WasmHost)]
-    public void DescriptorModeConsistencyPassesWhenDescriptorModeMatchesOwnerMode(StorefrontComponentMode mode)
-    {
-        var result = StorefrontComponentDescriptorModeOwnership.Validate(
-            CreateDescriptor(mode),
-            mode);
-
-        Assert.True(result.IsApplicable);
-        Assert.True(result.IsValid);
-        Assert.Null(result.Error);
-    }
-
-    [Fact]
-    public void DescriptorModeConsistencySkipsUnknownOwnerMode()
-    {
-        var result = StorefrontComponentDescriptorModeOwnership.Validate(
-            CreateDescriptor(StorefrontComponentMode.Ssr),
-            null);
-
-        Assert.False(result.IsApplicable);
-        Assert.True(result.IsValid);
-        Assert.Null(result.Error);
-    }
-
-    [Theory]
-    [InlineData(StorefrontComponentMode.Ssr, StorefrontComponentMode.Hybrid)]
-    [InlineData(StorefrontComponentMode.Hybrid, StorefrontComponentMode.WasmHost)]
-    [InlineData(StorefrontComponentMode.WasmHost, StorefrontComponentMode.Ssr)]
-    public void DescriptorModeConsistencyFailsWhenDescriptorModeDiffersFromOwnerMode(
-        StorefrontComponentMode descriptorMode,
-        StorefrontComponentMode ownerMode)
-    {
-        var result = StorefrontComponentDescriptorModeOwnership.Validate(
-            CreateDescriptor(descriptorMode),
-            ownerMode);
-
-        Assert.True(result.IsApplicable);
-        Assert.False(result.IsValid);
-        Assert.NotNull(result.Error);
-        Assert.Contains($"declares mode '{descriptorMode}'", result.Error, StringComparison.Ordinal);
-        Assert.Contains($"owning assembly mode is '{ownerMode}'", result.Error, StringComparison.Ordinal);
-        Assert.Contains("brand-logo", result.Error, StringComparison.Ordinal);
-        Assert.Contains(typeof(ComponentFixture).FullName!, result.Error, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void RepositoryModeProjectsExposeExpectedReferenceDescriptorsOnly()
+    public void RepositoryReferenceDescriptorInventoryMatchesCurrentMvp()
     {
         var descriptorCandidates = DiscoverRepositoryDescriptors()
             .Select(candidate => candidate.RelativePath)
@@ -229,7 +149,7 @@ public sealed class StorefrontComponentDescriptorTests
     }
 
     [Fact]
-    public void RepositoryModeProjectDescriptorsAreValidAndOwnedByTheirModeProjects()
+    public void RepositoryPublicDescriptorsAreSemanticallyValid()
     {
         var descriptors = DiscoverRepositoryDescriptors();
 
@@ -244,18 +164,44 @@ public sealed class StorefrontComponentDescriptorTests
         foreach (var candidate in descriptors)
         {
             var validation = StorefrontComponentDescriptorValidator.Validate(candidate.Descriptor);
-            var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
-                candidate.Descriptor,
-                candidate.OwnerMode);
-            var componentOwnerMode = StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(candidate.Descriptor.ComponentType);
 
             Assert.True(validation.IsValid, $"{candidate.RelativePath}: {string.Join("; ", validation.Errors)}");
-            Assert.True(ownership.IsValid, $"{candidate.RelativePath}: {ownership.Error}");
-            Assert.Equal(candidate.OwnerMode, candidate.Descriptor.Mode);
-            Assert.Equal(candidate.OwnerMode, componentOwnerMode);
+            Assert.True(Enum.IsDefined(candidate.Descriptor.Mode));
             Assert.True(Enum.IsDefined(candidate.Descriptor.Category));
             Assert.True(typeof(IComponent).IsAssignableFrom(candidate.Descriptor.ComponentType));
         }
+    }
+
+    [Fact]
+    public void RepositoryPublicDescriptorKeysAreUnique()
+    {
+        var duplicateKeys = DiscoverRepositoryDescriptors()
+            .GroupBy(candidate => candidate.Descriptor.Key, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group => $"{group.Key}: {string.Join(", ", group.Select(candidate => candidate.RelativePath).OrderBy(path => path, StringComparer.Ordinal))}")
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Empty(duplicateKeys);
+    }
+
+    [Fact]
+    public void DescriptorContractDoesNotOwnRouteRenderModeThemeOrRegistryMetadata()
+    {
+        var propertyNames = typeof(StorefrontComponentDescriptor)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Select(property => property.Name)
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(
+            [
+                nameof(StorefrontComponentDescriptor.Category),
+                nameof(StorefrontComponentDescriptor.ComponentType),
+                nameof(StorefrontComponentDescriptor.Key),
+                nameof(StorefrontComponentDescriptor.Mode),
+            ],
+            propertyNames);
     }
 
     [Fact]
@@ -264,13 +210,9 @@ public sealed class StorefrontComponentDescriptorTests
         var descriptor = StorefrontBrandLogoDescriptor.Descriptor;
 
         var validation = StorefrontComponentDescriptorValidator.Validate(descriptor);
-        var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
-            descriptor,
-            StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(descriptor.ComponentType));
 
         Assert.True(validation.IsValid);
         Assert.Empty(validation.Errors);
-        Assert.True(ownership.IsValid, ownership.Error);
         Assert.Equal("brand-logo", descriptor.Key);
         Assert.Equal(StorefrontComponentMode.Ssr, descriptor.Mode);
         Assert.Equal(StorefrontComponentCategory.Brand, descriptor.Category);
@@ -283,13 +225,9 @@ public sealed class StorefrontComponentDescriptorTests
         var descriptor = StorefrontContactFormDescriptor.Descriptor;
 
         var validation = StorefrontComponentDescriptorValidator.Validate(descriptor);
-        var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
-            descriptor,
-            StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(descriptor.ComponentType));
 
         Assert.True(validation.IsValid);
         Assert.Empty(validation.Errors);
-        Assert.True(ownership.IsValid, ownership.Error);
         Assert.Equal("contact-form", descriptor.Key);
         Assert.Equal(StorefrontComponentMode.Hybrid, descriptor.Mode);
         Assert.Equal(StorefrontComponentCategory.Content, descriptor.Category);
@@ -302,13 +240,9 @@ public sealed class StorefrontComponentDescriptorTests
         var descriptor = StorefrontDiscountedProductRailDescriptor.Descriptor;
 
         var validation = StorefrontComponentDescriptorValidator.Validate(descriptor);
-        var ownership = StorefrontComponentDescriptorModeOwnership.Validate(
-            descriptor,
-            StorefrontComponentDescriptorModeOwnership.ResolveOwnerMode(descriptor.ComponentType));
 
         Assert.True(validation.IsValid);
         Assert.Empty(validation.Errors);
-        Assert.True(ownership.IsValid, ownership.Error);
         Assert.Equal("discounted-product-rail", descriptor.Key);
         Assert.Equal(StorefrontComponentMode.WasmHost, descriptor.Mode);
         Assert.Equal(StorefrontComponentCategory.Catalog, descriptor.Category);
@@ -377,17 +311,16 @@ public sealed class StorefrontComponentDescriptorTests
     private static RepositoryDescriptorCandidate CreateDescriptorCandidate(string file)
     {
         var relativePath = Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/');
-        var ownerMode = ResolveOwnerModeFromPath(relativePath);
-        var descriptorHolderType = ResolveDescriptorHolderType(file, ownerMode);
+        var descriptorHolderType = ResolveDescriptorHolderType(file, ResolveAssemblyNameFromPath(relativePath));
         var property = descriptorHolderType.GetProperty("Descriptor", BindingFlags.Public | BindingFlags.Static)
             ?? throw new InvalidOperationException($"{descriptorHolderType.FullName} must expose a public static Descriptor property.");
         var descriptor = property.GetValue(null) as StorefrontComponentDescriptor
             ?? throw new InvalidOperationException($"{descriptorHolderType.FullName}.Descriptor must return StorefrontComponentDescriptor.");
 
-        return new RepositoryDescriptorCandidate(relativePath, ownerMode, descriptor);
+        return new RepositoryDescriptorCandidate(relativePath, descriptor);
     }
 
-    private static Type ResolveDescriptorHolderType(string file, StorefrontComponentMode ownerMode)
+    private static Type ResolveDescriptorHolderType(string file, string assemblyName)
     {
         var source = File.ReadAllText(file);
         var namespaceName = source
@@ -398,33 +331,26 @@ public sealed class StorefrontComponentDescriptorTests
             .FirstOrDefault()
             ?? throw new InvalidOperationException($"{file} must declare a file-scoped namespace.");
         var typeName = Path.GetFileNameWithoutExtension(file);
-        var assemblyName = ownerMode switch
-        {
-            StorefrontComponentMode.Ssr => "BlazorShop.Storefront.Components.Ssr",
-            StorefrontComponentMode.Hybrid => "BlazorShop.Storefront.Components.Hybrid",
-            StorefrontComponentMode.WasmHost => "BlazorShop.Storefront.Components.WasmHost",
-            _ => throw new ArgumentOutOfRangeException(nameof(ownerMode), ownerMode, null),
-        };
 
         return Type.GetType($"{namespaceName}.{typeName}, {assemblyName}", throwOnError: true)!
             ?? throw new InvalidOperationException($"{namespaceName}.{typeName} could not be loaded from {assemblyName}.");
     }
 
-    private static StorefrontComponentMode ResolveOwnerModeFromPath(string relativePath)
+    private static string ResolveAssemblyNameFromPath(string relativePath)
     {
         if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/", StringComparison.Ordinal))
         {
-            return StorefrontComponentMode.Ssr;
+            return "BlazorShop.Storefront.Components.Ssr";
         }
 
         if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/", StringComparison.Ordinal))
         {
-            return StorefrontComponentMode.Hybrid;
+            return "BlazorShop.Storefront.Components.Hybrid";
         }
 
         if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/", StringComparison.Ordinal))
         {
-            return StorefrontComponentMode.WasmHost;
+            return "BlazorShop.Storefront.Components.WasmHost";
         }
 
         throw new InvalidOperationException($"Descriptor file is outside a known mode project: {relativePath}");
@@ -445,62 +371,5 @@ public sealed class StorefrontComponentDescriptorTests
 
     private sealed record RepositoryDescriptorCandidate(
         string RelativePath,
-        StorefrontComponentMode OwnerMode,
         StorefrontComponentDescriptor Descriptor);
-
-    private static class StorefrontComponentDescriptorModeOwnership
-    {
-        public static StorefrontComponentMode? ResolveOwnerMode(Type componentType)
-        {
-            return ResolveOwnerMode(componentType.Assembly.GetName().Name);
-        }
-
-        public static StorefrontComponentMode? ResolveOwnerMode(string? assemblyName)
-        {
-            return assemblyName switch
-            {
-                "BlazorShop.Storefront.Components.Ssr" => StorefrontComponentMode.Ssr,
-                "BlazorShop.Storefront.Components.Hybrid" => StorefrontComponentMode.Hybrid,
-                "BlazorShop.Storefront.Components.WasmHost" => StorefrontComponentMode.WasmHost,
-                _ => null,
-            };
-        }
-
-        public static StorefrontComponentDescriptorModeConsistencyResult Validate(
-            StorefrontComponentDescriptor descriptor,
-            StorefrontComponentMode? ownerMode)
-        {
-            if (ownerMode is null)
-            {
-                return StorefrontComponentDescriptorModeConsistencyResult.NotApplicable;
-            }
-
-            if (descriptor.Mode == ownerMode.Value)
-            {
-                return StorefrontComponentDescriptorModeConsistencyResult.Valid;
-            }
-
-            var componentType = descriptor.ComponentType;
-            var componentTypeName = componentType?.FullName ?? "<null>";
-            var assemblyName = componentType?.Assembly.GetName().Name ?? "<null>";
-
-            return StorefrontComponentDescriptorModeConsistencyResult.Invalid(
-                $"Component descriptor '{descriptor.Key}' declares mode '{descriptor.Mode}', but owning assembly mode is '{ownerMode.Value}'. Component type: '{componentTypeName}'. Assembly: '{assemblyName}'.");
-        }
-    }
-
-    private sealed record StorefrontComponentDescriptorModeConsistencyResult(
-        bool IsApplicable,
-        bool IsValid,
-        string? Error)
-    {
-        public static StorefrontComponentDescriptorModeConsistencyResult Valid { get; } = new(true, true, null);
-
-        public static StorefrontComponentDescriptorModeConsistencyResult NotApplicable { get; } = new(false, true, null);
-
-        public static StorefrontComponentDescriptorModeConsistencyResult Invalid(string error)
-        {
-            return new StorefrontComponentDescriptorModeConsistencyResult(true, false, error);
-        }
-    }
 }
