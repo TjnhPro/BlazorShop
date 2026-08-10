@@ -955,12 +955,17 @@ Also run affected catalog/home/search tests if they are not covered by the filte
 
 Exit criteria:
 
-- [ ] Primitive dependency tests pass.
-- [ ] Product Summary semantic tests pass.
-- [ ] Product rail tests pass.
-- [ ] Visual neutrality tests pass.
-- [ ] Render mode ownership tests pass.
-- [ ] No architecture exception hides a dependency regression.
+- [x] Primitive dependency tests pass.
+- [x] Product Summary semantic tests pass.
+- [x] Product rail tests pass.
+- [x] Visual neutrality tests pass.
+- [x] Render mode ownership tests pass.
+- [x] No architecture exception hides a dependency regression.
+
+Implementation notes:
+
+- 2026-08-10: Focused Product Summary/primitive/architecture gate passed 143 tests with `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~Primitive|FullyQualifiedName~ProductSummary|FullyQualifiedName~ProductRail|FullyQualifiedName~ComponentVisualNeutrality|FullyQualifiedName~VisualOnlyBoundary|FullyQualifiedName~HeadlessPresentationRefactor|FullyQualifiedName~ComponentModeDependency|FullyQualifiedName~RenderModeOwnership"`.
+- 2026-08-10: Additional affected catalog/home/search gate passed 71 tests with `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontProductDecisionContextTests|FullyQualifiedName~StorefrontSearchPageRegressionTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontDiscountedProductRailPresentationTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontBrowserProductRailControllerTests"`.
 
 ## Phase 3.1.14 - Browser QA
 
