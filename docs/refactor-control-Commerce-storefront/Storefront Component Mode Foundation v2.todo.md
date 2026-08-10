@@ -308,7 +308,7 @@ In `StorefrontComponentDescriptorTests`:
 - [x] Remove or replace `DescriptorModeConsistencyFailsWhenDescriptorModeDiffersFromOwnerMode`.
 - [x] Replace `RepositoryModeProjectDescriptorsAreValidAndOwnedByTheirModeProjects` with a semantic descriptor validity test.
 - [x] Keep `RepositoryModeProjectsExposeExpectedReferenceDescriptorsOnly` only if the intention is to freeze the current reference descriptor inventory. If kept, rename/comment it as current reference inventory, not mode ownership rule.
-- [ ] Keep direct descriptor tests for existing reference components:
+- [x] Keep direct descriptor tests for existing reference components:
   - [x] `BrandLogoDescriptorIsValidAndMatchesSsrMode`
   - [x] `ContactFormDescriptorIsValidAndMatchesHybridMode`
   - [x] `DiscountedProductRailDescriptorIsValidAndMatchesWasmHostMode`
@@ -958,20 +958,26 @@ refactor(storefront): clarify hybrid component project metadata
 
 ### Closure Checklist
 
-- [ ] H1 baseline notes are filled in.
-- [ ] Descriptor mode is semantic.
-- [ ] Descriptor tests no longer enforce physical assembly ownership.
-- [ ] SSR dependency boundary remains explicit.
-- [ ] WasmHost dependency boundary remains explicit.
-- [ ] Hybrid project status is transitional or otherwise explicitly decided.
-- [ ] Boundary validator wording matches the selected status.
-- [ ] Existing reference components still compile.
-- [ ] V2 visible contact and discounted rail paths are unchanged unless documented.
-- [ ] Browser QA decision is documented.
-- [ ] Focused build/test commands and results are recorded.
-- [ ] Documentation is synchronized.
-- [ ] H2 handoff is complete.
-- [ ] No backend, Control Plane, StorefrontBuilder, Product/Catalog/Cart extraction, plugin/theme/registry, or visual rewrite work entered H1.
+- [x] H1 baseline notes are filled in.
+- [x] Descriptor mode is semantic.
+- [x] Descriptor tests no longer enforce physical assembly ownership.
+- [x] SSR dependency boundary remains explicit.
+- [x] WasmHost dependency boundary remains explicit.
+- [x] Hybrid project status is transitional or otherwise explicitly decided.
+- [x] Boundary validator wording matches the selected status.
+- [x] Existing reference components still compile.
+- [x] V2 visible contact and discounted rail paths are unchanged unless documented.
+- [x] Browser QA decision is documented.
+- [x] Focused build/test commands and results are recorded.
+- [x] Documentation is synchronized.
+- [x] H2 handoff is complete.
+- [x] No backend, Control Plane, StorefrontBuilder, Product/Catalog/Cart extraction, plugin/theme/registry, or visual rewrite work entered H1.
+
+Implementation notes:
+
+- 2026-08-10: final `git status --short` before closure checklist showed no output.
+- 2026-08-10: scope scan over base/mode component projects for backend/core/API, Control Plane, Runtime, Client, StorefrontBuilder, `Components.Product`, registry, `InteractiveServer`, and `InteractiveAuto` tokens returned no matches.
+- 2026-08-10: phase commits through H1.13 are present, including baseline, semantic contract, descriptor decoupling, dependency guardrail realignment, Hybrid transitional docs, boundary validator wording, render-mode review, preservation evidence, visual guardrail fix, docs sync, build gate, test gate, browser QA decision, and H2 handoff.
 
 ## Risks And Mitigations
 
@@ -991,62 +997,62 @@ H1 is complete only when all items below are true.
 
 ### Semantic Architecture
 
-- [ ] `Ssr`, `Hybrid`, and `WasmHost` have clear runtime meanings.
-- [ ] `Hybrid` is not defined by `Components.Hybrid` physical location.
-- [ ] `Hybrid` is not defined as mandatory nested server-shell to WasmHost composition.
-- [ ] `StorefrontComponentMode` metadata is semantic.
+- [x] `Ssr`, `Hybrid`, and `WasmHost` have clear runtime meanings.
+- [x] `Hybrid` is not defined by `Components.Hybrid` physical location.
+- [x] `Hybrid` is not defined as mandatory nested server-shell to WasmHost composition.
+- [x] `StorefrontComponentMode` metadata is semantic.
 
 ### SSR
 
-- [ ] SSR dependency graph is explicit.
-- [ ] SSR has no browser runtime requirement.
-- [ ] SSR tests protect server-safe ownership.
+- [x] SSR dependency graph is explicit.
+- [x] SSR has no browser runtime requirement.
+- [x] SSR tests protect server-safe ownership.
 
 ### WasmHost
 
-- [ ] WasmHost is browser-safe.
-- [ ] WasmHost uses Browser controllers for protected browser interactions.
-- [ ] WasmHost does not reference Presentation, Runtime, Client, V2, Starter, backend/core, or `Web.SharedV2`.
-- [ ] WasmHost does not self-own render mode.
+- [x] WasmHost is browser-safe.
+- [x] WasmHost uses Browser controllers for protected browser interactions.
+- [x] WasmHost does not reference Presentation, Runtime, Client, V2, Starter, backend/core, or `Web.SharedV2`.
+- [x] WasmHost does not self-own render mode.
 
 ### Hybrid
 
-- [ ] Current `Components.Hybrid` project has explicit transitional/permanent status.
-- [ ] H1 does not force a permanent physical model without H2 evidence.
-- [ ] Hybrid prerender/WASM lifecycle is documented.
-- [ ] Host/composition owns render-mode placement.
-- [ ] Browser-executed dependencies remain browser-safe.
+- [x] Current `Components.Hybrid` project has explicit transitional/permanent status.
+- [x] H1 does not force a permanent physical model without H2 evidence.
+- [x] Hybrid prerender/WASM lifecycle is documented.
+- [x] Host/composition owns render-mode placement.
+- [x] Browser-executed dependencies remain browser-safe.
 
 ### Descriptor Architecture
 
-- [ ] Descriptor/project-name coupling is removed or explicitly marked historical compatibility.
-- [ ] Descriptors remain minimal.
-- [ ] No component registry/scanner/plugin/theme framework is introduced.
-- [ ] Future capability-based project organization remains possible.
+- [x] Descriptor/project-name coupling is removed or explicitly marked historical compatibility.
+- [x] Descriptors remain minimal.
+- [x] No component registry/scanner/plugin/theme framework is introduced.
+- [x] Future capability-based project organization remains possible.
 
 ### Tests
 
-- [ ] Dependency architecture tests pass.
-- [ ] Visual neutrality tests pass.
-- [ ] Descriptor tests pass.
-- [ ] Render-mode ownership tests pass.
-- [ ] Existing reference component tests pass if touched.
-- [ ] Full relevant V2 test gate passes or any skip is documented.
+- [x] Dependency architecture tests pass.
+- [x] Visual neutrality tests pass.
+- [x] Descriptor tests pass.
+- [x] Render-mode ownership tests pass.
+- [x] Existing reference component tests pass if touched.
+- [x] Full relevant V2 test gate passes or any skip is documented.
 
 ### Scope
 
-- [ ] No Phase 3 component extraction occurred.
-- [ ] No Product/Catalog capability module was introduced.
-- [ ] No StorefrontBuilder migration occurred.
-- [ ] No backend feature work occurred.
-- [ ] No unnecessary runtime behavior changes occurred.
+- [x] No Phase 3 component extraction occurred.
+- [x] No Product/Catalog capability module was introduced.
+- [x] No StorefrontBuilder migration occurred.
+- [x] No backend feature work occurred.
+- [x] No unnecessary runtime behavior changes occurred.
 
 ### H2 Readiness
 
-- [ ] H2 has a clear SSR MVP requirement.
-- [ ] H2 has a clear Hybrid runtime proof requirement.
-- [ ] H2 has a clear WasmHost proof requirement.
-- [ ] H2 owns final evidence for H3 guardrail hardening.
+- [x] H2 has a clear SSR MVP requirement.
+- [x] H2 has a clear Hybrid runtime proof requirement.
+- [x] H2 has a clear WasmHost proof requirement.
+- [x] H2 owns final evidence for H3 guardrail hardening.
 
 ## Autoplan Decision Audit Trail
 
