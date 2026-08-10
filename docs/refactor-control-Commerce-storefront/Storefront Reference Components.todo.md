@@ -457,31 +457,31 @@ Implement in `BlazorShop.Storefront.Browser`.
 
 Files:
 
-- [ ] `Contact/IStorefrontBrowserContactController.cs` or `Contact/StorefrontBrowserContactController.cs` plus interface.
-- [ ] Update `StorefrontBrowserServiceCollectionExtensions.cs`.
+- [x] `Contact/IStorefrontBrowserContactController.cs` or `Contact/StorefrontBrowserContactController.cs` plus interface.
+- [x] Update `StorefrontBrowserServiceCollectionExtensions.cs`.
 
 Behavior:
 
-- [ ] Submit `StorefrontContactFormSubmitRequest` through `StorefrontLocalApiClient`.
-- [ ] Use only same-origin local path from descriptor or a browser-safe default controlled by Presentation contracts.
-- [ ] Attach antiforgery automatically through `StorefrontLocalApiClient`.
-- [ ] Preserve cancellation behavior.
-- [ ] Surface `Success`, `Code`, `DefaultMessage`, `TraceId`, and field errors.
-- [ ] Do not hardcode final user-facing copy except technical fallback if existing Browser pattern requires it.
-- [ ] Do not reference Presentation, Runtime, Client, V2, backend/core/API, or Web.SharedV2.
+- [x] Submit `StorefrontContactFormSubmitRequest` through `StorefrontLocalApiClient`.
+- [x] Use only same-origin local path from descriptor or a browser-safe default controlled by Presentation contracts.
+- [x] Attach antiforgery automatically through `StorefrontLocalApiClient`.
+- [x] Preserve cancellation behavior.
+- [x] Surface `Success`, `Code`, `DefaultMessage`, `TraceId`, and field errors.
+- [x] Do not hardcode final user-facing copy except technical fallback if existing Browser pattern requires it.
+- [x] Do not reference Presentation, Runtime, Client, V2, backend/core/API, or Web.SharedV2.
 
 Tests:
 
-- [ ] Add DI registration test for contact controller.
-- [ ] Add test that absolute and protocol-relative routes are not accepted if the controller allows route override.
-- [ ] Add submit success mapping test.
-- [ ] Add submit validation/error mapping test.
-- [ ] Add cancellation behavior test.
+- [x] Add DI registration test for contact controller.
+- [x] Add test that absolute and protocol-relative routes are not accepted if the controller allows route override.
+- [x] Add submit success mapping test.
+- [x] Add submit validation/error mapping test.
+- [x] Add cancellation behavior test.
 
 Exit criteria:
 
-- [ ] Contact Browser controller follows the existing cart/checkout/account controller pattern.
-- [ ] WasmHost can submit contact data without direct transport ownership.
+- [x] Contact Browser controller follows the existing cart/checkout/account controller pattern.
+- [x] WasmHost can submit contact data without direct transport ownership.
 
 ## Phase 5 - Hybrid Contact Form And WasmHost Child
 
@@ -967,4 +967,15 @@ Phase 3 build/test:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj --no-restore`: passed, 0 warnings, 0 errors.
 - Contact endpoint guard scan for direct `HttpClient`, Commerce Node base URL, direct `api/storefront/stores`, V2, CommerceNode, and ControlPlane references: no matches.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPresentationContactEndpointTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"`: passed 24/24.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 4 build/test:
+
+- Added `IStorefrontBrowserContactController` and `StorefrontBrowserContactController`.
+- Registered contact through `AddStorefrontBrowserControllers()` and `AddStorefrontBrowserContact()`.
+- Controller submits `StorefrontContactFormSubmitRequest` to descriptor/default same-origin route through `StorefrontLocalApiClient`, preserving antiforgery, cancellation, semantic errors, trace id, field errors, and retryable state.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- Contact controller guard scan for Presentation, Runtime, Client, V2, backend/core/API, Web.SharedV2, direct Storefront API route, and direct `HttpClient`: no matches.
+- Wider bootstrap/contact filter found unrelated existing failure in `StorefrontApplicationBootstrapTests.StorefrontStarterProgram_UsesSharedApplicationBootstrap`; not caused by contact Browser controller changes.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrowserContactControllerTests"`: passed 7/7.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
