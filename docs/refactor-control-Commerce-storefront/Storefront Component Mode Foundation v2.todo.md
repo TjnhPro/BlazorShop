@@ -621,23 +621,23 @@ Ensure foundation changes do not regress existing reference component behavior.
 
 ### Reference Components
 
-- [ ] `StorefrontBrandLogo`
-- [ ] `StorefrontContactForm`
-- [ ] `StorefrontContactFormApp`
-- [ ] `StorefrontDiscountedProductRail`
-- [ ] `StorefrontContactFormSection`
-- [ ] `StorefrontDiscountedProductRailSection`
+- [x] `StorefrontBrandLogo`
+- [x] `StorefrontContactForm`
+- [x] `StorefrontContactFormApp`
+- [x] `StorefrontDiscountedProductRail`
+- [x] `StorefrontContactFormSection`
+- [x] `StorefrontDiscountedProductRailSection`
 
 ### Tasks
 
-- [ ] Build current component projects after test/doc changes.
-- [ ] Keep `StorefrontBrandLogo` SSR behavior unchanged.
-- [ ] Keep visible V2 contact path unchanged unless a compile blocker requires adjustment.
-- [ ] Keep `StorefrontContactFormApp` Browser/BFF contract unchanged.
-- [ ] Keep visible discounted rail path unchanged.
-- [ ] Keep no-direct-Commerce-Node-call rule intact.
-- [ ] Keep no-V2-copy/layout ownership in reusable libraries.
-- [ ] If any descriptor test changes affect these components, document the reason.
+- [x] Build current component projects after test/doc changes.
+- [x] Keep `StorefrontBrandLogo` SSR behavior unchanged.
+- [x] Keep visible V2 contact path unchanged unless a compile blocker requires adjustment.
+- [x] Keep `StorefrontContactFormApp` Browser/BFF contract unchanged.
+- [x] Keep visible discounted rail path unchanged.
+- [x] Keep no-direct-Commerce-Node-call rule intact.
+- [x] Keep no-V2-copy/layout ownership in reusable libraries.
+- [x] If any descriptor test changes affect these components, document the reason.
 
 ### Browser QA Rule
 
@@ -653,9 +653,17 @@ If H1 only changes docs/tests/project metadata, browser QA may be deferred to H2
 
 ### Exit Criteria
 
-- [ ] Existing reference component runtime behavior remains unchanged.
-- [ ] No visible V2 route is moved back to the old nested Hybrid shell.
-- [ ] Browser/BFF protected interaction path remains intact.
+- [x] Existing reference component runtime behavior remains unchanged.
+- [x] No visible V2 route is moved back to the old nested Hybrid shell.
+- [x] Browser/BFF protected interaction path remains intact.
+
+Implementation notes:
+
+- 2026-08-10: no production component behavior was changed in H1.7; only earlier descriptor tests and Hybrid docs/metadata changed.
+- 2026-08-10: descriptor test changes affect reference components only by removing physical assembly-mode assertions; direct semantic descriptor assertions for BrandLogo, ContactForm, and DiscountedProductRail remain.
+- 2026-08-10: an accidental concurrent build/test run briefly hit `CS2012` file lock on `BlazorShop.Storefront.Presentation.dll`; the build was rerun sequentially to avoid compiler output contention.
+- 2026-08-10: sequential builds passed for `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.WasmHost`, and `BlazorShop.Storefront.Components.Hybrid`, each with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests"` passed: 9 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H1.8 - Visual Ownership And Source Boundary Guardrails
 
