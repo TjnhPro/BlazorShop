@@ -579,30 +579,37 @@ Keep fast regression tests for contracts and boundary rules.
 
 ### Required Tests
 
-- [ ] `StorefrontBrandLogoComponentTests` update or add coverage if lab usage changes class/context assumptions.
-- [ ] New `StorefrontHybridRuntimeProbeComponentTests` for:
-  - [ ] root marker;
-  - [ ] value marker;
-  - [ ] action marker;
-  - [ ] label/classes parameters if present;
-  - [ ] descriptor validation if descriptor exists.
-- [ ] `StorefrontComponentDescriptorTests` update:
-  - [ ] expected descriptor inventory includes `hybrid-runtime-probe` if public descriptor is added;
-  - [ ] no owner assembly equals mode assumption is reintroduced.
-- [ ] `StorefrontComponentModeDependencyTests` update only if project references actually change.
-- [ ] Visual neutrality tests:
-  - [ ] reusable component has no literal V2 Tailwind classes;
-  - [ ] V2/V2.WASM own visual classes.
-- [ ] Route ownership test:
-  - [ ] no `@page` directive in V2/V2.WASM;
-  - [ ] `/__qa/component-mvp` route exists only in Presentation.
-- [ ] Bootstrap test:
-  - [ ] V2 maps required additional assemblies for V2.WASM/WasmHost.
+- [x] `StorefrontBrandLogoComponentTests` update or add coverage if lab usage changes class/context assumptions.
+- [x] New `StorefrontHybridRuntimeProbeComponentTests` for:
+  - [x] root marker;
+  - [x] value marker;
+  - [x] action marker;
+  - [x] label/classes parameters if present;
+  - [x] descriptor validation if descriptor exists.
+- [x] `StorefrontComponentDescriptorTests` update:
+  - [x] expected descriptor inventory includes `hybrid-runtime-probe` if public descriptor is added;
+  - [x] no owner assembly equals mode assumption is reintroduced.
+- [x] `StorefrontComponentModeDependencyTests` update only if project references actually change.
+- [x] Visual neutrality tests:
+  - [x] reusable component has no literal V2 Tailwind classes;
+  - [x] V2/V2.WASM own visual classes.
+- [x] Route ownership test:
+  - [x] no `@page` directive in V2/V2.WASM;
+  - [x] `/__qa/component-mvp` route exists only in Presentation.
+- [x] Bootstrap test:
+  - [x] V2 maps required additional assemblies for V2.WASM/WasmHost.
 
 ### Exit Criteria
 
-- [ ] Fast tests catch descriptor, route, and visual boundary regressions.
-- [ ] Runtime lifecycle remains delegated to browser Playwright tests.
+- [x] Fast tests catch descriptor, route, and visual boundary regressions.
+- [x] Runtime lifecycle remains delegated to browser Playwright tests.
+
+Implementation notes:
+
+- 2026-08-10: added `StorefrontComponentMvpArchitectureTests` to lock Presentation-owned `/__qa/component-mvp`, noindex metadata, optional `ComponentMvpLab` view slot, V2 visual composition, and V2 bootstrap assembly mapping for V2.WASM plus WasmHost.
+- 2026-08-10: existing `StorefrontHybridRuntimeProbeComponentTests` covers root/value/action markers, host-supplied labels/classes, no API/server injection/render mode, and descriptor validation remains in `StorefrontComponentDescriptorTests`.
+- 2026-08-10: existing visual neutrality and dependency tests still cover reusable component projects; H2.7 did not change project references.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontHybridRuntimeProbeComponentTests|FullyQualifiedName~StorefrontComponentMvpArchitectureTests|FullyQualifiedName~StorefrontComponentMvpLabTests"` passed: 75 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H2.8 - Playwright Raw HTML Proof
 
