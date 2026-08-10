@@ -651,43 +651,43 @@ Exit criteria:
 
 Project references:
 
-- [ ] Add `BlazorShop.Storefront.Components.Ssr` reference to `BlazorShop.Storefront.V2`.
-- [ ] Add `BlazorShop.Storefront.Components.Hybrid` reference to `BlazorShop.Storefront.V2`.
-- [ ] Add `BlazorShop.Storefront.Components.WasmHost` reference where the WASM client must compile/load the child components.
-- [ ] Do not add these references to Starter or generated storefront projects.
+- [x] Add `BlazorShop.Storefront.Components.Ssr` reference to `BlazorShop.Storefront.V2`.
+- [x] Add `BlazorShop.Storefront.Components.Hybrid` reference to `BlazorShop.Storefront.V2`.
+- [x] Add `BlazorShop.Storefront.Components.WasmHost` reference where the WASM client must compile/load the child components.
+- [x] Do not add these references to Starter or generated storefront projects.
 
 Component discovery/rendering:
 
-- [ ] Update V2 app component assembly registration if required.
-- [ ] Ensure `StorefrontContactFormApp` and `StorefrontDiscountedProductRail` are included in the interactive WASM assembly set.
-- [ ] Keep V2 as visual host and class owner.
+- [x] Update V2 app component assembly registration if required.
+- [x] Ensure `StorefrontContactFormApp` and `StorefrontDiscountedProductRail` are included in the interactive WASM assembly set.
+- [x] Keep V2 as visual host and class owner.
 
 Brand adoption:
 
-- [ ] Replace both header brand blocks with `StorefrontBrandLogo`.
-- [ ] Pass V2 class slots from `StorefrontHeader.razor`.
-- [ ] Preserve current layout and header behavior.
+- [x] Replace both header brand blocks with `StorefrontBrandLogo`.
+- [x] Pass V2 class slots from `StorefrontHeader.razor`.
+- [x] Preserve current layout and header behavior.
 
 Contact adoption:
 
-- [ ] Add/use a V2 contact route or region.
-- [ ] Render `StorefrontContactForm`.
-- [ ] Supply V2-owned labels/classes.
-- [ ] Confirm form is visible before WASM hydration.
-- [ ] Confirm submit works after WASM hydration.
+- [x] Add/use a V2 contact route or region.
+- [x] Render `StorefrontContactForm`.
+- [x] Supply V2-owned labels/classes.
+- [x] Confirm form is visible before WASM hydration.
+- [x] Confirm submit works after WASM hydration.
 
 Discounted rail adoption:
 
-- [ ] Add `StorefrontDiscountedProductRail` to V2 Home or a small V2 region.
-- [ ] Keep existing Home latest-products behavior unless the implementation explicitly replaces only a redundant block.
-- [ ] Supply V2-owned labels/classes and product item template.
-- [ ] Confirm empty/error/retry states do not break Home layout.
+- [x] Add `StorefrontDiscountedProductRail` to V2 Home or a small V2 region.
+- [x] Keep existing Home latest-products behavior unless the implementation explicitly replaces only a redundant block.
+- [x] Supply V2-owned labels/classes and product item template.
+- [x] Confirm empty/error/retry states do not break Home layout.
 
 Exit criteria:
 
-- [ ] V2 visibly uses all three reference components.
-- [ ] V2 remains the owner of layout, class values, copy, and visual composition.
-- [ ] Starter and StorefrontBuilder remain unchanged.
+- [x] V2 visibly uses all three reference components.
+- [x] V2 remains the owner of layout, class values, copy, and visual composition.
+- [x] Starter and StorefrontBuilder remain unchanged.
 
 ## Phase 10 - Descriptor Repository Guard Upgrade
 
@@ -1022,4 +1022,17 @@ Phase 8 build/test:
 - `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj --no-restore`: passed, 0 warnings, 0 errors.
 - WasmHost Catalog guard scan for direct API strings, `HttpClient`, render mode, Presentation/Runtime/Client/V2/backend references, and literal class attributes: no matches.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`: passed 76/76.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 9 build/test:
+
+- Added `Components.Ssr` and `Components.Hybrid` references to `BlazorShop.Storefront.V2`; added `Components.WasmHost` reference to `BlazorShop.Storefront.V2.WASM`.
+- Added the WasmHost assembly to `MapStorefrontApplication(...)` additional assemblies so `StorefrontContactFormApp` and `StorefrontDiscountedProductRail` are available to interactive WebAssembly rendering.
+- Replaced the duplicated desktop and mobile header brand blocks with `StorefrontBrandLogo`; V2 still owns all header class slots through `StorefrontBrandLogoClasses`.
+- Added a V2 contact content region using `StorefrontContactForm` for `customer_service`, `contact`, and `contact-us` content pages; V2 supplies labels, classes, and same-origin `/api/contact` action.
+- Added `StorefrontDiscountedProductRail` to Home as a small proof region before the existing latest-products section; V2 supplies labels/classes and renders product items through `StorefrontProductSummaryCard`.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontContactFormComponentTests"`: passed 88/88.
+- Scope scan confirmed `Components/Features` does not exist, Starter/StorefrontBuilder/generated outputs were not changed, and V2/V2.WASM do not call `api/storefront/stores` directly.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

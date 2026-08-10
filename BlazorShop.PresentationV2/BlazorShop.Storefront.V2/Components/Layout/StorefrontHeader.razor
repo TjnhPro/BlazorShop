@@ -3,14 +3,7 @@
 <header class="bs-storefront-header relative text-neutral-100">
     <div class="bs-storefront-header__shell">
         <div class="bs-storefront-header__desktop relative mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            <a href="@Context.Links.Home.Href" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
-                @if (!string.IsNullOrWhiteSpace(Context.Brand.LogoUrl))
-                {
-                    <img class="bs-storefront-header__brand-logo" src="@Context.Brand.LogoUrl" alt="" loading="eager" decoding="async" />
-                }
-                <span class="bs-storefront-header__brand-mark">@Context.Brand.Name</span>
-                <span class="bs-storefront-header__brand-label">@Context.Brand.Label</span>
-            </a>
+            <StorefrontBrandLogo Context="BrandLogoContext" Classes="BrandLogoClasses" />
 
             <form method="get" action="@Context.Search.Action" class="bs-storefront-search" role="search">
                 <select name="category" class="bs-storefront-search__select" aria-label="Search category">
@@ -81,14 +74,7 @@
         </div>
 
         <div class="bs-storefront-header__mobile relative mx-auto max-w-7xl px-4 py-3 sm:px-6">
-            <a href="@Context.Links.Home.Href" class="bs-storefront-header__brand" aria-label="@Context.Brand.HomeLabel">
-                @if (!string.IsNullOrWhiteSpace(Context.Brand.LogoUrl))
-                {
-                    <img class="bs-storefront-header__brand-logo" src="@Context.Brand.LogoUrl" alt="" loading="eager" decoding="async" />
-                }
-                <span class="bs-storefront-header__brand-mark">@Context.Brand.Name</span>
-                <span class="bs-storefront-header__brand-label">@Context.Brand.Label</span>
-            </a>
+            <StorefrontBrandLogo Context="BrandLogoContext" Classes="BrandLogoClasses" />
 
             <div class="bs-storefront-header__mobile-actions" aria-label="Shop shortcuts">
                 <a href="@Context.Links.Cart.Href"
@@ -177,4 +163,17 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontHeaderContext Context { get; set; } = default!;
+
+    private StorefrontBrandLogoContext BrandLogoContext => new(
+        Context.Links.Home.Href,
+        Context.Brand.Name,
+        Context.Brand.Label,
+        Context.Brand.LogoUrl,
+        Context.Brand.HomeLabel);
+
+    private static StorefrontBrandLogoClasses BrandLogoClasses { get; } = new(
+        Root: "bs-storefront-header__brand",
+        Image: "bs-storefront-header__brand-logo",
+        Mark: "bs-storefront-header__brand-mark",
+        Label: "bs-storefront-header__brand-label");
 }

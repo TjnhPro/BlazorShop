@@ -11,6 +11,8 @@
     <ProjectReference Include="..\..\BlazorShop.ServiceDefaults\BlazorShop.ServiceDefaults.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.Components.Hybrid\BlazorShop.Storefront.Components.Hybrid.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.Components.Ssr\BlazorShop.Storefront.Components.Ssr.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Presentation\BlazorShop.Storefront.Presentation.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.V2.WASM\BlazorShop.Storefront.V2.WASM.csproj" />
   </ItemGroup>

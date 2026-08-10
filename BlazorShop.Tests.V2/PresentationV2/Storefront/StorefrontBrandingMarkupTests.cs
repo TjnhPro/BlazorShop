@@ -11,6 +11,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
             Assert.Contains("public StorefrontHeaderContext Context", markup);
+            Assert.Contains("<StorefrontBrandLogo Context=\"BrandLogoContext\" Classes=\"BrandLogoClasses\" />", markup);
+            Assert.Contains("private StorefrontBrandLogoContext BrandLogoContext", markup);
+            Assert.Contains("private static StorefrontBrandLogoClasses BrandLogoClasses", markup);
             Assert.Contains("Context.Brand.LogoUrl", markup);
             Assert.Contains("bs-storefront-header__brand-logo", markup);
             Assert.Contains("Context.Navigation.HeaderLinks", markup);
@@ -21,6 +24,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("OnInitializedAsync", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes.About", markup, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontRoutes.CustomerService", markup, StringComparison.Ordinal);
+            Assert.Equal(2, CountOccurrences(markup, "<StorefrontBrandLogo Context=\"BrandLogoContext\" Classes=\"BrandLogoClasses\" />"));
         }
 
         [Fact]
@@ -358,6 +362,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor")));
 
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontDiscountedProductRail Labels=\"DiscountedProductRailLabels\"", home, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryCard Item=\"product\" />", home, StringComparison.Ordinal);
+            Assert.Contains("DiscountedProductRailActionDescriptor DiscountedProductRailAction", home, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", categoryPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", searchPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductGrid Products=\"_products\"", categoryPage + searchPage, StringComparison.Ordinal);
@@ -426,6 +433,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs")
                     .OrderBy(path => path, StringComparer.Ordinal)
                     .Select(File.ReadAllText));
+        }
+
+        private static int CountOccurrences(string value, string token)
+        {
+            var count = 0;
+            var index = 0;
+            while ((index = value.IndexOf(token, index, StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                index += token.Length;
+            }
+
+            return count;
         }
         private static string FindStorefrontSupportRepositoryRoot()
         {

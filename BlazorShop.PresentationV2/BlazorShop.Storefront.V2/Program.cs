@@ -16,7 +16,8 @@ app.UseStorefrontApplication();
 app.MapDefaultEndpoints();
 app.MapStorefrontApplication(
     typeof(V2FoundationViewRegistration),
-    typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly);
+    typeof(BlazorShop.Storefront.V2.WASM.Components.Account.StorefrontAccountApp).Assembly,
+    typeof(BlazorShop.Storefront.Components.WasmHost.Content.StorefrontContactFormApp).Assembly);
 
 app.Run();
 

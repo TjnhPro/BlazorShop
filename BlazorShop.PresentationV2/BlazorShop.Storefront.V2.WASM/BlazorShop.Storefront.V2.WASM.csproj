@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BlazorShop.Storefront.Browser\BlazorShop.Storefront.Browser.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+    <ProjectReference Include="..\BlazorShop.Storefront.Components.WasmHost\BlazorShop.Storefront.Components.WasmHost.csproj" />
   </ItemGroup>
 
 </Project>

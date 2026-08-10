@@ -394,6 +394,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("presentationResolver.Resolve(page)", service, StringComparison.Ordinal);
             Assert.Contains("ComposeStructuredDataAsync(routePath, page, presentation, metadata", service, StringComparison.Ordinal);
             Assert.Contains("data-storefront-page-template", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontContactForm Labels=\"ContactFormLabels\"", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("ShouldRenderContactForm", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("StorefrontContactFormActionDescriptor ContactFormAction", viewMarkup, StringComparison.Ordinal);
         }
 
         [Fact]

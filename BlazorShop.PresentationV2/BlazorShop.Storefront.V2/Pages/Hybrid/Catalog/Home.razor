@@ -49,6 +49,20 @@
     }
 </section>
 
+<section id="discounted-products" class="relative z-[1]">
+    <div class="mx-auto max-w-7xl px-4 pb-8 pt-2 sm:px-6 lg:px-8">
+        <StorefrontDiscountedProductRail Labels="DiscountedProductRailLabels"
+                                         Classes="DiscountedProductRailClasses"
+                                         Action="DiscountedProductRailAction"
+                                         Limit="6"
+                                         @rendermode="InteractiveWebAssembly">
+            <ItemTemplate Context="product">
+                <StorefrontProductSummaryCard Item="product" />
+            </ItemTemplate>
+        </StorefrontDiscountedProductRail>
+    </div>
+</section>
+
 <section id="latest" class="relative z-[1]">
     <div class="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
         <StorefrontDealsSection Placement="DealsPlacement.Home"
@@ -64,6 +78,27 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontHomePageContext Context { get; set; } = default!;
+
+    private static StorefrontDiscountedProductRailLabels DiscountedProductRailLabels { get; } = new(
+        "Discounted products",
+        "Loading discounted products...",
+        "No discounted products are available right now.",
+        "Discounted products could not be loaded.",
+        "Try again");
+
+    private static StorefrontDiscountedProductRailClasses DiscountedProductRailClasses { get; } = new(
+        Root: "rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg",
+        Header: "mb-5 flex items-center justify-between gap-4",
+        Heading: "text-2xl font-extrabold tracking-tight text-neutral-900",
+        Body: "min-h-24",
+        List: "grid gap-5 sm:grid-cols-2 lg:grid-cols-3",
+        Item: "list-none",
+        Loading: "rounded-md bg-neutral-100 px-4 py-3 text-sm text-neutral-700",
+        Empty: "rounded-md bg-neutral-100 px-4 py-3 text-sm text-neutral-700",
+        Error: "rounded-md bg-red-50 px-4 py-3 text-sm text-red-800",
+        RetryButton: "mt-3 inline-flex items-center rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800");
+
+    private static StorefrontDiscountedProductRailActionDescriptor DiscountedProductRailAction { get; } = new("/api/catalog/discounted-products");
 
     private IReadOnlyList<GetCategory> FeaturedCategories => Context.Categories
         .Where(category => !string.IsNullOrWhiteSpace(category.Slug))
