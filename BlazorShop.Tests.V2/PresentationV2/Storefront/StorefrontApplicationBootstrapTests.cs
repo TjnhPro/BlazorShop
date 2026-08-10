@@ -83,8 +83,12 @@ public sealed class StorefrontApplicationBootstrapTests
         var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
 
         Assert.Contains("AddStorefrontApplication(builder.Configuration)", source, StringComparison.Ordinal);
+        Assert.Contains("AddStorefrontBrowserControllers()", source, StringComparison.Ordinal);
+        Assert.Contains("AddStarterFoundationViews()", source, StringComparison.Ordinal);
         Assert.Contains("UseStorefrontApplication()", source, StringComparison.Ordinal);
-        Assert.Contains("MapStorefrontApplication(typeof(StarterFoundationViewRegistration))", source, StringComparison.Ordinal);
+        Assert.Contains("MapStorefrontApplication(", source, StringComparison.Ordinal);
+        Assert.Contains("typeof(StarterFoundationViewRegistration)", source, StringComparison.Ordinal);
+        Assert.Contains("typeof(BlazorShop.Storefront.Starter.WASM.StarterWasmAssemblyMarker).Assembly", source, StringComparison.Ordinal);
         Assert.DoesNotContain("AddStorefrontRuntime", source, StringComparison.Ordinal);
         Assert.DoesNotContain("AddStorefrontPlatformRuntime", source, StringComparison.Ordinal);
         Assert.DoesNotContain("AddStorefrontPresentation", source, StringComparison.Ordinal);
@@ -136,6 +140,33 @@ public sealed class StorefrontApplicationBootstrapTests
         Assert.True(
             offenders.Length == 0,
             $"Storefront V2 must not own manual Storefront API client transport.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [Fact]
+    public void StorefrontV2Source_DoesNotOwnReferenceComponentLocalEndpointContracts()
+    {
+        var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
+            .Where(file => file.EndsWith(".cs", StringComparison.Ordinal) || file.EndsWith(".razor", StringComparison.Ordinal))
+            .Select(file => (File: file, Source: ReadRepositoryFile(file)))
+            .SelectMany(file => new[]
+                {
+                    "StorefrontLocalContactRequest",
+                    "StorefrontLocalApiErrorResponse",
+                    "StorefrontDiscountedProductRailResponse",
+                    "PostJsonAsync<",
+                    "GetAsync<",
+                }
+                .Where(token => file.Source.Contains(token, StringComparison.Ordinal))
+                .Select(token => $"{file.File}: {token}"))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            offenders.Length == 0,
+            $"Storefront V2 must not own local BFF/manual transport DTOs or local API transport calls.{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+
+        Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/Contracts/StorefrontContactLocalContracts.cs")));
+        Assert.True(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/StorefrontDiscountedProductRailResponse.cs")));
     }
 
     [Fact]
@@ -201,7 +232,12 @@ public sealed class StorefrontApplicationBootstrapTests
 
     private static string ReadRepositoryFile(string relativePath)
     {
-        return File.ReadAllText(Path.Combine(RepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        return File.ReadAllText(RepositoryPath(relativePath));
+    }
+
+    private static string RepositoryPath(string relativePath)
+    {
+        return Path.Combine(RepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
 
     private static IEnumerable<string> EnumerateSourceFiles(string relativeFolder)

@@ -721,31 +721,31 @@ Exit criteria:
 
 Mode boundary tests:
 
-- [ ] Ensure SSR component has no Browser/Runtime/Client/direct route/JS/render-mode tokens.
-- [ ] Ensure Hybrid shell has no direct Browser controller injection, `HttpClient`, direct API route, or V2 import.
-- [ ] Ensure WasmHost components have no Presentation/Runtime/Client/V2/backend imports.
-- [ ] Ensure WasmHost components have no `HttpClient` and no direct `/api/*` route strings.
-- [ ] Ensure reusable components have no literal `class` attributes.
-- [ ] Ensure no CSS, SCSS, theme assets, or Tailwind config appear in mode projects.
+- [x] Ensure SSR component has no Browser/Runtime/Client/direct route/JS/render-mode tokens.
+- [x] Ensure Hybrid shell has no direct Browser controller injection, `HttpClient`, direct API route, or V2 import.
+- [x] Ensure WasmHost components have no Presentation/Runtime/Client/V2/backend imports.
+- [x] Ensure WasmHost components have no `HttpClient` and no direct `/api/*` route strings.
+- [x] Ensure reusable components have no literal `class` attributes.
+- [x] Ensure no CSS, SCSS, theme assets, or Tailwind config appear in mode projects.
 
 V2 boundary tests:
 
-- [ ] Update any Phase 1 test that previously asserted V2 must not reference mode projects.
-- [ ] Replace it with a stricter rule: V2 may reference mode projects only because it is adopting real reference components.
-- [ ] Assert Starter and generated storefront projects still do not reference mode projects in this phase.
-- [ ] Assert V2 still does not reference Runtime/Client directly.
-- [ ] Assert V2 still does not own BFF/manual transport DTOs.
+- [x] Update any Phase 1 test that previously asserted V2 must not reference mode projects.
+- [x] Replace it with a stricter rule: V2 may reference mode projects only because it is adopting real reference components.
+- [x] Assert Starter and generated storefront projects still do not reference mode projects in this phase.
+- [x] Assert V2 still does not reference Runtime/Client directly.
+- [x] Assert V2 still does not own BFF/manual transport DTOs.
 
 Browser/Presentation tests:
 
-- [ ] Add tests proving contact and discounted rail browser controllers use same-origin local endpoints.
-- [ ] Add tests proving Presentation endpoint mappings do not inject concrete V2 clients.
-- [ ] Add tests proving local endpoint contracts stay in Presentation/BFF or base Components, not V2.
+- [x] Add tests proving contact and discounted rail browser controllers use same-origin local endpoints.
+- [x] Add tests proving Presentation endpoint mappings do not inject concrete V2 clients.
+- [x] Add tests proving local endpoint contracts stay in Presentation/BFF or base Components, not V2.
 
 Exit criteria:
 
-- [ ] Existing guardrails are updated instead of weakened.
-- [ ] The new V2 exception is narrow, intentional, and tested.
+- [x] Existing guardrails are updated instead of weakened.
+- [x] The new V2 exception is narrow, intentional, and tested.
 
 ## Phase 12 - QA Checklist Updates
 
@@ -1044,4 +1044,16 @@ Phase 10 build/test:
 - Repository validation now proves descriptor keys, defined modes/categories, `IComponent` component types, owning mode/project consistency, and expected real descriptor keys.
 - `StorefrontContactFormAppDoesNotPublishPublicDescriptor` remains in place to keep the WasmHost child internal to the Hybrid public descriptor.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentDescriptorTests"`: passed 33/33.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 11 build/test:
+
+- Updated `StorefrontIndependenceBoundaryTests` so `BlazorShop.Storefront.V2.WASM` may reference `Components.WasmHost` for the adopted reference child components while still forbidding Runtime, Client, backend, and Web.SharedV2 references.
+- Added `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2` to prove V2 references only SSR/Hybrid mode projects, V2.WASM references WasmHost, the three components are actually used, and Starter/generated projects do not reference mode projects.
+- Added `StorefrontApplicationBootstrapTests.StorefrontV2Source_DoesNotOwnReferenceComponentLocalEndpointContracts` so V2 cannot own local BFF DTOs or local API transport calls.
+- Refreshed stale Starter bootstrap/package assertions to the current shared bootstrap + Browser controller + Starter WASM assembly marker shape.
+- Existing mode boundary and visual neutrality tests cover SSR/Hybrid/WasmHost forbidden dependencies, direct API tokens, literal class attributes, CSS/theme assets, and Tailwind configs.
+- Existing Browser/Presentation tests cover same-origin contact/discounted-rail browser controllers, local Presentation endpoint mapping, no concrete V2 client injection, and local contract placement.
+- Initial Phase 11 gate surfaced the two stale Starter assertions above; after updating them, the rerun passed.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontApplicationBootstrapTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontBrowserContactControllerTests|FullyQualifiedName~StorefrontBrowserProductRailControllerTests|FullyQualifiedName~StorefrontPresentationContactEndpointTests|FullyQualifiedName~StorefrontDiscountedProductRailPresentationTests"`: passed 114/114.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

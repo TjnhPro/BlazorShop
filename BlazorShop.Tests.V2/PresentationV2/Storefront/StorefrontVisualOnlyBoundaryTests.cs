@@ -195,9 +195,51 @@ public sealed class StorefrontVisualOnlyBoundaryTests
 
         Assert.Contains("BlazorShop.ServiceDefaults", project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.Components", project, StringComparison.Ordinal);
+        Assert.Contains("BlazorShop.Storefront.Components.Hybrid", project, StringComparison.Ordinal);
+        Assert.Contains("BlazorShop.Storefront.Components.Ssr", project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.Presentation", project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.V2.WASM", project, StringComparison.Ordinal);
         Assert.Contains("Microsoft.AspNetCore.Components.WebAssembly.Server", project, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2()
+    {
+        var v2Project = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj"));
+        var wasmProject = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj"));
+        var header = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor"));
+        var contentPage = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor"));
+        var home = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor"));
+
+        Assert.Contains("BlazorShop.Storefront.Components.Ssr", v2Project, StringComparison.Ordinal);
+        Assert.Contains("BlazorShop.Storefront.Components.Hybrid", v2Project, StringComparison.Ordinal);
+        Assert.DoesNotContain("BlazorShop.Storefront.Components.WasmHost.csproj", v2Project, StringComparison.Ordinal);
+        Assert.Contains("BlazorShop.Storefront.Components.WasmHost", wasmProject, StringComparison.Ordinal);
+
+        Assert.Contains("<StorefrontBrandLogo", header, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontContactForm", contentPage, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontDiscountedProductRail", home, StringComparison.Ordinal);
+
+        AssertProjectsDoNotReferenceModeProjects([
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj",
+        ]);
+
+        var generatedProjects = new[]
+            {
+                "artifacts/storefront-builder",
+                "obj/storefront-builder/generated",
+            }
+            .Select(RepositoryPath)
+            .Where(Directory.Exists)
+            .SelectMany(root => Directory.EnumerateFiles(root, "*.csproj", SearchOption.AllDirectories)
+                .Where(path => !IsBuildOutput(path)))
+            .ToArray();
+
+        foreach (var generatedProject in generatedProjects)
+        {
+            AssertProjectDoesNotReferenceModeProjects(generatedProject);
+        }
     }
 
     [Fact]
@@ -367,6 +409,28 @@ public sealed class StorefrontVisualOnlyBoundaryTests
     {
         return path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
             || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void AssertProjectsDoNotReferenceModeProjects(IReadOnlyList<string> relativeProjectPaths)
+    {
+        foreach (var relativeProjectPath in relativeProjectPaths)
+        {
+            AssertProjectDoesNotReferenceModeProjects(RepositoryPath(relativeProjectPath));
+        }
+    }
+
+    private static void AssertProjectDoesNotReferenceModeProjects(string projectPath)
+    {
+        var project = File.ReadAllText(projectPath);
+        foreach (var forbiddenModeProject in new[]
+        {
+            "BlazorShop.Storefront.Components.Ssr",
+            "BlazorShop.Storefront.Components.Hybrid",
+            "BlazorShop.Storefront.Components.WasmHost",
+        })
+        {
+            Assert.DoesNotContain(forbiddenModeProject, project, StringComparison.Ordinal);
+        }
     }
 
     private static string RepositoryPath(string relativePath)

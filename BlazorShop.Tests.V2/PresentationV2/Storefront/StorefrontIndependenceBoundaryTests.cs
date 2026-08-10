@@ -11,6 +11,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Client",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"
@@ -96,6 +99,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(
                 [
                     "../BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj",
+                    "../BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj",
                     "../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj",
                 ],
                 references);
@@ -220,7 +224,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 StringComparison.Ordinal);
             Assert.DoesNotContain("Include=\"BlazorShop.Storefront.Client\"", project, StringComparison.Ordinal);
             Assert.DoesNotContain("Include=\"BlazorShop.Storefront.Runtime\"", project, StringComparison.Ordinal);
-            Assert.Contains("Include=\"BlazorShop.Storefront.Components\"", project, StringComparison.Ordinal);
+            Assert.Contains(
+                "Include=\"..\\BlazorShop.Storefront.Components\\BlazorShop.Storefront.Components.csproj\"",
+                project,
+                StringComparison.Ordinal);
 
             AssertNoSourceFragments(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
@@ -249,7 +256,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             foreach (var browserRoot in new[]
             {
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components"
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost"
             })
             {
                 AssertNoSourceFragments(
