@@ -1,0 +1,37 @@
+@namespace BlazorShop.Storefront.V2.WASM.Components.Content
+@using BlazorShop.Storefront.Components.Contracts.Contact
+
+<section class="@Classes.Root" data-storefront-component="contact-form" data-storefront-contact-shell>
+    <StorefrontContactFormApp InitialState="StorefrontContactFormState.Empty"
+                              Labels="Labels"
+                              Classes="Classes"
+                              Action="Action" />
+</section>
+
+@code {
+    private static StorefrontContactFormLabels Labels { get; } = new(
+        "Name",
+        "Email",
+        "Subject",
+        "Message",
+        "Send message",
+        "Sending...",
+        "Please correct the highlighted fields.",
+        "Thanks. Your message has been sent.",
+        "Try again");
+
+    private static StorefrontContactFormClasses Classes { get; } = new(
+        Root: "mt-8 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8",
+        Form: "grid gap-5",
+        Field: "grid gap-2",
+        Label: "text-sm font-semibold text-neutral-800",
+        Input: "w-full rounded border border-neutral-300 px-3 py-2 text-base text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10",
+        Textarea: "min-h-36 w-full rounded border border-neutral-300 px-3 py-2 text-base text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10",
+        Submit: "inline-flex w-fit items-center rounded bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60",
+        Status: "rounded-md bg-red-50 px-4 py-3 text-sm text-red-800",
+        ErrorSummary: "rounded-md bg-red-50 px-4 py-3 text-sm text-red-800",
+        FieldError: "text-sm text-red-700",
+        SuccessMessage: "rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800");
+
+    private static StorefrontContactFormActionDescriptor Action { get; } = new("/api/contact");
+}

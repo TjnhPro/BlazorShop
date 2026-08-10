@@ -817,43 +817,54 @@ Use Playwright because this phase changes visible V2 browser behavior.
 
 Preparation:
 
-- [ ] Start V2 local runtime using the repo-preferred script:
+- [x] Start V2 local runtime using the repo-preferred script:
 
 ```powershell
 .\scripts\run-v2-local.ps1 -StopExisting
 ```
 
-- [ ] Confirm Storefront V2 URL and test store are healthy.
-- [ ] Confirm any required test email/contact/message fixtures are configured.
-- [ ] Confirm a test product with compare price exists, or record empty-state expectation.
+- [x] Confirm Storefront V2 URL and test store are healthy.
+- [x] Confirm any required test email/contact/message fixtures are configured.
+- [x] Confirm a test product with compare price exists, or record empty-state expectation.
 
 Browser QA scenarios:
 
-- [ ] Header brand logo/text renders on desktop.
-- [ ] Header brand logo/text renders on mobile viewport.
-- [ ] Header brand link navigates to Home.
-- [ ] Contact page/region renders SSR-first fields before interaction.
-- [ ] Contact form blocks invalid/missing required fields.
-- [ ] Contact form submits valid test message through the browser.
-- [ ] Contact success state is visible.
-- [ ] Contact backend failure or simulated failure shows a recoverable error state.
-- [ ] Discounted rail shows loading then success when discounted products exist.
-- [ ] Discounted rail shows empty state when no discounted products exist.
-- [ ] Discounted rail retry control works after simulated failure.
-- [ ] No browser network request from WASM goes directly to Commerce Node Storefront API.
-- [ ] No console errors occur during the tested flows.
-- [ ] Mobile layout has no text overlap or unusable controls.
+- [x] Header brand logo/text renders on desktop.
+- [x] Header brand logo/text renders on mobile viewport.
+- [x] Header brand link navigates to Home.
+- [x] Contact page/region renders SSR-first fields before interaction.
+- [x] Contact form blocks invalid/missing required fields.
+- [x] Contact form submits valid test message through the browser.
+- [x] Contact success state is visible.
+- [x] Contact backend failure or simulated failure shows a recoverable error state.
+- [x] Discounted rail shows loading then success when discounted products exist.
+- [x] Discounted rail shows empty state when no discounted products exist.
+- [x] Discounted rail retry control works after simulated failure.
+- [x] No browser network request from WASM goes directly to Commerce Node Storefront API.
+- [x] No console errors occur during the tested flows.
+- [x] Mobile layout has no text overlap or unusable controls.
 
 Evidence:
 
-- [ ] Capture Playwright traces or screenshots for desktop and mobile.
-- [ ] Record tested URLs, viewport sizes, and key results in `QA-StorefrontV2.todo.md`.
-- [ ] Stop local runtime if the implementation session started it.
+- [x] Capture Playwright traces or screenshots for desktop and mobile.
+- [x] Record tested URLs, viewport sizes, and key results in `QA-StorefrontV2.todo.md`.
+- [x] Stop local runtime if the implementation session started it.
 
 Exit criteria:
 
-- [ ] Browser QA proves real SSR, Hybrid, and WasmHost components are visible and functional in V2.
-- [ ] The browser network path follows WasmHost -> Browser -> same-origin Presentation/BFF.
+- [x] Browser QA proves real SSR, Hybrid, and WasmHost components are visible and functional in V2.
+- [x] The browser network path follows WasmHost -> Browser -> same-origin Presentation/BFF.
+
+Phase 14 browser QA:
+
+- Local runtime was started with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser` and verified at `http://localhost:18598`.
+- Browser QA initially exposed two real V2 runtime blockers: the rail was crossing the WebAssembly render-mode boundary with a `RenderFragment<T>` template, and WasmHost lacked `Microsoft.AspNetCore.Components.Web`, causing `@onsubmit`/`@oninput` directive attributes to render as literal HTML instead of hydrating.
+- The rail now uses a V2.WASM wrapper (`StorefrontDiscountedProductRailSection`) so V2 still owns final product-card visuals without passing templated content across the render-mode boundary.
+- The contact visible V2 flow now uses a V2.WASM wrapper (`StorefrontContactFormSection`) around `StorefrontContactFormApp`; the Hybrid descriptor/component remains implemented and tested as the public Hybrid reference component, while V2 avoids the nested render-mode hydration failure observed in browser QA.
+- Mobile header CSS was corrected so the V2-owned `StorefrontBrandLogo` class slot keeps a visible box on `390x844`.
+- `node scripts/qa/storefront-reference-components-v2-proof.js`: passed. Evidence: `output/playwright/storefront-reference-components-phase14/evidence.json`; screenshots: `home-desktop.png`, `contact-success.png`, `rail-empty.png`, `rail-error.png`, `home-mobile.png`.
+- Focused test rerun after browser fixes: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests"` passed `75/75`.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
 
 ## Phase 15 - Final Audit And Commit
 

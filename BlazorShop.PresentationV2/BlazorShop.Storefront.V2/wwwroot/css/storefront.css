@@ -303,13 +303,18 @@
 
 .bs-storefront-header__mobile {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
 }
 
+.bs-storefront-header__mobile > .bs-storefront-header__brand {
+    flex: 1 1 auto;
+}
+
 .bs-storefront-header__mobile-actions {
     display: flex;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
     align-items: center;
     justify-content: flex-end;

@@ -1,0 +1,26 @@
+@namespace BlazorShop.Storefront.V2.WASM.Components.Catalog
+@using BlazorShop.Storefront.Components.Contracts.Catalog
+
+@if (!string.IsNullOrWhiteSpace(Item.ImageUrl))
+{
+    <img src="@Item.ImageUrl"
+         alt="@Item.Name"
+         class="absolute inset-0 h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
+         onerror="@BrokenImageFallbackScript" />
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-500" role="img" aria-label="Image unavailable for @Item.Name" hidden>
+        Image unavailable
+    </div>
+}
+else
+{
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-500" role="img" aria-label="Image unavailable for @Item.Name">
+        Image unavailable
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public ProductSummaryItem Item { get; set; } = default!;
+
+    private const string BrokenImageFallbackScript = "this.onerror=null;this.hidden=true;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E';if(this.nextElementSibling){this.nextElementSibling.hidden=false;}";
+}

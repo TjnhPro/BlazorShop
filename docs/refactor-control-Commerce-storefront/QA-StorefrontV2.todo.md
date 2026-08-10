@@ -828,7 +828,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 ## Storefront Reference Components
 
 Owner: Storefront V2 host QA, Storefront Browser same-origin boundary, and reusable component mode guardrails.
-Current status: static implementation and focused tests are complete; visible browser evidence remains assigned to Phase 14 of `Storefront Reference Components.todo.md`.
+Current status: complete. Static implementation, focused tests, and visible V2 browser evidence are recorded.
 
 - [x] SSR `StorefrontBrandLogo` renders through V2 header without browser dependency. Owner: V2 host markup tests. Evidence: `StorefrontBrandingMarkupTests`, `StorefrontBrandLogoComponentTests`, and V2 builds.
 - [x] SSR component uses descriptor key `brand-logo`, mode `Ssr`, category `Brand`. Owner: component descriptor guardrails. Evidence: `StorefrontComponentDescriptorTests`.
@@ -837,14 +837,14 @@ Current status: static implementation and focused tests are complete; visible br
 - [x] Contact form includes `Subject` or has a documented Presentation default subject. Owner: contact component contract. Evidence: `StorefrontContactFormComponentTests` covers the explicit `Subject` field required by the existing contact API.
 - [x] Contact form submits through Browser controller and same-origin Presentation endpoint. Owner: Browser/Persistence boundary tests. Evidence: `StorefrontBrowserContactControllerTests` and `StorefrontPresentationContactEndpointTests`.
 - [x] Contact submit uses antiforgery. Owner: Presentation endpoint tests. Evidence: `StorefrontPresentationContactEndpointTests` guards antiforgery validation on `POST /api/contact`.
-- [ ] Contact success, validation failure, backend failure, and retry states are browser-tested. Owner: Phase 14 Playwright V2 browser QA.
+- [x] Contact success, validation failure, backend failure, and retry states are browser-tested. Owner: Phase 14 Playwright V2 browser QA. Evidence: `node scripts/qa/storefront-reference-components-v2-proof.js` passed on 2026-08-10 with `contact.browser-required-validation`, `contact.validation-failure-state`, `contact.backend-failure-and-retry-state`, and `contact.success-state`; evidence: `output/playwright/storefront-reference-components-phase14/evidence.json`.
 - [x] `StorefrontContactFormApp` is not a public descriptor. Owner: descriptor guardrails. Evidence: `StorefrontComponentDescriptorTests.StorefrontContactFormAppDoesNotPublishPublicDescriptor`.
 - [x] WasmHost `StorefrontDiscountedProductRail` loads through Browser controller and same-origin Presentation endpoint. Owner: Browser/Persistence boundary tests. Evidence: `StorefrontBrowserProductRailControllerTests` and `StorefrontDiscountedProductRailPresentationTests`.
-- [ ] Discounted rail loading, success, empty, error, and retry states are browser-tested. Owner: Phase 14 Playwright V2 browser QA.
+- [x] Discounted rail loading, success, empty, error, and retry states are browser-tested. Owner: Phase 14 Playwright V2 browser QA. Evidence: `node scripts/qa/storefront-reference-components-v2-proof.js` passed on 2026-08-10 with real success state plus mocked empty/error/retry states; evidence: `output/playwright/storefront-reference-components-phase14/evidence.json`.
 - [x] Discounted rail does not introduce backend discount core changes. Owner: Presentation/service boundary tests. Evidence: `StorefrontDiscountedProductRailPresentationTests` and Commerce Node/core source scan found no `discountedOnly` or new backend discount API expansion.
 - [x] Reusable mode projects still have no literal classes, CSS, theme assets, direct APIs, or forbidden project references. Owner: architecture guardrails. Evidence: `StorefrontComponentModeDependencyTests`, `StorefrontComponentModeBoundaryValidatorTests`, and `StorefrontComponentVisualNeutralityTests`.
 - [x] Starter and StorefrontBuilder remain unchanged. Owner: final audit and visual-only boundary tests. Evidence: `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2`; final git audit remains required before closure.
-- [ ] Playwright evidence is recorded for visible V2 flows. Owner: Phase 14 Playwright V2 browser QA.
+- [x] Playwright evidence is recorded for visible V2 flows. Owner: Phase 14 Playwright V2 browser QA. Evidence: `output/playwright/storefront-reference-components-phase14/evidence.json` plus screenshots `home-desktop.png`, `contact-success.png`, `rail-empty.png`, `rail-error.png`, and `home-mobile.png`; viewports were desktop `1440x1000` and mobile `390x844`, with zero direct Commerce browser calls, zero console errors, and zero page errors.
 
 ## Storefront Visual Source Ownership
 

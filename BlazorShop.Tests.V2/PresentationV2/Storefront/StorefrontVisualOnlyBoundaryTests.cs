@@ -195,7 +195,7 @@ public sealed class StorefrontVisualOnlyBoundaryTests
 
         Assert.Contains("BlazorShop.ServiceDefaults", project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.Components", project, StringComparison.Ordinal);
-        Assert.Contains("BlazorShop.Storefront.Components.Hybrid", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("BlazorShop.Storefront.Components.Hybrid", project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.Components.Ssr", project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.Presentation", project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.V2.WASM", project, StringComparison.Ordinal);
@@ -210,15 +210,17 @@ public sealed class StorefrontVisualOnlyBoundaryTests
         var header = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor"));
         var contentPage = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor"));
         var home = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor"));
+        var discountedRailSection = File.ReadAllText(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Catalog/StorefrontDiscountedProductRailSection.razor"));
 
         Assert.Contains("BlazorShop.Storefront.Components.Ssr", v2Project, StringComparison.Ordinal);
-        Assert.Contains("BlazorShop.Storefront.Components.Hybrid", v2Project, StringComparison.Ordinal);
+        Assert.DoesNotContain("BlazorShop.Storefront.Components.Hybrid", v2Project, StringComparison.Ordinal);
         Assert.DoesNotContain("BlazorShop.Storefront.Components.WasmHost.csproj", v2Project, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.Components.WasmHost", wasmProject, StringComparison.Ordinal);
 
         Assert.Contains("<StorefrontBrandLogo", header, StringComparison.Ordinal);
-        Assert.Contains("<StorefrontContactForm", contentPage, StringComparison.Ordinal);
-        Assert.Contains("<StorefrontDiscountedProductRail", home, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontContactFormSection", contentPage, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontDiscountedProductRailSection", home, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontDiscountedProductRail", discountedRailSection, StringComparison.Ordinal);
 
         AssertProjectsDoNotReferenceModeProjects([
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj",

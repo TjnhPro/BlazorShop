@@ -351,6 +351,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor");
             var categoryPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
             var searchPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
+            var discountedRailSection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Catalog/StorefrontDiscountedProductRailSection.razor");
             var dealsBlock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontDealsSection.razor");
             var productGrid = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor");
             var productCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
@@ -362,9 +363,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor")));
 
             Assert.Contains("<StorefrontDealsSection Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontDiscountedProductRail Labels=\"DiscountedProductRailLabels\"", home, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryCard Item=\"product\" />", home, StringComparison.Ordinal);
-            Assert.Contains("DiscountedProductRailActionDescriptor DiscountedProductRailAction", home, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontDiscountedProductRailSection @rendermode=\"InteractiveWebAssembly\" />", home, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ItemTemplate", home, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontDiscountedProductRail Labels=\"Labels\"", discountedRailSection, StringComparison.Ordinal);
+            Assert.Contains("StorefrontDiscountedProductRailActionDescriptor Action", discountedRailSection, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-summary-card", discountedRailSection, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", categoryPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", searchPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductGrid Products=\"_products\"", categoryPage + searchPage, StringComparison.Ordinal);
