@@ -485,28 +485,39 @@ Prove real V2 composition with host-owned render mode.
 
 ### Tasks
 
-- [ ] Add a V2.WASM wrapper/root if needed by existing composition pattern.
-- [ ] The wrapper may supply labels/classes/options.
-- [ ] The wrapper should not duplicate runtime state logic.
-- [ ] V2 lab view renders the wrapper/root with:
+- [x] Add a V2.WASM wrapper/root if needed by existing composition pattern.
+- [x] The wrapper may supply labels/classes/options.
+- [x] The wrapper should not duplicate runtime state logic.
+- [x] V2 lab view renders the wrapper/root with:
 
 ```razor
 @rendermode="InteractiveWebAssembly"
 ```
 
-- [ ] Prerender remains enabled.
-- [ ] Parameters crossing static-to-interactive boundary are JSON serializable.
-- [ ] Do not pass `RenderFragment` across static-to-interactive boundary unless verified safe.
-- [ ] Do not inject Presentation/Runtime/Client into browser-executed component code.
-- [ ] Ensure the component assembly is included in the V2.WASM downloadable graph.
-- [ ] Ensure `MapStorefrontApplication(...)` additional assemblies remain sufficient.
+- [x] Prerender remains enabled.
+- [x] Parameters crossing static-to-interactive boundary are JSON serializable.
+- [x] Do not pass `RenderFragment` across static-to-interactive boundary unless verified safe.
+- [x] Do not inject Presentation/Runtime/Client into browser-executed component code.
+- [x] Ensure the component assembly is included in the V2.WASM downloadable graph.
+- [x] Ensure `MapStorefrontApplication(...)` additional assemblies remain sufficient.
 
 ### Exit Criteria
 
-- [ ] Initial HTTP response includes Hybrid probe HTML.
-- [ ] Browser later observes `interactive` marker.
-- [ ] Button click changes C# component state.
-- [ ] No server-interactive mechanism is introduced.
+- [x] Initial HTTP response includes Hybrid probe HTML.
+- [x] Browser later observes `interactive` marker.
+- [x] Button click changes C# component state.
+- [x] No server-interactive mechanism is introduced.
+
+Implementation notes:
+
+- 2026-08-10: added V2.WASM `StorefrontHybridRuntimeProbeSection`, which supplies V2-owned labels/classes and delegates runtime state/counter logic to `StorefrontHybridRuntimeProbe`.
+- 2026-08-10: `StorefrontComponentMvpLab` renders `<StorefrontHybridRuntimeProbeSection @rendermode="InteractiveWebAssembly" />`; no `InteractiveServer`, `InteractiveAuto`, route directive, `RenderFragment`, Presentation/Runtime/Client injection, or server-interactive path was introduced.
+- 2026-08-10: V2.WASM already references `BlazorShop.Storefront.Components.WasmHost`, so the probe is in the downloadable WASM graph. Existing `MapStorefrontApplication(...)` additional assemblies remain sufficient because it already maps the V2.WASM assembly and the WasmHost assembly.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: first direct HtmlRenderer test of the full V2 lab failed because `HtmlRenderer` does not support rendering a child with `InteractiveWebAssembly` render mode outside a Blazor Web App host. The test was corrected to source-guard the V2 placement and render the V2.WASM wrapper directly for prerender markup.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentMvpLabTests|FullyQualifiedName~StorefrontHybridRuntimeProbeComponentTests"` passed: 5 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
+- 2026-08-10: browser-observed `interactive` marker and click state are implemented here and remain explicitly proven by the mandatory H2.9 Playwright gate.
 
 ## Phase H2.6 - WasmHost Proof With Discounted Product Rail
 

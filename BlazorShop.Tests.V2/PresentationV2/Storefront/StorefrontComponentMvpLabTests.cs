@@ -1,60 +1,70 @@
-extern alias StorefrontV2;
-
 namespace BlazorShop.Tests.PresentationV2.Storefront;
 
-using BlazorShop.Storefront.Components.Contracts.Brand;
-using BlazorShop.Storefront.Presentation.Services.SystemPages;
+using BlazorShop.Storefront.V2.WASM.Components.System;
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-
-using StorefrontComponentMvpLab = StorefrontV2::BlazorShop.Storefront.V2.Components.System.StorefrontComponentMvpLab;
 
 using Xunit;
 
 public sealed class StorefrontComponentMvpLabTests
 {
     [Fact]
-    public async Task RendersBrandLogoInSsrSectionWithRawServerHtml()
+    public void LabComposesBrandLogoInSsrSectionWithoutOwningRoute()
     {
-        var html = await RenderAsync(new StorefrontComponentMvpPageContext(
-            new StorefrontBrandLogoContext(
-                "/",
-                "Kindred Coast",
-                "Coastal goods",
-                "/media/assets/kindred-logo.svg",
-                "Go to Kindred Coast home")));
+        var source = ReadRepositoryFile(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/System/StorefrontComponentMvpLab.razor");
 
-        Assert.Contains("data-storefront-component-mvp", html, StringComparison.Ordinal);
-        Assert.Contains("data-storefront-component-mvp-section=\"ssr\"", html, StringComparison.Ordinal);
-        Assert.Contains("data-storefront-component=\"brand-logo\"", html, StringComparison.Ordinal);
-        Assert.Contains("data-storefront-brand=\"Kindred Coast\"", html, StringComparison.Ordinal);
-        Assert.Contains("href=\"/\"", html, StringComparison.Ordinal);
-        Assert.Contains("src=\"/media/assets/kindred-logo.svg\"", html, StringComparison.Ordinal);
-        Assert.Contains("alt=\"Kindred Coast\"", html, StringComparison.Ordinal);
-        Assert.Contains("aria-label=\"Go to Kindred Coast home\"", html, StringComparison.Ordinal);
-        Assert.Contains("class=\"bs-storefront-component-mvp__brand\"", html, StringComparison.Ordinal);
-        Assert.Contains("class=\"bs-storefront-component-mvp__brand-image\"", html, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-storefront-component-mvp-placeholder=\"ssr\"", html, StringComparison.Ordinal);
-        Assert.DoesNotContain("Coastal goods", html, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-component-mvp-section=\"ssr\"", source, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontBrandLogo Context=\"Context.BrandLogo\" Classes=\"BrandLogoClasses\" />", source, StringComparison.Ordinal);
+        Assert.Contains("Root: \"bs-storefront-component-mvp__brand\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-storefront-component-mvp-placeholder=\"ssr\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("@page", source, StringComparison.Ordinal);
     }
 
-    private static async Task<string> RenderAsync(StorefrontComponentMvpPageContext context)
+    [Fact]
+    public void LabPlacesHybridWrapperWithInteractiveWebAssemblyRenderMode()
+    {
+        var source = ReadRepositoryFile(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/System/StorefrontComponentMvpLab.razor");
+
+        Assert.Contains("data-storefront-component-mvp-section=\"hybrid\"", source, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontHybridRuntimeProbeSection @rendermode=\"InteractiveWebAssembly\" />", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("InteractiveServer", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("InteractiveAuto", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("@page", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HybridWrapperRendersProbePrerenderMarkupWhenRenderedAsStaticHtml()
+    {
+        var html = await RenderHybridWrapperAsync();
+
+        Assert.Contains("data-storefront-component=\"hybrid-runtime-probe\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-hybrid-probe", html, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-runtime-state=\"prerender\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-hybrid-value", html, StringComparison.Ordinal);
+        Assert.Contains(">0</output>", html, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-hybrid-action", html, StringComparison.Ordinal);
+    }
+
+    private static async Task<string> RenderHybridWrapperAsync()
     {
         var services = new ServiceCollection().BuildServiceProvider();
         await using var renderer = new HtmlRenderer(services, NullLoggerFactory.Instance);
 
         return await renderer.Dispatcher.InvokeAsync(async () =>
         {
-            var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-            {
-                ["Context"] = context,
-            });
-
-            var component = await renderer.RenderComponentAsync<StorefrontComponentMvpLab>(parameters);
+            var component = await renderer.RenderComponentAsync<StorefrontHybridRuntimeProbeSection>();
             return component.ToHtmlString();
         });
+    }
+
+    private static string RepositoryRoot => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
+
+    private static string ReadRepositoryFile(string relativePath)
+    {
+        return File.ReadAllText(Path.Combine(RepositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
     }
 }

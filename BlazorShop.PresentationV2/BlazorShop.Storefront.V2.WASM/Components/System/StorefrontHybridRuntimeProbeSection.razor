@@ -1,0 +1,21 @@
+@namespace BlazorShop.Storefront.V2.WASM.Components.System
+
+<StorefrontHybridRuntimeProbe Labels="Labels" Classes="Classes" />
+
+@code {
+    private static StorefrontHybridRuntimeProbeLabels Labels { get; } = new(
+        "Hybrid runtime",
+        "Prerendered before WebAssembly",
+        "Interactive WebAssembly",
+        "C# counter",
+        "Increment");
+
+    private static StorefrontHybridRuntimeProbeClasses Classes { get; } = new(
+        Root: "bs-storefront-component-mvp__probe",
+        Heading: "bs-storefront-component-mvp__probe-heading",
+        State: "bs-storefront-component-mvp__probe-state",
+        ValueGroup: "bs-storefront-component-mvp__probe-value-group",
+        ValueLabel: "bs-storefront-component-mvp__probe-value-label",
+        Value: "bs-storefront-component-mvp__probe-value",
+        Action: "bs-storefront-component-mvp__probe-action");
+}
