@@ -1224,16 +1224,23 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 If existing unrelated warnings/failures appear:
 
-- [ ] record exact command;
-- [ ] record exact warning/failure summary;
-- [ ] prove no Phase 3.2 regression caused it;
-- [ ] do not hide failures behind broad exclusions.
+- [x] record exact command;
+- [x] record exact warning/failure summary;
+- [x] prove no Phase 3.2 regression caused it;
+- [x] do not hide failures behind broad exclusions.
 
 Exit criteria:
 
-- [ ] full solution build passes, or unrelated known issue is documented with evidence;
-- [ ] full V2 tests pass, or unrelated known issue is documented with evidence;
-- [ ] browser QA evidence is recorded.
+- [x] full solution build passes, or unrelated known issue is documented with evidence;
+- [x] full V2 tests pass, or unrelated known issue is documented with evidence;
+- [x] browser QA evidence is recorded.
+
+Implementation notes:
+
+- 2026-08-10: Full solution build passed: `dotnet build BlazorShop.sln --no-restore`; elapsed `00:00:37.00`; 0 errors.
+- 2026-08-10: Full V2 test gate passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore`; 1924 passed, 2 skipped, 0 failed, total 1926, duration `3 m 43 s`.
+- 2026-08-10: Existing unrelated warnings were recorded: MessagePack 2.5.192 NU1902/NU1903 advisory warnings from `BlazorShop.Tests.V2.csproj`, and Control Plane Tailwind Browserslist `caniuse-lite is outdated`. These warnings existed in earlier focused gates and are not introduced by Product Detail display extraction.
+- 2026-08-10: Browser QA evidence remains recorded at `output/playwright/storefront-product-detail-display-components/evidence.json`.
 
 ## Phase 3.2.20 - Closure Review
 
