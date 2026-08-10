@@ -956,9 +956,18 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.
 
 Exit criteria:
 
-- [ ] focused builds pass;
-- [ ] no new warning is introduced by Phase 3.2;
-- [ ] any unrelated existing warning is recorded with exact command and summary.
+- [x] focused builds pass;
+- [x] no new warning is introduced by Phase 3.2;
+- [x] any unrelated existing warning is recorded with exact command and summary.
+
+Implementation notes:
+
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj" --no-restore` with 0 warnings.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj" --no-restore` with 0 warnings.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj" --no-restore` with 0 warnings.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj" --no-restore` with 0 warnings.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj" --no-restore` with 0 warnings.
+- 2026-08-10: No unrelated warnings appeared in the focused build gate.
 
 ## Phase 3.2.14 - Focused Test Gate
 
