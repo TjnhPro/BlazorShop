@@ -335,42 +335,42 @@ Add contracts to base `BlazorShop.Storefront.Components` only.
 
 Brand contracts:
 
-- [ ] Add `Contracts/Brand/StorefrontBrandLogoContext.cs`.
-- [ ] Add `Contracts/Brand/StorefrontBrandLogoClasses.cs`.
+- [x] Add `Contracts/Brand/StorefrontBrandLogoContext.cs`.
+- [x] Add `Contracts/Brand/StorefrontBrandLogoClasses.cs`.
 
 Contact contracts:
 
-- [ ] Add `Contracts/Contact/StorefrontContactFormState.cs`.
-- [ ] Add `Contracts/Contact/StorefrontContactFormLabels.cs`.
-- [ ] Add `Contracts/Contact/StorefrontContactFormClasses.cs`.
-- [ ] Add `Contracts/Contact/StorefrontContactFormActionDescriptor.cs`.
-- [ ] Add `Contracts/Contact/StorefrontContactFormSubmitRequest.cs`.
-- [ ] Add `Contracts/Contact/StorefrontContactFormSubmitResult.cs`.
-- [ ] Add validation/state helpers only if they remain browser-safe and do not duplicate backend validation rules.
+- [x] Add `Contracts/Contact/StorefrontContactFormState.cs`.
+- [x] Add `Contracts/Contact/StorefrontContactFormLabels.cs`.
+- [x] Add `Contracts/Contact/StorefrontContactFormClasses.cs`.
+- [x] Add `Contracts/Contact/StorefrontContactFormActionDescriptor.cs`.
+- [x] Add `Contracts/Contact/StorefrontContactFormSubmitRequest.cs`.
+- [x] Add `Contracts/Contact/StorefrontContactFormSubmitResult.cs`.
+- [x] Add validation/state helpers only if they remain browser-safe and do not duplicate backend validation rules.
 
 Discounted rail contracts:
 
-- [ ] Add `Contracts/Catalog/StorefrontDiscountedProductRailState.cs`.
-- [ ] Add `Contracts/Catalog/StorefrontDiscountedProductRailRequest.cs`.
-- [ ] Add `Contracts/Catalog/StorefrontDiscountedProductRailResponse.cs`.
-- [ ] Add `Contracts/Catalog/StorefrontDiscountedProductRailLabels.cs`.
-- [ ] Add `Contracts/Catalog/StorefrontDiscountedProductRailClasses.cs`.
-- [ ] Add `Contracts/Catalog/StorefrontDiscountedProductRailActionDescriptor.cs`.
-- [ ] Reuse existing `ProductSummaryItem`; do not create a duplicate product card DTO.
+- [x] Add `Contracts/Catalog/StorefrontDiscountedProductRailState.cs`.
+- [x] Add `Contracts/Catalog/StorefrontDiscountedProductRailRequest.cs`.
+- [x] Add `Contracts/Catalog/StorefrontDiscountedProductRailResponse.cs`.
+- [x] Add `Contracts/Catalog/StorefrontDiscountedProductRailLabels.cs`.
+- [x] Add `Contracts/Catalog/StorefrontDiscountedProductRailClasses.cs`.
+- [x] Add `Contracts/Catalog/StorefrontDiscountedProductRailActionDescriptor.cs`.
+- [x] Reuse existing `ProductSummaryItem`; do not create a duplicate product card DTO.
 
 General contract rules:
 
-- [ ] No V2 CSS class defaults.
-- [ ] No hardcoded same-origin endpoint paths in contracts unless represented as host-supplied descriptors.
-- [ ] No `HttpClient`, Runtime, Client, Presentation, V2, backend/core/API, or Web.SharedV2 references.
-- [ ] Keep the base Components project on `Microsoft.NET.Sdk`.
-- [ ] Keep base Components free of `.razor`, CSS, JS, and `Features`.
+- [x] No V2 CSS class defaults.
+- [x] No hardcoded same-origin endpoint paths in contracts unless represented as host-supplied descriptors.
+- [x] No `HttpClient`, Runtime, Client, Presentation, V2, backend/core/API, or Web.SharedV2 references.
+- [x] Keep the base Components project on `Microsoft.NET.Sdk`.
+- [x] Keep base Components free of `.razor`, CSS, JS, and `Features`.
 
 Exit criteria:
 
-- [ ] Base Components builds.
-- [ ] Existing headless/component architecture tests still pass.
-- [ ] Contracts are small, semantic, and reusable.
+- [x] Base Components builds.
+- [x] Existing headless/component architecture tests still pass.
+- [x] Contracts are small, semantic, and reusable.
 
 ## Phase 2 - SSR Brand Logo Component
 
@@ -924,7 +924,7 @@ Exit criteria:
 ## Implementation Notes
 
 - [x] Record baseline command outputs here during implementation.
-- [ ] Record build/test command outputs here during implementation.
+- [x] Record build/test command outputs here during implementation.
 - [ ] Record Playwright evidence here during implementation.
 - [ ] Record any deviation from this plan with reason and file references.
 
@@ -938,3 +938,13 @@ Phase 0 baseline:
 - Presentation currently has no mapped local contact/catalog rail endpoint; Browser currently has no contact/catalog rail controller.
 - `ProductSummaryItem.ComparePriceDisplay` and existing V2 product-card compare-price rendering are available.
 - Scope remains exactly `StorefrontBrandLogo`, `StorefrontContactForm`, and `StorefrontDiscountedProductRail`; backend/core expansion, Starter, StorefrontBuilder, and generated storefront changes remain out of scope.
+
+Phase 1 build/test:
+
+- Added base contracts only under `BlazorShop.Storefront.Components/Contracts/Brand`, `Contracts/Contact`, and `Contracts/Catalog`.
+- No separate validation helper was added; this avoids duplicating backend validation while preserving browser-safe state contracts.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- New-contract guard scan for forbidden dependencies, `HttpClient`, `class=`, and `Features`: no matches.
+- Base Components asset scan for `.razor`, CSS, SCSS, and JS files: no files.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests"`: passed 39/39.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
