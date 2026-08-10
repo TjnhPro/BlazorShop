@@ -4,6 +4,14 @@ using BlazorShop.Storefront.Components.Contracts.Product;
 
 public static class ProductDetailDisplayVisuals
 {
+    public static ProductPricingClasses PricingClasses { get; } = new(
+        Root: "mt-5",
+        Label: "text-sm text-neutral-500",
+        PriceRow: "mt-1 flex flex-wrap items-end gap-3",
+        Price: "text-4xl font-black text-neutral-900",
+        ComparePrice: "pb-1 text-lg font-semibold text-neutral-400 line-through",
+        Hidden: "hidden");
+
     public static ProductAvailabilityClasses AvailabilityClasses { get; } = new(
         Root: "mt-4 flex flex-wrap items-center gap-3 text-sm text-neutral-600",
         Summary: "inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700",

@@ -681,23 +681,31 @@ Expected shape:
 
 V2 page must still own:
 
-- [ ] `StorefrontPageShell`;
-- [ ] breadcrumb slot;
-- [ ] product layout grid;
-- [ ] gallery/details cards;
-- [ ] category link/title/new badge;
-- [ ] product description placement;
-- [ ] `StorefrontProductPurchasePanel`;
-- [ ] navigation buttons;
-- [ ] support callout;
-- [ ] SEO content section;
-- [ ] related products section.
+- [x] `StorefrontPageShell`;
+- [x] breadcrumb slot;
+- [x] product layout grid;
+- [x] gallery/details cards;
+- [x] category link/title/new badge;
+- [x] product description placement;
+- [x] `StorefrontProductPurchasePanel`;
+- [x] navigation buttons;
+- [x] support callout;
+- [x] SEO content section;
+- [x] related products section.
 
 Exit criteria:
 
-- [ ] all four extracted components are consumed.
-- [ ] page remains a composition view, not an empty pass-through shell.
-- [ ] Product Detail route/page services are unchanged.
+- [x] all four extracted components are consumed.
+- [x] page remains a composition view, not an empty pass-through shell.
+- [x] Product Detail route/page services are unchanged.
+
+Implementation notes:
+
+- 2026-08-10: Added `ProductDetailDisplayVisuals.PricingClasses` and replaced inline pricing markup with `StorefrontProductPricing`.
+- 2026-08-10: `V2ProductPageView.razor` now composes `StorefrontProductGallery`, `StorefrontProductPricing`, `StorefrontProductAvailability`, `StorefrontProductPurchasePanel`, and `StorefrontProductVariantList`.
+- 2026-08-10: V2 page still owns shell, breadcrumbs, product layout cards, category/new badge, description placement, navigation buttons, support callout, SEO content, and related products.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj" --no-restore` with 0 warnings.
+- 2026-08-10: Audit passed: Product selection hooks are present in extracted SSR components; `Available Variants` is host-owned in `ProductDetailDisplayVisuals`.
 
 ## Phase 3.2.9 - Update Existing Guardrail Tests
 

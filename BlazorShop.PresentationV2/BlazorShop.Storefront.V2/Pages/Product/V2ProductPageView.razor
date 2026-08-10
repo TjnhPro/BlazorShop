@@ -36,15 +36,9 @@
                     }
 
                     <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-neutral-900">@_product.Name</h1>
-                    <div class="mt-5">
-                        <div class="text-sm text-neutral-500">@_pricing.PrimaryPriceLabel</div>
-                        <div class="mt-1 flex flex-wrap items-end gap-3">
-                            <span class="text-4xl font-black text-neutral-900" data-storefront-selection-price>@_pricing.PriceDisplay</span>
-                            <span class="pb-1 text-lg font-semibold text-neutral-400 line-through @(string.IsNullOrWhiteSpace(_pricing.ComparePriceDisplay) ? "hidden" : null)" data-storefront-selection-compare>
-                                @_pricing.ComparePriceDisplay
-                            </span>
-                        </div>
-                    </div>
+                    <StorefrontProductPricing
+                        Model="_pricing"
+                        Classes="ProductDetailDisplayVisuals.PricingClasses" />
 
                     <StorefrontProductAvailability
                         Availability="_availability"
