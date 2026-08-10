@@ -11,9 +11,7 @@
         <section class="bs-storefront-component-mvp__section"
                  data-storefront-component-mvp-section="ssr">
             <p class="bs-storefront-component-mvp__section-label">SSR proof</p>
-            <p class="bs-storefront-component-mvp__placeholder" data-storefront-component-mvp-placeholder="ssr">
-                SSR proof component is ready for H2.3.
-            </p>
+            <StorefrontBrandLogo Context="Context.BrandLogo" Classes="BrandLogoClasses" />
         </section>
 
         <section class="bs-storefront-component-mvp__section"
@@ -37,4 +35,9 @@
 @code {
     [Parameter, EditorRequired]
     public StorefrontComponentMvpPageContext Context { get; set; } = default!;
+
+    private static StorefrontBrandLogoClasses BrandLogoClasses { get; } = new(
+        Root: "bs-storefront-component-mvp__brand",
+        Image: "bs-storefront-component-mvp__brand-image",
+        Mark: "bs-storefront-component-mvp__brand-mark");
 }

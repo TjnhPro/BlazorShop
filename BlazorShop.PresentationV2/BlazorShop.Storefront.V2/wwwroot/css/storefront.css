@@ -816,6 +816,29 @@
     color: #525252;
 }
 
+.bs-storefront-component-mvp__brand {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: 800;
+    color: #171717;
+    text-decoration: none;
+}
+
+.bs-storefront-component-mvp__brand-image {
+    display: block;
+    width: auto;
+    max-width: 12rem;
+    max-height: 2.75rem;
+}
+
+.bs-storefront-component-mvp__brand-mark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: 1.2rem;
+}
+
 .bs-storefront-component-mvp__grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

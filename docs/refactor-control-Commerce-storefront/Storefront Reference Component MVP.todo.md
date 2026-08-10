@@ -338,30 +338,37 @@ Prove the existing SSR component is useful from raw server HTML.
 
 ### Tasks
 
-- [ ] Render `StorefrontBrandLogo` in the SSR section of the V2 lab view.
-- [ ] Supply `StorefrontBrandLogoContext` and `StorefrontBrandLogoClasses` from V2.
-- [ ] Confirm the component output includes:
-  - [ ] anchor root;
-  - [ ] `data-storefront-component="brand-logo"`;
-  - [ ] `data-storefront-brand`;
-  - [ ] logo image or brand-name fallback;
-  - [ ] accessible label.
-- [ ] Confirm `StorefrontBrandLogo` still has:
-  - [ ] no `@rendermode`;
-  - [ ] no Browser dependency;
-  - [ ] no Runtime/Client dependency;
-  - [ ] no direct API calls;
-  - [ ] no V2 literal theme classes inside the reusable component.
+- [x] Render `StorefrontBrandLogo` in the SSR section of the V2 lab view.
+- [x] Supply `StorefrontBrandLogoContext` and `StorefrontBrandLogoClasses` from V2.
+- [x] Confirm the component output includes:
+  - [x] anchor root;
+  - [x] `data-storefront-component="brand-logo"`;
+  - [x] `data-storefront-brand`;
+  - [x] logo image or brand-name fallback;
+  - [x] accessible label.
+- [x] Confirm `StorefrontBrandLogo` still has:
+  - [x] no `@rendermode`;
+  - [x] no Browser dependency;
+  - [x] no Runtime/Client dependency;
+  - [x] no direct API calls;
+  - [x] no V2 literal theme classes inside the reusable component.
 
 ### Tests
 
-- [ ] Focused component test for context/classes/fallback.
-- [ ] Raw HTML Playwright/API assertion that SSR markup exists before browser JS executes.
+- [x] Focused component test for context/classes/fallback.
+- [x] Raw HTML Playwright/API assertion that SSR markup exists before browser JS executes.
 
 ### Exit Criteria
 
-- [ ] SSR proof appears in raw initial HTML.
-- [ ] SSR proof remains useful with JavaScript disabled or before WASM starts.
+- [x] SSR proof appears in raw initial HTML.
+- [x] SSR proof remains useful with JavaScript disabled or before WASM starts.
+
+Implementation notes:
+
+- 2026-08-10: `StorefrontComponentMvpLab` now renders `StorefrontBrandLogo` in the `ssr` section, using the Presentation-owned `Context.BrandLogo` and V2-owned `StorefrontBrandLogoClasses`.
+- 2026-08-10: `StorefrontBrandLogo` source remains unchanged and still has no `@rendermode`, Browser dependency, Runtime/Client dependency, direct API call, or V2 literal theme classes.
+- 2026-08-10: added `StorefrontComponentMvpLabTests.RendersBrandLogoInSsrSectionWithRawServerHtml`, which renders the lab with `HtmlRenderer` and asserts the SSR raw HTML includes anchor, component marker, brand marker, image URL, alt text, accessible label, and V2 class slots before any browser JS/hydration.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontComponentMvpLabTests"` passed: 3 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H2.4 - Add Hybrid Runtime Probe Contract
 
