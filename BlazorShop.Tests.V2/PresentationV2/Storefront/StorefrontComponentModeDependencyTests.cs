@@ -32,6 +32,30 @@ public sealed class StorefrontComponentModeDependencyTests
         "BlazorShop.Web.SharedV2",
     ];
 
+    private static readonly string[] ForbiddenReusableBrowserReferenceFragments =
+    [
+        "BlazorShop.Storefront.Browser",
+    ];
+
+    private static readonly string[] ForbiddenWasmHostReferenceFragments =
+    [
+        "BlazorShop.Storefront.Presentation",
+        .. ForbiddenModeProjectReferenceFragments,
+    ];
+
+    private static readonly string[] ForbiddenV2WasmReferenceFragments =
+    [
+        "BlazorShop.Storefront.Runtime",
+        "BlazorShop.Storefront.Client",
+        "BlazorShop.Storefront.Starter",
+        "BlazorShop.CommerceNode.API",
+        "BlazorShop.ControlPlane",
+        "BlazorShop.Application",
+        "BlazorShop.Domain",
+        "BlazorShop.Infrastructure",
+        "BlazorShop.Web.SharedV2",
+    ];
+
     [Fact]
     public void SsrReferencesExactlyComponentsAndPresentation()
     {
@@ -43,6 +67,15 @@ public sealed class StorefrontComponentModeDependencyTests
                 "../BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj",
             ],
             references);
+    }
+
+    [Fact]
+    public void BaseComponentsReferencesNoProjectAndDoesNotReferenceBrowser()
+    {
+        var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
+
+        Assert.Empty(references);
+        AssertNoReferencesContain(references, ForbiddenReusableBrowserReferenceFragments);
     }
 
     [Fact]
@@ -67,6 +100,7 @@ public sealed class StorefrontComponentModeDependencyTests
             ],
             references);
         Assert.DoesNotContain(references, reference => reference.Contains("BlazorShop.Storefront.Presentation", StringComparison.Ordinal));
+        AssertNoReferencesContain(references, ForbiddenWasmHostReferenceFragments);
     }
 
     [Fact]
@@ -81,6 +115,22 @@ public sealed class StorefrontComponentModeDependencyTests
                 Assert.DoesNotContain(references, reference => reference.Contains(forbidden, StringComparison.OrdinalIgnoreCase));
             }
         }
+    }
+
+    [Fact]
+    public void V2WasmDoesNotReferenceRuntimeClientConsumersBackendCoreOrApiProjects()
+    {
+        var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj");
+
+        AssertNoReferencesContain(references, ForbiddenV2WasmReferenceFragments);
+    }
+
+    [Fact]
+    public void V2DoesNotReferenceRetiredHybridProject()
+    {
+        var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj");
+
+        AssertNoReferencesContain(references, [RetiredHybridProjectName]);
     }
 
     [Fact]
@@ -149,6 +199,15 @@ public sealed class StorefrontComponentModeDependencyTests
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    private static void AssertNoReferencesContain(IReadOnlyList<string> references, IReadOnlyCollection<string> forbiddenFragments)
+    {
+        var offenders = references
+            .Where(reference => forbiddenFragments.Any(fragment => reference.Contains(fragment, StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
+
+        Assert.True(offenders.Length == 0, $"Forbidden project references:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
     private static string NormalizeRelativeReference(string reference)

@@ -395,22 +395,30 @@ V2.WASM
 
 Tasks:
 
-- [ ] Update `StorefrontComponentModeDependencyTests` to remove `Components.Hybrid`.
-- [ ] Add direct dependency tests for base `Components`.
-- [ ] Keep SSR exact references test.
-- [ ] Keep WasmHost exact references test.
-- [ ] Add test that WasmHost does not reference Presentation.
-- [ ] Add test that WasmHost does not reference Runtime/Client/backend/core/API projects.
-- [ ] Add test that base Components does not reference Browser.
-- [ ] Add test that V2.WASM does not reference Runtime/Client/backend/core/API projects.
-- [ ] Add test that V2 does not reference `Components.Hybrid`.
-- [ ] Update `StorefrontComponentModeBoundaryValidator` messages so they no longer mention "until H2".
-- [ ] Remove old remediation text that describes `Components.Hybrid` as current dependency graph.
+- [x] Update `StorefrontComponentModeDependencyTests` to remove `Components.Hybrid`.
+- [x] Add direct dependency tests for base `Components`.
+- [x] Keep SSR exact references test.
+- [x] Keep WasmHost exact references test.
+- [x] Add test that WasmHost does not reference Presentation.
+- [x] Add test that WasmHost does not reference Runtime/Client/backend/core/API projects.
+- [x] Add test that base Components does not reference Browser.
+- [x] Add test that V2.WASM does not reference Runtime/Client/backend/core/API projects.
+- [x] Add test that V2 does not reference `Components.Hybrid`.
+- [x] Update `StorefrontComponentModeBoundaryValidator` messages so they no longer mention "until H2".
+- [x] Remove old remediation text that describes `Components.Hybrid` as current dependency graph.
 
 Exit criteria:
 
-- [ ] Architecture dependency tests express current target, not historical transition.
-- [ ] Error messages explain problem, cause, and correct destination.
+- [x] Architecture dependency tests express current target, not historical transition.
+- [x] Error messages explain problem, cause, and correct destination.
+
+Implementation notes:
+
+- 2026-08-10: `StorefrontComponentModeDependencyTests` now checks the active reusable mode project paths only: SSR and WasmHost.
+- 2026-08-10: added direct tests that base `Components` has no project references and no Browser reference, WasmHost keeps exact Components/Browser references and excludes Presentation/Runtime/Client/backend/core/API projects, V2.WASM excludes Runtime/Client/backend/core/API projects, and V2 excludes the retired Hybrid project.
+- 2026-08-10: `StorefrontComponentModeBoundaryValidator` repository profiles now include only SSR and WasmHost; transitional Hybrid repository remediation was removed.
+- 2026-08-10: `rg -n "until H2|transitional|compatibility project|Components\\.Hybrid" BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentModeBoundaryValidator.cs BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentModeBoundaryValidatorTests.cs` returned no matches.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests"` passed 57/57. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.6 - Render Mode Ownership Guardrails
 
@@ -852,7 +860,7 @@ Before marking H3 complete:
 - [x] H3.2 remove historical contact shell.
 - [x] H3.3 remove `Components.Hybrid` project and references.
 - [x] H3.4 decouple descriptor discovery from project topology.
-- [ ] H3.5 harden component dependency matrix.
+- [x] H3.5 harden component dependency matrix.
 - [ ] H3.6 harden render mode ownership.
 - [ ] H3.7 harden server-interactive/browser transport guardrails.
 - [ ] H3.8 rename `Contracts.System` namespace.
