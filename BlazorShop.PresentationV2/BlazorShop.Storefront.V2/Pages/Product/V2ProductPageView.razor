@@ -46,12 +46,10 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-neutral-600">
-                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700">@_availability.VariantSummary</span>
-                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(_purchase.DefaultSkuLabel) ? "hidden" : null)" data-storefront-selection-sku>@_purchase.DefaultSkuLabel</span>
-                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(_purchase.DefaultGtinLabel) ? "hidden" : null)" data-storefront-selection-gtin>@_purchase.DefaultGtinLabel</span>
-                        <span class="@StockBadgeClass" data-storefront-selection-stock>@_availability.StockLabel</span>
-                    </div>
+                    <StorefrontProductAvailability
+                        Availability="_availability"
+                        Purchase="_purchase"
+                        Classes="ProductDetailDisplayVisuals.AvailabilityClasses" />
 
                     <p class="mt-6 text-base leading-7 text-neutral-700">@_navigation.ProductDescription</p>
 
@@ -166,16 +164,7 @@
 
     private IReadOnlyList<ProductSummaryItem> _relatedProducts => Context.RelatedProductSummaries;
 
-    private string StockBadgeClass => AvailabilityBadgeClass(_availability.AvailabilityState);
-
     private string ProductSeoContentTitle => _navigation.ProductSeoContentTitle;
-
-    private static string AvailabilityBadgeClass(string state)
-    {
-        return string.Equals(state, "out-of-stock", StringComparison.Ordinal)
-            ? "inline-flex items-center rounded-full bg-rose-50 px-3 py-1 font-semibold text-rose-700"
-            : "inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700";
-    }
 
     private static string VariantStockClass(string state)
     {

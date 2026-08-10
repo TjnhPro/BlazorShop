@@ -569,28 +569,35 @@ StorefrontProductPurchaseView Purchase
 
 Responsibilities:
 
-- [ ] render variant summary;
-- [ ] render SKU when present;
-- [ ] render GTIN when present;
-- [ ] render stock label;
-- [ ] derive semantic availability state only for class selection;
-- [ ] preserve:
-  - [ ] `data-storefront-selection-sku`
-  - [ ] `data-storefront-selection-gtin`
-  - [ ] `data-storefront-selection-stock`
+- [x] render variant summary;
+- [x] render SKU when present;
+- [x] render GTIN when present;
+- [x] render stock label;
+- [x] derive semantic availability state only for class selection;
+- [x] preserve:
+  - [x] `data-storefront-selection-sku`
+  - [x] `data-storefront-selection-gtin`
+  - [x] `data-storefront-selection-stock`
 
 Forbidden:
 
-- [ ] purchase option selection;
-- [ ] quantity selection;
-- [ ] add-to-cart state;
-- [ ] selection-preview request payload construction;
-- [ ] hardcoded final V2 colors/classes.
+- [x] purchase option selection;
+- [x] quantity selection;
+- [x] add-to-cart state;
+- [x] selection-preview request payload construction;
+- [x] hardcoded final V2 colors/classes.
 
 Exit criteria:
 
-- [ ] `V2ProductPageView.razor` no longer owns availability metadata markup.
-- [ ] selection-preview JS can still update SKU/GTIN/stock hooks.
+- [x] `V2ProductPageView.razor` no longer owns availability metadata markup.
+- [x] selection-preview JS can still update SKU/GTIN/stock hooks.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontProductAvailability` in `BlazorShop.Storefront.Components.Ssr.Product`.
+- 2026-08-10: The component renders variant summary, SKU, GTIN, and stock hooks using `StorefrontProductAvailabilityView`, `StorefrontProductPurchaseView`, and `ProductAvailabilityClasses`.
+- 2026-08-10: Added V2-owned `ProductDetailDisplayVisuals.AvailabilityClasses` and replaced the inline availability block in `V2ProductPageView.razor`.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj" --no-restore` with 0 warnings.
 
 ## Phase 3.2.7 - Extract StorefrontProductVariantList
 

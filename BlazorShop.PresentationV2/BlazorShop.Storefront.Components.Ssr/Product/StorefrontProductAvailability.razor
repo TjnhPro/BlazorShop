@@ -1,0 +1,36 @@
+@namespace BlazorShop.Storefront.Components.Ssr.Product
+
+<div class="@Classes.Root">
+    <span class="@Classes.Summary">@Availability.VariantSummary</span>
+    <span class="@SkuClass" data-storefront-selection-sku>@Purchase.DefaultSkuLabel</span>
+    <span class="@GtinClass" data-storefront-selection-gtin>@Purchase.DefaultGtinLabel</span>
+    <span class="@StockClass" data-storefront-selection-stock>@Availability.StockLabel</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontProductAvailabilityView Availability { get; set; } = new(string.Empty, string.Empty, string.Empty, string.Empty);
+
+    [Parameter, EditorRequired]
+    public StorefrontProductPurchaseView Purchase { get; set; } = new(false, string.Empty, string.Empty, string.Empty, string.Empty, 1, null, 0);
+
+    [Parameter]
+    public ProductAvailabilityClasses Classes { get; set; } = new();
+
+    private string SkuClass => string.IsNullOrWhiteSpace(Purchase.DefaultSkuLabel)
+        ? CombineClasses(Classes.Metadata, Classes.Hidden)
+        : Classes.Metadata;
+
+    private string GtinClass => string.IsNullOrWhiteSpace(Purchase.DefaultGtinLabel)
+        ? CombineClasses(Classes.Metadata, Classes.Hidden)
+        : Classes.Metadata;
+
+    private string StockClass => string.Equals(Availability.AvailabilityState, "out-of-stock", StringComparison.Ordinal)
+        ? Classes.StockUnavailable
+        : Classes.StockAvailable;
+
+    private static string CombineClasses(params string[] values)
+    {
+        return string.Join(" ", values.Where(value => !string.IsNullOrWhiteSpace(value)));
+    }
+}
