@@ -300,23 +300,23 @@ H1 must be allowed to touch code/tests only after H0 docs are complete.
 
 H1 backlog must include at least:
 
-- [ ] Re-evaluate whether `BlazorShop.Storefront.Components.Hybrid` should remain, be narrowed, be renamed, or be retired.
-- [ ] Re-evaluate whether public descriptors should stay tied to physical mode project assembly names.
-- [ ] Re-evaluate `StorefrontComponentModeBoundaryValidator` profiles.
-- [ ] Re-evaluate `StorefrontComponentModeDependencyTests` exact project reference assertions.
-- [ ] Re-evaluate `StorefrontComponentDescriptorTests` descriptor/project mode consistency.
-- [ ] Re-evaluate `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2`.
-- [ ] Re-evaluate V2 visible contact flow and decide whether the `Components.Hybrid` contact descriptor remains useful.
-- [ ] Re-evaluate whether future shared interactive components should live in downloadable WASM assemblies directly instead of a server shell project.
-- [ ] Preserve Browser/BFF data path and no direct Commerce Node calls.
-- [ ] Preserve V2/Starter/generated visual ownership.
-- [ ] Define browser QA required before closing any code-level change.
+- [x] Re-evaluate whether `BlazorShop.Storefront.Components.Hybrid` should remain, be narrowed, be renamed, or be retired.
+- [x] Re-evaluate whether public descriptors should stay tied to physical mode project assembly names.
+- [x] Re-evaluate `StorefrontComponentModeBoundaryValidator` profiles.
+- [x] Re-evaluate `StorefrontComponentModeDependencyTests` exact project reference assertions.
+- [x] Re-evaluate `StorefrontComponentDescriptorTests` descriptor/project mode consistency.
+- [x] Re-evaluate `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2`.
+- [x] Re-evaluate V2 visible contact flow and decide whether the `Components.Hybrid` contact descriptor remains useful.
+- [x] Re-evaluate whether future shared interactive components should live in downloadable WASM assemblies directly instead of a server shell project.
+- [x] Preserve Browser/BFF data path and no direct Commerce Node calls.
+- [x] Preserve V2/Starter/generated visual ownership.
+- [x] Define browser QA required before closing any code-level change.
 
 Exit criteria:
 
-- [ ] H1 has a concrete code/test review queue.
-- [ ] H0 remains docs-only.
-- [ ] No implementation agent needs to infer the next code phase from scattered notes.
+- [x] H1 has a concrete code/test review queue.
+- [x] H0 remains docs-only.
+- [x] No implementation agent needs to infer the next code phase from scattered notes.
 
 ## Phase H0.6 - QA And Closure
 
