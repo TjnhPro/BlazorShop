@@ -72,28 +72,28 @@ Reference URLs:
 
 Allowed H0 changes:
 
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/03-runtime-boundaries.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`
-- [ ] `docs/refactor-control-Commerce-storefront/Storefront Reference Components.todo.md`
-- [ ] `docs/refactor-control-Commerce-storefront/Storefront Component Mode Foundation.todo.md`
-- [ ] `docs/refactor-control-Commerce-storefront/Storefront Component Mode Foundation Closure Patch.todo.md` only if a short historical/superseded note is required.
-- [ ] A new H1 backlog `.todo.md` file if needed.
-- [ ] Optional doc index/readme updates only when they point readers to the corrected source of truth.
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/03-runtime-boundaries.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`
+- [x] `docs/refactor-control-Commerce-storefront/Storefront Reference Components.todo.md`
+- [x] `docs/refactor-control-Commerce-storefront/Storefront Component Mode Foundation.todo.md`
+- [x] `docs/refactor-control-Commerce-storefront/Storefront Component Mode Foundation Closure Patch.todo.md` only if a short historical/superseded note is required.
+- [x] A new H1 backlog `.todo.md` file if needed.
+- [x] Optional doc index/readme updates were reviewed and not needed because corrected source-of-truth docs already point to the H1 backlog.
 
 Forbidden H0 changes:
 
-- [ ] No `.csproj` changes.
-- [ ] No production `.cs`, `.razor`, `.js`, `.css`, `.scss`, or static asset changes.
-- [ ] No DI, service registration, `Program.cs`, endpoint, BFF, Browser, Runtime, Client, Presentation, V2, V2.WASM, Starter, Builder, Control Plane, Commerce Node, Application, Domain, or Infrastructure source changes.
-- [ ] No test implementation changes.
-- [ ] No Playwright test changes or runs required.
-- [ ] No component movement.
-- [ ] No descriptor mode changes.
-- [ ] No render-mode behavior changes.
-- [ ] No project-reference graph changes.
+- [x] No `.csproj` changes.
+- [x] No production `.cs`, `.razor`, `.js`, `.css`, `.scss`, or static asset changes.
+- [x] No DI, service registration, `Program.cs`, endpoint, BFF, Browser, Runtime, Client, Presentation, V2, V2.WASM, Starter, Builder, Control Plane, Commerce Node, Application, Domain, or Infrastructure source changes.
+- [x] No test implementation changes.
+- [x] No Playwright test changes or runs required.
+- [x] No component movement.
+- [x] No descriptor mode changes.
+- [x] No render-mode behavior changes.
+- [x] No project-reference graph changes.
 
 If a code/test/build blocker appears during H0, stop and split it into H1. Do not fix it inside H0.
 
@@ -322,18 +322,18 @@ Exit criteria:
 
 Docs-only verification:
 
-- [ ] Run `git diff -- docs/architecture BlazorShop.PresentationV2/COMPONENT-MODES.md BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md docs/refactor-control-Commerce-storefront`.
-- [ ] Run the Hybrid wording scan again:
+- [x] Run `git diff -- docs/architecture BlazorShop.PresentationV2/COMPONENT-MODES.md BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md docs/refactor-control-Commerce-storefront`.
+- [x] Run the Hybrid wording scan again:
 
 ```powershell
 rg -n "Hybrid|InteractiveAuto|InteractiveServer|Components\.Hybrid|WasmHost child|server-owned shells|@rendermode" BlazorShop.PresentationV2 docs -g "*.md" -g "*.todo.md"
 ```
 
-- [ ] Confirm `InteractiveAuto` appears only as a forbidden/non-target clarification, not as recommended architecture.
-- [ ] Confirm `InteractiveServer` appears only as a forbidden/non-target clarification or official-doc comparison, not as recommended public storefront behavior.
-- [ ] Confirm source-of-truth docs do not state that `Hybrid` requires nested `WasmHost` child hosting.
-- [ ] Confirm historical plans have a superseded note instead of being rewritten.
-- [ ] Confirm no non-document source files changed:
+- [x] Confirm `InteractiveAuto` appears only as a forbidden/non-target clarification, not as recommended architecture.
+- [x] Confirm `InteractiveServer` appears only as a forbidden/non-target clarification or official-doc comparison, not as recommended public storefront behavior.
+- [x] Confirm source-of-truth docs do not state that `Hybrid` requires nested `WasmHost` child hosting.
+- [x] Confirm historical plans have a superseded note instead of being rewritten.
+- [x] Confirm no non-document source files changed:
 
 ```powershell
 git diff --name-only | rg -v "^(docs/|BlazorShop\.PresentationV2/COMPONENT-MODES\.md|BlazorShop\.PresentationV2/BlazorShop\.Storefront\.Components\.Hybrid/README\.md)"
@@ -345,29 +345,29 @@ Expected result:
 
 No build/test gate:
 
-- [ ] Do not run `dotnet build` unless a non-doc file was accidentally changed.
-- [ ] Do not run `dotnet test` unless a test/source file was accidentally changed.
-- [ ] Do not run Playwright because no browser behavior changes in H0.
+- [x] Do not run `dotnet build` unless a non-doc file was accidentally changed.
+- [x] Do not run `dotnet test` unless a test/source file was accidentally changed.
+- [x] Do not run Playwright because no browser behavior changes in H0.
 
 Exit criteria:
 
-- [ ] Docs-only diff is clean and scoped.
-- [ ] H1 backlog exists.
-- [ ] The current architecture source of truth is no longer internally contradictory.
+- [x] Docs-only diff is clean and scoped.
+- [x] H1 backlog exists.
+- [x] The current architecture source of truth is no longer internally contradictory.
 
 ## Definition Of Done
 
-- [ ] `COMPONENT-MODES.md` defines Hybrid as BlazorShop architectural classification, not as a mandatory physical shell pattern.
-- [ ] `COMPONENT-MODES.md` records official ASP.NET Core render-mode facts relevant to this project.
-- [ ] `03-runtime-boundaries.md` explains Storefront SSR/Hybrid/WasmHost boundaries.
-- [ ] `05-project-and-folder-guide.md` no longer tells agents that `Components.Hybrid` must be the canonical server shell bridge.
-- [ ] `10-v2-contract-ownership.md` no longer treats `Hybrid -> WasmHost child` as the required mode contract.
-- [ ] `Components.Hybrid/README.md` no longer claims the project is foundation-only or that nested bridge is the desired default.
-- [ ] Historical complete plans are annotated, not rewritten as if they never happened.
-- [ ] `InteractiveAuto` is explicitly non-target for public Storefront V2.
-- [ ] `InteractiveServer` is explicitly non-target for public Storefront V2.
-- [ ] H1 backlog exists and lists every code/test/project-graph area that must be reviewed later.
-- [ ] H0 made no code, test, project, runtime, DI, render-mode, API, Browser, Builder, or Playwright changes.
+- [x] `COMPONENT-MODES.md` defines Hybrid as BlazorShop architectural classification, not as a mandatory physical shell pattern.
+- [x] `COMPONENT-MODES.md` records official ASP.NET Core render-mode facts relevant to this project.
+- [x] `03-runtime-boundaries.md` explains Storefront SSR/Hybrid/WasmHost boundaries.
+- [x] `05-project-and-folder-guide.md` no longer tells agents that `Components.Hybrid` must be the canonical server shell bridge.
+- [x] `10-v2-contract-ownership.md` no longer treats `Hybrid -> WasmHost child` as the required mode contract.
+- [x] `Components.Hybrid/README.md` no longer claims the project is foundation-only or that nested bridge is the desired default.
+- [x] Historical complete plans are annotated, not rewritten as if they never happened.
+- [x] `InteractiveAuto` is explicitly non-target for public Storefront V2.
+- [x] `InteractiveServer` is explicitly non-target for public Storefront V2.
+- [x] H1 backlog exists and lists every code/test/project-graph area that must be reviewed later.
+- [x] H0 made no code, test, project, runtime, DI, render-mode, API, Browser, Builder, or Playwright changes.
 
 ## Implementation Notes
 
@@ -382,7 +382,11 @@ Exit criteria:
   - H0.0 discounted rail path: `V2/Pages/Hybrid/Catalog/Home.razor` renders `StorefrontDiscountedProductRailSection @rendermode="InteractiveWebAssembly"`; the section lives in `BlazorShop.Storefront.V2.WASM` and wraps `Components.WasmHost/Catalog/StorefrontDiscountedProductRail.razor`.
 - [x] Record the official Microsoft docs checked.
   - H0.0 checked Microsoft docs: ASP.NET Core Blazor render modes, prerendering, and JavaScript initializers/startup docs for .NET 10.
-- [ ] Record the final Hybrid wording scan summary.
+- [x] Record the final Hybrid wording scan summary.
+  - H0.6 `git diff -- docs/architecture BlazorShop.PresentationV2/COMPONENT-MODES.md BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md docs/refactor-control-Commerce-storefront` produced no output before final closure checklist edits because all content phases had already been committed.
+  - H0.6 wording scan confirmed source-of-truth docs define Hybrid as BlazorShop architecture classification and keep `InteractiveAuto`/`InteractiveServer` only as non-target/official-comparison wording.
+  - Remaining `Components.Hybrid -> WasmHost child` and old shell wording appears only in annotated historical plans or as explicit "not required/not default" clarification.
+  - Remaining `Pages/Hybrid` references are route ownership or generated-project folder conventions and are preserved.
 - H0.4 scan/classification summary:
   - Command run: `rg -n "Hybrid|InteractiveAuto|InteractiveServer|Components\.Hybrid|WasmHost child|server-owned shells|@rendermode" BlazorShop.PresentationV2 docs -g "*.md" -g "*.todo.md"`.
   - Current source-of-truth docs corrected in H0: `BlazorShop.PresentationV2/COMPONENT-MODES.md`, `docs/architecture/03-runtime-boundaries.md`, `docs/architecture/05-project-and-folder-guide.md`, `docs/architecture/10-v2-contract-ownership.md`, and `BlazorShop.Storefront.Components.Hybrid/README.md`.
@@ -390,7 +394,8 @@ Exit criteria:
   - Route-folder references such as `Pages/Hybrid` remain valid BlazorShop ownership terminology in V2, Starter, QA, and older refactor-control plans.
   - StorefrontBuilder and visual reverse engineering docs that mention `Pages/Hybrid` remain generated-project folder conventions and were not changed in H0.
   - Documentation mentions of descriptor/project tests and mode boundary allowlists are deferred to H1 because H0 is docs-only and made no code/test/project-graph changes.
-- [ ] Record why no build/test/Playwright gate was required.
+- [x] Record why no build/test/Playwright gate was required.
+  - H0 changed only Markdown documentation and todo files. The non-document diff audit produced no output, so `dotnet build`, `dotnet test`, and Playwright were intentionally not run.
 
 ## Decision Audit Trail
 
