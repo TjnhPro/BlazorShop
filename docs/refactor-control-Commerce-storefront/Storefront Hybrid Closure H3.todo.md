@@ -853,15 +853,23 @@ Unexpected unless separately justified:
 
 Tasks:
 
-- [ ] Run `git diff --stat`.
-- [ ] Run `git diff --name-only`.
-- [ ] Classify each changed file as expected or justified.
-- [ ] Confirm no unrelated feature work entered the phase.
-- [ ] Confirm no user changes were reverted.
+- [x] Run `git diff --stat`.
+- [x] Run `git diff --name-only`.
+- [x] Classify each changed file as expected or justified.
+- [x] Confirm no unrelated feature work entered the phase.
+- [x] Confirm no user changes were reverted.
 
 Exit criteria:
 
-- [ ] H3 diff is limited to closure scope.
+- [x] H3 diff is limited to closure scope.
+
+Implementation notes:
+
+- 2026-08-10: ran `git diff --stat b876dc6c^..HEAD`; audit covered 47 changed files with 1795 insertions and 282 deletions.
+- 2026-08-10: expected H3 files: retired `BlazorShop.Storefront.Components.Hybrid`, active reusable component roots, WasmHost descriptor/imports, V2.WASM imports, Storefront Presentation QA-route middleware, Storefront component/boundary tests, `BlazorShop.sln`, active architecture docs, QA checklist, and H3 plan.
+- 2026-08-10: justified H3.14/H3.15 support files: `scripts/qa/run-storefront-reference-components-v2-proof.ps1` for mandatory reference-component browser proof; `StorefrontStarterFoundationBoundaryTests`, `StorefrontBffBoundaryHardeningTests`, `verify-no-active-legacy-reference.ps1`, and historical release/foundation docs for full-gate stabilization after existing guardrails surfaced stale scan inputs.
+- 2026-08-10: no Commerce Node business services, Control Plane services, checkout/order/payment/cart domain logic, Storefront Runtime transport, Storefront Client generated code, StorefrontBuilder code, database migrations, or Starter/generated storefront implementation files were changed for feature behavior.
+- 2026-08-10: no user changes were reverted; H3 changes stayed in architecture closure, guardrail, documentation, and QA-proof scope.
 
 ## Phase H3.17 - Final Closure Report
 
@@ -949,7 +957,7 @@ Before marking H3 complete:
 - [x] H3.13 run focused test gate.
 - [x] H3.14 run mandatory Playwright browser regression.
 - [x] H3.15 run full solution gate.
-- [ ] H3.16 audit scope drift.
+- [x] H3.16 audit scope drift.
 - [ ] H3.17 write final closure report.
 
 ## Decision Audit Trail
