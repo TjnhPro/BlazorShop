@@ -156,6 +156,8 @@ Storefront `Ssr`, `Hybrid`, and `WasmHost` are BlazorShop architecture classific
 - `Hybrid` means server-produced or prerendered HTML/page snapshots plus client-side WebAssembly interactivity after hydration, with optional progressive enhancement.
 - `WasmHost` means browser-side WebAssembly interactive roots included in a downloadable WASM app graph and using Browser controllers for protected actions.
 
+`BlazorShop.Storefront.Components.Primitives` is not a fourth component mode. It is a browser-safe render-only Razor package for reusable semantic primitives that reference `BlazorShop.Storefront.Components` contracts only. Hosts such as V2 and V2.WASM provide final classes/copy/layout and render-mode placement.
+
 Storefront V2, Starter, and generated hosts may group route/page files under `Pages/Ssr`, `Pages/Hybrid`, and `Pages/WasmHost` as BlazorShop ownership folders. These folder names do not imply `.NET InteractiveAuto`, do not imply `InteractiveServer`, and do not require `Components.Hybrid` to be the physical implementation layer.
 
 Public interactive storefront behavior should use `InteractiveWebAssembly` with prerendering where needed. Public storefront routes must not use `InteractiveServer`, `InteractiveAuto`, or SignalR/circuit-based storefront interactivity unless a later architecture decision explicitly reopens the tradeoff.
@@ -177,6 +179,7 @@ Do not:
 
 - Put Storefront V2-specific design, CSS, copy, or generated visual output here.
 - Reference `BlazorShop.Storefront.V2`, `BlazorShop.Storefront.Starter`, generated storefront projects, Control Plane, Commerce Node API, Application, Domain, Infrastructure, or `Web.SharedV2`.
+- Put browser controllers, Presentation services, Runtime/Client access, `HttpClient`, `IJSRuntime`, `@rendermode`, descriptors, CSS/static assets, or final visual classes in `Components.Primitives`.
 - Move ecommerce truth such as pricing, sellability, checkout validity, order creation, or inventory decisions out of Commerce Node Storefront APIs.
 
 Hosts call `AddStorefrontApplication()`, `UseStorefrontApplication()`, and `MapStorefrontApplication()` instead of registering runtime services or mapping individual middleware, route, BFF, SEO, and media endpoint groups.

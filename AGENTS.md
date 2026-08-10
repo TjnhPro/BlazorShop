@@ -46,6 +46,7 @@ Active V2 presentation/runtime:
 - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM`
@@ -109,6 +110,7 @@ StorefrontBuilder boundary:
 - StorefrontBuilder is development-time tooling only; it is not a production service or Commerce Node extension.
 - Generated storefronts are disposable artifacts under `artifacts/storefront-builder/{ProjectName}` or `artifacts/storefront-builder/generated/{ProjectName}` for manual proof runs, or `obj/storefront-builder/generated/{ProjectName}` for automated proof runs. They consume `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Presentation`, and `BlazorShop.Storefront.Components` through package boundaries, keep `BlazorShop.Storefront.Client` package metadata because Runtime owns the generated transport dependency, and must not be added to `BlazorShop.sln` by default.
 - Storefront Presentation owns shared App/Routes/page services/BFF/SEO/media composition. Storefront V2, Starter, and generated storefronts provide host configuration, view registrations, assets, copy, and store-specific visual output.
+- Storefront Components.Primitives owns browser-safe render-only Razor primitives that reference `BlazorShop.Storefront.Components` contracts only. It is not a component mode, must not use `@rendermode`, descriptors, Browser/Presentation/Runtime/Client/backend references, final V2 CSS classes, store-specific copy, CSS/assets, or generated storefront output.
 - Generated storefronts must not reference Storefront V2, backend/core/API projects, Control Plane Web, Commerce Node API, or `Web.SharedV2.Models` business contracts.
 - Store-specific generated CSS, assets, pages, analysis artifacts, and AI-tuned components must not be written back into `BlazorShop.Storefront.Starter`.
 - Protected browser actions in generated storefronts must go through same-origin BFF endpoints before Commerce Node Storefront APIs.

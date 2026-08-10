@@ -125,6 +125,7 @@ Shared V2 UI/asset rules:
 - Share browser behavior helpers through `BlazorShop.Web.SharedV2` only when both active V2 frontends have a real use case. The helper must not be Storefront-specific.
 - Keep shared Storefront App/Routes/page services/BFF/SEO/media composition in `BlazorShop.Storefront.Presentation`.
 - Keep Storefront-specific header, footer, navigation, cart/toast DOM integration, layout views, and public commerce visual templates in `BlazorShop.Storefront.V2`.
+- Put shared browser-safe render-only Razor primitives in `BlazorShop.Storefront.Components.Primitives` only when more than one active host context reuses the same semantic markup. Primitives reference `BlazorShop.Storefront.Components` only and do not own final CSS/copy/layout, descriptors, render modes, Browser controllers, Presentation services, Runtime/Client access, backend references, or API calls.
 - Keep Control Plane-specific nav/sidebar/topbar/page header and dense operational components in `BlazorShop.ControlPlane.Web`.
 - Do not create a shared visual shell or asset registry just to reduce superficial markup similarity.
 

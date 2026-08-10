@@ -1126,35 +1126,41 @@ Goal: keep source-of-truth docs aligned with the new package.
 
 Update at minimum:
 
-- [ ] `AGENTS.md`
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/03-runtime-boundaries.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/08-agent-decision-rules.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
+- [x] `AGENTS.md`
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/03-runtime-boundaries.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/08-agent-decision-rules.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
 
 Document:
 
-- [ ] `Components.Primitives` is browser-safe render-only Razor.
-- [ ] It references `Components` only.
-- [ ] It is not a new semantic mode.
-- [ ] It must not own final V2 CSS/copy/layout.
-- [ ] It must not reference Presentation/Browser/Runtime/Client/backend/host projects.
-- [ ] Hybrid remains server/prerendered HTML plus WebAssembly interactivity after hydration.
-- [ ] `Components.Ssr` and `Components.WasmHost` remain runtime-specific reusable packages.
+- [x] `Components.Primitives` is browser-safe render-only Razor.
+- [x] It references `Components` only.
+- [x] It is not a new semantic mode.
+- [x] It must not own final V2 CSS/copy/layout.
+- [x] It must not reference Presentation/Browser/Runtime/Client/backend/host projects.
+- [x] Hybrid remains server/prerendered HTML plus WebAssembly interactivity after hydration.
+- [x] `Components.Ssr` and `Components.WasmHost` remain runtime-specific reusable packages.
 
 QA checklist update:
 
-- [ ] Add Product Summary primitive extraction entry.
-- [ ] Record browser QA expectations.
-- [ ] Record dependency guardrail expectations.
-- [ ] Record add-to-cart browser regression expectation.
+- [x] Add Product Summary primitive extraction entry.
+- [x] Record browser QA expectations.
+- [x] Record dependency guardrail expectations.
+- [x] Record add-to-cart browser regression expectation.
 
 Exit criteria:
 
-- [ ] Docs and code graph agree.
-- [ ] Future agents know where neutral Razor primitives belong.
+- [x] Docs and code graph agree.
+- [x] Future agents know where neutral Razor primitives belong.
+
+Implementation notes:
+
+- 2026-08-10: Updated `AGENTS.md`, `BlazorShop.PresentationV2/COMPONENT-MODES.md`, runtime boundary docs, project/folder guide, agent decision rules, contract ownership docs, and Storefront V2 QA checklist for `Components.Primitives`.
+- 2026-08-10: Docs now state `Components.Primitives` is browser-safe render-only Razor, references `Components` only, is not a component mode, and must not own descriptors, final CSS/copy/layout, assets, Browser/Presentation/Runtime/Client/backend references, API calls, JS interop, or `@rendermode`.
+- 2026-08-10: QA docs record Product Summary primitive browser QA, dependency guardrails, V2/V2.WASM final class/copy ownership, and add-to-cart same-origin regression expectations.
 
 ## Phase 3.1.18 - Full Verification Gate
 

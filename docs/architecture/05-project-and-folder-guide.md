@@ -225,6 +225,29 @@ Do not:
 - Add Razor components, static web assets, V2 layout/theme implementations, visual class bags, final copy, or generated visual output.
 - Reintroduce `Features/*` compatibility wrappers without a new architecture decision; visual templates belong in `Storefront.V2`, `Storefront.Starter`, or a generated/custom storefront.
 
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives`
+
+Status:
+
+- Browser-safe render-only Razor primitives.
+- Not a component mode, descriptor inventory, registry, transport layer, or design system.
+
+Use for:
+
+- Small reusable semantic Razor primitives that consume `BlazorShop.Storefront.Components` contracts.
+- Stable `data-storefront-*` hooks, accessibility markup, links/buttons, and fully host-supplied class slots.
+- Product Summary primitive rendering shared by Storefront V2 SSR surfaces and V2.WASM rail item rendering.
+
+Do not:
+
+- Reference `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Browser`, `Runtime`, `Client`, V2, V2.WASM, Starter, Starter.WASM, generated storefront projects, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
+- Use `HttpClient`, `IJSRuntime`, `@rendermode`, component descriptors, direct `/api/*`, Commerce Node URLs, or localhost backend URLs.
+- Own theme CSS, static assets, V2 layout classes, store-specific copy, generated output, or business decisions.
+
+Allowed direct project references:
+
+- `BlazorShop.Storefront.Components`
+
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr`
 
 Status:
