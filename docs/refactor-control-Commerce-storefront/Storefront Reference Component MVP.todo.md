@@ -527,14 +527,14 @@ Prove browser-interactive reusable component data flow through approved Browser/
 
 ### Tasks
 
-- [ ] Render `StorefrontDiscountedProductRailSection` or an equivalent V2.WASM-owned wrapper in the WasmHost section.
-- [ ] Preserve action route as same-origin BFF, not Commerce Node:
+- [x] Render `StorefrontDiscountedProductRailSection` or an equivalent V2.WASM-owned wrapper in the WasmHost section.
+- [x] Preserve action route as same-origin BFF, not Commerce Node:
 
 ```text
 /api/catalog/discounted-products
 ```
 
-- [ ] Preserve data path:
+- [x] Preserve data path:
 
 ```text
 StorefrontDiscountedProductRail
@@ -545,21 +545,31 @@ StorefrontDiscountedProductRail
   -> Commerce Node Storefront API
 ```
 
-- [ ] Confirm states are observable:
-  - [ ] loading;
-  - [ ] success;
-  - [ ] empty;
-  - [ ] error;
-  - [ ] retry.
-- [ ] Tests must not depend on uncontrolled store catalog data.
-- [ ] Use deterministic seeded fixture or Playwright network route mocking for BFF response states.
-- [ ] Do not add backend discount API behavior in H2.
+- [x] Confirm states are observable:
+  - [x] loading;
+  - [x] success;
+  - [x] empty;
+  - [x] error;
+  - [x] retry.
+- [x] Tests must not depend on uncontrolled store catalog data.
+- [x] Use deterministic seeded fixture or Playwright network route mocking for BFF response states.
+- [x] Do not add backend discount API behavior in H2.
 
 ### Exit Criteria
 
-- [ ] Rail works inside the MVP route.
-- [ ] Browser calls only same-origin local endpoint.
-- [ ] Error and retry behavior can be proven deterministically.
+- [x] Rail works inside the MVP route.
+- [x] Browser calls only same-origin local endpoint.
+- [x] Error and retry behavior can be proven deterministically.
+
+Implementation notes:
+
+- 2026-08-10: `StorefrontComponentMvpLab` now renders the existing V2.WASM-owned `StorefrontDiscountedProductRailSection` in the `wasmhost` proof section with `@rendermode="InteractiveWebAssembly"`.
+- 2026-08-10: wrapper source still supplies `StorefrontDiscountedProductRailActionDescriptor` with same-origin BFF route `/api/catalog/discounted-products`; no direct `api/storefront/stores`, `CommerceNode`, or `HttpClient` dependency was introduced in the wrapper.
+- 2026-08-10: existing product rail/controller tests cover deterministic loading, success, empty, error, retry, and browser controller behavior without uncontrolled store catalog data. Runtime browser route mocking remains the mandatory H2.10 proof.
+- 2026-08-10: no backend discount API behavior was added in H2.6.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: first focused H2.6 test run failed because a source assertion expected a non-target-typed constructor string. The assertion was corrected to lock behavior instead of syntax.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentMvpLabTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontBrowserProductRailControllerTests"` passed: 16 passed, 0 failed. Existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H2.7 - Focused Component And Architecture Tests
 

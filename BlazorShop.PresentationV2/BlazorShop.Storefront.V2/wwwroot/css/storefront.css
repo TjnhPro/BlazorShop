@@ -896,6 +896,12 @@
     background: #ffffff;
 }
 
+.bs-storefront-component-mvp__section [data-storefront-component="discounted-product-rail"] {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+}
+
 @media (max-width: 860px) {
     .bs-storefront-component-mvp__grid {
         grid-template-columns: 1fr;

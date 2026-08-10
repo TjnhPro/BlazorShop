@@ -37,6 +37,24 @@ public sealed class StorefrontComponentMvpLabTests
     }
 
     [Fact]
+    public void LabPlacesWasmHostRailWrapperWithSameOriginBffAction()
+    {
+        var lab = ReadRepositoryFile(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/System/StorefrontComponentMvpLab.razor");
+        var wrapper = ReadRepositoryFile(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Catalog/StorefrontDiscountedProductRailSection.razor");
+
+        Assert.Contains("data-storefront-component-mvp-section=\"wasmhost\"", lab, StringComparison.Ordinal);
+        Assert.Contains("<StorefrontDiscountedProductRailSection @rendermode=\"InteractiveWebAssembly\" />", lab, StringComparison.Ordinal);
+        Assert.Contains("StorefrontDiscountedProductRailActionDescriptor", wrapper, StringComparison.Ordinal);
+        Assert.Contains("\"/api/catalog/discounted-products\"", wrapper, StringComparison.Ordinal);
+        Assert.DoesNotContain("api/storefront/stores", wrapper, StringComparison.Ordinal);
+        Assert.DoesNotContain("CommerceNode", wrapper, StringComparison.Ordinal);
+        Assert.DoesNotContain("HttpClient", wrapper, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-storefront-component-mvp-placeholder=\"wasmhost\"", lab, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task HybridWrapperRendersProbePrerenderMarkupWhenRenderedAsStaticHtml()
     {
         var html = await RenderHybridWrapperAsync();
