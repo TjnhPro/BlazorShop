@@ -206,24 +206,21 @@ namespace BlazorShop.Tests.Architecture
         public void StarterProject_RestoresAndBuildsFromLocalStorefrontPackages()
         {
             var repositoryRoot = FindRepositoryRoot();
-            var packageFeed = RepositoryPath("artifacts/storefront-packages");
-            var packageCache = RepositoryPath("obj/storefront-starter-foundation-boundary/nuget-packages");
+            var runRoot = RepositoryPath($"obj/storefront-starter-foundation-boundary/{Guid.NewGuid():N}");
+            var packageFeed = Path.Combine(runRoot, "packages");
+            var packageCache = Path.Combine(runRoot, "nuget-packages");
+            var nugetConfig = Path.Combine(runRoot, "nuget.config");
+            var starterBuildProperties = new[]
+            {
+                $"/p:RestorePackagesPath={packageCache}",
+            };
             var starterProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
             var presentationProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj");
             var componentsProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
 
-            if (Directory.Exists(packageFeed))
-            {
-                Directory.Delete(packageFeed, recursive: true);
-            }
-
-            if (Directory.Exists(packageCache))
-            {
-                Directory.Delete(packageCache, recursive: true);
-            }
-
             Directory.CreateDirectory(packageFeed);
             Directory.CreateDirectory(packageCache);
+            WriteNuGetConfig(nugetConfig, packageFeed);
 
             var packResult = RunProcess(
                 "dotnet",
@@ -232,6 +229,7 @@ namespace BlazorShop.Tests.Architecture
                     RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj"),
                     "--output",
                     packageFeed,
+                    "--no-restore",
                     "/p:PackageVersion=1.0.0-local",
                 ],
                 repositoryRoot);
@@ -245,6 +243,7 @@ namespace BlazorShop.Tests.Architecture
                     RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj"),
                     "--output",
                     packageFeed,
+                    "--no-restore",
                     "/p:PackageVersion=1.0.0-local",
                 ],
                 repositoryRoot);
@@ -258,6 +257,7 @@ namespace BlazorShop.Tests.Architecture
                     presentationProject,
                     "--output",
                     packageFeed,
+                    "--no-restore",
                     "/p:PackageVersion=1.0.0-local",
                 ],
                 repositoryRoot);
@@ -271,6 +271,7 @@ namespace BlazorShop.Tests.Architecture
                     componentsProject,
                     "--output",
                     packageFeed,
+                    "--no-restore",
                     "/p:PackageVersion=1.0.0-local",
                 ],
                 repositoryRoot);
@@ -284,12 +285,14 @@ namespace BlazorShop.Tests.Architecture
                     starterProject,
                     "--no-cache",
                     "--force-evaluate",
-                    $"/p:RestorePackagesPath={packageCache}",
+                    "--configfile",
+                    nugetConfig,
+                    .. starterBuildProperties,
                 ],
                 repositoryRoot);
             Assert.True(restoreResult.ExitCode == 0, FormatProcessFailure("Starter did not restore from the local Storefront client package.", restoreResult));
 
-            var buildResult = RunProcess("dotnet", ["build", starterProject, "--no-restore"], repositoryRoot);
+            var buildResult = RunProcess("dotnet", ["build", starterProject, "--no-restore", .. starterBuildProperties], repositoryRoot);
             Assert.True(buildResult.ExitCode == 0, FormatProcessFailure("Starter did not build after package restore.", buildResult));
         }
 
@@ -1053,6 +1056,7 @@ namespace BlazorShop.Tests.Architecture
                 .Select(TryReadPageDirectiveRoute)
                 .Where(route => !string.IsNullOrWhiteSpace(route))
                 .Select(route => route!)
+                .Where(route => !IsArchitectureQaRoute(route))
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(route => route, StringComparer.Ordinal)
                 .ToArray();
@@ -1156,6 +1160,12 @@ namespace BlazorShop.Tests.Architecture
                 || contractRouteMetadata.Any(contractRoute => RouteTemplateCoversRoute(contractRoute, route));
         }
 
+        private static bool IsArchitectureQaRoute(string route)
+        {
+            return string.Equals(route, "/__qa", StringComparison.OrdinalIgnoreCase)
+                || route.StartsWith("/__qa/", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static bool RouteTemplateCoversRoute(string routeTemplate, string route)
         {
             if (routeTemplate.StartsWith("/{*", StringComparison.Ordinal))
@@ -1223,6 +1233,20 @@ namespace BlazorShop.Tests.Architecture
             return Path.GetRelativePath(FindRepositoryRoot(), path)
                 .Replace(Path.DirectorySeparatorChar, '/')
                 .Replace(Path.AltDirectorySeparatorChar, '/');
+        }
+
+        private static void WriteNuGetConfig(string path, string packageFeed)
+        {
+            var document = new XDocument(
+                new XElement(
+                    "configuration",
+                    new XElement(
+                        "packageSources",
+                        new XElement("clear"),
+                        new XElement("add", new XAttribute("key", "local-storefront-packages"), new XAttribute("value", packageFeed)),
+                        new XElement("add", new XAttribute("key", "nuget.org"), new XAttribute("value", "https://api.nuget.org/v3/index.json")))));
+
+            document.Save(path);
         }
 
         private static string FormatProcessFailure(string message, ProcessResult result)
@@ -1301,7 +1325,11 @@ namespace BlazorShop.Tests.Architecture
                     standardError.AppendLine($"Process '{fileName}' exceeded the 3 minute test step timeout.").ToString());
             }
 
-            process.WaitForExit();
+            if (!process.WaitForExit(TimeSpan.FromSeconds(5)))
+            {
+                standardError.AppendLine($"Process '{fileName}' exited but output drain exceeded the 5 second test step timeout.");
+            }
+
             return new ProcessResult(process.ExitCode, standardOutput.ToString(), standardError.ToString());
         }
 

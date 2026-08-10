@@ -802,15 +802,23 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 Rules:
 
-- [ ] Do not hide unrelated known warnings.
-- [ ] If unrelated tests fail, record exact failing tests and prove H3 focused gates independently pass.
-- [ ] If any H3-related test fails, fix before closure.
-- [ ] If solution references fail because `Components.Hybrid` was removed, update solution/test/project references rather than restoring the old project.
+- [x] Do not hide unrelated known warnings.
+- [x] If unrelated tests fail, record exact failing tests and prove H3 focused gates independently pass.
+- [x] If any H3-related test fails, fix before closure.
+- [x] If solution references fail because `Components.Hybrid` was removed, update solution/test/project references rather than restoring the old project.
 
 Exit criteria:
 
-- [ ] Solution build has 0 errors.
-- [ ] Relevant full tests pass, or unrelated failures are explicitly documented with H3 focused evidence.
+- [x] Solution build has 0 errors.
+- [x] Relevant full tests pass, or unrelated failures are explicitly documented with H3 focused evidence.
+
+Implementation notes:
+
+- 2026-08-10: `dotnet build BlazorShop.sln --no-restore` passed with 0 errors. Existing warnings remained visible: MessagePack NU1902/NU1903 in `BlazorShop.Tests.V2` and Browserslist/caniuse-lite from Control Plane Tailwind.
+- 2026-08-10: initial full test run exposed stale-test-environment issues, not a restored Hybrid dependency: BFF source scanning included `bin`/`obj`/`node_modules`; historical foundation docs expected by existing guardrails were missing; `/__qa/component-mvp` needed to stay excluded from Starter generated-route parity; legacy inventory scanning was spending time in generated/artifact folders; Starter package-boundary test deleted a fixed package cache and could poison Starter static web assets for later smoke tests.
+- 2026-08-10: fixed those H3.15 gate blockers without restoring `Components.Hybrid`: tightened scanner roots, added historical evidence files, excluded architecture QA routes from Starter public route parity, skipped generated/artifact folders in the legacy reference verifier, and isolated the Starter package-boundary test with a per-run package feed/cache plus bounded child-process output drain.
+- 2026-08-10: focused regression for the repaired Starter gate passed: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontStarterFoundationBoundaryTests.StarterProject_RestoresAndBuildsFromLocalStorefrontPackages|FullyQualifiedName~StorefrontStarterHostSmokeTests"` passed 10/10.
+- 2026-08-10: full V2 test gate passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore`: 1889 passed, 2 skipped, 0 failed, duration about 3m42s. Existing warnings remained visible: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.16 - Scope Drift Audit
 
@@ -940,7 +948,7 @@ Before marking H3 complete:
 - [x] H3.12 run focused build gate.
 - [x] H3.13 run focused test gate.
 - [x] H3.14 run mandatory Playwright browser regression.
-- [ ] H3.15 run full solution gate.
+- [x] H3.15 run full solution gate.
 - [ ] H3.16 audit scope drift.
 - [ ] H3.17 write final closure report.
 

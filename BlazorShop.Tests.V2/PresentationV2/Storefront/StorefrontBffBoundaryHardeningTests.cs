@@ -163,6 +163,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
                         || path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)
                         || path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+                    .Where(path => !path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                        .Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                            || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)
+                            || segment.Equals("node_modules", StringComparison.OrdinalIgnoreCase)))
                     .Select(path => new
                     {
                         RelativePath = Path.GetRelativePath(RepositoryRoot(), path),

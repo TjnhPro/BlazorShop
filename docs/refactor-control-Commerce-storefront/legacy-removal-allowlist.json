@@ -1,0 +1,4 @@
+{
+  "description": "Inventory is intentionally noisy; ActiveStrict ignores only explicitly approved files.",
+  "activeStrictIgnoreFiles": []
+}
