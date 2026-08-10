@@ -280,42 +280,49 @@ BlazorShop.Storefront.Components/Contracts/Product/ProductGalleryLabels.cs
 
 Tasks:
 
-- [ ] Reuse `ProductGalleryLabels`; do not create duplicate gallery label models.
-- [ ] Confirm existing fields cover:
-  - [ ] unavailable image text;
-  - [ ] unavailable image alt format;
-  - [ ] previous image aria label;
-  - [ ] next image aria label;
-  - [ ] product image region label;
-  - [ ] image button aria format.
-- [ ] Add `ProductGalleryClasses` under:
+- [x] Reuse `ProductGalleryLabels`; do not create duplicate gallery label models.
+- [x] Confirm existing fields cover:
+  - [x] unavailable image text;
+  - [x] unavailable image alt format;
+  - [x] previous image aria label;
+  - [x] next image aria label;
+  - [x] product image region label;
+  - [x] image button aria format.
+- [x] Add `ProductGalleryClasses` under:
 
 ```text
 BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductGalleryClasses.cs
 ```
 
-- [ ] Keep class slots minimal and semantic. Candidate slots:
-  - [ ] `Root`
-  - [ ] `Main`
-  - [ ] `MainImage`
-  - [ ] `Placeholder`
-  - [ ] `Controls`
-  - [ ] `PreviousButton`
-  - [ ] `NextButton`
-  - [ ] `Icon`
-  - [ ] `ThumbnailViewport`
-  - [ ] `Thumbnail`
-  - [ ] `ThumbnailImage`
-  - [ ] `ThumbnailFallback`
-- [ ] Reduce slots if implementation can reuse fewer host classes.
-- [ ] Do not add V2 class values to `Components`.
-- [ ] Do not add route/action/API descriptors.
+- [x] Keep class slots minimal and semantic. Candidate slots:
+  - [x] `Root`
+  - [x] `Main`
+  - [x] `MainImage`
+  - [x] `Placeholder`
+  - [x] `Controls`
+  - [x] `PreviousButton`
+  - [x] `NextButton`
+  - [x] `Icon`
+  - [x] `ThumbnailViewport`
+  - [x] `Thumbnail`
+  - [x] `ThumbnailImage`
+  - [x] `ThumbnailFallback`
+- [x] Reduce slots if implementation can reuse fewer host classes.
+- [x] Do not add V2 class values to `Components`.
+- [x] Do not add route/action/API descriptors.
 
 Exit criteria:
 
-- [ ] `ProductGalleryLabels` is reused.
-- [ ] `ProductGalleryClasses` is browser-safe and presentation-only.
-- [ ] No duplicate `ProductGallery*Label` contract is created.
+- [x] `ProductGalleryLabels` is reused.
+- [x] `ProductGalleryClasses` is browser-safe and presentation-only.
+- [x] No duplicate `ProductGallery*Label` contract is created.
+
+Implementation notes:
+
+- 2026-08-10: Reused existing `ProductGalleryLabels`; it already covers unavailable image text/alt format, previous/next labels, region label, and image button aria format.
+- 2026-08-10: Added browser-safe render-facing `ProductGalleryClasses` in `Components/Contracts/Product` with semantic slots only and no V2 class values, routes, actions, descriptors, or API paths.
+- 2026-08-10: Updated component contract inventory guardrail to include `ProductGalleryClasses`.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontContractOwnershipTests"` passed 31 tests. Existing unrelated warnings: MessagePack NU1902/NU1903 and Control Plane Browserslist notice.
 
 ## Phase 3.2.2 - Extract StorefrontProductGallery Primitive
 
