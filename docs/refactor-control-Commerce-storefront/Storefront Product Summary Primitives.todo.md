@@ -1050,27 +1050,34 @@ rg -n "data-storefront-product-summary-card|BrokenImageFallbackScript|data-store
 
 Allowed matches:
 
-- [ ] primitive implementation
-- [ ] tests
-- [ ] V2/V2.WASM label/config values
-- [ ] historical docs
-- [ ] product detail gallery fallback where unrelated
-- [ ] Presentation/browser binders that consume semantic hooks
+- [x] primitive implementation
+- [x] tests
+- [x] V2/V2.WASM label/config values
+- [x] historical docs
+- [x] product detail gallery fallback where unrelated
+- [x] Presentation/browser binders that consume semantic hooks
 
 Not allowed:
 
-- [ ] second Product Summary full card implementation
-- [ ] second Product Summary image fallback component
-- [ ] second Product Summary purchase-state branching implementation
-- [ ] full card markup embedded inside `StorefrontDiscountedProductRailSection`
-- [ ] unused pass-through V2 card wrapper
+- [x] second Product Summary full card implementation
+- [x] second Product Summary image fallback component
+- [x] second Product Summary purchase-state branching implementation
+- [x] full card markup embedded inside `StorefrontDiscountedProductRailSection`
+- [x] unused pass-through V2 card wrapper
 
 Exit criteria:
 
-- [ ] One Product Summary rendering implementation remains.
-- [ ] Old V2 card is deleted if redundant.
-- [ ] Old V2.WASM `ProductImage.razor` is deleted if unused.
-- [ ] Rail ItemTemplate no longer duplicates card markup.
+- [x] One Product Summary rendering implementation remains.
+- [x] Old V2 card is deleted if redundant.
+- [x] Old V2.WASM `ProductImage.razor` is deleted if unused.
+- [x] Rail ItemTemplate no longer duplicates card markup.
+
+Implementation notes:
+
+- 2026-08-10: Required duplicate-audit `rg` found allowed matches in primitive implementation, tests, V2/V2.WASM label values, historical plan/docs, Presentation/browser binders, and unrelated product detail gallery/purchase surfaces.
+- 2026-08-10: Additional component-name audit confirmed `StorefrontProductSummaryCard`, `StorefrontProductSummaryImage`, and `StorefrontProductSummaryPurchaseActions` implementation lives in `Components.Primitives`; V2 and V2.WASM only call the primitive card.
+- 2026-08-10: `BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor` and `BlazorShop.Storefront.V2.WASM/Components/Catalog/ProductImage.razor` remain absent.
+- 2026-08-10: `StorefrontDiscountedProductRailSection` contains only the primitive card usage inside `ItemTemplate`, not embedded full Product Summary markup.
 
 ## Phase 3.1.16 - Scope Drift Audit
 
