@@ -709,29 +709,39 @@ Update source-of-truth documentation after real code/test decisions are made.
 
 ### Files
 
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/03-runtime-boundaries.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` if browser-visible behavior changes
-- [ ] This H1 todo file
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/03-runtime-boundaries.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` if browser-visible behavior changes
+- [x] This H1 todo file
 
 ### Tasks
 
-- [ ] Remove wording that presents nested `Components.Hybrid -> WasmHost` shell as canonical.
-- [ ] Keep historical plans historically accurate, but add superseding notes where needed.
-- [ ] Document `Components.Hybrid` transitional status.
-- [ ] Document that descriptor mode is semantic and physical packaging may become capability-based later.
-- [ ] Document that H2 owns the permanent Hybrid proof.
-- [ ] Update QA checklist only if H1 changes visible behavior or browser flow.
-- [ ] Do not update `AGENTS.md` unless H1 introduces a stable rule important enough for every future agent.
+- [x] Remove wording that presents nested `Components.Hybrid -> WasmHost` shell as canonical.
+- [x] Keep historical plans historically accurate, but add superseding notes where needed.
+- [x] Document `Components.Hybrid` transitional status.
+- [x] Document that descriptor mode is semantic and physical packaging may become capability-based later.
+- [x] Document that H2 owns the permanent Hybrid proof.
+- [x] Update QA checklist only if H1 changes visible behavior or browser flow.
+- [x] Do not update `AGENTS.md` unless H1 introduces a stable rule important enough for every future agent.
 
 ### Exit Criteria
 
-- [ ] Docs match the actual tests and project graph after H1.
-- [ ] Future agents can tell current state from historical plan evidence.
-- [ ] H2 has clear guidance.
+- [x] Docs match the actual tests and project graph after H1.
+- [x] Future agents can tell current state from historical plan evidence.
+- [x] H2 has clear guidance.
+
+Implementation notes:
+
+- 2026-08-10: updated `COMPONENT-MODES.md` so `Components.Hybrid` is transitional after H1, descriptor mode is semantic metadata, and architecture tests no longer require descriptor mode to match physical assembly/project names.
+- 2026-08-10: updated `docs/architecture/05-project-and-folder-guide.md` so `Components.Hybrid` physical role is transitional after H1 and H2 owns the permanent decision; no new reusable components should be added there before H2 runtime proof.
+- 2026-08-10: updated `docs/architecture/10-v2-contract-ownership.md` so descriptor/project ownership coupling is recorded as removed by H1 and `Components.Hybrid` is transitional.
+- 2026-08-10: reviewed `03-runtime-boundaries.md` and `Components.Hybrid/README.md`; both already align after H1.3 and did not need more changes in H1.9.
+- 2026-08-10: QA checklist was not updated in H1.9 because H1 made no visible browser-flow change.
+- 2026-08-10: `AGENTS.md` was not updated because H1 did not introduce a new stable rule beyond existing architecture docs.
+- 2026-08-10: stale wording scan over source-of-truth docs for `pending H1`, `until H1`, `H1 changes`, `must be re-evaluated in H1`, `must be revisited in H1`, `Descriptor mode ownership is currently enforced`, and `Hybrid components may reference only` returned no matches.
 
 ## Phase H1.10 - Focused Build Gates
 

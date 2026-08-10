@@ -21,7 +21,7 @@ Do not add replacement shared-component projects without an approved follow-up p
 - `BlazorShop.Storefront.ComponentRuntime`
 - `BlazorShop.Storefront.ComponentRegistry`
 
-The physical role of `BlazorShop.Storefront.Components.Hybrid` is pending H1 re-evaluation. Current code and tests may still depend on it, so H0 documentation clarification does not delete, rename, or repurpose the project.
+The physical role of `BlazorShop.Storefront.Components.Hybrid` is transitional after H1. Current code and tests may still depend on its historical contact bridge, so H1 does not delete, rename, or repurpose the project. H2 must prove whether it stays, narrows, moves, or is retired.
 
 ## Current Project Graph
 
@@ -42,11 +42,11 @@ BlazorShop.Storefront.Components.WasmHost
   -> BlazorShop.Storefront.Browser
 ```
 
-The graph above describes the current repository state. It must be re-evaluated in H1 now that browser-visible V2 adoption proved the V2.WASM wrapper pattern for interactive roots.
+The graph above describes the current repository state. H1 keeps the `Components.Hybrid` graph as transitional compatibility state, not as the semantic definition of Hybrid mode. H2 owns the permanent proof now that browser-visible V2 adoption proved the V2.WASM wrapper pattern for interactive roots.
 
 The base `BlazorShop.Storefront.Components` project remains the lowest browser-safe contracts and headless layer. It must not reference `Presentation`, `Browser`, `Runtime`, `Client`, V2 hosts, Starter hosts, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
 
-Descriptor mode ownership is currently enforced by repository architecture tests. This is also an H1 review item because descriptor mode is semantic architecture metadata, while physical project ownership may change.
+Descriptor mode is semantic architecture metadata. Repository architecture tests validate descriptor shape, current public descriptor inventory, duplicate keys, and small contract surface, but they must not require descriptor mode to match a physical assembly or project name.
 
 ## ASP.NET Render Mode Facts
 
@@ -120,7 +120,7 @@ Hybrid route or component surfaces may use server-prepared state, semantic actio
 
 `@rendermode InteractiveWebAssembly` placement is host/composition ownership. It is not a guarantee that a reusable component library owns render-mode directives, and it is not proof that `Components.Hybrid` must be the composition layer.
 
-The current `Components.Hybrid` project remains guarded by its existing tests until H1 changes them. It must not directly reference Browser, inject Browser controllers, call APIs directly, own theme CSS, or own V2 layout/copy.
+The current `Components.Hybrid` project is a transitional compatibility project. It must not directly reference Browser, inject Browser controllers, call APIs directly, own theme CSS, own V2 layout/copy, or receive new reusable components until H2 decides its permanent role.
 
 ## WasmHost Mode
 

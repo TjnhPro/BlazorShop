@@ -254,13 +254,14 @@ Status:
 
 - Reusable Storefront Hybrid component mode library.
 - Historical reusable Hybrid shell library from the completed foundation/reference work.
-- Physical role is pending H1 re-evaluation; current guardrails remain until code/tests are deliberately changed.
+- Physical role is transitional after H1; H2 must prove whether it stays, narrows, moves, or is retired.
 
 Use for:
 
 - Hybrid-classified surfaces: server-produced or prerendered HTML/page snapshots plus client-side WebAssembly interactivity after hydration.
 - Existing server shell components only where current tests/code require them; nested WasmHost child placement is not the canonical meaning of Hybrid.
 - Host/composition-owned `@rendermode InteractiveWebAssembly` placement where browser interactivity is needed.
+- Historical compatibility descriptors/components only during H1; do not add new reusable components here before H2 runtime proof.
 
 Do not:
 
