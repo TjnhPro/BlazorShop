@@ -47,7 +47,6 @@ Active V2 presentation/runtime:
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM`
 - `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`

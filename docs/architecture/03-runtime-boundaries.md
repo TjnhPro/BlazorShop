@@ -171,7 +171,7 @@ Presentation route shell and page context
           -> Components.WasmHost reusable implementations
 ```
 
-The H2 Hybrid proof is physically implemented as `StorefrontHybridRuntimeProbe` in `BlazorShop.Storefront.Components.WasmHost` with semantic mode `Hybrid`. Browser evidence recorded prerender HTML, WebAssembly interactive state, C# click state changes, no `/_blazor` public server UI circuit, and no direct Commerce Node browser requests. `BlazorShop.Storefront.Components.Hybrid` remains a narrowed transitional compatibility project for the historical contact bridge until H3 decides migration or retirement.
+The H2/H3 Hybrid proof is physically implemented as `StorefrontHybridRuntimeProbe` in `BlazorShop.Storefront.Components.WasmHost` with semantic mode `Hybrid`. Browser evidence recorded prerender HTML, WebAssembly interactive state, C# click state changes, no `/_blazor` public server UI circuit, and no direct Commerce Node browser requests. H3 retired the old physical `BlazorShop.Storefront.Components.Hybrid` compatibility project; do not recreate it without a new architecture decision.
 
 Do not:
 

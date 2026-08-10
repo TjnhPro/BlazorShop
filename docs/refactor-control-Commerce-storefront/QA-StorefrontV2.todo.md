@@ -125,10 +125,10 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 ## Storefront Component Mode Foundation
 
 - [x] Base `BlazorShop.Storefront.Components` role is preserved as the lowest browser-safe contracts/headless layer; it still uses `Microsoft.NET.Sdk`, has no Razor components, and has no `Features` folder.
-- [x] Three empty/minimal reusable mode projects exist: `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.Hybrid`, and `BlazorShop.Storefront.Components.WasmHost`.
-- [x] Exact dependency allowlists are guarded: SSR references only Components + Presentation, Hybrid references only Components + Presentation + WasmHost, and WasmHost references only Components + Browser.
+- [x] Reusable mode projects now exist as `BlazorShop.Storefront.Components.Ssr` and `BlazorShop.Storefront.Components.WasmHost`; H3 retired the physical `BlazorShop.Storefront.Components.Hybrid` compatibility project.
+- [x] Exact dependency allowlists are guarded: SSR references only Components + Presentation, WasmHost references only Components + Browser, and the base Components project does not reference Browser, Presentation, Runtime, Client, backend/core/API, or V2 host projects.
 - [x] Descriptor validation is guarded for component key format, defined mode/category enum values, null component type, and `IComponent` implementation.
-- [x] Descriptor mode must match the owning mode project when a descriptor comes from `Components.Ssr`, `Components.Hybrid`, or `Components.WasmHost`; this is enforced by architecture tests, not by the production descriptor validator.
+- [x] Descriptor mode is semantic and no longer has to match a physical mode project. Architecture tests guard current descriptor inventory and prove Hybrid descriptors can live in `Components.WasmHost`.
 - [x] Visual neutrality is guarded: reusable mode projects contain no theme CSS/assets, literal class attributes, final storefront copy strings, or V2 CSS asset paths.
 - [x] Fully dynamic class attributes remain allowed in reusable mode project markup: `class="@CssClass"`, `class="@Classes.Container"`, `class="@GetCssClass()"`, and `class="@(BuildCssClass())"`.
 - [x] Mixed literal/dynamic class attributes are rejected, including `class="flex @CssClass"`, `class="@CssClass selected"`, and `class="@(BuildCssClass()) selected"`.

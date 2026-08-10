@@ -631,33 +631,40 @@ Goal: update active docs so agents and developers see the final H3 architecture,
 
 Files to update:
 
-- [ ] `AGENTS.md`
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/03-runtime-boundaries.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/08-agent-decision-rules.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
-- [ ] This H3 plan file with execution evidence.
+- [x] `AGENTS.md`
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/03-runtime-boundaries.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/08-agent-decision-rules.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
+- [x] This H3 plan file with execution evidence.
 
 Required documentation changes:
 
-- [ ] Remove active-current wording that lists `Components.Hybrid` as a live reusable project if retired.
-- [ ] Preserve historical references only in historical plan files.
-- [ ] State that `Hybrid = prerender/server-produced HTML + InteractiveWebAssembly browser interactivity`.
-- [ ] State that semantic component mode is independent from physical project/package.
-- [ ] State that reusable components do not own `@rendermode`.
-- [ ] State that V2/host composition owns `@rendermode InteractiveWebAssembly`.
-- [ ] State that public Storefront must not use `InteractiveServer` or `InteractiveAuto` without a new architecture decision.
-- [ ] State that public Storefront component interaction must not depend on SignalR/Blazor Server UI circuit.
-- [ ] State that browser components use Browser controllers and same-origin BFF, not direct Commerce Node APIs.
-- [ ] Document the retired `Contracts.System` namespace if renamed.
+- [x] Remove active-current wording that lists `Components.Hybrid` as a live reusable project if retired.
+- [x] Preserve historical references only in historical plan files.
+- [x] State that `Hybrid = prerender/server-produced HTML + InteractiveWebAssembly browser interactivity`.
+- [x] State that semantic component mode is independent from physical project/package.
+- [x] State that reusable components do not own `@rendermode`.
+- [x] State that V2/host composition owns `@rendermode InteractiveWebAssembly`.
+- [x] State that public Storefront must not use `InteractiveServer` or `InteractiveAuto` without a new architecture decision.
+- [x] State that public Storefront component interaction must not depend on SignalR/Blazor Server UI circuit.
+- [x] State that browser components use Browser controllers and same-origin BFF, not direct Commerce Node APIs.
+- [x] Document the retired `Contracts.System` namespace if renamed.
 
 Exit criteria:
 
-- [ ] Active source-of-truth docs match code after H3.
-- [ ] No active doc tells an agent to create new components in `Components.Hybrid`.
-- [ ] No active doc describes nested Hybrid shell as canonical.
+- [x] Active source-of-truth docs match code after H3.
+- [x] No active doc tells an agent to create new components in `Components.Hybrid`.
+- [x] No active doc describes nested Hybrid shell as canonical.
+
+Implementation notes:
+
+- 2026-08-10: removed `BlazorShop.Storefront.Components.Hybrid` from the active project list in `AGENTS.md`.
+- 2026-08-10: `COMPONENT-MODES.md` already reflected the H3 semantic mode model, retired Hybrid project, reusable render-mode ownership guardrail, Browser controller + same-origin BFF path, and `Contracts.Diagnostics` namespace after H3.3/H3.8.
+- 2026-08-10: updated active architecture docs so reusable mode projects are `Components.Ssr` and `Components.WasmHost`; `Components.Hybrid` is documented only as retired history.
+- 2026-08-10: updated `QA-StorefrontV2.todo.md` to supersede older foundation wording that described three live mode projects or descriptor-mode/project coupling.
 
 ## Phase H3.12 - Focused Build Gate
 
@@ -910,7 +917,7 @@ Before marking H3 complete:
 - [x] H3.8 rename `Contracts.System` namespace.
 - [x] H3.9 recheck visual neutrality and copy ownership.
 - [x] H3.10 close `/__qa` route policy.
-- [ ] H3.11 update active docs and QA checklist.
+- [x] H3.11 update active docs and QA checklist.
 - [ ] H3.12 run focused build gate.
 - [ ] H3.13 run focused test gate.
 - [ ] H3.14 run mandatory Playwright browser regression.

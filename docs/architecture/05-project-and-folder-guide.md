@@ -248,32 +248,23 @@ Allowed direct project references:
 - `BlazorShop.Storefront.Components`
 - `BlazorShop.Storefront.Presentation`
 
-### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid`
+### Retired `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid`
 
 Status:
 
-- Reusable Storefront Hybrid component mode library.
-- Historical reusable Hybrid shell library from the completed foundation/reference work.
-- Physical role is transitional after H2; H2 runtime evidence narrowed it to compatibility for the historical contact bridge until H3 decides whether to migrate or retire it.
+- Retired historical compatibility project.
+- H3 moved the public `contact-form` descriptor to `BlazorShop.Storefront.Components.WasmHost`, deleted the historical nested contact shell, and removed the physical Hybrid project from the active solution.
+- `Hybrid` remains a semantic render/runtime classification, not a required project name.
 
 Use for:
 
-- Hybrid-classified surfaces: server-produced or prerendered HTML/page snapshots plus client-side WebAssembly interactivity after hydration.
-- Existing server shell components only where current tests/code require them; nested WasmHost child placement is not the canonical meaning of Hybrid.
-- Host/composition-owned `@rendermode InteractiveWebAssembly` placement where browser interactivity is needed.
-- Historical compatibility descriptors/components only during H2/H3 transition; do not add new reusable components here without a new architecture decision.
+- Historical archaeology through git history or old completed plans only.
+- Understanding why semantic `Hybrid` descriptors can physically live in `Components.WasmHost`.
 
 Do not:
 
-- Reference `BlazorShop.Storefront.Browser` directly.
-- Reference `Runtime`, `Client`, V2, V2.WASM, Starter, Starter.WASM, generated storefront projects, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
-- Inject browser controllers, use direct `HttpClient` or `IJSRuntime` behavior, call backend/API routes, or own theme CSS/store copy/V2 layout.
-
-Allowed direct project references:
-
-- `BlazorShop.Storefront.Components`
-- `BlazorShop.Storefront.Presentation`
-- `BlazorShop.Storefront.Components.WasmHost`
+- Recreate the project, add new reusable components under this path, or use nested server-shell-to-WasmHost composition as the canonical Hybrid model without a new architecture decision.
+- Put `@rendermode` into reusable component libraries; V2/host composition owns `InteractiveWebAssembly` placement.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
 
@@ -384,7 +375,7 @@ Current ownership map:
 
 - `BlazorShop.Storefront.Presentation` owns storefront App/Routes, route composition, page services, SEO/discovery, media/local endpoint composition, and local browser/BFF application services for content, auth, system, cart, checkout, account, and other shared storefront entry points.
 - `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
-- `BlazorShop.Storefront.Components` owns browser-safe reusable `Contracts`, `Headless` state/behavior, and `Browser` same-origin primitives only. Visual templates belong to Storefront V2, Starter, or generated/custom storefront projects.
+- `BlazorShop.Storefront.Components` owns browser-safe reusable `Contracts`, `Contracts.Diagnostics`, `Headless` state/behavior, and descriptor contracts only. Visual templates belong to Storefront V2, Starter, or generated/custom storefront projects.
 - `BlazorShop.Storefront.V2` owns host configuration, session/cart-token policy, store resolution, deployment/static asset behavior, view registration, static storefront assets, and storefront-specific design. Its WASM client assembly owns the interactive V2 root components that must hydrate in the browser.
 - `BlazorShop.Storefront.Runtime` owns neutral runtime primitives and server-side generated-client registration.
 - `Storefront.Features.*` projects are deferred until repeated neutral feature logic proves the need.
