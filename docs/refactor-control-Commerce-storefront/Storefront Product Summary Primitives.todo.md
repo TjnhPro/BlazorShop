@@ -813,40 +813,47 @@ Goal: change the expected ownership model from "V2 owns all Product Summary mark
 
 Review and update at minimum:
 
-- [ ] `StorefrontBrandingMarkupTests`
-- [ ] `StorefrontComponentsHeadlessPresentationRefactorTests`
-- [ ] `StorefrontVisualOnlyBoundaryTests`
-- [ ] `StorefrontComponentVisualNeutralityTests`
-- [ ] `StorefrontComponentModeDependencyTests`
-- [ ] `StorefrontRenderModeOwnershipTests`
-- [ ] `StorefrontComponentModeBoundaryValidatorTests`
-- [ ] `StorefrontIndependenceBoundaryTests`
+- [x] `StorefrontBrandingMarkupTests`
+- [x] `StorefrontComponentsHeadlessPresentationRefactorTests`
+- [x] `StorefrontVisualOnlyBoundaryTests`
+- [x] `StorefrontComponentVisualNeutralityTests`
+- [x] `StorefrontComponentModeDependencyTests`
+- [x] `StorefrontRenderModeOwnershipTests`
+- [x] `StorefrontComponentModeBoundaryValidatorTests`
+- [x] `StorefrontIndependenceBoundaryTests`
 
 Required new assertions:
 
-- [ ] `Components.Primitives` exists and is included in relevant reusable component scans.
-- [ ] `Components.Primitives` is not treated as `Ssr`, `Hybrid`, or `WasmHost`.
-- [ ] `Components.Primitives` has no descriptors unless a real inventory use case is approved.
-- [ ] `Components.Primitives` has no `@rendermode`.
-- [ ] `Components.Primitives` has no final literal classes.
-- [ ] `Components.Primitives` owns `data-storefront-product-summary-card`.
-- [ ] `Components.Primitives` owns Product Summary image fallback.
-- [ ] `Components.Primitives` owns Product Summary purchase semantic markup.
-- [ ] V2 supplies final Product Summary classes/copy.
-- [ ] V2.WASM supplies final Product Summary classes/copy for the rail.
-- [ ] Old duplicate Product Summary card implementations are absent.
-- [ ] `V2.WASM` cannot reach `Presentation` or `Components.Ssr` directly or transitively.
+- [x] `Components.Primitives` exists and is included in relevant reusable component scans.
+- [x] `Components.Primitives` is not treated as `Ssr`, `Hybrid`, or `WasmHost`.
+- [x] `Components.Primitives` has no descriptors unless a real inventory use case is approved.
+- [x] `Components.Primitives` has no `@rendermode`.
+- [x] `Components.Primitives` has no final literal classes.
+- [x] `Components.Primitives` owns `data-storefront-product-summary-card`.
+- [x] `Components.Primitives` owns Product Summary image fallback.
+- [x] `Components.Primitives` owns Product Summary purchase semantic markup.
+- [x] V2 supplies final Product Summary classes/copy.
+- [x] V2.WASM supplies final Product Summary classes/copy for the rail.
+- [x] Old duplicate Product Summary card implementations are absent.
+- [x] `V2.WASM` cannot reach `Presentation` or `Components.Ssr` directly or transitively.
 
 Avoid:
 
-- [ ] broad allowlist exceptions
-- [ ] string-only tests that pass while dependency graph is broken
-- [ ] deleting old tests without replacing the architecture intent
+- [x] broad allowlist exceptions
+- [x] string-only tests that pass while dependency graph is broken
+- [x] deleting old tests without replacing the architecture intent
 
 Exit criteria:
 
-- [ ] Tests describe the new architecture clearly.
-- [ ] No stale "V2 owns all product card markup" assumption remains.
+- [x] Tests describe the new architecture clearly.
+- [x] No stale "V2 owns all product card markup" assumption remains.
+
+Implementation notes:
+
+- 2026-08-10: Updated Storefront architecture tests for the new reusable Product Summary primitive ownership model.
+- 2026-08-10: Added primitive project coverage to component visual neutrality and dependency graph tests.
+- 2026-08-10: Preserved graph-level assertions so `V2.WASM` cannot reach `Presentation` or `Components.Ssr` directly or transitively.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontRenderModeOwnershipTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests"`.
 
 ## Phase 3.1.11 - Focused Primitive Component Tests
 

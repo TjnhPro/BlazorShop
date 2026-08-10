@@ -129,7 +129,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains(
                 "data-currency-code",
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryPurchaseActions.razor"),
                 StringComparison.Ordinal);
             Assert.Contains(
                 "data-currency-code",
@@ -209,10 +209,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductCard_RendersSellabilitySafeActions()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor");
-            var summaryCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
+            var summaryCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryCard.razor");
+            var summaryImage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryImage.razor");
+            var summaryActions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryPurchaseActions.razor");
+            var visuals = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductSummaryCardVisuals.cs");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontProductSummaryMapper.cs");
 
-            Assert.Contains("<StorefrontProductSummaryCard Item=\"Item\" />", markup);
+            Assert.Contains("<StorefrontProductSummaryCard", markup);
+            Assert.Contains("Labels=\"ProductSummaryCardVisuals.Labels\"", markup);
+            Assert.Contains("Classes=\"ProductSummaryCardVisuals.Classes\"", markup);
             Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
             Assert.Contains("product.Purchasable && !product.PurchaseBlockReasons.Any(IsDirectAddHardBlock) && QuantityOneAllowed(product)", mapper);
             Assert.Contains("product.MinOrderQuantity <= 1", mapper);
@@ -220,9 +225,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("product.ManageStock ? Math.Max(0, product.AvailableQuantity ?? product.Quantity) : 999999", mapper);
             Assert.Contains("\"purchase_disabled\" => \"Purchasing is paused.\"", mapper);
             Assert.Contains("\"below_min_quantity\" => $\"Minimum order quantity is {product.MinOrderQuantity}.\"", mapper);
-            Assert.Contains("View Product", summaryCard);
-            Assert.Contains("BrokenImageFallbackScript", summaryCard);
-            Assert.Contains("data:image/svg+xml", summaryCard);
+            Assert.Contains("ViewProduct", summaryCard + summaryActions);
+            Assert.Contains("BrokenImageFallbackScript", summaryImage);
+            Assert.Contains("data:image/svg+xml", summaryImage);
+            Assert.Contains("ViewProduct: \"View Product\"", visuals);
         }
 
         [Fact]
@@ -354,7 +360,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var discountedRailSection = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Catalog/StorefrontDiscountedProductRailSection.razor");
             var dealsBlock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontDealsSection.razor");
             var productGrid = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor");
-            var productCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
+            var productCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryCard.razor");
+            var productActions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryPurchaseActions.razor");
+            var v2Visuals = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductSummaryCardVisuals.cs");
             var dealsPlacement = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Deals/DealsPlacement.cs");
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontDealsPageService.cs")));
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontNewReleasesPageService.cs")));
@@ -367,7 +375,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("<ItemTemplate", home, StringComparison.Ordinal);
             Assert.Contains("<StorefrontDiscountedProductRail Labels=\"Labels\"", discountedRailSection, StringComparison.Ordinal);
             Assert.Contains("StorefrontDiscountedProductRailActionDescriptor Action", discountedRailSection, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-product-summary-card", discountedRailSection, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryCard", discountedRailSection, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-storefront-product-summary-card", discountedRailSection, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", categoryPage, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductSummaryGrid Items=\"Context.ProductSummaries\"", searchPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductGrid Products=\"_products\"", categoryPage + searchPage, StringComparison.Ordinal);
@@ -383,12 +392,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<StorefrontProductSummaryGrid", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-grid", productGrid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-card", productCard, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-product-purchase", productCard, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-command=\"cart.add-line\"", productCard, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-product-purchase-submit", productCard, StringComparison.Ordinal);
-            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", productCard, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase", productActions, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-command=\"cart.add-line\"", productActions, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase-submit", productActions, StringComparison.Ordinal);
+            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", productActions, StringComparison.Ordinal);
+            Assert.Contains("ProductSummaryCardVisuals.Classes", productGrid, StringComparison.Ordinal);
+            Assert.Contains("Root: \"group relative", v2Visuals, StringComparison.Ordinal);
             Assert.Contains("ProductDetailFooter", dealsPlacement, StringComparison.Ordinal);
-            Assert.DoesNotContain("IStorefront", dealsBlock + productGrid + productCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefront", dealsBlock + productGrid + productCard + productActions, StringComparison.Ordinal);
         }
 
         [Fact]

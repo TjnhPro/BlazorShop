@@ -11,6 +11,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime",
@@ -98,6 +99,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(
                 [
                     "../BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj",
+                    "../BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj",
                     "../BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj",
                     "../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj",
                 ],
@@ -127,6 +129,28 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     .Append("BlazorShop.Storefront.Runtime")
                     .Append("BlazorShop.Storefront.Client")
                     .Append("BlazorShop.Storefront.V2")
+                    .ToArray());
+
+            AssertNoProjectReferences(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj",
+                ForbiddenBackendProjectFragments
+                    .Append("BlazorShop.Storefront.Runtime.csproj")
+                    .Append("BlazorShop.Storefront.Client.csproj")
+                    .Append("BlazorShop.Storefront.V2.csproj")
+                    .Append("BlazorShop.Storefront.V2.WASM.csproj")
+                    .Append("BlazorShop.Storefront.Presentation.csproj")
+                    .Append("BlazorShop.Storefront.Components.Ssr.csproj")
+                    .Append("BlazorShop.Web.SharedV2.csproj")
+                    .ToArray());
+
+            AssertNoSourceFragments(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives",
+                ForbiddenBackendNamespaceFragments
+                    .Append("BlazorShop.Web.SharedV2")
+                    .Append("BlazorShop.Storefront.Runtime")
+                    .Append("BlazorShop.Storefront.Client")
+                    .Append("BlazorShop.Storefront.V2")
+                    .Append("BlazorShop.Storefront.Presentation")
                     .ToArray());
         }
 

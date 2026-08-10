@@ -7,6 +7,7 @@ public sealed class StorefrontRenderModeOwnershipTests
     private static readonly string[] ReusableComponentRoots =
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
     ];
@@ -14,6 +15,7 @@ public sealed class StorefrontRenderModeOwnershipTests
     private static readonly string[] PublicStorefrontRoots =
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.V2",

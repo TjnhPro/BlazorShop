@@ -263,8 +263,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryLabels.cs");
             var productSummaryClasses = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryCardClasses.cs");
-            var v2Card = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor");
+            var primitiveCard = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryCard.razor");
+            var primitiveActions = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryPurchaseActions.razor");
+            var primitiveImage = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryImage.razor");
+            var v2Visuals = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductSummaryCardVisuals.cs");
 
             Assert.Contains("public sealed record ProductSummaryItem", productSummaryContract, StringComparison.Ordinal);
             Assert.Contains("SelectVariant", productSummaryLabels, StringComparison.Ordinal);
@@ -273,14 +279,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("public sealed record ProductSummaryCardClasses", productSummaryClasses, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Catalog/ProductSummaryCardLabels.cs")));
-            Assert.Contains("data-storefront-product-summary-card", v2Card, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-product-purchase", v2Card, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-command=\"cart.add-line\"", v2Card, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-product-purchase-submit", v2Card, StringComparison.Ordinal);
-            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", v2Card, StringComparison.Ordinal);
-            Assert.Contains("rounded-2xl", v2Card, StringComparison.Ordinal);
-            Assert.Contains("bg-white/95", v2Card, StringComparison.Ordinal);
-            Assert.Contains("hover:shadow-2xl", v2Card, StringComparison.Ordinal);
+            Assert.False(File.Exists(RepositoryPath(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryCard.razor")));
+            Assert.Contains("data-storefront-product-summary-card", primitiveCard, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase", primitiveActions, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-command=\"cart.add-line\"", primitiveActions, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-purchase-submit", primitiveActions, StringComparison.Ordinal);
+            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", primitiveActions, StringComparison.Ordinal);
+            Assert.Contains("BrokenImageFallbackScript", primitiveImage, StringComparison.Ordinal);
+            Assert.Contains("rounded-2xl", v2Visuals, StringComparison.Ordinal);
+            Assert.Contains("bg-white/95", v2Visuals, StringComparison.Ordinal);
+            Assert.Contains("hover:shadow-2xl", v2Visuals, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -296,7 +305,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
 
             Assert.Contains("data-storefront-product-summary-grid", v2Grid, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductSummaryCard Item=\"item\" />", v2Grid, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductSummaryCard", v2Grid, StringComparison.Ordinal);
+            Assert.Contains("ProductSummaryCardVisuals.Labels", v2Grid, StringComparison.Ordinal);
+            Assert.Contains("ProductSummaryCardVisuals.Classes", v2Grid, StringComparison.Ordinal);
             Assert.Contains("grid gap-8 sm:grid-cols-2 lg:grid-cols-3", v2Grid, StringComparison.Ordinal);
             Assert.Contains("data-storefront-product-summary-empty", v2Grid, StringComparison.Ordinal);
 
