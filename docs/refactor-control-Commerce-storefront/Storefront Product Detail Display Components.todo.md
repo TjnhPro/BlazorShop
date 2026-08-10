@@ -346,61 +346,70 @@ BlazorShop.Storefront.Components.Primitives.Product
 
 Inputs:
 
-- [ ] `IReadOnlyList<ProductGalleryItem> Items`
-- [ ] `string? ProductName`
-- [ ] `ProductGalleryLabels Labels`
-- [ ] `ProductGalleryClasses Classes`
+- [x] `IReadOnlyList<ProductGalleryItem> Items`
+- [x] `string? ProductName`
+- [x] `ProductGalleryLabels Labels`
+- [x] `ProductGalleryClasses Classes`
 
 Preserve behavior/markup semantics:
 
-- [ ] main image;
-- [ ] missing image fallback;
-- [ ] broken image fallback behavior consistent with existing Product Summary primitive fallback policy;
-- [ ] previous/next controls;
-- [ ] thumbnails;
-- [ ] selected thumbnail semantics;
-- [ ] `aria-label`;
-- [ ] `aria-current`;
-- [ ] `aria-selected`;
-- [ ] `aria-disabled`;
-- [ ] `data-selected`;
-- [ ] all gallery data hooks listed in Phase 3.2.0.
+- [x] main image;
+- [x] missing image fallback;
+- [x] broken image fallback behavior consistent with existing Product Summary primitive fallback policy;
+- [x] previous/next controls;
+- [x] thumbnails;
+- [x] selected thumbnail semantics;
+- [x] `aria-label`;
+- [x] `aria-current`;
+- [x] `aria-selected`;
+- [x] `aria-disabled`;
+- [x] `data-selected`;
+- [x] all gallery data hooks listed in Phase 3.2.0.
 
 Must remove from primitive:
 
-- [ ] V2/Tailwind class literals;
-- [ ] `bs-product-gallery*` class ownership unless supplied through `ProductGalleryClasses`;
-- [ ] hardcoded `Image unavailable`;
-- [ ] host-specific copy;
-- [ ] any `@rendermode`;
-- [ ] any `@onclick`/Blazor C# event interaction;
-- [ ] any `IJSRuntime`;
-- [ ] any `HttpClient`;
-- [ ] any Browser/Presentation/Runtime/Client/backend reference.
+- [x] V2/Tailwind class literals;
+- [x] `bs-product-gallery*` class ownership unless supplied through `ProductGalleryClasses`;
+- [x] hardcoded `Image unavailable`;
+- [x] host-specific copy;
+- [x] any `@rendermode`;
+- [x] any `@onclick`/Blazor C# event interaction;
+- [x] any `IJSRuntime`;
+- [x] any `HttpClient`;
+- [x] any Browser/Presentation/Runtime/Client/backend reference.
 
 Allowed:
 
-- [ ] `ProductGalleryState.Create(Items, ProductName)`;
-- [ ] semantic `data-storefront-*` hooks;
-- [ ] host-supplied class slots;
-- [ ] host-supplied labels;
-- [ ] the same narrow inline image fallback pattern already allowed by Product Summary primitive, unless architecture tests are deliberately tightened in the same phase.
+- [x] `ProductGalleryState.Create(Items, ProductName)`;
+- [x] semantic `data-storefront-*` hooks;
+- [x] host-supplied class slots;
+- [x] host-supplied labels;
+- [x] the same narrow inline image fallback pattern already allowed by Product Summary primitive, unless architecture tests are deliberately tightened in the same phase.
 
 Important:
 
-- [ ] Do not move gallery click/keyboard JS into `Components.Primitives`.
-- [ ] Do not add a JS file to `Components.Primitives`.
-- [ ] V2 `storefrontCommerce.js` remains responsible for progressive enhancement through existing hooks.
-- [ ] If the primitive cannot satisfy visual-neutrality tests, stop and split the work:
-  - [ ] move only static image/fallback/thumbnail primitive now;
-  - [ ] keep interactive gallery shell in V2 until a separate decision.
+- [x] Do not move gallery click/keyboard JS into `Components.Primitives`.
+- [x] Do not add a JS file to `Components.Primitives`.
+- [x] V2 `storefrontCommerce.js` remains responsible for progressive enhancement through existing hooks.
+- [x] If the primitive cannot satisfy visual-neutrality tests, stop and split the work:
+  - [x] move only static image/fallback/thumbnail primitive now;
+  - [x] keep interactive gallery shell in V2 until a separate decision.
 
 Exit criteria:
 
-- [ ] Old V2 gallery implementation is removed.
-- [ ] Primitive gallery builds.
-- [ ] V2 consumes the primitive gallery.
-- [ ] Primitive dependency and visual-neutrality tests pass.
+- [x] Old V2 gallery implementation is removed.
+- [x] Primitive gallery builds.
+- [x] V2 consumes the primitive gallery.
+- [x] Primitive dependency and visual-neutrality tests pass.
+
+Implementation notes:
+
+- 2026-08-10: Moved `StorefrontProductGallery` to `Components.Primitives/Product` with namespace `BlazorShop.Storefront.Components.Primitives.Product`.
+- 2026-08-10: Primitive inputs are `Items`, `ProductName`, `Labels`, and `Classes`; class attributes are fully host-supplied and copy flows through `ProductGalleryLabels`.
+- 2026-08-10: Preserved main image, missing/broken image fallback, previous/next controls, thumbnail state, aria attributes, `data-selected`, `data-gallery-index`, `data-image-url`, `data-alt`, and all `data-storefront-product-gallery` / `data-storefront-gallery-*` hooks.
+- 2026-08-10: No JS file, `@onclick`, `IJSRuntime`, `HttpClient`, `@rendermode`, Browser/Presentation/Runtime/Client/backend reference, final V2 class literal, or hardcoded `Image unavailable` copy was added to the primitive.
+- 2026-08-10: V2 page temporarily imports the primitive namespace directly for this phase; V2 final labels/classes are added in Phase 3.2.3.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj" --no-restore` and `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontPrimitiveDependencyTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontRenderModeOwnershipTests"` passed 38 tests. Existing unrelated warnings: MessagePack NU1902/NU1903 and Control Plane Browserslist notice.
 
 ## Phase 3.2.3 - Add V2 Product Gallery Visuals
 

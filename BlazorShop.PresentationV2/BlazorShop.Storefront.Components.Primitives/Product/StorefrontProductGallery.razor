@@ -1,33 +1,33 @@
-@using BlazorShop.Storefront.Components.Headless.Product
+@namespace BlazorShop.Storefront.Components.Primitives.Product
 
 @if (Gallery.HasItems && Gallery.SelectedItem is { } main)
 {
-    <div class="bs-product-gallery grid gap-4" data-storefront-product-gallery>
-        <div class="bs-product-gallery__main relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-gallery-main>
+    <div class="@Classes.Root" data-storefront-product-gallery>
+        <div class="@Classes.Main" data-storefront-gallery-main>
             <img src="@main.ImageUrl"
                  alt="@Gallery.SelectedAltText"
-                 class="bs-product-gallery__image absolute inset-0 h-full w-full object-contain"
+                 class="@Classes.MainImage"
                  loading="eager"
                  onerror="@BrokenImageFallbackScript"
                  data-storefront-gallery-main-image />
-            <div class="bs-product-gallery__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
+            <div class="@Classes.Placeholder"
                  role="img"
                  aria-label="@FallbackAltText"
                  data-storefront-gallery-placeholder
                  hidden>
-                Image unavailable
+                @Labels.ImageUnavailableText
             </div>
 
             @if (Gallery.HasMultipleItems)
             {
-                <div class="bs-product-gallery__controls" data-storefront-gallery-controls>
+                <div class="@Classes.Controls" data-storefront-gallery-controls>
                     <button type="button"
-                            class="bs-product-gallery__nav bs-product-gallery__nav--prev"
-                            aria-label="Show previous product image"
+                            class="@Classes.PreviousButton"
+                            aria-label="@Labels.PreviousImage"
                             aria-disabled="@(!Gallery.CanSelectPrevious).ToString().ToLowerInvariant()"
                             data-storefront-gallery-prev
-                            disabled>
-                        <svg class="bs-product-gallery__nav-icon"
+                            disabled="@(!Gallery.CanSelectPrevious)">
+                        <svg class="@Classes.Icon"
                              aria-hidden="true"
                              viewBox="0 0 24 24"
                              focusable="false">
@@ -35,11 +35,12 @@
                         </svg>
                     </button>
                     <button type="button"
-                            class="bs-product-gallery__nav bs-product-gallery__nav--next"
-                            aria-label="Show next product image"
+                            class="@Classes.NextButton"
+                            aria-label="@Labels.NextImage"
                             aria-disabled="@(!Gallery.CanSelectNext).ToString().ToLowerInvariant()"
-                            data-storefront-gallery-next>
-                        <svg class="bs-product-gallery__nav-icon"
+                            data-storefront-gallery-next
+                            disabled="@(!Gallery.CanSelectNext)">
+                        <svg class="@Classes.Icon"
                              aria-hidden="true"
                              viewBox="0 0 24 24"
                              focusable="false">
@@ -52,16 +53,16 @@
 
         @if (Gallery.HasMultipleItems)
         {
-            <div class="bs-product-gallery__thumbs flex gap-3 overflow-x-auto pb-1"
+            <div class="@Classes.ThumbnailViewport"
                  data-storefront-gallery-thumb-viewport
                  role="list"
-                 aria-label="Product images">
+                 aria-label="@Labels.ImagesRegion">
                 @for (var index = 0; index < Gallery.Items.Count; index++)
                 {
                     var item = Gallery.Items[index];
                     <button type="button"
-                            class="bs-product-gallery__thumb relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-0 ring-0 transition hover:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-900 data-[selected=true]:border-neutral-900 data-[selected=true]:ring-2 data-[selected=true]:ring-neutral-900"
-                            aria-label="@($"Show product image {index + 1}")"
+                            class="@Classes.Thumbnail"
+                            aria-label="@Labels.FormatImageButton(index + 1)"
                             aria-current="@(index == Gallery.SelectedIndex ? "true" : "false")"
                             aria-selected="@(index == Gallery.SelectedIndex ? "true" : "false")"
                             data-selected="@(index == Gallery.SelectedIndex ? "true" : "false")"
@@ -71,13 +72,13 @@
                             data-alt="@item.AltText">
                         <img src="@item.ThumbnailUrl"
                              alt=""
-                             class="bs-product-gallery__image absolute inset-0 h-full w-full object-contain"
+                             class="@Classes.ThumbnailImage"
                              loading="lazy"
                              onerror="@BrokenImageFallbackScript" />
-                        <span class="bs-product-gallery__thumb-fallback absolute inset-0 flex items-center justify-center bg-neutral-100 px-2 text-center text-[11px] font-semibold text-neutral-500"
+                        <span class="@Classes.ThumbnailFallback"
                               data-storefront-gallery-thumb-fallback
                               hidden>
-                            Image unavailable
+                            @Labels.ImageUnavailableText
                         </span>
                     </button>
                 }
@@ -87,12 +88,14 @@
 }
 else
 {
-    <div class="bs-product-gallery__main relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-product-gallery>
-        <div class="bs-product-gallery__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
-             role="img"
-             aria-label="@FallbackAltText"
-             data-storefront-gallery-placeholder>
-            Image unavailable
+    <div class="@Classes.Root" data-storefront-product-gallery>
+        <div class="@Classes.Main" data-storefront-gallery-main>
+            <div class="@Classes.Placeholder"
+                 role="img"
+                 aria-label="@FallbackAltText"
+                 data-storefront-gallery-placeholder>
+                @Labels.ImageUnavailableText
+            </div>
         </div>
     </div>
 }
@@ -104,9 +107,15 @@ else
     [Parameter]
     public string? ProductName { get; set; }
 
+    [Parameter]
+    public ProductGalleryLabels Labels { get; set; } = ProductGalleryLabels.Empty;
+
+    [Parameter]
+    public ProductGalleryClasses Classes { get; set; } = new();
+
     private ProductGalleryState Gallery => ProductGalleryState.Create(Items, ProductName);
 
-    private string FallbackAltText => $"Image unavailable for {Gallery.DisplayProductName}";
+    private string FallbackAltText => Labels.FormatImageUnavailableAlt(Gallery.DisplayProductName);
 
     private const string BrokenImageFallbackScript = "this.onerror=null;this.hidden=true;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E';if(this.nextElementSibling){this.nextElementSibling.hidden=false;}";
 }
