@@ -1132,38 +1132,45 @@ Implementation notes:
 
 Expected changed areas:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/**`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/**`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/**`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/**`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/**`
-- [ ] `BlazorShop.Tests.V2/Architecture/**` only for ownership assertion updates
-- [ ] architecture docs
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
-- [ ] this plan file
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/**`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/**`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/**`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/**`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/**`
+- [x] `BlazorShop.Tests.V2/Architecture/**` only for ownership assertion updates
+- [x] architecture docs
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
+- [x] this plan file
 
 Unexpected unless separately justified:
 
-- [ ] `BlazorShop.Storefront.Presentation` behavior/service code;
-- [ ] `BlazorShop.Storefront.Runtime`;
-- [ ] `BlazorShop.Storefront.Client`;
-- [ ] `BlazorShop.Storefront.Browser`;
-- [ ] `BlazorShop.Storefront.V2.WASM`;
-- [ ] `BlazorShop.Storefront.Starter`;
-- [ ] StorefrontBuilder tooling;
-- [ ] Commerce Node;
-- [ ] Control Plane;
-- [ ] Application/Domain/Infrastructure;
-- [ ] database/migrations;
-- [ ] cart/checkout/account source;
-- [ ] product purchase behavior source.
+- [x] `BlazorShop.Storefront.Presentation` behavior/service code;
+- [x] `BlazorShop.Storefront.Runtime`;
+- [x] `BlazorShop.Storefront.Client`;
+- [x] `BlazorShop.Storefront.Browser`;
+- [x] `BlazorShop.Storefront.V2.WASM`;
+- [x] `BlazorShop.Storefront.Starter`;
+- [x] StorefrontBuilder tooling;
+- [x] Commerce Node;
+- [x] Control Plane;
+- [x] Application/Domain/Infrastructure;
+- [x] database/migrations;
+- [x] cart/checkout/account source;
+- [x] product purchase behavior source.
 
 Exit criteria:
 
-- [ ] any unexpected file is explained or removed;
-- [ ] Phase remains Product Detail display extraction only.
+- [x] any unexpected file is explained or removed;
+- [x] Phase remains Product Detail display extraction only.
+
+Implementation notes:
+
+- 2026-08-10: Ran `git diff --name-only 1e2b02ef^..HEAD` to audit the full Phase 3.2 commit range.
+- 2026-08-10: Changed files are limited to Product component contracts, Product primitive/SSR display components, V2 Product visual config/import/page composition, Storefront V2/Product architecture tests, and this plan file.
+- 2026-08-10: No files changed in Presentation behavior/services, Runtime, Client, Browser, V2.WASM, Starter, StorefrontBuilder, Commerce Node, Control Plane, Application/Domain/Infrastructure, database/migrations, cart/checkout/account source, or ProductPurchasePanel purchase behavior.
+- 2026-08-10: Architecture docs and `QA-StorefrontV2.todo.md` are intentionally handled in Phase 3.2.18; their absence from the Phase 3.2.17 diff is not scope drift.
 
 ## Phase 3.2.18 - Documentation Update
 
