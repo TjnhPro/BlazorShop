@@ -799,17 +799,17 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Feature test gate:
 
-- [ ] Add and run focused tests for BrandLogo.
-- [ ] Add and run focused tests for contact endpoint/controller/components.
-- [ ] Add and run focused tests for discounted rail endpoint/controller/component.
-- [ ] Run all new tests by fully qualified name filter and record results here.
+- [x] Add and run focused tests for BrandLogo.
+- [x] Add and run focused tests for contact endpoint/controller/components.
+- [x] Add and run focused tests for discounted rail endpoint/controller/component.
+- [x] Run all new tests by fully qualified name filter and record results here.
 
 Exit criteria:
 
-- [ ] All relevant builds pass.
-- [ ] Focused architecture tests pass.
-- [ ] New feature tests pass.
-- [ ] Known unrelated warnings are recorded but not fixed in this phase.
+- [x] All relevant builds pass.
+- [x] Focused architecture tests pass.
+- [x] New feature tests pass.
+- [x] Known unrelated warnings are recorded but not fixed in this phase.
 
 ## Phase 14 - Playwright V2 Browser QA
 
@@ -1064,3 +1064,13 @@ Phase 12 QA checklist:
 - The checklist is usable without this implementation plan because each item has an owner and concrete evidence pointer.
 - Static implementation, descriptor, boundary, and build/test-backed items are marked complete in the QA checklist.
 - Visible runtime browser items remain unchecked in the QA checklist and are explicitly owned by Phase 14 Playwright V2 browser QA.
+
+Phase 13 build/test gates:
+
+- `dotnet build` passed 0 warnings/0 errors for `BlazorShop.Storefront.Components`, `BlazorShop.Storefront.Presentation`, `BlazorShop.Storefront.Browser`, `BlazorShop.Storefront.Components.Ssr`, `BlazorShop.Storefront.Components.WasmHost`, `BlazorShop.Storefront.Components.Hybrid`, `BlazorShop.Storefront.V2.WASM`, and `BlazorShop.Storefront.V2`.
+- The first architecture gate run exposed two stale guardrails: `StorefrontComponentModeFoundationTests.PhaseOneConsumersDoNotReferenceModeProjects` still forbade the now-intentional V2/V2.WASM mode references, and `StorefrontComponentsHeadlessPresentationRefactorTests.ContractModelInventory_RecordsReusableProductAndCatalogContracts` did not include the new Brand/Contact/discounted rail contracts.
+- Updated the foundation guardrail to keep the mode-reference ban on non-adopting consumers (`Presentation`, `Starter`, and `Starter.WASM`) while leaving the narrow V2/V2.WASM adoption covered by `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2`.
+- Updated contract inventory to include the current 34 contract files under base `Storefront.Components/Contracts`.
+- Architecture gate rerun: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontComponentsHeadlessPresentationRefactorTests|FullyQualifiedName~StorefrontSharedPlatformPackageContractTests|FullyQualifiedName~StorefrontPageCompositionGuardrailTests|FullyQualifiedName~StorefrontEndpointDependencyBoundaryTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests"`: passed 207/207.
+- Feature gate: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontPresentationContactEndpointTests|FullyQualifiedName~StorefrontBrowserContactControllerTests|FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontDiscountedProductRailPresentationTests|FullyQualifiedName~StorefrontBrowserProductRailControllerTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests"`: passed 88/88.
+- Known unrelated warnings during tests: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.

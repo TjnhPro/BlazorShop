@@ -8,16 +8,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [
             "Account/AccountLabels.cs",
             "Account/AccountRouteDescriptor.cs",
+            "Brand/StorefrontBrandLogoClasses.cs",
+            "Brand/StorefrontBrandLogoContext.cs",
             "Cart/CartLabels.cs",
             "Catalog/CatalogFilterCategoryOption.cs",
             "Catalog/ProductSummaryItem.cs",
             "Catalog/ProductSummaryLabels.cs",
+            "Catalog/StorefrontDiscountedProductRailActionDescriptor.cs",
+            "Catalog/StorefrontDiscountedProductRailClasses.cs",
+            "Catalog/StorefrontDiscountedProductRailLabels.cs",
+            "Catalog/StorefrontDiscountedProductRailRequest.cs",
+            "Catalog/StorefrontDiscountedProductRailResponse.cs",
+            "Catalog/StorefrontDiscountedProductRailState.cs",
             "Checkout/CheckoutLabels.cs",
             "Components/StorefrontComponentCategory.cs",
             "Components/StorefrontComponentDescriptor.cs",
             "Components/StorefrontComponentDescriptorValidationResult.cs",
             "Components/StorefrontComponentDescriptorValidator.cs",
             "Components/StorefrontComponentMode.cs",
+            "Contact/StorefrontContactFormActionDescriptor.cs",
+            "Contact/StorefrontContactFormClasses.cs",
+            "Contact/StorefrontContactFormLabels.cs",
+            "Contact/StorefrontContactFormState.cs",
+            "Contact/StorefrontContactFormSubmitRequest.cs",
+            "Contact/StorefrontContactFormSubmitResult.cs",
             "Deals/DealsPlacement.cs",
             "Product/ProductGalleryItem.cs",
             "Product/ProductGalleryLabels.cs",
@@ -113,7 +127,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(20, actual.Length);
+            Assert.Equal(34, actual.Length);
         }
 
         [Fact]

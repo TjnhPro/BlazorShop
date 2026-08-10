@@ -22,11 +22,9 @@ public sealed class StorefrontComponentModeFoundationTests
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj"),
     ];
 
-    private static readonly string[] ConsumersThatMustNotReferenceModeProjects =
+    private static readonly string[] NonAdoptingConsumersThatMustNotReferenceModeProjects =
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter.WASM/BlazorShop.Storefront.Starter.WASM.csproj",
     ];
@@ -86,9 +84,9 @@ public sealed class StorefrontComponentModeFoundationTests
     }
 
     [Fact]
-    public void PhaseOneConsumersDoNotReferenceModeProjects()
+    public void NonAdoptingConsumersDoNotReferenceModeProjects()
     {
-        foreach (var consumerProject in ConsumersThatMustNotReferenceModeProjects)
+        foreach (var consumerProject in NonAdoptingConsumersThatMustNotReferenceModeProjects)
         {
             var source = ReadRepositoryFile(consumerProject);
 
