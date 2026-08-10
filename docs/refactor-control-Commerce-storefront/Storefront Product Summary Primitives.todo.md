@@ -541,28 +541,36 @@ Responsibility:
 
 Inputs:
 
-- [ ] `ProductSummaryItem Item`
-- [ ] `ProductSummaryLabels Labels`
-- [ ] image-related classes from `ProductSummaryCardClasses` or a smaller internal parameter set
+- [x] `ProductSummaryItem Item`
+- [x] `ProductSummaryLabels Labels`
+- [x] image-related classes from `ProductSummaryCardClasses` or a smaller internal parameter set
 
 Behavior to preserve:
 
-- [ ] If `Item.ImageUrl` exists, render `<img src alt>`.
-- [ ] `alt` uses `Item.Name`.
-- [ ] If image URL is missing, render fallback immediately.
-- [ ] If image load fails, hide image and reveal fallback.
-- [ ] Fallback has `role="img"`.
-- [ ] Fallback has useful `aria-label`.
-- [ ] Fallback text comes from host-supplied labels.
-- [ ] Existing simple inline `onerror` behavior may be preserved.
-- [ ] Do not replace inline fallback with `IJSRuntime` or Browser controller.
-- [ ] Do not introduce static assets or SVG files.
+- [x] If `Item.ImageUrl` exists, render `<img src alt>`.
+- [x] `alt` uses `Item.Name`.
+- [x] If image URL is missing, render fallback immediately.
+- [x] If image load fails, hide image and reveal fallback.
+- [x] Fallback has `role="img"`.
+- [x] Fallback has useful `aria-label`.
+- [x] Fallback text comes from host-supplied labels.
+- [x] Existing simple inline `onerror` behavior may be preserved.
+- [x] Do not replace inline fallback with `IJSRuntime` or Browser controller.
+- [x] Do not introduce static assets or SVG files.
 
 Exit criteria:
 
-- [ ] Image behavior exists once for Product Summary.
-- [ ] Component compiles in browser-safe primitive graph.
-- [ ] No runtime-specific dependency.
+- [x] Image behavior exists once for Product Summary.
+- [x] Component compiles in browser-safe primitive graph.
+- [x] No runtime-specific dependency.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontProductSummaryImage` under `Components.Primitives/Catalog` with `ProductSummaryItem`, `ProductSummaryLabels`, and `ProductSummaryCardClasses` parameters.
+- 2026-08-10: The component preserves current `<img>` rendering, `alt="@Item.Name"`, lazy loading, hidden fallback reveal through the existing inline `onerror` script, and immediate fallback when `ImageUrl` is missing.
+- 2026-08-10: Fallback text and aria-label come from `ProductSummaryLabels`; visual classes are dynamic host slots only.
+- 2026-08-10: No `IJSRuntime`, Browser controller, API path, static asset, or extra SVG file was introduced.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj"`.
 
 ## Phase 3.1.6 - Extract StorefrontProductSummaryPurchaseActions
 
