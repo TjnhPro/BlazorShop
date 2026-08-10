@@ -819,12 +819,19 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 ### Exit Criteria
 
-- [ ] Descriptor tests pass with semantic mode behavior.
-- [ ] Dependency tests pass with strict SSR/WasmHost and transitional Hybrid.
-- [ ] Boundary validator tests pass.
-- [ ] Visual neutrality tests pass.
-- [ ] Reference component tests pass if related code was touched.
-- [ ] Exact command output/result count is recorded in implementation notes.
+- [x] Descriptor tests pass with semantic mode behavior.
+- [x] Dependency tests pass with strict SSR/WasmHost and transitional Hybrid.
+- [x] Boundary validator tests pass.
+- [x] Visual neutrality tests pass.
+- [x] Reference component tests pass if related code was touched.
+- [x] Exact command output/result count is recorded in implementation notes.
+
+Implementation notes:
+
+- 2026-08-10: required focused architecture test gate passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests"`: 84 passed, 0 failed.
+- 2026-08-10: focused reference/browser-controller test gate passed with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrandLogoComponentTests|FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontDiscountedProductRailComponentTests|FullyQualifiedName~StorefrontBrowserContactControllerTests|FullyQualifiedName~StorefrontBrowserProductRailControllerTests"`: 24 passed, 0 failed.
+- 2026-08-10: full unfiltered `BlazorShop.Tests.V2` gate was intentionally skipped because this repository has known long-running tests and H1's required focused gates cover the changed descriptor, dependency, boundary, visual, and reference-component surfaces.
+- 2026-08-10: existing MessagePack NU1902/NU1903 and Browserslist warnings remain unrelated.
 
 ## Phase H1.12 - Browser QA Decision Gate
 
