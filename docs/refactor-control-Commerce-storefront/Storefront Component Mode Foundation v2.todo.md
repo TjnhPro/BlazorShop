@@ -774,9 +774,20 @@ If broader build fails due to unrelated restore/environment issues, record the f
 
 ### Exit Criteria
 
-- [ ] Every changed component mode project builds.
-- [ ] V2 and V2.WASM build if they are in the affected graph.
-- [ ] Any skipped broad build is documented with reason.
+- [x] Every changed component mode project builds.
+- [x] V2 and V2.WASM build if they are in the affected graph.
+- [x] Any skipped broad build is documented with reason.
+
+Implementation notes:
+
+- 2026-08-10: required focused build gate was run sequentially with `--no-restore` to avoid compiler output file locks.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings and 0 errors.
+- 2026-08-10: optional `dotnet build BlazorShop.sln --no-restore` was skipped because H1 changes are covered by the focused project graph build and the solution-wide build would exercise unrelated runtime surfaces.
 
 ## Phase H1.11 - Focused Test Gates
 
