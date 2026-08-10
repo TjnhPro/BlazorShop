@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using BlazorShop.Storefront.Browser.Cart;
+using BlazorShop.Storefront.Browser.Catalog;
 using BlazorShop.Storefront.Browser.Checkout;
 using BlazorShop.Storefront.Browser.Account;
 using BlazorShop.Storefront.Browser.Contact;
@@ -34,6 +35,7 @@ public static class StorefrontBrowserServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddStorefrontBrowserCart();
+        services.AddStorefrontBrowserProductRails();
         services.AddStorefrontBrowserCheckout();
         services.AddStorefrontBrowserAccount();
         services.AddStorefrontBrowserContact();
@@ -65,6 +67,13 @@ public static class StorefrontBrowserServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddTransient<IStorefrontBrowserContactController, StorefrontBrowserContactController>();
+        return services;
+    }
+
+    public static IServiceCollection AddStorefrontBrowserProductRails(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddTransient<IStorefrontBrowserProductRailController, StorefrontBrowserProductRailController>();
         return services;
     }
 }

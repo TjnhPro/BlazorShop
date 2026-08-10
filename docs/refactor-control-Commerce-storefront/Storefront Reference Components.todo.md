@@ -573,35 +573,35 @@ Implement in `BlazorShop.Storefront.Browser`.
 
 Preferred files:
 
-- [ ] `Catalog/IStorefrontBrowserProductRailController.cs`
-- [ ] `Catalog/StorefrontBrowserProductRailController.cs`
+- [x] `Catalog/IStorefrontBrowserProductRailController.cs`
+- [x] `Catalog/StorefrontBrowserProductRailController.cs`
 
 Behavior:
 
-- [ ] Load discounted product rail through `StorefrontLocalApiClient`.
-- [ ] Use same-origin relative route only.
-- [ ] Pass `limit`.
-- [ ] Preserve cancellation behavior.
-- [ ] Map success, empty, error, retryable, and default technical message fields.
-- [ ] Do not hardcode final V2 copy.
-- [ ] Do not reference Presentation, Runtime, Client, V2, backend/core/API, or Web.SharedV2.
+- [x] Load discounted product rail through `StorefrontLocalApiClient`.
+- [x] Use same-origin relative route only.
+- [x] Pass `limit`.
+- [x] Preserve cancellation behavior.
+- [x] Map success, empty, error, retryable, and default technical message fields.
+- [x] Do not hardcode final V2 copy.
+- [x] Do not reference Presentation, Runtime, Client, V2, backend/core/API, or Web.SharedV2.
 
 Registration:
 
-- [ ] Add `AddStorefrontBrowserCatalog()` or `AddStorefrontBrowserProductRails()`.
-- [ ] Include it from `AddStorefrontBrowserControllers()`.
+- [x] Add `AddStorefrontBrowserCatalog()` or `AddStorefrontBrowserProductRails()`.
+- [x] Include it from `AddStorefrontBrowserControllers()`.
 
 Tests:
 
-- [ ] DI registration test.
-- [ ] Success mapping test.
-- [ ] Empty mapping test.
-- [ ] Error mapping test.
-- [ ] Cancellation behavior test.
+- [x] DI registration test.
+- [x] Success mapping test.
+- [x] Empty mapping test.
+- [x] Error mapping test.
+- [x] Cancellation behavior test.
 
 Exit criteria:
 
-- [ ] WasmHost rail can load data without direct transport ownership.
+- [x] WasmHost rail can load data without direct transport ownership.
 
 ## Phase 8 - WasmHost Discounted Product Rail Component
 
@@ -1002,4 +1002,14 @@ Phase 6 build/test:
 - Guard scan for `discountedOnly`/`discounted-products` in Commerce Node/core projects: no matches.
 - Guard scan for direct `HttpClient`, Commerce Node base URL, direct `api/storefront/stores`, V2, and ControlPlane references in the local catalog endpoint/service: no matches.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontDiscountedProductRailPresentationTests|FullyQualifiedName~StorefrontPresentationFoundationBoundaryTests"`: passed 39/39.
+- Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 7 build/test:
+
+- Added `IStorefrontBrowserProductRailController` and `StorefrontBrowserProductRailController`.
+- Registered product rails through `AddStorefrontBrowserProductRails()` and `AddStorefrontBrowserControllers()`.
+- Controller loads the discounted rail through `StorefrontLocalApiClient.GetAsync`, appends `limit`, preserves cancellation, rejects absolute/protocol-relative routes through local-route normalization, and maps success/empty/error/retryable response states.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj --no-restore`: passed, 0 warnings, 0 errors.
+- Browser catalog guard scan for Presentation, Runtime, Client, V2, CommerceNode, ControlPlane, Web.SharedV2, generated catalog client, direct `HttpClient`, and direct Storefront API route references: no matches.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontBrowserProductRailControllerTests|FullyQualifiedName~StorefrontBrowserContactControllerTests|FullyQualifiedName~StorefrontV2WASMRuntimeFoundationTests"`: passed 34/34.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
