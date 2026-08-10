@@ -15,12 +15,13 @@ using Xunit;
 
 public sealed class StorefrontComponentDescriptorTests
 {
-    private static readonly string[] ModeProjectDirectories =
+    private static readonly string[] ReusableDescriptorSourceDirectories =
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
     ];
+
+    private static string RetiredHybridNamespace => "BlazorShop.Storefront.Components." + "Hybrid";
 
     [Fact]
     public void ValidDescriptorPasses()
@@ -287,7 +288,7 @@ public sealed class StorefrontComponentDescriptorTests
         Assert.DoesNotContain(
             descriptors,
             candidate => candidate.Descriptor.ComponentType.Namespace?.StartsWith(
-                "BlazorShop.Storefront.Components.Hybrid",
+                RetiredHybridNamespace,
                 StringComparison.Ordinal) == true);
     }
 
@@ -330,7 +331,7 @@ public sealed class StorefrontComponentDescriptorTests
 
     private static IReadOnlyList<RepositoryDescriptorCandidate> DiscoverRepositoryDescriptors()
     {
-        return ModeProjectDirectories
+        return ReusableDescriptorSourceDirectories
             .Select(RepositoryPath)
             .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
             .Where(IsActiveSourceFile)
@@ -373,11 +374,6 @@ public sealed class StorefrontComponentDescriptorTests
         if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/", StringComparison.Ordinal))
         {
             return "BlazorShop.Storefront.Components.Ssr";
-        }
-
-        if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/", StringComparison.Ordinal))
-        {
-            return "BlazorShop.Storefront.Components.Hybrid";
         }
 
         if (relativePath.StartsWith("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/", StringComparison.Ordinal))

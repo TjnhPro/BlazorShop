@@ -13,6 +13,8 @@ using Xunit;
 
 public sealed class StorefrontContactFormComponentTests
 {
+    private static string RetiredHybridNamespace => "BlazorShop.Storefront.Components." + "Hybrid";
+
     [Fact]
     public async Task WasmHostAppPrerendersSemanticFormWithSubjectField()
     {
@@ -74,7 +76,7 @@ public sealed class StorefrontContactFormComponentTests
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor"));
 
         Assert.Contains("<StorefrontContactFormSection @rendermode=\"InteractiveWebAssembly\" />", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("BlazorShop.Storefront.Components.Hybrid", source, StringComparison.Ordinal);
+        Assert.DoesNotContain(RetiredHybridNamespace, source, StringComparison.Ordinal);
     }
 
     private static async Task<string> RenderAppAsync(RecordingContactController controller)

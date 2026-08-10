@@ -12,7 +12,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Client",

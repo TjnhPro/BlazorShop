@@ -279,31 +279,6 @@ internal static class StorefrontComponentModeProfiles
             sourceTokenRemediation: "Move browser, runtime, client, API, JS interop, and render-mode behavior out of SSR components.");
     }
 
-    public static StorefrontComponentModeProfile Hybrid(string repositoryRoot)
-    {
-        return Create(
-            "Components.Hybrid",
-            repositoryRoot,
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj",
-            requiredProjectReferenceFragments:
-            [
-                "BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj",
-                "BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj",
-                "BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj",
-            ],
-            allowedProjectReferenceFragments:
-            [
-                "BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj",
-                "BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj",
-                "BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj",
-            ],
-            forbiddenSourceTokens: HybridForbiddenSourceTokens,
-            allowedSourceTokens: HybridAllowedSourceTokens,
-            projectReferenceRemediation: "The transitional Components.Hybrid project may reference only base Components, Presentation, and Components.WasmHost until H2 decides its permanent role. This is not the semantic definition of Hybrid mode.",
-            sourceTokenRemediation: "Keep the transitional Components.Hybrid project free of direct browser transport, API calls, HttpClient, and JS interop behavior; H2 owns any permanent Hybrid runtime pattern changes.");
-    }
-
     public static StorefrontComponentModeProfile WasmHost(string repositoryRoot)
     {
         return Create(

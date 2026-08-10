@@ -49,7 +49,6 @@ public sealed class StorefrontComponentModeBoundaryValidatorTests
     public static IEnumerable<object[]> RepositoryProfiles()
     {
         yield return [StorefrontComponentModeProfiles.Ssr(RepositoryRoot)];
-        yield return [StorefrontComponentModeProfiles.Hybrid(RepositoryRoot)];
         yield return [StorefrontComponentModeProfiles.WasmHost(RepositoryRoot)];
     }
 
@@ -262,7 +261,7 @@ public sealed class StorefrontComponentModeBoundaryValidatorTests
     private static StorefrontComponentModeProfile HybridFixtureProfile()
     {
         return FixtureProfile(
-            "Components.Hybrid",
+            "Semantic.Hybrid",
             "Positive.Hybrid",
             "Positive.Hybrid.csproj",
             [

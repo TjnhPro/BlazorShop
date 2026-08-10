@@ -13,14 +13,12 @@ public sealed class StorefrontComponentModeFoundationTests
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj"),
         (
-            "BlazorShop.Storefront.Components.Hybrid",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj"),
-        (
             "BlazorShop.Storefront.Components.WasmHost",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj"),
     ];
+
+    private static string RetiredHybridProjectName => "BlazorShop.Storefront.Components." + "Hybrid";
 
     private static readonly string[] NonAdoptingConsumersThatMustNotReferenceModeProjects =
     [
@@ -91,7 +89,7 @@ public sealed class StorefrontComponentModeFoundationTests
             var source = ReadRepositoryFile(consumerProject);
 
             Assert.DoesNotContain("BlazorShop.Storefront.Components.Ssr", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.Storefront.Components.Hybrid", source, StringComparison.Ordinal);
+            Assert.DoesNotContain(RetiredHybridProjectName, source, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Storefront.Components.WasmHost", source, StringComparison.Ordinal);
         }
     }

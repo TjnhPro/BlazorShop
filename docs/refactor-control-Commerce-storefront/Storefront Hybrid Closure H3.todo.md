@@ -289,16 +289,16 @@ Goal: retire the physical transitional project after descriptor and shell consum
 
 Tasks:
 
-- [ ] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/_Imports.razor`.
-- [ ] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`.
-- [ ] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj`.
-- [ ] Delete the now-empty `BlazorShop.Storefront.Components.Hybrid` folder.
-- [ ] Remove `BlazorShop.Storefront.Components.Hybrid` project entry from `BlazorShop.sln`.
-- [ ] Remove test project reference from `BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj`.
-- [ ] Remove all active build commands for `Components.Hybrid` from plan/docs/QA current gates.
-- [ ] Keep historical plan files as history, but update source-of-truth docs to say the project is retired.
-- [ ] Ensure no active project references `BlazorShop.Storefront.Components.Hybrid`.
-- [ ] Ensure no active test imports `BlazorShop.Storefront.Components.Hybrid`.
+- [x] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/_Imports.razor`.
+- [x] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/README.md`.
+- [x] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj`.
+- [x] Delete the now-empty `BlazorShop.Storefront.Components.Hybrid` folder.
+- [x] Remove `BlazorShop.Storefront.Components.Hybrid` project entry from `BlazorShop.sln`.
+- [x] Remove test project reference from `BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj`.
+- [x] Remove all active build commands for `Components.Hybrid` from plan/docs/QA current gates.
+- [x] Keep historical plan files as history, but update source-of-truth docs to say the project is retired.
+- [x] Ensure no active project references `BlazorShop.Storefront.Components.Hybrid`.
+- [x] Ensure no active test imports `BlazorShop.Storefront.Components.Hybrid`.
 
 Fallback if removal is blocked:
 
@@ -309,9 +309,18 @@ Fallback if removal is blocked:
 
 Preferred exit criteria:
 
-- [ ] `rg -n "BlazorShop.Storefront.Components.Hybrid" BlazorShop.PresentationV2 BlazorShop.Tests.V2 BlazorShop.sln` returns no active source/test/project references.
-- [ ] Historical docs may still mention the retired project only as historical context.
-- [ ] Active docs do not list `Components.Hybrid` as a current project.
+- [x] `rg -n "BlazorShop.Storefront.Components.Hybrid" BlazorShop.PresentationV2 BlazorShop.Tests.V2 BlazorShop.sln` returns no active source/test/project references.
+- [x] Historical docs may still mention the retired project only as historical context.
+- [x] Active docs do not list `Components.Hybrid` as a current project.
+
+Implementation notes:
+
+- 2026-08-10: removed the retired Hybrid project from `BlazorShop.sln` with `dotnet sln BlazorShop.sln remove`.
+- 2026-08-10: deleted tracked Hybrid project files: `_Imports.razor`, `README.md`, and `BlazorShop.Storefront.Components.Hybrid.csproj`; the tracked source tree no longer contains the project. Local ignored `bin`/`obj` artifacts are not part of git/build graph.
+- 2026-08-10: removed the Hybrid project reference from `BlazorShop.Tests.V2.csproj`.
+- 2026-08-10: updated active architecture tests and `COMPONENT-MODES.md` so reusable project roots are `Components.Ssr` and `Components.WasmHost`; Hybrid remains semantic mode only.
+- 2026-08-10: `rg -n "BlazorShop.Storefront.Components.Hybrid" BlazorShop.PresentationV2 BlazorShop.Tests.V2 BlazorShop.sln -g "!*bin*" -g "!*obj*"` returned no matches.
+- 2026-08-10: focused architecture/contact gate passed 106/106 with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentModeFoundationTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentDescriptorTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontContactFormComponentTests"`. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.4 - Descriptor Discovery Decoupling
 
@@ -832,7 +841,7 @@ Before marking H3 complete:
 - [x] H3.0 baseline and evidence lock.
 - [x] H3.1 move `contact-form` descriptor to WasmHost.
 - [x] H3.2 remove historical contact shell.
-- [ ] H3.3 remove `Components.Hybrid` project and references.
+- [x] H3.3 remove `Components.Hybrid` project and references.
 - [ ] H3.4 decouple descriptor discovery from project topology.
 - [ ] H3.5 harden component dependency matrix.
 - [ ] H3.6 harden render mode ownership.

@@ -8,7 +8,6 @@ public sealed class StorefrontComponentVisualNeutralityTests
     private static readonly string[] ModeProjectDirectories =
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
     ];
 

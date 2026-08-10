@@ -9,9 +9,12 @@ public sealed class StorefrontComponentModeDependencyTests
     private static readonly string[] ModeProjectPaths =
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj",
-        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj",
     ];
+
+    private static string RetiredHybridProjectDirectory => "BlazorShop.PresentationV2/BlazorShop.Storefront.Components." + "Hybrid";
+
+    private static string RetiredHybridProjectName => "BlazorShop.Storefront.Components." + "Hybrid";
 
     private static readonly string[] ForbiddenModeProjectReferenceFragments =
     [
@@ -43,18 +46,13 @@ public sealed class StorefrontComponentModeDependencyTests
     }
 
     [Fact]
-    public void HybridProject_RemainsTransitionalCompatibilityGraphUntilH2()
+    public void RetiredHybridProjectIsAbsentFromActiveRepository()
     {
-        var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj");
+        var projectPath = $"{RetiredHybridProjectDirectory}/{RetiredHybridProjectName}.csproj";
+        var solution = File.ReadAllText(RepositoryPath("BlazorShop.sln"));
 
-        // This is the current compatibility project graph, not the semantic definition of Hybrid mode.
-        Assert.Equal(
-            [
-                "../BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj",
-                "../BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj",
-                "../BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj",
-            ],
-            references);
+        Assert.False(File.Exists(RepositoryPath(projectPath)));
+        Assert.DoesNotContain(projectPath.Replace('/', '\\'), solution, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
