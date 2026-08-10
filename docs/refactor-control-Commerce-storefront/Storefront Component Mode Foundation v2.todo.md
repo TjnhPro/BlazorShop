@@ -257,32 +257,38 @@ Make explicit that mode metadata describes runtime/usage semantics, not project 
 
 ### Tasks
 
-- [ ] Review `StorefrontComponentMode`.
-- [ ] Keep existing enum values unless real evidence requires more.
-- [ ] Do not add `HybridSsr`, `HybridWasm`, `HybridServer`, or `HybridClient`.
-- [ ] Review `StorefrontComponentDescriptor`.
-- [ ] Keep descriptor minimal: `Key`, `Mode`, `Category`, `ComponentType`.
-- [ ] Review `StorefrontComponentDescriptorValidator`.
-- [ ] Preserve validation of:
-  - [ ] non-empty lowercase kebab-case key;
-  - [ ] valid mode;
-  - [ ] valid category;
-  - [ ] component type implements `IComponent`.
-- [ ] Do not add registry/discovery/routing/theme responsibilities to descriptor validation.
-- [ ] Add or update comments/docs only if source currently implies physical assembly ownership.
+- [x] Review `StorefrontComponentMode`.
+- [x] Keep existing enum values unless real evidence requires more.
+- [x] Do not add `HybridSsr`, `HybridWasm`, `HybridServer`, or `HybridClient`.
+- [x] Review `StorefrontComponentDescriptor`.
+- [x] Keep descriptor minimal: `Key`, `Mode`, `Category`, `ComponentType`.
+- [x] Review `StorefrontComponentDescriptorValidator`.
+- [x] Preserve validation of:
+  - [x] non-empty lowercase kebab-case key;
+  - [x] valid mode;
+  - [x] valid category;
+  - [x] component type implements `IComponent`.
+- [x] Do not add registry/discovery/routing/theme responsibilities to descriptor validation.
+- [x] Add or update comments/docs only if source currently implies physical assembly ownership.
 
 ### Files
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Components/StorefrontComponentMode.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Components/StorefrontComponentDescriptor.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Components/StorefrontComponentDescriptorValidator.cs`
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Components/StorefrontComponentMode.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Components/StorefrontComponentDescriptor.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Components/StorefrontComponentDescriptorValidator.cs`
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
 
 ### Exit Criteria
 
-- [ ] `Mode` remains semantic metadata.
-- [ ] No code path requires descriptor mode to match assembly/project name.
-- [ ] Descriptor remains small and not a registry framework.
+- [x] `Mode` remains semantic metadata.
+- [x] No production code path requires descriptor mode to match assembly/project name; stale architecture-test coupling is isolated for H1.2.
+- [x] Descriptor remains small and not a registry framework.
+
+Implementation notes:
+
+- 2026-08-10: `StorefrontComponentMode` kept exactly `Ssr`, `Hybrid`, and `WasmHost`; added XML summaries that describe runtime semantics rather than physical package ownership.
+- 2026-08-10: `StorefrontComponentDescriptor` stayed limited to `Key`, `Mode`, `Category`, and `ComponentType`; added a summary that the descriptor is not a registry entry and does not define the component's physical assembly owner.
+- 2026-08-10: `StorefrontComponentDescriptorValidator` was reviewed and left unchanged; it still validates only key shape, enum values, and `IComponent`.
 
 ## Phase H1.2 - Refactor Descriptor Ownership Tests
 
