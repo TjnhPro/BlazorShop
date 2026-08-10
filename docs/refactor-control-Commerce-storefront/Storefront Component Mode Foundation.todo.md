@@ -4,6 +4,12 @@ Status: complete
 Owner: Storefront V2 architecture
 Scope: Phase 1 foundation only
 
+## Historical Note
+
+This completed foundation plan is historical evidence. Its original dependency graph and Hybrid shell wording were correct for the foundation phase that created the mode projects and guardrails, but the current source of truth is now `BlazorShop.PresentationV2/COMPONENT-MODES.md` plus `Storefront Hybrid Architecture Clarification.todo.md`.
+
+Do not infer from this historical plan that future Hybrid work must use a mandatory `Components.Hybrid -> WasmHost child` bridge. H1 must re-evaluate the physical project graph, descriptor/project consistency tests, and the role of `BlazorShop.Storefront.Components.Hybrid`.
+
 ## Goal
 
 Create the architecture foundation for reusable Storefront component libraries with explicit render/runtime modes:

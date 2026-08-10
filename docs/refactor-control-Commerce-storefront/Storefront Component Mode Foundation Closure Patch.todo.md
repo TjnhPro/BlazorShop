@@ -4,6 +4,12 @@ Status: complete
 Scope: test-only and documentation-only closure patch
 Target area: Storefront component mode architecture guardrails
 
+## Historical Note
+
+This completed closure patch remains valid as evidence for visual neutrality and descriptor/project consistency guardrails. Its references to `BlazorShop.Storefront.Components.Hybrid` owning `StorefrontComponentMode.Hybrid` describe the test architecture at the time of the closure patch, not a final decision that future Hybrid behavior must use a nested shell bridge.
+
+For current Hybrid semantics, use `BlazorShop.PresentationV2/COMPONENT-MODES.md` and `Storefront Hybrid Architecture Clarification.todo.md`. H1 must revisit whether these test-side descriptor/project ownership rules should remain unchanged.
+
 ## Purpose
 
 Close the remaining Phase 1 Component Mode Foundation gaps without changing production behavior:

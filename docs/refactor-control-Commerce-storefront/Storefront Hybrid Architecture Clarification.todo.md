@@ -222,41 +222,41 @@ Exit criteria:
 
 ### `BlazorShop.Storefront.Components.Hybrid/README.md`
 
-- [ ] Remove the stale "foundation-only until later phase adds real shared components" wording.
-- [ ] Explain that the project exists from the earlier foundation/reference component work but its future role is pending H1 re-evaluation.
-- [ ] Keep current guardrails until H1 changes tests/code:
+- [x] Remove the stale "foundation-only until later phase adds real shared components" wording.
+- [x] Explain that the project exists from the earlier foundation/reference component work but its future role is pending H1 re-evaluation.
+- [x] Keep current guardrails until H1 changes tests/code:
   - no direct Browser reference;
   - no Browser controller injection;
   - no direct API calls;
   - no theme CSS;
   - no V2 layout/copy ownership.
-- [ ] Avoid claiming nested bridge is the desired default.
+- [x] Avoid claiming nested bridge is the desired default.
 
 ### `Storefront Reference Components.todo.md`
 
-- [ ] Add a short "H0 Hybrid Clarification Note" near the top.
-- [ ] Preserve the historical completion record.
-- [ ] State that the phase did implement a Hybrid descriptor/component, but visible V2 contact flow moved to a V2.WASM wrapper after browser QA exposed nested bridge hydration failure.
-- [ ] State that the phase proves useful SSR/WASM/BFF/reference behavior, but it does not close the physical Hybrid shell model.
-- [ ] Link or name this H0 plan as the follow-up architecture clarification.
+- [x] Add a short "H0 Hybrid Clarification Note" near the top.
+- [x] Preserve the historical completion record.
+- [x] State that the phase did implement a Hybrid descriptor/component, but visible V2 contact flow moved to a V2.WASM wrapper after browser QA exposed nested bridge hydration failure.
+- [x] State that the phase proves useful SSR/WASM/BFF/reference behavior, but it does not close the physical Hybrid shell model.
+- [x] Link or name this H0 plan as the follow-up architecture clarification.
 
 ### `Storefront Component Mode Foundation.todo.md`
 
-- [ ] Add a short "Historical Note" near the top.
-- [ ] Preserve the completed foundation record.
-- [ ] State that the original dependency graph and Hybrid shell wording were correct for that historical foundation phase but are being superseded by H0/H1.
-- [ ] Do not rewrite all completed checkboxes.
+- [x] Add a short "Historical Note" near the top.
+- [x] Preserve the completed foundation record.
+- [x] State that the original dependency graph and Hybrid shell wording were correct for that historical foundation phase but are being superseded by H0/H1.
+- [x] Do not rewrite all completed checkboxes.
 
 ### `Storefront Component Mode Foundation Closure Patch.todo.md`
 
-- [ ] Add a historical note only if scan results show it is likely to be used as current source of truth.
-- [ ] Do not rewrite closure evidence.
+- [x] Add a historical note only if scan results show it is likely to be used as current source of truth.
+- [x] Do not rewrite closure evidence.
 
 Exit criteria:
 
-- [ ] Historical docs remain historically accurate.
-- [ ] Future agents are warned not to treat old completed plan wording as current architecture source of truth.
-- [ ] No implementation evidence is erased.
+- [x] Historical docs remain historically accurate.
+- [x] Future agents are warned not to treat old completed plan wording as current architecture source of truth.
+- [x] No implementation evidence is erased.
 
 ## Phase H0.4 - Scan And Classify Remaining Hybrid References
 

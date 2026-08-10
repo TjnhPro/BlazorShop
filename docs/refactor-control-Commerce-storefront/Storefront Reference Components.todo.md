@@ -4,6 +4,12 @@ Status: complete
 Owner: Storefront V2 architecture
 Scope: Phase 2 reference components only
 
+## H0 Hybrid Clarification Note
+
+This completed phase is historical implementation evidence, not the current Hybrid architecture source of truth. `Storefront Hybrid Architecture Clarification.todo.md` supersedes the old assumption that browser-visible Hybrid must use a mandatory `Components.Hybrid -> WasmHost child` bridge.
+
+This phase did implement a Hybrid descriptor/component for `StorefrontContactForm`, and it still proves useful SSR, WASM, Browser/BFF, descriptor, and reference-component behavior. However, visible V2 contact flow later moved to a V2.WASM wrapper after browser QA showed the nested Hybrid bridge rendered but did not hydrate submit events in the visible route flow. Therefore, this plan does not close the final physical Hybrid shell model; H1 must re-evaluate that model.
+
 ## Goal
 
 Implement exactly three reusable reference features to prove the current Storefront component mode architecture:
