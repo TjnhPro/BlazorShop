@@ -602,21 +602,28 @@ Decision:
 
 Tasks:
 
-- [ ] Confirm `ComponentMvpRoutePage.razor` sets robots noindex/nofollow metadata.
-- [ ] Confirm `StorefrontCurrentStoreMiddleware` skips `/__qa/component-mvp` or `/__qa/*` intentionally.
-- [ ] Confirm `StorefrontPublicRedirectMiddleware` skips `/__qa/component-mvp` or `/__qa/*` intentionally.
-- [ ] Confirm sitemap does not include `/__qa/component-mvp`.
-- [ ] Confirm navigation/menu does not include `/__qa/component-mvp`.
-- [ ] Confirm robots policy remains documented.
-- [ ] Decide whether docs use broad `/__qa/*` namespace or narrow `/__qa/component-mvp`.
-- [ ] If broad namespace remains, document it as internal architecture QA namespace and require noindex/not in sitemap.
-- [ ] If narrow exception is chosen, update middleware/tests to match exact path.
+- [x] Confirm `ComponentMvpRoutePage.razor` sets robots noindex/nofollow metadata.
+- [x] Confirm `StorefrontCurrentStoreMiddleware` skips `/__qa/component-mvp` or `/__qa/*` intentionally.
+- [x] Confirm `StorefrontPublicRedirectMiddleware` skips `/__qa/component-mvp` or `/__qa/*` intentionally.
+- [x] Confirm sitemap does not include `/__qa/component-mvp`.
+- [x] Confirm navigation/menu does not include `/__qa/component-mvp`.
+- [x] Confirm robots policy remains documented.
+- [x] Decide whether docs use broad `/__qa/*` namespace or narrow `/__qa/component-mvp`.
+- [x] If broad namespace remains, document it as internal architecture QA namespace and require noindex/not in sitemap.
+- [x] If narrow exception is chosen, update middleware/tests to match exact path.
 
 Exit criteria:
 
-- [ ] QA route policy is explicit.
-- [ ] Browser proof route stays deterministic.
-- [ ] Production-facing navigation/SEO surfaces do not expose the route.
+- [x] QA route policy is explicit.
+- [x] Browser proof route stays deterministic.
+- [x] Production-facing navigation/SEO surfaces do not expose the route.
+
+Implementation notes:
+
+- 2026-08-10: kept the broad internal `/__qa/*` architecture QA namespace and made the policy explicit through `IsArchitectureQaPath` in both `StorefrontCurrentStoreMiddleware` and `StorefrontPublicRedirectMiddleware`.
+- 2026-08-10: `ComponentMvpRoutePage.razor` remains Presentation-owned and emits `RobotsIndex = false` and `RobotsFollow = false` for both ready and unavailable states.
+- 2026-08-10: added architecture tests that keep `/__qa/component-mvp` out of public navigation, sitemap, route catalogs, and V2 public route ownership.
+- 2026-08-10: focused H3.10 test gate passed 28/28 with `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontComponentMvpArchitectureTests|FullyQualifiedName~StorefrontCurrentStoreMiddlewareTests|FullyQualifiedName~StorefrontPublicRedirectMiddlewareTests"`. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.11 - Documentation Closure
 
@@ -902,7 +909,7 @@ Before marking H3 complete:
 - [x] H3.7 harden server-interactive/browser transport guardrails.
 - [x] H3.8 rename `Contracts.System` namespace.
 - [x] H3.9 recheck visual neutrality and copy ownership.
-- [ ] H3.10 close `/__qa` route policy.
+- [x] H3.10 close `/__qa` route policy.
 - [ ] H3.11 update active docs and QA checklist.
 - [ ] H3.12 run focused build gate.
 - [ ] H3.13 run focused test gate.

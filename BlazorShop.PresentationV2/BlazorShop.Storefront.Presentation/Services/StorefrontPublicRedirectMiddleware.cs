@@ -13,7 +13,6 @@ namespace BlazorShop.Storefront.Presentation.Services
         [
             "/api",
             "/_",
-            "/__qa",
             "/css",
             "/js",
             "/images",
@@ -127,6 +126,11 @@ namespace BlazorShop.Storefront.Presentation.Services
                 return false;
             }
 
+            if (IsArchitectureQaPath(path))
+            {
+                return false;
+            }
+
             if (ExcludedPrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
@@ -138,6 +142,12 @@ namespace BlazorShop.Storefront.Presentation.Services
             }
 
             return true;
+        }
+
+        private static bool IsArchitectureQaPath(string path)
+        {
+            return string.Equals(path, "/__qa", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("/__qa/", StringComparison.OrdinalIgnoreCase);
         }
 
         private enum RedirectBlockReason

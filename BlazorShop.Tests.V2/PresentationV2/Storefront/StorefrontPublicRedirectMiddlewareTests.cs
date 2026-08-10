@@ -127,7 +127,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [InlineData("/health")]
         [InlineData("/alive")]
         [InlineData("/maintenance")]
+        [InlineData("/__qa")]
         [InlineData("/__qa/component-mvp")]
+        [InlineData("/__qa/future-proof")]
         public async Task InvokeAsync_WhenPathIsInfrastructureOrQaRoute_SkipsRedirectResolution(string path)
         {
             var nextCalled = false;

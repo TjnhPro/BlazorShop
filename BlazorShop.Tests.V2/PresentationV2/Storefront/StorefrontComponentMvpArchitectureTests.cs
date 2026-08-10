@@ -32,6 +32,54 @@ public sealed class StorefrontComponentMvpArchitectureTests
     }
 
     [Fact]
+    public void ComponentMvpRoute_IsNotPublicNavigationOrSitemapSurface()
+    {
+        var publicSurfaceFiles = new[]
+        {
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontRoutes.cs",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Seo/StorefrontSitemapService.cs",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontNavigationProvider.cs",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontPageNavigationProvider.cs",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontShellContextService.cs",
+        };
+
+        foreach (var publicSurfaceFile in publicSurfaceFiles)
+        {
+            var source = ReadRepositoryFile(publicSurfaceFile);
+
+            Assert.DoesNotContain("/__qa/component-mvp", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("/__qa/", source, StringComparison.Ordinal);
+        }
+
+        foreach (var visualFile in EnumerateRazorFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
+            .Where(file => !file.EndsWith("Components/System/StorefrontComponentMvpLab.razor", StringComparison.Ordinal)))
+        {
+            var source = ReadRepositoryFile(visualFile);
+
+            Assert.DoesNotContain("/__qa/component-mvp", source, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void ComponentMvpQaNamespace_IsExplicitMiddlewarePolicy()
+    {
+        var currentStoreMiddleware = ReadRepositoryFile(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontCurrentStoreMiddleware.cs");
+        var redirectMiddleware = ReadRepositoryFile(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/StorefrontPublicRedirectMiddleware.cs");
+
+        Assert.Contains("IsArchitectureQaPath(path)", currentStoreMiddleware, StringComparison.Ordinal);
+        Assert.Contains("string.Equals(path, \"/__qa\", StringComparison.OrdinalIgnoreCase)", currentStoreMiddleware, StringComparison.Ordinal);
+        Assert.Contains("path.StartsWith(\"/__qa/\", StringComparison.OrdinalIgnoreCase)", currentStoreMiddleware, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"/__qa\"", ReadExcludedPrefixesInitializer(currentStoreMiddleware), StringComparison.Ordinal);
+
+        Assert.Contains("IsArchitectureQaPath(path)", redirectMiddleware, StringComparison.Ordinal);
+        Assert.Contains("string.Equals(path, \"/__qa\", StringComparison.OrdinalIgnoreCase)", redirectMiddleware, StringComparison.Ordinal);
+        Assert.Contains("path.StartsWith(\"/__qa/\", StringComparison.OrdinalIgnoreCase)", redirectMiddleware, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"/__qa\"", ReadExcludedPrefixesInitializer(redirectMiddleware), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ComponentMvpViewSlot_IsOptionalAndUsesPresentationOwnedContext()
     {
         var viewSet = ReadRepositoryFile(
@@ -102,6 +150,17 @@ public sealed class StorefrontComponentMvpArchitectureTests
     private static string ReadRepositoryFile(string relativePath)
     {
         return File.ReadAllText(Path.Combine(RepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
+    }
+
+    private static string ReadExcludedPrefixesInitializer(string source)
+    {
+        var start = source.IndexOf("ExcludedPrefixes", StringComparison.Ordinal);
+        Assert.True(start >= 0, "ExcludedPrefixes initializer was not found.");
+
+        var end = source.IndexOf("];", start, StringComparison.Ordinal);
+        Assert.True(end > start, "ExcludedPrefixes initializer end was not found.");
+
+        return source[start..end];
     }
 
     private static string RepositoryRoot()

@@ -19,7 +19,6 @@ namespace BlazorShop.Storefront.Presentation.Services
         [
             "/api",
             "/_",
-            "/__qa",
             "/css",
             "/js",
             "/images",
@@ -104,6 +103,11 @@ namespace BlazorShop.Storefront.Presentation.Services
                 return true;
             }
 
+            if (IsArchitectureQaPath(path))
+            {
+                return true;
+            }
+
             if (ExcludedPrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
@@ -112,6 +116,12 @@ namespace BlazorShop.Storefront.Presentation.Services
             return Path.HasExtension(path)
                 && !string.Equals(path, StorefrontRoutes.Robots, StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(path, StorefrontRoutes.Sitemap, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsArchitectureQaPath(string path)
+        {
+            return string.Equals(path, "/__qa", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("/__qa/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static Task WriteUnavailableAsync(
