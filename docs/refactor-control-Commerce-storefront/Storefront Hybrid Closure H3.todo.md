@@ -877,20 +877,37 @@ Goal: leave a durable execution record for merge readiness.
 
 Update this file with:
 
-- [ ] Final commit SHA or working branch state.
-- [ ] Whether `Components.Hybrid` was removed or kept with blocker.
-- [ ] Final contact descriptor owner.
-- [ ] Final contact visible browser path.
-- [ ] Final Hybrid semantic definition.
-- [ ] Final render-mode owner.
-- [ ] Final browser data path.
-- [ ] Component MVP proof results.
-- [ ] Contact browser regression result.
-- [ ] Focused build result.
-- [ ] Focused test result.
-- [ ] Full solution result.
-- [ ] Remaining technical debt.
-- [ ] Merge readiness statement.
+- [x] Final commit SHA or working branch state.
+- [x] Whether `Components.Hybrid` was removed or kept with blocker.
+- [x] Final contact descriptor owner.
+- [x] Final contact visible browser path.
+- [x] Final Hybrid semantic definition.
+- [x] Final render-mode owner.
+- [x] Final browser data path.
+- [x] Component MVP proof results.
+- [x] Contact browser regression result.
+- [x] Focused build result.
+- [x] Focused test result.
+- [x] Full solution result.
+- [x] Remaining technical debt.
+- [x] Merge readiness statement.
+
+Final closure report:
+
+- Final branch state: H3.17 final report is committed as branch `HEAD`; previous phase HEAD before this report was `4d5e6462`.
+- `BlazorShop.Storefront.Components.Hybrid` has been retired from active architecture and removed from the solution, active project references, and source/test ownership.
+- Final `contact-form` descriptor owner: `BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormDescriptor.cs`; descriptor key remains `contact-form`, semantic mode remains `Hybrid`, and target remains the reusable WasmHost contact app.
+- Final contact visible browser path: V2 page/wrapper composition renders the reusable WasmHost contact app; browser regression evidence is `output/playwright/storefront-reference-components-phase14/evidence.json`.
+- Final Hybrid semantic definition: server-produced or prerendered HTML followed by `InteractiveWebAssembly` browser interactivity; semantic component mode is independent from physical package ownership.
+- Final render-mode owner: host/V2 composition owns `@rendermode InteractiveWebAssembly`; reusable components do not own render modes.
+- Final browser data path: browser components use Browser controllers and same-origin BFF routes such as `/api/contact`; they do not call Commerce Node Storefront APIs directly and do not expose protected tokens.
+- Component MVP proof results: RawHtml, Hybrid, Rail, and Network phases passed with `scripts/qa/run-storefront-component-mvp-proof.ps1`; network evidence recorded `serverUiCircuit: 0`, `directCommerce: 0`, `webSockets: 0`, zero credential leaks, zero console errors, and zero page errors.
+- Contact browser regression result: passed with `scripts/qa/run-storefront-reference-components-v2-proof.ps1 -UseExisting -NoBuild` against the local V2 runtime, covering SSR-first contact markup, required validation, backend validation failure, backend failure/retry, success state, rail empty/error/retry, desktop/mobile brand visibility, same-origin `/api/contact`, zero direct Commerce calls, zero console errors, and zero page errors.
+- Focused build result: passed for `Components`, `Components.Ssr`, `Components.WasmHost`, `Browser`, `Presentation`, `V2.WASM`, and `V2` with 0 warnings and 0 errors.
+- Focused test result: passed 186/186 for the H3 source/component guardrail filter.
+- Full solution result: `dotnet build BlazorShop.sln --no-restore` passed with 0 errors; `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed with 1889 passed, 2 skipped, 0 failed.
+- Remaining technical debt: existing MessagePack NU1902/NU1903 package vulnerability warnings in `BlazorShop.Tests.V2`, existing Browserslist/caniuse-lite warning from Control Plane Tailwind, and existing skipped cart/payment tests unrelated to H3.
+- Merge readiness: H3 is ready for review/merge after the final report commit.
 
 Expected final statement:
 
@@ -906,23 +923,23 @@ Components.Hybrid has been retired from active architecture.
 
 Exit criteria:
 
-- [ ] Closure report is written.
-- [ ] `Hybrid-Architecture` branch is ready for review/merge.
+- [x] Closure report is written.
+- [x] `Hybrid-Architecture` branch is ready for review/merge.
 
 ## Required Final Checks
 
 Before marking H3 complete:
 
-- [ ] `rg -n "BlazorShop.Storefront.Components.Hybrid" BlazorShop.PresentationV2 BlazorShop.Tests.V2 BlazorShop.sln -g "!*bin*" -g "!*obj*"` has no active source/test/project matches.
-- [ ] `rg -n "Contracts.System|namespace BlazorShop.Storefront.Components.Contracts.System" BlazorShop.PresentationV2 BlazorShop.Tests.V2 -g "!*bin*" -g "!*obj*"` has no active source/test matches.
-- [ ] `rg -n "InteractiveServer|InteractiveAuto" BlazorShop.PresentationV2/BlazorShop.Storefront* BlazorShop.Tests.V2 -g "!*bin*" -g "!*obj*"` shows only documentation/test-negative-fixture references, not active public Storefront implementation.
-- [ ] `rg -n "@rendermode" BlazorShop.PresentationV2/BlazorShop.Storefront.Components* -g "!*bin*" -g "!*obj*"` shows no reusable component render-mode ownership.
-- [ ] `rg -n "api/storefront/stores|CommerceNode|ControlPlane" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM -g "!*bin*" -g "!*obj*"` shows no direct backend transport leak, excluding docs/tests if applicable.
-- [ ] `dotnet build` focused gate passes.
-- [ ] `dotnet test` focused gate passes.
-- [ ] Playwright Component MVP proof passes all phases.
-- [ ] Contact browser regression passes.
-- [ ] `QA-StorefrontV2.todo.md` records final evidence.
+- [x] `rg -n "BlazorShop.Storefront.Components.Hybrid" BlazorShop.PresentationV2 BlazorShop.Tests.V2 BlazorShop.sln -g "!*bin*" -g "!*obj*"` has no active source/test/project matches.
+- [x] `rg -n "Contracts.System|namespace BlazorShop.Storefront.Components.Contracts.System" BlazorShop.PresentationV2 BlazorShop.Tests.V2 -g "!*bin*" -g "!*obj*"` has no active source/test matches.
+- [x] `rg -n "InteractiveServer|InteractiveAuto" BlazorShop.PresentationV2 BlazorShop.Tests.V2 -g "!*bin*" -g "!*obj*"` shows only documentation/test-negative-fixture references, not active public Storefront implementation.
+- [x] `rg -n "@rendermode" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost -g "!*bin*" -g "!*obj*"` shows no reusable component render-mode ownership.
+- [x] `rg -n "api/storefront/stores|CommerceNode|ControlPlane" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM -g "!*bin*" -g "!*obj*" -g "!node_modules/**"` shows no direct backend transport leak.
+- [x] `dotnet build` focused gate passes.
+- [x] `dotnet test` focused gate passes.
+- [x] Playwright Component MVP proof passes all phases.
+- [x] Contact browser regression passes.
+- [x] `QA-StorefrontV2.todo.md` records final evidence.
 
 ## Failure Modes Registry
 
@@ -958,7 +975,7 @@ Before marking H3 complete:
 - [x] H3.14 run mandatory Playwright browser regression.
 - [x] H3.15 run full solution gate.
 - [x] H3.16 audit scope drift.
-- [ ] H3.17 write final closure report.
+- [x] H3.17 write final closure report.
 
 ## Decision Audit Trail
 
