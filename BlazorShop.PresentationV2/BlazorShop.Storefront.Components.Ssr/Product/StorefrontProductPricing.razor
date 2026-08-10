@@ -1,0 +1,26 @@
+@namespace BlazorShop.Storefront.Components.Ssr.Product
+
+<div class="@Classes.Root">
+    <div class="@Classes.Label">@Model.PrimaryPriceLabel</div>
+    <div class="@Classes.PriceRow">
+        <span class="@Classes.Price" data-storefront-selection-price>@Model.PriceDisplay</span>
+        <span class="@ComparePriceClass" data-storefront-selection-compare>@Model.ComparePriceDisplay</span>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontProductPricingView Model { get; set; } = new(string.Empty, string.Empty, null, string.Empty);
+
+    [Parameter]
+    public ProductPricingClasses Classes { get; set; } = new();
+
+    private string ComparePriceClass => string.IsNullOrWhiteSpace(Model.ComparePriceDisplay)
+        ? CombineClasses(Classes.ComparePrice, Classes.Hidden)
+        : Classes.ComparePrice;
+
+    private static string CombineClasses(params string[] values)
+    {
+        return string.Join(" ", values.Where(value => !string.IsNullOrWhiteSpace(value)));
+    }
+}

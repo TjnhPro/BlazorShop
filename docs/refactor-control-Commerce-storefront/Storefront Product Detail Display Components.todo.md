@@ -521,22 +521,29 @@ StorefrontProductPricingView Model
 
 Responsibilities:
 
-- [ ] render `PrimaryPriceLabel`;
-- [ ] render `PriceDisplay`;
-- [ ] render `ComparePriceDisplay` when present;
-- [ ] hide compare-price region when absent;
-- [ ] preserve:
-  - [ ] `data-storefront-selection-price`
-  - [ ] `data-storefront-selection-compare`
+- [x] render `PrimaryPriceLabel`;
+- [x] render `PriceDisplay`;
+- [x] render `ComparePriceDisplay` when present;
+- [x] hide compare-price region when absent;
+- [x] preserve:
+  - [x] `data-storefront-selection-price`
+  - [x] `data-storefront-selection-compare`
 
 Forbidden:
 
-- [ ] Browser dependency;
-- [ ] API calls;
-- [ ] generated client usage;
-- [ ] V2 references;
-- [ ] hardcoded final V2 classes;
-- [ ] final customer copy outside the prepared view.
+- [x] Browser dependency;
+- [x] API calls;
+- [x] generated client usage;
+- [x] V2 references;
+- [x] hardcoded final V2 classes;
+- [x] final customer copy outside the prepared view.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontProductPricing` in `BlazorShop.Storefront.Components.Ssr.Product`.
+- 2026-08-10: Pricing display uses `StorefrontProductPricingView` plus `ProductPricingClasses`; absent compare price is hidden through the host-supplied hidden class slot.
+- 2026-08-10: Preserved `data-storefront-selection-price` and `data-storefront-selection-compare` for the existing storefront selection script.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/BlazorShop.Storefront.Components.Ssr.csproj" --no-restore` with 0 warnings.
 
 Exit criteria:
 
