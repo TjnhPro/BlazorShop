@@ -48,18 +48,33 @@ public sealed class StorefrontContactFormComponentTests
     }
 
     [Fact]
-    public void HybridShellHostsWasmChildAtRenderModeBridgeWithoutBrowserController()
+    public void V2WasmWrapperHostsWasmHostAppWithoutRenderModeOwnership()
     {
         var source = File.ReadAllText(RepositoryPath(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactForm.razor"));
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Content/StorefrontContactFormSection.razor"));
 
         Assert.Contains("<StorefrontContactFormApp", source, StringComparison.Ordinal);
-        Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", source, StringComparison.Ordinal);
         Assert.Contains("data-storefront-component=\"contact-form\"", source, StringComparison.Ordinal);
+        Assert.Contains("data-storefront-contact-shell", source, StringComparison.Ordinal);
+        Assert.Contains("private static StorefrontContactFormActionDescriptor Action", source, StringComparison.Ordinal);
+        Assert.Contains("new(\"/api/contact\")", source, StringComparison.Ordinal);
+        Assert.Contains("Name", source, StringComparison.Ordinal);
+        Assert.Contains("Send message", source, StringComparison.Ordinal);
+        Assert.Contains("mt-8 rounded-2xl", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("@rendermode", source, StringComparison.Ordinal);
         Assert.DoesNotContain("IStorefrontBrowser", source, StringComparison.Ordinal);
         Assert.DoesNotContain("HttpClient", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"/api/", source, StringComparison.Ordinal);
         Assert.DoesNotContain("api/storefront", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void V2ContentPageOwnsInteractiveWebAssemblyPlacementForContactWrapper()
+    {
+        var source = File.ReadAllText(RepositoryPath(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor"));
+
+        Assert.Contains("<StorefrontContactFormSection @rendermode=\"InteractiveWebAssembly\" />", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("BlazorShop.Storefront.Components.Hybrid", source, StringComparison.Ordinal);
     }
 
     private static async Task<string> RenderAppAsync(RecordingContactController controller)

@@ -252,28 +252,36 @@ Goal: remove the unused historical shell that still owns `@rendermode` inside a 
 
 Tasks:
 
-- [ ] Confirm no production source references `BlazorShop.Storefront.Components.Hybrid.Content.StorefrontContactForm`.
-- [ ] Delete `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactForm.razor`.
-- [ ] Remove tests that inspect the deleted historical bridge.
-- [ ] Replace historical bridge tests with tests for the current visible V2.WASM wrapper path:
-  - [ ] `StorefrontContactFormSection` wraps `StorefrontContactFormApp`.
-  - [ ] `StorefrontContactFormSection` does not own `@rendermode`.
-  - [ ] V2 `StorefrontPage.razor` owns `@rendermode="InteractiveWebAssembly"` placement.
-  - [ ] V2.WASM wrapper supplies V2 labels/classes/action descriptor.
-  - [ ] Wrapper action stays same-origin `/api/contact`.
-- [ ] Keep `StorefrontContactFormApp` component tests for validation, submit request, success, failure, and Browser controller invocation.
+- [x] Confirm no production source references `BlazorShop.Storefront.Components.Hybrid.Content.StorefrontContactForm`.
+- [x] Delete `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactForm.razor`.
+- [x] Remove tests that inspect the deleted historical bridge.
+- [x] Replace historical bridge tests with tests for the current visible V2.WASM wrapper path:
+  - [x] `StorefrontContactFormSection` wraps `StorefrontContactFormApp`.
+  - [x] `StorefrontContactFormSection` does not own `@rendermode`.
+  - [x] V2 `StorefrontPage.razor` owns `@rendermode="InteractiveWebAssembly"` placement.
+  - [x] V2.WASM wrapper supplies V2 labels/classes/action descriptor.
+  - [x] Wrapper action stays same-origin `/api/contact`.
+- [x] Keep `StorefrontContactFormApp` component tests for validation, submit request, success, failure, and Browser controller invocation.
 
 Do not:
 
-- [ ] Do not move `StorefrontContactFormSection` into shared `Components`.
-- [ ] Do not put V2 labels/classes into shared package.
-- [ ] Do not introduce direct `HttpClient` into `StorefrontContactFormApp`.
+- [x] Do not move `StorefrontContactFormSection` into shared `Components`.
+- [x] Do not put V2 labels/classes into shared package.
+- [x] Do not introduce direct `HttpClient` into `StorefrontContactFormApp`.
 
 Exit criteria:
 
-- [ ] No reusable component file contains `@rendermode` for the old contact bridge.
-- [ ] Visible contact composition remains V2 route -> V2.WASM wrapper -> WasmHost app.
-- [ ] Existing contact contracts remain browser-safe.
+- [x] No reusable component file contains `@rendermode` for the old contact bridge.
+- [x] Visible contact composition remains V2 route -> V2.WASM wrapper -> WasmHost app.
+- [x] Existing contact contracts remain browser-safe.
+
+Implementation notes:
+
+- 2026-08-10: deleted historical `BlazorShop.Storefront.Components.Hybrid/Content/StorefrontContactForm.razor`.
+- 2026-08-10: `StorefrontContactFormComponentTests` now verifies the current visible path: V2 page owns `@rendermode="InteractiveWebAssembly"`, V2.WASM `StorefrontContactFormSection` wraps WasmHost `StorefrontContactFormApp`, and the wrapper keeps `/api/contact` as same-origin action.
+- 2026-08-10: `StorefrontContactFormApp` remains Browser-controller-only: no `HttpClient`, no direct `/api/*`, no `api/storefront`, and no `@rendermode`.
+- 2026-08-10: `rg -n "BlazorShop\.Storefront\.Components\.Hybrid\.Content\.StorefrontContactForm|<StorefrontContactForm(\s|>)" BlazorShop.PresentationV2 -g "!*bin*" -g "!*obj*"` returned no active production matches.
+- 2026-08-10: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontContactFormComponentTests|FullyQualifiedName~StorefrontComponentDescriptorTests"` passed 28/28. Existing warnings: MessagePack NU1902/NU1903 and Browserslist/caniuse-lite.
 
 ## Phase H3.3 - Remove Components.Hybrid Project
 
@@ -821,9 +829,9 @@ Before marking H3 complete:
 
 ## Implementation Task Summary
 
-- [ ] H3.0 baseline and evidence lock.
+- [x] H3.0 baseline and evidence lock.
 - [x] H3.1 move `contact-form` descriptor to WasmHost.
-- [ ] H3.2 remove historical contact shell.
+- [x] H3.2 remove historical contact shell.
 - [ ] H3.3 remove `Components.Hybrid` project and references.
 - [ ] H3.4 decouple descriptor discovery from project topology.
 - [ ] H3.5 harden component dependency matrix.
