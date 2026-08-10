@@ -785,25 +785,32 @@ Make H2 browser checks discoverable in production QA tracking.
 
 ### Tasks
 
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
-- [ ] Add a section for Component MVP runtime proof.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+- [x] Add a section for Component MVP runtime proof.
 - [ ] Include checkboxes for:
-  - [ ] raw HTML SSR proof;
-  - [ ] raw HTML Hybrid prerender proof;
-  - [ ] hydrated Hybrid interactive proof;
-  - [ ] Hybrid counter/action proof;
-  - [ ] WasmHost loading/success/empty/error/retry proof;
-  - [ ] no direct Commerce Node browser call;
-  - [ ] no public Blazor Server UI circuit;
-  - [ ] route not in menu/sitemap;
-  - [ ] noindex or QA-only route behavior.
-- [ ] Record exact Playwright command once implemented.
-- [ ] Record evidence date and result counts at closure.
+  - [x] raw HTML SSR proof;
+  - [x] raw HTML Hybrid prerender proof;
+  - [x] hydrated Hybrid interactive proof;
+  - [x] Hybrid counter/action proof;
+  - [x] WasmHost loading/success/empty/error/retry proof;
+  - [x] no direct Commerce Node browser call;
+  - [x] no public Blazor Server UI circuit;
+  - [x] route not in menu/sitemap;
+  - [x] noindex or QA-only route behavior.
+- [x] Record exact Playwright command once implemented.
+- [x] Record evidence date and result counts at closure.
 
 ### Exit Criteria
 
-- [ ] QA checklist is production-release usable.
-- [ ] Browser tests are not described as smoke tests.
+- [x] QA checklist is production-release usable.
+- [x] Browser tests are not described as smoke tests.
+
+Implementation notes:
+
+- 2026-08-10: added `Component MVP Runtime Proof` to `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+- 2026-08-10: QA checklist records the exact RawHtml, Hybrid, Rail, and Network Playwright wrapper commands and evidence files under `output/playwright/storefront-component-mvp/`.
+- 2026-08-10: QA checklist records release-relevant assertions: raw SSR HTML, Hybrid prerender, Hybrid WASM interactive state, C# click `0 -> 1 -> 2`, WasmHost rail loading/success/empty/error/retry, zero direct Commerce browser calls, zero public Blazor Server UI circuit, hidden route discovery, and noindex behavior.
+- 2026-08-10: browser proofs are recorded as runtime proof gates, not smoke tests.
 
 ## Phase H2.13 - Documentation Update
 

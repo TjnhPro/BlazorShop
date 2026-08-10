@@ -846,6 +846,22 @@ Current status: complete. Static implementation, focused tests, and visible V2 b
 - [x] Starter and StorefrontBuilder remain unchanged. Owner: final audit and visual-only boundary tests. Evidence: `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2`; final git audit remains required before closure.
 - [x] Playwright evidence is recorded for visible V2 flows. Owner: Phase 14 Playwright V2 browser QA. Evidence: `output/playwright/storefront-reference-components-phase14/evidence.json` plus screenshots `home-desktop.png`, `contact-success.png`, `rail-empty.png`, `rail-error.png`, and `home-mobile.png`; viewports were desktop `1440x1000` and mobile `390x844`, with zero direct Commerce browser calls, zero console errors, and zero page errors.
 
+### Component MVP Runtime Proof
+
+Owner: Storefront V2 host QA, Presentation route ownership, and component mode runtime guardrails.
+Current status: complete. Evidence was recorded on 2026-08-10 from the hidden/noindex architecture QA route `/__qa/component-mvp`.
+
+- [x] Raw HTML SSR proof passes before browser JavaScript executes. Evidence: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase RawHtml -RuntimeTimeoutSeconds 90 -NoBuild` passed; `output/playwright/storefront-component-mvp/raw-html.evidence.json`.
+- [x] Raw HTML Hybrid prerender proof passes before WebAssembly hydration. Evidence: RawHtml phase found `data-storefront-runtime-state="prerender"` and value `0`.
+- [x] Hydrated Hybrid interactive proof passes in a real browser. Evidence: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Hybrid -RuntimeTimeoutSeconds 90 -NoBuild` passed; `output/playwright/storefront-component-mvp/hybrid.evidence.json`.
+- [x] Hybrid counter/action proof passes through C# browser-side event handling. Evidence: Hybrid phase clicked `[data-storefront-hybrid-action]` twice and verified value `0 -> 1 -> 2`.
+- [x] WasmHost discounted rail loading, success, empty, error, and retry states pass through Browser controller and same-origin BFF. Evidence: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Rail -RuntimeTimeoutSeconds 90 -NoBuild` passed; `output/playwright/storefront-component-mvp/rail.evidence.json`.
+- [x] Browser code does not call Commerce Node directly during Component MVP proof. Evidence: Hybrid, Rail, and Network phases recorded zero direct Commerce requests.
+- [x] Browser runtime does not require a public Blazor Server UI circuit. Evidence: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase Network -RuntimeTimeoutSeconds 90 -NoBuild` passed; `output/playwright/storefront-component-mvp/network.evidence.json` recorded `serverUiCircuit: 0` and no `/_blazor` request.
+- [x] Component MVP route is not exposed through menu or sitemap. Evidence: H2 route/source scans and architecture tests keep `/__qa/component-mvp` out of navigation, footer, sitemap, page template catalog, and public content catalog.
+- [x] Component MVP route is noindex or QA-only. Evidence: Presentation route emits `RobotsIndex = false` and `RobotsFollow = false`; Storefront current-store and public-redirect middleware skip `/__qa/*` so the QA route remains deterministic.
+- [x] Result counts are recorded for release review. Evidence: RawHtml, Hybrid, Rail, and Network Playwright phases passed on 2026-08-10 with zero console errors, zero page errors, zero direct Commerce browser calls, and zero credential leaks.
+
 ## Storefront Visual Source Ownership
 
 - [x] Storefront V2 JavaScript must not own toast colors, toast SVG icons, toast animation values, or purchase feedback Tailwind color utility selection.
