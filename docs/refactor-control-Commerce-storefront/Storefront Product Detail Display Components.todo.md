@@ -1098,27 +1098,35 @@ rg -n "StorefrontProductGallery|StorefrontProductPricing|StorefrontProductAvaila
 
 Allowed matches:
 
-- [ ] primitive gallery implementation;
-- [ ] SSR display component implementations;
-- [ ] V2 page component usage;
-- [ ] V2 visual config;
-- [ ] V2 JS selectors;
-- [ ] tests;
-- [ ] docs/QA notes.
+- [x] primitive gallery implementation;
+- [x] SSR display component implementations;
+- [x] V2 page component usage;
+- [x] V2 visual config;
+- [x] V2 JS selectors;
+- [x] tests;
+- [x] docs/QA notes.
 
 Not allowed:
 
-- [ ] old V2 gallery implementation file still present;
-- [ ] inline pricing implementation still in `V2ProductPageView.razor`;
-- [ ] inline availability/SKU/GTIN/stock implementation still in `V2ProductPageView.razor`;
-- [ ] inline informational variant list implementation still in `V2ProductPageView.razor`;
-- [ ] duplicated Product Detail display contracts;
-- [ ] reusable component files with final V2 class literals.
+- [x] old V2 gallery implementation file still present;
+- [x] inline pricing implementation still in `V2ProductPageView.razor`;
+- [x] inline availability/SKU/GTIN/stock implementation still in `V2ProductPageView.razor`;
+- [x] inline informational variant list implementation still in `V2ProductPageView.razor`;
+- [x] duplicated Product Detail display contracts;
+- [x] reusable component files with final V2 class literals.
 
 Exit criteria:
 
-- [ ] Product Detail page is materially thinner.
-- [ ] No duplicate extracted implementation remains.
+- [x] Product Detail page is materially thinner.
+- [x] No duplicate extracted implementation remains.
+
+Implementation notes:
+
+- 2026-08-10: Ran the required duplication audit `rg` over `BlazorShop.PresentationV2`, `BlazorShop.Tests.V2`, and `docs`.
+- 2026-08-10: Allowed matches were limited to the primitive gallery implementation, SSR display implementations, V2 page call-sites, V2 visual config/JS selectors, tests, and docs/QA notes. The grep also matched existing Commerce Node catalog DTO names such as `StorefrontProductGalleryImageResponse`; those are API product media contracts, not duplicated display components.
+- 2026-08-10: Confirmed `BlazorShop.Storefront.V2/Components/Product/StorefrontProductGallery.razor` no longer exists.
+- 2026-08-10: Confirmed `V2ProductPageView.razor` no longer contains inline selection price/compare/SKU/GTIN/stock hooks, inline `Available Variants` markup, or direct display implementation; it composes the extracted components.
+- 2026-08-10: Confirmed reusable Product Detail primitive/SSR component files do not contain final V2 class literals or final copy strings such as `Image unavailable` and `Available Variants`.
 
 ## Phase 3.2.17 - Scope Drift Audit
 
