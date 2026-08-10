@@ -8,7 +8,7 @@
     <PackageId>BlazorShop.Storefront.Components.Hybrid</PackageId>
     <Version>1.0.0</Version>
     <Authors>BlazorShop</Authors>
-    <Description>Reusable hybrid Storefront component shell mode library.</Description>
+    <Description>Transitional Storefront Hybrid compatibility component project pending H2 runtime proof.</Description>
     <RepositoryUrl>https://github.com/TjnhPro/BlazorShop</RepositoryUrl>
   </PropertyGroup>
 

@@ -357,23 +357,23 @@ Make `Components.Hybrid` explicit as a transitional compatibility project, not t
 
 ### Tasks
 
-- [ ] Inventory every source file under `BlazorShop.Storefront.Components.Hybrid`.
-- [ ] Classify each file as:
-  - [ ] historical contact shell;
-  - [ ] descriptor compatibility;
-  - [ ] render-mode bridge;
-  - [ ] genuinely reusable Hybrid behavior;
-  - [ ] obsolete or H2 candidate.
-- [ ] Keep the project compiling if current tests/code still depend on it.
-- [ ] Do not delete the project in H1.
-- [ ] Do not move the visible V2 contact route back to the old nested Hybrid shell.
-- [ ] Update `BlazorShop.Storefront.Components.Hybrid.csproj` description so it does not advertise the old shell model as final.
-- [ ] Update `BlazorShop.Storefront.Components.Hybrid/README.md` with:
-  - [ ] transitional status;
-  - [ ] current allowed references;
-  - [ ] no-new-component rule for H1;
-  - [ ] H2 decision requirement.
-- [ ] Document whether `StorefrontContactFormDescriptor` remains as historical compatibility only.
+- [x] Inventory every source file under `BlazorShop.Storefront.Components.Hybrid`.
+- [x] Classify each file as:
+  - [x] historical contact shell;
+  - [x] descriptor compatibility;
+  - [x] render-mode bridge;
+  - [x] genuinely reusable Hybrid behavior;
+  - [x] obsolete or H2 candidate.
+- [x] Keep the project compiling if current tests/code still depend on it.
+- [x] Do not delete the project in H1.
+- [x] Do not move the visible V2 contact route back to the old nested Hybrid shell.
+- [x] Update `BlazorShop.Storefront.Components.Hybrid.csproj` description so it does not advertise the old shell model as final.
+- [x] Update `BlazorShop.Storefront.Components.Hybrid/README.md` with:
+  - [x] transitional status;
+  - [x] current allowed references;
+  - [x] no-new-component rule for H1;
+  - [x] H2 decision requirement.
+- [x] Document whether `StorefrontContactFormDescriptor` remains as historical compatibility only.
 
 ### Decision Rule
 
@@ -388,9 +388,18 @@ H2 must prove whether it stays, narrows, moves, or is retired.
 
 ### Exit Criteria
 
-- [ ] Agents can no longer infer that every Hybrid component must live in `Components.Hybrid`.
-- [ ] The current contact shell remains compile-compatible if still referenced by tests.
-- [ ] The visible V2.WASM wrapper path remains the preferred current runtime proof.
+- [x] Agents can no longer infer that every Hybrid component must live in `Components.Hybrid`.
+- [x] The current contact shell remains compile-compatible if still referenced by tests.
+- [x] The visible V2.WASM wrapper path remains the preferred current runtime proof.
+
+Implementation notes:
+
+- 2026-08-10: source inventory for `Components.Hybrid` is `_Imports.razor`, `Content/StorefrontContactForm.razor`, `Content/StorefrontContactFormDescriptor.cs`, `README.md`, and `BlazorShop.Storefront.Components.Hybrid.csproj` when excluding `bin`/`obj`.
+- 2026-08-10: `_Imports.razor` is compatibility imports; `StorefrontContactForm.razor` is the historical contact shell and render-mode bridge; `StorefrontContactFormDescriptor.cs` remains historical compatibility descriptor for `contact-form`.
+- 2026-08-10: no obsolete file was deleted in H1 because current tests still cover the compatibility project and H2 owns the permanent runtime proof.
+- 2026-08-10: `BlazorShop.Storefront.Components.Hybrid.csproj` description now says the project is transitional pending H2 runtime proof.
+- 2026-08-10: `Components.Hybrid/README.md` records transitional status, current allowed references, no-new-component rule for H1, H2 decision requirement, and the fact that visible V2 contact stays on the V2.WASM wrapper path.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Hybrid/BlazorShop.Storefront.Components.Hybrid.csproj --no-restore` passed with 0 warnings and 0 errors.
 
 ## Phase H1.4 - Rework Mode Dependency Tests
 
