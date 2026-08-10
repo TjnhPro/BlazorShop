@@ -8,6 +8,9 @@ public sealed record ProductSummaryCardClasses(
     string? Title = null,
     string? BadgeGroup = null,
     string? Badge = null,
+    string? NewBadge = null,
+    string? VariantsBadge = null,
+    string? OutOfStockBadge = null,
     string? Price = null,
     string? ComparePrice = null,
     string? ImageLink = null,
@@ -19,4 +22,5 @@ public sealed record ProductSummaryCardClasses(
     string? ActionGroup = null,
     string? PrimaryAction = null,
     string? SecondaryAction = null,
-    string? Status = null);
+    string? Status = null,
+    string? WarningStatus = null);

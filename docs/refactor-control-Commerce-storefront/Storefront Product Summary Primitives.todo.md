@@ -668,26 +668,26 @@ StorefrontProductSummaryCard
 
 Inputs:
 
-- [ ] `ProductSummaryItem Item`
-- [ ] `ProductSummaryLabels Labels`
-- [ ] minimal class contract
+- [x] `ProductSummaryItem Item`
+- [x] `ProductSummaryLabels Labels`
+- [x] minimal class contract
 
 Preserve:
 
-- [ ] `data-storefront-product-summary-card`
-- [ ] category link/text behavior
-- [ ] product link/title behavior
-- [ ] `New` badge semantics
-- [ ] `Variants` badge semantics
-- [ ] `Out` badge semantics
-- [ ] `From` vs `Price` label behavior
-- [ ] `PriceDisplay`
-- [ ] `ComparePriceDisplay`
-- [ ] image wrapped in product link when product URL exists
-- [ ] description
-- [ ] purchase action composition
-- [ ] accessibility labels
-- [ ] all semantic `data-storefront-*` hooks
+- [x] `data-storefront-product-summary-card`
+- [x] category link/text behavior
+- [x] product link/title behavior
+- [x] `New` badge semantics
+- [x] `Variants` badge semantics
+- [x] `Out` badge semantics
+- [x] `From` vs `Price` label behavior
+- [x] `PriceDisplay`
+- [x] `ComparePriceDisplay`
+- [x] image wrapped in product link when product URL exists
+- [x] description
+- [x] purchase action composition
+- [x] accessibility labels
+- [x] all semantic `data-storefront-*` hooks
 
 Do not create in Phase 3.1:
 
@@ -699,9 +699,18 @@ Do not create in Phase 3.1:
 
 Exit criteria:
 
-- [ ] One reusable Product Summary card renders in both V2 and V2.WASM.
-- [ ] Card has no final V2 classes.
-- [ ] Card has no runtime-specific dependency.
+- [x] One reusable Product Summary card renders in both V2 and V2.WASM.
+- [x] Card has no final V2 classes.
+- [x] Card has no runtime-specific dependency.
+
+Implementation notes:
+
+- 2026-08-10: Added `StorefrontProductSummaryCard` under `Components.Primitives/Catalog`; it composes `StorefrontProductSummaryImage` and `StorefrontProductSummaryPurchaseActions`.
+- 2026-08-10: Preserved root `data-storefront-product-summary-card`, category link/text fallback, product title/link fallback, badge semantics, price/compare price, product-link-wrapped image, description, purchase action composition, and `data-storefront-*` hooks.
+- 2026-08-10: No extra micro-primitives were introduced for price, badge, title, category link, or description.
+- 2026-08-10: Extended `ProductSummaryCardClasses` with state-specific badge/status slots because the current V2 card uses distinct classes for new, variant, out-of-stock, and warning states; primitive markup still uses dynamic host class slots only.
+- 2026-08-10: The primitive is browser-safe and buildable for both V2 and V2.WASM adoption; phase 3.1.8/3.1.9 complete the actual host cutover.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj"` and `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --filter "FullyQualifiedName~StorefrontPrimitiveDependencyTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests"`.
 
 ## Phase 3.1.8 - V2 Adoption
 

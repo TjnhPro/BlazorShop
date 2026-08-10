@@ -1,0 +1,111 @@
+<article class="@Classes.Root" data-storefront-product-summary-card>
+    @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
+    {
+        <a class="@Classes.ImageLink" href="@Item.ProductUrl">
+            <div class="@Classes.ImageFrame">
+                <StorefrontProductSummaryImage Item="Item" Labels="Labels" Classes="Classes" />
+            </div>
+        </a>
+    }
+    else
+    {
+        <div class="@Classes.ImageFrame">
+            <StorefrontProductSummaryImage Item="Item" Labels="Labels" Classes="Classes" />
+        </div>
+    }
+
+    <div class="@Classes.Body">
+        <header class="@Classes.Header">
+            @if (!string.IsNullOrWhiteSpace(Item.CategoryName))
+            {
+                @if (!string.IsNullOrWhiteSpace(Item.CategoryUrl))
+                {
+                    <a class="@Classes.Category" href="@Item.CategoryUrl">@Item.CategoryName</a>
+                }
+                else
+                {
+                    <span class="@Classes.Category">@Item.CategoryName</span>
+                }
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
+            {
+                <a class="@Classes.Title" href="@Item.ProductUrl">
+                    <h2>@Item.Name</h2>
+                </a>
+            }
+            else
+            {
+                <h2 class="@Classes.Title">@Item.Name</h2>
+            }
+
+            @if (Item.IsNewArrival || Item.HasVariants || !Item.InStock)
+            {
+                <div class="@Classes.BadgeGroup">
+                    @if (Item.IsNewArrival)
+                    {
+                        <span class="@(BuildClass(Classes.Badge, Classes.NewBadge))">@Labels.NewBadge</span>
+                    }
+                    @if (Item.HasVariants)
+                    {
+                        <span class="@(BuildClass(Classes.Badge, Classes.VariantsBadge))">@Labels.VariantsBadge</span>
+                    }
+                    @if (!Item.InStock)
+                    {
+                        <span class="@(BuildClass(Classes.Badge, Classes.OutOfStockBadge))">@Labels.OutOfStockBadge</span>
+                    }
+                </div>
+            }
+        </header>
+
+        <div class="@Classes.Price">
+            <span>@(Item.HasVariants ? Labels.FromPrefix : Labels.PricePrefix)</span>
+            <strong>@Item.PriceDisplay</strong>
+            @if (!string.IsNullOrWhiteSpace(Item.ComparePriceDisplay))
+            {
+                <del class="@Classes.ComparePrice">@Item.ComparePriceDisplay</del>
+            }
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Item.Description))
+        {
+            <p class="@Classes.Description">@Item.Description</p>
+        }
+
+        <StorefrontProductSummaryPurchaseActions
+            Item="Item"
+            Labels="Labels"
+            Classes="@PurchaseActionClasses" />
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public ProductSummaryItem Item { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public ProductSummaryLabels Labels { get; set; } = ProductSummaryLabels.Empty;
+
+    [Parameter, EditorRequired]
+    public ProductSummaryCardClasses Classes { get; set; } = new();
+
+    private ProductSummaryCardClasses PurchaseActionClasses => Classes with
+    {
+        Status = BuildClass(Classes.Status, ShouldUseWarningStatus ? Classes.WarningStatus : null),
+    };
+
+    private bool ShouldUseWarningStatus => !Item.InStock || !Item.Purchasable;
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Item);
+        ArgumentNullException.ThrowIfNull(Labels);
+        ArgumentNullException.ThrowIfNull(Classes);
+    }
+
+    private static string? BuildClass(params string?[] values)
+    {
+        var result = string.Join(" ", values.Where(value => !string.IsNullOrWhiteSpace(value)));
+        return result.Length == 0 ? null : result;
+    }
+}
