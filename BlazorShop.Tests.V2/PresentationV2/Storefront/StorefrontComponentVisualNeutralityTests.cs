@@ -24,7 +24,9 @@ public sealed class StorefrontComponentVisualNeutralityTests
     [
         "Shop now",
         "Add to cart",
+        "Available Variants",
         "Checkout",
+        "Image unavailable",
         "Sale",
         "Free shipping",
     ];
@@ -153,6 +155,18 @@ public sealed class StorefrontComponentVisualNeutralityTests
 
         Assert.Contains(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/_Imports.razor",
+            scannedFiles);
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductGallery.razor",
+            scannedFiles);
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductPricing.razor",
+            scannedFiles);
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductAvailability.razor",
+            scannedFiles);
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductVariantList.razor",
             scannedFiles);
         Assert.Contains(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor",

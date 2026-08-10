@@ -833,58 +833,65 @@ Goal: keep the extraction from opening forbidden dependency paths.
 
 Primitive guardrails:
 
-- [ ] `Components.Primitives` still references exactly `Components`.
-- [ ] `Components.Primitives` source still forbids:
-  - [ ] `BlazorShop.Storefront.Presentation`
-  - [ ] `BlazorShop.Storefront.Browser`
-  - [ ] `BlazorShop.Storefront.Runtime`
-  - [ ] `BlazorShop.Storefront.Client`
-  - [ ] `BlazorShop.Storefront.Components.Ssr`
-  - [ ] `BlazorShop.Storefront.Components.WasmHost`
-  - [ ] V2/V2.WASM/Starter/generated storefronts
-  - [ ] backend/core/API projects
-  - [ ] `Web.SharedV2`
-  - [ ] `HttpClient`
-  - [ ] `IJSRuntime`
-  - [ ] `@rendermode`
-  - [ ] `InteractiveServer`
-  - [ ] `InteractiveAuto`
-  - [ ] `InteractiveWebAssembly`
-  - [ ] direct API path strings
+- [x] `Components.Primitives` still references exactly `Components`.
+- [x] `Components.Primitives` source still forbids:
+  - [x] `BlazorShop.Storefront.Presentation`
+  - [x] `BlazorShop.Storefront.Browser`
+  - [x] `BlazorShop.Storefront.Runtime`
+  - [x] `BlazorShop.Storefront.Client`
+  - [x] `BlazorShop.Storefront.Components.Ssr`
+  - [x] `BlazorShop.Storefront.Components.WasmHost`
+  - [x] V2/V2.WASM/Starter/generated storefronts
+  - [x] backend/core/API projects
+  - [x] `Web.SharedV2`
+  - [x] `HttpClient`
+  - [x] `IJSRuntime`
+  - [x] `@rendermode`
+  - [x] `InteractiveServer`
+  - [x] `InteractiveAuto`
+  - [x] `InteractiveWebAssembly`
+  - [x] direct API path strings
 
 SSR guardrails:
 
-- [ ] `Components.Ssr` remains allowed to reference `Components` and `Presentation`.
-- [ ] `Components.Ssr` still forbids:
-  - [ ] Browser;
-  - [ ] Runtime;
-  - [ ] Client;
-  - [ ] V2;
-  - [ ] V2.WASM;
-  - [ ] Starter;
-  - [ ] backend/core/API projects;
-  - [ ] `Web.SharedV2`;
-  - [ ] `HttpClient`;
-  - [ ] `IJSRuntime`;
-  - [ ] `@rendermode`;
-  - [ ] direct API path strings.
+- [x] `Components.Ssr` remains allowed to reference `Components` and `Presentation`.
+- [x] `Components.Ssr` still forbids:
+  - [x] Browser;
+  - [x] Runtime;
+  - [x] Client;
+  - [x] V2;
+  - [x] V2.WASM;
+  - [x] Starter;
+  - [x] backend/core/API projects;
+  - [x] `Web.SharedV2`;
+  - [x] `HttpClient`;
+  - [x] `IJSRuntime`;
+  - [x] `@rendermode`;
+  - [x] direct API path strings.
 
 Visual neutrality:
 
-- [ ] Include new `Components.Primitives/Product/*.razor`.
-- [ ] Include new `Components.Ssr/Product/*.razor`.
-- [ ] No literal class attributes in reusable render projects except fully dynamic class slots.
-- [ ] No final copy strings such as `Available Variants` or `Image unavailable` in reusable component project files.
+- [x] Include new `Components.Primitives/Product/*.razor`.
+- [x] Include new `Components.Ssr/Product/*.razor`.
+- [x] No literal class attributes in reusable render projects except fully dynamic class slots.
+- [x] No final copy strings such as `Available Variants` or `Image unavailable` in reusable component project files.
 
 Render-mode ownership:
 
-- [ ] All extracted components contain no `@rendermode`.
-- [ ] Host/composition remains the only render-mode owner.
+- [x] All extracted components contain no `@rendermode`.
+- [x] Host/composition remains the only render-mode owner.
 
 Exit criteria:
 
-- [ ] Existing guardrails pass after updating expected ownership.
-- [ ] No broad allowlist exception is added to make tests pass.
+- [x] Existing guardrails pass after updating expected ownership.
+- [x] No broad allowlist exception is added to make tests pass.
+
+Implementation notes:
+
+- 2026-08-10: Extended visual-neutrality scan coverage to include the Product gallery primitive and Product SSR display components.
+- 2026-08-10: Added `Available Variants` and `Image unavailable` to final reusable-copy guardrails; these remain host-owned via V2 visual config.
+- 2026-08-10: Existing primitive dependency, SSR dependency, and render-mode ownership guardrails already cover forbidden references, API strings, `HttpClient`, `IJSRuntime`, and `@rendermode`.
+- 2026-08-10: Verification passed: `dotnet test "BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj" --no-restore --filter "FullyQualifiedName~StorefrontPrimitiveDependencyTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontRenderModeOwnershipTests"`; 47 tests passed, with existing MessagePack/Browserslist warnings only.
 
 ## Phase 3.2.12 - Product Detail JS Hook Regression Tests
 
