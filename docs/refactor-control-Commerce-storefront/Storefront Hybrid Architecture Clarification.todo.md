@@ -268,25 +268,25 @@ rg -n "Hybrid|InteractiveAuto|InteractiveServer|Components\.Hybrid|WasmHost chil
 
 Classify results into:
 
-- [ ] Current source-of-truth docs that must be corrected in H0.
-- [ ] Historical implementation plans that need a short superseded note only.
-- [ ] Route folder conventions where `Hybrid` remains valid as BlazorShop ownership terminology.
-- [ ] StorefrontBuilder docs where `Pages/Hybrid` remains a generated project folder convention and should not be changed in H0.
-- [ ] Test/code references that must be deferred to H1.
+- [x] Current source-of-truth docs that must be corrected in H0.
+- [x] Historical implementation plans that need a short superseded note only.
+- [x] Route folder conventions where `Hybrid` remains valid as BlazorShop ownership terminology.
+- [x] StorefrontBuilder docs where `Pages/Hybrid` remains a generated project folder convention and should not be changed in H0.
+- [x] Test/code references that must be deferred to H1.
 
 Rules:
 
-- [ ] Do not mechanically replace every `Hybrid` mention.
-- [ ] Do not rename folders.
-- [ ] Do not edit generated artifacts.
-- [ ] Do not edit visual reverse engineering docs unless they are actively misleading about `.NET InteractiveAuto` or `Components.Hybrid`.
-- [ ] Preserve route ownership meaning for `Pages/Hybrid`.
+- [x] Do not mechanically replace every `Hybrid` mention.
+- [x] Do not rename folders.
+- [x] Do not edit generated artifacts.
+- [x] Do not edit visual reverse engineering docs unless they are actively misleading about `.NET InteractiveAuto` or `Components.Hybrid`.
+- [x] Preserve route ownership meaning for `Pages/Hybrid`.
 
 Exit criteria:
 
-- [ ] All stale source-of-truth docs are fixed.
-- [ ] Remaining `Hybrid` references are either correct, historical, or explicitly deferred.
-- [ ] A final scan command and result summary are recorded in implementation notes.
+- [x] All stale source-of-truth docs are fixed.
+- [x] Remaining `Hybrid` references are either correct, historical, or explicitly deferred.
+- [x] A final scan command and result summary are recorded in implementation notes.
 
 ## Phase H0.5 - Create H1 Backlog
 
@@ -383,6 +383,13 @@ Exit criteria:
 - [x] Record the official Microsoft docs checked.
   - H0.0 checked Microsoft docs: ASP.NET Core Blazor render modes, prerendering, and JavaScript initializers/startup docs for .NET 10.
 - [ ] Record the final Hybrid wording scan summary.
+- H0.4 scan/classification summary:
+  - Command run: `rg -n "Hybrid|InteractiveAuto|InteractiveServer|Components\.Hybrid|WasmHost child|server-owned shells|@rendermode" BlazorShop.PresentationV2 docs -g "*.md" -g "*.todo.md"`.
+  - Current source-of-truth docs corrected in H0: `BlazorShop.PresentationV2/COMPONENT-MODES.md`, `docs/architecture/03-runtime-boundaries.md`, `docs/architecture/05-project-and-folder-guide.md`, `docs/architecture/10-v2-contract-ownership.md`, and `BlazorShop.Storefront.Components.Hybrid/README.md`.
+  - Historical plans annotated only: `Storefront Component Mode Foundation.todo.md`, `Storefront Component Mode Foundation Closure Patch.todo.md`, and `Storefront Reference Components.todo.md`.
+  - Route-folder references such as `Pages/Hybrid` remain valid BlazorShop ownership terminology in V2, Starter, QA, and older refactor-control plans.
+  - StorefrontBuilder and visual reverse engineering docs that mention `Pages/Hybrid` remain generated-project folder conventions and were not changed in H0.
+  - Documentation mentions of descriptor/project tests and mode boundary allowlists are deferred to H1 because H0 is docs-only and made no code/test/project-graph changes.
 - [ ] Record why no build/test/Playwright gate was required.
 
 ## Decision Audit Trail
