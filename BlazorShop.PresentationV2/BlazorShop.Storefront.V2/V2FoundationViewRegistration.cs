@@ -3,6 +3,7 @@ namespace BlazorShop.Storefront.V2;
 using BlazorShop.Storefront.V2.Components.Layout;
 using BlazorShop.Storefront.V2.Components.Security;
 using BlazorShop.Storefront.V2.Components.Shared;
+using BlazorShop.Storefront.V2.Components.System;
 using BlazorShop.Storefront.Presentation.DependencyInjection;
 using BlazorShop.Storefront.Presentation.Views.Foundation;
 using BlazorShop.Storefront.V2.Pages.Auth;
@@ -37,6 +38,7 @@ public static class V2FoundationViewRegistration
                 PaymentResultPage = typeof(PaymentResultPage),
                 AuthPage = typeof(V2AuthPageView),
                 AccountPage = typeof(AccountHostPage),
+                ComponentMvpLab = typeof(StorefrontComponentMvpLab),
                 MaintenanceState = typeof(MaintenancePage),
                 NotFoundState = typeof(NotFoundPage),
                 ServiceUnavailableState = typeof(ServiceUnavailableState),

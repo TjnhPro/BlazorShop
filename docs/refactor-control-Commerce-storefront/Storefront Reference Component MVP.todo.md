@@ -295,33 +295,40 @@ Let V2 compose and style the proof surface while Presentation keeps route owners
 
 ### Tasks
 
-- [ ] Add a V2 visual component for the lab view.
-- [ ] Register it in `V2FoundationViewRegistration`.
-- [ ] Include exactly three visible proof sections:
-  - [ ] SSR proof;
-  - [ ] Hybrid proof;
-  - [ ] WasmHost proof.
-- [ ] Add stable semantic QA hooks:
+- [x] Add a V2 visual component for the lab view.
+- [x] Register it in `V2FoundationViewRegistration`.
+- [x] Include exactly three visible proof sections:
+  - [x] SSR proof;
+  - [x] Hybrid proof;
+  - [x] WasmHost proof.
+- [x] Add stable semantic QA hooks:
 
 ```html
 data-storefront-component-mvp
 data-storefront-component-mvp-section="ssr|hybrid|wasmhost"
 ```
 
-- [ ] Keep V2 labels, copy, and CSS classes in V2.
-- [ ] Do not introduce a general gallery/design-system framework.
-- [ ] Do not add route registration in reusable component libraries.
+- [x] Keep V2 labels, copy, and CSS classes in V2.
+- [x] Do not introduce a general gallery/design-system framework.
+- [x] Do not add route registration in reusable component libraries.
 
 ### Candidate Files
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/System/StorefrontComponentMvpLab.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/System/StorefrontComponentMvpLab.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs`
 
 ### Exit Criteria
 
-- [ ] `/__qa/component-mvp` renders V2-owned visual lab markup.
-- [ ] All three proof areas are visible and have stable selectors.
-- [ ] No general visual framework is introduced.
+- [x] `/__qa/component-mvp` renders V2-owned visual lab markup.
+- [x] All three proof areas are visible and have stable selectors.
+- [x] No general visual framework is introduced.
+
+Implementation notes:
+
+- 2026-08-10: added `StorefrontComponentMvpLab` under V2 `Components/System` and registered it as the `ComponentMvpLab` foundation view slot.
+- 2026-08-10: lab view renders exactly three sections with `data-storefront-component-mvp-section="ssr"`, `"hybrid"`, and `"wasmhost"`.
+- 2026-08-10: labels, copy, and `.bs-storefront-component-mvp*` CSS classes live in V2; no reusable component library route or visual framework was added.
+- 2026-08-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings and 0 errors.
 
 ## Phase H2.3 - SSR Proof With StorefrontBrandLogo
 
