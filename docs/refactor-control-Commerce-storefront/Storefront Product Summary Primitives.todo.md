@@ -300,23 +300,31 @@ Forbidden direct project references:
 
 Tasks:
 
-- [ ] Create `BlazorShop.Storefront.Components.Primitives`.
-- [ ] Add `_Imports.razor` with only required component namespaces.
-- [ ] Add README stating:
-  - [ ] browser-safe render-only Razor primitives
-  - [ ] `Components` dependency only
-  - [ ] no Presentation/Browser/Runtime/Client/backend/host dependency
-  - [ ] no final CSS/copy/design ownership
-  - [ ] not a component mode
-- [ ] Add project to `BlazorShop.sln`.
-- [ ] Keep solution placement consistent with existing Storefront component projects.
+- [x] Create `BlazorShop.Storefront.Components.Primitives`.
+- [x] Add `_Imports.razor` with only required component namespaces.
+- [x] Add README stating:
+  - [x] browser-safe render-only Razor primitives
+  - [x] `Components` dependency only
+  - [x] no Presentation/Browser/Runtime/Client/backend/host dependency
+  - [x] no final CSS/copy/design ownership
+  - [x] not a component mode
+- [x] Add project to `BlazorShop.sln`.
+- [x] Keep solution placement consistent with existing Storefront component projects.
 
 Exit criteria:
 
-- [ ] Project exists.
-- [ ] Project directly references only `Components`.
-- [ ] Project builds.
-- [ ] No consumer references are added yet except when the adoption phase starts.
+- [x] Project exists.
+- [x] Project directly references only `Components`.
+- [x] Project builds.
+- [x] No consumer references are added yet except when the adoption phase starts.
+
+Implementation notes:
+
+- 2026-08-10: Added `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives` with Razor SDK, `net10.0`, package id/root namespace, and a single direct `ProjectReference` to `BlazorShop.Storefront.Components`.
+- 2026-08-10: Added `_Imports.razor` with only `Microsoft.AspNetCore.Components` and catalog contract namespaces.
+- 2026-08-10: Added README documenting browser-safe render-only scope, dependency boundary, host-owned CSS/copy/design, and no new component mode.
+- 2026-08-10: Added the project to `BlazorShop.sln` adjacent to existing Storefront component projects.
+- 2026-08-10: Verification passed: `dotnet build "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/BlazorShop.Storefront.Components.Primitives.csproj"`.
 
 ## Phase 3.1.2 - Add Primitive Dependency Guardrails
 
