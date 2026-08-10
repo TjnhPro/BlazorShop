@@ -745,41 +745,49 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-co
 
 Required Component MVP assertions:
 
-- [ ] Raw HTML route returns HTTP 200.
-- [ ] Raw HTML contains SSR brand logo proof.
-- [ ] Raw HTML contains Hybrid prerender state.
-- [ ] Browser hydration changes runtime state to `interactive`.
-- [ ] C# click changes value `0 -> 1 -> 2`.
-- [ ] Rail loading state appears.
-- [ ] Rail success state appears.
-- [ ] Rail empty state appears.
-- [ ] Rail error state appears.
-- [ ] Rail retry state works.
-- [ ] Network proof records no public `/_blazor` UI circuit.
-- [ ] Network proof records no direct Commerce browser requests.
-- [ ] Network proof records no credential leaks.
-- [ ] Network proof records no console errors.
-- [ ] Network proof records no page errors.
+- [x] Raw HTML route returns HTTP 200.
+- [x] Raw HTML contains SSR brand logo proof.
+- [x] Raw HTML contains Hybrid prerender state.
+- [x] Browser hydration changes runtime state to `interactive`.
+- [x] C# click changes value `0 -> 1 -> 2`.
+- [x] Rail loading state appears.
+- [x] Rail success state appears.
+- [x] Rail empty state appears.
+- [x] Rail error state appears.
+- [x] Rail retry state works.
+- [x] Network proof records no public `/_blazor` UI circuit.
+- [x] Network proof records no direct Commerce browser requests.
+- [x] Network proof records no credential leaks.
+- [x] Network proof records no console errors.
+- [x] Network proof records no page errors.
 
 Contact browser regression:
 
-- [ ] Start local V2 runtime with existing local script or current QA runner.
-- [ ] Navigate to a page that renders the contact component.
-- [ ] Submit empty form and verify validation.
-- [ ] Submit valid form against configured local/test store route.
-- [ ] Verify success state.
-- [ ] Simulate or route failure if current QA utilities support it.
-- [ ] Verify retry or recoverable error state.
-- [ ] Verify no direct Commerce Node browser request.
-- [ ] Verify no unexpected console/page errors.
+- [x] Start local V2 runtime with existing local script or current QA runner.
+- [x] Navigate to a page that renders the contact component.
+- [x] Submit empty form and verify validation.
+- [x] Submit valid form against configured local/test store route.
+- [x] Verify success state.
+- [x] Simulate or route failure if current QA utilities support it.
+- [x] Verify retry or recoverable error state.
+- [x] Verify no direct Commerce Node browser request.
+- [x] Verify no unexpected console/page errors.
 
 If a dedicated contact Playwright wrapper already exists, use it instead of writing an ad hoc script. If none exists, add a focused wrapper under `scripts/qa` and record evidence under `output/playwright`.
 
 Exit criteria:
 
-- [ ] Component MVP browser proof passes after H3.
-- [ ] Contact visible browser flow passes after H3.
-- [ ] Evidence files are recorded in `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+- [x] Component MVP browser proof passes after H3.
+- [x] Contact visible browser flow passes after H3.
+- [x] Evidence files are recorded in `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+
+Implementation notes:
+
+- 2026-08-10: Component MVP browser proof passed RawHtml, Hybrid, Rail, and Network phases with `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa/run-storefront-component-mvp-proof.ps1 -Phase <phase> -RuntimeTimeoutSeconds 120 -NoBuild`.
+- 2026-08-10: Component MVP evidence files were refreshed under `output/playwright/storefront-component-mvp/*.evidence.json`; Network recorded `serverUiCircuit: 0`, `directCommerce: 0`, `webSockets: 0`, zero credential leaks, zero console errors, and zero page errors.
+- 2026-08-10: added `scripts/qa/run-storefront-reference-components-v2-proof.ps1` as the dedicated wrapper for the existing reference component Playwright script, including `-UseExisting` for full local V2 runtime QA.
+- 2026-08-10: contact/reference browser proof passed on `http://localhost:18598` after starting full local V2 runtime with `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser`; evidence: `output/playwright/storefront-reference-components-phase14/evidence.json`.
+- 2026-08-10: contact/reference proof verified SSR-first contact markup, browser required validation, backend validation failure, backend failure/retry, success state, rail empty/error/retry, desktop/mobile brand visibility, same-origin `/api/contact`, zero direct Commerce calls, zero console errors, and zero page errors.
 
 ## Phase H3.15 - Full Solution Gate
 
@@ -931,7 +939,7 @@ Before marking H3 complete:
 - [x] H3.11 update active docs and QA checklist.
 - [x] H3.12 run focused build gate.
 - [x] H3.13 run focused test gate.
-- [ ] H3.14 run mandatory Playwright browser regression.
+- [x] H3.14 run mandatory Playwright browser regression.
 - [ ] H3.15 run full solution gate.
 - [ ] H3.16 audit scope drift.
 - [ ] H3.17 write final closure report.
