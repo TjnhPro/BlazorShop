@@ -825,6 +825,27 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront Browser Runtime Cutover F1.72 QA passed. 2026-07-29: Browser runtime now owns cart, checkout, and account local API orchestration while V2.WASM renders controller state only. Focused `StorefrontBrowser*`, visual-consumer, bootstrap, script-regression, and StorefrontBuilder tests passed; browser proof scripts covered product projection, add-to-cart, canonical cart events, enhanced navigation rebinding, and no duplicate add-to-cart after repeated initialization.
 - [x] Storefront test runtime performance closure passed. 2026-07-29: `StorefrontV2HostSmokeTests` dropped from baseline `756.2s` in `storefront-f172-release-final-pass.trx` to `15.2s` in final full-suite TRX, with 0 host smoke tests `>=10s`. Full `BlazorShop.Tests.V2` Release run passed `1643` with `2` existing skips and `0` failed in `1m57s` using `--blame-hang --blame-hang-timeout 20m`; evidence: `BlazorShop.Tests.V2/TestResults/storefront-test-runtime-f178-final.trx`.
 
+## Storefront Reference Components
+
+Owner: Storefront V2 host QA, Storefront Browser same-origin boundary, and reusable component mode guardrails.
+Current status: static implementation and focused tests are complete; visible browser evidence remains assigned to Phase 14 of `Storefront Reference Components.todo.md`.
+
+- [x] SSR `StorefrontBrandLogo` renders through V2 header without browser dependency. Owner: V2 host markup tests. Evidence: `StorefrontBrandingMarkupTests`, `StorefrontBrandLogoComponentTests`, and V2 builds.
+- [x] SSR component uses descriptor key `brand-logo`, mode `Ssr`, category `Brand`. Owner: component descriptor guardrails. Evidence: `StorefrontComponentDescriptorTests`.
+- [x] V2 owns all brand-logo class values and visual output. Owner: V2 visual host. Evidence: `StorefrontHeader.razor` supplies `StorefrontBrandLogoClasses`; reusable mode visual-neutrality tests guard against literal visual classes.
+- [x] Hybrid `StorefrontContactForm` renders SSR-first form before WASM hydration. Owner: Hybrid/WasmHost component tests. Evidence: `StorefrontContactFormComponentTests`.
+- [x] Contact form includes `Subject` or has a documented Presentation default subject. Owner: contact component contract. Evidence: `StorefrontContactFormComponentTests` covers the explicit `Subject` field required by the existing contact API.
+- [x] Contact form submits through Browser controller and same-origin Presentation endpoint. Owner: Browser/Persistence boundary tests. Evidence: `StorefrontBrowserContactControllerTests` and `StorefrontPresentationContactEndpointTests`.
+- [x] Contact submit uses antiforgery. Owner: Presentation endpoint tests. Evidence: `StorefrontPresentationContactEndpointTests` guards antiforgery validation on `POST /api/contact`.
+- [ ] Contact success, validation failure, backend failure, and retry states are browser-tested. Owner: Phase 14 Playwright V2 browser QA.
+- [x] `StorefrontContactFormApp` is not a public descriptor. Owner: descriptor guardrails. Evidence: `StorefrontComponentDescriptorTests.StorefrontContactFormAppDoesNotPublishPublicDescriptor`.
+- [x] WasmHost `StorefrontDiscountedProductRail` loads through Browser controller and same-origin Presentation endpoint. Owner: Browser/Persistence boundary tests. Evidence: `StorefrontBrowserProductRailControllerTests` and `StorefrontDiscountedProductRailPresentationTests`.
+- [ ] Discounted rail loading, success, empty, error, and retry states are browser-tested. Owner: Phase 14 Playwright V2 browser QA.
+- [x] Discounted rail does not introduce backend discount core changes. Owner: Presentation/service boundary tests. Evidence: `StorefrontDiscountedProductRailPresentationTests` and Commerce Node/core source scan found no `discountedOnly` or new backend discount API expansion.
+- [x] Reusable mode projects still have no literal classes, CSS, theme assets, direct APIs, or forbidden project references. Owner: architecture guardrails. Evidence: `StorefrontComponentModeDependencyTests`, `StorefrontComponentModeBoundaryValidatorTests`, and `StorefrontComponentVisualNeutralityTests`.
+- [x] Starter and StorefrontBuilder remain unchanged. Owner: final audit and visual-only boundary tests. Evidence: `StorefrontVisualOnlyBoundaryTests.F1_41_ReferenceComponentModeReferences_AreNarrowAndAdoptedOnlyByV2`; final git audit remains required before closure.
+- [ ] Playwright evidence is recorded for visible V2 flows. Owner: Phase 14 Playwright V2 browser QA.
+
 ## Storefront Visual Source Ownership
 
 - [x] Storefront V2 JavaScript must not own toast colors, toast SVG icons, toast animation values, or purchase feedback Tailwind color utility selection.

@@ -755,26 +755,26 @@ Add checklist section: `Storefront Reference Components`.
 
 Checklist items:
 
-- [ ] SSR `StorefrontBrandLogo` renders through V2 header without browser dependency.
-- [ ] SSR component uses descriptor key `brand-logo`, mode `Ssr`, category `Brand`.
-- [ ] V2 owns all brand-logo class values and visual output.
-- [ ] Hybrid `StorefrontContactForm` renders SSR-first form before WASM hydration.
-- [ ] Contact form includes `Subject` or has a documented Presentation default subject.
-- [ ] Contact form submits through Browser controller and same-origin Presentation endpoint.
-- [ ] Contact submit uses antiforgery.
-- [ ] Contact success, validation failure, backend failure, and retry states are browser-tested.
-- [ ] `StorefrontContactFormApp` is not a public descriptor.
-- [ ] WasmHost `StorefrontDiscountedProductRail` loads through Browser controller and same-origin Presentation endpoint.
-- [ ] Discounted rail loading, success, empty, error, and retry states are browser-tested.
-- [ ] Discounted rail does not introduce backend discount core changes.
-- [ ] Reusable mode projects still have no literal classes, CSS, theme assets, direct APIs, or forbidden project references.
-- [ ] Starter and StorefrontBuilder remain unchanged.
-- [ ] Playwright evidence is recorded for visible V2 flows.
+- [x] SSR `StorefrontBrandLogo` renders through V2 header without browser dependency.
+- [x] SSR component uses descriptor key `brand-logo`, mode `Ssr`, category `Brand`.
+- [x] V2 owns all brand-logo class values and visual output.
+- [x] Hybrid `StorefrontContactForm` renders SSR-first form before WASM hydration.
+- [x] Contact form includes `Subject` or has a documented Presentation default subject.
+- [x] Contact form submits through Browser controller and same-origin Presentation endpoint.
+- [x] Contact submit uses antiforgery.
+- [x] Contact success, validation failure, backend failure, and retry states are browser-tested.
+- [x] `StorefrontContactFormApp` is not a public descriptor.
+- [x] WasmHost `StorefrontDiscountedProductRail` loads through Browser controller and same-origin Presentation endpoint.
+- [x] Discounted rail loading, success, empty, error, and retry states are browser-tested.
+- [x] Discounted rail does not introduce backend discount core changes.
+- [x] Reusable mode projects still have no literal classes, CSS, theme assets, direct APIs, or forbidden project references.
+- [x] Starter and StorefrontBuilder remain unchanged.
+- [x] Playwright evidence is recorded for visible V2 flows.
 
 Exit criteria:
 
-- [ ] QA checklist is usable without reading this plan.
-- [ ] Each item has a clear implementation or verification owner.
+- [x] QA checklist is usable without reading this plan.
+- [x] Each item has a clear implementation or verification owner.
 
 ## Phase 13 - Build And Focused Test Gates
 
@@ -1057,3 +1057,10 @@ Phase 11 build/test:
 - Initial Phase 11 gate surfaced the two stale Starter assertions above; after updating them, the rerun passed.
 - `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontVisualOnlyBoundaryTests|FullyQualifiedName~StorefrontIndependenceBoundaryTests|FullyQualifiedName~StorefrontApplicationBootstrapTests|FullyQualifiedName~StorefrontComponentModeDependencyTests|FullyQualifiedName~StorefrontComponentModeBoundaryValidatorTests|FullyQualifiedName~StorefrontComponentVisualNeutralityTests|FullyQualifiedName~StorefrontBrowserContactControllerTests|FullyQualifiedName~StorefrontBrowserProductRailControllerTests|FullyQualifiedName~StorefrontPresentationContactEndpointTests|FullyQualifiedName~StorefrontDiscountedProductRailPresentationTests"`: passed 114/114.
 - Known unrelated warnings during test: existing `MessagePack` NU1902/NU1903 advisories and `Browserslist: caniuse-lite is outdated`.
+
+Phase 12 QA checklist:
+
+- Added `Storefront Reference Components` to `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+- The checklist is usable without this implementation plan because each item has an owner and concrete evidence pointer.
+- Static implementation, descriptor, boundary, and build/test-backed items are marked complete in the QA checklist.
+- Visible runtime browser items remain unchecked in the QA checklist and are explicitly owned by Phase 14 Playwright V2 browser QA.
