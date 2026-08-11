@@ -1,4 +1,6 @@
 @namespace BlazorShop.Storefront.V2.Pages.Catalog
+@using BlazorShop.Storefront.Components.Contracts.Navigation
+@using BlazorShop.Storefront.Components.Primitives.Navigation
 @using BlazorShop.Storefront.Presentation.Services.Catalog
 
 <StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-6 pt-10 sm:px-6 lg:px-8">
@@ -46,19 +48,9 @@
     <StorefrontProductSummaryGrid Items="Context.ProductSummaries"
                                   EmptyMessage="No products are available in this category right now." />
 
-    @if (Context.TotalPages > 1)
-    {
-        <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Category product pages">
-            @for (var pageNumber = 1; pageNumber <= Context.TotalPages; pageNumber++)
-            {
-                <a href="@Context.Links.CategoryUrl(Context.Slug, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)"
-                   class="@GetPageLinkClass(pageNumber)"
-                   aria-current="@(pageNumber == Context.PageNumber ? "page" : null)">
-                    @pageNumber
-                </a>
-            }
-        </nav>
-    }
+    <StorefrontPagination Items="PaginationItems"
+                         Classes="CategoryPaginationClasses"
+                         Labels="CategoryPaginationLabels" />
 </section>
 
 <SeoContentSection Title="@CategorySeoContentTitle"
@@ -73,11 +65,26 @@
 
     private string CategoryResultCountText => Context.TotalCount == 1 ? "1 item" : $"{Context.TotalCount} items";
 
-    private string GetPageLinkClass(int page)
-    {
-        var baseClass = "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold";
-        return page == Context.PageNumber
-            ? $"{baseClass} border-neutral-900 bg-neutral-900 text-white"
-            : $"{baseClass} border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100";
-    }
+    private IReadOnlyList<StorefrontPaginationItem> PaginationItems => Enumerable
+        .Range(1, Context.TotalPages)
+        .Select(pageNumber => new StorefrontPaginationItem(
+            pageNumber,
+            Context.Links.CategoryUrl(
+                Context.Slug,
+                pageNumber,
+                Context.PageSize,
+                Context.SortBy,
+                Context.MinPrice,
+                Context.MaxPrice,
+                Context.InStock ? true : null),
+            pageNumber == Context.PageNumber))
+        .ToArray();
+
+    private static StorefrontPaginationClasses CategoryPaginationClasses { get; } = new(
+        Root: "mt-8 flex flex-wrap items-center justify-center gap-2",
+        Link: "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold",
+        CurrentLink: "border-neutral-900 bg-neutral-900 text-white",
+        InactiveLink: "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100");
+
+    private static StorefrontPaginationLabels CategoryPaginationLabels { get; } = new("Category product pages");
 }

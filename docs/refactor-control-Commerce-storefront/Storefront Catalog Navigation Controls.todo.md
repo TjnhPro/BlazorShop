@@ -296,14 +296,14 @@ Goal: replace Category page manual pagination without changing URLs.
 
 File:
 
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`.
 
 Tasks:
 
-- [ ] Add required namespace import for `Components.Primitives.Navigation`.
-- [ ] Add required namespace import for `Components.Contracts.Navigation`.
-- [ ] Build `StorefrontPaginationItem[]` or `IReadOnlyList<StorefrontPaginationItem>` in V2 page code.
-- [ ] Preserve URL call exactly:
+- [x] Add required namespace import for `Components.Primitives.Navigation`.
+- [x] Add required namespace import for `Components.Contracts.Navigation`.
+- [x] Build `StorefrontPaginationItem[]` or `IReadOnlyList<StorefrontPaginationItem>` in V2 page code.
+- [x] Preserve URL call exactly:
 
 ```csharp
 Context.Links.CategoryUrl(
@@ -316,21 +316,21 @@ Context.Links.CategoryUrl(
     Context.InStock ? true : null)
 ```
 
-- [ ] Pass prepared items to `StorefrontPagination`.
-- [ ] Pass V2-owned classes to `StorefrontPagination`.
-- [ ] Pass V2-owned `AriaLabel` value equivalent to `Category product pages`.
-- [ ] Remove manual `<nav>` loop.
-- [ ] Remove `GetPageLinkClass` from Category if unused.
-- [ ] Keep product grid placement unchanged.
-- [ ] Keep category heading/description/result count unchanged.
-- [ ] Keep SEO content placement unchanged.
+- [x] Pass prepared items to `StorefrontPagination`.
+- [x] Pass V2-owned classes to `StorefrontPagination`.
+- [x] Pass V2-owned `AriaLabel` value equivalent to `Category product pages`.
+- [x] Remove manual `<nav>` loop.
+- [x] Remove `GetPageLinkClass` from Category if unused.
+- [x] Keep product grid placement unchanged.
+- [x] Keep category heading/description/result count unchanged.
+- [x] Keep SEO content placement unchanged.
 
 Exit criteria:
 
-- [ ] category pagination route behavior unchanged;
-- [ ] category query state preserved across page links;
-- [ ] reusable primitive owns rendering only;
-- [ ] V2 still owns URL generation and final classes.
+- [x] category pagination route behavior unchanged;
+- [x] category query state preserved across page links;
+- [x] reusable primitive owns rendering only;
+- [x] V2 still owns URL generation and final classes.
 
 ## Phase 3.3.4 - Adopt Pagination In Search
 
