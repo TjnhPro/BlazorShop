@@ -8,8 +8,8 @@
 <StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-6 pt-10 sm:px-6 lg:px-8">
     <Breadcrumb>
         <StorefrontBreadcrumb Items="Context.Breadcrumbs"
-                             Classes="BreadcrumbClasses"
-                             Labels="BreadcrumbLabels" />
+                             Classes="CatalogNavigationVisuals.BreadcrumbClasses"
+                             Labels="CatalogNavigationVisuals.BreadcrumbLabels" />
     </Breadcrumb>
 
     <ChildContent>
@@ -34,8 +34,8 @@
                 </div>
             </div>
 
-            <StorefrontCatalogFilterPanel Classes="CategoryFilterClasses"
-                                           Labels="CategoryFilterLabels"
+            <StorefrontCatalogFilterPanel Classes="CatalogNavigationVisuals.CategoryFilterClasses"
+                                           Labels="CatalogNavigationVisuals.CategoryFilterLabels"
                                            ShowPriceRange="true"
                                            MinPrice="Context.MinPrice"
                                            MaxPrice="Context.MaxPrice"
@@ -54,8 +54,8 @@
                                   EmptyMessage="No products are available in this category right now." />
 
     <StorefrontPagination Items="PaginationItems"
-                         Classes="CategoryPaginationClasses"
-                         Labels="CategoryPaginationLabels" />
+                         Classes="CatalogNavigationVisuals.PaginationClasses"
+                         Labels="CatalogNavigationVisuals.CategoryPaginationLabels" />
 </section>
 
 <SeoContentSection Title="@CategorySeoContentTitle"
@@ -85,44 +85,4 @@
             pageNumber == Context.PageNumber))
         .ToArray();
 
-    private static StorefrontPaginationClasses CategoryPaginationClasses { get; } = new(
-        Root: "mt-8 flex flex-wrap items-center justify-center gap-2",
-        Link: "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold",
-        CurrentLink: "border-neutral-900 bg-neutral-900 text-white",
-        InactiveLink: "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100");
-
-    private static StorefrontPaginationLabels CategoryPaginationLabels { get; } = new("Category product pages");
-
-    private static StorefrontCatalogFilterPanelClasses CategoryFilterClasses { get; } = new(
-        Root: "mt-6 grid gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-4 md:grid-cols-3 xl:grid-cols-6",
-        Input: "rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10",
-        Select: "rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10",
-        CheckboxLabel: "flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700",
-        SubmitButton: "inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 text-sm font-semibold text-white hover:bg-neutral-800");
-
-    private static StorefrontCatalogFilterPanelLabels CategoryFilterLabels { get; } = new(
-        AllCategories: "All",
-        SearchPlaceholder: "Search products",
-        MinPricePlaceholder: "Min price",
-        MaxPricePlaceholder: "Max price",
-        SortAriaLabel: "Sort products",
-        CategoryAriaLabel: "Filter by category",
-        PageSizeAriaLabel: "Products per page",
-        FeaturedSort: "Featured",
-        RecentlyUpdatedSort: "Recently updated",
-        PriceLowSort: "Price low",
-        PriceHighSort: "Price high",
-        NewestSort: "Newest",
-        InStock: "In stock",
-        Submit: "Apply",
-        PerPageSuffix: "per page");
-
-    private static StorefrontBreadcrumbClasses BreadcrumbClasses { get; } = new(
-        List: "flex flex-wrap items-center gap-2 text-sm text-neutral-500",
-        Item: "flex items-center gap-2",
-        Link: "font-medium text-neutral-500 hover:text-neutral-900",
-        Current: "font-semibold text-neutral-900",
-        Separator: "text-neutral-300");
-
-    private static StorefrontBreadcrumbLabels BreadcrumbLabels { get; } = new();
 }

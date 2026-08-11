@@ -6,8 +6,8 @@
 <StorefrontPageShell Class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
     <Breadcrumb>
         <StorefrontBreadcrumb Items="Context.Breadcrumbs"
-                             Classes="BreadcrumbClasses"
-                             Labels="BreadcrumbLabels" />
+                             Classes="CatalogNavigationVisuals.BreadcrumbClasses"
+                             Labels="CatalogNavigationVisuals.BreadcrumbLabels" />
     </Breadcrumb>
 
     <ChildContent>
@@ -67,12 +67,4 @@
         };
     }
 
-    private static StorefrontBreadcrumbClasses BreadcrumbClasses { get; } = new(
-        List: "flex flex-wrap items-center gap-2 text-sm text-neutral-500",
-        Item: "flex items-center gap-2",
-        Link: "font-medium text-neutral-500 hover:text-neutral-900",
-        Current: "font-semibold text-neutral-900",
-        Separator: "text-neutral-300");
-
-    private static StorefrontBreadcrumbLabels BreadcrumbLabels { get; } = new();
 }

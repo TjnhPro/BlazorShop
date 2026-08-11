@@ -15,8 +15,8 @@
             </div>
 
             <StorefrontCatalogFilterPanel Action="@Context.Links.Search.Href"
-                                           Classes="SearchFilterClasses"
-                                           Labels="SearchFilterLabels"
+                                           Classes="CatalogNavigationVisuals.SearchFilterClasses"
+                                           Labels="CatalogNavigationVisuals.SearchFilterLabels"
                                            Role="search"
                                            ShowCategory="true"
                                            Categories="Context.SearchCategories"
@@ -59,8 +59,8 @@
     <StorefrontProductSummaryGrid Items="Context.ProductSummaries" EmptyMessage="No products found" />
 
     <StorefrontPagination Items="PaginationItems"
-                         Classes="SearchPaginationClasses"
-                         Labels="SearchPaginationLabels" />
+                         Classes="CatalogNavigationVisuals.PaginationClasses"
+                         Labels="CatalogNavigationVisuals.SearchPaginationLabels" />
 </section>
 
 @code {
@@ -93,35 +93,4 @@
             pageNumber == Context.PageNumber))
         .ToArray();
 
-    private static StorefrontPaginationClasses SearchPaginationClasses { get; } = new(
-        Root: "mt-8 flex flex-wrap items-center justify-center gap-2",
-        Link: "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold",
-        CurrentLink: "border-neutral-900 bg-neutral-900 text-white",
-        InactiveLink: "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100");
-
-    private static StorefrontPaginationLabels SearchPaginationLabels { get; } = new("Search result pages");
-
-    private static StorefrontCatalogFilterPanelClasses SearchFilterClasses { get; } = new(
-        Root: "grid gap-3 md:grid-cols-4 xl:grid-cols-8",
-        Input: "rounded border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900",
-        Select: "rounded border border-neutral-300 bg-white px-3 py-3 text-sm font-semibold text-neutral-900",
-        CheckboxLabel: "flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700",
-        SubmitButton: "inline-flex items-center justify-center gap-2 rounded bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600");
-
-    private static StorefrontCatalogFilterPanelLabels SearchFilterLabels { get; } = new(
-        AllCategories: "All",
-        SearchPlaceholder: "Search products",
-        MinPricePlaceholder: "Min price",
-        MaxPricePlaceholder: "Max price",
-        SortAriaLabel: "Sort products",
-        CategoryAriaLabel: "Filter by category",
-        PageSizeAriaLabel: "Products per page",
-        FeaturedSort: "Featured",
-        RecentlyUpdatedSort: "Recently updated",
-        PriceLowSort: "Price low",
-        PriceHighSort: "Price high",
-        NewestSort: "Newest",
-        InStock: "In stock",
-        Submit: "Search",
-        PerPageSuffix: "per page");
 }

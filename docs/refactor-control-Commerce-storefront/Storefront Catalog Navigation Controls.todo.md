@@ -663,35 +663,35 @@ Goal: keep final styling and visible copy centralized enough for maintainability
 
 Preferred file:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogNavigationVisuals.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogNavigationVisuals.cs`
 
 Allowed split if the single file becomes noisy:
 
-- [ ] `Components/Catalog/CatalogFilterVisuals.cs`
-- [ ] `Components/Navigation/StorefrontNavigationVisuals.cs`
+- [x] Not needed: `Components/Catalog/CatalogFilterVisuals.cs`.
+- [x] Not needed: `Components/Navigation/StorefrontNavigationVisuals.cs`.
 
 Responsibilities:
 
-- [ ] Provide `StorefrontPaginationClasses`.
-- [ ] Provide Category pagination labels.
-- [ ] Provide Search pagination labels.
-- [ ] Provide `StorefrontCatalogFilterPanelClasses`.
-- [ ] Provide Category filter labels.
-- [ ] Provide Search filter labels.
-- [ ] Provide `StorefrontBreadcrumbClasses`.
-- [ ] Provide breadcrumb labels.
+- [x] Provide `StorefrontPaginationClasses`.
+- [x] Provide Category pagination labels.
+- [x] Provide Search pagination labels.
+- [x] Provide `StorefrontCatalogFilterPanelClasses`.
+- [x] Provide Category filter labels.
+- [x] Provide Search filter labels.
+- [x] Provide `StorefrontBreadcrumbClasses`.
+- [x] Provide breadcrumb labels.
 
 Rules:
 
-- [ ] Do not create one visual class file per tiny component unless readability requires it.
-- [ ] Do not move page headings/result-count copy into reusable packages.
-- [ ] Do not move search validation copy into reusable packages.
-- [ ] Keep V2 CSS classes readable at call sites or in a small V2 config class.
+- [x] Do not create one visual class file per tiny component unless readability requires it.
+- [x] Do not move page headings/result-count copy into reusable packages.
+- [x] Do not move search validation copy into reusable packages.
+- [x] Keep V2 CSS classes readable at call sites or in a small V2 config class.
 
 Exit criteria:
 
-- [ ] reusable packages contain no final V2 Tailwind literals;
-- [ ] V2 controls visual output.
+- [x] reusable packages contain no final V2 Tailwind literals;
+- [x] V2 controls visual output.
 
 ## Phase 3.3.13 - Imports And Project References
 
