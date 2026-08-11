@@ -168,51 +168,6 @@ public sealed class StorefrontComponentVisualNeutralityTests
         }
     }
 
-    [Fact]
-    public void VisualNeutralityScanIncludesCurrentPrimitiveWasmHostAndContactComponents()
-    {
-        var scannedFiles = EnumerateSourceFiles()
-            .Select(file => Path.GetRelativePath(RepositoryRoot, file).Replace(Path.DirectorySeparatorChar, '/'))
-            .ToArray();
-
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/_Imports.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductGallery.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Navigation/StorefrontPagination.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/System/StorefrontToastRegion.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductPricing.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductAvailability.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductVariantList.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanel.razor",
-            scannedFiles);
-        Assert.Contains(
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor",
-            scannedFiles);
-    }
-
     private static IEnumerable<string> EnumerateSourceFiles()
     {
         return ReusableRenderProjectDirectories

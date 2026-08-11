@@ -4,15 +4,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     public sealed class StorefrontVisualSourceOwnershipTests
     {
-        private static readonly string[] ActiveV2RazorSourceFiles =
-        [
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/ProductPurchasePanelVisuals.cs",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontToastVisuals.cs",
-        ];
-
         [Fact]
         public void StorefrontCommerceScript_DoesNotOwnToastVisualValuesOrFeedbackColorClasses()
         {
@@ -67,9 +58,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "fa-check",
             };
 
-            foreach (var sourceFile in ActiveV2RazorSourceFiles)
+            foreach (var sourceFile in EnumerateCuratedOwnershipSources().Where(file => file.RelativePath.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)))
             {
-                var source = ReadRepositoryFile(sourceFile);
+                var source = File.ReadAllText(sourceFile.AbsolutePath);
                 foreach (var forbiddenToken in forbiddenTokens)
                 {
                     Assert.DoesNotContain(forbiddenToken, source, StringComparison.Ordinal);
@@ -80,14 +71,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ActiveStorefrontV2Source_DoesNotExposeSubmitIconCssClass()
         {
-            foreach (var sourceFile in ActiveV2RazorSourceFiles)
+            foreach (var sourceFile in EnumerateCuratedOwnershipSources())
             {
-                Assert.DoesNotContain("SubmitIconCssClass", ReadRepositoryFile(sourceFile), StringComparison.Ordinal);
+                Assert.DoesNotContain("SubmitIconCssClass", File.ReadAllText(sourceFile.AbsolutePath), StringComparison.Ordinal);
             }
 
             var catalogFilter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor");
             Assert.Contains("public RenderFragment? SubmitIcon { get; set; }", catalogFilter, StringComparison.Ordinal);
             Assert.Contains("@SubmitIcon", catalogFilter, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void ActiveStorefrontV2Sources_DoNotContainRetiredVisualWrappers()
+        {
+            var sources = EnumerateCuratedOwnershipSources();
+
+            Assert.DoesNotContain(sources, source => source.RelativePath.EndsWith("/ProductCard.razor", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(sources, source => source.RelativePath.EndsWith("/ProductGrid.razor", StringComparison.OrdinalIgnoreCase));
+
+            foreach (var source in sources)
+            {
+                var content = File.ReadAllText(source.AbsolutePath);
+                Assert.DoesNotContain("<ProductCard", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("<ProductGrid", content, StringComparison.Ordinal);
+            }
         }
 
         [Fact]
@@ -156,6 +163,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/node_modules/", StringComparison.OrdinalIgnoreCase));
             Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/bin/", StringComparison.OrdinalIgnoreCase));
             Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/obj/", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/artifacts/", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/tmp/", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/temp/", StringComparison.OrdinalIgnoreCase));
             Assert.DoesNotContain(curatedSources, file => file.RelativePath.StartsWith("docs/", StringComparison.OrdinalIgnoreCase));
             Assert.DoesNotContain(curatedSources, file => file.RelativePath.Contains("/Fixtures/", StringComparison.OrdinalIgnoreCase));
         }
@@ -268,9 +278,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     var relativePath = NormalizePath(Path.GetRelativePath(repositoryRoot, absolutePath));
                     if (!sourceExtensions.Contains(Path.GetExtension(absolutePath))
                         || excludedRelativePaths.Contains(relativePath)
-                        || relativePath.Contains("/node_modules/", StringComparison.OrdinalIgnoreCase)
-                        || relativePath.Contains("/bin/", StringComparison.OrdinalIgnoreCase)
-                        || relativePath.Contains("/obj/", StringComparison.OrdinalIgnoreCase))
+                        || HasExcludedPathSegment(relativePath))
                     {
                         continue;
                     }
@@ -280,6 +288,25 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             return files;
+        }
+
+        private static bool HasExcludedPathSegment(string relativePath)
+        {
+            var excludedDirectoryNames = new[]
+            {
+                "artifacts",
+                "bin",
+                "docs",
+                "fixtures",
+                "generated",
+                "node_modules",
+                "obj",
+                "temp",
+                "tmp",
+            };
+
+            return relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries)
+                .Any(segment => excludedDirectoryNames.Contains(segment, StringComparer.OrdinalIgnoreCase));
         }
 
 

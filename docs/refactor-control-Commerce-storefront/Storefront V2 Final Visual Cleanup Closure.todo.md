@@ -743,152 +743,152 @@ Reason
 
 Review at minimum:
 
-- [ ] `StorefrontV2WASMRuntimeFoundationTests`.
-- [ ] `StorefrontCartCheckoutWasmHostBoundaryTests`.
-- [ ] `StorefrontAccountWasmHostOwnershipTests`.
-- [ ] `StorefrontComponentModeDependencyTests`.
-- [ ] `StorefrontRenderModeOwnershipTests`.
-- [ ] `StorefrontComponentVisualNeutralityTests`.
-- [ ] `StorefrontVisualSourceOwnershipTests`.
-- [ ] `StorefrontRequiredVisualContractsHardeningTests`.
-- [ ] `StorefrontVisualOnlyBoundaryTests`.
-- [ ] `StorefrontBrandingMarkupTests`.
-- [ ] `StorefrontComponentsHeadlessPresentationRefactorTests`.
-- [ ] Commerce flow tests.
-- [ ] Component-specific tests.
+- [x] `StorefrontV2WASMRuntimeFoundationTests`.
+- [x] `StorefrontCartCheckoutWasmHostBoundaryTests`.
+- [x] `StorefrontAccountWasmHostOwnershipTests`.
+- [x] `StorefrontComponentModeDependencyTests`.
+- [x] `StorefrontRenderModeOwnershipTests`.
+- [x] `StorefrontComponentVisualNeutralityTests`.
+- [x] `StorefrontVisualSourceOwnershipTests`.
+- [x] `StorefrontRequiredVisualContractsHardeningTests`.
+- [x] `StorefrontVisualOnlyBoundaryTests`.
+- [x] `StorefrontBrandingMarkupTests`.
+- [x] `StorefrontComponentsHeadlessPresentationRefactorTests`.
+- [x] Commerce flow tests.
+- [x] Component-specific tests.
 
 ### Phase 4B - Authoritative Owners
 
 Project graph owner:
 
-- [ ] `StorefrontComponentModeDependencyTests`.
-- [ ] Owns exact project references.
-- [ ] Owns forbidden dependencies.
-- [ ] Owns transitive reachability.
-- [ ] Owns cycles.
-- [ ] Owns retired physical Hybrid absence.
+- [x] `StorefrontComponentModeDependencyTests`.
+- [x] Owns exact project references.
+- [x] Owns forbidden dependencies.
+- [x] Owns transitive reachability.
+- [x] Owns cycles.
+- [x] Owns retired physical Hybrid absence.
 
 Render mode owner:
 
-- [ ] `StorefrontRenderModeOwnershipTests`.
-- [ ] Owns no reusable `@rendermode`.
-- [ ] Owns no `InteractiveServer`.
-- [ ] Owns no `InteractiveAuto`.
-- [ ] Owns approved `InteractiveWebAssembly` owners.
+- [x] `StorefrontRenderModeOwnershipTests`.
+- [x] Owns no reusable `@rendermode`.
+- [x] Owns no `InteractiveServer`.
+- [x] Owns no `InteractiveAuto`.
+- [x] Owns approved `InteractiveWebAssembly` owners.
 
 Visual neutrality owner:
 
-- [ ] `StorefrontComponentVisualNeutralityTests`.
-- [ ] Owns no literal final classes in reusable projects.
-- [ ] Owns no V2 visual assets in reusable projects.
-- [ ] Owns no final V2 copy tokens in reusable projects.
-- [ ] Owns no theme CSS assets in reusable projects.
+- [x] `StorefrontComponentVisualNeutralityTests`.
+- [x] Owns no literal final classes in reusable projects.
+- [x] Owns no V2 visual assets in reusable projects.
+- [x] Owns no final V2 copy tokens in reusable projects.
+- [x] Owns no theme CSS assets in reusable projects.
 
 Cart/checkout owner:
 
-- [ ] `StorefrontCartCheckoutWasmHostBoundaryTests`.
-- [ ] Owns cart/checkout WasmHost runtime ownership.
-- [ ] Owns V2.WASM cart/checkout wrapper boundary.
-- [ ] Owns V2 page render-mode ownership for cart/checkout.
-- [ ] Owns shared cart/checkout contract ownership.
+- [x] `StorefrontCartCheckoutWasmHostBoundaryTests`.
+- [x] Owns cart/checkout WasmHost runtime ownership.
+- [x] Owns V2.WASM cart/checkout wrapper boundary.
+- [x] Owns V2 page render-mode ownership for cart/checkout.
+- [x] Owns shared cart/checkout contract ownership.
 
 Account owner:
 
-- [ ] `StorefrontAccountWasmHostOwnershipTests`.
-- [ ] Owns five account leaves in WasmHost.
-- [ ] Owns account browser controller lifecycle ownership.
-- [ ] Owns V2.WASM account shell/navigation only.
-- [ ] Owns shared account contract ownership.
+- [x] `StorefrontAccountWasmHostOwnershipTests`.
+- [x] Owns five account leaves in WasmHost.
+- [x] Owns account browser controller lifecycle ownership.
+- [x] Owns V2.WASM account shell/navigation only.
+- [x] Owns shared account contract ownership.
 
 Root contract owner:
 
-- [ ] `StorefrontRequiredVisualContractsHardeningTests`.
-- [ ] Owns required root contexts.
-- [ ] Owns no fallback routes/actions/classes where host must supply contracts.
-- [ ] Owns host-supplied root contract requirements.
+- [x] `StorefrontRequiredVisualContractsHardeningTests`.
+- [x] Owns required root contexts.
+- [x] Owns no fallback routes/actions/classes where host must supply contracts.
+- [x] Owns host-supplied root contract requirements.
 
 Component behavior owners:
 
-- [ ] Component-specific tests own DOM and behavior semantics for primitives/SSR/WasmHost components.
-- [ ] Browser controller tests own same-origin controller command behavior.
-- [ ] Browser Playwright release journeys own visible end-to-end browser behavior.
+- [x] Component-specific tests own DOM and behavior semantics for primitives/SSR/WasmHost components.
+- [x] Browser controller tests own same-origin controller command behavior.
+- [x] Browser Playwright release journeys own visible end-to-end browser behavior.
 
 ### Phase 4C - Trim Runtime Foundation Tests
 
 Keep in `StorefrontV2WASMRuntimeFoundationTests`:
 
-- [ ] WASM startup.
-- [ ] same-origin browser runtime registration.
-- [ ] no Commerce Node configuration.
-- [ ] V2.WASM project identity.
-- [ ] core project dependency contract if not owned elsewhere.
+- [x] WASM startup.
+- [x] same-origin browser runtime registration.
+- [x] no Commerce Node configuration.
+- [x] V2.WASM project identity.
+- [x] core project dependency contract if not owned elsewhere.
 
 Move/delete from `StorefrontV2WASMRuntimeFoundationTests` when duplicated:
 
-- [ ] exact cart hook counts;
-- [ ] exact checkout hook counts;
-- [ ] cart wrapper wiring;
-- [ ] checkout wrapper wiring;
-- [ ] exact cart labels property inventory;
-- [ ] exact checkout labels property inventory;
-- [ ] account leaf ownership.
+- [x] exact cart hook counts;
+- [x] exact checkout hook counts;
+- [x] cart wrapper wiring;
+- [x] checkout wrapper wiring;
+- [x] exact cart labels property inventory;
+- [x] exact checkout labels property inventory;
+- [x] account leaf ownership.
 
 Goal:
 
-- [ ] RuntimeFoundation becomes small, stable, and architectural.
+- [x] RuntimeFoundation becomes small, stable, and architectural.
 
 ### Phase 4D - Trim Required Visual Contracts Tests
 
 Keep:
 
-- [ ] root page context required;
-- [ ] no fallback page contexts;
-- [ ] root action/classes required;
-- [ ] no fallback routes/actions/classes;
-- [ ] host-supplied contracts.
+- [x] root page context required;
+- [x] no fallback page contexts;
+- [x] root action/classes required;
+- [x] no fallback routes/actions/classes;
+- [x] host-supplied contracts.
 
 Remove duplicates for:
 
-- [ ] component ownership path;
-- [ ] WasmHost project ownership;
-- [ ] controller ownership;
-- [ ] render-mode ownership;
-- [ ] source inventory that another scanner owns.
+- [x] component ownership path;
+- [x] WasmHost project ownership;
+- [x] controller ownership;
+- [x] render-mode ownership;
+- [x] source inventory that another scanner owns.
 
 ### Phase 4E - Trim Render Mode And Visual Neutrality Tests
 
 Render mode:
 
-- [ ] Keep global reusable package scanner.
-- [ ] Keep public no-server/no-auto scanner.
-- [ ] Keep approved InteractiveWebAssembly owner scanner.
-- [ ] Keep scanner self-tests.
-- [ ] Remove per-component theory tests when the global scanner covers the same source set.
+- [x] Keep global reusable package scanner.
+- [x] Keep public no-server/no-auto scanner.
+- [x] Keep approved InteractiveWebAssembly owner scanner.
+- [x] Keep scanner self-tests.
+- [x] Remove per-component theory tests when the global scanner covers the same source set.
 
 Visual neutrality:
 
-- [ ] Keep global reusable render project scanner.
-- [ ] Keep scanner positive fixtures.
-- [ ] Keep scanner negative fixtures.
-- [ ] Keep forbidden-copy scanner.
-- [ ] Keep visual asset scanner.
-- [ ] Remove brittle inventory tests such as `VisualNeutralityScanIncludesCurrentPrimitiveWasmHostAndContactComponents` if dynamic directory enumeration already provides coverage.
-- [ ] Reduce component-name-specific regex fixtures to representative examples.
+- [x] Keep global reusable render project scanner.
+- [x] Keep scanner positive fixtures.
+- [x] Keep scanner negative fixtures.
+- [x] Keep forbidden-copy scanner.
+- [x] Keep visual asset scanner.
+- [x] Remove brittle inventory tests such as `VisualNeutralityScanIncludesCurrentPrimitiveWasmHostAndContactComponents` if dynamic directory enumeration already provides coverage.
+- [x] Reduce component-name-specific regex fixtures to representative examples.
 
 ### Phase 4F - Improve Visual Source Ownership Scanner
 
 Tasks:
 
-- [ ] Prefer dynamic curated enumeration over hardcoded source file lists where possible.
-- [ ] Enumerate active V2 and V2.WASM source files.
-- [ ] Exclude `bin`, `obj`, generated output, artifacts, fixtures, docs, node modules, and temporary folders.
-- [ ] Use global checks for:
-  - [ ] FontAwesome classes;
-  - [ ] retired visual tokens;
-  - [ ] old wrapper names;
-  - [ ] `SubmitIconCssClass`;
-  - [ ] stale component source names.
-- [ ] Keep targeted file-specific tests where the invariant is genuinely file-specific.
+- [x] Prefer dynamic curated enumeration over hardcoded source file lists where possible.
+- [x] Enumerate active V2 and V2.WASM source files.
+- [x] Exclude `bin`, `obj`, generated output, artifacts, fixtures, docs, node modules, and temporary folders.
+- [x] Use global checks for:
+  - [x] FontAwesome classes;
+  - [x] retired visual tokens;
+  - [x] old wrapper names;
+  - [x] `SubmitIconCssClass`;
+  - [x] stale component source names.
+- [x] Keep targeted file-specific tests where the invariant is genuinely file-specific.
 
 ### Phase 4G - Remove Stale Path Tests
 
@@ -900,48 +900,58 @@ rg -n "V2.WASM.*/StorefrontCartView.razor|V2.WASM.*/StorefrontCheckoutShell.razo
 
 Classify each reference:
 
-- [ ] Intentional retired-path assertion.
-- [ ] Stale test.
-- [ ] Historical fixture.
+- [x] Intentional retired-path assertion.
+- [x] Stale test.
+- [x] Historical fixture.
 
 Remove:
 
-- [ ] stale tests that only check old file paths;
-- [ ] file-existence tests made redundant by stronger ownership tests;
-- [ ] brittle exact counts where semantic coverage already exists elsewhere.
+- [x] stale tests that only check old file paths;
+- [x] file-existence tests made redundant by stronger ownership tests;
+- [x] brittle exact counts where semantic coverage already exists elsewhere.
 
 Keep:
 
-- [ ] architecture boundary tests;
-- [ ] security tests;
-- [ ] render-mode tests;
-- [ ] same-origin browser transport tests;
-- [ ] business-critical mutation semantics;
-- [ ] semantic DOM hook tests;
-- [ ] accessibility contract tests;
-- [ ] root required contract tests.
+- [x] architecture boundary tests;
+- [x] security tests;
+- [x] render-mode tests;
+- [x] same-origin browser transport tests;
+- [x] business-critical mutation semantics;
+- [x] semantic DOM hook tests;
+- [x] accessibility contract tests;
+- [x] root required contract tests.
 
 ### Phase 4H - Test Helper Cleanup
 
 Consolidate only where useful:
 
-- [ ] `RepositoryRoot`.
-- [ ] `RepositoryPath`.
-- [ ] `ReadRepositoryFile`.
-- [ ] `CountOccurrences`.
-- [ ] `ReadDirectory`.
-- [ ] `NormalizePath`.
+- [x] `RepositoryRoot`.
+- [x] `RepositoryPath`.
+- [x] `ReadRepositoryFile`.
+- [x] `CountOccurrences`.
+- [x] `ReadDirectory`.
+- [x] `NormalizePath`.
 
 Allowed:
 
-- [ ] A small shared helper under `BlazorShop.Tests.V2/PresentationV2/Storefront/TestSupport`.
+- [x] A small shared helper under `BlazorShop.Tests.V2/PresentationV2/Storefront/TestSupport`.
 
 Rules:
 
-- [ ] Do not over-abstract tests.
-- [ ] Do not make tests harder to read.
-- [ ] Do not create a large testing framework.
-- [ ] Keep helper extraction optional unless it meaningfully reduces duplication.
+- [x] Do not over-abstract tests.
+- [x] Do not make tests harder to read.
+- [x] Do not create a large testing framework.
+- [x] Keep helper extraction optional unless it meaningfully reduces duplication.
+
+### Phase 4 Completion Record
+
+Ownership matrix outcome: project graph (`StorefrontComponentModeDependencyTests`); render-mode (`StorefrontRenderModeOwnershipTests`); reusable visual neutrality (`StorefrontComponentVisualNeutralityTests`); cart/checkout and account browser boundaries (their dedicated WasmHost tests); required host contracts (`StorefrontRequiredVisualContractsHardeningTests`); detailed DOM/controller/business behavior (component, browser-controller, and commerce-flow tests).
+
+`StorefrontV2WASMRuntimeFoundationTests` is now limited to startup, dependency/configuration isolation, V2.WASM identity, Tailwind input scope, and application endpoint composition. Duplicated cart, checkout, account, label inventory, and controller tests were removed from it. The render-mode per-component theory and visual-neutrality inventory test were removed because their dynamic global scanners cover the same source sets. The visual-source scanner now dynamically covers V2 and V2.WASM source roots and excludes generated/build/artifact/fixture/docs/temp paths.
+
+Stale-path review: legacy `ProductCard`/`ProductGrid` references are intentional retired-path assertions; active source paths were removed. No historical fixture was executed as production test coverage. Local helper extraction was assessed and deliberately declined: the small test-local helpers remain clearer than introducing a framework.
+
+Focused ownership suite passed: **75 passed, 0 failed** (`StorefrontV2WASMRuntimeFoundation`, visual-source, visual-neutrality, render-mode, component-mode, cart/checkout, account, and required-contract suites). Existing MessagePack advisory and Browserslist notices are baseline warnings.
 
 ## Phase 5 - QA Consolidation And Browser Release Journeys
 
