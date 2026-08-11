@@ -995,22 +995,22 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 Required passing areas:
 
-- [ ] pagination primitive tests;
-- [ ] catalog filter SSR tests;
-- [ ] breadcrumb SSR tests;
-- [ ] layout asset foundation tests;
-- [ ] primitive dependency tests;
-- [ ] component mode dependency tests;
-- [ ] visual-neutrality tests;
-- [ ] render-mode ownership tests;
-- [ ] visual-only boundary tests;
-- [ ] search page regression tests;
-- [ ] V2 host smoke tests relevant to Category/Search/Product/Content.
+- [x] pagination primitive tests;
+- [x] catalog filter SSR tests;
+- [x] breadcrumb SSR tests;
+- [x] layout asset foundation tests;
+- [x] primitive dependency tests;
+- [x] component mode dependency tests;
+- [x] visual-neutrality tests;
+- [x] render-mode ownership tests;
+- [x] visual-only boundary tests;
+- [x] search page regression tests;
+- [x] V2 host smoke tests relevant to Category/Search/Product/Content.
 
 Exit criteria:
 
-- [ ] focused tests pass;
-- [ ] full tests pass or unrelated failures are documented with exact names.
+- [x] focused tests pass;
+- [x] full tests pass: 1,942 passed, 2 skipped, 0 failed.
 
 ## Phase 3.3.21 - Duplication Removal Audit
 

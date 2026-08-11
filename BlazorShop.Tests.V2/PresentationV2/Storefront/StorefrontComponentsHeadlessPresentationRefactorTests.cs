@@ -36,6 +36,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Deals/DealsPlacement.cs",
             "Diagnostics/StorefrontHybridRuntimeProbeClasses.cs",
             "Diagnostics/StorefrontHybridRuntimeProbeLabels.cs",
+            "Navigation/StorefrontPaginationClasses.cs",
+            "Navigation/StorefrontPaginationItem.cs",
+            "Navigation/StorefrontPaginationLabels.cs",
             "Product/ProductAvailabilityClasses.cs",
             "Product/ProductGalleryClasses.cs",
             "Product/ProductGalleryItem.cs",
@@ -135,7 +138,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(42, actual.Length);
+            Assert.Equal(45, actual.Length);
         }
 
         [Fact]

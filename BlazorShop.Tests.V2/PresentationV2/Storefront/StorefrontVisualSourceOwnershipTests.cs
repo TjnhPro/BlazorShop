@@ -8,7 +8,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor",
         ];
@@ -85,7 +84,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.DoesNotContain("SubmitIconCssClass", ReadRepositoryFile(sourceFile), StringComparison.Ordinal);
             }
 
-            var catalogFilter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor");
+            var catalogFilter = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor");
             Assert.Contains("public RenderFragment? SubmitIcon { get; set; }", catalogFilter, StringComparison.Ordinal);
             Assert.Contains("@SubmitIcon", catalogFilter, StringComparison.Ordinal);
         }
