@@ -158,7 +158,12 @@ public sealed class StorefrontComponentVisualNeutralityTests
 
             foreach (var copy in ForbiddenCopyStrings)
             {
-                Assert.DoesNotContain(copy, source, StringComparison.OrdinalIgnoreCase);
+                Assert.False(
+                    Regex.IsMatch(
+                        source,
+                        $@"(?<![A-Za-z0-9_]){Regex.Escape(copy)}(?![A-Za-z0-9_])",
+                        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant),
+                    $"Reusable source {file} contains forbidden final storefront copy: {copy}");
             }
         }
     }

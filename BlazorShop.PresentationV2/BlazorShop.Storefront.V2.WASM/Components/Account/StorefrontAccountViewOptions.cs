@@ -90,7 +90,7 @@ public static class StorefrontAccountViewOptions
     public static StorefrontAccountFormClasses FormClasses { get; } = new()
     {
         Root = "space-y-6",
-        StatusMessage = "rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800",
+        StatusAlert = "rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800",
         ErrorAlert = "rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800",
         MissingProfile = "text-sm text-neutral-700",
         ProfileForm = "grid max-w-3xl gap-5 sm:grid-cols-2",
@@ -107,7 +107,7 @@ public static class StorefrontAccountViewOptions
     public static StorefrontAccountAddressBookClasses AddressClasses { get; } = new()
     {
         Root = "space-y-6",
-        StatusMessage = "rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800",
+        StatusAlert = "rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800",
         ErrorAlert = "rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800",
         AddSection = "rounded-2xl border border-neutral-200 bg-neutral-50/70 p-5",
         AddTitle = "text-lg font-bold text-neutral-900",

@@ -5,7 +5,7 @@ public sealed record StorefrontAccountFormClasses
     public static StorefrontAccountFormClasses Empty { get; } = new();
 
     public string Root { get; init; } = string.Empty;
-    public string StatusMessage { get; init; } = string.Empty;
+    public string StatusAlert { get; init; } = string.Empty;
     public string ErrorAlert { get; init; } = string.Empty;
     public string MissingProfile { get; init; } = string.Empty;
     public string ProfileForm { get; init; } = string.Empty;
@@ -24,7 +24,7 @@ public sealed record StorefrontAccountAddressBookClasses
     public static StorefrontAccountAddressBookClasses Empty { get; } = new();
 
     public string Root { get; init; } = string.Empty;
-    public string StatusMessage { get; init; } = string.Empty;
+    public string StatusAlert { get; init; } = string.Empty;
     public string ErrorAlert { get; init; } = string.Empty;
     public string AddSection { get; init; } = string.Empty;
     public string AddTitle { get; init; } = string.Empty;
