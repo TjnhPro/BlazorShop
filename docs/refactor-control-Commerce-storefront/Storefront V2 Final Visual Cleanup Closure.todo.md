@@ -64,39 +64,39 @@ DX review:
 
 ## Current Code Evidence
 
-- [ ] `BlazorShop.Storefront.Components.WasmHost/Components/Account` contains the five account runtime leaves:
-  - [ ] `StorefrontAccountProfileEditor.razor`
-  - [ ] `StorefrontAccountChangePasswordForm.razor`
-  - [ ] `StorefrontAccountAddressBook.razor`
-  - [ ] `StorefrontAccountOrderList.razor`
-  - [ ] `StorefrontAccountOrderDetail.razor`
-- [ ] `BlazorShop.Storefront.V2.WASM/Components/Account` contains only account composition/options files:
-  - [ ] `StorefrontAccountApp.razor`
-  - [ ] `StorefrontAccountNavigation.razor`
-  - [ ] `StorefrontAccountViewOptions.cs`
-  - [ ] `StorefrontAccountViewClasses.cs`
-- [ ] Current source search shows no `IStorefrontBrowser*`, `HttpClient`, or account lifecycle/mutation methods in `BlazorShop.Storefront.V2` and `BlazorShop.Storefront.V2.WASM`.
-- [ ] `BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor` is a pure pass-through to `StorefrontProductSummaryCard`.
-- [ ] `BlazorShop.Storefront.V2/Components/Catalog/ProductGrid.razor` renders `ProductCard` and duplicates `StorefrontProductSummaryGrid` layout/empty-state behavior.
-- [ ] `BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor` is the canonical V2 product summary grid and includes semantic hooks.
-- [ ] `BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor` still uses `ProductGrid` for related products.
-- [ ] `StorefrontAccountApp.razor` still owns final copy such as `Customer account`, route titles, and unknown-section text directly in Razor.
-- [ ] V2.WASM wrapper inventory currently includes:
-  - [ ] `Cart/StorefrontCartSection.razor`
-  - [ ] `Checkout/StorefrontCheckoutSection.razor`
-  - [ ] `Catalog/StorefrontDiscountedProductRailSection.razor`
-  - [ ] `Content/StorefrontContactFormSection.razor`
-  - [ ] `System/StorefrontHybridRuntimeProbeSection.razor`
-  - [ ] `Account/StorefrontAccountApp.razor`
-  - [ ] `Account/StorefrontAccountNavigation.razor`
-- [ ] Current project graph matches the approved mode split:
-  - [ ] `Components` has no project references.
-  - [ ] `Components.Primitives -> Components`.
-  - [ ] `Components.Ssr -> Components + Presentation`.
-  - [ ] `Components.WasmHost -> Components + Browser`.
-  - [ ] `V2.WASM -> Browser + Components + Primitives + WasmHost`.
-- [ ] Active QA file `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` is large and includes historical execution notes.
-- [ ] No `docs/refactor-control-Commerce-storefront/archive/QA-StorefrontV2-History.md` file is currently present.
+- [x] `BlazorShop.Storefront.Components.WasmHost/Components/Account` contains the five account runtime leaves:
+  - [x] `StorefrontAccountProfileEditor.razor`
+  - [x] `StorefrontAccountChangePasswordForm.razor`
+  - [x] `StorefrontAccountAddressBook.razor`
+  - [x] `StorefrontAccountOrderList.razor`
+  - [x] `StorefrontAccountOrderDetail.razor`
+- [x] `BlazorShop.Storefront.V2.WASM/Components/Account` contains only account composition/options files:
+  - [x] `StorefrontAccountApp.razor`
+  - [x] `StorefrontAccountNavigation.razor`
+  - [x] `StorefrontAccountViewOptions.cs`
+  - [x] `StorefrontAccountViewClasses.cs`
+- [x] Current source search shows no `IStorefrontBrowser*`, `HttpClient`, or account lifecycle/mutation methods in `BlazorShop.Storefront.V2` and `BlazorShop.Storefront.V2.WASM`.
+- [x] `BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor` is a pure pass-through to `StorefrontProductSummaryCard`.
+- [x] `BlazorShop.Storefront.V2/Components/Catalog/ProductGrid.razor` renders `ProductCard` and duplicates `StorefrontProductSummaryGrid` layout/empty-state behavior.
+- [x] `BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor` is the canonical V2 product summary grid and includes semantic hooks.
+- [x] `BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor` still uses `ProductGrid` for related products.
+- [x] `StorefrontAccountApp.razor` still owns final copy such as `Customer account`, route titles, and unknown-section text directly in Razor.
+- [x] V2.WASM wrapper inventory currently includes:
+  - [x] `Cart/StorefrontCartSection.razor`
+  - [x] `Checkout/StorefrontCheckoutSection.razor`
+  - [x] `Catalog/StorefrontDiscountedProductRailSection.razor`
+  - [x] `Content/StorefrontContactFormSection.razor`
+  - [x] `System/StorefrontHybridRuntimeProbeSection.razor`
+  - [x] `Account/StorefrontAccountApp.razor`
+  - [x] `Account/StorefrontAccountNavigation.razor`
+- [x] Current project graph matches the approved mode split:
+  - [x] `Components` has no project references.
+  - [x] `Components.Primitives -> Components`.
+  - [x] `Components.Ssr -> Components + Presentation`.
+  - [x] `Components.WasmHost -> Components + Browser`.
+  - [x] `V2.WASM -> Browser + Components + Primitives + WasmHost`.
+- [x] Active QA file `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md` is large and includes historical execution notes.
+- [x] No `docs/refactor-control-Commerce-storefront/archive/QA-StorefrontV2-History.md` file is currently present.
 
 ## Final Closure Target
 
@@ -383,700 +383,14 @@ Tasks:
   - [x] `Orders`.
   - [x] `Receipt`.
   - [x] `Order`.
-  - [x] `Change password`.
-  - [x] `Account section not found`.
-  - [x] `The account section could not be found.`
-- [x] Do not move route parsing out of current account contracts.
-- [x] Do not move account navigation into shared packages.
-- [x] Do not change account URLs.
-- [x] Do not change account browser controller APIs.
-
-Exit criteria:
-
-- [x] `StorefrontAccountApp` still composes the same panels.
-- [x] Final account app copy is V2-owned and centralized.
-- [x] No new shared visual ownership is introduced.
-
-### Phase 2D - V2.WASM Wrapper Audit
-
-Classify each wrapper:
-
-```text
-A. meaningful visual/config wrapper
-B. pure pass-through wrapper
-C. dead wrapper
-```
-
-Wrappers to inspect:
-
-- [x] `Cart/StorefrontCartSection.razor`.
-- [x] `Checkout/StorefrontCheckoutSection.razor`.
-- [x] `Catalog/StorefrontDiscountedProductRailSection.razor`.
-- [x] `Content/StorefrontContactFormSection.razor`.
-- [x] `System/StorefrontHybridRuntimeProbeSection.razor`.
-- [x] `Account/StorefrontAccountApp.razor`.
-- [x] `Account/StorefrontAccountNavigation.razor`.
-
-Keep wrappers that supply any of:
-
-- [x] Final V2 labels.
-- [x] Final V2 classes.
-- [x] V2 action descriptors.
-- [x] V2 route/panel composition.
-- [x] Theme-specific template.
-- [x] Host semantic composition.
-
-Remove wrappers only when:
-
-- [x] They are pure pass-through.
-- [x] Direct host composition remains clearer.
-- [x] Tests and page imports can be simplified.
-- [x] No V2 final class/copy/action ownership is lost.
-
-Exit criteria:
-
-- [x] Each remaining wrapper has a documented responsibility.
-- [x] Each removed wrapper is proven redundant.
-- [x] No behavior changes are introduced.
-
-### Phase 2E - Import, Namespace, And Dead Source Cleanup
-
-Tasks:
-
-- [x] Remove unused `@using` directives in V2 and V2.WASM.
-- [x] Remove unused C# `using` directives in touched files.
-- [x] Remove stale component aliases.
-- [x] Remove retired Hybrid project references.
-- [x] Remove stale source comments that describe old ownership.
-- [x] Prefer clean namespace imports over pervasive fully-qualified Razor type names when it improves readability.
-- [x] Do not introduce ambiguous component names.
-
-Searches:
-
-```powershell
-rg -n "Components.Hybrid|StorefrontCartView.razor|StorefrontCheckoutShell.razor|V2.WASM/.*/StorefrontAccount(ProfileEditor|ChangePasswordForm|AddressBook|OrderList|OrderDetail)" BlazorShop.PresentationV2 BlazorShop.Tests.V2 docs
-rg -n "ProductCard|ProductGrid" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 BlazorShop.Tests.V2
-```
-
-Exit criteria:
-
-- [x] No stale active-code path references remain.
-- [x] Removed paths appear only in deliberate retired-path tests or historical archive notes.
-
-### Phase 2 Evidence (2026-08-11)
-
-- Removed `ProductCard.razor` and `ProductGrid.razor`. The sole related-products consumer now uses `StorefrontProductSummaryGrid`, preserving `Items`, `EmptyMessage`, and the canonical grid/empty semantic hooks. Category, search, and deals already used that grid. Starter's independent `ProductGrid` was not touched.
-- The retired paths are asserted only as intentional `File.Exists == false` checks. Focused cleanup/boundary tests passed 62/62 after stopping the local runtime to release its build outputs.
-- Added the V2.WASM-local `StorefrontAccountAppLabels` record and `StorefrontAccountViewOptions.AppLabels`; all nine shell strings now come from this V2 options surface. Route parsing, panel composition, URLs, and Browser controller contracts are unchanged.
-- Wrapper audit: Cart (A: labels/classes/actions and route links), Checkout (A: labels/classes/actions), Discounted rail (A: themed labels/classes/action/template), Contact form (A: themed labels/classes/action/semantic shell), Hybrid probe (A: QA theme labels/classes), Account app (A: panel composition/classes/labels), and account navigation (A: host nav semantics/classes). No further wrapper is a safe pure pass-through; the two catalog wrappers were the only B/C removals.
-- The Phase 2 stale-path scans found no active V2 reference to the removed catalog wrappers. `Components.Hybrid` mentions are intentional retirement documentation only; no retired project reference remains.
-
-## Phase 3 - Visual, CSS, JS, And Semantic Hook Sweep
-
-Goal: fix concrete visual and browser-surface debt after extraction without redesigning the storefront.
-
-### Phase 3A - Visual Sweep Triage
-
-Before editing:
-
-- [x] Capture desktop screenshots for baseline pages.
-- [x] Capture mobile screenshots for baseline pages.
-- [x] Record all visible defects in a short triage table.
-- [x] Classify each item as:
-  - [x] regression from extraction;
-  - [x] inconsistent V2 component styling;
-  - [x] responsive overflow/usability defect;
-  - [x] dead markup/CSS cleanup;
-  - [x] cosmetic improvement to defer.
-
-Only fix:
-
-- [x] extraction regressions;
-- [x] obvious responsive usability defects;
-- [x] broken alignment or spacing that blocks production polish;
-- [x] inconsistent state styling that makes behavior unclear;
-- [x] dead CSS/JS/hook issues tied to removed source.
-
-Defer:
-
-- [x] new design direction;
-- [x] new typography system;
-- [x] new color palette;
-- [x] full homepage redesign;
-- [x] redesign of checkout/account flows;
-- [x] pixel-perfect baseline automation unless already stable.
-
-### Phase 3B - Product Summary And Catalog Visual Debt
-
-Review:
-
-- [x] Home product summary sections.
-- [x] Category grid.
-- [x] Search grid.
-- [x] Deals/discounted rail.
-- [x] Related products on product detail.
-- [x] Empty state.
-- [x] Pagination.
-- [x] Breadcrumb.
-- [x] Filter panel.
-
-Check:
-
-- [x] Product image aspect is stable.
-- [x] Card height is consistent enough for grid scan.
-- [x] Category/title grouping reads clearly.
-- [x] Price label hierarchy is clear.
-- [x] Action buttons do not wrap badly.
-- [x] Badges do not overlap image/title.
-- [x] Empty state spacing matches surrounding surface.
-- [x] Mobile card content does not overflow.
-- [x] Semantic hooks remain present.
-
-Implementation rules:
-
-- [x] Do not blindly restore old DOM.
-- [x] Prefer the canonical `StorefrontProductSummaryGrid` and primitive card path.
-- [x] Do not duplicate card markup.
-- [x] Keep product image fallback behavior.
-- [x] Keep `loading="lazy"` where currently expected.
-
-### Phase 3C - Product Detail Visual Sweep
-
-Review:
-
-- [x] Gallery.
-- [x] Pricing.
-- [x] Availability.
-- [x] Purchase panel.
-- [x] Variant/attribute controls.
-- [x] Quantity control.
-- [x] Add-to-cart feedback.
-- [x] Related products.
-- [x] Support callout.
-
-Check:
-
-- [x] Desktop two-column balance.
-- [x] Mobile stacking order.
-- [x] Gallery 1x1/product image framing where required by current product image policy.
-- [x] Thumbnail spacing.
-- [x] Pricing hierarchy.
-- [x] Variant selected state.
-- [x] Blocked purchase state.
-- [x] Feedback placement.
-- [x] Button sizing.
-
-### Phase 3D - Cart And Checkout Visual Sweep
-
-Cart:
-
-- [x] Empty cart.
-- [x] One line.
-- [x] Multiple lines.
-- [x] Alerts.
-- [x] Quantity input.
-- [x] Remove action.
-- [x] Summary.
-- [x] Checkout CTA.
-- [x] Mobile layout.
-
-Checkout:
-
-- [x] Checkout form.
-- [x] Address fields.
-- [x] Shipping section.
-- [x] Payment section.
-- [x] Summary.
-- [x] Place-order action.
-- [x] Validation states.
-- [x] Success/result branch.
-- [x] Empty-cart branch.
-- [x] Hidden WasmHost shell remains visually hidden when `ShowPanel=false`.
-
-Rules:
-
-- [x] Do not change cart runtime behavior.
-- [x] Do not change checkout state machine.
-- [x] Do not change order placement.
-- [x] Do not change payment provider behavior.
-
-### Phase 3E - Auth, Account, Content, Payment, Error Visual Sweep
-
-Auth/account:
-
-- [x] Login.
-- [x] Register.
-- [x] Recovery.
-- [x] Profile.
-- [x] Change password.
-- [x] Address book.
-- [x] Orders.
-- [x] Order detail.
-- [x] Account navigation.
-
-Content/payment/error:
-
-- [x] Content standard.
-- [x] Policy.
-- [x] FAQ/support.
-- [x] Payment success.
-- [x] Payment pending/cancelled/failure if deterministic.
-- [x] 404.
-- [x] Service unavailable if deterministic.
-
-Check:
-
-- [x] Form width.
-- [x] Labels.
-- [x] Alerts.
-- [x] Buttons.
-- [x] Table readability.
-- [x] Address card stacking.
-- [x] Account navigation.
-- [x] Heading hierarchy.
-- [x] CTA consistency.
-- [x] Mobile rendering.
-
-### Phase 3F - Accessibility Cleanup
-
-Review active surfaces for:
-
-- [x] `aria-label`.
-- [x] `aria-current`.
-- [x] `aria-live`.
-- [x] `role=alert`.
-- [x] `role=status`.
-- [x] button labels.
-- [x] form labels.
-- [x] heading order.
-- [x] keyboard reachability.
-- [x] focus visibility.
-- [x] color-independent state cues.
-
-Scope:
-
-- [x] Fix regressions introduced or exposed by component extraction.
-- [x] Do not redesign all accessibility architecture in this phase.
-
-### Phase 3G - CSS, JS, And Semantic Hook Cleanup
-
-CSS entrypoints:
-
-- [x] `BlazorShop.Storefront.V2/wwwroot/css/storefront.css`.
-- [x] `BlazorShop.Storefront.V2/wwwroot/css/site.css`.
-- [x] `BlazorShop.Storefront.V2/wwwroot/css/input.css`.
-- [x] `BlazorShop.Storefront.V2.WASM/wwwroot/css/wasm-site.css` if touched by V2.WASM options.
-
-JS entrypoint:
-
-- [x] `BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js`.
-
-CSS tasks:
-
-- [x] Search selectors tied to removed `ProductCard` or `ProductGrid`.
-- [x] Search old wrapper selectors.
-- [x] Search retired component selectors.
-- [x] Search duplicate selectors.
-- [x] Remove confirmed dead selectors.
-- [x] Merge duplicate rules only when behavior remains identical.
-- [x] Do not hand-edit generated CSS if a source pipeline owns it.
-
-JS tasks:
-
-- [x] Search selectors tied to removed wrappers/components.
-- [x] Remove obsolete fallback code only when no active markup uses it.
-- [x] Preserve progressive enhancement.
-- [x] Preserve purchase hooks.
-- [x] Preserve toast behavior.
-- [x] Preserve consent behavior.
-- [x] Preserve gallery behavior.
-- [x] Verify no duplicate event ownership after WASM activation.
-
-Semantic hook audit:
-
-- [x] `data-storefront-product-*`.
-- [x] `data-storefront-cart-*`.
-- [x] `data-storefront-checkout-*`.
-- [x] `data-storefront-account-*`.
-- [x] `data-storefront-consent-*`.
-- [x] `data-storefront-toast-*`.
-
-Resolve:
-
-- [x] orphan JS selector;
-- [x] orphan markup hook;
-- [x] duplicate hook owner;
-- [x] missing canonical hook after wrapper removal.
-
-### Phase 3 Evidence (2026-08-11)
-
-| Surface/item | Classification | Decision |
-| --- | --- | --- |
-| Canonical product grid and related-products region | No extraction regression | The browser rendered the canonical card/grid path with stable layout at desktop/mobile; no change required. |
-| Product gallery thumbnail media | Fixture/media-data limitation | The three QA thumbnail responses are valid 1×1 images while the main image/fallback hooks work. This is neither a wrapper nor CSS defect and is deferred outside this phase. |
-| Account order-detail title at 390px | Expected responsive wrapping | The long reference wraps without horizontal overflow; hierarchy, nav and totals remain readable. |
-| Cart, checkout, auth, content, payment, error, consent and toast surfaces | No extraction regression | Phase 0 desktop/mobile evidence and the runtime recheck show no actionable visual defect. |
-
-- Rechecked changed product and account surfaces at `output/playwright/phase37-phase3-{product,account}-{desktop,mobile}.png`. All Phase 0 public/account/consent/toast screenshots remain under `output/playwright/phase37-baseline-*`.
-- CSS/JS source scans found no selector or code token tied to the removed `ProductCard` or `ProductGrid`; generated `site.css` and `wasm-site.css` were inspected but not hand-edited.
-- The active Razor/JS hook scan found product, cart, checkout, account, consent and toast hooks. The canonical grid still provides `data-storefront-product-summary-grid` and `data-storefront-product-summary-empty`; browser add-to-cart, consent and gallery checks retained their existing behavior.
-- Accessibility review found existing named controls, form labels, route/account navigation semantics, alert/status hooks, focus styles, and state text. No extraction-exposed accessibility regression required a source change.
-
-## Phase 4 - Test Consolidation
-
-Goal: one authoritative test owner per invariant, with behavior and security coverage preserved.
-
-### Phase 4A - Build Test Ownership Matrix
-
-Create a temporary matrix during implementation:
-
-```text
-Test file
-Invariant
-Behavior
-Duplicate with
-Keep
-Merge
-Delete
-Reason
-```
-
-Review at minimum:
-
-- [x] `StorefrontV2WASMRuntimeFoundationTests`.
-- [x] `StorefrontCartCheckoutWasmHostBoundaryTests`.
-- [x] `StorefrontAccountWasmHostOwnershipTests`.
-- [x] `StorefrontComponentModeDependencyTests`.
-- [x] `StorefrontRenderModeOwnershipTests`.
-- [x] `StorefrontComponentVisualNeutralityTests`.
-- [x] `StorefrontVisualSourceOwnershipTests`.
-- [x] `StorefrontRequiredVisualContractsHardeningTests`.
-- [x] `StorefrontVisualOnlyBoundaryTests`.
-- [x] `StorefrontBrandingMarkupTests`.
-- [x] `StorefrontComponentsHeadlessPresentationRefactorTests`.
-- [x] Commerce flow tests.
-- [x] Component-specific tests.
-
-### Phase 4B - Authoritative Owners
-
-Project graph owner:
-
-- [x] `StorefrontComponentModeDependencyTests`.
-- [x] Owns exact project references.
-- [x] Owns forbidden dependencies.
-- [x] Owns transitive reachability.
-- [x] Owns cycles.
-- [x] Owns retired physical Hybrid absence.
-
-Render mode owner:
-
-- [x] `StorefrontRenderModeOwnershipTests`.
-- [x] Owns no reusable `@rendermode`.
-- [x] Owns no `InteractiveServer`.
-- [x] Owns no `InteractiveAuto`.
-- [x] Owns approved `InteractiveWebAssembly` owners.
-
-Visual neutrality owner:
-
-- [x] `StorefrontComponentVisualNeutralityTests`.
-- [x] Owns no literal final classes in reusable projects.
-- [x] Owns no V2 visual assets in reusable projects.
-- [x] Owns no final V2 copy tokens in reusable projects.
-- [x] Owns no theme CSS assets in reusable projects.
-
-Cart/checkout owner:
-
-- [x] `StorefrontCartCheckoutWasmHostBoundaryTests`.
-- [x] Owns cart/checkout WasmHost runtime ownership.
-- [x] Owns V2.WASM cart/checkout wrapper boundary.
-- [x] Owns V2 page render-mode ownership for cart/checkout.
-- [x] Owns shared cart/checkout contract ownership.
-
-Account owner:
-
-- [x] `StorefrontAccountWasmHostOwnershipTests`.
-- [x] Owns five account leaves in WasmHost.
-- [x] Owns account browser controller lifecycle ownership.
-- [x] Owns V2.WASM account shell/navigation only.
-- [x] Owns shared account contract ownership.
-
-Root contract owner:
-
-- [x] `StorefrontRequiredVisualContractsHardeningTests`.
-- [x] Owns required root contexts.
-- [x] Owns no fallback routes/actions/classes where host must supply contracts.
-- [x] Owns host-supplied root contract requirements.
-
-Component behavior owners:
-
-- [x] Component-specific tests own DOM and behavior semantics for primitives/SSR/WasmHost components.
-- [x] Browser controller tests own same-origin controller command behavior.
-- [x] Browser Playwright release journeys own visible end-to-end browser behavior.
-
-### Phase 4C - Trim Runtime Foundation Tests
-
-Keep in `StorefrontV2WASMRuntimeFoundationTests`:
-
-- [x] WASM startup.
-- [x] same-origin browser runtime registration.
-- [x] no Commerce Node configuration.
-- [x] V2.WASM project identity.
-- [x] core project dependency contract if not owned elsewhere.
-
-Move/delete from `StorefrontV2WASMRuntimeFoundationTests` when duplicated:
-
-- [x] exact cart hook counts;
-- [x] exact checkout hook counts;
-- [x] cart wrapper wiring;
-- [x] checkout wrapper wiring;
-- [x] exact cart labels property inventory;
-- [x] exact checkout labels property inventory;
-- [x] account leaf ownership.
-
-Goal:
-
-- [x] RuntimeFoundation becomes small, stable, and architectural.
-
-### Phase 4D - Trim Required Visual Contracts Tests
-
-Keep:
-
-- [x] root page context required;
-- [x] no fallback page contexts;
-- [x] root action/classes required;
-- [x] no fallback routes/actions/classes;
-- [x] host-supplied contracts.
-
-Remove duplicates for:
-
-- [x] component ownership path;
-- [x] WasmHost project ownership;
-- [x] controller ownership;
-- [x] render-mode ownership;
-- [x] source inventory that another scanner owns.
-
-### Phase 4E - Trim Render Mode And Visual Neutrality Tests
-
-Render mode:
-
-- [x] Keep global reusable package scanner.
-- [x] Keep public no-server/no-auto scanner.
-- [x] Keep approved InteractiveWebAssembly owner scanner.
-- [x] Keep scanner self-tests.
-- [x] Remove per-component theory tests when the global scanner covers the same source set.
-
-Visual neutrality:
-
-- [x] Keep global reusable render project scanner.
-- [x] Keep scanner positive fixtures.
-- [x] Keep scanner negative fixtures.
-- [x] Keep forbidden-copy scanner.
-- [x] Keep visual asset scanner.
-- [x] Remove brittle inventory tests such as `VisualNeutralityScanIncludesCurrentPrimitiveWasmHostAndContactComponents` if dynamic directory enumeration already provides coverage.
-- [x] Reduce component-name-specific regex fixtures to representative examples.
-
-### Phase 4F - Improve Visual Source Ownership Scanner
-
-Tasks:
-
-- [x] Prefer dynamic curated enumeration over hardcoded source file lists where possible.
-- [x] Enumerate active V2 and V2.WASM source files.
-- [x] Exclude `bin`, `obj`, generated output, artifacts, fixtures, docs, node modules, and temporary folders.
-- [x] Use global checks for:
-  - [x] FontAwesome classes;
-  - [x] retired visual tokens;
-  - [x] old wrapper names;
-  - [x] `SubmitIconCssClass`;
-  - [x] stale component source names.
-- [x] Keep targeted file-specific tests where the invariant is genuinely file-specific.
-
-### Phase 4G - Remove Stale Path Tests
-
-Search:
-
-```powershell
-rg -n "V2.WASM.*/StorefrontCartView.razor|V2.WASM.*/StorefrontCheckoutShell.razor|V2.WASM.*/StorefrontAccount(ProfileEditor|ChangePasswordForm|AddressBook|OrderList|OrderDetail).razor|ProductCard.razor|ProductGrid.razor|Components.Hybrid" BlazorShop.Tests.V2
-```
-
-Classify each reference:
-
-- [x] Intentional retired-path assertion.
-- [x] Stale test.
-- [x] Historical fixture.
-
-Remove:
-
-- [x] stale tests that only check old file paths;
-- [x] file-existence tests made redundant by stronger ownership tests;
-- [x] brittle exact counts where semantic coverage already exists elsewhere.
-
-Keep:
-
-- [x] architecture boundary tests;
-- [x] security tests;
-- [x] render-mode tests;
-- [x] same-origin browser transport tests;
-- [x] business-critical mutation semantics;
-- [x] semantic DOM hook tests;
-- [x] accessibility contract tests;
-- [x] root required contract tests.
-
-### Phase 4H - Test Helper Cleanup
-
-Consolidate only where useful:
-
-- [x] `RepositoryRoot`.
-- [x] `RepositoryPath`.
-- [x] `ReadRepositoryFile`.
-- [x] `CountOccurrences`.
-- [x] `ReadDirectory`.
-- [x] `NormalizePath`.
-
-Allowed:
-
-- [x] A small shared helper under `BlazorShop.Tests.V2/PresentationV2/Storefront/TestSupport`.
-
-Rules:
-
-- [x] Do not over-abstract tests.
-- [x] Do not make tests harder to read.
-- [x] Do not create a large testing framework.
-- [x] Keep helper extraction optional unless it meaningfully reduces duplication.
-
-### Phase 4 Completion Record
-
-Ownership matrix outcome: project graph (`StorefrontComponentModeDependencyTests`); render-mode (`StorefrontRenderModeOwnershipTests`); reusable visual neutrality (`StorefrontComponentVisualNeutralityTests`); cart/checkout and account browser boundaries (their dedicated WasmHost tests); required host contracts (`StorefrontRequiredVisualContractsHardeningTests`); detailed DOM/controller/business behavior (component, browser-controller, and commerce-flow tests).
-
-`StorefrontV2WASMRuntimeFoundationTests` is now limited to startup, dependency/configuration isolation, V2.WASM identity, Tailwind input scope, and application endpoint composition. Duplicated cart, checkout, account, label inventory, and controller tests were removed from it. The render-mode per-component theory and visual-neutrality inventory test were removed because their dynamic global scanners cover the same source sets. The visual-source scanner now dynamically covers V2 and V2.WASM source roots and excludes generated/build/artifact/fixture/docs/temp paths.
-
-Stale-path review: legacy `ProductCard`/`ProductGrid` references are intentional retired-path assertions; active source paths were removed. No historical fixture was executed as production test coverage. Local helper extraction was assessed and deliberately declined: the small test-local helpers remain clearer than introducing a framework.
-
-Focused ownership suite passed: **75 passed, 0 failed** (`StorefrontV2WASMRuntimeFoundation`, visual-source, visual-neutrality, render-mode, component-mode, cart/checkout, account, and required-contract suites). Existing MessagePack advisory and Browserslist notices are baseline warnings.
-
-## Phase 5 - QA Consolidation And Browser Release Journeys
-
-Goal: replace historical checklist sprawl with a current, runnable release gate.
-
-### Phase 5A - Split Active QA From History
-
-Preferred final structure:
-
-```text
-docs/refactor-control-Commerce-storefront/
-  QA-StorefrontV2.todo.md
-  archive/
-    QA-StorefrontV2-History.md
-```
-
-Active QA file should contain:
-
-- [ ] current setup;
-- [ ] current build/test gate;
-- [ ] canonical browser journeys;
-- [ ] network assertions;
-- [ ] visual screenshot checklist;
-- [ ] known skips/warnings;
-- [ ] release sign-off checklist.
-
-Archive should contain:
-
-- [ ] Phase 3.1 to 3.6 execution evidence;
-- [ ] V2F6/V2F7/V2F8 historical notes if present;
-- [ ] old screenshots references;
-- [ ] old timestamps;
-- [ ] old order references;
-- [ ] old execution diary entries.
-
-Rules:
-
-- [ ] Do not delete useful evidence.
-- [ ] Do not keep active QA as an execution diary.
-- [ ] Do not keep obsolete old route assertions in the active release checklist.
-- [ ] Preserve historical context in archive.
-
-### Phase 5B - Global Browser Instrumentation
-
-For Playwright release journeys:
-
-- [ ] Collect console errors.
-- [ ] Collect page errors.
-- [ ] Collect request URLs.
-- [ ] Collect response status codes.
-- [ ] Fail on unexpected 5xx.
-- [ ] Fail on direct Commerce Node browser requests.
-- [ ] Fail on unexpected `api/storefront/stores/*` direct browser calls unless explicitly routed through same-origin Presentation/BFF behavior.
-- [ ] Fail on `/_blazor` server UI circuit.
-- [ ] Fail on WebSocket/EventSource UI transport unless a future approved architecture reopens it.
-- [ ] Record browser trace or screenshots for failures.
-
-### Phase 5C - Canonical Journey 1: Public Catalog
-
-Flow:
-
-```text
-Home -> Category or Search -> Product -> select variant if applicable -> Add to Cart
-```
-
-Assert:
-
-- [ ] Header renders.
-- [ ] Main navigation works.
-- [ ] Product summary grid renders.
-- [ ] Product cards render images, price, status, and actions.
-- [ ] Product detail gallery renders.
-- [ ] Purchase panel renders.
-- [ ] Variant controls work if product has variants.
-- [ ] Add-to-cart sends one expected mutation.
-- [ ] Cart badge updates.
-- [ ] Toast/feedback appears.
-- [ ] No console/page errors.
-- [ ] Desktop full behavior passes.
-- [ ] Mobile critical interaction passes.
-
-### Phase 5D - Canonical Journey 2: Cart
-
-Flow:
-
-```text
-Cart with items -> quantity update -> remove -> empty state
-```
-
-Assert:
-
-- [ ] Cart page loads.
-- [ ] Cart lines render.
-- [ ] Quantity update sends one expected mutation.
-- [ ] Line total/summary updates.
-- [ ] Remove sends one expected mutation.
-- [ ] Empty state renders when cart is empty.
-- [ ] Checkout CTA state is correct.
-- [ ] No direct Commerce Node browser request.
-- [ ] No console/page errors.
-
-Optional:
-
-- [ ] Clear cart only if it adds coverage beyond remove-to-empty.
-
-### Phase 5E - Canonical Journey 3: Checkout
-
-Flow:
-
-```text
-Product -> Cart -> Checkout -> contact/address -> shipping if required -> COD/payment fixture -> place order -> success
-```
-
-Assert:
-
-- [ ] Checkout page loads with valid cart.
-- [ ] Address/contact fields validate.
-- [ ] Shipping method is selected or skipped according to current rules.
-- [ ] Payment method uses COD or sandbox fixture.
-- [ ] Place-order sends exactly one mutation per submit.
-- [ ] Redirect/result is correct.
-- [ ] Cart clears/closes where expected.
-- [ ] Order reference appears.
-- [ ] No direct Commerce Node browser request.
-- [ ] No console/page errors.
+  …5938 tokens truncated…ped according to current rules.
+- [x] Payment method uses COD or sandbox fixture.
+- [x] Place-order sends exactly one mutation per submit.
+- [x] Redirect/result is correct.
+- [x] Cart clears/closes where expected.
+- [x] Order reference appears.
+- [x] No direct Commerce Node browser request.
+- [x] No console/page errors.
 
 ### Phase 5F - Canonical Journey 4: Account
 
@@ -1088,19 +402,19 @@ login -> profile -> address create/update/default/delete -> orders -> order deta
 
 Assert:
 
-- [ ] Login works with QA account.
-- [ ] Profile loads.
-- [ ] Profile update works and can be restored if needed.
-- [ ] Address create works with a unique QA marker.
-- [ ] Address update works.
-- [ ] Default billing/shipping works if supported.
-- [ ] Address delete removes the QA marker.
-- [ ] Orders list loads.
-- [ ] Order detail loads from a list link.
-- [ ] Invalid password validation returns visible error and does not log out.
-- [ ] Password rotation is not required unless fixture management is safe.
-- [ ] Desktop full behavior passes.
-- [ ] Mobile account navigation and one critical form interaction pass.
+- [x] Login works with QA account.
+- [x] Profile loads.
+- [x] Profile update works and can be restored if needed.
+- [x] Address create works with a unique QA marker.
+- [x] Address update works.
+- [x] Default billing/shipping works if supported.
+- [x] Address delete removes the QA marker.
+- [x] Orders list loads.
+- [x] Order detail loads from a list link.
+- [x] Invalid password validation returns visible error and does not log out.
+- [x] Password rotation is not required unless fixture management is safe.
+- [x] Desktop full behavior passes.
+- [x] Mobile account navigation and one critical form interaction pass.
 
 ### Phase 5G - Canonical Journey 5: Content And Security
 
@@ -1112,89 +426,89 @@ content page -> consent save -> consent revoke -> auth redirect -> 404
 
 Assert:
 
-- [ ] Content standard page renders.
-- [ ] Policy/FAQ/support page renders if present in fixture.
-- [ ] Consent save works.
-- [ ] Consent revoke/change works.
-- [ ] Auth redirect protects account routes.
-- [ ] Unknown route returns the expected not-found UI.
-- [ ] Optional service-unavailable/maintenance page only if deterministic.
-- [ ] No console/page errors.
+- [x] Content standard page renders.
+- [x] Policy/FAQ/support page renders if present in fixture.
+- [x] Consent save works.
+- [x] Consent revoke/change works.
+- [x] Auth redirect protects account routes.
+- [x] Unknown route returns the expected not-found UI.
+- [x] Optional service-unavailable/maintenance page only if deterministic.
+- [x] No console/page errors.
 
 ### Phase 5H - Canonical Journey 6: SEO, Network, And Runtime
 
 Verify:
 
-- [ ] `robots.txt`.
-- [ ] sitemap.
-- [ ] canonical/meta tags.
-- [ ] noindex rules for cart/checkout/account/internal search if applicable.
-- [ ] same-origin browser requests.
-- [ ] no direct Commerce Node.
-- [ ] no `/_blazor`.
-- [ ] no WebSocket UI transport.
-- [ ] no EventSource UI transport.
-- [ ] no unexpected 5xx.
-- [ ] no unexpected console errors.
-- [ ] no page errors.
+- [x] `robots.txt`.
+- [x] sitemap.
+- [x] canonical/meta tags.
+- [x] noindex rules for cart/checkout/account/internal search if applicable.
+- [x] same-origin browser requests.
+- [x] no direct Commerce Node.
+- [x] no `/_blazor`.
+- [x] no WebSocket UI transport.
+- [x] no EventSource UI transport.
+- [x] no unexpected 5xx.
+- [x] no unexpected console errors.
+- [x] no page errors.
 
 ### Phase 5I - Mobile QA Strategy
 
 Desktop:
 
-- [ ] Full functional E2E for all six canonical journeys.
+- [x] Full functional E2E for all six canonical journeys.
 
 Mobile:
 
-- [ ] Responsive visual plus critical interaction checks.
+- [x] Responsive visual plus critical interaction checks.
 
 Mobile surfaces:
 
-- [ ] Header/menu.
-- [ ] Catalog grid.
-- [ ] Product purchase.
-- [ ] Cart.
-- [ ] Checkout form.
-- [ ] Account navigation.
-- [ ] Content page.
-- [ ] Consent/toast.
+- [x] Header/menu.
+- [x] Catalog grid.
+- [x] Product purchase.
+- [x] Cart.
+- [x] Checkout form.
+- [x] Account navigation.
+- [x] Content page.
+- [x] Consent/toast.
 
 Rule:
 
-- [ ] Do not duplicate every CRUD branch on mobile unless a mobile-specific bug is found.
+- [x] Do not duplicate every CRUD branch on mobile unless a mobile-specific bug is found.
 
 ### Phase 5J - Visual Screenshot Matrix
 
 Capture:
 
-- [ ] Desktop.
-- [ ] Tablet if tooling/time allows.
-- [ ] Mobile.
+- [x] Desktop.
+- [x] Tablet if tooling/time allows.
+- [x] Mobile.
 
 Minimum pages:
 
-- [ ] Home.
-- [ ] Category.
-- [ ] Search.
-- [ ] Product.
-- [ ] Cart.
-- [ ] Checkout.
-- [ ] Account.
-- [ ] Content.
+- [x] Home.
+- [x] Category.
+- [x] Search.
+- [x] Product.
+- [x] Cart.
+- [x] Checkout.
+- [x] Account.
+- [x] Content.
 
 Additional states:
 
-- [ ] Empty cart.
-- [ ] Blocked/unavailable product if deterministic.
-- [ ] Toast.
-- [ ] Consent.
-- [ ] Account address cards.
-- [ ] Order detail.
-- [ ] Payment result.
+- [x] Empty cart.
+- [x] Blocked/unavailable product if deterministic.
+- [x] Toast.
+- [x] Consent.
+- [x] Account address cards.
+- [x] Order detail.
+- [x] Payment result.
 
 Rule:
 
-- [ ] Use screenshots for visual review, not brittle pixel-perfect automation unless stable baseline tooling already exists.
+- [x] Use screenshots for visual review, not brittle pixel-perfect automation unless stable baseline tooling already exists.
 
 ### Phase 5 Completion Record
 
@@ -1234,22 +548,22 @@ V2
 
 Checks:
 
-- [ ] No cycles.
-- [ ] No Presentation reachable from V2.WASM.
-- [ ] No Runtime/Client/backend reachable from reusable packages.
-- [ ] No Control Plane reachable from Storefront components.
-- [ ] No `Web.SharedV2` business contracts in reusable component packages.
-- [ ] No physical `Components.Hybrid` project returns.
-- [ ] No `Features` folder returns.
+- [x] No cycles.
+- [x] No Presentation reachable from V2.WASM.
+- [x] No Runtime/Client/backend reachable from reusable packages.
+- [x] No Control Plane reachable from Storefront components.
+- [x] No `Web.SharedV2` business contracts in reusable component packages.
+- [x] No physical `Components.Hybrid` project returns.
+- [x] No `Features` folder returns.
 
 ### Phase 6B - Render Mode Re-Audit
 
 Confirm:
 
-- [ ] no reusable package owns `@rendermode`;
-- [ ] no `InteractiveServer`;
-- [ ] no `InteractiveAuto`;
-- [ ] only approved V2 files own `InteractiveWebAssembly` placement.
+- [x] no reusable package owns `@rendermode`;
+- [x] no `InteractiveServer`;
+- [x] no `InteractiveAuto`;
+- [x] only approved V2 files own `InteractiveWebAssembly` placement.
 
 Approved current concept:
 
@@ -1280,32 +594,32 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Record:
 
-- [ ] passed count;
-- [ ] failed count;
-- [ ] removed test count;
-- [ ] new consolidated test count;
-- [ ] known skips.
+- [x] passed count;
+- [x] failed count;
+- [x] removed test count;
+- [x] new consolidated test count;
+- [x] known skips.
 
 Goal:
 
-- [ ] Maximum useful invariant coverage with minimum duplication.
+- [x] Maximum useful invariant coverage with minimum duplication.
 
 ### Phase 6D - Focused Visual And Component Gate
 
 Run focused component tests for:
 
-- [ ] Product summary.
-- [ ] Product detail.
-- [ ] Product gallery.
-- [ ] Product purchase panel.
-- [ ] Pagination.
-- [ ] Breadcrumb.
-- [ ] Catalog filter.
-- [ ] Consent.
-- [ ] Toast.
-- [ ] Cart.
-- [ ] Checkout.
-- [ ] Account leaves.
+- [x] Product summary.
+- [x] Product detail.
+- [x] Product gallery.
+- [x] Product purchase panel.
+- [x] Pagination.
+- [x] Breadcrumb.
+- [x] Catalog filter.
+- [x] Consent.
+- [x] Toast.
+- [x] Cart.
+- [x] Checkout.
+- [x] Account leaves.
 
 Use filters matching current test names:
 
@@ -1328,212 +642,226 @@ git diff --check
 
 Record:
 
-- [ ] build result;
-- [ ] warnings;
-- [ ] known unrelated warnings;
-- [ ] test passed count;
-- [ ] test skipped count;
-- [ ] test failed count;
-- [ ] `git diff --check` result.
+- [x] build result;
+- [x] warnings;
+- [x] known unrelated warnings;
+- [x] test passed count;
+- [x] test skipped count;
+- [x] test failed count;
+- [x] `git diff --check` result.
 
 Rules:
 
-- [ ] A lower raw test count is acceptable only if duplicate tests were consolidated and invariant coverage remains documented.
-- [ ] Do not close with failing architecture tests.
-- [ ] Do not close with failing browser-boundary tests.
+- [x] A lower raw test count is acceptable only if duplicate tests were consolidated and invariant coverage remains documented.
+- [x] Do not close with failing architecture tests.
+- [x] Do not close with failing browser-boundary tests.
 
 ### Phase 6F - Final Browser Gate
 
 Run all six canonical browser journeys:
 
-- [ ] Public Catalog.
-- [ ] Cart.
-- [ ] Checkout.
-- [ ] Account.
-- [ ] Content/Security.
-- [ ] SEO/Network/Runtime.
+- [x] Public Catalog.
+- [x] Cart.
+- [x] Checkout.
+- [x] Account.
+- [x] Content/Security.
+- [x] SEO/Network/Runtime.
 
 Collect:
 
-- [ ] screenshots;
-- [ ] browser errors;
-- [ ] console errors;
-- [ ] request log;
-- [ ] unexpected status codes;
-- [ ] network guardrail report.
+- [x] screenshots;
+- [x] browser errors;
+- [x] console errors;
+- [x] request log;
+- [x] unexpected status codes;
+- [x] network guardrail report.
 
 Closure conditions:
 
-- [ ] No direct Commerce Node browser calls.
-- [ ] No `/_blazor` public server UI circuit.
-- [ ] No unexpected console errors.
-- [ ] No unexpected page errors.
-- [ ] Place-order works with COD/sandbox fixture.
-- [ ] Account flow works with QA account.
-- [ ] Desktop and mobile checks pass according to Phase 5 strategy.
+- [x] No direct Commerce Node browser calls.
+- [x] No `/_blazor` public server UI circuit.
+- [x] No unexpected console errors.
+- [x] No unexpected page errors.
+- [x] Place-order works with COD/sandbox fixture.
+- [x] Account flow works with QA account.
+- [x] Desktop and mobile checks pass according to Phase 5 strategy.
 
 ### Phase 6G - Documentation Cleanup
 
 Update:
 
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`.
-- [ ] `docs/architecture/03-runtime-boundaries.md`.
-- [ ] `docs/architecture/05-project-and-folder-guide.md`.
-- [ ] `docs/architecture/10-v2-contract-ownership.md`.
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
-- [ ] `docs/refactor-control-Commerce-storefront/archive/QA-StorefrontV2-History.md`.
-- [ ] This plan file.
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`.
+- [x] `docs/architecture/03-runtime-boundaries.md`.
+- [x] `docs/architecture/05-project-and-folder-guide.md`.
+- [x] `docs/architecture/10-v2-contract-ownership.md`.
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`.
+- [x] `docs/refactor-control-Commerce-storefront/archive/QA-StorefrontV2-History.md`.
+- [x] This plan file.
 
 Document final state:
 
-- [ ] Phase 3 extraction closed.
-- [ ] V2 is visual/theme host.
-- [ ] V2.WASM is visual/browser host composition.
-- [ ] Shared component packages own reusable implementation.
-- [ ] ProductCard/ProductGrid decision.
-- [ ] Wrapper retention/removal decisions.
-- [ ] Active QA release gate.
-- [ ] Historical QA evidence archived.
+- [x] Phase 3 extraction closed.
+- [x] V2 is visual/theme host.
+- [x] V2.WASM is visual/browser host composition.
+- [x] Shared component packages own reusable implementation.
+- [x] ProductCard/ProductGrid decision.
+- [x] Wrapper retention/removal decisions.
+- [x] Active QA release gate.
+- [x] Historical QA evidence archived.
 
 ### Phase 6H - Closure Report
 
 Write final report section in this plan or a sibling closure file with:
 
-- [ ] final project graph;
-- [ ] final V2/V2.WASM responsibility split;
-- [ ] components extracted across Phase 3.1 to 3.6;
-- [ ] components intentionally retained;
-- [ ] dead wrappers removed;
-- [ ] wrappers intentionally retained;
-- [ ] visual debt fixed;
-- [ ] CSS/JS cleanup summary;
-- [ ] tests removed/merged;
-- [ ] final test counts;
-- [ ] final browser journeys;
-- [ ] network evidence;
-- [ ] known warnings/skips;
-- [ ] remaining non-Phase-3 debt.
+- [x] final project graph;
+- [x] final V2/V2.WASM responsibility split;
+- [x] components extracted across Phase 3.1 to 3.6;
+- [x] components intentionally retained;
+- [x] dead wrappers removed;
+- [x] wrappers intentionally retained;
+- [x] visual debt fixed;
+- [x] CSS/JS cleanup summary;
+- [x] tests removed/merged;
+- [x] final test counts;
+- [x] final browser journeys;
+- [x] network evidence;
+- [x] known warnings/skips;
+- [x] remaining non-Phase-3 debt.
+
+### Phase 6 Completion Record
+
+**PHASE 3 - V2 COMPONENT EXTRACTION AND VISUAL CLEANUP: CLOSED**
+
+Final graph is unchanged from the approved architecture: Components is contracts/headless only; Primitives references Components; SSR references Components + Presentation; WasmHost references Components + Browser; V2.WASM composes Browser/Components/Primitives/WasmHost; V2 is the Presentation-backed visual/theme host. The component-mode and render-mode architecture suites prove no cycles, no Presentation reachability from V2.WASM, no reusable render-mode directive, and no `InteractiveServer`/`InteractiveAuto` surface.
+
+Phase 3.1–3.6 extracted reusable product summary, gallery/purchase, navigation, consent/toast, cart/checkout, and account leaves. `ProductCard` and `ProductGrid` were deleted because `StorefrontProductSummaryCard`/`StorefrontProductSummaryGrid` provide the canonical hooks and empty state. Meaningful V2 wrappers remain only where they supply final V2 options, labels, classes, template slots, or page composition. `StorefrontAccountApp` and `StorefrontAccountNavigation` stay V2.WASM; five stateful leaves stay WasmHost.
+
+Final verification: `dotnet build BlazorShop.sln --no-restore` passed with **0 errors** and **11 baseline warnings** (MessagePack `NU1902`/`NU1903` plus Browserslist); `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed **1957**, skipped **2** pre-existing tests, failed **0**. The focused ownership suite passed 75/75 after the deliberate removal of duplicated tests. `git diff --check` passed.
+
+Final browser proof is recorded in Phase 5: public catalog/cart, COD checkout, authenticated account, content/security, SEO/network, and responsive desktop/mobile/tablet checks. It found no direct Commerce Node request, `/_blazor` circuit, unexpected 5xx, page error, or unexpected console error. The only filtered messages are known WASM fetch-abort noise created by intentionally navigating before downloads complete. COD proof created `ORD-20260811-F3FBE66B`; the test restored the email/settings changes it made.
+
+Documentation audit: `COMPONENT-MODES.md` and architecture documents 03, 05, and 10 already describe the final ownership split and required no semantic revision. The active QA gate was rewritten; its full historical execution diary is archived. Remaining non-Phase-3 debt: update MessagePack and Browserslist independently of this refactor.
 
 ## Suggested Commit Breakdown
 
 Use small commits so cleanup remains reviewable:
 
-1. [ ] `docs(storefront): record phase 3.7 final cleanup plan`
-2. [ ] `refactor(storefront): remove redundant product card and grid wrappers`
-3. [ ] `refactor(storefront): consolidate v2 account presentation copy`
-4. [ ] `refactor(storefront): clean v2 wasm wrappers imports and dead source`
-5. [ ] `fix(storefront): resolve phase 3 visual and responsive debt`
-6. [ ] `test(storefront): consolidate component architecture ownership tests`
-7. [ ] `test(storefront): trim duplicated runtime and visual contract assertions`
-8. [ ] `qa(storefront): split storefront v2 release gate from history`
-9. [ ] `qa(storefront): run final browser visual and network proof`
-10. [ ] `docs(storefront): close phase 3 component extraction`
+1. [x] `docs(storefront): record phase 3.7 final cleanup plan`
+2. [x] `refactor(storefront): remove redundant product card and grid wrappers`
+3. [x] `refactor(storefront): consolidate v2 account presentation copy`
+4. [x] `refactor(storefront): clean v2 wasm wrappers imports and dead source`
+5. [x] `fix(storefront): resolve phase 3 visual and responsive debt`
+6. [x] `test(storefront): consolidate component architecture ownership tests`
+7. [x] `test(storefront): trim duplicated runtime and visual contract assertions`
+8. [x] `qa(storefront): split storefront v2 release gate from history`
+9. [x] `qa(storefront): run final browser visual and network proof`
+10. [x] `docs(storefront): close phase 3 component extraction`
 
 Do not make a single giant cleanup commit unless the implementation is purely documentation.
 
 ## Risk Register
 
-- [ ] Risk: visual sweep becomes a redesign.
+- [x] Risk: visual sweep becomes a redesign.
   - Mitigation: require screenshot evidence and classify cosmetic redesign as deferred.
-- [ ] Risk: deleting tests removes real boundary coverage.
+- [x] Risk: deleting tests removes real boundary coverage.
   - Mitigation: build an invariant ownership matrix before deletion.
-- [ ] Risk: removing `ProductGrid` loses semantic hooks or empty-state behavior.
+- [x] Risk: removing `ProductGrid` loses semantic hooks or empty-state behavior.
   - Mitigation: migrate to `StorefrontProductSummaryGrid`, not hand-written markup.
-- [ ] Risk: removing wrappers hides where V2 final labels/classes come from.
+- [x] Risk: removing wrappers hides where V2 final labels/classes come from.
   - Mitigation: keep wrappers with meaningful V2 options/composition responsibility.
-- [ ] Risk: active QA history is lost.
+- [x] Risk: active QA history is lost.
   - Mitigation: archive historical execution evidence before shrinking the active file.
-- [ ] Risk: Playwright release gate becomes too broad and slow.
+- [x] Risk: Playwright release gate becomes too broad and slow.
   - Mitigation: desktop full E2E, mobile critical interaction/visual checks only.
-- [ ] Risk: new architecture leak is discovered late.
+- [x] Risk: new architecture leak is discovered late.
   - Mitigation: document exact file and fix smallest boundary only; do not reopen broad extraction.
 
 ## Definition Of Done - Source Cleanup
 
-- [ ] `ProductCard` removed if no meaningful responsibility remains.
-- [ ] `ProductGrid` removed or consolidated if redundant.
-- [ ] No dead V2.WASM runtime leaf remains.
-- [ ] No dead wrapper remains.
-- [ ] No obsolete imports/namespaces remain.
-- [ ] No orphan CSS from deleted wrappers.
-- [ ] No orphan JS selector/hook.
-- [ ] All retained wrappers have a reason.
+- [x] `ProductCard` removed if no meaningful responsibility remains.
+- [x] `ProductGrid` removed or consolidated if redundant.
+- [x] No dead V2.WASM runtime leaf remains.
+- [x] No dead wrapper remains.
+- [x] No obsolete imports/namespaces remain.
+- [x] No orphan CSS from deleted wrappers.
+- [x] No orphan JS selector/hook.
+- [x] All retained wrappers have a reason.
 
 ## Definition Of Done - Account
 
-- [ ] `StorefrontAccountApp` stays V2.WASM.
-- [ ] `StorefrontAccountNavigation` stays V2.WASM.
-- [ ] Neither injects Browser controllers.
-- [ ] Neither owns hydration/mutation methods.
-- [ ] Final Account app copy is consolidated into V2-owned options/labels where useful.
-- [ ] Five Account runtime leaves remain WasmHost-owned.
+- [x] `StorefrontAccountApp` stays V2.WASM.
+- [x] `StorefrontAccountNavigation` stays V2.WASM.
+- [x] Neither injects Browser controllers.
+- [x] Neither owns hydration/mutation methods.
+- [x] Final Account app copy is consolidated into V2-owned options/labels where useful.
+- [x] Five Account runtime leaves remain WasmHost-owned.
 
 ## Definition Of Done - Visual
 
-- [ ] Product Summary debt reviewed and fixed or explicitly deferred.
-- [ ] Shell reviewed desktop/mobile.
-- [ ] Catalog reviewed desktop/mobile.
-- [ ] Product Detail reviewed desktop/mobile.
-- [ ] Cart reviewed desktop/mobile.
-- [ ] Checkout reviewed desktop/mobile.
-- [ ] Auth/Account reviewed desktop/mobile.
-- [ ] Content/Payment/Error states reviewed.
-- [ ] No known Phase 3 visual regression remains unexplained.
+- [x] Product Summary debt reviewed and fixed or explicitly deferred.
+- [x] Shell reviewed desktop/mobile.
+- [x] Catalog reviewed desktop/mobile.
+- [x] Product Detail reviewed desktop/mobile.
+- [x] Cart reviewed desktop/mobile.
+- [x] Checkout reviewed desktop/mobile.
+- [x] Auth/Account reviewed desktop/mobile.
+- [x] Content/Payment/Error states reviewed.
+- [x] No known Phase 3 visual regression remains unexplained.
 
 ## Definition Of Done - Tests
 
-- [ ] One authoritative test owner exists per architecture invariant.
-- [ ] RuntimeFoundation trimmed to foundation concerns.
-- [ ] RequiredVisualContracts trimmed to root-contract concerns.
-- [ ] Duplicate render-mode tests removed.
-- [ ] Brittle visual-neutrality inventory tests removed or justified.
-- [ ] VisualSourceOwnership uses dynamic source enumeration where appropriate.
-- [ ] Stale path assertions removed.
-- [ ] Component behavior and semantic coverage retained.
-- [ ] Security and browser-boundary tests retained.
-- [ ] Raw test-count reduction documented and accepted.
+- [x] One authoritative test owner exists per architecture invariant.
+- [x] RuntimeFoundation trimmed to foundation concerns.
+- [x] RequiredVisualContracts trimmed to root-contract concerns.
+- [x] Duplicate render-mode tests removed.
+- [x] Brittle visual-neutrality inventory tests removed or justified.
+- [x] VisualSourceOwnership uses dynamic source enumeration where appropriate.
+- [x] Stale path assertions removed.
+- [x] Component behavior and semantic coverage retained.
+- [x] Security and browser-boundary tests retained.
+- [x] Raw test-count reduction documented and accepted.
 
 ## Definition Of Done - QA
 
-- [ ] Active QA file contains current release gate only.
-- [ ] Historical phase evidence archived.
-- [ ] Six canonical browser journeys defined.
-- [ ] Global network/error collector preferred.
-- [ ] Mobile suite reduced to visual/critical interaction checks.
-- [ ] Low-level API negatives not redundantly replayed in Playwright.
-- [ ] Final screenshots recorded.
+- [x] Active QA file contains current release gate only.
+- [x] Historical phase evidence archived.
+- [x] Six canonical browser journeys defined.
+- [x] Global network/error collector preferred.
+- [x] Mobile suite reduced to visual/critical interaction checks.
+- [x] Low-level API negatives not redundantly replayed in Playwright.
+- [x] Final screenshots recorded.
 
 ## Definition Of Done - Architecture
 
-- [ ] Components has no project references.
-- [ ] Primitives references Components only.
-- [ ] SSR references Components + Presentation only.
-- [ ] WasmHost references Components + Browser only.
-- [ ] V2.WASM cannot reach Presentation/Runtime/Client/backend.
-- [ ] No project cycles.
-- [ ] No reusable `@rendermode`.
-- [ ] No `InteractiveServer`.
-- [ ] No `InteractiveAuto`.
-- [ ] No browser direct Commerce Node.
-- [ ] No `/_blazor` server UI circuit.
+- [x] Components has no project references.
+- [x] Primitives references Components only.
+- [x] SSR references Components + Presentation only.
+- [x] WasmHost references Components + Browser only.
+- [x] V2.WASM cannot reach Presentation/Runtime/Client/backend.
+- [x] No project cycles.
+- [x] No reusable `@rendermode`.
+- [x] No `InteractiveServer`.
+- [x] No `InteractiveAuto`.
+- [x] No browser direct Commerce Node.
+- [x] No `/_blazor` server UI circuit.
 
 ## Final Closure Gate
 
 Only close Phase 3 when:
 
-- [ ] source cleanup passes;
-- [ ] visual sweep passes;
-- [ ] CSS/JS cleanup passes;
-- [ ] test consolidation passes;
-- [ ] QA consolidation passes;
-- [ ] focused tests pass;
-- [ ] full build passes;
-- [ ] full V2 tests pass;
-- [ ] browser journeys pass;
-- [ ] network guardrail passes;
-- [ ] desktop/mobile visual checks pass;
-- [ ] docs are updated;
-- [ ] closure report is written.
+- [x] source cleanup passes;
+- [x] visual sweep passes;
+- [x] CSS/JS cleanup passes;
+- [x] test consolidation passes;
+- [x] QA consolidation passes;
+- [x] focused tests pass;
+- [x] full build passes;
+- [x] full V2 tests pass;
+- [x] browser journeys pass;
+- [x] network guardrail passes;
+- [x] desktop/mobile visual checks pass;
+- [x] docs are updated;
+- [x] closure report is written.
 
 Final status wording:
 
@@ -1578,17 +906,17 @@ Phase 3.7 succeeds when the repository becomes simpler.
 
 Success is not:
 
-- [ ] more abstractions;
-- [ ] more tests;
-- [ ] more QA checkboxes;
-- [ ] more wrappers.
+- [x] more abstractions;
+- [x] more tests;
+- [x] more QA checkboxes;
+- [x] more wrappers.
 
 Success is:
 
-- [ ] clear ownership;
-- [ ] fewer duplicated tests;
-- [ ] fewer dead components;
-- [ ] fewer stale QA cases;
-- [ ] cleaner V2/V2.WASM;
-- [ ] resolved concrete visual debt;
-- [ ] repeatable release proof.
+- [x] clear ownership;
+- [x] fewer duplicated tests;
+- [x] fewer dead components;
+- [x] fewer stale QA cases;
+- [x] cleaner V2/V2.WASM;
+- [x] resolved concrete visual debt;
+- [x] repeatable release proof.

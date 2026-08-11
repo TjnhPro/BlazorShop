@@ -19,6 +19,10 @@ This is the active, runnable release gate for `BlazorShop.Storefront.V2`. Histor
 
 Known baseline notices: MessagePack advisory warnings (`NU1902`/`NU1903`) and the stale Browserslist database notice. Existing baseline skips must be recorded, not silently reclassified as passes.
 
+## V2 Production Readiness Release Gate
+
+Cart/account/checkout browser flows remain the production gate. Run the current build/test gate and the canonical browser journeys below against the local or release candidate runtime; use the archived file only for historical evidence.
+
 ## Browser Instrumentation
 
 For every release journey, record console errors, page errors, request URLs, response statuses, and screenshots on failure.
