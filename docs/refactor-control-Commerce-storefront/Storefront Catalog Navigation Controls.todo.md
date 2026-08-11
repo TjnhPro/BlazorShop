@@ -495,30 +495,30 @@ Goal: make Category use the reusable SSR filter.
 
 File:
 
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`.
 
 Tasks:
 
-- [ ] Replace `<CatalogFilterPanel` with `<StorefrontCatalogFilterPanel`.
-- [ ] Preserve `ShowPriceRange="true"`.
-- [ ] Preserve `MinPrice="Context.MinPrice"`.
-- [ ] Preserve `MaxPrice="Context.MaxPrice"`.
-- [ ] Preserve `ShowSort="true"`.
-- [ ] Preserve `SortBy="Context.SortBy"`.
-- [ ] Preserve `ShowPageSize="true"`.
-- [ ] Preserve `PageSize="Context.PageSize"`.
-- [ ] Preserve `ShowStock="true"`.
-- [ ] Preserve `InStock="Context.InStock"`.
-- [ ] Supply V2-owned filter classes matching current visual output.
-- [ ] Supply V2-owned filter labels matching current visible copy.
-- [ ] Do not add search/category fields to Category unless already present.
-- [ ] Do not change form action behavior.
+- [x] Replace `<CatalogFilterPanel` with `<StorefrontCatalogFilterPanel`.
+- [x] Preserve `ShowPriceRange="true"`.
+- [x] Preserve `MinPrice="Context.MinPrice"`.
+- [x] Preserve `MaxPrice="Context.MaxPrice"`.
+- [x] Preserve `ShowSort="true"`.
+- [x] Preserve `SortBy="Context.SortBy"`.
+- [x] Preserve `ShowPageSize="true"`.
+- [x] Preserve `PageSize="Context.PageSize"`.
+- [x] Preserve `ShowStock="true"`.
+- [x] Preserve `InStock="Context.InStock"`.
+- [x] Supply V2-owned filter classes matching current visual output.
+- [x] Supply V2-owned filter labels matching current visible copy.
+- [x] Do not add search/category fields to Category unless already present.
+- [x] Do not change form action behavior.
 
 Exit criteria:
 
-- [ ] Category filter GET behavior unchanged;
-- [ ] Category filter visual class ownership moved to V2 call site/config;
-- [ ] no query regression.
+- [x] Category filter GET behavior unchanged;
+- [x] Category filter visual class ownership moved to V2 call site/config;
+- [x] no query regression.
 
 ## Phase 3.3.8 - Adopt Catalog Filter In Search
 
