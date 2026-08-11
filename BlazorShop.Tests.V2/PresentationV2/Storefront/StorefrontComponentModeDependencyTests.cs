@@ -72,6 +72,17 @@ public sealed class StorefrontComponentModeDependencyTests
     }
 
     [Fact]
+    public void CatalogFilterAndBreadcrumbSsrComponentsDoNotUseBrowserRuntimeClientOrInteractiveDependencies()
+    {
+        AssertNoSourceTokens(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor",
+            ["BlazorShop.Storefront.Browser", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client", "HttpClient", "IJSRuntime", "@rendermode"]);
+        AssertNoSourceTokens(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor",
+            ["BlazorShop.Storefront.Browser", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client", "StorefrontRoutes", "CategoryUrl", "SearchUrl", "@rendermode"]);
+    }
+
+    [Fact]
     public void BaseComponentsReferencesNoProjectAndDoesNotReferenceBrowser()
     {
         var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
@@ -257,6 +268,16 @@ public sealed class StorefrontComponentModeDependencyTests
             .ToArray();
 
         Assert.True(offenders.Length == 0, $"Forbidden project references:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    private static void AssertNoSourceTokens(string relativePath, IReadOnlyCollection<string> tokens)
+    {
+        var source = File.ReadAllText(RepositoryPath(relativePath));
+
+        foreach (var token in tokens)
+        {
+            Assert.DoesNotContain(token, source, StringComparison.Ordinal);
+        }
     }
 
     private static string NormalizeRelativeReference(string reference)

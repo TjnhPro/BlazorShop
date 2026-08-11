@@ -8,6 +8,7 @@ public sealed class StorefrontServerInteractiveTransportGuardrailTests
     [
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components",
+        "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost",
         "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation",

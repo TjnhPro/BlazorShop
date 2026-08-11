@@ -64,9 +64,17 @@ public sealed class StorefrontCatalogFilterPanelSsrTests
         Assert.Contains("value=\"linen\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"minPrice\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"maxPrice\"", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"12.5\"", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"50\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"sortBy\"", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"displayOrder\"", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"updated\"", html, StringComparison.Ordinal);
         Assert.Contains("value=\"priceLowToHigh\" selected", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"priceHighToLow\"", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"newest\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"pageSize\"", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"12\"", html, StringComparison.Ordinal);
+        Assert.Contains("value=\"24\"", html, StringComparison.Ordinal);
         Assert.Contains("value=\"48\" selected", html, StringComparison.Ordinal);
         Assert.Contains("name=\"inStock\"", html, StringComparison.Ordinal);
         Assert.Contains("checked", html, StringComparison.Ordinal);

@@ -826,30 +826,30 @@ Goal: prevent the extraction from weakening component boundaries.
 
 Update or add tests under:
 
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontPrimitiveDependencyTests.cs`.
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentModeDependencyTests.cs`.
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontRenderModeOwnershipTests.cs`.
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontServerInteractiveTransportGuardrailTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontPrimitiveDependencyTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentModeDependencyTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontRenderModeOwnershipTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontServerInteractiveTransportGuardrailTests.cs`.
 
 Assertions:
 
-- [ ] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `BlazorShop.Storefront.Presentation`.
-- [ ] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `CategoryUrl`.
-- [ ] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `SearchUrl`.
-- [ ] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `StorefrontRoutes`.
-- [ ] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `/api/`.
-- [ ] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `@rendermode`.
-- [ ] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no Browser/Runtime/Client namespace.
-- [ ] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no `HttpClient`.
-- [ ] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no `IJSRuntime`.
-- [ ] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no `@rendermode`.
-- [ ] `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` contains no Browser/Runtime/Client namespace.
-- [ ] `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` contains no route construction.
-- [ ] `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` contains no `@rendermode`.
+- [x] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `BlazorShop.Storefront.Presentation`.
+- [x] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `CategoryUrl`.
+- [x] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `SearchUrl`.
+- [x] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `StorefrontRoutes`.
+- [x] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `/api/`.
+- [x] `Components.Primitives/Navigation/StorefrontPagination.razor` contains no `@rendermode`.
+- [x] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no Browser/Runtime/Client namespace.
+- [x] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no `HttpClient`.
+- [x] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no `IJSRuntime`.
+- [x] `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` contains no `@rendermode`.
+- [x] `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` contains no Browser/Runtime/Client namespace.
+- [x] `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` contains no route construction.
+- [x] `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` contains no `@rendermode`.
 
 Exit criteria:
 
-- [ ] component boundary regression fails tests immediately.
+- [x] component boundary regression fails tests immediately.
 
 ## Phase 3.3.17 - Visual Neutrality Tests
 

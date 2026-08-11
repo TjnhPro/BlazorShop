@@ -43,6 +43,17 @@ public sealed class StorefrontRenderModeOwnershipTests
         Assert.Empty(violations);
     }
 
+    [Theory]
+    [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Navigation/StorefrontPagination.razor")]
+    [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor")]
+    [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor")]
+    public void CatalogNavigationReusableComponentsDoNotOwnRenderModes(string relativePath)
+    {
+        var source = File.ReadAllText(RepositoryPath(relativePath));
+
+        Assert.DoesNotContain("@rendermode", source, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void PublicStorefrontDoesNotUseServerOrAutoInteractivity()
     {

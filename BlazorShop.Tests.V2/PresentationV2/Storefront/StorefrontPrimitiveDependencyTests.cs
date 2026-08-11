@@ -99,6 +99,26 @@ public sealed class StorefrontPrimitiveDependencyTests
         Assert.Empty(violations);
     }
 
+    [Fact]
+    public void PaginationPrimitiveDoesNotOwnPresentationRoutesApiOrRenderMode()
+    {
+        var source = File.ReadAllText(RepositoryPath(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Navigation/StorefrontPagination.razor"));
+
+        foreach (var token in new[]
+        {
+            "BlazorShop.Storefront.Presentation",
+            "CategoryUrl",
+            "SearchUrl",
+            "StorefrontRoutes",
+            "/api/",
+            "@rendermode",
+        })
+        {
+            Assert.DoesNotContain(token, source, StringComparison.Ordinal);
+        }
+    }
+
     [Theory]
     [InlineData("../BlazorShop.Storefront.Presentation/BlazorShop.Storefront.Presentation.csproj", "ProjectReference")]
     [InlineData("../BlazorShop.Storefront.Browser/BlazorShop.Storefront.Browser.csproj", "ProjectReference")]

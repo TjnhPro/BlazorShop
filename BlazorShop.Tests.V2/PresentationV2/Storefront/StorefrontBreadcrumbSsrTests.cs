@@ -38,6 +38,7 @@ public sealed class StorefrontBreadcrumbSsrTests
 
         Assert.Contains("<nav", html, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("aria-label=\"Product trail\"", html, StringComparison.Ordinal);
+        Assert.Contains("class=\"breadcrumb-root\"", html, StringComparison.Ordinal);
         Assert.Contains("class=\"breadcrumb-list\"", html, StringComparison.Ordinal);
         Assert.Contains("<a href=\"/\" class=\"breadcrumb-link\">Home</a>", html, StringComparison.Ordinal);
         Assert.Contains("<a href=\"/category/hats\" class=\"breadcrumb-link\">Hats</a>", html, StringComparison.Ordinal);
