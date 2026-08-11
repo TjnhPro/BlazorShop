@@ -22,7 +22,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "InitialAlerts=\"Context.Alerts\"",
                 "DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"",
                 "Actions=\"@Context.CartActions\"",
-                "Classes=\"StorefrontCartViewOptions.Classes\"",
                 "CheckoutUrl=\"@Context.CheckoutUrl\"",
                 "ContinueShoppingUrl=\"@Context.ContinueShoppingUrl\"",
                 "SecondaryShoppingUrl=\"@Context.Links.Home.Href\""
@@ -35,7 +34,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CartView_RequiresRootWiringWithoutOwningFallbackRoutesOrDescriptors()
         {
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/StorefrontCartView.razor");
 
             foreach (var requiredParameter in new[]
             {
@@ -82,7 +81,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CheckoutShell_RequiresRootWiringWithoutOwningFallbackStateOrDescriptors()
         {
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/StorefrontCheckoutShell.razor");
 
             foreach (var requiredParameter in new[]
             {
@@ -126,14 +125,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("[Parameter, EditorRequired]", page, StringComparison.Ordinal);
             Assert.Contains("public StorefrontCheckoutPageContext Context { get; set; } = default!;", page, StringComparison.Ordinal);
             Assert.Contains("ArgumentNullException.ThrowIfNull(Context);", page, StringComparison.Ordinal);
-            Assert.Equal(2, CountOccurrences(page, "<StorefrontCheckoutShell"));
+            Assert.Equal(2, CountOccurrences(page, "<StorefrontCheckoutSection"));
 
             foreach (var requiredAttribute in new[]
             {
                 "InitialState=\"Context.CheckoutState\"",
                 "DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"",
                 "Actions=\"@Context.CheckoutActions\"",
-                "Classes=\"StorefrontCheckoutShellOptions.Classes\"",
                 "ShowPanel=\"false\""
             })
             {
@@ -274,8 +272,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var rootComponents = new[]
             {
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/StorefrontCartView.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/StorefrontCheckoutShell.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor"
             };
 

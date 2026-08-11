@@ -12,6 +12,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Brand/StorefrontBrandLogoContext.cs",
             "Cart/CartLabels.cs",
             "Cart/StorefrontCartViewClasses.cs",
+            "Cart/StorefrontCartViewLabels.cs",
             "Catalog/CatalogFilterCategoryOption.cs",
             "Catalog/ProductSummaryCardClasses.cs",
             "Catalog/ProductSummaryItem.cs",
@@ -24,6 +25,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Catalog/StorefrontDiscountedProductRailState.cs",
             "Checkout/CheckoutLabels.cs",
             "Checkout/StorefrontCheckoutViewClasses.cs",
+            "Checkout/StorefrontCheckoutViewLabels.cs",
             "Components/StorefrontComponentCategory.cs",
             "Components/StorefrontComponentDescriptor.cs",
             "Components/StorefrontComponentDescriptorValidationResult.cs",
@@ -98,7 +100,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var browserInterop = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/wwwroot/js/storefrontWasmInterop.js");
             var browserRuntimeSource = ReadSourceTree(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Browser"));
             var cartView = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/StorefrontCartView.razor");
 
             Assert.Contains("<Project Sdk=\"Microsoft.NET.Sdk\">", project, StringComparison.Ordinal);
             Assert.DoesNotContain("Microsoft.NET.Sdk.Razor", project, StringComparison.Ordinal);
@@ -143,7 +145,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(50, actual.Length);
+            Assert.Equal(52, actual.Length);
         }
 
         [Fact]
@@ -455,7 +457,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CartView_UsesHostActionsAndClassesAfterHpr7Migration()
         {
             var cartView = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/StorefrontCartView.razor");
             var cartController = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Cart/StorefrontBrowserCartController.cs");
             var cartBehavior = ReadRepositoryFile(
@@ -504,8 +506,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("rounded-3xl", cartOptions, StringComparison.Ordinal);
             Assert.Contains("max-w-7xl", cartOptions, StringComparison.Ordinal);
             Assert.Contains("Actions=\"@Context.CartActions\"", cartPage, StringComparison.Ordinal);
-            Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", cartPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontCartView", cartPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCartSection", cartPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<CartView", cartPage, StringComparison.Ordinal);
         }
 
@@ -513,7 +514,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutShell_UsesHostActionsAndClassesAfterHpr8Migration()
         {
             var checkoutShell = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/StorefrontCheckoutShell.razor");
             var checkoutController = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Checkout/StorefrontBrowserCheckoutController.cs");
             var checkoutBehavior = ReadRepositoryFile(
@@ -559,8 +560,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("\"/api/checkout", checkoutOptions, StringComparison.Ordinal);
             Assert.Contains("rounded", checkoutOptions, StringComparison.Ordinal);
             Assert.Contains("Actions=\"@Context.CheckoutActions\"", checkoutPage, StringComparison.Ordinal);
-            Assert.Contains("Classes=\"StorefrontCheckoutShellOptions.Classes\"", checkoutPage, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontCheckoutShell", checkoutPage, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCheckoutSection", checkoutPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<CheckoutShell", checkoutPage, StringComparison.Ordinal);
             Assert.Equal(2, CountOccurrences(checkoutPage, "ShowPanel=\"false\""));
         }

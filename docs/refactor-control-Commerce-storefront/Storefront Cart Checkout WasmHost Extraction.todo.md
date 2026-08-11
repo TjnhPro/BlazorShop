@@ -449,33 +449,33 @@ Exit criteria:
 
 Tests to inspect and update:
 
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentsHeadlessPresentationRefactorTests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontV2WASMRuntimeFoundationTests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontCommerceFlowCutoverTests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontRequiredVisualContractsHardeningTests.cs`
-- [ ] Any test found by `rg "StorefrontCartView|StorefrontCheckoutShell|StorefrontCartViewClasses|StorefrontCheckoutViewClasses" BlazorShop.Tests.V2`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentsHeadlessPresentationRefactorTests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontV2WASMRuntimeFoundationTests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontCommerceFlowCutoverTests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontRequiredVisualContractsHardeningTests.cs`
+- [x] Any test found by `rg "StorefrontCartView|StorefrontCheckoutShell|StorefrontCartViewClasses|StorefrontCheckoutViewClasses" BlazorShop.Tests.V2`
 
 Required new assertions:
 
-- [ ] WasmHost project contains cart and checkout implementation components.
-- [ ] WasmHost cart component injects `IStorefrontBrowserCartController`.
-- [ ] WasmHost checkout shell injects `IStorefrontBrowserCheckoutController`.
-- [ ] WasmHost components do not contain `@rendermode` or interactive render-mode directives.
-- [ ] WasmHost components do not reference V2 or V2.WASM namespaces.
-- [ ] Components contracts own `StorefrontCartViewClasses` and `StorefrontCheckoutViewClasses`.
-- [ ] Components contracts own `StorefrontCartViewLabels` and `StorefrontCheckoutViewLabels`.
-- [ ] V2.WASM wrappers do not inject browser controllers.
-- [ ] V2.WASM wrappers do not contain lifecycle methods such as `HydrateAsync`, `UpdateQuantityAsync`, `ClearAsync`, `RefreshAsync`, `ReviewAsync`, and `PlaceOrderAsync`.
-- [ ] V2.WASM wrappers render WasmHost components and pass V2 options.
-- [ ] V2 pages own `InteractiveWebAssembly` render mode.
-- [ ] Checkout page still renders the shell with `ShowPanel=false`.
-- [ ] Checkout page still renders SSR checkout form components for real checkout.
+- [x] WasmHost project contains cart and checkout implementation components.
+- [x] WasmHost cart component injects `IStorefrontBrowserCartController`.
+- [x] WasmHost checkout shell injects `IStorefrontBrowserCheckoutController`.
+- [x] WasmHost components do not contain `@rendermode` or interactive render-mode directives.
+- [x] WasmHost components do not reference V2 or V2.WASM namespaces.
+- [x] Components contracts own `StorefrontCartViewClasses` and `StorefrontCheckoutViewClasses`.
+- [x] Components contracts own `StorefrontCartViewLabels` and `StorefrontCheckoutViewLabels`.
+- [x] V2.WASM wrappers do not inject browser controllers.
+- [x] V2.WASM wrappers do not contain lifecycle methods such as `HydrateAsync`, `UpdateQuantityAsync`, `ClearAsync`, `RefreshAsync`, `ReviewAsync`, and `PlaceOrderAsync`.
+- [x] V2.WASM wrappers render WasmHost components and pass V2 options.
+- [x] V2 pages own `InteractiveWebAssembly` render mode.
+- [x] Checkout page still renders the shell with `ShowPanel=false`.
+- [x] Checkout page still renders SSR checkout form components for real checkout.
 
 Required removed or corrected assertions:
 
-- [ ] Remove assertions that V2.WASM implementation files own browser controller injection.
-- [ ] Remove assertions that V2.WASM implementation files own runtime lifecycle methods.
-- [ ] Remove assertions that checkout shell visible actions are part of the public page when `ShowPanel=false`.
+- [x] Remove assertions that V2.WASM implementation files own browser controller injection.
+- [x] Remove assertions that V2.WASM implementation files own runtime lifecycle methods.
+- [x] Remove assertions that checkout shell visible actions are part of the public page when `ShowPanel=false`.
 
 Focused test filters:
 
@@ -488,9 +488,9 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter
 
 Exit criteria:
 
-- [ ] Tests describe the new ownership accurately.
-- [ ] Tests no longer preserve the old boundary leak.
-- [ ] Tests fail if a later agent moves browser runtime behavior back into V2.WASM.
+- [x] Tests describe the new ownership accurately. Focused regression suite passed 66/66 on 2026-08-11.
+- [x] Tests no longer preserve the old boundary leak.
+- [x] Tests fail if a later agent moves browser runtime behavior back into V2.WASM.
 
 ## Phase 9 - Add Boundary Guardrails
 

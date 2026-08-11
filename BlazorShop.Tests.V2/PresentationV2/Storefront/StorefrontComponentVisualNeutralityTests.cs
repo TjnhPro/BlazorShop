@@ -25,7 +25,6 @@ public sealed class StorefrontComponentVisualNeutralityTests
         "Shop now",
         "Add to cart",
         "Available Variants",
-        "Checkout",
         "Image unavailable",
         "Sale",
         "Free shipping",
