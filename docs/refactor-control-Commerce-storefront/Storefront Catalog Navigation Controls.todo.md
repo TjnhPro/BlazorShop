@@ -965,7 +965,7 @@ dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Store
 
 Conditional build:
 
-- [ ] build `BlazorShop.Storefront.V2.WASM` only if base contracts/imports affect WASM graph.
+- [x] build `BlazorShop.Storefront.V2.WASM` because base contracts/imports affect the WASM graph.
 
 Full build before closure:
 
@@ -975,9 +975,9 @@ dotnet build BlazorShop.sln --no-restore
 
 Exit criteria:
 
-- [ ] focused builds pass;
-- [ ] full solution build passes;
-- [ ] no new warnings accepted without note.
+- [x] focused builds pass;
+- [x] full solution build passes;
+- [x] no new warnings accepted without note; the 11 warnings are pre-existing `MessagePack` advisories in `BlazorShop.Tests.V2` and the existing Browserslist database notice.
 
 ## Phase 3.3.20 - Test Gate
 
