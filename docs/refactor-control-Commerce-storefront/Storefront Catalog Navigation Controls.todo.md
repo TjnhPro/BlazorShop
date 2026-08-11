@@ -1022,23 +1022,23 @@ rg -n "GetPageLinkClass|<BreadcrumbNav|<CatalogFilterPanel|aria-label=\"Category
 
 Expected:
 
-- [ ] no active V2 source uses `GetPageLinkClass`.
-- [ ] no active V2 source uses `<BreadcrumbNav`.
-- [ ] no active V2 source uses `<CatalogFilterPanel`.
-- [ ] no active V2 source contains old manual pagination loops.
+- [x] no active V2 source uses `GetPageLinkClass`.
+- [x] no active V2 source uses `<BreadcrumbNav`.
+- [x] no active V2 source uses `<CatalogFilterPanel`.
+- [x] no active V2 source contains old manual pagination loops.
 
 Allowed:
 
-- [ ] new tests may mention old names only inside negative assertions.
-- [ ] docs may mention old names as migration history.
-- [ ] V2 pages may still contain `Context.Links.CategoryUrl`.
-- [ ] V2 pages may still contain `Context.Links.SearchUrl`.
-- [ ] V2 visual config may contain final classes and labels.
+- [x] new tests may mention old names only inside negative assertions.
+- [x] docs may mention old names as migration history.
+- [x] V2 pages may still contain `Context.Links.CategoryUrl`.
+- [x] V2 pages may still contain `Context.Links.SearchUrl`.
+- [x] V2 visual config may contain final classes and labels.
 
 Exit criteria:
 
-- [ ] duplicate render implementation removed;
-- [ ] stale old component implementation deleted.
+- [x] duplicate render implementation removed;
+- [x] stale old component implementation deleted.
 
 ## Phase 3.3.22 - V2 Composition Audit
 
