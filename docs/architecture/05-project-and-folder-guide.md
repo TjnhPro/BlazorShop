@@ -197,7 +197,7 @@ Asset and layout rules:
 - Page-specific CSS should prefer scoped CSS or controlled app-owned classes in `wwwroot/css`.
 - Page-specific JavaScript should prefer `IJSRuntime` module imports. Add root scripts only when they must load with the root document, and update the root asset allowlist tests with the reason.
 - Store configuration must not accept arbitrary public script or stylesheet injection.
-- Storefront V2 layout views own the global header, toast DOM region, `<main>`, and footer through Presentation view slots. Page-level structure belongs in optional host views such as `StorefrontPageShell` and catalog-only components such as `CatalogFilterPanel`.
+- Storefront V2 layout views own the global header, toast placement, `<main>`, and footer through Presentation view slots. `StorefrontToastRegion` owns the shared semantic region/template markup; MainLayout composes it once. Page-level structure belongs in optional host views such as `StorefrontPageShell` and catalog-only components such as `CatalogFilterPanel`.
 
 Do not:
 
@@ -238,6 +238,8 @@ Use for:
 - Stable `data-storefront-*` hooks, accessibility markup, links/buttons, and fully host-supplied class slots.
 - Product Summary primitive rendering shared by Storefront V2 SSR surfaces and V2.WASM rail item rendering.
 - Product Detail gallery render markup through `StorefrontProductGallery`, using `ProductGalleryItem`, `ProductGalleryLabels`, `ProductGalleryClasses`, and `ProductGalleryState` while V2 owns final labels/classes and JavaScript progressive enhancement.
+- Product purchase semantic rendering through `StorefrontProductPurchasePanel`, using prepared purchase contracts and host-supplied `ProductPurchaseLabels`/`ProductPurchasePanelClasses`; V2 owns final purchase copy/classes, placement, and visual fallback treatment.
+- Toast region/template semantic rendering through `StorefrontToastRegion`, using host-supplied labels/classes; V2 owns its single layout placement, final copy/classes, CSS, and toast visual behavior.
 - Navigation pagination through `StorefrontPagination`, using `StorefrontPaginationItem` values whose `Href` is prepared by the host. The primitive must not select Category or Search routes.
 
 Do not:
@@ -263,6 +265,7 @@ Use for:
 - Semantic hooks, accessibility markup, forms, links, `RenderFragment`, and host-supplied class slots.
 - Product Detail display components such as `StorefrontProductPricing`, `StorefrontProductAvailability`, and informational `StorefrontProductVariantList` over prepared Presentation product views.
 - Catalog filter and breadcrumb rendering through `StorefrontCatalogFilterPanel` and `StorefrontBreadcrumb`. They consume prepared GET/form and breadcrumb contexts while V2 keeps final labels, classes, icons, and route/query generation.
+- Consent semantic rendering through `StorefrontConsentPanel`, which consumes the prepared `StorefrontConsentContext`; V2 retains the registered thin wrapper and final visual values, while Presentation JavaScript owns consent current/save/revoke and native hidden state.
 
 Do not:
 

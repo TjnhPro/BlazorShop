@@ -44,11 +44,11 @@ The graph above describes the current repository state. H2 proved the browser-vi
 
 The base `BlazorShop.Storefront.Components` project remains the lowest browser-safe contracts and headless layer. It must not reference `Presentation`, `Browser`, `Runtime`, `Client`, V2 hosts, Starter hosts, backend/core/API projects, Control Plane projects, or `Web.SharedV2`.
 
-`BlazorShop.Storefront.Components.Primitives` is a browser-safe render-only Razor package for small reusable semantic primitives such as Product Summary cards and Product Detail gallery rendering. It is not a component mode and must not declare descriptors. It references only `BlazorShop.Storefront.Components`, consumes contracts/class slots/labels supplied by hosts, and must not own final CSS classes, store-specific copy, static assets, `@rendermode`, JS interop, HTTP/API calls, Browser controllers, Presentation services, Runtime, Client, backend/core/API projects, V2 hosts, Starter hosts, generated storefront projects, Control Plane projects, or `Web.SharedV2`.
+`BlazorShop.Storefront.Components.Primitives` is a browser-safe render-only Razor package for small reusable semantic primitives such as Product Summary cards, Product Detail gallery and purchase-panel rendering, and the storefront toast region/template. It is not a component mode and must not declare descriptors. It references only `BlazorShop.Storefront.Components`, consumes contracts/class slots/labels supplied by hosts, and must not own final CSS classes, store-specific copy, static assets, `@rendermode`, JS interop, HTTP/API calls, Browser controllers, Presentation services, Runtime, Client, backend/core/API projects, V2 hosts, Starter hosts, generated storefront projects, Control Plane projects, or `Web.SharedV2`.
 
 `StorefrontPagination` is a Navigation primitive in this package. Its host prepares each `StorefrontPaginationItem`, including its `Href`; the primitive only renders those supplied links and never selects a Category or Search route.
 
-`StorefrontCatalogFilterPanel` and `StorefrontBreadcrumb` are SSR reusable components. The filter consumes a prepared GET form context and the Presentation-owned catalog sort model; the breadcrumb consumes the existing Presentation breadcrumb item. Their V2 host supplies final labels, classes, and the filter submit icon.
+`StorefrontCatalogFilterPanel`, `StorefrontBreadcrumb`, and `StorefrontConsentPanel` are SSR reusable components. The filter consumes a prepared GET form context and the Presentation-owned catalog sort model; the breadcrumb consumes the existing Presentation breadcrumb item; the consent panel consumes the Presentation-owned consent context. Their V2 host supplies final labels, classes, placement, and registered visual wrappers. Presentation JavaScript owns consent current/save/revoke behavior and native hidden-state changes.
 
 Descriptor mode is semantic architecture metadata. Repository architecture tests validate descriptor shape, current public descriptor inventory, duplicate keys, and small contract surface, but they must not require descriptor mode to match a physical assembly or project name.
 
@@ -219,7 +219,9 @@ Implemented reference examples:
 - `StorefrontHybridRuntimeProbe` in `Components.WasmHost` with semantic descriptor mode `Hybrid`;
 - `StorefrontDiscountedProductRail` in `Components.WasmHost`;
 - `StorefrontProductSummaryCard`, `StorefrontProductSummaryImage`, `StorefrontProductSummaryPurchaseActions`, and render-only `StorefrontProductGallery` in `Components.Primitives`;
+- `StorefrontProductPurchasePanel` and `StorefrontToastRegion` in `Components.Primitives`, with V2-supplied labels/classes and V2-owned final placement/visual behavior;
 - `StorefrontProductPricing`, `StorefrontProductAvailability`, and informational `StorefrontProductVariantList` in `Components.Ssr`;
+- `StorefrontConsentPanel` in `Components.Ssr`, wrapped and visually configured by V2 while Presentation owns consent commands/state;
 - `StorefrontPagination` in `Components.Primitives/Navigation`, over host-prepared pagination items;
 - `StorefrontCatalogFilterPanel` in `Components.Ssr/Catalog` and `StorefrontBreadcrumb` in `Components.Ssr/Navigation`;
 - V2.WASM wrapper components for browser-visible contact and discounted rail adoption.

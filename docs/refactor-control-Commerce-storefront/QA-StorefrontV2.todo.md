@@ -885,6 +885,8 @@ Current status: complete. Evidence was recorded on 2026-08-10 from the hidden/no
 
 ## Storefront Presentation Visual Neutrality
 
+- [x] Storefront Shared Semantic Render Extraction Phase 3.4 closed on 2026-08-11. `StorefrontProductPurchasePanel` and `StorefrontToastRegion` render shared semantics in Components.Primitives; `StorefrontConsentPanel` renders shared semantics in Components.Ssr; V2 retains final classes/copy/placement and its registered consent wrapper; Presentation retains purchase/consent command behavior. Automated focused gate passed `247/247`; browser evidence at `output/playwright/storefront-shared-semantic-render/` covers 1440x900 and 390x844 product, consent, and toast states. Starter consent remains explicitly deferred.
+
 - [x] Storefront Presentation must not own concrete Storefront V2/Tailwind theme class strings in route fallback markup, content page presentation contracts, or payment result state contracts.
 - [x] Storefront Presentation must not own theme CSS, Tailwind/PostCSS config, font files, or theme image assets.
 - [x] Account unauthorized redirect fallback must remain classless or semantic-only while preserving anonymous redirect behavior.

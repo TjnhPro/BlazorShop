@@ -15,7 +15,7 @@ public static class ProductPurchasePanelVisuals
         FreeShippingBadge: "rounded bg-emerald-50 px-2 py-1 text-emerald-700",
         DeliveryEstimateBadge: "rounded bg-neutral-100 px-2 py-1 text-neutral-700",
         OptionGroups: "mt-5 grid gap-5",
-        OptionGroup: "mt-4",
+        OptionGroup: string.Empty,
         OptionLegend: "flex items-center justify-between gap-3 text-sm font-semibold text-neutral-900",
         OptionalLabel: "text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500",
         OptionChoices: "mt-2 flex flex-wrap gap-2",

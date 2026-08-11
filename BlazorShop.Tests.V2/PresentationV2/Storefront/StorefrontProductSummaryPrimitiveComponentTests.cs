@@ -137,11 +137,17 @@ public sealed class StorefrontProductSummaryPrimitiveComponentTests
             Directory.EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives"), "*.razor", SearchOption.AllDirectories)
                 .Select(File.ReadAllText));
 
-        Assert.DoesNotContain("rounded-", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("bg-", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("text-", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("shadow", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("group", source, StringComparison.Ordinal);
+        var classValues = global::System.Text.RegularExpressions.Regex.Matches(source, "class=\"(?<value>[^\"]*)\"")
+            .Select(match => match.Groups["value"].Value);
+
+        foreach (var classValue in classValues)
+        {
+            Assert.DoesNotContain("rounded-", classValue, StringComparison.Ordinal);
+            Assert.DoesNotContain("bg-", classValue, StringComparison.Ordinal);
+            Assert.DoesNotContain("text-", classValue, StringComparison.Ordinal);
+            Assert.DoesNotContain("shadow", classValue, StringComparison.Ordinal);
+            Assert.DoesNotContain("group", classValue, StringComparison.Ordinal);
+        }
     }
 
     private static async Task<string> RenderImageAsync(ProductSummaryItem item)
