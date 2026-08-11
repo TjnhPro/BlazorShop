@@ -248,26 +248,26 @@ Exit criteria:
 
 Tasks:
 
-- [ ] Add `StorefrontCartViewLabels` under `BlazorShop.Storefront.Components/Contracts/Cart/`.
-- [ ] Include labels for all current hardcoded cart copy, including title, heading, empty state, loading state, error state, quantity label, remove action, clear action, checkout action, continue shopping action, product link label where applicable, cart summary labels, and fallback item text.
-- [ ] Add `StorefrontCheckoutViewLabels` under `BlazorShop.Storefront.Components/Contracts/Checkout/`.
-- [ ] Include labels for all current hardcoded checkout shell copy, including heading, state label, refresh action, refreshing state, cart version label, shipping-not-required message, review action, place-order action, placing-order state, error/failure fallback, loading state, and selected option labels.
-- [ ] Provide safe defaults only if existing components require non-null values to render during tests.
-- [ ] Keep defaults neutral and technical if defaults are needed.
-- [ ] Put V2 final English copy in V2.WASM options, not in shared Components contracts.
+- [x] Add `StorefrontCartViewLabels` under `BlazorShop.Storefront.Components/Contracts/Cart/`. Evidence: `StorefrontCartViewLabels.cs` is the sole shared cart label contract definition.
+- [x] Include labels for all current hardcoded cart copy, including title, heading, empty state, loading state, error state, quantity label, remove action, clear action, checkout action, continue shopping action, product link label where applicable, cart summary labels, and fallback item text. Evidence: focused contract test asserts the complete cart label property set, including current cart copy and future-safe loading/error slots.
+- [x] Add `StorefrontCheckoutViewLabels` under `BlazorShop.Storefront.Components/Contracts/Checkout/`. Evidence: `StorefrontCheckoutViewLabels.cs` is the sole shared checkout label contract definition.
+- [x] Include labels for all current hardcoded checkout shell copy, including heading, state label, refresh action, refreshing state, cart version label, shipping-not-required message, review action, place-order action, placing-order state, error/failure fallback, loading state, and selected option labels. Evidence: focused contract test asserts the complete checkout label property set, including current shell copy and future-safe loading/error/selection slots.
+- [x] Provide safe defaults only if existing components require non-null values to render during tests. Evidence: both contracts expose non-null `string.Empty` property defaults and an `Empty` instance without storefront copy.
+- [x] Keep defaults neutral and technical if defaults are needed. Evidence: shared contract defaults are `string.Empty`; no final English copy is defined in Components.
+- [x] Put V2 final English copy in V2.WASM options, not in shared Components contracts. Evidence: `StorefrontCartViewOptions.Labels` and `StorefrontCheckoutShellOptions.Labels` contain the current English tokens; the focused test asserts representative ownership and shared contracts exclude those tokens.
 
 Guardrails:
 
-- [ ] Shared labels are a contract shape, not the final storefront copy source.
-- [ ] Do not add localization infrastructure in this phase.
-- [ ] Do not add database-backed labels in this phase.
-- [ ] Do not move route labels or page titles outside current scope.
+- [x] Shared labels are a contract shape, not the final storefront copy source. Evidence: the two Components records contain only neutral string defaults; V2.WASM options own final values.
+- [x] Do not add localization infrastructure in this phase. Evidence: no localization services, resources, registrations, or dependencies changed.
+- [x] Do not add database-backed labels in this phase. Evidence: only Components contract and V2.WASM option source changed; no persistence/API changes were made.
+- [x] Do not move route labels or page titles outside current scope. Evidence: cart and checkout Razor/page files remain untouched.
 
 Exit criteria:
 
-- [ ] All cart user-facing text in the reusable cart component can be supplied by labels.
-- [ ] All checkout shell user-facing text in the reusable checkout shell can be supplied by labels.
-- [ ] V2.WASM owns the current final text values.
+- [x] All cart user-facing text in the reusable cart component can be supplied by labels. Evidence: the cart label contract covers each current hardcoded token and required loading/error fallbacks; component wiring is deferred to Phase 3.
+- [x] All checkout shell user-facing text in the reusable checkout shell can be supplied by labels. Evidence: the checkout label contract covers each current hardcoded shell token and required loading/error/selection fallbacks; component wiring is deferred to Phase 4.
+- [x] V2.WASM owns the current final text values. Evidence: both V2.WASM option classes expose `Labels` with the exact current cart/checkout English tokens; focused ownership test passes.
 
 ## Phase 3 - Move Cart Implementation Into WasmHost
 

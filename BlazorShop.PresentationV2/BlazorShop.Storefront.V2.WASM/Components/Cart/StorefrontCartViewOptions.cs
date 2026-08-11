@@ -4,6 +4,37 @@ namespace BlazorShop.Storefront.V2.WASM.Components.Cart;
 
 public static class StorefrontCartViewOptions
 {
+    public static StorefrontCartViewLabels Labels { get; } = new()
+    {
+        HeaderEyebrow = "Storefront Cart",
+        Heading = "My Cart",
+        IntroductoryText = "Review the items you picked from the public storefront before you continue to checkout.",
+        ItemCountSingular = "item",
+        ItemCountPlural = "items",
+        ItemCountSuffix = "in cart",
+        EmptyHeading = "Your cart is empty",
+        EmptyText = "Add products from the storefront and they will appear here for review before checkout.",
+        LoadingText = "Loading cart...",
+        ErrorFallback = "Cart could not be updated.",
+        BrowseProducts = "Browse Products",
+        BackToHome = "Back to Home",
+        FallbackItemText = "Item",
+        UnitPrice = "Unit Price",
+        Quantity = "Quantity",
+        LineTotal = "Line Total",
+        ViewProduct = "View Product",
+        Remove = "Remove",
+        OrderSummary = "Order Summary",
+        ReadyForCheckout = "Ready for checkout",
+        Items = "Items",
+        Subtotal = "Subtotal",
+        Total = "Total",
+        ContinueToCheckout = "Continue to Checkout",
+        CheckoutHandoffText = "Checkout continues through an authenticated handoff so payment and order history stay attached to your profile.",
+        ClearCart = "Clear Cart",
+        KeepShopping = "Keep Shopping"
+    };
+
     public static StorefrontCartViewClasses Classes { get; } = new()
     {
         PageSection = "mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8",

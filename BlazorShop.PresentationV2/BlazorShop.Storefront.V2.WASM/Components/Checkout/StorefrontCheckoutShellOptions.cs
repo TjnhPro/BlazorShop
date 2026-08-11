@@ -4,6 +4,29 @@ namespace BlazorShop.Storefront.V2.WASM.Components.Checkout;
 
 public static class StorefrontCheckoutShellOptions
 {
+    public static StorefrontCheckoutViewLabels Labels { get; } = new()
+    {
+        StateLabel = "Checkout state",
+        EmptyCartTitle = "Cart is empty",
+        ReadySuffix = "ready",
+        Refresh = "Refresh",
+        Refreshing = "Refreshing...",
+        LoadingText = "Loading checkout...",
+        ErrorFallback = "Checkout could not be refreshed.",
+        CartVersion = "Cart version",
+        CheckoutVersion = "Checkout version",
+        Total = "Total",
+        Shipping = "Shipping",
+        ShippingNotRequired = "Shipping is not required for this cart.",
+        ShippingUnavailable = "Shipping is not available yet.",
+        Payment = "Payment",
+        SelectedShippingOption = "Selected shipping option",
+        SelectedPaymentOption = "Selected payment option",
+        ReviewLatestCheckout = "Review latest checkout",
+        PlaceOrder = "Place order",
+        PlacingOrder = "Placing order..."
+    };
+
     public static StorefrontCheckoutViewClasses Classes { get; } = new()
     {
         Shell = "mb-6 rounded border border-neutral-200 bg-white px-5 py-4",

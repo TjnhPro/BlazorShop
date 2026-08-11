@@ -92,6 +92,60 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void CartAndCheckoutLabelContracts_AreDefinedInSharedComponentsContractsWithV2WasmCopy()
+        {
+            var presentationRoot = ResolveRepositoryPath("BlazorShop.PresentationV2");
+            var cartDefinitions = FindContractDefinitions(presentationRoot, "StorefrontCartViewLabels");
+            var checkoutDefinitions = FindContractDefinitions(presentationRoot, "StorefrontCheckoutViewLabels");
+
+            Assert.Equal(
+                new[]
+                {
+                    "BlazorShop.Storefront.Components/Contracts/Cart/StorefrontCartViewLabels.cs"
+                },
+                cartDefinitions);
+            Assert.Equal(
+                new[]
+                {
+                    "BlazorShop.Storefront.Components/Contracts/Checkout/StorefrontCheckoutViewLabels.cs"
+                },
+                checkoutDefinitions);
+
+            var cartLabels = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/StorefrontCartViewLabels.cs");
+            var checkoutLabels = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/StorefrontCheckoutViewLabels.cs");
+            var cartOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs");
+            var checkoutOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
+
+            foreach (var property in new[]
+            {
+                "HeaderEyebrow", "Heading", "IntroductoryText", "ItemCountSingular", "ItemCountPlural", "ItemCountSuffix",
+                "EmptyHeading", "EmptyText", "LoadingText", "ErrorFallback", "BrowseProducts", "BackToHome", "FallbackItemText",
+                "UnitPrice", "Quantity", "LineTotal", "ViewProduct", "Remove", "OrderSummary", "ReadyForCheckout", "Items",
+                "Subtotal", "Total", "ContinueToCheckout", "CheckoutHandoffText", "ClearCart", "KeepShopping"
+            })
+            {
+                Assert.Contains($"public string {property} {{ get; init; }} = string.Empty;", cartLabels, StringComparison.Ordinal);
+            }
+
+            foreach (var property in new[]
+            {
+                "StateLabel", "EmptyCartTitle", "ReadySuffix", "Refresh", "Refreshing", "LoadingText", "ErrorFallback",
+                "CartVersion", "CheckoutVersion", "Total", "Shipping", "ShippingNotRequired", "ShippingUnavailable", "Payment",
+                "SelectedShippingOption", "SelectedPaymentOption", "ReviewLatestCheckout", "PlaceOrder", "PlacingOrder"
+            })
+            {
+                Assert.Contains($"public string {property} {{ get; init; }} = string.Empty;", checkoutLabels, StringComparison.Ordinal);
+            }
+
+            Assert.DoesNotContain("My Cart", cartLabels, StringComparison.Ordinal);
+            Assert.DoesNotContain("Checkout state", checkoutLabels, StringComparison.Ordinal);
+            Assert.Contains("public static StorefrontCartViewLabels Labels { get; } = new()", cartOptions, StringComparison.Ordinal);
+            Assert.Contains("Heading = \"My Cart\"", cartOptions, StringComparison.Ordinal);
+            Assert.Contains("public static StorefrontCheckoutViewLabels Labels { get; } = new()", checkoutOptions, StringComparison.Ordinal);
+            Assert.Contains("StateLabel = \"Checkout state\"", checkoutOptions, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void WasmTailwindPipeline_OwnsInteractiveCssWithoutScanningOtherProjects()
         {
             var package = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json");
