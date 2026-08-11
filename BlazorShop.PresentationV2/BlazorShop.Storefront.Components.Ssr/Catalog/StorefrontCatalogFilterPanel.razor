@@ -1,0 +1,146 @@
+@namespace BlazorShop.Storefront.Components.Ssr.Catalog
+@using BlazorShop.Storefront.Components.Contracts.Catalog
+@using BlazorShop.Storefront.Presentation.Models
+
+<form method="get" action="@Action" class="@Classes.Root" role="@Role">
+    @if (ShowCategory)
+    {
+        <select name="category" class="@Classes.Select" aria-label="@Labels.CategoryAriaLabel">
+            <option value="">@Labels.AllCategories</option>
+            @foreach (var category in Categories)
+            {
+                <option value="@category.Slug" selected="@IsSelectedCategory(category.Slug)">@category.Label</option>
+            }
+        </select>
+    }
+
+    @if (ShowSearch)
+    {
+        <input name="q"
+               value="@SearchTerm"
+               type="search"
+               placeholder="@Labels.SearchPlaceholder"
+               class="@Classes.Input"
+               aria-label="@Labels.SearchPlaceholder" />
+    }
+
+    @if (ShowPriceRange)
+    {
+        <input name="minPrice"
+               value="@MinPrice"
+               type="number"
+               step="0.01"
+               placeholder="@Labels.MinPricePlaceholder"
+               class="@Classes.Input" />
+        <input name="maxPrice"
+               value="@MaxPrice"
+               type="number"
+               step="0.01"
+               placeholder="@Labels.MaxPricePlaceholder"
+               class="@Classes.Input" />
+    }
+
+    @if (ShowSort)
+    {
+        <select name="sortBy" class="@Classes.Select" aria-label="@Labels.SortAriaLabel">
+            <option value="@ProductCatalogSortBy.DisplayOrder.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.DisplayOrder)">@Labels.FeaturedSort</option>
+            <option value="@ProductCatalogSortBy.Updated.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.Updated)">@Labels.RecentlyUpdatedSort</option>
+            <option value="@ProductCatalogSortBy.PriceLowToHigh.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.PriceLowToHigh)">@Labels.PriceLowSort</option>
+            <option value="@ProductCatalogSortBy.PriceHighToLow.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.PriceHighToLow)">@Labels.PriceHighSort</option>
+            <option value="@ProductCatalogSortBy.Newest.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.Newest)">@Labels.NewestSort</option>
+        </select>
+    }
+
+    @if (ShowPageSize)
+    {
+        <select name="pageSize" class="@Classes.Select" aria-label="@Labels.PageSizeAriaLabel">
+            @foreach (var pageSizeOption in PageSizeOptions)
+            {
+                <option value="@pageSizeOption" selected="@(PageSize == pageSizeOption)">@pageSizeOption @Labels.PerPageSuffix</option>
+            }
+        </select>
+    }
+
+    @if (ShowStock)
+    {
+        <label class="@Classes.CheckboxLabel">
+            <input name="inStock" value="true" type="checkbox" class="@Classes.Checkbox" checked="@InStock" />
+            @Labels.InStock
+        </label>
+    }
+
+    <button type="submit" class="@Classes.SubmitButton">
+        @if (SubmitIcon is not null)
+        {
+            @SubmitIcon
+        }
+        @Labels.Submit
+    </button>
+</form>
+
+@code {
+    [Parameter]
+    public string? Action { get; set; }
+
+    [Parameter]
+    public string? Role { get; set; }
+
+    [Parameter]
+    public bool ShowCategory { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<CatalogFilterCategoryOption> Categories { get; set; } = [];
+
+    [Parameter]
+    public string? CategorySlug { get; set; }
+
+    [Parameter]
+    public bool ShowSearch { get; set; }
+
+    [Parameter]
+    public string? SearchTerm { get; set; }
+
+    [Parameter]
+    public bool ShowPriceRange { get; set; }
+
+    [Parameter]
+    public decimal? MinPrice { get; set; }
+
+    [Parameter]
+    public decimal? MaxPrice { get; set; }
+
+    [Parameter]
+    public bool ShowSort { get; set; }
+
+    [Parameter]
+    public ProductCatalogSortBy SortBy { get; set; } = ProductCatalogSortBy.DisplayOrder;
+
+    [Parameter]
+    public bool ShowPageSize { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; } = 24;
+
+    [Parameter]
+    public IReadOnlyList<int> PageSizeOptions { get; set; } = [12, 24, 48];
+
+    [Parameter]
+    public bool ShowStock { get; set; }
+
+    [Parameter]
+    public bool InStock { get; set; }
+
+    [Parameter]
+    public RenderFragment? SubmitIcon { get; set; }
+
+    [Parameter]
+    public StorefrontCatalogFilterPanelClasses Classes { get; set; } = new();
+
+    [Parameter]
+    public StorefrontCatalogFilterPanelLabels Labels { get; set; } = StorefrontCatalogFilterPanelLabels.Empty;
+
+    private bool IsSelectedCategory(string slug)
+    {
+        return string.Equals(slug, CategorySlug?.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+}

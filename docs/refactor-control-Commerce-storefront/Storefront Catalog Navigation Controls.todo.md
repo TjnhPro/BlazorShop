@@ -53,7 +53,7 @@ V2 remains owner of:
 
 Current reusable-looking V2 components:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor`
 - [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Shared/BreadcrumbNav.razor`
 
 Current Category page:
@@ -437,45 +437,45 @@ Source:
 
 Target:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor`
 
 Tasks:
 
-- [ ] Rename component from `CatalogFilterPanel` to `StorefrontCatalogFilterPanel`.
-- [ ] Set namespace to `BlazorShop.Storefront.Components.Ssr.Catalog`.
-- [ ] Keep `method="get"`.
-- [ ] Keep host-supplied `Action`.
-- [ ] Keep optional `Role`.
-- [ ] Preserve `ShowCategory`.
-- [ ] Preserve `Categories`.
-- [ ] Preserve `CategorySlug`.
-- [ ] Preserve `ShowSearch`.
-- [ ] Preserve `SearchTerm`.
-- [ ] Preserve `ShowPriceRange`.
-- [ ] Preserve `MinPrice`.
-- [ ] Preserve `MaxPrice`.
-- [ ] Preserve `ShowSort`.
-- [ ] Preserve `SortBy`.
-- [ ] Preserve `ShowPageSize`.
-- [ ] Preserve `PageSize`.
-- [ ] Preserve `PageSizeOptions`.
-- [ ] Preserve `ShowStock`.
-- [ ] Preserve `InStock`.
-- [ ] Preserve `RenderFragment? SubmitIcon`.
-- [ ] Replace individual class string parameters with `StorefrontCatalogFilterPanelClasses` unless the local pattern strongly favors flat parameters.
-- [ ] Replace direct copy literals with `StorefrontCatalogFilterPanelLabels`.
+- [x] Rename component from `CatalogFilterPanel` to `StorefrontCatalogFilterPanel`.
+- [x] Set namespace to `BlazorShop.Storefront.Components.Ssr.Catalog`.
+- [x] Keep `method="get"`.
+- [x] Keep host-supplied `Action`.
+- [x] Keep optional `Role`.
+- [x] Preserve `ShowCategory`.
+- [x] Preserve `Categories`.
+- [x] Preserve `CategorySlug`.
+- [x] Preserve `ShowSearch`.
+- [x] Preserve `SearchTerm`.
+- [x] Preserve `ShowPriceRange`.
+- [x] Preserve `MinPrice`.
+- [x] Preserve `MaxPrice`.
+- [x] Preserve `ShowSort`.
+- [x] Preserve `SortBy`.
+- [x] Preserve `ShowPageSize`.
+- [x] Preserve `PageSize`.
+- [x] Preserve `PageSizeOptions`.
+- [x] Preserve `ShowStock`.
+- [x] Preserve `InStock`.
+- [x] Preserve `RenderFragment? SubmitIcon`.
+- [x] Replace individual class string parameters with `StorefrontCatalogFilterPanelClasses` unless the local pattern strongly favors flat parameters.
+- [x] Replace direct copy literals with `StorefrontCatalogFilterPanelLabels`.
 - [ ] Keep query input names exactly:
-  - [ ] `category`
-  - [ ] `q`
-  - [ ] `minPrice`
-  - [ ] `maxPrice`
-  - [ ] `sortBy`
-  - [ ] `pageSize`
-  - [ ] `inStock`
-- [ ] Keep `ProductCatalogSortBy.*.ToApiValue()` values.
-- [ ] Do not add client-side submit logic.
-- [ ] Do not add JS.
-- [ ] Do not add API/BFF calls.
+- [x] `category`
+  - [x] `q`
+  - [x] `minPrice`
+  - [x] `maxPrice`
+  - [x] `sortBy`
+  - [x] `pageSize`
+  - [x] `inStock`
+- [x] Keep `ProductCatalogSortBy.*.ToApiValue()` values.
+- [x] Do not add client-side submit logic.
+- [x] Do not add JS.
+- [x] Do not add API/BFF calls.
 
 Cleanup:
 
