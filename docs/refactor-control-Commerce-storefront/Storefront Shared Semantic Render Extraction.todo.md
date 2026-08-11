@@ -859,6 +859,16 @@ Exit criteria:
 - [ ] desktop and mobile evidence exists;
 - [ ] no selector, event, layout, or visual regression is observed.
 
+### Phase 3.4.7 execution evidence (2026-08-11)
+
+- Started the configured V2 environment with `./scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser`; `http://localhost:5180/health`, `http://localhost:18598/health`, and `http://localhost:18598/` returned HTTP 200.
+- Tested `http://localhost:18598` with store key `default` on commit `8211ee97`, using headed Chromium at 1440x900 and 390x844.
+- Real same-origin purchase flows passed for `/product/qa-simple-product-100` and `/product/catalog-qa-t-shirt`; the latter updated price, stock, SKU, GTIN, image, and eligibility after variant selection. The cart command showed success feedback, a badge update, and one success toast.
+- `node scripts/qa/storefront-browser-action-boundary-proof.js` and `node scripts/qa/storefront-browser-semantics-v2-proof.js` passed. They record only same-origin BFF calls and no direct Commerce Node calls.
+- The default local fixture had consent disabled. It was enabled only for the browser run, then restored to `consent_enabled=false` and `consent_banner_required=false`. Actual BFF current/save/revoke requests returned HTTP 200; Essential-only, selected-preferences save, footer manage/reopen, reload persistence, and revoke/reload behavior were observed.
+- No browser console errors were reported. A safe fixture did not expose an enabled error submitter after it became non-purchasable; the existing JS split proof remains the coverage for error/info/warning templates.
+- Screenshots (ignored QA artifacts): `output/playwright/storefront-shared-semantic-render/product-simple-desktop.png`, `product-variant-desktop-1440.png`, `product-variant-mobile.png`, `consent-open-desktop.png`, `consent-open-mobile.png`, and `toast-success-desktop.png`.
+
 ## Phase 3.4.8 - Documentation, Duplication Audit, And Closure
 
 Goal: make ownership discoverable, remove obsolete V2 markup, and close only with reproducible evidence.
