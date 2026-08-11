@@ -164,7 +164,7 @@ Public interactive storefront behavior should use `InteractiveWebAssembly` with 
 
 Browser/WASM code still uses same-origin BFF endpoints and must not call Commerce Node directly.
 
-For reusable interactive cart and checkout behavior, WasmHost owns the Browser-controller implementation, V2.WASM owns only the V2 wrapper and final label/class option values, and the V2 server page owns `InteractiveWebAssembly` placement. This preserves the required Browser -> same-origin Presentation/BFF -> Runtime -> Commerce Node path; a WasmHost component must never call Commerce Node or a Storefront API directly. The checkout runtime shell may hydrate with `ShowPanel=false`; that does not replace the V2 server page's visible SSR checkout form.
+For reusable interactive cart, checkout, and account-leaf behavior, WasmHost owns the Browser-controller implementation, V2.WASM owns only V2 wrappers/composition and final label/class option values, and the V2 server page owns `InteractiveWebAssembly` placement. Account leaves use `IStorefrontBrowserAccountController`; `StorefrontAccountApp` and `StorefrontAccountNavigation` remain V2.WASM composition. This preserves the required Browser -> same-origin Presentation/BFF -> Runtime -> Commerce Node path; a WasmHost component must never call Commerce Node or a Storefront API directly. The checkout runtime shell may hydrate with `ShowPanel=false`; that does not replace the V2 server page's visible SSR checkout form.
 
 H2 Component MVP runtime evidence proves the current pattern through `/__qa/component-mvp`, a hidden/noindex Presentation-owned QA route:
 
@@ -205,7 +205,7 @@ It must not call Control Plane APIs and must not use Control Plane credentials.
 
 Browser and WASM code calls same-origin storefront endpoints under `/api/*`. It must not call Commerce Node protected APIs directly, must not know the Commerce Node base URL, must not hold node credentials, and must not store Commerce access tokens in browser local storage.
 
-`BlazorShop.Storefront.Browser` owns browser-side local API transport primitives, the Browser-owned `storefrontWasmInterop.js` static web asset, and high-level cart, checkout, and account controllers for interactive WASM flows. V2.WASM visual components render controller state and call controller methods; they must not construct Browser request DTOs, create default `/api/*` descriptors, resolve services manually, or call `StorefrontLocalApiClient` directly. Public browser events expose visual projections only, while command payload state remains inside Presentation/Browser closures.
+`BlazorShop.Storefront.Browser` owns browser-side local API transport primitives, the Browser-owned `storefrontWasmInterop.js` static web asset, and high-level cart, checkout, and account controllers for interactive WASM flows. WasmHost leaves render controller state and call controller methods; V2.WASM retains only host-specific composition where required. Neither may construct Browser request DTOs, create default `/api/*` descriptors, resolve services manually, or call `StorefrontLocalApiClient` directly. Public browser events expose visual projections only, while command payload state remains inside Presentation/Browser closures.
 
 Browser controller registration is split by runtime:
 

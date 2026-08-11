@@ -484,34 +484,34 @@ Goal: keep architecture source-of-truth aligned with the new split.
 
 Update `BlazorShop.PresentationV2/COMPONENT-MODES.md`:
 
-- [ ] Add account leaves to the WasmHost examples beside cart and checkout.
-- [ ] Document that AccountApp and AccountNavigation are still V2.WASM composition in this phase.
-- [ ] State that WasmHost account leaves use Browser controllers and host-supplied contracts.
-- [ ] State that V2 pages own `@rendermode`.
+- [x] Add account leaves to the WasmHost examples beside cart and checkout.
+- [x] Document that AccountApp and AccountNavigation are still V2.WASM composition in this phase.
+- [x] State that WasmHost account leaves use Browser controllers and host-supplied contracts.
+- [x] State that V2 pages own `@rendermode`.
 
 Update `docs/architecture/03-runtime-boundaries.md`:
 
-- [ ] Clarify Storefront Components.WasmHost account leaves may use Browser controllers only.
-- [ ] Clarify WasmHost must not call Commerce Node directly.
-- [ ] Clarify V2 keeps render-mode placement.
+- [x] Clarify Storefront Components.WasmHost account leaves may use Browser controllers only.
+- [x] Clarify WasmHost must not call Commerce Node directly.
+- [x] Clarify V2 keeps render-mode placement.
 
 Update `docs/architecture/05-project-and-folder-guide.md`:
 
-- [ ] Add `Components.WasmHost/Components/Account` as current reusable browser account leaf location.
-- [ ] Add `Components/Contracts/Account` as current account contract/class/label ownership location.
-- [ ] Keep V2.WASM account composition ownership documented.
+- [x] Add `Components.WasmHost/Components/Account` as current reusable browser account leaf location.
+- [x] Add `Components/Contracts/Account` as current account contract/class/label ownership location.
+- [x] Keep V2.WASM account composition ownership documented.
 
 Update `docs/architecture/10-v2-contract-ownership.md`:
 
-- [ ] Clarify account visual/runtime contracts live in Components contracts and WasmHost, not Presentation transport contracts.
-- [ ] Clarify final V2 copy/classes remain V2-owned.
+- [x] Clarify account visual/runtime contracts live in Components contracts and WasmHost, not Presentation transport contracts.
+- [x] Clarify final V2 copy/classes remain V2-owned.
 
 Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
 
-- [ ] Add account Playwright regression section if missing.
-- [ ] Include account profile, password, addresses, orders list/detail.
-- [ ] Include same-origin BFF network assertions.
-- [ ] Include no direct Commerce Node network assertion.
+- [x] Add account Playwright regression section if missing.
+- [x] Include account profile, password, addresses, orders list/detail.
+- [x] Include same-origin BFF network assertions.
+- [x] Include no direct Commerce Node network assertion.
 
 ## Phase 11 - Compile Verification
 

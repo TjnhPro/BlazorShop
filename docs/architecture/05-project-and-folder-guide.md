@@ -216,6 +216,7 @@ Use for:
 - Reusable component descriptor contracts under `Contracts/Components`.
 - Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
 - Shared cart/checkout render class and label contracts: `StorefrontCartViewClasses`, `StorefrontCartViewLabels`, `StorefrontCheckoutViewClasses`, and `StorefrontCheckoutViewLabels`. Hosts supply their final values.
+- Shared account leaf class and label contracts under `Contracts/Account`: `StorefrontAccountFormClasses`, `StorefrontAccountAddressBookClasses`, `StorefrontAccountOrderListClasses`, `StorefrontAccountOrderDetailClasses`, and the neutral account label bags. Hosts supply final V2 copy and class values.
 
 Do not:
 
@@ -309,7 +310,7 @@ Use for:
 
 - WASM feature roots that consume `BlazorShop.Storefront.Browser` controllers.
 - Browser-safe state/action contracts, `EventCallback`, lifecycle interaction, and `IJSRuntime` only for real browser behavior.
-- Reusable cart and checkout implementations. These own controller lifecycle/mutations but receive labels, classes, actions, initial state, and routes as parameters.
+- Reusable cart, checkout, and account-leaf implementations. The five `Components/Account` leaves own account controller lifecycle/mutations through `IStorefrontBrowserAccountController`, but receive labels, classes, actions, initial state, and routes as parameters.
 
 Do not:
 
@@ -348,8 +349,8 @@ Do not:
 Use for:
 
 - Storefront V2 interactive WebAssembly components and bootstrapping required by `AddInteractiveWebAssemblyRenderMode`.
-- Interactive cart, checkout, and account root components used by Storefront V2 after SSR route/security/bootstrap has selected the page surface.
-- Visual composition for interactive browser roots. Components render `BlazorShop.Storefront.Browser` controller state and invoke high-level controller methods.
+- Interactive cart, checkout, and account composition roots used by Storefront V2 after SSR route/security/bootstrap has selected the page surface. `StorefrontAccountApp` and `StorefrontAccountNavigation` remain V2.WASM composition; reusable account leaves live in Components.WasmHost.
+- Visual composition for interactive browser roots. V2.WASM forwards prepared contracts and final V2 copy/classes to WasmHost leaves; it does not duplicate account controller lifecycle or mutation behavior.
 - Thin V2 wrappers such as `StorefrontCartSection` and `StorefrontCheckoutSection` that forward page contracts to WasmHost implementations and supply final V2 labels/classes. V2 pages, not these wrappers, own `InteractiveWebAssembly` placement; `CheckoutPage` retains the visible SSR checkout form while the wrapper can hydrate with `ShowPanel=false`.
 
 Do not:

@@ -26,6 +26,14 @@ Muc tieu hien tai:
 - [x] Run the local V2 stack and Playwright checkout COD case: create a cart, load checkout, submit valid contact/shipping data, place COD order, and verify success without console/page errors or direct Commerce Node browser calls. 2026-08-11: `QA Digital No Shipping Product` COD completed as `ORD-20260811-7A4002FC`.
 - [x] Verify source boundaries: WasmHost owns cart/checkout controller behavior, V2.WASM wrappers only supply V2 options, V2 pages own `InteractiveWebAssembly`, and the V2 checkout page retains SSR form ownership while `ShowPanel=false`. 2026-08-11: Phase 9 guardrails and browser output confirm this boundary.
 
+## Account WasmHost Runtime Leaves Evidence
+
+- [ ] Build Components, Browser, Components.WasmHost, V2.WASM, V2, and the solution with `--no-restore` after account-leaf extraction.
+- [ ] Run account/WasmHost/component-mode/render-mode/visual-boundary/V2.WASM/commerce-flow/browser-action focused tests and the full `BlazorShop.Tests.V2` project.
+- [ ] Run local V2 Playwright account regression: authenticated profile update, invalid password validation, address create/edit/delete, empty and populated order list, order detail, and receipt navigation.
+- [ ] Verify browser traffic remains same-origin BFF/static/media only, with no direct Commerce Node Storefront calls, no real console/page errors, and no unexpected 5xx responses.
+- [ ] Verify source boundaries: the five Account WasmHost leaves own `IStorefrontBrowserAccountController` lifecycle/mutations, V2.WASM keeps only AccountApp/navigation/composition and final V2 options, and the V2 server account host owns `InteractiveWebAssembly` placement.
+
 ## Phase 7 V2 Canonicalization Evidence - 2026-07-22
 
 - [x] Storefront V2 builds through `dotnet build BlazorShop.sln -c Release --no-restore`.

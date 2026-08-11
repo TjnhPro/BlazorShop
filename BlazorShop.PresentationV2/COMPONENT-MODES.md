@@ -157,7 +157,7 @@ Forbidden:
 
 WasmHost components must not use `@rendermode`. A host or composition root owns render-mode placement.
 
-Cart and checkout illustrate this split. `Components.WasmHost/Components/Cart/StorefrontCartView.razor` and `Components.WasmHost/Components/Checkout/StorefrontCheckoutShell.razor` own reusable browser interaction through Browser controllers. Their V2.WASM `StorefrontCartSection` and `StorefrontCheckoutSection` wrappers supply the final V2 class and label options only. The V2 server pages own `@rendermode="InteractiveWebAssembly"` placement. `CheckoutPage` keeps the extracted shell hidden with `ShowPanel="false"` for browser state hydration while the server page continues to own the visible SSR checkout form, address/payment fields, order summary, and submit action.
+Cart, checkout, and account leaves illustrate this split. `Components.WasmHost/Components/Cart/StorefrontCartView.razor`, `Components.WasmHost/Components/Checkout/StorefrontCheckoutShell.razor`, and the reusable account leaves under `Components.WasmHost/Components/Account` own browser interaction through Browser controllers. The account leaves use `IStorefrontBrowserAccountController`; they receive neutral account labels/classes and never call Commerce Node directly. V2.WASM `StorefrontCartSection` and `StorefrontCheckoutSection` wrappers supply final V2 class and label options, while `StorefrontAccountApp` and `StorefrontAccountNavigation` retain V2 account composition and navigation. The V2 server pages own `@rendermode="InteractiveWebAssembly"` placement. `CheckoutPage` keeps the extracted shell hidden with `ShowPanel="false"` for browser state hydration while the server page continues to own the visible SSR checkout form, address/payment fields, order summary, and submit action.
 
 Required browser data path:
 
@@ -227,7 +227,7 @@ Implemented reference examples:
 - `StorefrontPagination` in `Components.Primitives/Navigation`, over host-prepared pagination items;
 - `StorefrontCatalogFilterPanel` in `Components.Ssr/Catalog` and `StorefrontBreadcrumb` in `Components.Ssr/Navigation`;
 - V2.WASM wrapper components for browser-visible contact and discounted rail adoption.
-- WasmHost cart and checkout implementations, with V2.WASM option-supplying wrappers and V2 page-owned render-mode placement.
+- WasmHost cart, checkout, and account-leaf implementations, with V2.WASM option-supplying/composition roots and V2 page-owned render-mode placement.
 
 The contact reference proves Browser/BFF/WASM behavior through V2 page composition, V2.WASM wrapper ownership, and a reusable WasmHost app.
 
