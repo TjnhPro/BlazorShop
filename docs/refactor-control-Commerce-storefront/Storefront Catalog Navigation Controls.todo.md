@@ -699,19 +699,19 @@ Goal: keep compile graph explicit and minimal.
 
 Tasks:
 
-- [ ] Confirm `BlazorShop.Storefront.Components.Primitives` already references `BlazorShop.Storefront.Components`.
-- [ ] Confirm `BlazorShop.Storefront.Components.Ssr` already references `BlazorShop.Storefront.Components`.
-- [ ] Confirm `BlazorShop.Storefront.Components.Ssr` already references `BlazorShop.Storefront.Presentation`.
-- [ ] Add namespace imports only where needed.
-- [ ] Prefer `_Imports.razor` only if multiple V2 files consume the namespace.
-- [ ] Do not add `Components.Ssr` reference to V2.WASM.
-- [ ] Do not add `Presentation` reference to `Components.Primitives`.
-- [ ] Do not add Browser/Runtime/Client references to SSR or Primitives.
+- [x] Confirm `BlazorShop.Storefront.Components.Primitives` already references `BlazorShop.Storefront.Components`.
+- [x] Confirm `BlazorShop.Storefront.Components.Ssr` already references `BlazorShop.Storefront.Components`.
+- [x] Confirm `BlazorShop.Storefront.Components.Ssr` already references `BlazorShop.Storefront.Presentation`.
+- [x] Add namespace imports only where needed.
+- [x] Prefer `_Imports.razor` only if multiple V2 files consume the namespace.
+- [x] Do not add `Components.Ssr` reference to V2.WASM.
+- [x] Do not add `Presentation` reference to `Components.Primitives`.
+- [x] Do not add Browser/Runtime/Client references to SSR or Primitives.
 
 Exit criteria:
 
-- [ ] project graph remains unchanged except necessary compile references already present;
-- [ ] V2.WASM remains isolated from Presentation/SSR where existing tests require it.
+- [x] project graph remains unchanged except necessary compile references already present;
+- [x] V2.WASM remains isolated from Presentation/SSR where existing tests require it.
 
 ## Phase 3.3.14 - Update Existing Characterization Tests
 
