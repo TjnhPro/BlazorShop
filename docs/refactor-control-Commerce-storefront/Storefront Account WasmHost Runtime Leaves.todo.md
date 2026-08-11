@@ -596,102 +596,110 @@ Goal: verify real browser account behavior, not smoke-only rendering.
 
 Runtime setup:
 
-- [ ] Start V2 local stack with `.\scripts\run-v2-local.ps1 -StopExisting`.
-- [ ] Confirm storefront URL and configured test store from local script output.
-- [ ] Use an existing QA account that is allowed to sign in.
-- [ ] Use a dedicated QA address name/phone/postal code marker so cleanup is safe.
-- [ ] Use an order fixture already associated with the QA account for order list/detail checks.
+- [x] Start V2 local stack with `.\scripts\run-v2-local.ps1 -StopExisting`.
+- [x] Confirm storefront URL and configured test store from local script output.
+- [x] Use an existing QA account that is allowed to sign in.
+- [x] Use a dedicated QA address name/phone/postal code marker so cleanup is safe.
+- [x] Use an order fixture already associated with the QA account for order list/detail checks.
 
 Profile flow:
 
-- [ ] Navigate to `/account/profile`.
-- [ ] Sign in if redirected.
-- [ ] Wait for `data-storefront-account-profile`.
-- [ ] Confirm profile fields load.
-- [ ] Edit first/last name or a safe profile field.
-- [ ] Submit profile update.
-- [ ] Assert success state appears.
-- [ ] Reload `/account/profile`.
-- [ ] Assert saved value persists.
-- [ ] Restore original value if the QA account should remain stable.
+- [x] Navigate to `/account/profile`.
+- [x] Sign in if redirected.
+- [x] Wait for `data-storefront-account-profile`.
+- [x] Confirm profile fields load.
+- [x] Edit first/last name or a safe profile field.
+- [x] Submit profile update.
+- [x] Assert success state appears.
+- [x] Reload `/account/profile`.
+- [x] Assert saved value persists.
+- [x] Restore original value if the QA account should remain stable.
 
 Password flow:
 
-- [ ] Navigate to `/account/change-password`.
-- [ ] Wait for `data-storefront-account-password`.
-- [ ] Submit invalid current password and assert validation/error state without logout.
-- [ ] If fixture supports password rotation, perform one valid change and immediately change back.
-- [ ] If fixture does not support password rotation, document the reason and keep validation coverage only.
-- [ ] Do not leave the QA account with an unknown password.
+- [x] Navigate to `/account/change-password`.
+- [x] Wait for `data-storefront-account-password`.
+- [x] Submit invalid current password and assert validation/error state without logout.
+- [x] If fixture supports password rotation, perform one valid change and immediately change back.
+- [n/a] If fixture does not support password rotation, document the reason and keep validation coverage only. The fixture supported rotate-back.
+- [x] Do not leave the QA account with an unknown password.
 
 Address flow:
 
-- [ ] Navigate to `/account/addresses`.
-- [ ] Wait for `data-storefront-account-addresses`.
-- [ ] Create a new QA address with a unique marker.
-- [ ] Assert the new address appears.
-- [ ] Edit the QA address.
-- [ ] Assert the edit appears.
-- [ ] Set the QA address as default billing if supported.
-- [ ] Set the QA address as default shipping if supported.
-- [ ] Assert default markers/state update.
-- [ ] Delete the QA address.
-- [ ] Assert the deleted marker no longer appears.
+- [x] Navigate to `/account/addresses`.
+- [x] Wait for `data-storefront-account-addresses`.
+- [x] Create a new QA address with a unique marker.
+- [x] Assert the new address appears.
+- [x] Edit the QA address.
+- [x] Assert the edit appears.
+- [x] Set the QA address as default billing if supported.
+- [x] Set the QA address as default shipping if supported.
+- [x] Assert default markers/state update.
+- [x] Delete the QA address.
+- [x] Assert the deleted marker no longer appears.
 
 Order list flow:
 
-- [ ] Navigate to `/account/orders`.
-- [ ] Wait for `data-storefront-account-orders`.
-- [ ] Assert order list loads without console/page errors.
-- [ ] Assert at least one order row if the QA fixture has orders.
-- [ ] If no fixture order exists, create an order through the normal cart/checkout COD flow before rerunning this check.
-- [ ] Open an order detail link from the list.
+- [x] Navigate to `/account/orders`.
+- [x] Wait for `data-storefront-account-orders`.
+- [x] Assert order list loads without console/page errors.
+- [x] Assert at least one order row if the QA fixture has orders.
+- [n/a] If no fixture order exists, create an order through the normal cart/checkout COD flow before rerunning this check. The QA account had ten orders.
+- [x] Open an order detail link from the list.
 
 Order detail flow:
 
-- [ ] Wait for `data-storefront-account-order-detail`.
-- [ ] Assert public order reference is visible.
-- [ ] Assert order items are visible.
-- [ ] Assert totals are visible.
-- [ ] Assert billing/shipping info renders according to current implementation.
-- [ ] Assert payment status renders.
-- [ ] Assert shipment/tracking area renders according to current implementation.
-- [ ] Assert unauthorized or unknown order reference does not expose another customer's order.
+- [x] Wait for `data-storefront-account-order-detail`.
+- [x] Assert public order reference is visible.
+- [x] Assert order items are visible.
+- [x] Assert totals are visible.
+- [x] Assert billing/shipping info renders according to current implementation.
+- [x] Assert payment status renders.
+- [x] Assert shipment/tracking area renders according to current implementation. The fixture has no shipment/tracking data, so the current contract intentionally renders no shipment block.
+- [x] Assert unauthorized or unknown order reference does not expose another customer's order.
 
 Account navigation flow:
 
-- [ ] Navigate between `/account/profile`, `/account/addresses`, `/account/orders`, and `/account/change-password`.
-- [ ] Assert `data-storefront-account-navigation` remains visible.
-- [ ] Assert active nav item state updates.
-- [ ] Assert browser back/forward keeps correct active panel.
-- [ ] Assert unknown account section shows the existing account app unknown-section state without crashing.
+- [x] Navigate between `/account/profile`, `/account/addresses`, `/account/orders`, and `/account/change-password`.
+- [x] Assert `data-storefront-account-navigation` remains visible.
+- [x] Assert active nav item state updates.
+- [x] Assert browser back/forward keeps correct active panel.
+- [x] Assert unknown account section shows the existing account app unknown-section state without crashing.
 
 Network and runtime assertions:
 
-- [ ] Capture browser console errors and fail on unexpected errors.
-- [ ] Capture page errors and fail on any unhandled exception.
-- [ ] Assert protected account mutations use same-origin BFF routes.
-- [ ] Assert no browser request goes directly to Commerce Node host/port.
-- [ ] Assert no browser request goes directly to `api/storefront/stores/{storeKey}` unless routed through allowed same-origin BFF behavior.
-- [ ] Assert no unexpected `/_blazor` WebSocket/EventSource dependency is introduced.
-- [ ] Assert no duplicate profile/address/password mutation request is sent per single submit.
-- [ ] Assert account pages remain usable after WASM hydration.
+- [x] Capture browser console errors and fail on unexpected errors.
+- [x] Capture page errors and fail on any unhandled exception.
+- [x] Assert protected account mutations use same-origin BFF routes.
+- [x] Assert no browser request goes directly to Commerce Node host/port.
+- [x] Assert no browser request goes directly to `api/storefront/stores/{storeKey}` unless routed through allowed same-origin BFF behavior.
+- [x] Assert no unexpected `/_blazor` WebSocket/EventSource dependency is introduced.
+- [x] Assert no duplicate profile/address/password mutation request is sent per single submit.
+- [x] Assert account pages remain usable after WASM hydration.
 
 Responsive checks:
 
-- [ ] Run account profile at desktop viewport.
-- [ ] Run account profile at mobile viewport.
-- [ ] Run address book at desktop viewport.
-- [ ] Run address book at mobile viewport.
-- [ ] Run order list/detail at desktop viewport.
-- [ ] Run order list/detail at mobile viewport.
-- [ ] Assert no obvious overlapping text, broken buttons, or unusable form controls.
+- [x] Run account profile at desktop viewport.
+- [x] Run account profile at mobile viewport.
+- [x] Run address book at desktop viewport.
+- [x] Run address book at mobile viewport.
+- [x] Run order list/detail at desktop viewport.
+- [x] Run order list/detail at mobile viewport.
+- [x] Assert no obvious overlapping text, broken buttons, or unusable form controls.
 
 Evidence:
 
-- [ ] Save Playwright trace or screenshots for failed cases.
-- [ ] Record exact storefront base URL, store key, account fixture, and command used.
-- [ ] Update QA checklist status after browser QA.
+- [n/a] Save Playwright trace or screenshots for failed cases. No case failed; visible-browser screenshots were captured for the passing desktop and mobile flows.
+- [x] Record exact storefront base URL, store key, account fixture, and command used.
+- [x] Update QA checklist status after browser QA.
+
+Browser evidence, 2026-08-11:
+
+- Visible Playwright CLI session against `http://localhost:18598` / store `default`, using `qa.customer@example.local` and order `ORD-20260729-2686F072`; command: `npx --yes --package @playwright/cli playwright-cli -s=account-wasmhost ...`.
+- Profile phone update persisted after reload and was restored to `+1 555 0101`. The unique address `WasmHost QA 20260811` was created, edited, set as both defaults, and deleted; no marker remained.
+- Invalid password produced the expected BFF validation response. A successful `QaCustomer123!` → temporary → `QaCustomer123!` rotation verified recovery, and a fresh sign-in confirmed the original password.
+- Order, detail, and receipt showed reference, payment, items, totals, and addresses. The unknown order returned `Order was not found.` without order data. Expected validation/not-found BFF 400/404 resource messages were excluded from unexpected-console-error checks.
+- The browser captured only same-origin account BFF/static resources; its resource audit returned `crossOrigin: []`, `directCommerce: []`, and `blazorTransport: []`. Single-submit inspection showed one same-origin `POST /api/account/change-password`; no page errors were captured during reload.
 
 ## Phase 14 - Cleanup And Obsolete Code Removal
 
