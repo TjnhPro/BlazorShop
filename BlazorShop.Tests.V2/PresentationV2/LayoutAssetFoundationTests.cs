@@ -113,13 +113,16 @@ namespace BlazorShop.Tests.PresentationV2
         {
             var routeMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Pages/Ssr/Content/ContentRoutePage.razor");
             var pageMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor");
+            var productMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
 
             Assert.Contains("<StorefrontPage TContext=\"StorefrontContentPageContext\"", routeMarkup, StringComparison.Ordinal);
             Assert.Contains("Metadata=\"_result.Metadata\"", routeMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<StorefrontSeoHead", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPageShell", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<Breadcrumb>", pageMarkup, StringComparison.Ordinal);
-            Assert.Contains("<BreadcrumbNav", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontBreadcrumb", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontBreadcrumb", productMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<BreadcrumbNav", pageMarkup + productMarkup, StringComparison.Ordinal);
             Assert.Contains("<ChildContent>", pageMarkup, StringComparison.Ordinal);
             Assert.Contains("<h1", pageMarkup, StringComparison.OrdinalIgnoreCase);
         }
@@ -135,7 +138,8 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("StorefrontCategoryPageService", routeMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPageShell", viewMarkup, StringComparison.Ordinal);
             Assert.Contains("<Breadcrumb>", viewMarkup, StringComparison.Ordinal);
-            Assert.Contains("<BreadcrumbNav", viewMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontBreadcrumb", viewMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<BreadcrumbNav", viewMarkup, StringComparison.Ordinal);
             Assert.Contains("<ChildContent>", viewMarkup, StringComparison.Ordinal);
             Assert.Contains("<h1", viewMarkup, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("<StorefrontSeoHead", viewMarkup, StringComparison.Ordinal);
@@ -144,7 +148,7 @@ namespace BlazorShop.Tests.PresentationV2
         [Fact]
         public void StorefrontCatalogFilterPanel_PreservesQueryStringContract()
         {
-            var filterMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor");
+            var filterMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor");
 
             Assert.Contains("method=\"get\"", filterMarkup, StringComparison.Ordinal);
             Assert.Contains("name=\"category\"", filterMarkup, StringComparison.Ordinal);
@@ -166,7 +170,7 @@ namespace BlazorShop.Tests.PresentationV2
             var categoryMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
             var searchMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
 
-            Assert.Contains("<CatalogFilterPanel", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCatalogFilterPanel", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPriceRange=\"true\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowSort=\"true\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowStock=\"true\"", categoryMarkup, StringComparison.Ordinal);
@@ -175,9 +179,12 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("ShowPageSize=\"true\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("PageSize=\"Context.PageSize\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("InStock=\"Context.InStock\"", categoryMarkup, StringComparison.Ordinal);
-            Assert.Contains("Context.Links.CategoryUrl(Context.Slug, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("Context.Links.CategoryUrl(", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPagination", categoryMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetPageLinkClass", categoryMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<nav", categoryMarkup, StringComparison.OrdinalIgnoreCase);
 
-            Assert.Contains("<CatalogFilterPanel", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCatalogFilterPanel", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("Action=\"@Context.Links.Search.Href\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowCategory=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowSearch=\"true\"", searchMarkup, StringComparison.Ordinal);
@@ -185,7 +192,10 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("<SubmitIcon>", searchMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("SubmitIconCssClass", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPageSize=\"true\"", searchMarkup, StringComparison.Ordinal);
-            Assert.Contains("Context.Links.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("Context.Links.SearchUrl(", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPagination", searchMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetPageLinkClass", searchMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<nav", searchMarkup, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("CatalogSearchPolicy.MinimumSearchTermLength", searchMarkup, StringComparison.Ordinal);
         }
 

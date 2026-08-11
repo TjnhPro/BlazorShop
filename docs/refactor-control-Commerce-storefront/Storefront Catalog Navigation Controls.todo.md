@@ -719,45 +719,45 @@ Goal: replace tests that lock old V2 component names/paths with tests that lock 
 
 File:
 
-- [ ] `BlazorShop.Tests.V2/PresentationV2/LayoutAssetFoundationTests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/LayoutAssetFoundationTests.cs`
 
 Current tests to update:
 
-- [ ] `StorefrontCatalogFilterPanel_PreservesQueryStringContract`.
-- [ ] `StorefrontCategoryAndSearchPages_UseCatalogFilterPanelWithoutRouteChanges`.
-- [ ] tests asserting `<BreadcrumbNav`.
+- [x] `StorefrontCatalogFilterPanel_PreservesQueryStringContract`.
+- [x] `StorefrontCategoryAndSearchPages_UseCatalogFilterPanelWithoutRouteChanges`.
+- [x] tests asserting `<BreadcrumbNav`.
 
 Required new assertions:
 
-- [ ] Filter source is read from `BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor`.
-- [ ] Filter source still contains `method="get"`.
-- [ ] Filter source still contains `name="category"`.
-- [ ] Filter source still contains `name="q"`.
-- [ ] Filter source still contains `name="minPrice"`.
-- [ ] Filter source still contains `name="maxPrice"`.
-- [ ] Filter source still contains `name="sortBy"`.
-- [ ] Filter source still contains `name="pageSize"`.
-- [ ] Filter source still contains `name="inStock"`.
-- [ ] Filter source still uses `ProductCatalogSortBy.DisplayOrder.ToApiValue()`.
-- [ ] Filter source still uses `ProductCatalogSortBy.PriceLowToHigh.ToApiValue()`.
-- [ ] Filter source still uses `ProductCatalogSortBy.PriceHighToLow.ToApiValue()`.
-- [ ] Filter source does not contain `onclick`.
-- [ ] Category page contains `<StorefrontCatalogFilterPanel`.
-- [ ] Search page contains `<StorefrontCatalogFilterPanel`.
-- [ ] Category page still contains `Context.Links.CategoryUrl(`.
-- [ ] Search page still contains `Context.Links.SearchUrl(`.
-- [ ] Category page contains `<StorefrontPagination`.
-- [ ] Search page contains `<StorefrontPagination`.
-- [ ] Category page no longer contains manual pagination `<nav>` loop text.
-- [ ] Search page no longer contains manual pagination `<nav>` loop text.
-- [ ] Category page no longer contains `GetPageLinkClass`.
-- [ ] Search page no longer contains `GetPageLinkClass`.
-- [ ] Product/Content/Category page tests assert `<StorefrontBreadcrumb`.
-- [ ] Tests do not assert `<BreadcrumbNav`.
+- [x] Filter source is read from `BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor`.
+- [x] Filter source still contains `method="get"`.
+- [x] Filter source still contains `name="category"`.
+- [x] Filter source still contains `name="q"`.
+- [x] Filter source still contains `name="minPrice"`.
+- [x] Filter source still contains `name="maxPrice"`.
+- [x] Filter source still contains `name="sortBy"`.
+- [x] Filter source still contains `name="pageSize"`.
+- [x] Filter source still contains `name="inStock"`.
+- [x] Filter source still uses `ProductCatalogSortBy.DisplayOrder.ToApiValue()`.
+- [x] Filter source still uses `ProductCatalogSortBy.PriceLowToHigh.ToApiValue()`.
+- [x] Filter source still uses `ProductCatalogSortBy.PriceHighToLow.ToApiValue()`.
+- [x] Filter source does not contain `onclick`.
+- [x] Category page contains `<StorefrontCatalogFilterPanel`.
+- [x] Search page contains `<StorefrontCatalogFilterPanel`.
+- [x] Category page still contains `Context.Links.CategoryUrl(`.
+- [x] Search page still contains `Context.Links.SearchUrl(`.
+- [x] Category page contains `<StorefrontPagination`.
+- [x] Search page contains `<StorefrontPagination`.
+- [x] Category page no longer contains manual pagination `<nav>` loop text.
+- [x] Search page no longer contains manual pagination `<nav>` loop text.
+- [x] Category page no longer contains `GetPageLinkClass`.
+- [x] Search page no longer contains `GetPageLinkClass`.
+- [x] Product/Content/Category page tests assert `<StorefrontBreadcrumb`.
+- [x] Tests do not assert `<BreadcrumbNav`.
 
 Exit criteria:
 
-- [ ] tests lock behavior and ownership, not stale V2 filenames.
+- [x] tests lock behavior and ownership, not stale V2 filenames.
 
 ## Phase 3.3.15 - Add Focused Component Tests
 
