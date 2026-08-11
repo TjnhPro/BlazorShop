@@ -308,94 +308,94 @@ Goal: remove proven-dead wrappers and stale imports without changing visible beh
 
 Current evidence:
 
-- [ ] `ProductCard.razor` only renders `StorefrontProductSummaryCard`.
-- [ ] It supplies `ProductSummaryCardVisuals.Labels` and `ProductSummaryCardVisuals.Classes`.
-- [ ] It has only an `Item` parameter.
+- [x] `ProductCard.razor` only renders `StorefrontProductSummaryCard`.
+- [x] It supplies `ProductSummaryCardVisuals.Labels` and `ProductSummaryCardVisuals.Classes`.
+- [x] It has only an `Item` parameter.
 
 Tasks:
 
-- [ ] Find all active `ProductCard` usages.
-- [ ] Replace each usage with direct `StorefrontProductSummaryCard`.
-- [ ] If the usage is inside a grid, prefer `StorefrontProductSummaryGrid` instead of hand-duplicating grid markup.
-- [ ] Preserve `ProductSummaryCardVisuals.Labels`.
-- [ ] Preserve `ProductSummaryCardVisuals.Classes`.
-- [ ] Preserve product card semantic hooks from the primitive.
-- [ ] Delete `BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor`.
-- [ ] Remove obsolete namespace imports.
-- [ ] Update tests that still read the removed path.
-- [ ] Remove dead CSS selectors only if they were proven wrapper-specific.
+- [x] Find all active `ProductCard` usages.
+- [x] Replace each usage with direct `StorefrontProductSummaryCard`.
+- [x] If the usage is inside a grid, prefer `StorefrontProductSummaryGrid` instead of hand-duplicating grid markup.
+- [x] Preserve `ProductSummaryCardVisuals.Labels`.
+- [x] Preserve `ProductSummaryCardVisuals.Classes`.
+- [x] Preserve product card semantic hooks from the primitive.
+- [x] Delete `BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor`.
+- [x] Remove obsolete namespace imports.
+- [x] Update tests that still read the removed path.
+- [x] Remove dead CSS selectors only if they were proven wrapper-specific.
 
 Exit criteria:
 
-- [ ] No active source file references `<ProductCard`.
-- [ ] No active test reads `V2/Components/Catalog/ProductCard.razor` except a deliberate retired-path assertion.
-- [ ] Direct product card rendering still uses `StorefrontProductSummaryCard`.
+- [x] No active source file references `<ProductCard`.
+- [x] No active test reads `V2/Components/Catalog/ProductCard.razor` except a deliberate retired-path assertion.
+- [x] Direct product card rendering still uses `StorefrontProductSummaryCard`.
 
 ### Phase 2B - Consolidate `ProductGrid`
 
 Current evidence:
 
-- [ ] `ProductGrid.razor` renders a grid of `ProductCard`.
-- [ ] `StorefrontProductSummaryGrid.razor` renders the same grid shape directly with `StorefrontProductSummaryCard`.
-- [ ] `StorefrontProductSummaryGrid.razor` owns semantic hooks `data-storefront-product-summary-grid` and `data-storefront-product-summary-empty`.
-- [ ] `V2ProductPageView.razor` uses `ProductGrid` for related products.
+- [x] `ProductGrid.razor` renders a grid of `ProductCard`.
+- [x] `StorefrontProductSummaryGrid.razor` renders the same grid shape directly with `StorefrontProductSummaryCard`.
+- [x] `StorefrontProductSummaryGrid.razor` owns semantic hooks `data-storefront-product-summary-grid` and `data-storefront-product-summary-empty`.
+- [x] `V2ProductPageView.razor` uses `ProductGrid` for related products.
 
 Tasks:
 
-- [ ] Find all active `ProductGrid` usages.
-- [ ] Replace `ProductGrid` usages with `StorefrontProductSummaryGrid`.
-- [ ] Preserve `Items` binding.
-- [ ] Preserve `EmptyMessage`.
-- [ ] Preserve related-products layout intent.
-- [ ] Ensure related products now get `data-storefront-product-summary-grid`.
-- [ ] Delete `BlazorShop.Storefront.V2/Components/Catalog/ProductGrid.razor` if no unique responsibility remains.
-- [ ] Update tests that still read or assert `ProductGrid`.
-- [ ] Update historical docs only if active docs claim `ProductGrid` is current V2 canonical behavior.
-- [ ] Do not touch Starter `ProductGrid` in this phase.
+- [x] Find all active `ProductGrid` usages.
+- [x] Replace `ProductGrid` usages with `StorefrontProductSummaryGrid`.
+- [x] Preserve `Items` binding.
+- [x] Preserve `EmptyMessage`.
+- [x] Preserve related-products layout intent.
+- [x] Ensure related products now get `data-storefront-product-summary-grid`.
+- [x] Delete `BlazorShop.Storefront.V2/Components/Catalog/ProductGrid.razor` if no unique responsibility remains.
+- [x] Update tests that still read or assert `ProductGrid`.
+- [x] Update historical docs only if active docs claim `ProductGrid` is current V2 canonical behavior.
+- [x] Do not touch Starter `ProductGrid` in this phase.
 
 Exit criteria:
 
-- [ ] One active V2 product summary grid implementation remains.
-- [ ] V2 uses `StorefrontProductSummaryGrid` for category, search, deals, and related products.
-- [ ] No active V2 source references `<ProductGrid`.
+- [x] One active V2 product summary grid implementation remains.
+- [x] V2 uses `StorefrontProductSummaryGrid` for category, search, deals, and related products.
+- [x] No active V2 source references `<ProductGrid`.
 
 ### Phase 2C - Account Composition Copy Cleanup
 
 Current evidence:
 
-- [ ] `StorefrontAccountApp.razor` correctly stays in V2.WASM.
-- [ ] `StorefrontAccountNavigation.razor` correctly stays in V2.WASM.
-- [ ] `StorefrontAccountViewOptions.cs` already owns leaf labels and final classes.
-- [ ] `StorefrontAccountApp.razor` still contains final copy directly in Razor.
+- [x] `StorefrontAccountApp.razor` correctly stays in V2.WASM.
+- [x] `StorefrontAccountNavigation.razor` correctly stays in V2.WASM.
+- [x] `StorefrontAccountViewOptions.cs` already owns leaf labels and final classes.
+- [x] `StorefrontAccountApp.razor` still contains final copy directly in Razor.
 
 Tasks:
 
-- [ ] Keep `StorefrontAccountApp.razor` in V2.WASM.
-- [ ] Keep `StorefrontAccountNavigation.razor` in V2.WASM.
-- [ ] Keep `StorefrontAccountShellClasses` in V2.WASM.
-- [ ] Keep `AccountNavigationClasses` in V2.WASM.
-- [ ] Add a V2-owned account app label structure if useful, for example `StorefrontAccountAppLabels`.
-- [ ] Or add a clearly named account app labels section inside `StorefrontAccountViewOptions`.
-- [ ] Move final account app copy from Razor into V2-owned options:
-  - [ ] `Customer account`.
-  - [ ] `Profile`.
-  - [ ] `Addresses`.
-  - [ ] `Orders`.
-  - [ ] `Receipt`.
-  - [ ] `Order`.
-  - [ ] `Change password`.
-  - [ ] `Account section not found`.
-  - [ ] `The account section could not be found.`
-- [ ] Do not move route parsing out of current account contracts.
-- [ ] Do not move account navigation into shared packages.
-- [ ] Do not change account URLs.
-- [ ] Do not change account browser controller APIs.
+- [x] Keep `StorefrontAccountApp.razor` in V2.WASM.
+- [x] Keep `StorefrontAccountNavigation.razor` in V2.WASM.
+- [x] Keep `StorefrontAccountShellClasses` in V2.WASM.
+- [x] Keep `AccountNavigationClasses` in V2.WASM.
+- [x] Add a V2-owned account app label structure if useful, for example `StorefrontAccountAppLabels`.
+- [x] Or add a clearly named account app labels section inside `StorefrontAccountViewOptions`.
+- [x] Move final account app copy from Razor into V2-owned options:
+  - [x] `Customer account`.
+  - [x] `Profile`.
+  - [x] `Addresses`.
+  - [x] `Orders`.
+  - [x] `Receipt`.
+  - [x] `Order`.
+  - [x] `Change password`.
+  - [x] `Account section not found`.
+  - [x] `The account section could not be found.`
+- [x] Do not move route parsing out of current account contracts.
+- [x] Do not move account navigation into shared packages.
+- [x] Do not change account URLs.
+- [x] Do not change account browser controller APIs.
 
 Exit criteria:
 
-- [ ] `StorefrontAccountApp` still composes the same panels.
-- [ ] Final account app copy is V2-owned and centralized.
-- [ ] No new shared visual ownership is introduced.
+- [x] `StorefrontAccountApp` still composes the same panels.
+- [x] Final account app copy is V2-owned and centralized.
+- [x] No new shared visual ownership is introduced.
 
 ### Phase 2D - V2.WASM Wrapper Audit
 
@@ -409,47 +409,47 @@ C. dead wrapper
 
 Wrappers to inspect:
 
-- [ ] `Cart/StorefrontCartSection.razor`.
-- [ ] `Checkout/StorefrontCheckoutSection.razor`.
-- [ ] `Catalog/StorefrontDiscountedProductRailSection.razor`.
-- [ ] `Content/StorefrontContactFormSection.razor`.
-- [ ] `System/StorefrontHybridRuntimeProbeSection.razor`.
-- [ ] `Account/StorefrontAccountApp.razor`.
-- [ ] `Account/StorefrontAccountNavigation.razor`.
+- [x] `Cart/StorefrontCartSection.razor`.
+- [x] `Checkout/StorefrontCheckoutSection.razor`.
+- [x] `Catalog/StorefrontDiscountedProductRailSection.razor`.
+- [x] `Content/StorefrontContactFormSection.razor`.
+- [x] `System/StorefrontHybridRuntimeProbeSection.razor`.
+- [x] `Account/StorefrontAccountApp.razor`.
+- [x] `Account/StorefrontAccountNavigation.razor`.
 
 Keep wrappers that supply any of:
 
-- [ ] Final V2 labels.
-- [ ] Final V2 classes.
-- [ ] V2 action descriptors.
-- [ ] V2 route/panel composition.
-- [ ] Theme-specific template.
-- [ ] Host semantic composition.
+- [x] Final V2 labels.
+- [x] Final V2 classes.
+- [x] V2 action descriptors.
+- [x] V2 route/panel composition.
+- [x] Theme-specific template.
+- [x] Host semantic composition.
 
 Remove wrappers only when:
 
-- [ ] They are pure pass-through.
-- [ ] Direct host composition remains clearer.
-- [ ] Tests and page imports can be simplified.
-- [ ] No V2 final class/copy/action ownership is lost.
+- [x] They are pure pass-through.
+- [x] Direct host composition remains clearer.
+- [x] Tests and page imports can be simplified.
+- [x] No V2 final class/copy/action ownership is lost.
 
 Exit criteria:
 
-- [ ] Each remaining wrapper has a documented responsibility.
-- [ ] Each removed wrapper is proven redundant.
-- [ ] No behavior changes are introduced.
+- [x] Each remaining wrapper has a documented responsibility.
+- [x] Each removed wrapper is proven redundant.
+- [x] No behavior changes are introduced.
 
 ### Phase 2E - Import, Namespace, And Dead Source Cleanup
 
 Tasks:
 
-- [ ] Remove unused `@using` directives in V2 and V2.WASM.
-- [ ] Remove unused C# `using` directives in touched files.
-- [ ] Remove stale component aliases.
-- [ ] Remove retired Hybrid project references.
-- [ ] Remove stale source comments that describe old ownership.
-- [ ] Prefer clean namespace imports over pervasive fully-qualified Razor type names when it improves readability.
-- [ ] Do not introduce ambiguous component names.
+- [x] Remove unused `@using` directives in V2 and V2.WASM.
+- [x] Remove unused C# `using` directives in touched files.
+- [x] Remove stale component aliases.
+- [x] Remove retired Hybrid project references.
+- [x] Remove stale source comments that describe old ownership.
+- [x] Prefer clean namespace imports over pervasive fully-qualified Razor type names when it improves readability.
+- [x] Do not introduce ambiguous component names.
 
 Searches:
 
@@ -460,8 +460,16 @@ rg -n "ProductCard|ProductGrid" BlazorShop.PresentationV2/BlazorShop.Storefront.
 
 Exit criteria:
 
-- [ ] No stale active-code path references remain.
-- [ ] Removed paths appear only in deliberate retired-path tests or historical archive notes.
+- [x] No stale active-code path references remain.
+- [x] Removed paths appear only in deliberate retired-path tests or historical archive notes.
+
+### Phase 2 Evidence (2026-08-11)
+
+- Removed `ProductCard.razor` and `ProductGrid.razor`. The sole related-products consumer now uses `StorefrontProductSummaryGrid`, preserving `Items`, `EmptyMessage`, and the canonical grid/empty semantic hooks. Category, search, and deals already used that grid. Starter's independent `ProductGrid` was not touched.
+- The retired paths are asserted only as intentional `File.Exists == false` checks. Focused cleanup/boundary tests passed 62/62 after stopping the local runtime to release its build outputs.
+- Added the V2.WASM-local `StorefrontAccountAppLabels` record and `StorefrontAccountViewOptions.AppLabels`; all nine shell strings now come from this V2 options surface. Route parsing, panel composition, URLs, and Browser controller contracts are unchanged.
+- Wrapper audit: Cart (A: labels/classes/actions and route links), Checkout (A: labels/classes/actions), Discounted rail (A: themed labels/classes/action/template), Contact form (A: themed labels/classes/action/semantic shell), Hybrid probe (A: QA theme labels/classes), Account app (A: panel composition/classes/labels), and account navigation (A: host nav semantics/classes). No further wrapper is a safe pure pass-through; the two catalog wrappers were the only B/C removals.
+- The Phase 2 stale-path scans found no active V2 reference to the removed catalog wrappers. `Components.Hybrid` mentions are intentional retirement documentation only; no retired project reference remains.
 
 ## Phase 3 - Visual, CSS, JS, And Semantic Hook Sweep
 

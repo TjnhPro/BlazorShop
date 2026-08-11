@@ -4,6 +4,17 @@ namespace BlazorShop.Storefront.V2.WASM.Components.Account;
 
 public static class StorefrontAccountViewOptions
 {
+    public static StorefrontAccountAppLabels AppLabels { get; } = new(
+        Eyebrow: "Customer account",
+        Profile: "Profile",
+        Addresses: "Addresses",
+        Orders: "Orders",
+        Receipt: "Receipt",
+        Order: "Order",
+        ChangePassword: "Change password",
+        UnknownTitle: "Account section not found",
+        UnknownMessage: "The account section could not be found.");
+
     public static StorefrontAccountProfileLabels ProfileLabels { get; } = new()
     {
         MissingProfile = "Profile could not be loaded.",

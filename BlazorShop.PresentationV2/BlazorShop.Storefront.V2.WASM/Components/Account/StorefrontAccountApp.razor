@@ -11,7 +11,7 @@
 
         <article class="@ShellClasses.ContentArticle">
             <header class="@ShellClasses.Header">
-                <p class="@ShellClasses.Eyebrow">Customer account</p>
+                <p class="@ShellClasses.Eyebrow">@AppLabels.Eyebrow</p>
                 <h1 class="@ShellClasses.Title">@Title</h1>
             </header>
 
@@ -81,12 +81,12 @@
 
     private string Title => ActiveRoute.Kind switch
     {
-        AccountRouteKind.Profile => "Profile",
-        AccountRouteKind.Addresses => "Addresses",
-        AccountRouteKind.Orders => "Orders",
-        AccountRouteKind.OrderDetail => $"{(ActiveRoute.ReceiptMode ? "Receipt" : "Order")} {ActiveRoute.OrderReference}".Trim(),
-        AccountRouteKind.ChangePassword => "Change password",
-        _ => "Account section not found"
+        AccountRouteKind.Profile => AppLabels.Profile,
+        AccountRouteKind.Addresses => AppLabels.Addresses,
+        AccountRouteKind.Orders => AppLabels.Orders,
+        AccountRouteKind.OrderDetail => $"{(ActiveRoute.ReceiptMode ? AppLabels.Receipt : AppLabels.Order)} {ActiveRoute.OrderReference}".Trim(),
+        AccountRouteKind.ChangePassword => AppLabels.ChangePassword,
+        _ => AppLabels.UnknownTitle
     };
 
     private RenderFragment RenderActivePanel() => builder =>
@@ -159,7 +159,7 @@
                 builder.OpenElement(50, "div");
                 builder.AddAttribute(51, "class", ShellClasses.UnknownAlert);
                 builder.AddAttribute(52, "role", "alert");
-                builder.AddContent(53, "The account section could not be found.");
+                builder.AddContent(53, AppLabels.UnknownMessage);
                 builder.CloseElement();
                 break;
         }
@@ -180,5 +180,7 @@
         ArgumentNullException.ThrowIfNull(OrderDetailClasses);
         ArgumentNullException.ThrowIfNull(ShellClasses);
     }
+
+    private static StorefrontAccountAppLabels AppLabels => StorefrontAccountViewOptions.AppLabels;
 
 }

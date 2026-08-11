@@ -66,6 +66,7 @@ public sealed class StorefrontAccountWasmHostOwnershipTests
     public void V2WasmRetainsOnlyAccountCompositionAndNavigation()
     {
         var app = ReadRepositoryFile($"{V2WasmAccountRoot}/StorefrontAccountApp.razor");
+        var options = ReadRepositoryFile($"{V2WasmAccountRoot}/StorefrontAccountViewOptions.cs");
 
         Assert.True(File.Exists(RepositoryPath($"{V2WasmAccountRoot}/StorefrontAccountNavigation.razor")));
         Assert.DoesNotContain("IStorefrontBrowserAccountController", app, StringComparison.Ordinal);
@@ -79,6 +80,10 @@ public sealed class StorefrontAccountWasmHostOwnershipTests
         {
             Assert.DoesNotContain(lifecycleMethod, app, StringComparison.Ordinal);
         }
+
+        Assert.Contains("StorefrontAccountAppLabels AppLabels", options, StringComparison.Ordinal);
+        Assert.Contains("AppLabels.Eyebrow", app, StringComparison.Ordinal);
+        Assert.Contains("AppLabels.UnknownMessage", app, StringComparison.Ordinal);
     }
 
     private static string ReadRepositoryFile(string relativePath) => File.ReadAllText(RepositoryPath(relativePath));

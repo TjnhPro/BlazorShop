@@ -113,7 +113,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var files = new[]
             {
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor",
@@ -212,19 +211,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void ProductCard_RendersSellabilitySafeActions()
+        public void ProductSummaryCard_RendersSellabilitySafeActions()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor");
             var summaryCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryCard.razor");
             var summaryImage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryImage.razor");
             var summaryActions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Catalog/StorefrontProductSummaryPurchaseActions.razor");
             var visuals = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductSummaryCardVisuals.cs");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Catalog/StorefrontProductSummaryMapper.cs");
 
-            Assert.Contains("<StorefrontProductSummaryCard", markup);
-            Assert.Contains("Labels=\"ProductSummaryCardVisuals.Labels\"", markup);
-            Assert.Contains("Classes=\"ProductSummaryCardVisuals.Classes\"", markup);
-            Assert.DoesNotContain("@inject", markup, StringComparison.Ordinal);
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor")));
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductGrid.razor")));
+            Assert.DoesNotContain("@inject", summaryCard, StringComparison.Ordinal);
             Assert.Contains("product.Purchasable && !product.PurchaseBlockReasons.Any(IsDirectAddHardBlock) && QuantityOneAllowed(product)", mapper);
             Assert.Contains("product.MinOrderQuantity <= 1", mapper);
             Assert.Contains("product.QuantityStep <= 1", mapper);
@@ -241,6 +238,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductPage_RendersSellabilityAndQuantityMetadata()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
+            var productGrid = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/StorefrontProductSummaryGrid.razor");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
             var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor");
             var purchaseVisuals = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/ProductPurchasePanelVisuals.cs");
@@ -259,6 +257,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("or \"out_of_stock\"", mapper);
             Assert.Contains("return product.ManageStock == false", mapper);
             Assert.Contains("? 999999", mapper);
+            Assert.Contains("<StorefrontProductSummaryGrid Items=\"_relatedProducts\"", markup);
+            Assert.DoesNotContain("<ProductGrid", markup, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-summary-grid", productGrid);
+            Assert.Contains("data-storefront-product-summary-empty", productGrid);
         }
 
         [Fact]
