@@ -433,7 +433,7 @@ Goal: move the existing V2 filter implementation into the reusable SSR project.
 
 Source:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor`
 
 Target:
 
@@ -464,7 +464,7 @@ Tasks:
 - [x] Preserve `RenderFragment? SubmitIcon`.
 - [x] Replace individual class string parameters with `StorefrontCatalogFilterPanelClasses` unless the local pattern strongly favors flat parameters.
 - [x] Replace direct copy literals with `StorefrontCatalogFilterPanelLabels`.
-- [ ] Keep query input names exactly:
+- [x] Keep query input names exactly:
 - [x] `category`
   - [x] `q`
   - [x] `minPrice`
@@ -479,15 +479,15 @@ Tasks:
 
 Cleanup:
 
-- [ ] Delete old V2 `Components/Catalog/CatalogFilterPanel.razor` after both Category and Search compile against the new component.
-- [ ] Remove obsolete V2 namespace import if unused.
+- [x] Delete old V2 `Components/Catalog/CatalogFilterPanel.razor` after both Category and Search compile against the new component.
+- [x] Remove obsolete V2 namespace import if unused.
 
 Exit criteria:
 
-- [ ] filter component lives in `Components.Ssr`;
-- [ ] query contract unchanged;
-- [ ] V2 owns final classes/copy through supplied records;
-- [ ] no Browser/runtime/client/backend dependency introduced.
+- [x] filter component lives in `Components.Ssr`;
+- [x] query contract unchanged;
+- [x] V2 owns final classes/copy through supplied records;
+- [x] no Browser/runtime/client/backend dependency introduced.
 
 ## Phase 3.3.7 - Adopt Catalog Filter In Category
 
@@ -526,37 +526,37 @@ Goal: make Search use the reusable SSR filter.
 
 File:
 
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor`.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor`.
 
 Tasks:
 
-- [ ] Replace `<CatalogFilterPanel` with `<StorefrontCatalogFilterPanel`.
-- [ ] Preserve `Action="@Context.Links.Search.Href"`.
-- [ ] Preserve `Role="search"`.
-- [ ] Preserve `ShowCategory="true"`.
-- [ ] Preserve `Categories="Context.SearchCategories"`.
-- [ ] Preserve `CategorySlug="@Context.Category"`.
-- [ ] Preserve `ShowSearch="true"`.
-- [ ] Preserve `SearchTerm="@Context.Q"`.
-- [ ] Preserve `ShowPriceRange="true"`.
-- [ ] Preserve `MinPrice="Context.MinPrice"`.
-- [ ] Preserve `MaxPrice="Context.MaxPrice"`.
-- [ ] Preserve `ShowSort="true"`.
-- [ ] Preserve `SortBy="Context.SortBy"`.
-- [ ] Preserve `ShowPageSize="true"`.
-- [ ] Preserve `PageSize="Context.PageSize"`.
-- [ ] Preserve `ShowStock="true"`.
-- [ ] Preserve `InStock="Context.InStock"`.
-- [ ] Preserve `SubmitIcon` inline SVG or move it to V2-owned local helper.
-- [ ] Preserve current visible submit label `Search`.
-- [ ] Supply V2-owned filter classes matching current visual output.
-- [ ] Supply V2-owned filter labels matching current visible copy.
+- [x] Replace `<CatalogFilterPanel` with `<StorefrontCatalogFilterPanel`.
+- [x] Preserve `Action="@Context.Links.Search.Href"`.
+- [x] Preserve `Role="search"`.
+- [x] Preserve `ShowCategory="true"`.
+- [x] Preserve `Categories="Context.SearchCategories"`.
+- [x] Preserve `CategorySlug="@Context.Category"`.
+- [x] Preserve `ShowSearch="true"`.
+- [x] Preserve `SearchTerm="@Context.Q"`.
+- [x] Preserve `ShowPriceRange="true"`.
+- [x] Preserve `MinPrice="Context.MinPrice"`.
+- [x] Preserve `MaxPrice="Context.MaxPrice"`.
+- [x] Preserve `ShowSort="true"`.
+- [x] Preserve `SortBy="Context.SortBy"`.
+- [x] Preserve `ShowPageSize="true"`.
+- [x] Preserve `PageSize="Context.PageSize"`.
+- [x] Preserve `ShowStock="true"`.
+- [x] Preserve `InStock="Context.InStock"`.
+- [x] Preserve `SubmitIcon` inline SVG or move it to V2-owned local helper.
+- [x] Preserve current visible submit label `Search`.
+- [x] Supply V2-owned filter classes matching current visual output.
+- [x] Supply V2-owned filter labels matching current visible copy.
 
 Exit criteria:
 
-- [ ] Search filter GET behavior unchanged;
-- [ ] Search category/search/price/sort/page-size/stock fields remain present;
-- [ ] Search short-term validation remains outside the reusable filter.
+- [x] Search filter GET behavior unchanged;
+- [x] Search category/search/price/sort/page-size/stock fields remain present;
+- [x] Search short-term validation remains outside the reusable filter.
 
 ## Phase 3.3.9 - Define Breadcrumb Visual And Label Contracts
 

@@ -1,6 +1,7 @@
 @namespace BlazorShop.Storefront.V2.Pages.Catalog
 @using BlazorShop.Storefront.Components.Contracts.Navigation
 @using BlazorShop.Storefront.Components.Primitives.Navigation
+@using BlazorShop.Storefront.Components.Ssr.Catalog
 @using BlazorShop.Storefront.Presentation.Models
 @using BlazorShop.Storefront.Presentation.Services.Catalog
 
@@ -13,34 +14,31 @@
                 <p class="mt-3 max-w-3xl text-sm leading-6 text-neutral-700">@ScopeText</p>
             </div>
 
-            <CatalogFilterPanel Action="@Context.Links.Search.Href"
-                                Class="grid gap-3 md:grid-cols-4 xl:grid-cols-8"
-                                Role="search"
-                                ShowCategory="true"
-                                Categories="Context.SearchCategories"
-                                CategorySlug="@Context.Category"
-                                ShowSearch="true"
-                                SearchTerm="@Context.Q"
-                                ShowPriceRange="true"
-                                MinPrice="Context.MinPrice"
-                                MaxPrice="Context.MaxPrice"
-                                ShowSort="true"
-                                SortBy="Context.SortBy"
-                                ShowPageSize="true"
-                                PageSize="Context.PageSize"
-                                ShowStock="true"
-                                InStock="Context.InStock"
-                                SelectClass="rounded border border-neutral-300 bg-white px-3 py-3 text-sm font-semibold text-neutral-900"
-                                InputClass="rounded border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
-                                SubmitButtonClass="inline-flex items-center justify-center gap-2 rounded bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600"
-                                SubmitLabel="Search">
+            <StorefrontCatalogFilterPanel Action="@Context.Links.Search.Href"
+                                           Classes="SearchFilterClasses"
+                                           Labels="SearchFilterLabels"
+                                           Role="search"
+                                           ShowCategory="true"
+                                           Categories="Context.SearchCategories"
+                                           CategorySlug="@Context.Category"
+                                           ShowSearch="true"
+                                           SearchTerm="@Context.Q"
+                                           ShowPriceRange="true"
+                                           MinPrice="Context.MinPrice"
+                                           MaxPrice="Context.MaxPrice"
+                                           ShowSort="true"
+                                           SortBy="Context.SortBy"
+                                           ShowPageSize="true"
+                                           PageSize="Context.PageSize"
+                                           ShowStock="true"
+                                           InStock="Context.InStock">
                 <SubmitIcon>
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
                         <circle cx="11" cy="11" r="7" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
                 </SubmitIcon>
-            </CatalogFilterPanel>
+            </StorefrontCatalogFilterPanel>
         </div>
     </div>
 </section>
@@ -102,4 +100,28 @@
         InactiveLink: "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100");
 
     private static StorefrontPaginationLabels SearchPaginationLabels { get; } = new("Search result pages");
+
+    private static StorefrontCatalogFilterPanelClasses SearchFilterClasses { get; } = new(
+        Root: "grid gap-3 md:grid-cols-4 xl:grid-cols-8",
+        Input: "rounded border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900",
+        Select: "rounded border border-neutral-300 bg-white px-3 py-3 text-sm font-semibold text-neutral-900",
+        CheckboxLabel: "flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700",
+        SubmitButton: "inline-flex items-center justify-center gap-2 rounded bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600");
+
+    private static StorefrontCatalogFilterPanelLabels SearchFilterLabels { get; } = new(
+        AllCategories: "All",
+        SearchPlaceholder: "Search products",
+        MinPricePlaceholder: "Min price",
+        MaxPricePlaceholder: "Max price",
+        SortAriaLabel: "Sort products",
+        CategoryAriaLabel: "Filter by category",
+        PageSizeAriaLabel: "Products per page",
+        FeaturedSort: "Featured",
+        RecentlyUpdatedSort: "Recently updated",
+        PriceLowSort: "Price low",
+        PriceHighSort: "Price high",
+        NewestSort: "Newest",
+        InStock: "In stock",
+        Submit: "Search",
+        PerPageSuffix: "per page");
 }
