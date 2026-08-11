@@ -1196,6 +1196,14 @@ Rule:
 
 - [ ] Use screenshots for visual review, not brittle pixel-perfect automation unless stable baseline tooling already exists.
 
+### Phase 5 Completion Record
+
+The active checklist was split from history without discarding evidence: `QA-StorefrontV2.todo.md` is the runnable release gate and `archive/QA-StorefrontV2-History.md` retains the previous 922-line execution diary, including Phase 3.1–3.6, V2F6/V2F7/V2F8, screenshot paths, timestamps, and historic order references.
+
+Current runtime proof: `storefront-browser-action-boundary-proof.js` passed against `qa-seo-media-product` (one same-origin cart mutation, badge feedback, no direct Commerce request); `storefront-order-email-e2e.js` passed, placed COD order `ORD-20260811-F3FBE66B`, verified one confirmation email, retry recovery, and 0 browser 5xx; `storefront-registration-policy-e2e.js` passed and restored the original policy. Mobile Playwright QA authenticated the QA customer, rendered account, content, FAQ, `robots.txt`, sitemap, and the expected HTTP 404 unknown route with 0 direct Commerce, circuit, 5xx, or unexpected browser errors (known WASM fetch-abort messages caused by deliberate rapid navigation were filtered). Consent save was separately exercised under a temporary enabled configuration and the configuration was restored; its same-origin `GET /api/consent/current` and `POST /api/consent` both returned 200.
+
+Visual evidence includes the Phase 0 desktop/mobile matrix for all listed surfaces, current checkout/order evidence under `output/playwright/phase37-order-email-e2e`, policy evidence under `output/playwright/phase37-registration-policy-e2e`, and a tablet home capture at `.playwright-cli/page-2026-08-11T12-57-39-731Z.png`. Visual review is intentionally screenshot-based rather than pixel-diff based.
+
 ## Phase 6 - Final Architecture, Build, Test, Browser, And Closure Gate
 
 Goal: prove Phase 3 is complete and leave an explicit closure report.
