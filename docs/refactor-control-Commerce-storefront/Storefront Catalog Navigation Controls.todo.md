@@ -251,44 +251,44 @@ Goal: move duplicated pagination rendering into one browser-safe primitive.
 
 Files:
 
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Navigation/StorefrontPagination.razor`.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Navigation/StorefrontPagination.razor`.
 
 Inputs:
 
-- [ ] `IReadOnlyList<StorefrontPaginationItem> Items`.
-- [ ] `StorefrontPaginationClasses Classes`.
-- [ ] `StorefrontPaginationLabels Labels`.
-- [ ] Optional `string? DataStorefrontId` only if consistent with existing primitive hooks.
+- [x] `IReadOnlyList<StorefrontPaginationItem> Items`.
+- [x] `StorefrontPaginationClasses Classes`.
+- [x] `StorefrontPaginationLabels Labels`.
+- [x] Optional `string? DataStorefrontId` only if consistent with existing primitive hooks.
 
 Rendering behavior:
 
-- [ ] Render nothing when `Items.Count == 0`.
-- [ ] Render `<nav>` when at least one item exists.
-- [ ] Use `Labels.AriaLabel` for `aria-label`.
-- [ ] Render one link per item.
-- [ ] Use `item.Href` exactly as supplied.
-- [ ] Use `item.Label` when present.
-- [ ] Fall back to `item.PageNumber` when label is missing.
-- [ ] Apply `aria-current="page"` only when `item.IsCurrent`.
-- [ ] Apply current and inactive class slots correctly.
-- [ ] Do not compute URL values.
-- [ ] Do not mutate `Href`.
+- [x] Render nothing when `Items.Count == 0`.
+- [x] Render `<nav>` when at least one item exists.
+- [x] Use `Labels.AriaLabel` for `aria-label`.
+- [x] Render one link per item.
+- [x] Use `item.Href` exactly as supplied.
+- [x] Use `item.Label` when present.
+- [x] Fall back to `item.PageNumber` when label is missing.
+- [x] Apply `aria-current="page"` only when `item.IsCurrent`.
+- [x] Apply current and inactive class slots correctly.
+- [x] Do not compute URL values.
+- [x] Do not mutate `Href`.
 
 Forbidden:
 
-- [ ] no literal Tailwind classes;
-- [ ] no `Presentation` namespace;
-- [ ] no V2 namespace;
-- [ ] no route helpers;
-- [ ] no API calls;
-- [ ] no render mode directives;
-- [ ] no JS interop.
+- [x] no literal Tailwind classes;
+- [x] no `Presentation` namespace;
+- [x] no V2 namespace;
+- [x] no route helpers;
+- [x] no API calls;
+- [x] no render mode directives;
+- [x] no JS interop.
 
 Exit criteria:
 
-- [ ] primitive compiles;
-- [ ] primitive dependency guardrails pass;
-- [ ] primitive visual-neutrality tests cover it.
+- [x] primitive compiles;
+- [x] primitive dependency guardrails pass;
+- [x] primitive visual-neutrality tests cover it.
 
 ## Phase 3.3.3 - Adopt Pagination In Category
 

@@ -1,0 +1,38 @@
+@namespace BlazorShop.Storefront.Components.Primitives.Navigation
+@using BlazorShop.Storefront.Components.Contracts.Navigation
+
+@if (Items.Count > 0)
+{
+    <nav class="@Classes.Root" aria-label="@Labels.AriaLabel">
+        @foreach (var item in Items)
+        {
+            <a href="@item.Href"
+               class="@GetLinkClass(item)"
+               aria-current="@(item.IsCurrent ? "page" : null)">
+                @(item.Label ?? item.PageNumber.ToString())
+            </a>
+        }
+    </nav>
+}
+
+@code {
+    [Parameter]
+    public IReadOnlyList<StorefrontPaginationItem> Items { get; set; } = [];
+
+    [Parameter]
+    public StorefrontPaginationClasses Classes { get; set; } = new();
+
+    [Parameter]
+    public StorefrontPaginationLabels Labels { get; set; } = StorefrontPaginationLabels.Empty;
+
+    private string GetLinkClass(StorefrontPaginationItem item)
+    {
+        return string.Join(
+            " ",
+            new[]
+            {
+                Classes.Link,
+                item.IsCurrent ? Classes.CurrentLink : Classes.InactiveLink,
+            }.Where(value => !string.IsNullOrWhiteSpace(value)));
+    }
+}
