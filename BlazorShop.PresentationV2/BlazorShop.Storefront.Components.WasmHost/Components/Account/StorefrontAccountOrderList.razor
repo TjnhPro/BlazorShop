@@ -1,6 +1,4 @@
-@using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser.Account
-@using BlazorShop.Storefront.Components.Headless.Account
+@namespace BlazorShop.Storefront.Components.WasmHost.Components.Account
 @inject IStorefrontBrowserAccountController AccountController
 
 <div class="@Classes.Root" data-storefront-account-orders>
@@ -10,7 +8,7 @@
     }
     else if (AccountState.Orders.Items.Count == 0)
     {
-        <p class="@Classes.EmptyState">No orders yet.</p>
+        <p class="@Classes.EmptyState">@Labels.NoOrders</p>
     }
     else
     {
@@ -18,12 +16,12 @@
             <table class="@Classes.Table">
                 <thead class="@Classes.TableHead">
                     <tr>
-                        <th class="@Classes.HeaderCell">Reference</th>
-                        <th class="@Classes.HeaderCell">Date</th>
-                        <th class="@Classes.HeaderCell">Status</th>
-                        <th class="@Classes.HeaderCell">Payment</th>
-                        <th class="@Classes.HeaderCell">Total</th>
-                        <th class="@Classes.HeaderCell">Items</th>
+                        <th class="@Classes.HeaderCell">@Labels.Reference</th>
+                        <th class="@Classes.HeaderCell">@Labels.Date</th>
+                        <th class="@Classes.HeaderCell">@Labels.Status</th>
+                        <th class="@Classes.HeaderCell">@Labels.Payment</th>
+                        <th class="@Classes.HeaderCell">@Labels.Total</th>
+                        <th class="@Classes.HeaderCell">@Labels.Items</th>
                     </tr>
                 </thead>
                 <tbody class="@Classes.TableBody">
@@ -65,10 +63,14 @@
     [Parameter]
     public StorefrontAccountOrderListClasses Classes { get; set; } = StorefrontAccountOrderListClasses.Empty;
 
+    [Parameter]
+    public StorefrontAccountOrderListLabels Labels { get; set; } = StorefrontAccountOrderListLabels.Empty;
+
     private StorefrontBrowserAccountState AccountState => AccountController.State;
 
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(Labels);
         AccountController.InitializeOrders(InitialOrders, InitialError, DataMode, Actions, PageNumber);
     }
 

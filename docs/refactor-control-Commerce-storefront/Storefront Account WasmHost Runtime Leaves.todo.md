@@ -313,23 +313,23 @@ Goal: extract account order list browser loading behavior while preserving list 
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderList.razor`.
-- [ ] Move current markup and behavior from V2.WASM order list mechanically.
-- [ ] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
-- [ ] Keep `InitializeOrders` and `HydrateOrdersAsync` behavior equivalent.
-- [ ] Preserve `data-storefront-account-orders`.
-- [ ] Preserve paging/list display behavior if present.
-- [ ] Preserve order reference link generation through host-provided route/action descriptors.
-- [ ] Replace hardcoded leaf copy with `StorefrontAccountOrderListLabels` parameters.
-- [ ] Use `StorefrontAccountOrderListClasses` from Components contracts.
-- [ ] Do not change customer order API shape.
-- [ ] Do not change guest order access behavior.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderList.razor`.
+- [x] Move current markup and behavior from V2.WASM order list mechanically.
+- [x] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
+- [x] Keep `InitializeOrders` and `HydrateOrdersAsync` behavior equivalent.
+- [x] Preserve `data-storefront-account-orders`.
+- [x] Preserve paging/list display behavior if present.
+- [x] Preserve order reference link generation through host-provided route/action descriptors.
+- [x] Replace hardcoded leaf copy with `StorefrontAccountOrderListLabels` parameters.
+- [x] Use `StorefrontAccountOrderListClasses` from Components contracts.
+- [x] Do not change customer order API shape.
+- [x] Do not change guest order access behavior.
 
 Validation:
 
-- [ ] V2.WASM no longer owns order list lifecycle methods.
-- [ ] Order list links still resolve to the same V2 account order detail route.
-- [ ] The moved leaf does not hardcode V2 route assumptions that should come from descriptors.
+- [x] V2.WASM no longer owns order list lifecycle methods.
+- [x] Order list links still resolve to the same V2 account order detail route.
+- [x] The moved leaf does not hardcode V2 route assumptions that should come from descriptors.
 
 ## Phase 6 - Move Order Detail Leaf To WasmHost
 

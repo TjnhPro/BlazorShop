@@ -120,12 +120,13 @@
                 break;
 
             case AccountRouteKind.Orders:
-                builder.OpenComponent<StorefrontAccountOrderList>(20);
-                builder.AddAttribute(21, nameof(StorefrontAccountOrderList.InitialError), Error);
-                builder.AddAttribute(22, nameof(StorefrontAccountOrderList.PageNumber), PageNumber);
-                builder.AddAttribute(23, nameof(StorefrontAccountOrderList.DataMode), StorefrontFeatureDataMode.BrowserFetch);
-                builder.AddAttribute(24, nameof(StorefrontAccountOrderList.Actions), OrderActions);
-                builder.AddAttribute(25, nameof(StorefrontAccountOrderList.Classes), OrderListClasses);
+                builder.OpenComponent<BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderList>(20);
+                builder.AddAttribute(21, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderList.InitialError), Error);
+                builder.AddAttribute(22, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderList.PageNumber), PageNumber);
+                builder.AddAttribute(23, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderList.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(24, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderList.Actions), OrderActions);
+                builder.AddAttribute(25, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderList.Classes), OrderListClasses);
+                builder.AddAttribute(26, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderList.Labels), StorefrontAccountViewOptions.OrderListLabels);
                 builder.CloseComponent();
                 break;
 

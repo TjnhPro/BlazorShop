@@ -52,6 +52,17 @@ public static class StorefrontAccountViewOptions
         SavedSuccess = "Address book updated."
     };
 
+    public static StorefrontAccountOrderListLabels OrderListLabels { get; } = new()
+    {
+        NoOrders = "No orders yet.",
+        Reference = "Reference",
+        Date = "Date",
+        Status = "Status",
+        Payment = "Payment",
+        Total = "Total",
+        Items = "Items"
+    };
+
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {
         Nav = "rounded-3xl border border-neutral-200/70 bg-white/95 p-3 text-sm shadow-lg lg:sticky lg:top-24",
