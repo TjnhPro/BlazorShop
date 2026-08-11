@@ -397,31 +397,31 @@ Goal: make account leaves compile inside WasmHost and lock the project boundary.
 
 Tasks:
 
-- [ ] Update `BlazorShop.Storefront.Components.WasmHost/_Imports.razor` with only required account imports:
-  - [ ] `@using BlazorShop.Storefront.Browser.Account`
-  - [ ] `@using BlazorShop.Storefront.Components.Contracts.Account`
-  - [ ] `@using BlazorShop.Storefront.Components.Headless.Account`
-  - [ ] `@using Microsoft.AspNetCore.Components.Forms`
-  - [ ] `@using Microsoft.AspNetCore.Components.Rendering` if required by moved components.
-- [ ] Do not add V2/V2.WASM imports to WasmHost.
-- [ ] Do not add Presentation imports to WasmHost.
-- [ ] Do not add Runtime/Client imports to WasmHost.
-- [ ] Do not add backend/core/API imports to WasmHost.
-- [ ] Do not add new project references to WasmHost except if a compile-time evidence proves an existing approved browser-safe reference is missing.
+- [x] Update `BlazorShop.Storefront.Components.WasmHost/_Imports.razor` with only required account imports:
+  - [x] `@using BlazorShop.Storefront.Browser.Account`
+  - [x] `@using BlazorShop.Storefront.Components.Contracts.Account`
+  - [x] `@using BlazorShop.Storefront.Components.Headless.Account`
+  - [x] `@using Microsoft.AspNetCore.Components.Forms`
+  - [x] `@using Microsoft.AspNetCore.Components.Rendering` if required by moved components.
+- [x] Do not add V2/V2.WASM imports to WasmHost.
+- [x] Do not add Presentation imports to WasmHost.
+- [x] Do not add Runtime/Client imports to WasmHost.
+- [x] Do not add backend/core/API imports to WasmHost.
+- [x] Do not add new project references to WasmHost except if a compile-time evidence proves an existing approved browser-safe reference is missing. Its existing Components and Browser references compile the leaves.
 
 Guardrail checks:
 
-- [ ] `rg -n "BlazorShop.Storefront.V2" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
-- [ ] `rg -n "BlazorShop.Storefront.Presentation" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
-- [ ] `rg -n "BlazorShop.Storefront.Runtime|BlazorShop.Storefront.Client" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
-- [ ] `rg -n "BlazorShop.(Domain|Application|Infrastructure)|ControlPlane|CommerceNode|Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
-- [ ] `rg -n "@rendermode|InteractiveWebAssembly|InteractiveServer|InteractiveAuto" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
-- [ ] `rg -n "HttpClient|api/storefront|localhost|CommerceNodeBaseUrl" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
+- [x] `rg -n "BlazorShop.Storefront.V2" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
+- [x] `rg -n "BlazorShop.Storefront.Presentation" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
+- [x] `rg -n "BlazorShop.Storefront.Runtime|BlazorShop.Storefront.Client" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
+- [x] `rg -n "BlazorShop.(Domain|Application|Infrastructure)|ControlPlane|CommerceNode|Web.SharedV2" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
+- [x] `rg -n "@rendermode|InteractiveWebAssembly|InteractiveServer|InteractiveAuto" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
+- [x] `rg -n "HttpClient|api/storefront|localhost|CommerceNodeBaseUrl" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost`
 
 Expected result:
 
-- [ ] All guardrail searches return no invalid production references.
-- [ ] Any false positive is documented in the implementation notes with a file/line reason.
+- [x] All guardrail searches return no invalid production references.
+- [x] Any false positive is documented in the implementation notes with a file/line reason. The only transport-token match is the existing prose warning in `Components.WasmHost/README.md:10`; it is not production code or a dependency.
 
 ## Phase 9 - Update Architecture Tests
 
