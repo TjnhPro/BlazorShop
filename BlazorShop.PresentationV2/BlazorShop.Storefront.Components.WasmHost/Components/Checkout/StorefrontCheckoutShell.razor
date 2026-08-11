@@ -1,6 +1,4 @@
-@using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser.Checkout
-@using BlazorShop.Storefront.Components.Headless.Checkout
+@namespace BlazorShop.Storefront.Components.WasmHost.Components.Checkout
 @inject IStorefrontBrowserCheckoutController CheckoutController
 @inject NavigationManager NavigationManager
 
@@ -9,7 +7,7 @@
     <section class="@Classes.Shell" data-storefront-checkout-shell>
         <div class="@Classes.HeaderLayout">
             <div>
-                <p class="@Classes.Eyebrow">Checkout state</p>
+                <p class="@Classes.Eyebrow">@Labels.StateLabel</p>
                 <h2 class="@Classes.Title">@Title</h2>
                 @if (!string.IsNullOrWhiteSpace(CurrentCheckout.Message))
                 {
@@ -17,7 +15,7 @@
                 }
             </div>
             <button type="button" class="@Classes.RefreshButton" @onclick="RefreshAsync" disabled="@ControllerState.Loading">
-                @(ControllerState.Loading ? "Refreshing..." : "Refresh")
+                @(ControllerState.Loading ? Labels.Refreshing : Labels.Refresh)
             </button>
         </div>
 
@@ -30,15 +28,15 @@
         {
             <div class="@Classes.MetricsGrid">
                 <div class="@Classes.MetricCard">
-                    <p class="@Classes.Eyebrow">Cart version</p>
+                    <p class="@Classes.Eyebrow">@Labels.CartVersion</p>
                     <p class="@Classes.MetricValue" data-storefront-checkout-cart-version>@CurrentCheckout.CartVersion</p>
                 </div>
                 <div class="@Classes.MetricCard">
-                    <p class="@Classes.Eyebrow">Checkout version</p>
+                    <p class="@Classes.Eyebrow">@Labels.CheckoutVersion</p>
                     <p class="@Classes.MetricValue">@CurrentCheckout.CheckoutVersion</p>
                 </div>
                 <div class="@Classes.MetricCard">
-                    <p class="@Classes.Eyebrow">Total</p>
+                    <p class="@Classes.Eyebrow">@Labels.Total</p>
                     <p class="@Classes.MetricValue">@CurrentCheckout.GrandTotalDisplay</p>
                 </div>
             </div>
@@ -55,15 +53,15 @@
 
             <div class="@Classes.OptionGrid">
                 <section class="@Classes.OptionPanel">
-                    <h3>Shipping</h3>
+                    <h3>@Labels.Shipping</h3>
                     <div class="@Classes.OptionList">
                         @if (!CurrentCheckout.ShippingRequired)
                         {
-                            <p>Shipping is not required for this cart.</p>
+                            <p>@Labels.ShippingNotRequired</p>
                         }
                         else if (CurrentCheckout.ShippingOptions.Count == 0)
                         {
-                            <p>Shipping is not available yet.</p>
+                            <p>@Labels.ShippingUnavailable</p>
                         }
                         else
                         {
@@ -85,7 +83,7 @@
                 </section>
 
                 <section class="@Classes.OptionPanel">
-                    <h3>Payment</h3>
+                    <h3>@Labels.Payment</h3>
                     <div class="@Classes.OptionList">
                         @foreach (var method in CurrentCheckout.PaymentMethods)
                         {
@@ -105,12 +103,12 @@
             </div>
 
             <button type="button" class="@Classes.PrimaryButton" @onclick="ReviewAsync" disabled="@ControllerState.Loading">
-                Review latest checkout
+                @Labels.ReviewLatestCheckout
             </button>
             @if (CurrentCheckout.PlaceOrderAllowed)
             {
                 <button type="button" class="@Classes.SecondaryButton" @onclick="PlaceOrderAsync" disabled="@ControllerState.Loading">
-                    Place order
+                    @Labels.PlaceOrder
                 </button>
             }
         }
@@ -133,11 +131,16 @@
     [Parameter, EditorRequired]
     public StorefrontCheckoutViewClasses Classes { get; set; } = default!;
 
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutViewLabels Labels { get; set; } = default!;
+
     private StorefrontBrowserCheckoutControllerState ControllerState => CheckoutController.State;
 
     private StorefrontBrowserCheckoutState CurrentCheckout => ControllerState.Checkout;
 
-    private string Title => !CurrentCheckout.HasCart ? "Cart is empty" : $"{CurrentCheckout.CurrentStep} ready";
+    private string Title => !CurrentCheckout.HasCart
+        ? Labels.EmptyCartTitle
+        : $"{CurrentCheckout.CurrentStep} {Labels.ReadySuffix}";
 
     private StorefrontCheckoutViewState ViewState => StorefrontCheckoutViewState.FromState(CurrentCheckout, ControllerState.Loading, ControllerState.Error);
 
@@ -146,6 +149,7 @@
         ArgumentNullException.ThrowIfNull(InitialState);
         ArgumentNullException.ThrowIfNull(Actions);
         ArgumentNullException.ThrowIfNull(Classes);
+        ArgumentNullException.ThrowIfNull(Labels);
 
         CheckoutController.Initialize(InitialState, ShowPanel, DataMode, Actions);
     }

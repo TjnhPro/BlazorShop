@@ -216,6 +216,68 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void CheckoutRuntime_IsOwnedByNeutralWasmHostComponentWithHiddenPanelBehavior()
+        {
+            const string wasmHostPath =
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/StorefrontCheckoutShell.razor";
+            const string retiredV2WasmPath =
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor";
+
+            Assert.True(File.Exists(ResolveRepositoryPath(wasmHostPath)), $"Missing WasmHost checkout runtime: {wasmHostPath}");
+            Assert.False(File.Exists(ResolveRepositoryPath(retiredV2WasmPath)), $"V2.WASM still owns the checkout runtime: {retiredV2WasmPath}");
+
+            var checkoutShell = ReadRepositoryFile(wasmHostPath);
+
+            Assert.Contains("@namespace BlazorShop.Storefront.Components.WasmHost.Components.Checkout", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("@inject IStorefrontBrowserCheckoutController CheckoutController", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("@inject NavigationManager NavigationManager", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("public bool ShowPanel { get; set; }", checkoutShell, StringComparison.Ordinal);
+            Assert.DoesNotContain("public bool ShowPanel { get; set; } = true;", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontCheckoutViewClasses Classes { get; set; } = default!;", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontCheckoutViewLabels Labels { get; set; } = default!;", checkoutShell, StringComparison.Ordinal);
+            Assert.Equal(6, CountOccurrences(checkoutShell, "[Parameter, EditorRequired]"));
+            Assert.Contains("@if (ShowPanel)", checkoutShell, StringComparison.Ordinal);
+            Assert.Contains("if (ShowPanel", checkoutShell, StringComparison.Ordinal);
+
+            foreach (var lifecycleCall in new[]
+            {
+                "CheckoutController.Initialize(InitialState, ShowPanel, DataMode, Actions)",
+                "CheckoutController.HydrateAsync()",
+                "CheckoutController.RefreshAsync()",
+                "CheckoutController.SelectShippingAsync(key)",
+                "CheckoutController.SelectPaymentAsync(key)",
+                "CheckoutController.ReviewAsync()",
+                "CheckoutController.PlaceOrderAsync()",
+                "NavigationManager.NavigateTo(outcome.RedirectUrl, forceLoad: true)"
+            })
+            {
+                Assert.Contains(lifecycleCall, checkoutShell, StringComparison.Ordinal);
+            }
+
+            Assert.Equal(1, CountOccurrences(checkoutShell, "data-storefront-checkout-shell"));
+            Assert.Equal(1, CountOccurrences(checkoutShell, "data-storefront-checkout-cart-version"));
+
+            foreach (var label in new[]
+            {
+                "StateLabel", "EmptyCartTitle", "ReadySuffix", "Refresh", "Refreshing", "CartVersion", "CheckoutVersion",
+                "Total", "Shipping", "ShippingNotRequired", "ShippingUnavailable", "Payment", "ReviewLatestCheckout", "PlaceOrder"
+            })
+            {
+                Assert.Contains($"Labels.{label}", checkoutShell, StringComparison.Ordinal);
+            }
+
+            foreach (var forbidden in new[]
+            {
+                ">Checkout state<", ">Cart version<", ">Checkout version<", ">Total<", ">Shipping<", ">Payment<",
+                ">Review latest checkout<", ">Place order<", "@rendermode", "InteractiveServer", "InteractiveWebAssembly",
+                "InteractiveAuto", "HttpClient", "BlazorShop.Storefront.V2", "rounded-", "bg-neutral-", "md:", "lg:"
+            })
+            {
+                Assert.DoesNotContain(forbidden, checkoutShell, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void WasmTailwindPipeline_OwnsInteractiveCssWithoutScanningOtherProjects()
         {
             var package = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json");

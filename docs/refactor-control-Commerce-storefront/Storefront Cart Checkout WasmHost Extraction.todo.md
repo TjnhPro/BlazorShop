@@ -322,31 +322,31 @@ Exit criteria:
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/`.
-- [ ] Move the runtime markup and behavior from V2.WASM `StorefrontCheckoutShell.razor` into WasmHost `StorefrontCheckoutShell.razor`.
-- [ ] Update the namespace to `BlazorShop.Storefront.Components.WasmHost.Components.Checkout`.
-- [ ] Inject `IStorefrontBrowserCheckoutController` in the WasmHost component.
-- [ ] Keep `NavigationManager` usage only if it is required for current redirect behavior.
-- [ ] Accept `StorefrontCheckoutViewClasses` as a parameter.
-- [ ] Accept `StorefrontCheckoutViewLabels` as a parameter.
-- [ ] Preserve `RefreshAsync`, `SelectShippingAsync`, `SelectPaymentAsync`, `ReviewAsync`, `PlaceOrderAsync`, and current state update behavior.
-- [ ] Preserve the `ShowPanel` parameter behavior.
-- [ ] Preserve current hidden-shell behavior when `ShowPanel=false`.
-- [ ] Preserve semantic hooks:
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/`. Evidence: the moved shell now exists at `Components/Checkout/StorefrontCheckoutShell.razor`.
+- [x] Move the runtime markup and behavior from V2.WASM `StorefrontCheckoutShell.razor` into WasmHost `StorefrontCheckoutShell.razor`. Evidence: the Phase 4 commit records an 87% rename and the focused ownership test passes.
+- [x] Update the namespace to `BlazorShop.Storefront.Components.WasmHost.Components.Checkout`. Evidence: the moved Razor file declares the required namespace.
+- [x] Inject `IStorefrontBrowserCheckoutController` in the WasmHost component. Evidence: the only checkout controller injection across WasmHost and V2.WASM is in the moved shell.
+- [x] Keep `NavigationManager` usage only if it is required for current redirect behavior. Evidence: it remains injected solely for the preserved `NavigateTo(outcome.RedirectUrl, forceLoad: true)` path.
+- [x] Accept `StorefrontCheckoutViewClasses` as a parameter. Evidence: `Classes` is an editor-required parameter and all class attributes remain dynamic.
+- [x] Accept `StorefrontCheckoutViewLabels` as a parameter. Evidence: `Labels` is an editor-required parameter and replaces the prior UI literals.
+- [x] Preserve `RefreshAsync`, `SelectShippingAsync`, `SelectPaymentAsync`, `ReviewAsync`, `PlaceOrderAsync`, and current state update behavior. Evidence: source-parity and focused ownership checks confirm every controller call and `StateHasChanged` flow remains.
+- [x] Preserve the `ShowPanel` parameter behavior. Evidence: `ShowPanel` remains editor-required with the default `false` value-type behavior.
+- [x] Preserve current hidden-shell behavior when `ShowPanel=false`. Evidence: the shell markup and browser hydration remain guarded by `ShowPanel`.
+- [x] Preserve semantic hooks. Evidence: source parity confirms one occurrence before and after for each hook:
   - `data-storefront-checkout-shell`
   - `data-storefront-checkout-cart-version`
-- [ ] Replace hardcoded copy with label contract usage.
-- [ ] Ensure the component does not contain `@rendermode`.
-- [ ] Ensure the component does not contain final V2 Tailwind class literals unless they come through the supplied `Classes` contract.
-- [ ] Update `BlazorShop.Storefront.Components.WasmHost/_Imports.razor` as needed.
+- [x] Replace hardcoded copy with label contract usage. Evidence: the old checkout UI-copy scan returns zero matches and the focused test verifies all used label slots.
+- [x] Ensure the component does not contain `@rendermode`. Evidence: the WasmHost render-mode scan returns zero matches.
+- [x] Ensure the component does not contain final V2 Tailwind class literals unless they come through the supplied `Classes` contract. Evidence: the reusable literal-class/V2-token neutrality test passes.
+- [x] Update `BlazorShop.Storefront.Components.WasmHost/_Imports.razor` as needed. Evidence: Checkout Browser, contract, and headless namespaces were added without other dependency changes.
 
 Checkout-specific caution:
 
-- [ ] Do not make the WasmHost shell the visible production checkout UI in this phase.
-- [ ] Do not remove the SSR Presentation checkout form from `CheckoutPage.razor`.
-- [ ] Do not change order placement semantics.
-- [ ] Do not change payment method selection semantics.
-- [ ] Do not add tax UI.
+- [x] Do not make the WasmHost shell the visible production checkout UI in this phase. Evidence: `CheckoutPage.razor` has zero diff and still passes `ShowPanel="false"` twice.
+- [x] Do not remove the SSR Presentation checkout form from `CheckoutPage.razor`. Evidence: the unchanged page still contains form, address, payment, and submit components once each.
+- [x] Do not change order placement semantics. Evidence: place-order dispatch, pending refresh, redirect, and changed-outcome refresh have exact source parity.
+- [x] Do not change payment method selection semantics. Evidence: `SelectPaymentAsync(key)` and its state-refresh branch have exact source parity.
+- [x] Do not add tax UI. Evidence: the Phase 4 diff contains only the shell rename/neutralization, required imports, focused test, and this checklist evidence.
 
 Focused checks:
 
@@ -358,9 +358,9 @@ rg "data-storefront-checkout" BlazorShop.PresentationV2/BlazorShop.Storefront.Co
 
 Exit criteria:
 
-- [ ] WasmHost owns the checkout shell behavior implementation.
-- [ ] V2.WASM no longer owns checkout controller injection or shell lifecycle code.
-- [ ] Current V2 checkout page still uses the visible SSR checkout form for real browser order placement.
+- [x] WasmHost owns the checkout shell behavior implementation. Evidence: the focused ownership test passes and the WasmHost project builds with zero warnings/errors.
+- [x] V2.WASM no longer owns checkout controller injection or shell lifecycle code. Evidence: the old V2.WASM shell path is absent and only the WasmHost source injects the controller.
+- [x] Current V2 checkout page still uses the visible SSR checkout form for real browser order placement. Evidence: the page is unchanged and retains `StorefrontCheckoutForm`, address, payment, and submit composition.
 
 ## Phase 5 - Create V2.WASM Cart Wrapper
 
