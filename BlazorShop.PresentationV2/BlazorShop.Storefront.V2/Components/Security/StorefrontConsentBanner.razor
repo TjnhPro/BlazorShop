@@ -1,68 +1,8 @@
 @namespace BlazorShop.Storefront.V2.Components.Security
 @using BlazorShop.Storefront.Presentation.Services
-
-<section data-storefront-consent-banner
-         data-storefront-consent-enabled="@Context.VisualEnabled.ToString().ToLowerInvariant()"
-         data-storefront-consent-current-url="@Context.Actions.CurrentUrl"
-         data-storefront-consent-accept-url="@Context.Actions.AcceptUrl"
-         data-storefront-consent-revoke-url="@Context.Actions.RevokeUrl"
-         data-storefront-consent-current-method="@Context.Actions.CurrentMethod"
-         data-storefront-consent-accept-method="@Context.Actions.AcceptMethod"
-         data-storefront-consent-revoke-method="@Context.Actions.RevokeMethod"
-         data-storefront-consent-changed-event="@Context.Events.Changed"
-         data-storefront-consent-manage-event="@Context.Events.ManageRequested"
-         class="pointer-events-auto fixed inset-x-0 bottom-0 z-[100] hidden border-t border-slate-200 bg-white/95 px-4 py-4 shadow-2xl backdrop-blur sm:px-6"
-         aria-label="Cookie consent">
-    <div class="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div class="max-w-3xl">
-            <p class="text-sm font-semibold text-slate-950">Privacy preferences</p>
-            <p class="mt-1 text-sm leading-6 text-slate-700">
-                Essential cookies keep sign-in, cart, checkout, and security working. Optional preferences can improve the Storefront experience.
-            </p>
-            <a data-storefront-consent-policy
-               href="@Context.PolicyPagePath"
-               class="mt-2 inline-flex text-sm font-medium text-slate-950 underline underline-offset-4">
-                Cookie information
-            </a>
-        </div>
-        <div class="flex flex-col gap-3 sm:min-w-80">
-            <label class="flex items-center justify-between gap-4 text-sm text-slate-700">
-                <span>Preferences</span>
-                <input data-storefront-consent-preferences type="checkbox" class="h-4 w-4 rounded border-slate-300" />
-            </label>
-            <label class="flex items-center justify-between gap-4 text-sm text-slate-700">
-                <span>Analytics</span>
-                <input data-storefront-consent-analytics type="checkbox" class="h-4 w-4 rounded border-slate-300" />
-            </label>
-            <label class="flex items-center justify-between gap-4 text-sm text-slate-700">
-                <span>Marketing</span>
-                <input data-storefront-consent-marketing type="checkbox" class="h-4 w-4 rounded border-slate-300" />
-            </label>
-            <div class="flex flex-wrap justify-end gap-2">
-                <button type="button"
-                        data-storefront-consent-essential
-                        class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100">
-                    Essential only
-                </button>
-                <button type="button"
-                        data-storefront-consent-revoke
-                        class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100">
-                    Revoke
-                </button>
-                <button type="button"
-                        data-storefront-consent-selected
-                        class="rounded-md border border-slate-900 px-3 py-2 text-sm font-medium text-slate-950 transition hover:bg-slate-100">
-                    Save choices
-                </button>
-                <button type="button"
-                        data-storefront-consent-all
-                        class="rounded-md bg-slate-950 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800">
-                    Accept all
-                </button>
-            </div>
-        </div>
-    </div>
-</section>
+<StorefrontConsentPanel Context="Context"
+                        Labels="StorefrontConsentVisuals.Labels"
+                        Classes="StorefrontConsentVisuals.Classes" />
 
 @code {
     [Parameter, EditorRequired]

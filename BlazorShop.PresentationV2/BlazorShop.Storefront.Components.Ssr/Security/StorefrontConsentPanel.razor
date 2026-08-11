@@ -1,0 +1,40 @@
+@namespace BlazorShop.Storefront.Components.Ssr.Security
+
+<section data-storefront-consent-banner
+         data-storefront-consent-enabled="@Context.VisualEnabled.ToString().ToLowerInvariant()"
+         data-storefront-consent-current-url="@Context.Actions.CurrentUrl"
+         data-storefront-consent-accept-url="@Context.Actions.AcceptUrl"
+         data-storefront-consent-revoke-url="@Context.Actions.RevokeUrl"
+         data-storefront-consent-current-method="@Context.Actions.CurrentMethod"
+         data-storefront-consent-accept-method="@Context.Actions.AcceptMethod"
+         data-storefront-consent-revoke-method="@Context.Actions.RevokeMethod"
+         data-storefront-consent-changed-event="@Context.Events.Changed"
+         data-storefront-consent-manage-event="@Context.Events.ManageRequested"
+         class="@Classes.Root"
+         aria-label="@Labels.AriaLabel"
+         hidden>
+    <div class="@Classes.Inner">
+        <div class="@Classes.Description">
+            <p class="@Classes.Heading">@Labels.Heading</p>
+            <p class="@Classes.Body">@Labels.Description</p>
+            <a data-storefront-consent-policy href="@Context.PolicyPagePath" class="@Classes.PolicyLink">@Labels.PolicyLink</a>
+        </div>
+        <div class="@Classes.Choices">
+            <label class="@Classes.ChoiceLabel"><span>@Labels.Preferences</span><input data-storefront-consent-preferences type="checkbox" class="@Classes.ChoiceInput" /></label>
+            <label class="@Classes.ChoiceLabel"><span>@Labels.Analytics</span><input data-storefront-consent-analytics type="checkbox" class="@Classes.ChoiceInput" /></label>
+            <label class="@Classes.ChoiceLabel"><span>@Labels.Marketing</span><input data-storefront-consent-marketing type="checkbox" class="@Classes.ChoiceInput" /></label>
+            <div class="@Classes.Actions">
+                <button type="button" data-storefront-consent-essential class="@Classes.SecondaryButton">@Labels.EssentialOnly</button>
+                <button type="button" data-storefront-consent-revoke class="@Classes.SecondaryButton">@Labels.Revoke</button>
+                <button type="button" data-storefront-consent-selected class="@Classes.SecondaryButton">@Labels.SaveChoices</button>
+                <button type="button" data-storefront-consent-all class="@Classes.PrimaryButton">@Labels.AcceptAll</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public StorefrontConsentContext Context { get; set; } = default!;
+    [Parameter, EditorRequired] public StorefrontConsentPanelLabels Labels { get; set; } = default!;
+    [Parameter, EditorRequired] public StorefrontConsentPanelClasses Classes { get; set; } = default!;
+}

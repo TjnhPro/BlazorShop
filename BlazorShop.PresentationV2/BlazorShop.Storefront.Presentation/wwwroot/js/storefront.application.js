@@ -285,7 +285,10 @@
       boundConsentManageButtons.add(button);
       button.addEventListener("click", () => {
         publishConsentManageRequested();
-        document.querySelector(consentBannerSelector)?.classList.remove("hidden");
+        const banner = document.querySelector(consentBannerSelector);
+        if (banner instanceof HTMLElement) {
+          banner.hidden = false;
+        }
       });
     });
   }
@@ -301,7 +304,7 @@
 
     boundConsentBanners.add(banner);
     if (banner.dataset.storefrontConsentEnabled === "false") {
-      banner.classList.add("hidden");
+      banner.hidden = true;
       return;
     }
 
@@ -316,14 +319,14 @@
 
     const applyState = (state) => {
       if (!state || state.enabled === false || state.bannerRequired === false) {
-        banner.classList.add("hidden");
+        banner.hidden = true;
         return;
       }
 
       preferences.checked = Boolean(state.categories?.preferences);
       analytics.checked = Boolean(state.categories?.analytics);
       marketing.checked = Boolean(state.categories?.marketing);
-      banner.classList.remove("hidden");
+      banner.hidden = false;
     };
 
     const save = async (selection) => {
@@ -343,11 +346,11 @@
     banner.querySelector("[data-storefront-consent-revoke]")?.addEventListener("click", () => {
       void consent.revoke(actions)
         .then(applyState)
-        .catch(() => banner.classList.add("hidden"));
+        .catch(() => { banner.hidden = true; });
     });
     void consent.current(actions)
       .then(applyState)
-      .catch(() => banner.classList.add("hidden"));
+      .catch(() => { banner.hidden = true; });
   }
 
   function disableCheckoutSubmitters(form) {
