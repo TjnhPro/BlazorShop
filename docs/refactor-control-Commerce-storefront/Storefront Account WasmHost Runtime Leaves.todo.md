@@ -223,8 +223,8 @@ Label contract tasks:
 - [x] Add `StorefrontAccountOrderListLabels`.
 - [x] Add `StorefrontAccountOrderDetailLabels`.
 - [x] Add `StorefrontAccountAppLabels` only if `StorefrontAccountApp` copy needs a typed host-owned label bag in this phase. Not needed: account-shell copy remains V2.WASM-owned.
-- [ ] Ensure moved WasmHost leaves receive labels through parameters, not hardcoded final V2 copy.
-- [ ] Keep default label values neutral/fallback only; V2 final copy must be supplied by `StorefrontAccountViewOptions`.
+- [x] Ensure moved WasmHost leaves receive labels through parameters, not hardcoded final V2 copy.
+- [x] Keep default label values neutral/fallback only; V2 final copy is supplied by `StorefrontAccountViewOptions`.
 
 Validation:
 
@@ -359,37 +359,37 @@ Goal: reconnect V2 account composition to the moved WasmHost leaves and keep V2 
 
 Tasks:
 
-- [ ] Update `StorefrontAccountApp.razor` to use the WasmHost leaf components.
-- [ ] Keep `StorefrontAccountApp.razor` in `BlazorShop.Storefront.V2.WASM`.
-- [ ] Keep `StorefrontAccountNavigation.razor` in `BlazorShop.Storefront.V2.WASM`.
-- [ ] Update `StorefrontAccountViewOptions.cs` to expose final V2 labels for:
-  - [ ] profile editor;
-  - [ ] password form;
-  - [ ] address book;
-  - [ ] order list;
-  - [ ] order detail;
-  - [ ] account app shell only if needed.
-- [ ] Keep final V2 Tailwind class values in `StorefrontAccountViewOptions.cs`.
-- [ ] Keep `AccountNavigationClasses` in V2.WASM.
-- [ ] Keep `StorefrontAccountShellClasses` in V2.WASM.
-- [ ] Remove leaf class definitions from V2.WASM once all callers use Components contracts.
-- [ ] If `StorefrontAccountViewClasses.cs` remains, shrink it to only V2-owned shell/navigation class definitions.
-- [ ] If a V2.WASM `_Imports.razor` namespace becomes ambiguous, update imports explicitly.
-- [ ] Ensure `AccountHostPage.razor` does not need behavior changes beyond namespace import updates.
+- [x] Update `StorefrontAccountApp.razor` to use the WasmHost leaf components.
+- [x] Keep `StorefrontAccountApp.razor` in `BlazorShop.Storefront.V2.WASM`.
+- [x] Keep `StorefrontAccountNavigation.razor` in `BlazorShop.Storefront.V2.WASM`.
+- [x] Update `StorefrontAccountViewOptions.cs` to expose final V2 labels for:
+  - [x] profile editor;
+  - [x] password form;
+  - [x] address book;
+  - [x] order list;
+  - [x] order detail;
+  - [x] account app shell only if needed. Not needed; account-app copy stays in its V2 shell.
+- [x] Keep final V2 Tailwind class values in `StorefrontAccountViewOptions.cs`.
+- [x] Keep `AccountNavigationClasses` in V2.WASM.
+- [x] Keep `StorefrontAccountShellClasses` in V2.WASM.
+- [x] Remove leaf class definitions from V2.WASM once all callers use Components contracts.
+- [x] If `StorefrontAccountViewClasses.cs` remains, shrink it to only V2-owned shell/navigation class definitions.
+- [x] If a V2.WASM `_Imports.razor` namespace becomes ambiguous, update imports explicitly. The shared Account contracts import is explicit; WasmHost leaves are fully qualified in composition.
+- [x] Ensure `AccountHostPage.razor` does not need behavior changes beyond namespace import updates. No page change was needed.
 
 Copy ownership tasks:
 
-- [ ] Move leaf success/loading/error/empty labels into `StorefrontAccountViewOptions`.
-- [ ] Keep `Customer account` and account app route titles in V2.WASM options or V2.WASM app shell.
-- [ ] Avoid final user-facing copy inside `Components.WasmHost`.
-- [ ] Allow technical fallback labels only when a host fails to provide labels.
+- [x] Move leaf success/loading/error/empty labels into `StorefrontAccountViewOptions`.
+- [x] Keep `Customer account` and account app route titles in V2.WASM options or V2.WASM app shell.
+- [x] Avoid final user-facing copy inside `Components.WasmHost`.
+- [x] Allow technical fallback labels only when a host fails to provide labels.
 
 Validation:
 
-- [ ] Account routes render the same sections as before.
-- [ ] `StorefrontAccountApp` remains the V2 route/panel orchestrator.
-- [ ] `StorefrontAccountNavigation` remains render-only.
-- [ ] No V2.WASM account leaf injects `IStorefrontBrowserAccountController`.
+- [x] Account routes render the same sections as before.
+- [x] `StorefrontAccountApp` remains the V2 route/panel orchestrator.
+- [x] `StorefrontAccountNavigation` remains render-only.
+- [x] No V2.WASM account leaf injects `IStorefrontBrowserAccountController`.
 
 ## Phase 8 - WasmHost Imports And Boundary Guardrails
 
