@@ -216,6 +216,47 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void CartWrapper_ForwardsPageInputsAndV2PresentationOptionsToWasmHostRuntime()
+        {
+            const string wrapperPath =
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartSection.razor";
+
+            Assert.True(File.Exists(ResolveRepositoryPath(wrapperPath)), $"Missing V2.WASM cart wrapper: {wrapperPath}");
+
+            var wrapper = ReadRepositoryFile(wrapperPath);
+
+            Assert.Contains("@namespace BlazorShop.Storefront.V2.WASM.Components.Cart", wrapper, StringComparison.Ordinal);
+            Assert.Contains("<BlazorShop.Storefront.Components.WasmHost.Components.Cart.StorefrontCartView", wrapper, StringComparison.Ordinal);
+
+            foreach (var parameter in new[]
+            {
+                "InitialCart=\"InitialCart\"",
+                "InitialAlerts=\"InitialAlerts\"",
+                "DataMode=\"DataMode\"",
+                "Actions=\"Actions\"",
+                "CheckoutUrl=\"CheckoutUrl\"",
+                "ContinueShoppingUrl=\"ContinueShoppingUrl\"",
+                "SecondaryShoppingUrl=\"SecondaryShoppingUrl\""
+            })
+            {
+                Assert.Contains(parameter, wrapper, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("Classes=\"StorefrontCartViewOptions.Classes\"", wrapper, StringComparison.Ordinal);
+            Assert.Contains("Labels=\"StorefrontCartViewOptions.Labels\"", wrapper, StringComparison.Ordinal);
+            Assert.Equal(7, CountOccurrences(wrapper, "[Parameter, EditorRequired]"));
+
+            foreach (var forbidden in new[]
+            {
+                "@inject", "IStorefrontBrowserCartController", "CartController.", "OnParametersSet", "OnAfterRenderAsync",
+                "UpdateQuantityAsync", "RemoveLineAsync", "ClearCartAsync", "<section", "data-storefront-cart-"
+            })
+            {
+                Assert.DoesNotContain(forbidden, wrapper, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void CheckoutRuntime_IsOwnedByNeutralWasmHostComponentWithHiddenPanelBehavior()
         {
             const string wasmHostPath =

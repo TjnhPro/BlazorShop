@@ -366,26 +366,26 @@ Exit criteria:
 
 Tasks:
 
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartSection.razor`.
-- [ ] Make the wrapper render `BlazorShop.Storefront.Components.WasmHost.Components.Cart.StorefrontCartView`.
-- [ ] Pass V2 cart classes from `StorefrontCartViewOptions`.
-- [ ] Pass V2 cart labels from `StorefrontCartViewOptions`.
-- [ ] Keep V2 final class values and V2 final English copy in the V2 options object.
-- [ ] Keep wrapper markup minimal.
-- [ ] Do not inject `IStorefrontBrowserCartController` in the wrapper.
-- [ ] Delete or stop using the old V2.WASM `StorefrontCartView.razor`.
-- [ ] Update namespaces and imports so V2 pages can render `StorefrontCartSection` without ambiguity.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartSection.razor`.
+- [x] Make the wrapper render `BlazorShop.Storefront.Components.WasmHost.Components.Cart.StorefrontCartView`.
+- [x] Pass V2 cart classes from `StorefrontCartViewOptions`.
+- [x] Pass V2 cart labels from `StorefrontCartViewOptions`.
+- [x] Keep V2 final class values and V2 final English copy in the V2 options object.
+- [x] Keep wrapper markup minimal.
+- [x] Do not inject `IStorefrontBrowserCartController` in the wrapper.
+- [x] Delete or stop using the old V2.WASM `StorefrontCartView.razor`.
+- [x] Update namespaces and imports so V2 pages can render `StorefrontCartSection` without ambiguity.
 
 Guardrails:
 
-- [ ] Wrapper may configure V2 options.
-- [ ] Wrapper may expose V2 page parameters if currently needed.
-- [ ] Wrapper must not duplicate cart behavior logic.
-- [ ] Wrapper must not duplicate the reusable cart markup.
+- [x] Wrapper may configure V2 options.
+- [x] Wrapper may expose V2 page parameters if currently needed.
+- [x] Wrapper must not duplicate cart behavior logic.
+- [x] Wrapper must not duplicate the reusable cart markup.
 
 Exit criteria:
 
-- [ ] V2.WASM owns cart presentation values only.
+- [x] V2.WASM owns cart presentation values only.
 - [ ] `CartPage.razor` renders the wrapper, not the shared component directly unless an explicit namespace alias is used.
 
 ## Phase 6 - Create V2.WASM Checkout Wrapper

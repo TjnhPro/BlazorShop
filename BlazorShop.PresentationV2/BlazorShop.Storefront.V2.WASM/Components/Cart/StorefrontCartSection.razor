@@ -1,0 +1,38 @@
+@namespace BlazorShop.Storefront.V2.WASM.Components.Cart
+@using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Contracts.Cart
+@using BlazorShop.Storefront.Components.Headless.Cart
+
+<BlazorShop.Storefront.Components.WasmHost.Components.Cart.StorefrontCartView
+    InitialCart="InitialCart"
+    InitialAlerts="InitialAlerts"
+    DataMode="DataMode"
+    Actions="Actions"
+    Classes="StorefrontCartViewOptions.Classes"
+    Labels="StorefrontCartViewOptions.Labels"
+    CheckoutUrl="CheckoutUrl"
+    ContinueShoppingUrl="ContinueShoppingUrl"
+    SecondaryShoppingUrl="SecondaryShoppingUrl" />
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontBrowserCart? InitialCart { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorefrontBrowserCartAlert> InitialAlerts { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public StorefrontFeatureDataMode DataMode { get; set; }
+
+    [Parameter, EditorRequired]
+    public StorefrontCartActionDescriptor Actions { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string CheckoutUrl { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string ContinueShoppingUrl { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string SecondaryShoppingUrl { get; set; } = default!;
+}
