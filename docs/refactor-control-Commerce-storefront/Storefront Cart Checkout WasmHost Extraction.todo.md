@@ -1,6 +1,6 @@
 # Storefront Cart Checkout WasmHost Extraction
 
-Status: planned
+Status: complete
 Track: Phase 3.5 - Cart and Checkout WasmHost Extraction
 Target area: Storefront component mode architecture
 
@@ -45,127 +45,127 @@ DX review:
 
 ## Current Code Evidence
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor` currently owns cart browser behavior.
-- [ ] `StorefrontCartView.razor` injects `IStorefrontBrowserCartController`.
-- [ ] `StorefrontCartView.razor` owns lifecycle methods such as `Initialize`, `HydrateAsync`, `UpdateQuantityAsync`, `RemoveLineAsync`, and `ClearAsync`.
-- [ ] `StorefrontCartView.razor` renders cart semantic hooks such as `data-storefront-cart-quantity`, `data-line-id`, `data-product-id`, `data-variant-id`, `data-product-name`, `data-size-value`, `data-storefront-cart-remove`, and `data-storefront-cart-clear`.
-- [ ] `StorefrontCartView.razor` currently includes hardcoded English copy such as cart title, empty cart text, button text, and loading/error text.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewClasses.cs` currently owns the cart class contract shape.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs` currently owns final V2 class values.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor` currently owns checkout browser shell behavior.
-- [ ] `StorefrontCheckoutShell.razor` injects `IStorefrontBrowserCheckoutController` and `NavigationManager`.
-- [ ] `StorefrontCheckoutShell.razor` owns methods such as `RefreshAsync`, `SelectShippingAsync`, `SelectPaymentAsync`, `ReviewAsync`, and `PlaceOrderAsync`.
-- [ ] `StorefrontCheckoutShell.razor` renders `data-storefront-checkout-shell` and `data-storefront-checkout-cart-version`.
-- [ ] `StorefrontCheckoutShell.razor` currently includes hardcoded English copy such as checkout state, refresh, review, and place-order labels.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutViewClasses.cs` currently owns the checkout class contract shape.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs` currently owns final V2 class values.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj` already references `BlazorShop.Storefront.Components` and `BlazorShop.Storefront.Browser`.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj` already references `BlazorShop.Storefront.Components.WasmHost`.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` currently renders the cart WASM view with `@rendermode="InteractiveWebAssembly"`.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor` currently renders `StorefrontCheckoutShell` with `ShowPanel="false"`.
-- [ ] `CheckoutPage.razor` currently uses SSR Presentation components for the visible checkout form and real order placement: `StorefrontCheckoutForm`, `StorefrontCheckoutAddressFields`, `StorefrontCheckoutPaymentFields`, and `StorefrontCheckoutSubmit`.
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor` currently imports V2.WASM cart and checkout namespaces and must be updated after extraction.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor` currently owns cart browser behavior.
+- [x] `StorefrontCartView.razor` injects `IStorefrontBrowserCartController`.
+- [x] `StorefrontCartView.razor` owns lifecycle methods such as `Initialize`, `HydrateAsync`, `UpdateQuantityAsync`, `RemoveLineAsync`, and `ClearAsync`.
+- [x] `StorefrontCartView.razor` renders cart semantic hooks such as `data-storefront-cart-quantity`, `data-line-id`, `data-product-id`, `data-variant-id`, `data-product-name`, `data-size-value`, `data-storefront-cart-remove`, and `data-storefront-cart-clear`.
+- [x] `StorefrontCartView.razor` currently includes hardcoded English copy such as cart title, empty cart text, button text, and loading/error text.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewClasses.cs` currently owns the cart class contract shape.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs` currently owns final V2 class values.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShell.razor` currently owns checkout browser shell behavior.
+- [x] `StorefrontCheckoutShell.razor` injects `IStorefrontBrowserCheckoutController` and `NavigationManager`.
+- [x] `StorefrontCheckoutShell.razor` owns methods such as `RefreshAsync`, `SelectShippingAsync`, `SelectPaymentAsync`, `ReviewAsync`, and `PlaceOrderAsync`.
+- [x] `StorefrontCheckoutShell.razor` renders `data-storefront-checkout-shell` and `data-storefront-checkout-cart-version`.
+- [x] `StorefrontCheckoutShell.razor` currently includes hardcoded English copy such as checkout state, refresh, review, and place-order labels.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutViewClasses.cs` currently owns the checkout class contract shape.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs` currently owns final V2 class values.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/BlazorShop.Storefront.Components.WasmHost.csproj` already references `BlazorShop.Storefront.Components` and `BlazorShop.Storefront.Browser`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/BlazorShop.Storefront.V2.WASM.csproj` already references `BlazorShop.Storefront.Components.WasmHost`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` currently renders the cart WASM view with `@rendermode="InteractiveWebAssembly"`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor` currently renders `StorefrontCheckoutShell` with `ShowPanel="false"`.
+- [x] `CheckoutPage.razor` currently uses SSR Presentation components for the visible checkout form and real order placement: `StorefrontCheckoutForm`, `StorefrontCheckoutAddressFields`, `StorefrontCheckoutPaymentFields`, and `StorefrontCheckoutSubmit`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor` currently imports V2.WASM cart and checkout namespaces and must be updated after extraction.
 
 ## Final Ownership Target
 
 `BlazorShop.Storefront.Components`:
 
-- [ ] Owns `Contracts/Cart/StorefrontCartViewClasses.cs`.
-- [ ] Owns `Contracts/Cart/StorefrontCartViewLabels.cs`.
-- [ ] Owns `Contracts/Checkout/StorefrontCheckoutViewClasses.cs`.
-- [ ] Owns `Contracts/Checkout/StorefrontCheckoutViewLabels.cs`.
-- [ ] Does not reference `BlazorShop.Storefront.Browser`.
-- [ ] Does not reference `BlazorShop.Storefront.V2`.
-- [ ] Does not reference `BlazorShop.Storefront.V2.WASM`.
-- [ ] Does not own final V2 CSS class values.
-- [ ] Does not own final V2 copy.
+- [x] Owns `Contracts/Cart/StorefrontCartViewClasses.cs`.
+- [x] Owns `Contracts/Cart/StorefrontCartViewLabels.cs`.
+- [x] Owns `Contracts/Checkout/StorefrontCheckoutViewClasses.cs`.
+- [x] Owns `Contracts/Checkout/StorefrontCheckoutViewLabels.cs`.
+- [x] Does not reference `BlazorShop.Storefront.Browser`.
+- [x] Does not reference `BlazorShop.Storefront.V2`.
+- [x] Does not reference `BlazorShop.Storefront.V2.WASM`.
+- [x] Does not own final V2 CSS class values.
+- [x] Does not own final V2 copy.
 
 `BlazorShop.Storefront.Components.WasmHost`:
 
-- [ ] Owns reusable `Components/Cart/StorefrontCartView.razor`.
-- [ ] Owns reusable `Components/Checkout/StorefrontCheckoutShell.razor`.
-- [ ] Injects browser controllers from `BlazorShop.Storefront.Browser`.
-- [ ] Accepts class and label contract parameters from the host.
-- [ ] Renders semantic `data-storefront-*` hooks needed by QA and future frontend generation.
-- [ ] Does not contain `@rendermode`, `InteractiveServer`, `InteractiveWebAssembly`, or `InteractiveAuto`.
-- [ ] Does not contain V2 final Tailwind values.
-- [ ] Does not contain V2 route defaults that are not passed in by host options.
+- [x] Owns reusable `Components/Cart/StorefrontCartView.razor`.
+- [x] Owns reusable `Components/Checkout/StorefrontCheckoutShell.razor`.
+- [x] Injects browser controllers from `BlazorShop.Storefront.Browser`.
+- [x] Accepts class and label contract parameters from the host.
+- [x] Renders semantic `data-storefront-*` hooks needed by QA and future frontend generation.
+- [x] Does not contain `@rendermode`, `InteractiveServer`, `InteractiveWebAssembly`, or `InteractiveAuto`.
+- [x] Does not contain V2 final Tailwind values.
+- [x] Does not contain V2 route defaults that are not passed in by host options.
 
 `BlazorShop.Storefront.V2.WASM`:
 
-- [ ] Owns `Components/Cart/StorefrontCartSection.razor` thin wrapper.
-- [ ] Owns `Components/Checkout/StorefrontCheckoutSection.razor` thin wrapper.
-- [ ] Owns `StorefrontCartViewOptions` with final V2 class values and labels.
-- [ ] Owns `StorefrontCheckoutShellOptions` with final V2 class values and labels.
-- [ ] Does not inject `IStorefrontBrowserCartController` directly.
-- [ ] Does not inject `IStorefrontBrowserCheckoutController` directly.
-- [ ] Does not own cart or checkout lifecycle methods.
-- [ ] Does not implement shared Presentation `IStorefront*Client` contracts.
+- [x] Owns `Components/Cart/StorefrontCartSection.razor` thin wrapper.
+- [x] Owns `Components/Checkout/StorefrontCheckoutSection.razor` thin wrapper.
+- [x] Owns `StorefrontCartViewOptions` with final V2 class values and labels.
+- [x] Owns `StorefrontCheckoutShellOptions` with final V2 class values and labels.
+- [x] Does not inject `IStorefrontBrowserCartController` directly.
+- [x] Does not inject `IStorefrontBrowserCheckoutController` directly.
+- [x] Does not own cart or checkout lifecycle methods.
+- [x] Does not implement shared Presentation `IStorefront*Client` contracts.
 
 `BlazorShop.Storefront.V2`:
 
-- [ ] Keeps page placement and render-mode ownership.
-- [ ] Keeps cart page behavior unchanged.
-- [ ] Keeps checkout page behavior unchanged, including the current visible SSR form flow.
-- [ ] Keeps `StorefrontCheckoutShell` hidden with `ShowPanel=false` unless a separate approved behavior phase changes that.
+- [x] Keeps page placement and render-mode ownership.
+- [x] Keeps cart page behavior unchanged.
+- [x] Keeps checkout page behavior unchanged, including the current visible SSR form flow.
+- [x] Keeps `StorefrontCheckoutShell` hidden with `ShowPanel=false` unless a separate approved behavior phase changes that.
 
 ## Hard Scope Lock
 
 Allowed production areas:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/_Imports.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/_Imports.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/_Imports.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/_Imports.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/_Imports.razor`
 
 Allowed tests:
 
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/*ComponentMode*Tests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/*RenderMode*Tests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/*VisualOnlyBoundary*Tests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/*V2WASMRuntimeFoundation*Tests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/*CommerceFlowCutover*Tests.cs`
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/*RequiredVisualContracts*Tests.cs`
-- [ ] Optional new focused tests under `BlazorShop.Tests.V2/PresentationV2/Storefront/`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/*ComponentMode*Tests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/*RenderMode*Tests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/*VisualOnlyBoundary*Tests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/*V2WASMRuntimeFoundation*Tests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/*CommerceFlowCutover*Tests.cs`
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/*RequiredVisualContracts*Tests.cs`
+- [x] Optional new focused tests under `BlazorShop.Tests.V2/PresentationV2/Storefront/`
 
 Allowed docs:
 
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/03-runtime-boundaries.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
-- [ ] This plan file.
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/03-runtime-boundaries.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
+- [x] This plan file.
 
 Forbidden changes:
 
-- [ ] Do not change `BlazorShop.Storefront.Browser` controller public APIs.
-- [ ] Do not change BFF endpoint paths.
-- [ ] Do not change Commerce Node Storefront API paths.
-- [ ] Do not change checkout order placement business logic.
-- [ ] Do not change payment provider behavior.
-- [ ] Do not change account components in this phase.
-- [ ] Do not change header, footer, product detail, gallery, auth, payment, or order components in this phase.
-- [ ] Do not touch StorefrontBuilder tooling.
-- [ ] Do not touch Starter or generated storefront projects.
-- [ ] Do not introduce React, JS framework code, or a new frontend package.
-- [ ] Do not make WasmHost depend on V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, or domain/application/infrastructure projects.
+- [x] Do not change `BlazorShop.Storefront.Browser` controller public APIs.
+- [x] Do not change BFF endpoint paths.
+- [x] Do not change Commerce Node Storefront API paths.
+- [x] Do not change checkout order placement business logic.
+- [x] Do not change payment provider behavior.
+- [x] Do not change account components in this phase.
+- [x] Do not change header, footer, product detail, gallery, auth, payment, or order components in this phase.
+- [x] Do not touch StorefrontBuilder tooling.
+- [x] Do not touch Starter or generated storefront projects.
+- [x] Do not introduce React, JS framework code, or a new frontend package.
+- [x] Do not make WasmHost depend on V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, or domain/application/infrastructure projects.
 
 ## Naming Decision
 
 Use V2.WASM wrapper names to avoid component ambiguity:
 
-- [ ] `BlazorShop.Storefront.Components.WasmHost.Components.Cart.StorefrontCartView`
-- [ ] `BlazorShop.Storefront.V2.WASM.Components.Cart.StorefrontCartSection`
-- [ ] `BlazorShop.Storefront.Components.WasmHost.Components.Checkout.StorefrontCheckoutShell`
-- [ ] `BlazorShop.Storefront.V2.WASM.Components.Checkout.StorefrontCheckoutSection`
+- [x] `BlazorShop.Storefront.Components.WasmHost.Components.Cart.StorefrontCartView`
+- [x] `BlazorShop.Storefront.V2.WASM.Components.Cart.StorefrontCartSection`
+- [x] `BlazorShop.Storefront.Components.WasmHost.Components.Checkout.StorefrontCheckoutShell`
+- [x] `BlazorShop.Storefront.V2.WASM.Components.Checkout.StorefrontCheckoutSection`
 
 Rationale:
 
@@ -273,16 +273,16 @@ Exit criteria:
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/`.
-- [ ] Move the runtime markup and behavior from V2.WASM `StorefrontCartView.razor` into WasmHost `StorefrontCartView.razor`.
-- [ ] Update the namespace to `BlazorShop.Storefront.Components.WasmHost.Components.Cart`.
-- [ ] Inject `IStorefrontBrowserCartController` in the WasmHost component.
-- [ ] Accept `StorefrontCartViewClasses` as a parameter.
-- [ ] Accept `StorefrontCartViewLabels` as a parameter.
-- [ ] Preserve `Initialize`, `HydrateAsync`, `UpdateQuantityAsync`, `RemoveLineAsync`, `ClearAsync`, and existing state update behavior.
-- [ ] Preserve existing quantity validation and mutation call behavior.
-- [ ] Preserve existing line rendering and item identity values.
-- [ ] Preserve existing semantic hooks:
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/`.
+- [x] Move the runtime markup and behavior from V2.WASM `StorefrontCartView.razor` into WasmHost `StorefrontCartView.razor`.
+- [x] Update the namespace to `BlazorShop.Storefront.Components.WasmHost.Components.Cart`.
+- [x] Inject `IStorefrontBrowserCartController` in the WasmHost component.
+- [x] Accept `StorefrontCartViewClasses` as a parameter.
+- [x] Accept `StorefrontCartViewLabels` as a parameter.
+- [x] Preserve `Initialize`, `HydrateAsync`, `UpdateQuantityAsync`, `RemoveLineAsync`, `ClearAsync`, and existing state update behavior.
+- [x] Preserve existing quantity validation and mutation call behavior.
+- [x] Preserve existing line rendering and item identity values.
+- [x] Preserve existing semantic hooks:
   - `data-storefront-cart-quantity`
   - `data-line-id`
   - `data-product-id`
@@ -291,18 +291,18 @@ Tasks:
   - `data-size-value`
   - `data-storefront-cart-remove`
   - `data-storefront-cart-clear`
-- [ ] Replace hardcoded copy with label contract usage.
-- [ ] Ensure the component does not contain `@rendermode`.
-- [ ] Ensure the component does not contain final V2 Tailwind class literals unless they already come through the supplied `Classes` contract.
-- [ ] Update `BlazorShop.Storefront.Components.WasmHost/_Imports.razor` as needed.
+- [x] Replace hardcoded copy with label contract usage.
+- [x] Ensure the component does not contain `@rendermode`.
+- [x] Ensure the component does not contain final V2 Tailwind class literals unless they already come through the supplied `Classes` contract.
+- [x] Update `BlazorShop.Storefront.Components.WasmHost/_Imports.razor` as needed.
 
 Guardrails:
 
-- [ ] WasmHost may reference `BlazorShop.Storefront.Browser`.
-- [ ] WasmHost may reference `BlazorShop.Storefront.Components`.
-- [ ] WasmHost must not reference V2 or V2.WASM.
-- [ ] WasmHost must not create a new HTTP client transport.
-- [ ] WasmHost must keep using Browser controllers, not generated backend clients.
+- [x] WasmHost may reference `BlazorShop.Storefront.Browser`.
+- [x] WasmHost may reference `BlazorShop.Storefront.Components`.
+- [x] WasmHost must not reference V2 or V2.WASM.
+- [x] WasmHost must not create a new HTTP client transport.
+- [x] WasmHost must keep using Browser controllers, not generated backend clients.
 
 Focused checks:
 
@@ -314,9 +314,9 @@ rg "data-storefront-cart" BlazorShop.PresentationV2/BlazorShop.Storefront.Compon
 
 Exit criteria:
 
-- [ ] WasmHost owns the cart behavior implementation.
-- [ ] V2.WASM no longer owns cart controller injection or mutation lifecycle code.
-- [ ] Cart semantic hooks remain available for browser QA.
+- [x] WasmHost owns the cart behavior implementation.
+- [x] V2.WASM no longer owns cart controller injection or mutation lifecycle code.
+- [x] Cart semantic hooks remain available for browser QA.
 
 ## Phase 4 - Move Checkout Shell Implementation Into WasmHost
 
@@ -729,12 +729,12 @@ Exit criteria:
 
 Only commit after all verification is complete.
 
-- [ ] Confirm `git status --short` contains only intentional files.
-- [ ] Confirm no unrelated user changes were modified or reverted.
-- [ ] Confirm build verification results are recorded in the implementation summary.
-- [ ] Confirm test verification results are recorded in the implementation summary.
-- [ ] Confirm Playwright QA evidence is recorded in `QA-StorefrontV2.todo.md`.
-- [ ] Commit with a message similar to:
+- [x] Confirm `git status --short` contains only intentional files.
+- [x] Confirm no unrelated user changes were modified or reverted.
+- [x] Confirm build verification results are recorded in the implementation summary.
+- [x] Confirm test verification results are recorded in the implementation summary.
+- [x] Confirm Playwright QA evidence is recorded in `QA-StorefrontV2.todo.md`.
+- [x] Commit with a message similar to:
 
 ```text
 refactor: move cart checkout wasm behavior to wasmhost
@@ -776,40 +776,40 @@ Risk: Tests preserve old architecture.
 
 Stop and re-review before continuing if:
 
-- [ ] A required cart or checkout behavior requires changing Browser controller APIs.
-- [ ] A required behavior requires changing BFF route contracts.
-- [ ] A required behavior requires changing Commerce Node Storefront API contracts.
-- [ ] Checkout shell must become visible on the production checkout page to pass tests.
-- [ ] Any direct dependency from WasmHost to V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, Domain, Application, or Infrastructure appears necessary.
-- [ ] A Playwright order placement failure appears unrelated to the component move.
-- [ ] The implementation touches account, product, header, footer, payment provider, order placement service, or StorefrontBuilder code.
+- [n/a] A required cart or checkout behavior requires changing Browser controller APIs. No such change was required.
+- [n/a] A required behavior requires changing BFF route contracts. No such change was required.
+- [n/a] A required behavior requires changing Commerce Node Storefront API contracts. No such change was required.
+- [n/a] Checkout shell must become visible on the production checkout page to pass tests. The SSR form remains visible and `ShowPanel=false` remains unchanged.
+- [n/a] Any direct dependency from WasmHost to V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, Domain, Application, or Infrastructure appears necessary. No such dependency was required.
+- [x] A Playwright order placement failure appears unrelated to the component move. It was re-reviewed and resolved as two Presentation serialization defects; no API or business-contract change was required.
+- [n/a] The implementation touches account, product, header, footer, payment provider, order placement service, or StorefrontBuilder code. No such component/tooling change was made.
 
 ## Definition Of Done
 
-- [ ] Cart class contract lives in `BlazorShop.Storefront.Components/Contracts/Cart`.
-- [ ] Checkout class contract lives in `BlazorShop.Storefront.Components/Contracts/Checkout`.
-- [ ] Cart label contract lives in `BlazorShop.Storefront.Components/Contracts/Cart`.
-- [ ] Checkout label contract lives in `BlazorShop.Storefront.Components/Contracts/Checkout`.
-- [ ] Cart reusable implementation lives in `BlazorShop.Storefront.Components.WasmHost`.
-- [ ] Checkout shell reusable implementation lives in `BlazorShop.Storefront.Components.WasmHost`.
-- [ ] V2.WASM cart wrapper exists and owns V2 classes/labels.
-- [ ] V2.WASM checkout wrapper exists and owns V2 classes/labels.
-- [ ] V2.WASM no longer owns cart runtime controller injection.
-- [ ] V2.WASM no longer owns checkout runtime controller injection.
-- [ ] WasmHost has no render-mode directives.
-- [ ] V2 pages still own `InteractiveWebAssembly` placement.
-- [ ] V2 checkout page still uses the visible SSR checkout form for real order placement.
-- [ ] V2 checkout shell remains hidden with `ShowPanel=false` where it was hidden before.
-- [ ] Architecture docs are updated.
-- [ ] QA checklist is updated.
-- [ ] Focused builds pass.
-- [ ] Full solution build passes.
-- [ ] Focused tests pass.
-- [ ] Full V2 tests pass.
-- [ ] Playwright cart browser QA passes.
-- [ ] Playwright checkout real COD/sandbox place-order QA passes.
-- [ ] Network guardrails pass.
-- [ ] No unrelated files are changed.
+- [x] Cart class contract lives in `BlazorShop.Storefront.Components/Contracts/Cart`.
+- [x] Checkout class contract lives in `BlazorShop.Storefront.Components/Contracts/Checkout`.
+- [x] Cart label contract lives in `BlazorShop.Storefront.Components/Contracts/Cart`.
+- [x] Checkout label contract lives in `BlazorShop.Storefront.Components/Contracts/Checkout`.
+- [x] Cart reusable implementation lives in `BlazorShop.Storefront.Components.WasmHost`.
+- [x] Checkout shell reusable implementation lives in `BlazorShop.Storefront.Components.WasmHost`.
+- [x] V2.WASM cart wrapper exists and owns V2 classes/labels.
+- [x] V2.WASM checkout wrapper exists and owns V2 classes/labels.
+- [x] V2.WASM no longer owns cart runtime controller injection.
+- [x] V2.WASM no longer owns checkout runtime controller injection.
+- [x] WasmHost has no render-mode directives.
+- [x] V2 pages still own `InteractiveWebAssembly` placement.
+- [x] V2 checkout page still uses the visible SSR checkout form for real order placement.
+- [x] V2 checkout shell remains hidden with `ShowPanel=false` where it was hidden before.
+- [x] Architecture docs are updated.
+- [x] QA checklist is updated.
+- [x] Focused builds pass.
+- [x] Full solution build passes.
+- [x] Focused tests pass.
+- [x] Full V2 tests pass.
+- [x] Playwright cart browser QA passes.
+- [x] Playwright checkout real COD/sandbox place-order QA passes.
+- [x] Network guardrails pass.
+- [x] No unrelated files are changed.
 
 ## Decision Audit Trail
 
@@ -824,6 +824,6 @@ Stop and re-review before continuing if:
 
 ## Post Phase Requirement
 
-- [ ] After implementation and QA pass, run one fresh review against the resulting diff before starting the next component extraction phase.
-- [ ] The fresh review must specifically verify that no old V2.WASM manual runtime ownership remains for cart or checkout.
-- [ ] Do not start Account extraction until this phase is closed.
+- [x] After implementation and QA pass, run one fresh review against the resulting diff before starting the next component extraction phase. 2026-08-11: reviewed the baseline diff, all changed files, static ownership scans, browser evidence, and final test result.
+- [x] The fresh review must specifically verify that no old V2.WASM manual runtime ownership remains for cart or checkout. 2026-08-11: cart/checkout paths have no V2.WASM controller injection or lifecycle methods; WasmHost owns both implementations.
+- [x] Do not start Account extraction until this phase is closed.

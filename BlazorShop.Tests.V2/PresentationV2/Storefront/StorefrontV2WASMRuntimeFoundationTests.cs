@@ -234,9 +234,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "InitialAlerts=\"InitialAlerts\"",
                 "DataMode=\"DataMode\"",
                 "Actions=\"Actions\"",
-                "CheckoutUrl=\"CheckoutUrl\"",
-                "ContinueShoppingUrl=\"ContinueShoppingUrl\"",
-                "SecondaryShoppingUrl=\"SecondaryShoppingUrl\""
+                "CheckoutUrl=\"@CheckoutUrl\"",
+                "ContinueShoppingUrl=\"@ContinueShoppingUrl\"",
+                "SecondaryShoppingUrl=\"@SecondaryShoppingUrl\""
             })
             {
                 Assert.Contains(parameter, wrapper, StringComparison.Ordinal);
