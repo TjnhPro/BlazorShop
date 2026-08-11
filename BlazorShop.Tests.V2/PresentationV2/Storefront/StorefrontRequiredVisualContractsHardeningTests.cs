@@ -211,7 +211,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("== AccountRouteDescriptor.Empty", app, StringComparison.Ordinal);
             Assert.DoesNotContain("== StorefrontAccount", app, StringComparison.Ordinal);
             Assert.Contains("AccountRouteParser.Resolve(Path, RouteDescriptor)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountOrderList.PageNumber), PageNumber", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderList.PageNumber), PageNumber", app, StringComparison.Ordinal);
             Assert.DoesNotContain("Math.Max(1, PageNumber)", app, StringComparison.Ordinal);
         }
 

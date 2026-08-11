@@ -8,6 +8,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [
             "Account/AccountLabels.cs",
             "Account/AccountRouteDescriptor.cs",
+            "Account/StorefrontAccountLabels.cs",
+            "Account/StorefrontAccountViewClasses.cs",
             "Brand/StorefrontBrandLogoClasses.cs",
             "Brand/StorefrontBrandLogoContext.cs",
             "Cart/CartLabels.cs",
@@ -145,7 +147,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(52, actual.Length);
+            Assert.Equal(54, actual.Length);
         }
 
         [Fact]
@@ -245,25 +247,36 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontComponents_HeadlessHasNoVisualClassBags()
         {
             var headlessSource = ReadComponentLayerSource("Headless");
-            var v2ClassSource =
+            var v2OwnedClassSource =
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewClasses.cs")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/StorefrontCartViewClasses.cs")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/StorefrontCheckoutViewClasses.cs");
+            var accountContractSource = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Account/StorefrontAccountViewClasses.cs");
 
             foreach (var classBag in new[]
             {
                 "StorefrontCartViewClasses",
                 "StorefrontCheckoutViewClasses",
                 "AccountNavigationClasses",
-                "StorefrontAccountFormClasses",
-                "StorefrontAccountAddressBookClasses",
-                "StorefrontAccountOrderListClasses",
-                "StorefrontAccountOrderDetailClasses",
                 "StorefrontAccountShellClasses"
             })
             {
                 Assert.DoesNotContain(classBag, headlessSource, StringComparison.Ordinal);
-                Assert.Contains(classBag, v2ClassSource, StringComparison.Ordinal);
+                Assert.Contains(classBag, v2OwnedClassSource, StringComparison.Ordinal);
+            }
+
+            foreach (var accountLeafClassBag in new[]
+            {
+                "StorefrontAccountFormClasses",
+                "StorefrontAccountAddressBookClasses",
+                "StorefrontAccountOrderListClasses",
+                "StorefrontAccountOrderDetailClasses"
+            })
+            {
+                Assert.DoesNotContain(accountLeafClassBag, headlessSource, StringComparison.Ordinal);
+                Assert.Contains(accountLeafClassBag, accountContractSource, StringComparison.Ordinal);
+                Assert.DoesNotContain(accountLeafClassBag, v2OwnedClassSource, StringComparison.Ordinal);
             }
         }
 
@@ -624,9 +637,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void AccountProfileAndPasswordForms_UseHostActionsAndClassesAfterHpr10Migration()
         {
             var profile = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountProfileEditor.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountProfileEditor.razor");
             var password = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountChangePasswordForm.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountChangePasswordForm.razor");
             var accountController = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Account/StorefrontBrowserAccountController.cs");
             var behavior = ReadRepositoryFile(
@@ -683,17 +696,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("ProfileActions=\"@Context.ProfileActions\"", host, StringComparison.Ordinal);
             Assert.Contains("PasswordActions=\"@Context.PasswordActions\"", host, StringComparison.Ordinal);
             Assert.Contains("AccountFormClasses=\"StorefrontAccountViewOptions.FormClasses\"", host, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountProfileEditor.Actions)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountChangePasswordForm.Actions)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountProfileEditor.Classes)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountChangePasswordForm.Classes)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountProfileEditor.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountChangePasswordForm.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountProfileEditor.Classes)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountChangePasswordForm.Classes)", app, StringComparison.Ordinal);
         }
 
         [Fact]
         public void AccountAddressBook_UsesHostActionsAndClassesAfterHpr11Migration()
         {
             var addresses = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountAddressBook.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountAddressBook.razor");
             var accountController = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Account/StorefrontBrowserAccountController.cs");
             var behavior = ReadRepositoryFile(
@@ -751,17 +764,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("AddressActions=\"@Context.AddressActions\"", host, StringComparison.Ordinal);
             Assert.Contains("AddressClasses=\"StorefrontAccountViewOptions.AddressClasses\"", host, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountAddressBook.Actions)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountAddressBook.Classes)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountAddressBook.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountAddressBook.Classes)", app, StringComparison.Ordinal);
         }
 
         [Fact]
         public void AccountOrders_UseHostActionsAndClassesAfterHpr12Migration()
         {
             var orderList = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderList.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderList.razor");
             var orderDetail = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderDetail.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderDetail.razor");
             var accountController = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Browser/Account/StorefrontBrowserAccountController.cs");
             var behavior = ReadRepositoryFile(
@@ -825,10 +838,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("OrderActions=\"@Context.OrderActions\"", host, StringComparison.Ordinal);
             Assert.Contains("OrderListClasses=\"StorefrontAccountViewOptions.OrderListClasses\"", host, StringComparison.Ordinal);
             Assert.Contains("OrderDetailClasses=\"StorefrontAccountViewOptions.OrderDetailClasses\"", host, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountOrderList.Actions)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountOrderDetail.Actions)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountOrderList.Classes)", app, StringComparison.Ordinal);
-            Assert.Contains("nameof(StorefrontAccountOrderDetail.Classes)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderList.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderDetail.Actions)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderList.Classes)", app, StringComparison.Ordinal);
+            Assert.Contains("StorefrontAccountOrderDetail.Classes)", app, StringComparison.Ordinal);
         }
 
         [Fact]

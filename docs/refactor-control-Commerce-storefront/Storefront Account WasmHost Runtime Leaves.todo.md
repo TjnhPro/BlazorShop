@@ -429,54 +429,54 @@ Goal: adjust tests so they prove the new ownership instead of preserving old V2.
 
 Focused test update targets:
 
-- [ ] `StorefrontComponentsHeadlessPresentationRefactorTests.cs`
-  - [ ] Stop expecting account leaf runtime implementation under V2.WASM.
-  - [ ] Assert account leaves exist under Components.WasmHost.
-  - [ ] Assert account leaves inject Browser controller only from WasmHost.
-  - [ ] Assert Components contracts own account leaf class/label contracts.
-- [ ] `StorefrontV2WASMRuntimeFoundationTests.cs`
-  - [ ] Update account file path assertions to current ownership.
-  - [ ] Keep assertions that V2.WASM owns AccountApp and AccountNavigation.
-  - [ ] Add assertion that V2.WASM account leaves do not inject `IStorefrontBrowserAccountController`.
-- [ ] `StorefrontCommerceFlowCutoverTests.cs`
-  - [ ] Update order list/detail file paths and namespace references.
-  - [ ] Preserve business assertions for account order flows.
-- [ ] `StorefrontRequiredVisualContractsHardeningTests.cs`
-  - [ ] Keep root AccountApp visual contract assertions in V2.WASM.
-  - [ ] Add WasmHost leaf semantic hook assertions.
-- [ ] `StorefrontBrandingMarkupTests.cs`
-  - [ ] Update `nameof(StorefrontAccountOrderDetail.OrderReference)` namespace import if needed.
-  - [ ] Keep branding/markup intent unchanged.
-- [ ] `StorefrontPageCompositionGuardrailTests.cs`
-  - [ ] Keep `AccountHostPage.razor` route and render-mode ownership assertions.
-- [ ] `StorefrontRenderModeOwnershipTests.cs`
-  - [ ] Assert `@rendermode` remains in V2 page/composition only.
-  - [ ] Assert WasmHost account leaves have no render-mode directive.
+- [x] `StorefrontComponentsHeadlessPresentationRefactorTests.cs`
+  - [x] Stop expecting account leaf runtime implementation under V2.WASM.
+  - [x] Assert account leaves exist under Components.WasmHost.
+  - [x] Assert account leaves inject Browser controller only from WasmHost.
+  - [x] Assert Components contracts own account leaf class/label contracts.
+- [x] `StorefrontV2WASMRuntimeFoundationTests.cs`
+  - [x] Update account file path assertions to current ownership.
+  - [x] Keep assertions that V2.WASM owns AccountApp and AccountNavigation.
+  - [x] Add assertion that V2.WASM account leaves do not inject `IStorefrontBrowserAccountController`.
+- [x] `StorefrontCommerceFlowCutoverTests.cs`
+  - [x] Update order list/detail file paths and namespace references.
+  - [x] Preserve business assertions for account order flows.
+- [x] `StorefrontRequiredVisualContractsHardeningTests.cs`
+  - [x] Keep root AccountApp visual contract assertions in V2.WASM.
+  - [x] Add WasmHost leaf semantic hook assertions.
+- [x] `StorefrontBrandingMarkupTests.cs`
+  - [x] Update `nameof(StorefrontAccountOrderDetail.OrderReference)` namespace import if needed.
+  - [x] Keep branding/markup intent unchanged.
+- [x] `StorefrontPageCompositionGuardrailTests.cs`
+  - [x] Keep `AccountHostPage.razor` route and render-mode ownership assertions.
+- [x] `StorefrontRenderModeOwnershipTests.cs`
+  - [x] Assert `@rendermode` remains in V2 page/composition only.
+  - [x] Assert WasmHost account leaves have no render-mode directive.
 
 New/updated guardrail assertions:
 
-- [ ] V2.WASM account leaves no longer exist as runtime implementation files, or are thin wrappers only if necessary.
-- [ ] V2.WASM does not contain account lifecycle method names:
-  - [ ] `InitializeProfile`
-  - [ ] `HydrateProfileAsync`
-  - [ ] `SaveProfileAsync`
-  - [ ] `InitializePassword`
-  - [ ] `ChangePasswordAsync`
-  - [ ] `InitializeAddresses`
-  - [ ] `HydrateAddressesAsync`
-  - [ ] `CreateAddressAsync`
-  - [ ] `UpdateAddressAsync`
-  - [ ] `DeleteAddressAsync`
-  - [ ] `SetDefaultAddressAsync`
-  - [ ] `InitializeOrders`
-  - [ ] `HydrateOrdersAsync`
-  - [ ] `InitializeOrderDetail`
-  - [ ] `HydrateOrderDetailAsync`
-- [ ] Components.WasmHost contains those account lifecycle method names.
-- [ ] Components.WasmHost account files contain `IStorefrontBrowserAccountController`.
-- [ ] Components.WasmHost account files contain existing semantic hooks.
-- [ ] Components.WasmHost account files do not contain final V2 option class names as dependencies except through contract types.
-- [ ] Starter.WASM is explicitly not used as pass/fail ownership source for this phase.
+- [x] V2.WASM account leaves no longer exist as runtime implementation files, or are thin wrappers only if necessary.
+- [x] V2.WASM does not contain account lifecycle method names:
+  - [x] `InitializeProfile`
+  - [x] `HydrateProfileAsync`
+  - [x] `SaveProfileAsync`
+  - [x] `InitializePassword`
+  - [x] `ChangePasswordAsync`
+  - [x] `InitializeAddresses`
+  - [x] `HydrateAddressesAsync`
+  - [x] `CreateAddressAsync`
+  - [x] `UpdateAddressAsync`
+  - [x] `DeleteAddressAsync`
+  - [x] `SetDefaultAddressAsync`
+  - [x] `InitializeOrders`
+  - [x] `HydrateOrdersAsync`
+  - [x] `InitializeOrderDetail`
+  - [x] `HydrateOrderDetailAsync`
+- [x] Components.WasmHost contains those account lifecycle method names.
+- [x] Components.WasmHost account files contain `IStorefrontBrowserAccountController`.
+- [x] Components.WasmHost account files contain existing semantic hooks.
+- [x] Components.WasmHost account files do not contain final V2 option class names as dependencies except through contract types.
+- [x] Starter.WASM is explicitly not used as pass/fail ownership source for this phase.
 
 ## Phase 10 - Documentation Updates
 

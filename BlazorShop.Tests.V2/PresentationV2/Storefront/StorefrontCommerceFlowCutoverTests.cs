@@ -22,8 +22,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Checkout/StorefrontCheckoutShell.razor"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/StorefrontCartView.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderList.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountOrderDetail.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderList.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderDetail.razor"),
             };
 
             foreach (var source in activeStorefrontSources)

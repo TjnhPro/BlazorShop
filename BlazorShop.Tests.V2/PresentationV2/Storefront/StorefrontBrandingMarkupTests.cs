@@ -418,7 +418,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountApp.razor");
 
-            Assert.Contains("nameof(StorefrontAccountOrderDetail.OrderReference)", markup);
+            Assert.Contains("nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.OrderReference)", markup);
             Assert.Contains("ActiveRoute.OrderReference", markup);
             Assert.DoesNotContain("OrderReference=\"OrderReference\"", markup, StringComparison.Ordinal);
         }
