@@ -707,14 +707,14 @@ Goal: remove temporary duplication and close the architecture gap cleanly.
 
 Tasks:
 
-- [ ] Delete old V2.WASM account leaf implementation files after WasmHost equivalents are active.
-- [ ] If thin wrappers are required during migration, remove them before closing the phase unless a test-proven compatibility need remains.
-- [ ] Remove obsolete namespace imports from V2.WASM and V2.
-- [ ] Remove duplicate labels or class bags from V2.WASM after the contract move.
-- [ ] Remove any TODO comments created during this phase unless they point to an approved future phase.
-- [ ] Ensure no `Features` folder was recreated.
-- [ ] Ensure no Starter files were changed unintentionally.
-- [ ] Ensure no generated storefront artifacts were written to source directories.
+- [x] Delete old V2.WASM account leaf implementation files after WasmHost equivalents are active.
+- [x] If thin wrappers are required during migration, remove them before closing the phase unless a test-proven compatibility need remains. No wrappers remain.
+- [x] Remove obsolete namespace imports from V2.WASM and V2.
+- [x] Remove duplicate labels or class bags from V2.WASM after the contract move.
+- [x] Remove any TODO comments created during this phase unless they point to an approved future phase. No phase TODOs remain.
+- [x] Ensure no `Features` folder was recreated.
+- [x] Ensure no Starter files were changed unintentionally.
+- [x] Ensure no generated storefront artifacts were written to source directories.
 
 Search cleanup:
 
@@ -727,10 +727,10 @@ rg -n "BlazorShop.Storefront.V2|BlazorShop.Storefront.Presentation|BlazorShop.St
 
 Expected result:
 
-- [ ] V2.WASM has no account browser controller injection.
-- [ ] V2.WASM has no account leaf runtime lifecycle methods.
-- [ ] WasmHost has no invalid references.
-- [ ] Account shell/navigation remain in V2.WASM.
+- [x] V2.WASM has no account browser controller injection.
+- [x] V2.WASM has no account leaf runtime lifecycle methods.
+- [x] WasmHost has no invalid references.
+- [x] Account shell/navigation remain in V2.WASM.
 
 ## Phase 15 - Final Release Gate
 
