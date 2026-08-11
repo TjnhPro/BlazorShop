@@ -1,3 +1,5 @@
+using BlazorShop.Storefront.Components.Contracts.Account;
+
 namespace BlazorShop.Storefront.V2.WASM.Components.Account;
 
 public static class StorefrontAccountViewOptions

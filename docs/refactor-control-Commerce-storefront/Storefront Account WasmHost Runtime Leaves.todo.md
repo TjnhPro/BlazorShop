@@ -203,34 +203,34 @@ Goal: make the shared account contract layer usable by WasmHost without referenc
 
 Tasks:
 
-- [ ] Create or update account leaf class contract files under `BlazorShop.Storefront.Components/Contracts/Account/`.
-- [ ] Move `StorefrontAccountFormClasses` from V2.WASM class file into Components contracts.
-- [ ] Move `StorefrontAccountAddressBookClasses` from V2.WASM class file into Components contracts.
-- [ ] Move `StorefrontAccountOrderListClasses` from V2.WASM class file into Components contracts.
-- [ ] Move `StorefrontAccountOrderDetailClasses` from V2.WASM class file into Components contracts.
-- [ ] Keep `AccountNavigationClasses` in V2.WASM for now.
-- [ ] Keep `StorefrontAccountShellClasses` in V2.WASM for now.
-- [ ] Preserve property names and defaults unless a compile error requires a mechanical namespace adjustment.
-- [ ] Avoid changing class slot semantics.
+- [x] Create or update account leaf class contract files under `BlazorShop.Storefront.Components/Contracts/Account/`.
+- [x] Move `StorefrontAccountFormClasses` from V2.WASM class file into Components contracts.
+- [x] Move `StorefrontAccountAddressBookClasses` from V2.WASM class file into Components contracts.
+- [x] Move `StorefrontAccountOrderListClasses` from V2.WASM class file into Components contracts.
+- [x] Move `StorefrontAccountOrderDetailClasses` from V2.WASM class file into Components contracts.
+- [x] Keep `AccountNavigationClasses` in V2.WASM for now.
+- [x] Keep `StorefrontAccountShellClasses` in V2.WASM for now.
+- [x] Preserve property names and defaults unless a compile error requires a mechanical namespace adjustment.
+- [x] Avoid changing class slot semantics.
 
 Label contract tasks:
 
-- [ ] Review existing `AccountLabels.cs` and decide whether to keep it as navigation/common labels or replace it with a compatible aggregate.
-- [ ] Do not create two competing account label systems with overlapping purpose.
-- [ ] Add `StorefrontAccountProfileLabels`.
-- [ ] Add `StorefrontAccountPasswordLabels`.
-- [ ] Add `StorefrontAccountAddressBookLabels`.
-- [ ] Add `StorefrontAccountOrderListLabels`.
-- [ ] Add `StorefrontAccountOrderDetailLabels`.
-- [ ] Add `StorefrontAccountAppLabels` only if `StorefrontAccountApp` copy needs a typed host-owned label bag in this phase.
+- [x] Review existing `AccountLabels.cs` and decide whether to keep it as navigation/common labels or replace it with a compatible aggregate. It remains the separate existing navigation/common aggregate; leaf-specific contracts have non-overlapping names.
+- [x] Do not create two competing account label systems with overlapping purpose.
+- [x] Add `StorefrontAccountProfileLabels`.
+- [x] Add `StorefrontAccountPasswordLabels`.
+- [x] Add `StorefrontAccountAddressBookLabels`.
+- [x] Add `StorefrontAccountOrderListLabels`.
+- [x] Add `StorefrontAccountOrderDetailLabels`.
+- [x] Add `StorefrontAccountAppLabels` only if `StorefrontAccountApp` copy needs a typed host-owned label bag in this phase. Not needed: account-shell copy remains V2.WASM-owned.
 - [ ] Ensure moved WasmHost leaves receive labels through parameters, not hardcoded final V2 copy.
 - [ ] Keep default label values neutral/fallback only; V2 final copy must be supplied by `StorefrontAccountViewOptions`.
 
 Validation:
 
-- [ ] `BlazorShop.Storefront.Components` still has no reference to Browser, Presentation, Runtime, Client, V2, V2.WASM, Starter, backend/core/API, Control Plane, or `Web.SharedV2`.
-- [ ] No account leaf class contracts remain exclusively defined in V2.WASM.
-- [ ] V2.WASM still owns navigation/shell class contracts.
+- [x] `BlazorShop.Storefront.Components` still has no reference to Browser, Presentation, Runtime, Client, V2, V2.WASM, Starter, backend/core/API, Control Plane, or `Web.SharedV2`.
+- [x] No account leaf class contracts remain exclusively defined in V2.WASM.
+- [x] V2.WASM still owns navigation/shell class contracts.
 
 ## Phase 2 - Move Profile Leaf To WasmHost
 
