@@ -41,7 +41,9 @@ internal static class CatalogNavigationVisuals
         Current: "font-semibold text-neutral-900",
         Separator: "text-neutral-300");
 
-    public static StorefrontBreadcrumbLabels BreadcrumbLabels { get; } = new();
+    public static StorefrontBreadcrumbLabels BreadcrumbLabels { get; } = new(
+        AriaLabel: "Breadcrumb",
+        SeparatorText: "/");
 
     private static StorefrontCatalogFilterPanelLabels CreateFilterLabels(string submit)
     {

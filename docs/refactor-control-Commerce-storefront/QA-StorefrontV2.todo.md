@@ -833,7 +833,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Category filter GET form preserves `minPrice`, `maxPrice`, `sortBy`, `pageSize`, and `inStock`; category pagination preserves the active query state. 2026-08-11: V2 browser proof submitted and paged `/category/t-shirts` with `pageSize=12`, price, sort, and stock filters.
 - [x] Search filter GET form preserves `q`, `category`, `minPrice`, `maxPrice`, `sortBy`, `pageSize`, and `inStock`; search pagination preserves the active query state. 2026-08-11: V2 browser proof submitted filtered search and moved to page 2 without dropping the filter query.
 - [x] Product and content routes render the shared SSR breadcrumb. 2026-08-11: browser proof covered `/product/catalog-qa-t-shirt` and `/pages/faq`.
-- [x] Catalog navigation browser proof records no direct Commerce Node Storefront request, no `/_blazor` request, and no console/page errors. 2026-08-11: evidence is stored under ignored `output/playwright/storefront-catalog-navigation-controls/`.
+- [x] Catalog navigation browser proof records no direct Commerce Node Storefront request, no `/_blazor` request, and no console/page errors. 2026-08-11: run tracked `node scripts/qa/storefront-catalog-navigation-controls-proof.js` against the local V2 stack; evidence is written under ignored `output/playwright/storefront-catalog-navigation-controls/`.
 
 ## Storefront Reference Components
 

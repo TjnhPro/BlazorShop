@@ -1,6 +1,6 @@
 # Storefront Catalog Navigation Controls
 
-Status: planned
+Status: complete
 Track: Phase 3.3 - V2 Component Extraction
 Owner boundary: Storefront V2 / Storefront Components
 Primary goal: extract reusable catalog navigation/control rendering from V2 without moving route ownership, runtime behavior, final visual styling, backend behavior, cart/checkout/account logic, or SEO placement.
@@ -9,9 +9,9 @@ Primary goal: extract reusable catalog navigation/control rendering from V2 with
 
 Phase 3.3 extracts exactly these components:
 
-- [ ] `StorefrontPagination`
-- [ ] `StorefrontCatalogFilterPanel`
-- [ ] `StorefrontBreadcrumb`
+- [x] `StorefrontPagination`
+- [x] `StorefrontCatalogFilterPanel`
+- [x] `StorefrontBreadcrumb`
 
 Target ownership:
 
@@ -39,15 +39,15 @@ BlazorShop.Storefront.Components.Ssr
 
 V2 remains owner of:
 
-- [ ] page composition;
-- [ ] final Tailwind classes;
-- [ ] final storefront copy;
-- [ ] category/search URL generation;
-- [ ] query string values;
-- [ ] `@rendermode` placement;
-- [ ] search validation text;
-- [ ] SEO placement;
-- [ ] product grid placement.
+- [x] page composition;
+- [x] final Tailwind classes;
+- [x] final storefront copy;
+- [x] category/search URL generation;
+- [x] query string values;
+- [x] `@rendermode` placement;
+- [x] search validation text;
+- [x] SEO placement;
+- [x] product grid placement.
 
 ## Codebase Evidence
 
@@ -58,118 +58,118 @@ Current reusable-looking V2 components:
 
 Current Category page:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`
-- [ ] uses `<BreadcrumbNav Items="Context.Breadcrumbs" />`;
-- [ ] uses `<CatalogFilterPanel ... />`;
-- [ ] owns manual pagination loop;
-- [ ] calls `Context.Links.CategoryUrl(...)`;
-- [ ] owns `GetPageLinkClass`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`
+- [x] uses `<BreadcrumbNav Items="Context.Breadcrumbs" />`;
+- [x] uses `<CatalogFilterPanel ... />`;
+- [x] owns manual pagination loop;
+- [x] calls `Context.Links.CategoryUrl(...)`;
+- [x] owns `GetPageLinkClass`.
 
 Current Search page:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor`
-- [ ] uses `<CatalogFilterPanel ... />`;
-- [ ] owns manual pagination loop;
-- [ ] calls `Context.Links.SearchUrl(...)`;
-- [ ] owns duplicated `GetPageLinkClass`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor`
+- [x] uses `<CatalogFilterPanel ... />`;
+- [x] owns manual pagination loop;
+- [x] calls `Context.Links.SearchUrl(...)`;
+- [x] owns duplicated `GetPageLinkClass`.
 
 Current breadcrumb consumers found in V2:
 
-- [ ] `Pages/Hybrid/Catalog/CategoryPage.razor`
-- [ ] `Pages/Ssr/Content/StorefrontPage.razor`
-- [ ] `Pages/Product/V2ProductPageView.razor`
+- [x] `Pages/Hybrid/Catalog/CategoryPage.razor`
+- [x] `Pages/Ssr/Content/StorefrontPage.razor`
+- [x] `Pages/Product/V2ProductPageView.razor`
 
 Current contract locations:
 
-- [ ] `CatalogFilterCategoryOption` already lives in `BlazorShop.Storefront.Components/Contracts/Catalog`.
-- [ ] `ProductCatalogSortBy` lives in `BlazorShop.Storefront.Presentation/Models/StorefrontCatalogContentModels.cs`.
-- [ ] `StorefrontBreadcrumbItem` lives in `BlazorShop.Storefront.Presentation/Services/StorefrontBreadcrumbItem.cs`.
-- [ ] `Components.Ssr` currently references `Components` and `Presentation`.
-- [ ] `Components.Primitives` currently references only `Components`.
+- [x] `CatalogFilterCategoryOption` already lives in `BlazorShop.Storefront.Components/Contracts/Catalog`.
+- [x] `ProductCatalogSortBy` lives in `BlazorShop.Storefront.Presentation/Models/StorefrontCatalogContentModels.cs`.
+- [x] `StorefrontBreadcrumbItem` lives in `BlazorShop.Storefront.Presentation/Services/StorefrontBreadcrumbItem.cs`.
+- [x] `Components.Ssr` currently references `Components` and `Presentation`.
+- [x] `Components.Primitives` currently references only `Components`.
 
 ## Architecture Rules
 
 ### Pagination
 
-- [ ] `StorefrontPagination` must live in `Components.Primitives/Navigation`.
-- [ ] It may reference only `BlazorShop.Storefront.Components`.
-- [ ] It must consume prepared pagination items with final `Href` values.
-- [ ] It must not reference `Presentation`.
-- [ ] It must not call `Context.Links.CategoryUrl`.
-- [ ] It must not call `Context.Links.SearchUrl`.
-- [ ] It must not import `StorefrontRoutes`.
-- [ ] It must not parse or build query strings.
-- [ ] It must not contain `/api/`, `api/storefront`, Commerce Node URLs, or localhost URLs.
-- [ ] It must not use `HttpClient`, `IJSRuntime`, Browser controllers, Runtime, Client, V2, V2.WASM, Starter, backend projects, Control Plane, Domain, Application, or Infrastructure.
-- [ ] It must not use `@rendermode`.
+- [x] `StorefrontPagination` must live in `Components.Primitives/Navigation`.
+- [x] It may reference only `BlazorShop.Storefront.Components`.
+- [x] It must consume prepared pagination items with final `Href` values.
+- [x] It must not reference `Presentation`.
+- [x] It must not call `Context.Links.CategoryUrl`.
+- [x] It must not call `Context.Links.SearchUrl`.
+- [x] It must not import `StorefrontRoutes`.
+- [x] It must not parse or build query strings.
+- [x] It must not contain `/api/`, `api/storefront`, Commerce Node URLs, or localhost URLs.
+- [x] It must not use `HttpClient`, `IJSRuntime`, Browser controllers, Runtime, Client, V2, V2.WASM, Starter, backend projects, Control Plane, Domain, Application, or Infrastructure.
+- [x] It must not use `@rendermode`.
 
 ### Catalog Filter
 
-- [ ] `StorefrontCatalogFilterPanel` must live in `Components.Ssr/Catalog`.
-- [ ] It may use approved Presentation catalog contracts, including `ProductCatalogSortBy`.
-- [ ] It may use browser-safe component contracts, including `CatalogFilterCategoryOption`.
-- [ ] It must not reference Browser, Runtime, Client, V2, V2.WASM, Starter, backend projects, Control Plane, Domain, Application, or Infrastructure.
-- [ ] It must not use `HttpClient`.
-- [ ] It must not use `IJSRuntime`.
-- [ ] It must not use `@rendermode`.
-- [ ] It must render a normal SSR-safe `method="get"` form.
-- [ ] It must preserve current query input names exactly: `category`, `q`, `minPrice`, `maxPrice`, `sortBy`, `pageSize`, `inStock`.
-- [ ] It may render the host-supplied `Action`, but it must not construct routes.
+- [x] `StorefrontCatalogFilterPanel` must live in `Components.Ssr/Catalog`.
+- [x] It may use approved Presentation catalog contracts, including `ProductCatalogSortBy`.
+- [x] It may use browser-safe component contracts, including `CatalogFilterCategoryOption`.
+- [x] It must not reference Browser, Runtime, Client, V2, V2.WASM, Starter, backend projects, Control Plane, Domain, Application, or Infrastructure.
+- [x] It must not use `HttpClient`.
+- [x] It must not use `IJSRuntime`.
+- [x] It must not use `@rendermode`.
+- [x] It must render a normal SSR-safe `method="get"` form.
+- [x] It must preserve current query input names exactly: `category`, `q`, `minPrice`, `maxPrice`, `sortBy`, `pageSize`, `inStock`.
+- [x] It may render the host-supplied `Action`, but it must not construct routes.
 
 ### Breadcrumb
 
-- [ ] `StorefrontBreadcrumb` must live in `Components.Ssr/Navigation`.
-- [ ] It may consume the current `StorefrontBreadcrumbItem` from `Presentation`.
-- [ ] Do not move `StorefrontBreadcrumbItem` into `Components` during this phase unless compilation forces it and the dependency graph is reviewed again.
-- [ ] It must not reference Browser, Runtime, Client, V2, V2.WASM, Starter, backend projects, Control Plane, Domain, Application, or Infrastructure.
-- [ ] It must not use `@rendermode`.
+- [x] `StorefrontBreadcrumb` must live in `Components.Ssr/Navigation`.
+- [x] It may consume the current `StorefrontBreadcrumbItem` from `Presentation`.
+- [x] Do not move `StorefrontBreadcrumbItem` into `Components` during this phase unless compilation forces it and the dependency graph is reviewed again.
+- [x] It must not reference Browser, Runtime, Client, V2, V2.WASM, Starter, backend projects, Control Plane, Domain, Application, or Infrastructure.
+- [x] It must not use `@rendermode`.
 
 ### Visual Ownership
 
-- [ ] Reusable component packages must not own final V2 Tailwind class literals.
-- [ ] Reusable components must expose class slots through records or parameters.
-- [ ] V2 must provide the final classes.
-- [ ] Reusable components must not own store-specific copy.
-- [ ] V2 must provide final labels and placeholder text.
-- [ ] Semantic `data-storefront-*` hooks are allowed.
-- [ ] Accessibility attributes are allowed.
+- [x] Reusable component packages must not own final V2 Tailwind class literals.
+- [x] Reusable components must expose class slots through records or parameters.
+- [x] V2 must provide the final classes.
+- [x] Reusable components must not own store-specific copy.
+- [x] V2 must provide final labels and placeholder text.
+- [x] Semantic `data-storefront-*` hooks are allowed.
+- [x] Accessibility attributes are allowed.
 
 ## Explicit Non-Goals
 
 Do not change or extract:
 
-- [ ] `StorefrontProductSummaryGrid`;
-- [ ] `StorefrontDealsSection`;
-- [ ] `HeroBanner`;
-- [ ] `StorefrontHeader`;
-- [ ] `StorefrontFooter`;
-- [ ] `StorefrontProductPurchasePanel`;
-- [ ] product detail page layout;
-- [ ] cart;
-- [ ] checkout;
-- [ ] account;
-- [ ] consent;
-- [ ] SEO content components;
-- [ ] Storefront Runtime;
-- [ ] Storefront Client;
-- [ ] Browser controllers;
-- [ ] Commerce Node;
-- [ ] Control Plane;
-- [ ] database schema;
-- [ ] StorefrontBuilder;
-- [ ] Starter;
-- [ ] generated storefronts.
+- [x] `StorefrontProductSummaryGrid`;
+- [x] `StorefrontDealsSection`;
+- [x] `HeroBanner`;
+- [x] `StorefrontHeader`;
+- [x] `StorefrontFooter`;
+- [x] `StorefrontProductPurchasePanel`;
+- [x] product detail page layout;
+- [x] cart;
+- [x] checkout;
+- [x] account;
+- [x] consent;
+- [x] SEO content components;
+- [x] Storefront Runtime;
+- [x] Storefront Client;
+- [x] Browser controllers;
+- [x] Commerce Node;
+- [x] Control Plane;
+- [x] database schema;
+- [x] StorefrontBuilder;
+- [x] Starter;
+- [x] generated storefronts.
 
 Do not introduce:
 
-- [ ] a new component project;
-- [ ] a design system package;
-- [ ] a route registry;
-- [ ] a generic form framework;
-- [ ] a pagination service;
-- [ ] a query-string builder inside reusable components;
-- [ ] route ownership inside reusable components;
-- [ ] visual polish beyond functional preservation.
+- [x] a new component project;
+- [x] a design system package;
+- [x] a route registry;
+- [x] a generic form framework;
+- [x] a pagination service;
+- [x] a query-string builder inside reusable components;
+- [x] route ownership inside reusable components;
+- [x] visual polish beyond functional preservation.
 
 ## Phase 3.3.0 - Baseline Lock
 
@@ -1128,6 +1128,7 @@ Expected changed areas:
 - [x] small V2 visual config/helper files
 - [x] tests under `BlazorShop.Tests.V2/PresentationV2`
 - [x] relevant architecture docs and QA checklist
+- [x] `scripts/qa/storefront-catalog-navigation-controls-proof.js`
 
 Unexpected changed areas:
 
@@ -1159,112 +1160,121 @@ Exit criteria:
 
 Answer these before closing:
 
-- [ ] Did pagination become one reusable primitive?
-- [ ] Does pagination consume prepared `Href` values only?
-- [ ] Does Category still generate Category URLs outside the primitive?
-- [ ] Does Search still generate Search URLs outside the primitive?
-- [ ] Did Category/Search preserve filter query names?
-- [ ] Did Catalog filter move to SSR without Browser/runtime coupling?
-- [ ] Did Breadcrumb move to SSR without unnecessary contract migration?
-- [ ] Did all active breadcrumb consumers migrate?
-- [ ] Did old V2 `CatalogFilterPanel` get deleted?
-- [ ] Did old V2 `BreadcrumbNav` get deleted?
-- [ ] Did final visual values remain in V2?
-- [ ] Did reusable components avoid literal V2 Tailwind classes?
-- [ ] Did reusable components avoid `@rendermode`?
-- [ ] Did reusable components avoid API/BFF/HttpClient/JS behavior?
-- [ ] Did functional browser QA pass?
-- [ ] Did focused build pass?
-- [ ] Did focused tests pass?
-- [ ] Did full build pass?
-- [ ] Did full tests pass or document unrelated failures?
-- [ ] Did docs and QA checklist update?
+- [x] Did pagination become one reusable primitive?
+- [x] Does pagination consume prepared `Href` values only?
+- [x] Does Category still generate Category URLs outside the primitive?
+- [x] Does Search still generate Search URLs outside the primitive?
+- [x] Did Category/Search preserve filter query names?
+- [x] Did Catalog filter move to SSR without Browser/runtime coupling?
+- [x] Did Breadcrumb move to SSR without unnecessary contract migration?
+- [x] Did all active breadcrumb consumers migrate?
+- [x] Did old V2 `CatalogFilterPanel` get deleted?
+- [x] Did old V2 `BreadcrumbNav` get deleted?
+- [x] Did final visual values remain in V2?
+- [x] Did reusable components avoid literal V2 Tailwind classes?
+- [x] Did reusable components avoid `@rendermode`?
+- [x] Did reusable components avoid API/BFF/HttpClient/JS behavior?
+- [x] Did functional browser QA pass?
+- [x] Did focused build pass?
+- [x] Did focused tests pass?
+- [x] Did full build pass?
+- [x] Did full tests pass or document unrelated failures?
+- [x] Did docs and QA checklist update?
 
 Closure notes must include:
 
-- [ ] changed files;
-- [ ] moved/deleted files;
-- [ ] final component graph;
-- [ ] test command outputs and counts;
-- [ ] browser QA evidence;
-- [ ] any known unrelated failures;
-- [ ] remaining visual debt deferred to final V2 visual sweep.
+- [x] changed files;
+- [x] moved/deleted files;
+- [x] final component graph;
+- [x] test command outputs and counts;
+- [x] browser QA evidence;
+- [x] any known unrelated failures;
+- [x] remaining visual debt deferred to final V2 visual sweep.
+
+Closure evidence (2026-08-11):
+
+- Changed surface: base Navigation pagination contracts; Navigation primitive; SSR Catalog/Navigation components; V2 catalog/page consumers and visual configuration; focused PresentationV2 tests; tracked catalog-navigation Playwright proof; architecture and Storefront V2 QA documents.
+- Moved/deleted surface: V2 `CatalogFilterPanel.razor` became `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor`; V2 `BreadcrumbNav.razor` became `Components.Ssr/Navigation/StorefrontBreadcrumb.razor`.
+- Final component graph: `Components.Primitives/Navigation/StorefrontPagination -> Components/Contracts/Navigation`; `Components.Ssr/Catalog/StorefrontCatalogFilterPanel -> Components + Presentation`; `Components.Ssr/Navigation/StorefrontBreadcrumb -> Components + Presentation`; V2 prepares URLs and supplies visual contracts.
+- Verification: direct component/boundary slice passed `35/35`; visual neutrality slice passed `29/29`; focused plan filter passed `103/103`; full `BlazorShop.Tests.V2` passed `1942`, skipped `2`, failed `0` in `3m48s`. Components, Primitives, SSR, V2, V2.WASM, and solution builds passed. The solution retained the pre-existing MessagePack `NU1902`/`NU1903` and Browserslist warnings only.
+- Browser evidence: run `node scripts/qa/storefront-catalog-navigation-controls-proof.js` against the local V2 stack; it writes `output/playwright/storefront-catalog-navigation-controls/evidence.json` and screenshots while covering filtered Category/Search forms, pagination query preservation, Category/Product/Content breadcrumbs, no direct Commerce browser request, no `/_blazor`, and no console/page errors.
+- Remaining visual debt: no new visual debt was introduced; any future visual redesign remains deferred to a separate V2 visual sweep. Phase 3.4 requires a fresh review before selection.
 
 Exit criteria:
 
-- [ ] Phase 3.3 can be marked closed;
-- [ ] Phase 3.4 is not selected until a fresh review is run.
+- [x] Phase 3.3 can be marked closed;
+- [x] Phase 3.4 is not selected until a fresh review is run.
 
 ## Definition Of Done
 
 Pagination:
 
-- [ ] `StorefrontPaginationItem` exists in base `Components`.
-- [ ] `StorefrontPaginationClasses` exists in base `Components`.
-- [ ] `StorefrontPaginationLabels` exists in base `Components`.
-- [ ] `StorefrontPagination` exists in `Components.Primitives/Navigation`.
-- [ ] Category uses `StorefrontPagination`.
-- [ ] Search uses `StorefrontPagination`.
-- [ ] route generation stays outside primitive.
-- [ ] duplicate pagination loops removed.
-- [ ] duplicate `GetPageLinkClass` removed.
+- [x] `StorefrontPaginationItem` exists in base `Components`.
+- [x] `StorefrontPaginationClasses` exists in base `Components`.
+- [x] `StorefrontPaginationLabels` exists in base `Components`.
+- [x] `StorefrontPagination` exists in `Components.Primitives/Navigation`.
+- [x] Category uses `StorefrontPagination`.
+- [x] Search uses `StorefrontPagination`.
+- [x] route generation stays outside primitive.
+- [x] duplicate pagination loops removed.
+- [x] duplicate `GetPageLinkClass` removed.
 
 Catalog filter:
 
-- [ ] `StorefrontCatalogFilterPanel` exists in `Components.Ssr/Catalog`.
-- [ ] old V2 `CatalogFilterPanel.razor` removed.
-- [ ] Category uses `StorefrontCatalogFilterPanel`.
-- [ ] Search uses `StorefrontCatalogFilterPanel`.
-- [ ] query field names unchanged.
-- [ ] sort API values unchanged.
-- [ ] category option contract reused.
-- [ ] V2 owns final classes/copy/icon.
+- [x] `StorefrontCatalogFilterPanel` exists in `Components.Ssr/Catalog`.
+- [x] old V2 `CatalogFilterPanel.razor` removed.
+- [x] Category uses `StorefrontCatalogFilterPanel`.
+- [x] Search uses `StorefrontCatalogFilterPanel`.
+- [x] query field names unchanged.
+- [x] sort API values unchanged.
+- [x] category option contract reused.
+- [x] V2 owns final classes/copy/icon.
 
 Breadcrumb:
 
-- [ ] `StorefrontBreadcrumb` exists in `Components.Ssr/Navigation`.
-- [ ] old V2 `BreadcrumbNav.razor` removed.
-- [ ] Category breadcrumb migrated.
-- [ ] Product breadcrumb migrated.
-- [ ] Content breadcrumb migrated.
-- [ ] existing Presentation breadcrumb item reused.
-- [ ] no unnecessary contract migration.
+- [x] `StorefrontBreadcrumb` exists in `Components.Ssr/Navigation`.
+- [x] old V2 `BreadcrumbNav.razor` removed.
+- [x] Category breadcrumb migrated.
+- [x] Product breadcrumb migrated.
+- [x] Content breadcrumb migrated.
+- [x] existing Presentation breadcrumb item reused.
+- [x] no unnecessary contract migration.
 
 Architecture:
 
-- [ ] `Components.Primitives` still references only `Components`.
-- [ ] `Components.Ssr` remains Browser-free.
-- [ ] no reusable component owns `@rendermode`.
-- [ ] no reusable component constructs Storefront routes.
-- [ ] no reusable component calls API/BFF/backend.
-- [ ] no direct Commerce browser request added.
+- [x] `Components.Primitives` still references only `Components`.
+- [x] `Components.Ssr` remains Browser-free.
+- [x] no reusable component owns `@rendermode`.
+- [x] no reusable component constructs Storefront routes.
+- [x] no reusable component calls API/BFF/backend.
+- [x] no direct Commerce browser request added.
 
 Visual ownership:
 
-- [ ] final V2 classes remain in V2.
-- [ ] final host copy remains in V2.
-- [ ] reusable packages use class/label contracts.
-- [ ] no broad design system introduced.
+- [x] final V2 classes remain in V2.
+- [x] final host copy remains in V2.
+- [x] reusable packages use class/label contracts.
+- [x] no broad design system introduced.
 
 QA:
 
-- [ ] Category filtering works in browser.
-- [ ] Search filtering works in browser.
-- [ ] Category pagination works in browser.
-- [ ] Search pagination works in browser.
-- [ ] query state is preserved across pagination.
-- [ ] breadcrumbs render on Category/Product/Content.
-- [ ] no browser console errors.
-- [ ] no page errors.
+- [x] Category filtering works in browser.
+- [x] Search filtering works in browser.
+- [x] Category pagination works in browser.
+- [x] Search pagination works in browser.
+- [x] query state is preserved across pagination.
+- [x] breadcrumbs render on Category/Product/Content.
+- [x] no browser console errors.
+- [x] no page errors.
 
 Scope:
 
-- [ ] no ProductPurchasePanel extraction.
-- [ ] no Header/Footer/Hero extraction.
-- [ ] no cart/checkout/account changes.
-- [ ] no backend changes.
-- [ ] no Builder/Starter changes.
-- [ ] no visual polish work.
+- [x] no ProductPurchasePanel extraction.
+- [x] no Header/Footer/Hero extraction.
+- [x] no cart/checkout/account changes.
+- [x] no backend changes.
+- [x] no Builder/Starter changes.
+- [x] no visual polish work.
 
 ## Suggested Commit Breakdown
 

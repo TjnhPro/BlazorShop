@@ -60,6 +60,15 @@ public sealed class StorefrontBreadcrumbSsrTests
         Assert.DoesNotContain("@rendermode", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void BreadcrumbLabelDefaultsDoNotOwnHostCopy()
+    {
+        var labels = new StorefrontBreadcrumbLabels();
+
+        Assert.Equal(string.Empty, labels.AriaLabel);
+        Assert.Equal(string.Empty, labels.SeparatorText);
+    }
+
     private static async Task<string> RenderAsync(IReadOnlyList<StorefrontBreadcrumbItem> items)
     {
         var services = new ServiceCollection().BuildServiceProvider();
