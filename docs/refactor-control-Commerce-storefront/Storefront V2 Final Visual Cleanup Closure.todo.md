@@ -479,234 +479,248 @@ Goal: fix concrete visual and browser-surface debt after extraction without rede
 
 Before editing:
 
-- [ ] Capture desktop screenshots for baseline pages.
-- [ ] Capture mobile screenshots for baseline pages.
-- [ ] Record all visible defects in a short triage table.
-- [ ] Classify each item as:
-  - [ ] regression from extraction;
-  - [ ] inconsistent V2 component styling;
-  - [ ] responsive overflow/usability defect;
-  - [ ] dead markup/CSS cleanup;
-  - [ ] cosmetic improvement to defer.
+- [x] Capture desktop screenshots for baseline pages.
+- [x] Capture mobile screenshots for baseline pages.
+- [x] Record all visible defects in a short triage table.
+- [x] Classify each item as:
+  - [x] regression from extraction;
+  - [x] inconsistent V2 component styling;
+  - [x] responsive overflow/usability defect;
+  - [x] dead markup/CSS cleanup;
+  - [x] cosmetic improvement to defer.
 
 Only fix:
 
-- [ ] extraction regressions;
-- [ ] obvious responsive usability defects;
-- [ ] broken alignment or spacing that blocks production polish;
-- [ ] inconsistent state styling that makes behavior unclear;
-- [ ] dead CSS/JS/hook issues tied to removed source.
+- [x] extraction regressions;
+- [x] obvious responsive usability defects;
+- [x] broken alignment or spacing that blocks production polish;
+- [x] inconsistent state styling that makes behavior unclear;
+- [x] dead CSS/JS/hook issues tied to removed source.
 
 Defer:
 
-- [ ] new design direction;
-- [ ] new typography system;
-- [ ] new color palette;
-- [ ] full homepage redesign;
-- [ ] redesign of checkout/account flows;
-- [ ] pixel-perfect baseline automation unless already stable.
+- [x] new design direction;
+- [x] new typography system;
+- [x] new color palette;
+- [x] full homepage redesign;
+- [x] redesign of checkout/account flows;
+- [x] pixel-perfect baseline automation unless already stable.
 
 ### Phase 3B - Product Summary And Catalog Visual Debt
 
 Review:
 
-- [ ] Home product summary sections.
-- [ ] Category grid.
-- [ ] Search grid.
-- [ ] Deals/discounted rail.
-- [ ] Related products on product detail.
-- [ ] Empty state.
-- [ ] Pagination.
-- [ ] Breadcrumb.
-- [ ] Filter panel.
+- [x] Home product summary sections.
+- [x] Category grid.
+- [x] Search grid.
+- [x] Deals/discounted rail.
+- [x] Related products on product detail.
+- [x] Empty state.
+- [x] Pagination.
+- [x] Breadcrumb.
+- [x] Filter panel.
 
 Check:
 
-- [ ] Product image aspect is stable.
-- [ ] Card height is consistent enough for grid scan.
-- [ ] Category/title grouping reads clearly.
-- [ ] Price label hierarchy is clear.
-- [ ] Action buttons do not wrap badly.
-- [ ] Badges do not overlap image/title.
-- [ ] Empty state spacing matches surrounding surface.
-- [ ] Mobile card content does not overflow.
-- [ ] Semantic hooks remain present.
+- [x] Product image aspect is stable.
+- [x] Card height is consistent enough for grid scan.
+- [x] Category/title grouping reads clearly.
+- [x] Price label hierarchy is clear.
+- [x] Action buttons do not wrap badly.
+- [x] Badges do not overlap image/title.
+- [x] Empty state spacing matches surrounding surface.
+- [x] Mobile card content does not overflow.
+- [x] Semantic hooks remain present.
 
 Implementation rules:
 
-- [ ] Do not blindly restore old DOM.
-- [ ] Prefer the canonical `StorefrontProductSummaryGrid` and primitive card path.
-- [ ] Do not duplicate card markup.
-- [ ] Keep product image fallback behavior.
-- [ ] Keep `loading="lazy"` where currently expected.
+- [x] Do not blindly restore old DOM.
+- [x] Prefer the canonical `StorefrontProductSummaryGrid` and primitive card path.
+- [x] Do not duplicate card markup.
+- [x] Keep product image fallback behavior.
+- [x] Keep `loading="lazy"` where currently expected.
 
 ### Phase 3C - Product Detail Visual Sweep
 
 Review:
 
-- [ ] Gallery.
-- [ ] Pricing.
-- [ ] Availability.
-- [ ] Purchase panel.
-- [ ] Variant/attribute controls.
-- [ ] Quantity control.
-- [ ] Add-to-cart feedback.
-- [ ] Related products.
-- [ ] Support callout.
+- [x] Gallery.
+- [x] Pricing.
+- [x] Availability.
+- [x] Purchase panel.
+- [x] Variant/attribute controls.
+- [x] Quantity control.
+- [x] Add-to-cart feedback.
+- [x] Related products.
+- [x] Support callout.
 
 Check:
 
-- [ ] Desktop two-column balance.
-- [ ] Mobile stacking order.
-- [ ] Gallery 1x1/product image framing where required by current product image policy.
-- [ ] Thumbnail spacing.
-- [ ] Pricing hierarchy.
-- [ ] Variant selected state.
-- [ ] Blocked purchase state.
-- [ ] Feedback placement.
-- [ ] Button sizing.
+- [x] Desktop two-column balance.
+- [x] Mobile stacking order.
+- [x] Gallery 1x1/product image framing where required by current product image policy.
+- [x] Thumbnail spacing.
+- [x] Pricing hierarchy.
+- [x] Variant selected state.
+- [x] Blocked purchase state.
+- [x] Feedback placement.
+- [x] Button sizing.
 
 ### Phase 3D - Cart And Checkout Visual Sweep
 
 Cart:
 
-- [ ] Empty cart.
-- [ ] One line.
-- [ ] Multiple lines.
-- [ ] Alerts.
-- [ ] Quantity input.
-- [ ] Remove action.
-- [ ] Summary.
-- [ ] Checkout CTA.
-- [ ] Mobile layout.
+- [x] Empty cart.
+- [x] One line.
+- [x] Multiple lines.
+- [x] Alerts.
+- [x] Quantity input.
+- [x] Remove action.
+- [x] Summary.
+- [x] Checkout CTA.
+- [x] Mobile layout.
 
 Checkout:
 
-- [ ] Checkout form.
-- [ ] Address fields.
-- [ ] Shipping section.
-- [ ] Payment section.
-- [ ] Summary.
-- [ ] Place-order action.
-- [ ] Validation states.
-- [ ] Success/result branch.
-- [ ] Empty-cart branch.
-- [ ] Hidden WasmHost shell remains visually hidden when `ShowPanel=false`.
+- [x] Checkout form.
+- [x] Address fields.
+- [x] Shipping section.
+- [x] Payment section.
+- [x] Summary.
+- [x] Place-order action.
+- [x] Validation states.
+- [x] Success/result branch.
+- [x] Empty-cart branch.
+- [x] Hidden WasmHost shell remains visually hidden when `ShowPanel=false`.
 
 Rules:
 
-- [ ] Do not change cart runtime behavior.
-- [ ] Do not change checkout state machine.
-- [ ] Do not change order placement.
-- [ ] Do not change payment provider behavior.
+- [x] Do not change cart runtime behavior.
+- [x] Do not change checkout state machine.
+- [x] Do not change order placement.
+- [x] Do not change payment provider behavior.
 
 ### Phase 3E - Auth, Account, Content, Payment, Error Visual Sweep
 
 Auth/account:
 
-- [ ] Login.
-- [ ] Register.
-- [ ] Recovery.
-- [ ] Profile.
-- [ ] Change password.
-- [ ] Address book.
-- [ ] Orders.
-- [ ] Order detail.
-- [ ] Account navigation.
+- [x] Login.
+- [x] Register.
+- [x] Recovery.
+- [x] Profile.
+- [x] Change password.
+- [x] Address book.
+- [x] Orders.
+- [x] Order detail.
+- [x] Account navigation.
 
 Content/payment/error:
 
-- [ ] Content standard.
-- [ ] Policy.
-- [ ] FAQ/support.
-- [ ] Payment success.
-- [ ] Payment pending/cancelled/failure if deterministic.
-- [ ] 404.
-- [ ] Service unavailable if deterministic.
+- [x] Content standard.
+- [x] Policy.
+- [x] FAQ/support.
+- [x] Payment success.
+- [x] Payment pending/cancelled/failure if deterministic.
+- [x] 404.
+- [x] Service unavailable if deterministic.
 
 Check:
 
-- [ ] Form width.
-- [ ] Labels.
-- [ ] Alerts.
-- [ ] Buttons.
-- [ ] Table readability.
-- [ ] Address card stacking.
-- [ ] Account navigation.
-- [ ] Heading hierarchy.
-- [ ] CTA consistency.
-- [ ] Mobile rendering.
+- [x] Form width.
+- [x] Labels.
+- [x] Alerts.
+- [x] Buttons.
+- [x] Table readability.
+- [x] Address card stacking.
+- [x] Account navigation.
+- [x] Heading hierarchy.
+- [x] CTA consistency.
+- [x] Mobile rendering.
 
 ### Phase 3F - Accessibility Cleanup
 
 Review active surfaces for:
 
-- [ ] `aria-label`.
-- [ ] `aria-current`.
-- [ ] `aria-live`.
-- [ ] `role=alert`.
-- [ ] `role=status`.
-- [ ] button labels.
-- [ ] form labels.
-- [ ] heading order.
-- [ ] keyboard reachability.
-- [ ] focus visibility.
-- [ ] color-independent state cues.
+- [x] `aria-label`.
+- [x] `aria-current`.
+- [x] `aria-live`.
+- [x] `role=alert`.
+- [x] `role=status`.
+- [x] button labels.
+- [x] form labels.
+- [x] heading order.
+- [x] keyboard reachability.
+- [x] focus visibility.
+- [x] color-independent state cues.
 
 Scope:
 
-- [ ] Fix regressions introduced or exposed by component extraction.
-- [ ] Do not redesign all accessibility architecture in this phase.
+- [x] Fix regressions introduced or exposed by component extraction.
+- [x] Do not redesign all accessibility architecture in this phase.
 
 ### Phase 3G - CSS, JS, And Semantic Hook Cleanup
 
 CSS entrypoints:
 
-- [ ] `BlazorShop.Storefront.V2/wwwroot/css/storefront.css`.
-- [ ] `BlazorShop.Storefront.V2/wwwroot/css/site.css`.
-- [ ] `BlazorShop.Storefront.V2/wwwroot/css/input.css`.
-- [ ] `BlazorShop.Storefront.V2.WASM/wwwroot/css/wasm-site.css` if touched by V2.WASM options.
+- [x] `BlazorShop.Storefront.V2/wwwroot/css/storefront.css`.
+- [x] `BlazorShop.Storefront.V2/wwwroot/css/site.css`.
+- [x] `BlazorShop.Storefront.V2/wwwroot/css/input.css`.
+- [x] `BlazorShop.Storefront.V2.WASM/wwwroot/css/wasm-site.css` if touched by V2.WASM options.
 
 JS entrypoint:
 
-- [ ] `BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js`.
+- [x] `BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js`.
 
 CSS tasks:
 
-- [ ] Search selectors tied to removed `ProductCard` or `ProductGrid`.
-- [ ] Search old wrapper selectors.
-- [ ] Search retired component selectors.
-- [ ] Search duplicate selectors.
-- [ ] Remove confirmed dead selectors.
-- [ ] Merge duplicate rules only when behavior remains identical.
-- [ ] Do not hand-edit generated CSS if a source pipeline owns it.
+- [x] Search selectors tied to removed `ProductCard` or `ProductGrid`.
+- [x] Search old wrapper selectors.
+- [x] Search retired component selectors.
+- [x] Search duplicate selectors.
+- [x] Remove confirmed dead selectors.
+- [x] Merge duplicate rules only when behavior remains identical.
+- [x] Do not hand-edit generated CSS if a source pipeline owns it.
 
 JS tasks:
 
-- [ ] Search selectors tied to removed wrappers/components.
-- [ ] Remove obsolete fallback code only when no active markup uses it.
-- [ ] Preserve progressive enhancement.
-- [ ] Preserve purchase hooks.
-- [ ] Preserve toast behavior.
-- [ ] Preserve consent behavior.
-- [ ] Preserve gallery behavior.
-- [ ] Verify no duplicate event ownership after WASM activation.
+- [x] Search selectors tied to removed wrappers/components.
+- [x] Remove obsolete fallback code only when no active markup uses it.
+- [x] Preserve progressive enhancement.
+- [x] Preserve purchase hooks.
+- [x] Preserve toast behavior.
+- [x] Preserve consent behavior.
+- [x] Preserve gallery behavior.
+- [x] Verify no duplicate event ownership after WASM activation.
 
 Semantic hook audit:
 
-- [ ] `data-storefront-product-*`.
-- [ ] `data-storefront-cart-*`.
-- [ ] `data-storefront-checkout-*`.
-- [ ] `data-storefront-account-*`.
-- [ ] `data-storefront-consent-*`.
-- [ ] `data-storefront-toast-*`.
+- [x] `data-storefront-product-*`.
+- [x] `data-storefront-cart-*`.
+- [x] `data-storefront-checkout-*`.
+- [x] `data-storefront-account-*`.
+- [x] `data-storefront-consent-*`.
+- [x] `data-storefront-toast-*`.
 
 Resolve:
 
-- [ ] orphan JS selector;
-- [ ] orphan markup hook;
-- [ ] duplicate hook owner;
-- [ ] missing canonical hook after wrapper removal.
+- [x] orphan JS selector;
+- [x] orphan markup hook;
+- [x] duplicate hook owner;
+- [x] missing canonical hook after wrapper removal.
+
+### Phase 3 Evidence (2026-08-11)
+
+| Surface/item | Classification | Decision |
+| --- | --- | --- |
+| Canonical product grid and related-products region | No extraction regression | The browser rendered the canonical card/grid path with stable layout at desktop/mobile; no change required. |
+| Product gallery thumbnail media | Fixture/media-data limitation | The three QA thumbnail responses are valid 1×1 images while the main image/fallback hooks work. This is neither a wrapper nor CSS defect and is deferred outside this phase. |
+| Account order-detail title at 390px | Expected responsive wrapping | The long reference wraps without horizontal overflow; hierarchy, nav and totals remain readable. |
+| Cart, checkout, auth, content, payment, error, consent and toast surfaces | No extraction regression | Phase 0 desktop/mobile evidence and the runtime recheck show no actionable visual defect. |
+
+- Rechecked changed product and account surfaces at `output/playwright/phase37-phase3-{product,account}-{desktop,mobile}.png`. All Phase 0 public/account/consent/toast screenshots remain under `output/playwright/phase37-baseline-*`.
+- CSS/JS source scans found no selector or code token tied to the removed `ProductCard` or `ProductGrid`; generated `site.css` and `wasm-site.css` were inspected but not hand-edited.
+- The active Razor/JS hook scan found product, cart, checkout, account, consent and toast hooks. The canonical grid still provides `data-storefront-product-summary-grid` and `data-storefront-product-summary-empty`; browser add-to-cart, consent and gallery checks retained their existing behavior.
+- Accessibility review found existing named controls, form labels, route/account navigation semantics, alert/status hooks, focus styles, and state text. No extraction-exposed accessibility regression required a source change.
 
 ## Phase 4 - Test Consolidation
 
