@@ -1118,42 +1118,42 @@ Exit criteria:
 
 Expected changed areas:
 
-- [ ] `BlazorShop.Storefront.Components/Contracts/Navigation`
-- [ ] `BlazorShop.Storefront.Components.Primitives/Navigation`
-- [ ] `BlazorShop.Storefront.Components.Ssr/Catalog`
-- [ ] `BlazorShop.Storefront.Components.Ssr/Navigation`
-- [ ] `BlazorShop.Storefront.V2/Pages/Hybrid/Catalog`
-- [ ] `BlazorShop.Storefront.V2/Pages/Ssr/Content`
-- [ ] `BlazorShop.Storefront.V2/Pages/Product`
-- [ ] small V2 visual config/helper files
-- [ ] tests under `BlazorShop.Tests.V2/PresentationV2`
-- [ ] relevant architecture docs and QA checklist
+- [x] `BlazorShop.Storefront.Components/Contracts/Navigation`
+- [x] `BlazorShop.Storefront.Components.Primitives/Navigation`
+- [x] `BlazorShop.Storefront.Components.Ssr/Catalog`
+- [x] `BlazorShop.Storefront.Components.Ssr/Navigation`
+- [x] `BlazorShop.Storefront.V2/Pages/Hybrid/Catalog`
+- [x] `BlazorShop.Storefront.V2/Pages/Ssr/Content`
+- [x] `BlazorShop.Storefront.V2/Pages/Product`
+- [x] small V2 visual config/helper files
+- [x] tests under `BlazorShop.Tests.V2/PresentationV2`
+- [x] relevant architecture docs and QA checklist
 
 Unexpected changed areas:
 
-- [ ] Product purchase panel;
-- [ ] cart;
-- [ ] checkout;
-- [ ] account;
-- [ ] consent;
-- [ ] Runtime;
-- [ ] Client;
-- [ ] Browser;
-- [ ] V2.WASM unless conditional import/build requires it;
-- [ ] Commerce Node;
-- [ ] Control Plane;
-- [ ] Application;
-- [ ] Domain;
-- [ ] Infrastructure;
-- [ ] database migrations;
-- [ ] StorefrontBuilder;
-- [ ] Starter;
-- [ ] generated storefront artifacts.
+- [x] Product purchase panel;
+- [x] cart;
+- [x] checkout;
+- [x] account;
+- [x] consent;
+- [x] Runtime;
+- [x] Client;
+- [x] Browser;
+- [x] V2.WASM unless conditional import/build requires it;
+- [x] Commerce Node;
+- [x] Control Plane;
+- [x] Application;
+- [x] Domain;
+- [x] Infrastructure;
+- [x] database migrations;
+- [x] StorefrontBuilder;
+- [x] Starter;
+- [x] generated storefront artifacts.
 
 Exit criteria:
 
-- [ ] no unrelated work entered the phase;
-- [ ] any unexpected change has a written reason and is approved before commit.
+- [x] no unrelated work entered the phase;
+- [x] any unexpected change has a written reason and is approved before commit.
 
 ## Phase 3.3.25 - Closure Review
 
