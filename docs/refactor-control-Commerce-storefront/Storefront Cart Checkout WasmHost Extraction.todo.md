@@ -522,41 +522,41 @@ Exit criteria:
 
 Update `BlazorShop.PresentationV2/COMPONENT-MODES.md`:
 
-- [ ] Document that WasmHost owns browser-interactive reusable components.
-- [ ] Document that V2.WASM owns wrappers and final V2 presentation values.
-- [ ] Document that V2 pages own render mode.
-- [ ] Add cart and checkout as concrete examples.
-- [ ] Clarify that checkout shell extraction does not make the shell the visible checkout form in V2.
+- [x] Document that WasmHost owns browser-interactive reusable components.
+- [x] Document that V2.WASM owns wrappers and final V2 presentation values.
+- [x] Document that V2 pages own render mode.
+- [x] Add cart and checkout as concrete examples.
+- [x] Clarify that checkout shell extraction does not make the shell the visible checkout form in V2.
 
 Update `docs/architecture/03-runtime-boundaries.md`:
 
-- [ ] Clarify Storefront browser actions go through Browser/BFF primitives and same-origin routes.
-- [ ] Clarify WasmHost must not call Commerce Node directly.
-- [ ] Clarify V2 server pages own render-mode placement.
+- [x] Clarify Storefront browser actions go through Browser/BFF primitives and same-origin routes.
+- [x] Clarify WasmHost must not call Commerce Node directly.
+- [x] Clarify V2 server pages own render-mode placement.
 
 Update `docs/architecture/05-project-and-folder-guide.md`:
 
-- [ ] Add or update `BlazorShop.Storefront.Components.WasmHost` responsibilities.
-- [ ] Add or update `BlazorShop.Storefront.V2.WASM` responsibilities.
-- [ ] Add or update `BlazorShop.Storefront.Components` contract responsibilities.
+- [x] Add or update `BlazorShop.Storefront.Components.WasmHost` responsibilities.
+- [x] Add or update `BlazorShop.Storefront.V2.WASM` responsibilities.
+- [x] Add or update `BlazorShop.Storefront.Components` contract responsibilities.
 
 Update `docs/architecture/10-v2-contract-ownership.md`:
 
-- [ ] Clarify class and label contracts for cart/checkout live in shared Components contracts.
-- [ ] Clarify final copy and final class values live in store-specific wrapper/options.
+- [x] Clarify class and label contracts for cart/checkout live in shared Components contracts.
+- [x] Clarify final copy and final class values live in store-specific wrapper/options.
 
 Update `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`:
 
-- [ ] Add Phase 3.5 evidence checklist.
-- [ ] Add Playwright cart browser QA cases.
-- [ ] Add Playwright checkout browser QA cases.
-- [ ] Add boundary verification evidence commands.
+- [x] Add Phase 3.5 evidence checklist.
+- [x] Add Playwright cart browser QA cases.
+- [x] Add Playwright checkout browser QA cases.
+- [x] Add boundary verification evidence commands.
 
 Exit criteria:
 
-- [ ] Documentation matches actual code ownership.
-- [ ] No doc claims that V2.WASM owns reusable cart/checkout behavior.
-- [ ] No doc claims that checkout shell is the visible production checkout form while `ShowPanel=false`.
+- [x] Documentation matches actual code ownership.
+- [x] No doc claims that V2.WASM owns reusable cart/checkout behavior.
+- [x] No doc claims that checkout shell is the visible production checkout form while `ShowPanel=false`.
 
 ## Phase 11 - Build Verification
 

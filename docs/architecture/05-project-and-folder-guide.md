@@ -215,6 +215,7 @@ Use for:
 - Browser-safe behavior/state primitives under `Headless/{Capability}`.
 - Reusable component descriptor contracts under `Contracts/Components`.
 - Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
+- Shared cart/checkout render class and label contracts: `StorefrontCartViewClasses`, `StorefrontCartViewLabels`, `StorefrontCheckoutViewClasses`, and `StorefrontCheckoutViewLabels`. Hosts supply their final values.
 
 Do not:
 
@@ -308,6 +309,7 @@ Use for:
 
 - WASM feature roots that consume `BlazorShop.Storefront.Browser` controllers.
 - Browser-safe state/action contracts, `EventCallback`, lifecycle interaction, and `IJSRuntime` only for real browser behavior.
+- Reusable cart and checkout implementations. These own controller lifecycle/mutations but receive labels, classes, actions, initial state, and routes as parameters.
 
 Do not:
 
@@ -348,6 +350,7 @@ Use for:
 - Storefront V2 interactive WebAssembly components and bootstrapping required by `AddInteractiveWebAssemblyRenderMode`.
 - Interactive cart, checkout, and account root components used by Storefront V2 after SSR route/security/bootstrap has selected the page surface.
 - Visual composition for interactive browser roots. Components render `BlazorShop.Storefront.Browser` controller state and invoke high-level controller methods.
+- Thin V2 wrappers such as `StorefrontCartSection` and `StorefrontCheckoutSection` that forward page contracts to WasmHost implementations and supply final V2 labels/classes. V2 pages, not these wrappers, own `InteractiveWebAssembly` placement; `CheckoutPage` retains the visible SSR checkout form while the wrapper can hydrate with `ShowPanel=false`.
 
 Do not:
 

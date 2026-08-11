@@ -17,6 +17,15 @@ Muc tieu hien tai:
 - Xac nhan legacy API fallback bi tat mac dinh.
 - Xac nhan `api/internal/*` da bi remove khoi CommerceNode runtime sau scoped route QA; neu gap request moi toi `api/internal/*` thi do la regression.
 
+## Phase 3.5 Cart And Checkout WasmHost Extraction Evidence
+
+- [ ] Build Components, Browser, Components.WasmHost, V2.WASM, V2, and the solution with `--no-restore`.
+- [ ] Run focused Cart, Checkout, WasmHost, component-mode, render-mode, visual-boundary, V2.WASM runtime, commerce-flow, and required-visual tests.
+- [ ] Run the full `BlazorShop.Tests.V2` project.
+- [ ] Run the local V2 stack and Playwright cart browser case: load cart, change quantity, remove a line, clear cart, and continue shopping without console/page errors or direct Commerce Node browser calls.
+- [ ] Run the local V2 stack and Playwright checkout COD case: create a cart, load checkout, submit valid contact/shipping data, place COD order, and verify success without console/page errors or direct Commerce Node browser calls.
+- [ ] Verify source boundaries: WasmHost owns cart/checkout controller behavior, V2.WASM wrappers only supply V2 options, V2 pages own `InteractiveWebAssembly`, and the V2 checkout page retains SSR form ownership while `ShowPanel=false`.
+
 ## Phase 7 V2 Canonicalization Evidence - 2026-07-22
 
 - [x] Storefront V2 builds through `dotnet build BlazorShop.sln -c Release --no-restore`.

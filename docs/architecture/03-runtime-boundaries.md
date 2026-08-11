@@ -164,6 +164,8 @@ Public interactive storefront behavior should use `InteractiveWebAssembly` with 
 
 Browser/WASM code still uses same-origin BFF endpoints and must not call Commerce Node directly.
 
+For reusable interactive cart and checkout behavior, WasmHost owns the Browser-controller implementation, V2.WASM owns only the V2 wrapper and final label/class option values, and the V2 server page owns `InteractiveWebAssembly` placement. This preserves the required Browser -> same-origin Presentation/BFF -> Runtime -> Commerce Node path; a WasmHost component must never call Commerce Node or a Storefront API directly. The checkout runtime shell may hydrate with `ShowPanel=false`; that does not replace the V2 server page's visible SSR checkout form.
+
 H2 Component MVP runtime evidence proves the current pattern through `/__qa/component-mvp`, a hidden/noindex Presentation-owned QA route:
 
 ```text
