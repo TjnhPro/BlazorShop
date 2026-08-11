@@ -496,27 +496,27 @@ Exit criteria:
 
 Add or update tests to enforce:
 
-- [ ] `BlazorShop.Storefront.Components.WasmHost` references only allowed Storefront shared projects.
-- [ ] `BlazorShop.Storefront.Components.WasmHost` does not reference V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, Domain, Application, or Infrastructure.
-- [ ] `BlazorShop.Storefront.Components.WasmHost` does not contain `@rendermode`.
-- [ ] `BlazorShop.Storefront.Components.WasmHost` does not contain `InteractiveServer`, `InteractiveWebAssembly`, or `InteractiveAuto`.
-- [ ] `BlazorShop.Storefront.Components.WasmHost` does not contain final V2 route defaults that belong to V2 options.
-- [ ] `BlazorShop.Storefront.V2.WASM` wrappers do not inject `IStorefrontBrowserCartController`.
-- [ ] `BlazorShop.Storefront.V2.WASM` wrappers do not inject `IStorefrontBrowserCheckoutController`.
-- [ ] `BlazorShop.Storefront.V2.WASM` does not contain duplicated cart or checkout mutation methods after extraction.
-- [ ] `BlazorShop.Storefront.Components` does not reference Browser, V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, Domain, Application, or Infrastructure.
+- [x] `BlazorShop.Storefront.Components.WasmHost` references only allowed Storefront shared projects.
+- [x] `BlazorShop.Storefront.Components.WasmHost` does not reference V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, Domain, Application, or Infrastructure.
+- [x] `BlazorShop.Storefront.Components.WasmHost` does not contain `@rendermode`.
+- [x] `BlazorShop.Storefront.Components.WasmHost` does not contain `InteractiveServer`, `InteractiveWebAssembly`, or `InteractiveAuto`.
+- [x] `BlazorShop.Storefront.Components.WasmHost` does not contain final V2 route defaults that belong to V2 options.
+- [x] `BlazorShop.Storefront.V2.WASM` wrappers do not inject `IStorefrontBrowserCartController`.
+- [x] `BlazorShop.Storefront.V2.WASM` wrappers do not inject `IStorefrontBrowserCheckoutController`.
+- [x] `BlazorShop.Storefront.V2.WASM` does not contain duplicated cart or checkout mutation methods after extraction.
+- [x] `BlazorShop.Storefront.Components` does not reference Browser, V2, V2.WASM, Runtime, Client, Commerce Node, Control Plane, Domain, Application, or Infrastructure.
 
 Recommended test names:
 
-- [ ] `StorefrontWasmHostComponentOwnershipTests`
-- [ ] `StorefrontV2WasmWrapperBoundaryTests`
-- [ ] `StorefrontSharedContractOwnershipTests`
+- [x] `StorefrontWasmHostComponentOwnershipTests`
+- [x] `StorefrontV2WasmWrapperBoundaryTests`
+- [x] `StorefrontSharedContractOwnershipTests`
 
 Exit criteria:
 
-- [ ] Boundary tests fail on the most likely future regressions.
-- [ ] Boundary tests are path based and deterministic.
-- [ ] Boundary tests do not require running a browser.
+- [x] Boundary tests fail on the most likely future regressions. Focused suite passed 4/4 on 2026-08-11.
+- [x] Boundary tests are path based and deterministic.
+- [x] Boundary tests do not require running a browser.
 
 ## Phase 10 - Update Documentation
 
