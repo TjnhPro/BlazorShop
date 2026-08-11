@@ -213,37 +213,37 @@ Goal: create the smallest browser-safe pagination render contract.
 
 Files:
 
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Navigation/StorefrontPaginationItem.cs`.
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Navigation/StorefrontPaginationClasses.cs`.
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Navigation/StorefrontPaginationLabels.cs`.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Navigation/StorefrontPaginationItem.cs`.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Navigation/StorefrontPaginationClasses.cs`.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Navigation/StorefrontPaginationLabels.cs`.
 
 Contract shape:
 
-- [ ] `StorefrontPaginationItem` contains `int PageNumber`.
-- [ ] `StorefrontPaginationItem` contains `string Href`.
-- [ ] `StorefrontPaginationItem` contains `bool IsCurrent`.
-- [ ] `StorefrontPaginationItem` contains optional `string? Label`.
-- [ ] `StorefrontPaginationItem` does not contain category slug.
-- [ ] `StorefrontPaginationItem` does not contain search term.
-- [ ] `StorefrontPaginationItem` does not contain sort/filter values.
-- [ ] `StorefrontPaginationItem` does not contain Presentation link context.
-- [ ] `StorefrontPaginationItem` does not contain route service references.
-- [ ] `StorefrontPaginationClasses` has a small slot surface, preferably `Root`, `Link`, `CurrentLink`, and `InactiveLink`.
-- [ ] `StorefrontPaginationLabels` includes `AriaLabel`.
-- [ ] Use neutral defaults only where they are semantic, not visual.
+- [x] `StorefrontPaginationItem` contains `int PageNumber`.
+- [x] `StorefrontPaginationItem` contains `string Href`.
+- [x] `StorefrontPaginationItem` contains `bool IsCurrent`.
+- [x] `StorefrontPaginationItem` contains optional `string? Label`.
+- [x] `StorefrontPaginationItem` does not contain category slug.
+- [x] `StorefrontPaginationItem` does not contain search term.
+- [x] `StorefrontPaginationItem` does not contain sort/filter values.
+- [x] `StorefrontPaginationItem` does not contain Presentation link context.
+- [x] `StorefrontPaginationItem` does not contain route service references.
+- [x] `StorefrontPaginationClasses` has a small slot surface, preferably `Root`, `Link`, `CurrentLink`, and `InactiveLink`.
+- [x] `StorefrontPaginationLabels` includes `AriaLabel`.
+- [x] Use neutral defaults only where they are semantic, not visual.
 
 Test expectations:
 
-- [ ] Component contract source contains no `BlazorShop.Storefront.Presentation`.
-- [ ] Component contract source contains no `StorefrontRoutes`.
-- [ ] Component contract source contains no `CategoryUrl`.
-- [ ] Component contract source contains no `SearchUrl`.
+- [x] Component contract source contains no `BlazorShop.Storefront.Presentation`.
+- [x] Component contract source contains no `StorefrontRoutes`.
+- [x] Component contract source contains no `CategoryUrl`.
+- [x] Component contract source contains no `SearchUrl`.
 
 Exit criteria:
 
-- [ ] contracts compile in base `Components`;
-- [ ] contracts are browser-safe;
-- [ ] no route-specific fields were added.
+- [x] contracts compile in base `Components`;
+- [x] contracts are browser-safe;
+- [x] no route-specific fields were added.
 
 ## Phase 3.3.2 - Implement Pagination Primitive
 
