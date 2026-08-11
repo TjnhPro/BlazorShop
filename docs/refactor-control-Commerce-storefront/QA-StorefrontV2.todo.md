@@ -19,12 +19,12 @@ Muc tieu hien tai:
 
 ## Phase 3.5 Cart And Checkout WasmHost Extraction Evidence
 
-- [ ] Build Components, Browser, Components.WasmHost, V2.WASM, V2, and the solution with `--no-restore`.
-- [ ] Run focused Cart, Checkout, WasmHost, component-mode, render-mode, visual-boundary, V2.WASM runtime, commerce-flow, and required-visual tests.
-- [ ] Run the full `BlazorShop.Tests.V2` project.
-- [ ] Run the local V2 stack and Playwright cart browser case: load cart, change quantity, remove a line, clear cart, and continue shopping without console/page errors or direct Commerce Node browser calls.
-- [ ] Run the local V2 stack and Playwright checkout COD case: create a cart, load checkout, submit valid contact/shipping data, place COD order, and verify success without console/page errors or direct Commerce Node browser calls.
-- [ ] Verify source boundaries: WasmHost owns cart/checkout controller behavior, V2.WASM wrappers only supply V2 options, V2 pages own `InteractiveWebAssembly`, and the V2 checkout page retains SSR form ownership while `ShowPanel=false`.
+- [x] Build Components, Browser, Components.WasmHost, V2.WASM, V2, and the solution with `--no-restore`. 2026-08-11: Phase 11 verified all targets and solution, 0 warnings/errors.
+- [x] Run focused Cart, Checkout, WasmHost, component-mode, render-mode, visual-boundary, V2.WASM runtime, commerce-flow, and required-visual tests. 2026-08-11: Phase 12 focused suite passed 66/66.
+- [x] Run the full `BlazorShop.Tests.V2` project. 2026-08-11: 1971 passed, 2 pre-existing skipped, 0 failed.
+- [x] Run the local V2 stack and Playwright cart browser case: load cart, change quantity, remove a line, clear cart, and continue shopping without console/page errors or direct Commerce Node browser calls. 2026-08-11: visible Chromium covered one and two lines, quantity 1→2→1, remove, product navigation, clear, and empty state.
+- [x] Run the local V2 stack and Playwright checkout COD case: create a cart, load checkout, submit valid contact/shipping data, place COD order, and verify success without console/page errors or direct Commerce Node browser calls. 2026-08-11: `QA Digital No Shipping Product` COD completed as `ORD-20260811-7A4002FC`.
+- [x] Verify source boundaries: WasmHost owns cart/checkout controller behavior, V2.WASM wrappers only supply V2 options, V2 pages own `InteractiveWebAssembly`, and the V2 checkout page retains SSR form ownership while `ShowPanel=false`. 2026-08-11: Phase 9 guardrails and browser output confirm this boundary.
 
 ## Phase 7 V2 Canonicalization Evidence - 2026-07-22
 

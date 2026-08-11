@@ -4,7 +4,7 @@
     <AntiforgeryToken />
     <input type="hidden" name="@StorefrontCheckoutFormFieldNames.CartVersion" value="@Context.CartVersion" />
     <input type="hidden" name="@StorefrontCheckoutFormFieldNames.IdempotencyKey" value="@Context.IdempotencyKey" />
-    <input type="hidden" name="@StorefrontCheckoutFormFieldNames.UseShippingAddressAsBillingAddress" value="@UseShippingAddressAsBillingAddress" />
+    <input type="hidden" name="@StorefrontCheckoutFormFieldNames.UseShippingAddressAsBillingAddress" value="@(UseShippingAddressAsBillingAddress ? "true" : "false")" />
     @ChildContent
 </form>
 

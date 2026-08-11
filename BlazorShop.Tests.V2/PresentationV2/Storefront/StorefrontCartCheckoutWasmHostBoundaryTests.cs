@@ -45,6 +45,9 @@ public sealed class StorefrontV2WasmWrapperBoundaryTests
         Assert.Contains("BlazorShop.Storefront.Components.WasmHost.Components.Cart.StorefrontCartView", cart, StringComparison.Ordinal);
         Assert.Contains("StorefrontCartViewOptions.Classes", cart, StringComparison.Ordinal);
         Assert.Contains("StorefrontCartViewOptions.Labels", cart, StringComparison.Ordinal);
+        Assert.Contains("CheckoutUrl=\"@CheckoutUrl\"", cart, StringComparison.Ordinal);
+        Assert.Contains("ContinueShoppingUrl=\"@ContinueShoppingUrl\"", cart, StringComparison.Ordinal);
+        Assert.Contains("SecondaryShoppingUrl=\"@SecondaryShoppingUrl\"", cart, StringComparison.Ordinal);
         Assert.Contains("BlazorShop.Storefront.Components.WasmHost.Components.Checkout.StorefrontCheckoutShell", checkout, StringComparison.Ordinal);
         Assert.Contains("StorefrontCheckoutShellOptions.Classes", checkout, StringComparison.Ordinal);
         Assert.Contains("StorefrontCheckoutShellOptions.Labels", checkout, StringComparison.Ordinal);

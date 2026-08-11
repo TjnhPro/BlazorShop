@@ -635,72 +635,72 @@ Use the local V2 runner unless an implementation session has an existing equival
 
 Cart browser QA:
 
-- [ ] Open the cart page when the cart is empty.
-- [ ] Confirm empty state renders without console errors.
-- [ ] Add a product to cart from product detail or existing supported path.
-- [ ] Open cart page with one item.
-- [ ] Confirm product name, quantity, unit/line pricing, image/fallback, and checkout link render.
-- [ ] Confirm `data-storefront-cart-quantity` is present.
-- [ ] Confirm each line has `data-line-id`.
-- [ ] Confirm each line has `data-product-id`.
-- [ ] Confirm variant products include `data-variant-id` where available.
-- [ ] Confirm selected attributes include `data-size-value` where available.
-- [ ] Increase quantity.
-- [ ] Confirm server-backed state updates and total/count refresh.
-- [ ] Decrease quantity.
-- [ ] Confirm state updates and no duplicate mutation occurs.
-- [ ] Remove one line.
-- [ ] Confirm line disappears and summary updates.
-- [ ] Add multiple items if fixture supports it.
-- [ ] Clear cart.
-- [ ] Confirm empty state returns.
-- [ ] Confirm product links still navigate.
-- [ ] Confirm checkout link still navigates.
-- [ ] Confirm no direct Commerce Node URL appears in browser network requests.
-- [ ] Confirm browser actions use same-origin BFF routes.
-- [ ] Confirm no `/_blazor` server circuit connection appears for cart page.
-- [ ] Confirm no unexpected WebSocket or EventSource connection appears.
-- [ ] Confirm no page errors.
-- [ ] Confirm no console errors except known benign framework diagnostics already accepted by QA.
+- [x] Open the cart page when the cart is empty.
+- [x] Confirm empty state renders without console errors.
+- [x] Add a product to cart from product detail or existing supported path.
+- [x] Open cart page with one item.
+- [x] Confirm product name, quantity, unit/line pricing, image/fallback, and checkout link render.
+- [x] Confirm `data-storefront-cart-quantity` is present.
+- [x] Confirm each line has `data-line-id`.
+- [x] Confirm each line has `data-product-id`.
+- [n/a] Confirm variant products include `data-variant-id` where available. The selected simple/digital fixtures have no variant.
+- [n/a] Confirm selected attributes include `data-size-value` where available. The selected simple/digital fixtures have no size selection.
+- [x] Increase quantity.
+- [x] Confirm server-backed state updates and total/count refresh.
+- [x] Decrease quantity.
+- [x] Confirm state updates and no duplicate mutation occurs.
+- [x] Remove one line.
+- [x] Confirm line disappears and summary updates.
+- [x] Add multiple items if fixture supports it.
+- [x] Clear cart.
+- [x] Confirm empty state returns.
+- [x] Confirm product links still navigate.
+- [x] Confirm checkout link still navigates.
+- [x] Confirm no direct Commerce Node URL appears in browser network requests.
+- [x] Confirm browser actions use same-origin BFF routes.
+- [x] Confirm no `/_blazor` server circuit connection appears for cart page.
+- [x] Confirm no unexpected WebSocket or EventSource connection appears.
+- [x] Confirm no page errors.
+- [x] Confirm no console errors except known benign framework diagnostics already accepted by QA.
 
 Checkout browser QA:
 
-- [ ] Create a valid cart with an active item.
-- [ ] Navigate to checkout.
-- [ ] Confirm current visible checkout form still renders through SSR Presentation components.
-- [ ] Confirm hidden `StorefrontCheckoutSection` / shell behavior does not create visible duplicate checkout controls while `ShowPanel=false`.
-- [ ] Confirm `data-storefront-checkout-shell` exists only if the hidden shell currently rendered it before extraction; otherwise document the unchanged behavior.
-- [ ] Fill billing/shipping fields according to current V2 fixture.
-- [ ] Select COD payment.
-- [ ] Submit real place-order flow.
-- [ ] Confirm order completion page or expected provider redirect behavior.
-- [ ] Confirm order number/reference is displayed if current V2 flow displays it.
-- [ ] Confirm cart is closed or cleared according to existing checkout rule.
-- [ ] Confirm browser network does not call direct Commerce Node URL.
-- [ ] Confirm browser actions use same-origin BFF routes.
-- [ ] Confirm no `/_blazor` server circuit connection appears for checkout page.
-- [ ] Confirm no unexpected WebSocket or EventSource connection appears.
-- [ ] Confirm no page errors.
-- [ ] Confirm no console errors except known benign framework diagnostics already accepted by QA.
+- [x] Create a valid cart with an active item.
+- [x] Navigate to checkout.
+- [x] Confirm current visible checkout form still renders through SSR Presentation components.
+- [x] Confirm hidden `StorefrontCheckoutSection` / shell behavior does not create visible duplicate checkout controls while `ShowPanel=false`.
+- [x] Confirm `data-storefront-checkout-shell` exists only if the hidden shell currently rendered it before extraction; otherwise document the unchanged behavior. The hidden `ShowPanel=false` shell emits no element, matching the current behavior.
+- [x] Fill billing/shipping fields according to current V2 fixture.
+- [x] Select COD payment.
+- [x] Submit real place-order flow.
+- [x] Confirm order completion page or expected provider redirect behavior.
+- [x] Confirm order number/reference is displayed if current V2 flow displays it.
+- [x] Confirm cart is closed or cleared according to existing checkout rule.
+- [x] Confirm browser network does not call direct Commerce Node URL.
+- [x] Confirm browser actions use same-origin BFF routes.
+- [x] Confirm no `/_blazor` server circuit connection appears for checkout page.
+- [x] Confirm no unexpected WebSocket or EventSource connection appears.
+- [x] Confirm no page errors.
+- [x] Confirm no console errors except known benign framework diagnostics already accepted by QA.
 
 Optional shell behavior QA:
 
-- [ ] If a component test page or fixture supports `ShowPanel=true`, test `RefreshAsync` through the UI.
-- [ ] If a component test page or fixture supports `ShowPanel=true`, test shipping option selection through the UI.
-- [ ] If a component test page or fixture supports `ShowPanel=true`, test payment option selection through the UI.
-- [ ] If a component test page or fixture supports `ShowPanel=true`, test review and place-order command dispatch with a mocked or fixture-safe Browser controller.
-- [ ] Do not treat missing visible shell controls on production checkout page as a failure while `ShowPanel=false` remains current behavior.
+- [n/a] If a component test page or fixture supports `ShowPanel=true`, test `RefreshAsync` through the UI. No such test page or safe fixture is exposed.
+- [n/a] If a component test page or fixture supports `ShowPanel=true`, test shipping option selection through the UI. No such test page or safe fixture is exposed.
+- [n/a] If a component test page or fixture supports `ShowPanel=true`, test payment option selection through the UI. No such test page or safe fixture is exposed.
+- [n/a] If a component test page or fixture supports `ShowPanel=true`, test review and place-order command dispatch with a mocked or fixture-safe Browser controller. No such test page or safe fixture is exposed.
+- [x] Do not treat missing visible shell controls on production checkout page as a failure while `ShowPanel=false` remains current behavior.
 
 Evidence to capture:
 
-- [ ] Storefront URL used.
-- [ ] Store key used.
-- [ ] Browser mode used, headless or visible.
-- [ ] Product fixture used.
-- [ ] Payment method used.
-- [ ] Order reference from real COD/sandbox order placement.
-- [ ] Console error summary.
-- [ ] Network guardrail summary.
+- [x] Storefront URL used: `http://localhost:18598`.
+- [x] Store key used: `default`.
+- [x] Browser mode used: visible Chromium through Playwright CLI.
+- [x] Product fixtures used: `QA Simple Product 100` and `QA Digital No Shipping Product`.
+- [x] Payment method used: Cash on Delivery.
+- [x] Order reference from real COD/sandbox order placement: `ORD-20260811-7A4002FC`.
+- [x] Console error summary: final cart page reports 0 errors and 0 warnings.
+- [x] Network guardrail summary: browser actions used same-origin `http://localhost:18598/api/*`; no Commerce Node, `/_blazor`, WebSocket, or EventSource browser request appeared.
 
 ## Phase 14 - Final Cleanup
 

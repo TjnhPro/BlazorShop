@@ -18,6 +18,7 @@ public sealed class StorefrontCheckoutFormPatternTests
         Assert.Contains("name=\"@StorefrontCheckoutFormFieldNames.IdempotencyKey\"", form);
         Assert.Contains("value=\"@Context.IdempotencyKey\"", form);
         Assert.Contains("name=\"@StorefrontCheckoutFormFieldNames.UseShippingAddressAsBillingAddress\"", form);
+        Assert.Contains("value=\"@(UseShippingAddressAsBillingAddress ? \"true\" : \"false\")\"", form);
         Assert.Contains("data-storefront-checkout-form", form);
         Assert.Contains("data-storefront-checkout-submit", submit);
         Assert.Contains("checkoutFormSelector = \"[data-storefront-checkout-form]\"", applicationScript);
@@ -25,6 +26,15 @@ public sealed class StorefrontCheckoutFormPatternTests
         Assert.Contains("boundCheckoutForms", applicationScript);
         Assert.Contains("candidate.addEventListener(\"submit\", () => disableCheckoutSubmitters(candidate))", applicationScript);
         Assert.Contains("button.disabled = true", applicationScript);
+    }
+
+    [Fact]
+    public void CheckoutForm_PostHandler_SendsExplicitReviewTermsDefault()
+    {
+        var endpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCheckoutEndpoints.cs");
+
+        Assert.Contains("new StorefrontCheckoutReviewRequest", endpoints);
+        Assert.Contains("TermsAccepted = false", endpoints);
     }
 
     [Fact]

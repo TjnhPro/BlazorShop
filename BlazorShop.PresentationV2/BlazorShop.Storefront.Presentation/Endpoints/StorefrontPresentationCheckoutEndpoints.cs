@@ -131,7 +131,10 @@ namespace BlazorShop.Storefront.Presentation.Endpoints
                 var reviewResult = await checkoutFacade.ReviewAsync(
                     cartToken,
                     paymentResult.Value.CheckoutSessionId.GetValueOrDefault(),
-                    new StorefrontCheckoutReviewRequest(),
+                    new StorefrontCheckoutReviewRequest
+                    {
+                        TermsAccepted = false,
+                    },
                     cancellationToken);
                 if (!reviewResult.Success || reviewResult.Value is null)
                 {
