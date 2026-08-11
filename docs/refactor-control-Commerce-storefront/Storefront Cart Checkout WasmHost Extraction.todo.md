@@ -578,18 +578,18 @@ dotnet build BlazorShop.sln --no-restore
 
 Exit criteria:
 
-- [ ] Components builds.
-- [ ] Browser builds.
-- [ ] WasmHost builds.
-- [ ] V2.WASM builds.
-- [ ] V2 builds.
-- [ ] Full solution builds.
+- [x] Components builds.
+- [x] Browser builds.
+- [x] WasmHost builds.
+- [x] V2.WASM builds.
+- [x] V2 builds.
+- [x] Full solution builds. `dotnet build BlazorShop.sln --no-restore` passed on 2026-08-11 with 0 errors (11 pre-existing MessagePack advisory warnings).
 
 Failure handling:
 
-- [ ] If a build fails because of namespace ambiguity, prefer wrapper naming/import cleanup over direct fully-qualified markup everywhere.
-- [ ] If a build fails because of missing label/class properties, update the shared contract shape to match existing markup.
-- [ ] If a build fails because WasmHost needs a Browser type, confirm the Browser dependency already exists in WasmHost csproj before adding anything.
+- [n/a] If a build fails because of namespace ambiguity, prefer wrapper naming/import cleanup over direct fully-qualified markup everywhere. No Phase 11 ambiguity failure.
+- [n/a] If a build fails because of missing label/class properties, update the shared contract shape to match existing markup. No Phase 11 contract-shape failure.
+- [x] If a build fails because WasmHost needs a Browser type, confirm the Browser dependency already exists in WasmHost csproj before adding anything. Confirmed existing Browser reference; no new reference was added.
 
 ## Phase 12 - Unit And Architecture Test Verification
 
