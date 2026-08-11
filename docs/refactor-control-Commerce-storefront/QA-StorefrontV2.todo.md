@@ -828,6 +828,13 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront Browser Runtime Cutover F1.72 QA passed. 2026-07-29: Browser runtime now owns cart, checkout, and account local API orchestration while V2.WASM renders controller state only. Focused `StorefrontBrowser*`, visual-consumer, bootstrap, script-regression, and StorefrontBuilder tests passed; browser proof scripts covered product projection, add-to-cart, canonical cart events, enhanced navigation rebinding, and no duplicate add-to-cart after repeated initialization.
 - [x] Storefront test runtime performance closure passed. 2026-07-29: `StorefrontV2HostSmokeTests` dropped from baseline `756.2s` in `storefront-f172-release-final-pass.trx` to `15.2s` in final full-suite TRX, with 0 host smoke tests `>=10s`. Full `BlazorShop.Tests.V2` Release run passed `1643` with `2` existing skips and `0` failed in `1m57s` using `--blame-hang --blame-hang-timeout 20m`; evidence: `BlazorShop.Tests.V2/TestResults/storefront-test-runtime-f178-final.trx`.
 
+## Storefront Catalog Navigation Controls
+
+- [x] Category filter GET form preserves `minPrice`, `maxPrice`, `sortBy`, `pageSize`, and `inStock`; category pagination preserves the active query state. 2026-08-11: V2 browser proof submitted and paged `/category/t-shirts` with `pageSize=12`, price, sort, and stock filters.
+- [x] Search filter GET form preserves `q`, `category`, `minPrice`, `maxPrice`, `sortBy`, `pageSize`, and `inStock`; search pagination preserves the active query state. 2026-08-11: V2 browser proof submitted filtered search and moved to page 2 without dropping the filter query.
+- [x] Product and content routes render the shared SSR breadcrumb. 2026-08-11: browser proof covered `/product/catalog-qa-t-shirt` and `/pages/faq`.
+- [x] Catalog navigation browser proof records no direct Commerce Node Storefront request, no `/_blazor` request, and no console/page errors. 2026-08-11: evidence is stored under ignored `output/playwright/storefront-catalog-navigation-controls/`.
+
 ## Storefront Reference Components
 
 Owner: Storefront V2 host QA, Storefront Browser same-origin boundary, and reusable component mode guardrails.

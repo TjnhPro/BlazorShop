@@ -238,6 +238,7 @@ Use for:
 - Stable `data-storefront-*` hooks, accessibility markup, links/buttons, and fully host-supplied class slots.
 - Product Summary primitive rendering shared by Storefront V2 SSR surfaces and V2.WASM rail item rendering.
 - Product Detail gallery render markup through `StorefrontProductGallery`, using `ProductGalleryItem`, `ProductGalleryLabels`, `ProductGalleryClasses`, and `ProductGalleryState` while V2 owns final labels/classes and JavaScript progressive enhancement.
+- Navigation pagination through `StorefrontPagination`, using `StorefrontPaginationItem` values whose `Href` is prepared by the host. The primitive must not select Category or Search routes.
 
 Do not:
 
@@ -261,6 +262,7 @@ Use for:
 - Server-rendered reusable components that consume prepared Presentation contexts or component contracts.
 - Semantic hooks, accessibility markup, forms, links, `RenderFragment`, and host-supplied class slots.
 - Product Detail display components such as `StorefrontProductPricing`, `StorefrontProductAvailability`, and informational `StorefrontProductVariantList` over prepared Presentation product views.
+- Catalog filter and breadcrumb rendering through `StorefrontCatalogFilterPanel` and `StorefrontBreadcrumb`. They consume prepared GET/form and breadcrumb contexts while V2 keeps final labels, classes, icons, and route/query generation.
 
 Do not:
 

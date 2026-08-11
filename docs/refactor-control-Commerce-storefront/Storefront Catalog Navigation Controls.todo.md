@@ -1084,35 +1084,35 @@ Exit criteria:
 
 Update docs:
 
-- [ ] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
-- [ ] `docs/architecture/05-project-and-folder-guide.md`
-- [ ] `docs/architecture/10-v2-contract-ownership.md`
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
+- [x] `BlazorShop.PresentationV2/COMPONENT-MODES.md`
+- [x] `docs/architecture/05-project-and-folder-guide.md`
+- [x] `docs/architecture/10-v2-contract-ownership.md`
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
 
 Document:
 
-- [ ] `StorefrontPagination` lives in `Components.Primitives/Navigation`.
-- [ ] `StorefrontCatalogFilterPanel` lives in `Components.Ssr/Catalog`.
-- [ ] `StorefrontBreadcrumb` lives in `Components.Ssr/Navigation`.
-- [ ] Pagination primitive consumes prepared links only.
-- [ ] Filter preserves existing GET query contract.
-- [ ] Breadcrumb consumes Presentation breadcrumb item for now.
-- [ ] V2 owns final classes/copy and route-specific URL generation.
+- [x] `StorefrontPagination` lives in `Components.Primitives/Navigation`.
+- [x] `StorefrontCatalogFilterPanel` lives in `Components.Ssr/Catalog`.
+- [x] `StorefrontBreadcrumb` lives in `Components.Ssr/Navigation`.
+- [x] Pagination primitive consumes prepared links only.
+- [x] Filter preserves existing GET query contract.
+- [x] Breadcrumb consumes Presentation breadcrumb item for now.
+- [x] V2 owns final classes/copy and route-specific URL generation.
 
 QA checklist additions:
 
-- [ ] Category filter query preservation.
-- [ ] Search filter query preservation.
-- [ ] Category pagination query preservation.
-- [ ] Search pagination query preservation.
-- [ ] Product breadcrumb rendering.
-- [ ] Content breadcrumb rendering.
-- [ ] No direct Commerce browser transport after extraction.
+- [x] Category filter query preservation.
+- [x] Search filter query preservation.
+- [x] Category pagination query preservation.
+- [x] Search pagination query preservation.
+- [x] Product breadcrumb rendering.
+- [x] Content breadcrumb rendering.
+- [x] No direct Commerce browser transport after extraction.
 
 Exit criteria:
 
-- [ ] docs align with implemented graph;
-- [ ] QA checklist can be executed by another agent.
+- [x] docs align with implemented graph;
+- [x] QA checklist can be executed by another agent.
 
 ## Phase 3.3.24 - Scope Drift Audit
 
