@@ -1,0 +1,22 @@
+@namespace BlazorShop.Storefront.Components.Primitives.System
+
+<div data-storefront-toast-region class="@Classes.Region" aria-live="polite" aria-atomic="true"></div>
+<template data-storefront-toast-template>
+    <div data-storefront-toast data-level="info" data-state="entering" class="@Classes.Toast">
+        <div class="@Classes.Content">
+            <div data-storefront-toast-accent class="@Classes.Accent">
+                <svg data-storefront-toast-icon="info" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="@Classes.Icon"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                <svg data-storefront-toast-icon="success" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="@Classes.Icon"><path d="m5 13 4 4L19 7" /></svg>
+                <svg data-storefront-toast-icon="warning" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="@Classes.Icon"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>
+                <svg data-storefront-toast-icon="error" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="@Classes.Icon"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+            </div>
+            <div class="@Classes.Text"><p data-storefront-toast-heading class="@Classes.Heading"></p><p data-storefront-toast-message class="@Classes.Message"></p></div>
+            <button type="button" data-storefront-toast-close class="@Classes.CloseButton" aria-label="@Labels.CloseButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="@Classes.CloseIcon"><path d="M6 6l12 12" /><path d="m18 6-12 12" /></svg></button>
+        </div>
+    </div>
+</template>
+
+@code {
+    [Parameter, EditorRequired] public StorefrontToastRegionClasses Classes { get; set; } = default!;
+    [Parameter, EditorRequired] public StorefrontToastRegionLabels Labels { get; set; } = default!;
+}
