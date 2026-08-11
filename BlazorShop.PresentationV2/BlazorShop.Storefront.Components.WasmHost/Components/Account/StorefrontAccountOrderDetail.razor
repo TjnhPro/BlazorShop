@@ -1,6 +1,4 @@
-@using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser.Account
-@using BlazorShop.Storefront.Components.Headless.Account
+@namespace BlazorShop.Storefront.Components.WasmHost.Components.Account
 @inject IStorefrontBrowserAccountController AccountController
 
 <div class="@Classes.Root" data-storefront-account-order-detail>
@@ -13,26 +11,26 @@
         var order = AccountState.OrderDetail;
         <div class="@Classes.MetricsGrid">
             <div>
-                <p class="@Classes.MetricLabel">Order status</p>
+                <p class="@Classes.MetricLabel">@Labels.OrderStatus</p>
                 <p class="@Classes.MetricValue">@order.OrderStatus</p>
             </div>
             <div>
-                <p class="@Classes.MetricLabel">Payment</p>
+                <p class="@Classes.MetricLabel">@Labels.Payment</p>
                 <p class="@Classes.MetricValue">@order.PaymentStatus</p>
             </div>
             <div>
-                <p class="@Classes.MetricLabel">Total</p>
+                <p class="@Classes.MetricLabel">@Labels.Total</p>
                 <p class="@Classes.MetricValue">@order.TotalDisplay</p>
             </div>
         </div>
 
         <div class="@Classes.AddressGrid">
-            @RenderAddress("Shipping address", order.ShippingAddress)
-            @RenderAddress("Billing address", order.BillingAddress ?? order.ShippingAddress)
+            @RenderAddress(Labels.ShippingAddress, order.ShippingAddress)
+            @RenderAddress(Labels.BillingAddress, order.BillingAddress ?? order.ShippingAddress)
         </div>
 
         <section class="@Classes.ItemsSection">
-            <h2 class="@Classes.SectionTitle">Items</h2>
+            <h2 class="@Classes.SectionTitle">@Labels.Items</h2>
             <div class="@Classes.ItemsList">
                 @foreach (var line in order.Lines)
                 {
@@ -44,7 +42,7 @@
                                 <p class="@Classes.LineSku">@line.Sku</p>
                             }
                         </div>
-                        <p class="@Classes.LineText">Qty @line.Quantity</p>
+                        <p class="@Classes.LineText">@Labels.QuantityPrefix @line.Quantity</p>
                         <p class="@Classes.LineTotal">@line.LineTotalDisplay</p>
                     </div>
                 }
@@ -52,13 +50,13 @@
         </section>
 
         <section class="@Classes.TotalsSection">
-            <h2 class="@Classes.SectionTitle">Totals</h2>
+            <h2 class="@Classes.SectionTitle">@Labels.Totals</h2>
             <div class="@Classes.TotalsBody">
-                <div class="@Classes.TotalRow"><span>Subtotal</span><span>@order.Totals.SubtotalDisplay</span></div>
-                <div class="@Classes.TotalRow"><span>Shipping</span><span>@order.Totals.ShippingDisplay</span></div>
-                <div class="@Classes.TotalRow"><span>Tax</span><span>@order.Totals.TaxDisplay</span></div>
-                <div class="@Classes.TotalRow"><span>Discount</span><span>@order.Totals.DiscountDisplay</span></div>
-                <div class="@Classes.GrandTotalRow"><span>Grand total</span><span>@order.Totals.GrandTotalDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>@Labels.Subtotal</span><span>@order.Totals.SubtotalDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>@Labels.Shipping</span><span>@order.Totals.ShippingDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>@Labels.Tax</span><span>@order.Totals.TaxDisplay</span></div>
+                <div class="@Classes.TotalRow"><span>@Labels.Discount</span><span>@order.Totals.DiscountDisplay</span></div>
+                <div class="@Classes.GrandTotalRow"><span>@Labels.GrandTotal</span><span>@order.Totals.GrandTotalDisplay</span></div>
             </div>
         </section>
     }
@@ -86,10 +84,14 @@
     [Parameter]
     public StorefrontAccountOrderDetailClasses Classes { get; set; } = StorefrontAccountOrderDetailClasses.Empty;
 
+    [Parameter]
+    public StorefrontAccountOrderDetailLabels Labels { get; set; } = StorefrontAccountOrderDetailLabels.Empty;
+
     private StorefrontBrowserAccountState AccountState => AccountController.State;
 
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(Labels);
         AccountController.InitializeOrderDetail(InitialOrder, InitialError, DataMode, Actions, OrderReference, ReceiptMode);
     }
 

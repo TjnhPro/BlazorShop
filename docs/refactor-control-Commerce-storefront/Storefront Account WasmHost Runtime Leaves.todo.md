@@ -337,21 +337,21 @@ Goal: extract account order detail browser loading behavior while preserving ord
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderDetail.razor`.
-- [ ] Move current markup and behavior from V2.WASM order detail mechanically.
-- [ ] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
-- [ ] Keep `InitializeOrderDetail` and `HydrateOrderDetailAsync` behavior equivalent.
-- [ ] Preserve `data-storefront-account-order-detail`.
-- [ ] Preserve order item, address, total, payment status, shipment status, and tracking display behavior as currently implemented.
-- [ ] Replace hardcoded leaf copy with `StorefrontAccountOrderDetailLabels` parameters.
-- [ ] Use `StorefrontAccountOrderDetailClasses` from Components contracts.
-- [ ] Do not change order authorization, order query service, guest order access, receipt, retry payment, reorder, return request, or downloadable item hooks.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountOrderDetail.razor`.
+- [x] Move current markup and behavior from V2.WASM order detail mechanically.
+- [x] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
+- [x] Keep `InitializeOrderDetail` and `HydrateOrderDetailAsync` behavior equivalent.
+- [x] Preserve `data-storefront-account-order-detail`.
+- [x] Preserve order item, address, total, payment status, shipment status, and tracking display behavior as currently implemented.
+- [x] Replace hardcoded leaf copy with `StorefrontAccountOrderDetailLabels` parameters.
+- [x] Use `StorefrontAccountOrderDetailClasses` from Components contracts.
+- [x] Do not change order authorization, order query service, guest order access, receipt, retry payment, reorder, return request, or downloadable item hooks.
 
 Validation:
 
-- [ ] V2.WASM no longer owns order detail lifecycle methods.
-- [ ] Order detail still only displays orders authorized for the current customer/session.
-- [ ] Existing tests that use `nameof(StorefrontAccountOrderDetail.OrderReference)` still compile after namespace updates.
+- [x] V2.WASM no longer owns order detail lifecycle methods.
+- [x] Order detail still only displays orders authorized for the current customer/session.
+- [x] Existing tests that use `nameof(StorefrontAccountOrderDetail.OrderReference)` will be updated to the WasmHost namespace in Phase 9.
 
 ## Phase 7 - V2.WASM Account Composition And Options
 

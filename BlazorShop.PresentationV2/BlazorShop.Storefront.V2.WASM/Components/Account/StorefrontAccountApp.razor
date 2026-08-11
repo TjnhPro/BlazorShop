@@ -131,13 +131,14 @@
                 break;
 
             case AccountRouteKind.OrderDetail:
-                builder.OpenComponent<StorefrontAccountOrderDetail>(30);
-                builder.AddAttribute(31, nameof(StorefrontAccountOrderDetail.InitialError), Error);
-                builder.AddAttribute(32, nameof(StorefrontAccountOrderDetail.OrderReference), ActiveRoute.OrderReference);
-                builder.AddAttribute(33, nameof(StorefrontAccountOrderDetail.ReceiptMode), ActiveRoute.ReceiptMode);
-                builder.AddAttribute(34, nameof(StorefrontAccountOrderDetail.DataMode), StorefrontFeatureDataMode.BrowserFetch);
-                builder.AddAttribute(35, nameof(StorefrontAccountOrderDetail.Actions), OrderActions);
-                builder.AddAttribute(36, nameof(StorefrontAccountOrderDetail.Classes), OrderDetailClasses);
+                builder.OpenComponent<BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail>(30);
+                builder.AddAttribute(31, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.InitialError), Error);
+                builder.AddAttribute(32, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.OrderReference), ActiveRoute.OrderReference);
+                builder.AddAttribute(33, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.ReceiptMode), ActiveRoute.ReceiptMode);
+                builder.AddAttribute(34, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(35, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.Actions), OrderActions);
+                builder.AddAttribute(36, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.Classes), OrderDetailClasses);
+                builder.AddAttribute(37, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountOrderDetail.Labels), StorefrontAccountViewOptions.OrderDetailLabels);
                 builder.CloseComponent();
                 break;
 

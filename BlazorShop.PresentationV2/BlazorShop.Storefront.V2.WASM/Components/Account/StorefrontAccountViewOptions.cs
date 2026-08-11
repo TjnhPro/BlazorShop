@@ -63,6 +63,23 @@ public static class StorefrontAccountViewOptions
         Items = "Items"
     };
 
+    public static StorefrontAccountOrderDetailLabels OrderDetailLabels { get; } = new()
+    {
+        OrderStatus = "Order status",
+        Payment = "Payment",
+        Total = "Total",
+        ShippingAddress = "Shipping address",
+        BillingAddress = "Billing address",
+        Items = "Items",
+        QuantityPrefix = "Qty",
+        Totals = "Totals",
+        Subtotal = "Subtotal",
+        Shipping = "Shipping",
+        Tax = "Tax",
+        Discount = "Discount",
+        GrandTotal = "Grand total"
+    };
+
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {
         Nav = "rounded-3xl border border-neutral-200/70 bg-white/95 p-3 text-sm shadow-lg lg:sticky lg:top-24",
