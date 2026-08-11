@@ -10,6 +10,7 @@ This is the active, runnable release gate for `BlazorShop.Storefront.V2`. Histor
 - [x] Confirm Storefront V2 is healthy at `http://localhost:18598` and Commerce Node is healthy at `http://localhost:5180`.
 - [x] Use the scoped `default` store fixture and the dedicated QA customer; do not use legacy or `api/internal/*` routes.
 - [x] Use a new, unique QA marker for mutable address data and remove it during the same run.
+- [x] Fresh development store fixtures use V2 `brandlogo.png` and `brandfavicon.png`; header/favicon rendering remains owned by current-store runtime URLs and `StorefrontIconHead`.
 
 ## Build And Test Gate
 

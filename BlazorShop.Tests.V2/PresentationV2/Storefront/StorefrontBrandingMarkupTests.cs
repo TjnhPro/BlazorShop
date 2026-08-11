@@ -82,8 +82,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var styles = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/css/storefront.css");
 
             Assert.Contains(".bs-storefront-header__brand-logo", styles);
+            Assert.Contains("width: auto;", styles);
             Assert.Contains("height: 2rem;", styles);
             Assert.Contains("object-fit: contain;", styles);
+            Assert.Contains("object-position: left center;", styles);
+        }
+
+        [Fact]
+        public void DevelopmentSeed_UsesV2BrandAssetsWhileRuntimeHeadOwnershipStaysShared()
+        {
+            var seed = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.StoreSeed.cs");
+            var applicationHead = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontApplicationHead.razor");
+
+            Assert.Equal(2, CountOccurrences(seed, "LogoUrl = \"/brandlogo.png\""));
+            Assert.Equal(2, CountOccurrences(seed, "FaviconUrl = \"/brandfavicon.png\""));
+            Assert.Equal(2, CountOccurrences(seed, "PngIconUrl = \"/brandfavicon.png\""));
+            Assert.Contains("<StorefrontIconHead DisplayContext=\"Context.Display\" />", applicationHead, StringComparison.Ordinal);
+            Assert.DoesNotContain("rel=\"icon\"", applicationHead, StringComparison.Ordinal);
         }
 
         [Fact]
