@@ -4,7 +4,7 @@
 <div class="@Classes.Root" data-storefront-account-profile>
     @if (!string.IsNullOrWhiteSpace(AccountState.ProfileSuccess))
     {
-        <div class="@Classes.StatusAlert" role="status">@AccountState.ProfileSuccess</div>
+        <div class="@Classes.StatusMessage" role="status">@AccountState.ProfileSuccess</div>
     }
     @if (!string.IsNullOrWhiteSpace(AccountState.ProfileError))
     {

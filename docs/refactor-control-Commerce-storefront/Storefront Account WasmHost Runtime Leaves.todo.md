@@ -576,18 +576,18 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 Expected result:
 
-- [ ] Account ownership tests pass.
-- [ ] WasmHost boundary tests pass.
-- [ ] Render-mode ownership tests pass.
-- [ ] Commerce flow cutover tests pass.
-- [ ] Required visual contract tests pass.
-- [ ] Full V2 tests pass.
+- [x] Account ownership tests pass. 2026-08-11: `Account` filter passed 62 tests; account ownership/visual-neutrality/browser-action targeted regression passed 43 tests.
+- [x] WasmHost boundary tests pass. 2026-08-11: `WasmHost` filter passed 22 tests.
+- [x] Render-mode ownership tests pass. 2026-08-11: required focused filter passed.
+- [x] Commerce flow cutover tests pass. 2026-08-11: required focused filter passed.
+- [x] Required visual contract tests pass. 2026-08-11: required focused filter passed after neutral `StatusMessage` slot correction.
+- [x] Full V2 tests pass. 2026-08-11: 1979 passed, 2 pre-existing skipped, 0 failed.
 
 If tests fail:
 
 - [ ] Determine whether failure is a stale path assertion or a behavior regression.
 - [ ] Fix stale tests only when code behavior is intentionally moved.
-- [ ] Fix behavior regression in implementation before continuing.
+- [x] Fix behavior regression in implementation before continuing. 2026-08-11: renamed the reusable `StatusAlert` class slot to neutral `StatusMessage`; the former token unintentionally matched forbidden host copy `Sale`.
 - [ ] Do not weaken guardrail tests to hide invalid references.
 
 ## Phase 13 - Browser Playwright QA

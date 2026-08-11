@@ -28,8 +28,8 @@ Muc tieu hien tai:
 
 ## Account WasmHost Runtime Leaves Evidence
 
-- [ ] Build Components, Browser, Components.WasmHost, V2.WASM, V2, and the solution with `--no-restore` after account-leaf extraction.
-- [ ] Run account/WasmHost/component-mode/render-mode/visual-boundary/V2.WASM/commerce-flow/browser-action focused tests and the full `BlazorShop.Tests.V2` project.
+- [x] Build Components, Browser, Components.WasmHost, V2.WASM, V2, and the solution with `--no-restore` after account-leaf extraction. 2026-08-11: all passed; full solution had only existing MessagePack vulnerability and Browserslist database warnings.
+- [x] Run account/WasmHost/component-mode/render-mode/visual-boundary/V2.WASM/commerce-flow/browser-action focused tests and the full `BlazorShop.Tests.V2` project. 2026-08-11: focused suite passed; full suite 1979 passed, 2 pre-existing skipped, 0 failed.
 - [ ] Run local V2 Playwright account regression: authenticated profile update, invalid password validation, address create/edit/delete, empty and populated order list, order detail, and receipt navigation.
 - [ ] Verify browser traffic remains same-origin BFF/static/media only, with no direct Commerce Node Storefront calls, no real console/page errors, and no unexpected 5xx responses.
 - [ ] Verify source boundaries: the five Account WasmHost leaves own `IStorefrontBrowserAccountController` lifecycle/mutations, V2.WASM keeps only AccountApp/navigation/composition and final V2 options, and the V2 server account host owns `InteractiveWebAssembly` placement.
