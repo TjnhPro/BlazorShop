@@ -82,7 +82,7 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("<StorefrontHeader Context=\"Context.Header\" />", layoutMarkup);
             Assert.Contains("<main class=\"bs-storefront-main flex-1\">", layoutMarkup);
             Assert.Contains("<StorefrontFooter Context=\"Context.Footer\" />", layoutMarkup);
-            Assert.Equal(1, CountOccurrences(layoutMarkup, "data-storefront-toast-region"));
+            Assert.Equal(1, CountOccurrences(layoutMarkup, "<StorefrontToastRegion "));
             Assert.DoesNotContain("<HeadContent>", layoutMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("WasmProbe", layoutMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("data-wasm-probe", layoutMarkup, StringComparison.Ordinal);

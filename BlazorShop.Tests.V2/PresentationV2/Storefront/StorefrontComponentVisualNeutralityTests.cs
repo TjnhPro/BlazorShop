@@ -121,8 +121,11 @@ public sealed class StorefrontComponentVisualNeutralityTests
 
     [Theory]
     [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Navigation/StorefrontPagination.razor", "<nav class=\"rounded-xl\"></nav>", "rounded-xl")]
+    [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor", "<section class=\"rounded-2xl\"></section>", "rounded-2xl")]
+    [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/System/StorefrontToastRegion.razor", "<div class=\"fixed top-4\"></div>", "fixed top-4")]
     [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor", "<form class=\"bg-white\"></form>", "bg-white")]
     [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor", "<nav class=\"px-4\"></nav>", "px-4")]
+    [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanel.razor", "<section class=\"shadow-xl\"></section>", "shadow-xl")]
     public void CatalogNavigationFixturesRejectLiteralHostVisualClasses(
         string relativePath,
         string markup,
@@ -175,7 +178,13 @@ public sealed class StorefrontComponentVisualNeutralityTests
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductGallery.razor",
             scannedFiles);
         Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor",
+            scannedFiles);
+        Assert.Contains(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Navigation/StorefrontPagination.razor",
+            scannedFiles);
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/System/StorefrontToastRegion.razor",
             scannedFiles);
         Assert.Contains(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductPricing.razor",
@@ -191,6 +200,9 @@ public sealed class StorefrontComponentVisualNeutralityTests
             scannedFiles);
         Assert.Contains(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor",
+            scannedFiles);
+        Assert.Contains(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanel.razor",
             scannedFiles);
         Assert.Contains(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Content/StorefrontContactFormApp.razor",

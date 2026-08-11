@@ -80,6 +80,9 @@ public sealed class StorefrontComponentModeDependencyTests
         AssertNoSourceTokens(
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor",
             ["BlazorShop.Storefront.Browser", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client", "StorefrontRoutes", "CategoryUrl", "SearchUrl", "@rendermode"]);
+        AssertNoSourceTokens(
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanel.razor",
+            ["BlazorShop.Storefront.Browser", "BlazorShop.Storefront.Runtime", "BlazorShop.Storefront.Client", "HttpClient", "IJSRuntime", "api/", "http://", "https://", "@rendermode"]);
     }
 
     [Fact]

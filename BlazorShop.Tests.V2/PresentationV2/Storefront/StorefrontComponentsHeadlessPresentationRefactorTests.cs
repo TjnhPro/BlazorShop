@@ -47,10 +47,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Product/ProductPurchaseLabels.cs",
             "Product/ProductPurchaseOptionItem.cs",
             "Product/ProductPurchaseOptionValueItem.cs",
+            "Product/ProductPurchasePanelClasses.cs",
             "Product/ProductPurchasePanelModel.cs",
             "Product/ProductPurchaseVariantItem.cs",
             "Product/ProductVariantListClasses.cs",
             "Product/ProductVariantListLabels.cs",
+            "System/StorefrontToastRegionClasses.cs",
+            "System/StorefrontToastRegionLabels.cs",
         ];
 
         private static readonly string[] ExpectedBrowserContractFiles =
@@ -138,7 +141,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(45, actual.Length);
+            Assert.Equal(48, actual.Length);
         }
 
         [Fact]
@@ -396,7 +399,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var purchaseBehavior = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Headless/Product/ProductPurchaseBehavior.cs");
             var v2Panel = ReadRepositoryFile(
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor");
+            var visuals = ReadRepositoryFile(
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/ProductPurchasePanelVisuals.cs");
             var productContext = ReadRepositoryFile(
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageContext.cs");
             var productMapper = ReadRepositoryFile(
@@ -427,7 +432,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 Assert.Contains(expected, purchaseBehavior, StringComparison.Ordinal);
             }
 
-            Assert.Contains("ProductPurchaseActionDescriptor.Empty", v2Panel, StringComparison.Ordinal);
+            Assert.DoesNotContain("ProductPurchaseActionDescriptor.Empty", v2Panel, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontV2Default", purchaseBehavior, StringComparison.Ordinal);
             Assert.DoesNotContain("/api/product-selection-preview", purchaseBehavior, StringComparison.Ordinal);
             Assert.Contains("ProductPurchaseActionDescriptor PurchaseActions", productContext, StringComparison.Ordinal);
@@ -439,8 +444,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("data-preview-container", v2Panel, StringComparison.Ordinal);
             Assert.Contains("data-feedback-target=\"@Actions.FeedbackTargetSelector\"", v2Panel, StringComparison.Ordinal);
             Assert.Contains("disabled=\"@(!Model.CanSubmitInitialPurchase)\"", v2Panel, StringComparison.Ordinal);
-            Assert.Contains("rounded-2xl", v2Panel, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" Actions=\"Context.PurchaseActions\" />", productPage, StringComparison.Ordinal);
+            Assert.Contains("rounded-2xl", visuals, StringComparison.Ordinal);
+            Assert.Contains("Labels=\"ProductPurchasePanelVisuals.Labels\"", productPage, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProductPurchasePanel Model=\"_purchasePanel\"", productPage, StringComparison.Ordinal);
         }
 

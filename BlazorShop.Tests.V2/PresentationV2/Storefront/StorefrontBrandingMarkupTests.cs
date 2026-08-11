@@ -134,7 +134,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains(
                 "data-currency-code",
                 ReadRepositoryFile(files[1])
-                    + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor"),
+                    + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor"),
                 StringComparison.Ordinal);
         }
 
@@ -157,7 +157,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
-            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
+            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor");
             var pricingDisplay = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductPricing.razor");
             var availabilityDisplay = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Product/StorefrontProductAvailability.razor");
             var purchaseModels = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Product/ProductPurchasePanelModel.cs");
@@ -166,7 +166,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationCartEndpoints.cs");
             Assert.False(File.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor")));
 
-            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" Actions=\"Context.PurchaseActions\" />", markup);
+            Assert.Contains("Actions=\"Context.PurchaseActions\"", markup);
+            Assert.Contains("Labels=\"ProductPurchasePanelVisuals.Labels\"", markup);
+            Assert.Contains("Classes=\"ProductPurchasePanelVisuals.Classes\"", markup);
             Assert.Contains("BuildPurchasePanel", mapper, StringComparison.Ordinal);
             Assert.Contains("ProductPurchasePanelModel", purchaseModels, StringComparison.Ordinal);
             Assert.Contains("ProductPurchaseActionDescriptor", purchaseBehavior, StringComparison.Ordinal);
@@ -240,7 +242,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor");
             var mapper = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Services/Product/StorefrontProductPageMapper.cs");
-            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor");
+            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/Product/StorefrontProductPurchasePanel.razor");
+            var purchaseVisuals = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/ProductPurchasePanelVisuals.cs");
 
             Assert.Contains("min=\"@Model.MinOrderQuantity\"", purchasePanel);
             Assert.Contains("max=\"@Model.MaxOrderQuantity\"", purchasePanel);
@@ -248,7 +251,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("value=\"@Model.MinOrderQuantity\"", purchasePanel);
             Assert.Contains("disabled=\"@(!Model.CanSubmitInitialPurchase)\"", purchasePanel);
             Assert.DoesNotContain("data-stock=", purchasePanel, StringComparison.Ordinal);
-            Assert.Contains("Free shipping", purchasePanel);
+            Assert.Contains("Free shipping", purchaseVisuals);
             Assert.Contains("@Model.DeliveryEstimateText", purchasePanel);
             Assert.Contains("BuildPurchasePanel", mapper);
             Assert.Contains("IsInitialPurchaseHardBlock", mapper);

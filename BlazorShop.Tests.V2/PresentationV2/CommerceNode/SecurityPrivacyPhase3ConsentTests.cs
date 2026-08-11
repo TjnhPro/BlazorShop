@@ -75,17 +75,20 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         {
             var registration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/V2FoundationViewRegistration.cs");
             var banner = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Security/StorefrontConsentBanner.razor");
+            var panel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanel.razor");
+            var visuals = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Security/StorefrontConsentVisuals.cs");
             var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/Endpoints/StorefrontPresentationConsentEndpoints.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var applicationScript = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Presentation/wwwroot/js/storefront.application.js");
 
             Assert.Contains("ConsentBanner = typeof(StorefrontConsentBanner)", registration, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-consent-banner", banner, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-consent-current-url", banner, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-consent-accept-url", banner, StringComparison.Ordinal);
-            Assert.Contains("pointer-events-auto", banner, StringComparison.Ordinal);
-            Assert.Contains("z-[100]", banner, StringComparison.Ordinal);
-            Assert.Contains("data-storefront-consent-revoke", banner, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontConsentPanel", banner, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-consent-banner", panel, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-consent-current-url", panel, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-consent-accept-url", panel, StringComparison.Ordinal);
+            Assert.Contains("pointer-events-auto", visuals, StringComparison.Ordinal);
+            Assert.Contains("z-[100]", visuals, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-consent-revoke", panel, StringComparison.Ordinal);
             Assert.Contains("/api/consent/current", consentEndpoints, StringComparison.Ordinal);
             Assert.Contains("/api/consent/revoke", consentEndpoints, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-manage", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor"), StringComparison.Ordinal);

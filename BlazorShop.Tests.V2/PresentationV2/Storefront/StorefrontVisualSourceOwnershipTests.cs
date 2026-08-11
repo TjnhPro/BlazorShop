@@ -9,7 +9,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor",
             "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/StorefrontProductPurchasePanel.razor",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Product/ProductPurchasePanelVisuals.cs",
+            "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontToastVisuals.cs",
         ];
 
         [Fact]
@@ -90,10 +91,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void MainLayout_OwnsToastIconMarkupAndNoInlineToastVisualState()
+        public void ToastPrimitiveOwnsSemanticMarkupWhileMainLayoutOwnsPlacement()
         {
             var layout = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
-            var toastTemplate = ExtractToastTemplate(layout);
+            var toastTemplate = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Primitives/System/StorefrontToastRegion.razor");
 
             foreach (var expectedIcon in new[]
             {
@@ -108,8 +109,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("data-level=\"info\"", toastTemplate, StringComparison.Ordinal);
             Assert.Contains("data-state=\"entering\"", toastTemplate, StringComparison.Ordinal);
-            Assert.Contains("aria-live=\"polite\"", layout, StringComparison.Ordinal);
-            Assert.Contains("aria-label=\"Dismiss notification\"", toastTemplate, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontToastRegion", layout, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-storefront-toast-region", layout, StringComparison.Ordinal);
+            Assert.Contains("aria-live=\"polite\"", toastTemplate, StringComparison.Ordinal);
+            Assert.Contains("StorefrontToastVisuals.Labels", layout, StringComparison.Ordinal);
             Assert.DoesNotContain("style=\"opacity", toastTemplate, StringComparison.Ordinal);
             Assert.DoesNotContain("transform: translateY", toastTemplate, StringComparison.Ordinal);
             Assert.DoesNotContain("transition: opacity", toastTemplate, StringComparison.Ordinal);
@@ -279,24 +282,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return files;
         }
 
-        private static string ExtractToastTemplate(string layout)
-        {
-            const string startMarker = "<template data-storefront-toast-template>";
-            const string endMarker = "</template>";
-            var start = layout.IndexOf(startMarker, StringComparison.Ordinal);
-            if (start < 0)
-            {
-                throw new InvalidOperationException("Toast template start marker was not found.");
-            }
-
-            var end = layout.IndexOf(endMarker, start, StringComparison.Ordinal);
-            if (end < 0)
-            {
-                throw new InvalidOperationException("Toast template end marker was not found.");
-            }
-
-            return layout[start..(end + endMarker.Length)];
-        }
 
         private static string ExtractFunction(string source, string functionName)
         {

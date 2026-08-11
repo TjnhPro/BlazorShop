@@ -575,7 +575,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("Classes=\"ProductGalleryVisuals.Classes\"", view, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductPricing", view, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductAvailability", view, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\" Actions=\"Context.PurchaseActions\" />", view, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontProductPurchasePanel Model=\"_purchasePanel\"", view, StringComparison.Ordinal);
+            Assert.Contains("Labels=\"ProductPurchasePanelVisuals.Labels\"", view, StringComparison.Ordinal);
             Assert.Contains("<StorefrontProductVariantList", view, StringComparison.Ordinal);
         }
 
