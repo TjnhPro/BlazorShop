@@ -140,14 +140,15 @@
                 break;
 
             case AccountRouteKind.ChangePassword:
-                builder.OpenComponent<StorefrontAccountChangePasswordForm>(40);
-                builder.AddAttribute(41, nameof(StorefrontAccountChangePasswordForm.InitialError), Error);
-                builder.AddAttribute(42, nameof(StorefrontAccountChangePasswordForm.InitialSuccess), Saved == "1" ? "Password changed." : null);
-                builder.AddAttribute(43, nameof(StorefrontAccountChangePasswordForm.Actions), PasswordActions);
-                builder.AddAttribute(44, nameof(StorefrontAccountChangePasswordForm.AntiforgeryFieldName), AntiforgeryFieldName);
-                builder.AddAttribute(45, nameof(StorefrontAccountChangePasswordForm.AntiforgeryRequestToken), AntiforgeryRequestToken);
-                builder.AddAttribute(46, nameof(StorefrontAccountChangePasswordForm.DataMode), StorefrontFeatureDataMode.BrowserFetch);
-                builder.AddAttribute(47, nameof(StorefrontAccountChangePasswordForm.Classes), AccountFormClasses);
+                builder.OpenComponent<BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm>(40);
+                builder.AddAttribute(41, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.InitialError), Error);
+                builder.AddAttribute(42, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.InitialSuccess), Saved == "1" ? StorefrontAccountViewOptions.PasswordLabels.SavedSuccess : null);
+                builder.AddAttribute(43, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.Actions), PasswordActions);
+                builder.AddAttribute(44, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.AntiforgeryFieldName), AntiforgeryFieldName);
+                builder.AddAttribute(45, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.AddAttribute(46, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(47, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.Classes), AccountFormClasses);
+                builder.AddAttribute(48, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountChangePasswordForm.Labels), StorefrontAccountViewOptions.PasswordLabels);
                 builder.CloseComponent();
                 break;
 

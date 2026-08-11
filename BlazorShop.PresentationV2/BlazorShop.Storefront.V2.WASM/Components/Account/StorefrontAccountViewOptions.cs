@@ -20,6 +20,16 @@ public static class StorefrontAccountViewOptions
         SavedSuccess = "Profile updated."
     };
 
+    public static StorefrontAccountPasswordLabels PasswordLabels { get; } = new()
+    {
+        CurrentPassword = "Current password",
+        NewPassword = "New password",
+        ConfirmNewPassword = "Confirm new password",
+        ChangePassword = "Change password",
+        Changing = "Changing...",
+        SavedSuccess = "Password changed."
+    };
+
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {
         Nav = "rounded-3xl border border-neutral-200/70 bg-white/95 p-3 text-sm shadow-lg lg:sticky lg:top-24",

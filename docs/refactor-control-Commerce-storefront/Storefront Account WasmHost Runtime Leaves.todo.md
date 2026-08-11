@@ -263,22 +263,22 @@ Goal: extract password change runtime behavior without changing password policy 
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountChangePasswordForm.razor`.
-- [ ] Move current markup and behavior from V2.WASM password form mechanically.
-- [ ] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
-- [ ] Keep `InitializePassword` and `ChangePasswordAsync` behavior equivalent.
-- [ ] Preserve `data-storefront-account-password`.
-- [ ] Preserve validation and error behavior.
-- [ ] Replace hardcoded leaf copy with `StorefrontAccountPasswordLabels` parameters.
-- [ ] Use `StorefrontAccountFormClasses` from Components contracts.
-- [ ] Preserve password field names and form model semantics.
-- [ ] Do not change password hashing, password policy, recovery policy, or backend commands.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountChangePasswordForm.razor`.
+- [x] Move current markup and behavior from V2.WASM password form mechanically.
+- [x] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
+- [x] Keep `InitializePassword` and `ChangePasswordAsync` behavior equivalent.
+- [x] Preserve `data-storefront-account-password`.
+- [x] Preserve validation and error behavior.
+- [x] Replace hardcoded leaf copy with `StorefrontAccountPasswordLabels` parameters.
+- [x] Use `StorefrontAccountFormClasses` from Components contracts.
+- [x] Preserve password field names and form model semantics.
+- [x] Do not change password hashing, password policy, recovery policy, or backend commands.
 
 Validation:
 
-- [ ] V2.WASM no longer owns password lifecycle methods.
-- [ ] Password change still goes through same-origin browser controller.
-- [ ] No direct Commerce Node or direct account API route is introduced in the component.
+- [x] V2.WASM no longer owns password lifecycle methods.
+- [x] Password change still goes through same-origin browser controller.
+- [x] No direct Commerce Node or direct account API route is introduced in the component.
 
 ## Phase 4 - Move Address Book Leaf To WasmHost
 
