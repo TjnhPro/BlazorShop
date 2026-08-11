@@ -50,6 +50,12 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Media
                     CommerceMediaAssetUploadRequest request,
                     CancellationToken cancellationToken = default);
 
+                Task<ApplicationResult<CommerceBrandingAssetResponse>> UploadBrandingAssetAsync(
+                    Guid storePublicId,
+                    string slot,
+                    CommerceMediaAssetUploadRequest request,
+                    CancellationToken cancellationToken = default);
+
         
                 Task<ApplicationResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
                     Guid storePublicId,

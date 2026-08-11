@@ -187,6 +187,31 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 cancellationToken));
         }
 
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/media/branding/{slot}")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> UploadBrandingAsset(
+            Guid storePublicId,
+            string slot,
+            IFormFile file,
+            CancellationToken cancellationToken = default)
+        {
+            if (file is null)
+            {
+                return ControlPlaneApiResponseWriter.Failure<object>(
+                    StatusCodes.Status400BadRequest,
+                    "Image file is required.");
+            }
+
+            await using var stream = file.OpenReadStream();
+            return ToActionResult(await this.gateway.UploadBrandingAssetAsync(
+                storePublicId,
+                slot,
+                new CommerceMediaAssetUploadRequest(stream, file.FileName, file.ContentType, file.Length),
+                cancellationToken));
+        }
+
         [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/media/assets/{assetPublicId:guid}")]
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> UpdateMediaAssetMetadata(

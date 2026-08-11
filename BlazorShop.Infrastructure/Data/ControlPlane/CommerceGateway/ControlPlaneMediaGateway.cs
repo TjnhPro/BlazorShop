@@ -207,6 +207,19 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
+        public Task<ApplicationResult<CommerceBrandingAssetResponse>> UploadBrandingAssetAsync(
+            Guid storePublicId,
+            string slot,
+            CommerceMediaAssetUploadRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendMediaAssetMultipartApplicationAsync<CommerceBrandingAssetResponse>(
+                storePublicId,
+                $"api/commerce/admin/media/assets/branding/{Uri.EscapeDataString(slot)}",
+                request,
+                cancellationToken);
+        }
+
         public Task<ApplicationResult<ApplicationMediaContent>> GetMediaAssetPreviewAsync(
             Guid storePublicId,
             Guid assetPublicId,

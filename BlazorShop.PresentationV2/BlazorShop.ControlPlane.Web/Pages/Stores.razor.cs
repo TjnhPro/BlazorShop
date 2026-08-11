@@ -26,6 +26,7 @@ namespace BlazorShop.ControlPlane.Web.Pages
     using BlazorShop.ControlPlane.Web.Services.Users;
     using BlazorShop.Domain.Contracts;
     using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Forms;
     using Microsoft.AspNetCore.Components.Web;
 
     public partial class Stores
@@ -77,6 +78,7 @@ namespace BlazorShop.ControlPlane.Web.Pages
         private string runtimeSupportEmail = string.Empty;
         private string runtimeSupportPhone = string.Empty;
         private const int StorePageSize = 25;
+        private const long MaxBrandingUploadBytes = 10 * 1024 * 1024;
         private int storePageNumber = 1;
         private int storeTotalCount;
         private int storeTotalPages;
@@ -355,6 +357,62 @@ namespace BlazorShop.ControlPlane.Web.Pages
                 successMessage = result.Success ? "Runtime store updated." : null;
                 errorMessage = result.Success ? null : result.Message;
             });
+        }
+
+        private Task UploadLogoAsync(InputFileChangeEventArgs args)
+        {
+            return UploadBrandingAsync(CommerceBrandingAssetSlots.Logo, args);
+        }
+
+        private Task UploadFaviconAsync(InputFileChangeEventArgs args)
+        {
+            return UploadBrandingAsync(CommerceBrandingAssetSlots.Favicon, args);
+        }
+
+        private async Task UploadBrandingAsync(string slot, InputFileChangeEventArgs args)
+        {
+            if (selectedStore is null || args.File is null)
+            {
+                return;
+            }
+
+            isSaving = true;
+            errorMessage = null;
+            successMessage = null;
+            try
+            {
+                await using var stream = args.File.OpenReadStream(MaxBrandingUploadBytes);
+                var result = await MediaClient.UploadBrandingAssetAsync(
+                    selectedStore.PublicId,
+                    slot,
+                    stream,
+                    args.File.Name,
+                    args.File.ContentType);
+                if (!result.Success || result.Data is null)
+                {
+                    errorMessage = result.Message;
+                    return;
+                }
+
+                if (result.Data.Slot == CommerceBrandingAssetSlots.Logo)
+                {
+                    runtimeLogoUrl = result.Data.EffectiveUrl;
+                }
+                else
+                {
+                    runtimeFaviconUrl = result.Data.EffectiveUrl;
+                }
+
+                successMessage = "Branding image uploaded. Save runtime settings to publish it.";
+            }
+            catch (IOException ex)
+            {
+                errorMessage = ex.Message;
+            }
+            finally
+            {
+                isSaving = false;
+            }
         }
 
         private async Task ActivateRuntimeStoreAsync()

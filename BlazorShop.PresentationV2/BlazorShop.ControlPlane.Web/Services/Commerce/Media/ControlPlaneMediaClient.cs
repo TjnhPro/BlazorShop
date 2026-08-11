@@ -144,6 +144,22 @@ namespace BlazorShop.ControlPlane.Web.Services.Commerce
                 cancellationToken);
         }
 
+        public async Task<ControlPlaneClientResult<CommerceBrandingAssetResponse>> UploadBrandingAssetAsync(
+            Guid storePublicId,
+            string slot,
+            Stream content,
+            string fileName,
+            string? contentType,
+            CancellationToken cancellationToken = default)
+        {
+            using var form = BuildMediaAssetForm(content, fileName, contentType);
+            return await this.ApiClient.PostPrivateMultipartAsync<CommerceBrandingAssetResponse>(
+                CommerceRoute(storePublicId, $"media/branding/{Uri.EscapeDataString(slot)}"),
+                form,
+                "Unable to upload branding image.",
+                cancellationToken);
+        }
+
         public Task<ControlPlaneClientResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
             Guid storePublicId,
             Guid assetPublicId,

@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject IControlPlaneNodeClient NodeClient
 @inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneMediaClient MediaClient
 
 <PageTitle>Stores</PageTitle>
 
@@ -206,22 +207,46 @@
 
                             <div class="rounded-md bg-ink-50 px-3 py-2 text-xs font-semibold uppercase text-ink-500">Branding</div>
                             <div class="grid gap-3 sm:grid-cols-2">
-                                <label class="space-y-1">
-                                    <span class="text-xs font-semibold uppercase text-ink-500">Logo URL</span>
-                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeLogoUrl" />
+                                <div class="space-y-2">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Logo (4:1)</span>
                                     @if (CanPreviewImage(runtimeLogoUrl))
                                     {
-                                        <img src="@runtimeLogoUrl" alt="Runtime store logo preview" class="mt-2 h-10 max-w-40 rounded border border-ink-200 object-contain p-1" />
+                                        <img src="@runtimeLogoUrl" alt="Runtime store logo preview" class="h-16 w-full rounded border border-ink-200 object-contain p-1" />
                                     }
-                                </label>
-                                <label class="space-y-1">
-                                    <span class="text-xs font-semibold uppercase text-ink-500">Favicon URL</span>
-                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeFaviconUrl" />
+                                    <label class="cp-button cp-button-secondary inline-flex cursor-pointer justify-center">
+                                        <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                                        @(string.IsNullOrWhiteSpace(runtimeLogoUrl) ? "Upload logo" : "Replace logo")
+                                        <InputFile class="sr-only" OnChange="UploadLogoAsync" accept="image/png,image/webp" />
+                                    </label>
+                                </div>
+                                <div class="space-y-2">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Favicon (1:1)</span>
                                     @if (CanPreviewImage(runtimeFaviconUrl))
                                     {
-                                        <img src="@runtimeFaviconUrl" alt="Runtime store favicon preview" class="mt-2 h-10 w-10 rounded border border-ink-200 object-contain p-1" />
+                                        <img src="@runtimeFaviconUrl" alt="Runtime store favicon preview" class="h-16 w-16 rounded border border-ink-200 object-contain p-1" />
                                     }
-                                </label>
+                                    <label class="cp-button cp-button-secondary inline-flex cursor-pointer justify-center">
+                                        <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                                        @(string.IsNullOrWhiteSpace(runtimeFaviconUrl) ? "Upload favicon" : "Replace favicon")
+                                        <InputFile class="sr-only" OnChange="UploadFaviconAsync" accept="image/png,image/webp" />
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="rounded border border-ink-200 p-3 text-xs text-ink-600">
+                                <p class="font-semibold text-ink-700">Advanced URLs</p>
+                                <p class="mt-1">Manual URLs remain supported for migrations and externally hosted assets.</p>
+                                <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                                    <label class="space-y-1">
+                                        <span class="text-xs font-semibold uppercase text-ink-500">Logo URL</span>
+                                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeLogoUrl" />
+                                    </label>
+                                    <label class="space-y-1">
+                                        <span class="text-xs font-semibold uppercase text-ink-500">Favicon URL</span>
+                                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeFaviconUrl" />
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="grid gap-3 sm:grid-cols-2">
                                 <label class="space-y-1">
                                     <span class="text-xs font-semibold uppercase text-ink-500">PNG icon URL</span>
                                     <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimePngIconUrl" />

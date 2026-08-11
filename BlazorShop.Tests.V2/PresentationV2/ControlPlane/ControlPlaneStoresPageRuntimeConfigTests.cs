@@ -59,6 +59,21 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             Assert.Contains("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$", markup);
         }
 
+        [Fact]
+        public void StoresPage_UploadsBrandingThroughTheControlPlaneMediaClientAndKeepsManualUrls()
+        {
+            var markup = ReadControlPlanePageSource("Stores");
+
+            Assert.Contains("IControlPlaneMediaClient MediaClient", markup);
+            Assert.Contains("UploadLogoAsync", markup);
+            Assert.Contains("UploadFaviconAsync", markup);
+            Assert.Contains("UploadBrandingAssetAsync", markup);
+            Assert.Contains("runtimeLogoUrl = result.Data.EffectiveUrl", markup);
+            Assert.Contains("runtimeFaviconUrl = result.Data.EffectiveUrl", markup);
+            Assert.Contains("Manual URLs remain supported", markup);
+            Assert.DoesNotContain("CommerceNode.API", markup, StringComparison.OrdinalIgnoreCase);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

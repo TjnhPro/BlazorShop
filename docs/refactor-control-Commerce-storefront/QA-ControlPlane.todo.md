@@ -184,6 +184,7 @@ Status legend:
 - [x] Browser network capture shows ControlPlane Web calls only ControlPlane API when editing runtime store config. 2026-07-15: Playwright network capture showed `/api/controlplane/commerce/.../runtime-store` requests only on `localhost:5280`.
 - [x] Browser never receives Commerce Node node key, node secret, or direct `api/commerce/*` URL during runtime config edit. 2026-07-15: Playwright network filter found no `localhost:5180`, `/api/internal`, or direct `/api/commerce/*` calls from ControlPlane Web during edit/save.
 - [x] StoreRegistry fields remain platform registry data only; runtime profile fields are not duplicated into ControlPlane DB. 2026-07-15: ControlPlane UI kept registry `Name`/node/metadata separate from runtime Identity/Branding/Locale/Contact groups; focused `ControlPlaneStoresPageRuntimeConfigTests` passed.
+- [x] Stores branding controls upload/replace logo and favicon through ControlPlane API, place returned effective URLs into the existing runtime fields, and retain manual URL compatibility. 2026-08-11: `ControlPlaneStoresPageRuntimeConfigTests` focused run passed with ControlPlane-only client wiring.
 
 ## Catalog Product Media
 

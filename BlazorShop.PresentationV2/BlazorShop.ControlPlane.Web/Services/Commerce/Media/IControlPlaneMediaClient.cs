@@ -82,6 +82,14 @@ namespace BlazorShop.ControlPlane.Web.Services.Commerce
             string? contentType,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneClientResult<CommerceBrandingAssetResponse>> UploadBrandingAssetAsync(
+            Guid storePublicId,
+            string slot,
+            Stream content,
+            string fileName,
+            string? contentType,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneClientResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
             Guid storePublicId,
             Guid assetPublicId,
