@@ -212,22 +212,22 @@ Exit criteria:
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/`.
-- [ ] Move or recreate `StorefrontCartViewClasses` under `Contracts/Cart`.
-- [ ] Keep the public shape needed by the existing cart markup.
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/`.
-- [ ] Move or recreate `StorefrontCheckoutViewClasses` under `Contracts/Checkout`.
-- [ ] Keep the public shape needed by the existing checkout shell markup.
-- [ ] Delete the old class contract definitions from V2.WASM after all references are migrated.
-- [ ] Update namespaces to `BlazorShop.Storefront.Components.Contracts.Cart` and `BlazorShop.Storefront.Components.Contracts.Checkout`.
-- [ ] Ensure Components contracts remain browser-safe and do not depend on V2.WASM.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/`. Evidence: added `StorefrontCartViewClasses.cs` at the contract path.
+- [x] Move or recreate `StorefrontCartViewClasses` under `Contracts/Cart`. Evidence: the cart class record now has the shared Cart contract namespace.
+- [x] Keep the public shape needed by the existing cart markup. Evidence: all public properties and `Empty` were preserved verbatim.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/`. Evidence: added `StorefrontCheckoutViewClasses.cs` at the contract path.
+- [x] Move or recreate `StorefrontCheckoutViewClasses` under `Contracts/Checkout`. Evidence: the checkout class record now has the shared Checkout contract namespace.
+- [x] Keep the public shape needed by the existing checkout shell markup. Evidence: all public properties and `Empty` were preserved verbatim.
+- [x] Delete the old class contract definitions from V2.WASM after all references are migrated. Evidence: both former V2.WASM definition files were deleted.
+- [x] Update namespaces to `BlazorShop.Storefront.Components.Contracts.Cart` and `BlazorShop.Storefront.Components.Contracts.Checkout`. Evidence: the new contract files and V2.WASM imports use those namespaces.
+- [x] Ensure Components contracts remain browser-safe and do not depend on V2.WASM. Evidence: contract files contain only records/properties and the Components project remains a plain class library.
 
 Guardrails:
 
-- [ ] Do not move final Tailwind values into Components.
-- [ ] Do not move V2 options into Components.
-- [ ] Do not add service registrations in Components.
-- [ ] Do not add `Microsoft.AspNetCore.Components.WebAssembly` dependencies to Components.
+- [x] Do not move final Tailwind values into Components. Evidence: final values remain in `StorefrontCartViewOptions` and `StorefrontCheckoutShellOptions` in V2.WASM.
+- [x] Do not move V2 options into Components. Evidence: both options classes remain in their V2.WASM component folders.
+- [x] Do not add service registrations in Components. Evidence: no Components project/service registration changes were made.
+- [x] Do not add `Microsoft.AspNetCore.Components.WebAssembly` dependencies to Components. Evidence: Components project package references are unchanged.
 
 Focused checks:
 
@@ -240,9 +240,9 @@ rg "StorefrontCheckoutViewClasses" BlazorShop.PresentationV2/BlazorShop.Storefro
 
 Exit criteria:
 
-- [ ] Exactly one cart class contract definition remains, under Components contracts.
-- [ ] Exactly one checkout class contract definition remains, under Components contracts.
-- [ ] V2.WASM references the shared contracts but does not define them.
+- [x] Exactly one cart class contract definition remains, under Components contracts. Evidence: prescribed `rg` and the focused ownership test find only `Contracts/Cart/StorefrontCartViewClasses.cs`.
+- [x] Exactly one checkout class contract definition remains, under Components contracts. Evidence: prescribed `rg` and the focused ownership test find only `Contracts/Checkout/StorefrontCheckoutViewClasses.cs`.
+- [x] V2.WASM references the shared contracts but does not define them. Evidence: V2.WASM options and Razor imports consume the shared types; old definitions were deleted.
 
 ## Phase 2 - Add Label Contracts
 

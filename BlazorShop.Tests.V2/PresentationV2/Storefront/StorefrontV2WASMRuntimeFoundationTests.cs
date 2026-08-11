@@ -65,6 +65,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void CartAndCheckoutClassContracts_AreDefinedOnceInSharedComponentsContracts()
+        {
+            var presentationRoot = ResolveRepositoryPath("BlazorShop.PresentationV2");
+            var cartDefinitions = FindContractDefinitions(presentationRoot, "StorefrontCartViewClasses");
+            var checkoutDefinitions = FindContractDefinitions(presentationRoot, "StorefrontCheckoutViewClasses");
+
+            Assert.Equal(
+                new[]
+                {
+                    "BlazorShop.Storefront.Components/Contracts/Cart/StorefrontCartViewClasses.cs"
+                },
+                cartDefinitions);
+            Assert.Equal(
+                new[]
+                {
+                    "BlazorShop.Storefront.Components/Contracts/Checkout/StorefrontCheckoutViewClasses.cs"
+                },
+                checkoutDefinitions);
+
+            var cartOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewOptions.cs");
+            var checkoutOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutShellOptions.cs");
+
+            Assert.Contains("using BlazorShop.Storefront.Components.Contracts.Cart;", cartOptions, StringComparison.Ordinal);
+            Assert.Contains("using BlazorShop.Storefront.Components.Contracts.Checkout;", checkoutOptions, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void WasmTailwindPipeline_OwnsInteractiveCssWithoutScanningOtherProjects()
         {
             var package = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json");
@@ -622,6 +649,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(ResolveRepositoryPath(relativePath));
+        }
+
+        private static string[] FindContractDefinitions(string presentationRoot, string typeName)
+        {
+            return Directory
+                .EnumerateFiles(presentationRoot, "*.cs", SearchOption.AllDirectories)
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .Where(path => File.ReadAllText(path).Contains($"public sealed record {typeName}", StringComparison.Ordinal))
+                .Select(path => Path.GetRelativePath(presentationRoot, path).Replace('\\', '/'))
+                .Order(StringComparer.Ordinal)
+                .ToArray();
         }
 
         private static string ResolveRepositoryPath(string relativePath)

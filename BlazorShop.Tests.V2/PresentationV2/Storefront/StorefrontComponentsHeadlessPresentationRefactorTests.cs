@@ -11,6 +11,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Brand/StorefrontBrandLogoClasses.cs",
             "Brand/StorefrontBrandLogoContext.cs",
             "Cart/CartLabels.cs",
+            "Cart/StorefrontCartViewClasses.cs",
             "Catalog/CatalogFilterCategoryOption.cs",
             "Catalog/ProductSummaryCardClasses.cs",
             "Catalog/ProductSummaryItem.cs",
@@ -22,6 +23,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             "Catalog/StorefrontDiscountedProductRailResponse.cs",
             "Catalog/StorefrontDiscountedProductRailState.cs",
             "Checkout/CheckoutLabels.cs",
+            "Checkout/StorefrontCheckoutViewClasses.cs",
             "Components/StorefrontComponentCategory.cs",
             "Components/StorefrontComponentDescriptor.cs",
             "Components/StorefrontComponentDescriptorValidationResult.cs",
@@ -141,7 +143,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var actual = EnumerateComponentContractFiles("*.cs");
 
             Assert.Equal(ExpectedContractModelAndEnumFiles, actual);
-            Assert.Equal(48, actual.Length);
+            Assert.Equal(50, actual.Length);
         }
 
         [Fact]
@@ -243,8 +245,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var headlessSource = ReadComponentLayerSource("Headless");
             var v2ClassSource =
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Account/StorefrontAccountViewClasses.cs")
-                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartViewClasses.cs")
-                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutViewClasses.cs");
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Cart/StorefrontCartViewClasses.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Contracts/Checkout/StorefrontCheckoutViewClasses.cs");
 
             foreach (var classBag in new[]
             {

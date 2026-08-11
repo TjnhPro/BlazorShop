@@ -1,3 +1,5 @@
+using BlazorShop.Storefront.Components.Contracts.Cart;
+
 namespace BlazorShop.Storefront.V2.WASM.Components.Cart;
 
 public static class StorefrontCartViewOptions

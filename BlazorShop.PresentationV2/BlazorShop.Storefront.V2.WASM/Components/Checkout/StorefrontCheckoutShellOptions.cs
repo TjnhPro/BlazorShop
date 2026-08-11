@@ -1,3 +1,5 @@
+using BlazorShop.Storefront.Components.Contracts.Checkout;
+
 namespace BlazorShop.Storefront.V2.WASM.Components.Checkout;
 
 public static class StorefrontCheckoutShellOptions
