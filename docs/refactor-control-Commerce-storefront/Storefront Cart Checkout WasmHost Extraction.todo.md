@@ -386,7 +386,7 @@ Guardrails:
 Exit criteria:
 
 - [x] V2.WASM owns cart presentation values only.
-- [ ] `CartPage.razor` renders the wrapper, not the shared component directly unless an explicit namespace alias is used.
+- [x] `CartPage.razor` renders the wrapper, not the shared component directly unless an explicit namespace alias is used. Completed in Phase 7 because page placement is Phase 7 ownership.
 
 ## Phase 6 - Create V2.WASM Checkout Wrapper
 
@@ -413,37 +413,37 @@ Guardrails:
 Exit criteria:
 
 - [x] V2.WASM owns checkout presentation values only.
-- [ ] `CheckoutPage.razor` renders the V2 wrapper with `ShowPanel=false`.
+- [x] `CheckoutPage.razor` renders the V2 wrapper with `ShowPanel=false`. Completed in Phase 7 because page placement is Phase 7 ownership.
 
 ## Phase 7 - Update V2 Page Integration
 
 Cart page:
 
-- [ ] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` to render `StorefrontCartSection`.
-- [ ] Keep `@rendermode="InteractiveWebAssembly"` on the page component usage.
-- [ ] Preserve route, page title, metadata, and surrounding V2 layout.
-- [ ] Preserve current empty-cart and loaded-cart behavior.
+- [x] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor` to render `StorefrontCartSection`.
+- [x] Keep `@rendermode="InteractiveWebAssembly"` on the page component usage.
+- [x] Preserve route, page title, metadata, and surrounding V2 layout.
+- [x] Preserve current empty-cart and loaded-cart behavior.
 
 Checkout page:
 
-- [ ] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor` to render `StorefrontCheckoutSection`.
-- [ ] Keep `@rendermode="InteractiveWebAssembly"` on the page component usage.
-- [ ] Keep `ShowPanel=false` in the same places it is currently used unless explicitly approved otherwise.
-- [ ] Preserve the visible SSR checkout form components.
-- [ ] Preserve current checkout redirects.
-- [ ] Preserve COD place-order flow.
+- [x] Update `BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor` to render `StorefrontCheckoutSection`.
+- [x] Keep `@rendermode="InteractiveWebAssembly"` on the page component usage.
+- [x] Keep `ShowPanel=false` in the same places it is currently used unless explicitly approved otherwise.
+- [x] Preserve the visible SSR checkout form components.
+- [x] Preserve current checkout redirects.
+- [x] Preserve COD place-order flow.
 
 Imports:
 
-- [ ] Update `BlazorShop.Storefront.V2/_Imports.razor` to reference V2.WASM wrapper namespaces.
-- [ ] Remove imports that point V2 server pages directly at old V2.WASM implementation namespaces if no longer needed.
-- [ ] Avoid ambiguous component names between WasmHost and V2.WASM.
+- [x] Update `BlazorShop.Storefront.V2/_Imports.razor` to reference V2.WASM wrapper namespaces.
+- [x] Remove imports that point V2 server pages directly at old V2.WASM implementation namespaces if no longer needed.
+- [x] Avoid ambiguous component names between WasmHost and V2.WASM.
 
 Exit criteria:
 
-- [ ] Cart page behavior is unchanged.
-- [ ] Checkout page behavior is unchanged.
-- [ ] Render mode remains owned by V2 page placement, not WasmHost.
+- [x] Cart page behavior is unchanged.
+- [x] Checkout page behavior is unchanged.
+- [x] Render mode remains owned by V2 page placement, not WasmHost. V2 build passed with 0 warnings/errors.
 
 ## Phase 8 - Rewrite Architecture Tests
 

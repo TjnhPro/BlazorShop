@@ -1,15 +1,14 @@
 @using BlazorShop.Storefront.Presentation.Services.Cart
 @using BlazorShop.Storefront.Presentation.Contracts
 
-<StorefrontCartView InitialCart="Context.Cart"
-                    InitialAlerts="Context.Alerts"
-                    DataMode="StorefrontFeatureDataMode.InitialSnapshot"
-                    Actions="@Context.CartActions"
-                    Classes="StorefrontCartViewOptions.Classes"
-                    CheckoutUrl="@Context.CheckoutUrl"
-                    ContinueShoppingUrl="@Context.ContinueShoppingUrl"
-                    SecondaryShoppingUrl="@Context.Links.Home.Href"
-                    @rendermode="InteractiveWebAssembly" />
+<StorefrontCartSection InitialCart="Context.Cart"
+                       InitialAlerts="Context.Alerts"
+                       DataMode="StorefrontFeatureDataMode.InitialSnapshot"
+                       Actions="@Context.CartActions"
+                       CheckoutUrl="@Context.CheckoutUrl"
+                       ContinueShoppingUrl="@Context.ContinueShoppingUrl"
+                       SecondaryShoppingUrl="@Context.Links.Home.Href"
+                       @rendermode="InteractiveWebAssembly" />
 
 @code {
     [Parameter, EditorRequired]
