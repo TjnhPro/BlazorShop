@@ -30,6 +30,28 @@ public static class StorefrontAccountViewOptions
         SavedSuccess = "Password changed."
     };
 
+    public static StorefrontAccountAddressBookLabels AddressLabels { get; } = new()
+    {
+        AddAddress = "Add address",
+        SaveAddress = "Save address",
+        NoSavedAddresses = "No saved addresses yet.",
+        DefaultShipping = "Default shipping",
+        DefaultBilling = "Default billing",
+        Update = "Update",
+        Delete = "Delete",
+        FullName = "Full name",
+        Company = "Company",
+        Email = "Email",
+        Phone = "Phone",
+        AddressLine1 = "Address line 1",
+        AddressLine2 = "Address line 2",
+        City = "City",
+        StateProvince = "State / province",
+        PostalCode = "Postal code",
+        CountryCode = "Country code",
+        SavedSuccess = "Address book updated."
+    };
+
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {
         Nav = "rounded-3xl border border-neutral-200/70 bg-white/95 p-3 text-sm shadow-lg lg:sticky lg:top-24",

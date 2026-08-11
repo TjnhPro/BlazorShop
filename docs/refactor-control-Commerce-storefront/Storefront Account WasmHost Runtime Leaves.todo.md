@@ -286,26 +286,26 @@ Goal: extract the account address browser CRUD leaf while keeping address behavi
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountAddressBook.razor`.
-- [ ] Move current markup and behavior from V2.WASM address book mechanically.
-- [ ] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
-- [ ] Keep `InitializeAddresses` behavior equivalent.
-- [ ] Keep `HydrateAddressesAsync` behavior equivalent.
-- [ ] Keep `CreateAddressAsync` behavior equivalent.
-- [ ] Keep `UpdateAddressAsync` behavior equivalent.
-- [ ] Keep `DeleteAddressAsync` behavior equivalent.
-- [ ] Keep `SetDefaultAddressAsync` behavior equivalent.
-- [ ] Preserve `data-storefront-account-addresses`.
-- [ ] Preserve validation, editing, cancel, delete, and default-address behavior.
-- [ ] Replace hardcoded leaf copy with `StorefrontAccountAddressBookLabels` parameters.
-- [ ] Use `StorefrontAccountAddressBookClasses` from Components contracts.
-- [ ] Do not change address DTOs, country/state lookup, order snapshot behavior, or account backend validation.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountAddressBook.razor`.
+- [x] Move current markup and behavior from V2.WASM address book mechanically.
+- [x] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
+- [x] Keep `InitializeAddresses` behavior equivalent.
+- [x] Keep `HydrateAddressesAsync` behavior equivalent.
+- [x] Keep `CreateAddressAsync` behavior equivalent.
+- [x] Keep `UpdateAddressAsync` behavior equivalent.
+- [x] Keep `DeleteAddressAsync` behavior equivalent.
+- [x] Keep `SetDefaultAddressAsync` behavior equivalent.
+- [x] Preserve `data-storefront-account-addresses`.
+- [x] Preserve validation, editing, cancel, delete, and default-address behavior.
+- [x] Replace hardcoded leaf copy with `StorefrontAccountAddressBookLabels` parameters.
+- [x] Use `StorefrontAccountAddressBookClasses` from Components contracts.
+- [x] Do not change address DTOs, country/state lookup, order snapshot behavior, or account backend validation.
 
 Validation:
 
-- [ ] V2.WASM no longer owns address lifecycle methods.
-- [ ] Create/update/delete/default operations still call the browser account controller.
-- [ ] Address book retains current semantic hooks for Playwright.
+- [x] V2.WASM no longer owns address lifecycle methods.
+- [x] Create/update/delete/default operations still call the browser account controller.
+- [x] Address book retains current semantic hooks for Playwright.
 
 ## Phase 5 - Move Order List Leaf To WasmHost
 

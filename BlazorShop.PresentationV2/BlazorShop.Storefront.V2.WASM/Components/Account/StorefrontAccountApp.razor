@@ -107,14 +107,15 @@
                 break;
 
             case AccountRouteKind.Addresses:
-                builder.OpenComponent<StorefrontAccountAddressBook>(10);
-                builder.AddAttribute(11, nameof(StorefrontAccountAddressBook.InitialError), Error);
-                builder.AddAttribute(12, nameof(StorefrontAccountAddressBook.InitialSuccess), Saved == "1" ? "Address book updated." : null);
-                builder.AddAttribute(13, nameof(StorefrontAccountAddressBook.Actions), AddressActions);
-                builder.AddAttribute(14, nameof(StorefrontAccountAddressBook.AntiforgeryFieldName), AntiforgeryFieldName);
-                builder.AddAttribute(15, nameof(StorefrontAccountAddressBook.AntiforgeryRequestToken), AntiforgeryRequestToken);
-                builder.AddAttribute(16, nameof(StorefrontAccountAddressBook.DataMode), StorefrontFeatureDataMode.BrowserFetch);
-                builder.AddAttribute(17, nameof(StorefrontAccountAddressBook.Classes), AddressClasses);
+                builder.OpenComponent<BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook>(10);
+                builder.AddAttribute(11, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.InitialError), Error);
+                builder.AddAttribute(12, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.InitialSuccess), Saved == "1" ? StorefrontAccountViewOptions.AddressLabels.SavedSuccess : null);
+                builder.AddAttribute(13, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.Actions), AddressActions);
+                builder.AddAttribute(14, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.AntiforgeryFieldName), AntiforgeryFieldName);
+                builder.AddAttribute(15, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.AddAttribute(16, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(17, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.Classes), AddressClasses);
+                builder.AddAttribute(18, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountAddressBook.Labels), StorefrontAccountViewOptions.AddressLabels);
                 builder.CloseComponent();
                 break;
 
