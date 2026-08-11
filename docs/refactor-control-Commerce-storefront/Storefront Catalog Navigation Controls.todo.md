@@ -857,28 +857,28 @@ Goal: ensure reusable packages do not inherit V2 visual ownership.
 
 Update:
 
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentVisualNeutralityTests.cs`.
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontBrandingMarkupTests.cs` if it tracks component literals.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontComponentVisualNeutralityTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontBrandingMarkupTests.cs` audited; it does not track component literals.
 
 Assertions:
 
-- [ ] include `Components.Primitives/Navigation/StorefrontPagination.razor` in scanned paths.
-- [ ] include `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` in scanned paths.
-- [ ] include `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` in scanned paths.
-- [ ] reusable components contain no literal Tailwind class strings such as `rounded-`, `bg-`, `text-`, `shadow`, `px-`, `mx-`, `sm:`, `md:`, `lg:`, `xl:`.
-- [ ] reusable components use `class="@..."` or computed host-supplied classes.
-- [ ] V2 files may contain final classes.
+- [x] include `Components.Primitives/Navigation/StorefrontPagination.razor` in scanned paths.
+- [x] include `Components.Ssr/Catalog/StorefrontCatalogFilterPanel.razor` in scanned paths.
+- [x] include `Components.Ssr/Navigation/StorefrontBreadcrumb.razor` in scanned paths.
+- [x] reusable components contain no literal Tailwind class strings such as `rounded-`, `bg-`, `text-`, `shadow`, `px-`, `mx-`, `sm:`, `md:`, `lg:`, `xl:`.
+- [x] reusable components use `class="@..."` or computed host-supplied classes.
+- [x] V2 files may contain final classes.
 
 Negative fixtures:
 
-- [ ] fixture fails if pagination primitive includes a literal Tailwind class.
-- [ ] fixture fails if SSR filter includes a literal V2 class.
-- [ ] fixture fails if SSR breadcrumb includes a literal V2 class.
+- [x] fixture fails if pagination primitive includes a literal Tailwind class.
+- [x] fixture fails if SSR filter includes a literal V2 class.
+- [x] fixture fails if SSR breadcrumb includes a literal V2 class.
 
 Exit criteria:
 
-- [ ] reusable packages remain visually neutral;
-- [ ] V2 remains final visual owner.
+- [x] reusable packages remain visually neutral;
+- [x] V2 remains final visual owner.
 
 ## Phase 3.3.18 - Functional Browser QA
 
