@@ -535,12 +535,12 @@ dotnet build BlazorShop.sln --no-restore
 
 Expected result:
 
-- [ ] Components builds independently.
-- [ ] Browser builds independently.
-- [ ] WasmHost builds without V2 references.
-- [ ] V2.WASM builds with moved leaf imports.
-- [ ] V2 builds with AccountHostPage render-mode placement unchanged.
-- [ ] Full solution build passes.
+- [x] Components builds independently. 2026-08-11: 0 warnings/errors.
+- [x] Browser builds independently. 2026-08-11: 0 warnings/errors.
+- [x] WasmHost builds without V2 references. 2026-08-11: 0 warnings/errors.
+- [x] V2.WASM builds with moved leaf imports. 2026-08-11: 0 warnings/errors.
+- [x] V2 builds with AccountHostPage render-mode placement unchanged. 2026-08-11: 0 warnings/errors.
+- [x] Full solution build passes. 2026-08-11: 0 errors; existing MessagePack vulnerability and Browserslist database warnings remain.
 
 If build fails:
 
