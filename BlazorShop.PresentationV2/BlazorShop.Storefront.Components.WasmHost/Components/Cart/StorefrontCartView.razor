@@ -1,6 +1,4 @@
-@using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser.Cart
-@using BlazorShop.Storefront.Components.Headless.Cart
+@namespace BlazorShop.Storefront.Components.WasmHost.Components.Cart
 @inject IStorefrontBrowserCartController CartController
 
 <section class="@Classes.PageSection">
@@ -9,13 +7,13 @@
             <header class="@Classes.HeaderCard">
                 <div class="@Classes.HeaderLayout">
                     <div>
-                        <p class="@Classes.Eyebrow">Storefront Cart</p>
-                        <h1 class="@Classes.HeaderTitle">My Cart</h1>
-                        <p class="@Classes.BodyText">Review the items you picked from the public storefront before you continue to checkout.</p>
+                        <p class="@Classes.Eyebrow">@Labels.HeaderEyebrow</p>
+                        <h1 class="@Classes.HeaderTitle">@Labels.Heading</h1>
+                        <p class="@Classes.BodyText">@Labels.IntroductoryText</p>
                     </div>
 
                     <div class="@Classes.CountBadge">
-                        @ViewState.ItemCount item@(ViewState.ItemCount == 1 ? string.Empty : "s") in cart
+                        @ViewState.ItemCount @(ViewState.ItemCount == 1 ? Labels.ItemCountSingular : Labels.ItemCountPlural) @Labels.ItemCountSuffix
                     </div>
                 </div>
             </header>
@@ -30,11 +28,11 @@
             @if (Lines.Count == 0)
             {
                 <div class="@Classes.EmptyState">
-                    <h2 class="@Classes.EmptyTitle">Your cart is empty</h2>
-                    <p class="@Classes.BodyText">Add products from the storefront and they will appear here for review before checkout.</p>
+                    <h2 class="@Classes.EmptyTitle">@Labels.EmptyHeading</h2>
+                    <p class="@Classes.BodyText">@Labels.EmptyText</p>
                     <div class="@Classes.EmptyActions">
-                        <a href="@ContinueShoppingUrl" class="@Classes.PrimaryLink">Browse Products</a>
-                        <a href="@SecondaryShoppingUrl" class="@Classes.SecondaryLink">Back to Home</a>
+                        <a href="@ContinueShoppingUrl" class="@Classes.PrimaryLink">@Labels.BrowseProducts</a>
+                        <a href="@SecondaryShoppingUrl" class="@Classes.SecondaryLink">@Labels.BackToHome</a>
                     </div>
                 </div>
             }
@@ -52,7 +50,7 @@
                                     }
                                     else
                                     {
-                                        <span>Item</span>
+                                        <span>@Labels.FallbackItemText</span>
                                     }
                                 </div>
 
@@ -79,12 +77,12 @@
                                     <div class="@Classes.LineControls">
                                         <div class="@Classes.LineMetrics">
                                             <div>
-                                                <p class="@Classes.MetricLabel">Unit Price</p>
+                                                <p class="@Classes.MetricLabel">@Labels.UnitPrice</p>
                                                 <p class="@Classes.MetricValue">@line.UnitPriceDisplay</p>
                                             </div>
 
                                             <label>
-                                                <span class="@Classes.MetricLabel">Quantity</span>
+                                                <span class="@Classes.MetricLabel">@Labels.Quantity</span>
                                                 <input type="number"
                                                        min="@line.QuantityMinimum"
                                                        max="@line.QuantityMaximum"
@@ -102,14 +100,14 @@
                                             </label>
 
                                             <div>
-                                                <p class="@Classes.MetricLabel">Line Total</p>
+                                                <p class="@Classes.MetricLabel">@Labels.LineTotal</p>
                                                 <p class="@Classes.MetricValue">@line.LineTotalDisplay</p>
                                             </div>
                                         </div>
 
                                         @if (!string.IsNullOrWhiteSpace(line.ProductUrl))
                                         {
-                                            <a href="@line.ProductUrl" class="@Classes.PrimaryLink">View Product</a>
+                                            <a href="@line.ProductUrl" class="@Classes.PrimaryLink">@Labels.ViewProduct</a>
                                         }
 
                                         <button type="button"
@@ -122,7 +120,7 @@
                                                 data-size-value="@line.VariantLabel"
                                                 @onclick="() => RemoveLineAsync(line)"
                                                 class="@Classes.RemoveButton">
-                                            Remove
+                                            @Labels.Remove
                                         </button>
                                     </div>
                                 </div>
@@ -135,20 +133,20 @@
 
         <aside class="@Classes.SummaryAside">
             <div class="@Classes.SummaryCard">
-                <p class="@Classes.Eyebrow">Order Summary</p>
-                <h2 class="@Classes.EmptyTitle">Ready for checkout</h2>
+                <p class="@Classes.Eyebrow">@Labels.OrderSummary</p>
+                <h2 class="@Classes.EmptyTitle">@Labels.ReadyForCheckout</h2>
 
                 <dl class="@Classes.SummaryRows">
                     <div class="@Classes.SummaryRow">
-                        <dt>Items</dt>
+                        <dt>@Labels.Items</dt>
                         <dd>@ViewState.ItemCount</dd>
                     </div>
                     <div class="@Classes.SummaryRow">
-                        <dt>Subtotal</dt>
+                        <dt>@Labels.Subtotal</dt>
                         <dd>@GrandTotalDisplay</dd>
                     </div>
                     <div class="@Classes.SummaryRow">
-                        <dt>Total</dt>
+                        <dt>@Labels.Total</dt>
                         <dd>@GrandTotalDisplay</dd>
                     </div>
                 </dl>
@@ -158,24 +156,24 @@
                     {
                         @if (ViewState.CheckoutAllowed)
                         {
-                            <a href="@CheckoutUrl" class="@Classes.CheckoutButton">Continue to Checkout</a>
+                            <a href="@CheckoutUrl" class="@Classes.CheckoutButton">@Labels.ContinueToCheckout</a>
                         }
                         else
                         {
-                            <button type="button" disabled class="@Classes.DisabledCheckoutButton">Continue to Checkout</button>
+                            <button type="button" disabled class="@Classes.DisabledCheckoutButton">@Labels.ContinueToCheckout</button>
                         }
-                        <p class="@Classes.BodyText">Checkout continues through an authenticated handoff so payment and order history stay attached to your profile.</p>
+                        <p class="@Classes.BodyText">@Labels.CheckoutHandoffText</p>
 
                         <button type="button"
                                 disabled="@CartController.IsClearDisabled()"
                                 data-storefront-cart-clear
                                 @onclick="ClearCartAsync"
                                 class="@Classes.ClearButton">
-                            Clear Cart
+                            @Labels.ClearCart
                         </button>
                     }
 
-                    <a href="@ContinueShoppingUrl" class="@Classes.PrimaryLink">Keep Shopping</a>
+                    <a href="@ContinueShoppingUrl" class="@Classes.PrimaryLink">@Labels.KeepShopping</a>
                 </div>
             </div>
         </aside>
@@ -199,6 +197,9 @@
     public StorefrontCartViewClasses Classes { get; set; } = default!;
 
     [Parameter, EditorRequired]
+    public StorefrontCartViewLabels Labels { get; set; } = default!;
+
+    [Parameter, EditorRequired]
     public string CheckoutUrl { get; set; } = default!;
 
     [Parameter, EditorRequired]
@@ -220,6 +221,7 @@
         ArgumentNullException.ThrowIfNull(InitialAlerts);
         ArgumentNullException.ThrowIfNull(Actions);
         ArgumentNullException.ThrowIfNull(Classes);
+        ArgumentNullException.ThrowIfNull(Labels);
         ArgumentException.ThrowIfNullOrWhiteSpace(CheckoutUrl);
         ArgumentException.ThrowIfNullOrWhiteSpace(ContinueShoppingUrl);
         ArgumentException.ThrowIfNullOrWhiteSpace(SecondaryShoppingUrl);

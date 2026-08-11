@@ -146,6 +146,76 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void CartRuntime_IsOwnedByNeutralWasmHostComponentWithExactSemanticHooks()
+        {
+            const string wasmHostPath =
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Cart/StorefrontCartView.razor";
+            const string retiredV2WasmPath =
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Cart/StorefrontCartView.razor";
+
+            Assert.True(File.Exists(ResolveRepositoryPath(wasmHostPath)), $"Missing WasmHost cart runtime: {wasmHostPath}");
+            Assert.False(File.Exists(ResolveRepositoryPath(retiredV2WasmPath)), $"V2.WASM still owns the cart runtime: {retiredV2WasmPath}");
+
+            var cartView = ReadRepositoryFile(wasmHostPath);
+
+            Assert.Contains("@namespace BlazorShop.Storefront.Components.WasmHost.Components.Cart", cartView, StringComparison.Ordinal);
+            Assert.Contains("@inject IStorefrontBrowserCartController CartController", cartView, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontCartViewClasses Classes { get; set; } = default!;", cartView, StringComparison.Ordinal);
+            Assert.Contains("public StorefrontCartViewLabels Labels { get; set; } = default!;", cartView, StringComparison.Ordinal);
+            Assert.Equal(9, CountOccurrences(cartView, "[Parameter, EditorRequired]"));
+
+            foreach (var lifecycleCall in new[]
+            {
+                "CartController.Initialize(InitialCart, InitialAlerts, DataMode, Actions)",
+                "CartController.HydrateAsync()",
+                "CartController.UpdateQuantityAsync(line.LineId, value)",
+                "CartController.RemoveLineAsync(line.LineId)",
+                "CartController.ClearAsync()"
+            })
+            {
+                Assert.Contains(lifecycleCall, cartView, StringComparison.Ordinal);
+            }
+
+            var expectedSemanticHookCounts = new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                ["data-storefront-cart-quantity"] = 1,
+                ["data-line-id"] = 2,
+                ["data-product-id"] = 2,
+                ["data-variant-id"] = 2,
+                ["data-product-name"] = 2,
+                ["data-size-value"] = 2,
+                ["data-storefront-cart-remove"] = 1,
+                ["data-storefront-cart-clear"] = 1
+            };
+
+            foreach (var (hook, expectedCount) in expectedSemanticHookCounts)
+            {
+                Assert.Equal(expectedCount, CountOccurrences(cartView, hook));
+            }
+
+            foreach (var label in new[]
+            {
+                "HeaderEyebrow", "Heading", "IntroductoryText", "ItemCountSingular", "ItemCountPlural", "ItemCountSuffix",
+                "EmptyHeading", "EmptyText", "BrowseProducts", "BackToHome", "FallbackItemText", "UnitPrice", "Quantity",
+                "LineTotal", "ViewProduct", "Remove", "OrderSummary", "ReadyForCheckout", "Items", "Subtotal", "Total",
+                "ContinueToCheckout", "CheckoutHandoffText", "ClearCart", "KeepShopping"
+            })
+            {
+                Assert.Contains($"Labels.{label}", cartView, StringComparison.Ordinal);
+            }
+
+            foreach (var forbidden in new[]
+            {
+                "My Cart", "Your cart is empty", ">Item<", ">Remove<", "Continue to Checkout", "Clear Cart", "Keep Shopping",
+                "@rendermode", "InteractiveServer", "InteractiveWebAssembly", "InteractiveAuto", "HttpClient", "BlazorShop.Storefront.V2",
+                "rounded-", "bg-neutral-", "max-w-", "sm:", "lg:"
+            })
+            {
+                Assert.DoesNotContain(forbidden, cartView, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void WasmTailwindPipeline_OwnsInteractiveCssWithoutScanningOtherProjects()
         {
             var package = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/package.json");
@@ -703,6 +773,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(ResolveRepositoryPath(relativePath));
+        }
+
+        private static int CountOccurrences(string source, string value)
+        {
+            return source.Split(value, StringSplitOptions.None).Length - 1;
         }
 
         private static string[] FindContractDefinitions(string presentationRoot, string typeName)
