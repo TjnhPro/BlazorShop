@@ -380,52 +380,52 @@ Goal: prepare the SSR filter component so it is reusable but not visually opinio
 
 Files:
 
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanelClasses.cs`.
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanelLabels.cs`.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanelClasses.cs`.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Catalog/StorefrontCatalogFilterPanelLabels.cs`.
 
 Class slots:
 
-- [ ] `Root`.
-- [ ] `Input`.
-- [ ] `Select`.
-- [ ] `CheckboxLabel`.
-- [ ] `SubmitButton`.
+- [x] `Root`.
+- [x] `Input`.
+- [x] `Select`.
+- [x] `CheckboxLabel`.
+- [x] `SubmitButton`.
 
 Optional slots only if required by current markup:
 
-- [ ] `Checkbox`.
-- [ ] `SubmitIcon`.
+- [x] `Checkbox`.
+- [x] `SubmitIcon`.
 
 Label slots:
 
-- [ ] `AllCategories`.
-- [ ] `SearchPlaceholder`.
-- [ ] `MinPricePlaceholder`.
-- [ ] `MaxPricePlaceholder`.
-- [ ] `SortAriaLabel`.
-- [ ] `CategoryAriaLabel`.
-- [ ] `PageSizeAriaLabel`.
-- [ ] `FeaturedSort`.
-- [ ] `RecentlyUpdatedSort`.
-- [ ] `PriceLowSort`.
-- [ ] `PriceHighSort`.
-- [ ] `NewestSort`.
-- [ ] `InStock`.
-- [ ] `Submit`.
-- [ ] `PerPageSuffix` or formatter if needed.
+- [x] `AllCategories`.
+- [x] `SearchPlaceholder`.
+- [x] `MinPricePlaceholder`.
+- [x] `MaxPricePlaceholder`.
+- [x] `SortAriaLabel`.
+- [x] `CategoryAriaLabel`.
+- [x] `PageSizeAriaLabel`.
+- [x] `FeaturedSort`.
+- [x] `RecentlyUpdatedSort`.
+- [x] `PriceLowSort`.
+- [x] `PriceHighSort`.
+- [x] `NewestSort`.
+- [x] `InStock`.
+- [x] `Submit`.
+- [x] `PerPageSuffix` or formatter if needed.
 
 Rules:
 
-- [ ] Do not create a broad localization framework.
-- [ ] Do not create a generic form framework.
-- [ ] Do not create per-store service dependencies.
-- [ ] Keep labels simple and host-supplied.
-- [ ] Keep default labels only as neutral technical fallback, if needed for tests.
+- [x] Do not create a broad localization framework.
+- [x] Do not create a generic form framework.
+- [x] Do not create per-store service dependencies.
+- [x] Keep labels simple and host-supplied.
+- [x] Keep default labels only as neutral technical fallback, if needed for tests.
 
 Exit criteria:
 
-- [ ] reusable filter can render without V2 class literals;
-- [ ] V2 can keep the exact current visible copy by supplying labels.
+- [x] reusable filter can render without V2 class literals;
+- [x] V2 can keep the exact current visible copy by supplying labels.
 
 ## Phase 3.3.6 - Extract Catalog Filter To SSR
 
