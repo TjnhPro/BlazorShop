@@ -49,7 +49,10 @@
 
                     <p class="mt-6 text-base leading-7 text-neutral-700">@_navigation.ProductDescription</p>
 
-                <StorefrontProductPurchasePanel Model="_purchasePanel" Actions="Context.PurchaseActions" />
+                <StorefrontProductPurchasePanel Model="_purchasePanel"
+                                               Actions="Context.PurchaseActions"
+                                               Labels="ProductPurchasePanelVisuals.Labels"
+                                               Classes="ProductPurchasePanelVisuals.Classes" />
 
                 <StorefrontProductVariantList
                     Items="_variants"

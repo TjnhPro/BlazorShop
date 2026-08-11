@@ -528,6 +528,8 @@ Exit criteria:
 - [ ] old V2 purchase implementation is removed;
 - [ ] purchase command and selection-preview behavior are unchanged.
 
+Phase 3.4.2 evidence (2026-08-11): the V2 page now composes the Primitives purchase panel with `ProductPurchasePanelVisuals`; the former V2 component was deleted. The primitive preserves purchase descriptors and pure IDs, uses `fieldset`/`legend` for radio/color groups, validates hex swatches before producing inline color, and defers missing-color presentation to a V2 class slot. Components.Primitives, V2, and V2.WASM builds passed; `StorefrontProductPurchasePanelPrimitiveTests` passed `3/3`.
+
 ## Phase 3.4.3 - Extract Consent SSR Rendering And Remove Hidden-Class Coupling
 
 Goal: move consent semantic rendering to Components.Ssr while keeping V2 registration, final visuals, and Presentation-owned consent behavior.
