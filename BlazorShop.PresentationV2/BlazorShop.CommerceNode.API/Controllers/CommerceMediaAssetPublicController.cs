@@ -45,6 +45,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             [FromQuery] int? height,
             [FromQuery] string? fit,
             [FromQuery] string? format,
+            [FromQuery] bool extend,
             [FromQuery] long? v,
             CancellationToken cancellationToken)
         {
@@ -74,6 +75,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 height,
                 fit,
                 format,
+                extend,
                 v,
                 cancellationToken);
         }
@@ -88,6 +90,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             [FromQuery] int? height,
             [FromQuery] string? fit,
             [FromQuery] string? format,
+            [FromQuery] bool extend,
             [FromQuery] long? v,
             CancellationToken cancellationToken)
         {
@@ -118,7 +121,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 || h is not null
                 || height is not null
                 || !string.IsNullOrWhiteSpace(fit)
-                || !string.IsNullOrWhiteSpace(format);
+                || !string.IsNullOrWhiteSpace(format)
+                || extend;
 
             var query = MediaTransformPolicy.NormalizeAssetQuery(
                 width ?? w,
@@ -127,7 +131,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 format,
                 asset.Width,
                 asset.Height,
-                hasTransformQuery);
+                hasTransformQuery,
+                extend,
+                asset.UsageType.Equals(CommerceMediaAssetUsageTypes.Branding, StringComparison.OrdinalIgnoreCase));
             if (!query.Success)
             {
                 return this.BadRequest(query.Message);
@@ -202,7 +208,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var imgproxyFit = MediaTransformPolicy.AssetImgproxyFitByRequestFit[query.Fit];
             var imgproxyPath = this.BuildImgproxyLocalPath(asset.OriginalStoragePath);
             var source = Uri.EscapeDataString($"local:///{imgproxyPath}");
-            return $"{normalizedBaseUrl}/insecure/rs:{imgproxyFit}:{query.Width ?? 0}:{query.Height ?? 0}/plain/{source}@{GetOutputFormat(asset, query)}";
+            var enlarge = query.Extend ? 1 : 0;
+            var extend = query.Extend ? 1 : 0;
+            return $"{normalizedBaseUrl}/insecure/rs:{imgproxyFit}:{query.Width ?? 0}:{query.Height ?? 0}:{enlarge}:{extend}/plain/{source}@{GetOutputFormat(asset, query)}";
         }
 
         private string BuildImgproxyLocalPath(string storagePath)

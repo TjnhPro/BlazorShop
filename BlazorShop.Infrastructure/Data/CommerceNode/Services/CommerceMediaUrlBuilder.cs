@@ -19,6 +19,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 AddQuery(query, "h", preset.Height);
                 AddQuery(query, "fit", preset.Fit);
                 AddQuery(query, "format", preset.Format);
+                if (preset.Extend)
+                {
+                    AddQuery(query, "extend", "true");
+                }
             }
 
             if (version is > 0)

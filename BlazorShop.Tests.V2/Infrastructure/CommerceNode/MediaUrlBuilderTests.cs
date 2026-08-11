@@ -45,6 +45,22 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 url);
         }
 
+        [Theory]
+        [InlineData(MediaUrlPresetNames.BrandLogo, "brand-logo.png", "/media/assets/33333333-3333-3333-3333-333333333333/brand-logo.png?w=800&h=200&fit=contain&format=png&extend=true&v=42")]
+        [InlineData(MediaUrlPresetNames.BrandFavicon, "brand-favicon.png", "/media/assets/33333333-3333-3333-3333-333333333333/brand-favicon.png?w=512&h=512&fit=contain&format=png&extend=true&v=42")]
+        public void BuildAssetUrl_BrandingPresetsRequestFixedExtendedCanvas(string presetName, string fileName, string expected)
+        {
+            ICommerceMediaUrlBuilder builder = new CommerceMediaUrlBuilder();
+
+            var url = builder.BuildAssetUrl(
+                Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                fileName,
+                42,
+                presetName);
+
+            Assert.Equal(expected, url);
+        }
+
         [Fact]
         public void BuildAbsoluteProductMediaPresetUrl_UsesPublicBaseUrl()
         {

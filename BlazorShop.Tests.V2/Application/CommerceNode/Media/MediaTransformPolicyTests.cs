@@ -66,6 +66,54 @@ namespace BlazorShop.Tests.Application.CommerceNode.Media
         }
 
         [Fact]
+        public void NormalizeAssetQuery_KeepsGenericAssetsClampedToSourceDimensions()
+        {
+            var result = MediaTransformPolicy.NormalizeAssetQuery(800, 200, "contain", "png", 300, 100, hasTransformQuery: true);
+
+            Assert.True(result.Success);
+            Assert.Equal(300, result.Value.Width);
+            Assert.Equal(100, result.Value.Height);
+            Assert.False(result.Value.Extend);
+        }
+
+        [Fact]
+        public void NormalizeAssetQuery_AllowsBrandingCanvasToEnlargeAndExtend()
+        {
+            var result = MediaTransformPolicy.NormalizeAssetQuery(
+                800,
+                200,
+                "contain",
+                "png",
+                300,
+                100,
+                hasTransformQuery: true,
+                extend: true,
+                allowEnlarge: true);
+
+            Assert.True(result.Success);
+            Assert.Equal(800, result.Value.Width);
+            Assert.Equal(200, result.Value.Height);
+            Assert.True(result.Value.Extend);
+        }
+
+        [Fact]
+        public void NormalizeAssetQuery_RejectsCanvasExtensionForGenericAssets()
+        {
+            var result = MediaTransformPolicy.NormalizeAssetQuery(
+                800,
+                200,
+                "contain",
+                "png",
+                300,
+                100,
+                hasTransformQuery: true,
+                extend: true);
+
+            Assert.False(result.Success);
+            Assert.Equal("Media canvas extension is only supported for branding assets.", result.Message);
+        }
+
+        [Fact]
         public void NormalizeAssetQuery_RejectsTooLargeOutput()
         {
             var result = MediaTransformPolicy.NormalizeAssetQuery(4096, 4096, "cover", "webp", null, null, hasTransformQuery: true);
@@ -84,6 +132,18 @@ namespace BlazorShop.Tests.Application.CommerceNode.Media
             Assert.Equal(400, preset.Height);
             Assert.Equal("cover", preset.Fit);
             Assert.Equal("webp", preset.Format);
+        }
+
+        [Fact]
+        public void MediaUrlPresets_NormalizeBrandingCanvasesWithoutChangingProductPresets()
+        {
+            var logo = MediaUrlPresets.Get(MediaUrlPresetNames.BrandLogo);
+            var favicon = MediaUrlPresets.Get(MediaUrlPresetNames.BrandFavicon);
+            var product = MediaUrlPresets.Get(MediaUrlPresetNames.ProductCard);
+
+            Assert.Equal((800, 200, "contain", "png", true), (logo.Width, logo.Height, logo.Fit, logo.Format, logo.Extend));
+            Assert.Equal((512, 512, "contain", "png", true), (favicon.Width, favicon.Height, favicon.Fit, favicon.Format, favicon.Extend));
+            Assert.Equal((600, 600, "contain", "webp", false), (product.Width, product.Height, product.Fit, product.Format, product.Extend));
         }
     }
 }

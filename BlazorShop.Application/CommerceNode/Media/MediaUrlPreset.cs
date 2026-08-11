@@ -9,6 +9,7 @@ namespace BlazorShop.Application.CommerceNode.Media
         public const string ContentBanner = "content-banner";
         public const string ContentCard = "content-card";
         public const string BrandLogo = "brand-logo";
+        public const string BrandFavicon = "brand-favicon";
     }
 
     public sealed record MediaUrlPreset(
@@ -16,7 +17,8 @@ namespace BlazorShop.Application.CommerceNode.Media
         int? Width,
         int? Height,
         string Fit,
-        string Format);
+        string Format,
+        bool Extend = false);
 
     public static class MediaUrlPresets
     {
@@ -29,7 +31,8 @@ namespace BlazorShop.Application.CommerceNode.Media
                 [MediaUrlPresetNames.CategoryCard] = new(MediaUrlPresetNames.CategoryCard, 600, 400, "cover", "webp"),
                 [MediaUrlPresetNames.ContentBanner] = new(MediaUrlPresetNames.ContentBanner, 1920, 600, "cover", "webp"),
                 [MediaUrlPresetNames.ContentCard] = new(MediaUrlPresetNames.ContentCard, 800, 600, "cover", "webp"),
-                [MediaUrlPresetNames.BrandLogo] = new(MediaUrlPresetNames.BrandLogo, 320, null, "inside", "png"),
+                [MediaUrlPresetNames.BrandLogo] = new(MediaUrlPresetNames.BrandLogo, 800, 200, "contain", "png", Extend: true),
+                [MediaUrlPresetNames.BrandFavicon] = new(MediaUrlPresetNames.BrandFavicon, 512, 512, "contain", "png", Extend: true),
             };
 
         public static MediaUrlPreset Get(string name)

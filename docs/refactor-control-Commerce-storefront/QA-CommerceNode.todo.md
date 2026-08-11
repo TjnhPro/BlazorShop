@@ -549,6 +549,7 @@ Plan: `Cart Core.todo.md`.
 - [x] Media Core Phase 6 generic media assets default to `content` usage and validate allowlisted usage values. 2026-07-15: `CommerceMediaAssetUsageTypeTests` covered normalization, list filtering, metadata update, and invalid usage rejection.
 - [x] CommerceNode API builds after Media Core Phase 6 media asset usage classification migration/API changes. 2026-07-15: CommerceNode API build passed.
 - [x] Media Core Phase 7 assigned generic media asset delete is blocked instead of silently breaking category image. 2026-07-15: `CommerceMediaAssetUsageTypeTests.DeleteAsync_WhenAssetIsAssignedToCategory_ReturnsConflict` passed.
+- [x] Branding transforms use the named `brand-logo` (800x200 PNG) and `brand-favicon` (512x512 PNG) presets with contain-plus-extend canvas output; non-branding generic assets remain source-clamped. 2026-08-11: `MediaTransformPolicyTests` and `MediaUrlBuilderTests` passed 23/23.
 
 ### Product Import
 

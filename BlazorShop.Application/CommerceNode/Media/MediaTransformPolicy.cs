@@ -1,6 +1,11 @@
 namespace BlazorShop.Application.CommerceNode.Media
 {
-    public sealed record MediaTransformQuery(int? Width, int? Height, string Fit, string Format);
+    public sealed record MediaTransformQuery(
+        int? Width,
+        int? Height,
+        string Fit,
+        string Format,
+        bool Extend = false);
 
     public sealed record MediaTransformPolicyResult(
         bool Success,
@@ -98,7 +103,9 @@ namespace BlazorShop.Application.CommerceNode.Media
             string? format,
             int? sourceWidth,
             int? sourceHeight,
-            bool hasTransformQuery)
+            bool hasTransformQuery,
+            bool extend = false,
+            bool allowEnlarge = false)
         {
             var normalizedWidth = ClampDimension(width, AssetMaxDimension);
             var normalizedHeight = ClampDimension(height, AssetMaxDimension);
@@ -124,12 +131,19 @@ namespace BlazorShop.Application.CommerceNode.Media
                 normalizedHeight = sourceHeight;
             }
 
-            if (normalizedWidth is not null && sourceWidth is not null)
+            if (extend && !allowEnlarge)
+            {
+                return MediaTransformPolicyResult.Failed(
+                    new MediaTransformQuery(null, null, "inside", "original"),
+                    "Media canvas extension is only supported for branding assets.");
+            }
+
+            if (!allowEnlarge && normalizedWidth is not null && sourceWidth is not null)
             {
                 normalizedWidth = Math.Min(normalizedWidth.Value, sourceWidth.Value);
             }
 
-            if (normalizedHeight is not null && sourceHeight is not null)
+            if (!allowEnlarge && normalizedHeight is not null && sourceHeight is not null)
             {
                 normalizedHeight = Math.Min(normalizedHeight.Value, sourceHeight.Value);
             }
@@ -143,7 +157,7 @@ namespace BlazorShop.Application.CommerceNode.Media
             }
 
             return MediaTransformPolicyResult.Succeeded(
-                new MediaTransformQuery(normalizedWidth, normalizedHeight, normalizedFit, normalizedFormat));
+                new MediaTransformQuery(normalizedWidth, normalizedHeight, normalizedFit, normalizedFormat, extend));
         }
 
         public static int? ClampDimension(int? value, int maxDimension)
