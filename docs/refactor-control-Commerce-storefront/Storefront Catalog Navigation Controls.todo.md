@@ -564,35 +564,35 @@ Goal: make breadcrumb reusable without moving Presentation breadcrumb data.
 
 Files:
 
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumbClasses.cs`.
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumbLabels.cs` only if needed.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumbClasses.cs`.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumbLabels.cs` only if needed.
 
 Class slots:
 
-- [ ] `Root`.
-- [ ] `List`.
-- [ ] `Item`.
-- [ ] `Link`.
-- [ ] `Current`.
-- [ ] `Separator`.
+- [x] `Root`.
+- [x] `List`.
+- [x] `Item`.
+- [x] `Link`.
+- [x] `Current`.
+- [x] `Separator`.
 
 Label/semantic slots:
 
-- [ ] `AriaLabel`, defaulting to `Breadcrumb` if a fallback is needed.
-- [ ] `SeparatorText`, defaulting to `/` only if allowed by visual neutrality tests.
+- [x] `AriaLabel`, defaulting to `Breadcrumb` if a fallback is needed.
+- [x] `SeparatorText`, defaulting to `/` only if allowed by visual neutrality tests.
 
 Rules:
 
-- [ ] Keep `IReadOnlyList<StorefrontBreadcrumbItem>` input.
-- [ ] Do not move `StorefrontBreadcrumbItem`.
-- [ ] Do not add route generation.
-- [ ] Do not inspect URL/current route.
-- [ ] Current item remains last item in the supplied list.
+- [x] Keep `IReadOnlyList<StorefrontBreadcrumbItem>` input.
+- [x] Do not move `StorefrontBreadcrumbItem`.
+- [x] Do not add route generation.
+- [x] Do not inspect URL/current route.
+- [x] Current item remains last item in the supplied list.
 
 Exit criteria:
 
-- [ ] breadcrumb can render current V2 output from supplied classes/labels;
-- [ ] Presentation breadcrumb contract remains unchanged.
+- [x] breadcrumb can render current V2 output from supplied classes/labels;
+- [x] Presentation breadcrumb contract remains unchanged.
 
 ## Phase 3.3.10 - Extract Breadcrumb To SSR
 
