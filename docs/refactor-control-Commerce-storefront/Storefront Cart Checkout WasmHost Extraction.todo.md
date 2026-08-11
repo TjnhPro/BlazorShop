@@ -704,26 +704,26 @@ Evidence to capture:
 
 ## Phase 14 - Final Cleanup
 
-- [ ] Run `rg "StorefrontCartView.razor" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no old implementation remains.
-- [ ] Run `rg "StorefrontCheckoutShell.razor" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no old implementation remains.
-- [ ] Run `rg "IStorefrontBrowserCartController" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no direct V2.WASM injection remains.
-- [ ] Run `rg "IStorefrontBrowserCheckoutController" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no direct V2.WASM injection remains.
-- [ ] Run `rg "StorefrontCartViewClasses" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm the contract definition is in Components only.
-- [ ] Run `rg "StorefrontCheckoutViewClasses" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm the contract definition is in Components only.
-- [ ] Run `rg "StorefrontCartViewLabels|StorefrontCheckoutViewLabels" BlazorShop.PresentationV2` and confirm labels flow from V2 options to WasmHost components.
-- [ ] Run `rg "@rendermode|InteractiveServer|InteractiveWebAssembly|InteractiveAuto" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost` and confirm no results.
-- [ ] Run `rg "BlazorShop.Storefront.V2|BlazorShop.Storefront.V2.WASM" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost` and confirm no results.
-- [ ] Run `rg "BlazorShop.CommerceNode|BlazorShop.ControlPlane|BlazorShop.Domain|BlazorShop.Application|BlazorShop.Infrastructure" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost` and confirm no results.
-- [ ] Run `git diff --check`.
-- [ ] Review `git diff --stat`.
-- [ ] Review every modified file before commit.
+- [x] Run `rg "StorefrontCartView.razor" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no old implementation remains.
+- [x] Run `rg "StorefrontCheckoutShell.razor" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no old implementation remains.
+- [x] Run `rg "IStorefrontBrowserCartController" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no direct V2.WASM injection remains.
+- [x] Run `rg "IStorefrontBrowserCheckoutController" BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm no direct V2.WASM injection remains.
+- [x] Run `rg "StorefrontCartViewClasses" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm the contract definition is in Components only.
+- [x] Run `rg "StorefrontCheckoutViewClasses" BlazorShop.PresentationV2/BlazorShop.Storefront.Components BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM` and confirm the contract definition is in Components only.
+- [x] Run `rg "StorefrontCartViewLabels|StorefrontCheckoutViewLabels" BlazorShop.PresentationV2` and confirm labels flow from V2 options to WasmHost components.
+- [x] Run `rg "@rendermode|InteractiveServer|InteractiveWebAssembly|InteractiveAuto" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost` and confirm no results.
+- [x] Run `rg "BlazorShop.Storefront.V2|BlazorShop.Storefront.V2.WASM" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost` and confirm no results.
+- [x] Run `rg "BlazorShop.CommerceNode|BlazorShop.ControlPlane|BlazorShop.Domain|BlazorShop.Application|BlazorShop.Infrastructure" BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost` and confirm no results.
+- [x] Run `git diff --check`.
+- [x] Review `git diff --stat`.
+- [x] Review every modified file before commit.
 
 Exit criteria:
 
-- [ ] Old runtime ownership has been removed from V2.WASM.
-- [ ] New shared runtime ownership is in WasmHost.
-- [ ] V2 behavior has not changed.
-- [ ] The implementation leaves no temporary duplicate component files.
+- [x] Old runtime ownership has been removed from V2.WASM.
+- [x] New shared runtime ownership is in WasmHost.
+- [x] V2 behavior has not changed.
+- [x] The implementation leaves no temporary duplicate component files.
 
 ## Phase 15 - Commit Checklist
 
