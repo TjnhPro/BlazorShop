@@ -615,15 +615,15 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 Exit criteria:
 
-- [ ] Focused cart tests pass.
-- [ ] Focused checkout tests pass.
-- [ ] WasmHost boundary tests pass.
-- [ ] Component mode dependency tests pass.
-- [ ] Render mode ownership tests pass.
-- [ ] Visual-only boundary tests pass.
-- [ ] Commerce flow cutover tests pass.
-- [ ] Required visual contract tests pass.
-- [ ] Full `BlazorShop.Tests.V2` passes.
+- [x] Focused cart tests pass.
+- [x] Focused checkout tests pass.
+- [x] WasmHost boundary tests pass.
+- [x] Component mode dependency tests pass.
+- [x] Render mode ownership tests pass.
+- [x] Visual-only boundary tests pass.
+- [x] Commerce flow cutover tests pass.
+- [x] Required visual contract tests pass.
+- [x] Full `BlazorShop.Tests.V2` passes: 1971 passed, 2 pre-existing skipped, 0 failed on 2026-08-11.
 
 ## Phase 13 - Playwright Browser QA
 
