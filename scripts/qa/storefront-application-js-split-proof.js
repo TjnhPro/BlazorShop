@@ -218,6 +218,8 @@ async function main() {
     await page.waitForFunction(() => window.__storefrontProofEvents.some((event) => event.name === "storefront:consent:manage-requested"));
     await page.click("[data-storefront-consent-selected]");
     await page.waitForFunction(() => window.__storefrontProofEvents.filter((event) => event.name === "storefront:consent:changed").length >= 2);
+    await page.click("[data-storefront-consent-manage]");
+    await page.waitForFunction(() => document.querySelector("[data-storefront-consent-banner]")?.hidden === false);
     await page.click("[data-storefront-consent-revoke]");
     await page.waitForFunction(() => window.__storefrontProofEvents.filter((event) => event.name === "storefront:consent:changed").length >= 3);
 
