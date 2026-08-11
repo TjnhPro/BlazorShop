@@ -94,14 +94,15 @@
         switch (ActiveRoute.Kind)
         {
             case AccountRouteKind.Profile:
-                builder.OpenComponent<StorefrontAccountProfileEditor>(0);
-                builder.AddAttribute(1, nameof(StorefrontAccountProfileEditor.InitialError), Error);
-                builder.AddAttribute(2, nameof(StorefrontAccountProfileEditor.InitialSuccess), Saved == "1" ? "Profile updated." : null);
-                builder.AddAttribute(3, nameof(StorefrontAccountProfileEditor.Actions), ProfileActions);
-                builder.AddAttribute(4, nameof(StorefrontAccountProfileEditor.AntiforgeryFieldName), AntiforgeryFieldName);
-                builder.AddAttribute(5, nameof(StorefrontAccountProfileEditor.AntiforgeryRequestToken), AntiforgeryRequestToken);
-                builder.AddAttribute(6, nameof(StorefrontAccountProfileEditor.DataMode), StorefrontFeatureDataMode.BrowserFetch);
-                builder.AddAttribute(7, nameof(StorefrontAccountProfileEditor.Classes), AccountFormClasses);
+                builder.OpenComponent<BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor>(0);
+                builder.AddAttribute(1, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.InitialError), Error);
+                builder.AddAttribute(2, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.InitialSuccess), Saved == "1" ? StorefrontAccountViewOptions.ProfileLabels.SavedSuccess : null);
+                builder.AddAttribute(3, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.Actions), ProfileActions);
+                builder.AddAttribute(4, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.AntiforgeryFieldName), AntiforgeryFieldName);
+                builder.AddAttribute(5, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.AddAttribute(6, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.DataMode), StorefrontFeatureDataMode.BrowserFetch);
+                builder.AddAttribute(7, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.Classes), AccountFormClasses);
+                builder.AddAttribute(8, nameof(BlazorShop.Storefront.Components.WasmHost.Components.Account.StorefrontAccountProfileEditor.Labels), StorefrontAccountViewOptions.ProfileLabels);
                 builder.CloseComponent();
                 break;
 

@@ -238,24 +238,24 @@ Goal: extract profile editor runtime behavior first as the smallest account muta
 
 Tasks:
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountProfileEditor.razor`.
-- [ ] Move current markup and behavior from V2.WASM profile editor mechanically.
-- [ ] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
-- [ ] Keep `InitializeProfile`, `HydrateProfileAsync`, and `SaveProfileAsync` behavior equivalent.
-- [ ] Preserve `data-storefront-account-profile`.
-- [ ] Preserve form validation behavior.
-- [ ] Replace hardcoded leaf copy with `StorefrontAccountProfileLabels` parameters.
-- [ ] Replace V2.WASM class type reference with `StorefrontAccountFormClasses` from Components contracts.
-- [ ] Add optional host callback/event if `StorefrontAccountApp` currently depends on save success.
-- [ ] Remove or convert the old V2.WASM profile file into a thin wrapper only if needed by existing namespaces.
-- [ ] Prefer no V2.WASM leaf wrapper if `StorefrontAccountApp` can import the WasmHost component cleanly.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.WasmHost/Components/Account/StorefrontAccountProfileEditor.razor`.
+- [x] Move current markup and behavior from V2.WASM profile editor mechanically.
+- [x] Keep `IStorefrontBrowserAccountController` injection inside the WasmHost leaf.
+- [x] Keep `InitializeProfile`, `HydrateProfileAsync`, and `SaveProfileAsync` behavior equivalent.
+- [x] Preserve `data-storefront-account-profile`.
+- [x] Preserve form validation behavior.
+- [x] Replace hardcoded leaf copy with `StorefrontAccountProfileLabels` parameters.
+- [x] Replace V2.WASM class type reference with `StorefrontAccountFormClasses` from Components contracts.
+- [x] Add optional host callback/event if `StorefrontAccountApp` currently depends on save success. Not required; the existing success value remains a composition parameter.
+- [x] Remove or convert the old V2.WASM profile file into a thin wrapper only if needed by existing namespaces. Removed.
+- [x] Prefer no V2.WASM leaf wrapper if `StorefrontAccountApp` can import the WasmHost component cleanly.
 
 Validation:
 
-- [ ] V2.WASM no longer owns profile lifecycle methods.
-- [ ] The moved file has no `@rendermode`.
-- [ ] The moved file has no V2 namespace import.
-- [ ] The moved file has no direct `/api/*` or `HttpClient`.
+- [x] V2.WASM no longer owns profile lifecycle methods.
+- [x] The moved file has no `@rendermode`.
+- [x] The moved file has no V2 namespace import.
+- [x] The moved file has no direct `/api/*` or `HttpClient`.
 
 ## Phase 3 - Move Password Leaf To WasmHost
 

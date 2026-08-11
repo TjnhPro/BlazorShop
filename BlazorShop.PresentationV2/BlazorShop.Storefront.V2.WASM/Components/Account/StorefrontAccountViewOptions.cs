@@ -4,6 +4,22 @@ namespace BlazorShop.Storefront.V2.WASM.Components.Account;
 
 public static class StorefrontAccountViewOptions
 {
+    public static StorefrontAccountProfileLabels ProfileLabels { get; } = new()
+    {
+        MissingProfile = "Profile could not be loaded.",
+        EmailAddress = "Email address",
+        DisplayName = "Display name",
+        FirstName = "First name",
+        LastName = "Last name",
+        Company = "Company",
+        Phone = "Phone",
+        Language = "Language",
+        Currency = "Currency",
+        SaveProfile = "Save profile",
+        Saving = "Saving...",
+        SavedSuccess = "Profile updated."
+    };
+
     public static AccountNavigationClasses NavigationClasses { get; } = new()
     {
         Nav = "rounded-3xl border border-neutral-200/70 bg-white/95 p-3 text-sm shadow-lg lg:sticky lg:top-24",

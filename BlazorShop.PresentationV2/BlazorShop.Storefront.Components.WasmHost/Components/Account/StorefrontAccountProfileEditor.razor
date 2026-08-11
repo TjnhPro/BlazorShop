@@ -1,6 +1,4 @@
-@using BlazorShop.Storefront.Components.Browser
-@using BlazorShop.Storefront.Browser.Account
-@using BlazorShop.Storefront.Components.Headless.Account
+@namespace BlazorShop.Storefront.Components.WasmHost.Components.Account
 @inject IStorefrontBrowserAccountController AccountController
 
 <div class="@Classes.Root" data-storefront-account-profile>
@@ -15,7 +13,7 @@
 
     @if (AccountState.Profile is null)
     {
-        <p class="@Classes.MissingProfile">Profile could not be loaded.</p>
+        <p class="@Classes.MissingProfile">@Labels.MissingProfile</p>
     }
     else
     {
@@ -23,39 +21,39 @@
             <AntiforgeryToken />
             @RenderAntiforgeryField()
             <label class="@Classes.WideField">
-                <span class="@Classes.LabelText">Email address</span>
+                <span class="@Classes.LabelText">@Labels.EmailAddress</span>
                 <input name="Email" type="email" autocomplete="email" required @bind="AccountState.ProfileForm.Email" class="@Classes.Input" />
             </label>
             <label class="@Classes.WideField">
-                <span class="@Classes.LabelText">Display name</span>
+                <span class="@Classes.LabelText">@Labels.DisplayName</span>
                 <input name="FullName" type="text" autocomplete="name" required @bind="AccountState.ProfileForm.FullName" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
-                <span class="@Classes.LabelText">First name</span>
+                <span class="@Classes.LabelText">@Labels.FirstName</span>
                 <input name="FirstName" type="text" autocomplete="given-name" @bind="AccountState.ProfileForm.FirstName" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
-                <span class="@Classes.LabelText">Last name</span>
+                <span class="@Classes.LabelText">@Labels.LastName</span>
                 <input name="LastName" type="text" autocomplete="family-name" @bind="AccountState.ProfileForm.LastName" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
-                <span class="@Classes.LabelText">Company</span>
+                <span class="@Classes.LabelText">@Labels.Company</span>
                 <input name="Company" type="text" autocomplete="organization" @bind="AccountState.ProfileForm.Company" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
-                <span class="@Classes.LabelText">Phone</span>
+                <span class="@Classes.LabelText">@Labels.Phone</span>
                 <input name="PhoneNumber" type="tel" autocomplete="tel" @bind="AccountState.ProfileForm.PhoneNumber" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
-                <span class="@Classes.LabelText">Language</span>
+                <span class="@Classes.LabelText">@Labels.Language</span>
                 <input name="PreferredLanguage" type="text" @bind="AccountState.ProfileForm.PreferredLanguage" class="@Classes.Input" />
             </label>
             <label class="@Classes.Field">
-                <span class="@Classes.LabelText">Currency</span>
+                <span class="@Classes.LabelText">@Labels.Currency</span>
                 <input name="PreferredCurrencyCode" type="text" maxlength="3" @bind="AccountState.ProfileForm.PreferredCurrencyCode" class="@Classes.CurrencyInput" />
             </label>
             <div class="@Classes.ActionRow">
-                <button type="submit" disabled="@AccountState.ProfileSaving" class="@Classes.SubmitButton">@(AccountState.ProfileSaving ? "Saving..." : "Save profile")</button>
+                <button type="submit" disabled="@AccountState.ProfileSaving" class="@Classes.SubmitButton">@(AccountState.ProfileSaving ? Labels.Saving : Labels.SaveProfile)</button>
             </div>
         </form>
     }
@@ -78,6 +76,9 @@
     public StorefrontAccountFormClasses Classes { get; set; } = StorefrontAccountFormClasses.Empty;
 
     [Parameter]
+    public StorefrontAccountProfileLabels Labels { get; set; } = StorefrontAccountProfileLabels.Empty;
+
+    [Parameter]
     public string? AntiforgeryFieldName { get; set; }
 
     [Parameter]
@@ -90,6 +91,7 @@
 
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(Labels);
         AccountController.InitializeProfile(InitialProfile, InitialError, InitialSuccess, DataMode, Actions);
     }
 
