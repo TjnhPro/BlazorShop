@@ -1,0 +1,42 @@
+@namespace BlazorShop.Storefront.Components.Ssr.Navigation
+@using BlazorShop.Storefront.Presentation.Services
+
+@if (Items.Count > 1)
+{
+    <nav aria-label="@Labels.AriaLabel" class="@Classes.Root">
+        <ol class="@Classes.List">
+            @for (var index = 0; index < Items.Count; index++)
+            {
+                var item = Items[index];
+                var isCurrent = index == Items.Count - 1;
+
+                <li class="@Classes.Item">
+                    @if (!isCurrent && !string.IsNullOrWhiteSpace(item.Href))
+                    {
+                        <a href="@item.Href" class="@Classes.Link">@item.Title</a>
+                    }
+                    else
+                    {
+                        <span aria-current="@(isCurrent ? "page" : null)" class="@Classes.Current">@item.Title</span>
+                    }
+
+                    @if (!isCurrent)
+                    {
+                        <span aria-hidden="true" class="@Classes.Separator">@Labels.SeparatorText</span>
+                    }
+                </li>
+            }
+        </ol>
+    </nav>
+}
+
+@code {
+    [Parameter]
+    public IReadOnlyList<StorefrontBreadcrumbItem> Items { get; set; } = [];
+
+    [Parameter]
+    public StorefrontBreadcrumbClasses Classes { get; set; } = new();
+
+    [Parameter]
+    public StorefrontBreadcrumbLabels Labels { get; set; } = new();
+}

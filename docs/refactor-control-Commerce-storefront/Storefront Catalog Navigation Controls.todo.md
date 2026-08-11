@@ -54,7 +54,7 @@ V2 remains owner of:
 Current reusable-looking V2 components:
 
 - [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Shared/BreadcrumbNav.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Shared/BreadcrumbNav.razor`
 
 Current Category page:
 
@@ -604,20 +604,20 @@ Source:
 
 Target:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Components.Ssr/Navigation/StorefrontBreadcrumb.razor`
 
 Tasks:
 
-- [ ] Rename component from `BreadcrumbNav` to `StorefrontBreadcrumb`.
-- [ ] Set namespace to `BlazorShop.Storefront.Components.Ssr.Navigation`.
-- [ ] Preserve behavior of rendering only when `Items.Count > 1`.
-- [ ] Preserve linked ancestor behavior.
-- [ ] Preserve current item span behavior.
-- [ ] Preserve `aria-current="page"` on current item.
-- [ ] Preserve separator rendering between items.
-- [ ] Replace V2 Tailwind literals with class slots.
-- [ ] Use supplied `AriaLabel`.
-- [ ] Do not add route matching or active-item detection.
+- [x] Rename component from `BreadcrumbNav` to `StorefrontBreadcrumb`.
+- [x] Set namespace to `BlazorShop.Storefront.Components.Ssr.Navigation`.
+- [x] Preserve behavior of rendering only when `Items.Count > 1`.
+- [x] Preserve linked ancestor behavior.
+- [x] Preserve current item span behavior.
+- [x] Preserve `aria-current="page"` on current item.
+- [x] Preserve separator rendering between items.
+- [x] Replace V2 Tailwind literals with class slots.
+- [x] Use supplied `AriaLabel`.
+- [x] Do not add route matching or active-item detection.
 
 Cleanup:
 
