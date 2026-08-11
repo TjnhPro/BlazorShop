@@ -181,6 +181,7 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("InStock=\"Context.InStock\"", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("Context.Links.CategoryUrl(", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPagination", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("PaginationItems => Context.TotalPages > 1", categoryMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("GetPageLinkClass", categoryMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<nav", categoryMarkup, StringComparison.OrdinalIgnoreCase);
 
@@ -194,6 +195,7 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("ShowPageSize=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("Context.Links.SearchUrl(", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("<StorefrontPagination", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("PaginationItems => Context.TotalPages > 1", searchMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("GetPageLinkClass", searchMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<nav", searchMarkup, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("CatalogSearchPolicy.MinimumSearchTermLength", searchMarkup, StringComparison.Ordinal);

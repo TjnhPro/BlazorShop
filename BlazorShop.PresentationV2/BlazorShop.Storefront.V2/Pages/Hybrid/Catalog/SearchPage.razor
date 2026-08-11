@@ -74,20 +74,22 @@
 
     private string ResultCountText => Context.TotalCount == 1 ? "1 item" : $"{Context.TotalCount} items";
 
-    private IReadOnlyList<StorefrontPaginationItem> PaginationItems => Enumerable
-        .Range(1, Context.TotalPages)
-        .Select(pageNumber => new StorefrontPaginationItem(
-            pageNumber,
-            Context.Links.SearchUrl(
-                Context.Q,
-                Context.Category,
+    private IReadOnlyList<StorefrontPaginationItem> PaginationItems => Context.TotalPages > 1
+        ? Enumerable
+            .Range(1, Context.TotalPages)
+            .Select(pageNumber => new StorefrontPaginationItem(
                 pageNumber,
-                Context.PageSize,
-                Context.SortBy,
-                Context.MinPrice,
-                Context.MaxPrice,
-                Context.InStock ? true : null),
-            pageNumber == Context.PageNumber))
-        .ToArray();
+                Context.Links.SearchUrl(
+                    Context.Q,
+                    Context.Category,
+                    pageNumber,
+                    Context.PageSize,
+                    Context.SortBy,
+                    Context.MinPrice,
+                    Context.MaxPrice,
+                    Context.InStock ? true : null),
+                pageNumber == Context.PageNumber))
+            .ToArray()
+        : [];
 
 }

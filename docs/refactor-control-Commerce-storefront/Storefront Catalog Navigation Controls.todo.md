@@ -894,52 +894,52 @@ Use Playwright browser verification.
 
 Category checks:
 
-- [ ] open a seeded category page, for example `/category/t-shirts`.
-- [ ] breadcrumb is visible.
-- [ ] category heading is visible.
-- [ ] filter panel is visible.
-- [ ] submit price filter `minPrice` and `maxPrice`.
-- [ ] verify URL keeps `minPrice` and `maxPrice`.
-- [ ] select sort option.
-- [ ] verify URL keeps `sortBy`.
-- [ ] select page size.
-- [ ] verify URL keeps `pageSize`.
-- [ ] toggle in-stock.
-- [ ] verify URL keeps `inStock=true`.
-- [ ] use pagination link.
-- [ ] verify URL keeps category filter state across pagination.
-- [ ] verify product cards still render or valid empty state renders.
+- [x] open a seeded category page, for example `/category/t-shirts`.
+- [x] breadcrumb is visible.
+- [x] category heading is visible.
+- [x] filter panel is visible.
+- [x] submit price filter `minPrice` and `maxPrice`.
+- [x] verify URL keeps `minPrice` and `maxPrice`.
+- [x] select sort option.
+- [x] verify URL keeps `sortBy`.
+- [x] select page size.
+- [x] verify URL keeps `pageSize`.
+- [x] toggle in-stock.
+- [x] verify URL keeps `inStock=true`.
+- [x] use pagination link.
+- [x] verify URL keeps category filter state across pagination.
+- [x] verify product cards still render or valid empty state renders.
 
 Search checks:
 
-- [ ] open `/search`.
-- [ ] enter valid query.
-- [ ] submit search form.
-- [ ] verify URL keeps `q`.
-- [ ] select category filter.
-- [ ] verify URL keeps `category`.
-- [ ] apply price/sort/page-size/in-stock filters.
-- [ ] verify URL keeps all active query state.
-- [ ] use pagination link.
-- [ ] verify query state survives pagination.
-- [ ] open a too-short search term.
-- [ ] verify short-search validation still appears.
-- [ ] verify product cards still render or valid empty state renders.
+- [x] open `/search`.
+- [x] enter valid query.
+- [x] submit search form.
+- [x] verify URL keeps `q`.
+- [x] select category filter.
+- [x] verify URL keeps `category`.
+- [x] apply price/sort/page-size/in-stock filters.
+- [x] verify URL keeps all active query state.
+- [x] use pagination link.
+- [x] verify query state survives pagination.
+- [x] open a too-short search term.
+- [x] verify short-search validation still appears.
+- [x] verify product cards still render or valid empty state renders.
 
 Product/content breadcrumb checks:
 
-- [ ] open a seeded product page.
-- [ ] verify product breadcrumb renders.
-- [ ] open a content page with breadcrumb.
-- [ ] verify content breadcrumb renders.
+- [x] open a seeded product page.
+- [x] verify product breadcrumb renders.
+- [x] open a content page with breadcrumb.
+- [x] verify content breadcrumb renders.
 
 Network/runtime checks:
 
-- [ ] no browser request goes directly to Commerce Node Storefront API.
-- [ ] no direct `api/storefront/stores/*` browser request appears unless it is same-origin BFF-owned and already expected.
-- [ ] no `/_blazor` public server UI circuit appears.
-- [ ] browser console has no errors.
-- [ ] page errors are absent.
+- [x] no browser request goes directly to Commerce Node Storefront API.
+- [x] no direct `api/storefront/stores/*` browser request appears unless it is same-origin BFF-owned and already expected.
+- [x] no `/_blazor` public server UI circuit appears.
+- [x] browser console has no errors.
+- [x] page errors are absent.
 
 Stop runtime:
 
@@ -949,8 +949,8 @@ Stop runtime:
 
 Exit criteria:
 
-- [ ] real browser behavior preserved;
-- [ ] no direct Commerce browser transport introduced.
+- [x] real browser behavior preserved;
+- [x] no direct Commerce browser transport introduced.
 
 ## Phase 3.3.19 - Build Gate
 
