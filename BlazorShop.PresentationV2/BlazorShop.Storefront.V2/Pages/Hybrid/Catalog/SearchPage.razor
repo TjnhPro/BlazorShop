@@ -1,4 +1,6 @@
 @namespace BlazorShop.Storefront.V2.Pages.Catalog
+@using BlazorShop.Storefront.Components.Contracts.Navigation
+@using BlazorShop.Storefront.Components.Primitives.Navigation
 @using BlazorShop.Storefront.Presentation.Models
 @using BlazorShop.Storefront.Presentation.Services.Catalog
 
@@ -58,19 +60,9 @@
 
     <StorefrontProductSummaryGrid Items="Context.ProductSummaries" EmptyMessage="No products found" />
 
-    @if (Context.TotalPages > 1)
-    {
-        <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
-            @for (var pageNumber = 1; pageNumber <= Context.TotalPages; pageNumber++)
-            {
-                <a href="@Context.Links.SearchUrl(Context.Q, Context.Category, pageNumber, Context.PageSize, Context.SortBy, Context.MinPrice, Context.MaxPrice, Context.InStock ? true : null)"
-                   class="@GetPageLinkClass(pageNumber)"
-                   aria-current="@(pageNumber == Context.PageNumber ? "page" : null)">
-                    @pageNumber
-                </a>
-            }
-        </nav>
-    }
+    <StorefrontPagination Items="PaginationItems"
+                         Classes="SearchPaginationClasses"
+                         Labels="SearchPaginationLabels" />
 </section>
 
 @code {
@@ -87,11 +79,27 @@
 
     private string ResultCountText => Context.TotalCount == 1 ? "1 item" : $"{Context.TotalCount} items";
 
-    private string GetPageLinkClass(int page)
-    {
-        var baseClass = "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold";
-        return page == Context.PageNumber
-            ? $"{baseClass} border-neutral-900 bg-neutral-900 text-white"
-            : $"{baseClass} border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100";
-    }
+    private IReadOnlyList<StorefrontPaginationItem> PaginationItems => Enumerable
+        .Range(1, Context.TotalPages)
+        .Select(pageNumber => new StorefrontPaginationItem(
+            pageNumber,
+            Context.Links.SearchUrl(
+                Context.Q,
+                Context.Category,
+                pageNumber,
+                Context.PageSize,
+                Context.SortBy,
+                Context.MinPrice,
+                Context.MaxPrice,
+                Context.InStock ? true : null),
+            pageNumber == Context.PageNumber))
+        .ToArray();
+
+    private static StorefrontPaginationClasses SearchPaginationClasses { get; } = new(
+        Root: "mt-8 flex flex-wrap items-center justify-center gap-2",
+        Link: "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold",
+        CurrentLink: "border-neutral-900 bg-neutral-900 text-white",
+        InactiveLink: "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100");
+
+    private static StorefrontPaginationLabels SearchPaginationLabels { get; } = new("Search result pages");
 }

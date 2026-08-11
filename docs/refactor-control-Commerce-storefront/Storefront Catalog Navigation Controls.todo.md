@@ -338,14 +338,14 @@ Goal: replace Search page manual pagination without changing URLs.
 
 File:
 
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor`.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor`.
 
 Tasks:
 
-- [ ] Add required namespace import for `Components.Primitives.Navigation`.
-- [ ] Add required namespace import for `Components.Contracts.Navigation`.
-- [ ] Build `StorefrontPaginationItem[]` or `IReadOnlyList<StorefrontPaginationItem>` in V2 page code.
-- [ ] Preserve URL call exactly:
+- [x] Add required namespace import for `Components.Primitives.Navigation`.
+- [x] Add required namespace import for `Components.Contracts.Navigation`.
+- [x] Build `StorefrontPaginationItem[]` or `IReadOnlyList<StorefrontPaginationItem>` in V2 page code.
+- [x] Preserve URL call exactly:
 
 ```csharp
 Context.Links.SearchUrl(
@@ -359,20 +359,20 @@ Context.Links.SearchUrl(
     Context.InStock ? true : null)
 ```
 
-- [ ] Pass prepared items to `StorefrontPagination`.
-- [ ] Pass V2-owned classes to `StorefrontPagination`.
-- [ ] Pass V2-owned `AriaLabel` value equivalent to `Search result pages`.
-- [ ] Remove manual `<nav>` loop.
-- [ ] Remove `GetPageLinkClass` from Search if unused.
-- [ ] Keep search heading/scope/result count unchanged.
-- [ ] Keep short-search validation unchanged.
-- [ ] Keep product grid placement unchanged.
+- [x] Pass prepared items to `StorefrontPagination`.
+- [x] Pass V2-owned classes to `StorefrontPagination`.
+- [x] Pass V2-owned `AriaLabel` value equivalent to `Search result pages`.
+- [x] Remove manual `<nav>` loop.
+- [x] Remove `GetPageLinkClass` from Search if unused.
+- [x] Keep search heading/scope/result count unchanged.
+- [x] Keep short-search validation unchanged.
+- [x] Keep product grid placement unchanged.
 
 Exit criteria:
 
-- [ ] search pagination route behavior unchanged;
-- [ ] search query state preserved across page links;
-- [ ] duplicated pagination loop removed.
+- [x] search pagination route behavior unchanged;
+- [x] search query state preserved across page links;
+- [x] duplicated pagination loop removed.
 
 ## Phase 3.3.5 - Define Catalog Filter Visual And Label Contracts
 
