@@ -392,27 +392,27 @@ Exit criteria:
 
 Tasks:
 
-- [ ] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutSection.razor`.
-- [ ] Make the wrapper render `BlazorShop.Storefront.Components.WasmHost.Components.Checkout.StorefrontCheckoutShell`.
-- [ ] Pass V2 checkout classes from `StorefrontCheckoutShellOptions`.
-- [ ] Pass V2 checkout labels from `StorefrontCheckoutShellOptions`.
-- [ ] Preserve current `ShowPanel` parameter behavior.
-- [ ] Keep V2 final class values and V2 final English copy in the V2 options object.
-- [ ] Keep wrapper markup minimal.
-- [ ] Do not inject `IStorefrontBrowserCheckoutController` in the wrapper.
-- [ ] Delete or stop using the old V2.WASM `StorefrontCheckoutShell.razor`.
-- [ ] Update namespaces and imports so V2 pages can render `StorefrontCheckoutSection` without ambiguity.
+- [x] Add `BlazorShop.PresentationV2/BlazorShop.Storefront.V2.WASM/Components/Checkout/StorefrontCheckoutSection.razor`.
+- [x] Make the wrapper render `BlazorShop.Storefront.Components.WasmHost.Components.Checkout.StorefrontCheckoutShell`.
+- [x] Pass V2 checkout classes from `StorefrontCheckoutShellOptions`.
+- [x] Pass V2 checkout labels from `StorefrontCheckoutShellOptions`.
+- [x] Preserve current `ShowPanel` parameter behavior.
+- [x] Keep V2 final class values and V2 final English copy in the V2 options object.
+- [x] Keep wrapper markup minimal.
+- [x] Do not inject `IStorefrontBrowserCheckoutController` in the wrapper.
+- [x] Delete or stop using the old V2.WASM `StorefrontCheckoutShell.razor`.
+- [x] Update namespaces and imports so V2 pages can render `StorefrontCheckoutSection` without ambiguity.
 
 Guardrails:
 
-- [ ] Wrapper may configure V2 options.
-- [ ] Wrapper may expose `ShowPanel`.
-- [ ] Wrapper must not duplicate checkout shell behavior logic.
-- [ ] Wrapper must not duplicate the reusable checkout shell markup.
+- [x] Wrapper may configure V2 options.
+- [x] Wrapper may expose `ShowPanel`.
+- [x] Wrapper must not duplicate checkout shell behavior logic.
+- [x] Wrapper must not duplicate the reusable checkout shell markup.
 
 Exit criteria:
 
-- [ ] V2.WASM owns checkout presentation values only.
+- [x] V2.WASM owns checkout presentation values only.
 - [ ] `CheckoutPage.razor` renders the V2 wrapper with `ShowPanel=false`.
 
 ## Phase 7 - Update V2 Page Integration

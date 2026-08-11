@@ -1,0 +1,24 @@
+@namespace BlazorShop.Storefront.V2.WASM.Components.Checkout
+@using BlazorShop.Storefront.Components.Browser
+@using BlazorShop.Storefront.Components.Headless.Checkout
+
+<BlazorShop.Storefront.Components.WasmHost.Components.Checkout.StorefrontCheckoutShell InitialState="InitialState"
+                                                                                       ShowPanel="ShowPanel"
+                                                                                       DataMode="DataMode"
+                                                                                       Actions="Actions"
+                                                                                       Classes="StorefrontCheckoutShellOptions.Classes"
+                                                                                       Labels="StorefrontCheckoutShellOptions.Labels" />
+
+@code {
+    [Parameter, EditorRequired]
+    public StorefrontBrowserCheckoutState InitialState { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public bool ShowPanel { get; set; }
+
+    [Parameter, EditorRequired]
+    public StorefrontFeatureDataMode DataMode { get; set; }
+
+    [Parameter, EditorRequired]
+    public StorefrontCheckoutActionDescriptor Actions { get; set; } = default!;
+}
