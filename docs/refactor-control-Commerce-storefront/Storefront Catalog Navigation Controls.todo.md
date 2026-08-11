@@ -765,60 +765,60 @@ Goal: cover the reusable components directly.
 
 Suggested files:
 
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontPaginationPrimitiveTests.cs`.
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontCatalogFilterPanelSsrTests.cs`.
-- [ ] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontBreadcrumbSsrTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontPaginationPrimitiveTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontCatalogFilterPanelSsrTests.cs`.
+- [x] `BlazorShop.Tests.V2/PresentationV2/Storefront/StorefrontBreadcrumbSsrTests.cs`.
 
 Pagination tests:
 
-- [ ] no items renders no navigation or no page links, matching chosen component behavior.
-- [ ] one item renders one link when provided.
-- [ ] multiple items render all links.
-- [ ] current item receives `aria-current="page"`.
-- [ ] non-current items do not receive `aria-current`.
-- [ ] current class slot is used.
-- [ ] inactive class slot is used.
-- [ ] host-supplied `Href` is emitted unchanged.
-- [ ] host-supplied label is used.
-- [ ] page number fallback is used when label is missing.
-- [ ] `aria-label` comes from labels.
+- [x] no items renders no navigation or no page links, matching chosen component behavior.
+- [x] one item renders one link when provided.
+- [x] multiple items render all links.
+- [x] current item receives `aria-current="page"`.
+- [x] non-current items do not receive `aria-current`.
+- [x] current class slot is used.
+- [x] inactive class slot is used.
+- [x] host-supplied `Href` is emitted unchanged.
+- [x] host-supplied label is used.
+- [x] page number fallback is used when label is missing.
+- [x] `aria-label` comes from labels.
 
 Catalog filter tests:
 
-- [ ] category select can be hidden.
-- [ ] category select can be shown.
-- [ ] selected category is marked selected.
-- [ ] search input can be hidden.
-- [ ] search input can be shown.
-- [ ] search term is preserved.
-- [ ] price inputs render decimal values.
-- [ ] sort select renders allowed values.
-- [ ] selected sort is marked selected.
-- [ ] page-size select renders configured options.
-- [ ] selected page size is marked selected.
-- [ ] in-stock checkbox is checked when `InStock=true`.
-- [ ] submit label renders.
-- [ ] submit icon slot renders.
-- [ ] query names are unchanged.
-- [ ] class slots are applied.
-- [ ] no JavaScript event handler appears.
+- [x] category select can be hidden.
+- [x] category select can be shown.
+- [x] selected category is marked selected.
+- [x] search input can be hidden.
+- [x] search input can be shown.
+- [x] search term is preserved.
+- [x] price inputs render decimal values.
+- [x] sort select renders allowed values.
+- [x] selected sort is marked selected.
+- [x] page-size select renders configured options.
+- [x] selected page size is marked selected.
+- [x] in-stock checkbox is checked when `InStock=true`.
+- [x] submit label renders.
+- [x] submit icon slot renders.
+- [x] query names are unchanged.
+- [x] class slots are applied.
+- [x] no JavaScript event handler appears.
 
 Breadcrumb tests:
 
-- [ ] zero items render nothing.
-- [ ] one item render behavior matches existing behavior.
-- [ ] two or more items render `<nav>`.
-- [ ] ancestor item with `Href` renders as link.
-- [ ] current item renders as span.
-- [ ] current item receives `aria-current="page"`.
-- [ ] separator renders between items.
-- [ ] class slots are applied.
-- [ ] no route helper usage.
+- [x] zero items render nothing.
+- [x] one item render behavior matches existing behavior.
+- [x] two or more items render `<nav>`.
+- [x] ancestor item with `Href` renders as link.
+- [x] current item renders as span.
+- [x] current item receives `aria-current="page"`.
+- [x] separator renders between items.
+- [x] class slots are applied.
+- [x] no route helper usage.
 
 Exit criteria:
 
-- [ ] new components have semantic coverage independent of V2 pages;
-- [ ] no browser/runtime setup required for component tests.
+- [x] new components have semantic coverage independent of V2 pages;
+- [x] no browser/runtime setup required for component tests.
 
 ## Phase 3.3.16 - Architecture Guardrail Tests
 
