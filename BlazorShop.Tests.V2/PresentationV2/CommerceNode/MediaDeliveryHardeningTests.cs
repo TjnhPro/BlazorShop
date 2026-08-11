@@ -43,6 +43,18 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("X-Store-Key", source);
         }
 
+        [Fact]
+        public void BrandingUpload_UsesDedicatedStoreScopedServiceAndDocumentedAdminOperation()
+        {
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/CommerceMediaAssetsController.cs");
+            var swagger = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwagger.BrandingMediaAdminOperationMetadataFilter.cs");
+
+            Assert.Contains("ICommerceBrandingAssetService", controller);
+            Assert.Contains("[HttpPost(\"branding/{slot}\")]", controller);
+            Assert.Contains("CommerceMediaAssets_UploadBranding", swagger);
+            Assert.Contains("Upload a normalized branding logo or favicon.", swagger);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

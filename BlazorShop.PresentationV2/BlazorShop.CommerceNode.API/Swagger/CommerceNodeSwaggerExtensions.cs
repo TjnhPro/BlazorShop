@@ -93,6 +93,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.OperationFilter<CommerceShippingAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceTransactionalMessageAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceCategoryMediaAdminOperationMetadataFilter>();
+                options.OperationFilter<CommerceBrandingMediaAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceNavigationAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceSeoSlugAdminOperationMetadataFilter>();
                 options.OperationFilter<StorefrontOperationMetadataFilter>();

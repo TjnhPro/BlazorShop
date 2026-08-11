@@ -11,10 +11,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class CommerceMediaAssetsController : CommerceAdminControllerBase
     {
         private readonly ICommerceMediaAssetService mediaAssetService;
+        private readonly ICommerceBrandingAssetService brandingAssetService;
 
-        public CommerceMediaAssetsController(ICommerceMediaAssetService mediaAssetService)
+        public CommerceMediaAssetsController(
+            ICommerceMediaAssetService mediaAssetService,
+            ICommerceBrandingAssetService brandingAssetService)
         {
             this.mediaAssetService = mediaAssetService;
+            this.brandingAssetService = brandingAssetService;
         }
 
         [HttpGet]
@@ -58,6 +62,30 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 new CommerceMediaAssetUploadRequest(stream, file.FileName, file.ContentType, file.Length),
                 cancellationToken);
             return this.FromMediaAssetResult(result);
+        }
+
+        [HttpPost("branding/{slot}")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> UploadBranding(
+            string slot,
+            IFormFile file,
+            CancellationToken cancellationToken = default)
+        {
+            if (file is null)
+            {
+                return ApplicationResult<CommerceBrandingAssetResponse>
+                    .Failed(ApplicationError.Validation("branding.validation", "Image file is required."))
+                    .ToCommerceNodeActionResult();
+            }
+
+            await using var stream = file.OpenReadStream();
+            var result = await this.brandingAssetService.UploadAsync(
+                new CommerceBrandingAssetUploadRequest(
+                    slot,
+                    new CommerceMediaAssetUploadRequest(stream, file.FileName, file.ContentType, file.Length)),
+                cancellationToken);
+            return result.ToCommerceNodeActionResult();
         }
 
         [HttpPut("{assetPublicId:guid}")]

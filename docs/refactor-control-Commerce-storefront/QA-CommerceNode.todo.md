@@ -550,6 +550,7 @@ Plan: `Cart Core.todo.md`.
 - [x] CommerceNode API builds after Media Core Phase 6 media asset usage classification migration/API changes. 2026-07-15: CommerceNode API build passed.
 - [x] Media Core Phase 7 assigned generic media asset delete is blocked instead of silently breaking category image. 2026-07-15: `CommerceMediaAssetUsageTypeTests.DeleteAsync_WhenAssetIsAssignedToCategory_ReturnsConflict` passed.
 - [x] Branding transforms use the named `brand-logo` (800x200 PNG) and `brand-favicon` (512x512 PNG) presets with contain-plus-extend canvas output; non-branding generic assets remain source-clamped. 2026-08-11: `MediaTransformPolicyTests` and `MediaUrlBuilderTests` passed 23/23.
+- [x] Branding upload accepts only PNG/WebP logo or favicon assets, records `UsageType=branding`, and returns the preset effective URL through a documented Commerce Admin operation. 2026-08-11: `CommerceBrandingAssetServiceTests` and `MediaDeliveryHardeningTests` passed 33/33.
 
 ### Product Import
 
