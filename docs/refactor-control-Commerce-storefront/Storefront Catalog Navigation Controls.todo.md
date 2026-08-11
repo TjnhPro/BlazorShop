@@ -1046,39 +1046,39 @@ Goal: confirm V2 page ownership remains intact.
 
 Category must still own:
 
-- [ ] `StorefrontPageShell` placement;
-- [ ] breadcrumb slot placement;
-- [ ] category title;
-- [ ] category description/meta-description fallback;
-- [ ] result count text;
-- [ ] Back to Home CTA;
-- [ ] filter placement;
-- [ ] product grid placement;
-- [ ] pagination item construction;
-- [ ] SEO content placement.
+- [x] `StorefrontPageShell` placement;
+- [x] breadcrumb slot placement;
+- [x] category title;
+- [x] category description/meta-description fallback;
+- [x] result count text;
+- [x] Back to Home CTA;
+- [x] filter placement;
+- [x] product grid placement;
+- [x] pagination item construction;
+- [x] SEO content placement.
 
 Search must still own:
 
-- [ ] page section shell;
-- [ ] search title;
-- [ ] scope text;
-- [ ] filter placement;
-- [ ] short-term validation;
-- [ ] result heading;
-- [ ] result count;
-- [ ] product grid placement;
-- [ ] pagination item construction.
+- [x] page section shell;
+- [x] search title;
+- [x] scope text;
+- [x] filter placement;
+- [x] short-term validation;
+- [x] result heading;
+- [x] result count;
+- [x] product grid placement;
+- [x] pagination item construction.
 
 Product/content must still own:
 
-- [ ] page shell placement;
-- [ ] breadcrumb slot placement;
-- [ ] page-specific content around breadcrumb.
+- [x] page shell placement;
+- [x] breadcrumb slot placement;
+- [x] page-specific content around breadcrumb.
 
 Exit criteria:
 
-- [ ] Phase 3.3 did not turn reusable components into page shells;
-- [ ] V2 still controls page composition.
+- [x] Phase 3.3 did not turn reusable components into page shells;
+- [x] V2 still controls page composition.
 
 ## Phase 3.3.23 - Documentation And QA Checklist
 
