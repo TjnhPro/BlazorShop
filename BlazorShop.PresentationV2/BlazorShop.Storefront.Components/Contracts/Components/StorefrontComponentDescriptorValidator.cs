@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Components.Contracts.Components;
 
-using System.Text.RegularExpressions;
+using global::System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 
 public static class StorefrontComponentDescriptorValidator

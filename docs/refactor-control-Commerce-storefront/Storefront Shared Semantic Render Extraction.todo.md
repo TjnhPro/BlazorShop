@@ -378,9 +378,9 @@ Goal: define the smallest contracts needed to remove final classes and copy from
 
 Files:
 
-- [ ] Extend `BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseLabels.cs`.
-- [ ] Add `BlazorShop.Storefront.Components/Contracts/Product/ProductPurchasePanelClasses.cs`.
-- [ ] Do not add `ProductPurchasePanelLabels.cs`.
+- [x] Extend `BlazorShop.Storefront.Components/Contracts/Product/ProductPurchaseLabels.cs`.
+- [x] Add `BlazorShop.Storefront.Components/Contracts/Product/ProductPurchasePanelClasses.cs`.
+- [x] Do not add `ProductPurchasePanelLabels.cs`.
 
 `ProductPurchaseLabels` requirements:
 
@@ -405,8 +405,8 @@ Files:
 
 Files:
 
-- [ ] Add `BlazorShop.Storefront.Components/Contracts/System/StorefrontToastRegionClasses.cs`.
-- [ ] Add `BlazorShop.Storefront.Components/Contracts/System/StorefrontToastRegionLabels.cs`.
+- [x] Add `BlazorShop.Storefront.Components/Contracts/System/StorefrontToastRegionClasses.cs`.
+- [x] Add `BlazorShop.Storefront.Components/Contracts/System/StorefrontToastRegionLabels.cs`.
 
 Requirements:
 
@@ -419,8 +419,8 @@ Requirements:
 
 Files:
 
-- [ ] Add `BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanelClasses.cs`.
-- [ ] Add `BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanelLabels.cs`.
+- [x] Add `BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanelClasses.cs`.
+- [x] Add `BlazorShop.Storefront.Components.Ssr/Security/StorefrontConsentPanelLabels.cs`.
 
 Requirements:
 
@@ -432,17 +432,19 @@ Requirements:
 
 Contract tests:
 
-- [ ] Base Components contracts contain no Presentation, Runtime, Client, Browser, V2, V2.WASM, Starter, backend, or API references.
-- [ ] New contracts contain no literal Tailwind classes or final V2 copy.
-- [ ] Ssr consent contracts contain no Browser, Runtime, Client, V2, Starter, backend, or API references.
-- [ ] Public contract shape is covered by focused source or reflection tests where repository convention requires it.
+- [x] Base Components contracts contain no Presentation, Runtime, Client, Browser, V2, V2.WASM, Starter, backend, or API references.
+- [x] New contracts contain no literal Tailwind classes or final V2 copy.
+- [x] Ssr consent contracts contain no Browser, Runtime, Client, V2, Starter, backend, or API references.
+- [x] Public contract shape is covered by focused source or reflection tests where repository convention requires it.
 
 Exit criteria:
 
-- [ ] Components builds;
-- [ ] Components.Ssr builds;
-- [ ] contracts are sufficient for the current markup without an untyped attribute dictionary;
-- [ ] no generic design-system or localization abstraction was introduced.
+- [x] Components builds;
+- [x] Components.Ssr builds;
+- [x] contracts are sufficient for the current markup without an untyped attribute dictionary;
+- [x] no generic design-system or localization abstraction was introduced.
+
+Phase 3.4.1 evidence (2026-08-11): Components and Components.Ssr built successfully. `StorefrontSharedSemanticRenderContractTests` locks the extended purchase label surface, neutral `Empty` values, and class-slot contracts without V2 visual values. `Contracts/System` required the existing descriptor validator to use `global::System.Text.RegularExpressions` so the new contract namespace cannot shadow the framework `System` namespace.
 
 ## Phase 3.4.2 - Extract Product Purchase Primitive
 

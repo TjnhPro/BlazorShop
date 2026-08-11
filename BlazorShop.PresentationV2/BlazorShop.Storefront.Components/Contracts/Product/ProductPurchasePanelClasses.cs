@@ -1,0 +1,26 @@
+namespace BlazorShop.Storefront.Components.Contracts.Product;
+
+public sealed record ProductPurchasePanelClasses(
+    string Root = "",
+    string Heading = "",
+    string Message = "",
+    string BlockedMessage = "",
+    string DeliveryMetadata = "",
+    string DeliveryBadge = "",
+    string OptionGroups = "",
+    string OptionGroup = "",
+    string OptionLegend = "",
+    string OptionChoices = "",
+    string OptionChoice = "",
+    string OptionInput = "",
+    string OptionLabel = "",
+    string Select = "",
+    string Quantity = "",
+    string QuantityLabel = "",
+    string Actions = "",
+    string AddButton = "",
+    string DisabledAddButton = "",
+    string CartLink = "",
+    string Feedback = "",
+    string ValidColorSwatch = "",
+    string MissingColorSwatch = "");

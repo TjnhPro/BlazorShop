@@ -5,9 +5,19 @@ public sealed record ProductPurchaseLabels(
     string AddedToCart,
     string ViewCart,
     string FreeShipping,
-    string Optional)
+    string Optional,
+    string PurchaseHeading,
+    string ChooseVariant,
+    string SelectVariant,
+    string Quantity,
+    string SelectOptionFormat)
 {
     public static ProductPurchaseLabels Empty { get; } = new(
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
         string.Empty,
         string.Empty,
         string.Empty,
