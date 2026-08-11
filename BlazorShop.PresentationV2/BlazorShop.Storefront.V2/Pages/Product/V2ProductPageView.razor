@@ -1,11 +1,14 @@
 @namespace BlazorShop.Storefront.V2.Pages.Product
+@using BlazorShop.Storefront.Components.Ssr.Navigation
 @using BlazorShop.Storefront.Presentation.Models
 @using BlazorShop.Storefront.Presentation.Services.Product
 @using BlazorShop.Storefront.Presentation.Services
 
 <StorefrontPageShell Class="mx-auto max-w-7xl px-4 pb-8 pt-10 sm:px-6 lg:px-8">
         <Breadcrumb>
-            <BreadcrumbNav Items="_breadcrumbs" />
+            <StorefrontBreadcrumb Items="_breadcrumbs"
+                                 Classes="BreadcrumbClasses"
+                                 Labels="BreadcrumbLabels" />
         </Breadcrumb>
 
         <ChildContent>
@@ -144,5 +147,14 @@
     private IReadOnlyList<ProductSummaryItem> _relatedProducts => Context.RelatedProductSummaries;
 
     private string ProductSeoContentTitle => _navigation.ProductSeoContentTitle;
+
+    private static StorefrontBreadcrumbClasses BreadcrumbClasses { get; } = new(
+        List: "flex flex-wrap items-center gap-2 text-sm text-neutral-500",
+        Item: "flex items-center gap-2",
+        Link: "font-medium text-neutral-500 hover:text-neutral-900",
+        Current: "font-semibold text-neutral-900",
+        Separator: "text-neutral-300");
+
+    private static StorefrontBreadcrumbLabels BreadcrumbLabels { get; } = new();
 
 }

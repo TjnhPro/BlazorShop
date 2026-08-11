@@ -600,7 +600,7 @@ Goal: move existing breadcrumb rendering from V2 to the reusable SSR project.
 
 Source:
 
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Shared/BreadcrumbNav.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Shared/BreadcrumbNav.razor`
 
 Target:
 
@@ -621,14 +621,14 @@ Tasks:
 
 Cleanup:
 
-- [ ] Delete old V2 `Components/Shared/BreadcrumbNav.razor` after all active consumers migrate.
-- [ ] Remove obsolete V2 namespace import if unused.
+- [x] Delete old V2 `Components/Shared/BreadcrumbNav.razor` after all active consumers migrate.
+- [x] Remove obsolete V2 namespace import if unused.
 
 Exit criteria:
 
-- [ ] one breadcrumb implementation remains;
-- [ ] V2 still owns final classes/copy;
-- [ ] no route/runtime dependency added.
+- [x] one breadcrumb implementation remains;
+- [x] V2 still owns final classes/copy;
+- [x] no route/runtime dependency added.
 
 ## Phase 3.3.11 - Migrate Breadcrumb Consumers
 
@@ -636,26 +636,26 @@ Goal: update all active V2 breadcrumb consumers in the same phase.
 
 Files:
 
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`.
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor`.
-- [ ] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor`.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor`.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor`.
+- [x] Update `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Product/V2ProductPageView.razor`.
 
 Tasks:
 
-- [ ] Replace `<BreadcrumbNav Items="...">` with `<StorefrontBreadcrumb Items="...">`.
-- [ ] Supply V2-owned breadcrumb classes.
-- [ ] Supply V2-owned breadcrumb labels if needed.
-- [ ] Keep `StorefrontPageShell` breadcrumb slot usage unchanged.
-- [ ] Keep Product breadcrumb data mapping unchanged.
-- [ ] Keep Content breadcrumb data mapping unchanged.
-- [ ] Keep Category breadcrumb data mapping unchanged.
+- [x] Replace `<BreadcrumbNav Items="...">` with `<StorefrontBreadcrumb Items="...">`.
+- [x] Supply V2-owned breadcrumb classes.
+- [x] Supply V2-owned breadcrumb labels if needed.
+- [x] Keep `StorefrontPageShell` breadcrumb slot usage unchanged.
+- [x] Keep Product breadcrumb data mapping unchanged.
+- [x] Keep Content breadcrumb data mapping unchanged.
+- [x] Keep Category breadcrumb data mapping unchanged.
 
 Exit criteria:
 
-- [ ] no active V2 page uses `<BreadcrumbNav`;
-- [ ] Product breadcrumb still renders;
-- [ ] Content breadcrumb still renders;
-- [ ] Category breadcrumb still renders.
+- [x] no active V2 page uses `<BreadcrumbNav`;
+- [x] Product breadcrumb still renders;
+- [x] Content breadcrumb still renders;
+- [x] Category breadcrumb still renders.
 
 ## Phase 3.3.12 - V2 Visual Configuration
 
