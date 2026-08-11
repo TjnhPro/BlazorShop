@@ -261,36 +261,44 @@ rg -n "IStorefrontBrowser|HttpClient|IJSRuntime|HydrateAsync|Initialize|Controll
 
 Expected V2 result:
 
-- [ ] No Browser controller injection.
-- [ ] No direct Commerce Node or Storefront API transport.
-- [ ] No reusable browser lifecycle/mutation logic.
-- [ ] Approved page/composition `@rendermode` remains in V2 pages only.
-- [ ] Approved theme JavaScript/CSS behavior remains V2-owned.
+- [x] No Browser controller injection.
+- [x] No direct Commerce Node or Storefront API transport.
+- [x] No reusable browser lifecycle/mutation logic.
+- [x] Approved page/composition `@rendermode` remains in V2 pages only.
+- [x] Approved theme JavaScript/CSS behavior remains V2-owned.
 
 Expected V2.WASM result:
 
-- [ ] Thin wrappers may render WasmHost/primitive components with V2 labels/classes/actions.
-- [ ] Account app may route/select panels and render account navigation.
-- [ ] No account leaf lifecycle/mutation methods.
-- [ ] No direct `HttpClient`.
-- [ ] No direct `/api/storefront/*`.
-- [ ] No Presentation, Runtime, Client, Commerce Node, Control Plane, or backend references.
+- [x] Thin wrappers may render WasmHost/primitive components with V2 labels/classes/actions.
+- [x] Account app may route/select panels and render account navigation.
+- [x] No account leaf lifecycle/mutation methods.
+- [x] No direct `HttpClient`.
+- [x] No direct `/api/storefront/*`.
+- [x] No Presentation, Runtime, Client, Commerce Node, Control Plane, or backend references.
 
 Special account review:
 
-- [ ] `StorefrontAccountApp` has no `IStorefrontBrowserAccountController`.
-- [ ] `StorefrontAccountNavigation` has no browser controller injection.
-- [ ] `StorefrontAccountApp` has no account leaf lifecycle methods.
-- [ ] `StorefrontAccountNavigation` has no account mutation methods.
-- [ ] `StorefrontAccountApp` still owns composition and route/panel selection only.
-- [ ] `StorefrontAccountNavigation` still owns render-only navigation.
+- [x] `StorefrontAccountApp` has no `IStorefrontBrowserAccountController`.
+- [x] `StorefrontAccountNavigation` has no browser controller injection.
+- [x] `StorefrontAccountApp` has no account leaf lifecycle methods.
+- [x] `StorefrontAccountNavigation` has no account mutation methods.
+- [x] `StorefrontAccountApp` still owns composition and route/panel selection only.
+- [x] `StorefrontAccountNavigation` still owns render-only navigation.
 
 Decision:
 
-- [ ] If all checks pass, mark extraction loop closed and continue as cleanup only.
-- [ ] If a new leak is found, document the exact file, dependency, and behavior.
-- [ ] Fix only the smallest boundary violation needed.
-- [ ] Do not open another broad extraction phase without a separate approved plan.
+- [x] If all checks pass, mark extraction loop closed and continue as cleanup only.
+- [x] If a new leak is found, document the exact file, dependency, and behavior.
+- [x] Fix only the smallest boundary violation needed.
+- [x] Do not open another broad extraction phase without a separate approved plan.
+
+### Phase 1 Evidence (2026-08-11)
+
+- The V2 scan found no Browser controller, direct Commerce Node/Storefront transport, or reusable browser lifecycle/mutation logic. The only `localhost` matches are allowed development configuration and launch settings.
+- All nine `@rendermode="InteractiveWebAssembly"` sites are V2 page/composition sites. V2's application head and scripts load the approved theme assets.
+- V2.WASM references only Browser, Components, Components.Primitives, and Components.WasmHost. Its source scan has no forbidden runtime/project dependency and no direct transport.
+- `StorefrontAccountApp` and `StorefrontAccountNavigation` have no controller/lifecycle/mutation match; the app selects the route panel and navigation renders links. The controller lifecycle/mutations remain in the five approved WasmHost account leaves.
+- Decision: no new leak was found. The extraction loop is closed; remaining work is cleanup only.
 
 ## Phase 2 - Source Cleanup
 
